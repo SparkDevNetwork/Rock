@@ -42,7 +42,7 @@ namespace RockWeb.Blocks.Communication
     [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve new communications." )]
 
     [LinkedPage( "Detail Page", order: 1 )]
-    [LinkedPage( "Email Analytics", defaultValue:Rock.SystemGuid.Page.EMAIL_ANALYTICS, order: 2 )]
+    [LinkedPage( "Email Analytics", defaultValue: Rock.SystemGuid.Page.EMAIL_ANALYTICS, order: 2 )]
     public partial class CommunicationList : Rock.Web.UI.RockBlock, ICustomGridColumns
     {
         private bool canApprove = false;
@@ -68,7 +68,7 @@ namespace RockWeb.Blocks.Communication
             canApprove = this.IsUserAuthorized( "Approve" );
             ppSender.Visible = canApprove;
 
-            var createdByBoundField = gCommunication.ColumnsOfType<RockBoundField>().FirstOrDefault(a=>a.HeaderText == "Created By" );
+            var createdByBoundField = gCommunication.ColumnsOfType<RockBoundField>().FirstOrDefault( a => a.HeaderText == "Created By" );
             if ( createdByBoundField != null )
             {
                 createdByBoundField.Visible = canApprove;
@@ -133,7 +133,7 @@ namespace RockWeb.Blocks.Communication
                     {
                         if ( !string.IsNullOrWhiteSpace( e.Value ) )
                         {
-                            e.Value = ( (CommunicationType)System.Enum.Parse( typeof( CommunicationType ), e.Value ) ).ConvertToString();
+                            e.Value = ( ( CommunicationType ) System.Enum.Parse( typeof( CommunicationType ), e.Value ) ).ConvertToString();
                         }
 
                         break;
@@ -142,7 +142,7 @@ namespace RockWeb.Blocks.Communication
                     {
                         if ( !string.IsNullOrWhiteSpace( e.Value ) )
                         {
-                            e.Value = ( (CommunicationStatus)System.Enum.Parse( typeof( CommunicationStatus ), e.Value ) ).ConvertToString();
+                            e.Value = ( ( CommunicationStatus ) System.Enum.Parse( typeof( CommunicationStatus ), e.Value ) ).ConvertToString();
                         }
 
                         break;
@@ -328,7 +328,7 @@ namespace RockWeb.Blocks.Communication
             string status = ddlStatus.SelectedValue;
             if ( !string.IsNullOrWhiteSpace( status ) )
             {
-                var communicationStatus = (CommunicationStatus)System.Enum.Parse( typeof( CommunicationStatus ), status );
+                var communicationStatus = ( CommunicationStatus ) System.Enum.Parse( typeof( CommunicationStatus ), status );
                 communications = communications.Where( c => c.Status == communicationStatus );
             }
 
@@ -353,13 +353,13 @@ namespace RockWeb.Blocks.Communication
 
             if ( drpDates.LowerValue.HasValue )
             {
-                communications = communications.Where( a => (a.SendDateTime ?? a.FutureSendDateTime) >= drpDates.LowerValue.Value );
+                communications = communications.Where( a => ( a.SendDateTime ?? a.FutureSendDateTime ) >= drpDates.LowerValue.Value );
             }
 
             if ( drpDates.UpperValue.HasValue )
             {
                 DateTime upperDate = drpDates.UpperValue.Value.Date.AddDays( 1 );
-                communications = communications.Where( a => (a.SendDateTime ?? a.FutureSendDateTime) < upperDate );
+                communications = communications.Where( a => ( a.SendDateTime ?? a.FutureSendDateTime ) < upperDate );
             }
 
             string content = tbContent.Text;
@@ -379,13 +379,14 @@ namespace RockWeb.Blocks.Communication
                 .Where( a => communications.Where( x => x.CommunicationTemplateId.HasValue ).Select( x => x.CommunicationTemplateId.Value ).Distinct().Contains( a.Id ) )
                 .ToList().Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) ).Select( a => a.Id ).ToList();
 
-            var queryable = communications.Where(a => a.CommunicationTemplateId == null || authorizedCommunicationTemplateIds.Contains(a.CommunicationTemplateId.Value) )
+            var queryable = communications.Where( a => a.CommunicationTemplateId == null || authorizedCommunicationTemplateIds.Contains( a.CommunicationTemplateId.Value ) )
                 .Select( c => new CommunicationItem
                 {
                     Id = c.Id,
                     CommunicationType = c.CommunicationType,
                     Subject = string.IsNullOrEmpty( c.Subject ) ? c.Name : c.Subject,
                     SendDateTime = c.SendDateTime ?? c.FutureSendDateTime,
+                    SendDateTimeFormat = c.SendDateTime != null ? "" : "<span class='label label-default'>Pending</span>&nbsp;",
                     Sender = c.SenderPersonAlias != null ? c.SenderPersonAlias.Person : null,
                     ReviewedDateTime = c.ReviewedDateTime,
                     Reviewer = c.ReviewerPersonAlias != null ? c.ReviewerPersonAlias.Person : null,
@@ -396,7 +397,7 @@ namespace RockWeb.Blocks.Communication
                     FailedRecipients = recipients.Where( r => r.CommunicationId == c.Id && r.Status == CommunicationRecipientStatus.Failed ).Count(),
                     DeliveredRecipients = recipients.Where( r => r.CommunicationId == c.Id && ( r.Status == CommunicationRecipientStatus.Delivered || r.Status == CommunicationRecipientStatus.Opened ) ).Count(),
                     OpenedRecipients = recipients.Where( r => r.CommunicationId == c.Id && r.Status == CommunicationRecipientStatus.Opened ).Count()
-                });
+                } );
 
             var sortProperty = gCommunication.SortProperty;
             if ( sortProperty != null )
@@ -452,7 +453,18 @@ namespace RockWeb.Blocks.Communication
             public int FailedRecipients { get; set; }
             public int DeliveredRecipients { get; set; }
             public int OpenedRecipients { get; set; }
-            public string TypeIconCssClass 
+            public string SendDateTimeFormat
+            {
+                get
+                {
+                    return _sendDateTimeFormat + string.Format( "{0:g}", SendDateTime );
+                }
+                set
+                {
+                    _sendDateTimeFormat = value;
+                }
+            }
+            public string TypeIconCssClass
             {
                 get
                 {
@@ -477,6 +489,8 @@ namespace RockWeb.Blocks.Communication
                     return iconCssClass;
                 }
             }
+
+            private string _sendDateTimeFormat;
         }
 
     }

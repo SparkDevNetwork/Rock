@@ -201,15 +201,12 @@ namespace Rock.Model
         /// A Json formatted <see cref="System.String"/> that contains any additional merge fields for the Communication.
         /// </value>
         [DataMember]
-        public string AdditionalMergeFieldsJson
-        {
-            get
-            {
+        public string AdditionalMergeFieldsJson {
+            get {
                 return AdditionalMergeFields.ToJson();
             }
 
-            set
-            {
+            set {
                 AdditionalMergeFields = value.FromJsonOrNull<List<string>>() ?? new List<string>();
             }
         }
@@ -396,8 +393,7 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.CommunicationRecipient">CommunicationRecipients</see> of the Communication.
         /// </value>
         [DataMember]
-        public virtual ICollection<CommunicationRecipient> Recipients
-        {
+        public virtual ICollection<CommunicationRecipient> Recipients {
             get { return _recipients ?? ( _recipients = new Collection<CommunicationRecipient>() ); }
             set { _recipients = value; }
         }
@@ -411,8 +407,7 @@ namespace Rock.Model
         /// The attachments.
         /// </value>
         [DataMember]
-        public virtual ICollection<CommunicationAttachment> Attachments
-        {
+        public virtual ICollection<CommunicationAttachment> Attachments {
             get { return _attachments ?? ( _attachments = new Collection<CommunicationAttachment>() ); }
             set { _attachments = value; }
         }
@@ -426,10 +421,8 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [Obsolete( "MediumData is no longer used. Communication now has specific properties for medium data." )]
-        public virtual Dictionary<string, string> MediumData
-        {
-            get
-            {
+        public virtual Dictionary<string, string> MediumData {
+            get {
                 // Get the MediumData from the new property values. This is provided due to the fact that there may be Lava that is 
                 // referencing the "MediumData" property of a communication.
 
@@ -482,8 +475,7 @@ namespace Rock.Model
         /// A <see cref="System.Collections.Generic.List{String}"/> of values containing the additional merge field list.
         /// </value>
         [DataMember]
-        public virtual List<string> AdditionalMergeFields
-        {
+        public virtual List<string> AdditionalMergeFields {
             get { return _additionalMergeFields; }
             set { _additionalMergeFields = value; }
         }
@@ -505,10 +497,8 @@ namespace Rock.Model
         /// The attachment binary file ids
         /// </value>
         [NotMapped]
-        public virtual IEnumerable<int> EmailAttachmentBinaryFileIds
-        {
-            get
-            {
+        public virtual IEnumerable<int> EmailAttachmentBinaryFileIds {
+            get {
                 return this.Attachments.Where( a => a.CommunicationType == CommunicationType.Email ).Select( a => a.BinaryFileId ).ToList();
             }
         }
@@ -520,10 +510,8 @@ namespace Rock.Model
         /// The attachment binary file ids
         /// </value>
         [NotMapped]
-        public virtual IEnumerable<int> SMSAttachmentBinaryFileIds
-        {
-            get
-            {
+        public virtual IEnumerable<int> SMSAttachmentBinaryFileIds {
+            get {
                 return this.Attachments.Where( a => a.CommunicationType == CommunicationType.SMS ).Select( a => a.BinaryFileId ).ToList();
             }
         }
@@ -546,10 +534,8 @@ namespace Rock.Model
         /// this object, Rock will check the default authorization on the current type, and
         /// then the authorization on the Rock.Security.GlobalDefault entity
         /// </summary>
-        public override Security.ISecured ParentAuthority
-        {
-            get
-            {
+        public override Security.ISecured ParentAuthority {
+            get {
                 return this.CommunicationTemplate ?? base.ParentAuthority;
             }
         }
@@ -750,12 +736,15 @@ namespace Rock.Model
                     var dbCommunication = new CommunicationService( rockContext ).Get( communication.Id );
 
                     var maxSendDateTime = dbCommunication.Recipients
-                                        .Where( a => a.CommunicationId == communication.Id )
+                                        .Where( a => a.CommunicationId == communication.Id && a.SendDateTime.HasValue )
+                                        .OrderByDescending( a => a.SendDateTime )
                                         .Select( a => a.SendDateTime )
-                                        .Max();
-
-                    dbCommunication.SendDateTime = maxSendDateTime;
-                    rockContext.SaveChanges();
+                                        .FirstOrDefault();
+                    if ( maxSendDateTime.HasValue )
+                    {
+                        dbCommunication.SendDateTime = maxSendDateTime;
+                        rockContext.SaveChanges();
+                    }
                 }
             }
         }
@@ -921,7 +910,7 @@ namespace Rock.Model
         /// <summary>
         /// Some other communication type
         /// </summary>
-        [Obsolete("Not Supported")]
+        [Obsolete( "Not Supported" )]
         Other = 4
     }
 

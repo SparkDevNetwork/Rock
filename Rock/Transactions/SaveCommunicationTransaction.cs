@@ -192,8 +192,8 @@ namespace Rock.Transactions
                 }
 
                 var communication = new CommunicationService( rockContext ).CreateEmailCommunication(
-                    RecipientEmails, FromName, FromAddress, ReplyTo, Subject, HtmlMessage, BulkCommunication,
-                    RecipientStatus, senderPersonAliasId, SendDateTime );
+                    RecipientEmails, FromName, FromAddress, ReplyTo, Subject, HtmlMessage, BulkCommunication, SendDateTime,
+                    RecipientStatus, senderPersonAliasId );
 
                 if ( communication != null && communication.Recipients.Count() == 1 && RecipientGuid.HasValue )
                 {

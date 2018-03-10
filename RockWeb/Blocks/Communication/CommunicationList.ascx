@@ -37,7 +37,7 @@
                             <Rock:EnumField DataField="Status" SortExpression="Status" HeaderText="Status" />
                             <Rock:DateTimeField DataField="ReviewedDateTime" SortExpression="ReviewedDateTime" ColumnPriority="DesktopLarge" HeaderText="Reviewed" />
                             <Rock:RockBoundField DataField="Reviewer.FullName" HeaderText="Reviewed By" ColumnPriority="DesktopLarge" SortExpression="Reviewer.LastName,Reviewer.NickName"  />
-                            <Rock:DateTimeField DataField="SendDateTime" SortExpression="SendDateTime" ColumnPriority="Desktop" HeaderText="Sent" />
+                            <Rock:RockBoundField  DataField="SendDateTimeFormat" HtmlEncode="false" ItemStyle-HorizontalAlign="Right" SortExpression="SendDateTime" ColumnPriority="Desktop" HeaderText="Sent" />
                             <Rock:RockTemplateField HeaderText="Recipients" ItemStyle-HorizontalAlign="Center" SortExpression="Recipients">
                                 <ItemTemplate>
                                     <span class="badge badge-success" title="Opened" data-toggle="tooltip" style='<%# (int)Eval("OpenedRecipients") > 0 ? "display:inline-block" : "display:none" %>'><%# Eval("OpenedRecipients") %></span>
