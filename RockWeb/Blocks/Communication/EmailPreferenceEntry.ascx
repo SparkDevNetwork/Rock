@@ -11,9 +11,9 @@
         </div>
         <div class="radio">
             <Rock:RockRadioButton ID="rbUpdateEmailAddress" runat="server" Text="Option 2" GroupName="EmailPreference" DisplayInline="false" CssClass="js-email-radio-option" />
-            <div id="divUpdateEmail" runat="server" class="margin-l-lg margin-t-sm" style="display: none">
-                <Rock:EmailBox ID="tbEmail" runat="server" Placeholder="Email" AllowMultiple="false" CssClass="input-width-xxl" />
-            </div>
+        </div>
+        <div id="divUpdateEmail" runat="server" style="display: none">
+                <Rock:EmailBox ID="tbEmail" runat="server" Placeholder="Email" Label="Email" AllowMultiple="false" CssClass="input-width-xxl" />
         </div>
         <div class="radio">
             <Rock:RockRadioButton ID="rbEmailPreferenceEmailAllowed" runat="server" Text="Option 3" GroupName="EmailPreference" DisplayInline="false" CssClass="js-email-radio-option" />
@@ -46,25 +46,28 @@
                     if ($('#<%=rbNotInvolved.ClientID%>').is(':checked')) {
                         $('#<%=divNotInvolved.ClientID%>').slideDown('fast');
                         $('#<%=divUnsubscribeLists.ClientID%>').slideUp('fast');
+                        $('#<%=divUpdateEmail.ClientID%>').slideUp('fast');
+
                     } else if ($('#<%=rbUnsubscribe.ClientID%>').is(':checked')) {
                         $('#<%=divNotInvolved.ClientID%>').slideUp('fast');
                         $('#<%=divUnsubscribeLists.ClientID%>').slideDown('fast');
-                    } else {
+                        $('#<%=divUpdateEmail.ClientID%>').slideUp('fast');
+
+                    } else if ($('#<%=rbUpdateEmailAddress.ClientID%>').is(':checked')) {
                         $('#<%=divNotInvolved.ClientID%>').slideUp('fast');
                         $('#<%=divUnsubscribeLists.ClientID%>').slideUp('fast');
+                        $('#<%=divUpdateEmail.ClientID%>').slideDown('fast');
+
+                    }
+                    else {
+                        $('#<%=divNotInvolved.ClientID%>').slideUp('fast');
+                        $('#<%=divUnsubscribeLists.ClientID%>').slideUp('fast');
+                        $('#<%=divUpdateEmail.ClientID%>').slideUp('fast');
                     }
                 }
 
                 $('.js-email-radio-option').click(function () {
                     toggleVisibility();
-
-                    if ($('#<%=rbUpdateEmailAddress.ClientID%>').is(':checked')) {
-                        $('#<%=divUpdateEmail.ClientID%>').show();
-                        $('#<%=tbEmail.ClientID%>').prop('required', true);
-                    } else {
-                        $('#<%=divUpdateEmail.ClientID%>').hide();
-                        $('#<%=tbEmail.ClientID%>').prop('required', false);
-                    } 
                 });
 
                 toggleVisibility();
