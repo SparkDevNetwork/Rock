@@ -121,6 +121,10 @@
     <Compile Include="Migrations\201803081805523_Communication_AddSendDateTime.Designer.cs">
       <DependentUpon>201803081805523_Communication_AddSendDateTime.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201803110904393_RegistrationTemplateFee_AddIsRequired.cs" />
+    <Compile Include="Migrations\201803110904393_RegistrationTemplateFee_AddIsRequired.Designer.cs">
+      <DependentUpon>201803110904393_RegistrationTemplateFee_AddIsRequired.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.cs" />
     <Compile Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.Designer.cs">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
@@ -2740,6 +2744,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201803081805523_Communication_AddSendDateTime.resx">
       <DependentUpon>201803081805523_Communication_AddSendDateTime.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201803110904393_RegistrationTemplateFee_AddIsRequired.resx">
+      <DependentUpon>201803110904393_RegistrationTemplateFee_AddIsRequired.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.resx">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
