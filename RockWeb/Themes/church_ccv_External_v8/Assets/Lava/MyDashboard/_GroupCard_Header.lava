@@ -1,0 +1,12 @@
+{% comment %} Header for Group Card (also referenced by add group member panel) {% endcomment %}
+<div class="title">
+    <h4>Group</h4>
+    <div>
+        <button class="dropdown-toggle" type="button" data-toggle="dropdown">
+            <span class="material-icons pull-right">more_vert</span>
+        </button>
+        <ul class="dropdown-menu panel-dropdown-menu">
+            <li><a href="/page/1751?person={{ DatamartSummary.AssociatePastor.Id }}">Contact Associate Pastor: {{ DatamartSummary.AssociatePastor.FullName }}</a></li>
+        </ul>
+    </div>   
+</div>

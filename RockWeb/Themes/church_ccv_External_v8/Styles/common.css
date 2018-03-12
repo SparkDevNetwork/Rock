@@ -1,4 +1,74 @@
-/*Main Navbar Styling*/
+/* Start Standard Layout Styling */
+.masthead {
+    background-color: transparent;
+}
+
+.main-feature {
+    padding-top: 75px;
+}
+
+#zone-feature {
+   max-width: 1280px;
+   margin: 0 auto;
+}
+
+#subnavbar-bg {
+	background-color: #ffffff;
+}
+
+#zone-subnavbar {
+    max-width: 1280px;
+    margin: 0 auto;
+}
+
+#section-a-bg {
+	background-color: #f9f9f9;
+}
+
+#zone-sectiona {
+    max-width: 1280px;
+    margin: 0 auto;
+}
+
+#section-b-bg {
+	background-color: #f9f9f9;
+}
+
+#zone-sectionb {
+    max-width: 1280px;
+    margin: 0 auto;
+}
+
+#section-c-bg {
+	background-color: #f9f9f9;
+}
+
+#zone-sectionc {
+    max-width: 1280px;
+    margin: 0 auto;
+}
+
+#section-d-bg {
+	background-color: #f9f9f9;
+}
+
+#zone-sectiond {
+    max-width: 1280px;
+    margin: 0 auto;
+}
+
+#section-e-bg {
+	background-color: #f9f9f9;
+}
+
+#zone-sectione {
+    max-width: 1280px;
+    margin: 0 auto;
+}
+/* End Standard Layout Styling */
+
+
+/*Start Main Navbar Styling*/
 .masthead-navitems {
    list-style-type: none;
    text-transform: uppercase;
@@ -14,15 +84,23 @@
 .masthead-navitem {
    display: inline-block;
    padding: 0 7.5px;
+   margin: 0 7.5px;
    transition: opacity .5s;
 }
 
 .masthead-navitems .dropdown-menu {
   margin-top: -1px;
+  padding-top: 0px;
+  padding-bottom: 0px;
 }
 
 .masthead-navitems .dropdown:hover .dropdown-menu {
   display: block;
+}
+
+.masthead-navitems .dropdown .dropdown-menu li a {
+   padding: 5px 0px 5px 5px;
+   margin: 5px 0px 5px 0px;
 }
 
 .masthead-navitems .dropdown .dropdown-menu li a:hover {
@@ -54,7 +132,6 @@
    border-bottom: 2px solid #555;
 }
 
-
 #masthead-navitem-register {
    display: inline-block;
    margin: 7px 0px;
@@ -65,7 +142,7 @@
 /*End Main Navbar Styling*/
 
 
-/* Style Hamburger Menu aka Full Menu*/
+/* Start Hamburger Menu aka Full Menu*/
 /* Show Hamburger Menu on any device smaller than 1024px */
 /* Overriding Bootstrap media query */
 @media (max-width: 1024px) {
@@ -136,7 +213,7 @@
     background-color: #EEEEEE;
     text-decoration: none;
 }
-/* End Style Hamburger Menu aka Full Menu*/
+/* End Hamburger Menu aka Full Menu*/
 
 
 p {
@@ -144,7 +221,7 @@ p {
 }
 
 .ccvRed {
-   color: rgb(111,19,21)
+   color: rgb(122,19,21)
 }
 
 hr {
@@ -180,13 +257,23 @@ hr {
 
 /*Render the red background overlay*/
 .videoThumbnail:before {
-   background-color: rgba(111,19,21,.6);
+   background-color: rgba(122,19,21,.80);
    min-width: 50%;
    min-height: 50%;
    content: " ";
    position: absolute;
    top: 25%;
    left: 25%;
+
+   transition: background-color .1s, min-width .1s, min-height .1s, top .1s, left .1s;
+}
+
+.videoThumbnail:hover:before {
+   min-width: 100%;
+   min-height: 100%;
+   top: 0;
+   left: 0;
+   background-color: rgba(122,19,21,.4);
 }
 
 /*Render the white play icon*/
@@ -308,7 +395,7 @@ hr {
 }
 
 .event-card .content {
-    padding: 16px; 
+    padding: 0 16px; 
     font-size: 14px; 
     color: rgba(0, 0, 0, 0.87); 
     font-family: Heebo;
@@ -317,6 +404,7 @@ hr {
 
 .event-card .content p {
     line-height: unset;
+    margin: unset;
 }
 .event-card .link {
     align-self: flex-end;

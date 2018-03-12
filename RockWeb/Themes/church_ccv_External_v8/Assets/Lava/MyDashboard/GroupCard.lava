@@ -1,5 +1,5 @@
 {% comment %}
-{% include '~~/Assets/Lava/MyDashboard/ServingGroupList.lava' %}
+{% include '~~/Assets/Lava/MyDashboard/GroupCard.lava' %}
 {% endcomment %}
 
 {% comment %} Init values {% endcomment %}
@@ -35,17 +35,7 @@ TODO: Add Other Group Type leader roles
 
     {% comment %} Render {% endcomment %}
     <div class="dashboard-card">
-        <div class="title">
-            <h4>Group</h4>
-            <div>
-                <button class="dropdown-toggle" type="button" data-toggle="dropdown">
-                    <span class="material-icons pull-right">more_vert</span>
-                </button>
-                <ul class="dropdown-menu panel-dropdown-menu">
-                    <li><a href="/page/1751?person={{ DatamartSummary.AssociatePastor.Id }}">Contact Associate Pastor: {{ DatamartSummary.AssociatePastor.FullName }}</a></li>
-                </ul>
-            </div>   
-        </div>
+        {% include '~~/Assets/Lava/MyDashboard/_GroupCard_Header.lava' %}
         <div class="content">
             {% for group in Groups %}
 
@@ -73,7 +63,7 @@ TODO: Add Other Group Type leader roles
                                 {% if showAdminElements == true %}                                
                                     <a href="/toolboxv2?GroupId={{ group.Group.Id }}">
                                         <div>
-                                            <span>{{ group.Group.Name | Truncate: 32 }}</span>
+                                            <span>{{ group.Group.Name | Truncate: 40 }}</span>
                                             <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path></svg>
                                         </div>
                                     </a>

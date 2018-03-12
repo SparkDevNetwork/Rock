@@ -67,7 +67,7 @@
 $(document).ready(function(){
   $('.event-cards-row').slick({
       slidesToShow: 3,
-      slidesToScroll: 1,
+      slidesToScroll: 3,
       arrows: false,
       responsive: [
         {

@@ -29,7 +29,7 @@ function togglePanel(panelLink, panelObj, enabled) {
    }
 }
          
-function linkClicked(linkElement, sectionName) {
+function linkClicked(linkElement, sectionName, showInfoBanner = true) {
    
    // turn off existing panel
    togglePanel( gCurrentLink, gCurrentPanel, false );
@@ -39,6 +39,11 @@ function linkClicked(linkElement, sectionName) {
    gCurrentLink = linkElement;
    
    togglePanel( gCurrentLink, gCurrentPanel, true );
+
+   $(".group-info-banner")[0].style.display = showInfoBanner == true ? "flex" : "none";
+}
+
+function tryToggleInfoBanner( sectionName ) {
 }
 </script>
 
@@ -62,7 +67,7 @@ function linkClicked(linkElement, sectionName) {
    <div id="training-center-button" onClick="linkClicked(this, 'training-center')">Training Center</div>
    <div id="resources-button" onClick="linkClicked(this, 'resources')">Resources</div>
    <div id="baptisms-button" onClick="linkClicked(this, 'baptisms')">Baptisms</div>
-   <div id="group-details-button" onClick="linkClicked(this, 'group-details')">Group Details</div>
+   <div id="group-details-button" onClick="linkClicked(this, 'group-details', false)">Group Details</div>
 </div>
 
 <div class="group-info-banner">

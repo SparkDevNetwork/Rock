@@ -217,6 +217,14 @@
     align-items: center;
 }
 
+/* Add Group member Panel in Group Panel */
+#pnlAddGroupMember .content {
+    padding: 15px 15px 0 15px;
+}
+
+#pnlAddGroupMember .picker .picker-menu {
+    width: 100%;
+}
 
 
 /* Call To Action Info Panel */
@@ -261,6 +269,11 @@
     color: rgba(0, 0, 0, 0.87); 
     font-family: Heebo;
     height: 115px;
+}
+
+.info-card .content p {
+    line-height: unset;
+    margin: unset;
 }
 
 .info-card .link {
