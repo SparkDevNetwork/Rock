@@ -3717,6 +3717,15 @@ namespace Rock.Lava
         }
 
 
+        /// <summary>
+        /// Creates the short link.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="token">The token.</param>
+        /// <param name="siteId">The site identifier.</param>
+        /// <param name="overwrite">if set to <c>true</c> [overwrite].</param>
+        /// <param name="randomLength">The random length.</param>
+        /// <returns></returns>
         public static string CreateShortLink( object input, string token = "", int? siteId = null, bool overwrite = false, int randomLength = 7 )
         {
             // Notes: This filter attemtps to return a valid shortlink at all costs
