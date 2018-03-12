@@ -21,7 +21,8 @@
                         <Rock:RockDropDownList ID="ddlType" runat="server" Label="Communication Type" />
                         <Rock:RockDropDownList ID="ddlStatus" runat="server" Label="Status" />
                         <Rock:PersonPicker ID="ppSender" runat="server" Label="Created By" />
-                        <Rock:DateRangePicker ID="drpDates" runat="server" Label="Sent Date Range" Help="Note: Leaving dates blank will default to last 7 days." />
+                        <Rock:DateRangePicker ID="drpCreatedDates" runat="server" Label="Created Date Range" Help="Note: Leaving dates blank will default to last 7 days." />
+                        <Rock:DateRangePicker ID="drpSentDates" runat="server" Label="Sent Date Range" />
                         <Rock:RockTextBox ID="tbContent" runat="server" Label="Content" />
                     </Rock:GridFilter>
 
@@ -33,6 +34,7 @@
                                 </ItemTemplate>
                             </Rock:RockTemplateField>
                             <Rock:RockBoundField DataField="Subject" SortExpression="Subject" HeaderText="Subject" />
+                            <Rock:DateTimeField DataField="CreatedDateTime" SortExpression="CreatedDateTime" ColumnPriority="DesktopLarge" HeaderText="Created" />
                             <Rock:RockBoundField DataField="Sender.FullName" HeaderText="Created By" SortExpression="Sender.LastName,Sender.NickName" />
                             <Rock:EnumField DataField="Status" SortExpression="Status" HeaderText="Status" />
                             <Rock:DateTimeField DataField="ReviewedDateTime" SortExpression="ReviewedDateTime" ColumnPriority="DesktopLarge" HeaderText="Reviewed" />

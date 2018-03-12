@@ -107,13 +107,14 @@ namespace RockWeb.Blocks.Communication
             int personId = ppSender.PersonId ?? 0;
             rFilter.SaveUserPreference( "Created By", canApprove ? personId.ToString() : "" );
 
-            if ( !drpDates.LowerValue.HasValue && !drpDates.UpperValue.HasValue )
+            if ( !drpCreatedDates.LowerValue.HasValue && !drpCreatedDates.UpperValue.HasValue )
             {
                 // If a date range has not been selected, default to last 7 days
-                drpDates.LowerValue = RockDateTime.Today.AddDays( -7 );
+                drpCreatedDates.LowerValue = RockDateTime.Today.AddDays( -7 );
             }
-            rFilter.SaveUserPreference( "Date Range", drpDates.DelimitedValues );
+            rFilter.SaveUserPreference( "Created Date Range", drpCreatedDates.DelimitedValues );
 
+            rFilter.SaveUserPreference( "Sent Date Range", drpSentDates.DelimitedValues );
             rFilter.SaveUserPreference( "Content", tbContent.Text );
 
             BindGrid();
@@ -129,6 +130,11 @@ namespace RockWeb.Blocks.Communication
         {
             switch ( e.Key )
             {
+                case "Subject":
+                case "Content":
+                    {
+                        break;
+                    }
                 case "Communication Type":
                     {
                         if ( !string.IsNullOrWhiteSpace( e.Value ) )
@@ -169,9 +175,15 @@ namespace RockWeb.Blocks.Communication
 
                         break;
                     }
-                case "Date Range":
+                case "Created Date Range":
+                case "Sent Date Range":
                     {
                         e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
+                        break;
+                    }
+                default:
+                    {
+                        e.Value = string.Empty;
                         break;
                     }
             }
@@ -291,13 +303,15 @@ namespace RockWeb.Blocks.Communication
                 }
             }
 
-            drpDates.DelimitedValues = rFilter.GetUserPreference( "Date Range" );
-            if ( !drpDates.LowerValue.HasValue && !drpDates.UpperValue.HasValue )
+            drpCreatedDates.DelimitedValues = rFilter.GetUserPreference( "Created Date Range" );
+            if ( !drpCreatedDates.LowerValue.HasValue && !drpCreatedDates.UpperValue.HasValue )
             {
                 // If a date range has not been selected, default to last 7 days
-                drpDates.LowerValue = RockDateTime.Today.AddDays( -7 );
-                rFilter.SaveUserPreference( "Date Range", drpDates.DelimitedValues );
+                drpCreatedDates.LowerValue = RockDateTime.Today.AddDays( -7 );
+                rFilter.SaveUserPreference( "Created Date Range", drpCreatedDates.DelimitedValues );
             }
+
+            drpSentDates.DelimitedValues = rFilter.GetUserPreference( "Sent Date Range" );
 
             tbContent.Text = rFilter.GetUserPreference( "Content" );
         }
@@ -351,14 +365,25 @@ namespace RockWeb.Blocks.Communication
                         c.SenderPersonAlias.PersonId == CurrentPersonId );
             }
 
-            if ( drpDates.LowerValue.HasValue )
+            if ( drpCreatedDates.LowerValue.HasValue )
             {
-                communications = communications.Where( a => ( a.SendDateTime ?? a.FutureSendDateTime ) >= drpDates.LowerValue.Value );
+                communications = communications.Where( a => a.CreatedDateTime.HasValue && a.CreatedDateTime.Value >= drpCreatedDates.LowerValue.Value );
             }
 
-            if ( drpDates.UpperValue.HasValue )
+            if ( drpCreatedDates.UpperValue.HasValue )
             {
-                DateTime upperDate = drpDates.UpperValue.Value.Date.AddDays( 1 );
+                DateTime upperDate = drpCreatedDates.UpperValue.Value.Date.AddDays( 1 );
+                communications = communications.Where( a => a.CreatedDateTime.HasValue && a.CreatedDateTime.Value < upperDate );
+            }
+
+            if ( drpSentDates.LowerValue.HasValue )
+            {
+                communications = communications.Where( a => ( a.SendDateTime ?? a.FutureSendDateTime ) >= drpSentDates.LowerValue.Value );
+            }
+
+            if ( drpSentDates.UpperValue.HasValue )
+            {
+                DateTime upperDate = drpSentDates.UpperValue.Value.Date.AddDays( 1 );
                 communications = communications.Where( a => ( a.SendDateTime ?? a.FutureSendDateTime ) < upperDate );
             }
 
@@ -385,8 +410,9 @@ namespace RockWeb.Blocks.Communication
                     Id = c.Id,
                     CommunicationType = c.CommunicationType,
                     Subject = string.IsNullOrEmpty( c.Subject ) ? c.Name : c.Subject,
+                    CreatedDateTime = c.CreatedDateTime,
                     SendDateTime = c.SendDateTime ?? c.FutureSendDateTime,
-                    SendDateTimeFormat = c.SendDateTime != null ? "" : "<span class='label label-default'>Pending</span>&nbsp;",
+                    SendDateTimeFormat = c.SendDateTime == null && c.FutureSendDateTime != null ? "<span class='label label-default'>Future</span>&nbsp;" : "",
                     Sender = c.SenderPersonAlias != null ? c.SenderPersonAlias.Person : null,
                     ReviewedDateTime = c.ReviewedDateTime,
                     Reviewer = c.ReviewerPersonAlias != null ? c.ReviewerPersonAlias.Person : null,
@@ -433,6 +459,7 @@ namespace RockWeb.Blocks.Communication
                 gCommunication.DataSource = new List<object>();
                 gCommunication.DataBind();
             }
+
         }
 
         #endregion
@@ -441,6 +468,7 @@ namespace RockWeb.Blocks.Communication
         {
             public int Id { get; set; }
             public CommunicationType CommunicationType { get; set; }
+            public DateTime? CreatedDateTime { get; set; }
             public string Subject { get; set; }
             public DateTime? SendDateTime { get; set; }
             public Person Sender { get; set; }
@@ -472,16 +500,16 @@ namespace RockWeb.Blocks.Communication
                     switch ( this.CommunicationType )
                     {
                         case CommunicationType.RecipientPreference:
-                            iconCssClass = "fa fa-user";
+                            iconCssClass = "fa fa-user fa-lg";
                             break;
                         case CommunicationType.Email:
-                            iconCssClass = "fa fa-envelope";
+                            iconCssClass = "fa fa-envelope fa-lg";
                             break;
                         case CommunicationType.SMS:
-                            iconCssClass = "fa fa-comment";
+                            iconCssClass = "fa fa-comment fa-lg";
                             break;
                         case CommunicationType.PushNotification:
-                            iconCssClass = "fa fa-bell";
+                            iconCssClass = "fa fa-bell fa-lg";
                             break;
                         default:
                             break;
