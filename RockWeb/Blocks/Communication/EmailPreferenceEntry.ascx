@@ -13,9 +13,9 @@
             <Rock:RockRadioButton ID="rbUpdateEmailAddress" runat="server" Text="Option 2" GroupName="EmailPreference" DisplayInline="false" CssClass="js-email-radio-option" />
         </div>
         <div id="divUpdateEmail" runat="server" style="display: none">
-                <Rock:EmailBox ID="tbEmail" runat="server" Placeholder="Email" Label="Email" AllowMultiple="false" CssClass="input-width-xxl" />
+            <Rock:EmailBox ID="tbEmail" runat="server" Placeholder="Email" Label="Email" AllowMultiple="false" CssClass="input-width-xxl" />
         </div>
-        <div class="radio">
+        <div class="radio" style="margin-top: -5px">
             <Rock:RockRadioButton ID="rbEmailPreferenceEmailAllowed" runat="server" Text="Option 3" GroupName="EmailPreference" DisplayInline="false" CssClass="js-email-radio-option" />
         </div>
         <div class="radio">
