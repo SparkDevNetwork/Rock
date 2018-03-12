@@ -115,6 +115,9 @@ namespace Rock.Client
         public string Segments { get; set; }
 
         /// <summary />
+        public DateTime? SendDateTime { get; set; }
+
+        /// <summary />
         public int? SenderPersonAliasId { get; set; }
 
         /// <summary />
@@ -191,6 +194,7 @@ namespace Rock.Client
             this.ReviewerPersonAliasId = source.ReviewerPersonAliasId;
             this.SegmentCriteria = source.SegmentCriteria;
             this.Segments = source.Segments;
+            this.SendDateTime = source.SendDateTime;
             this.SenderPersonAliasId = source.SenderPersonAliasId;
             this.SMSFromDefinedValueId = source.SMSFromDefinedValueId;
             this.SMSMessage = source.SMSMessage;

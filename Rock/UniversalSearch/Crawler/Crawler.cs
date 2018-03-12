@@ -520,10 +520,5 @@ namespace Rock.UniversalSearch.Crawler
             return true;
         }
 
-        public class CrawlUrl
-        {
-            public int Level { get; set; }
-            public string Url { get; set; }
-        }
     }
 }
