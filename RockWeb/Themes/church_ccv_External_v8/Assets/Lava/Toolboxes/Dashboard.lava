@@ -1,15 +1,41 @@
-{% comment %} //rock.ccv.church/api/Podcast/Category/452/web/0?numMessages=5' {% endcomment %}
 
-{% assign isFirstPage = false %}
-{% if PageParameter.PageNum == 0 or PageParameter.PageNum == null %}
-  {% assign isFirstPage = true %}
-{% endif %}
+{% comment %} It's possible the newest podcast entry doesn't have an active video yet. So we'll iterate until we find the first valid one, and start there. {% endcomment %}
+{% assign firstSeriesIndex = 0 %}
+{% assign firstMessageIndex = 0 %}
+{% assign foundValidItem = false %}
 
+{% for series in SeriesList.Children %}
+   
+   {% for message in series.Messages %}
+   
+      {% if message.Attributes.WistiaId != '' %}
+         {% assign foundValidItem = true %}
+         {% break %}
+      {% endif %}
 
-{{ "/Themes/church_ccv_External_v7/Styles/pages/watch.css" | AddLinkTagToHead:'rel','stylesheet' }}
+      {% assign firstMessageIndex = firstMessageIndex | Plus: 1 %}
 
-{% assign firstSeries = SeriesList.Children.first %}
-{% assign firstMessage = firstSeries.Messages | First %}
+   {% endfor %}
+
+   {% if foundValidItem == true %}
+      {% break %}
+   {% endif %}
+
+   {% assign firstMessageIndex = 0 %}
+   {% assign firstSeriesIndex = firstSeriesIndex | Plus: 1 %}
+{% endfor %}
+
+{% for series in SeriesList.Children offset:firstSeriesIndex %}
+   {% assign firstSeries = series %}
+   {% break %}
+{% endfor %}
+
+{% for message in firstSeries.Messages offset:firstMessageIndex %}
+   {% assign firstMessage = message %}
+   {% break %}
+{% endfor %}
+{% comment %} End get first valid message {% endcomment %}
+
 <div style="margin-bottom: 30px;">
    <h3>STUDY MATERIALS</h3>
    <div class="latest-series-info">
@@ -67,83 +93,61 @@
    </div>
 </div>
 
+
+{% comment %} Now we'll increment to the next message, and do a check to see if we ran out of messages for this series and need to move to the next. {% endcomment %}
+{% assign numMessagesInSeries = firstSeries.Messages | Size %}
+
+{% assign firstMessageIndex = firstMessageIndex | Plus: 1 %}
+
+{% if firstMessageIndex >= numMessagesInSeries %}
+   {% assign firstSeriesIndex = firstSeriesIndex | Plus: 1 %}
+   {% assign firstMessageIndex = 0 %}
+{% endif %}
+
 {% comment %} Now render three more items {% endcomment %}
 
 {% assign numToRender = 3 %}
-{% assign isFirstItem = true %}
 
 <h3>PREVIOUS WEEKS</h3>
 <div class="toolbox-past-messages">
- {% for Series in SeriesList.Children %}
+ {% for series in SeriesList.Children offset:firstSeriesIndex %}
 
-   {% for Message in Series.Messages %}
-
-      {% comment %} Skip the first item since we render it as a billboard above. {% endcomment %}
-      {% if isFirstItem %}
-         {% assign isFirstItem = false %}
-         {% continue %}
-      {% endif %}
+   {% for message in series.Messages offset:firstMessageIndex %}
       
-      {{ Message.3rdPartyFullVideoUrl }}
       <div class="toolbox-video-card">
          <div>
-            <script src="https://fast.wistia.com/embed/medias/{{Message.Attributes.WistiaId}}.jsonp" async></script>
+            <script src="https://fast.wistia.com/embed/medias/{{message.Attributes.WistiaId}}.jsonp" async></script>
             <script src="https://fast.wistia.com/assets/external/E-v1.js" async></script>
             <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-                  <span class="wistia_embed wistia_async_{{Message.Attributes.WistiaId}} popover=true popoverAnimateThumbnail=true videoFoam=true" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                  <span class="wistia_embed wistia_async_{{message.Attributes.WistiaId}} popover=true popoverAnimateThumbnail=true videoFoam=true" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
                </div>
             </div>
          </div>
          <div>
-            <p>{{ Message.Name | Truncate:20,'...'}}</p>
+            <p>{{ message.Name | Truncate:20,'...'}}</p>
          </div>
          <div>
             <p style="line-height: 0">Week - {{ forloop.rindex }}</p>
          </div>         
          <div>
-            <a href="{{Message.Attributes.DiscussionGuideUrl}}"><h6 style="font-size: 1em;" ><i class="fa fa-file-text discussion-guide-icon"></i> Discussion Guide</h6></a>
+            <a href="{{message.Attributes.DiscussionGuideUrl}}"><h6 style="font-size: 1em;" ><i class="fa fa-file-text discussion-guide-icon"></i> Discussion Guide</h6></a>
          </div>
       </div>
-      <!--<div class="toolbox-video-card">
-         <div class="row" style="padding: 0px;">
-            <div class="col-md-12" style="padding: 0px;">
-               <script src="https://fast.wistia.com/embed/medias/{{Message.Attributes.WistiaId}}.jsonp" async></script>
-               <script src="https://fast.wistia.com/assets/external/E-v1.js" async></script>
-               <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-                  <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-                     <span class="wistia_embed wistia_async_{{Message.Attributes.WistiaId}} popover=true popoverAnimateThumbnail=true videoFoam=true" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
-                  </div>
-               </div>
-            </div>
-         </div>
-         <div class="row" style="padding: 0px;">
-            <div class="col-md-12" style="margin: 0px; padding: 0px;">
-               <div class="row" style="margin: 0px; padding: 0px;">
-                  <div class="col-md-12" style="margin: 0px; padding: 0px;">
-                     <p>{{ Message.Name | Truncate:20,'...'}}</p>
-                  </div>
-               </div>
-               <div class="row" style="margin: 0px; padding: 0px;">
-                  <div class="col-md-12" style="margin: 0px; padding: 0px;">
-                     <p style="line-height: 0">Week - {{ forloop.rindex }}</p>
-                  </div>
-               </div>
-            </div>
-            <div class="row" style="margin: 0px; padding: 0px;">
-               <div class="col-md-12" style="margin: 0px; padding: 0px;">
-                  <a href="{{Message.Attributes.DiscussionGuideUrl}}"><h6 style="font-size: 1em;" ><i class="fa fa-file-text discussion-guide-icon"></i> Discussion Guide</h6></a>
-               </div>
-            </div>
-         </div>
-      </div>-->
+
    {% assign numToRender = numToRender | Minus: 1 %}
       {% if numToRender == 0 %}
          {% break %}
       {% endif %}
+
    {% endfor %}
+
+   {% comment %} Reset the firstMessageIndex in case it had an offset for the first iteration of this loop {% endcomment %}
+   {% assign firstMessageIndex = 0 %}
+
    {% if numToRender == 0 %}
       {% break %}
    {% endif %}
+
 {% endfor %}
 </div>
