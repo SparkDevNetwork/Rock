@@ -150,7 +150,7 @@ namespace Rock.Model
         /// The interaction end date time.
         /// </value>
         [DataMember]
-        public DateTime InteractionEndDateTime { get; set; }
+        public DateTime? InteractionEndDateTime { get; set; }
 
         #endregion
 
