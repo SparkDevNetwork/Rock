@@ -45,6 +45,8 @@ namespace RockWeb.Blocks.Administration
 
         private List<IgnoreCampusChangeRow> _ignoreCampusChangeRows { get; set; }
         private RockContext _rockContext = new RockContext();
+        private Dictionary<string, string> _generalSettings = new Dictionary<string, string>();
+        private Dictionary<string, string> _ncoaSettings = new Dictionary<string, string>();
         private ReactivatePeople _reactivateSettings = new ReactivatePeople();
         private InactivatePeople _inactivateSettings = new InactivatePeople();
         private UpdateFamilyCampus _campusSettings = new UpdateFamilyCampus();
@@ -262,6 +264,14 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void GetSettings()
         {
+            // Get General Settings
+            nbGenderAutoFill.Text = Rock.Web.SystemSettings.GetValue( SystemSetting.GENDER_AUTO_FILL_CONFIDENCE );
+
+            // Get Ncoa Configuration Settings
+            nbMinMoveDistance.Text = Rock.Web.SystemSettings.GetValue( SystemSetting.NCOA_MINIMUM_MOVE_DISTANCE_TO_INACTIVATE );
+            cb48MonAsPrevious.Checked = Rock.Web.SystemSettings.GetValue( SystemSetting.NCOA_SET_48_MONTH_AS_PREVIOUS ).AsBoolean();
+            cbInvalidAddressAsPrevious.Checked = Rock.Web.SystemSettings.GetValue( SystemSetting.NCOA_SET_INVALID_AS_PREVIOUS ).AsBoolean();
+
             // Get Data Automation Settings
             _reactivateSettings = Rock.Web.SystemSettings.GetValue( SystemSetting.DATA_AUTOMATION_REACTIVATE_PEOPLE ).FromJsonOrNull<ReactivatePeople>() ?? new ReactivatePeople();
             _inactivateSettings = Rock.Web.SystemSettings.GetValue( SystemSetting.DATA_AUTOMATION_INACTIVATE_PEOPLE ).FromJsonOrNull<InactivatePeople>() ?? new InactivatePeople();
@@ -395,6 +405,14 @@ namespace RockWeb.Blocks.Administration
 
         private void SaveSettings()
         {
+            //Save General
+            Rock.Web.SystemSettings.SetValue( SystemSetting.GENDER_AUTO_FILL_CONFIDENCE, nbGenderAutoFill.Text );
+
+            // Ncoa Configuration
+            Rock.Web.SystemSettings.SetValue( SystemSetting.NCOA_MINIMUM_MOVE_DISTANCE_TO_INACTIVATE, nbMinMoveDistance.Text );
+            Rock.Web.SystemSettings.SetValue( SystemSetting.NCOA_SET_48_MONTH_AS_PREVIOUS, cb48MonAsPrevious.Checked.ToString() );
+            Rock.Web.SystemSettings.SetValue( SystemSetting.NCOA_SET_INVALID_AS_PREVIOUS, cbInvalidAddressAsPrevious.Checked.ToString() );
+
             // Save Data Automation
             _reactivateSettings = new ReactivatePeople();
             _inactivateSettings = new InactivatePeople();
