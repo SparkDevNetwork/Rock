@@ -86,7 +86,7 @@
 			    {% endif %}
 		    {% endif %}
 
-		    {% if LinkedPages.ParentRosterPage != '' %}
+		    {% if LinkedPages.ParentRosterPage != '' and Parents != null %}
 			    {% if LinkedPages.ParentRosterPage == CurrentPage.Path %}
 				    <li role="presentation" class="active"><a href="{{ LinkedPages.ParentRosterPage }}?GroupId={{ Group.Id }}">Parent Roster</a></li>
 			    {% else %}
@@ -316,7 +316,7 @@
 					</a>
 				{% endif %}
 			{% endif %}
-			{% if LinkedPages.CommunicationPage != '' %}
+			{% if LinkedPages.CommunicationPage != '' and Parents != null %}
 				{% if AllowedActions.Edit == true or AllowedActions.ManageMembers == true %}
 					<a href="#" onclick="{{ 'Yes' | Postback:'SendCommunication' }}" class="btn btn-default btn-xs">
 						<i class="fa fa-envelope-o"></i> Email Parents
@@ -334,7 +334,6 @@
 
 			{% for member in Group.Members %}
 
-				{% assign totalParents = Parents | Size %}
 				{% for kvpParents in Parents %}
 					{% assign memberId = kvpParents | Property:'Key' %}
 					{% assign memberParents = kvpParents | Property:'Value' %}
