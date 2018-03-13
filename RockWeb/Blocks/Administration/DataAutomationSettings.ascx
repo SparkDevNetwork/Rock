@@ -37,7 +37,7 @@
                 <Rock:PanelWidget ID="pwReactivatePeople" runat="server" title="Reactivate People">
 
                     <Rock:RockCheckBox ID="cbReactivatePeople" runat="server" 
-                        Label="Enable" Text="Enable the automatic activating of individuals who are currently inactive and who meet any of the following selected criteria. (deceased individuals will never be reactivated)."
+                        Label="Enable" Text="Enable the automatic activating of individuals who are currently inactive and who meet any of the following selected criteria. Note: This will not include people who were inactivated for a reason that was configured to not allow automatic reactivation."
                         AutoPostBack="true" OnCheckedChanged="cbReactivatePeople_CheckedChanged" />
 
                     <hr />
@@ -108,7 +108,7 @@
                 <Rock:PanelWidget ID="pwInactivatePeople" runat="server" Title="Inactivate People">
 
                     <Rock:RockCheckBox ID="cbInactivatePeople" runat="server" 
-                        Label="Enable" Text="Enable the automatic inactivating of individuals who are currently active and who meet all of the following selected criteria."
+                        Label="Enable" Text="Enable the automatic inactivating of individuals who are currently active and who meet all of the following selected criteria. Note: This will also inactivate these people in most of the groups they belong to (including security roles)."
                         AutoPostBack="true" OnCheckedChanged="cbInactivatePeople_CheckedChanged" />
 
                     <hr />

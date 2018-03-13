@@ -50,6 +50,8 @@ namespace Rock.Plugin.HotFixes
 //            RockMigrationHelper.AddDefinedValueAttributeValue( "05D35BC4-5816-4210-965F-1BF44F35A16A", "E47870C0-17C7-4556-A922-D7866DFC2C57", @"False" );
 //            RockMigrationHelper.AddDefinedValueAttributeValue( "2BDE800A-C562-4077-9636-5C68770D9676", "E47870C0-17C7-4556-A922-D7866DFC2C57", @"False" );
 
+//            RockMigrationHelper.UpdateDefinedValue( "E17D5988-0372-4792-82CF-9E37C79F7319", "No Activity", "The individual has not participated in any recent activity.", "64014FE6-943D-4ACF-8014-FED9F9169AE8", true );
+
 //            Sql( @"IF NOT EXISTS(SELECT [Id] FROM [ServiceJob] WHERE [Class] = 'Rock.Jobs.DataAutomation')
 //BEGIN
 //	INSERT INTO [ServiceJob] (
@@ -63,11 +65,11 @@ namespace Rock.Plugin.HotFixes
 //        ,[Guid] )
 //    VALUES (
 //         0
-//        ,0
+//        ,1
 //        ,'Data Automation'
 //        ,'Updates person/family information based on data automation settings.'
 //        ,'Rock.Jobs.DataAutomation'
-//        ,'0 0 4 ? * MON *'
+//        ,'0 0 4 ? * TUE *'
 //        ,1
 //        ,'059DC06D-39F1-4113-A6C3-94622A40F1CE');
 //END" );
