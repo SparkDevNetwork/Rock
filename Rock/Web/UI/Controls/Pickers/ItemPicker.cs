@@ -867,7 +867,7 @@ $@"Rock.controls.itemPicker.initialize({{
         /// <param name="ids">The ids.</param>
         public void SetValues( IEnumerable<int> ids )
         {
-            ItemIds = ids.Select( i => i.ToString() );
+            ItemIds = ids != null ? ids.Select( i => i.ToString() ) : new List<string>();
             SetValuesOnSelect();
         }
 

@@ -45,7 +45,7 @@ namespace Rock.Web.UI.Controls
         ]
         public string DataLoadingText
         {
-            get { return ViewState["DataLoadingText"] as string ?? "<i class='fa fa-refresh fa-spin working'></i>"; }
+            get { return ViewState["DataLoadingText"] as string; }
             set { ViewState["DataLoadingText"] = value; }
         }
 
@@ -97,7 +97,7 @@ namespace Rock.Web.UI.Controls
             set { ViewState["CompletedMessage"] = value; }
         }
 
-        private bool _isButtonClicked;
+        private bool _isButtonClicked = false;
 
         /// <summary>
         /// Adds the attributes of the <see cref="T:System.Web.UI.WebControls.LinkButton" /> control to the output stream for rendering on the client.
