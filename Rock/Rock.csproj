@@ -704,7 +704,7 @@
     <Compile Include="Jobs\MigrateInteractionsData.cs" />
     <Compile Include="Jobs\ProcessBIAnalytics.cs" />
     <Compile Include="Jobs\PbxCdrDownload.cs" />
-    <Compile Include="Jobs\RunDataAutomation.cs" />
+    <Compile Include="Jobs\DataAutomation.cs" />
     <Compile Include="Jobs\SendCreditCardExpirationNotices.cs" />
     <Compile Include="Jobs\IndexEntities.cs" />
     <Compile Include="Jobs\SendDataViewEmail.cs" />
@@ -1193,6 +1193,7 @@
     <Compile Include="Plugin\HotFixes\040_BusinessTransactionDetailLinks.cs" />
     <Compile Include="Plugin\HotFixes\039_MigrationRollupsForV7_2.cs" />
     <Compile Include="Plugin\HotFixes\042_FixShortLinkUrlInteractionChannel.cs" />
+    <Compile Include="Plugin\HotFixes\047_DataAutomation.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <DependentUpon>HotFixMigrationResource.resx</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -2072,6 +2073,12 @@
     </Content>
     <Content Include="Plugin\HotFixes\043_MoreMigrationRollupsForV7_3_ufnUtility_CsvToTable.sql">
       <DependentUpon>043_MoreMigrationRollupsForV7_3.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\047_DataAutomation_FixBenevolenceCaseWorker.sql">
+      <DependentUpon>047_DataAutomation.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\047_DataAutomation_ShortLinkInteractionFix.sql">
+      <DependentUpon>047_DataAutomation.cs</DependentUpon>
     </Content>
     <Content Include="Scripts\jquery-1.12.4.intellisense.js" />
     <Content Include="Scripts\jquery-1.12.4.js" />

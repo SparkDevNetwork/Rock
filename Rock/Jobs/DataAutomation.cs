@@ -18,10 +18,10 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Web;
+
 using Quartz;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.SystemKey;
@@ -33,7 +33,7 @@ namespace Rock.Jobs
     /// Job to update people/families based on the Data Automation settings.
     /// </summary>
     [DisallowConcurrentExecution]
-    public class RunDataAutomation : IJob
+    public class DataAutomation : IJob
     {
         #region Constructor
 
@@ -44,7 +44,7 @@ namespace Rock.Jobs
         /// scheduler can instantiate the class whenever it needs.
         /// </para>
         /// </summary>
-        public RunDataAutomation()
+        public DataAutomation()
         {
         }
 
