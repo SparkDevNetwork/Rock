@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="DataIntegritySettings.ascx.cs" Inherits="RockWeb.Blocks.Administration.DataIntegritySettings" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="DataAutomationSettings.ascx.cs" Inherits="RockWeb.Blocks.Administration.DataAutomationSettings" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>

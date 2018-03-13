@@ -36,10 +36,10 @@ namespace RockWeb.Blocks.Administration
     /// <summary>
     /// Data Automation Settings
     /// </summary>
-    [DisplayName( "Data Integrity Settings" )]
+    [DisplayName( "Data Automation Settings" )]
     [Category( "Administration" )]
-    [Description( "Block used to set values specific to data integrity (NCOA, Data Automation, Etc)." )]
-    public partial class DataIntegritySettings : Rock.Web.UI.RockBlock
+    [Description( "Block used to set values specific to data automation (NCOA, Updating Person Status, Family Campus, Etc)." )]
+    public partial class DataAutomationSettings : Rock.Web.UI.RockBlock
     {
         #region private variables
 
