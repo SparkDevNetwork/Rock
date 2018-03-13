@@ -214,6 +214,7 @@ namespace Rock.Model
         /// <value>
         /// The campus identifier.
         /// </value>
+        [HideFromReporting]
         [DataMember]
         public int? CampusId { get; set; }
 

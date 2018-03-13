@@ -132,7 +132,12 @@ namespace Rock.Utility.Settings.DataAutomation
         /// <summary>
         /// Use attendance
         /// </summary>
-        UseAttendance = 2
+        UseAttendance = 2,
+
+        /// <summary>
+        /// Use one with highest frequency
+        /// </summary>
+        UseHighestFrequency = 3,
     }
 
     /// <summary>
