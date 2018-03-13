@@ -226,13 +226,20 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void BindControls()
         {
-            rlbAttendanceInGroupType.DataSource = new GroupTypeService( _rockContext )
+            var groupTypes = new GroupTypeService( _rockContext )
                 .Queryable().AsNoTracking()
+                .Where( t => t.TakesAttendance == true)
                 .OrderBy( t => t.Order )
                 .ThenBy( t => t.Name )
                 .Select( t => new { value = t.Id, text = t.Name } )
                 .ToList();
+
+            rlbAttendanceInGroupType.DataSource = groupTypes;
             rlbAttendanceInGroupType.DataBind();
+
+
+            rlbNoAttendanceInGroupType.DataSource = groupTypes;
+            rlbNoAttendanceInGroupType.DataBind();
 
             var personAttributes = new AttributeService( _rockContext )
                 .GetByEntityTypeId( new Person().TypeId )
@@ -487,7 +494,7 @@ namespace RockWeb.Blocks.Administration
             }
 
             //Campus Update
-            _campusSettings.IsEnabled = cbAdultChildren.Checked;
+            _campusSettings.IsEnabled = cbCampusUpdate.Checked;
 
             _campusSettings.IsMostFamilyAttendanceEnabled = cbMostFamilyAttendance.Checked;
             _campusSettings.MostFamilyAttendancePeriod = nbMostFamilyAttendance.Text.AsInteger();
