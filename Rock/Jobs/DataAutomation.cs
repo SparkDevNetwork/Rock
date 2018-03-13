@@ -62,10 +62,9 @@ namespace Rock.Jobs
             string updateFamilyCampusResult = UpdateFamilyCampus( context );
             string moveAdultChildrenResult = MoveAdultChildren( context );
 
-            context.UpdateLastStatusMessage( $@"
-Reactivate People: {reactivateResult}, 
-Inactivate People: {inactivateResult}, 
-Update Family Campus: {updateFamilyCampusResult},
+            context.UpdateLastStatusMessage( $@"Reactivate People: {reactivateResult},
+Inactivate People: {inactivateResult}
+Update Family Campus: {updateFamilyCampusResult}
 Move Adult Children: {moveAdultChildrenResult}
 " );
         }
@@ -93,14 +92,14 @@ Move Adult Children: {moveAdultChildrenResult}
                 var activeStatus = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
                 if ( activeStatus == null )
                 {
-                    throw new Exception( "Could not determine the 'Active' record status type." );
+                    throw new Exception( "Could not determine the 'Active' record status value." );
                 }
 
                 // Get the inactive record status defined value
                 var inactiveStatus = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
                 if ( inactiveStatus == null )
                 {
-                    throw new Exception( "Could not determine the 'Inactive' record status type." );
+                    throw new Exception( "Could not determine the 'Inactive' record status value." );
                 }
 
                 var personIds = new List<int>();
@@ -143,7 +142,7 @@ Move Adult Children: {moveAdultChildrenResult}
                         var invalidReasonIds = invalidReasonDt.DefinedValues
                             .Where( a =>
                                 a.AttributeValues.ContainsKey( "AllowAutomatedReactivation" ) &&
-                                a.AttributeValues["AllowAutomatedReactivation"].Value.AsBoolean() )
+                                !a.AttributeValues["AllowAutomatedReactivation"].Value.AsBoolean() )
                             .Select( a => a.Id )
                             .ToList();
                         if ( invalidReasonIds.Any() )
@@ -170,7 +169,7 @@ Move Adult Children: {moveAdultChildrenResult}
                 // Counter for displaying results
                 int recordsProcessed = 0;
                 int recordsUpdated = 0;
-                int totalRecords = 0;
+                int totalRecords = personIds.Count();
 
                 // Loop through each person
                 foreach ( var personId in personIds )
@@ -236,16 +235,22 @@ Move Adult Children: {moveAdultChildrenResult}
                 var activeStatus = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
                 if ( activeStatus == null )
                 {
-                    throw new Exception( "Could not determine the 'Active' record status type." );
+                    throw new Exception( "Could not determine the 'Active' record status value." );
                 }
 
                 // Get the inactive record status defined value
                 var inactiveStatus = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
                 if ( inactiveStatus == null )
                 {
-                    throw new Exception( "Could not determine the 'Inactive' record status type." );
+                    throw new Exception( "Could not determine the 'Inactive' record status value." );
                 }
 
+                // Get the inactive record status defined value
+                var inactiveReason = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_NO_ACTIVITY.AsGuid() );
+                if ( inactiveReason == null )
+                {
+                    throw new Exception( "Could not determine the 'No Activity' record status reason value." );
+                }
                 var personIds = new List<int>();
                 using ( var rockContext = new RockContext() )
                 {
@@ -292,7 +297,7 @@ Move Adult Children: {moveAdultChildrenResult}
                 // Counter for displaying results
                 int recordsProcessed = 0;
                 int recordsUpdated = 0;
-                int totalRecords = 0;
+                int totalRecords = personIds.Count();
 
                 // Loop through each person
                 foreach ( var personId in personIds )
@@ -311,8 +316,8 @@ Move Adult Children: {moveAdultChildrenResult}
                         if ( person != null )
                         {
                             person.RecordStatusValueId = inactiveStatus.Id;
-                            //person.RecordStatusReasonValueId = ;
-                            person.InactiveReasonNote = "Inactivated by Data Automation Job";
+                            person.RecordStatusReasonValueId = inactiveReason.Id;
+                            person.InactiveReasonNote = "Inactivated by the Data Automation Job";
                             rockContext.SaveChanges();
 
                             recordsUpdated++;
@@ -886,6 +891,7 @@ Move Adult Children: {moveAdultChildrenResult}
                             t.TransactionDateTime.Value >= startDate &&
                             t.AuthorizedPersonAliasId.HasValue )
                         .Select( a => a.AuthorizedPersonAlias.PersonId )
+                        .Distinct()
                         .ToList();
                 }
             }
@@ -909,6 +915,7 @@ Move Adult Children: {moveAdultChildrenResult}
                         a.DidAttend.Value == true &&
                         a.PersonAlias != null )
                     .Select( a => a.PersonAlias.PersonId )
+                    .Distinct()
                     .ToList();
             }
 
@@ -931,6 +938,7 @@ Move Adult Children: {moveAdultChildrenResult}
                         a.DidAttend.Value == true &&
                         a.PersonAlias != null )
                     .Select( a => a.PersonAlias.PersonId )
+                    .Distinct()
                     .ToList();
             }
 
@@ -950,6 +958,7 @@ Move Adult Children: {moveAdultChildrenResult}
                         a.EnteredDateTime >= startDate &&
                         a.RequestedByPersonAlias != null )
                     .Select( a => a.RequestedByPersonAlias.PersonId )
+                    .Distinct()
                     .ToList();
             }
 
@@ -965,12 +974,13 @@ Move Adult Children: {moveAdultChildrenResult}
                 return new AttributeValueService( rockContext )
                     .Queryable().AsNoTracking()
                     .Where( a =>
-                          a.ModifiedDateTime.HasValue && 
-                          a.ModifiedDateTime.Value >= startDate &&
-                          attributeIds.Contains( a.AttributeId ) &&
-                          a.EntityId.HasValue )
-                      .Select( a => a.EntityId.Value )
-                      .ToList();
+                        a.ModifiedDateTime.HasValue && 
+                        a.ModifiedDateTime.Value >= startDate &&
+                        attributeIds.Contains( a.AttributeId ) &&
+                        a.EntityId.HasValue )
+                    .Select( a => a.EntityId.Value )
+                    .Distinct()
+                    .ToList();
             }
 
             return new List<int>();
@@ -987,16 +997,17 @@ Move Adult Children: {moveAdultChildrenResult}
                     var startDate = RockDateTime.Now.AddDays( -interactionItem.LastInteractionDays );
 
                     personIdList.AddRange( new InteractionService( rockContext )
-                       .Queryable().AsNoTracking()
-                       .Where( a =>
+                        .Queryable().AsNoTracking()
+                        .Where( a =>
                             a.InteractionDateTime >= startDate &&
                             a.InteractionComponent.Channel.Guid == interactionItem.Guid &&
                             a.PersonAlias != null )
-                       .Select( a => a.PersonAlias.PersonId )
-                       .ToList() );
+                        .Select( a => a.PersonAlias.PersonId )
+                        .Distinct()
+                        .ToList() );
                 }
 
-                return personIdList;
+                return personIdList.Distinct().ToList();
             }
 
             return new List<int>();
@@ -1013,7 +1024,9 @@ Move Adult Children: {moveAdultChildrenResult}
                     var qry = dataView.GetQuery( null, null, out errorMessages );
                     if ( qry != null )
                     {
-                        return qry.Select( e => e.Id ).ToList();
+                        return qry
+                            .Select( e => e.Id )
+                            .ToList();
                     }
                 }
             }

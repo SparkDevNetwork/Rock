@@ -28,10 +28,17 @@ namespace Rock.Utility.Settings.DataAutomation
         /// </summary>
         public ReactivatePeople()
         {
+            IsLastContributionEnabled = true;
             LastContributionPeriod = 90;
+
+            IsAttendanceInServiceGroupEnabled = true;
             AttendanceInServiceGroupPeriod = 90;
+
             AttendanceInGroupTypeDays = 90;
+
+            IsPrayerRequestEnabled = true;
             PrayerRequestPeriod = 90;
+
             PersonAttributesDays = 90;
         }
 

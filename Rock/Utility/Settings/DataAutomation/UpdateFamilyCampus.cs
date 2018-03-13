@@ -28,8 +28,13 @@ namespace Rock.Utility.Settings.DataAutomation
         /// </summary>
         public UpdateFamilyCampus()
         {
+            IsMostFamilyAttendanceEnabled = true;
             MostFamilyAttendancePeriod = 90;
+
+            IsMostFamilyGivingEnabled = true;
             MostFamilyGivingPeriod = 90;
+
+            IsIgnoreIfManualUpdateEnabled = true;
             IgnoreIfManualUpdatePeriod = 90;
         }
 

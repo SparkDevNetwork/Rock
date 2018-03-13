@@ -29,10 +29,17 @@ namespace Rock.Utility.Settings.DataAutomation
         /// </summary>
         public InactivatePeople()
         {
+            IsNoLastContributionEnabled = true;
             NoLastContributionPeriod = 500;
+
+            IsNoAttendanceInServiceGroupEnabled = true;
             NoAttendanceInServiceGroupPeriod = 500;
+
             NoAttendanceInGroupTypeDays = 500;
+
+            IsNoPrayerRequestEnabled = true;
             NoPrayerRequestPeriod = 500;
+
             NoPersonAttributesDays = 500;
         }
 
