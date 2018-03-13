@@ -56,7 +56,12 @@ namespace Rock.SystemKey
         /// <summary>
         /// Settings for if/when a family's campus should be updated
         /// </summary>
-        public const string DATA_AUTOMATION_UPDATE_FAMILY_CAMPUS = "core_DataAutomationUpdateFamilyCampus";
+        public const string DATA_AUTOMATION_CAMPUS_UPDATE = "core_DataAutomationUpdateFamilyCampus";
+
+        /// <summary>
+        /// Settings for if/when adult children should be moved to their own family
+        /// </summary>
+        public const string DATA_AUTOMATION_ADULT_CHILDREN = "core_DataAutomationAdultChildren";
 
         /// <summary>
         /// The font awesome pro key

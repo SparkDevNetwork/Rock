@@ -154,7 +154,7 @@ namespace Rock.Utility.Settings.DataAutomation
         /// <value>
         /// The not in dataview.
         /// </value>
-        public string NotInDataview { get; set; }
+        public int? NotInDataview { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is no interactions enabled.

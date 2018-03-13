@@ -721,6 +721,7 @@
     <Compile Include="Jobs\ProcessBIAnalytics.cs" />
     <Compile Include="Jobs\RunDataAutomation.cs" />
     <Compile Include="Jobs\PbxCdrDownload.cs" />
+    <Compile Include="Jobs\DataAutomation.cs" />
     <Compile Include="Jobs\SendCreditCardExpirationNotices.cs" />
     <Compile Include="Jobs\IndexEntities.cs" />
     <Compile Include="Jobs\SendDataViewEmail.cs" />
@@ -1219,6 +1220,7 @@
     <Compile Include="Plugin\HotFixes\040_BusinessTransactionDetailLinks.cs" />
     <Compile Include="Plugin\HotFixes\039_MigrationRollupsForV7_2.cs" />
     <Compile Include="Plugin\HotFixes\042_FixShortLinkUrlInteractionChannel.cs" />
+    <Compile Include="Plugin\HotFixes\047_DataAutomation.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <DependentUpon>HotFixMigrationResource.resx</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -1235,6 +1237,7 @@
     <Compile Include="Reporting\DataFilter\Person\PostalCodeFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\HasNoteFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\UserLoginDataViewFilter.cs" />
+    <Compile Include="Reporting\DataFilter\PrayerRequest\CampusFilter.cs" />
     <Compile Include="Reporting\DataFilter\UserLogin\LoginTypeFilter.cs" />
     <Compile Include="Reporting\DataSelect\FormattedFieldSelect.cs" />
     <Compile Include="Reporting\DataSelect\GroupMember\GroupLinkSelect.cs" />
@@ -1508,6 +1511,11 @@
     <Compile Include="Utility\FileUtilities.cs" />
     <Compile Include="Utility\FontAwesomeHelper.cs" />
     <Compile Include="Utility\IRockOwinStartup.cs" />
+    <Compile Include="Utility\Settings\DataAutomation\InactivatePeople.cs" />
+    <Compile Include="Utility\Settings\DataAutomation\InteractionItem.cs" />
+    <Compile Include="Utility\Settings\DataAutomation\MoveAdultChildren.cs" />
+    <Compile Include="Utility\Settings\DataAutomation\ReactivatePeople.cs" />
+    <Compile Include="Utility\Settings\DataAutomation\UpdateFamilyCampus.cs" />
     <Compile Include="Utility\TextToWorkflow.cs" />
     <Compile Include="Web\Cache\ContentChannelCache.cs" />
     <Compile Include="Web\Cache\LavaTemplateCache.cs" />
@@ -2107,6 +2115,12 @@
     </Content>
     <Content Include="Plugin\HotFixes\043_MoreMigrationRollupsForV7_3_ufnUtility_CsvToTable.sql">
       <DependentUpon>043_MoreMigrationRollupsForV7_3.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\047_DataAutomation_FixBenevolenceCaseWorker.sql">
+      <DependentUpon>047_DataAutomation.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\047_DataAutomation_ShortLinkInteractionFix.sql">
+      <DependentUpon>047_DataAutomation.cs</DependentUpon>
     </Content>
     <Content Include="Scripts\jquery-1.12.4.intellisense.js" />
     <Content Include="Scripts\jquery-1.12.4.js" />
