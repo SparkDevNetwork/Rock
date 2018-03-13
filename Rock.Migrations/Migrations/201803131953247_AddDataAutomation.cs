@@ -35,9 +35,11 @@ namespace Rock.Migrations
             RockMigrationHelper.DeletePage( "4818E7C6-4D21-4657-B4E7-464B61160EB2" ); //  Page: Data Integrity Settings, Layout: Full Width, Site: Rock RMS
 
             // Add the new page
-            RockMigrationHelper.AddPage( true, "84FD84DF-F58B-4B9D-A407-96276C40AB7E", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Data Automation", "Configure how the data automation job should update your data.", "A2D5F989-1E30-47B9-AAFC-F7EC627AFF21", "fa fa-tachometer" ); // Site:Rock RMS
+            RockMigrationHelper.AddPage( true, "84FD84DF-F58B-4B9D-A407-96276C40AB7E", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Data Automation", "", "A2D5F989-1E30-47B9-AAFC-F7EC627AFF21", "fa fa-tachometer" ); // Site:Rock RMS
             RockMigrationHelper.UpdateBlockType( "Data Automation Settings", "Block used to set values specific to data automation (NCOA, Updating Person Status, Family Campus, Etc).", "~/Blocks/Administration/DataAutomationSettings.ascx", "Administration", "E34C45E9-97CA-4902-803B-1EFAC9174083" );
             RockMigrationHelper.AddBlock( true, "A2D5F989-1E30-47B9-AAFC-F7EC627AFF21", "", "E34C45E9-97CA-4902-803B-1EFAC9174083", "Data Automation Settings", "Main", @"", @"", 0, "AD705C56-1451-4FD6-BDC3-66072F54034D" );
+
+            RockMigrationHelper.UpdateDefinedValue( "E17D5988-0372-4792-82CF-9E37C79F7319", "No Activity", "The individual has not participated in any recent activity.", "64014FE6-943D-4ACF-8014-FED9F9169AE8", true );
 
             // Add the job if it does not exist
             Sql( @"IF NOT EXISTS(SELECT [Id] FROM [ServiceJob] WHERE [Class] = 'Rock.Jobs.DataAutomation')
@@ -53,11 +55,11 @@ BEGIN
         ,[Guid] )
     VALUES (
          0
-        ,0
+        ,1
         ,'Data Automation'
         ,'Updates person/family information based on data automation settings.'
         ,'Rock.Jobs.DataAutomation'
-        ,'0 0 4 ? * MON *'
+        ,'0 0 4 ? * TUE *'
         ,1
         ,'059DC06D-39F1-4113-A6C3-94622A40F1CE');
 END" );
