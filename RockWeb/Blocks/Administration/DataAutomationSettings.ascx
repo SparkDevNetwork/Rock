@@ -16,24 +16,6 @@
 
                 <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
-                <Rock:PanelWidget ID="pwGeneralSettings" runat="server" Title="General Settings">
-                    <Rock:NumberBox ID="nbGenderAutoFill" runat="server" AppendText="%" CssClass="input-width-md" Label="Gender AutoFill Confidence" MinimumValue="0" MaximumValue="100" NumberType="Integer" />
-                </Rock:PanelWidget>
-
-                <Rock:PanelWidget ID="pwNcoaConfiguration" runat="server" Title="National Change of Address (NCOA)">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <Rock:NumberBox ID="nbMinMoveDistance" runat="server" AppendText="miles" CssClass="input-width-md" Label="Minimum Move Distance to Inactivate" NumberType="Double" Text="250" />
-                        </div>
-                        <div class="col-md-4">
-                            <Rock:RockCheckBox ID="cb48MonAsPrevious" runat="server" Label="Mark 48 Month Move as Previous Addresses" />
-                        </div>
-                        <div class="col-md-4">
-                            <Rock:RockCheckBox ID="cbInvalidAddressAsPrevious" runat="server" Label="Mark Invalid Addresses as Previous Addresses" />
-                        </div>
-                    </div>
-                </Rock:PanelWidget>
-
                 <Rock:PanelWidget ID="pwReactivatePeople" runat="server" title="Reactivate People">
 
                     <Rock:RockCheckBox ID="cbReactivatePeople" runat="server" 
