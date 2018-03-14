@@ -207,6 +207,7 @@ namespace RockWeb.Blocks.Event
                             i.EventItem.IsActive &&
                             i.EventItem.IsApproved &&
                             i.EventItem.EventItemOccurrences.Any() )
+                        .OrderBy( i => i.EventItem.Name )
                         .ToList()
                         .Where( i => i.EventItem.GetStartTimes( fromDate, toDate.AddDays( 1 ) ).Any() )
                         .Select( c => new

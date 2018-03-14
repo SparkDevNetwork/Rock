@@ -104,6 +104,7 @@ namespace Rock.Model
             get { return _groupMemberStatus; }
             set { _groupMemberStatus = value; }
         }
+
         private GroupMemberStatus _groupMemberStatus = GroupMemberStatus.Active;
 
         /// <summary>
@@ -124,7 +125,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public DateTime? DateTimeAdded { get; set; }
-
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is notified.
@@ -266,10 +266,12 @@ namespace Rock.Model
                             {
                                 group = this.Group;
                             }
+
                             if ( group == null )
                             {
                                 group = new GroupService( rockContext ).Get( this.GroupId );
                             }
+
                             if ( group != null )
                             {
                                 var groupType = GroupTypeCache.Read( group.GroupTypeId );
@@ -277,9 +279,10 @@ namespace Rock.Model
                                 {
                                     var origRole = groupType.Roles.FirstOrDefault( r => r.Id == origGroupRoleId );
                                     var newRole = groupType.Roles.FirstOrDefault( r => r.Id == this.GroupRoleId );
-                                    action = string.Format( "Group role changed from {0} to {1}",
-                                        ( origRole != null ? origRole.Name : "??" ),
-                                        ( newRole != null ? newRole.Name : "??" ) );
+                                    action = string.Format(
+                                        "Group role changed from {0} to {1}",
+                                        origRole != null ? origRole.Name : "??",
+                                        newRole != null ? newRole.Name : "??" );
                                 }
                             }
                         }
@@ -296,10 +299,12 @@ namespace Rock.Model
                 {
                     group = this.Group;
                 }
+
                 if ( group == null )
                 {
                     group = new GroupService( rockContext ).Get( this.GroupId );
                 }
+
                 if ( group != null )
                 {
                     var groupType = GroupTypeCache.Read( group.GroupTypeId );
@@ -322,10 +327,12 @@ namespace Rock.Model
                     {
                         group = this.Group;
                     }
+
                     if ( group == null )
                     {
                         group = new GroupService( rockContext ).Get( this.GroupId );
                     }
+
                     if ( group != null )
                     {
                         var personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
@@ -346,7 +353,9 @@ namespace Rock.Model
                     }
                 }
             }
-            catch { }
+            catch
+            {
+            }
 
             base.PreSaveChanges( dbContext, state );
         }
@@ -389,7 +398,6 @@ namespace Rock.Model
                     ValidationResults.Add( new ValidationResult( errorMessage ) );
                     result = false;
                 }
-                
             }
 
             return result;
@@ -544,7 +552,7 @@ namespace Rock.Model
                 }
 
                 // existing groupmember record, but person or role was changed
-                var hasChanged = ( ( this.GroupMemberStatus != databaseGroupMemberRecord.GroupMemberStatus ) || ( this.GroupRoleId != databaseGroupMemberRecord.GroupRoleId ) );
+                var hasChanged = this.GroupMemberStatus != databaseGroupMemberRecord.GroupMemberStatus || this.GroupRoleId != databaseGroupMemberRecord.GroupRoleId;
 
                 if ( !hasChanged )
                 {
@@ -577,7 +585,7 @@ namespace Rock.Model
                 var databaseGroupMemberRecord = groupMemberService.Get( this.Id );
 
                 // existing groupmember record, but person or role was changed
-                var hasChanged = ( ( this.PersonId != databaseGroupMemberRecord.PersonId ) || ( this.GroupRoleId != databaseGroupMemberRecord.GroupRoleId ) );
+                var hasChanged = this.PersonId != databaseGroupMemberRecord.PersonId || this.GroupRoleId != databaseGroupMemberRecord.GroupRoleId;
 
                 if ( !hasChanged )
                 {

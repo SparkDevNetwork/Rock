@@ -54,7 +54,7 @@ namespace Rock.Web.UI.Controls
         private GridActions _gridActions;
         private bool PreDataBound = true;
 
-        private Dictionary<int, string> _columnDataPriorities;
+        private Dictionary<DataControlField, string> _columnDataPriorities;
 
         #endregion
 
@@ -856,6 +856,52 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Creates the set of column fields used to build the control hierarchy.
+        /// </summary>
+        /// <param name="dataSource">A <see cref="T:System.Web.UI.WebControls.PagedDataSource" /> that represents the data source.</param>
+        /// <param name="useDataSource">true to use the data source specified by the <paramref name="dataSource" /> parameter; otherwise, false.</param>
+        /// <returns>
+        /// A <see cref="T:System.Collections.ICollection" /> that contains the fields used to build the control hierarchy.
+        /// </returns>
+        protected override ICollection CreateColumns( PagedDataSource dataSource, bool useDataSource )
+        {
+            if ( CustomColumns != null && CustomColumns.Any() )
+            {
+                var columns = base.CreateColumns( dataSource, useDataSource ).OfType<DataControlField>().ToList();
+                foreach ( var columnConfig in CustomColumns )
+                {
+                    int insertPosition;
+                    if ( columnConfig.PositionOffsetType == CustomGridColumnsConfig.ColumnConfig.OffsetType.LastColumn )
+                    {
+                        insertPosition = columns.Count - columnConfig.PositionOffset;
+                    }
+                    else
+                    {
+                        insertPosition = columnConfig.PositionOffset;
+                    }
+
+                    var column = columnConfig.GetGridColumn();
+                    columns.Insert( insertPosition, column );
+                    insertPosition++;
+                }
+
+                return columns;
+            }
+            else
+            {
+                return base.CreateColumns( dataSource, useDataSource );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the custom columns from blocks that implement ICustomGridColumns
+        /// </summary>
+        /// <value>
+        /// The custom columns.
+        /// </value>
+        public List<CustomGridColumnsConfig.ColumnConfig> CustomColumns { get; set; }
+
+        /// <summary>
         /// Creates the control hierarchy used to render the <see cref="T:System.Web.UI.WebControls.GridView" /> control using the specified data source.
         /// </summary>
         /// <param name="dataSource">An <see cref="T:System.Collections.IEnumerable" /> that contains the data source for the <see cref="T:System.Web.UI.WebControls.GridView" /> control.</param>
@@ -900,7 +946,7 @@ namespace Rock.Web.UI.Controls
                 _table.Rows.Add( _actionRow );
 
                 TableCell cell = new TableCell();
-                cell.ColumnSpan = this.Columns.Count;
+                cell.ColumnSpan = this.Columns.Count + (this.CustomColumns?.Count ?? 0);
                 cell.CssClass = "grid-actions";
                 _actionRow.Cells.Add( cell );
 
@@ -929,7 +975,7 @@ namespace Rock.Web.UI.Controls
         {
             // Get the css class for any column that does not implement the INotRowSelectedField
             RowSelectedColumns = new Dictionary<int, string>();
-            _columnDataPriorities = new Dictionary<int, string>();
+            _columnDataPriorities = new Dictionary<DataControlField, string>();
 
             for ( int i = 0; i < this.Columns.Count; i++ )
             {
@@ -942,11 +988,11 @@ namespace Rock.Web.UI.Controls
                 // get data priority from column
                 if ( column is IPriorityColumn )
                 {
-                    _columnDataPriorities.Add( i, ( (IPriorityColumn)column ).ColumnPriority.ConvertToInt().ToString() );
+                    _columnDataPriorities.Add( column, ( (IPriorityColumn)column ).ColumnPriority.ConvertToInt().ToString() );
                 }
                 else
                 {
-                    _columnDataPriorities.Add( i, "1" );
+                    _columnDataPriorities.Add( column, "1" );
                 }
             }
 
@@ -1112,10 +1158,12 @@ namespace Rock.Web.UI.Controls
             if ( e.Row.RowType == DataControlRowType.Header )
             {
                 //add data priority
-                for ( int i = 0; i < e.Row.Cells.Count; i++ )
+                foreach( var cell in e.Row.Cells.OfType<DataControlFieldCell>())
                 {
-                    var cell = e.Row.Cells[i];
-                    cell.Attributes.Add( "data-priority", _columnDataPriorities[i] );
+                    if ( _columnDataPriorities.ContainsKey( cell.ContainingField ) )
+                    {
+                        cell.Attributes.Add( "data-priority", _columnDataPriorities[cell.ContainingField] );
+                    }
                 }
 
                 if ( this.AllowSorting )
@@ -1153,9 +1201,12 @@ namespace Rock.Web.UI.Controls
             if ( e.Row.RowType == DataControlRowType.DataRow || e.Row.RowType == DataControlRowType.Footer )
             {
                 // add the data priority
-                for ( int i = 0; i < e.Row.Cells.Count; i++ )
+                foreach ( var cell in e.Row.Cells.OfType<DataControlFieldCell>() )
                 {
-                    e.Row.Cells[i].Attributes.Add( "data-priority", _columnDataPriorities[i] );
+                    if ( _columnDataPriorities.ContainsKey( cell.ContainingField ) )
+                    {
+                        cell.Attributes.Add( "data-priority", _columnDataPriorities[cell.ContainingField] );
+                    }
                 }
             }
 
@@ -1544,10 +1595,11 @@ namespace Rock.Web.UI.Controls
             if ( this.ExportSource == ExcelExportSource.ColumnOutput )
             {
                 // Columns to export with their column index as the key
-                var gridColumns = new Dictionary<int, IRockGridField>();
+                var gridColumns = new Dictionary<int, DataControlField>();
 
                 for ( int i = 0; i < this.Columns.Count; i++ )
                 {
+                    var dataField = this.Columns[i];
                     var rockField = this.Columns[i] as IRockGridField;
                     if ( rockField != null &&
                         (
@@ -1555,7 +1607,7 @@ namespace Rock.Web.UI.Controls
                             ( rockField.ExcelExportBehavior == ExcelExportBehavior.IncludeIfVisible && rockField.Visible )
                         ) )
                     {
-                        gridColumns.Add( i, rockField );
+                        gridColumns.Add( i, dataField );
                     }
                 }
 
@@ -1594,10 +1646,10 @@ namespace Rock.Web.UI.Controls
                     gridViewRow.DataItem = dataItem;
                     this.OnRowDataBound( args );
                     columnCounter = 0;
+                    var gridViewRowCellLookup = gridViewRow.Cells.OfType<DataControlFieldCell>().ToDictionary( k => k.ContainingField, v => v );
                     foreach ( var col in gridColumns )
                     {
                         columnCounter++;
-                        var fieldCell = gridViewRow.Cells[col.Key] as DataControlFieldCell;
 
                         object exportValue = null;
                         if ( col.Value is RockBoundField )
@@ -1606,6 +1658,7 @@ namespace Rock.Web.UI.Controls
                         }
                         else if ( col.Value is RockTemplateField )
                         {
+                            var fieldCell = gridViewRowCellLookup[col.Value];
                             var textControls = fieldCell.ControlsOfTypeRecursive<Control>().OfType<ITextControl>();
                             if ( textControls.Any() )
                             {
@@ -1619,7 +1672,7 @@ namespace Rock.Web.UI.Controls
                         // This is done here because a value is needed to determine the data types
                         if ( rowCounter == headerRows + 1 )
                         {
-                            worksheet.Column( columnCounter ).Style.Numberformat.Format = ExcelHelper.DefaultColumnFormat( col.Value, exportValue );
+                            worksheet.Column( columnCounter ).Style.Numberformat.Format = ExcelHelper.DefaultColumnFormat( col.Value as IRockGridField, exportValue );
                         }
                     }
                 }
@@ -1688,6 +1741,13 @@ namespace Rock.Web.UI.Controls
 
                 // get all properties of the objects in the grid
                 IList<PropertyInfo> allprops = new List<PropertyInfo>( oType.GetProperties() );
+
+                // If this is a DotLiquid.Drop class, don't include any of the properties that are inherited from DotLiquid.Drop
+                if ( typeof( DotLiquid.Drop ).IsAssignableFrom( oType ) )
+                {
+                    var dropProperties = typeof( DotLiquid.Drop ).GetProperties().Select( a => a.Name );
+                    allprops = allprops.Where( a => !dropProperties.Contains( a.Name ) ).ToList();
+                }
 
                 // Inspect the collection of Fields that appear in the Grid and add the corresponding data item properties to the set of fields to be exported.
                 // The fields are exported in the same order as they appear in the Grid.
@@ -2291,7 +2351,7 @@ namespace Rock.Web.UI.Controls
                             // Merge values
                             var mergeValues = new Dictionary<string, object>();
 
-                            for ( int i = 0; i < data.Columns.Count; i++ )
+                            for (  int i = 0; i < data.Columns.Count; i++ )
                             {
                                 // Add any new person id values from the selected person (or recipient) column(s)
                                 if ( personIdFields.Contains( data.Columns[i].ColumnName, StringComparer.OrdinalIgnoreCase ) )
@@ -3709,6 +3769,7 @@ namespace Rock.Web.UI.Controls
                 PageLink[i] = new LinkButton();
                 PageLinkListItem[i].Controls.Add( PageLink[i] );
                 PageLink[i].ID = string.Format( "pageLink{0}", i );
+                PageLink[i].CausesValidation = false;
                 PageLink[i].Command += lbPage_Command;
             }
 

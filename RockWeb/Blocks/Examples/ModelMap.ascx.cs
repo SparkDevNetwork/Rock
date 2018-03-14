@@ -49,8 +49,6 @@ namespace RockWeb.Blocks.Examples
         #region Properties
 
         protected List<MCategory> EntityCategories { get; set; }
-        protected Guid? SelectedCategoryGuid { get; set; }
-        protected int? selectedEntityId { get; set; }
 
         #endregion
 
@@ -65,8 +63,6 @@ namespace RockWeb.Blocks.Examples
             base.LoadViewState( savedState );
 
             EntityCategories = ViewState["EntityCategories"] as List<MCategory>;
-            SelectedCategoryGuid = ViewState["SelectedCategoryGuid"] as Guid?;
-            selectedEntityId = ViewState["selectedEntityId"] as int?;
         }
 
         /// <summary>
@@ -107,8 +103,6 @@ namespace RockWeb.Blocks.Examples
         protected override object SaveViewState()
         {
             ViewState["EntityCategories"] = EntityCategories;
-            ViewState["SelectedCategoryGuid"] = SelectedCategoryGuid;
-            ViewState["selectedEntityId"] = selectedEntityId;
 
             return base.SaveViewState();
         }
@@ -134,7 +128,7 @@ namespace RockWeb.Blocks.Examples
         /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
         protected void rptModel_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
-            ShowData( SelectedCategoryGuid, e.CommandArgument.ToString().AsInteger() );
+            ShowData( hfSelectedCategoryGuid.Value.AsGuid(), e.CommandArgument.ToString().AsInteger() );
         }
 
         #endregion
@@ -175,11 +169,11 @@ namespace RockWeb.Blocks.Examples
                         .FirstOrDefault();
                     if ( entityCategory == null )
                     {
-                        entityCategory = new MCategory { Guid = Guid.NewGuid(), Name = category, RockEntities = new List<MEntity>() };
+                        entityCategory = new MCategory { Guid = Guid.NewGuid(), Name = category, RockEntityIds = new List<int>() };
                         entityCategory.IconCssClass = categoryIcons.ContainsKey( category ) ? categoryIcons[category] : string.Empty;
                         entityCategories.Add( entityCategory );
                     }
-                    entityCategory.RockEntities.Add( new MEntity { Id = entity.Id, AssemblyName = entity.AssemblyName, FriendlyName = entity.FriendlyName } );
+                    entityCategory.RockEntityIds.Add( entity.Id );
                 }
             }
 
@@ -194,8 +188,8 @@ namespace RockWeb.Blocks.Examples
                 LoadCategories();
             }
 
-            SelectedCategoryGuid = categoryGuid;
-            selectedEntityId = null;
+            hfSelectedCategoryGuid.Value = categoryGuid.ToString();
+            hfSelectedEntityId.Value = null;
 
             // Bind Categories
             rptCategory.DataSource = EntityCategories;
@@ -204,9 +198,9 @@ namespace RockWeb.Blocks.Examples
             pnlModels.Visible = false;
             pnlKey.Visible = false;
             lCategoryName.Text = string.Empty;
-            
-            MEntity entityType = null;
-            var entities = new List<MEntity>();
+
+            EntityTypeCache entityType = null;
+            var entityTypeList = new List<EntityTypeCache>();
             if ( categoryGuid.HasValue )
             {
                 var category = EntityCategories.Where( c => c.Guid.Equals( categoryGuid ) ).FirstOrDefault();
@@ -215,77 +209,93 @@ namespace RockWeb.Blocks.Examples
                     lCategoryName.Text = category.Name + " Models";
                     pnlModels.Visible = true;
 
-                    entities = category.RockEntities.OrderBy( e => e.FriendlyName ).ToList();
+                    entityTypeList = category.RockEntityIds.Select( a => EntityTypeCache.Read( a ) ).Where( a => a != null ).ToList();
                     if ( entityTypeId.HasValue )
                     {
-                        entityType = entities.Where( t => t.Id == entityTypeId.Value ).FirstOrDefault();
-                        selectedEntityId = entityType != null ? entityType.Id : (int?)null;
+                        entityType = entityTypeList.Where( t => t.Id == entityTypeId.Value ).FirstOrDefault();
+                        hfSelectedEntityId.Value = entityType != null ? entityType.Id.ToString() : null;
                     }
                     else
                     {
-                        entityType = entities.FirstOrDefault();
-                        selectedEntityId = entities.Any() ? entities.First().Id : (int?)null;
+                        entityType = entityTypeList.FirstOrDefault();
+                        hfSelectedEntityId.Value = entityTypeList.Any() ? entityTypeList.First().Id.ToString() : null;
                     }
                 }
             }
 
             // Bind Models
-            rptModel.DataSource = entities;
+            rptModel.DataSource = entityTypeList;
             rptModel.DataBind();
 
             string details = string.Empty;
+            nbClassesWarning.Visible = false;
             if ( entityType != null )
             {
-                details = "<div class='alert alert-warning'>Error getting class details!</div>";
-
-                var type = entityType.GetEntityType();
-                if ( type != null )
+                try
                 {
-                    pnlKey.Visible = true;
-
-                    var xmlComments = GetXmlComments();
-
-                    var mClass = new MClass();
-                    mClass.Name = type.Name;
-                    mClass.Comment = GetComments( type, xmlComments );
-
-                    PropertyInfo[] properties = type.GetProperties( BindingFlags.Public | ( BindingFlags.Instance ) )
-                        .Where( m => ( m.MemberType == MemberTypes.Method || m.MemberType == MemberTypes.Property ) )
-                        .ToArray();
-                    foreach ( PropertyInfo p in properties.OrderBy( i => i.Name ).ToArray() )
+                    var type = entityType.GetEntityType();
+                    if ( type != null )
                     {
-                        mClass.Properties.Add( new MProperty
-                        {
-                            Name = p.Name,
-                            IsInherited = p.DeclaringType != type,
-                            IsVirtual = p.GetGetMethod() != null && p.GetGetMethod().IsVirtual && !p.GetGetMethod().IsFinal,
-                            IsLavaInclude = p.IsDefined( typeof( LavaIncludeAttribute ) ) || p.IsDefined( typeof( DataMemberAttribute ) ),
-                            NotMapped = p.IsDefined( typeof( NotMappedAttribute ) ),
-                            Required = p.IsDefined( typeof( RequiredAttribute ) ),
-                            Id = p.MetadataToken,
-                            Comment = GetComments( p, xmlComments )
-                        } );
-                    }
+                        pnlKey.Visible = true;
 
-                    MethodInfo[] methods = type.GetMethods( BindingFlags.Public | ( BindingFlags.Instance ) )
-                        .Where( m => !m.IsSpecialName && ( m.MemberType == MemberTypes.Method || m.MemberType == MemberTypes.Property ) )
-                        .ToArray();
-                    foreach ( MethodInfo m in methods.OrderBy( i => i.Name ).ToArray() )
+                        var xmlComments = GetXmlComments();
+
+                        var mClass = new MClass();
+                        mClass.Name = type.Name;
+                        mClass.Comment = GetComments( type, xmlComments );
+
+                        PropertyInfo[] properties = type.GetProperties( BindingFlags.Public | ( BindingFlags.Instance ) )
+                            .Where( m => ( m.MemberType == MemberTypes.Method || m.MemberType == MemberTypes.Property ) )
+                            .ToArray();
+                        foreach ( PropertyInfo p in properties.OrderBy( i => i.Name ).ToArray() )
+                        {
+                            mClass.Properties.Add( new MProperty
+                            {
+                                Name = p.Name,
+                                IsInherited = p.DeclaringType != type,
+                                IsVirtual = p.GetGetMethod() != null && p.GetGetMethod().IsVirtual && !p.GetGetMethod().IsFinal,
+                                IsLavaInclude = p.IsDefined( typeof( LavaIncludeAttribute ) ) || p.IsDefined( typeof( DataMemberAttribute ) ),
+                                NotMapped = p.IsDefined( typeof( NotMappedAttribute ) ),
+                                Required = p.IsDefined( typeof( RequiredAttribute ) ),
+                                Id = p.MetadataToken,
+                                Comment = GetComments( p, xmlComments )
+                            } );
+                        }
+
+                        MethodInfo[] methods = type.GetMethods( BindingFlags.Public | ( BindingFlags.Instance ) )
+                            .Where( m => !m.IsSpecialName && ( m.MemberType == MemberTypes.Method || m.MemberType == MemberTypes.Property ) )
+                            .ToArray();
+                        foreach ( MethodInfo m in methods.OrderBy( i => i.Name ).ToArray() )
+                        {
+                            // crazy, right?
+                            var param = string.Join( ", ", m.GetParameters().Select( pi => { var x = pi.ParameterType + " " + pi.Name; return x; } ) );
+
+                            mClass.Methods.Add( new MMethod
+                            {
+                                Name = m.Name,
+                                IsInherited = m.DeclaringType != type,
+                                Id = m.MetadataToken,
+                                Signature = string.Format( "{0}({1})", m.Name, param ),
+                                Comment = GetComments( m, xmlComments )
+                            } );
+                        }
+
+                        details = ClassNode( mClass );
+                    }
+                    else
                     {
-                        // crazy, right?
-                        var param = string.Join( ", ", m.GetParameters().Select( pi => { var x = pi.ParameterType + " " + pi.Name; return x; } ) );
-
-                        mClass.Methods.Add( new MMethod
-                        {
-                            Name = m.Name,
-                            IsInherited = m.DeclaringType != type,
-                            Id = m.MetadataToken,
-                            Signature = string.Format( "{0}({1})", m.Name, param ),
-                            Comment = GetComments( m, xmlComments )
-                        } );
+                        nbClassesWarning.Text = "Unable to get class details for " + entityType.FriendlyName;
+                        nbClassesWarning.Details = entityType.AssemblyName;
+                        nbClassesWarning.Dismissable = true;
+                        nbClassesWarning.Visible = true;
                     }
-
-                    details = ClassNode( mClass );
+                }
+                catch ( Exception ex )
+                {
+                    nbClassesWarning.Text = string.Format( "Error getting class details for <code>{0}</code>", entityType );
+                    nbClassesWarning.Details = ex.Message;
+                    nbClassesWarning.Dismissable = true;
+                    nbClassesWarning.Visible = true;
                 }
             }
 
@@ -462,8 +472,9 @@ namespace RockWeb.Blocks.Examples
         {
             if ( obj is Guid )
             {
+                Guid? selectedCategoryGuid = hfSelectedCategoryGuid.Value.AsGuidOrNull();
                 Guid categoryGuid = (Guid)obj;
-                return SelectedCategoryGuid.HasValue && SelectedCategoryGuid.Value == categoryGuid ? "active" : string.Empty;
+                return selectedCategoryGuid.HasValue && selectedCategoryGuid.Value == categoryGuid ? "active" : string.Empty;
             }
             return string.Empty;
         }
@@ -472,6 +483,7 @@ namespace RockWeb.Blocks.Examples
         {
             if ( obj is int )
             {
+                int? selectedEntityId = hfSelectedEntityId.Value.AsIntegerOrNull();
                 int entityId = (int)obj;
                 return selectedEntityId.HasValue && selectedEntityId.Value == entityId ? "active" : string.Empty;
             }
@@ -489,24 +501,7 @@ namespace RockWeb.Blocks.Examples
         public Guid Guid { get; set; }
         public string Name { get; set; }
         public string IconCssClass { get; set; }
-        public List<MEntity> RockEntities { get; set; }
-    }
-
-    [Serializable]
-    public class MEntity
-    {
-        public int Id { get; set; }
-        public string AssemblyName { get; set; }
-        public string FriendlyName { get; set; }
-        public Type GetEntityType()
-        {
-            if ( !string.IsNullOrWhiteSpace( this.AssemblyName ) )
-            {
-                return Type.GetType( this.AssemblyName );
-            }
-
-            return null;
-        }
+        public List<int> RockEntityIds { get; set; }
     }
 
     class MClass

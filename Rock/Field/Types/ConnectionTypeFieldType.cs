@@ -131,7 +131,7 @@ namespace Rock.Field.Types
             var picker = control as DropDownList;
             if ( picker != null )
             {
-                picker.SelectedValue = value.ToUpper();
+                picker.SelectedValue = value?.ToUpper();
             }
         }
 

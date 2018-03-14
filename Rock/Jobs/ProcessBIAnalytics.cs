@@ -81,7 +81,6 @@ namespace Rock.Jobs
         private JobStats _campusJobStats = new JobStats();
 
         private int? _commandTimeout = null;
-        private List<string> _sqlLogs = new List<string>();
 
         #endregion Private Fields
 
@@ -97,8 +96,6 @@ namespace Rock.Jobs
 
             // get the configured timeout, or default to 20 minutes if it is blank
             _commandTimeout = dataMap.GetString( "CommandTimeout" ).AsIntegerOrNull() ?? 1200;
-
-            int? commandTimeout = dataMap.GetString( "CommandTimeout" ).AsIntegerOrNull();
 
             StringBuilder results = new StringBuilder();
 
@@ -139,7 +136,7 @@ namespace Rock.Jobs
             {
                 try
                 {
-                    int rows = DbService.ExecuteCommand( "EXEC [dbo].[spAnalytics_ETL_FinancialTransaction]", System.Data.CommandType.Text, null, commandTimeout );
+                    int rows = DbService.ExecuteCommand( "EXEC [dbo].[spAnalytics_ETL_FinancialTransaction]", System.Data.CommandType.Text, null, _commandTimeout );
                     results.AppendLine( "FinancialTransaction ETL completed." );
 
                     context.UpdateLastStatusMessage( results.ToString() );
@@ -157,7 +154,7 @@ namespace Rock.Jobs
             {
                 try
                 {
-                    int rows = DbService.ExecuteCommand( "EXEC [dbo].[spAnalytics_ETL_Attendance]", System.Data.CommandType.Text, null, commandTimeout );
+                    int rows = DbService.ExecuteCommand( "EXEC [dbo].[spAnalytics_ETL_Attendance]", System.Data.CommandType.Text, null, _commandTimeout );
                     results.AppendLine( "Attendance ETL completed." );
 
                     context.UpdateLastStatusMessage( results.ToString() );
@@ -419,9 +416,9 @@ UPDATE [{analyticsTableName}]
                             var parameters = new Dictionary<string, object>();
                             parameters.Add( "@modelAttributeValue", modelAttributeValue );
                             parameters.Add( "@attributeValue", attributeValue );
-                            modelJobStats.AttributeFieldsUpdated += DbService.ExecuteCommand( updateSql, System.Data.CommandType.Text, parameters );
 
-                            _sqlLogs.Add( parameters.Select( a => $"/* {a.Key} = '{a.Value}' */" ).ToList().AsDelimited( "\n" ) + updateSql );
+                            modelJobStats.SqlLogs.Add( parameters.Select( a => $"/* {a.Key} = '{a.Value}' */" ).ToList().AsDelimited( "\n" ) + updateSql );
+                            modelJobStats.AttributeFieldsUpdated += DbService.ExecuteCommand( updateSql, System.Data.CommandType.Text, parameters, _commandTimeout );
                         }
                     }
                 }
@@ -477,7 +474,7 @@ UPDATE [{analyticsTableName}]
             {
                 if ( dataMap.GetString( "SaveSQLForDebug" ).AsBoolean() )
                 {
-                    LogSQL( "ProcessAnalyticsDimPerson.sql", _sqlLogs.AsDelimited( "\n" ).ToString() );
+                    LogSQL( "ProcessAnalyticsDimPerson.sql", _personJobStats.SqlLogs.AsDelimited( "\n" ).ToString() );
                 }
             }
         }
@@ -530,9 +527,10 @@ UPDATE [AnalyticsSourcePersonHistorical]
                             var parameters = new Dictionary<string, object>();
                             parameters.Add( "@personAttributeValue", personAttributeValue );
                             parameters.Add( "@formattedValue", formattedValue );
-                            this._personJobStats.RowsMarkedAsHistory += DbService.ExecuteCommand( markAsHistorySQL, System.Data.CommandType.Text, parameters );
 
-                            _sqlLogs.Add( parameters.Select( a => $"/* {a.Key} = '{a.Value}' */" ).ToList().AsDelimited( "\n" ) + markAsHistorySQL );
+                            this._personJobStats.SqlLogs.Add( parameters.Select( a => $"/* {a.Key} = '{a.Value}' */" ).ToList().AsDelimited( "\n" ) + markAsHistorySQL );
+
+                            this._personJobStats.RowsMarkedAsHistory += DbService.ExecuteCommand( markAsHistorySQL, System.Data.CommandType.Text, parameters, _commandTimeout );
                         }
                     }
                 }
@@ -580,9 +578,10 @@ UPDATE [AnalyticsSourcePersonHistorical]
                             var parameters = new Dictionary<string, object>();
                             parameters.Add( "@personAttributeValue", personAttributeValue );
                             parameters.Add( "@formattedValue", formattedValue );
-                            _personJobStats.AttributeFieldsUpdated += DbService.ExecuteCommand( updateSql, System.Data.CommandType.Text, parameters );
 
-                            _sqlLogs.Add( parameters.Select( a => $"/* {a.Key} = '{a.Value}' */" ).ToList().AsDelimited( "\n" ) + updateSql );
+                            _personJobStats.SqlLogs.Add( parameters.Select( a => $"/* {a.Key} = '{a.Value}' */" ).ToList().AsDelimited( "\n" ) + updateSql );
+
+                            _personJobStats.AttributeFieldsUpdated += DbService.ExecuteCommand( updateSql, System.Data.CommandType.Text, parameters, _commandTimeout );
                         }
                     }
                 }
@@ -690,9 +689,9 @@ DECLARE
     , @MaxExpireDate DATE = DateFromParts( 9999, 1, 1 )";
 
                 // throw script into logs in case 'Save SQL for Debug' is enabled
-                _sqlLogs.Add( "/* MarkAsHistoryScript */\n" + scriptDeclares + markAsHistoryScript );
-                _sqlLogs.Add( "/* UpdateETLScript */\n" + scriptDeclares + updateETLScript );
-                _sqlLogs.Add( "/* ProcessINSERTScript */\n" + scriptDeclares + processINSERTScript );
+                _personJobStats.SqlLogs.Add( "/* MarkAsHistoryScript */\n" + scriptDeclares + markAsHistoryScript );
+                _personJobStats.SqlLogs.Add( "/* UpdateETLScript */\n" + scriptDeclares + updateETLScript );
+                _personJobStats.SqlLogs.Add( "/* ProcessINSERTScript */\n" + scriptDeclares + processINSERTScript );
 
                 // Move Records To History that have changes in any of fields that trigger history
                 _personJobStats.RowsMarkedAsHistory += DbService.ExecuteCommand( scriptDeclares + markAsHistoryScript, CommandType.Text, null, _commandTimeout );
@@ -916,7 +915,7 @@ WHERE asph.CurrentRowIndicator = 1 AND (";
                 MarkFamilyAsHistoryUsingAttributeValues( familyAnalyticAttributes );
 
                 // run the main spAnalytics_ETL_Family stored proc to take care of all the non-attribute related data
-                var etlResult = DbService.GetDataTable( "EXEC [dbo].[spAnalytics_ETL_Family]", CommandType.Text, null );
+                var etlResult = DbService.GetDataTable( "EXEC [dbo].[spAnalytics_ETL_Family]", CommandType.Text, null, _commandTimeout );
                 if ( etlResult.Rows.Count == 1 )
                 {
                     _familyJobStats.RowsInserted = etlResult.Rows[0]["RowsInserted"] as int? ?? 0;
@@ -930,7 +929,7 @@ WHERE asph.CurrentRowIndicator = 1 AND (";
             {
                 if ( dataMap.GetString( "SaveSQLForDebug" ).AsBoolean() )
                 {
-                    LogSQL( "ProcessAnalyticsDimFamily.sql", _sqlLogs.AsDelimited( "\n" ).ToString() );
+                    LogSQL( "ProcessAnalyticsDimFamily.sql", _familyJobStats.SqlLogs.AsDelimited( "\n" ).ToString() );
                 }
             }
         }
@@ -985,9 +984,9 @@ UPDATE [AnalyticsSourceFamilyHistorical]
                         var parameters = new Dictionary<string, object>();
                         parameters.Add( "@familyAttributeValue", familyAttributeValue );
                         parameters.Add( "@attributeValue", attributeValue );
-                        this._familyJobStats.RowsMarkedAsHistory += DbService.ExecuteCommand( markAsHistorySQL, System.Data.CommandType.Text, parameters );
+                        this._familyJobStats.SqlLogs.Add( parameters.Select( a => $"/* {a.Key} = '{a.Value}' */" ).ToList().AsDelimited( "\n" ) + markAsHistorySQL );
 
-                        _sqlLogs.Add( parameters.Select( a => $"/* {a.Key} = '{a.Value}' */" ).ToList().AsDelimited( "\n" ) + markAsHistorySQL );
+                        this._familyJobStats.RowsMarkedAsHistory += DbService.ExecuteCommand( markAsHistorySQL, System.Data.CommandType.Text, parameters, _commandTimeout );
                     }
                 }
             }
@@ -1019,7 +1018,7 @@ UPDATE [AnalyticsSourceFamilyHistorical]
                 UpdateAnalyticsSchemaForModel( analyticsSourceCampusFields, campusAnalyticAttributes, "AnalyticsSourceCampus", _campusJobStats );
 
                 // run the main spAnalytics_ETL_Campus stored proc to take care of all the non-attribute related data
-                var etlResult = DbService.GetDataTable( "EXEC [dbo].[spAnalytics_ETL_Campus]", CommandType.Text, null );
+                var etlResult = DbService.GetDataTable( "EXEC [dbo].[spAnalytics_ETL_Campus]", CommandType.Text, null, _commandTimeout );
                 if ( etlResult.Rows.Count == 1 )
                 {
                     _campusJobStats.RowsInserted = etlResult.Rows[0]["RowsInserted"] as int? ?? 0;
@@ -1033,7 +1032,7 @@ UPDATE [AnalyticsSourceFamilyHistorical]
             {
                 if ( dataMap.GetString( "SaveSQLForDebug" ).AsBoolean() )
                 {
-                    LogSQL( "ProcessAnalyticsDimCampus.sql", _sqlLogs.AsDelimited( "\n" ).ToString() );
+                    LogSQL( "ProcessAnalyticsDimCampus.sql", _campusJobStats.SqlLogs.AsDelimited( "\n" ).ToString() );
                 }
             }
         }
@@ -1190,6 +1189,11 @@ UPDATE [AnalyticsSourceFamilyHistorical]
             /// The attribute fields updated.
             /// </value>
             public int AttributeFieldsUpdated { get; set; }
+
+            /// <summary>
+            /// The SQL logs
+            /// </summary>
+            public List<string> SqlLogs = new List<string>();
 
             /// <summary>
             /// Gets the summary message.
