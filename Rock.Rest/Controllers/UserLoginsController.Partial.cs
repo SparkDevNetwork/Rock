@@ -56,7 +56,7 @@ namespace Rock.Rest.Controllers
         {
             if ( ( ( UserLoginService ) Service ).GetByUserName( value.UserName ) != null )
             {
-                return ControllerContext.Request.CreateResponse( HttpStatusCode.Conflict, "The User Name already exists." );
+                return ControllerContext.Request.CreateResponse( HttpStatusCode.Conflict, "The username already exists." );
             }
 
             SetPasswordFromRest( value );
