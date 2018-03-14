@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.Entity;
+using System.Data.Entity.Migrations.Infrastructure;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
@@ -180,7 +181,7 @@ namespace RockWeb
                         // If any migrations ran (version was likely updated)
                         try
                         {
-                            Rock.Utility.SparkLinkHelper.SendToSpark();
+                            Rock.Utility.SparkLinkHelper.SendToSpark( rockContext );
                         }
                         catch ( Exception ex )
                         {
@@ -559,9 +560,14 @@ namespace RockWeb
                     LogMessage( APP_LOG_FILENAME, "Migrating Database..." );
                     
                     var lastMigration = pendingMigrations.Last();
-                    
+
+                    // create a logger, but don't enable any of the logs
+                    var migrationLogger = new Rock.Migrations.RockMigrationsLogger() { LogVerbose = false, LogInfo = false, LogWarning = false };
+
+                    var migratorLoggingDecorator = new MigratorLoggingDecorator( migrator, migrationLogger );
+
                     // NOTE: we need to specify the last migration vs null so it won't detect/complain about pending changes
-                    migrator.Update( lastMigration );
+                    migratorLoggingDecorator.Update( lastMigration );
                     result = true;
                 }
 

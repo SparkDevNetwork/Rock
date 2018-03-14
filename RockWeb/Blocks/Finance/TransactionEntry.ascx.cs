@@ -1767,7 +1767,7 @@ TransactionAccountDetails: [
                     }
                     else
                     {
-                        familyGroup = personService.GetFamilies( person.Id ).FirstOrDefault();
+                        familyGroup = person.GetFamily( rockContext );
                     }
                 }
 
@@ -2024,7 +2024,7 @@ TransactionAccountDetails: [
                     }
                     else
                     {
-                        familyGroup = personService.GetFamilies( business.Id ).FirstOrDefault();
+                        familyGroup = business.GetFamily( rockContext );
                     }
                 }
 

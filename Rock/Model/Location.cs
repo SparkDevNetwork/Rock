@@ -549,6 +549,18 @@ namespace Rock.Model
         }
         private double _distance = 0.0D;
 
+        /// <summary>
+        /// Gets the polygon for google maps.
+        /// </summary>
+        /// <value>
+        /// The polygon for google maps.
+        /// </value>
+        [LavaInclude]
+        public virtual string GooglePolygon
+        {
+            get { return EncodeGooglePolygon(); }
+        }
+
         #endregion
 
         #region overrides

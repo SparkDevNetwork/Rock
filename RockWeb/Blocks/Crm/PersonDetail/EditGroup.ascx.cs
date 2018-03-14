@@ -1004,6 +1004,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             confirmExit.Enabled = true;
 
+            gLocations.EditIndex = -1;
+
             BindLocations();
         }
 
@@ -1426,7 +1428,27 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 	                    }
 	
 	                    _group.LoadAttributes();
-	                    Rock.Attribute.Helper.GetEditValues( phGroupAttributes, _group );
+
+                        Dictionary<string, AttributeValueCache> originalGroupAttributes = new Dictionary<string, AttributeValueCache>();
+                        foreach ( var attribute in _group.AttributeValues )
+                        {
+                            originalGroupAttributes.Add( attribute.Key, attribute.Value );
+                        }
+
+                        Rock.Attribute.Helper.GetEditValues( phGroupAttributes, _group );
+
+                        foreach ( var attribute in _group.Attributes.Select( a => a.Value ) )
+                        {
+                            string originalValue = originalGroupAttributes.ContainsKey( attribute.Key ) ? originalGroupAttributes[attribute.Key].Value : string.Empty;
+                            string newValue = _group.AttributeValues.ContainsKey( attribute.Key ) ? _group.AttributeValues[attribute.Key].Value : string.Empty;
+                            if ( newValue != originalValue )
+                            {
+                                string originalFormattedValue = attribute.FieldType.Field.FormatValue( null, originalValue, attribute.QualifierValues, false );
+                                string newFormattedValue = attribute.FieldType.Field.FormatValue( null, newValue, attribute.QualifierValues, false );
+                                History.EvaluateChange( groupChanges, attribute.Key, originalFormattedValue, newFormattedValue );
+                            }
+                        }
+
 	                    _group.SaveAttributeValues( rockContext );
 	
 	                    if ( _isFamilyGroupType )

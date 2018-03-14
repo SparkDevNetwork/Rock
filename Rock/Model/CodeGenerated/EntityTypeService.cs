@@ -70,6 +70,12 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<BackgroundCheck>( Context ).Queryable().Any( a => a.ProcessorEntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, BackgroundCheck.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<BinaryFileType>( Context ).Queryable().Any( a => a.StorageEntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, BinaryFileType.FriendlyTypeName );
@@ -79,12 +85,6 @@ namespace Rock.Model
             if ( new Service<Category>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, Category.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<CommunicationRecipient>( Context ).Queryable().Any( a => a.MediumEntityTypeId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, CommunicationRecipient.FriendlyTypeName );
                 return false;
             }  
  

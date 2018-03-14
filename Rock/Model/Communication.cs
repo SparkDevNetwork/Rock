@@ -410,34 +410,6 @@ namespace Rock.Model
         private ICollection<CommunicationAttachment> _attachments;
 
         /// <summary>
-        /// Gets the <see cref="Rock.Communication.MediumComponent"/> for the communication medium that is being used.
-        /// </summary>
-        /// <value>
-        /// The <see cref="Rock.Communication.MediumComponent"/> for the communication medium that is being used.
-        /// </value>
-        [NotMapped]
-        public virtual List<MediumComponent> Mediums
-        {
-            get
-            {
-                var mediums = new List<MediumComponent>();
-
-                foreach ( var serviceEntry in MediumContainer.Instance.Components )
-                {
-                    var component = serviceEntry.Value.Value;
-                    if ( component.IsActive &&
-                        ( this.CommunicationType == component.CommunicationType ||
-                         this.CommunicationType == CommunicationType.RecipientPreference ) )
-                    {
-                        mediums.Add( component );
-                    }
-                }
-
-                return mediums;
-            }
-        }
-
-        /// <summary>
         /// Gets or sets the data used by the selected communication medium.
         /// </summary>
         /// <value>
@@ -576,6 +548,31 @@ namespace Rock.Model
         #endregion 
 
         #region Public Methods
+
+        /// <summary>
+        /// Gets the <see cref="Rock.Communication.MediumComponent" /> for the communication medium that is being used.
+        /// </summary>
+        /// <returns></returns>
+        /// <value>
+        /// The <see cref="Rock.Communication.MediumComponent" /> for the communication medium that is being used.
+        /// </value>
+        public virtual List<MediumComponent> GetMediums()
+        {
+            var mediums = new List<MediumComponent>();
+
+            foreach ( var serviceEntry in MediumContainer.Instance.Components )
+            {
+                var component = serviceEntry.Value.Value;
+                if ( component.IsActive &&
+                    ( this.CommunicationType == component.CommunicationType ||
+                        this.CommunicationType == CommunicationType.RecipientPreference ) )
+                {
+                    mediums.Add( component );
+                }
+            }
+
+            return mediums;
+        }
 
         /// <summary>
         /// Adds the attachment.
@@ -734,7 +731,7 @@ namespace Rock.Model
         {
             if ( communication != null && communication.Status == CommunicationStatus.Approved )
             {
-                foreach ( var medium in communication.Mediums )
+                foreach ( var medium in communication.GetMediums() )
                 {
                     medium.Send( communication );
                 }
@@ -898,6 +895,12 @@ namespace Rock.Model
         /// Push notification
         /// </summary>
         PushNotification = 3,
+
+        /// <summary>
+        /// Some other communication type
+        /// </summary>
+        [Obsolete("Not Supported")]
+        Other = 4
     }
 
     /// <summary>

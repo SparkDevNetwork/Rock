@@ -145,6 +145,50 @@ namespace Rock.Model
 
         #endregion
 
+        #region Campaign Meta fields
+
+        /// <summary>
+        /// Gets or sets the campaign source.
+        /// </summary>
+        /// <value>
+        /// The source.
+        /// </value>
+        [DataMember]
+        [MaxLength( 25 )]
+        public string Source { get; set; }
+
+        /// <summary>
+        /// Gets or sets the campaign medium.
+        /// </summary>
+        /// <value>
+        /// The medium.
+        /// </value>
+        [DataMember]
+        [MaxLength( 25 )]
+        public string Medium { get; set; }
+
+        /// <summary>
+        /// Gets or sets the campaign name
+        /// </summary>
+        /// <value>
+        /// The campaign.
+        /// </value>
+        [DataMember]
+        [MaxLength( 50 )]
+        public string Campaign { get; set; }
+
+        /// <summary>
+        /// Gets or sets the campaign content.
+        /// </summary>
+        /// <value>
+        /// The content.
+        /// </value>
+        [DataMember]
+        [MaxLength( 50 )]
+        public string Content { get; set; }
+
+        #endregion
+
         #region Virtual Properties
 
         /// <summary>

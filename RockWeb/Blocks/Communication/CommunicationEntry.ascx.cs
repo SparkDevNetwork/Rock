@@ -519,7 +519,10 @@ namespace RockWeb.Blocks.Communication
                         // Using a new context (so that changes in the UpdateCommunication() are not persisted )
                         var testCommunication = communication.Clone( false );
                         testCommunication.Id = 0;
-                        testCommunication.Guid = Guid.Empty;
+                        testCommunication.Guid = Guid.NewGuid();
+                        testCommunication.CreatedByPersonAliasId = this.CurrentPersonAliasId;
+                        testCommunication.CreatedByPersonAlias = new PersonAliasService( rockContext ).Queryable().Where( a => a.Id == this.CurrentPersonAliasId.Value ).Include( a => a.Person ).FirstOrDefault();
+
                         testCommunication.EnabledLavaCommands = GetAttributeValue( "EnabledLavaCommands" );
                         testCommunication.ForeignGuid = null;
                         testCommunication.ForeignId = null;
@@ -529,6 +532,18 @@ namespace RockWeb.Blocks.Communication
                         testCommunication.Status = CommunicationStatus.Approved;
                         testCommunication.ReviewedDateTime = RockDateTime.Now;
                         testCommunication.ReviewerPersonAliasId = CurrentPersonAliasId;
+
+                        foreach ( var attachment in communication.Attachments )
+                        {
+                            var cloneAttachment = attachment.Clone( false );
+                            cloneAttachment.Id = 0;
+                            cloneAttachment.Guid = Guid.NewGuid();
+                            cloneAttachment.ForeignGuid = null;
+                            cloneAttachment.ForeignId = null;
+                            cloneAttachment.ForeignKey = null;
+
+                            testCommunication.Attachments.Add( cloneAttachment );
+                        }
 
                         var testRecipient = new CommunicationRecipient();
                         if ( communication.GetRecipientCount( rockContext ) > 0 )
@@ -546,7 +561,7 @@ namespace RockWeb.Blocks.Communication
                         communicationService.Add( testCommunication );
                         rockContext.SaveChanges();
 
-                        foreach ( var medium in testCommunication.Mediums )
+                        foreach ( var medium in testCommunication.GetMediums() )
                         {
                             medium.Send( testCommunication );
                         }
@@ -786,7 +801,7 @@ namespace RockWeb.Blocks.Communication
 
             CommunicationId = communication.Id;
 
-            var firstMedium = communication.Mediums.FirstOrDefault();
+            var firstMedium = communication.GetMediums().FirstOrDefault();
             if ( firstMedium != null && firstMedium.EntityType != null )
             {
                 MediumEntityTypeId = firstMedium.EntityType.Id;
@@ -1285,7 +1300,7 @@ namespace RockWeb.Blocks.Communication
             // add any new attachments that were added
             foreach ( var attachmentBinaryFileId in CommunicationData.EmailAttachmentBinaryFileIds.Where( a => !communication.Attachments.Any( x => x.BinaryFileId == a ) ) )
             {
-                communication.Attachments.Add( new CommunicationAttachment { BinaryFileId = attachmentBinaryFileId } );
+                communication.AddAttachment( new CommunicationAttachment { BinaryFileId = attachmentBinaryFileId }, CommunicationType.Email );
             }
 
             DateTime? futureSendDate = dtpFutureSend.SelectedDateTime;
