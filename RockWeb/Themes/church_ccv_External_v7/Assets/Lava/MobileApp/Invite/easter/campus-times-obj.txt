@@ -1,0 +1,223 @@
+//THIS GOES IN THE "CONTENT OBJECT" FIELD OF THE "INVITE ENTRY - MOBILE" BLOCK
+[
+  {
+    "Name": "Anthem",
+    "ShortCode": "ATH",
+    "Address1": "39905 N Gavilan Peak Pkwy",
+    "Address2": "Anthem, AZ 85086",
+    "Services": [
+      {
+        "Date": "Friday 3/30",
+        "Times": [
+          "5:30 pm"
+        ]
+      },
+      {
+        "Date": "Saturday 3/31",
+        "Times": [
+          "4:30 pm",
+          "6:00 pm"
+        ]
+      },
+      {
+        "Date": "Sunday 4/1",
+        "Times": [
+          "7:00 am",
+          "8:30 am special",
+          "10:00 am special",
+          "11:30 am"
+        ]
+      }
+    ]
+  },
+  {
+    "Name": "Avondale",
+    "ShortCode": "AVD",
+    "Address1": "1565 N 113th Ave",
+    "Address2": "Avondale, AZ 85392",
+    "Services": [
+      {
+        "Date": "Friday 3/30",
+        "Times": [
+          "5:30 pm"
+        ]
+      },
+      {
+        "Date": "Saturday 3/31",
+        "Times": [
+          "3:00 pm",
+		  "4:30 pm special",
+          "6:00 pm special"
+        ]
+      },
+      {
+        "Date": "Sunday 4/1",
+        "Times": [
+          "6:30 am",
+          "9:00 am",
+          "10:30 am special",
+          "12:00 pm special"
+        ]
+      }
+    ]
+  },
+  {
+    "Name": "Chandler",
+    "ShortCode": "CHD",
+    "Address1": "5835 W Ray Rd",
+    "Address2": "Chandler, AZ 85226",
+    "Services": [
+      {
+        "Date": "Sunday 4/1",
+        "Times": [
+          "6:30 am",
+          "9:00 am",
+          "10:30 am special"
+        ]
+      }
+    ]
+  },
+  {
+    "Name": "East Valley",
+    "ShortCode": "EAV",
+    "Address1": "1330 S Crismon Rd",
+    "Address2": "Mesa, AZ 85209",
+    "Services": [
+      {
+        "Date": "Friday 3/30",
+        "Times": [
+          "5:30 pm"
+        ]
+      },
+      {
+        "Date": "Saturday 3/31",
+        "Times": [
+		  "4:30 pm",
+          "6:00 pm special"
+        ]
+      },
+      {
+        "Date": "Sunday 4/1",
+        "Times": [
+          "6:30 am",
+          "9:00 am",
+          "10:30 am"
+        ]
+      }
+    ]
+  },
+  {
+    "Name": "Midtown Phoenix",
+    "ShortCode": "MID",
+    "Address1": "2005 E Indian School Rd",
+    "Address2": "Phoenix, AZ 85016",
+    "Services": [
+      {
+        "Date": "Saturday 3/31",
+        "Times": [
+		  "4:30 pm"
+        ]
+      },
+      {
+        "Date": "Sunday 4/1",
+        "Times": [
+          "6:30 am",
+          "9:00 am special",
+          "10:30 am special"
+        ]
+      }
+    ]
+  },
+  {
+    "Name": "Peoria",
+    "ShortCode": "PEO",
+    "Address1": "7007 W Happy Valley Rd",
+    "Address2": "Peoria, AZ 85383",
+    "Services": [
+      {
+        "Date": "Friday 3/30",
+        "Times": [
+          "5:30 pm special"
+        ]
+      },
+      {
+        "Date": "Saturday 3/31",
+        "Times": [
+          "3:00 pm special",
+		  "4:30 pm special",
+          "6:00 pm special hearing"
+        ]
+      },
+      {
+        "Date": "Sunday 4/1",
+        "Times": [
+          "6:30 am",
+          "9:00 am special",
+          "10:30 am special",
+          "12:00 pm special"
+        ]
+      }
+    ]
+  },
+  {
+    "Name": "Scottsdale",
+    "ShortCode": "SCO",
+    "Address1": "19030 N Pima Rd",
+    "Address2": "Scottsdale, AZ 85255",
+    "Services": [
+      {
+        "Date": "Friday 3/30",
+        "Times": [
+          "5:30 pm"
+        ]
+      },
+      {
+        "Date": "Saturday 3/31",
+        "Times": [
+		  "4:30 pm",
+          "6:00 pm"
+        ]
+      },
+      {
+        "Date": "Sunday 4/1",
+        "Times": [
+          "6:30 am",
+          "9:00 am special",
+          "11:00 am"
+        ]
+      }
+    ]
+  },
+  {
+    "Name": "Surprise",
+    "ShortCode": "SUR",
+    "Address1": "14787 W Cholla St",
+    "Address2": "Surprise, AZ 85379",
+    "Services": [
+      {
+        "Date": "Friday 3/30",
+        "Times": [
+          "5:30 pm special"
+        ]
+      },
+      {
+        "Date": "Saturday 3/31",
+        "Times": [
+          "3:00 pm special",
+		  "4:30 pm special",
+          "6:00 pm special"
+        ]
+      },
+      {
+        "Date": "Sunday 4/1",
+        "Times": [
+          "6:30 am",
+          "8:30 am special",
+          "10:00 am special hearing",
+          "11:30 am special",
+		  "1:00 pm special"
+        ]
+      }
+    ]
+  }
+]
