@@ -1,15 +1,5 @@
 <div class="row">
-  <div class="col-md-8 col-md-push-4">
-    {% if Event.Photo.Guid %}
-      <center>
-        <img src="/GetImage.ashx?Guid={{ Event.Photo.Guid }}" class="title-image img-responsive"></img>
-      </center>
-    {% endif %}
-
-    <h1>{{Event.Name}}</h1>
-    {{Event.Description}}
-  </div>
-  <div class="col-md-4 col-md-pull-8">
+  <div class="col-md-4">
     <div class="well">
       {% assign linkage = EventItemOccurrence.Linkages | First %}
 
@@ -103,5 +93,15 @@
       </li>
     </ul>
 
+  </div>
+  <div class="col-md-8">
+    {% if Event.Photo.Guid %}
+    <center>
+      <img src="/GetImage.ashx?Guid={{ Event.Photo.Guid }}" class="title-image img-responsive"></img>
+    </center>
+    {% endif %}
+
+    <h1>{{Event.Name}}</h1>
+    {{Event.Description}}
   </div>
 </div>
