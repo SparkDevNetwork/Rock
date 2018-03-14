@@ -840,6 +840,22 @@ namespace Rock.Lava
             }
         }
 
+        /// <summary>
+        /// Sanitizes a SQL string by replacing any occurrences of "'" with "''".
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns>Sanitized string that can be used in a SQL statement.</returns>
+        /// <example>{% sql %}SELECT * FROM [Person] WHERE [LastName] = '{{ Name | SanitizeSql }}'{% endsql %}</example>
+        public static string SanitizeSql( string input )
+        {
+            if ( input == null )
+            {
+                return input;
+            }
+
+            return input.Replace( "'", "''" );
+        }
+
         #endregion
 
         #region DateTime Filters
