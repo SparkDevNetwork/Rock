@@ -766,6 +766,7 @@
     <Compile Include="Lava\LavaHelper.cs" />
     <Compile Include="Lava\LavaSupportLevel.cs" />
     <Compile Include="Lava\LegacyLavaSyntaxDetectedException.cs" />
+    <Compile Include="Lava\LegacyLavaUpdater.cs" />
     <Compile Include="Lava\RockFilters.cs" />
     <Compile Include="Lava\Shortcodes\DynamicShortcodeBlock.cs" />
     <Compile Include="Lava\Shortcodes\DynamicShortcodeInline.cs" />
