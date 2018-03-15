@@ -2,7 +2,7 @@ name: "Rock"
 tasks:
   bower:
     "../":
-      "rock-themes": "NewSpring/rock-themes"
+      # "rock-themes": "NewSpring/rock-themes"
       "rock-workflows": "NewSpring/rock-workflows"
       "rock-cybersource": "NewSpring/rock-cybersource"
       "rock-attended-checkin": "NewSpring/rock-attended-checkin"
