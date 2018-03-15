@@ -38,7 +38,7 @@ namespace Rock.Plugin.HotFixes
             // Added to core migration: 201803131953247_AddDataAutomation
 
             // Data Automation Settings
-//            RockMigrationHelper.AddPage( true, "84FD84DF-F58B-4B9D-A407-96276C40AB7E", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Data Automation", "Configure how the data automation job should update your data.", "A2D5F989-1E30-47B9-AAFC-F7EC627AFF21", "fa fa-tachometer" ); // Site:Rock RMS
+//            RockMigrationHelper.AddPage( true, "84FD84DF-F58B-4B9D-A407-96276C40AB7E", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Data Integrity Settings", "Configure how the data automation job should update your data.", "A2D5F989-1E30-47B9-AAFC-F7EC627AFF21", "fa fa-tachometer" ); // Site:Rock RMS
 //            RockMigrationHelper.UpdateBlockType( "Data Automation Settings", "Block used to set values specific to data automation (NCOA, Updating Person Status, Family Campus, Etc).", "~/Blocks/Administration/DataAutomationSettings.ascx", "Administration", "E34C45E9-97CA-4902-803B-1EFAC9174083" );
 //            RockMigrationHelper.AddBlock( true, "A2D5F989-1E30-47B9-AAFC-F7EC627AFF21", "", "E34C45E9-97CA-4902-803B-1EFAC9174083", "Data Automation Settings", "Main", @"", @"", 0, "AD705C56-1451-4FD6-BDC3-66072F54034D" );
 

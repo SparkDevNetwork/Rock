@@ -34,12 +34,16 @@ namespace Rock.Utility.Settings.DataAutomation
             IsAttendanceInServiceGroupEnabled = true;
             AttendanceInServiceGroupPeriod = 90;
 
+            IsAttendanceInGroupTypeEnabled = true;
             AttendanceInGroupTypeDays = 90;
 
             IsPrayerRequestEnabled = true;
             PrayerRequestPeriod = 90;
 
+            IsPersonAttributesEnabled = true;
             PersonAttributesDays = 90;
+
+            IsInteractionsEnabled = true;
         }
 
         /// <summary>

@@ -172,7 +172,7 @@ namespace Rock.Utility.Settings.DataAutomation
         /// <value>
         /// The based on.
         /// </value>
-        public CampusCriteria BasedOn { get; set; }
+        public CampusCriteria? BasedOn { get; set; }
     }
     
 }
