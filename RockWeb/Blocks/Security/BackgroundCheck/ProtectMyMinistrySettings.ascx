@@ -14,7 +14,6 @@
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-shield"></i> Protect My Ministry</h1>
                 <div class="panel-labels">
-                    <Rock:HighlightLabel ID="hlMode" runat="server" LabelType="Type" />
                     <Rock:HighlightLabel ID="hlActive" runat="server" />
                 </div>
 
