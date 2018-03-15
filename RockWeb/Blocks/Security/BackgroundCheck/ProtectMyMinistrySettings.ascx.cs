@@ -380,7 +380,6 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         /// </summary>
         public void ShowNew()
         {
-            hlMode.Visible = false;
             hlActive.Visible = false;
 
             imgPromotion.ImageUrl = PROMOTION_IMAGE_URL;
@@ -418,7 +417,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
             }
 
             nbSSLWarning.Visible = !GetSettingValue( settings, "ReturnURL" ).StartsWith( "https://" );
-            nbSSLWarning.NotificationBoxType = GetSettingValue( settings, "TestMode" ).AsBoolean() ? NotificationBoxType.Warning : NotificationBoxType.Danger;
+            nbSSLWarning.NotificationBoxType = NotificationBoxType.Warning;
 
             pnlNew.Visible = false;
             pnlViewDetails.Visible = true;
@@ -546,11 +545,6 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         /// <param name="settings">The settings.</param>
         public void ShowHighlightLabels( List<AttributeValue> settings )
         {
-            bool testMode = GetSettingValue( settings, "TestMode" ).AsBoolean();
-            hlMode.LabelType = testMode ? LabelType.Primary : LabelType.Success;
-            hlMode.Text = testMode ? "In Test Mode" : "In Live Mode";
-            hlMode.Visible = true;
-
             bool active = GetSettingValue( settings, "Active" ).AsBoolean();
             hlActive.LabelType = active ? LabelType.Success : LabelType.Danger;
             hlActive.Text = active ? "Active" : "Inactive";
