@@ -31,6 +31,7 @@ using Rock.Web.Cache;
 
 namespace Rock.Model
 {
+
     /// <summary>
     /// Represents a communication in Rock (i.e. email, SMS message, etc.).
     /// </summary>
