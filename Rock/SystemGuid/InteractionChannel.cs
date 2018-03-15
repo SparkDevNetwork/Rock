@@ -36,5 +36,10 @@ namespace Rock.SystemGuid
         /// Interaction Channel GUID for wifi presence
         /// </summary>
         public const string WIFI_PRESENCE = "23888303-4847-4C80-93E2-4C5EB8029D18";
+
+        /// <summary>
+        /// Interaction Channel GUID for short links
+        /// </summary>
+        public const string SHORT_LINKS = "AEFF9B52-AE61-8EBB-4F43-37C152342076";
     }
 }

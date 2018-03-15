@@ -26,6 +26,8 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:RockTextBox runat=server></{0}:RockTextBox>" )]
     public class RockTextBox : TextBox, IRockControl, IDisplayRequiredIndicator
     {
+        private RegularExpressionValidator _regexValidator;
+
         #region IRockControl implementation
 
         /// <summary>
@@ -178,7 +180,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return !Required || RequiredFieldValidator == null || RequiredFieldValidator.IsValid;
+                return ( !Required || RequiredFieldValidator == null || RequiredFieldValidator.IsValid ) && !( this.MaxLength != 0 && this.MaxLength < this.Text.Length );
             }
         }
 
@@ -223,6 +225,10 @@ namespace Rock.Web.UI.Controls
                 {
                     RequiredFieldValidator.ValidationGroup = value;
                 }
+                if ( _regexValidator != null )
+                {
+                    _regexValidator.ValidationGroup = value;
+                }
             }
         }
 
@@ -239,8 +245,8 @@ namespace Rock.Web.UI.Controls
         [
         Bindable( false ),
         Category( "Appearance" ),
-        DefaultValue(""),
-        Description("Text that appears prepended to the front of the text box.")
+        DefaultValue( "" ),
+        Description( "Text that appears prepended to the front of the text box." )
         ]
         public string PrependText
         {
@@ -315,6 +321,19 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether to show the count down
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [show count down]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowCountDown
+        {
+            get { return ViewState["ShowCountDown"] as bool? ?? false; }
+            set { ViewState["ShowCountDown"] = value; }
+        }
+
+
         #endregion
 
         private HiddenField _hfDisableVrm;
@@ -335,12 +354,20 @@ namespace Rock.Web.UI.Controls
         {
             base.CreateChildControls();
             Controls.Clear();
-            RockControlHelper.CreateChildControls(this, Controls);
+            RockControlHelper.CreateChildControls( this, Controls );
 
             _hfDisableVrm = new HiddenField();
             _hfDisableVrm.ID = this.ID + "_dvrm";
             _hfDisableVrm.Value = "True";
             Controls.Add( _hfDisableVrm );
+
+            _regexValidator = new RegularExpressionValidator();
+            _regexValidator.ID = this.ID + "_LengthRE";
+            _regexValidator.ControlToValidate = this.ID;
+            _regexValidator.Display = ValidatorDisplay.Dynamic;
+            _regexValidator.CssClass = "validation-error help-inline";
+            _regexValidator.Enabled = false;
+            Controls.Add( _regexValidator );
         }
 
         /// <summary>
@@ -350,6 +377,7 @@ namespace Rock.Web.UI.Controls
         protected override void OnLoad( System.EventArgs e )
         {
             base.OnLoad( e );
+
             if ( this.Page.IsPostBack && this.TextMode == TextBoxMode.Password )
             {
                 Password = this.Text;
@@ -364,6 +392,13 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Visible )
             {
+                if ( this.MaxLength != 0  && this.ShowCountDown)
+                {
+                    writer.AddAttribute( "class", "pull-right badge" );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Id, this.ClientID + "_em" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Em );
+                    writer.RenderEndTag();
+                }
                 RockControlHelper.RenderControl( this, writer );
             }
         }
@@ -395,13 +430,13 @@ namespace Rock.Web.UI.Controls
             if ( renderInputGroup )
             {
                 writer.AddAttribute( "class", "input-group " + cssClass );
-                if (this.Style[HtmlTextWriterStyle.Display] == "none")
+                if ( this.Style[HtmlTextWriterStyle.Display] == "none" )
                 {
                     // render the display:none in the inputgroup div instead of the control itself
                     writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
                     this.Style[HtmlTextWriterStyle.Display] = string.Empty;
                 }
-                
+
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 this.CssClass = string.Empty;
@@ -415,8 +450,8 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
             }
 
-            ( (WebControl)this ).AddCssClass( "form-control" );
-            if (!string.IsNullOrWhiteSpace(Placeholder))
+            ( ( WebControl ) this ).AddCssClass( "form-control" );
+            if ( !string.IsNullOrWhiteSpace( Placeholder ) )
             {
                 this.Attributes["placeholder"] = Placeholder;
             }
@@ -425,6 +460,7 @@ namespace Rock.Web.UI.Controls
             {
                 _hfDisableVrm.RenderControl( writer );
             }
+
             base.RenderControl( writer );
 
             if ( !string.IsNullOrWhiteSpace( AppendText ) )
@@ -441,9 +477,23 @@ namespace Rock.Web.UI.Controls
                 this.CssClass = cssClass;
             }
 
-            RenderDataValidator( writer );
+            if ( _regexValidator != null )
+            {
+                RenderDataValidator( writer );
+            }
+
+            if ( this.MaxLength != 0 && this.ShowCountDown )
+            {
+                string scriptFormat = string.Format( @"
+        $('#{0}').limit({{maxChars: {1}, counter:'#{2}', normalClass:'badge', warningClass:'badge-warning', overLimitClass: 'badge-danger'}});
+        
+", this.ClientID, this.MaxLength, this.ClientID + "_em" );
+                ScriptManager.RegisterStartupScript( this, this.GetType(), "MaxLengthScript_" + this.ClientID, scriptFormat, true );
+            }
+
 
         }
+
 
         /// <summary>
         /// Renders any data validator.
@@ -451,6 +501,14 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         protected virtual void RenderDataValidator( HtmlTextWriter writer )
         {
+            if ( this.MaxLength != 0 && this.TextMode == TextBoxMode.MultiLine )
+            {
+                _regexValidator.Enabled = true;
+                _regexValidator.ValidationExpression = @"^((.|\n){0," + this.MaxLength.ToString() + "})$";
+                _regexValidator.ErrorMessage = Rock.Constants.WarningMessage.TextLengthInvalid( this.Label, this.MaxLength );
+                _regexValidator.ValidationGroup = this.ValidationGroup;
+                _regexValidator.RenderControl( writer );
+            }
         }
 
         /// <summary>
