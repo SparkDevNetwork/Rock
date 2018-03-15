@@ -1,12 +1,38 @@
+{% comment %} {% include '~~/Assets/Lava/MyDashboard/NextStepsNav.lava' %} {% endcomment %}
 
-
-<div class="circle-container">
-    <a href="#" class="center">1</a>
-    <a href="#" class="deg22-5">2</a>
-    <a href="#" class="deg45">3</a>
-    <a href="#" class="deg67-5">4</a>
-    <a href="#" class="deg90">5</a>
-    <a href="#" class="deg112-5">6</a>
-    <a href="#" class="deg135">7</a>
-    <a href="#" class="deg157.5">8</a>
+<div class="next-steps-nav">
+    <div class="outer-circle">
+        <a href="#" class="outer-circle-link hidden deg188"><img src='~~/Assets/Images/dashboard/Icon-NxSteps-StartingPoint-Inactive@2x.png'></a>
+        <a href="#" class="outer-circle-link hidden deg209-5"><img src='~~/Assets/Images/dashboard/Icon-NxSteps-Baptism-Inactive@2x.png'></a>
+        <a href="#" class="outer-circle-link hidden deg233"><img src='~~/Assets/Images/dashboard/Icon-NxSteps-Worship-Inactive@2x.png'></a>
+        <a href="#" class="outer-circle-link hidden deg257-5"><img src='~~/Assets/Images/dashboard/Icon-NxSteps-Connect-Inactive@2x.png'></a>
+        <a href="#" class="outer-circle-link hidden deg282-5"><img src='~~/Assets/Images/dashboard/Icon-NxSteps-Serve-Inactive@2x.png'></a>
+        <a href="#" class="outer-circle-link hidden deg307"><img src='~~/Assets/Images/dashboard/Icon-NxSteps-Give-Inactive@2x.png'></a>
+        <a href="#" class="outer-circle-link hidden deg330-5"><img src='~~/Assets/Images/dashboard/Icon-NxSteps-Share-Inactive@2x.png'></a>
+        <a href="#" class="outer-circle-link hidden deg352"><img src='~~/Assets/Images/dashboard/Icon-NxSteps-Coach-Inactive@2x.png'></a>
+    </div>
+    <div class="inner-circle">
+        <a href="#" onClick="toggleNextStepsMenu(); return false;">
+            <div class="inner-circle-text">
+                <span><svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path></svg></span>
+                <span>My Next Steps</span>
+            </div>
+        </a>
+    </div>
 </div>
+
+<script>
+    // hidden is used to prevent steps icons from displaying in front of dashboard cards on load
+    $( document ).ready(function() {
+        $('.outer-circle-link').toggleClass('hidden');
+    });
+    // .5s after page load, trigger the toggleNextStepsMenu animation
+    $( window ).on('load', function() {
+        setTimeout(function() {
+        toggleNextStepsMenu();
+        }, 500);
+    });
+    function toggleNextStepsMenu() {
+        $('.outer-circle-link').toggleClass('outer-circle-link-open');
+    };
+</script>

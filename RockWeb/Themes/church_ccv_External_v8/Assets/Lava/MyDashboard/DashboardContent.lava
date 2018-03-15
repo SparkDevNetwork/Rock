@@ -1,0 +1,18 @@
+{% comment %} Content file for Dashboard {% endcomment %}
+{% comment %} {% include '~~/Assets/Lava/MyDashboard/DashboardContent.lava' %} {% endcomment %}
+
+{% comment %} Morning {% endcomment %}
+{% assign morningGreeting = "Good Morning, " %}
+{% assign morningMessage = "You're an early riser" %}
+
+{% comment %} Afternoon {% endcomment %}
+{% assign afternoonGreeting = "Good Afternoon, " %}
+{% assign afternoonMessage = "Hope your day is going great! Thanks for making God and faith a priority." %}
+
+{% comment %} Evening {% endcomment %}
+{% assign eveningGreeting = "Good Evening, " %}
+{% assign eveningMessage = "What a day! Thanks for making God and faith a priority." %}
+
+{% comment %} Late Night {% endcomment %}
+{% assign nightGreeting = "Hello, " %}
+{% assign nightMessage = "Or should we call you night owl? Thanks for making God and faith a priority." %}

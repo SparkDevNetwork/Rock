@@ -1,3 +1,158 @@
+/* Dasboard Page */
+.page-background {   
+    background-color: #EBEBEB;
+    margin: auto;
+}
+
+.page-background-morning {  
+    background: url("/Themes/church_ccv_External_v8/Assets/Images/dashboard-hero.jpg") no-repeat fixed;
+    background-color: #EBEBEB;
+    background-position: center top;
+    background-size: cover;
+}
+
+.page-background-afternoon {  
+    background: url("/Themes/church_ccv_External_v8/Assets/Images/dashboard-hero.jpg") no-repeat fixed;
+    background-color: #EBEBEB;
+    background-position: center top;
+    background-size: cover;
+}
+
+.page-background-evening {  
+    background: url("/Themes/church_ccv_External_v8/Assets/Images/dashboard-hero.jpg") no-repeat fixed;
+    background-color: #EBEBEB;
+    background-position: center top;
+    background-size: cover;
+}
+
+.page-background-night {  
+    background: url("/Themes/church_ccv_External_v8/Assets/Images/dashboard-hero.jpg") no-repeat fixed;
+    background-color: #EBEBEB;
+    background-position: center top;
+    background-size: cover;
+}
+
+#subnavbar-bg {
+    background-color: #EBEBEB;
+}
+
+
+/* Dashboard Title */
+
+.title-container {
+    margin-top: 76px;
+}
+
+.title-greeting {
+    text-align: center; 
+    color: #FFFFFF; 
+    font-family: akrobat; 
+    font-weight: 900; 
+    font-size: 60px
+}
+
+.title-message {
+    text-align: center; 
+    color: #FFFFFF; 
+    font-size: 18px; 
+    font-family: heebo; 
+    font-weight: normal;
+}
+
+/* End Dashboard Title */
+
+/* NextSteps Nav */
+
+.next-steps-nav {
+    height: 210px;
+}
+
+.outer-circle {
+    bottom: 0;
+    left: 35%;
+    width: 410px;
+    height: 210px;
+    padding: 42px; /* 42px = 30px*1.4 (30px = half the width of a link with img, 1.4 = sqrt(2)) */
+    margin: 0 auto;
+}
+
+.outer-circle-link {
+    display: block;
+    position: absolute;
+    bottom: -50%; 
+    left: 50%;
+    width: 60px; 
+    height: 60px;
+    margin: -2em;
+    opacity: 0;
+    transition-property: all;
+    transition-duration: .5s;
+    transition-timing-function: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.outer-circle-link-open {
+    bottom: 5%;
+    opacity: 1;
+}
+
+.outer-circle img { 
+    display: block; 
+    width: 60px;
+    height: 60px; 
+}
+
+/* Degree rotations for outer circle steps icons */
+.deg188 { transform: rotate(188deg) translate(175px) rotate(-188deg) }
+.deg209-5 { transform: rotate(209.5deg) translate(160px) rotate(-209.5deg); }
+.deg233 { transform: rotate(233deg) translate(155px) rotate(-233deg); }
+.deg257-5 { transform: rotate(257.5deg) translate(150px) rotate(-257.5deg); }
+.deg282-5 { transform: rotate(282.5deg) translate(150px) rotate(-282.5deg); }
+.deg307 { transform: rotate(307deg) translate(155px) rotate(-307deg); }
+.deg330-5 { transform: rotate(330.5deg) translate(160px) rotate(-330.5deg); }
+.deg352 { transform: rotate(352deg) translate(175px) rotate(-352deg); }
+
+.inner-circle {
+    background-color: #EBEBEB;
+    position: relative;
+    width: 200px;
+    height: 210px;
+    border-radius: 50%;
+    margin: 0 auto;
+    margin-top: -100px;
+    z-index: .5;
+}
+
+.inner-circle-text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.inner-circle-text svg {
+    display: inline-block; 
+    color: rgba(0, 0, 0, 0.87); 
+    fill: #7A1315; 
+    height: 40px; 
+    width: 40px; 
+    user-select: none; 
+    transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms; 
+    transform: rotate(270deg);
+    vertical-align: middle; 
+    margin-top: 20px;
+}
+
+.inner-circle a {
+    font-family: akrobat;
+    color: #7A1315;
+    font-size: 18px;
+    text-transform: uppercase;
+    text-decoration: none;
+}
+
+/* End Next Steps Nav */
+
+/* Dashboard Card */
+
 .dashboard-row {
     margin-top: 40px;
 }
@@ -134,11 +289,13 @@
 }
 
 .item-content a {
-    color: rgb(122, 19, 21);
+    color: #7A1315;
     text-transform: uppercase; 
-    font-family: Akrobat; 
+    font-family: akrobat; 
     font-weight: bold;
 }
+
+/* End Dashboard Card */
 
 /* Group Card */
 .group-header {
@@ -153,9 +310,9 @@
 
 .group-header a {
     display: inline-block; 
-    font-family: Akrobat;
+    font-family: akrobat;
     font-size: 16px; 
-    color: rgb(122, 19, 21); 
+    color: #7A1315; 
     transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms; 
     overflow: hidden; 
     text-transform: uppercase;
@@ -178,7 +335,7 @@
 .group-header a svg {
     display: inline-block; 
     color: rgba(0, 0, 0, 0.87); 
-    fill: rgb(122, 19, 21); 
+    fill: #7A1315; 
     height: 24px; 
     width: 24px; 
     user-select: none; 
@@ -217,7 +374,6 @@
     align-items: center;
 }
 
-/* Add Group member Panel in Group Panel */
 #pnlAddGroupMember .content {
     padding: 15px 15px 0 15px;
 }
@@ -226,8 +382,10 @@
     width: 100%;
 }
 
+/* End Group Card */
 
-/* Call To Action Info Panel */
+/* Call To Action Info Card */
+
 .info-card {
     display: flex;
     flex-direction: column;
@@ -248,7 +406,7 @@
     display: flex; 
     flex-direction: column; 
     padding: 10px 16px; 
-    font-family: Akrobat; 
+    font-family: akrobat; 
     font-weight: bold; 
     text-transform: uppercase;
 }
@@ -282,13 +440,13 @@
 
 .info-card .link a {
     display: inline-block; 
-    font-family: Akrobat;
+    font-family: akrobat;
     font-size: 16px; 
     margin: 0px 8px 0px 0px; 
     height: 55px; 
     line-height: 55px; 
     min-width: 88px; 
-    color: rgb(122, 19, 21); 
+    color: #7A1315; 
     transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms; 
     overflow: hidden; 
     text-transform: uppercase;
@@ -307,7 +465,7 @@
 .info-card .link a svg {
     display: inline-block; 
     color: rgba(0, 0, 0, 0.87); 
-    fill: rgb(122, 19, 21); 
+    fill: #7A1315; 
     height: 24px; 
     width: 24px; 
     user-select: none; 
@@ -317,5 +475,4 @@
     margin-right: 12px;
 }
 
-
-
+/* End Call To Action Info Card */
