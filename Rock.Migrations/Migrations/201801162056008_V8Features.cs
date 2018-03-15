@@ -307,7 +307,7 @@ namespace Rock.Migrations
 </div>";
             Sql( string.Format( @"UPDATE [GroupType] SET [GroupViewLavaTemplate] = '{0}'", lavaTemplate.Replace( "'", "''" ) ) );
 
-            Rock.Web.SystemSettings.SetValue( "core_templates_GroupViewTemplate", lavaTemplate );
+            RockMigrationHelper.UpdateSystemSetting( "core_templates_GroupViewTemplate", lavaTemplate );
 
             #endregion
 
