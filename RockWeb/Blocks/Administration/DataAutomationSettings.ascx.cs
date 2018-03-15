@@ -83,6 +83,7 @@ namespace RockWeb.Blocks.Administration
             {
                 BindControls();
                 GetSettings();
+                SetPanels();
             }
             else
             {
@@ -177,44 +178,21 @@ namespace RockWeb.Blocks.Administration
                 {
                     ddlCampusAttendanceOrGiving.SetValue( ignoreCampusChangeRow.CampusCriteria.ConvertToInt() );
                 }
+                else
+                {
+                    ddlCampusAttendanceOrGiving.SetValue( string.Empty );
+                }
             }
         }
 
         /// <summary>
-        /// Handles the CheckedChanged event of the cbReactivatePeople control.
+        /// Handles the CheckedChanged event when enabling/disabling a data automation option.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void cbReactivatePeople_CheckedChanged( object sender, EventArgs e )
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void cbDataAutomationEnabled_CheckedChanged( object sender, EventArgs e )
         {
-            pnlReactivatePeople.Enabled = cbReactivatePeople.Checked;
-        }
-        /// <summary>
-        /// Handles the CheckedChanged event of the cbInactivatePeople control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void cbInactivatePeople_CheckedChanged( object sender, EventArgs e )
-        {
-            pnlInactivatePeople.Enabled = cbInactivatePeople.Checked;
-        }
-        /// <summary>
-        /// Handles the CheckedChanged event of the cbCampusUpdate control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void cbCampusUpdate_CheckedChanged( object sender, EventArgs e )
-        {
-            pnlCampusUpdate.Enabled = cbCampusUpdate.Checked;
-        }
-        /// <summary>
-        /// Handles the CheckedChanged event of the cbAdultChildren control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void cbAdultChildren_CheckedChanged( object sender, EventArgs e )
-        {
-            pnlAdultChildren.Enabled = cbAdultChildren.Checked;
+            SetPanels();
         }
 
         #endregion
@@ -236,7 +214,6 @@ namespace RockWeb.Blocks.Administration
 
             rlbAttendanceInGroupType.DataSource = groupTypes;
             rlbAttendanceInGroupType.DataBind();
-
 
             rlbNoAttendanceInGroupType.DataSource = groupTypes;
             rlbNoAttendanceInGroupType.DataBind();
@@ -262,6 +239,31 @@ namespace RockWeb.Blocks.Administration
                 rpParentRelationship.GroupTypeId = knownRelGroupType.Id;
                 rpSiblingRelationship.GroupTypeId = knownRelGroupType.Id;
             }
+        }
+
+        /// <summary>
+        /// Enables the data automation panels and sets the titles.
+        /// </summary>
+        private void SetPanels()
+        {
+            SetPanel( pwReactivatePeople, pnlReactivatePeople, "Reactivate People", cbReactivatePeople.Checked );
+            SetPanel( pwInactivatePeople, pnlInactivatePeople, "Inactivate People", cbInactivatePeople.Checked );
+            SetPanel( pwUpdateCampus, pnlCampusUpdate, "Update Family Campus", cbCampusUpdate.Checked );
+            SetPanel( pwAdultChildren, pnlAdultChildren, "Move Adult Children", cbAdultChildren.Checked );
+        }
+
+        /// <summary>
+        /// Enables a data automation panel and sets the title.
+        /// </summary>
+        /// <param name="panelWidget">The panel widget.</param>
+        /// <param name="panel">The panel.</param>
+        /// <param name="title">The title.</param>
+        /// <param name="enabled">if set to <c>true</c> [enabled].</param>
+        private void SetPanel( PanelWidget panelWidget, Panel panel, string title, bool enabled )
+        {
+            panel.Enabled = enabled;
+            string enabledStr = enabled ? "Enabled" : "Disabled";
+            panelWidget.Title = string.Format( "{0} ({1})", title, enabledStr );
         }
 
         /// <summary>
@@ -308,12 +310,13 @@ namespace RockWeb.Blocks.Administration
             var reactivateChannelTypes = interactionChannels.Select( c => new InteractionItem( c.Guid, c.Name ) ).ToList();
             if ( _reactivateSettings.Interactions != null )
             {
+                bool noneSelected = !_reactivateSettings.Interactions.Any( i => i.IsInteractionTypeEnabled );
                 foreach ( var settingInteractionItem in _reactivateSettings.Interactions )
                 {
                     var interactionChannelType = reactivateChannelTypes.SingleOrDefault( a => a.Guid == settingInteractionItem.Guid );
                     if ( interactionChannelType != null )
                     {
-                        interactionChannelType.IsInteractionTypeEnabled = settingInteractionItem.IsInteractionTypeEnabled;
+                        interactionChannelType.IsInteractionTypeEnabled = noneSelected || settingInteractionItem.IsInteractionTypeEnabled;
                         interactionChannelType.LastInteractionDays = settingInteractionItem.LastInteractionDays;
                     }
                 }
@@ -326,8 +329,6 @@ namespace RockWeb.Blocks.Administration
             pnlInactivatePeople.Enabled = _inactivateSettings.IsEnabled;
             cbNoLastContribution.Checked = _inactivateSettings.IsNoLastContributionEnabled;
             nbNoLastContribution.Text = _inactivateSettings.NoLastContributionPeriod.ToStringSafe();
-            cbNoAttendanceInServiceGroup.Checked = _inactivateSettings.IsNoAttendanceInServiceGroupEnabled;
-            nbNoAttendanceInServiceGroup.Text = _inactivateSettings.NoAttendanceInServiceGroupPeriod.ToStringSafe();
             cbNoAttendanceInGroupType.Checked = _inactivateSettings.IsNoAttendanceInGroupTypeEnabled;
             nbNoAttendanceInGroupType.Text = _inactivateSettings.NoAttendanceInGroupTypeDays.ToStringSafe();
             rlbNoAttendanceInGroupType.SetValues( _inactivateSettings.AttendanceInGroupType ?? new List<int>() );
@@ -344,12 +345,13 @@ namespace RockWeb.Blocks.Administration
             var inactivateChannelTypes = interactionChannels.Select( c => new InteractionItem( c.Guid, c.Name ) ).ToList();
             if ( _inactivateSettings.NoInteractions != null )
             {
+                bool noneSelected = !_inactivateSettings.NoInteractions.Any( i => i.IsInteractionTypeEnabled );
                 foreach ( var settingInteractionItem in _inactivateSettings.NoInteractions )
                 {
                     var interactionChannelType = inactivateChannelTypes.SingleOrDefault( a => a.Guid == settingInteractionItem.Guid );
                     if ( interactionChannelType != null )
                     {
-                        interactionChannelType.IsInteractionTypeEnabled = settingInteractionItem.IsInteractionTypeEnabled;
+                        interactionChannelType.IsInteractionTypeEnabled = noneSelected || settingInteractionItem.IsInteractionTypeEnabled;
                         interactionChannelType.LastInteractionDays = settingInteractionItem.LastInteractionDays;
                     }
                 }
@@ -458,9 +460,6 @@ namespace RockWeb.Blocks.Administration
             _inactivateSettings.IsNoLastContributionEnabled = cbNoLastContribution.Checked;
             _inactivateSettings.NoLastContributionPeriod = nbNoLastContribution.Text.AsInteger();
 
-            _inactivateSettings.IsNoAttendanceInServiceGroupEnabled = cbNoAttendanceInServiceGroup.Checked;
-            _inactivateSettings.NoAttendanceInServiceGroupPeriod = nbNoAttendanceInServiceGroup.Text.AsInteger();
-
             _inactivateSettings.IsNoAttendanceInGroupTypeEnabled = cbNoAttendanceInGroupType.Checked;
             _inactivateSettings.AttendanceInGroupType = rlbNoAttendanceInGroupType.SelectedValues.AsIntegerList();
             _inactivateSettings.NoAttendanceInGroupTypeDays = nbNoAttendanceInGroupType.Text.AsInteger();
@@ -510,12 +509,12 @@ namespace RockWeb.Blocks.Administration
             _campusSettings.IsIgnoreCampusChangesEnabled = cbIgnoreCampusChanges.Checked;
             _campusSettings.IgnoreCampusChanges =
                 _ignoreCampusChangeRows
-                    .Where( a => a.CampusCriteria.HasValue && a.FromCampusId.HasValue && a.ToCampusId.HasValue )
+                    .Where( a => a.FromCampusId.HasValue && a.ToCampusId.HasValue )
                     .Select( a => new IgnoreCampusChangeItem
                     {
                         FromCampus = a.FromCampusId.Value,
                         ToCampus = a.ToCampusId.Value,
-                        BasedOn = a.CampusCriteria.Value
+                        BasedOn = a.CampusCriteria
                     } )
                     .ToList();
 
