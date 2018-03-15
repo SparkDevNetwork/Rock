@@ -148,7 +148,6 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                     SetSettingValue( rockContext, settings, "UserName", tbUserName.Text );
                     SetSettingValue( rockContext, settings, "Password", tbPassword.Text, true );
                     SetSettingValue( rockContext, settings, "ReturnURL", urlWebHook.Text );
-                    SetSettingValue( rockContext, settings, "TestMode", cbTestMode.Checked.ToString() );
                     SetSettingValue( rockContext, settings, "Active", cbActive.Checked.ToString() );
                     rockContext.SaveChanges();
 
@@ -441,7 +440,6 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
             tbPassword.Text = GetSettingValue( settings, "Password", true );
             urlWebHook.Text = GetSettingValue( settings, "ReturnURL" );
             cbActive.Checked = GetSettingValue( settings, "Active" ).AsBoolean();
-            cbTestMode.Checked = GetSettingValue( settings, "TestMode" ).AsBoolean();
 
             BindPackageGrid();
 
