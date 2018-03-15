@@ -147,3 +147,59 @@
 		display: none;
 	}
 }
+
+@media (max-width: @screen-sm-min) {
+	.workflowNotifications {
+		position: absolute;
+		top: 10px;
+		right: 10px;
+
+		.badge {
+			height: 38px !important;
+			line-height: 42px !important;
+		}
+	}
+
+	.navbar-zone-login.pull-right {
+		float: none !important;
+	}
+
+	.navbar-zone-login {
+		margin: 10px;
+		background-color: @tertiary-color;
+		border-radius: 5px;
+	}
+
+	.loginstatus .dropdown-toggle {
+		padding-left: 8px !important;
+	}
+
+	#content-wrapper header .navbar-default .navbar-header {
+		padding: 10px;
+		padding-bottom: 0;
+	}
+
+	.login-status {
+		width: 100%;
+	}
+
+	.navbar-default .navbar-nav .open .dropdown-menu > li > a {
+		color: @theme-1-text;
+		border-bottom: 2px solid rgba(255,255,255,.05);
+		padding: 6px 15px 5px;
+
+		&:hover {
+			color: @theme-1-text;
+			background-color: @secondary-color;
+			border-color: @secondary-color;
+		}
+	}
+
+	.navbar-default .navbar-nav .open .dropdown-menu > li:last-child a {
+		border: 0px;
+	}
+
+	.navbar-default .navbar-nav .open .dropdown-menu > li.divider {
+		display: none;
+	}
+}

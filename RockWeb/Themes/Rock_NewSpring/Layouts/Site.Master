@@ -47,6 +47,7 @@
         Raven.config("<%# Rock.Web.Cache.GlobalAttributesCache.Read().GetValue( "PublicSentryDSN" ) %>").install();
     </script>
 
+    <!-- jQuery -->
     <script src="<%# ResolveRockUrl("~/Scripts/jquery-1.12.4.min.js" ) %>"></script>
     <script src="<%# ResolveRockUrl("~/Scripts/jquery.jquery-dotimeout.js" ) %>"></script>
 
@@ -100,8 +101,12 @@
                             </div>
 
                             <div class="navbar-content">
-                                <div class="navbar-zone-login pull-right"><Rock:Zone Name="Login" runat="server" /></div>
-                                <div class="navbar-zone-header divided"><Rock:Zone Name="Header" runat="server" /></div>
+                                <div class="navbar-zone-login pull-right">
+                                    <Rock:Zone Name="Login" runat="server" />
+                                </div>
+                                <div class="navbar-zone-header divided">
+                                    <Rock:Zone Name="Header" runat="server" />
+                                </div>
 			                </div>
                     </nav>
 
