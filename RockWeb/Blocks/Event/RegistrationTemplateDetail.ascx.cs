@@ -1874,11 +1874,11 @@ namespace RockWeb.Blocks.Event
 
             if ( fee.FeeType == RegistrationFeeType.Single )
             {
-                fee.CostValue = cCost.Text;
+                fee.CostValue = cCost.Text.Replace("$", "");
             }
             else
             {
-                fee.CostValue = kvlMultipleFees.Value;
+                fee.CostValue = kvlMultipleFees.Value.Replace("$", "");
             }
             
             hfFeeGuid.Value = string.Empty;

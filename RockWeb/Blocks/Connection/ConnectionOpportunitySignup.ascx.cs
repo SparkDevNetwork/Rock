@@ -193,26 +193,15 @@ namespace RockWeb.Blocks.Connection
                     // If there is a valid person with a primary alias, continue
                     if ( person != null && person.PrimaryAliasId.HasValue )
                     {
-                        var changes = new List<string>();
-                        
+                       
                         if ( pnHome.Visible )
                         {
-                            SavePhone( pnHome, person, _homePhone.Guid, changes );
+                            SavePhone( pnHome, person, _homePhone.Guid );
                         }
 
                         if ( pnMobile.Visible )
                         {
-                            SavePhone( pnMobile, person, _cellPhone.Guid, changes );
-                        }
-
-                        if ( changes.Any() )
-                        {
-                            HistoryService.SaveChanges(
-                                rockContext,
-                                typeof( Person ),
-                                Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                                person.Id,
-                                changes );
+                            SavePhone( pnMobile, person, _cellPhone.Guid );
                         }
 
                         // Now that we have a person, we can create the connection request
@@ -383,7 +372,7 @@ namespace RockWeb.Blocks.Connection
             }
         }
 
-        private void SavePhone( PhoneNumberBox phoneNumberBox, Person person, Guid phoneTypeGuid, List<string> changes )
+        private void SavePhone( PhoneNumberBox phoneNumberBox, Person person, Guid phoneTypeGuid )
         {
             var numberType = DefinedValueCache.Read( phoneTypeGuid );
             if ( numberType != null )
@@ -406,12 +395,6 @@ namespace RockWeb.Blocks.Connection
                     }
                     phone.CountryCode = PhoneNumber.CleanNumber( phoneNumberBox.CountryCode );
                     phone.Number = newPhoneNumber;
-
-                    History.EvaluateChange(
-                        changes,
-                        string.Format( "{0} Phone", numberType.Value ),
-                        oldPhoneNumber,
-                        phone.NumberFormattedWithCountryCode );
                 }
 
             }

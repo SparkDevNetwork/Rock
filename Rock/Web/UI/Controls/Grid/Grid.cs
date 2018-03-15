@@ -1913,6 +1913,11 @@ namespace Rock.Web.UI.Controls
                                     propValue = ( dataField as LavaBoundField ).GetFormattedDataValue( propValue );
                                 }
 
+                                if ( dataField is HtmlField )
+                                {
+                                    propValue = ( dataField as HtmlField ).FormatDataValue( propValue );
+                                }
+
                                 if ( propValue != null )
                                 {
                                     exportValue = GetExportValue( prop, propValue, IsDefinedValue( definedValueFields, propIsDefinedValueLookup, prop ), cell ).ReverseCurrencyFormatting();
