@@ -85,6 +85,9 @@ namespace Rock.Client
         public string Name { get; set; }
 
         /// <summary />
+        public string RegistrationInstructions { get; set; }
+
+        /// <summary />
         public int RegistrationTemplateId { get; set; }
 
         /// <summary />
@@ -148,6 +151,7 @@ namespace Rock.Client
             this.MinimumInitialPayment = source.MinimumInitialPayment;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
+            this.RegistrationInstructions = source.RegistrationInstructions;
             this.RegistrationTemplateId = source.RegistrationTemplateId;
             this.RegistrationWorkflowTypeId = source.RegistrationWorkflowTypeId;
             this.ReminderSent = source.ReminderSent;

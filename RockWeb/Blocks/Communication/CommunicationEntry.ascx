@@ -90,7 +90,7 @@
                         </div>
                     </div>
 
-                    <Rock:RockDropDownList ID="ddlTemplate" runat="server" Label="Template" AutoPostBack="true" OnSelectedIndexChanged="ddlTemplate_SelectedIndexChanged" />
+                    <Rock:RockDropDownList ID="ddlTemplate" runat="server" Label="Template" AutoPostBack="true" OnSelectedIndexChanged="ddlTemplate_SelectedIndexChanged" EnhanceForLongLists="true" />
 
                     <asp:PlaceHolder ID="phContent" runat="server" />
 

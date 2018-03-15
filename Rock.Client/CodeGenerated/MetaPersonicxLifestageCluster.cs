@@ -77,6 +77,9 @@ namespace Rock.Client
         public string MaritalStatus { get; set; }
 
         /// <summary />
+        public int? MeanAge { get; set; }
+
+        /// <summary />
         public int MetaPersonicxLifestyleGroupId { get; set; }
 
         /// <summary>
@@ -161,6 +164,7 @@ namespace Rock.Client
             this.LifestyleClusterCode = source.LifestyleClusterCode;
             this.LifestyleClusterName = source.LifestyleClusterName;
             this.MaritalStatus = source.MaritalStatus;
+            this.MeanAge = source.MeanAge;
             this.MetaPersonicxLifestyleGroupId = source.MetaPersonicxLifestyleGroupId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.NetWorth = source.NetWorth;

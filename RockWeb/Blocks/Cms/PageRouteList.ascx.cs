@@ -17,7 +17,6 @@
 using System;
 using System.Linq;
 using System.Web.Routing;
-using System.Web.UI;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -27,6 +26,7 @@ using Rock.Web.UI.Controls;
 using System.ComponentModel;
 using Rock.Security;
 using Rock.Web.Cache;
+using System.Web.UI.WebControls;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -53,7 +53,8 @@ namespace RockWeb.Blocks.Cms
             gPageRoutes.Actions.ShowAdd = true;
             gPageRoutes.Actions.AddClick += gPageRoutes_Add;
             gPageRoutes.GridRebind += gPageRoutes_GridRebind;
-
+            gFilter.ApplyFilterClick += gFilter_ApplyFilterClick;
+            gFilter.DisplayFilterValue += gFilter_DisplayFilterValue;
             // Block Security and special attributes (RockPage takes care of View)
             bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             gPageRoutes.Actions.ShowAdd = canAddEditDelete;
@@ -68,6 +69,7 @@ namespace RockWeb.Blocks.Cms
         {
             if ( !Page.IsPostBack )
             {
+                BindFilter();
                 BindGrid();
             }
 
@@ -75,7 +77,19 @@ namespace RockWeb.Blocks.Cms
         }
         #endregion
 
-        #region Grid Events
+        #region Events
+
+        /// <summary>
+        /// Handles the ApplyFilterClick event of the gFilter control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gFilter_ApplyFilterClick( object sender, EventArgs e )
+        {
+            gFilter.SaveUserPreference( "Site", ddlSite.SelectedValue );
+
+            BindGrid();
+        }
 
         /// <summary>
         /// Handles the Add event of the gPageRoutes control.
@@ -126,6 +140,29 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
+        /// Displays the text of the gFilter control
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The e.</param>
+        protected void gFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
+        {
+            switch ( e.Key )
+            {
+                case "Site":
+                    int? siteId = e.Value.AsIntegerOrNull();
+                    if ( siteId.HasValue )
+                    {
+                        var site = SiteCache.Read( siteId.Value );
+                        if ( site != null )
+                        {
+                            e.Value = site.Name;
+                        }
+                    }
+                    break;
+            }
+        }
+
+        /// <summary>
         /// Handles the GridRebind event of the gPageRoutes control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -140,6 +177,20 @@ namespace RockWeb.Blocks.Cms
         #region Internal Methods
 
         /// <summary>
+        /// Binds the filter.
+        /// </summary>
+        private void BindFilter()
+        {
+            ddlSite.Items.Clear();
+            foreach ( SiteCache site in new SiteService( new RockContext() ).Queryable().OrderBy( s => s.Name ).Select( a => a.Id ).ToList().Select( a => SiteCache.Read( a ) ) )
+            {
+                ddlSite.Items.Add( new ListItem( site.Name, site.Id.ToString() ) );
+            }
+            ddlSite.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
+            ddlSite.SetValue( gFilter.GetUserPreference( "Site" ) );
+        }
+
+        /// <summary>
         /// Binds the grid.
         /// </summary>
         private void BindGrid()
@@ -148,16 +199,24 @@ namespace RockWeb.Blocks.Cms
             SortProperty sortProperty = gPageRoutes.SortProperty;
             gPageRoutes.EntityTypeId = EntityTypeCache.Read<PageRoute>().Id;
 
-            var qry = pageRouteService.Queryable().Select( a =>
-                new
-                {
-                    a.Id,
-                    a.Route,
-                    Site = a.Page.Layout.Site.Name,
-                    PageName = a.Page.InternalName,
-                    PageId = a.Page.Id,
-                    a.IsSystem
-                } );
+            var queryable = pageRouteService.Queryable();
+
+            int? siteId = gFilter.GetUserPreference( "Site" ).AsIntegerOrNull();
+            if ( siteId.HasValue )
+            {
+                queryable = queryable.Where( d => d.Page.Layout.SiteId == siteId.Value );
+            }
+
+            var qry = queryable.Select( a =>
+                    new
+                    {
+                        a.Id,
+                        a.Route,
+                        Site = a.Page.Layout.Site.Name,
+                        PageName = a.Page.InternalName,
+                        PageId = a.Page.Id,
+                        a.IsSystem
+                    } );
 
             if ( sortProperty != null )
             {

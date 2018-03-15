@@ -18,6 +18,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Data;
 using Rock.MergeTemplates;
 using Rock.Web.Cache;
@@ -165,6 +166,36 @@ namespace Rock.Model
             return this.Name;
         }
 
+        #endregion
+
+        #region ISecurity
+
+        /// <summary>
+        /// Return <c>true</c> if the user is authorized to perform the selected action on this object.
+        /// Over-riding this to ensure that a person can see only their own personal templates
+        /// regardless of security settings.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <returns>
+        /// <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
+        /// </returns>
+        public override bool IsAuthorized( string action, Person person )
+        {
+            if ( action == Security.Authorization.VIEW && PersonAlias != null )
+            {
+                if ( PersonAlias.PersonId == person.Id )
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            return base.IsAuthorized( action, person );
+        }
         #endregion
 
         #region Private Methods

@@ -76,6 +76,9 @@ namespace Rock.Client
         /// <summary />
         public string MaritalStatus { get; set; }
 
+        /// <summary />
+        public int? MeanAge { get; set; }
+
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
@@ -158,6 +161,7 @@ namespace Rock.Client
             this.LifestyleGroupCode = source.LifestyleGroupCode;
             this.LifestyleGroupName = source.LifestyleGroupName;
             this.MaritalStatus = source.MaritalStatus;
+            this.MeanAge = source.MeanAge;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.NetWorth = source.NetWorth;
             this.NetWorthLevel = source.NetWorthLevel;

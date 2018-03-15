@@ -257,29 +257,11 @@ namespace RockWeb.Blocks.Fundraising
             var personService = new PersonService( rockContext );
             var person = personService.Get( groupMember.PersonId );
 
-            var changes = new List<string>();
-
             int? orphanedPhotoId = null;
             if ( person.PhotoId != imgProfilePhoto.BinaryFileId )
             {
                 orphanedPhotoId = person.PhotoId;
                 person.PhotoId = imgProfilePhoto.BinaryFileId;
-
-                if ( orphanedPhotoId.HasValue )
-                {
-                    if ( person.PhotoId.HasValue )
-                    {
-                        changes.Add( "Modified the photo." );
-                    }
-                    else
-                    {
-                        changes.Add( "Deleted the photo." );
-                    }
-                }
-                else if ( person.PhotoId.HasValue )
-                {
-                    changes.Add( "Added a photo." );
-                }
 
                 // add or update the Photo Verify group to have this person as Pending since the photo was changed or deleted
                 using ( var photoRequestRockContext = new RockContext() )
@@ -317,29 +299,9 @@ namespace RockWeb.Blocks.Fundraising
                     Control attributeControl = phPersonAttributes.FindControl( string.Format( "attribute_field_{0}", personAttribute.Id ) );
                     if ( attributeControl != null )
                     {
-                        string originalValue = person.GetAttributeValue( personAttribute.Key );
-                        string newValue = personAttribute.FieldType.Field.GetEditValue( attributeControl, personAttribute.QualifierValues );
-
                         // Save Attribute value to the database
+                        string newValue = personAttribute.FieldType.Field.GetEditValue( attributeControl, personAttribute.QualifierValues );
                         Rock.Attribute.Helper.SaveAttributeValue( person, personAttribute, newValue, rockContext );
-
-                        // Check for changes to write to history
-                        if ( ( originalValue ?? string.Empty ).Trim() != ( newValue ?? string.Empty ).Trim() )
-                        {
-                            string formattedOriginalValue = string.Empty;
-                            if ( !string.IsNullOrWhiteSpace( originalValue ) )
-                            {
-                                formattedOriginalValue = personAttribute.FieldType.Field.FormatValue( null, originalValue, personAttribute.QualifierValues, false );
-                            }
-
-                            string formattedNewValue = string.Empty;
-                            if ( !string.IsNullOrWhiteSpace( newValue ) )
-                            {
-                                formattedNewValue = personAttribute.FieldType.Field.FormatValue( null, newValue, personAttribute.QualifierValues, false );
-                            }
-
-                            History.EvaluateChange( changes, personAttribute.Name, formattedOriginalValue, formattedNewValue, personAttribute.FieldType.Field.IsSensitive() );
-                        }
                     }
                 }
             }
@@ -349,16 +311,6 @@ namespace RockWeb.Blocks.Fundraising
             {
                 rockContext.SaveChanges();
                 groupMember.SaveAttributeValues( rockContext );
-
-                if ( changes.Any() )
-                {
-                    HistoryService.SaveChanges(
-                        rockContext,
-                        typeof( Person ),
-                        Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                        person.Id,
-                        changes );
-                }
 
                 if ( orphanedPhotoId.HasValue )
                 {

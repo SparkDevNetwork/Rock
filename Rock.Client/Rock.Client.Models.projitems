@@ -73,6 +73,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ContentChannelType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\DataView.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\DataViewFilter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\DataViewPersistedValue.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\DefinedType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\DefinedValue.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Device.cs" />
@@ -118,6 +119,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupRequirement.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupRequirementType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupScheduleExclusion.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupSync.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupTypeLocationType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupTypeRole.cs" />
@@ -144,6 +146,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MetricPartition.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MetricValue.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MetricValuePartition.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\NcoaHistory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Note.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\NoteType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Notification.cs" />
@@ -158,6 +161,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonBadge.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonDuplicate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonPreviousName.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonSignal.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonToken.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonViewed.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PhoneNumber.cs" />
@@ -180,6 +184,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ScheduleCategoryExclusion.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ServiceJob.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ServiceLog.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SignalType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SignatureDocument.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SignatureDocumentTemplate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Site.cs" />

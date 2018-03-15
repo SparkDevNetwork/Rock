@@ -68,6 +68,7 @@ namespace Rock.Web.UI.Controls
         private HtmlAnchor _serverSaveLink;
         private HtmlAnchor _saveLink;
         private HtmlAnchor _cancelLink;
+        private HtmlAnchor _saveThenAddLink;
 
         /// <summary>
         /// Raises the <see cref="E:Init"/> event.
@@ -86,6 +87,7 @@ namespace Rock.Web.UI.Controls
                 sm.RegisterAsyncPostBackControl( _cancelLink );
                 sm.RegisterAsyncPostBackControl( _serverSaveLink );
                 sm.RegisterAsyncPostBackControl( _saveLink );
+                sm.RegisterAsyncPostBackControl( _saveThenAddLink );
             }
         }
 
@@ -149,6 +151,16 @@ namespace Rock.Web.UI.Controls
         {
             get { return ViewState["SaveButtonText"] as string ?? "Save"; }
             set { ViewState["SaveButtonText"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the save then add button text.
+        /// </summary>
+        /// <value>The post save then add button text.</value>
+        public string SaveThenAddButtonText
+        {
+            get { return ViewState["SaveThenAddButtonText"] as string ?? "Save Then Add"; }
+            set { ViewState["SaveThenAddButtonText"] = value; }
         }
 
         /// <summary>
@@ -281,7 +293,7 @@ namespace Rock.Web.UI.Controls
             _hfModalVisible.Value = "0";
 
             // make sure the close script gets fired, even if the modal isn't rendered
-            string hideScript = string.Format("Rock.controls.modal.closeModalDialog($('#{0}'));", _dialogPanel.ClientID);
+            string hideScript = string.Format( "Rock.controls.modal.closeModalDialog($('#{0}'));", _dialogPanel.ClientID );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "modaldialog-hide-" + this.ClientID, hideScript, true );
 
             this.Visible = false;
@@ -370,6 +382,12 @@ namespace Rock.Web.UI.Controls
             _cancelLink.Attributes.Add( "data-dismiss", "modal" );
             _cancelLink.InnerText = "Cancel";
 
+            _saveThenAddLink = new HtmlAnchor();
+            _footerPanel.Controls.Add( _saveThenAddLink );
+            _saveThenAddLink.ID = "saveThenAddLink";
+            _saveThenAddLink.Attributes.Add( "class", "btn btn-link" );
+            _saveThenAddLink.ServerClick += SaveThenAdd_ServerClick;
+
             _serverSaveLink = new HtmlAnchor();
             _footerPanel.Controls.Add( _serverSaveLink );
             _serverSaveLink.ID = "serverSaveLink";
@@ -397,6 +415,10 @@ namespace Rock.Web.UI.Controls
             _saveLink.Visible = !string.IsNullOrWhiteSpace( SaveButtonText ) && SaveClick == null && !string.IsNullOrWhiteSpace( OnOkScript );
             _saveLink.InnerText = SaveButtonText;
             _saveLink.ValidationGroup = this.ValidationGroup;
+
+            _saveThenAddLink.Visible = !string.IsNullOrWhiteSpace( SaveThenAddButtonText ) && SaveThenAddClick != null;
+            _saveThenAddLink.InnerText = SaveThenAddButtonText;
+            _saveThenAddLink.ValidationGroup = this.ValidationGroup;
 
             if ( !_serverSaveLink.Visible && !_saveLink.Visible )
             {
@@ -453,8 +475,26 @@ $('#{0}').find('.js-modaldialog-save-link').click(function () {{
         }
 
         /// <summary>
+        /// Handles the ServerClick event of the SaveThenAddLink control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
+        public void SaveThenAdd_ServerClick( object sender, EventArgs e )
+        {
+            if ( SaveThenAddClick != null )
+            {
+                SaveThenAddClick( sender, e );
+            }
+        }
+
+        /// <summary>
         /// Occurs when the save button is clicked.
         /// </summary>
         public event EventHandler SaveClick;
+
+        /// <summary>
+        /// Occurs after the save then add button is clicked.
+        /// </summary>
+        public event EventHandler SaveThenAddClick;
     }
 }

@@ -305,9 +305,9 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
-        /// Gs the marketing campaign ad attribute type_ show edit.
+        /// gs the channel attributes show edit.
         /// </summary>
-        /// <param name="attributeId">The attribute id.</param>
+        /// <param name="attributeGuid">The attribute unique identifier.</param>
         protected void gChannelAttributes_ShowEdit( Guid attributeGuid )
         {
             Attribute attribute;
@@ -421,7 +421,7 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
-        /// Binds the marketing campaign ad attribute type grid.
+        /// Binds the channel attributes grid.
         /// </summary>
         private void BindChannelAttributesGrid()
         {
@@ -458,9 +458,9 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
-        /// Gs the marketing campaign ad attribute type_ show edit.
+        /// gs the item attributes show edit.
         /// </summary>
-        /// <param name="attributeId">The attribute id.</param>
+        /// <param name="attributeGuid">The attribute unique identifier.</param>
         protected void gItemAttributes_ShowEdit( Guid attributeGuid )
         {
             Attribute attribute;
@@ -577,7 +577,7 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
-        /// Binds the marketing campaign ad attribute type grid.
+        /// Binds the item attributes grid.
         /// </summary>
         private void BindItemAttributesGrid()
         {
@@ -613,7 +613,7 @@ namespace RockWeb.Blocks.Cms
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="contentTypeId">The marketing campaign ad type identifier.</param>
+        /// <param name="contentTypeId">The content type identifier.</param>
         public void ShowDetail( int contentTypeId )
         {
             var rockContext = new RockContext();
