@@ -44,12 +44,14 @@ namespace RockWeb.Blocks.Connection
     [BooleanField( "Enable Campus Context", "If the page has a campus context it's value will be used as a filter", true, "", 4 )]
     [DefinedValueField( "2E6540EA-63F0-40FE-BE50-F2A84735E600", "Connection Status", "The connection status to use for new individuals (default: 'Web Prospect'.)", true, false, "368DD475-242C-49C4-A42C-7278BE690CC2", "", 5 )]
     [DefinedValueField( "8522BADD-2871-45A5-81DD-C76DA07E2E7E", "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, "283999EC-7346-42E3-B807-BCE9B2BABB49", "", 6 )]
+    [ConnectionOpportunityField("Connection Opportunity", "If a Connection Opportunity is set, only details for it will be displayed (regardless of the querystring parameters).", false, "", "", 7 )]
     public partial class ConnectionOpportunitySignup : RockBlock, IDetailBlock
     {
         #region Fields
 
         DefinedValueCache _homePhone = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
         DefinedValueCache _cellPhone = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
+        int _opportunityId = 0;
 
         #endregion
 
@@ -77,10 +79,11 @@ namespace RockWeb.Blocks.Connection
             base.OnLoad( e );
 
             nbErrorMessage.Visible = false;
+            _opportunityId = GetConnectionOpportunityId();
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "OpportunityId" ).AsInteger() );
+                ShowDetail( _opportunityId );
             }
         }
 
@@ -92,7 +95,7 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            ShowDetail( PageParameter( "OpportunityId" ).AsInteger() );
+            ShowDetail( GetConnectionOpportunityId() );
         }
 
         #endregion
@@ -113,10 +116,9 @@ namespace RockWeb.Blocks.Connection
                 var personService = new PersonService( rockContext );
 
                 // Get the opportunity and default status
-                int opportunityId = PageParameter( "OpportunityId" ).AsInteger();
                 var opportunity = opportunityService
                     .Queryable()
-                    .Where( o => o.Id == opportunityId )
+                    .Where( o => o.Id == _opportunityId )
                     .FirstOrDefault();
 
                 int defaultStatusId = opportunity.ConnectionType.ConnectionStatuses
@@ -236,7 +238,7 @@ namespace RockWeb.Blocks.Connection
                         rockContext.SaveChanges();
 
                         var mergeFields = new Dictionary<string, object>();
-                        mergeFields.Add( "Opportunity", new ConnectionOpportunityService( rockContext ).Get( PageParameter( "OpportunityId" ).AsInteger() ) );
+                        mergeFields.Add( "Opportunity", new ConnectionOpportunityService( rockContext ).Get( _opportunityId ) );
                         mergeFields.Add( "CurrentPerson", CurrentPerson );
                         mergeFields.Add( "Person", person );
 
@@ -367,7 +369,7 @@ namespace RockWeb.Blocks.Connection
 
                 // show debug info
                 var mergeFields = new Dictionary<string, object>();
-                mergeFields.Add( "Opportunity", new ConnectionOpportunityService( rockContext ).Get( PageParameter( "OpportunityId" ).AsInteger() ) );
+                mergeFields.Add( "Opportunity", new ConnectionOpportunityService( rockContext ).Get( _opportunityId ) );
                 mergeFields.Add( "CurrentPerson", CurrentPerson );
             }
         }
@@ -406,6 +408,25 @@ namespace RockWeb.Blocks.Connection
             nbErrorMessage.Text = string.Format( "<p>{0}</p>", message );
             nbErrorMessage.NotificationBoxType = NotificationBoxType.Danger;
             nbErrorMessage.Visible = true;
+        }
+
+        /// <summary>
+        /// Determines which item to display based on either the configuration or the connectionOpportunityId that was passed in.
+        /// </summary>
+        /// <returns>An <see cref="System.Int32"/> of the Id for a <see cref="Rock.Model.ConnectionOpportunity"/> or null if it was not found.</returns>
+        private int GetConnectionOpportunityId() {
+            Guid? connectionOpportunityGuid = GetAttributeValue("ConnectionOpportunity").AsGuidOrNull();
+            int itemId = default(int);
+
+            // A configured defined type takes precedence over any definedTypeId param value that is passed in.
+            if (connectionOpportunityGuid.HasValue) {
+                var opportunity = new ConnectionOpportunityService(new RockContext()).Get(connectionOpportunityGuid.Value);
+                itemId = opportunity.Id;
+            } else {
+                itemId = PageParameter("OpportunityId").AsInteger();
+            }
+
+            return itemId;
         }
 
         #endregion
