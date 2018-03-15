@@ -8,7 +8,7 @@
 
     Sys.Application.add_load(function () {
         $('div.js-same-family').find('input:radio').on('click', function () {
-            if ($(this).val() == '1') {
+            if ($(this).val() > 0) {
                 $('.js-current-family-members').slideDown();
             } else {
                 var $div = $('.js-current-family-members');
@@ -120,7 +120,7 @@
                                     Help="Typical relationship of registrants that user would register." />
                                 <div id="divCurrentFamilyMembers" runat="server" class="js-current-family-members" >
                                     <Rock:RockCheckBox ID="cbShowCurrentFamilyMembers" runat="server" Label="Show Family Members" Text="Yes"
-                                        Help="If Registrans in Same Family option is set to 'Yes', should the person registering be able to select people from their family when registering (vs. having to enter the family member's information manually)?" />
+                                        Help="If Registrants in Same Family option is set to 'Yes' or 'Ask', should the person registering be able to select people from their family when registering (vs. having to enter the family member's information manually)?" />
                                 </div>
                                 <div class="well">
                                     <Rock:Toggle ID="tglSetCostOnTemplate" runat="server" Label="Set Cost On" OnText="Template" OffText="Instance" 
