@@ -34,6 +34,7 @@ namespace Rock.Follow.Event
     [ExportMetadata( "ComponentName", "PersonBaptized" )]
 
     [IntegerField( "Max Days Back", "Maximum number of days back to consider", false, 30, "", 0)]
+    [IntegerField( "Anniversary Count", "The anniversary number that this event will trigger on. If you want to catch the 5th anniversary of the person being baptized set this to 5.", false, 0, order: 1 )]
     public class PersonBaptized : EventComponent
     {
         #region Event Component Implementation
@@ -79,13 +80,15 @@ namespace Rock.Follow.Event
                     if ( baptismDate.HasValue )
                     {
                         int daysBack = GetAttributeValue( followingEvent, "MaxDaysBack" ).AsInteger();
-                        var processDate = RockDateTime.Today;
+                        int anniversaryCount = GetAttributeValue( followingEvent, "AnniversaryCount" ).AsIntegerOrNull() ?? 0;
+                        var processDate = RockDateTime.Today.AddYears( -anniversaryCount );
                         if ( !followingEvent.SendOnWeekends && RockDateTime.Today.DayOfWeek == DayOfWeek.Friday )
                         {
                             daysBack += 2;
                         }
 
-                        if ( processDate.Subtract( baptismDate.Value ).Days < daysBack )
+                        var daysSince = processDate.Subtract( baptismDate.Value ).Days;
+                        if ( daysSince >= 0 && daysSince < daysBack )
                         {
                             return true;
                         }
