@@ -1235,8 +1235,13 @@
     <Compile Include="Reporting\DataFilter\Person\PersonalDeviceDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\PostalCodeFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\HasNoteFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\PrayerRequestDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\UserLoginDataViewFilter.cs" />
+    <Compile Include="Reporting\DataFilter\PrayerRequest\CampusActiveFilter.cs" />
+    <Compile Include="Reporting\DataFilter\PrayerRequest\CampusesActiveFilter.cs" />
+    <Compile Include="Reporting\DataFilter\PrayerRequest\CampusesFilter.cs" />
     <Compile Include="Reporting\DataFilter\PrayerRequest\CampusFilter.cs" />
+    <Compile Include="Reporting\DataFilter\PrayerRequest\ContainsPeopleFilter.cs" />
     <Compile Include="Reporting\DataFilter\UserLogin\LoginTypeFilter.cs" />
     <Compile Include="Reporting\DataSelect\FormattedFieldSelect.cs" />
     <Compile Include="Reporting\DataSelect\GroupMember\GroupLinkSelect.cs" />
@@ -1244,6 +1249,9 @@
     <Compile Include="Reporting\DataSelect\Group\GroupFormattedFieldSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\PersonFormattedFieldSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\SignalSelect.cs" />
+    <Compile Include="Reporting\DataSelect\PrayerRequest\CampusSelect.cs" />
+    <Compile Include="Reporting\DataSelect\PrayerRequest\CategorySelect.cs" />
+    <Compile Include="Reporting\DataSelect\PrayerRequest\PersonLinkSelect.cs" />
     <Compile Include="Reporting\DataTransform\Person\FatherTransform.cs" />
     <Compile Include="Reporting\DataTransform\Person\GrandchildTransform.cs" />
     <Compile Include="Reporting\DataTransform\Person\GrandparentTransform.cs" />

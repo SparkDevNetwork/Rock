@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -23,6 +24,7 @@ using System.Web.UI;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.PrayerRequest
@@ -30,10 +32,10 @@ namespace Rock.Reporting.DataFilter.PrayerRequest
     /// <summary>
     /// 
     /// </summary>
-    [Description("Filter prayer requests that are associated with a specific campus.")]
+    [Description("Filter prayer requests that are associated with any of the selected campuses.")]
     [Export(typeof(DataFilterComponent))]
-    [ExportMetadata("ComponentName", "Prayer Request Campus Filter")]
-    public class CampusFilter : DataFilterComponent, IUpdateSelectionFromPageParameters
+    [ExportMetadata("ComponentName", "Prayer Request Campuses Filter")]
+    public class CampusesFilter : DataFilterComponent, IUpdateSelectionFromPageParameters
     {
         #region Properties
 
@@ -67,7 +69,7 @@ namespace Rock.Reporting.DataFilter.PrayerRequest
         /// </value>
         internal virtual string ControlClassName
         {
-            get { return "js-campus-picker"; }
+            get { return "js-campuses-picker"; }
         }
 
         /// <summary>
@@ -93,9 +95,9 @@ namespace Rock.Reporting.DataFilter.PrayerRequest
         /// <value>
         /// The title.
         /// </value>
-        public override string GetTitle( Type entityType )
+        public override string GetTitle(Type entityType)
         {
-            return "Campus";
+            return "Campuses";
         }
 
         /// <summary>
@@ -111,10 +113,15 @@ namespace Rock.Reporting.DataFilter.PrayerRequest
         {
             return $@"
 function() {{
-    var campusPicker = $('.{this.ControlClassName}', $content);
-    var campusName = $(':selected', campusPicker).text();
+    var result = 'Campuses';
+    var campusesPicker = $('.{this.ControlClassName}', $content);
+    var checkedCampuses = $('.{this.ControlClassName}', $content).find(':checked').closest('label');
+    if (checkedCampuses.length) {{
+        var campusCommaList = checkedCampuses.map(function() {{ return $(this).text() }}).get().join(',');
+        result = 'Campuses: ' + campusCommaList;
+    }}
 
-    return 'Campus: ' + campusName;
+    return result;
 }}";
         }
 
@@ -126,16 +133,25 @@ function() {{
         /// <returns></returns>
         public override string FormatSelection(Type entityType, string selection)
         {
-            string result = "Campus";
+            string result = "Campuses";
             string[] selectionValues = selection.Split('|');
 
             if (selectionValues.Length >= 1)
             {
-                Guid campusGuid = selectionValues[0].AsGuid();
-                var campus = CampusCache.Read(campusGuid);
-                if (campus != null)
+                var campusGuidList = selectionValues[0].Split(',').AsGuidList();
+                List<string> campusNames = new List<string>();
+                foreach (var campusGuid in campusGuidList)
                 {
-                    result = "Campus: " + campus.Name;
+                    var campus = CampusCache.Read(campusGuid);
+                    if (campus != null)
+                    {
+                        campusNames.Add(campus.Name);
+                    }
+                }
+
+                if (campusNames.Any())
+                {
+                    result = "Campuses: " + campusNames.AsDelimited(", ");
                 }
             }
 
@@ -148,15 +164,15 @@ function() {{
         /// <returns></returns>
         public override Control[] CreateChildControls(Type entityType, FilterField filterControl)
         {
-            CampusPicker campusPicker = new CampusPicker();
-            campusPicker.ID = filterControl.ID + "_0";
-            campusPicker.Label = string.Empty;
-            campusPicker.CssClass = $"{ControlClassName}";
-            campusPicker.Campuses = CampusCache.All(IncludeInactive);
+            CampusesPicker campusesPicker = new CampusesPicker();
+            campusesPicker.ID = filterControl.ID + "_0";
+            campusesPicker.Label = string.Empty;
+            campusesPicker.CssClass = $"{ControlClassName} campuses-picker";
+            campusesPicker.Campuses = CampusCache.All(IncludeInactive);
 
-            filterControl.Controls.Add(campusPicker);
+            filterControl.Controls.Add(campusesPicker);
 
-            return new Control[1] { campusPicker };
+            return new Control[1] { campusesPicker };
         }
 
         /// <summary>
@@ -179,14 +195,20 @@ function() {{
         /// <returns></returns>
         public override string GetSelection(Type entityType, Control[] controls)
         {
-            var campusId = (controls[0] as CampusPicker).SelectedCampusId;
-            if (campusId.HasValue)
+            var campusIds = (controls[0] as CampusesPicker).SelectedCampusIds;
+            if (campusIds != null && campusIds.Any())
             {
-                var campus = CampusCache.Read(campusId.Value);
-                if (campus != null)
+                List<Guid> campusGuids = new List<Guid>();
+                foreach (var campusId in campusIds)
                 {
-                    return campus.Guid.ToString();
+                    var campus = CampusCache.Read(campusId);
+                    if (campus != null)
+                    {
+                        campusGuids.Add(campus.Guid);
+                    }
                 }
+
+                return campusGuids.Select(s => s.ToString()).ToList().AsDelimited(",");
             }
 
             return string.Empty;
@@ -203,52 +225,20 @@ function() {{
             string[] selectionValues = selection.Split('|');
             if (selectionValues.Length >= 1)
             {
-                var campusPicker = controls[0] as CampusPicker;
-                var selectedCampus = CampusCache.Read(selectionValues[0].AsGuid());
-                if (selectedCampus != null)
+                var campusGuidList = selectionValues[0].Split(',').AsGuidList();
+                List<int> campusIds = new List<int>();
+                foreach (var campusGuid in campusGuidList)
                 {
-                    campusPicker.SelectedCampusId = selectedCampus.Id;
-                }
-                else
-                {
-                    campusPicker.SelectedCampusId = null;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Updates the selection from page parameters.
-        /// </summary>
-        /// <param name="selection">The selection.</param>
-        /// <param name="rockBlock">The rock block.</param>
-        /// <returns></returns>
-        public string UpdateSelectionFromPageParameters(string selection, Rock.Web.UI.RockBlock rockBlock)
-        {
-            string[] selectionValues = selection?.Split('|') ?? new string[] { "" };
-            if (selectionValues.Length >= 1)
-            {
-                var campusId = rockBlock.PageParameter("CampusId").AsIntegerOrNull();
-                if (campusId == null)
-                {
-                    var campusEntity = rockBlock.ContextEntity<Campus>();
-                    if (campusEntity != null)
+                    var campus = CampusCache.Read(campusGuid);
+                    if (campus != null)
                     {
-                        campusId = campusEntity.Id;
+                        campusIds.Add(campus.Id);
                     }
                 }
 
-                if (campusId.HasValue)
-                {
-                    var selectedCampus = CampusCache.Read(campusId.Value);
-                    if (selectedCampus != null)
-                    {
-                        selectionValues[0] = selectedCampus.Guid.ToString();
-                        return selectionValues.ToList().AsDelimited("|");
-                    }
-                }
+                var campusesPicker = controls[0] as CampusesPicker;
+                campusesPicker.SelectedCampusIds = campusIds;
             }
-
-            return selection;
         }
 
         /// <summary>
@@ -266,14 +256,24 @@ function() {{
             string[] selectionValues = selection.Split('|');
             if (selectionValues.Length >= 1)
             {
-                var campus = CampusCache.Read(selectionValues[0].AsGuid());
-                if (campus == null)
+                var campusGuidList = selectionValues[0].Split(',').AsGuidList();
+                List<int> campusIds = new List<int>();
+                foreach (var campusGuid in campusGuidList)
+                {
+                    var campus = CampusCache.Read(campusGuid);
+                    if (campus != null)
+                    {
+                        campusIds.Add(campus.Id);
+                    }
+                }
+
+                if (!campusIds.Any())
                 {
                     return null;
                 }
 
                 var qry = new PrayerRequestService((RockContext)serviceInstance.Context).Queryable()
-                    .Where(p => (p.CampusId ?? 0) == campus.Id);
+                    .Where(p => campusIds.Contains(p.CampusId ?? 0));
 
                 Expression extractedFilterExpression = FilterExpressionExtractor.Extract<Rock.Model.PrayerRequest>(qry, parameterExpression, "p");
 
@@ -283,6 +283,35 @@ function() {{
             return null;
         }
 
+        /// <summary>
+        /// Updates the selection from page parameters.
+        /// </summary>
+        /// <param name="selection">The selection.</param>
+        /// <param name="rockBlock">The rock block.</param>
+        /// <returns></returns>
+        public string UpdateSelectionFromPageParameters(string selection, RockBlock rockBlock)
+        {
+            string[] selectionValues = selection?.Split('|') ?? new string[] { "" };
+            if (selectionValues.Length >= 1)
+            {
+                // check for either a CampusId or CampusIds parameter
+                var campusIds = rockBlock.PageParameter("CampusId")?.SplitDelimitedValues().AsIntegerList();
+                campusIds = campusIds ?? rockBlock.PageParameter("CampusIds")?.SplitDelimitedValues().AsIntegerList() ?? new List<int>();
+
+                if (campusIds.Any())
+                {
+
+                    var selectedCampusGuids = campusIds.Select(a => CampusCache.Read(a)).Where(a => a != null).Select(a => a.Guid).ToList();
+
+                    selectionValues[0] = selectedCampusGuids.AsDelimited(",");
+                    return selectionValues.ToList().AsDelimited("|");
+                }
+            }
+
+            return selection;
+        }
+
         #endregion
+
     }
 }
