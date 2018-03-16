@@ -788,7 +788,7 @@ Move Adult Children: {moveAdultChildrenResult}
                             var person = groupMembers.First().Person;
 
                             // Get the person's primary family, and if we can't get that (something else that shouldn't happen), just ignore this person.
-                            var primaryFamily = person.GetFamilies( rockContext ).FirstOrDefault();
+                            var primaryFamily = person.PrimaryFamily;
                             if ( primaryFamily == null )
                             {
                                 continue;
