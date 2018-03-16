@@ -1225,6 +1225,7 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
+    <Compile Include="Reporting\DataFilter\FinancialScheduledTransactionDetail\AccountFilter.cs" />
     <Compile Include="Reporting\DataFilter\BenevolenceRequest\CampusActiveFilter.cs" />
     <Compile Include="Reporting\DataFilter\BenevolenceRequest\CampusesActiveFilter.cs" />
     <Compile Include="Reporting\DataFilter\BenevolenceRequest\CampusesFilter.cs" />
@@ -1232,6 +1233,7 @@
     <Compile Include="Reporting\DataFilter\BenevolenceRequest\TotalBenevolenceFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\BenevolenceRequestDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\FinancialPledgeDataViewFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\FinancialScheduledTransactionDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\FinancialTransactionDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\HasPhoneFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\HasSignalFilter.cs" />
