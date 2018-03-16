@@ -32,11 +32,6 @@ namespace Rock.Lava
     public class LegacyLavaUpdater
     {
         /// <summary>
-        /// Match Match EntityType.AttributeKey unless the key has "_u"
-        /// </summary>
-        private string DotNotationPattern = "{{(.*?){0}.{1}(.*?)}}";
-        
-        /// <summary>
         /// The SQL Update scripts that need to be run to update Legacy Lava code.
         /// </summary>
         /// <value>
@@ -63,13 +58,13 @@ namespace Rock.Lava
                 CheckHtmlContent();
                 CheckAttributeValue();
                 CheckAttribute();
-                CheckAttribute();
                 CheckCommunicationTemplate();
                 CheckSystemEmail();
                 CheckWorkflowActionFormAttribute();
                 CheckWorkflowActionForm();
                 CheckRegistrationTemplateFormField();
                 CheckReportField();
+                OutputToText();
             }
             catch(Exception e)
             {
@@ -77,11 +72,17 @@ namespace Rock.Lava
             }
         }
 
+        public void OutputToText()
+        {
+
+            System.IO.File.WriteAllLines( $"C:\\temp\\LegacyLavaUpdater_UpdateSQL_{DateTime.Now.ToString("yyyyMMdd-HHmmss")}.txt", SQLUpdateScripts );
+        }
+
         /// <summary>
         /// Finds the attributes that are of type Entity..
         /// </summary>
         /// <returns></returns>
-        private static IQueryable<EntityAttribute> GetEntitiyAttributes()
+        public static IQueryable<EntityAttribute> GetEntitiyAttributes()
         {
             var rockContext = new RockContext();
 
@@ -91,7 +92,7 @@ namespace Rock.Lava
             AttributeService attributeService = new AttributeService( rockContext );
             var attributes = attributeService.Queryable();
 
-            return entityTypes.Join( attributes,
+            return entityTypes.Where( t => t.FriendlyName != null && t.FriendlyName.Trim() != string.Empty ).Join( attributes,
                 t => t.Id, 
                 a => a.EntityTypeId, 
                 ( type, attribute ) => new EntityAttribute
@@ -106,60 +107,116 @@ namespace Rock.Lava
         /// </summary>
         /// <param name="lavaText">The lava text.</param>
         /// <returns></returns>
-        private string ReplaceGlobal( string lavaText, ref bool isUpdated )
+        public string ReplaceGlobal( string lavaText, ref bool isUpdated )
         {
             if ( lavaText.IsNullOrWhiteSpace() )
             {
                 return lavaText;
             }
-
-            int startIndex = lavaText.IndexOf( "GlobalAttribute" );
-            while ( lavaText.Contains( "GlobalAttribute." ) )
+            try
             {
-                isUpdated = true;
-                int stopIndex = lavaText.IndexOf( " ", startIndex ) - startIndex;
-                string legacyNotation = lavaText.Substring( startIndex, stopIndex ).Trim();
-                string globalAttribute = legacyNotation.Split( '.' )[1];
-                lavaText = lavaText.Replace( legacyNotation, $"''Global'' | Attribute:''{globalAttribute}''" );
-                startIndex = lavaText.IndexOf( "GlobalAttribute" );
-            }
+                int startIndex = lavaText.IndexOf( "GlobalAttribute" );
+                while ( lavaText.Contains( "GlobalAttribute." ) )
+                {
+                    isUpdated = true;
+                    int stopIndex = lavaText.IndexOf( "}}", startIndex ) - startIndex;
+                    string legacyNotation = lavaText.Substring( startIndex, stopIndex ).Trim();
+                    string globalAttribute = legacyNotation.Split( '.' )[1];
+                    lavaText = lavaText.Replace( legacyNotation, $"'Global' | Attribute:'{globalAttribute}'" );
+                    startIndex = lavaText.IndexOf( "GlobalAttribute" );
+                }
 
+            }
+            catch ( Exception e )
+            {
+                System.Diagnostics.Debug.WriteLine( e.Message );
+                throw;
+            }
+            
             return lavaText;
         }
 
-        private string ReplaceUnformatted( string lavaText, ref bool isUpdated )
+        /// <summary>
+        /// Finds and replaces all instances of {{ *_unformatted* }} with {{ *, 'RawValue' }}
+        /// </summary>
+        /// <param name="lavaText">The lava text.</param>
+        /// <param name="isUpdated">if set to <c>true</c> [is updated].</param>
+        /// <returns></returns>
+        public string ReplaceUnformatted( string lavaText, ref bool isUpdated )
         {
-            if ( lavaText.IsNullOrWhiteSpace() )
+            if ( lavaText.IsNullOrWhiteSpace() || !lavaText.Contains( "{{" ) )
             {
                 return lavaText;
             }
 
-            if ( lavaText.Contains( "_unformatted" ) )
+            try
             {
-                isUpdated = true;
-                lavaText = lavaText.Replace( "_unformatted", ", ''RawValue''" );
+                Regex regex = new Regex( @"{{(.*?)_unformatted(.*?)}}" );
+                MatchCollection matches = regex.Matches( lavaText );
+                if ( matches.Count > 0 )
+                {
+                    isUpdated = true;
+                    foreach ( Match match in matches )
+                    {
+                        string oldLava = match.Value;
+                        string newLava = oldLava.Replace( "_unformatted", ",'RawValue'" );
+                        lavaText = lavaText.Replace( oldLava, newLava );
+                    }
+                }
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex, null );
+                throw;
             }
 
             return lavaText;
         }
 
-        private string ReplaceUrl( string lavaText, ref bool isUpdated )
+        /// <summary>
+        /// Finds and replaces all instances of {{ *_url* }} with {{ *, 'Url' }}
+        /// </summary>
+        /// <param name="lavaText">The lava text.</param>
+        /// <param name="isUpdated">if set to <c>true</c> [is updated].</param>
+        /// <returns></returns>
+        public string ReplaceUrl( string lavaText, ref bool isUpdated )
         {
-            if ( lavaText.IsNullOrWhiteSpace() )
+            if ( lavaText.IsNullOrWhiteSpace() || !lavaText.Contains( "{{" ) )
             {
                 return lavaText;
             }
-
-            if ( lavaText.Contains( "_url" ) )
+            
+            try
             {
-                isUpdated = true;
-                lavaText = lavaText.Replace( "_url", ", ''Url''" );
+                Regex regex = new Regex( @"{{(.*?)_url(.*?)}}" );
+                MatchCollection matches = regex.Matches( lavaText );
+                if ( matches.Count > 0 )
+                {
+                    isUpdated = true;
+                    foreach ( Match match in matches )
+                    {
+                        string oldLava = match.Value;
+                        string newLava = oldLava.Replace( "_url", ",'Url'" );
+                        lavaText = lavaText.Replace( oldLava, newLava );
+                    }
+                }
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex, null );
+                throw;
             }
 
             return lavaText;
         }
 
-        private string ReplaceDotNotation( string lavaText, ref bool isUpdated )
+        /// <summary>
+        /// Replaces the dot notation with attribute notation for attributes
+        /// </summary>
+        /// <param name="lavaText">The lava text.</param>
+        /// <param name="isUpdated">if set to <c>true</c> [is updated].</param>
+        /// <returns></returns>
+        public string ReplaceDotNotation( string lavaText, ref bool isUpdated )
         {
             if ( lavaText.IsNullOrWhiteSpace() )
             {
@@ -168,15 +225,20 @@ namespace Rock.Lava
 
             foreach ( EntityAttribute entityAttribute in EntityAttributes )
             {
-                string friendlyName = entityAttribute.EntityTypeLegacyLava.FriendlyName;
+                //if ( entityAttribute.EntityTypeLegacyLava.FriendlyName.IsNullOrWhiteSpace() )
+                //{
+                //    continue;
+                //}
+
+                string friendlyName = entityAttribute.EntityTypeLegacyLava.FriendlyName.Replace( " ", string.Empty );
                 string attributeKey = entityAttribute.AttributeLegacyLava.Key;
-                Regex regex = new Regex( string.Format( DotNotationPattern, friendlyName, attributeKey ), RegexOptions.IgnoreCase );
+                Regex regex = new Regex( $"{{(.*?){friendlyName}.{attributeKey}(.*?)}}", RegexOptions.IgnoreCase );
 
                 if ( regex.IsMatch( lavaText ) )
                 {
                     isUpdated = true;
                     string legacyNotation = $"{friendlyName}.{attributeKey}";
-                    string newLava = $"{friendlyName} | Attribute: ''{attributeKey}''";
+                    string newLava = $"{friendlyName} | Attribute: '{attributeKey}'";
                     lavaText = lavaText.Replace( legacyNotation, newLava );
                 }
             }
@@ -184,12 +246,10 @@ namespace Rock.Lava
             return lavaText;
         }
         /// <summary>
-        /// Checks HtmlContent model for legacy lava and output SQL to correct it
+        /// Checks HtmlContent model for legacy lava and outputs SQL to correct it
         /// Fields evaluated: Content
         /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <param name="attribute">The attribute.</param>
-        private void CheckHtmlContent()
+        public void CheckHtmlContent()
         {
             RockContext rockContext = new RockContext();
             HtmlContentService htmlContentService = new HtmlContentService( rockContext );
@@ -211,15 +271,18 @@ namespace Rock.Lava
 
                 if ( isUpdated )
                 {
-                    string sql = $"UPDATE HtmlContent SET Content = '{htmlContent.Content}' WHERE Id = {htmlContent.Id};";
+                    string sql = $"UPDATE [HtmlContent] SET [Content] = '{htmlContent.Content.Replace( "'", "''" )}' WHERE [Guid] = '{htmlContent.Guid}';";
                     _sqlUpdateScripts.Add( sql );
                 }
             }
         }
 
-        private void CheckAttributeValue()
+        /// <summary>
+        /// Checks AttributeValue model for legacy lava and outputs SQL to correct it.
+        /// Fields evaluated: Value
+        /// </summary>
+        public void CheckAttributeValue()
         {
-            //Value 
             RockContext rockContext = new RockContext();
             AttributeValueService attributeValueService = new AttributeValueService( rockContext );
 
@@ -240,15 +303,18 @@ namespace Rock.Lava
 
                 if ( isUpdated )
                 {
-                    string sql = $"UPDATE AttributeValue SET Value = '{attributeValue.Value}' WHERE Id = {attributeValue.Id};";
+                    string sql = $"UPDATE [AttributeValue] SET [Value] = '{attributeValue.Value.Replace( "'", "''" )}' WHERE [Guid] = '{attributeValue.Guid}';";
                     _sqlUpdateScripts.Add( sql );
                 }
             }
         }
 
-        private void CheckAttribute()
+        /// <summary>
+        /// Checks Attribute model for legacy lava and outputs SQL to correct it.
+        /// Fields evaluated: DefaultValue
+        /// </summary>
+        public void CheckAttribute()
         {
-            //DefaultValue
             RockContext rockContext = new RockContext();
             AttributeService attributeService = new AttributeService( rockContext );
 
@@ -269,16 +335,18 @@ namespace Rock.Lava
 
                 if ( isUpdated )
                 {
-                    string sql = $"UPDATE Attribute SET DefaultValue = '{attribute.DefaultValue}' WHERE ID = {attribute.Id};";
+                    string sql = $"UPDATE [Attribute] SET [DefaultValue] = '{attribute.DefaultValue.Replace( "'", "''" )}' WHERE [Guid] = '{attribute.Guid}';";
                     _sqlUpdateScripts.Add( sql );
                 }
             }
         }
 
-
-        private void CheckCommunicationTemplate()
+        /// <summary>
+        /// Checks CommunicationTemplate model for legacy lava and outputs SQL to correct it.
+        /// Fields evaluated: MediumDataJson Subject
+        /// </summary>
+        public void CheckCommunicationTemplate()
         {
-            //MediumDataJson [Subject] 
             RockContext rockContext = new RockContext();
             CommunicationTemplateService communicationTemplateService = new CommunicationTemplateService( rockContext );
 
@@ -304,103 +372,239 @@ namespace Rock.Lava
 
                 if ( isUpdated )
                 {
-                    string sql = $"UPDATE CommunicationTemplate SET MediumDataJson = '{communicationTemplate.MediumDataJson}', [Subject] = '{communicationTemplate.Subject}' WHERE ID = {communicationTemplate.Id};";
+                    string sql = $"UPDATE [CommunicationTemplate] SET [MediumDataJson] = '{communicationTemplate.MediumDataJson.Replace( "'", "''" )}', [Subject] = '{communicationTemplate.Subject.Replace( "'", "''" )}' WHERE [Guid] = '{communicationTemplate.Guid}';";
                     _sqlUpdateScripts.Add( sql );
                 }
             }
         }
 
-
-        private void CheckSystemEmail()
+        /// <summary>
+        /// Checks SystemEmail model for legacy lava and outputs SQL to correct it.
+        /// Fields evaluated: Title From To Cc Bcc Subject Body
+        /// </summary>
+        public void CheckSystemEmail()
         {
-            //Title [From] [To] [Cc] [Bcc] [Subject] [Body] 
-            RockContext rockContext = new RockContext();
-            SystemEmailService systemEmailService = new SystemEmailService( rockContext );
+            try
+            {
 
-            foreach ( SystemEmail systemEmail in systemEmailService.Queryable().ToList() )
+                RockContext rockContext = new RockContext();
+                SystemEmailService systemEmailService = new SystemEmailService( rockContext );
+
+                foreach ( SystemEmail systemEmail in systemEmailService.Queryable().ToList() )
+                {
+                    // don't change if modified
+                    if ( systemEmail.ModifiedDateTime != null )
+                    {
+                        continue;
+                    }
+
+                    bool isUpdated = false;
+
+                    systemEmail.Title = ReplaceUnformatted( systemEmail.Title, ref isUpdated );
+                    systemEmail.Title = ReplaceUrl( systemEmail.Title, ref isUpdated );
+                    systemEmail.Title = ReplaceGlobal( systemEmail.Title, ref isUpdated );
+                    systemEmail.Title = ReplaceDotNotation( systemEmail.Title, ref isUpdated );
+
+                    systemEmail.From = ReplaceUnformatted( systemEmail.From, ref isUpdated );
+                    systemEmail.From = ReplaceUrl( systemEmail.From, ref isUpdated );
+                    systemEmail.From = ReplaceGlobal( systemEmail.From, ref isUpdated );
+                    systemEmail.From = ReplaceDotNotation( systemEmail.From, ref isUpdated );
+
+                    systemEmail.To = ReplaceUnformatted( systemEmail.To, ref isUpdated );
+                    systemEmail.To = ReplaceUrl( systemEmail.To, ref isUpdated );
+                    systemEmail.To = ReplaceGlobal( systemEmail.To, ref isUpdated );
+                    systemEmail.To = ReplaceDotNotation( systemEmail.To, ref isUpdated );
+
+                    systemEmail.Cc = ReplaceUnformatted( systemEmail.Cc, ref isUpdated );
+                    systemEmail.Cc = ReplaceUrl( systemEmail.Cc, ref isUpdated );
+                    systemEmail.Cc = ReplaceGlobal( systemEmail.Cc, ref isUpdated );
+                    systemEmail.Cc = ReplaceDotNotation( systemEmail.Cc, ref isUpdated );
+
+                    systemEmail.Bcc = ReplaceUnformatted( systemEmail.Bcc, ref isUpdated );
+                    systemEmail.Bcc = ReplaceUrl( systemEmail.Bcc, ref isUpdated );
+                    systemEmail.Bcc = ReplaceGlobal( systemEmail.Bcc, ref isUpdated );
+                    systemEmail.Bcc = ReplaceDotNotation( systemEmail.Bcc, ref isUpdated );
+
+                    systemEmail.Subject = ReplaceUnformatted( systemEmail.Subject, ref isUpdated );
+                    systemEmail.Subject = ReplaceUrl( systemEmail.Subject, ref isUpdated );
+                    systemEmail.Subject = ReplaceGlobal( systemEmail.Subject, ref isUpdated );
+                    systemEmail.Subject = ReplaceDotNotation( systemEmail.Subject, ref isUpdated );
+
+                    systemEmail.Body = ReplaceUnformatted( systemEmail.Body, ref isUpdated );
+                    systemEmail.Body = ReplaceUrl( systemEmail.Body, ref isUpdated );
+                    systemEmail.Body = ReplaceGlobal( systemEmail.Body, ref isUpdated );
+                    systemEmail.Body = ReplaceDotNotation( systemEmail.Body, ref isUpdated );
+
+                    if ( isUpdated )
+                    {
+                        StringBuilder sb = new StringBuilder();
+                        sb.AppendLine( "UPDATE[SystemEmail]" );
+                        if ( systemEmail.Title != null )
+                        {
+                            sb.AppendLine( $"SET [Title] = '{systemEmail.Title.Replace( "'", "''" )}', " );
+                        }
+
+                        if( systemEmail.From != null )
+                        {
+                            sb.AppendLine( $"[From] = '{systemEmail.From.Replace( "'", "''" )}', " );
+                        }
+
+                        if ( systemEmail.To != null)
+                        {
+                            sb.AppendLine( $"[To] = '{systemEmail.To.Replace( "'", "''" )}', " );
+                        }
+
+                        if ( systemEmail.Cc != null)
+                        {
+                            sb.AppendLine( $"[Cc] = '{systemEmail.Cc.Replace( "'", "''" )}', " );
+                        }
+
+                        if ( systemEmail.Bcc != null )
+                        {
+                            sb.AppendLine( $"[Bcc] = '{systemEmail.Bcc.Replace( "'", "''" )}', " );
+                        }
+
+                        if ( systemEmail.Subject != null )
+                        {
+                            sb.AppendLine( $"[Subject] = '{systemEmail.Subject.Replace( "'", "''" )}' , " );
+                        }
+
+                        if ( systemEmail.Body != null )
+                        {
+                            sb.AppendLine( $"[Body] = '{systemEmail.Body.Replace( "'", "''" )}' " );
+                        }
+
+                        sb.AppendLine( $"WHERE [Guid] = '{systemEmail.Guid}';" );
+
+                        _sqlUpdateScripts.Add( sb.ToString() );
+                    }
+                }
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex, null );
+                throw;
+            }
+        
+        }
+
+        /// <summary>
+        /// Checks WorkflowActionFormAttribute model for legacy lava and outputs SQL to correct it.
+        /// Fields evaluated: PreHtml PostHtml
+        /// </summary>
+        public void CheckWorkflowActionFormAttribute()
+        {
+            RockContext rockContext = new RockContext();
+            WorkflowActionFormAttributeService workflowActionFormAttributeService = new WorkflowActionFormAttributeService( rockContext );
+
+            foreach ( WorkflowActionFormAttribute workflowActionFormAttribute in workflowActionFormAttributeService.Queryable().ToList() )
             {
                 // don't change if modified
-                if ( systemEmail.ModifiedDateTime != null )
+                if ( workflowActionFormAttribute.ModifiedDateTime != null )
                 {
                     continue;
                 }
 
                 bool isUpdated = false;
 
-                systemEmail.Title = ReplaceUnformatted( systemEmail.Title, ref isUpdated );
-                systemEmail.Title = ReplaceUrl( systemEmail.Title, ref isUpdated );
-                systemEmail.Title = ReplaceGlobal( systemEmail.Title, ref isUpdated );
-                systemEmail.Title = ReplaceDotNotation( systemEmail.Title, ref isUpdated );
+                workflowActionFormAttribute.PreHtml = ReplaceUnformatted( workflowActionFormAttribute.PreHtml, ref isUpdated );
+                workflowActionFormAttribute.PreHtml = ReplaceUrl( workflowActionFormAttribute.PreHtml, ref isUpdated );
+                workflowActionFormAttribute.PreHtml = ReplaceGlobal( workflowActionFormAttribute.PreHtml, ref isUpdated );
+                workflowActionFormAttribute.PreHtml = ReplaceDotNotation( workflowActionFormAttribute.PreHtml, ref isUpdated );
 
-                systemEmail.From = ReplaceUnformatted( systemEmail.From, ref isUpdated );
-                systemEmail.From = ReplaceUrl( systemEmail.From, ref isUpdated );
-                systemEmail.From = ReplaceGlobal( systemEmail.From, ref isUpdated );
-                systemEmail.From = ReplaceDotNotation( systemEmail.From, ref isUpdated );
-
-                systemEmail.To = ReplaceUnformatted( systemEmail.To, ref isUpdated );
-                systemEmail.To = ReplaceUrl( systemEmail.To, ref isUpdated );
-                systemEmail.To = ReplaceGlobal( systemEmail.To, ref isUpdated );
-                systemEmail.To = ReplaceDotNotation( systemEmail.To, ref isUpdated );
-
-                systemEmail.Cc = ReplaceUnformatted( systemEmail.Cc, ref isUpdated );
-                systemEmail.Cc = ReplaceUrl( systemEmail.Cc, ref isUpdated );
-                systemEmail.Cc = ReplaceGlobal( systemEmail.Cc, ref isUpdated );
-                systemEmail.Cc = ReplaceDotNotation( systemEmail.Cc, ref isUpdated );
-
-                systemEmail.Bcc = ReplaceUnformatted( systemEmail.Bcc, ref isUpdated );
-                systemEmail.Bcc = ReplaceUrl( systemEmail.Bcc, ref isUpdated );
-                systemEmail.Bcc = ReplaceGlobal( systemEmail.Bcc, ref isUpdated );
-                systemEmail.Bcc = ReplaceDotNotation( systemEmail.Bcc, ref isUpdated );
-
-                systemEmail.Subject = ReplaceUnformatted( systemEmail.Subject, ref isUpdated );
-                systemEmail.Subject = ReplaceUrl( systemEmail.Subject, ref isUpdated );
-                systemEmail.Subject = ReplaceGlobal( systemEmail.Subject, ref isUpdated );
-                systemEmail.Subject = ReplaceDotNotation( systemEmail.Subject, ref isUpdated );
-
-                systemEmail.Body = ReplaceUnformatted( systemEmail.Body, ref isUpdated );
-                systemEmail.Body = ReplaceUrl( systemEmail.Body, ref isUpdated );
-                systemEmail.Body = ReplaceGlobal( systemEmail.Body, ref isUpdated );
-                systemEmail.Body = ReplaceDotNotation( systemEmail.Body, ref isUpdated );
+                workflowActionFormAttribute.PostHtml = ReplaceUnformatted( workflowActionFormAttribute.PostHtml, ref isUpdated );
+                workflowActionFormAttribute.PostHtml = ReplaceUrl( workflowActionFormAttribute.PostHtml, ref isUpdated );
+                workflowActionFormAttribute.PostHtml = ReplaceGlobal( workflowActionFormAttribute.PostHtml, ref isUpdated );
+                workflowActionFormAttribute.PostHtml = ReplaceDotNotation( workflowActionFormAttribute.PostHtml, ref isUpdated );
 
                 if ( isUpdated )
                 {
-                    string sql = $@"UPDATE [HtmlContent]
-                        SET [Title] = '{systemEmail.Title}'
-                        , [From] = '{systemEmail.From}'
-                        , [To] = '{systemEmail.To}'
-                        , [Cc] = '{systemEmail.Cc}'
-                        , [Bcc] = '{systemEmail.Bcc}'
-                        , [Subject] = '{systemEmail.Subject}'
-                        , [Body] = '{systemEmail.Body}'
-                        WHERE Id = {systemEmail.Id};";
-
+                    string sql = $"UPDATE [WorkflowActionFormAttribute] SET [PreHtml] = '{workflowActionFormAttribute.PreHtml.Replace( "'", "''" )}', [PostHtml] = '{workflowActionFormAttribute.PostHtml.Replace( "'", "''" )}' WHERE [Guid] = '{workflowActionFormAttribute.Guid}';";
                     _sqlUpdateScripts.Add( sql );
                 }
             }
         }
 
-
-        private void CheckWorkflowActionFormAttribute()
+        /// <summary>
+        /// Checks WorkflowActionForm model for legacy lava and outputs SQL to correct it.
+        /// Fields evaluated: Header Footer
+        /// </summary>
+        public void CheckWorkflowActionForm()
         {
-            //PreHtml PostHtml 
+            RockContext rockContext = new RockContext();
+            WorkflowActionFormService workflowActionFormService = new WorkflowActionFormService( rockContext );
 
+            foreach ( WorkflowActionForm workflowActionForm in workflowActionFormService.Queryable().ToList() )
+            {
+                // don't change if modified
+                if ( workflowActionForm.ModifiedDateTime != null )
+                {
+                    continue;
+                }
+
+                bool isUpdated = false;
+
+                workflowActionForm.Header = ReplaceUnformatted( workflowActionForm.Header, ref isUpdated );
+                workflowActionForm.Header = ReplaceUrl( workflowActionForm.Header, ref isUpdated );
+                workflowActionForm.Header = ReplaceGlobal( workflowActionForm.Header, ref isUpdated );
+                workflowActionForm.Header = ReplaceDotNotation( workflowActionForm.Header, ref isUpdated );
+
+                workflowActionForm.Footer = ReplaceUnformatted( workflowActionForm.Footer, ref isUpdated );
+                workflowActionForm.Footer = ReplaceUrl( workflowActionForm.Footer, ref isUpdated );
+                workflowActionForm.Footer = ReplaceGlobal( workflowActionForm.Footer, ref isUpdated );
+                workflowActionForm.Footer = ReplaceDotNotation( workflowActionForm.Footer, ref isUpdated );
+
+                if ( isUpdated )
+                {
+                    string sql = $"UPDATE [WorkflowActionForm] SET [Header] = '{workflowActionForm.Header.Replace( "'", "''" )}', [Footer] = '{workflowActionForm.Footer.Replace( "'", "''" )}' WHERE [Guid] = '{workflowActionForm.Guid}';";
+                    _sqlUpdateScripts.Add( sql );
+                }
+            }
         }
 
-
-        private void CheckWorkflowActionForm()
+        /// <summary>
+        /// Checks RegistrationTemplateFormField model for legacy lava and outputs SQL to correct it.
+        /// Fields evaluated: PreText PostText 
+        /// </summary>
+        public void CheckRegistrationTemplateFormField()
         {
-            //Header Footer 
+            RockContext rockContext = new RockContext();
+            RegistrationTemplateFormFieldService registrationTemplateFormFieldService = new RegistrationTemplateFormFieldService( rockContext );
+
+            foreach ( RegistrationTemplateFormField registrationTemplateFormField in registrationTemplateFormFieldService.Queryable().ToList() )
+            {
+                // don't change if modified
+                if ( registrationTemplateFormField.ModifiedDateTime != null )
+                {
+                    continue;
+                }
+
+                bool isUpdated = false;
+
+                registrationTemplateFormField.PreText = ReplaceUnformatted( registrationTemplateFormField.PreText, ref isUpdated );
+                registrationTemplateFormField.PreText = ReplaceUrl( registrationTemplateFormField.PreText, ref isUpdated );
+                registrationTemplateFormField.PreText = ReplaceGlobal( registrationTemplateFormField.PreText, ref isUpdated );
+                registrationTemplateFormField.PreText = ReplaceDotNotation( registrationTemplateFormField.PreText, ref isUpdated );
+
+                registrationTemplateFormField.PostText = ReplaceUnformatted( registrationTemplateFormField.PostText, ref isUpdated );
+                registrationTemplateFormField.PostText = ReplaceUrl( registrationTemplateFormField.PostText, ref isUpdated );
+                registrationTemplateFormField.PostText = ReplaceGlobal( registrationTemplateFormField.PostText, ref isUpdated );
+                registrationTemplateFormField.PostText = ReplaceDotNotation( registrationTemplateFormField.PostText, ref isUpdated );
+
+                if ( isUpdated )
+                {
+                    string sql = $"UPDATE [RegistrationTemplateFormField] SET [PreText] = '{registrationTemplateFormField.PreText.Replace( "'", "''" )}', [PostText] = '{registrationTemplateFormField.PostText.Replace( "'", "''" )}' WHERE [Id] = {registrationTemplateFormField.Id};";
+                    _sqlUpdateScripts.Add( sql );
+                }
+            }
         }
 
-
-        private void CheckRegistrationTemplateFormField()
+        /// <summary>
+        /// Checks ReportField model for legacy lava and outputs SQL to correct it.
+        /// Fields evaluated: Selection 
+        /// </summary>
+        public void CheckReportField()
         {
-            //PreText PostText 
-        }
-
-        private void CheckReportField()
-        {
-            //Selection 
             RockContext rockContext = new RockContext();
             ReportFieldService reportFieldService = new ReportFieldService( rockContext );
 
@@ -417,25 +621,11 @@ namespace Rock.Lava
                 reportField.Selection = ReplaceUnformatted( reportField.Selection, ref isUpdated );
                 reportField.Selection = ReplaceUrl( reportField.Selection, ref isUpdated );
                 reportField.Selection = ReplaceGlobal( reportField.Selection, ref isUpdated );
-
-                foreach ( EntityAttribute entityAttribute in EntityAttributes )
-                {
-                    string friendlyName = entityAttribute.EntityTypeLegacyLava.FriendlyName;
-                    string attributeKey = entityAttribute.AttributeLegacyLava.Key;
-                    Regex regex = new Regex( string.Format( DotNotationPattern, friendlyName, attributeKey ), RegexOptions.IgnoreCase );
-
-                    if ( regex.IsMatch( reportField.Selection ) )
-                    {
-                        isUpdated = true;
-                        string legacyNotation = $"{friendlyName}.{attributeKey}";
-                        string newLava = $"{friendlyName} | Attribute: ''{attributeKey}''";
-                        reportField.Selection = reportField.Selection.Replace( legacyNotation, newLava );
-                    }
-                }
+                reportField.Selection = ReplaceDotNotation( reportField.Selection, ref isUpdated );
 
                 if ( isUpdated )
                 {
-                    string sql = $"UPDATE ReportField SET Selection = '{reportField.Selection}' WHERE ID = {reportField.Id};";
+                    string sql = $"UPDATE [ReportField] SET [Selection] = '{reportField.Selection.Replace( "'", "''" )}' WHERE [Id] = {reportField.Id};";
                     _sqlUpdateScripts.Add( sql );
                 }
             }
@@ -443,6 +633,9 @@ namespace Rock.Lava
 
     }
 
+    /// <summary>
+    /// POCO to hold matched EntityAttributes and Attributes
+    /// </summary>
     public class EntityAttribute
     {
         public EntityType EntityTypeLegacyLava { get; set; }
