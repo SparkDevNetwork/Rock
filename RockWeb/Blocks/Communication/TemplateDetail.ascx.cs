@@ -285,6 +285,7 @@ namespace RockWeb.Blocks.Communication
                 if ( communicationTemplate != null )
                 {
                     lTitle.Text = communicationTemplate.Name.FormatAsHtmlTitle();
+                    pdAuditDetails.SetEntity( communicationTemplate, ResolveRockUrl( "~" ) );
                 }
             }
 

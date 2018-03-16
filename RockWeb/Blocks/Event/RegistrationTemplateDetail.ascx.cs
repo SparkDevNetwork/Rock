@@ -2140,6 +2140,7 @@ namespace RockWeb.Blocks.Event
                 pwDetails.Expanded = false;
             }
 
+            pdAuditDetails.Visible = false;
             SetEditMode( true );
 
             LoadDropDowns( rockContext );
