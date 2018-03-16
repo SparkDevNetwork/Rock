@@ -64,11 +64,12 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( control != null && control is DropDownList )
+            var editControl = control as ListControl;
+            if ( editControl != null )
             {
-                return ( (DropDownList)control ).SelectedValue;
+                return editControl.SelectedValue;
             }
-            
+
             return null;
         }
 
@@ -80,12 +81,10 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value != null )
+            var editControl = control as ListControl;
+            if ( editControl != null )
             {
-                if ( control != null && control is DropDownList )
-                {
-                    ( (DropDownList)control ).SelectedValue = value;
-                }
+                editControl.SetValue( value );
             }
         }
 

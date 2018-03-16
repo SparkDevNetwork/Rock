@@ -131,3 +131,19 @@ table th[align='right'] {
     float: left;
 }
 
+
+/* SK Added for checklist*/
+label.strikethrough {
+    text-decoration: line-through;
+}
+
+/* SK Add margin in ListItems*/
+.list-items-rows .controls-row {
+    margin-bottom: 6px;
+}
+
+/* SK Zoom pointer in  Transaction Matching Images*/
+.transaction-image.photo .fluidbox-ghost {
+    cursor: -webkit-zoom-in;
+    cursor: -moz-zoom-in;
+}

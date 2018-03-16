@@ -28,8 +28,13 @@ namespace Rock.Utility.Settings.DataAutomation
         /// </summary>
         public UpdateFamilyCampus()
         {
+            IsMostFamilyAttendanceEnabled = true;
             MostFamilyAttendancePeriod = 90;
+
+            IsMostFamilyGivingEnabled = true;
             MostFamilyGivingPeriod = 90;
+
+            IsIgnoreIfManualUpdateEnabled = true;
             IgnoreIfManualUpdatePeriod = 90;
         }
 
@@ -132,7 +137,12 @@ namespace Rock.Utility.Settings.DataAutomation
         /// <summary>
         /// Use attendance
         /// </summary>
-        UseAttendance = 2
+        UseAttendance = 2,
+
+        /// <summary>
+        /// Use one with highest frequency
+        /// </summary>
+        UseHighestFrequency = 3,
     }
 
     /// <summary>
@@ -162,7 +172,7 @@ namespace Rock.Utility.Settings.DataAutomation
         /// <value>
         /// The based on.
         /// </value>
-        public CampusCriteria BasedOn { get; set; }
+        public CampusCriteria? BasedOn { get; set; }
     }
     
 }

@@ -1221,6 +1221,7 @@ Registration By: {0} Total Cost/Fees:{1}
                                 dvPhone = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK );
                                 break;
                             }
+                        case RegistrationPersonFieldType.ConnectionStatus: return person.ConnectionStatusValueId;
                     }
 
                     if ( dvPhone != null )
@@ -1393,6 +1394,7 @@ Registration By: {0} Total Cost/Fees:{1}
                         case RegistrationPersonFieldType.Campus:
                         case RegistrationPersonFieldType.MaritalStatus:
                         case RegistrationPersonFieldType.Grade:
+                        case RegistrationPersonFieldType.ConnectionStatus:
                                 return typeof( int? );
 
                         case RegistrationPersonFieldType.Address:

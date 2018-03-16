@@ -44,6 +44,9 @@ namespace RockWeb.Blocks.Finance
     [LinkedPage( "View Page", "", false )]
     [LinkedPage( "Add Page", "", false )]
     [AccountsField( "Accounts", "Limit the results to scheduled transactions that match the selected accounts.", false, "", "", 2 )]
+
+    [IntegerField( "Person Token Expire Minutes", "When adding a new scheduled transaction from a person detail page, the number of minutes the person token for the transaction is valid after it is issued.", true, 60, "", 3 )]
+    [IntegerField( "Person Token Usage Limit", "When adding a new scheduled transaction from a person detail page, the maximum number of times the person token for the transaction can be used.", false, 1, "", 4 )]
     [ContextAware]
     public partial class ScheduledTransactionList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
@@ -78,12 +81,15 @@ namespace RockWeb.Blocks.Finance
 
             gList.DataKeyNames = new string[] { "Id" };
             gList.Actions.ShowAdd = canEdit && !string.IsNullOrWhiteSpace( GetAttributeValue( "AddPage" ) );
+            gList.Actions.AddClick += gList_Add;
+
             gList.IsDeleteEnabled = canEdit;
 
             if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "ViewPage" ) ) )
             {
                 gList.RowSelected += gList_Edit;
             }
+
             gList.GridRebind += gList_GridRebind;
 
             TargetPerson = ContextEntity<Person>();
@@ -199,7 +205,17 @@ namespace RockWeb.Blocks.Finance
         protected void gList_Add( object sender, EventArgs e )
         {
             var parms = new Dictionary<string, string>();
-            parms.Add( "Person", TargetPerson.UrlEncodedKey );
+            var addScheduledTransactionPage = new Rock.Web.PageReference( GetAttributeValue( "AddPage" ) );
+            if ( addScheduledTransactionPage != null )
+            {
+                // create a limited-use personkey that will last long enough for them to go thru all the 'postbacks' while posting a transaction
+                if ( this.TargetPerson != null )
+                {
+                    var impersonationToken = this.TargetPerson.GetImpersonationToken( DateTime.Now.AddMinutes( this.GetAttributeValue( "PersonTokenExpireMinutes" ).AsIntegerOrNull() ?? 60 ), this.GetAttributeValue( "PersonTokenUsageLimit" ).AsIntegerOrNull(), addScheduledTransactionPage.PageId );
+                    parms.Add( "Person", impersonationToken );
+                }
+            }
+            
             NavigateToLinkedPage( "AddPage", parms );
         }
 

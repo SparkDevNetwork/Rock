@@ -2,7 +2,6 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
-        
         <asp:panel ID="pnlContent" runat="server" CssClass="panel panel-block">
             
             <div class="panel-heading">

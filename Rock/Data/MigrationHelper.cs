@@ -396,6 +396,41 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Updates the System Setting or adds it if it doesn't exist
+        /// </summary>
+        /// <param name="attributeKey">The attribute key.</param>
+        /// <param name="value">The value.</param>
+        public void UpdateSystemSetting( string attributeKey, string value )
+        {
+            var attributeName = attributeKey.SplitCase();
+            string updateSql = $@"
+                DECLARE 
+                    @FieldTypeId int
+                    ,@AttributeId int
+                
+                SET @FieldTypeId = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{Rock.SystemGuid.FieldType.TEXT}')
+                SET @AttributeId = (SELECT [Id]
+                    FROM [Attribute]
+                    WHERE [EntityTypeId] is null
+                    AND [EntityTypeQualifierColumn] = '{Rock.Model.Attribute.SYSTEM_SETTING_QUALIFIER}'
+                    AND [Key] = '{attributeKey}')
+
+                IF @AttributeId IS NULL
+                BEGIN
+                    INSERT INTO [Attribute] (
+                        [IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
+                        [Order],[IsGridColumn],[IsMultiValue],[IsRequired],                        
+                        [Key],[Name],[DefaultValue], [Guid])
+                    VALUES(
+                        1,@FieldTypeId,NULL,'{Rock.Model.Attribute.SYSTEM_SETTING_QUALIFIER}','',
+                        0,0,0,0,
+                        '{attributeKey}','{attributeName}', '{value.Replace("'", "''")}', NEWID())
+                END";
+
+            Migration.Sql( updateSql );
+        }
+
+        /// <summary>
         /// Deletes the Layout.
         /// </summary>
         /// <param name="guid">The GUID.</param>

@@ -93,7 +93,7 @@ namespace Rock.Reporting.DataFilter.PrayerRequest
         /// <value>
         /// The title.
         /// </value>
-        public override string GetTitle(Type entityType)
+        public override string GetTitle( Type entityType )
         {
             return "Campus";
         }
@@ -286,4 +286,3 @@ function() {{
         #endregion
     }
 }
-              

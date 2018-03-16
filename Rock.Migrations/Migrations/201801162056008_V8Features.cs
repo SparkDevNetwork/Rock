@@ -307,7 +307,7 @@ namespace Rock.Migrations
 </div>";
             Sql( string.Format( @"UPDATE [GroupType] SET [GroupViewLavaTemplate] = '{0}'", lavaTemplate.Replace( "'", "''" ) ) );
 
-            Rock.Web.SystemSettings.SetValue( "core_templates_GroupViewTemplate", lavaTemplate );
+            RockMigrationHelper.UpdateSystemSetting( "core_templates_GroupViewTemplate", lavaTemplate );
 
             #endregion
 
@@ -675,9 +675,9 @@ namespace Rock.Migrations
             RockMigrationHelper.AddAttributeQualifier( "E47870C0-17C7-4556-A922-D7866DFC2C57", "falsetext", "No", "0EBAAE3D-DC46-4834-8EE7-F44CA07D43E6" );
             RockMigrationHelper.AddAttributeQualifier( "E47870C0-17C7-4556-A922-D7866DFC2C57", "truetext", "Yes", "C322A622-C1FE-45C7-87B8-60A357BDC2D8" );
 
-            RockMigrationHelper.AddDefinedValue( "E17D5988-0372-4792-82CF-9E37C79F7319", "Does not attend with family", "The individual has not attended with family.", "2BDE800A-C562-4077-9636-5C68770D9676", false );
-            RockMigrationHelper.AddDefinedValueAttributeValue( "05D35BC4-5816-4210-965F-1BF44F35A16A", "E47870C0-17C7-4556-A922-D7866DFC2C57", @"False" );
-            RockMigrationHelper.AddDefinedValueAttributeValue( "2BDE800A-C562-4077-9636-5C68770D9676", "E47870C0-17C7-4556-A922-D7866DFC2C57", @"False" );
+            RockMigrationHelper.UpdateDefinedValue( "E17D5988-0372-4792-82CF-9E37C79F7319", "Does not attend with family", "The individual has not attended with family.", "2BDE800A-C562-4077-9636-5C68770D9676", false );
+            RockMigrationHelper.AddDefinedValueAttributeValue( "05D35BC4-5816-4210-965F-1BF44F35A16A", "E47870C0-17C7-4556-A922-D7866DFC2C57", @"False", false );
+            RockMigrationHelper.AddDefinedValueAttributeValue( "2BDE800A-C562-4077-9636-5C68770D9676", "E47870C0-17C7-4556-A922-D7866DFC2C57", @"False", false );
 
             #endregion
 
