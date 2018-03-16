@@ -2471,6 +2471,7 @@ namespace RockWeb.Blocks.Event
                 lWizardInstanceName.Text = instance.Name;
             }
 
+            pdAuditDetails.Visible = false;
             SetEditMode( true );
 
             rieDetails.SetValue( instance );
