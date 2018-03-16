@@ -37,19 +37,7 @@ namespace Rock
             if ( !string.IsNullOrWhiteSpace( str ) )
             {
                 // Remove any HTML
-                string encodedStr = HttpUtility.HtmlEncode( str );
-
-                // split first word from rest of string
-                int endOfFirstWord = encodedStr.IndexOf( " " );
-
-                if ( endOfFirstWord != -1 )
-                {
-                    return "<span class='first-word'>" + encodedStr.Substring( 0, endOfFirstWord ) + " </span> " + encodedStr.Substring( endOfFirstWord, encodedStr.Length - endOfFirstWord );
-                }
-                else
-                {
-                    return "<span class='first-word'>" + encodedStr + " </span>";
-                }
+                return HttpUtility.HtmlEncode( str );
             }
 
             return string.Empty;
@@ -146,6 +134,28 @@ namespace Rock
 
             // Now we pass it to sanitizer and then convert those section-symbols to <br/>
             return str.SanitizeHtml().Replace( "\u00A7", "<br/>" );
+        }
+
+        /// <summary>
+        /// Scrubs the HTML but retains "&lt;br/&gt;",changes "&lt;/p/&gt;" to "&lt;br//&gt;&lt;br/&gt;", and "\r\n" to "&lt;br/&gt;".
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static string ScrubHtmlForGridDisplay( this string str )
+        {
+            if ( string.IsNullOrWhiteSpace(str) )
+            {
+                return string.Empty;
+            }
+
+            // Note: \u00A7 is the section symbol, \u00A6 is the broken bar symbol
+            // First convert HTML breaks to a character that can pass through the Sanitizer.
+            str = str.Replace( "<br/>", "\u00A7" ).Replace( "<br />", "\u00A7" );
+            str = str.Replace( "</p>", "\u00A6" );
+
+            // Now sanitize and convert the symbols to breaks
+            str = str.SanitizeHtml().Replace( "\u00A7", "<br/>" ).Replace( "\u00A6", "<br/><br/>" ).Replace( "\r\n", "<br/>" );
+            return str;
         }
 
         /// <summary>

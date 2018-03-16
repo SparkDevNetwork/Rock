@@ -80,6 +80,10 @@
                                         Help="The column name(s) that contain a person id field to use as the recipient for a communication. If left blank, it will assume a column named 'Id' contains the recipient's person Id." />
 
                                     <Rock:NumberBox ID="nbTimeout" runat="server" Label="Timeout" Help="In seconds." />
+
+                                    <Rock:RockTextBox ID="tbEncryptedFields" runat="server" Label="Encrypted Fields" TextMode="MultiLine" Rows="1" CssClass="input-xlarge"
+                                        Help="Any fields that need to be decrypted before displaying their value." />
+
                                 </div>
 
                                 <div class="col-md-12">

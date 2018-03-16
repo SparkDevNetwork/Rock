@@ -455,7 +455,14 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "actions" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-action btn-xs value-list-add" );
+            var addButtonCssClass = "btn btn-action btn-xs value-list-add";
+            if ( !this.Enabled )
+            {
+                addButtonCssClass += " aspNetDisabled disabled";
+            }
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, addButtonCssClass );
+
             writer.AddAttribute( HtmlTextWriterAttribute.Href, "#" );
             writer.RenderBeginTag( HtmlTextWriterTag.A );
             writer.AddAttribute(HtmlTextWriterAttribute.Class, "fa fa-plus-circle");
@@ -468,50 +475,6 @@ namespace Rock.Web.UI.Controls
 
             writer.RenderEndTag();
             writer.WriteLine();
-
-            RegisterClientScript();
         }
-
-        private void RegisterClientScript()
-        {
-            string script = @"
-;(function () {
-    function updateKeyValues( e ) {
-        var $span = e.closest('span.value-list');
-        var newValue = '';
-        $span.children('span.value-list-rows:first').children('div.controls-row').each(function( index ) {
-            newValue += $(this).children('.js-value-list-input:first').val() + '|'
-        });
-        $span.children('input:first').val(newValue);            
-    }
-
-    $('a.value-list-add').click(function (e) {
-        e.preventDefault();
-        var $ValueList = $(this).closest('.value-list');
-        $ValueList.find('.value-list-rows').append($ValueList.find('.js-value-list-html').val());
-        updateKeyValues($(this));            
-        Rock.controls.modal.updateSize($(this));
-    });
-
-    $(document).on('click', 'a.value-list-remove', function (e) {
-        e.preventDefault();
-        var $rows = $(this).closest('span.value-list-rows');
-        $(this).closest('div.controls-row').remove();
-        updateKeyValues($rows);            
-        Rock.controls.modal.updateSize($(this));
-    });
-
-    $(document).on('keyup', '.js-value-list-input', function (e) {
-        updateKeyValues($(this));            
-    });
-    $(document).on('focusout', '.js-value-list-input', function (e) {
-        updateKeyValues($(this));            
-    });
-})();
-";
-
-            ScriptManager.RegisterStartupScript( this, this.GetType(), "value-list", script, true );
-        }
-
     }
 }

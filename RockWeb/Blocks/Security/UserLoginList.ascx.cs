@@ -107,7 +107,7 @@ namespace RockWeb.Blocks.Security
                 if ( _canEdit && !string.IsNullOrWhiteSpace( hfIdValue.Value ) )
                 {
                     nbErrorMessage.Visible = false;
-                    SetPasswordState();
+                    SetUIControls();
                 }
 
                 ShowDialog();
@@ -256,7 +256,7 @@ namespace RockWeb.Blocks.Security
                 var rockContext = new RockContext();
                 UserLogin userLogin = null;
                 var service = new UserLoginService( rockContext );
-                string newUserName = tbUserName.Text.Trim();
+                string newUserName = tbUserNameEdit.Text.Trim();
 
                 int userLoginId = int.Parse( hfIdValue.Value );
 
@@ -398,7 +398,7 @@ namespace RockWeb.Blocks.Security
         /// </summary>
         private void BindGrid()
         {
-            int personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
+            int personEntityTypeId = EntityTypeCache.Read<Rock.Model.Person>().Id;
             if ( ContextTypesRequired.Any( e => e.Id == personEntityTypeId ) && ContextEntity<Person>() == null )
             {
                 return;
@@ -415,10 +415,10 @@ namespace RockWeb.Blocks.Security
             }
 
             // provider filter
-            Guid guid = Guid.Empty;
-            if ( Guid.TryParse( gfSettings.GetUserPreference( "Authentication Provider" ), out guid ) )
+            Guid? authProviderGuid = gfSettings.GetUserPreference( "Authentication Provider" ).AsGuidOrNull();
+            if ( authProviderGuid.HasValue )
             {
-                qry = qry.Where( l => l.EntityType.Guid.Equals( guid ) );
+                qry = qry.Where( l => l.EntityType.Guid.Equals( authProviderGuid.Value ) );
             }
 
             // created filter
@@ -471,21 +471,37 @@ namespace RockWeb.Blocks.Security
             }
 
             gUserLogins.EntityTypeId = EntityTypeCache.Read<UserLogin>().Id;
-            gUserLogins.DataSource = qry.Sort( sortProperty )
-                .Select( l => new
-                {
-                    Id = l.Id,
-                    UserName = l.UserName,
-                    PersonId = l.PersonId,
-                    PersonName = l.Person.LastName + ", " + l.Person.NickName,
-                    ProviderName = l.EntityType.FriendlyName,
-                    CreatedDateTime = l.CreatedDateTime,
-                    LastLoginDateTime = l.LastLoginDateTime,
-                    IsConfirmed = l.IsConfirmed,
-                    IsLockedOut = l.IsLockedOut,
-                    IsPasswordChangeRequired = l.IsPasswordChangeRequired
-                } ).ToList();
+            gUserLogins.DataSource = qry.Sort( sortProperty ).ToList();
             gUserLogins.DataBind();
+        }
+
+        /// <summary>
+        /// Handles the RowDataBound event of the gUserLogins control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        protected void gUserLogins_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            UserLogin userLogin = e.Row.DataItem as UserLogin;
+            Literal lUserNameOrRemoteProvider = e.Row.FindControl( "lUserNameOrRemoteProvider" ) as Literal;
+            Literal lProviderName = e.Row.FindControl( "lProviderName" ) as Literal;
+            if ( userLogin != null )
+            {
+                lUserNameOrRemoteProvider.Text = userLogin.UserName;
+                if ( userLogin.EntityTypeId.HasValue )
+                {
+                    var entityType = EntityTypeCache.Read( userLogin.EntityTypeId.Value );
+                    if ( entityType != null )
+                    {
+                        var component = AuthenticationContainer.GetComponent( entityType.Name );
+                        lProviderName.Text = entityType.FriendlyName;
+                        if ( !component.PromptForUserName )
+                        {
+                            lUserNameOrRemoteProvider.Text = "(External)";
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -519,7 +535,7 @@ namespace RockWeb.Blocks.Security
                 userLogin = new UserLogin { Id = 0, IsConfirmed = true };
             }
 
-            tbUserName.Text = userLogin.UserName;
+            tbUserNameEdit.Text = userLogin.UserName;
             cbIsConfirmed.Checked = userLogin.IsConfirmed ?? false;
             cbIsLockedOut.Checked = userLogin.IsLockedOut ?? false;
             cbIsRequirePasswordChange.Checked = userLogin.IsPasswordChangeRequired ?? false;
@@ -528,21 +544,26 @@ namespace RockWeb.Blocks.Security
             {
                 compProvider.SetValue( userLogin.EntityType.Guid.ToString().ToUpper() );
             }
+            else
+            {
+                compProvider.SetValue( string.Empty );
+            }
 
             hfIdValue.Value = userLogin.Id.ToString();
 
-            SetPasswordState();
+            SetUIControls();
 
             ShowDialog( "EDITLOGIN", true );
         }
 
         /// <summary>
-        /// Sets the state of the password.
+        /// Set up the controls based on the AuthenticationServiceType
         /// </summary>
-        private void SetPasswordState()
+        private void SetUIControls()
         {
-            tbPassword.Enabled = false;
-            tbPasswordConfirm.Enabled = false;
+            tbUserNameEdit.Visible = true;
+            lUserNameExternal.Visible = false;
+            rcwPassword.Visible = false;
             tbPassword.Required = false;
             tbPasswordConfirm.Required = false;
 
@@ -559,7 +580,11 @@ namespace RockWeb.Blocks.Security
                         cbIsRequirePasswordChange.Checked = false;
                     }
 
-                    if ( component.ServiceType == AuthenticationServiceType.Internal )
+                    rcwPassword.Visible = component.PromptForPassword;
+                    tbUserNameEdit.Visible = component.PromptForUserName;
+                    lUserNameExternal.Visible = !component.PromptForUserName;
+
+                    if ( component.PromptForPassword )
                     {
                         tbPassword.Enabled = true;
                         tbPasswordConfirm.Enabled = true;
@@ -616,5 +641,7 @@ namespace RockWeb.Blocks.Security
         }
 
         #endregion
+
+        
     }
 }

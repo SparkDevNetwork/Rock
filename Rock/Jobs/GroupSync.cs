@@ -181,7 +181,9 @@ namespace Rock.Jobs
                                             // account, add one for them.
                                             string newPassword = string.Empty;
                                             bool createLogin = sync.AddUserAccountsDuringSync;
-                                            if ( createLogin && !person.Users.Any() )
+                                            
+                                            // Only create a login if requested, no logins exist and we have enough information to generate a username.
+                                            if ( createLogin && !person.Users.Any() && !string.IsNullOrWhiteSpace( person.NickName ) && !string.IsNullOrWhiteSpace( person.LastName ) )
                                             {
                                                 newPassword = System.Web.Security.Membership.GeneratePassword( 9, 1 );
                                                 string username = Rock.Security.Authentication.Database.GenerateUsername( person.NickName, person.LastName );

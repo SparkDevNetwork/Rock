@@ -127,13 +127,12 @@ namespace Rock.Lava.Blocks
                     internalMergeFields.AddOrReplace( item.Key, item.Value );
                 }
             }
-            var resolvedMarkup = markup.ResolveMergeFields( internalMergeFields );
 
             var parms = new Dictionary<string, string>();
             parms.Add( "return", "results" );
             parms.Add( "statement", "select" );
 
-            var markupItems = Regex.Matches( resolvedMarkup, "(.*?:'[^']+')" )
+            var markupItems = Regex.Matches( markup, "(.*?:'[^']+')" )
                 .Cast<Match>()
                 .Select( m => m.Value )
                 .ToList();
@@ -143,7 +142,14 @@ namespace Rock.Lava.Blocks
                 var itemParts = item.ToString().Split( new char[] { ':' }, 2 );
                 if ( itemParts.Length > 1 )
                 {
-                    parms.AddOrReplace( itemParts[0].Trim().ToLower(), itemParts[1].Trim().Substring( 1, itemParts[1].Length - 2 ) );
+                    var value = itemParts[1];
+
+                    if ( value.HasMergeFields() )
+                    {
+                        value = value.ResolveMergeFields( internalMergeFields );
+                    }
+
+                    parms.AddOrReplace( itemParts[0].Trim().ToLower(), value.Substring( 1, value.Length - 2 ).Trim() );
                 }
             }
             return parms;

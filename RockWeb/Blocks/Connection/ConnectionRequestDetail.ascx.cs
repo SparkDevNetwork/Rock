@@ -305,7 +305,7 @@ namespace RockWeb.Blocks.Connection
                     int connectionOpportunityId = hfConnectionOpportunityId.ValueAsInt();
 
                     // Check if this person already has a connection request for this opportunity.
-                    var connectionRequest = connectionRequestService.Queryable()
+                    var connectionRequest = connectionRequestService.Queryable().AsNoTracking()
                         .Where( r => r.PersonAliasId == ppRequestor.PersonAliasId.Value && r.ConnectionOpportunityId == connectionOpportunityId &&
                             ( r.ConnectionState == ConnectionState.Active || r.ConnectionState == ConnectionState.FutureFollowUp ) )
                         .FirstOrDefault();
@@ -415,7 +415,7 @@ namespace RockWeb.Blocks.Connection
                     if ( newConnectorPersonAliasId.HasValue && !newConnectorPersonAliasId.Equals( oldConnectorPersonAliasId ) )
                     {
                         var guid = Rock.SystemGuid.ConnectionActivityType.ASSIGNED.AsGuid();
-                        var assignedActivityId = new ConnectionActivityTypeService( rockContext ).Queryable()
+                        var assignedActivityId = new ConnectionActivityTypeService( rockContext ).Queryable().AsNoTracking()
                             .Where( t => t.Guid == guid )
                             .Select( t => t.Id )
                             .FirstOrDefault();
@@ -530,7 +530,7 @@ namespace RockWeb.Blocks.Connection
                     {
                         // ... but always record the connection activity and change the state to connected.
                         var guid = Rock.SystemGuid.ConnectionActivityType.CONNECTED.AsGuid();
-                        var connectedActivityId = connectionActivityTypeService.Queryable()
+                        var connectedActivityId = connectionActivityTypeService.Queryable().AsNoTracking()
                             .Where( t => t.Guid == guid )
                             .Select( t => t.Id )
                             .FirstOrDefault();
@@ -1244,6 +1244,7 @@ namespace RockWeb.Blocks.Connection
                 var connectionRequestActivityService = new ConnectionRequestActivityService( rockContext );
                 var qry = connectionRequestActivityService
                     .Queryable( "ConnectionActivityType,ConnectionOpportunity,ConnectorPersonAlias.Person" )
+                    .AsNoTracking()
                     .Where( a =>
                         a.ConnectionRequest != null &&
                         a.ConnectionRequest.PersonAlias != null &&
@@ -1347,6 +1348,7 @@ namespace RockWeb.Blocks.Connection
                 {
                     var connectionStatus = connectionStatusService
                         .Queryable()
+                        .AsNoTracking()
                         .Where( s =>
                             s.ConnectionTypeId == connectionOpportunity.ConnectionTypeId &&
                             s.IsDefault )
@@ -1403,7 +1405,7 @@ namespace RockWeb.Blocks.Connection
                 // Grants edit access to those in the opportunity's connector groups
                 if ( !editAllowed && CurrentPersonId.HasValue )
                 {
-                    var qryConnectionOpportunityConnectorGroups = new ConnectionOpportunityConnectorGroupService( rockContext ).Queryable()
+                    var qryConnectionOpportunityConnectorGroups = new ConnectionOpportunityConnectorGroupService( rockContext ).Queryable().AsNoTracking()
                         .Where( a => a.ConnectionOpportunityId == connectionOpportunity.Id );
 
                     // Grant edit access to any of those in a non campus-specific connector group
@@ -1415,7 +1417,7 @@ namespace RockWeb.Blocks.Connection
 
                     if ( !editAllowed )
                     {
-                        //If this is a new request, grant edit access to any connector group. Otherwise, match the request's campus to the corresponding campus-specific connector group
+                        // If this is a new request, grant edit access to any connector group. Otherwise, match the request's campus to the corresponding campus-specific connector group
                         foreach ( var groupCampus in qryConnectionOpportunityConnectorGroups
                             .Where( g =>
                                 ( connectionRequest.Id == 0 || ( connectionRequest.CampusId.HasValue && g.CampusId == connectionRequest.CampusId.Value ) ) &&
@@ -2507,12 +2509,6 @@ namespace RockWeb.Blocks.Connection
         }
 
         #endregion
-
-
-
-
-
-
         
     }
 }

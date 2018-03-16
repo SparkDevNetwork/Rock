@@ -107,6 +107,7 @@ namespace Rock.Lava.Blocks
                     _imports.Insert( 0, "Rock.Data" );
                     _imports.Insert( 0, "Rock.Model" );
                     _imports.Insert( 0, "Rock" );
+                    _imports.Insert( 0, "System" );
 
                     // treat this as a script
                     string imports = string.Empty;

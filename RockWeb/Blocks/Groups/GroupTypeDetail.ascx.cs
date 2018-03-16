@@ -1382,6 +1382,7 @@ namespace RockWeb.Blocks.Groups
             cbReceiveRequirementsNotifications.Checked = groupTypeRole.ReceiveRequirementsNotifications;
             cbCanView.Checked = groupTypeRole.CanView;
             cbCanEdit.Checked = groupTypeRole.CanEdit;
+            cbCanManageMembers.Checked = groupTypeRole.CanManageMembers;
 
             nbMinimumRequired.Text = groupTypeRole.MinCount.HasValue ? groupTypeRole.MinCount.ToString() : string.Empty;
             nbMinimumRequired.Help = string.Format(
@@ -1468,6 +1469,7 @@ namespace RockWeb.Blocks.Groups
             groupTypeRole.ReceiveRequirementsNotifications = cbReceiveRequirementsNotifications.Checked;
             groupTypeRole.CanView = cbCanView.Checked;
             groupTypeRole.CanEdit = cbCanEdit.Checked;
+            groupTypeRole.CanManageMembers = cbCanManageMembers.Checked;
             groupTypeRole.MinCount = nbMinimumRequired.Text.AsIntegerOrNull();
             groupTypeRole.MaxCount = nbMaximumAllowed.Text.AsIntegerOrNull();
             groupTypeRole.LoadAttributes();

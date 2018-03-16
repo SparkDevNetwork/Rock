@@ -151,6 +151,7 @@ namespace Rock.Client.Enums
         Email = 0x1,
         SMS = 0x2,
         PushNotification = 0x3,
+        Other = 0x4,
     }
 
     /// <summary>
@@ -503,6 +504,7 @@ namespace Rock.Client.Enums
         HomePhone = 0x9,
         WorkPhone = 0xa,
         Grade = 0xb,
+        ConnectionStatus = 0xc,
     }
 
     /// <summary>

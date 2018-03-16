@@ -136,12 +136,12 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Qualifiers control
         /// </summary>
-        protected PlaceHolder _phQualifiers;
+        protected DynamicPlaceholder _phQualifiers;
 
         /// <summary>
         /// Default value control
         /// </summary>
-        protected PlaceHolder _phDefaultValue;
+        protected DynamicPlaceholder _phDefaultValue;
 
         /// <summary>
         /// Save control
@@ -1104,11 +1104,11 @@ namespace Rock.Web.UI.Controls
                 _ddlFieldType.EnhanceForLongLists = true;
                 Controls.Add( _ddlFieldType );
 
-                _phQualifiers = new PlaceHolder();
+                _phQualifiers = new DynamicPlaceholder(); 
                 _phQualifiers.ID = "phQualifiers";
                 Controls.Add( _phQualifiers );
 
-                _phDefaultValue = new PlaceHolder();
+                _phDefaultValue = new DynamicPlaceholder();
                 _phDefaultValue.ID = "phDefaultValue";
                 Controls.Add( _phDefaultValue );
 
@@ -1435,7 +1435,7 @@ namespace Rock.Web.UI.Controls
                 this.DefaultValue = attribute.DefaultValue;
 
                 this.ReloadQualifiers = false;
-                
+
                 SetSubTitleOnModal( attribute );
             }
 
@@ -1580,7 +1580,7 @@ namespace Rock.Web.UI.Controls
         protected void SetSubTitleOnModal( Model.Attribute attribute )
         {
             ModalDialog modalDialog = this.FirstParentControlOfType<ModalDialog>();
-            if ( modalDialog != null && string.IsNullOrEmpty(modalDialog.SubTitle) )
+            if ( modalDialog != null && ( string.IsNullOrEmpty(modalDialog.SubTitle) || modalDialog.SubTitle.StartsWith( "Id: ") ) )
             {
                 modalDialog.SubTitle = string.Format( "Id: {0}", attribute.Id );
             }

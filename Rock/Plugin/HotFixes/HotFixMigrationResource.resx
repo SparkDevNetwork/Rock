@@ -121,4 +121,19 @@
   <data name="_039_MigrationRollupsForV7_2_UpdateCheckInMergefieldDebugInfo" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>039_migrationrollupsforv7_2_updatecheckinmergefielddebuginfo.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
+  <data name="_041_MigrationRollupsForV7_3_UpdateWizardCommunicationDetailApprovers" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>041_migrationrollupsforv7_3_updatewizardcommunicationdetailapprovers.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_043_MoreMigrationRollupsForV7_3_spCrm_PersonDuplicateFinder" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>043_moremigrationrollupsforv7_3_spcrm_personduplicatefinder.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_043_MoreMigrationRollupsForV7_3_ufnUtility_CsvToTable" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>043_moremigrationrollupsforv7_3_ufnutility_csvtotable.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_047_DataAutomation_FixBenevolenceCaseWorker" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>047_dataautomation_fixbenevolencecaseworker.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_047_DataAutomation_ShortLinkInteractionFix" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>047_dataautomation_shortlinkinteractionfix.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
 </root>

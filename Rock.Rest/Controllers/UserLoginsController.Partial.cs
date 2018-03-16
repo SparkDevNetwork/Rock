@@ -16,6 +16,8 @@
 //
 using System;
 using System.IO;
+using System.Net;
+using System.Net.Http;
 using System.Web.Http;
 using Newtonsoft.Json;
 
@@ -52,6 +54,11 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         public override System.Net.Http.HttpResponseMessage Post( UserLogin value )
         {
+            if ( ( ( UserLoginService ) Service ).GetByUserName( value.UserName ) != null )
+            {
+                return ControllerContext.Request.CreateResponse( HttpStatusCode.Conflict, "The username already exists." );
+            }
+
             SetPasswordFromRest( value );
             return base.Post( value );
         }
