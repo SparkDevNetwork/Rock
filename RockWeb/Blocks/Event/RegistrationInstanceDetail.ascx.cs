@@ -4221,7 +4221,7 @@ namespace RockWeb.Blocks.Event
         private void BindFeesGrid()
         {
             int? instanceId = hfRegistrationInstanceId.Value.AsIntegerOrNull();
-            if (instanceId == null)
+            if ( instanceId == null || instanceId == 0 )
             {
                 return;
             }
@@ -4275,7 +4275,7 @@ namespace RockWeb.Blocks.Event
         private void Populate_ddlFeeName()
         {
             int? instanceId = hfRegistrationInstanceId.Value.AsIntegerOrNull();
-            if ( instanceId == null )
+            if ( instanceId == null || instanceId == 0 )
             {
                 return;
             }
