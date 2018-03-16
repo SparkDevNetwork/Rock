@@ -1464,7 +1464,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                 hlType.Visible = false;
             }
 
-            lWorkflowTypeDescription.Text = workflowType.Description;
+            lWorkflowTypeDescription.Text = workflowType.Description.ConvertMarkdownToHtml();
 
             if ( workflowType.ActivityTypes.Count > 0 )
             {
