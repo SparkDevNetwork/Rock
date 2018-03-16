@@ -695,7 +695,7 @@ namespace RockWeb.Blocks.Cms
                 var descriptionListLeft = new DescriptionList();
                 var descriptionListRight = new DescriptionList();
 
-                descriptionListLeft.Add( "Item's Require Approval", contentChannel.RequiresApproval.ToYesNo() );
+                descriptionListLeft.Add( "Items Require Approval", contentChannel.RequiresApproval.ToYesNo() );
                 descriptionListRight.Add( "Is Indexed", contentChannel.IsIndexEnabled.ToYesNo() );
 
                 if ( contentChannel.EnableRss )

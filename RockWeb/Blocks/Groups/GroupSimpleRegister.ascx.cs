@@ -174,7 +174,7 @@ namespace RockWeb.Blocks.Groups
                         }
                         else
                         {
-                            ShowError( "Configuration Error", "The configured group does not exist, or it's group type does not have a default role configured." );
+                            ShowError( "Configuration Error", "The configured group does not exist, or its group type does not have a default role configured." );
                         }
                     }
                     else
