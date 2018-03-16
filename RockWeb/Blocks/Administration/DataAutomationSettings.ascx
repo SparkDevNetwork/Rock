@@ -192,7 +192,7 @@
                             <Rock:RockCheckBox ID="cbMostFamilyGiving" runat="server" />
                             <Rock:NumberBox ID="nbMostFamilyGiving" runat="server" Label="Calculate campus based on the most family giving to a campus-specific account in the last" AppendText="days" CssClass="input-width-md" Text="90" />
 
-                            <Rock:RockDropDownList ID="ddlAttendanceOrGiving" CssClass="input-width-lg" runat="server" Label="If the calcualted campus for most attendance and most giving are different" />
+                            <Rock:RockDropDownList ID="ddlAttendanceOrGiving" CssClass="input-width-lg" runat="server" Label="If the calculated campus for most attendance and most giving are different" />
                             
                             <Rock:RockCheckBox ID="cbIgnoreIfManualUpdate" runat="server" />
                             <Rock:NumberBox ID="nbIgnoreIfManualUpdate" runat="server" Label="Ignore any family that has had a manual campus update in the last" AppendText="days" CssClass="input-width-md" Text="90" />
