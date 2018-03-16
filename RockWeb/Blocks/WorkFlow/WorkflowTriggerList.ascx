@@ -18,7 +18,7 @@
                             <Rock:RockBoundField DataField="EntityTypeFriendlyName" HeaderText="Entity" />
                             <Rock:EnumField DataField="WorkflowTriggerType" HeaderText="Type" />
                             <Rock:RockBoundField DataField="EntityTypeQualifierColumn" HeaderText="Qualifier Column" />
-                            <Rock:RockBoundField DataField="EntityTypeQualifierValue" HeaderText="Qualifier Value"  />
+                            <Rock:RockBoundField DataField="EntityTypeQualifierValueFormatted" HeaderText="Qualifier Value" HtmlEncode="false" />
                             <Rock:RockBoundField DataField="WorkflowTypeName" HeaderText="Workflow"  />
                             <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
                             <Rock:BoolField DataField="IsActive" HeaderText="Active" SortExpression="IsActive" />
