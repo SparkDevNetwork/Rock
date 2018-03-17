@@ -24,7 +24,7 @@
 
                         <div class="actions margin-t-md">
                             <asp:LinkButton ID="btnFilter" runat="server" AccessKey="m" ToolTip="Alt+m" Text="Filter" CssClass="btn btn-primary btn-sm" OnClick="btnFilter_Click" />
-                            <asp:LinkButton ID="btnFilterSetDefault" runat="server" Text="Set Default" ToolTip="Set the filter to its default values" CssClass="btn btn-link btn-sm pull-right" OnClick="btnFilterSetDefault_Click" />
+                            <asp:LinkButton ID="btnFilterSetDefault" runat="server" Text="Reset Filters" ToolTip="Set the filter to its default values" CssClass="btn btn-link btn-sm pull-right" OnClick="btnFilterSetDefault_Click" />
                         </div>
                     </div>
                 </div>
