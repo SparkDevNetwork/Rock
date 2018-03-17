@@ -661,4 +661,7 @@
   <data name="_201802260423490_Rollup_0225_spCheckin_AttendanceAnalyticsQuery_NonAttendees" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201802260423490_rollup_0225_spcheckin_attendanceanalyticsquery_nonattendees.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
+  <data name="_201803162245569_UpdateLegacyLava" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201803162245569_updatelegacylava.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
 </root>

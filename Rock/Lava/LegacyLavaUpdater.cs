@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -66,17 +67,60 @@ namespace Rock.Lava
                 CheckReportField();
                 OutputToText();
             }
-            catch(Exception e)
+            catch( Exception ex )
             {
-                System.Diagnostics.Debug.WriteLine( e.Message );
+                ExceptionLogService.LogException( ex, null );
+                throw;
+            }
+        }
+
+        public void FindLegacyLavaInFiles()
+        {
+            try
+            {
+                bool isUpdated = false;
+                string basePath = Path.GetFullPath(Path.Combine( System.AppDomain.CurrentDomain.BaseDirectory, "..\\..\\..\\" ));
+
+                var files = System.IO.Directory.EnumerateFiles( basePath, "*.lava", System.IO.SearchOption.AllDirectories );
+                foreach ( string filePath in files )
+                {
+                    string lavaFileText = System.IO.File.ReadAllText( filePath );
+
+                    
+                    lavaFileText = ReplaceUnformatted( lavaFileText, ref isUpdated );
+                    lavaFileText = ReplaceUrl( lavaFileText, ref isUpdated );
+                    lavaFileText = ReplaceGlobal( lavaFileText, ref isUpdated );
+                    lavaFileText = ReplaceDotNotation( lavaFileText, ref isUpdated );
+
+                    if (isUpdated)
+                    {
+                        string s = filePath.Replace( ":", string.Empty ).Replace( "\\", "-" );
+                        OutputToText( $"{s}", lavaFileText );
+                        SQLUpdateScripts.Add($"File: {filePath}");
+                    }
+                }
+                if ( isUpdated )
+                {
+                    OutputToText();
+                }
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex, null );
+                throw;
             }
         }
 
         public void OutputToText()
         {
-
             System.IO.File.WriteAllLines( $"C:\\temp\\LegacyLavaUpdater_UpdateSQL_{DateTime.Now.ToString("yyyyMMdd-HHmmss")}.txt", SQLUpdateScripts );
         }
+
+        public void OutputToText(string fileName, string fileContnets)
+        {
+            System.IO.File.WriteAllText( $"C:\\temp\\LegacyLavaUpdater_{fileName}_{DateTime.Now.ToString( "yyyyMMdd-HHmmss" )}.txt", fileContnets );
+        }
+
 
         /// <summary>
         /// Finds the attributes that are of type Entity..
@@ -127,9 +171,9 @@ namespace Rock.Lava
                 }
 
             }
-            catch ( Exception e )
+            catch ( Exception ex )
             {
-                System.Diagnostics.Debug.WriteLine( e.Message );
+                ExceptionLogService.LogException( ex, null );
                 throw;
             }
             

@@ -15,7 +15,7 @@ namespace Rock.Tests.Rock.Lava
             LegacyLavaUpdater legacyLavaUpdater = new LegacyLavaUpdater();
             legacyLavaUpdater.FindLegacyLava();
 
-            Assert.NotEmpty( legacyLavaUpdater.SQLUpdateScripts );
+            Assert.Empty( legacyLavaUpdater.SQLUpdateScripts );
 
         }
 
@@ -81,6 +81,14 @@ namespace Rock.Tests.Rock.Lava
             LegacyLavaUpdater legacyLavaUpdater = new LegacyLavaUpdater();
             string afterText = legacyLavaUpdater.ReplaceDotNotation(beforeText, ref isUpdated );
             Assert.Equal( expectedText, afterText );
+        }
+
+        [Fact]
+        public void UpdateLegacyLavaFiles()
+        {
+            LegacyLavaUpdater legacyLavaUpdater = new LegacyLavaUpdater();
+            legacyLavaUpdater.FindLegacyLavaInFiles();
+
         }
     }
 }
