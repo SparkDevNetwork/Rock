@@ -1551,6 +1551,7 @@
     <Compile Include="Web\UI\Controls\Grid\EncryptedField.cs" />
     <Compile Include="Web\UI\Controls\Grid\HtmlField.cs" />
     <Compile Include="Web\UI\Controls\Grid\LavaField.cs" />
+    <Compile Include="Web\UI\Controls\ControlMirror.cs" />
     <Compile Include="Web\UI\Controls\ListItems.cs" />
     <Compile Include="Web\UI\Controls\NumberBoxBase.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ContentChannelItemPicker.cs" />

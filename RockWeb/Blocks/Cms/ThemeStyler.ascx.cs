@@ -194,7 +194,7 @@ $('.js-panel-toggle').on('click', function (e) {
                             secondaryValue = originalValue + originalValue.Substring( 1, 3 );
                         }
 
-                        if ( originalValue != textBoxControl.Text && secondaryValue != textBoxControl.Text )
+                        if ( originalValue.ToLower() != textBoxControl.Text.ToLower() && secondaryValue.ToLower() != textBoxControl.Text.ToLower() )
                         {
                             overrideFile.Append( string.Format( "@{0}: {1};{2}", variableName, textBoxControl.Text, Environment.NewLine ) );
                         }
@@ -343,6 +343,7 @@ $('.js-panel-toggle').on('click', function (e) {
         private void BuildControls()
         {
             bool inPanel = false;
+            List<string> lessColorFunctions = new List<string>() { "lighten", "darken", "saturate", "desaturate", "fadein", "fadeout", "fade", "spin", "mix" };
 
             /*Rock.Web.UI.Controls.ImageUploader fupTest = new Rock.Web.UI.Controls.ImageUploader();
             fupTest.ID = "test";
@@ -445,8 +446,7 @@ $('.js-panel-toggle').on('click', function (e) {
                             //     - if the comments tell us it's a color (#color)
                             //     - it's not a less variable (starts with a @)
                             //     - it's not a less color function
-                            List<string> lessColorFunctions = new List<string>() { "lighten", "darken", "saturate", "desaturate", "fadein", "fadeout", "fade", "spin", "mix" };
-
+                            
                             // todo check for less color functions
                             if ( variableParts[2].Contains( "#color" ) && !variableParts[1].StartsWith( "@" ) && !lessColorFunctions.Any( x => variableParts[1].StartsWith( x ) ) )
                             {
@@ -524,6 +524,7 @@ $('.js-panel-toggle').on('click', function (e) {
                                         textbox.Label = variableName;
                                         textbox.ID = variableKey;
                                         textbox.CssClass = "input-width-xl";
+                                        textbox.Help = helpText;
 
                                         // check if override of the variable exists
                                         if ( overrides.ContainsKey( variableKey ) )
