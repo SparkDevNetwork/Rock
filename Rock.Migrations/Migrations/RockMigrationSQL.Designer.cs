@@ -4338,5 +4338,21 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201802260423490_Rollup_0225_spCheckin_AttendanceAnalyticsQuery_NonAttendees", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to -- Update AttributeValues
+        ///----------------------------------------------------------------------------------------------------------------
+        ///
+        ///-- Fix NameValue AttributeValue for Request Set Name for the External Inquiryworkflow
+        ///UPDATE [AttributeValue]
+        ///SET [Value] = &apos;{{ Workflow | Attribute:&apos;&apos;FirstName&apos;&apos; }} {{ Workflow | Attribute:&apos;&apos;LastName&apos;&apos; }} ( {{ Workflow | Attribute:&apos;&apos;Topic&apos;&apos; }} )&apos;
+        ///WHERE AttributeId in (select Id from Attribute where [Guid] = &apos;93852244-A667-4749-961A-D47F88675BE4&apos;)
+        ///	AND [Value] =  [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201803162245569_UpdateLegacyLava {
+            get {
+                return ResourceManager.GetString("_201803162245569_UpdateLegacyLava", resourceCulture);
+            }
+        }
     }
 }
