@@ -139,7 +139,7 @@
                                                     <p><i class="fa fa-bolt"></i><strong>Sweet!</strong> Your package was imported successfully.</p>
                                                     <asp:Repeater ID="rptImportWarnings" runat="server" Visible="False">
                                                         <HeaderTemplate>
-                                                            <p><i class="fa fa-exclamation-triangle"></i>Just a quick head's up...</p>
+                                                            <p><i class="fa fa-exclamation-triangle"></i>Just a quick heads up...</p>
                                                             <ul>
                                                         </HeaderTemplate>
                                                         <ItemTemplate>

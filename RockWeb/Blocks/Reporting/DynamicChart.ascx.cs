@@ -69,7 +69,7 @@ order by YValue desc
 </pre>
 </code>",
               CodeEditorMode.Sql )]
-    [TextField( "Query Params", "The parameters that the stored procedure expects in the format of 'param1=value;param2=value'. Any parameter with the same name as a page parameter (i.e. querystring, form, or page route) will have it's value replaced with the page's current value. A parameter with the name of 'CurrentPersonId' will have it's value replaced with the currently logged in person's id.", false, "" )]
+    [TextField( "Query Params", "The parameters that the stored procedure expects in the format of 'param1=value;param2=value'. Any parameter with the same name as a page parameter (i.e. querystring, form, or page route) will have its value replaced with the page's current value. A parameter with the name of 'CurrentPersonId' will have its value replaced with the currently logged in person's id.", false, "" )]
     [IntegerField( "Chart Height", "", false, 200 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", order: 3 )]
 

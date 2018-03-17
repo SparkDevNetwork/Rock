@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.Cms
     [TextField("RSS Feed Url", "The Url to the RSS feed that the item belongs to.", true, "", "Feed")]
     [IntegerField("Cache Duration", "The length of time (in minutes) that the RSS feed data is stored in cache. If this value is 0, the feed will not be cached. Default is 20 minutes.", false, 20, "Feed")]
     [TextField("CSS File", "An optional CSS File to add to the page for styling. Example \"Styles/rss.css\" would point to a stylesheet in the current theme's style folder.", false, "", "Layout")]
-    [CodeEditorField( "Template", "The liquid template to use for rendering. This template would typically be in the theme's \"Assets/Liquid\" folder.",
+    [CodeEditorField( "Template", "The Lava template to use for rendering. This template would typically be in the theme's \"Assets/Lava\" folder.",
         CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, true, @"{% include '~~/Assets/Lava/RSSFeedItem.lava' %}", "Layout" )]
     [BooleanField( "Include RSS Link", "Flag indicating that an RSS link should be included in the page header.", true, "Feed" )]
     public partial class RSSFeedItem : RockBlock
