@@ -233,7 +233,7 @@ namespace Rock.Web.UI.Controls
             }
             else
             {
-                base.MaxLength = 0;
+                base.MaxLength = dataValidator.ValueMaxLength;
             }
             base.RenderBaseControl( writer );
         }
