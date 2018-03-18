@@ -343,9 +343,19 @@ namespace RockWeb.Blocks.Prayer
             }
 
             descriptionList.Add( "Name", prayerRequest.FullName );
+            string email = null;
             if ( !string.IsNullOrWhiteSpace( prayerRequest.Email ) )
             {
-                descriptionList.Add( "Email", String.Format( "<a href='mailto:{0}'>{0}</a>", prayerRequest.Email ) );
+                email = prayerRequest.Email;
+            }
+            else if ( prayerRequest.RequestedByPersonAlias != null )
+            {
+                email = prayerRequest.RequestedByPersonAlias.Person.Email;
+            }
+
+            if ( !string.IsNullOrEmpty( email ) )
+            {
+                descriptionList.Add( "Email", String.Format( "<a href='mailto:{0}'>{0}</a>", email ) );
             }
             descriptionList.Add( "Campus", prayerRequest.Campus );
             descriptionList.Add( "Request", prayerRequest.Text.ScrubHtmlAndConvertCrLfToBr() );
