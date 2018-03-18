@@ -28,17 +28,14 @@
 
                     <Rock:Grid ID="gCommunication" runat="server" AllowSorting="true" OnRowSelected="gCommunication_RowSelected" OnRowDataBound="gCommunication_RowDataBound">
                         <Columns>
-                             <Rock:RockTemplateField SortExpression="CommunicationType" HeaderText="Type">
+                             <Rock:RockTemplateField SortExpression="CommunicationType" HeaderText="">
                                 <ItemTemplate>
                                    <div class="text-center"><i class="<%# Eval( "TypeIconCssClass" ) %>"></i></div>
                                 </ItemTemplate>
                             </Rock:RockTemplateField>
                             <Rock:RockBoundField DataField="Subject" SortExpression="Subject" HeaderText="Subject" />
-                            <Rock:DateTimeField DataField="CreatedDateTime" SortExpression="CreatedDateTime" ColumnPriority="DesktopLarge" HeaderText="Created" />
-                            <Rock:RockBoundField DataField="Sender.FullName" HeaderText="Created By" SortExpression="Sender.LastName,Sender.NickName" />
                             <Rock:EnumField DataField="Status" SortExpression="Status" HeaderText="Status" />
-                            <Rock:DateTimeField DataField="ReviewedDateTime" SortExpression="ReviewedDateTime" ColumnPriority="DesktopLarge" HeaderText="Reviewed" />
-                            <Rock:RockBoundField DataField="Reviewer.FullName" HeaderText="Reviewed By" ColumnPriority="DesktopLarge" SortExpression="Reviewer.LastName,Reviewer.NickName"  />
+                            <Rock:RockLiteralField HeaderText="Details" ID="lDetails" HeaderStyle-CssClass="grid-columncommand" ItemStyle-CssClass="grid-columncommand" />
                             <Rock:RockBoundField  DataField="SendDateTimeFormat" HtmlEncode="false" ItemStyle-HorizontalAlign="Right" SortExpression="SendDateTime" ColumnPriority="Desktop" HeaderText="Sent" />
                             <Rock:RockTemplateField HeaderText="Recipients" ItemStyle-HorizontalAlign="Center" SortExpression="Recipients">
                                 <ItemTemplate>

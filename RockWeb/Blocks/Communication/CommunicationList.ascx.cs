@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -202,7 +203,25 @@ namespace RockWeb.Blocks.Communication
                 if ( communicationItem != null )
                 {
                     // Hide delete button if there are any successful recipients
-                    e.Row.Cells[9].Controls[0].Visible = communicationItem.DeliveredRecipients <= 0;
+                    e.Row.Cells.OfType<DataControlFieldCell>().First( a => a.ContainingField is DeleteField ).Controls[0].Visible = communicationItem.DeliveredRecipients <= 0;
+
+                    Literal lDetails = e.Row.FindControl( "lDetails" ) as Literal;
+                    if ( lDetails != null )
+                    {
+                        string rockUrlRoot = ResolveRockUrl( "/" );
+                        var details = new StringBuilder();
+                        if ( communicationItem.CreatedDateTime.HasValue && communicationItem.Sender != null )
+                        {
+                            details.AppendFormat( "Created on {1} by {0}<br/>", communicationItem.Sender.GetAnchorTag( rockUrlRoot ),
+                                communicationItem.CreatedDateTime.Value.ToShortDateString() );
+                        }
+                        if ( communicationItem.ReviewedDateTime.HasValue && communicationItem.Reviewer != null )
+                        {
+                            details.AppendFormat( "Created on {1} by {0}", communicationItem.Reviewer.GetAnchorTag( rockUrlRoot ),
+                                communicationItem.ReviewedDateTime.Value.ToShortDateString() );
+                        }
+                        lDetails.Text = details.ToString();
+                    }
 
                     Literal lEmailAnalyticsLink = e.Row.FindControl( "lEmailAnalyticsLink" ) as Literal;
                     if ( lEmailAnalyticsLink != null )
