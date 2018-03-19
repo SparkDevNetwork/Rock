@@ -263,6 +263,8 @@ $('.js-panel-toggle').on('click', function (e) {
         /// </summary>
         public void ShowDetail( string themeName )
         {
+            lThemeName.Text = themeName + " Theme";
+            
             // Font Awesome stuff
             // TODO: Read LESS files for current setup
 
