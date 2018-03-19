@@ -84,8 +84,8 @@ namespace Rock.Lava
                 var files = System.IO.Directory.EnumerateFiles( basePath, "*.lava", System.IO.SearchOption.AllDirectories );
                 foreach ( string filePath in files )
                 {
+                    isUpdated = false;
                     string lavaFileText = System.IO.File.ReadAllText( filePath );
-
                     
                     lavaFileText = ReplaceUnformatted( lavaFileText, ref isUpdated );
                     lavaFileText = ReplaceUrl( lavaFileText, ref isUpdated );
