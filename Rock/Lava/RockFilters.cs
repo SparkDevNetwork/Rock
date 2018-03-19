@@ -722,6 +722,43 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// URLs the encode.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string UrlEncode( string input )
+        {
+            return EscapeDataString( input );
+        }
+
+        /// <summary>
+        /// Uns the escape data string.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string UnescapeDataString( string input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+            else
+            {
+                return Uri.UnescapeDataString( input );
+            }
+        }
+
+        /// <summary>
+        /// URLs the decode.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string UrlDecode( string input )
+        {
+            return UnescapeDataString( input );
+        }
+
+        /// <summary>
         /// Tests if the inputted string matches the regex
         /// </summary>
         /// <param name="input">The input.</param>
