@@ -169,7 +169,7 @@ namespace Rock.Web.UI.Controls
                     result = string.Format( "No {0} Found", RowItemText.Pluralize() );
                 }
 
-                return result;
+                return $"<span class='table-empty'>{result}</span>";
             }
 
             set
