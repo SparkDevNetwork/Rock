@@ -18,6 +18,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -26,6 +27,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Web;
 using System.Web.UI;
 
 namespace RockWeb.Plugins.church_ccv.AdultMinistries
@@ -204,7 +206,8 @@ namespace RockWeb.Plugins.church_ccv.AdultMinistries
             var qryParams = new Dictionary<string, string>();
             qryParams.Add( "WorkflowId", e.RowKeyId.ToString() );
 
-            NavigateToLinkedPage( "DetailPage", qryParams );
+            PageReference pageRef = new PageReference( new Uri( ResolveRockUrlIncludeRoot("~/WorkflowEntry/" + sWorkflowTypeId + "/" + e.RowKeyId.ToString() ) ), HttpContext.Current.Request.ApplicationPath );
+            NavigateToPage( pageRef );
         }
 
         class WorkflowWithAttribs
@@ -280,14 +283,6 @@ namespace RockWeb.Plugins.church_ccv.AdultMinistries
                     filteredList = filteredList.Where( wf => wf.WorkflowName.ToLower( ).Contains( personName.ToLower( ).Trim( ) ) ).ToList();
                 }
 
-                // Ministry Leader
-                string ministryLeader = rFilter.GetUserPreference( "Ministry Leader" );
-                if( string.IsNullOrWhiteSpace( ministryLeader ) == false )
-                {
-                    filteredList = filteredList.Where( wf => (wf.AttribValues.Where( av => av.Key == "MinistryLead" ).FirstOrDefault( ).Value.ToStringSafe( ).ToLower( ) == ministryLeader.ToLower( ).Trim( ) ) ).ToList( );
-                }
-
-
                 // Build Query so that Ministry Leader is populated for filtering / sorting
                 var filteredQueryWithMinistryLeader = filteredList.Select( wf =>
                                             new {
@@ -296,6 +291,13 @@ namespace RockWeb.Plugins.church_ccv.AdultMinistries
                                                 Campus = TryGetCampus( wf.AttribValues.Where( av => av.Key == "Campus" ).FirstOrDefault( ).Value.ToStringSafe( ).AsGuid( ), campusCache ),
                                                 MinistryLeader = TryGetMinistryLead( wf.AttribValues.Where( av => av.Key == "MinistryLead" ).FirstOrDefault( ).Value.ToStringSafe( ).AsGuid( ), paService )
                                             } ).ToList();
+
+                // Now that we have the Ministry Lead's name as text, we can filter it based on what the user typed in
+                string ministryLeader = rFilter.GetUserPreference( "Ministry Leader" );
+                if( string.IsNullOrWhiteSpace( ministryLeader ) == false )
+                {
+                    filteredQueryWithMinistryLeader = filteredQueryWithMinistryLeader.Where( wf => wf.MinistryLeader.ToLower( ).Contains( ministryLeader.ToLower( ).Trim( ) ) ).ToList( );
+                }
                 
                 // ---- End Filters ----
 
