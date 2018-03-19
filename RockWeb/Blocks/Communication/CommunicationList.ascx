@@ -28,7 +28,7 @@
 
                     <Rock:Grid ID="gCommunication" runat="server" AllowSorting="true" OnRowSelected="gCommunication_RowSelected" OnRowDataBound="gCommunication_RowDataBound">
                         <Columns>
-                             <Rock:RockTemplateField SortExpression="CommunicationType" HeaderText="">
+                             <Rock:RockTemplateField SortExpression="CommunicationType" >
                                 <ItemTemplate>
                                    <div class="text-center"><i class="<%# Eval( "TypeIconCssClass" ) %>"></i></div>
                                 </ItemTemplate>
@@ -36,8 +36,8 @@
                             <Rock:RockBoundField DataField="Subject" SortExpression="Subject" HeaderText="Subject" />
                             <Rock:EnumField DataField="Status" SortExpression="Status" HeaderText="Status" />
                             <Rock:RockLiteralField HeaderText="Details" ID="lDetails" HeaderStyle-CssClass="grid-columncommand" ItemStyle-CssClass="grid-columncommand" />
-                            <Rock:RockBoundField  DataField="SendDateTimeFormat" HtmlEncode="false" ItemStyle-HorizontalAlign="Right" SortExpression="SendDateTime" ColumnPriority="Desktop" HeaderText="Sent" />
-                            <Rock:RockTemplateField HeaderText="Recipients" ItemStyle-HorizontalAlign="Center" SortExpression="Recipients">
+                            <Rock:RockBoundField  DataField="SendDateTimeFormat" HtmlEncode="false" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" SortExpression="SendDateTime" ColumnPriority="Desktop" HeaderText="Sent" />
+                            <Rock:RockTemplateField HeaderText="Recipients" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" SortExpression="Recipients">
                                 <ItemTemplate>
                                     <span class="badge badge-success" title="Opened" data-toggle="tooltip" style='<%# (int)Eval("OpenedRecipients") > 0 ? "display:inline-block" : "display:none" %>'><%# Eval("OpenedRecipients") %></span>
                                     <span class="badge badge-info" title="Delivered" data-toggle="tooltip" style='<%# (int)Eval("DeliveredRecipients") > 0 ? "display:inline-block" : "display:none" %>'><%# Eval("DeliveredRecipients") %></span>
