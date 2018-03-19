@@ -312,7 +312,7 @@ td.grid-actions {
     &:after {
       content: "";
       background-image: url(../../../Assets/Images/rock-logo-circle-white.svg);
-      background-size: 45px;
+      background-size: calc(@navbarside-width * .45);
       background-position: center center;
       background-repeat: no-repeat;
       opacity: 0.7;
@@ -531,7 +531,7 @@ td.grid-actions {
   position: relative;
 
   @media (min-width: @screen-sm-min) {
-    margin-left: 100px;
+    margin-left: @navbarside-width;
   }
 }
 
@@ -582,7 +582,7 @@ td.grid-actions {
     width: 100%;
     cursor: default;
     position: fixed;
-    width: 100px;
+    width: @navbarside-width;
     z-index: @zindex-navbar-fixed;
 
     & > li {
@@ -602,7 +602,7 @@ td.grid-actions {
       > i {
         display: block;
         padding: 24px 0;
-        font-size: 2em;
+        font-size: calc(@navbarside-width * .32);
 
         &:hover {
           color: @navbarside-color;
