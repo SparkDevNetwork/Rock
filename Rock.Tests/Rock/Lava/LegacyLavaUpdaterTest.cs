@@ -90,5 +90,19 @@ namespace Rock.Tests.Rock.Lava
             legacyLavaUpdater.FindLegacyLavaInFiles();
 
         }
+
+        /// <summary>
+        /// Make sure we don't match the Report attribute and output Attribute:'Report'edBy
+        /// </summary>
+        [Fact]
+        public void CheckDotNotationPartialMatches()
+        {
+            bool isUpdated = false;
+            string beforeText = "<p>{{ Workflow.ReportedBy }},</p>";
+            string expectedText = "<p>{{ Workflow | Attribute:'ReportedBy' }},</p>";
+            LegacyLavaUpdater legacyLavaUpdater = new LegacyLavaUpdater();
+            string afterText = legacyLavaUpdater.ReplaceDotNotation( beforeText, ref isUpdated );
+            Assert.Equal( expectedText, afterText );
+        }
     }
 }
