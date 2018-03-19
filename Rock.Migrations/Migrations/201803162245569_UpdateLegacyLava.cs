@@ -30,6 +30,7 @@ namespace Rock.Migrations
         public override void Up()
         {
             Sql( MigrationSQL._201803162245569_UpdateLegacyLava );
+            UpdateLavaSupportLevel();
         }
         
         /// <summary>
@@ -37,6 +38,36 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
+        }
+
+        public void UpdateLavaSupportLevel()
+        {
+            Sql( @"DECLARE @LavaSupportLevelAttributeId INT = ( SELECT [Id] FROM [Attribute] WHERE [Guid] = 'C8E30F2B-7476-4B02-86D4-3E5057F03FD5' )
+
+                DECLARE @LavaSupportLevelValueId int = ( SELECT [Id] FROM [AttributeValue] WHERE [AttributeId] = @LavaSupportLevelAttributeId )
+
+                --First check to see if a value exists and create it if not
+                IF( @LavaSupportLevelValueId IS NULL )
+                BEGIN
+                    INSERT INTO AttributeValue( [IsSystem], [AttributeId], [Value], [Guid] )
+                    VALUES(
+                    0--[IsSystem]
+                    , @LavaSupportLevelAttributeId--[AttributeId]
+                    , 'LegacyWithWarning'--[Value]
+                    , NEWID()--[Guid]
+                    )
+                END
+                ELSE
+                BEGIN
+                    -- If there is a row update it if it is Legacy, otherwise leave it alone
+
+                    IF( ( SELECT [Value] FROM [AttributeValue] WHERE Id = @LavaSupportLevelValueId ) = 'Legacy')
+	                BEGIN
+                        UPDATE [AttributeValue]
+                        SET [Value] = 'LegacyWithWarning'
+                        WHERE [Id] = @LavaSupportLevelValueId
+                    END
+                END" );
         }
     }
 }
