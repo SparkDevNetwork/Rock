@@ -854,8 +854,15 @@ body.navbar-side-close {
 // 6. Components          */
 // -------------------------
 // radio buttons & checkboxes - fancy styling
-.radio label, .checkbox label {
+.radio label, 
+.checkbox label {
   padding-left: 0;
+}
+
+.radio-inline label,
+.checkbox label {
+  font-weight: normal;
+  cursor: pointer;
 }
 
 .checkbox-inline:first-child, .radio-inline:first-child {
@@ -872,8 +879,8 @@ body.navbar-side-close {
 }
 
 .checkbox input[type=checkbox]:checked + span.label-text:before,
-.radio-inline input[type=radio]:checked + span.label-text:before,
 .checkbox-inline input[type=checkbox]:checked + span.label-text:before,
+.radio input[type=radio]:checked + span.label-text:before,
 .radio-inline input[type=radio]:checked + span.label-text:before {
   content: @fa-var-check;
   color: @brand-color;
@@ -888,11 +895,11 @@ body.navbar-side-close {
   font-size: 14px;
 }
 
-.radio-inline input[type=radio]:checked + span.label-text:before,
+.radio input[type=radio]:checked + span.label-text:before,
 .radio-inline input[type=radio]:checked + span.label-text:before {
   content: @fa-var-circle;
   font-weight: 900;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .checkbox input[type=checkbox] + span.label-text:before,
