@@ -47,7 +47,7 @@ namespace Rock.Lava
         }
 
         private List<string> _sqlUpdateScripts = new List<string>();
-        private IQueryable<EntityAttribute> EntityAttributes = GetEntitiyAttributes();
+        private IQueryable<EntityAttribute> entityAttributes = GetEntitiyAttributes();
 
         /// <summary>
         /// Finds the legacy lava.
@@ -67,13 +67,16 @@ namespace Rock.Lava
                 CheckReportField();
                 OutputToText();
             }
-            catch( Exception ex )
+            catch ( Exception ex )
             {
                 ExceptionLogService.LogException( ex, null );
                 throw;
             }
         }
 
+        /// <summary>
+        /// Finds the legacy lava in files.
+        /// </summary>
         public void FindLegacyLavaInFiles()
         {
             try
@@ -99,6 +102,7 @@ namespace Rock.Lava
                         SQLUpdateScripts.Add($"File: {filePath}");
                     }
                 }
+
                 if ( isUpdated )
                 {
                     OutputToText();
@@ -111,16 +115,23 @@ namespace Rock.Lava
             }
         }
 
+        /// <summary>
+        /// Outputs to text.
+        /// </summary>
         public void OutputToText()
         {
             System.IO.File.WriteAllLines( $"C:\\temp\\LegacyLavaUpdater_UpdateSQL_{DateTime.Now.ToString("yyyyMMdd-HHmmss")}.txt", SQLUpdateScripts );
         }
 
+        /// <summary>
+        /// Outputs to text.
+        /// </summary>
+        /// <param name="fileName">Name of the file.</param>
+        /// <param name="fileContnets">The file contnets.</param>
         public void OutputToText(string fileName, string fileContnets)
         {
             System.IO.File.WriteAllText( $"C:\\temp\\LegacyLavaUpdater_{fileName}_{DateTime.Now.ToString( "yyyyMMdd-HHmmss" )}.txt", fileContnets );
         }
-
 
         /// <summary>
         /// Finds the attributes that are of type Entity..
@@ -136,14 +147,17 @@ namespace Rock.Lava
             AttributeService attributeService = new AttributeService( rockContext );
             var attributes = attributeService.Queryable();
 
-            return entityTypes.Where( t => t.FriendlyName != null && t.FriendlyName.Trim() != string.Empty ).Join( attributes,
-                t => t.Id, 
-                a => a.EntityTypeId, 
-                ( type, attribute ) => new EntityAttribute
-                {
-                    EntityTypeLegacyLava = type,
-                    AttributeLegacyLava = attribute
-                } );
+            return entityTypes
+                .Where( t => t.FriendlyName != null && t.FriendlyName.Trim() != string.Empty )
+                .Join(
+                    attributes,
+                    t => t.Id, 
+                    a => a.EntityTypeId, 
+                    ( type, attribute ) => new EntityAttribute
+                    {
+                        EntityTypeLegacyLava = type,
+                        AttributeLegacyLava = attribute
+                    } );
         }
 
         /// <summary>
@@ -157,6 +171,7 @@ namespace Rock.Lava
             {
                 return lavaText;
             }
+
             try
             {
                 int startIndex = lavaText.IndexOf( "GlobalAttribute" );
@@ -169,7 +184,6 @@ namespace Rock.Lava
                     lavaText = lavaText.Replace( legacyNotation, $"'Global' | Attribute:'{globalAttribute}'" );
                     startIndex = lavaText.IndexOf( "GlobalAttribute" );
                 }
-
             }
             catch ( Exception ex )
             {
@@ -195,7 +209,7 @@ namespace Rock.Lava
 
             try
             {
-                Regex regex = new Regex( @"{{(.*?)_unformatted(.*?)}}" );
+                Regex regex = new Regex( @"{{{{(.*?)_unformatted(.*?)}}}}" );
                 MatchCollection matches = regex.Matches( lavaText );
                 if ( matches.Count > 0 )
                 {
@@ -232,7 +246,7 @@ namespace Rock.Lava
             
             try
             {
-                Regex regex = new Regex( @"{{(.*?)_url(.*?)}}" );
+                Regex regex = new Regex( @"{{{{(.*?)_url(.*?)}}}}" );
                 MatchCollection matches = regex.Matches( lavaText );
                 if ( matches.Count > 0 )
                 {
@@ -267,28 +281,29 @@ namespace Rock.Lava
                 return lavaText;
             }
 
-            foreach ( EntityAttribute entityAttribute in EntityAttributes )
+            foreach ( EntityAttribute entityAttribute in entityAttributes )
             {
-                //if ( entityAttribute.EntityTypeLegacyLava.FriendlyName.IsNullOrWhiteSpace() )
-                //{
-                //    continue;
-                //}
+                if ( entityAttribute.EntityTypeLegacyLava.FriendlyName.IsNullOrWhiteSpace() )
+                {
+                    continue;
+                }
 
                 string friendlyName = entityAttribute.EntityTypeLegacyLava.FriendlyName.Replace( " ", string.Empty );
                 string attributeKey = entityAttribute.AttributeLegacyLava.Key;
-                Regex regex = new Regex( $"{{(.*?){friendlyName}.{attributeKey}(.*?)}}", RegexOptions.IgnoreCase );
+                Regex regex = new Regex( $"{{{{(.*?){friendlyName}.{attributeKey}([}}, ])(.*?)}}}}", RegexOptions.IgnoreCase );
 
                 if ( regex.IsMatch( lavaText ) )
                 {
                     isUpdated = true;
                     string legacyNotation = $"{friendlyName}.{attributeKey}";
-                    string newLava = $"{friendlyName} | Attribute: '{attributeKey}'";
+                    string newLava = $"{friendlyName} | Attribute:'{attributeKey}'";
                     lavaText = lavaText.Replace( legacyNotation, newLava );
                 }
             }
 
             return lavaText;
         }
+
         /// <summary>
         /// Checks HtmlContent model for legacy lava and outputs SQL to correct it
         /// Fields evaluated: Content
@@ -391,6 +406,7 @@ namespace Rock.Lava
         /// </summary>
         public void CheckCommunicationTemplate()
         {
+            #pragma warning disable 0618
             RockContext rockContext = new RockContext();
             CommunicationTemplateService communicationTemplateService = new CommunicationTemplateService( rockContext );
 
@@ -403,7 +419,7 @@ namespace Rock.Lava
                 }
 
                 bool isUpdated = false;
-
+                
                 communicationTemplate.MediumDataJson = ReplaceUnformatted( communicationTemplate.MediumDataJson, ref isUpdated );
                 communicationTemplate.MediumDataJson = ReplaceUrl( communicationTemplate.MediumDataJson, ref isUpdated );
                 communicationTemplate.MediumDataJson = ReplaceGlobal( communicationTemplate.MediumDataJson, ref isUpdated );
@@ -420,6 +436,8 @@ namespace Rock.Lava
                     _sqlUpdateScripts.Add( sql );
                 }
             }
+
+            #pragma warning restore 0618
         }
 
         /// <summary>
@@ -430,7 +448,6 @@ namespace Rock.Lava
         {
             try
             {
-
                 RockContext rockContext = new RockContext();
                 SystemEmailService systemEmailService = new SystemEmailService( rockContext );
 
@@ -488,7 +505,7 @@ namespace Rock.Lava
                             sb.AppendLine( $"SET [Title] = '{systemEmail.Title.Replace( "'", "''" )}', " );
                         }
 
-                        if( systemEmail.From != null )
+                        if ( systemEmail.From != null )
                         {
                             sb.AppendLine( $"[From] = '{systemEmail.From.Replace( "'", "''" )}', " );
                         }
@@ -529,7 +546,6 @@ namespace Rock.Lava
                 ExceptionLogService.LogException( ex, null );
                 throw;
             }
-        
         }
 
         /// <summary>
@@ -674,7 +690,6 @@ namespace Rock.Lava
                 }
             }
         }
-
     }
 
     /// <summary>
@@ -682,8 +697,20 @@ namespace Rock.Lava
     /// </summary>
     public class EntityAttribute
     {
+        /// <summary>
+        /// Gets or sets the entity type legacy lava.
+        /// </summary>
+        /// <value>
+        /// The entity type legacy lava.
+        /// </value>
         public EntityType EntityTypeLegacyLava { get; set; }
-        public Rock.Model.Attribute AttributeLegacyLava { get; set; }
 
+        /// <summary>
+        /// Gets or sets the attribute legacy lava.
+        /// </summary>
+        /// <value>
+        /// The attribute legacy lava.
+        /// </value>
+        public Rock.Model.Attribute AttributeLegacyLava { get; set; }
     }
 }
