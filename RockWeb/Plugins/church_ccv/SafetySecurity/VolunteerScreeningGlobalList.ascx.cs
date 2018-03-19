@@ -557,7 +557,7 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
         {
             // it's possible that no ministry lead has been assigned yet. In that case, we'll return an empty string
             MinistryLeadResult ministryLead = ministryLeadQueryResult.Where( ml => ml.EntityId == workflow.Id ).SingleOrDefault( );
-            if ( ministryLead != null )
+            if ( ministryLead != null && string.IsNullOrWhiteSpace( ministryLead.MinistryLead ) == false )
             {
                 // make sure the person exists
                 Person person = paService.Get( ministryLead.MinistryLead.AsGuid( ) ).Person;
