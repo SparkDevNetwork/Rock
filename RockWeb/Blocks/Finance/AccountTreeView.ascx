@@ -8,6 +8,7 @@
         <asp:HiddenField ID="hfSelectedAccountId" runat="server" />
         <asp:HiddenField ID="hfPageRouteTemplate" runat="server" />
         <asp:HiddenField ID="hfDetailPageUrl" runat="server" />
+        <asp:HiddenField ID="hfUsePublicName" runat="server" />
 
         <div class="treeview js-accounttreeview">
             <div class="treeview-actions rollover-container" id="divTreeviewActions" runat="server">
@@ -138,7 +139,7 @@
                     })
                     .rockTree({
                         restUrl: '<%=ResolveUrl( "~/api/FinancialAccounts/GetChildren/" ) %>',
-                        restParams: '/'+ ($('#<%=hfexcludeInactiveGroups.ClientID%>').val() || false),
+                        restParams: '/' + ($('#<%=hfexcludeInactiveGroups.ClientID%>').val() || false) + "/" + ($('#<%=hfUsePublicName.ClientID%>').val() || false),
                         multiSelect: false,
                         selectedIds: $selectedId.val() ? $selectedId.val().split(',') : null,
                         expandedIds: $expandedIds.val() ? $expandedIds.val().split(',') : null
