@@ -431,7 +431,7 @@ namespace RockWeb.Blocks.Communication
                     Subject = string.IsNullOrEmpty( c.Subject ) ? c.Name : c.Subject,
                     CreatedDateTime = c.CreatedDateTime,
                     SendDateTime = c.SendDateTime ?? c.FutureSendDateTime,
-                    SendDateTimePrefix = c.SendDateTime == null && c.FutureSendDateTime != null ? "<span class='label label-default'>Future</span>&nbsp;" : "",
+                    SendDateTimePrefix = c.SendDateTime == null && c.FutureSendDateTime != null ? "<span class='label label-info'>Future</span>&nbsp;" : "",
                     Sender = c.SenderPersonAlias != null ? c.SenderPersonAlias.Person : null,
                     ReviewedDateTime = c.ReviewedDateTime,
                     Reviewer = c.ReviewerPersonAlias != null ? c.ReviewerPersonAlias.Person : null,
