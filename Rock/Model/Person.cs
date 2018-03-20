@@ -1307,6 +1307,39 @@ namespace Rock.Model
                 return null;
             }
         }
+        
+        /// <summary>
+        /// Gets the number of days until the Person's anniversary.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the number of days until the Person's anniversary. If the person's anniversary is not available returns Int.MaxValue
+        /// </value>
+        [DataMember]
+        [NotMapped]
+        public virtual int DaysToAnniversary
+        {
+            get
+            {
+                if ( AnniversaryDate.HasValue )
+                {
+                    var today = RockDateTime.Today;
+                    var nextAnniversary = RockDateTime.New( today.Year, AnniversaryDate.Value.Month, AnniversaryDate.Value.Day );
+                    if ( nextAnniversary.HasValue && nextAnniversary.Value.CompareTo( today ) < 0 )
+                    {
+                        nextAnniversary = RockDateTime.New( today.Year + 1, AnniversaryDate.Value.Month, AnniversaryDate.Value.Day );
+                    }
+                    
+                    return Convert.ToInt32( nextAnniversary.Subtract( today ).TotalDays );
+                }
+
+                return Int.MaxValue;
+            }
+            private set
+            {
+                // intentionally blank
+            }
+
+        }
 
         /// <summary>
         /// Gets the next anniversary.
