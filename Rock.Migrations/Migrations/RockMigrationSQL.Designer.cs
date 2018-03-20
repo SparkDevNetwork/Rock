@@ -4354,5 +4354,30 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201803201440110_UpdateLegacyLava", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to BEGIN TRY
+        ///    ALTER TABLE Person
+        ///
+        ///    DROP COLUMN DaysUntilAnniversary
+        ///END TRY
+        ///
+        ///BEGIN CATCH
+        ///END CATCH
+        ///
+        ///ALTER TABLE Person ADD DaysUntilAnniversary AS (
+        ///    CASE 
+        ///        -- if there anniversary is Feb 29 and their next anniversary is this year and it isn&apos;t a leap year, set their anniversary to Feb 28 (this year)
+        ///        WHEN (
+        ///                DATEPART(MONTH, AnniversaryDate) = 2
+        ///                AND DATEPART(DAY, AnniversaryDate) = 29
+        ///                AND datepart(month, sysdatetime()) &lt; 3
+        ///    [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201803201617508_DaysUntilAnniversary {
+            get {
+                return ResourceManager.GetString("_201803201617508_DaysUntilAnniversary", resourceCulture);
+            }
+        }
     }
 }
