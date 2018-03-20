@@ -86,7 +86,7 @@ namespace Rock.Lava.Shortcodes
                 var parms = ParseMarkup( _markup, context );
 
                 // add a unique id so shortcodes have easy access to one
-                parms.Add( "uniqueid", "id-" + Guid.NewGuid().ToString() );
+                parms.AddOrReplace( "uniqueid", "id-" + Guid.NewGuid().ToString() );
 
                 var results = _shortcode.Markup.ResolveMergeFields( parms, _shortcode.EnabledLavaCommands );
                 result.Write( results );
