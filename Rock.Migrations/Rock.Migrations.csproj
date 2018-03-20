@@ -121,10 +121,6 @@
     <Compile Include="Migrations\201803081805523_Communication_AddSendDateTime.Designer.cs">
       <DependentUpon>201803081805523_Communication_AddSendDateTime.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201803162245569_UpdateLegacyLava.cs" />
-    <Compile Include="Migrations\201803162245569_UpdateLegacyLava.Designer.cs">
-      <DependentUpon>201803162245569_UpdateLegacyLava.cs</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.cs" />
     <Compile Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.Designer.cs">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
@@ -2745,9 +2741,6 @@
     <EmbeddedResource Include="Migrations\201803081805523_Communication_AddSendDateTime.resx">
       <DependentUpon>201803081805523_Communication_AddSendDateTime.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201803162245569_UpdateLegacyLava.resx">
-      <DependentUpon>201803162245569_UpdateLegacyLava.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.resx">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
     </EmbeddedResource>
@@ -4985,9 +4978,6 @@
     <Content Include="SqlServerTypes\readme.htm" />
     <None Include="Migrations\201802092340176_Rollup_0209_ufnUtility_CsvToTable.sql">
       <DependentUpon>201802092340176_Rollup_0209.cs</DependentUpon>
-    </None>
-    <None Include="Migrations\201803162245569_UpdateLegacyLava.sql">
-      <DependentUpon>201803162245569_UpdateLegacyLava.cs</DependentUpon>
     </None>
     <None Include="Migrations\Version 6.0\Version 1.6.0\201608101635463_PledgeGroup_SP1.sql" />
     <None Include="Migrations\Version 6.0\Version 1.6.0\201608101635463_PledgeGroup_SP2.sql" />
