@@ -137,6 +137,10 @@
     <Compile Include="Migrations\201803201440110_UpdateLegacyLava.Designer.cs">
       <DependentUpon>201803201440110_UpdateLegacyLava.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201803201617508_DaysUntilAnniversary.cs" />
+    <Compile Include="Migrations\201803201617508_DaysUntilAnniversary.Designer.cs">
+      <DependentUpon>201803201617508_DaysUntilAnniversary.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.cs" />
     <Compile Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.Designer.cs">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
@@ -2769,6 +2773,9 @@
     <EmbeddedResource Include="Migrations\201803201440110_UpdateLegacyLava.resx">
       <DependentUpon>201803201440110_UpdateLegacyLava.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201803201617508_DaysUntilAnniversary.resx">
+      <DependentUpon>201803201617508_DaysUntilAnniversary.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.resx">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
     </EmbeddedResource>
@@ -4728,6 +4735,9 @@
     </Content>
     <Content Include="Migrations\201803201440110_UpdateLegacyLava.sql">
       <DependentUpon>201803201440110_UpdateLegacyLava.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201803201617508_DaysUntilAnniversary.sql">
+      <DependentUpon>201803201617508_DaysUntilAnniversary.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 7.0\Version 1.7.0\201707182207536_AttendanceAnalyticsQuery_NonAttendees.sql">
       <DependentUpon>201707182207536_PageShortLinks.cs</DependentUpon>
