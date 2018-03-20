@@ -71,7 +71,7 @@ namespace RockWeb.Blocks.Finance
         // Dictionaries to cache values for databinding performance
         private Dictionary<int, string> _currencyTypes;
         private Dictionary<int, string> _creditCardTypes;
-        private Dictionary<int, string> _personFullNameReversedLookupByAliasId;
+        private List<PersonDetail> _personDetails;
         private Dictionary<int, FinancialAccount> _financialAccountLookup;
         private Dictionary<int, List<int>> _imageBinaryFileIdLookupByTransactionId;
 
@@ -578,11 +578,14 @@ namespace RockWeb.Blocks.Finance
                     string creditCardType = string.Empty;
 
                     var lPersonFullNameReversed = e.Row.FindControl( "lPersonFullNameReversed" ) as Literal;
-                    if ( lPersonFullNameReversed != null && txn.AuthorizedPersonAliasId.HasValue )
+                    var lPersonId = e.Row.FindControl( "lPersonId" ) as Literal;
+                    if ( lPersonFullNameReversed != null && lPersonId != null && txn.AuthorizedPersonAliasId.HasValue )
                     {
-                        if ( _personFullNameReversedLookupByAliasId.ContainsKey( txn.AuthorizedPersonAliasId.Value ) )
+                        var personDetail = _personDetails.FirstOrDefault( a => a.PersonAliasId == txn.AuthorizedPersonAliasId.Value );
+                        if ( personDetail != null )
                         {
-                            lPersonFullNameReversed.Text = _personFullNameReversedLookupByAliasId[txn.AuthorizedPersonAliasId.Value];
+                            lPersonId.Text = personDetail.PersonId.ToString();
+                            lPersonFullNameReversed.Text = personDetail.FullName;
                         }
                     }
 
@@ -1360,24 +1363,24 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 qry = financialTransactionDetailQry.Select( a => new FinancialTransactionRow
-                    {
-                        Id = a.TransactionId,
-                        BatchId = a.Transaction.BatchId,
-                        TransactionTypeValueId = a.Transaction.TransactionTypeValueId,
-                        ScheduledTransactionId = a.Transaction.ScheduledTransactionId,
-                        AuthorizedPersonAliasId = a.Transaction.AuthorizedPersonAliasId,
-                        TransactionDateTime = a.Transaction.TransactionDateTime.Value,
-                        SourceTypeValueId = a.Transaction.SourceTypeValueId,
-                        TotalAmount = a.Amount,
-                        TransactionCode = a.Transaction.TransactionCode,
-                        ForeignKey = a.Transaction.ForeignKey,
-                        Status = a.Transaction.Status,
-                        SettledDate = a.Transaction.SettledDate,
-                        SettledGroupId = a.Transaction.SettledGroupId,
-                        TransactionDetail = new DetailInfo { AccountId = a.AccountId, Amount = a.Amount, EntityId = a.EntityId, EntityTypeId = a.EntityId },
-                        Summary = a.Transaction.Summary,
-                        FinancialPaymentDetail = new PaymentDetailInfo { CreditCardTypeValueId = a.Transaction.FinancialPaymentDetail.CreditCardTypeValueId, CurrencyTypeValueId = a.Transaction.FinancialPaymentDetail.CurrencyTypeValueId }
-                    }
+                {
+                    Id = a.TransactionId,
+                    BatchId = a.Transaction.BatchId,
+                    TransactionTypeValueId = a.Transaction.TransactionTypeValueId,
+                    ScheduledTransactionId = a.Transaction.ScheduledTransactionId,
+                    AuthorizedPersonAliasId = a.Transaction.AuthorizedPersonAliasId,
+                    TransactionDateTime = a.Transaction.TransactionDateTime.Value,
+                    SourceTypeValueId = a.Transaction.SourceTypeValueId,
+                    TotalAmount = a.Amount,
+                    TransactionCode = a.Transaction.TransactionCode,
+                    ForeignKey = a.Transaction.ForeignKey,
+                    Status = a.Transaction.Status,
+                    SettledDate = a.Transaction.SettledDate,
+                    SettledGroupId = a.Transaction.SettledGroupId,
+                    TransactionDetail = new DetailInfo { AccountId = a.AccountId, Amount = a.Amount, EntityId = a.EntityId, EntityTypeId = a.EntityId },
+                    Summary = a.Transaction.Summary,
+                    FinancialPaymentDetail = new PaymentDetailInfo { CreditCardTypeValueId = a.Transaction.FinancialPaymentDetail.CreditCardTypeValueId, CurrencyTypeValueId = a.Transaction.FinancialPaymentDetail.CurrencyTypeValueId }
+                }
                 );
             }
             else
@@ -1669,14 +1672,20 @@ namespace RockWeb.Blocks.Finance
             }
 
             var qryPersonAlias = new PersonAliasService( rockContext ).Queryable();
-            _personFullNameReversedLookupByAliasId = qryPersonAlias.Where( a => qry.Any( q => q.AuthorizedPersonAliasId.HasValue && q.AuthorizedPersonAliasId == a.Id ) ).Select( a => new
+            _personDetails = qryPersonAlias.Where( a => qry.Any( q => q.AuthorizedPersonAliasId.HasValue && q.AuthorizedPersonAliasId == a.Id ) ).Select( a => new
             {
                 a.Id,
+                PersonId = a.Person.Id,
                 a.Person.LastName,
                 a.Person.NickName,
                 a.Person.SuffixValueId,
                 a.Person.RecordTypeValueId
-            } ).AsNoTracking().ToList().ToDictionary( k => k.Id, v => Person.FormatFullNameReversed( v.LastName, v.NickName, v.SuffixValueId, v.RecordTypeValueId ) );
+            } ).AsNoTracking().ToList().Select( k => new PersonDetail
+            {
+                PersonAliasId = k.Id,
+                PersonId = k.PersonId,
+                FullName = Person.FormatFullNameReversed( k.LastName, k.NickName, k.SuffixValueId, k.RecordTypeValueId )
+            } ).ToList();
 
             if ( showImages )
             {
@@ -1767,7 +1776,7 @@ namespace RockWeb.Blocks.Finance
                 pnlSummary.Visible = false;
             }
         }
-    
+
         /// <summary>
         /// 
         /// </summary>
@@ -1977,6 +1986,13 @@ namespace RockWeb.Blocks.Finance
         {
             public int? CreditCardTypeValueId { get; internal set; }
             public int? CurrencyTypeValueId { get; internal set; }
+        }
+
+        private class PersonDetail
+        {
+            public int PersonAliasId { get; set; }
+            public int PersonId { get; set; }
+            public string FullName { get; set; }
         }
     }
 }
