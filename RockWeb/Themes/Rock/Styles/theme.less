@@ -93,10 +93,6 @@ textarea:focus,
 // 2. Bootstrap Overrides    */
 // -------------------------
 
-.btn {
-  padding: 6px 12px 7px;
-}
-
 .input-group-addon,
 .form-control {
   height: 38px;
@@ -125,8 +121,6 @@ textarea:focus,
   border-radius: 0; // labels always have curves
   font-weight: 400; // make the font light
 }
-
-
 
 .table-bordered > tbody > tr > td {
   border-width: @table-column-border-width;
@@ -870,12 +864,21 @@ body.navbar-side-close {
   }
 }
 
+// family edit
+.editgroup-list li.member .radio .label-text:before {
+  width: 16px;
+  height: 16px;
+  padding-left: 1px;
+  line-height: 12px;
+  font-size: 8px;
+}
+
 /*#endregion */
 /*#region
 // 6. Components          */
 // -------------------------
 // radio buttons & checkboxes - fancy styling
-.radio label, 
+.radio label,
 .checkbox label {
   padding-left: 0;
 }
@@ -920,7 +923,6 @@ body.navbar-side-close {
 .radio-inline input[type=radio]:checked + span.label-text:before {
   content: @fa-var-circle;
   font-weight: 900;
-  font-size: 12px;
 }
 
 .checkbox input[type=checkbox] + span.label-text:before,
@@ -942,6 +944,11 @@ body.navbar-side-close {
   background-color: #fff;
   cursor: pointer;
   pointer-events: none;
+}
+
+.radio input[type=radio] + span.label-text:before,
+.radio-inline input[type=radio] + span.label-text:before {
+  font-size: 13px;
 }
 
 // slider styling
