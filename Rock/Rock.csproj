@@ -2095,6 +2095,7 @@
     <Compile Include="Workflow\Action\WorkflowControl\SetStatus.cs" />
     <Compile Include="Workflow\Action\WorkflowControl\SetWorkflowName.cs" />
     <Compile Include="Workflow\Action\WorkflowControl\UserForm.cs" />
+    <Compile Include="Workflow\Action\WorkflowControl\WebRequest.cs" />
     <Compile Include="Workflow\Action\WorkflowControl\WriteToLog.cs" />
     <Compile Include="Workflow\TriggerCache.cs" />
   </ItemGroup>
