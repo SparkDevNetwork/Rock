@@ -1,30 +1,45 @@
-<div class="panel panel-default list-as-blocks clearfix">
+<style>
+    .table > tbody > tr > td {
+        vertical-align: middle;
+    }
+    
+    table tr td {
+        padding: 8px 12px;
+    }
+    
+    table tr th {
+        padding: 12px;
+    }
+</style>
+
+<div class="panel panel-default list clearfix">
     <div class="panel-body hard">
         <div class="table-responsive">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th class="soft-half">
-                            <h3 class="flush">Pages</h3>
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for childPage in Page.Pages %}
-                    <tr>
-                        <td class="soft-half">
-                            <a href="{{ childPage.Url }}" class="" {% if childPage.DisplayDescription != 'true' %} title="{{ childPage.Description }}"{% endif %}>
-                                {% if childPage.IconCssClass != '' %}
-                                    <i class="{{ childPage.IconCssClass }} fa-lg fa-fw"></i>
-                                {% endif %}
-
-                                <b>{{ childPage.Title }}</b>
-                            </a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <table class="table-striped table-bordered flush">
+          <tr>
+            <th width="30%">Title</th>
+            <th>Description</th>
+            <th width="12%">Action</th>
+          </tr>
+            {% for childPage in Page.Pages %}
+              <tr>
+                <td>
+                    <a href="{{ childPage.Id }}" {% if childPage.DisplayDescription != 'true' %} title="{{ childPage.Description }}"{% endif %}>
+                        {% if childPage.IconCssClass != ' %}
+                            <i class="{{ childPage.IconCssClass }} fa-lg fa-fw"></i>
+                        {% endif %}
+                        <strong>{{ childPage.Title }}</strong>
+                    </a>
+                </td>
+                <td>
+                  {{ childPage.Description }}
+                </td>
+                <td>
+                  <a href="{{ childPage.Id }}" class="btn btn-primary btn-block btn-sm">View Report</a>
+                </td>
+              </tr>
+            {% endfor %}
+        </table>
         </div>
     </div>
 </div>
