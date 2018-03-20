@@ -14,14 +14,14 @@
                     <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue">
                         <Rock:RockCheckBoxList ID="cblCampus" runat="server" Label="Campus" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" />
                         <Rock:RockTextBox ID="tbApplicantName" runat="server" Label="Applicant Name" />
-                        <Rock:RockTextBox ID="tbMinistryLeader" runat="server" Label="Ministry Leader" />
+                        <Rock:DateRangePicker ID="drpDates" runat="server" Label="Starting Point" />
                     </Rock:GridFilter>
 
                     <Rock:Grid ID="gGrid" runat="server" AllowSorting="true" OnRowSelected="gGrid_Edit">
                         <Columns>
-                            <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
+                            <Rock:RockBoundField DataField="Applicant" HeaderText="Applicant" SortExpression="Applicant" />
                             <Rock:RockBoundField DataField="Campus" HeaderText="Campus" SortExpression="Campus" />
-                            <Rock:RockBoundField DataField="MinistryLeader" HeaderText="Ministry Leader" SortExpression="MinistryLeader" />
+                            <Rock:RockBoundField DataField="StartingPoint" HeaderText="Starting Point" SortExpression="StartingPoint" DataFormatString="{0:M/dd/yy}" NullDisplayText="No Date Specified" />
                         </Columns>
                     </Rock:Grid>
                 </div>

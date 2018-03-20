@@ -95,7 +95,7 @@ namespace RockWeb.Plugins.church_ccv.AdultMinistries
         {
             rFilter.SaveUserPreference( "Campus", "Campus", cblCampus.SelectedValues.AsDelimited( ";" ) );
             rFilter.SaveUserPreference( "Applicant Name", tbApplicantName.Text );
-            rFilter.SaveUserPreference( "Ministry Leader", tbMinistryLeader.Text );
+            rFilter.SaveUserPreference( "Starting Point", drpDates.DelimitedValues );
 
             BindFilter( );
             BindGrid( );
@@ -126,12 +126,35 @@ namespace RockWeb.Plugins.church_ccv.AdultMinistries
                     break;
                 }
 
-                case "Ministry Leader":
+                case "Starting Point":
                 {
-                    e.Value = rFilter.GetUserPreference( "Ministry Leader" );
+                    // first see if there's a lower value
+                    if ( drpDates.LowerValue != null )
+                    {
+                        // if there's also an upper value, its a between range
+                        if ( drpDates.UpperValue != null )
+                        {
+                            e.Value = string.Format( "{0:M/dd/yy} thru {1:M/dd/yy}", drpDates.LowerValue, drpDates.UpperValue );
+                        }
+                        else
+                        {
+                            // otherwise there's only a lower value, so it's anything on or after
+                            e.Value = string.Format( "{0:M/dd/yy} or later", drpDates.LowerValue );
+                        }
+                    }
+                    // is there only an upper value?
+                    else if ( drpDates.UpperValue != null )
+                    {
+                        // than nothing later than that date
+                        e.Value = "No later than " + string.Format( "{0:M/dd/yy}", drpDates.UpperValue );
+                    }
+                    else
+                    {
+                        e.Value = string.Empty;
+                    }
                     break;
                 }
-
+                    
                 default:
                 {
                     e.Value = string.Empty;
@@ -173,8 +196,8 @@ namespace RockWeb.Plugins.church_ccv.AdultMinistries
             // setup the Applicant Name
             tbApplicantName.Text = rFilter.GetUserPreference( "Applicant Name" );
 
-            // setup the Ministry Leader
-            tbMinistryLeader.Text = rFilter.GetUserPreference( "Ministry Leader" );
+            // setup Starting Point
+            drpDates.DelimitedValues = rFilter.GetUserPreference( "Starting Point" );
         }
         #endregion
 
@@ -244,8 +267,9 @@ namespace RockWeb.Plugins.church_ccv.AdultMinistries
                     workflowWithAttribs.WorkflowName = workflow.Name;
 
                     workflowWithAttribs.AttribValues = attribWithValue.Where( av => av.AttribValue.EntityId == workflow.Id &&
-                                                                                   (av.Attribute.Key == "MinistryLead" || 
-                                                                                    av.Attribute.Key == "Campus") )
+                                                                                   (av.Attribute.Key == "Applicant" || 
+                                                                                    av.Attribute.Key == "Campus" ||
+                                                                                    av.Attribute.Key == "CompletedStartingPoint_Date") )
                                                                       .Select( a => new { a.Attribute.Key, a.AttribValue.Value } ).AsEnumerable( )
                                                                       .Select( o => new KeyValuePair<string, string>( o.Key, o.Value ) )
                                                                       .ToList( );
@@ -275,28 +299,33 @@ namespace RockWeb.Plugins.church_ccv.AdultMinistries
                     filteredList = filteredList.Where( wf => selectedCampusNames.Contains( wf.AttribValues.Where( av => av.Key == "Campus" ).FirstOrDefault( ).Value.ToStringSafe( ).AsGuid( ) ) ).ToList();
                 }
                 
-                // Name
-                string personName = rFilter.GetUserPreference( "Applicant Name" );
-                if ( string.IsNullOrWhiteSpace( personName ) == false )
-                {
-                    // use the workflow name and see if the filter value is contained within that. (Since the workflow name always has the person's name in it)
-                    filteredList = filteredList.Where( wf => wf.WorkflowName.ToLower( ).Contains( personName.ToLower( ).Trim( ) ) ).ToList();
-                }
-
-                // Build Query so that Ministry Leader is populated for filtering / sorting
-                var filteredQueryWithMinistryLeader = filteredList.Select( wf =>
+                // Build Query so that the Applicant is populated for filtering / sorting
+                var inMemoryQuery = filteredList.Select( wf =>
                                             new {
-                                                Name = wf.WorkflowName,
                                                 Id = wf.WorkflowId,
                                                 Campus = TryGetCampus( wf.AttribValues.Where( av => av.Key == "Campus" ).FirstOrDefault( ).Value.ToStringSafe( ).AsGuid( ), campusCache ),
-                                                MinistryLeader = TryGetMinistryLead( wf.AttribValues.Where( av => av.Key == "MinistryLead" ).FirstOrDefault( ).Value.ToStringSafe( ).AsGuid( ), paService )
+                                                Applicant = TryGetApplicant( wf.AttribValues.Where( av => av.Key == "Applicant" ).FirstOrDefault( ).Value.ToStringSafe( ).AsGuid( ), paService ),
+                                                StartingPoint = wf.AttribValues.Where( av => av.Key == "CompletedStartingPoint_Date" ).FirstOrDefault( ).Value.AsDateTime( )
                                             } ).ToList();
 
-                // Now that we have the Ministry Lead's name as text, we can filter it based on what the user typed in
-                string ministryLeader = rFilter.GetUserPreference( "Ministry Leader" );
-                if( string.IsNullOrWhiteSpace( ministryLeader ) == false )
+
+                // Filter Dates - First see if there's a lower value
+                if ( drpDates.LowerValue != null )
                 {
-                    filteredQueryWithMinistryLeader = filteredQueryWithMinistryLeader.Where( wf => wf.MinistryLeader.ToLower( ).Contains( ministryLeader.ToLower( ).Trim( ) ) ).ToList( );
+                    inMemoryQuery = inMemoryQuery.Where( wf => wf.StartingPoint.HasValue == false || (wf.StartingPoint.Value >= drpDates.LowerValue ) ).ToList( );
+                }
+
+                // If there's an upper value, clamp to that as well
+                if ( drpDates.UpperValue != null )
+                {
+                    inMemoryQuery = inMemoryQuery.Where( wf => wf.StartingPoint.HasValue == false || (wf.StartingPoint.Value <= drpDates.UpperValue) ).ToList( );
+                }
+                
+                // Now that we have the Applicant's name as text, we can filter it based on what the user typed in
+                string applicantName = rFilter.GetUserPreference( "Applicant Name" );
+                if( string.IsNullOrWhiteSpace( applicantName ) == false )
+                {
+                    inMemoryQuery = inMemoryQuery.Where( wf => wf.Applicant.ToLower( ).Contains( applicantName.ToLower( ).Trim( ) ) ).ToList( );
                 }
                 
                 // ---- End Filters ----
@@ -310,14 +339,14 @@ namespace RockWeb.Plugins.church_ccv.AdultMinistries
                     {
                         switch ( sortProperty.Property )
                         {
-                            case "Name":
-                                filteredQueryWithMinistryLeader = filteredQueryWithMinistryLeader.OrderBy( o => o.Name ).ToList();
+                            case "Applicant":
+                                inMemoryQuery = inMemoryQuery.OrderBy( o => o.Applicant ).ToList();
+                                break;
+                            case "StartingPoint":
+                                inMemoryQuery = inMemoryQuery.OrderBy( o => o.StartingPoint ).ToList();
                                 break;
                             case "Campus":
-                                filteredQueryWithMinistryLeader = filteredQueryWithMinistryLeader.OrderBy( o => o.Campus ).ToList();
-                                break;
-                            case "MinistryLeader":
-                                filteredQueryWithMinistryLeader = filteredQueryWithMinistryLeader.OrderBy( o => o.MinistryLeader ).ToList();
+                                inMemoryQuery= inMemoryQuery.OrderBy( o => o.Campus ).ToList();
                                 break;
                         }
                     }
@@ -325,23 +354,23 @@ namespace RockWeb.Plugins.church_ccv.AdultMinistries
                     {
                         switch ( sortProperty.Property )
                         {
-                            case "Name":
-                                filteredQueryWithMinistryLeader = filteredQueryWithMinistryLeader.OrderByDescending( o => o.Name ).ToList();
+                            case "Applicant":
+                                inMemoryQuery = inMemoryQuery.OrderByDescending( o => o.Applicant ).ToList();
+                                break;
+                            case "StartingPoint":
+                                inMemoryQuery = inMemoryQuery.OrderByDescending( o => o.StartingPoint ).ToList();
                                 break;
                             case "Campus":
-                                filteredQueryWithMinistryLeader = filteredQueryWithMinistryLeader.OrderByDescending( o => o.Campus ).ToList();
-                                break;
-                            case "MinistryLeader":
-                                filteredQueryWithMinistryLeader = filteredQueryWithMinistryLeader.OrderByDescending( o => o.MinistryLeader ).ToList();
+                                inMemoryQuery = inMemoryQuery.OrderByDescending( o => o.Campus ).ToList();
                                 break;
                         }
                     }                  
                 }
 
                 // Bind filter to grid
-                if ( filteredQueryWithMinistryLeader.Count( ) > 0 )
+                if ( inMemoryQuery.Count( ) > 0 )
                 {
-                    gGrid.DataSource = filteredQueryWithMinistryLeader;
+                    gGrid.DataSource = inMemoryQuery;
                 }
 
                 gGrid.DataBind( );
@@ -361,9 +390,9 @@ namespace RockWeb.Plugins.church_ccv.AdultMinistries
             return string.Empty;
         }
 
-        string TryGetMinistryLead( Guid personGuid, PersonAliasService paService )
+        string TryGetApplicant( Guid personGuid, PersonAliasService paService )
         {
-            // it's possible that no ministry lead has been assigned yet. In that case, we'll return an empty string
+            // make sure the applicant exists
             if ( personGuid.IsEmpty( ) == false )
             {
                 // make sure the person exists
