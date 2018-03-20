@@ -48,6 +48,7 @@ namespace RockWeb.Blocks.CheckIn
     [BooleanField( "Show Group Ancestry", "By default the group ancestry path is shown.  Unselect this to show only the group name.", true, "", 3 )]
     [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked", false, "", "", 4 )]
     [LinkedPage( "Check-in Detail Page", "Page that shows the user details for the check-in data.", false, "", "", 5 )]
+    [CategoryField("Data View Category(s)", "The optional data view categories that should be included as an option to filter attendance for. If a category is not selected, all data views will be included.", true, "Rock.Model.DataView", "", "", false, "", "", 6, "DataViewCategories" )]
 
     [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", "", true, false, Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK, "", 5 )]
     public partial class AttendanceAnalytics : RockBlock
@@ -95,7 +96,10 @@ namespace RockWeb.Blocks.CheckIn
 
             gAttendeesAttendance.EntityTypeId = EntityTypeCache.Read<Rock.Model.Person>().Id;
 
+            dvpDataView.AutoLoadItems = false;
             dvpDataView.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Person ) ).Id;
+            dvpDataView.CategoryGuids = GetAttributeValue( "DataViewCategories" ).SplitDelimitedValues().AsGuidList();
+            dvpDataView.LoadDropDownItems();
 
             _rockContext = new RockContext();
 
@@ -344,11 +348,9 @@ namespace RockWeb.Blocks.CheckIn
                 if ( ddlAttendanceType.SelectedGroupTypeId.HasValue )
                 {
                     return new GroupTypeService( _rockContext )
-                        .GetChildGroupTypes( ddlAttendanceType.SelectedGroupTypeId.Value )
-                        .OrderBy( a => a.Order )
-                        .ThenBy( a => a.Name )
+                        .GetAllAssociatedDescendentsOrdered( ddlAttendanceType.SelectedGroupTypeId.Value )
                         .ToList();
-                }
+                }  
             }
 
             return new List<GroupType>();
@@ -1136,6 +1138,7 @@ function(item) {
                         var person = new PersonInfo();
                         person.NickName = row["NickName"].ToString();
                         person.LastName = row["LastName"].ToString();
+                        person.Gender = row["Gender"].ToString().ConvertToEnum<Gender>();
                         person.Email = row["Email"].ToString();
                         person.GivingId = row["GivingId"].ToString();
                         person.Birthdate = row["BirthDate"] as DateTime?;
@@ -1299,6 +1302,7 @@ function(item) {
                             var person = new PersonInfo();
                             person.NickName = row["NickName"].ToString();
                             person.LastName = row["LastName"].ToString();
+                            person.Gender = row["Gender"].ToString().ConvertToEnum<Gender>();
                             person.Email = row["Email"].ToString();
                             person.GivingId = row["GivingId"].ToString();
                             person.Birthdate = row["BirthDate"] as DateTime?;
@@ -1717,16 +1721,22 @@ function(item) {
         /// <returns></returns>
         public List<DateTime> GetPossibleAttendancesForDateRange( DateRange dateRange, ChartGroupBy attendanceGroupBy )
         {
-            TimeSpan dateRangeSpan = dateRange.End.Value - dateRange.Start.Value;
-
             var result = new List<DateTime>();
+
+            // Attendance is grouped by Sunday dates between the start/end dates. 
+            // The possible dates (columns) should be calculated the same way.
+            var startSunday = dateRange.Start.Value.SundayDate();
+            var endDate = dateRange.End.Value;
+            var endSunday = endDate.SundayDate();
+            if ( endSunday > endDate )
+            {
+                endSunday = endSunday.AddDays( -7 );
+            }
 
             if ( attendanceGroupBy == ChartGroupBy.Week )
             {
-                var endOfFirstWeek = dateRange.Start.Value.EndOfWeek( RockDateTime.FirstDayOfWeek );
-                var endOfLastWeek = dateRange.End.Value.EndOfWeek( RockDateTime.FirstDayOfWeek );
-                var weekEndDate = endOfFirstWeek;
-                while ( weekEndDate <= endOfLastWeek )
+                var weekEndDate = startSunday;
+                while ( weekEndDate <= endSunday )
                 {
                     // Weeks are summarized as the last day of the "Rock" week (Sunday)
                     result.Add( weekEndDate );
@@ -1735,8 +1745,8 @@ function(item) {
             }
             else if ( attendanceGroupBy == ChartGroupBy.Month )
             {
-                var endOfFirstMonth = dateRange.Start.Value.AddDays( -( dateRange.Start.Value.Day - 1 ) ).AddMonths( 1 ).AddDays( -1 );
-                var endOfLastMonth = dateRange.End.Value.AddDays( -( dateRange.End.Value.Day - 1 ) ).AddMonths( 1 ).AddDays( -1 );
+                var endOfFirstMonth = startSunday.AddDays( -( startSunday.Day - 1 ) ).AddMonths( 1 ).AddDays( -1 );
+                var endOfLastMonth = endSunday.AddDays( -( endSunday.Day - 1 ) ).AddMonths( 1 ).AddDays( -1 );
 
                 //// Months are summarized as the First Day of the month: For example, 5/1/2015 would include everything from 5/1/2015 - 5/31/2015 (inclusive)
                 var monthStartDate = new DateTime( endOfFirstMonth.Year, endOfFirstMonth.Month, 1 );
@@ -1748,8 +1758,8 @@ function(item) {
             }
             else if ( attendanceGroupBy == ChartGroupBy.Year )
             {
-                var endOfFirstYear = new DateTime( dateRange.Start.Value.Year, 1, 1 ).AddYears( 1 ).AddDays( -1 );
-                var endOfLastYear = new DateTime( dateRange.End.Value.Year, 1, 1 ).AddYears( 1 ).AddDays( -1 );
+                var endOfFirstYear = new DateTime( startSunday.Year, 1, 1 ).AddYears( 1 ).AddDays( -1 );
+                var endOfLastYear = new DateTime( endSunday.Year, 1, 1 ).AddYears( 1 ).AddDays( -1 );
 
                 //// Years are summarized as the First Day of the year: For example, 1/1/2015 would include everything from 1/1/2015 - 12/31/2015 (inclusive)
                 var yearStartDate = new DateTime( endOfFirstYear.Year, 1, 1 );
@@ -2268,6 +2278,8 @@ function(item) {
             public string LastName { get; set; }
 
             public string Email { get; set; }
+
+            public Gender Gender { get; set; }
 
             public int? Age { get; set; }
 

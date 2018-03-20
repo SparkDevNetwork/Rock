@@ -117,8 +117,11 @@ namespace Rock.Web.UI
                 {
                     FileInfo[] files = themeDirectory.GetFiles();
 
+                    // Good documentation on options
+                    // https://www.codeproject.com/Articles/710676/LESS-Web-config-DotlessConfiguration-Options
                     DotlessConfiguration dotLessConfiguration = new DotlessConfiguration();
                     dotLessConfiguration.MinifyOutput = true;
+                    dotLessConfiguration.DisableVariableRedefines = true;
                     //dotLessConfiguration.RootPath = themeDirectory.FullName;
 
                     Directory.SetCurrentDirectory( themeDirectory.FullName );

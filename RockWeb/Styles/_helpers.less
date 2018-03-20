@@ -183,6 +183,18 @@
   font-weight: @font-weight-bold;
 }
 
+.text-light {
+  text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;
+}
+
+.text-shadow {
+  text-shadow: -1px -1px 0 #777, 1px -1px 0 #777, -1px 1px 0 #777, 1px 1px 0 #777;
+}
+
+.text-shadow-dark {
+  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+}
+
 .is-inactive {
   opacity: .6;
 }
@@ -448,6 +460,8 @@
 
 // 3. Even Height Columns - provides classes for making columns even heights
 // -------------------------
+
+// usage row row-eq-height
 
 .row-eq-height {
   display: -webkit-flex;

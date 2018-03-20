@@ -16,7 +16,8 @@
 //
 using System;
 using System.Linq;
-using System.Text.RegularExpressions;
+using System.Web;
+using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -157,8 +158,18 @@ namespace Rock.Transactions
                             var clientOs = client.OS.ToString();
                             var clientBrowser = client.UserAgent.ToString();
 
-                            new InteractionService( rockContext ).AddInteraction( interactionComponent.Id, null, "View", Url, PersonAliasId, DateViewed,
+                            var interaction = new InteractionService( rockContext ).AddInteraction( interactionComponent.Id, null, "View", Url, PersonAliasId, DateViewed,
                                 clientBrowser, clientOs, clientType, userAgent, IPAddress, this.SessionId?.AsGuidOrNull() );
+
+                            if ( Url.IsNotNullOrWhitespace() && Url.IndexOf( "utm_", StringComparison.OrdinalIgnoreCase ) >= 0 )
+                            {
+                                var urlParams = HttpUtility.ParseQueryString( Url );
+                                interaction.Source = urlParams.Get( "utm_source" ).Truncate( 25 );
+                                interaction.Medium = urlParams.Get( "utm_medium" ).Truncate( 25 );
+                                interaction.Campaign = urlParams.Get( "utm_campaign" ).Truncate( 50 );
+                                interaction.Content = urlParams.Get( "utm_content" ).Truncate( 50 );
+                            }
+
                             rockContext.SaveChanges();
                         }
                     }

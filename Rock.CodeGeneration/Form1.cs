@@ -197,6 +197,17 @@ namespace Rock.CodeGeneration
         /// <param name="projectName">Name of the project.</param>
         public void WriteDatabaseProcsScripts( string databaseRootFolder, string projectName )
         {
+            // ignore any diagramming procs that might have been added by SMSS
+            string[] procsToIgnore = {
+                "fn_diagramobjects",
+                "sp_alterdiagram",
+                "sp_creatediagram",
+                "sp_dropdiagram",
+                "sp_helpdiagramdefinition",
+                "sp_helpdiagrams",
+                "sp_renamediagram",
+                "sp_upgraddiagrams" };
+
             SqlConnection sqlconn = GetSqlConnection( new DirectoryInfo( databaseRootFolder ).Parent.FullName );
             sqlconn.Open();
             var qryProcs = sqlconn.CreateCommand();
@@ -274,7 +285,10 @@ GO
 
                 if ( string.IsNullOrEmpty( procPrefixFilter ) || routineName.StartsWith( procPrefixFilter, StringComparison.OrdinalIgnoreCase ) )
                 {
-                    File.WriteAllText( filePath, script.Trim() );
+                    if ( !procsToIgnore.Contains( routineName ) )
+                    {
+                        File.WriteAllText( filePath, script.Trim() );
+                    }
                 }
             }
 

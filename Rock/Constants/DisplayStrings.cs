@@ -59,6 +59,17 @@ namespace Rock.Constants
         {
             return string.Format( "Value required for {0}.", itemFieldName.SplitCase().ToLower() );
         }
+
+        /// <summary>
+        /// Returns a message in the format: Invalid Length for {0}."
+        /// </summary>
+        /// <param name="itemFieldName">Name of the item field.</param>
+        /// <param name="maxLength">The maximum length.</param>
+        /// <returns></returns>
+        public static string TextLengthInvalid( string itemFieldName, int maxLength )
+        {
+            return string.Format( "Whoops. Would you mind reducing the length of your  {0} to {1} Characters?", itemFieldName.SplitCase().ToLower(), maxLength.ToString() );
+        }
     }
 
     /// <summary>

@@ -1170,20 +1170,20 @@ namespace RockWeb.Blocks.Connection
         /// <param name="connectionOpportunityWorkflowGuid">The connection opportunity workflow unique identifier.</param>
         protected void gConnectionOpportunityWorkflows_ShowEdit( Guid connectionOpportunityWorkflowGuid )
         {
+            ddlWorkflowType.Items.Clear();
+            ddlWorkflowType.Items.Add( new ListItem( string.Empty, string.Empty ) );
+
+            foreach ( var workflowType in new WorkflowTypeService( new RockContext() ).Queryable().OrderBy( w => w.Name ) )
+            {
+                if ( workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                {
+                    ddlWorkflowType.Items.Add( new ListItem( workflowType.Name, workflowType.Id.ToString() ) );
+                }
+            }
+
             var workflowTypeStateObj = WorkflowsState.FirstOrDefault( l => l.Guid.Equals( connectionOpportunityWorkflowGuid ) );
             if ( workflowTypeStateObj != null )
             {
-                ddlWorkflowType.Items.Clear();
-                ddlWorkflowType.Items.Add( new ListItem( string.Empty, string.Empty ) );
-
-                foreach ( var workflowType in new WorkflowTypeService( new RockContext() ).Queryable().OrderBy( w => w.Name ) )
-                {
-                    if ( workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
-                    {
-                        ddlWorkflowType.Items.Add( new ListItem( workflowType.Name, workflowType.Id.ToString() ) );
-                    }
-                }
-
                 if ( workflowTypeStateObj.WorkflowTypeId == null )
                 {
                     ddlWorkflowType.SelectedValue = "0";
@@ -1194,20 +1194,6 @@ namespace RockWeb.Blocks.Connection
                 }
 
                 ddlTriggerType.SelectedValue = workflowTypeStateObj.TriggerType.ConvertToInt().ToString();
-
-            }
-            else
-            {
-                ddlWorkflowType.Items.Clear();
-                ddlWorkflowType.Items.Add( new ListItem( string.Empty, string.Empty ) );
-
-                foreach ( var workflowType in new WorkflowTypeService( new RockContext() ).Queryable().OrderBy( w => w.Name ) )
-                {
-                    if ( workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
-                    {
-                        ddlWorkflowType.Items.Add( new ListItem( workflowType.Name, workflowType.Id.ToString() ) );
-                    }
-                }
             }
 
             hfWorkflowGuid.Value = connectionOpportunityWorkflowGuid.ToString();
@@ -1396,11 +1382,9 @@ namespace RockWeb.Blocks.Connection
         /// <param name="parentConnectionOpportunityId">The parent connectionOpportunity identifier.</param>
         public void ShowDetail( int connectionOpportunityId )
         {
-            ConnectionOpportunity connectionOpportunity = null;
-
-            bool editAllowed = UserCanEdit;
-
             RockContext rockContext = new RockContext();
+
+            ConnectionOpportunity connectionOpportunity = null;
 
             if ( !connectionOpportunityId.Equals( 0 ) )
             {
@@ -1410,22 +1394,17 @@ namespace RockWeb.Blocks.Connection
 
             if ( connectionOpportunity == null )
             {
+                int connectionTypeId = PageParameter( "ConnectionTypeId" ).AsInteger();
+
                 connectionOpportunity = new ConnectionOpportunity { Id = 0, IsActive = true, Name = "" };
-                connectionOpportunity.ConnectionType = new ConnectionTypeService( rockContext ).Get( PageParameter( "ConnectionTypeId" ).AsInteger() );
+                connectionOpportunity.ConnectionTypeId = _connectionTypeId;
+                connectionOpportunity.ConnectionType = new ConnectionTypeService( rockContext ).Get( _connectionTypeId );
+
                 // hide the panel drawer that show created and last modified dates
                 pdAuditDetails.Visible = false;
             }
 
-            // Only users that have Edit rights to block, or edit rights to the calendar (from query string) should be able to edit
-            if ( !editAllowed )
-            {
-                var connectionType = new ConnectionTypeService( rockContext ).Get( _connectionTypeId );
-                if ( connectionType != null )
-                {
-                    editAllowed = connectionType.IsAuthorized( Authorization.EDIT, CurrentPerson );
-                }
-            }
-
+            bool editAllowed = UserCanEdit || connectionOpportunity.IsAuthorized( Authorization.VIEW, CurrentPerson );
             bool readOnly = true;
 
             if ( !editAllowed )
@@ -1437,9 +1416,9 @@ namespace RockWeb.Blocks.Connection
             {
                 nbEditModeMessage.Text = string.Empty;
 
-                if ( connectionOpportunity.Id != 0 && !( connectionOpportunity.ConnectionTypeId == _connectionTypeId ) )
+                if ( connectionOpportunity.Id != 0 && connectionOpportunity.ConnectionTypeId != _connectionTypeId )
                 {
-                    // Item does not belong to calendar
+                    // Selected Opportunity does not belong to the selected Connection Type
                     nbIncorrectOpportunity.Visible = true;
                 }
                 else

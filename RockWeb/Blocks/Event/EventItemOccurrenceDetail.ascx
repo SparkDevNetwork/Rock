@@ -123,7 +123,7 @@
                         <Rock:RockTextBox ID="tbEditLinkagePublicName" runat="server" Label="Public Name" Required="true" ValidationGroup="EditLinkage" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockTextBox ID="tbEditLinkageUrlSlug" runat="server" Label="URL Slug" ValidationGroup="EditLinkage" />
+                        <Rock:RockTextBox ID="tbEditLinkageUrlSlug" runat="server" Label="URL Slug" ValidationGroup="EditLinkage" Help="When creating an event occurrence that specifies a campus, a URL Slug MUST be used when registering in order for the registrant to be placed into the linked group." />
                     </div>
                 </div>
                 <Rock:RegistrationInstanceEditor ID="rieEditLinkage" runat="server" ValidationGroup="EditLinkage" />
@@ -137,9 +137,9 @@
                     <div class="col-md-6">
                         <Rock:RockDropDownList ID="ddlExistingLinkageTemplate" runat="server" Label="Registration Template" ValidationGroup="ExistingLinkage" 
                             AutoPostBack="true" OnSelectedIndexChanged="ddlExistingLinkageTemplate_SelectedIndexChanged" CausesValidation="false" 
-                            Required="true" />
+                            Required="true" EnhanceForLongLists="true" />
                         <Rock:RockDropDownList ID="ddlExistingLinkageInstance" runat="server" Label="Registration Instance" ValidationGroup="ExistingLinkage"
-                            Required="true" />
+                            Required="true" EnhanceForLongLists="true" />
                     </div>
                     <div class="col-md-6">
                         <Rock:GroupPicker ID="gpExistingLinkageGroup" runat="server" Label="Group" ValidationGroup="ExistingLinkage" />

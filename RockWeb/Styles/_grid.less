@@ -18,7 +18,16 @@
 // 1. Bootstrap Overrides
 // -------------------------
 
-
+/* If th has a required class, render the required field indicator after the column heading */
+.table thead th.required:after {
+  margin-left: 4px;
+  font-family: @fa-font-face;
+  font-weight: 900;
+  font-size: 6px;
+  color: #eca9a7;
+  vertical-align: super;
+  content: '\f111';
+}
 
 .table > tbody > tr > td {
   color: @grid-row-even-color;
@@ -177,22 +186,23 @@ td.wrap-contents {
   background-color: @grid-column-header-bg;
   border-color: @grid-column-header-border-color;
 
-   > a:not(.btn) {
+  > a:not(.btn) {
     display: block;
     color: @grid-column-header-text-color;
   }
-
   // sorting
   &.ascending a::before {
     padding-right: 5px;
-    font-family: FontAwesome;
-    content: "\f0d8";
+    font-family: @fa-font-face;
+    font-weight: @fa-theme-weight;
+    content: @fa-var-caret-up;
   }
 
   &.descending a::before {
     padding-right: 5px;
-    font-family: FontAwesome;
-    content: "\f0d7";
+    font-family: @fa-font-face;
+    font-weight: @fa-theme-weight;
+    content: @fa-var-caret-down;
   }
 }
 
@@ -374,8 +384,8 @@ td.grid-col-actions {
 }
 
 .table .grid-icon img {
-  width: 72px;
-  height: 72px;
+  width: 100%;
+  max-width: 120px;
 }
 
 

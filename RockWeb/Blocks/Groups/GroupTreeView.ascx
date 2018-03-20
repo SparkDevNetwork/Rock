@@ -7,6 +7,7 @@
         <asp:HiddenField ID="hfGroupTypesInclude" runat="server" />
         <asp:HiddenField ID="hfGroupTypesExclude" runat="server" />
         <asp:HiddenField ID="hfIncludeInactiveGroups" runat="server" />
+        <asp:HiddenField ID="hfLimitPublicGroups" runat="server" />
         <asp:HiddenField ID="hfCountsType" runat="server" />
         <asp:HiddenField ID="hfCampusFilter" runat="server" />
         <asp:HiddenField ID="hfIncludeNoCampus" runat="server" />
@@ -37,7 +38,14 @@
             </div>
 
             <div class="js-config-panel" style="display: none" id="pnlConfigPanel" runat="server">
-                <Rock:Toggle ID="tglHideInactiveGroups" runat="server" OnText="Active" OffText="All" Checked="true" ButtonSizeCssClass="btn-xs" OnCheckedChanged="tglHideInactiveGroups_CheckedChanged" Label="Show" />
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:Toggle ID="tglHideInactiveGroups" runat="server" OnText="Active" OffText="All" Checked="true" ButtonSizeCssClass="btn-xs" OnCheckedChanged="tglHideInactiveGroups_CheckedChanged" Label="Show" />
+                    </div>
+                    <div class="col-md-6">
+                        <Rock:Toggle ID="tglLimitPublicGroups" runat="server" OnText="Is Public" OffText="All" ButtonSizeCssClass="btn-xs" OnCheckedChanged="tglLimitPublicGroups_CheckedChanged" Label="Public" />
+                    </div>
+                </div>
                 <Rock:RockDropDownList ID="ddlCountsType" runat="server" Label="Show Count For" OnSelectedIndexChanged="ddlCountsType_SelectedIndexChanged" CssClass="input-sm" AutoPostBack="true" />
                 <Rock:CampusPicker ID="ddlCampuses" runat="server" Label="Filter by Campus" OnSelectedIndexChanged="ddlCampuses_SelectedIndexChanged" CssClass="input-sm" AutoPostBack="true" />
                 <Rock:Toggle ID="tglIncludeNoCampus" runat="server" OnText="Yes" OffText="No" ButtonSizeCssClass="btn-xs" OnCheckedChanged="tglIncludeNoCampus_CheckedChanged" Label="Include groups with no campus" />
@@ -46,7 +54,7 @@
                     <asp:Panel ID="pnlSearch" runat="server" DefaultButton="btnSearch" CssClass="input-group">
                         <asp:TextBox ID="tbSearch" runat="server" CssClass="form-control input-sm" />
                         <span class="input-group-btn">
-                            <asp:Button ID="btnSearch" runat="server" Text="Go!" CssClass="btn btn-default btn-sm" OnClick="btnSearch_OnClick" />
+                            <asp:LinkButton ID="btnSearch" runat="server" CssClass="btn btn-default btn-sm" OnClick="btnSearch_OnClick"><i class="fa fa-search"></i></asp:LinkButton>
                         </span>
                     </asp:Panel>
                 </div>
@@ -93,7 +101,9 @@
                         resize: false,
                         listenX: true,
                         listenY: false,
-                    }
+                    },
+                    click: false,
+                    preventDefaultException: { tagName: /.*/ }
                 });
 
                 // resize scrollbar when the window resizes
@@ -151,7 +161,8 @@
                             + '&includeInactiveGroups=' + ($('#<%=hfIncludeInactiveGroups.ClientID%>').val() || false)
                             + '&countsType=' + ($('#<%=hfCountsType.ClientID%>').val() || false)
                             + '&includeNoCampus=' + ($('#<%=hfIncludeNoCampus.ClientID%>').val() || false)
-                            + '&campusId=' + ($('#<%=hfCampusFilter.ClientID%>').val() || 0),
+                        + '&campusId=' + ($('#<%=hfCampusFilter.ClientID%>').val() || 0)
+                        + '&limitToPublic=' + ($('#<%=hfLimitPublicGroups.ClientID%>').val() || false),
                         multiSelect: false,
                         selectedIds: $selectedId.val() ? $selectedId.val().split(',') : null,
                         expandedIds: $expandedIds.val() ? $expandedIds.val().split(',') : null
