@@ -485,7 +485,7 @@ namespace Rock.Model
 	{% if linkageCount > 0 %}
 	{% assign countRegistration = 0 %}
 	{% assign countLoop = 0 %}
-	{% assign countEventItemOccurances = 0 %}
+	{% assign countEventItemOccurrences = 0 %}
 	{% assign countContentItems = 0 %}
 	{% for linkage in linkages %}
 		{% if linkage.RegistrationInstanceId != null and linkage.RegistrationInstanceId != '' %}
@@ -504,15 +504,15 @@ namespace Rock.Model
 	{% assign countLoop = 0 %}
 	{% for linkage in linkages %}
 		{% if linkage.EventItemOccurrence != null and linkage.EventItemOccurrence.EventItem != null %}
-			{% if countEventItemOccurances == 0 %}
+			{% if countEventItemOccurrences == 0 %}
 			<strong> Event Item Occurrences</strong>
 			<ul class=""list-unstyled"">
 			{% endif %}
 			<li><a href = '{{ EventItemOccurrencePage }}? EventItemOccurrenceId = {{ linkage.EventItemOccurrence.Id }}'>{% if linkage.EventItemOccurrence != null %} {{ linkage.EventItemOccurrence.EventItem.Name }} -{% if linkage.EventItemOccurrence.Campus != null %} {{ linkage.EventItemOccurrence.Campus.Name }}  {% else %}  All Campuses {% endif %} {% endif %}</a></li>
-			{% assign countEventItemOccurances = countEventItemOccurances | Plus: 1 %}
+			{% assign countEventItemOccurrences = countEventItemOccurrences | Plus: 1 %}
 		{% endif %}
 		{% assign countLoop = countLoop | Plus: 1 %}
-		{% if countEventItemOccurances > 0  and countLoop == linkageCount %}
+		{% if countEventItemOccurrences > 0  and countLoop == linkageCount %}
 			</ul>
 		{% endif %}
 	{% endfor %}

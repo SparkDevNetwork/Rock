@@ -113,6 +113,7 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.CanEdit = source.CanEdit;
+            target.CanManageMembers = source.CanManageMembers;
             target.CanView = source.CanView;
             target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;

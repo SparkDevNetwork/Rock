@@ -33,6 +33,12 @@ namespace Rock.Web.UI.Controls
     {
         #region Protected Properties
 
+        /// <summary>
+        /// Gets or sets the custom validator.
+        /// </summary>
+        /// <value>
+        /// The custom validator.
+        /// </value>
         protected CustomValidator CustomValidator { get; set; }
 
         /// <summary>

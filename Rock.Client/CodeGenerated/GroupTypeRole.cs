@@ -38,6 +38,9 @@ namespace Rock.Client
         public bool CanEdit { get; set; }
 
         /// <summary />
+        public bool CanManageMembers { get; set; }
+
+        /// <summary />
         public bool CanView { get; set; }
 
         /// <summary />
@@ -112,6 +115,7 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.CanEdit = source.CanEdit;
+            this.CanManageMembers = source.CanManageMembers;
             this.CanView = source.CanView;
             this.Description = source.Description;
             this.ForeignGuid = source.ForeignGuid;

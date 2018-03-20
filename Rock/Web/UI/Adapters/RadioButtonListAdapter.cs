@@ -92,12 +92,13 @@ namespace Rock.Web.UI.Adapters
                     if ( rbl.RepeatDirection == RepeatDirection.Vertical )
                     {
                         writer.AddAttribute( "class", "radio" );
-                        writer.RenderBeginTag( HtmlTextWriterTag.Div );
                     }
                     else
                     {
                         writer.AddAttribute( "class", "radio-inline" );
                     }
+
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                     writer.RenderBeginTag( HtmlTextWriterTag.Label );
 
@@ -125,7 +126,12 @@ namespace Rock.Web.UI.Adapters
                     writer.RenderBeginTag( HtmlTextWriterTag.Input );
                     writer.RenderEndTag();
 
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "label-text" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Span );
+
                     writer.Write( li.Text );
+
+                    writer.RenderEndTag();      // Span
 
                     writer.RenderEndTag();      // Label
 

@@ -113,6 +113,7 @@ namespace Rock.Model
             target.ReviewerPersonAliasId = source.ReviewerPersonAliasId;
             target.SegmentCriteria = source.SegmentCriteria;
             target.Segments = source.Segments;
+            target.SendDateTime = source.SendDateTime;
             target.SenderPersonAliasId = source.SenderPersonAliasId;
             target.SMSFromDefinedValueId = source.SMSFromDefinedValueId;
             target.SMSMessage = source.SMSMessage;

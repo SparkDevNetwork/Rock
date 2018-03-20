@@ -46,6 +46,9 @@ namespace Rock.Web.HttpModules
         /// </value>
         protected static List<KeyValuePair<string, object>> Headers { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ResponseHeaders"/> class.
+        /// </summary>
         public ResponseHeaders()
         {
             if ( Headers == null )

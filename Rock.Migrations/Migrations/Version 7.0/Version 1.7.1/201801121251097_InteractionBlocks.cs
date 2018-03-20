@@ -364,7 +364,7 @@ namespace Rock.Migrations
             // Attrib Value for Block:Interaction Session List, Attribute:Component Detail Page Page: Sessions, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "0FCDA1B8-B3F1-4E78-8FCF-E81F2CA77D05", "26D25CD6-AF12-4A0C-80E0-0CD4CFEB4C6E", @"9043d8f9-f9fd-4be6-a50b-abf9821ec0cd" );
             // Attrib Value for Block:Interaction Session List, Attribute:Interaction Detail Page Page: Sessions, Site: Rock RMS
-            RockMigrationHelper.AddBlockAttributeValue( "0FCDA1B8-B3F1-4E78-8FCF-E81F2CA77D05", "922BDC9E-D1ED-4553-B84D-1C301B291F5F", @"9043d8f9-f9fd-4be6-a50b-abf9821ec0cd" );
+            RockMigrationHelper.AddBlockAttributeValue( "0FCDA1B8-B3F1-4E78-8FCF-E81F2CA77D05", "922BDC9E-D1ED-4553-B84D-1C301B291F5F", @"b6f6ab6f-a572-45fe-a143-2e4b8f192c8d" );
 
             // Attrib Value for Block:Interaction Component List, Attribute:Component Detail Page Page: Components, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "16884BC7-3185-4E8F-A93A-AF9F3B165DE0", "CCF5FD98-6F00-4DE6-9D8C-D1C86C2FE34C", @"9043d8f9-f9fd-4be6-a50b-abf9821ec0cd" );
