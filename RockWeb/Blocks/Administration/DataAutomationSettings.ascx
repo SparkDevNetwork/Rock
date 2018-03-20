@@ -49,62 +49,111 @@
 
                         <asp:Panel ID="pnlReactivatePeople" runat="server" Enabled="false" CssClas="data-integrity-options">
 
-                            <Rock:RockCheckBox ID="cbLastContribution" runat="server"/>
-                            <Rock:NumberBox ID="nbLastContribution" runat="server" Label="Any family member has made a contribution in the last" AppendText="days" CssClass="input-width-md" Text="90" />
-
-                            <Rock:RockCheckBox ID="cbAttendanceInServiceGroup" runat="server" />
-                            <Rock:NumberBox ID="nbAttendanceInServiceGroup" runat="server" Label="Any family member has attended a group that is considered a service in the last" AppendText="days" CssClass="input-width-md" Text="90" />
-
-                            <Rock:RockCheckBox ID="cbAttendanceInGroupType" runat="server" />
-                            <Rock:RockControlWrapper ID="rcwAttendanceInGroupType" runat="server" Label="Any family member has attended a group of this type in the last">
-                                <div class="row">
-                                    <div class="col-xs-12 col-sm-6 col-md-4">
-                                        <Rock:RockListBox ID="rlbAttendanceInGroupType" runat="server" DataTextField="text" DataValueField="value" />
-                                    </div>
-                                    <div class="col-xs-12 col-sm-6 col-md-4">
-                                        <Rock:NumberBox ID="nbAttendanceInGroupType" runat="server" AppendText="days" CssClass="input-width-md" Text="90" />
-                                    </div>
+                            <div class="clearfix margin-b-lg">
+                                <div class="pull-left" style="width: 40px">
+                                    <Rock:RockCheckBox ID="cbLastContribution" runat="server"/>
                                 </div>
-                            </Rock:RockControlWrapper>
-
-                            <Rock:RockCheckBox ID="cbPrayerRequest" runat="server" />
-                            <Rock:NumberBox ID="nbPrayerRequest" runat="server" Label="Any family member has submitted a prayer request in the last" AppendText="days" CssClass="input-width-md" Text="90" />
-
-                            <Rock:RockCheckBox ID="cbPersonAttributes" runat="server" />
-                            <Rock:RockControlWrapper ID="rcwPersonAttributes" runat="server" Label="Any family member has a new value for any of the following person attributes in the last">
-                                <div class="row">
-                                    <div class="col-xs-12 col-sm-6 col-md-4">
-                                        <Rock:RockListBox ID="rlbPersonAttributes" runat="server" DataTextField="text" DataValueField="value">
-                                        </Rock:RockListBox>
-                                    </div>
-                                    <div class="col-xs-12 col-sm-6 col-md-4">
-                                        <Rock:NumberBox ID="nbPersonAttributes" runat="server" AppendText="days" CssClass="input-width-md" Text="90" />
-                                    </div>
+                                <div class="pull-left">
+                                    <Rock:NumberBox ID="nbLastContribution" runat="server" Label="Any family member has made a contribution in the last" AppendText="days" CssClass="input-width-md" Text="90" />
                                 </div>
-                            </Rock:RockControlWrapper>
+                            </div>
+                            
+                            <div class="clearfix margin-b-lg">
+                                <div class="pull-left" style="width: 40px">
+                                    <Rock:RockCheckBox ID="cbAttendanceInServiceGroup" runat="server" />
+                                </div>
+                                <div class="pull-left">
+                                    <Rock:NumberBox ID="nbAttendanceInServiceGroup" runat="server" Label="Any family member has attended a group that is considered a service in the last" AppendText="days" CssClass="input-width-md" Text="90" />
+                                </div>
+                            </div>
 
-                            <Rock:RockCheckBox ID="cbInteractions" runat="server" />
-                            <Rock:RockControlWrapper ID="rcwInteractions" runat="server" Label="Any family member has an interaction of the following type in the last">
-                                <asp:Repeater ID="rInteractions" runat="server">
-                                    <ItemTemplate>
-                                        <div class="row margin-b-sm">
-                                            <asp:HiddenField ID="hfInteractionTypeId" runat="server" Value='<%# Eval("Guid") %>' />
-                                            <div class="col-md-2 col-sm-3 col-xs-4">
-                                                <Rock:RockCheckBox ID="cbInterationType" runat="server" SelectedIconCssClass="fa fa-check-square-o" UnSelectedIconCssClass="fa fa-square-o" Text='<%# Eval("Name") %>' Checked='<%# (bool)Eval("IsInteractionTypeEnabled") %>' />
-                                            </div>
-                                            <div class="col-md-10 col-sm-9 col-xs-6">
-                                                <Rock:NumberBox ID="nbInteractionDays" runat="server" AppendText="days" CssClass="input-width-md" Text='<%#Eval("LastInteractionDays") %>' />
-                                            </div>
+                            <div class="clearfix margin-b-lg">
+                                <div class="pull-left" style="width: 40px">
+                                    <Rock:RockCheckBox ID="cbAttendanceInGroupType" runat="server" />
+                                </div>
+                                <div class="pull-left">
+                                    <Rock:RockControlWrapper ID="rcwAttendanceInGroupType" runat="server" Label="Any family member has attended a group of this type in the last">
+                                    <div class="row">
+                                        <div class="col-xs-12 col-sm-6 col-md-4">
+                                            <Rock:RockListBox ID="rlbAttendanceInGroupType" runat="server" DataTextField="text" DataValueField="value" />
                                         </div>
-                                    </ItemTemplate>
-                                </asp:Repeater>
-                            </Rock:RockControlWrapper>
+                                        <div class="col-xs-12 col-sm-6 col-md-4">
+                                            <Rock:NumberBox ID="nbAttendanceInGroupType" runat="server" AppendText="days" CssClass="input-width-md" Text="90" />
+                                        </div>
+                                    </div>
+                                </Rock:RockControlWrapper>
+                                </div>
+                            </div>
+                            
+                            <div class="clearfix margin-b-lg">
+                                <div class="pull-left" style="width: 40px">
+                                    <Rock:RockCheckBox ID="cbPrayerRequest" runat="server" />
+                                </div>
+                                <div class="pull-left">
+                                    <Rock:NumberBox ID="nbPrayerRequest" runat="server" Label="Any family member has submitted a prayer request in the last" AppendText="days" CssClass="input-width-md" Text="90" />
+                                </div>
+                            </div>
 
-                            <Rock:RockCheckBox ID="cbIncludeDataView" runat="server" />
-                            <Rock:DataViewPicker ID="dvIncludeDataView" runat="server" Label="The person is in the following data view" CssClass="input-width-xl" />
+                            <div class="clearfix margin-b-lg">
+                                <div class="pull-left" style="width: 40px">
+                                    <Rock:RockCheckBox ID="cbPersonAttributes" runat="server" />
+                                </div>
+                                <div class="pull-left">
+                                    <Rock:RockControlWrapper ID="rcwPersonAttributes" runat="server" Label="Any family member has a new value for any of the following person attributes in the last">
+                                    <div class="row">
+                                        <div class="col-xs-12 col-sm-6 col-md-4">
+                                            <Rock:RockListBox ID="rlbPersonAttributes" runat="server" DataTextField="text" DataValueField="value">
+                                            </Rock:RockListBox>
+                                        </div>
+                                        <div class="col-xs-12 col-sm-6 col-md-4">
+                                            <Rock:NumberBox ID="nbPersonAttributes" runat="server" AppendText="days" CssClass="input-width-md" Text="90" />
+                                        </div>
+                                    </div>
+                                </Rock:RockControlWrapper>
+                                </div>
+                            </div>
 
-                            <Rock:RockCheckBox ID="cbExcludeDataView" runat="server" />
-                            <Rock:DataViewPicker ID="dvExcludeDataView" runat="server" Label="Exclude any person in the following data view" CssClass="input-width-xl" />
+                            <div class="clearfix margin-b-lg">
+                                <div class="pull-left" style="width: 40px">
+                                    <Rock:RockCheckBox ID="cbInteractions" runat="server" />
+                                </div>
+                                <div class="pull-left">
+                                    <Rock:RockControlWrapper ID="rcwInteractions" runat="server" Label="Any family member has an interaction of the following type in the last">
+                                    <asp:Repeater ID="rInteractions" runat="server">
+                                        <ItemTemplate>
+                                            <div class="row margin-b-sm">
+                                                <asp:HiddenField ID="hfInteractionTypeId" runat="server" Value='<%# Eval("Guid") %>' />
+                                                <div class="col-md-5 col-sm-6 col-xs-8 padding-t-sm">
+                                                    <Rock:RockCheckBox ID="cbInterationType" runat="server" SelectedIconCssClass="fa fa-check-square-o" UnSelectedIconCssClass="fa fa-square-o" Text='<%# Eval("Name") %>' Checked='<%# (bool)Eval("IsInteractionTypeEnabled") %>' />
+                                                </div>
+                                                <div class="col-md-7 col-sm-6 col-xs-4">
+                                                    <Rock:NumberBox ID="nbInteractionDays" runat="server" AppendText="days" CssClass="input-width-md" Text='<%#Eval("LastInteractionDays") %>' />
+                                                </div>
+                                            </div>
+                                            <hr />
+                                        </ItemTemplate>
+                                    </asp:Repeater>
+                                </Rock:RockControlWrapper>
+                                </div>
+                            </div>
+
+                            <div class="clearfix margin-b-lg">
+                                <div class="pull-left" style="width: 40px">
+                                    <Rock:RockCheckBox ID="cbIncludeDataView" runat="server" />
+                                </div>
+                                <div class="pull-left">
+                                    <Rock:DataViewPicker ID="dvIncludeDataView" runat="server" Label="The person is in the following data view" CssClass="input-width-xl" />
+                                </div>
+                            </div>
+
+                            <div class="clearfix margin-b-lg">
+                                <div class="pull-left" style="width: 40px">
+                                    <Rock:RockCheckBox ID="cbExcludeDataView" runat="server" />
+                                </div>
+                                <div class="pull-left">
+                                    <Rock:DataViewPicker ID="dvExcludeDataView" runat="server" Label="Exclude any person in the following data view" CssClass="input-width-xl" />
+                                </div>
+                            </div>
 
                         </asp:Panel>
 
@@ -125,53 +174,97 @@
 
                         <asp:Panel ID="pnlInactivatePeople" runat="server" Enabled="false" CssClas="data-integrity-options">
 
-                            <Rock:RockCheckBox ID="cbNoLastContribution" runat="server" />
-                            <Rock:NumberBox ID="nbNoLastContribution" runat="server" Label="No family member has made a contribution in the last" AppendText="days" CssClass="input-width-md" Text="500" />
-
-                            <Rock:RockCheckBox ID="cbNoAttendanceInGroupType" runat="server" />
-                            <div class="row">
-                                <div class="col-xs-12 col-sm-6 col-md-4">
-                                    <Rock:NumberBox ID="nbNoAttendanceInGroupType" runat="server" AppendText="days" CssClass="input-width-md" Text="500" Label="No family member has attended any group type that takes attendance in the last"/>
+                            <div class="clearfix margin-b-lg">
+                                <div class="pull-left" style="width: 40px">
+                                    <Rock:RockCheckBox ID="cbNoLastContribution" runat="server" />
                                 </div>
-                                <div class="col-xs-12 col-sm-6 col-md-4">
-                                    <Rock:RockListBox ID="rlbNoAttendanceInGroupType" runat="server" DataTextField="text" DataValueField="value" Label="Ignore any attendance in the following group types" />
+                                <div class="pull-left">
+                                    <Rock:NumberBox ID="nbNoLastContribution" runat="server" Label="No family member has made a contribution in the last" AppendText="days" CssClass="input-width-md" Text="500" />
                                 </div>
                             </div>
 
-                            <Rock:RockCheckBox ID="cbNoPrayerRequest" runat="server" />
-                            <Rock:NumberBox ID="nbNoPrayerRequest" runat="server" Label="No family member has submitted a prayer request in the last" AppendText="days" CssClass="input-width-md" Text="500" />
-
-                            <Rock:RockCheckBox ID="cbNoPersonAttributes" runat="server" />
-                            <div class="row">
-                                <div class="col-xs-12 col-sm-6 col-md-4">
-                                    <Rock:NumberBox ID="nbNoPersonAttributes" runat="server" AppendText="days" CssClass="input-width-md" Label="No family member has a person attribute value updated in the last"/>
+                            <div class="clearfix margin-b-lg">
+                                <div class="pull-left" style="width: 40px">
+                                    <Rock:RockCheckBox ID="cbNoAttendanceInGroupType" runat="server" />
                                 </div>
-                                <div class="col-xs-12 col-sm-6 col-md-4">
-                                    <Rock:RockListBox ID="rlbNoPersonAttributes" runat="server" DataTextField="text" DataValueField="value" Label="Ignore any updates to the following attributes">
-                                    </Rock:RockListBox>
-                                </div>
-                            </div>
-
-                            <Rock:RockCheckBox ID="cbNoInteractions" runat="server" />
-                            <Rock:RockControlWrapper ID="rcwNoInteractions" runat="server" Label="No family member has an interaction of the following type in the last">
-                                <asp:Repeater ID="rNoInteractions" runat="server">
-                                    <ItemTemplate>
-                                        <div class="row margin-b-sm">
-                                            <asp:HiddenField ID="hfInteractionTypeId" runat="server" Value='<%# Eval("Guid") %>' />
-                                            <div class="col-md-2 col-sm-3 col-xs-4">
-                                                <Rock:RockCheckBox ID="cbInterationType" runat="server" SelectedIconCssClass="fa fa-check-square-o" UnSelectedIconCssClass="fa fa-square-o" Text='<%# Eval("Name") %>' Checked='<%# (bool)Eval("IsInteractionTypeEnabled") %>' />
-                                            </div>
-                                            <div class="col-md-10 col-sm-9 col-xs-8">
-                                                <Rock:NumberBox ID="nbNoInteractionDays" runat="server" AppendText="days" CssClass="input-width-md" Text='<%#Eval("LastInteractionDays") %>' />
+                                <div class="pull-left">
+                                    <div class="row">
+                                        <div class="col-xs-12 col-sm-6">
+                                            <div style="max-width: 300px;">
+                                                <Rock:NumberBox ID="nbNoAttendanceInGroupType" runat="server" AppendText="days" CssClass="input-width-md" Text="500" Label="No family member has attended any group type that takes attendance in the last"/>
                                             </div>
                                         </div>
-                                    </ItemTemplate>
-                                </asp:Repeater>
-                            </Rock:RockControlWrapper>
+                                        <div class="col-xs-12 col-sm-6">
+                                            <div style="max-width: 300px;">
+                                                <Rock:RockListBox ID="rlbNoAttendanceInGroupType" runat="server" DataTextField="text" DataValueField="value" Label="Ignore any attendance in the following group types" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
-                            <Rock:RockCheckBox ID="cbNotInDataView" runat="server" />
-                            <Rock:DataViewPicker ID="dvNotInDataView" runat="server" Label="The person is not in the following data view" CssClass="input-width-xl" />
+                            <div class="clearfix margin-b-lg">
+                                <div class="pull-left" style="width: 40px">
+                                    <Rock:RockCheckBox ID="cbNoPrayerRequest" runat="server" />
+                                </div>
+                                <div class="pull-left">
+                                    <Rock:NumberBox ID="nbNoPrayerRequest" runat="server" Label="No family member has submitted a prayer request in the last" AppendText="days" CssClass="input-width-md" Text="500" />
+                                </div>
+                            </div>
 
+                            <div class="clearfix margin-b-lg">
+                                <div class="pull-left" style="width: 40px">
+                                    <Rock:RockCheckBox ID="cbNoPersonAttributes" runat="server" />
+                                </div>
+                                <div class="pull-left">
+                                    <div class="row">
+                                        <div class="col-xs-12 col-sm-6 col-md-4">
+                                            <div style="max-width: 300px;">
+                                                <Rock:NumberBox ID="nbNoPersonAttributes" runat="server" AppendText="days" CssClass="input-width-md" Label="No family member has a person attribute value updated in the last"/>
+                                            </div>
+                                        </div>
+                                        <div class="col-xs-12 col-sm-6 col-md-4">
+                                            <div style="max-width: 300px;">
+                                                <Rock:RockListBox ID="rlbNoPersonAttributes" runat="server" DataTextField="text" DataValueField="value" Label="Ignore any updates to the following attributes">
+                                                </Rock:RockListBox>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="clearfix margin-b-lg">
+                                <div class="pull-left" style="width: 40px">
+                                    <Rock:RockCheckBox ID="cbNoInteractions" runat="server" />
+                                </div>
+                                <div class="pull-left">
+                                    <Rock:RockControlWrapper ID="rcwNoInteractions" runat="server" Label="No family member has an interaction of the following type in the last">
+                                        <asp:Repeater ID="rNoInteractions" runat="server">
+                                            <ItemTemplate>
+                                                <div class="row margin-b-sm">
+                                                    <asp:HiddenField ID="hfInteractionTypeId" runat="server" Value='<%# Eval("Guid") %>' />
+                                                    <div class="col-md-5 col-sm-6 col-xs-8 padding-t-sm">
+                                                        <Rock:RockCheckBox ID="cbInterationType" runat="server" SelectedIconCssClass="fa fa-check-square-o" UnSelectedIconCssClass="fa fa-square-o" Text='<%# Eval("Name") %>' Checked='<%# (bool)Eval("IsInteractionTypeEnabled") %>' />
+                                                    </div>
+                                                    <div class="col-md-7 col-sm-6 col-xs-4">
+                                                        <Rock:NumberBox ID="nbNoInteractionDays" runat="server" AppendText="days" CssClass="input-width-md" Text='<%#Eval("LastInteractionDays") %>' />
+                                                    </div>
+                                                </div>
+                                                <hr />
+                                            </ItemTemplate>
+                                        </asp:Repeater>
+                                    </Rock:RockControlWrapper>
+                                </div>
+                            </div>
+
+                            <div class="clearfix margin-b-lg">
+                                <div class="pull-left" style="width: 40px">
+                                    <Rock:RockCheckBox ID="cbNotInDataView" runat="server" />
+                                </div>
+                                <div class="pull-left">
+                                    <Rock:DataViewPicker ID="dvNotInDataView" runat="server" Label="The person is not in the following data view" CssClass="input-width-xl" />
+                                </div>
+                            </div>
                         </asp:Panel>
 
                     </Rock:PanelWidget>
@@ -186,39 +279,61 @@
 
                         <asp:Panel ID="pnlCampusUpdate" runat="server" Enabled="false" CssClas="data-integrity-options">
 
-                            <Rock:RockCheckBox ID="cbMostFamilyAttendance" runat="server" />
-                            <Rock:NumberBox ID="nbMostFamilyAttendance" runat="server" Label="Calculate campus based on the most family attendance to a campus-specific location in the last" AppendText="days" CssClass="input-width-md" Text="90" />
-                            
-                            <Rock:RockCheckBox ID="cbMostFamilyGiving" runat="server" />
-                            <Rock:NumberBox ID="nbMostFamilyGiving" runat="server" Label="Calculate campus based on the most family giving to a campus-specific account in the last" AppendText="days" CssClass="input-width-md" Text="90" />
+                            <div class="clearfix margin-b-lg">
+                                <div class="pull-left" style="width: 40px">
+                                    <Rock:RockCheckBox ID="cbMostFamilyAttendance" runat="server" />
+                                </div>
+                                <div class="pull-left">
+                                    <Rock:NumberBox ID="nbMostFamilyAttendance" runat="server" Label="Calculate campus based on the most family attendance to a campus-specific location in the last" AppendText="days" CssClass="input-width-md" Text="90" />
+                                </div>
+                            </div>
 
-                            <Rock:RockDropDownList ID="ddlAttendanceOrGiving" CssClass="input-width-lg" runat="server" Label="If the calculated campus for most attendance and most giving are different" />
-                            
-                            <Rock:RockCheckBox ID="cbIgnoreIfManualUpdate" runat="server" />
-                            <Rock:NumberBox ID="nbIgnoreIfManualUpdate" runat="server" Label="Ignore any family that has had a manual campus update in the last" AppendText="days" CssClass="input-width-md" Text="90" />
-                            
-                            <Rock:RockCheckBox ID="cbIgnoreCampusChanges" runat="server" />
-                            <Rock:RockControlWrapper ID="rcwIgnoreCampusChanges" runat="server" Label="Ignore any update that would change the campus">
-                                <asp:Repeater ID="rIgnoreCampusChanges" runat="server" OnItemDataBound="rIgnoreCampusChanges_ItemDataBound" OnItemCommand="rIgnoreCampusChanges_ItemCommand">
-                                    <ItemTemplate>
-                                        <asp:HiddenField ID="hfRowId" runat="server" Value='<%# Eval("Id") %>' />
-                                        <div class="row margin-l-sm margin-b-sm form-inline">
-                                            <Rock:CampusPicker ID="cpFromCampus" runat="server" Label="From" CssClass="margin-r-sm" />
-                                            <Rock:CampusPicker ID="cpToCampus" runat="server" Label="To" CssClass="margin-r-sm" />
-                                            <Rock:RockDropDownList ID="ddlAttendanceOrGiving" runat="server" Label="Based On" CssClass="margin-r-sm" >
-                                                <asp:ListItem Text="Either" Value="" Selected="True" />
-                                                <asp:ListItem Text="Giving" Value="1" />
-                                                <asp:ListItem Text="Attendance" Value="2" />
-                                            </Rock:RockDropDownList>
-                                            <asp:LinkButton ID="lbDelete" runat="server" CssClass="btn btn-xs btn-danger form-action-remove" CommandName="delete" CommandArgument='<%# Eval("Id") %>'><i class="fa fa-minus-circle"></i></asp:LinkButton>
-                                        </div>
-                                    </ItemTemplate>
-                                </asp:Repeater>
-                                <asp:LinkButton ID="lbAdd" CssClass="btn btn-xs btn-action margin-l-sm" runat="server" OnClick="lbAdd_Click">
-                                    <i class="fa fa-plus-circle"></i>
-                                </asp:LinkButton>
-                            </Rock:RockControlWrapper>
+                            <div class="clearfix margin-b-lg">
+                                <div class="pull-left" style="width: 40px">
+                                    <Rock:RockCheckBox ID="cbMostFamilyGiving" runat="server" />
+                                </div>
+                                <div class="pull-left">
+                                    <Rock:NumberBox ID="nbMostFamilyGiving" runat="server" Label="Calculate campus based on the most family giving to a campus-specific account in the last" AppendText="days" CssClass="input-width-md" Text="90" />
+                                    <Rock:RockDropDownList ID="ddlAttendanceOrGiving" CssClass="input-width-lg" runat="server" Label="If the calculated campus for most attendance and most giving are different" />
+                                </div>
+                            </div>
 
+                            <div class="clearfix margin-b-lg">
+                                <div class="pull-left" style="width: 40px">
+                                    <Rock:RockCheckBox ID="cbIgnoreIfManualUpdate" runat="server" />
+                                </div>
+                                <div class="pull-left">
+                                    <Rock:NumberBox ID="nbIgnoreIfManualUpdate" runat="server" Label="Ignore any family that has had a manual campus update in the last" AppendText="days" CssClass="input-width-md" Text="90" />
+                                </div>
+                            </div>
+
+                            <div class="clearfix margin-b-lg">
+                                <div class="pull-left" style="width: 40px">
+                                    <Rock:RockCheckBox ID="cbIgnoreCampusChanges" runat="server" />
+                                </div>
+                                <div class="pull-left">
+                                    <Rock:RockControlWrapper ID="rcwIgnoreCampusChanges" runat="server" Label="Ignore any update that would change the campus">
+                                    <asp:Repeater ID="rIgnoreCampusChanges" runat="server" OnItemDataBound="rIgnoreCampusChanges_ItemDataBound" OnItemCommand="rIgnoreCampusChanges_ItemCommand">
+                                        <ItemTemplate>
+                                            <asp:HiddenField ID="hfRowId" runat="server" Value='<%# Eval("Id") %>' />
+                                            <div class="row margin-l-sm margin-b-sm form-inline">
+                                                <Rock:CampusPicker ID="cpFromCampus" runat="server" Label="From" CssClass="margin-r-sm" />
+                                                <Rock:CampusPicker ID="cpToCampus" runat="server" Label="To" CssClass="margin-r-sm" />
+                                                <Rock:RockDropDownList ID="ddlAttendanceOrGiving" runat="server" Label="Based On" CssClass="margin-r-sm" >
+                                                    <asp:ListItem Text="Either" Value="" Selected="True" />
+                                                    <asp:ListItem Text="Giving" Value="1" />
+                                                    <asp:ListItem Text="Attendance" Value="2" />
+                                                </Rock:RockDropDownList>
+                                                <asp:LinkButton ID="lbDelete" runat="server" CssClass="btn btn-xs btn-danger form-action-remove" CommandName="delete" CommandArgument='<%# Eval("Id") %>'><i class="fa fa-minus-circle"></i></asp:LinkButton>
+                                            </div>
+                                        </ItemTemplate>
+                                    </asp:Repeater>
+                                    <asp:LinkButton ID="lbAdd" CssClass="btn btn-xs btn-action margin-l-sm" runat="server" OnClick="lbAdd_Click">
+                                        <i class="fa fa-plus-circle"></i>
+                                    </asp:LinkButton>
+                                </Rock:RockControlWrapper>
+                                </div>
+                            </div>
                         </asp:Panel>
 
                     </Rock:PanelWidget>
@@ -240,7 +355,7 @@
                             <Rock:RockCheckBox ID="cbSamePhone" runat="server" Label="If the new adult does not have a home phone, should they use same number as their parent?" Text="Yes" />
                             <Rock:WorkflowTypePicker ID="wfWorkflows" runat="server" AllowMultiSelect="true" Label="The workflow type(s) to launch for each person that is processed."
                                 Help="The person will be passed to the workflow as the entity. If the workflow has an 'OldFamily' Group attribute it will set this to the person's primary family before processing the person. If the workflow has a 'NewFamily' Group attribute it will set to the family that the person was updated or added as an adult to." />
-                            <Rock:NumberBox ID="nbMaxRecords" runat="server" Label="The maximum number of records that should be processed at a time." AppendText="records" CssClass="input-width-md" /> 
+                            <Rock:NumberBox ID="nbMaxRecords" runat="server" Label="The maximum number of records that should be processed at a time." AppendText="records" CssClass="input-width-lg" /> 
 
                         </asp:Panel>
 

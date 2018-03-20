@@ -264,8 +264,16 @@ namespace RockWeb.Blocks.Administration
         private void SetPanel( PanelWidget panelWidget, Panel panel, string title, bool enabled )
         {
             panel.Enabled = enabled;
-            string enabledStr = enabled ? "Enabled" : "Disabled";
-            panelWidget.Title = string.Format( "{0} ({1})", title, enabledStr );
+            var enabledLabel = string.Empty;
+            if ( enabled )
+            {
+                enabledLabel = "<span class='label label-success'>Enabled</span>";
+            }
+            else
+            {
+                enabledLabel = "<span class='label label-warning'>Disabled</span>";
+            }
+            panelWidget.Title = string.Format( "<h3 class='panel-title pull-left margin-r-sm'>{0}</h3> <div class='pull-right'>{1}</div>", title, enabledLabel );
         }
 
         /// <summary>
