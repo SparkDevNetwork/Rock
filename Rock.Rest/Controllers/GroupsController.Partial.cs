@@ -50,6 +50,7 @@ namespace Rock.Rest.Controllers
         /// <param name="countsType">Type of the counts.</param>
         /// <param name="campusId">if set it will filter groups based on campus</param>
         /// <param name="includeNoCampus">if campus set and set to <c>true</c> [include groups with no campus].</param>
+        /// <param name="limitToPublic">if set to <c>true</c> [limit to public groups].</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Groups/GetChildren/{id}" )]
@@ -62,7 +63,8 @@ namespace Rock.Rest.Controllers
             bool includeInactiveGroups = false,
             TreeViewItem.GetCountsType countsType = TreeViewItem.GetCountsType.None,
             int campusId = 0,
-            bool includeNoCampus = false )
+            bool includeNoCampus = false,
+            bool limitToPublic  = false)
         {
             // Enable proxy creation since security is being checked and need to navigate parent authorities
             SetProxyCreation( true );
@@ -75,7 +77,7 @@ namespace Rock.Rest.Controllers
             // if specific group types are specified, show the groups regardless of ShowInNavigation
             bool limitToShowInNavigation = !includedGroupTypeIdList.Any();
 
-            var qry = groupService.GetChildren( id, rootGroupId, limitToSecurityRoleGroups, includedGroupTypeIdList, excludedGroupTypeIdList, includeInactiveGroups, limitToShowInNavigation, campusId, includeNoCampus );
+            var qry = groupService.GetChildren( id, rootGroupId, limitToSecurityRoleGroups, includedGroupTypeIdList, excludedGroupTypeIdList, includeInactiveGroups, limitToShowInNavigation, campusId, includeNoCampus, limitToPublic );
 
             List<Group> groupList = new List<Group>();
             List<TreeViewItem> groupNameList = new List<TreeViewItem>();
@@ -549,60 +551,6 @@ namespace Rock.Rest.Controllers
             System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
 
             GroupService.AddNewGroupAddress( rockContext, group, locationType.Guid.ToString(), street1, street2, city, state, postalCode, country, true );
-        }
-
-        /// <summary>
-        /// Puts the specified identifier.
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <param name="group">The group.</param>
-        public override void Put( int id, Group group )
-        {
-            var familyGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
-            if ( familyGroupType != null && familyGroupType.Id == group.GroupTypeId )
-            {
-                SetProxyCreation( true );
-
-                var rockContext = (RockContext)Service.Context;
-                var existingGroup = Service.Get( id );
-                if ( existingGroup != null )
-                {
-                    var changes = new List<string>();
-                    string oldCampus = existingGroup.Campus != null ? existingGroup.Campus.Name : string.Empty;
-                    string newCampus = group.Campus != null ? group.Campus.Name : string.Empty;
-                    if ( group.CampusId.HasValue && string.IsNullOrWhiteSpace( newCampus ) )
-                    {
-                        var campus = CampusCache.Read( group.CampusId.Value );
-                        newCampus = campus != null ? campus.Name : string.Empty;
-                    }
-
-                    History.EvaluateChange( changes, "Campus", oldCampus, newCampus );
-
-                    if ( changes.Any() )
-                    {
-                        System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
-
-                        int? modifiedByPersonAliasId = group.ModifiedAuditValuesAlreadyUpdated ? group.ModifiedByPersonAliasId : (int?)null;
-
-                        foreach ( var fm in existingGroup.Members )
-                        {
-                            HistoryService.SaveChanges(
-                                rockContext,
-                                typeof( Person ),
-                                Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
-                                fm.PersonId,
-                                changes,
-                                existingGroup.Name,
-                                typeof( Group ),
-                                existingGroup.Id,
-                                true,
-                                modifiedByPersonAliasId );
-                        }
-                    }
-                }
-            }
-
-            base.Put( id, group );
         }
 
         #region MapInfo methods

@@ -124,6 +124,11 @@ namespace Rock.Web.UI.Controls
         protected RockCheckBox _cbIsAnalyticHistory;
 
         /// <summary>
+        /// Field type control (readonly)
+        /// </summary>
+        protected RockLiteral _lFieldType;
+
+        /// <summary>
         /// Field type control
         /// </summary>
         protected RockDropDownList _ddlFieldType;
@@ -131,12 +136,12 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Qualifiers control
         /// </summary>
-        protected PlaceHolder _phQualifiers;
+        protected DynamicPlaceholder _phQualifiers;
 
         /// <summary>
         /// Default value control
         /// </summary>
-        protected PlaceHolder _phDefaultValue;
+        protected DynamicPlaceholder _phDefaultValue;
 
         /// <summary>
         /// Save control
@@ -262,6 +267,28 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this Attribute is marked as IsSystem=true
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is system; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsSystem
+        {
+            get
+            {
+                return ViewState["IsSystem"] as bool? ?? false;
+            }
+
+            private set
+            {
+                EnsureChildControls();
+                ViewState["IsSystem"] = value;
+                IsKeyEditable = !value;
+                IsFieldTypeEditable = !value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether to allow editing the Key field.
         /// </summary>
         /// <value>
@@ -272,17 +299,34 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _lKey.Visible;
+                return _tbKey.Visible;
             }
             set
             {
                 EnsureChildControls();
                 _lKey.Visible = !value;
-                if ( !value )
-                {
-                    _tbKey.CssClass = "hidden";
-                    _tbKey.FormGroupCssClass = "hidden";
-                }
+                _tbKey.Visible = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to allow editing the FieldType field.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> to see an editable FieldType field; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsFieldTypeEditable
+        {
+            get
+            {
+                EnsureChildControls();
+                return _ddlFieldType.Visible;
+            }
+            set
+            {
+                EnsureChildControls();
+                _lFieldType.Visible = !value;
+                _ddlFieldType.Visible = value;
             }
         }
 
@@ -774,6 +818,15 @@ namespace Rock.Web.UI.Controls
                     _ddlFieldType.SetValue( value );
                     CreateFieldTypeDetailControls( value );
                 }
+
+                if ( value.HasValue )
+                {
+                    _lFieldType.Text = FieldTypeCache.Read( value.Value )?.Name;
+                }
+                else
+                {
+                    _lFieldType.Text = string.Empty;
+                }
             }
         }
 
@@ -806,7 +859,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return ViewState["DefaultValue"] as string;
+                return ViewState["DefaultValue"] as string ?? string.Empty;
             }
             set
             {
@@ -867,6 +920,14 @@ namespace Rock.Web.UI.Controls
                 ViewState["ObjectPropertyNames"] = value;
             }
         }
+
+        /// <summary>
+        /// Gets or sets the reload qualifiers value.
+        /// </summary>
+        /// <value>
+        /// True if the OnPreRender method should reload the qualifiers.
+        /// </value>
+        private bool ReloadQualifiers { get; set; }
 
         #endregion
 
@@ -958,7 +1019,7 @@ namespace Rock.Web.UI.Controls
                 _lKey = new RockLiteral();
                 _lKey.Label = "Key";
                 _lKey.ID = "lKey";
-                _lKey.Visible = false;  // Default is to not show this option
+                _lKey.Visible = false;  
                 Controls.Add( _lKey );
 
                 _tbKey = new RockTextBox();
@@ -1027,6 +1088,12 @@ namespace Rock.Web.UI.Controls
                 _cbIsAnalyticHistory.Visible = false;  // Default is to not show this option
                 Controls.Add( _cbIsAnalyticHistory );
 
+                _lFieldType = new RockLiteral();
+                _lFieldType.Label = "Field Type";
+                _lFieldType.ID = "_lFieldType";
+                _lFieldType.Visible = false;  
+                Controls.Add( _lFieldType );
+
                 _ddlFieldType = new RockDropDownList();
                 _ddlFieldType.ID = "ddlFieldType";
                 _ddlFieldType.Label = "Field Type";
@@ -1037,14 +1104,12 @@ namespace Rock.Web.UI.Controls
                 _ddlFieldType.EnhanceForLongLists = true;
                 Controls.Add( _ddlFieldType );
 
-                _phQualifiers = new PlaceHolder();
+                _phQualifiers = new DynamicPlaceholder(); 
                 _phQualifiers.ID = "phQualifiers";
-                _phQualifiers.EnableViewState = false;
                 Controls.Add( _phQualifiers );
 
-                _phDefaultValue = new PlaceHolder();
+                _phDefaultValue = new DynamicPlaceholder();
                 _phDefaultValue.ID = "phDefaultValue";
-                _phDefaultValue.EnableViewState = false;
                 Controls.Add( _phDefaultValue );
 
                 _btnSave = new LinkButton();
@@ -1074,21 +1139,13 @@ namespace Rock.Web.UI.Controls
         {
             base.OnLoad( e );
 
+            // Load qualifier data now so the save event handler has access to it.
             if ( Page.IsPostBack && FieldTypeId.HasValue )
             {
-                var field = Rock.Web.Cache.FieldTypeCache.Read( FieldTypeId.Value ).Field;
-                var qualifierControls = new List<Control>();
-                foreach ( Control control in _phQualifiers.Controls )
-                {
-                    qualifierControls.Add( control );
-                }
-
-                DefaultValue = _phDefaultValue.Controls.Count >= 1 ?
-                    field.GetEditValue( _phDefaultValue.Controls[0], Qualifiers ) : string.Empty;
-
-                Qualifiers = field.ConfigurationValues( qualifierControls );
+                UpdateQualifiers();
             }
 
+            ReloadQualifiers = Page.IsPostBack && FieldTypeId.HasValue;
         }
 
         /// <summary>
@@ -1098,6 +1155,12 @@ namespace Rock.Web.UI.Controls
         protected override void OnPreRender( EventArgs e )
         {
             base.OnPreRender( e );
+
+            // Reload qualifiers in case any postback events caused them to change.
+            if ( ReloadQualifiers )
+            {
+                UpdateQualifiers();
+            }
 
             // Recreate the qualifiers and default control in case they changed due to new field type or
             // new qualifier values
@@ -1113,7 +1176,7 @@ namespace Rock.Web.UI.Controls
                 if ( entityType != null )
                 {
                     _cbIsAnalytic.Visible = entityType.IsAnalyticAttributesSupported( this.AttributeEntityTypeQualifierColumn, this.AttributeEntityTypeQualifierValue );
-                    _cbIsAnalyticHistory.Visible = entityType.IsAnalyticsHistoricalSupported( this.AttributeEntityTypeQualifierColumn, this.AttributeEntityTypeQualifierValue ) ;
+                    _cbIsAnalyticHistory.Visible = entityType.IsAnalyticsHistoricalSupported( this.AttributeEntityTypeQualifierColumn, this.AttributeEntityTypeQualifierValue );
                 }
             }
 
@@ -1184,7 +1247,7 @@ namespace Rock.Web.UI.Controls
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            _lKey.RenderControl( writer );
+            
             writer.RenderEndTag();
 
             writer.RenderEndTag();  // row
@@ -1208,6 +1271,7 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _cpCategories.RenderControl( writer );
+            _lKey.RenderControl( writer );
             _tbKey.RenderControl( writer );
             _cvKey.RenderControl( writer );
             _tbIconCssClass.RenderControl( writer );
@@ -1231,13 +1295,14 @@ namespace Rock.Web.UI.Controls
             writer.RenderEndTag();
 
             writer.RenderEndTag();
-            
+
             writer.RenderEndTag();
 
             // row 3 col 2
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _ddlFieldType.RenderControl( writer );
+            _lFieldType.RenderControl( writer );
             _phQualifiers.RenderControl( writer );
             _phDefaultValue.RenderControl( writer );
             writer.RenderEndTag();
@@ -1284,7 +1349,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="args">The <see cref="ServerValidateEventArgs"/> instance containing the event data.</param>
         protected void cvKey_ServerValidate( object source, ServerValidateEventArgs args )
         {
-            args.IsValid = 
+            args.IsValid =
                 !ReservedKeyNames.Contains( _tbKey.Text.Trim(), StringComparer.CurrentCultureIgnoreCase ) &&
                 !ObjectPropertyNames.Contains( _tbKey.Text.Trim(), StringComparer.CurrentCultureIgnoreCase );
         }
@@ -1325,7 +1390,7 @@ namespace Rock.Web.UI.Controls
                 CancelClick( sender, e );
             }
         }
-        
+
         #endregion
 
         #region Public Methods
@@ -1339,6 +1404,7 @@ namespace Rock.Web.UI.Controls
         {
             if ( attribute != null )
             {
+                this.IsSystem = attribute.IsSystem;
                 this.AttributeId = attribute.Id;
                 this.AttributeGuid = attribute.Guid;
                 this.AttributeEntityTypeQualifierColumn = attribute.EntityTypeQualifierColumn;
@@ -1367,6 +1433,10 @@ namespace Rock.Web.UI.Controls
 
                 this.Qualifiers = qualifiers;
                 this.DefaultValue = attribute.DefaultValue;
+
+                this.ReloadQualifiers = false;
+
+                SetSubTitleOnModal( attribute );
             }
 
             if ( objectType != null )
@@ -1447,16 +1517,16 @@ namespace Rock.Web.UI.Controls
                 var field = Rock.Web.Cache.FieldTypeCache.Read( fieldTypeId.Value ).Field;
 
                 var configControls = field.ConfigurationControls();
-                if ( recreate )
-                {
-                    field.SetConfigurationValues( configControls, Qualifiers );
-                }
-
                 int i = 0;
                 foreach ( var control in configControls )
                 {
                     control.ID = string.Format( "qualifier_{0}", i++ );
                     _phQualifiers.Controls.Add( control );
+                }
+
+                if ( recreate )
+                {
+                    field.SetConfigurationValues( configControls, Qualifiers );
                 }
 
                 // default control id needs to be unique to field type because some field types will transform
@@ -1486,6 +1556,37 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Reads the qualifiers and default value from the page contents.
+        /// </summary>
+        protected void UpdateQualifiers()
+        {
+            var field = Rock.Web.Cache.FieldTypeCache.Read( FieldTypeId.Value ).Field;
+            var qualifierControls = new List<Control>();
+            foreach ( Control control in _phQualifiers.Controls )
+            {
+                qualifierControls.Add( control );
+            }
+
+            DefaultValue = _phDefaultValue.Controls.Count >= 1 ?
+                field.GetEditValue( _phDefaultValue.Controls[0], Qualifiers ) : string.Empty;
+
+            Qualifiers = field.ConfigurationValues( qualifierControls );
+        }
+        
+        /// <summary>
+        /// Set the Subtitle of modal dialog
+        /// </summary>
+        /// <param name="attribute">The attribute.</param>
+        protected void SetSubTitleOnModal( Model.Attribute attribute )
+        {
+            ModalDialog modalDialog = this.FirstParentControlOfType<ModalDialog>();
+            if ( modalDialog != null && ( string.IsNullOrEmpty(modalDialog.SubTitle) || modalDialog.SubTitle.StartsWith( "Id: ") ) )
+            {
+                modalDialog.SubTitle = string.Format( "Id: {0}", attribute.Id );
+            }
+        }
+
+        /// <summary>
         /// Registers the client script.
         /// </summary>
         protected void RegisterClientScript()
@@ -1493,14 +1594,14 @@ namespace Rock.Web.UI.Controls
             string script = @"
     function populateAttributeKey(nameControlId, keyControlId, literalKeyControlId ) {
         // if the attribute key hasn't been filled in yet, populate it with the attribute name minus whitespace
-        var literalKeyControl = $('#' + literalKeyControlId);
-        var keyControl = $('#' + keyControlId);
-        var keyValue = keyControl.val();
+        var $literalKeyControl = $('#' + literalKeyControlId);
+        var $keyControl = $('#' + keyControlId);
+        var keyValue = $keyControl.val();
 
-        var reservedKeyJson = keyControl.closest('fieldset').find('.js-existing-key-names').val();
+        var reservedKeyJson = $keyControl.closest('fieldset').find('.js-existing-key-names').val();
         var reservedKeyNames = eval('(' + reservedKeyJson + ')');
 
-        if (keyValue == '') {
+        if ($keyControl.length && (keyValue == '')) {
 
             keyValue = $('#' + nameControlId).val().replace(/[^a-zA-Z0-9_.\-]/g, '');
             var newKeyValue = keyValue;
@@ -1510,8 +1611,8 @@ namespace Rock.Web.UI.Controls
                 newKeyValue = keyValue + i++;
             }
             
-            keyControl.val(newKeyValue);
-            literalKeyControl.html(newKeyValue);
+            $keyControl.val(newKeyValue);
+            $literalKeyControl.html(newKeyValue);
         }
     }
 

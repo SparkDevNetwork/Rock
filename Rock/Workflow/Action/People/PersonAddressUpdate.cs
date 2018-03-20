@@ -173,7 +173,7 @@ namespace Rock.Workflow.Action
             var groupLocationService = new GroupLocationService( rockContext );
             foreach ( var family in person.GetFamilies( rockContext ).ToList() )
             {
-                var groupChanges = new List<string>();
+                bool locationUpdated = false;
 
                 if ( savePreviousAddress )
                 {
@@ -204,39 +204,32 @@ namespace Rock.Workflow.Action
                         oldValue = groupLocation.Location.ToString();
                     }
 
-
-                    History.EvaluateChange(
-                        groupChanges,
-                        locationType.Value + " Location",
-                        oldValue,
-                        location.ToString() );
+                    locationUpdated = oldValue != location.ToString();
 
                     groupLocation.Location = location;
 
                     if ( mailing.HasValue )
                     {
-                        History.EvaluateChange(
-                            groupChanges,
-                            locationType.Value + " Is Mailing",
-                            ( oldValue == string.Empty ) ? null : groupLocation.IsMailingLocation.ToString(),
-                            mailing.Value.ToString() );
+                        if ( ( ( oldValue == string.Empty ) ? null : groupLocation.IsMailingLocation.ToString() ) != mailing.Value.ToString() )
+                        {
+                            locationUpdated = true;
+                        }
                         groupLocation.IsMailingLocation = mailing.Value;
                     }
 
                     if ( mapped.HasValue )
                     {
-                        History.EvaluateChange(
-                            groupChanges,
-                            locationType.Value + " Is Map Location",
-                            ( oldValue == string.Empty ) ? null : groupLocation.IsMappedLocation.ToString(),
-                            mapped.Value.ToString() );
+                        if ( ( ( oldValue == string.Empty ) ? null : groupLocation.IsMappedLocation.ToString() ) != mapped.Value.ToString() )
+                        {
+                            locationUpdated = true;
+                        }
                         groupLocation.IsMappedLocation = mapped.Value;
                     }
                 }
 
-                if ( groupChanges.Any() )
+                if ( locationUpdated  )
                 {
-                    groupChanges.Add( string.Format( "<em>(Updated by the '{0}' workflow)</em>", action.ActionTypeCache.ActivityType.WorkflowType.Name ) );
+                    var groupChanges = new List<string> { string.Format( "<em>(Location was updated by the '{0}' workflow)</em>", action.ActionTypeCache.ActivityType.WorkflowType.Name ) };
                     foreach ( var fm in family.Members )
                     {
                         HistoryService.SaveChanges(

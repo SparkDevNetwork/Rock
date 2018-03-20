@@ -85,6 +85,16 @@ namespace Rock.Model
         public BatchStatus Status { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance is automated.
+        /// If IsAutomated is True, the UI should not allow the status of Pending to be changed to Open or Closed ( an external process will be in change of changing the status )
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is automated; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsAutomated { get; set; } = false;
+
+        /// <summary>
         /// Gets or sets the CampusId of the <see cref="Rock.Model.Campus"/> that this batch is associated with. If the batch is not linked
         /// to a campus, this value will be null.
         /// </summary>

@@ -466,7 +466,7 @@ namespace Rock.MergeTemplates
             RemoveComments = true,
             RemoveContentControls = true,
             RemoveEndAndFootNotes = true,
-            RemoveFieldCodes = true,
+            RemoveFieldCodes = false,
             RemoveLastRenderedPageBreak = true,
             RemovePermissions = true,
             RemoveProof = true,

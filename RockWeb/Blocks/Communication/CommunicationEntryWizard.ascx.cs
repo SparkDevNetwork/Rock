@@ -239,31 +239,38 @@ namespace RockWeb.Blocks.Communication
             }
             else
             {
-                if ( !communication.CommunicationTemplateId.HasValue || !communication.CommunicationTemplate.SupportsEmailWizard() )
+                if ( !string.IsNullOrEmpty( communication.Message ) )
                 {
-                    // If this communication was previously created, but doesn't have a CommunicationTemplateId or uses a template that doesn't suport the EmailWizard, 
-                    // it is a communication (or a copy of a communication) that was created created using the 'Simple Editor' or the editor prior to v7.
-                    // So, if they use the wizard, the main Html Content will be reset when they get to the Select Template step
-                    // since the wizard requires that the communication uses a Template that supports the Email Wizard.
-                    // So, if this is the case, warn them and explain that they can continue with the wizard but start over on the content,
-                    // or to use the 'Use Simple Editor' to keep the content, but not use the wizard
-                    nbCommunicationNotWizardCompatible.Visible = true;
+                    if ( !communication.CommunicationTemplateId.HasValue || !communication.CommunicationTemplate.SupportsEmailWizard() )
+                    {
+                        // If this communication was previously created, but doesn't have a CommunicationTemplateId or uses a template that doesn't suport the EmailWizard, 
+                        // it is a communication (or a copy of a communication) that was created created using the 'Simple Editor' or the editor prior to v7.
+                        // So, if they use the wizard, the main Html Content will be reset when they get to the Select Template step
+                        // since the wizard requires that the communication uses a Template that supports the Email Wizard.
+                        // So, if this is the case, warn them and explain that they can continue with the wizard but start over on the content,
+                        // or to use the 'Use Simple Editor' to keep the content, but not use the wizard
+                        nbCommunicationNotWizardCompatible.Visible = true;
+                    }
                 }
             }
 
+            // If viewing a new, transient, draft, or are the approver of a pending-approval communication, use this block
+            // otherwise, set this block visible=false and if there is a communication detail block on this page, it'll be shown instead
             CommunicationStatus[] editableStatuses = new CommunicationStatus[] { CommunicationStatus.Transient, CommunicationStatus.Draft, CommunicationStatus.Denied };
             if ( editableStatuses.Contains( communication.Status ) || ( communication.Status == CommunicationStatus.PendingApproval && editingApproved ) )
             {
-                // Make sure they are authorized to view
+                // Make sure they are authorized to edit, or the owner, or the approver/editor
+                bool isAuthorizedEditor = communication.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson );
                 bool isCreator = ( communication.CreatedByPersonAlias != null && CurrentPersonId.HasValue && communication.CreatedByPersonAlias.PersonId == CurrentPersonId.Value );
-                if ( !communication.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson ) && !isCreator )
+                bool isApprovalEditor = communication.Status == CommunicationStatus.PendingApproval && editingApproved;
+                if ( isAuthorizedEditor || isCreator || isApprovalEditor )
                 {
-                    // not authorized, so hide this block
-                    this.Visible = false;
+                    // communication is either new or ok to edit
                 }
                 else
                 {
-                    // communication is either new or OK to edit
+                    // not authorized, so hide this block
+                    this.Visible = false;
                 }
             }
             else
@@ -292,6 +299,40 @@ namespace RockWeb.Blocks.Communication
             }
 
             this.IndividualRecipientPersonIds = new CommunicationRecipientService( rockContext ).Queryable().Where( r => r.CommunicationId == communication.Id ).Select( a => a.PersonAlias.PersonId ).ToList();
+
+            int? personId = PageParameter( "Person" ).AsIntegerOrNull();
+            if ( personId.HasValue && !communication.ListGroupId.HasValue )
+            {
+                communication.IsBulkCommunication = false;
+                var context = new RockContext();
+                var person = new PersonService( context ).Get( personId.Value );
+                if ( person != null )
+                {
+                    if ( !this.IndividualRecipientPersonIds.Contains( person.Id ) )
+                    {
+                        this.IndividualRecipientPersonIds.Add( person.Id );
+                    }
+
+                    tglRecipientSelection.Checked = false;
+                }
+            }
+
+            // If a template guid was passed in and this is a new communication, set that as the selected template
+            Guid? templateGuid = PageParameter( "templateGuid" ).AsGuidOrNull();
+
+            if ( communication.Id > 0 && templateGuid.HasValue )
+            {
+                var template = new CommunicationTemplateService( rockContext ).Get( templateGuid.Value );
+
+                // NOTE: Only set the selected template if the user has auth for this template 
+                // and the template supports the Email Wizard
+                if ( template != null && template.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) && template.SupportsEmailWizard() )
+                {
+                    communication.CommunicationTemplateId = template.Id;
+                    this.InitializeFieldsFromCommunicationTemplate( template.Id );
+                }
+            }
+
             UpdateRecipientFromListCount();
             UpdateIndividualRecipientsCountText();
 
@@ -461,8 +502,8 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnUseSimpleEditor_Click( object sender, EventArgs e )
         {
-            int communicationId = hfCommunicationId.Value.AsInteger();
-            NavigateToLinkedPage( "SimpleCommunicationPage", "CommunicationId", communicationId );
+            var simpleCommunicationPageRef = new Rock.Web.PageReference( this.GetAttributeValue( "SimpleCommunicationPage"), this.CurrentPageReference.Parameters, this.CurrentPageReference.QueryString );
+            NavigateToPage( simpleCommunicationPageRef );
         }
 
         #endregion
@@ -1082,8 +1123,20 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSelectTemplate_Click( object sender, EventArgs e )
         {
-            hfSelectedCommunicationTemplateId.Value = ( sender as LinkButton ).CommandArgument;
+            int communicationTemplateId = ( sender as LinkButton ).CommandArgument.AsInteger();
 
+            InitializeFieldsFromCommunicationTemplate( communicationTemplateId );
+
+            btnTemplateSelectionNext_Click( sender, e );
+        }
+
+        /// <summary>
+        /// Initializes the fields from communication template.
+        /// </summary>
+        /// <param name="communicationTemplateId">The communication template identifier.</param>
+        private void InitializeFieldsFromCommunicationTemplate( int communicationTemplateId )
+        {
+            hfSelectedCommunicationTemplateId.Value = communicationTemplateId.ToString();
             var communicationTemplate = new CommunicationTemplateService( new RockContext() ).Get( hfSelectedCommunicationTemplateId.Value.AsInteger() );
 
             // If the template does not provide a default From Name and Address use the current person.
@@ -1155,8 +1208,6 @@ namespace RockWeb.Blocks.Communication
             {
                 tbSMSTextMessage.Text = communicationTemplate.SMSMessage;
             }
-
-            btnTemplateSelectionNext_Click( sender, e );
         }
 
         /// <summary>
@@ -1396,7 +1447,7 @@ namespace RockWeb.Blocks.Communication
                         communicationService.Add( testCommunication );
                         rockContext.SaveChanges( disablePrePostProcessing: true );
 
-                        foreach ( var medium in testCommunication.Mediums )
+                        foreach ( var medium in testCommunication.GetMediums() )
                         {
                             medium.Send( testCommunication );
                         }
@@ -1480,6 +1531,8 @@ namespace RockWeb.Blocks.Communication
 
                         personToDeleteService.Delete( personToDelete );
                     }
+
+                    deleteRockContext.SaveChanges( disablePrePostProcessing: true );
                 }
             }
         }
@@ -2251,7 +2304,7 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
                 }
             }
 
-            communication.Name = tbCommunicationName.Text;
+            communication.Name = tbCommunicationName.Text.TrimForMaxLength( communication, "Name" );
             communication.IsBulkCommunication = tglBulkCommunication.Checked;
             communication.CommunicationType = ( CommunicationType ) hfMediumType.Value.AsInteger();
 
@@ -2346,9 +2399,9 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
                 communication.CommunicationTemplate = new CommunicationTemplateService( rockContext ).Get( communication.CommunicationTemplateId.Value );
             }
 
-            communication.FromName = tbFromName.Text;
-            communication.FromEmail = ebFromAddress.Text;
-            communication.ReplyToEmail = ebReplyToAddress.Text;
+            communication.FromName = tbFromName.Text.TrimForMaxLength( communication, "FromName" );
+            communication.FromEmail = ebFromAddress.Text.TrimForMaxLength( communication, "FromEmail" );
+            communication.ReplyToEmail = ebReplyToAddress.Text.TrimForMaxLength( communication, "ReplyToEmail" );
             communication.CCEmails = ebCCList.Text;
             communication.BCCEmails = ebBCCList.Text;
 
@@ -2379,7 +2432,7 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
                 communication.Attachments.Add( new CommunicationAttachment { BinaryFileId = attachmentBinaryFileId, CommunicationType = CommunicationType.SMS } );
             }
 
-            communication.Subject = tbEmailSubject.Text;
+            communication.Subject = tbEmailSubject.Text.TrimForMaxLength( communication, "Subject" );
             communication.Message = hfEmailEditorHtml.Value;
 
             communication.SMSFromDefinedValueId = ddlSMSFrom.SelectedValue.AsIntegerOrNull();

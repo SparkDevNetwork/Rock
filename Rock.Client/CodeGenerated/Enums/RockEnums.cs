@@ -28,6 +28,32 @@ namespace Rock.Client.Enums
     #pragma warning disable CS1591
     /// <summary>
     /// </summary>
+    public enum AddressInvalidReason
+    {
+        None = 0x0,
+        NotFound = 0x1,
+        Vacant = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum AddressStatus
+    {
+        Invalid = 0x0,
+        Valid = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum AgeClassification
+    {
+        Unknown = 0x0,
+        Adult = 0x1,
+        Child = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum AttendanceGraphBy
     {
         Total = 0x0,
@@ -125,6 +151,7 @@ namespace Rock.Client.Enums
         Email = 0x1,
         SMS = 0x2,
         PushNotification = 0x3,
+        Other = 0x4,
     }
 
     /// <summary>
@@ -302,6 +329,17 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum MatchFlag
+    {
+        None = 0x0,
+        Moved = 0x1,
+        POBoxClosed = 0x2,
+        MovedNoForwarding = 0x3,
+        MovedToForeignCountry = 0x4,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum MeetsGroupRequirement
     {
         Meets = 0x0,
@@ -347,6 +385,26 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum MoveType
+    {
+        None = 0x0,
+        Family = 0x1,
+        Individual = 0x2,
+        Business = 0x3,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum NcoaType
+    {
+        None = 0x0,
+        NoMove = 0x1,
+        Month48Move = 0x2,
+        Move = 0x3,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum NotificationClassification
     {
         Success = 0x0,
@@ -370,6 +428,15 @@ namespace Rock.Client.Enums
         Default = 0x0,
         Kiosk = 0x1,
         Location = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum Processed
+    {
+        NotProcessed = 0x0,
+        Complete = 0x1,
+        ManualUpdateRequired = 0x2,
     }
 
     /// <summary>
@@ -437,6 +504,7 @@ namespace Rock.Client.Enums
         HomePhone = 0x9,
         WorkPhone = 0xa,
         Grade = 0xb,
+        ConnectionStatus = 0xc,
     }
 
     /// <summary>
@@ -540,6 +608,15 @@ namespace Rock.Client.Enums
         Total = 0x0,
         FinancialAccount = 0x1,
         Campus = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum UpdatedAddressType
+    {
+        None = 0x0,
+        Residential = 0x1,
+        Business = 0x2,
     }
 
     /// <summary>

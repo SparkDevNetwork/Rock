@@ -2386,7 +2386,7 @@ namespace Rock.Migrations.Migrations {
         
         /// <summary>
         ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimAttendanceDate]&apos;, &apos;V&apos;) IS NOT NULL
-        ///    DROP VIEW AnalyticsDimAttendanceDate
+        ///    DROP VIEW [dbo].[AnalyticsDimAttendanceDate]
         ///GO
         ///
         ///CREATE VIEW [dbo].[AnalyticsDimAttendanceDate]
@@ -2412,10 +2412,10 @@ namespace Rock.Migrations.Migrations {
         
         /// <summary>
         ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimAttendanceLocation]&apos;, &apos;V&apos;) IS NOT NULL
-        ///    DROP VIEW AnalyticsDimAttendanceLocation
+        ///    DROP VIEW [dbo].[AnalyticsDimAttendanceLocation]
         ///GO
         ///
-        ///CREATE VIEW AnalyticsDimAttendanceLocation
+        ///CREATE VIEW [dbo].[AnalyticsDimAttendanceLocation]
         ///AS
         ///SELECT l.Id [LocationId]
         ///	,l.Name
@@ -2429,8 +2429,7 @@ namespace Rock.Migrations.Migrations {
         ///    ,l.GeoPoint [GeoPoint]
         ///    ,l.GeoFence [GeoFence]
         ///    ,l.GeoPoint.Lat [Latitude]
-        ///    ,l.GeoPoint.Long [Longitude]
-        ///FROM [rest of string was truncated]&quot;;.
+        ///    ,l.GeoPoint.Long [ [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201701040116351_Analytics1_AnalyticsDimAttendanceLocation {
             get {
@@ -2440,10 +2439,10 @@ namespace Rock.Migrations.Migrations {
         
         /// <summary>
         ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimFamilyCurrent]&apos;, &apos;V&apos;) IS NOT NULL
-        ///    DROP VIEW AnalyticsDimFamilyCurrent
+        ///    DROP VIEW [dbo].[AnalyticsDimFamilyCurrent]
         ///GO
         ///
-        ///CREATE VIEW AnalyticsDimFamilyCurrent
+        ///CREATE VIEW [dbo].[AnalyticsDimFamilyCurrent]
         ///AS
         ///SELECT * FROM AnalyticsDimFamilyHistorical where CurrentRowIndicator = 1.
         /// </summary>
@@ -2455,10 +2454,10 @@ namespace Rock.Migrations.Migrations {
         
         /// <summary>
         ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimFamilyHeadOfHousehold]&apos;, &apos;V&apos;) IS NOT NULL
-        ///    DROP VIEW AnalyticsDimFamilyHeadOfHousehold
+        ///    DROP VIEW [dbo].[AnalyticsDimFamilyHeadOfHousehold]
         ///GO
         ///
-        ///CREATE VIEW AnalyticsDimFamilyHeadOfHousehold
+        ///CREATE VIEW [dbo].[AnalyticsDimFamilyHeadOfHousehold]
         ///AS
         ///SELECT * FROM AnalyticsDimPersonCurrent.
         /// </summary>
@@ -2470,10 +2469,10 @@ namespace Rock.Migrations.Migrations {
         
         /// <summary>
         ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimFamilyHistorical]&apos;, &apos;V&apos;) IS NOT NULL
-        ///    DROP VIEW AnalyticsDimFamilyHistorical
+        ///    DROP VIEW [dbo].[AnalyticsDimFamilyHistorical]
         ///GO
         ///
-        ///CREATE VIEW AnalyticsDimFamilyHistorical
+        ///CREATE VIEW [dbo].[AnalyticsDimFamilyHistorical]
         ///AS
         ///SELECT asfh.*
         ///    ,isnull(c.NAME, &apos;None&apos;) [CampusName]
@@ -2482,7 +2481,7 @@ namespace Rock.Migrations.Migrations {
         ///    ,mailingLocation.Street2 [MailingAddressStreet2]
         ///    ,mailingLocation.City [MailingAddressCity]
         ///    ,mailingLocation.County [MailingAddressCounty]
-        ///    ,mailingLocation.[State [rest of string was truncated]&quot;;.
+        ///    ,mailin [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201701040116351_Analytics1_AnalyticsDimFamilyHistorical {
             get {
@@ -2492,10 +2491,10 @@ namespace Rock.Migrations.Migrations {
         
         /// <summary>
         ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimFinancialAccount]&apos;, &apos;V&apos;) IS NOT NULL
-        ///    DROP VIEW AnalyticsDimFinancialAccount
+        ///    DROP VIEW [dbo].[AnalyticsDimFinancialAccount]
         ///GO
         ///
-        ///CREATE VIEW AnalyticsDimFinancialAccount
+        ///CREATE VIEW [dbo].[AnalyticsDimFinancialAccount]
         ///AS
         ///SELECT fa.Id [AccountId]
         ///    ,fa.[Name]
@@ -2511,7 +2510,7 @@ namespace Rock.Migrations.Migrations {
         ///    ,fa.[Order]
         ///    ,CASE fa.IsActive
         ///        WHEN 1
-        ///            THEN &apos;Active&apos; [rest of string was truncated]&quot;;.
+        ///          [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201701040116351_Analytics1_AnalyticsDimFinancialAccount {
             get {
@@ -2521,10 +2520,10 @@ namespace Rock.Migrations.Migrations {
         
         /// <summary>
         ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimFinancialBatch]&apos;, &apos;V&apos;) IS NOT NULL
-        ///    DROP VIEW AnalyticsDimFinancialBatch
+        ///    DROP VIEW [dbo].[AnalyticsDimFinancialBatch]
         ///GO
         ///
-        ///CREATE VIEW AnalyticsDimFinancialBatch
+        ///CREATE VIEW [dbo].AnalyticsDimFinancialBatch
         ///AS
         ///SELECT fb.Id [BatchId]
         ///    ,fb.[Name]
@@ -2540,8 +2539,7 @@ namespace Rock.Migrations.Migrations {
         ///        ELSE NULL
         ///        END [Status]
         ///    ,c.NAME [Campus]
-        ///    ,fb.[AccountingSystemCode]
-        ///    ,f [rest of string was truncated]&quot;;.
+        ///    ,fb.[AccountingSyste [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201701040116351_Analytics1_AnalyticsDimFinancialBatch {
             get {
@@ -2551,7 +2549,7 @@ namespace Rock.Migrations.Migrations {
         
         /// <summary>
         ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimFinancialTransactionDate]&apos;, &apos;V&apos;) IS NOT NULL
-        ///    DROP VIEW AnalyticsDimFinancialTransactionDate
+        ///    DROP VIEW [dbo].AnalyticsDimFinancialTransactionDate
         ///GO
         ///
         ///CREATE VIEW [dbo].[AnalyticsDimFinancialTransactionDate]
@@ -2565,7 +2563,7 @@ namespace Rock.Migrations.Migrations {
         ///        )
         ///    AND d.DateKey &lt;= (
         ///        SELECT MAX(ft.TransactionDateKey)
-        ///        FROM AnalyticsFactFinancialTransact [rest of string was truncated]&quot;;.
+        ///        FROM AnalyticsFactFinancialTr [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201701040116351_Analytics1_AnalyticsDimFinancialTransactionDate {
             get {
@@ -2575,10 +2573,10 @@ namespace Rock.Migrations.Migrations {
         
         /// <summary>
         ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimFinancialTransactionType]&apos;, &apos;V&apos;) IS NOT NULL
-        ///    DROP VIEW AnalyticsDimFinancialTransactionType
+        ///    DROP VIEW [dbo].AnalyticsDimFinancialTransactionType
         ///GO
         ///
-        ///CREATE VIEW AnalyticsDimFinancialTransactionType
+        ///CREATE VIEW [dbo].AnalyticsDimFinancialTransactionType
         ///AS
         ///SELECT dv.Id [TransactionTypeId]
         ///    ,dv.Value [Name]
@@ -2597,7 +2595,7 @@ namespace Rock.Migrations.Migrations {
         
         /// <summary>
         ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimPersonBirthDate]&apos;, &apos;V&apos;) IS NOT NULL
-        ///    DROP VIEW AnalyticsDimPersonBirthDate
+        ///    DROP VIEW [dbo].AnalyticsDimPersonBirthDate
         ///GO
         ///
         ///CREATE VIEW [dbo].AnalyticsDimPersonBirthDate
@@ -2623,10 +2621,10 @@ namespace Rock.Migrations.Migrations {
         
         /// <summary>
         ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimPersonCurrent]&apos;, &apos;V&apos;) IS NOT NULL
-        ///    DROP VIEW AnalyticsDimPersonCurrent
+        ///    DROP VIEW [dbo].AnalyticsDimPersonCurrent
         ///GO
         ///
-        ///CREATE VIEW AnalyticsDimPersonCurrent
+        ///CREATE VIEW [dbo].AnalyticsDimPersonCurrent
         ///AS
         ///SELECT * FROM AnalyticsDimPersonHistorical where CurrentRowIndicator = 1.
         /// </summary>
@@ -2638,10 +2636,10 @@ namespace Rock.Migrations.Migrations {
         
         /// <summary>
         ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimPersonHistorical]&apos;, &apos;V&apos;) IS NOT NULL
-        ///    DROP VIEW AnalyticsDimPersonHistorical
+        ///    DROP VIEW [dbo].AnalyticsDimPersonHistorical
         ///GO
         ///
-        ///CREATE VIEW AnalyticsDimPersonHistorical
+        ///CREATE VIEW [dbo].AnalyticsDimPersonHistorical
         ///AS
         ///SELECT asph.*
         ///    ,ms.Value [MaritalStatus]
@@ -2656,7 +2654,7 @@ namespace Rock.Migrations.Migrations {
         ///        WHEN 1
         ///            THEN &apos;Male&apos;
         ///        WHEN 2
-        ///             [rest of string was truncated]&quot;;.
+        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201701040116351_Analytics1_AnalyticsDimPersonHistorical {
             get {
@@ -2666,11 +2664,11 @@ namespace Rock.Migrations.Migrations {
         
         /// <summary>
         ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsFactAttendance]&apos;, &apos;V&apos;) IS NOT NULL
-        ///    DROP VIEW AnalyticsFactAttendance
+        ///    DROP VIEW [dbo].AnalyticsFactAttendance
         ///GO
         ///
         ///-- select top 10000 * from AnalyticsFactAttendance order by Id desc
-        ///CREATE VIEW AnalyticsFactAttendance
+        ///CREATE VIEW [dbo].AnalyticsFactAttendance
         ///AS
         ///SELECT asa.*
         ///    ,isnull(at.NAME, &apos;None&apos;) [AttendanceTypeName]
@@ -2678,8 +2676,7 @@ namespace Rock.Migrations.Migrations {
         ///    ,isnull(c.NAME, &apos;None&apos;) [CampusName]
         ///    ,isnull(c.ShortCode, &apos;None&apos;) [CampusShortCode]
         ///    ,isnull(s.NAME, &apos;None&apos;) [ScheduleName]
-        ///    ,isnull(g.NAME, &apos;None&apos;) [GroupName]
-        ///   [rest of string was truncated]&quot;;.
+        ///    ,isnull(g.NAME, &apos;None&apos;) [Gr [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201701040116351_Analytics1_AnalyticsFactAttendance {
             get {
@@ -2689,11 +2686,11 @@ namespace Rock.Migrations.Migrations {
         
         /// <summary>
         ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsFactFinancialTransaction]&apos;, &apos;V&apos;) IS NOT NULL
-        ///    DROP VIEW AnalyticsFactFinancialTransaction
+        ///    DROP VIEW [dbo].AnalyticsFactFinancialTransaction
         ///GO
         ///
         ///--select count(*) from AnalyticsFactFinancialTransaction 2185726
-        ///CREATE VIEW AnalyticsFactFinancialTransaction
+        ///CREATE VIEW [dbo].AnalyticsFactFinancialTransaction
         ///AS
         ///SELECT asft.*
         ///    ,isnull(tt.NAME, &apos;None&apos;) [TransactionType]
@@ -2703,7 +2700,7 @@ namespace Rock.Migrations.Migrations {
         ///            THEN &apos;Scheduled&apos;
         ///        ELSE &apos;Non-Scheduled&apos;
         ///        END [ScheduleType]
-        ///    ,adfcAuthoriz [rest of string was truncated]&quot;;.
+        ///    , [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201701040116351_Analytics1_AnalyticsFactFinancialTransaction {
             get {
@@ -3380,7 +3377,7 @@ namespace Rock.Migrations.Migrations {
         
         /// <summary>
         ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimAttendanceDate]&apos;, &apos;V&apos;) IS NOT NULL
-        ///    DROP VIEW AnalyticsDimAttendanceDate
+        ///    DROP VIEW [dbo].AnalyticsDimAttendanceDate
         ///GO
         ///
         ///CREATE VIEW [dbo].[AnalyticsDimAttendanceDate]
@@ -3406,7 +3403,7 @@ namespace Rock.Migrations.Migrations {
         
         /// <summary>
         ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimFamilyHeadOfHouseholdBirthDate]&apos;, &apos;V&apos;) IS NOT NULL
-        ///    DROP VIEW AnalyticsDimFamilyHeadOfHouseholdBirthDate
+        ///    DROP VIEW [dbo].AnalyticsDimFamilyHeadOfHouseholdBirthDate
         ///GO
         ///
         ///CREATE VIEW [dbo].AnalyticsDimFamilyHeadOfHouseholdBirthDate
@@ -3420,7 +3417,7 @@ namespace Rock.Migrations.Migrations {
         ///        )
         ///    AND d.DateKey &lt;= (
         ///        SELECT MAX(x.BirthDateKey)
-        ///        FROM AnalyticsDimFamilyHeadOfHousehol [rest of string was truncated]&quot;;.
+        ///        FROM AnalyticsDimFamilyHeadOfHo [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201709191729044_Analytics2_AnalyticsDimFamilyHeadOfHouseholdBirthDate {
             get {
@@ -3430,7 +3427,7 @@ namespace Rock.Migrations.Migrations {
         
         /// <summary>
         ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimFinancialTransactionDate]&apos;, &apos;V&apos;) IS NOT NULL
-        ///    DROP VIEW AnalyticsDimFinancialTransactionDate
+        ///    DROP VIEW [dbo].AnalyticsDimFinancialTransactionDate
         ///GO
         ///
         ///CREATE VIEW [dbo].[AnalyticsDimFinancialTransactionDate]
@@ -3444,7 +3441,7 @@ namespace Rock.Migrations.Migrations {
         ///        )
         ///    AND d.DateKey &lt;= (
         ///        SELECT MAX(x.TransactionDateKey)
-        ///        FROM AnalyticsFactFinancialTransact [rest of string was truncated]&quot;;.
+        ///        FROM AnalyticsFactFinancialTr [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201709191729044_Analytics2_AnalyticsDimFinancialTransactionDate {
             get {
@@ -3454,7 +3451,7 @@ namespace Rock.Migrations.Migrations {
         
         /// <summary>
         ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimPersonCurrentBirthDate]&apos;, &apos;V&apos;) IS NOT NULL
-        ///    DROP VIEW AnalyticsDimPersonCurrentBirthDate
+        ///    DROP VIEW [dbo].AnalyticsDimPersonCurrentBirthDate
         ///GO
         ///
         ///CREATE VIEW [dbo].AnalyticsDimPersonCurrentBirthDate
@@ -3480,7 +3477,7 @@ namespace Rock.Migrations.Migrations {
         
         /// <summary>
         ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimPersonHistoricalBirthDate]&apos;, &apos;V&apos;) IS NOT NULL
-        ///    DROP VIEW AnalyticsDimPersonHistoricalBirthDate
+        ///    DROP VIEW [dbo].AnalyticsDimPersonHistoricalBirthDate
         ///GO
         ///
         ///CREATE VIEW [dbo].AnalyticsDimPersonHistoricalBirthDate
@@ -3652,11 +3649,11 @@ namespace Rock.Migrations.Migrations {
         
         /// <summary>
         ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsFactAttendance]&apos;, &apos;V&apos;) IS NOT NULL
-        ///    DROP VIEW AnalyticsFactAttendance
+        ///    DROP VIEW [dbo].AnalyticsFactAttendance
         ///GO
         ///
         ///-- select top 10000 * from AnalyticsFactAttendance order by Id desc
-        ///CREATE VIEW AnalyticsFactAttendance
+        ///CREATE VIEW [dbo].AnalyticsFactAttendance
         ///AS
         ///SELECT asa.*
         ///    ,adphPerson.PrimaryFamilyKey [FamilyKey]
@@ -3664,7 +3661,7 @@ namespace Rock.Migrations.Migrations {
         ///    ,isnull(at.NAME, &apos;None&apos;) [AttendanceTypeName]
         ///    ,isnull(l.NAME, &apos;None&apos;) [LocationName]
         ///    ,isnull(c.NAME, &apos;None&apos;) [CampusName]
-        ///    ,isnull(c.ShortCode, &apos;None&apos;) [CampusSho [rest of string was truncated]&quot;;.
+        ///    ,isnull(c.ShortCode, &apos;None&apos; [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201710131721219_InteractionRelatedEntity_AnalyticsFactAttendance {
             get {
@@ -3674,10 +3671,10 @@ namespace Rock.Migrations.Migrations {
         
         /// <summary>
         ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsFactFinancialTransaction]&apos;, &apos;V&apos;) IS NOT NULL
-        ///    DROP VIEW AnalyticsFactFinancialTransaction
+        ///    DROP VIEW [dbo].AnalyticsFactFinancialTransaction
         ///GO
         ///
-        ///CREATE VIEW AnalyticsFactFinancialTransaction
+        ///CREATE VIEW [dbo].AnalyticsFactFinancialTransaction
         ///AS
         ///SELECT asft.*
         ///    ,isnull(tt.Value, &apos;None&apos;) [TransactionType]
@@ -3688,7 +3685,7 @@ namespace Rock.Migrations.Migrations {
         ///        ELSE &apos;Non-Scheduled&apos;
         ///        END [ScheduleType]
         ///    ,adphAuthorizedPerson.PrimaryFamilyKey [AuthorizedFamilyKey]
-        ///	,adpcAuthorized [rest of string was truncated]&quot;;.
+        ///	,ad [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201710131721219_InteractionRelatedEntity_AnalyticsFactFinancialTransaction {
             get {
@@ -3746,10 +3743,10 @@ namespace Rock.Migrations.Migrations {
         
         /// <summary>
         ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimAttendanceLocation]&apos;, &apos;V&apos;) IS NOT NULL
-        ///    DROP VIEW AnalyticsDimAttendanceLocation
+        ///    DROP VIEW [dbo].AnalyticsDimAttendanceLocation
         ///GO
         ///
-        ///CREATE VIEW AnalyticsDimAttendanceLocation
+        ///CREATE VIEW [dbo].AnalyticsDimAttendanceLocation
         ///AS
         ///SELECT l.Id [LocationId]
         ///	,l.Name
@@ -3763,8 +3760,7 @@ namespace Rock.Migrations.Migrations {
         ///    ,l.GeoPoint [GeoPoint]
         ///    ,l.GeoFence [GeoFence]
         ///    ,l.GeoPoint.Lat [Latitude]
-        ///    ,l.GeoPoint.Long [Longitude]
-        ///	,1  [rest of string was truncated]&quot;;.
+        ///    ,l.GeoPoint.Long [Long [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201711081825032_Analytics4_AnalyticsDimAttendanceLocation {
             get {
@@ -3774,10 +3770,10 @@ namespace Rock.Migrations.Migrations {
         
         /// <summary>
         ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimFinancialAccount]&apos;, &apos;V&apos;) IS NOT NULL
-        ///    DROP VIEW AnalyticsDimFinancialAccount
+        ///    DROP VIEW [dbo].AnalyticsDimFinancialAccount
         ///GO
         ///
-        ///CREATE VIEW AnalyticsDimFinancialAccount
+        ///CREATE VIEW [dbo].AnalyticsDimFinancialAccount
         ///AS
         ///SELECT fa.Id [AccountId]
         ///    ,fa.[Name]
@@ -3793,7 +3789,7 @@ namespace Rock.Migrations.Migrations {
         ///    ,fa.[Order]
         ///    ,CASE fa.IsActive
         ///        WHEN 1
-        ///            THEN &apos;Active&apos; [rest of string was truncated]&quot;;.
+        ///            T [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201711081825032_Analytics4_AnalyticsDimFinancialAccount {
             get {
@@ -3803,10 +3799,10 @@ namespace Rock.Migrations.Migrations {
         
         /// <summary>
         ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimFinancialBatch]&apos;, &apos;V&apos;) IS NOT NULL
-        ///    DROP VIEW AnalyticsDimFinancialBatch
+        ///    DROP VIEW [dbo].AnalyticsDimFinancialBatch
         ///GO
         ///
-        ///CREATE VIEW AnalyticsDimFinancialBatch
+        ///CREATE VIEW [dbo].AnalyticsDimFinancialBatch
         ///AS
         ///SELECT fb.Id [BatchId]
         ///    ,fb.[Name]
@@ -3822,8 +3818,7 @@ namespace Rock.Migrations.Migrations {
         ///        ELSE NULL
         ///        END [Status]
         ///    ,c.NAME [Campus]
-        ///    ,fb.[AccountingSystemCode]
-        ///    ,f [rest of string was truncated]&quot;;.
+        ///    ,fb.[AccountingSystemC [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201711081825032_Analytics4_AnalyticsDimFinancialBatch {
             get {
@@ -3833,7 +3828,7 @@ namespace Rock.Migrations.Migrations {
         
         /// <summary>
         ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimPersonBirthDate]&apos;, &apos;V&apos;) IS NOT NULL
-        ///    DROP VIEW AnalyticsDimPersonBirthDate
+        ///    DROP VIEW [dbo].AnalyticsDimPersonBirthDate
         ///GO
         ///
         ///CREATE VIEW [dbo].AnalyticsDimPersonBirthDate
@@ -3858,10 +3853,10 @@ namespace Rock.Migrations.Migrations {
         
         /// <summary>
         ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimPersonHistorical]&apos;, &apos;V&apos;) IS NOT NULL
-        ///    DROP VIEW AnalyticsDimPersonHistorical
+        ///    DROP VIEW [dbo].AnalyticsDimPersonHistorical
         ///GO
         ///
-        ///CREATE VIEW AnalyticsDimPersonHistorical
+        ///CREATE VIEW [dbo].AnalyticsDimPersonHistorical
         ///AS
         ///SELECT asph.*
         ///    ,ms.Value [MaritalStatus]
@@ -3876,7 +3871,7 @@ namespace Rock.Migrations.Migrations {
         ///        WHEN 1
         ///            THEN &apos;Male&apos;
         ///        WHEN 2
-        ///             [rest of string was truncated]&quot;;.
+        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201711081825032_Analytics4_AnalyticsDimPersonHistorical {
             get {
@@ -3911,10 +3906,10 @@ namespace Rock.Migrations.Migrations {
         
         /// <summary>
         ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimAttendanceLocation]&apos;, &apos;V&apos;) IS NOT NULL
-        ///	DROP VIEW AnalyticsDimAttendanceLocation
+        ///	DROP VIEW [dbo].AnalyticsDimAttendanceLocation
         ///GO
         ///
-        ///CREATE VIEW AnalyticsDimAttendanceLocation
+        ///CREATE VIEW [dbo].AnalyticsDimAttendanceLocation
         ///AS
         ///SELECT l.Id [LocationId]
         ///	,l.NAME
@@ -3930,9 +3925,7 @@ namespace Rock.Migrations.Migrations {
         ///	,l.GeoPoint.Lat [Latitude]
         ///	,l.GeoPoint.Long [Longitude]
         ///	,CONCAT (
-        ///		l.[Street1]
-        ///		,&apos; &apos;
-        ///		, [rest of string was truncated]&quot;;.
+        ///		l.[Street1]        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201711092125120_Analytics5_AnalyticsDimAttendanceLocation {
             get {
@@ -3942,10 +3935,10 @@ namespace Rock.Migrations.Migrations {
         
         /// <summary>
         ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimCampus]&apos;, &apos;V&apos;) IS NOT NULL
-        ///	DROP VIEW AnalyticsDimCampus
+        ///	DROP VIEW [dbo].AnalyticsDimCampus
         ///GO
         ///
-        ///CREATE VIEW AnalyticsDimCampus
+        ///CREATE VIEW [dbo].AnalyticsDimCampus
         ///AS
         ///SELECT sc.*
         ///	,CONCAT (
@@ -3962,7 +3955,7 @@ namespace Rock.Migrations.Migrations {
         ///	,l.Country [AddressCountry]
         ///	,l.PostalCode [AddressPostalCode]
         ///	,l.GeoPoint [AddressGeoPoint]
-        ///	,l.GeoFence [AddressGeoFen [rest of string was truncated]&quot;;.
+        ///	,l.GeoFence [A [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201711092125120_Analytics5_AnalyticsDimCampus {
             get {
@@ -3972,10 +3965,10 @@ namespace Rock.Migrations.Migrations {
         
         /// <summary>
         ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimFamilyHistorical]&apos;, &apos;V&apos;) IS NOT NULL
-        ///	DROP VIEW AnalyticsDimFamilyHistorical
+        ///	DROP VIEW [dbo].AnalyticsDimFamilyHistorical
         ///GO
         ///
-        ///CREATE VIEW AnalyticsDimFamilyHistorical
+        ///CREATE VIEW [dbo].AnalyticsDimFamilyHistorical
         ///AS
         ///SELECT asfh.*
         ///	,isnull(c.NAME, &apos;None&apos;) [CampusName]
@@ -3984,7 +3977,7 @@ namespace Rock.Migrations.Migrations {
         ///	,mailingLocation.Street2 [MailingAddressStreet2]
         ///	,mailingLocation.City [MailingAddressCity]
         ///	,mailingLocation.County [MailingAddressCounty]
-        ///	,mailingLocation.[State] [MailingAddressState]        /// [rest of string was truncated]&quot;;.
+        ///	,mailingLocation.[State] [MailingAd [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201711092125120_Analytics5_AnalyticsDimFamilyHistorical {
             get {
@@ -3994,10 +3987,10 @@ namespace Rock.Migrations.Migrations {
         
         /// <summary>
         ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimPersonHistorical]&apos;, &apos;V&apos;) IS NOT NULL
-        ///    DROP VIEW AnalyticsDimPersonHistorical
+        ///    DROP VIEW [dbo].AnalyticsDimPersonHistorical
         ///GO
         ///
-        ///CREATE VIEW AnalyticsDimPersonHistorical
+        ///CREATE VIEW [dbo].AnalyticsDimPersonHistorical
         ///AS
         ///SELECT asph.*
         ///	,ms.Value [MaritalStatus]
@@ -4014,8 +4007,7 @@ namespace Rock.Migrations.Migrations {
         ///		WHEN 2
         ///			THEN &apos;Female&apos;
         ///		ELSE &apos;Unknown&apos;
-        ///		END [GenderText]
-        ///	,CA [rest of string was truncated]&quot;;.
+        ///		END [Gende [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201711092125120_Analytics5_AnalyticsDimPersonHistorical {
             get {
@@ -4057,10 +4049,10 @@ namespace Rock.Migrations.Migrations {
         
         /// <summary>
         ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimFinancialAccount]&apos;, &apos;V&apos;) IS NOT NULL
-        ///    DROP VIEW AnalyticsDimFinancialAccount
+        ///    DROP VIEW [dbo].AnalyticsDimFinancialAccount
         ///GO
         ///
-        ///CREATE VIEW AnalyticsDimFinancialAccount
+        ///CREATE VIEW [dbo].AnalyticsDimFinancialAccount
         ///AS
         ///SELECT fa.Id [AccountId]
         ///    ,fa.[Name]
@@ -4076,7 +4068,7 @@ namespace Rock.Migrations.Migrations {
         ///    ,fa.[Order]
         ///    ,CASE fa.IsActive
         ///        WHEN 1
-        ///            THEN &apos;Active&apos; [rest of string was truncated]&quot;;.
+        ///            T [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201711141624083_CommunicationTemplateCssInliningEnabled_AnalyticsDimFinancialAccount {
             get {
@@ -4105,6 +4097,245 @@ namespace Rock.Migrations.Migrations {
             get {
                 return ResourceManager.GetString("_201711141624083_CommunicationTemplateCssInliningEnabled_spCrm_PersonDuplicateFin" +
                         "der", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DECLARE
+        ///	@BinaryFileId int
+        ///	,@BinaryFileTypeIdDefault int = (SELECT TOP 1 Id from [BinaryFileType] where [Guid] = &apos;C1142570-8CD6-4A20-83B1-ACB47C1CD377&apos;)
+        ///	,@StorageEntityTypeIdDatabase int = (SELECT TOP 1 Id FROM [EntityType] WHERE [Guid] = &apos;0AA42802-04FD-4AEC-B011-FEB127FC85CD&apos;)
+        ///
+        ///-- Add communication-template-sidebar.svg
+        ///IF NOT EXISTS (SELECT * FROM [BinaryFile] WHERE [Guid] = &apos;26D240BC-B9AC-4120-8632-B63470A71414&apos; )
+        ///BEGIN
+        ///INSERT INTO [BinaryFile] ([IsTemporary], [IsSystem], [BinaryFileTypeId], [Fi [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201711211752271_NcoaHistory_UpdateCommunicationTemplateBinaryFiles {
+            get {
+                return ResourceManager.GetString("_201711211752271_NcoaHistory_UpdateCommunicationTemplateBinaryFiles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /* Update the System &apos;Blank&apos; communication template */
+        ///
+        ///UPDATE [dbo].[CommunicationTemplate] 
+        ///	SET [CategoryId] = (SELECT TOP 1 Id FROM [Category] WHERE [Guid] = &apos;A7F79054-5539-4910-A13F-AA5884B8C01D&apos;)
+        ///	,[Message] = &apos;&lt;!DOCTYPE html&gt;
+        ///&lt;html&gt;
+        ///&lt;head&gt;
+        ///&lt;title&gt;A Responsive Email Template&lt;/title&gt;
+        ///
+        ///&lt;meta charset=&quot;utf-8&quot;&gt;
+        ///&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+        ///&lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=edge&quot; &gt;
+        ///&lt;style type=&quot;text/css&quot;&gt;
+        ///    /* CLIENT-SPECIFIC STYLES */
+        ///    [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201711211752271_NcoaHistory_UpdateCommunicationTemplates {
+            get {
+                return ResourceManager.GetString("_201711211752271_NcoaHistory_UpdateCommunicationTemplates", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [DefinedType]
+        ///SET [helptext] = &apos;
+        ///Label merge fields are defined with a liquid syntax. Click the &apos;&apos;Show Merge Fields&apos;&apos; button below to view the available merge fields.
+        ///&lt;p&gt;
+        ///    &lt;a data-toggle=&apos;&apos;collapse&apos;&apos;  href=&apos;&apos;#collapseMergeFields&apos;&apos; class=&apos;&apos;btn btn-action btn-xs&apos;&apos;&gt;Show/Hide Merge Fields&lt;/a&gt;
+        ///&lt;/p&gt;
+        ///&lt;div id=&apos;&apos;collapseMergeFields&apos;&apos; class=&apos;&apos;panel-collapse collapse&apos;&apos;&gt;
+        ///&lt;div class=&apos;&apos;alert alert-info lava-debug&apos;&apos;&gt;
+        ///    &lt;div class=&apos;&apos;panel panel-default panel-lavadebug&apos;&apos;&gt;
+        ///        &lt;div class=&apos;&apos;panel-head [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201711271827181_V7Rollup_021_UpdateCheckInMergefieldDebugInfo {
+            get {
+                return ResourceManager.GetString("_201711271827181_V7Rollup_021_UpdateCheckInMergefieldDebugInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DECLARE @EntityTypeId INT = (
+        ///		SELECT TOP 1 [Id]
+        ///		FROM [EntityType]
+        ///		WHERE [Name] = &apos;Rock.Model.Block&apos;
+        ///		)
+        ///DECLARE @PersonEditBlockId INT = (
+        ///		SELECT TOP 1 [Id]
+        ///		FROM [Block]
+        ///		WHERE [Guid] = &apos;59C7EA79-2073-4EA9-B439-7E74F06E8F5B&apos;
+        ///		)
+        ///DECLARE @RockAdminGroupId INT = (
+        ///		SELECT TOP 1 [Id]
+        ///		FROM [Group]
+        ///		WHERE [Guid] = &apos;628C51A8-4613-43ED-A18D-4A6FB999273E&apos;
+        ///		)
+        ///DECLARE @Order INT = (
+        ///		SELECT MAX([Order])
+        ///		FROM [Auth]
+        ///		WHERE EntityTypeId = @EntityTypeId
+        ///			AND EntityId = @PersonEdi [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201711271827181_V7Rollup_026_PersonEditConnectionRecordStatus {
+            get {
+                return ResourceManager.GetString("_201711271827181_V7Rollup_026_PersonEditConnectionRecordStatus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to -- Add &apos;ReopenBatch&apos; as a security action on Rock.Model.FinancialBatch and default it to whatever might be there for EDIT on BatchDetail, and ensure that FinanceAdmin, FinanceWorker, and Admin have &apos;ReopenBatch&apos; security
+        ///DECLARE @EntityTypeIdBlock INT = (
+        ///		SELECT TOP 1 [Id]
+        ///		FROM [EntityType]
+        ///		WHERE [Name] = &apos;Rock.Model.Block&apos;
+        ///		)
+        ///DECLARE @EntityTypeIdFinancialBatch INT = (
+        ///		SELECT TOP 1 [Id]
+        ///		FROM [EntityType]
+        ///		WHERE [Name] = &apos;Rock.Model.FinancialBatch&apos;
+        ///		)
+        ///DECLARE @BatchDetailBlockId INT  [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201711271827181_V7Rollup_029_BatchDetailReopenBatchSecurity {
+            get {
+                return ResourceManager.GetString("_201711271827181_V7Rollup_029_BatchDetailReopenBatchSecurity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [MetaPersonicxLifestageCluster]
+        ///SET [MeanAge] = 52.2
+        ///WHERE [Id] = 1
+        ///
+        ///UPDATE [MetaPersonicxLifestageCluster]
+        ///SET [MeanAge] = 59.4
+        ///WHERE [Id] = 2
+        ///
+        ///UPDATE [MetaPersonicxLifestageCluster]
+        ///SET [MeanAge] = 54
+        ///WHERE [Id] = 3
+        ///
+        ///UPDATE [MetaPersonicxLifestageCluster]
+        ///SET [MeanAge] = 50.2
+        ///WHERE [Id] = 4
+        ///
+        ///UPDATE [MetaPersonicxLifestageCluster]
+        ///SET [MeanAge] = 76.5
+        ///WHERE [Id] = 9
+        ///
+        ///UPDATE [MetaPersonicxLifestageCluster]
+        ///SET [MeanAge] = 51.5
+        ///WHERE [Id] = 8
+        ///
+        ///UPDATE [MetaPersonicxLifestageClus [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201712191949335_CampusTimeZone_PersonicxMeanAge {
+            get {
+                return ResourceManager.GetString("_201712191949335_CampusTimeZone_PersonicxMeanAge", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This stored procedure detects potential duplicate person records and stores the results in [PersonDuplicate]
+        ///	&lt;/summary&gt;
+        ///	
+        ///	&lt;remarks&gt;	
+        ///		Uses the following constants:
+        ///			* Group Type - Family: &apos;790E3215-3B10-442B-AF69-616C0DCB998E&apos;
+        ///            * Location Type - Home: &apos;8C52E53C-2A66-435A-AE6E-5EE307D9A0DC&apos;
+        ///            * Phone Type - Home: &apos;407E7E45-7B2E-4FCD-9605-ECB1339F2453&apos;
+        ///            * Phone Type - Cell: &apos;AA8732FB-2CEA-4C76-8D6D-6AAA2C6A4303&apos;
+        ///	&lt;/remarks&gt;
+        ///	&lt;code&gt;
+        ///		EX [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201802092340176_Rollup_0209_spCrm_PersonDuplicateFinder {
+            get {
+                return ResourceManager.GetString("_201802092340176_Rollup_0209_spCrm_PersonDuplicateFinder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function converts a comma-delimited string of values into a table of values
+        ///        It comes from http://www.sqlservercentral.com/articles/Tally+Table/72993/
+        ///	&lt;/summary&gt;
+        ///	&lt;returns&gt;
+        ///		* id
+        ///	&lt;/returns&gt;
+        ///	&lt;remarks&gt;
+        ///		Used by spFinance_ContributionStatementQuery
+        ///	&lt;/remarks&gt;
+        ///	&lt;code&gt;
+        ///		SELECT * FROM [dbo].[ufnUtility_CsvToTable](&apos;1,3,7,11,13&apos;) 
+        ///	&lt;/code&gt;
+        ///&lt;/doc&gt;
+        ///*/
+        ///ALTER FUNCTION [dbo].[ufnUtility_CsvToTable] 
+        ///(
+        ///	@pString VARCHAR(8000)
+        ///)
+        ///RETURNS TABLE WITH SCHEMABINDI [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201802092340176_Rollup_0209_ufnUtility_CsvToTable {
+            get {
+                return ResourceManager.GetString("_201802092340176_Rollup_0209_ufnUtility_CsvToTable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[spCheckin_AttendanceAnalyticsQuery_Attendees]&apos;) AND type in (N&apos;P&apos;, N&apos;PC&apos;))
+        ///DROP PROCEDURE [dbo].[spCheckin_AttendanceAnalyticsQuery_Attendees]
+        ///GO
+        ///
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns the people that attended based on selected filter criteria
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* Id 
+        ///		* NickName
+        ///		* LastName
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&apos;GroupTypeId&apos; datatype=&apos;int&apos;&gt;The Check-in Area Group Type Id (only attendance for this a [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201802260423490_spCheckin_AttendanceAnalyticsQuery_Attendees {
+            get {
+                return ResourceManager.GetString("_201802260423490_spCheckin_AttendanceAnalyticsQuery_Attendees", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[spCheckin_AttendanceAnalyticsQuery_NonAttendees]&apos;) AND type in (N&apos;P&apos;, N&apos;PC&apos;))
+        ///DROP PROCEDURE [dbo].[spCheckin_AttendanceAnalyticsQuery_NonAttendees]
+        ///GO
+        ///
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns any person ids for people that have attended previously but who have not attended since the beginning date
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* PersonId 
+        ///		* SundayDate - Last time attended
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&apos;GroupTypeIds&apos; data [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201802260423490_spCheckin_AttendanceAnalyticsQuery_NonAttendees {
+            get {
+                return ResourceManager.GetString("_201802260423490_spCheckin_AttendanceAnalyticsQuery_NonAttendees", resourceCulture);
             }
         }
     }
