@@ -59,6 +59,12 @@ namespace RockWeb.Blocks.Communication
     [LinkedPage( "Simple Communication Page", "The page to use if the 'Use Simple Editor' panel heading icon is clicked. Leave this blank to not show the 'Use Simple Editor' heading icon", false, order: 9 )]
     public partial class CommunicationEntryWizard : RockBlock, IDetailBlock
     {
+        #region Fields
+
+        private const string CATEGORY_COMMUNICATION_TEMPLATE = "CategoryCommunicationTemplate";
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -905,7 +911,7 @@ namespace RockWeb.Blocks.Communication
                 var selectedPersonIds = gIndividualRecipients.SelectedKeys.OfType<int>().ToList();
                 IndividualRecipientPersonIds.RemoveAll( a => selectedPersonIds.Contains( a ) );
             }
-            
+
             BindIndividualRecipientsGrid();
 
             UpdateIndividualRecipientsCountText();
@@ -1033,6 +1039,7 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private void ShowTemplateSelection()
         {
+            cpCommunicationTemplate.SetValue( GetBlockUserPreference( CATEGORY_COMMUNICATION_TEMPLATE ).AsIntegerOrNull() );
             pnlTemplateSelection.Visible = true;
             nbTemplateSelectionWarning.Visible = false;
             SetNavigationHistory( pnlTemplateSelection );
@@ -1267,6 +1274,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void cpCommunicationTemplate_SelectItem( object sender, EventArgs e )
         {
+            SetBlockUserPreference( CATEGORY_COMMUNICATION_TEMPLATE, cpCommunicationTemplate.SelectedValue );
             BindTemplatePicker();
         }
 
@@ -1296,7 +1304,7 @@ namespace RockWeb.Blocks.Communication
         {
             pnlEmailEditor.Visible = false;
             ShowEmailSummary();
-            
+
         }
 
         /// <summary>
@@ -1510,7 +1518,7 @@ namespace RockWeb.Blocks.Communication
             {
                 PersonService personToDeleteService = new PersonService( deleteRockContext );
                 PersonAliasService personAliasToDeleteService = new PersonAliasService( deleteRockContext );
-                
+
                 // check for any test communication artifacts that didn't clean up correctly
                 var forTestCommunicationPersonQry = personToDeleteService.Queryable().Where( a => a.ForeignKey == "_ForTestCommunication_" );
                 if ( forTestCommunicationPersonQry.Any() )
@@ -1572,7 +1580,7 @@ namespace RockWeb.Blocks.Communication
                 .Where( a => a.EntityType.Guid == Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() ).FirstOrDefault();
 
             string communicationHtml = hfEmailEditorHtml.Value;
-            
+
             if ( emailMediumWithActiveTransport != null )
             {
                 var mediumAttributes = new Dictionary<string, string>();
@@ -2465,6 +2473,6 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
 
 
 
-        
+
     }
 }

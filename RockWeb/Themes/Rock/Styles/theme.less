@@ -15,67 +15,13 @@
 @import "_variable-overrides.less";
 
 
-/*#region
-// Fonts                       */
-// -------------------------
-
-// light (weight 400 = 'normal')
-@font-face {
-  font-family: 'OpenSans';
-  src: url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.eot');
-  src: url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.eot?#iefix') format('embedded-opentype'),
-       url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.woff2') format('woff2'),
-       url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.woff') format('woff');
-  font-weight: 300;
-  font-style: normal;
-}
-
-// regular (weight 500)
-@font-face {
-  font-family: 'OpenSans';
-  src: url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot');
-  src: url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot?#iefix') format('embedded-opentype'),
-       url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.woff2') format('woff2'),
-       url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.woff') format('woff');
-  font-weight: 400;
-  font-style: normal;
-}
-
-// semi-bold (weight 700)
-@font-face {
-  font-family: 'OpenSans';
-  src: url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.eot');
-  src: url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.eot?#iefix') format('embedded-opentype'),
-       url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.woff2') format('woff2'),
-       url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.woff') format('woff');
-  font-weight: 700;
-  font-style: normal;
-}
-
-// bold (weight 900)
-@font-face {
-  font-family: 'OpenSans';
-  src: url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.eot');
-  src: url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.eot?#iefix') format('embedded-opentype'),
-       url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.woff2') format('woff2'),
-       url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.woff') format('woff');
-  font-weight: 900;
-  font-style: normal;
-}
-/*#endregion */
-
 /*
   Rock Theme Styles
-
   1. HTML Overrides
   2. Bootstrap Overides
   3. Rock Overrides
   4. Theme Styling
-  5. Utilities
-  6. Responsive Overrides
-  7. Side Navbar
-  8. First Word Weight
-
+  5. Components
 */
 
 
@@ -89,7 +35,6 @@
 
 html {
   -ms-overflow-style: scrollbar; // need for IE 10 issue with scrollbars being on TOP of the content
-
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
 }
@@ -98,13 +43,16 @@ main {
   display: block;
 }
 
-body {
-  background-color: @nav-bg;
+h3, h4,
+legend {
+  font-weight: normal;
 }
 
-h1, h2, h3, h4 {
-  font-weight: @font-weight-light;
-  letter-spacing: -.5px;
+b,
+strong,
+dl:not(.dl-horizontal) dt,
+dt {
+  font-weight: @font-weight-semibold;
 }
 
 a:hover {
@@ -115,9 +63,9 @@ input[type=text],
 textarea,
 .form-control {
   -webkit-transition: all .3s ease-in-out;
-     -moz-transition: all .3s ease-in-out;
-      -ms-transition: all .3s ease-in-out;
-       -o-transition: all .3s ease-in-out;
+  -moz-transition: all .3s ease-in-out;
+  -ms-transition: all .3s ease-in-out;
+  -o-transition: all .3s ease-in-out;
 }
 
 input[type=text]:focus,
@@ -127,17 +75,12 @@ textarea:focus,
   box-shadow: 0 0 5px rgba(238, 118, 36, .6);
 }
 
-pre {
-  color: @theme-6-text;
-  background-color: @theme-6;
-  border-color: darken(@theme-6, 15%);
-}
-
 // text selection color
 ::selection {
   color: @text-selection-color;
   background: @text-selection-bg;
 }
+
 ::-moz-selection {
   color: @text-selection-color;
   background: @text-selection-bg;
@@ -150,607 +93,598 @@ pre {
 // 2. Bootstrap Overrides    */
 // -------------------------
 
-h1 small,
-h2 small,
-h3 small,
-h4 small,
-h5 small,
-h6 small,
-.h1 small,
-.h2 small,
-.h3 small,
-.h4 small,
-.h5 small,
-.h6 small,
-h1 .small,
-h2 .small,
-h3 .small,
-h4 .small,
-h5 .small,
-h6 .small,
-.h1 .small,
-.h2 .small,
-.h3 .small,
-.h4 .small,
-.h5 .small,
-.h6 .small {
-  font-weight: inherit;
+.btn {
+  padding: 6px 12px 7px;
 }
 
-h4, .h4 {
-  font-weight: 500;
+.input-group-addon,
+.form-control {
+  height: 38px;
+}
+.has-error .form-control,
+.has-error .input-group-addon {
+  border-color: @alert-danger-bg;
 }
 
-.table-hover > tbody > tr:hover {
-  td {
-    background-color: @grid-hover-bg;
-  }
+.has-error .control-label {
+  color: @alert-danger-bg;
 }
 
-.breadcrumb {
+.form-group label {
+  font-weight: @font-weight-semibold;
+}
+
+.nav .open > a,
+.nav .open > a:focus,
+.nav .open > a:hover {
   background-color: transparent;
+  border: 0;
 }
 
-// panel tweaks
-.panel {
-  border-top-width: 3px;
-  border-radius: 0;
-
-  .panel-heading {
-    .panel-title {
-      font-size: 18px;
-      font-weight: @font-weight-semibold;
-      letter-spacing: -.5px;
-    }
-  }
-
-  &.panel-primary {
-    .panel-heading {
-      background-color: @brand-primary;
-    }
-  }
-}
-.panel-info {
-  border-top-color: @panel-top-border-color;
-
-  .panel-body {
-    background-color: @body-bg;
-  }
-
-  .list-group-item {
-    background-color: @body-bg;
-  }
+.label {
+  border-radius: 0; // labels always have curves
+  font-weight: 400; // make the font light
 }
 
-.tag-letterlist a {
-  color: @brand-primary;
+
+
+.table-bordered > tbody > tr > td {
+  border-width: @table-column-border-width;
 }
 
-// change the color of the none selected links
-// by default bootsrap does not allow the color of a link roll-over to be a different color. Modified it to allow this.
-.nav-pills {
-  > li {
-    > a {
-      color: @nav-pills-link-color;
-
-      &:hover,
-      &:focus {
-        color: lighten(@nav-pills-active-link-hover-color, 20%);
-        background-color: lighten(@nav-pills-active-link-hover-bg, 20%);
-      }
-    }
-  }
+.table > tbody > tr > td,
+.table > tbody > tr > th,
+.table > tfoot > tr > td,
+.table > tfoot > tr > th,
+.table > thead > tr > td,
+.table > thead > tr > th {
+  border-width: @table-column-border-width;
+  border-top-width: 1px;
 }
+
+.table-bordered > thead > tr > td,
+.table-bordered > thead > tr > th,
+.table.table-light > thead > tr > th {
+  border-color: @grid-border-color;
+}
+
+.breadcrumb > .active { // make the active item in the breadcrumbs not look like a link
+  color: @text-color;
+}
+
+.btn.active, .btn:active { // removes the shadow from the toggles
+  -webkit-box-shadow: none;
+  box-shadow: none;
+}
+
+.control-label {
+  font-weight: @font-weight-semibold;
+}
+
+
+/*#endregion */
 
 /*#region
 // 3. Rock Overrides         */
 // -------------------------
 
-// make the no image svgs take on a bit of their background color
-.photo img[src*=no-photo],
-.person-image[style*=no-photo],
-.profile-photo[style*=no-photo] {
-  opacity: .5;
-}
-
-#cms-admin-footer {
-  border: 0;
-}
-
-.smartsearch {
-  float: right;
-  width: 92%;
-  margin: 12px 4%;
-  background-color: lighten(@theme-6, 5%);
-  border: 0;
-
-  input.searchinput {
-    color: @theme-6-text;
+.list-as-blocks {
+  ul {
+    margin-top: 0;
   }
 
-  @media @md {
-    width: 290px;
-    height: @navbar-height;
+  .panel-body {
+    padding: 15px 15px 0;
+  }
+}
+
+.rating-input i {
+  color: @brand-primary;
+}
+
+.wizard {
+  margin: -35px;
+  margin-top: -16px;
+  margin-bottom: 24px;
+}
+
+.help-message {
+  padding: 12px;
+}
+
+.grid-actions .form-control {
+  font-size: .8em;
+  height: 37px;
+  border: 0;
+  box-shadow: none;
+  background-color: @grid-column-header-bg;
+}
+
+.panel-block {
+
+  > .panel-heading {
+    font-size: 1.125em;
+    padding: 15px;
+    border-bottom: 1px solid @panel-border;
+  }
+}
+
+.panel-follow-status {
+  width: 50px;
+  padding-top: 14px;
+}
+
+.panel .panel-heading.panel-follow {
+  padding-right: 60px;
+}
+
+.panel-widget > .panel-heading {
+  background-color: @gray-lighter;
+}
+
+// grid styles
+
+td.grid-actions {
+  font-size: 1em;
+  padding: 0 !important;
+
+  a.btn {
+    opacity: .7;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+.grid-select-field {
+  width: 80px;
+
+  .checkbox:last-child,
+  .radio:last-child {
+    margin-left: 8px;
+  }
+
+  .checkbox input[type=checkbox] + span.label-text:before,
+  .radio input[type=radio] + span.label-text:before {
     margin: 0;
-    background-color: darken(@header-bg, 5%);
-    border-radius: 0;
-
-    input,
-    a.dropdown-toggle {
-      height: @navbar-height - 5px; // for IE11
-      line-height: @navbar-height - 12px;
-    }
-
-    > i {
-      margin-top: 0;
-      margin-left: 4px;
-      line-height: @navbar-height - 4px;
-    }
-
-    input.searchinput {
-      color: @header-text-color;
-    }
   }
 }
 
-.loginstatus {
-  margin-right: 2px;
+.grid-actions {
+  .btn {
+    background-color: transparent;
+    border: 0;
+    font-size: 1.125em;
 
-  .profile-photo {
-    float: left;
-    width: 35px;
-    height: 35px;
-    margin: -8px 4px 0 0;
-    background-repeat: no-repeat;
-    background-size: cover;
-            border-radius: 17.5px;
-    background-position-x: center;
-
-    -webkit-border-radius: 17.5px;
-       -moz-border-radius: 17.5px;
+    &:hover {
+      background-color: @btn-default-bg;
+    }
   }
 }
 
 /*#endregion */
-
-
 /*#region
 // 4. Theme Styling          */
 // -------------------------
+.page-wrapper {
 
-// Notifications
-.navbar-top-links {
-  float: left;
-  margin-left: 12px;
-  color: @text-color;
+  @media (min-width: @screen-md-min) {
+    padding-top: @navbar-top-height;
+  }
+
+  min-height: 100%;
 }
-.navbar-top-links > li {
-  display: inline-block;
-}
-.navbar-top-links > li > a {
-  padding: 15px;
-  color: @navbar-default-link-color;
-  &:hover, &:focus {
-    color: @theme-8-text;
-    background-color: @theme-8;
-    @media @sm {
-      color: @navbar-default-link-hover-color;
-      background-color: darken(@header-bg, 5%);
+
+.rock-top-header {
+  background-color: @brand-color;
+  margin-bottom: 0;
+  border: 0;
+
+  @media (max-width: @screen-sm-max) {
+    position: relative;
+  }
+
+  .header-content {
+    padding: 12px;
+  }
+
+  .navbar-zone-login {
+    float: right;
+  }
+
+  .navbar-zone-header {
+    float: left;
+  }
+
+  @media (min-width: @screen-sm-min) {
+    height: @navbar-top-height;
+
+    .header-content {
+      padding: 0;
+    }
+
+    .navbar-zone-header {
+      float: right;
     }
   }
-}
-.navbar-top-links > li.open > a {
-  &, &:hover, &:focus {
-    background-color: @theme-8;
-    @media @sm {
-      background-color: darken(@header-bg, 10%);
+
+  .navbar-toggle {
+    float: left;
+    font-size: 1.500em;
+    color: #fff;
+    margin-top: 12px;
+    margin-left: 27px;
+    cursor: pointer;
+  }
+
+  .navbar-brand-corner {
+    display: none;
+    background-color: @navbarside-background-color;
+    color: #fff;
+    height: @navbar-top-height;
+    width: @navbarside-width;
+    position: relative;
+    border-bottom: 1px solid lighten(@navbarside-background-color, 10%);
+    padding: 6px;
+    background-size: 45px;
+    float: left;
+
+    &:after {
+      content: "";
+      background-image: url(../../../Assets/Images/rock-logo-circle-white.svg);
+      background-size: calc(@navbarside-width * .45);
+      background-position: center center;
+      background-repeat: no-repeat;
+      opacity: 0.7;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      position: absolute;
+    }
+
+    &:hover {
+      background-color: @navbarside-background-color;
+    }
+
+    @media (min-width: @screen-sm-min) {
+      display: block;
     }
   }
-}
-.navbar-top-links ul .divider {
-  background-color: @gray-light!important;
-}
-.navbar-top-links .dropdown-menu {
-  width: 310px;
-  padding: 10px 0;
-}
-.navbar-top-links .dropdown-messages .media {
-  padding: 3px 15px;
-}
 
-.count-info .label {
-  position: absolute;
-  top: 6px;
-  right: 3px;
-  padding: 2px 4px;
-  line-height: 12px;
-}
+  .navbar-brand-center {
+    display: block;
+    height: @navbar-top-height;
+    width: @navbar-top-height;
+    background-image: url(../../../Assets/Images/rock-logo-circle-white.svg);
+    background-repeat: no-repeat;
+    background-size: 45px;
+    background-position: center center;
+    margin: 0 auto;
 
-a.link-block,
-.link-block > a {
-  display: block;
-  padding: @grid-gutter-width/4;
-}
+    @media (min-width: @screen-sm-min) {
+      display: none;
+    }
+  }
+
+  .bookmarks {
+    margin: 0;
+
+    & > li {
+      padding-bottom: 12px;
+    }
+
+    a {
+      font-size: 1em;
+      color: @navbartop-color;
+      line-height: 14px;
+      padding: 0 16px;
+
+      &:hover,
+      &:focus {
+        opacity: .8;
+        background-color: transparent;
+      }
+
+      @media (min-width: @screen-sm-min) {
+        line-height: @navbar-top-height;
+        margin-left: 24px;
+
+        & > li {
+          float: left;
+          padding-bottom: 24px;
+        }
+      }
+    }
+  }
+
+  .smartsearch {
+    float: right;
+    height: 50px;
+    margin: 15px 0;
+    color: @navbartop-color;
+    border: 0;
+    width: 340px;
+    font-size: 0.875em;
+
+    i {
+      margin-top: 14px;
+      margin-left: 6px;
+    }
+
+    input.searchinput {
+      color: @navbartop-color;
+      margin-top: 10px;
+      padding-left: 30px;
+    }
+
+    .dropdown {
+      margin-top: 10px;
 
 
-#page-wrapper {
-  width: 100%;
+      .navbar-link {
+        color: @navbartop-color;
+      }
+
+      .dropdown-menu {
+        font-size: 1em;
+        ;
+      }
+    }
+
+    .tt-hint {
+      padding: 14.5px 4px 4px 30px;
+      color: @navbartop-color;
+      opacity: .5;
+    }
+
+    .tt-dropdown-menu {
+      margin-top: 10px;
+    }
+  }
+
+  .loginstatus {
+    margin: 0;
+
+    & > li {
+      min-width: inherit;
+
+      > a {
+        color: @navbartop-color;
+        line-height: @navbar-top-height;
+        padding: 0 18px;
+
+
+        .profile-photo {
+          height: 43px;
+          width: 43px;
+          border-radius: 50%;
+          float: left;
+          background-repeat: no-repeat;
+          background-size: cover;
+          margin-top: 17px;
+          margin-right: 12px;
+        }
+
+        span {
+          display: none;
+        }
+
+        .fa-caret-down:before {
+          content: @fa-var-chevron-down;
+        }
+
+        &:hover,
+        &:focus {
+          background-color: transparent;
+        }
+      }
+
+      .dropdown-menu {
+        left: auto;
+        right: 0;
+      }
+    }
+  }
+
+  .dropdown {
+    a {
+      float: left;
+
+      i {
+        margin-left: 8px;
+      }
+    }
+  }
+
+  .dropdown-menu {
+    border: 0;
+
+    a {
+      color: @navbartop-color;
+      line-height: 34px;
+      width: 100%;
+
+      &:hover {
+        background-color: @brand-color;
+        color: #fff;
+        opacity: 1;
+      }
+
+      @media (min-width: @screen-sm-min) {
+        color: @text-color;
+      }
+    }
+
+    @media (min-width: @screen-sm-min) {
+      &:after {
+        border-bottom: 8px solid #fff;
+        border-left: 8px solid transparent;
+        border-right: 8px solid transparent;
+        top: -8px;
+        content: "";
+        display: inline-block;
+        left: 75px;
+        margin-left: -6px;
+        position: absolute;
+      }
+    }
+  }
+
+  #header-collapse { // the collapse for the bookmarks search and login status
+    color: @navbarside-color;
+    background-color: lighten(@brand-color, 30%);
+    width: 100%;
+    font-size: 1em;
+    text-align: center;
+    padding: 12px 0;
+    display: none;
+    cursor: pointer;
+
+    @media (max-width: @screen-sm-min) {
+      display: block;
+    }
+  }
 }
 
 #content-wrapper {
   position: relative;
-  min-width: 320px;
-  background-color: @body-bg;
 
-  @media screen {
-    min-height: 1100px;
-  }
-
-  header {
-    .navbar-default {
-      margin-bottom: 0;
-      color: @nav-color;
-      background-color: @nav-bg;
-      border-color: darken(@nav-bg, 5%);
-
-      .navbar-header {
-        float: left;
-        padding: 10px 0 0 12px;
-      }
-
-      .navbar-mobile-logo {
-        float: left;
-        width: 95px;
-        height: 34px;
-        margin: 8px 0 0 6px;
-        opacity: .8;
-
-        svg {
-          width: 100%;
-          height: 100%;
-
-          .rock-logo {
-            fill: darken(@theme-4, 5%);
-          }
-        }
-      }
-
-      .navbar-zone-header {
-        width: 100%;
-      }
-
-      .navbar-nav > .open > a,
-      .navbar-nav > .open > a:hover,
-      .navbar-nav > .open > a:focus {
-        background-color: @theme-2;
-      }
-
-      .navbar-nav > li > a {
-        color: @nav-color;
-      }
-
-      .dropdown-menu {
-        li.divider {
-          background-color: darken(@theme-2-text, 20%);
-        }
-      }
-    }
-  }
-
-  #page-title {
-    padding: 15px;
-    color: @pagetitle-text-color;
-    background-color: @pagetitle-bg;
-
-    h1 {
-      margin: 0;
-      font-size: 24px;
-      font-weight: @font-weight-light;
-      letter-spacing: -.5px;
-
-      .page-icon {
-        display: inline;
-        opacity: .8;
-      }
-    }
-
-    .breadcrumb {
-      padding: 0;
-      margin: 4px 0 0;
-
-      a {
-        color: @breadcrumb-color;
-
-        &:hover {
-          color: lighten(@breadcrumb-color, 10%);
-        }
-      }
-
-      > .active {
-        color: @breadcrumb-color;
-      }
-
-      li + li:before {
-        color: @breadcrumb-color;
-      }
-    }
-
-    .pageoverview-description {
-      margin-top: 4px;
-      opacity: .7;
-    }
-  }
-
-  #page-content {
-    padding: 15px;
-  }
-
-  footer {
-    padding: 0 15px;
-
-    a {
-      color: @text-color;
-
-      &:hover {
-        color: lighten(@text-color, 20%);
-      }
-    }
+  @media (min-width: @screen-sm-min) {
+    margin-left: @navbarside-width;
   }
 }
 
-#content-wrapper, .navbar-static-side {
-  -webkit-transition-duration: .5s;
-     -moz-transition-duration: .5s;
-       -o-transition-duration: .5s;
-          transition-duration: .5s;
-}
-
-.not-found h2 {
-  font-size: 200px;
-  font-weight: @font-weight-bold;
-  line-height: 210px;
-  letter-spacing: -5px;
-
-  i {
-    position: relative;
-    top: -12px;
-    font-size: 210px;
-    color: #f03;
-  }
-}
-
-body#splash {
-  background-color: @theme-4;
-  border-top: 36px solid @theme-2;
-
-  #content {
-    max-width: 400px;
-    padding: 15px;
-    margin: 24px auto 0;
-
-    #logo {
-      display: block;
-      width: 100px;
-      height: 100px;
-      margin: 0 auto;
-
-      svg {
-        width: 100%;
-        height: 100%;
-      }
-
-      .rock-logo {
-        fill: darken(@theme-4, 5%);
-      }
-    }
-  }
-
-
-  &.error #content {
-    max-width: 800px;
-    margin: 12px auto 0;
-
-    #logo {
-      width: 100px;
-      height: 100px;
-      margin: 0 auto;
-    }
-  }
-}
-
-.error-wrap .error-icon {
-  &.warning {
-    color: #dab751;
-  }
-}
-
-/*#endregion */
-
-
-/*#region
-// 5. Utilities              */
-// -------------------------
-
-.navbar-minimize {
-  display: inline-block;
-  padding: 4px 12px;
-  color: @header-hambuger-color;
-  cursor: pointer;
-  background-color: @header-hambuger-bg;
-  border: 1px solid @header-hamburger-border;
-  border-radius: @border-radius-base;
-}
-
-
-/*#endregion */
-
-
-/*#region
-// 6. Responsive Overrides  */
-// -------------------------
-
-// default styling should be for phones 767px or less
-
-// Small devices (tablets, 768px and up)
-@media (min-width: @screen-sm-min) {
-  body#splash {
-    #content {
-      margin: 36px auto 0;
-
-      #logo {
-        display: block;
-        width: 150px;
-        height: 150px;
-        margin: 0 auto 12px;
-      }
-    }
-  }
-}
-
-// Medium devices (desktops, 992px and up)
-@media (min-width: @screen-md-min) {
-  #content-wrapper {
-    header {
-      .navbar-default {
-        height: @navbar-height;
-        color: @header-text-color;
-        background-color: @header-bg;
-        border-color: darken(@header-bg, 5%);
-
-        .navbar-mobile-logo {
-          display: none;
-        }
-
-        .navbar-zone-header {
-          width: inherit;
-        }
-
-        & .navbar-nav > .open > a,
-        & .navbar-nav > .open > a:hover,
-        & .navbar-nav > .open > a:focus {
-          background-color: darken(@header-bg, 5%);
-        }
-
-        & .navbar-nav > li > a {
-          color: @header-text-color;
-        }
-
-        .dropdown-menu {
-          li.divider {
-            background-color: @gray-lighter;
-          }
-        }
-      }
-    }
-  }
-}
-
-// Large devices (large desktops, 1200px and up)
-@media (min-width: @screen-lg-min) {
-}
-/*#endregion */
-
-
-/*#region
-// 7. Side Navbar             */
-// -------------------------
-
-
-// base styles
 .navbar-static-side {
-  position: absolute;
+  position: fixed;
   display: none;
-  width: 70px;
-  color: @nav-color;
-  background-color: @nav-bg;
+  width: @navbarside-width;
+  color: @navbarside-color;
+  background-color: @navbarside-background-color;
+  height: 100%;
+  left: 0;
+  top: 0;
+  z-index: 1031;
 
-  .navbar-header {
-    width: 100%;
-    height: @navbar-height;
-    background-color: @nav-logo-bg;
+  @media (min-width: @screen-sm-min) {
+    z-index: auto;
+    position: absolute;
+    top: auto;
+  }
 
-    .logo {
-      width: 36px;
-      height: 35px;
-      margin: 8px auto 0;
-      background: url(../../../Assets/Images/rock-logo-sm.svg) no-repeat top left;
-      background-size: contain;
-      opacity: .8;
+  .navbar-toggle-side-left {
+    height: @navbar-top-height;
+    font-size: 1.500em;
+    display: block;
+    padding-top: 22px;
+    padding-left: 38px;
+    border-bottom: 1px solid lighten(@navbarside-background-color, 10%);
+    cursor: pointer;
+
+    @media (min-width: @screen-sm-min) {
+      display: none;
     }
+  }
+
+  &:before {
+    content: "";
+    position: fixed;
+    z-index: -1;
+    width: inherit;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    background-color: inherit;
   }
 
   .navbar-side {
     display: inline-block;
     width: 100%;
     cursor: default;
+    position: fixed;
+    width: @navbarside-width;
+    z-index: @zindex-navbar-fixed;
 
     & > li {
       margin-top: 0;
       text-align: center;
-      border-top: 1px solid lighten(@nav-bg, 7%);
+      border-top: 1px solid lighten( @navbarside-background-color, 7%);
+      cursor: pointer;
 
       &:last-child {
-        border-bottom: 1px solid lighten(@nav-bg, 7%);
+        border-bottom: 1px solid lighten( @navbarside-background-color, 7%);
+      }
+
+      &:first-child {
+        border-top: 0;
       }
 
       > i {
         display: block;
-        padding: 16px 0;
-        font-size: 24px;
+        padding: 24px 0;
+        font-size: calc(@navbarside-width * .32);
 
         &:hover {
-          color: @nav-sub-color;
-          background-color: @nav-sub-bg;
+          color: @navbarside-color;
+          background-color: @navbarside-sub-bg;
         }
       }
 
       &.open {
-        background-color: @nav-sub-bg;
+        background-color: @navbarside-sub-bg;
       }
 
       .nav-childpages {
-        position: absolute;
+        position: fixed;
         top: 0;
-        left: 70px;
+        left: @navbarside-width;
         z-index: 9999;
         display: none;
-        width: 220px;
-        padding: 9px 12px;
-        font-size: 14px;
+        width: 280px;
+        padding: 9px 20px;
         text-align: left;
-        background-color: @nav-sub-bg;
+        background-color: @navbarside-sub-bg;
+        height: 100%;
 
-        li a {
-          padding: 6px;
-          line-height: 1.1em;
-          color: @nav-sub-color;
+        li {
 
-          &:focus {
-            color: @nav-sub-text-rollover-color;
-            background-color: @nav-sub-text-rollover-bg;
-          }
+          a {
+            padding: 6px;
+            margin: 1px -6px;
+            line-height: 1.1em;
+            color: @navbarside-color;
 
-          &:hover {
-            color: @nav-sub-text-rollover-color;
-            background-color: @nav-sub-text-rollover-bg;
+            &:focus {
+              color: @nav-sub-text-rollover-color;
+              background-color: @nav-sub-text-rollover-bg;
+            }
+
+            &:hover {
+              color: @navbarside-color;
+              background-color: darken(@navbarside-sub-bg, 7%);
+            }
           }
         }
 
         li.title {
-          margin-bottom: -8px;
-          font-size: 18px;
+          margin-bottom: 24px;
+          font-size: 1.5em;
           font-weight: @font-weight-light;
-          color: @nav-sub-title-color;
+          color: @navbarside-color;
+          margin: -9px -20px 0;
+          padding: 9px 20px;
+          background-color: lighten(@navbarside-sub-bg, 15%);
         }
 
         li.header {
           padding-bottom: 2px;
-          margin-top: 14px;
-          margin-left: 4px;
+          margin-top: 32px;
+          margin-bottom: 4px;
           font-weight: @font-weight-semibold;
           font-weight: 400;
-          color: @nav-sub-heading-color;
-          border-bottom: 1px solid @nav-sub-heading-border;
+          color: darken(@navbarside-color, 20%);
+          border-bottom: 1px solid darken(@navbarside-color, 20%);
         }
 
         li.header:first-child {
@@ -772,13 +706,13 @@ body#splash {
 }
 
 // expanded view
-@media (min-width: @screen-md-min) {
+@media (min-width: @screen-sm-min) {
   .navbar-static-side {
     display: block;
   }
 
   #content-wrapper {
-    margin-left: 70px;
+    margin-left: @navbarside-width;
   }
 }
 
@@ -786,38 +720,253 @@ body#splash {
 body.navbar-side-open {
   .navbar-static-side {
     display: block;
-    width: 70px;
+    width: @navbarside-width;
   }
 
   #content-wrapper {
-    margin-left: 70px;
+    margin-left: @navbarside-width;
   }
 }
 
 body.navbar-side-close {
   .navbar-static-side {
-    display: none;
+
+    @media (max-width: @screen-xs-max) {
+      display: none;
+    }
+  }
+}
+
+
+// sub page styles
+.main-content {
+
+  #page-content {
+    min-height: 600px;
+    padding: 12px;
+
+    @media (min-width: @screen-md-min) {
+      padding: 0;
+    }
   }
 
-  #content-wrapper {
-    margin-left: 0;
+  .page-title {
+    background-color: @pagetitle-background;
+    padding: 20px 35px;
+
+    .title {
+      font-size: 1.750em;
+      margin: 0;
+    }
+
+    .page-icon {
+      float: left;
+      display: none;
+    }
+
+    .breadcrumb {
+      padding: 4px 0 0;
+      background-color: transparent;
+      margin: 0;
+      font-size: 0.875em;
+
+      i {
+        display: none;
+      }
+    }
+  }
+
+  @media (min-width: @screen-md-min) {
+    margin: 35px 35px 0 35px;
+
+    .page-title {
+      margin: -35px -35px 15px -35px;
+    }
+  }
+}
+
+.main-footer {
+  padding: 15px 0;
+}
+
+// person profile
+@media (min-width: @screen-md-min) {
+  .personprofile {
+    margin: -35px -35px 0;
+  }
+}
+
+// splash screen
+#splash {
+  #content {
+    position: absolute;
+    top: 50%;
+    margin-top: -300px;
+    width: 100%;
+  }
+
+  #logo {
+    margin: 0 auto 40px;
+    fill: @brand-color;
+    width: 120px;
+    height: 120px;
+  }
+
+  .login-block {
+    max-width: 400px;
+    margin: 0 auto;
+
+    legend {
+      display: none;
+    }
+  }
+
+  .login-block.external-auth-providers {
+    max-width: 800px;
+  }
+}
+
+// workflow page
+.workflow-activity {
+  & > .panel-heading {
+    background-color: @btn-action-bg;
+    border-color: @btn-action-bg;
+    color: #fff;
+
+    a.btn-link {
+      color: #fff;
+    }
+  }
+
+  .btn-action.add-action {
+    background-color: @gray-lighter;
+    border-color: darken(@gray-lighter, 10%);
+    color: @panel-heading-text-color;
+  }
+}
+
+.attribute-panel{
+  .panel-body {
+    padding: 0;
   }
 }
 /*#endregion */
-
-
 /*#region
-// 8. First Word Weight  */
+// 5. Specific Page Styling        */
 // -------------------------
-.title {
-  font-weight: @font-weight-light;
+.personprofilebar-bio {
+  .name .nickname,
+  .name .lastname {
+    font-weight: 700;
+  }
 
-  .first-word {
-    font-weight: @font-weight-bold;
+  .name .firstname {
+    font-size: 0.488em;
+    font-weight: @font-weight-light;
+  }
+
+  .previous-names {
+    font-weight: @font-weight-light;
   }
 }
+
 /*#endregion */
+/*#region
+// 6. Components          */
+// -------------------------
+// radio buttons & checkboxes - fancy styling
+.radio label, 
+.checkbox label {
+  padding-left: 0;
+}
 
+.radio-inline label,
+.checkbox label {
+  font-weight: normal;
+  cursor: pointer;
+}
 
+.checkbox-inline:first-child, .radio-inline:first-child {
+  padding-left: 0;
+}
+
+.checkbox input[type=checkbox],
+.checkbox-inline input[type=checkbox],
+.radio input[type=radio],
+.radio-inline input[type=radio] {
+  margin: 0;
+  display: none;
+  width: 22px;
+}
+
+.checkbox input[type=checkbox]:checked + span.label-text:before,
+.checkbox-inline input[type=checkbox]:checked + span.label-text:before,
+.radio input[type=radio]:checked + span.label-text:before,
+.radio-inline input[type=radio]:checked + span.label-text:before {
+  content: @fa-var-check;
+  color: @brand-color;
+  border-color: @brand-color;
+  font-weight: @fa-theme-weight;
+}
+
+.radio-inline input[type=radio] + span.label-text:before,
+.radio input[type=radio] + span.label-text:before {
+  border-radius: 50%;
+  line-height: 17px;
+  font-size: 14px;
+}
+
+.radio input[type=radio]:checked + span.label-text:before,
+.radio-inline input[type=radio]:checked + span.label-text:before {
+  content: @fa-var-circle;
+  font-weight: 900;
+  font-size: 12px;
+}
+
+.checkbox input[type=checkbox] + span.label-text:before,
+.radio input[type=radio] + span.label-text:before,
+.checkbox-inline input[type=checkbox] + span.label-text:before,
+.radio-inline input[type=radio] + span.label-text:before {
+  content: "";
+  width: 22px;
+  height: 22px;
+  display: inline-block;
+  border: 2px solid @input-border;
+  margin-right: 5px;
+  font-size: 14px;
+  font-family: FontAwesome;
+  font-weight: 400;
+  line-height: 19px;
+  vertical-align: bottom;
+  text-align: center;
+  background-color: #fff;
+  cursor: pointer;
+  pointer-events: none;
+}
+
+// slider styling
+.irs-bar-edge {
+  border: 1px solid @brand-color !important;
+  background: @brand-color !important;
+  background: @brand-color !important;
+}
+
+.irs-bar {
+  border: 1px solid @brand-color !important;
+  background: @brand-color !important;
+  background: @brand-color !important;
+}
+
+.irs-from, .irs-to, .irs-single {
+  background: @brand-color !important;
+}
+
+.irs-slider {
+  border: 1px solid #AAA !important;
+  background: #fff !important;
+  box-shadow: none !important;
+}
+
+/*#endregion */
 @import "_print.less";
 @import "_css-overrides.less";

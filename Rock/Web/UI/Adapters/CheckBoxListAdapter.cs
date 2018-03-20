@@ -148,7 +148,12 @@ namespace Rock.Web.UI.Adapters
                     writer.RenderBeginTag(HtmlTextWriterTag.Input);
                     writer.RenderEndTag();
 
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "label-text" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Span );
+
                     writer.Write(li.Text);
+
+                    writer.RenderEndTag();      // Span
 
                     writer.RenderEndTag();      // Label
 

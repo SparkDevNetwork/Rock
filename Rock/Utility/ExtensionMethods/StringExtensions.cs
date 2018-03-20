@@ -49,6 +49,11 @@ namespace Rock
             return sb.ToString();
         }
 
+        /// <summary>
+        /// Removes all non alpha numeric characters from a string
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
         public static string RemoveAllNonAlphaNumericCharacters( this string str )
         {
             return string.Concat( str.Where( c => char.IsLetterOrDigit( c ) ) );

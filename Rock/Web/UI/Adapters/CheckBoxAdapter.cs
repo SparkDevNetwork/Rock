@@ -122,15 +122,19 @@ namespace Rock.Web.UI.Adapters
 
                 if ( renderCheckboxLabel )
                 {
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "label-text" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Span );
+                    
                     if ( cb.Text.Length > 0 )
                     {
                         writer.Write( cb.Text );
                     }
                     else
                     {
-                        writer.Write( "&nbsp;" );
+                        writer.Write( "&nbsp" );
                     }
 
+                    writer.RenderEndTag();      // Span
                     writer.RenderEndTag();      // Label
                 }
 

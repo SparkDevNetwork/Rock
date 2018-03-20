@@ -234,6 +234,14 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+
+        /// Gets or sets a value indicating whether to show the action buttons in the header.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the action buttons will be shown in the header; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowActionsInHeader { get; set; } = true;
+
         /// Gets or sets the worksheet and title name on the excel file.
         /// If this property is null then the grid will use it's 
         /// caption or the page tile in that order.
@@ -252,6 +260,7 @@ namespace Rock.Web.UI.Controls
                 ViewState["ExportTitleName"] = value;
             }
         }
+
 
         /// <summary>
         /// Gets or sets a value indicating whether [hide delete button for is system].
@@ -716,6 +725,12 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
+            // disable showing buttons in the header of light grids
+            if ( DisplayType == GridDisplayType.Light )
+            {
+                ShowActionsInHeader = false;
+            }
+
             base.OnLoad( e );
         }
 
@@ -971,6 +986,27 @@ namespace Rock.Web.UI.Controls
                 _actionRow.Cells.Add( cell );
 
                 cell.Controls.Add( _gridActions );
+
+                // Add the action row to the top of the header
+                if ( ShowActionsInHeader )
+                {
+                    var actionHeaderRow = base.CreateRow( 0, 0, DataControlRowType.Header, DataControlRowState.Normal );
+                    actionHeaderRow.ID = "actionHeaderRow";
+                    actionHeaderRow.TableSection = TableRowSection.TableHeader;
+                    _table.Rows.AddAt( 0, actionHeaderRow );
+
+                    var mirrorControl = new ControlMirror();
+                    mirrorControl.ID = "actionMirror";
+                    mirrorControl.ControlToMirror = _gridActions;
+
+                    TableCell actionHeaderCell = new TableCell();
+                    actionHeaderCell.ColumnSpan = this.Columns.Count;
+                    actionHeaderCell.CssClass = "grid-actions";
+                    actionHeaderRow.Cells.Add( actionHeaderCell );
+
+                    actionHeaderCell.Controls.Add( mirrorControl );
+                }
+
 
                 if ( !this.ShowActionRow )
                 {
