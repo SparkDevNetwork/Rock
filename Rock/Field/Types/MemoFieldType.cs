@@ -46,7 +46,7 @@ namespace Rock.Field.Types
             configKeys.Add( NUMBER_OF_ROWS );
             configKeys.Add( ALLOW_HTML );
             configKeys.Add( MAX_CHARACTERS );
-            configKeys.Add( SHOW_COUNt_DOWN );
+            configKeys.Add( SHOW_COUNT_DOWN );
             return configKeys;
         }
 
@@ -108,7 +108,7 @@ namespace Rock.Field.Types
             configurationValues.Add( NUMBER_OF_ROWS, new ConfigurationValue( "Rows", "The number of rows to display (default is 3).", "" ) );
             configurationValues.Add( ALLOW_HTML, new ConfigurationValue( "Allow HTML", "Controls whether server should prevent HTML from being entered in this field or not.", "" ) );
             configurationValues.Add( MAX_CHARACTERS, new ConfigurationValue( "Max Characters", "The maximum number of characters to allow. Leave this field empty to allow for an unlimited amount of text.", "" ) );
-            configurationValues.Add( SHOW_COUNt_DOWN, new ConfigurationValue( "Show Count Down", "When set, displays the count down.", "" ) );
+            configurationValues.Add( SHOW_COUNT_DOWN, new ConfigurationValue( "Show Count Down", "When set, displays the count down.", "" ) );
 
             if ( controls != null )
             {
@@ -129,7 +129,7 @@ namespace Rock.Field.Types
 
                 if ( controls.Count > 3 && controls[3] != null && controls[3] is CheckBox )
                 {
-                    configurationValues[SHOW_COUNt_DOWN].Value = ( ( CheckBox ) controls[3] ).Checked.ToString();
+                    configurationValues[SHOW_COUNT_DOWN].Value = ( ( CheckBox ) controls[3] ).Checked.ToString();
                 }
             }
 
@@ -160,9 +160,9 @@ namespace Rock.Field.Types
                     ( ( NumberBox ) controls[2] ).Text = configurationValues[MAX_CHARACTERS].Value;
                 }
 
-                if ( controls[3] != null && controls[3] is CheckBox && configurationValues.ContainsKey( SHOW_COUNt_DOWN ) )
+                if ( controls[3] != null && controls[3] is CheckBox && configurationValues.ContainsKey( SHOW_COUNT_DOWN ) )
                 {
-                    ( ( CheckBox ) controls[3] ).Checked = configurationValues[SHOW_COUNt_DOWN].Value.AsBoolean();
+                    ( ( CheckBox ) controls[3] ).Checked = configurationValues[SHOW_COUNT_DOWN].Value.AsBoolean();
                 }
             }
         }
@@ -202,9 +202,9 @@ namespace Rock.Field.Types
                     maximumLength = configurationValues[MAX_CHARACTERS].Value.AsIntegerOrNull();
                 }
 
-                if ( configurationValues.ContainsKey( SHOW_COUNt_DOWN ) )
+                if ( configurationValues.ContainsKey( SHOW_COUNT_DOWN ) )
                 {
-                    showCountDown = configurationValues[SHOW_COUNt_DOWN].Value.AsBoolean();
+                    showCountDown = configurationValues[SHOW_COUNT_DOWN].Value.AsBoolean();
                 }
             }
 
