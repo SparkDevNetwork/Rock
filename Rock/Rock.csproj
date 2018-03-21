@@ -1195,6 +1195,7 @@
     <Compile Include="Plugin\HotFixes\042_FixShortLinkUrlInteractionChannel.cs" />
     <Compile Include="Plugin\HotFixes\048_InteractionSessionPerformance.cs" />
     <Compile Include="Plugin\HotFixes\047_DataAutomation.cs" />
+    <Compile Include="Plugin\HotFixes\049_UpdateGivingAnalyticsAccounts.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <DependentUpon>HotFixMigrationResource.resx</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -2098,6 +2099,15 @@
     </Content>
     <Content Include="Plugin\HotFixes\047_DataAutomation_ShortLinkInteractionFix.sql">
       <DependentUpon>047_DataAutomation.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\049_GivingAnalyticsAccounts_AccountTotals.sql">
+      <DependentUpon>049_UpdateGivingAnalyticsAccounts.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\049_GivingAnalyticsAccounts_PersonSummary.sql">
+      <DependentUpon>049_UpdateGivingAnalyticsAccounts.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\049_GivingAnalyticsAccounts_TransactionData.sql">
+      <DependentUpon>049_UpdateGivingAnalyticsAccounts.cs</DependentUpon>
     </Content>
     <Content Include="Scripts\jquery-1.12.4.intellisense.js" />
     <Content Include="Scripts\jquery-1.12.4.js" />
