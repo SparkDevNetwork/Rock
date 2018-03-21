@@ -24,7 +24,7 @@ namespace Rock.Web.UI
     /// included in the attribute, a block property will automatically be added for user to set 
     /// the entity type when block is placed on a page
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class)]
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
     public class ContextAwareAttribute : System.Attribute
     {
         /// <summary>

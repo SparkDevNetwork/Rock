@@ -249,7 +249,7 @@ namespace Rock.Communication.Transport
                                         var attachment = binaryFileService.Get( binaryFileId );
                                         if ( attachment != null )
                                         {
-                                            message.Attachments.Add( new Attachment( attachment.ContentStream, attachment.FileName ) );
+                                            message.Attachments.Add( new Attachment( attachment.ContentStream, attachment.FileName, attachment.MimeType ) );
                                         }
                                     }
                                 }
@@ -314,7 +314,7 @@ namespace Rock.Communication.Transport
 
                 if ( hasPendingRecipients )
                 {
-                    var currentPerson = communication.CreatedByPersonAlias.Person;
+                    var currentPerson = communication.CreatedByPersonAlias?.Person;
                     var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
                     string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, currentPerson );
@@ -473,7 +473,7 @@ namespace Rock.Communication.Transport
                                         message.Attachments.Clear();
                                         foreach ( var binaryFile in communication.GetAttachments( CommunicationType.Email ).Select( a => a.BinaryFile ) )
                                         {
-                                            message.Attachments.Add( new Attachment( binaryFile.ContentStream, binaryFile.FileName ) );
+                                            message.Attachments.Add( new Attachment( binaryFile.ContentStream, binaryFile.FileName, binaryFile.MimeType ) );
                                         }
 
                                         smtpClient.Send( message );
@@ -512,7 +512,7 @@ namespace Rock.Communication.Transport
                                     {
                                         ExceptionLogService.LogException( ex );
                                         recipient.Status = CommunicationRecipientStatus.Failed;
-                                        recipient.StatusNote = "Exception: " + ex.Message;
+                                        recipient.StatusNote = "Exception: " + ex.Messages().AsDelimited( " => " );
                                     }
                                 }
 
@@ -539,11 +539,27 @@ namespace Rock.Communication.Transport
             bool valid = base.ValidRecipient( recipient, isBulkCommunication );
             if ( valid )
             {
-                if ( string.IsNullOrWhiteSpace( recipient?.PersonAlias?.Person?.Email ) )
+                var person = recipient?.PersonAlias?.Person;
+                if ( person != null )
                 {
-                    recipient.Status = CommunicationRecipientStatus.Failed;
-                    recipient.StatusNote = "No Email Address";
-                    valid = false;
+                    if ( string.IsNullOrWhiteSpace( person.Email ) )
+                    {
+                        recipient.Status = CommunicationRecipientStatus.Failed;
+                        recipient.StatusNote = "No Email Address";
+                        valid = false;
+                    }
+                    else if ( person.EmailPreference == Model.EmailPreference.DoNotEmail )
+                    {
+                        recipient.Status = CommunicationRecipientStatus.Failed;
+                        recipient.StatusNote = "Communication Preference of 'Do Not Send Communication'";
+                        valid = false;
+                    }
+                    else if ( person.EmailPreference == Model.EmailPreference.NoMassEmails && isBulkCommunication )
+                    {
+                        recipient.Status = CommunicationRecipientStatus.Failed;
+                        recipient.StatusNote = "Communication Preference of 'No Bulk Communication'";
+                        valid = false;
+                    }
                 }
             }
 

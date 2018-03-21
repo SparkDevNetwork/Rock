@@ -39,6 +39,22 @@ namespace Rock.Web.UI.Controls
         #region IRockControl implementation
 
         /// <summary>
+        /// Gets or sets a value indicating whether the checkboxlist should be strikedoff when checked
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [display as checklist]; otherwise, <c>false</c>.
+        /// </value>
+        public bool DisplayAsCheckList
+        {
+            get { return ViewState["DisplayAsCheckList"] as bool? ?? false; }
+            set
+            {
+                ViewState["DisplayAsCheckList"] = value;
+                this.CssClass = "checklist";
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the label text.
         /// </summary>
         /// <value>
@@ -245,35 +261,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Registers the java script.
-        /// </summary>
-        private void RegisterJavaScript()
-        {
-            string script = string.Format( @" function ValidateCheckboxList_{0}(source, args) {{
-                var checkboxes = $(""input[id ^= '{0}']"");
-                var isValid = false;
-                for ( var i = 0; i < checkboxes.length; i++ )
-                {{
-                    if ( checkboxes[i].checked) {{
-                        isValid = true;
-                        break;
-                    }}
-                }}
-
-                var control = $(""label[for='{0}']"").closest('.rock-check-box-list');
-                if (isValid) {{
-                    control.removeClass('has-error');
-                }} else {{
-                    control.addClass('has-error');
-                }}
-
-                args.IsValid = isValid;
-
-        }}", this.ClientID );
-            ScriptManager.RegisterClientScriptBlock( this, typeof( RockCheckBoxList ), "RockCheckBoxListScript_" + this.ClientID, script, true );
-        }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="RockCheckBoxList"/> class.
         /// </summary>
         public RockCheckBoxList()
@@ -302,7 +289,7 @@ namespace Rock.Web.UI.Controls
 
             // add custom validator
             CustomValidator.ID = this.ID + "_cfv";
-            CustomValidator.ClientValidationFunction = "ValidateCheckboxList_" + this.ClientID;
+            CustomValidator.ClientValidationFunction = "Rock.controls.rockCheckBoxList.clientValidate";
             CustomValidator.ErrorMessage = this.Label != string.Empty ? this.Label + " is Required." : string.Empty;
             CustomValidator.CssClass = "validation-error help-inline";
             CustomValidator.Enabled = this.Required;
@@ -324,7 +311,7 @@ namespace Rock.Web.UI.Controls
         protected override bool LoadPostData( string postDataKey, System.Collections.Specialized.NameValueCollection postCollection )
         {
             EnsureChildControls();
-            
+
             // make sure we are dealing with a postback for this control by seeing if the hidden field is included
             if ( postDataKey == _hfCheckListBoxId.UniqueID )
             {
@@ -361,8 +348,8 @@ namespace Rock.Web.UI.Controls
         public void RenderBaseControl( HtmlTextWriter writer )
         {
             _hfCheckListBoxId.RenderControl( writer );
-            
-            writer.AddAttribute( "class", "controls" );
+
+            writer.AddAttribute( "class", "controls js-rockcheckboxlist" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             if ( Items.Count == 0 )
@@ -373,8 +360,35 @@ namespace Rock.Web.UI.Controls
             base.RenderControl( writer );
             CustomValidator.RenderControl( writer );
             writer.RenderEndTag();
+            if ( DisplayAsCheckList )
+            {
+                string script = string.Format( @"
+   function StrikeOffCheckbox( checkboxControl ){{
+                if ( checkboxControl.prop( 'checked' ) )
+                {{
+                    checkboxControl.parent('label').addClass( 'strikethrough' );
+                }}
+                else
+                {{
+                    checkboxControl.parent('label').removeClass( 'strikethrough' );
+                }}
 
-            RegisterJavaScript();
+            }}
+
+        $( "".checklist .checkbox input[type=checkbox]"").click( function() {{
+                StrikeOffCheckbox($( this ) );
+            }})
+
+            var checkboxes = $(""input[id ^= '{0}']:checked"");
+
+            for ( var i = 0; i < checkboxes.length; i++ )
+            {{
+                    StrikeOffCheckbox( $(checkboxes[i]) );
+            }}
+", this.ClientID );
+
+                ScriptManager.RegisterStartupScript( this, typeof( RockCheckBoxList ), "RockCheckBoxListScript_" + this.ClientID, script, true );
+            }
         }
 
         /// <summary>
@@ -416,4 +430,4 @@ namespace Rock.Web.UI.Controls
 
     }
 }
- 
+

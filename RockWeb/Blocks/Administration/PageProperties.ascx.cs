@@ -110,7 +110,7 @@ namespace RockWeb.Blocks.Administration
 
                 if ( pageCache != null && pageCache.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
                 {
-                    var blockContexts = new List<Tuple<string, string, List<BlockCache>>>();
+                    var blockContexts = new List<BlockContextsInfo>();
                     foreach ( var block in pageCache.Blocks )
                     {
                         try
@@ -121,14 +121,14 @@ namespace RockWeb.Blocks.Administration
                                 blockControl.SetBlock( pageCache, block );
                                 foreach ( var context in blockControl.ContextTypesRequired )
                                 {
-                                    var tuple = blockContexts.FirstOrDefault( t => t.Item1 == context.Name );
-                                    if ( tuple == null )
+                                    var blockContextsInfo = blockContexts.FirstOrDefault( t => t.EntityTypeName == context.Name );
+                                    if ( blockContextsInfo == null )
                                     {
-                                        tuple = new Tuple<string, string, List<BlockCache>>( context.Name, context.FriendlyName, new List<BlockCache>() );
-                                        blockContexts.Add( tuple );
+                                        blockContextsInfo = new BlockContextsInfo { EntityTypeName = context.Name, EntityTypeFriendlyName = context.FriendlyName, BlockList = new List<BlockCache>() };
+                                        blockContexts.Add( blockContextsInfo );
                                     }
 
-                                    tuple.Item3.Add( block );
+                                    blockContextsInfo.BlockList.Add( block );
                                 }
                             }
                         }
@@ -140,17 +140,17 @@ namespace RockWeb.Blocks.Administration
 
                     phContextPanel.Visible = blockContexts.Count > 0;
 
-                    foreach ( var context in blockContexts.OrderBy( t => t.Item2 ) )
+                    foreach ( var context in blockContexts.OrderBy( t => t.EntityTypeName ) )
                     {
                         var tbContext = new RockTextBox();
-                        tbContext.ID = string.Format( "context_{0}", context.Item1.Replace( '.', '_' ) );
-                        tbContext.Required = true;
-                        tbContext.Label = context.Item2 + " Parameter Name";
+                        tbContext.ID = string.Format( "context_{0}", context.EntityTypeName.Replace( '.', '_' ) );
+                        tbContext.Required = false;
+                        tbContext.Label = context.EntityTypeFriendlyName + " Parameter Name";
                         tbContext.Help = string.Format( "The page parameter name that contains the id of this context entity. This parameter will be used by the following {0}: {1}",
-                            "block".PluralizeIf( context.Item3.Count > 1 ), string.Join( ", ", context.Item3 ) );
-                        if ( pageCache.PageContexts.ContainsKey( context.Item1 ) )
+                            "block".PluralizeIf( context.BlockList.Count > 1 ), string.Join( ", ", context.BlockList ) );
+                        if ( pageCache.PageContexts.ContainsKey( context.EntityTypeName ) )
                         {
-                            tbContext.Text = pageCache.PageContexts[context.Item1];
+                            tbContext.Text = pageCache.PageContexts[context.EntityTypeName];
                         }
 
                         phContext.Controls.Add( tbContext );
@@ -163,6 +163,36 @@ namespace RockWeb.Blocks.Administration
             }
 
             base.OnInit( e );
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private class BlockContextsInfo
+        {
+            /// <summary>
+            /// Gets or sets the name of the entity type.
+            /// </summary>
+            /// <value>
+            /// The name of the entity type.
+            /// </value>
+            public string EntityTypeName { get; internal set; }
+
+            /// <summary>
+            /// Gets or sets the name of the entity type friendly.
+            /// </summary>
+            /// <value>
+            /// The name of the entity type friendly.
+            /// </value>
+            public string EntityTypeFriendlyName { get; internal set; }
+
+            /// <summary>
+            /// Gets or sets the block list.
+            /// </summary>
+            /// <value>
+            /// The block list.
+            /// </value>
+            public List<BlockCache> BlockList { get; internal set; }
         }
 
         /// <summary>
@@ -302,8 +332,16 @@ namespace RockWeb.Blocks.Administration
             {
                 page = new Rock.Model.Page { Id = 0, IsSystem = false, ParentPageId = parentPageId };
 
-                // fetch the ParentCategory (if there is one) so that security can check it
-                page.ParentPage = pageService.Get( parentPageId ?? 0 );
+                // fetch the ParentPage (if there is one) so that security can check it, and also default some stuff based on the ParentPage
+                if ( parentPageId.HasValue )
+                {
+                    page.ParentPage = pageService.Get( parentPageId.Value );
+                    if ( page.ParentPage != null )
+                    {
+                        page.AllowIndexing = page.ParentPage.AllowIndexing;
+                        page.LayoutId = page.ParentPage.LayoutId;
+                    }
+                }
             }
 
             hfPageId.Value = page.Id.ToString();
@@ -625,6 +663,16 @@ namespace RockWeb.Blocks.Administration
                 if ( parentPageId != 0 )
                 {
                     page.ParentPageId = parentPageId;
+
+                    if ( page.Id == 0 )
+                    {
+                        // newly added page, make sure the Order is correct
+                        Rock.Model.Page lastPage = pageService.GetByParentPageId( parentPageId ).OrderByDescending( b => b.Order ).FirstOrDefault();
+                        if ( lastPage != null )
+                        {
+                            page.Order = lastPage.Order + 1;
+                        }
+                    }
                 }
                 else
                 {

@@ -44,18 +44,110 @@ namespace RockWeb.Blocks.Cms
     [Category("CMS")]
     [Description("Displays the details for a content channel item.")]
 
-    [LinkedPage( "Event Occurrence Page", order: 0, required:false )]
+    [LinkedPage( "Event Occurrence Page", order: 0, required: false )]
     [BooleanField( "Show Delete Button", "Shows a delete button for the current item.", false, order: 1 )]
     [ContentChannelField("Content Channel", "If set the block will ignore content channel query parameters", false)]
     public partial class ContentChannelItemDetail : RockBlock, IDetailBlock
     {
-
         #region Fields
 
-        protected string PendingCss = "btn-default";
-        protected string ApprovedCss = "btn-default";
-        protected string DeniedCss = "btn-default";
+        private string _pendingCss = "btn-default";
+        private string _approvedCss = "btn-default";
+        private string _deniedCss = "btn-default";
 
+        /// <summary>
+        /// Gets or sets the pending CSS.
+        /// </summary>
+        /// <value>
+        /// The pending CSS.
+        /// </value>
+        protected string PendingCss
+        {
+            get { return _pendingCss; }
+            set { _pendingCss = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the approved CSS.
+        /// </summary>
+        /// <value>
+        /// The approved CSS.
+        /// </value>
+        protected string ApprovedCss
+        {
+            get { return _approvedCss; }
+            set { _approvedCss = value; }
+        }
+        
+        /// <summary>
+        /// Gets or sets the denied CSS.
+        /// </summary>
+        /// <value>
+        /// The denied CSS.
+        /// </value>
+        protected string DeniedCss
+        {
+            get { return _deniedCss; }
+            set { _deniedCss = value; }
+        }
+
+        private string _jsScript = @"$('#{0} .btn-toggle').click(function (e) {{
+
+                    e.stopImmediatePropagation();
+
+                    $(this).find('.btn').removeClass('active');
+                    $(e.target).addClass('active');
+
+                    $(this).find('a').each(function() {{
+                        if ($(this).hasClass('active')) {{
+                            $('#{1}').val($(this).attr('data-status'));
+                            $(this).removeClass('btn-default');
+                            $(this).addClass( $(this).attr('data-active-css') );
+                        }} else {{
+                            $(this).removeClass( $(this).attr('data-active-css') );
+                            $(this).addClass('btn-default');
+                        }}
+                    }});
+
+                }});
+
+                $(document).ready( function() {{
+        
+                    window.addEventListener('beforeunload', function(e) {{
+                        if ( $('#{2}').val() == 'true' ) {{
+                            var timeout = setTimeout( function() {{
+                                $('#updateProgress').hide();
+                            }}, 1000 );
+
+                            var confirmMessage = 'You have not saved your changes. Are you sure you want to continue?';    
+                            ( e || window.event).returnValue = confirmMessage;
+                            return confirmMessage;
+                        }}
+                        return;
+                    }});
+
+                    $('.js-item-details').find('input').blur( function() {{
+                        $('#{2}').val('true')
+                    }});
+
+                    $('.js-item-details').find('textarea').blur( function() {{
+                        $('#{2}').val('true')
+                    }});
+
+                    $('#{3}').on('summernote.blur', function() {{
+                        $('#{2}').val('true')
+                    }});
+                }});
+
+                function isDirty() {{
+                    if ( $('#{2}').val() == 'true' ) {{
+                        if ( confirm('You have not saved your changes. Are you sure you want to continue?') ) {{
+                            return false;
+                        }}
+                        return true;
+                    }}
+                    return false;
+                }}";
         #endregion
 
         #region Control Methods
@@ -92,69 +184,8 @@ namespace RockWeb.Blocks.Cms
             lbSave.OnClientClick = clearScript;
             lbCancel.OnClientClick = clearScript;
 
-            string script = string.Format( @"
-    $('#{0} .btn-toggle').click(function (e) {{
-
-        e.stopImmediatePropagation();
-
-        $(this).find('.btn').removeClass('active');
-        $(e.target).addClass('active');
-
-        $(this).find('a').each(function() {{
-            if ($(this).hasClass('active')) {{
-                $('#{1}').val($(this).attr('data-status'));
-                $(this).removeClass('btn-default');
-                $(this).addClass( $(this).attr('data-active-css') );
-            }} else {{
-                $(this).removeClass( $(this).attr('data-active-css') );
-                $(this).addClass('btn-default');
-            }}
-        }});
-
-    }});
-
-    $(document).ready( function() {{
-        
-        window.addEventListener('beforeunload', function(e) {{
-            if ( $('#{2}').val() == 'true' ) {{
-                var timeout = setTimeout( function() {{
-                    $('#updateProgress').hide();
-                }}, 1000 );
-
-                var confirmMessage = 'You have not saved your changes. Are you sure you want to continue?';    
-                ( e || window.event).returnValue = confirmMessage;
-                return confirmMessage;
-            }}
-            return;
-        }});
-
-        $('.js-item-details').find('input').blur( function() {{
-            $('#{2}').val('true')
-        }});
-
-        $('.js-item-details').find('textarea').blur( function() {{
-            $('#{2}').val('true')
-        }});
-
-        $('#{3}').on('summernote.blur', function() {{
-            $('#{2}').val('true')
-        }});
-    }});
-
-    function isDirty() {{
-        if ( $('#{2}').val() == 'true' ) {{
-            if ( confirm('You have not saved your changes. Are you sure you want to continue?') ) {{
-                return false;
-            }}
-            return true;
-        }}
-        return false;
-    }}
-
-", pnlStatus.ClientID, hfStatus.ClientID, hfIsDirty.ClientID, htmlContent.ClientID );
+            string script = string.Format( _jsScript, pnlStatus.ClientID, hfStatus.ClientID, hfIsDirty.ClientID, htmlContent.ClientID );
             ScriptManager.RegisterStartupScript( pnlStatus, pnlStatus.GetType(), "status-script-" + this.BlockId.ToString(), script, true );
-
-
         }
 
         /// <summary>
@@ -176,7 +207,6 @@ namespace RockWeb.Blocks.Cms
                     var contentChannel = GetAttributeValue("ContentChannel").AsGuid();
                     ShowDetail(PageParameter("contentItemId").AsInteger(), new ContentChannelService(new RockContext()).Get(GetAttributeValue("ContentChannel").AsGuid()).Id);
                 }
-
             }
             else
             {
@@ -207,7 +237,7 @@ namespace RockWeb.Blocks.Cms
                 itemIds.Add( itemId.Value );
             }
 
-            foreach( var contentItemId in itemIds )
+            foreach ( var contentItemId in itemIds )
             { 
                 ContentChannelItem contentItem = new ContentChannelItemService( new RockContext() ).Get( contentItemId );
                 if ( contentItem != null )
@@ -243,6 +273,13 @@ namespace RockWeb.Blocks.Cms
                 contentItem.Title = tbTitle.Text;
                 contentItem.Content = htmlContent.Text;
                 contentItem.Priority = nbPriority.Text.AsInteger();
+
+                // If this is a new item and the channel is manually sorted then we need to set the order to the next number
+                if ( contentItem.Id == 0 && new ContentChannelService( rockContext ).IsManuallySorted( contentItem.ContentChannelId ) )
+                {
+                    contentItem.Order = new ContentChannelItemService( rockContext ).GetNextItemOrderValueForContentChannel( contentItem.ContentChannelId );
+                }
+
                 if ( contentItem.ContentChannelType.IncludeTime )
                 {
                     contentItem.StartDateTime = dtpStart.SelectedDateTime ?? RockDateTime.Now;
@@ -329,12 +366,10 @@ namespace RockWeb.Blocks.Cms
                             rockContext.SaveChanges();
                         }
                     }
-
                 } );
 
                 ReturnToParentPage();
             }
-
         }
 
         /// <summary>
@@ -488,22 +523,22 @@ namespace RockWeb.Blocks.Cms
 
         protected void lbAddExistingChildItem_Click( object sender, EventArgs e )
         {
-            int? ItemId = hfId.Value.AsIntegerOrNull();
+            int? itemId = hfId.Value.AsIntegerOrNull();
             int? childItemId = ddlAddExistingItem.SelectedValueAsInt();
 
-            if ( ItemId.HasValue && childItemId.HasValue )
+            if ( itemId.HasValue && childItemId.HasValue )
             {
                 using ( var rockContext = new RockContext() )
                 {
                     var service = new ContentChannelItemAssociationService( rockContext );
                     var order = service.Queryable().AsNoTracking()
-                        .Where( a => a.ContentChannelItemId == ItemId.Value )
+                        .Where( a => a.ContentChannelItemId == itemId.Value )
                         .Select( a => (int?)a.Order )
                         .DefaultIfEmpty()
                         .Max();
 
                     var assoc = new ContentChannelItemAssociation();
-                    assoc.ContentChannelItemId = ItemId.Value;
+                    assoc.ContentChannelItemId = itemId.Value;
                     assoc.ChildContentChannelItemId = childItemId.Value;
                     assoc.Order = order.HasValue ? order.Value + 1 : 0;
                     service.Add( assoc );
@@ -686,7 +721,7 @@ namespace RockWeb.Blocks.Cms
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="contentItemId">The marketing campaign ad type identifier.</param>
+        /// <param name="contentItemId">The content item identifier.</param>
         public void ShowDetail( int contentItemId )
         {
             ShowDetail( contentItemId, null );
@@ -736,7 +771,7 @@ namespace RockWeb.Blocks.Cms
                 pnlEditDetails.Visible = true;
 
                 // show/hide the delete button
-                lbDelete.Visible = (GetAttributeValue( "ShowDeleteButton" ).AsBoolean() && contentItem.Id != 0);
+                lbDelete.Visible = GetAttributeValue( "ShowDeleteButton" ).AsBoolean() && contentItem.Id != 0;
 
                 hfId.Value = contentItem.Id.ToString();
                 hfChannelId.Value = contentItem.ContentChannelId.ToString();
@@ -746,6 +781,7 @@ namespace RockWeb.Blocks.Cms
                 {
                     cssIcon = "fa fa-certificate";
                 }
+
                 lIcon.Text = string.Format( "<i class='{0}'></i>", cssIcon );
 
                 string title = contentItem.Id > 0 ?
@@ -760,12 +796,23 @@ namespace RockWeb.Blocks.Cms
                 hlStatus.Text = contentItem.Status.ConvertToString();
 
                 hlStatus.LabelType = LabelType.Default;
-                switch( contentItem.Status )
+                switch ( contentItem.Status )
                 {
-                    case ContentChannelItemStatus.Approved: hlStatus.LabelType = LabelType.Success; break;
-                    case ContentChannelItemStatus.Denied: hlStatus.LabelType = LabelType.Danger; break;
-                    case ContentChannelItemStatus.PendingApproval: hlStatus.LabelType = LabelType.Warning; break;
-                    default: hlStatus.LabelType = LabelType.Default; break;
+                    case ContentChannelItemStatus.Approved:
+                        hlStatus.LabelType = LabelType.Success;
+                        break;
+
+                    case ContentChannelItemStatus.Denied:
+                        hlStatus.LabelType = LabelType.Danger;
+                        break;
+
+                    case ContentChannelItemStatus.PendingApproval:
+                        hlStatus.LabelType = LabelType.Warning;
+                        break;
+
+                    default:
+                        hlStatus.LabelType = LabelType.Default;
+                        break;
                 }
 
                 var statusDetail = new System.Text.StringBuilder();
@@ -773,11 +820,12 @@ namespace RockWeb.Blocks.Cms
                 {
                     statusDetail.AppendFormat( "by {0} ", contentItem.ApprovedByPersonAlias.Person.FullName );
                 }
+
                 if ( contentItem.ApprovedDateTime.HasValue )
                 {
-                    statusDetail.AppendFormat( "on {0} at {1}", contentItem.ApprovedDateTime.Value.ToShortDateString(),
-                        contentItem.ApprovedDateTime.Value.ToShortTimeString() );
+                    statusDetail.AppendFormat( "on {0} at {1}", contentItem.ApprovedDateTime.Value.ToShortDateString(), contentItem.ApprovedDateTime.Value.ToShortTimeString() );
                 }
+
                 hlStatus.ToolTip = statusDetail.ToString();
 
                 tbTitle.Text = contentItem.Title;
@@ -878,11 +926,8 @@ namespace RockWeb.Blocks.Cms
 
         private void ShowApproval( ContentChannelItem contentItem )
         {
-            if ( contentItem != null &&
-                contentItem.ContentChannel != null &&
-                contentItem.ContentChannel.RequiresApproval )
+            if ( contentItem != null && contentItem.ContentChannel != null && contentItem.ContentChannel.RequiresApproval )
             {
-
                 if ( contentItem.IsAuthorized( Authorization.APPROVE, CurrentPerson ) )
                 {
                     pnlStatus.Visible = true;
@@ -915,7 +960,7 @@ namespace RockWeb.Blocks.Cms
             hierarchy.Add( hfId.Value );
 
             var newHierarchy = new List<string>();
-            foreach( string existingItemId in hierarchy )
+            foreach ( string existingItemId in hierarchy )
             {
                 if ( existingItemId != itemId )
                 {
@@ -937,7 +982,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void ReturnToParentPage()
         {
-            var qryParams = new Dictionary<string,string>();
+            var qryParams = new Dictionary<string, string>();
 
             int? eventItemOccurrenceId = PageParameter( "EventItemOccurrenceId" ).AsIntegerOrNull();
             if ( eventItemOccurrenceId.HasValue )
@@ -971,6 +1016,7 @@ namespace RockWeb.Blocks.Cms
                     {
                         qryParams.Add( "Hierarchy", newHierarchy.Take( newHierarchy.Count() - 1 ).ToList().AsDelimited( "," ) );
                     }
+
                     qryParams.Add( "ContentItemId", newHierarchy.Last() );
                     NavigateToCurrentPage( qryParams );
                 }
@@ -1023,7 +1069,7 @@ namespace RockWeb.Blocks.Cms
                 ExpireDateTime = i.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? i.ExpireDateTime : (DateTime?)null,
                 Priority = i.ContentChannelType.DisablePriority ? (int?)null : (int?)i.Priority,
                 Status = (i.ContentChannel.RequiresApproval && !i.ContentChannelType.DisableStatus) ? DisplayStatus( i.Status ) : string.Empty,
-                CreatedBy = i.CreatedByPersonAlias != null && i.CreatedByPersonAlias.Person != null ? i.CreatedByPersonAlias.Person.NickName + " " + i.CreatedByPersonAlias.Person.LastName : ""
+                CreatedBy = i.CreatedByPersonAlias != null && i.CreatedByPersonAlias.Person != null ? i.CreatedByPersonAlias.Person.NickName + " " + i.CreatedByPersonAlias.Person.LastName : string.Empty
             } ).ToList();
 
             gChildItems.DataBind();
@@ -1055,10 +1101,9 @@ namespace RockWeb.Blocks.Cms
                 ExpireDateTime = i.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? i.ExpireDateTime : (DateTime?)null,
                 Priority = i.ContentChannelType.DisablePriority ? (int?)null : (int?)i.Priority,
                 Status = (i.ContentChannel.RequiresApproval && !i.ContentChannelType.DisableStatus) ? DisplayStatus( i.Status ) : string.Empty,
-                CreatedBy = i.CreatedByPersonAlias != null && i.CreatedByPersonAlias.Person != null ? i.CreatedByPersonAlias.Person.NickName + " " + i.CreatedByPersonAlias.Person.LastName : ""
+                CreatedBy = i.CreatedByPersonAlias != null && i.CreatedByPersonAlias.Person != null ? i.CreatedByPersonAlias.Person.NickName + " " + i.CreatedByPersonAlias.Person.LastName : string.Empty
             } ).ToList();
             gParentItems.DataBind();
-
         }
 
         private List<ContentChannelItem> GetChildItems( ContentChannelItem contentItem, out bool isFiltered )
@@ -1077,6 +1122,7 @@ namespace RockWeb.Blocks.Cms
                     isFiltered = true;
                 }
             }
+
             return items;
         }
 
@@ -1132,15 +1178,12 @@ namespace RockWeb.Blocks.Cms
             switch ( hfActiveDialog.Value )
             {
                 case "ADDCHILDITEM":
-                    {
-                        dlgAddChild.Show();
-                        break;
-                    }
+                    dlgAddChild.Show();
+                    break;
+
                 case "REMOVECHILDITEM":
-                    {
-                        dlgRemoveChild.Show();
-                        break;
-                    }
+                    dlgRemoveChild.Show();
+                    break;
             }
         }
 
@@ -1152,15 +1195,12 @@ namespace RockWeb.Blocks.Cms
             switch ( hfActiveDialog.Value )
             {
                 case "ADDCHILDITEM":
-                    {
-                        dlgAddChild.Hide();
-                        break;
-                    }
+                    dlgAddChild.Hide();
+                    break;
+
                 case "REMOVECHILDITEM":
-                    {
-                        dlgRemoveChild.Hide();
-                        break;
-                    }
+                    dlgRemoveChild.Hide();
+                    break;
             }
 
             hfActiveDialog.Value = string.Empty;
@@ -1173,10 +1213,10 @@ namespace RockWeb.Blocks.Cms
             {
                 return qryParam.SplitDelimitedValues( false ).ToList();
             }
+
             return new List<string>();
         }
 
         #endregion
-
     }
 }

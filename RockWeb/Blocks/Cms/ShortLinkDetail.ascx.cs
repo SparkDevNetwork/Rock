@@ -119,7 +119,7 @@ namespace RockWeb.Blocks.Crm
 
                     int? siteId = ddlSite.SelectedValueAsInt();
                     string token = tbToken.Text.Trim();
-                    string url = tbUrl.Text.Trim();
+                    string url = tbUrl.Text.RemoveCrLf().Trim();
 
                     if ( !siteId.HasValue )
                     {

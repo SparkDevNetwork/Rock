@@ -25,6 +25,7 @@ using System.Dynamic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Linq.Dynamic;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -89,6 +90,19 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string WithFallback( object input, string successText, string fallbackText )
         {
+            return WithFallback( input, successText, fallbackText, "prepend" );
+        }
+
+        /// <summary>
+        /// Withes the fallback.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="successText">The success text.</param>
+        /// <param name="fallbackText">The fallback text.</param>
+        /// <param name="appendOrder">The append order.</param>
+        /// <returns></returns>
+        public static string WithFallback( object input, string successText, string fallbackText, string appendOrder )
+        {
             if ( input == null )
             {
                 return fallbackText;
@@ -97,17 +111,40 @@ namespace Rock.Lava
             {
                 var inputString = input.ToString();
 
-                if (string.IsNullOrWhiteSpace( inputString ) )
+                if ( string.IsNullOrWhiteSpace( inputString ) )
                 {
                     return fallbackText;
                 }
                 else
                 {
-                    return inputString + successText;
+                    if ( appendOrder == "append" )
+                    {
+                        return successText + inputString;
+                    }
+                    else
+                    {
+                        return inputString + successText;
+                    }
                 }
             }
         }
 
+        /// <summary>
+        /// Returns the right most part of a string of the given length.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="length">The length.</param>
+        /// <returns></returns>
+        public static string Right( object input, int length )
+        {
+            if ( input == null )
+            {
+                return string.Empty;
+            }
+
+            var inputString = input.ToString();
+            return inputString.Right( length );
+        }
 
         /// <summary>
         /// obfuscate a given email
@@ -724,6 +761,21 @@ namespace Rock.Lava
             length = length > ( input.Length - start ) ? ( input.Length - start ) : length;
 
             return input.Substring(start, length);
+        }
+
+        /// <summary>
+        /// Decrypts an encrypted string
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string Decrypt( string input )
+        {
+            if ( input == null )
+            {
+                return input;
+            }
+
+            return Rock.Security.Encryption.DecryptString( input );
         }
 
         /// <summary>
@@ -3459,6 +3511,37 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Ratings the markup.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string RatingMarkup(object input )
+        {
+            var rating = 0;
+
+            if (input!= null )
+            {
+                rating = input.ToString().AsInteger();
+            }
+
+            var starCounter = 0;
+            StringBuilder starMarkup = new StringBuilder();
+
+            for ( int i = 0; i < rating; i++ )
+            {
+                starMarkup.Append( "<i class='fa fa-rating-on'></i>" );
+                starCounter++;
+            }
+
+            for ( int i = starCounter; i < 5; i++ )
+            {
+                starMarkup.Append( "<i class='fa fa-rating-off'></i>" );
+            }
+
+            return starMarkup.ToString();
+        }
+
+        /// <summary>
         /// Pages the specified input.
         /// </summary>
         /// <param name="input">The input.</param>
@@ -3900,6 +3983,26 @@ namespace Rock.Lava
             return inputList[indexInt.Value];
         }
 
+        /// <summary>
+        /// Takes a collection and returns distinct values in that collection.
+        /// </summary>
+        /// <param name="input">A collection of objects.</param>
+        /// <returns>A collection of objects with no repeating elements.</returns>
+        /// <example>
+        ///     {{ '["Banana","Orange","Banana","Apple"]' | FromJSON | Uniq | Join:',' }}
+        /// </example>
+        public static object Uniq( object input )
+        {
+            IEnumerable e = input as IEnumerable;
+
+            if ( e == null )
+            {
+                return input;
+            }
+
+            return e.Distinct().Cast<object>().ToList();
+        }
+
         #endregion
 
         #region Object Filters
@@ -3979,7 +4082,7 @@ namespace Rock.Lava
             }
             else
             {
-                return filterNotes.OrderBy(n => n.CreatedDateTime).Take( count.Value ).ToList();
+                return filterNotes.Take( count.Value ).ToList();
             }
         }
 

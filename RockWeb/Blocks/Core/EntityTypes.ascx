@@ -6,7 +6,7 @@
     }
 </script>
 
-<asp:UpdatePanel ID="upMarketingCampaigns" runat="server">
+<asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
 
         <div class="panel panel-block">
