@@ -12372,6 +12372,7 @@ BEGIN
             ,PostalCode
             ,IsActive
 			,GeoPoint
+			,Country
             ,[Guid]
             )
         VALUES (
@@ -12382,6 +12383,7 @@ BEGIN
             ,@zipCode
             ,1
 			,@geoPoint
+			,'US'
             ,NEWID()
             )
 
