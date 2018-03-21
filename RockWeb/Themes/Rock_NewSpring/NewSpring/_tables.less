@@ -1,4 +1,6 @@
 .table-responsive {
+	border-top: 1px solid @theme-4;
+
 	table {
 		width: 100%;
 	}
@@ -33,4 +35,13 @@
 
 .directory-grid>div.row:nth-child(odd) {
 	background-color: @theme-6;
+}
+
+.table > thead > tr > th,
+.table > tbody > tr > th,
+.table > tfoot > tr > th,
+.table > thead > tr > td,
+.table > tbody > tr > td,
+.table > tfoot > tr > td {
+	vertical-align: middle;
 }
