@@ -19,7 +19,7 @@ namespace Rock.Migrations.Migrations {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class RockMigrationSQL {
@@ -291,8 +291,7 @@ namespace Rock.Migrations.Migrations {
         ///
         ///
         ///&lt;p&gt;
-        ///    {{ Person.NickName }},
-        /// [rest of string was truncated]&quot;;.
+        ///    {{ Person.NickName }},        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201506242325188_GeoSpatialIndexes_AddSystemEmail {
             get {
@@ -545,8 +544,7 @@ namespace Rock.Migrations.Migrations {
         ///WHERE D.[ForeignId] IS NOT NULL
         ///
         ///UPDATE [FinancialPaymentDetail]
-        ///SET [ForeignId] = NULL
-        /// [rest of string was truncated]&quot;;.
+        ///SET [ForeignId] = NULL        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201508111636214_FinancialPaymentDetails {
             get {
@@ -873,8 +871,7 @@ namespace Rock.Migrations.Migrations {
         ///BEGIN
         ///	DECLARE @DayOfWeek int
         ///	DECLARE @DaysToAdd int
-        ///	DECLARE @SundayDate datetime
-        /// [rest of string was truncated]&quot;;.
+        ///	DECLARE @SundayDate datetime        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201510082215386_ComputedSundayDate_ufnUtility_GetSundayDate {
             get {
@@ -1373,8 +1370,7 @@ namespace Rock.Migrations.Migrations {
         ///
         ///	&lt;returns&gt;
         ///	&lt;/returns&gt;
-        ///	&lt;param name=&quot;Old Id&quot; datatype=&quot;int&quot;&gt;The person id of the non-primary Person being merged&lt;/param&gt;
-        /// [rest of string was truncated]&quot;;.
+        ///	&lt;param name=&quot;Old Id&quot; datatype=&quot;int&quot;&gt;The person id of the non-primary Person being merged&lt;/param&gt;        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201603241157527_spCrm_PersonMerge {
             get {
@@ -1777,8 +1773,7 @@ namespace Rock.Migrations.Migrations {
         ///CREATE PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery_FirstLastEverDates]
         ///AS
         ///
-        ///BEGIN
-        /// [rest of string was truncated]&quot;;.
+        ///BEGIN        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201606091237191_GivingAnalyticsRefactor_FirstLastEverDates {
             get {
@@ -1966,8 +1961,7 @@ namespace Rock.Migrations.Migrations {
         ///CREATE PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery_FirstLastEverDates]
         ///AS
         ///
-        ///BEGIN
-        /// [rest of string was truncated]&quot;;.
+        ///BEGIN        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201608171937068_GivingAnalyticsAccounts_FirstLastEverDates {
             get {
@@ -2392,7 +2386,7 @@ namespace Rock.Migrations.Migrations {
         
         /// <summary>
         ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimAttendanceDate]&apos;, &apos;V&apos;) IS NOT NULL
-        ///    DROP VIEW [dbo].AnalyticsDimAttendanceDate
+        ///    DROP VIEW [dbo].[AnalyticsDimAttendanceDate]
         ///GO
         ///
         ///CREATE VIEW [dbo].[AnalyticsDimAttendanceDate]
@@ -2418,10 +2412,10 @@ namespace Rock.Migrations.Migrations {
         
         /// <summary>
         ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimAttendanceLocation]&apos;, &apos;V&apos;) IS NOT NULL
-        ///    DROP VIEW [dbo].AnalyticsDimAttendanceLocation
+        ///    DROP VIEW [dbo].[AnalyticsDimAttendanceLocation]
         ///GO
         ///
-        ///CREATE VIEW [dbo].AnalyticsDimAttendanceLocation
+        ///CREATE VIEW [dbo].[AnalyticsDimAttendanceLocation]
         ///AS
         ///SELECT l.Id [LocationId]
         ///	,l.Name
@@ -2435,8 +2429,7 @@ namespace Rock.Migrations.Migrations {
         ///    ,l.GeoPoint [GeoPoint]
         ///    ,l.GeoFence [GeoFence]
         ///    ,l.GeoPoint.Lat [Latitude]
-        ///    ,l.GeoPoint.Long [Longitude]
-        ///FROM [rest of string was truncated]&quot;;.
+        ///    ,l.GeoPoint.Long [ [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201701040116351_Analytics1_AnalyticsDimAttendanceLocation {
             get {
@@ -2446,10 +2439,10 @@ namespace Rock.Migrations.Migrations {
         
         /// <summary>
         ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimFamilyCurrent]&apos;, &apos;V&apos;) IS NOT NULL
-        ///    DROP VIEW [dbo].AnalyticsDimFamilyCurrent
+        ///    DROP VIEW [dbo].[AnalyticsDimFamilyCurrent]
         ///GO
         ///
-        ///CREATE VIEW [dbo].AnalyticsDimFamilyCurrent
+        ///CREATE VIEW [dbo].[AnalyticsDimFamilyCurrent]
         ///AS
         ///SELECT * FROM AnalyticsDimFamilyHistorical where CurrentRowIndicator = 1.
         /// </summary>
@@ -2461,10 +2454,10 @@ namespace Rock.Migrations.Migrations {
         
         /// <summary>
         ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimFamilyHeadOfHousehold]&apos;, &apos;V&apos;) IS NOT NULL
-        ///    DROP VIEW [dbo].AnalyticsDimFamilyHeadOfHousehold
+        ///    DROP VIEW [dbo].[AnalyticsDimFamilyHeadOfHousehold]
         ///GO
         ///
-        ///CREATE VIEW [dbo].AnalyticsDimFamilyHeadOfHousehold
+        ///CREATE VIEW [dbo].[AnalyticsDimFamilyHeadOfHousehold]
         ///AS
         ///SELECT * FROM AnalyticsDimPersonCurrent.
         /// </summary>
@@ -2476,10 +2469,10 @@ namespace Rock.Migrations.Migrations {
         
         /// <summary>
         ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimFamilyHistorical]&apos;, &apos;V&apos;) IS NOT NULL
-        ///    DROP VIEW [dbo].AnalyticsDimFamilyHistorical
+        ///    DROP VIEW [dbo].[AnalyticsDimFamilyHistorical]
         ///GO
         ///
-        ///CREATE VIEW [dbo].AnalyticsDimFamilyHistorical
+        ///CREATE VIEW [dbo].[AnalyticsDimFamilyHistorical]
         ///AS
         ///SELECT asfh.*
         ///    ,isnull(c.NAME, &apos;None&apos;) [CampusName]
@@ -2488,7 +2481,7 @@ namespace Rock.Migrations.Migrations {
         ///    ,mailingLocation.Street2 [MailingAddressStreet2]
         ///    ,mailingLocation.City [MailingAddressCity]
         ///    ,mailingLocation.County [MailingAddressCounty]
-        ///    ,mailingLocation.[State [rest of string was truncated]&quot;;.
+        ///    ,mailin [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201701040116351_Analytics1_AnalyticsDimFamilyHistorical {
             get {
@@ -2498,10 +2491,10 @@ namespace Rock.Migrations.Migrations {
         
         /// <summary>
         ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimFinancialAccount]&apos;, &apos;V&apos;) IS NOT NULL
-        ///    DROP VIEW [dbo].AnalyticsDimFinancialAccount
+        ///    DROP VIEW [dbo].[AnalyticsDimFinancialAccount]
         ///GO
         ///
-        ///CREATE VIEW [dbo].AnalyticsDimFinancialAccount
+        ///CREATE VIEW [dbo].[AnalyticsDimFinancialAccount]
         ///AS
         ///SELECT fa.Id [AccountId]
         ///    ,fa.[Name]
@@ -2517,7 +2510,7 @@ namespace Rock.Migrations.Migrations {
         ///    ,fa.[Order]
         ///    ,CASE fa.IsActive
         ///        WHEN 1
-        ///            THEN &apos;Active&apos; [rest of string was truncated]&quot;;.
+        ///          [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201701040116351_Analytics1_AnalyticsDimFinancialAccount {
             get {
@@ -2527,7 +2520,7 @@ namespace Rock.Migrations.Migrations {
         
         /// <summary>
         ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimFinancialBatch]&apos;, &apos;V&apos;) IS NOT NULL
-        ///    DROP VIEW [dbo].AnalyticsDimFinancialBatch
+        ///    DROP VIEW [dbo].[AnalyticsDimFinancialBatch]
         ///GO
         ///
         ///CREATE VIEW [dbo].AnalyticsDimFinancialBatch
@@ -2546,8 +2539,7 @@ namespace Rock.Migrations.Migrations {
         ///        ELSE NULL
         ///        END [Status]
         ///    ,c.NAME [Campus]
-        ///    ,fb.[AccountingSystemCode]
-        ///    ,f [rest of string was truncated]&quot;;.
+        ///    ,fb.[AccountingSyste [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201701040116351_Analytics1_AnalyticsDimFinancialBatch {
             get {
@@ -2571,7 +2563,7 @@ namespace Rock.Migrations.Migrations {
         ///        )
         ///    AND d.DateKey &lt;= (
         ///        SELECT MAX(ft.TransactionDateKey)
-        ///        FROM AnalyticsFactFinancialTransact [rest of string was truncated]&quot;;.
+        ///        FROM AnalyticsFactFinancialTr [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201701040116351_Analytics1_AnalyticsDimFinancialTransactionDate {
             get {
@@ -2662,7 +2654,7 @@ namespace Rock.Migrations.Migrations {
         ///        WHEN 1
         ///            THEN &apos;Male&apos;
         ///        WHEN 2
-        ///             [rest of string was truncated]&quot;;.
+        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201701040116351_Analytics1_AnalyticsDimPersonHistorical {
             get {
@@ -2684,8 +2676,7 @@ namespace Rock.Migrations.Migrations {
         ///    ,isnull(c.NAME, &apos;None&apos;) [CampusName]
         ///    ,isnull(c.ShortCode, &apos;None&apos;) [CampusShortCode]
         ///    ,isnull(s.NAME, &apos;None&apos;) [ScheduleName]
-        ///    ,isnull(g.NAME, &apos;None&apos;) [GroupName]
-        ///   [rest of string was truncated]&quot;;.
+        ///    ,isnull(g.NAME, &apos;None&apos;) [Gr [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201701040116351_Analytics1_AnalyticsFactAttendance {
             get {
@@ -2709,7 +2700,7 @@ namespace Rock.Migrations.Migrations {
         ///            THEN &apos;Scheduled&apos;
         ///        ELSE &apos;Non-Scheduled&apos;
         ///        END [ScheduleType]
-        ///    ,adfcAuthoriz [rest of string was truncated]&quot;;.
+        ///    , [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201701040116351_Analytics1_AnalyticsFactFinancialTransaction {
             get {
@@ -3185,8 +3176,7 @@ namespace Rock.Migrations.Migrations {
         ///		* PersonId
         ///		* TimeAttending
         ///		* SundayDate
-        ///	&lt;/returns&gt;
-        /// [rest of string was truncated]&quot;;.
+        ///	&lt;/returns&gt;        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201708162105164_AnalyticsPerformance_AttendeeLastAttendance {
             get {
@@ -3427,7 +3417,7 @@ namespace Rock.Migrations.Migrations {
         ///        )
         ///    AND d.DateKey &lt;= (
         ///        SELECT MAX(x.BirthDateKey)
-        ///        FROM AnalyticsDimFamilyHeadOfHousehol [rest of string was truncated]&quot;;.
+        ///        FROM AnalyticsDimFamilyHeadOfHo [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201709191729044_Analytics2_AnalyticsDimFamilyHeadOfHouseholdBirthDate {
             get {
@@ -3451,7 +3441,7 @@ namespace Rock.Migrations.Migrations {
         ///        )
         ///    AND d.DateKey &lt;= (
         ///        SELECT MAX(x.TransactionDateKey)
-        ///        FROM AnalyticsFactFinancialTransact [rest of string was truncated]&quot;;.
+        ///        FROM AnalyticsFactFinancialTr [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201709191729044_Analytics2_AnalyticsDimFinancialTransactionDate {
             get {
@@ -3671,7 +3661,7 @@ namespace Rock.Migrations.Migrations {
         ///    ,isnull(at.NAME, &apos;None&apos;) [AttendanceTypeName]
         ///    ,isnull(l.NAME, &apos;None&apos;) [LocationName]
         ///    ,isnull(c.NAME, &apos;None&apos;) [CampusName]
-        ///    ,isnull(c.ShortCode, &apos;None&apos;) [CampusSho [rest of string was truncated]&quot;;.
+        ///    ,isnull(c.ShortCode, &apos;None&apos; [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201710131721219_InteractionRelatedEntity_AnalyticsFactAttendance {
             get {
@@ -3695,7 +3685,7 @@ namespace Rock.Migrations.Migrations {
         ///        ELSE &apos;Non-Scheduled&apos;
         ///        END [ScheduleType]
         ///    ,adphAuthorizedPerson.PrimaryFamilyKey [AuthorizedFamilyKey]
-        ///	,adpcAuthorized [rest of string was truncated]&quot;;.
+        ///	,ad [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201710131721219_InteractionRelatedEntity_AnalyticsFactFinancialTransaction {
             get {
@@ -3770,8 +3760,7 @@ namespace Rock.Migrations.Migrations {
         ///    ,l.GeoPoint [GeoPoint]
         ///    ,l.GeoFence [GeoFence]
         ///    ,l.GeoPoint.Lat [Latitude]
-        ///    ,l.GeoPoint.Long [Longitude]
-        ///	,1  [rest of string was truncated]&quot;;.
+        ///    ,l.GeoPoint.Long [Long [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201711081825032_Analytics4_AnalyticsDimAttendanceLocation {
             get {
@@ -3800,7 +3789,7 @@ namespace Rock.Migrations.Migrations {
         ///    ,fa.[Order]
         ///    ,CASE fa.IsActive
         ///        WHEN 1
-        ///            THEN &apos;Active&apos; [rest of string was truncated]&quot;;.
+        ///            T [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201711081825032_Analytics4_AnalyticsDimFinancialAccount {
             get {
@@ -3829,8 +3818,7 @@ namespace Rock.Migrations.Migrations {
         ///        ELSE NULL
         ///        END [Status]
         ///    ,c.NAME [Campus]
-        ///    ,fb.[AccountingSystemCode]
-        ///    ,f [rest of string was truncated]&quot;;.
+        ///    ,fb.[AccountingSystemC [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201711081825032_Analytics4_AnalyticsDimFinancialBatch {
             get {
@@ -3883,7 +3871,7 @@ namespace Rock.Migrations.Migrations {
         ///        WHEN 1
         ///            THEN &apos;Male&apos;
         ///        WHEN 2
-        ///             [rest of string was truncated]&quot;;.
+        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201711081825032_Analytics4_AnalyticsDimPersonHistorical {
             get {
@@ -3937,9 +3925,7 @@ namespace Rock.Migrations.Migrations {
         ///	,l.GeoPoint.Lat [Latitude]
         ///	,l.GeoPoint.Long [Longitude]
         ///	,CONCAT (
-        ///		l.[Street1]
-        ///		,&apos; &apos;
-        ///		, [rest of string was truncated]&quot;;.
+        ///		l.[Street1]        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201711092125120_Analytics5_AnalyticsDimAttendanceLocation {
             get {
@@ -3969,7 +3955,7 @@ namespace Rock.Migrations.Migrations {
         ///	,l.Country [AddressCountry]
         ///	,l.PostalCode [AddressPostalCode]
         ///	,l.GeoPoint [AddressGeoPoint]
-        ///	,l.GeoFence [AddressGeoFen [rest of string was truncated]&quot;;.
+        ///	,l.GeoFence [A [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201711092125120_Analytics5_AnalyticsDimCampus {
             get {
@@ -3991,8 +3977,7 @@ namespace Rock.Migrations.Migrations {
         ///	,mailingLocation.Street2 [MailingAddressStreet2]
         ///	,mailingLocation.City [MailingAddressCity]
         ///	,mailingLocation.County [MailingAddressCounty]
-        ///	,mailingLocation.[State] [MailingAddressState]
-        /// [rest of string was truncated]&quot;;.
+        ///	,mailingLocation.[State] [MailingAd [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201711092125120_Analytics5_AnalyticsDimFamilyHistorical {
             get {
@@ -4022,8 +4007,7 @@ namespace Rock.Migrations.Migrations {
         ///		WHEN 2
         ///			THEN &apos;Female&apos;
         ///		ELSE &apos;Unknown&apos;
-        ///		END [GenderText]
-        ///	,CA [rest of string was truncated]&quot;;.
+        ///		END [Gende [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201711092125120_Analytics5_AnalyticsDimPersonHistorical {
             get {
@@ -4055,8 +4039,7 @@ namespace Rock.Migrations.Migrations {
         ///		,[IsActive]
         ///		,[ShortCode]
         ///		,[Url]
-        ///		,[LocationId]
-        /// [rest of string was truncated]&quot;;.
+        ///		,[LocationId]        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201711092125120_Analytics5_spAnalytics_ETL_Campus {
             get {
@@ -4085,7 +4068,7 @@ namespace Rock.Migrations.Migrations {
         ///    ,fa.[Order]
         ///    ,CASE fa.IsActive
         ///        WHEN 1
-        ///            THEN &apos;Active&apos; [rest of string was truncated]&quot;;.
+        ///            T [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201711141624083_CommunicationTemplateCssInliningEnabled_AnalyticsDimFinancialAccount {
             get {
@@ -4161,7 +4144,13 @@ namespace Rock.Migrations.Migrations {
         ///   Looks up a localized string similar to UPDATE [DefinedType]
         ///SET [helptext] = &apos;
         ///Label merge fields are defined with a liquid syntax. Click the &apos;&apos;Show Merge Fields&apos;&apos; button below to view the available merge fields.
-        ///&lt;p&gt;&lt;a data-toggle=&quot;collapse&quot; href=&quot;#collapseMergeFields&quot; class=&quot;btn btn-action btn-xs&quot;&gt;Show/Hide Merge Fields&lt;/a&gt;&lt;/p&gt;&lt;div id=&quot;collapseMergeFields&quot; class=&quot;panel-collapse collapse&quot;&gt;&lt;div class=&quot;alert alert-info lava-debug&quot;&gt;&lt;div class=&quot;panel panel-default panel-lavadebug&quot;&gt;&lt;div class=&quot;panel-heading clearfix collapsed&quot; data-toggle=&quot;collaps [rest of string was truncated]&quot;;.
+        ///&lt;p&gt;
+        ///    &lt;a data-toggle=&apos;&apos;collapse&apos;&apos;  href=&apos;&apos;#collapseMergeFields&apos;&apos; class=&apos;&apos;btn btn-action btn-xs&apos;&apos;&gt;Show/Hide Merge Fields&lt;/a&gt;
+        ///&lt;/p&gt;
+        ///&lt;div id=&apos;&apos;collapseMergeFields&apos;&apos; class=&apos;&apos;panel-collapse collapse&apos;&apos;&gt;
+        ///&lt;div class=&apos;&apos;alert alert-info lava-debug&apos;&apos;&gt;
+        ///    &lt;div class=&apos;&apos;panel panel-default panel-lavadebug&apos;&apos;&gt;
+        ///        &lt;div class=&apos;&apos;panel-head [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201711271827181_V7Rollup_021_UpdateCheckInMergefieldDebugInfo {
             get {
@@ -4247,6 +4236,80 @@ namespace Rock.Migrations.Migrations {
         public static string _201712191949335_CampusTimeZone_PersonicxMeanAge {
             get {
                 return ResourceManager.GetString("_201712191949335_CampusTimeZone_PersonicxMeanAge", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ALTER PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery_AccountTotals]
+        ///	  @StartDate datetime = NULL
+        ///	, @EndDate datetime = NULL
+        ///	, @AccountIds varchar(max) = NULL
+        ///	, @CurrencyTypeIds varchar(max) = NULL
+        ///	, @SourceTypeIds varchar(max) = NULL
+        ///	, @TransactionTypeIds varchar(max) = NULL
+        ///	WITH RECOMPILE
+        ///AS
+        ///
+        ///BEGIN
+        ///
+        ///	SET @StartDate = COALESCE( CONVERT( date, @StartDate ), &apos;1900-01-01&apos; )
+        ///	SET @EndDate = COALESCE( @EndDate, &apos;2100-01-01&apos; )
+        ///
+        ///	DECLARE @AccountTbl TABLE ( [Id] int )
+        ///	INSERT INTO @AccountT [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201803211556277_GivingAnalyticsAccounts_AccountTotals {
+            get {
+                return ResourceManager.GetString("_201803211556277_GivingAnalyticsAccounts_AccountTotals", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ALTER PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery_PersonSummary]
+        ///	  @StartDate datetime = NULL
+        ///	, @EndDate datetime = NULL
+        ///	, @MinAmount decimal(18,2) = NULL
+        ///	, @MaxAmount decimal(18,2) = NULL
+        ///	, @AccountIds varchar(max) = NULL
+        ///	, @CurrencyTypeIds varchar(max) = NULL
+        ///	, @SourceTypeIds varchar(max) = NULL
+        ///	, @TransactionTypeIds varchar(max) = NULL
+        ///	WITH RECOMPILE
+        ///AS
+        ///
+        ///BEGIN
+        ///
+        ///	SET @StartDate = COALESCE( CONVERT( date, @StartDate ), &apos;1900-01-01&apos; )
+        ///	SET @EndDate = COALESCE( @EndDate, &apos;2100-01- [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201803211556277_GivingAnalyticsAccounts_PersonSummary {
+            get {
+                return ResourceManager.GetString("_201803211556277_GivingAnalyticsAccounts_PersonSummary", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ALTER PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery_TransactionData]
+        ///	  @StartDate datetime = NULL
+        ///	, @EndDate datetime = NULL
+        ///	, @AccountIds varchar(max) = NULL
+        ///	, @CurrencyTypeIds varchar(max) = NULL
+        ///	, @SourceTypeIds varchar(max) = NULL
+        ///	, @TransactionTypeIds varchar(max) = NULL
+        ///	WITH RECOMPILE
+        ///AS
+        ///
+        ///BEGIN
+        ///
+        ///	SET @StartDate = COALESCE( CONVERT( date, @StartDate ), &apos;1900-01-01&apos; )
+        ///	SET @EndDate = COALESCE( @EndDate, &apos;2100-01-01&apos; )
+        ///
+        ///	DECLARE @AccountTbl TABLE ( [Id] int )
+        ///	INSERT INTO @Accoun [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201803211556277_GivingAnalyticsAccounts_TransactionData {
+            get {
+                return ResourceManager.GetString("_201803211556277_GivingAnalyticsAccounts_TransactionData", resourceCulture);
             }
         }
     }
