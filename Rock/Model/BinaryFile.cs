@@ -389,22 +389,32 @@ namespace Rock.Model
                             {
                                 settings.Add( attributeValue.Key, attributeValue.Value.Value );
                             }
-                            string settingsJson = settings.ToJson();
+                            string newSettingsJson = settings.ToJson();
+                            string oldSettingsJson = ( StorageSettings ?? new Dictionary<string, string>() ).ToJson();
 
                             if ( StorageProvider != null && (
                                 StorageEntityTypeId.Value != BinaryFileType.StorageEntityTypeId.Value ||
-                                StorageEntitySettings != settingsJson ) )
+                                oldSettingsJson != newSettingsJson ) )
                             {
-                                // Save the file contents before deleting
-                                var contentStream = ContentStream;
+                                try
+                                {
+                                    // Save the file contents before deleting
+                                    var contentStream = ContentStream;
 
-                                // Delete the current provider's storage
-                                StorageProvider.DeleteContent( this );
+                                    // Delete the current provider's storage
+                                    StorageProvider.DeleteContent( this );
+
+                                    // Reset the content stream
+                                    ContentStream = contentStream;
+                                }
+                                catch ( Exception ex )
+                                {
+                                    ExceptionLogService.LogException( ex );
+                                }
 
                                 // Set the new storage provider with its settings
                                 StorageEntityTypeId = BinaryFileType.StorageEntityTypeId;
-                                StorageEntitySettings = settingsJson;
-                                ContentStream = contentStream;
+                                StorageEntitySettings = newSettingsJson;
                             }
                         }
                     }
