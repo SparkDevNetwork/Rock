@@ -436,6 +436,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         public void LoadDropDowns()
         {
+            cblTransactionType.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE.AsGuid() ) );
             cblCurrencyTypes.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE.AsGuid() ) );
             cblTransactionSource.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE.AsGuid() ) );
         }
@@ -586,6 +587,7 @@ function(item) {
             this.SetUserPreference( keyPrefix + "SlidingDateRange", drpSlidingDateRange.DelimitedValues, false );
             this.SetUserPreference( keyPrefix + "GroupBy", hfGroupBy.Value, false );
             this.SetUserPreference( keyPrefix + "AmountRange", nreAmount.DelimitedValues, false );
+            this.SetUserPreference( keyPrefix + "TransactionTypeIds", cblTransactionType.SelectedValues.AsDelimited( "," ), false );
             this.SetUserPreference( keyPrefix + "CurrencyTypeIds", cblCurrencyTypes.SelectedValues.AsDelimited( "," ), false );
             this.SetUserPreference( keyPrefix + "SourceIds", cblTransactionSource.SelectedValues.AsDelimited( "," ), false );
 
@@ -665,6 +667,9 @@ function(item) {
 
             var currencyTypeIdList = GetSetting( keyPrefix, "CurrencyTypeIds" ).Split( ',' ).ToList();
             cblCurrencyTypes.SetValues( currencyTypeIdList );
+
+            var transactionTypeIdList = GetSetting( keyPrefix, "TransactionTypeIds" ).Split( ',' ).ToList();
+            cblTransactionType.SetValues( transactionTypeIdList );
 
             var sourceIdList = GetSetting( keyPrefix, "SourceIds" ).Split( ',' ).ToList();
             cblTransactionSource.SetValues( sourceIdList );
@@ -760,6 +765,9 @@ function(item) {
             var sourceIds = new List<int>();
             cblTransactionSource.SelectedValues.ForEach( i => sourceIds.Add( i.AsInteger() ) );
 
+            var transactionTypeIds = new List<int>();
+            cblTransactionType.SelectedValues.ForEach( i => transactionTypeIds.Add( i.AsInteger() ) );
+
             var accountIds = new List<int>();
             foreach ( var cblAccounts in phAccounts.Controls.OfType<RockCheckBoxList>() )
             {
@@ -787,7 +795,8 @@ function(item) {
                     dateRange.End,
                     accountIds,
                     currencyTypeIds,
-                    sourceIds );
+                    sourceIds,
+                    transactionTypeIds );
 
                 if ( ds != null )
                 {
@@ -888,7 +897,8 @@ function(item) {
                         nreAmount.UpperValue,
                         accountIds,
                         currencyTypeIds,
-                        sourceIds ).Tables[0];
+                        sourceIds,
+                        transactionTypeIds ).Tables[0];
 
                     foreach ( DataRow row in dtPersonSummary.Rows )
                     {
@@ -1064,6 +1074,9 @@ function(item) {
             var currencyTypeIds = new List<int>();
             cblCurrencyTypes.SelectedValues.ForEach( i => currencyTypeIds.Add( i.AsInteger() ) );
 
+            var transactionTypeIds = new List<int>();
+            cblTransactionType.SelectedValues.ForEach( i => transactionTypeIds.Add( i.AsInteger() ) );
+
             var sourceIds = new List<int>();
             cblTransactionSource.SelectedValues.ForEach( i => sourceIds.Add( i.AsInteger() ) );
 
@@ -1094,7 +1107,7 @@ function(item) {
                 taskInfos.Add( ti );
 
                 var dt = FinancialTransactionDetailService.GetGivingAnalyticsPersonSummary(
-                    start, end, minAmount, maxAmount, accountIds, currencyTypeIds, sourceIds )
+                    start, end, minAmount, maxAmount, accountIds, currencyTypeIds, sourceIds, transactionTypeIds )
                     .Tables[0];
 
                 foreach ( DataRow row in dt.Rows )
@@ -1148,7 +1161,7 @@ function(item) {
 
                     if ( !DBNull.Value.Equals( row["TotalAmount"] ) )
                     {
-                        personInfo.TotalAmount = (decimal)row["TotalAmount"];
+                        personInfo.TotalAmount = ( decimal ) row["TotalAmount"];
                     }
 
                     if ( !DBNull.Value.Equals( row["IsGivingLeader"] ) )
@@ -1183,7 +1196,7 @@ function(item) {
                 taskInfos.Add( ti );
 
                 var dt = FinancialTransactionDetailService.GetGivingAnalyticsAccountTotals(
-                    start, end, accountIds, currencyTypeIds, sourceIds )
+                    start, end, accountIds, currencyTypeIds, sourceIds, transactionTypeIds )
                     .Tables[0];
                 foreach ( DataRow row in dt.Rows )
                 {
