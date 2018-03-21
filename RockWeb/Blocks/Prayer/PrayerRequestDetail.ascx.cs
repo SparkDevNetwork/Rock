@@ -255,11 +255,13 @@ namespace RockWeb.Blocks.Prayer
                         .Select( p => new
                         {
                             FirstName = p.NickName,
-                            LastName = p.LastName
+                            LastName = p.LastName,
+                            Email = p.Email
                         } ).FirstOrDefault();
 
                     tbFirstName.Text = requester.FirstName;
                     tbLastName.Text = requester.LastName;
+                    tbEmail.Text = requester.Email;
                 }
             }
         }
@@ -416,6 +418,7 @@ namespace RockWeb.Blocks.Prayer
 
             tbFirstName.Text = prayerRequest.FirstName;
             tbLastName.Text = prayerRequest.LastName;
+            tbEmail.Text = prayerRequest.Email;
             dtbText.Text = prayerRequest.Text;
             dtbAnswer.Text = prayerRequest.Answer;
 
@@ -431,6 +434,7 @@ namespace RockWeb.Blocks.Prayer
                     ppRequestor.SetValue( requestor );
                     tbFirstName.Text = requestor.NickName;
                     tbLastName.Text = requestor.LastName;
+                    tbEmail.Text = requestor.Email;
                 }
                 else
                 {
@@ -628,6 +632,7 @@ namespace RockWeb.Blocks.Prayer
             prayerRequest.IsPublic = cbIsPublic.Checked;
             prayerRequest.FirstName = tbFirstName.Text;
             prayerRequest.LastName = tbLastName.Text;
+            prayerRequest.Email = tbEmail.Text;
             prayerRequest.Text = dtbText.Text.Trim();
             prayerRequest.Answer = dtbAnswer.Text.Trim();
 
