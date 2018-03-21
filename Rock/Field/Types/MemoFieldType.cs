@@ -34,7 +34,7 @@ namespace Rock.Field.Types
         private const string NUMBER_OF_ROWS = "numberofrows";
         private const string ALLOW_HTML = "allowhtml";
         private const string MAX_CHARACTERS = "maxcharacters";
-        private const string SHOW_COUNt_DOWN = "showcountdown";
+        private const string SHOW_COUNT_DOWN = "showcountdown";
 
         /// <summary>
         /// Returns a list of the configuration keys
