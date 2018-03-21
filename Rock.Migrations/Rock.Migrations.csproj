@@ -69,10 +69,6 @@
     <Compile Include="HotFixMigrations\004_FixBaptismBadge.cs" />
     <Compile Include="HotFixMigrations\005_ValueAsNumeric.cs" />
     <Compile Include="HotFixMigrations\006_StatementProcs.cs" />
-    <Compile Include="Migrations\201803211556277_UpdateGivingAnalyticsAccounts.cs" />
-    <Compile Include="Migrations\201803211556277_UpdateGivingAnalyticsAccounts.Designer.cs">
-      <DependentUpon>201803211556277_UpdateGivingAnalyticsAccounts.cs</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.cs" />
     <Compile Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.Designer.cs">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
@@ -2654,9 +2650,6 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201803211556277_UpdateGivingAnalyticsAccounts.resx">
-      <DependentUpon>201803211556277_UpdateGivingAnalyticsAccounts.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.resx">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
     </EmbeddedResource>
@@ -4604,15 +4597,6 @@
     <Content Include="..\packages\Microsoft.SqlServer.Types.11.0.2\nativeBinaries\x86\SqlServerSpatial110.dll">
       <Link>SqlServerTypes\x86\SqlServerSpatial110.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Migrations\201803211556277_GivingAnalyticsAccounts_AccountTotals.sql">
-      <DependentUpon>201803211556277_UpdateGivingAnalyticsAccounts.cs</DependentUpon>
-    </Content>
-    <Content Include="Migrations\201803211556277_GivingAnalyticsAccounts_PersonSummary.sql">
-      <DependentUpon>201803211556277_UpdateGivingAnalyticsAccounts.cs</DependentUpon>
-    </Content>
-    <Content Include="Migrations\201803211556277_GivingAnalyticsAccounts_TransactionData.sql">
-      <DependentUpon>201803211556277_UpdateGivingAnalyticsAccounts.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 7.0\Version 1.7.0\201707182207536_AttendanceAnalyticsQuery_NonAttendees.sql">
       <DependentUpon>201707182207536_PageShortLinks.cs</DependentUpon>

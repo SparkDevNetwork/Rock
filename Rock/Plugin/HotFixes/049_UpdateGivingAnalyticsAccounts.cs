@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,31 +14,38 @@
 // limitations under the License.
 // </copyright>
 //
-namespace Rock.Migrations
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Rock.Plugin.HotFixes
 {
-    using System;
-    using System.Data.Entity.Migrations;
-    
     /// <summary>
-    ///
+    /// 
     /// </summary>
-    public partial class UpdateGivingAnalyticsAccounts : Rock.Migrations.RockMigration
+    /// <seealso cref="Rock.Plugin.Migration" />
+    [MigrationNumber( 49, "1.7.0" )]
+    public class UpdateGivingAnalyticsAccounts : Migration
     {
         /// <summary>
-        /// Operations to be performed during the upgrade process.
+        /// The commands to run to migrate plugin to the specific version
         /// </summary>
         public override void Up()
         {
-            Sql( MigrationSQL._201803211556277_GivingAnalyticsAccounts_AccountTotals );
-            Sql( MigrationSQL._201803211556277_GivingAnalyticsAccounts_PersonSummary );
-            Sql( MigrationSQL._201803211556277_GivingAnalyticsAccounts_TransactionData );
+            Sql( HotFixMigrationResource._049_GivingAnalyticsAccounts_AccountTotals );
+            Sql( HotFixMigrationResource._049_GivingAnalyticsAccounts_PersonSummary );
+            Sql( HotFixMigrationResource._049_GivingAnalyticsAccounts_TransactionData );
         }
-        
+
+
         /// <summary>
-        /// Operations to be performed during the downgrade process.
+        /// The commands to undo a migration from a specific version
         /// </summary>
         public override void Down()
         {
+
         }
     }
 }
