@@ -33,6 +33,7 @@
                                     <Rock:PersonPicker ID="ppRequestor" runat="server" Label="Requested By" EnableSelfSelection="true" OnSelectPerson="ppRequestor_SelectPerson" />
                                     <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" Required="true" />
                                     <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" />
+                                    <Rock:EmailBox ID="tbEmail" runat="server" Label="Email" />
                                     <Rock:DatePicker ID="dpExpirationDate" Text="Expires On" runat="server" SourceTypeName="Rock.Model.PrayerRequest, Rock" PropertyName="ExpirationDate" />
                                     <Rock:CampusPicker ID="cpCampus" runat="server" />
                                 </div>
