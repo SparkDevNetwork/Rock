@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,13 +18,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Data.Entity;
 using System.Linq;
 using Rock.Attribute;
-using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
-using Rock.Web.UI;
 
 namespace Rock.Workflow.Action
 {
@@ -36,30 +34,30 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Generate Discount Code" )]
 
-    [WorkflowTextOrAttribute( "Discount Code Length", "Discount Code Length Attribute", "Length to set the discount code", true,
-        "", "", 0, "DiscountCodeLength", new string[] { "Rock.Field.Types.IntegerFieldType" } )]
-
-    [CustomRadioListField( "Discount Type", "Type of discount to apply, percent or Amount", "Percent, Amount", true, "Percent", "", 1, "DiscountType" )]
-
-    [WorkflowTextOrAttribute( "Discount Amount", "Discount Amount Attribute", "Ammount in decimal to set the discount (percent or Amount)", true,
-        "", "", 2, "DiscountAmount", new string[] { "Rock.Field.Types.DecimalFieldType" } )]
-
-    [WorkflowTextOrAttribute( "Maximum Usage", "Maximum Usage Attribute", "The maximum number of times (registrations) that the discount code can be used.", true,
-        "", "", 3, "MaximumUsage", new string[] { "Rock.Field.Types.IntegerFieldType" } )]
-
-    [WorkflowTextOrAttribute( "Maximum Registrants", "Maximum Registrants Attribute", "The maximum number of registrants (per registration) that the discount code should apply to. ", true,
-        "", "", 4, "MaximumRegistrants", new string[] { "Rock.Field.Types.IntegerFieldType" } )]
-
-    [WorkflowTextOrAttribute( "Minimum Registrants", "Minimum Registrants Attribute", "The minimum number of registrants (per registration) that are required in order to use this discount code.", true,
-        "", "", 5, "MinimumRegistrants", new string[] { "Rock.Field.Types.IntegerFieldType" } )]
-
-    [WorkflowAttribute( "Effective Dates Attribute", "The date range in which the discount code is valid.", true,
-        "", "", 6, "EffectiveDates", new string[] { "Rock.Field.Types.DateRangeFieldType" } )]
-
     [CustomDropdownListField( "Registration Template", "Registration template to add the discount code to.",
-        "SELECT [Guid] AS [Value], [Name] AS [Text] FROM [RegistrationTemplate] ORDER BY [Name]", true, "", "", 7 )]
+        "SELECT [Guid] AS [Value], [Name] AS [Text] FROM [RegistrationTemplate] ORDER BY [Name]", true, "", "", 0 )]
 
-    [WorkflowAttribute( "Discount Code Attribute", "Attribute to save the discount code into.", true, "", "", 8, null,
+    [WorkflowTextOrAttribute( "Discount Code Length", "Discount Code Length Attribute", "Length to set the discount code (minimum value is 3)", true,
+        "", "", 1, "DiscountCodeLength", new string[] { "Rock.Field.Types.IntegerFieldType" } )]
+
+    [CustomRadioListField( "Discount Type", "Type of discount to apply, percent or Amount", "Percent, Amount", true, "Percent", "", 2, "DiscountType" )]
+
+    [WorkflowTextOrAttribute( "Discount Amount", "Discount Amount Attribute", "Amount in decimal to set the discount (percent or Amount)", true,
+        "", "", 3, "DiscountAmount", new string[] { "Rock.Field.Types.DecimalFieldType" } )]
+
+    [WorkflowTextOrAttribute( "Maximum Usage", "Maximum Usage Attribute", "The maximum number of times (registrations) that the discount code can be used.", false,
+        "", "", 4, "MaximumUsage", new string[] { "Rock.Field.Types.IntegerFieldType" } )]
+
+    [WorkflowTextOrAttribute( "Maximum Registrants", "Maximum Registrants Attribute", "The maximum number of registrants (per registration) that the discount code should apply to. ", false,
+        "", "", 5, "MaximumRegistrants", new string[] { "Rock.Field.Types.IntegerFieldType" } )]
+
+    [WorkflowTextOrAttribute( "Minimum Registrants", "Minimum Registrants Attribute", "The minimum number of registrants (per registration) that are required in order to use this discount code.", false,
+        "", "", 6, "MinimumRegistrants", new string[] { "Rock.Field.Types.IntegerFieldType" } )]
+
+    [WorkflowAttribute( "Effective Dates Attribute", "The date range in which the discount code is valid.", false,
+        "", "", 7, "EffectiveDates", new string[] { "Rock.Field.Types.DateRangeFieldType" } )]
+
+    [WorkflowAttribute( "Discount Code Attribute", "Attribute to save the discount code into.", false, "", "", 8, null,
         new string[] { "Rock.Field.Types.TextFieldType" } )]
 
     public class GenerateDiscountCode : ActionComponent
@@ -79,6 +77,8 @@ namespace Rock.Workflow.Action
             var mergeFields = GetMergeFields( action );
 
             var registrationTemplateService = new RegistrationTemplateService( rockContext );
+            var registrationTemplateDiscountService = new RegistrationTemplateDiscountService( rockContext );
+
             var registrationTemplate = registrationTemplateService.Get( GetAttributeValue( action, "RegistrationTemplate" ).ResolveMergeFields( mergeFields ).AsGuid() );
             if ( registrationTemplate == null )
             {
@@ -89,9 +89,19 @@ namespace Rock.Workflow.Action
             var length = GetAttributeValue( action, "DiscountCodeLength", true ).ResolveMergeFields( mergeFields ).AsInteger();
             if ( length < 3 )
             {
-                length = 6;
+                length = 3;
             }
-            var code = Guid.NewGuid().ToString().Replace( "-", "" ).ToUpper().Substring( 0, length );
+
+            string code = GetRandomCode( length );
+            while ( registrationTemplateDiscountService
+                .Queryable().AsNoTracking()
+                .Any( d =>
+                    d.RegistrationTemplateId == registrationTemplate.Id &&
+                    d.Code == code ) )
+            {
+                code = GetRandomCode( length );
+            }
+
             var discountCode = new RegistrationTemplateDiscount();
             discountCode.Code = code;
 
@@ -142,6 +152,11 @@ namespace Rock.Workflow.Action
             rockContext.SaveChanges();
             SetWorkflowAttributeValue( action, "DiscountCodeAttribute", code );
             return true;
+        }
+
+        private string GetRandomCode( int length )
+        {
+            return Guid.NewGuid().ToString().Replace( "-", "" ).ToUpper().Substring( 0, length );
         }
     }
 }
