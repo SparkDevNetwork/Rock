@@ -44,7 +44,7 @@ namespace Rock.Workflow.Action
 
     [CustomRadioListField( "Discount Type", "Type of discount to apply, percent or amount", "Percent, Amount", true, "Percent", "", 2, "DiscountType" )]
 
-    [WorkflowTextOrAttribute( "Discount Amount", "Discount Amount Attribute", "Ammount in decimal to set the discount (percent or amount)", true,
+    [WorkflowTextOrAttribute( "Discount Amount", "Discount Amount Attribute", "Amount in decimal to set the discount (percent or amount)", true,
         "", "", 3, "DiscountAmount", new string[] { "Rock.Field.Types.DecimalFieldType" } )]
 
     [BooleanField( "Update Past Registrations", "Should registrations that have used this discount code be retroactively updated?", order: 4 )]
