@@ -39,7 +39,8 @@ namespace Rock.Model
     [RockDomain( "Workflow" )]
     [Table( "WorkflowType" )]
     [DataContract]
-    public partial class WorkflowType : Model<WorkflowType>, IOrdered, ICategorized
+    public partial class WorkflowType : Model<WorkflowType>, IOrdered, ICategorized, IHasActiveFlag
+
     {
 
         #region Entity Properties
@@ -60,7 +61,12 @@ namespace Rock.Model
         /// A <see cref="System.Boolean"/> that is <c>true</c> if the WorkflowType is active; otherwise <c>false</c>.
         /// </value>
         [DataMember]
-        public bool? IsActive { get; set; }
+        public bool IsActive
+        {
+            get { return _isActive; }
+            set { _isActive = value; }
+        }
+        private bool _isActive = true;
 
         /// <summary>
         /// Gets or sets the workflow identifier prefix.
