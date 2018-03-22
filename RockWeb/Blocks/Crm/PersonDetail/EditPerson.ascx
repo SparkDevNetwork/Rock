@@ -11,10 +11,11 @@
 
 <asp:UpdatePanel ID="upEditPerson" runat="server">
     <ContentTemplate>
-        
+
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-user"></i> <asp:Literal ID="lTitle" runat="server" /></h1>
+                <h1 class="panel-title"><i class="fa fa-user"></i>
+                    <asp:Literal ID="lTitle" runat="server" /></h1>
             </div>
 
             <div class="panel-body">
@@ -29,7 +30,7 @@
                             <Rock:RockLiteral ID="lReasonNoteReadOnly" runat="server" Label="Inactive Reason Note" />
                             <Rock:RockDropDownList ID="ddlRecordStatus" runat="server" Label="Record Status" AutoPostBack="true" OnSelectedIndexChanged="ddlRecordStatus_SelectedIndexChanged" />
                             <Rock:RockDropDownList ID="ddlReason" runat="server" Label="Reason" Visible="false"></Rock:RockDropDownList>
-                            <Rock:RockTextBox ID="tbInactiveReasonNote" runat="server" Label="Inactive Reason Note" TextMode="MultiLine" Rows="2" Visible="false" autocomplete="off" ></Rock:RockTextBox>
+                            <Rock:RockTextBox ID="tbInactiveReasonNote" runat="server" Label="Inactive Reason Note" TextMode="MultiLine" Rows="2" Visible="false" autocomplete="off"></Rock:RockTextBox>
                             <Rock:ImageEditor ID="imgPhoto" runat="server" Label="Photo" BinaryFileTypeGuid="03BD8476-8A9F-4078-B628-5B538F967AFC" />
                         </div>
                     </div>
@@ -41,7 +42,7 @@
 
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <Rock:RockDropDownList ID="ddlTitle" runat="server" CssClass="input-width-md" Label="Title"/>
+                                        <Rock:RockDropDownList ID="ddlTitle" runat="server" CssClass="input-width-md" Label="Title" />
                                     </div>
                                     <div class="col-md-6">
                                         <Rock:DataTextBox ID="tbFirstName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="FirstName" autocomplete="off" />
@@ -60,10 +61,10 @@
                                         <Rock:DataTextBox ID="tbLastName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="LastName" autocomplete="off" />
                                     </div>
                                     <div class="col-md-6">
-                                        <Rock:RockDropDownList ID="ddlSuffix" CssClass="input-width-md" runat="server" Label="Suffix"/>
+                                        <Rock:RockDropDownList ID="ddlSuffix" CssClass="input-width-md" runat="server" Label="Suffix" />
                                     </div>
                                 </div>
-                                
+
                                 <div class="row">
                                     <div class="col-sm-6">
                                         <Rock:RockLiteral ID="lConnectionStatusReadOnly" runat="server" Label="Connection Status" />
@@ -78,7 +79,7 @@
                                     <asp:ListItem Text="Unknown" Value="Unknown" />
                                 </Rock:RockRadioButtonList>
                                 <Rock:BirthdayPicker ID="bpBirthDay" runat="server" Label="Birthday" />
-                                <asp:Panel id="pnlGradeGraduation" runat="server" CssClass="row">
+                                <asp:Panel ID="pnlGradeGraduation" runat="server" CssClass="row">
                                     <div class="col-sm-3">
                                         <Rock:GradePicker ID="ddlGradePicker" runat="server" UseAbbreviation="true" UseGradeOffsetAsValue="true" CssClass="input-width-md" />
                                     </div>
@@ -103,74 +104,77 @@
 
                         <div class="well">
                             <fieldset>
-                            <legend>Contact Info</legend>
+                                <legend>Contact Info</legend>
 
-                            <div class="row">
-                                <asp:Repeater ID="rContactInfo" runat="server">
-                                    <ItemTemplate>
-                                        <div class="form-group phonegroup">
-                                            <div class="control-label col-sm-1 phonegroup-label"><%# Rock.Web.Cache.DefinedValueCache.Read( (int)Eval("NumberTypeValueId")).Value  %></div>
-                                            <div class="controls col-sm-11 phonegroup-number">
-                                                <div class="row">
-                                                    <div class="col-sm-7">
-                                                        <asp:HiddenField ID="hfPhoneType" runat="server" Value='<%# Eval("NumberTypeValueId")  %>' />
-                                                        <Rock:PhoneNumberBox ID="pnbPhone" runat="server" CountryCode='<%# Eval("CountryCode") %>' Number='<%# Eval("NumberFormatted")  %>' autocomplete="off" />
-                                                    </div>    
-                                                    <div class="col-sm-5">
-                                                        <div class="row">
-                                                            <div class="col-xs-6">
-                                                                <asp:CheckBox ID="cbSms" runat="server" Text="SMS" Checked='<%# (bool)Eval("IsMessagingEnabled") %>' CssClass="js-sms-number" />
-                                                            </div>
-                                                            <div class="col-xs-6">
-                                                                <asp:CheckBox ID="cbUnlisted" runat="server" Text="Unlisted" Checked='<%# (bool)Eval("IsUnlisted") %>' />
+                                <div class="row">
+                                    <asp:Repeater ID="rContactInfo" runat="server">
+                                        <ItemTemplate>
+                                            <div class="form-group phonegroup">
+                                                <div class="control-label col-sm-1 phonegroup-label"><%# Rock.Web.Cache.DefinedValueCache.Read( (int)Eval("NumberTypeValueId")).Value  %></div>
+                                                <div class="controls col-sm-11 phonegroup-number">
+                                                    <div class="row">
+                                                        <div class="col-sm-7">
+                                                            <asp:HiddenField ID="hfPhoneType" runat="server" Value='<%# Eval("NumberTypeValueId")  %>' />
+                                                            <Rock:PhoneNumberBox ID="pnbPhone" runat="server" CountryCode='<%# Eval("CountryCode") %>' Number='<%# Eval("NumberFormatted")  %>' autocomplete="off" />
+                                                        </div>
+                                                        <div class="col-sm-5">
+                                                            <div class="row">
+                                                                <div class="col-xs-6">
+                                                                    <asp:CheckBox ID="cbSms" runat="server" Text="SMS" Checked='<%# (bool)Eval("IsMessagingEnabled") %>' CssClass="js-sms-number" />
+                                                                </div>
+                                                                <div class="col-xs-6">
+                                                                    <asp:CheckBox ID="cbUnlisted" runat="server" Text="Unlisted" Checked='<%# (bool)Eval("IsUnlisted") %>' />
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                    </div>
 
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </ItemTemplate>
-                                </asp:Repeater>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-sm-6">
-                                    <Rock:DataTextBox ID="tbEmail" PrependText="<i class='fa fa-envelope'></i>" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="Email" autocomplete="off" />
+                                        </ItemTemplate>
+                                    </asp:Repeater>
                                 </div>
-                                <div class="col-sm-3">
-                                    <Rock:RockCheckBox ID="cbIsEmailActive" runat="server" Label="Email Status" Text="Is Active" />
+
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <Rock:DataTextBox ID="tbEmail" PrependText="<i class='fa fa-envelope'></i>" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="Email" autocomplete="off" />
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <Rock:RockCheckBox ID="cbIsEmailActive" runat="server" Label="Email Status" Text="Is Active" />
+                                    </div>
                                 </div>
-                            </div>
 
-                            <Rock:RockRadioButtonList ID="rblEmailPreference" runat="server" RepeatDirection="Horizontal" Label="Email Preference">
-                                <asp:ListItem Text="Email Allowed" Value="EmailAllowed" />
-                                <asp:ListItem Text="No Mass Emails" Value="NoMassEmails" />
-                                <asp:ListItem Text="Do Not Email" Value="DoNotEmail" />
-                            </Rock:RockRadioButtonList>
+                                <Rock:RockRadioButtonList ID="rblEmailPreference" runat="server" RepeatDirection="Horizontal" Label="Email Preference">
+                                    <asp:ListItem Text="Email Allowed" Value="EmailAllowed" />
+                                    <asp:ListItem Text="No Mass Emails" Value="NoMassEmails" />
+                                    <asp:ListItem Text="Do Not Email" Value="DoNotEmail" />
+                                </Rock:RockRadioButtonList>
 
-                            <Rock:RockRadioButtonList ID="rblCommunicationPreference" runat="server" RepeatDirection="Horizontal" Label="Communication Preference" >
-                                <asp:ListItem Text="Email" Value="1" />
-                                <asp:ListItem Text="SMS" Value="2" />
-                            </Rock:RockRadioButtonList>
+                                <Rock:RockRadioButtonList ID="rblCommunicationPreference" runat="server" RepeatDirection="Horizontal" Label="Communication Preference">
+                                    <asp:ListItem Text="Email" Value="1" />
+                                    <asp:ListItem Text="SMS" Value="2" />
+                                </Rock:RockRadioButtonList>
 
-                        </fieldset>
+                            </fieldset>
                         </div>
 
 
                         <Rock:PanelWidget runat="server" ID="pwAdvanced" Title="Advanced Settings">
                             <div class="row">
-                                <asp:Panel ID="pnlGivingGroup" runat="server" CssClass="col-md-6">
-                                    <asp:HiddenField ID="hfGivingEnvelopeNumberConfirmed" runat="server" />
-                                    <Rock:RockDropDownList ID="ddlGivingGroup" runat="server" Label="Combine Giving With" Help="The family that this person's gifts should be combined with for contribution statements and reporting.  If left blank, their contributions will not be grouped with their family" /> 
-                                    <Rock:RockControlWrapper ID="rcwEnvelope" runat="server" Label="Envelope #" Help="The Giving Envelope Number that is associated with this Person" >
-                                        <Rock:NumberBox ID="tbGivingEnvelopeNumber" CssClass="input-width-sm pull-left" runat="server" Help="" NumberType="Integer" />
-                                        <asp:LinkButton ID="btnGenerateEnvelopeNumber" runat="server" Text="Generate Envelope #" CssClass="btn btn-default margin-l-sm" OnClick="btnGenerateEnvelopeNumber_Click" />
-                                    </Rock:RockControlWrapper>
-                                </asp:Panel>
+                                <div class="col-md-6">
+                                    <asp:Panel ID="pnlGivingGroup" runat="server">
+                                        <asp:HiddenField ID="hfGivingEnvelopeNumberConfirmed" runat="server" />
+                                        <Rock:RockDropDownList ID="ddlGivingGroup" runat="server" Label="Combine Giving With" Help="The family that this person's gifts should be combined with for contribution statements and reporting.  If left blank, their contributions will not be grouped with their family" />
+                                        <Rock:RockControlWrapper ID="rcwEnvelope" runat="server" Label="Envelope #" Help="The Giving Envelope Number that is associated with this Person">
+                                            <Rock:NumberBox ID="tbGivingEnvelopeNumber" CssClass="input-width-sm pull-left" runat="server" Help="" NumberType="Integer" />
+                                            <asp:LinkButton ID="btnGenerateEnvelopeNumber" runat="server" Text="Generate Envelope #" CssClass="btn btn-default margin-l-sm" OnClick="btnGenerateEnvelopeNumber_Click" />
+                                        </Rock:RockControlWrapper>
+                                    </asp:Panel>
+                                    <Rock:RockCheckBox ID="cbLockAsChild" runat="server" Label="Lock as Child" Text="Yes" Help="By default individuals will be considered an adult with they are over 18 or are marked as an adult in a family. This setting will override this logic and lock the individual as a child."/>
+                                </div>
                                 <div class="col-md-6">
                                     <Rock:RockControlWrapper ID="rcwPreviousNames" runat="server" Label="Previous Last Names">
-                                        <Rock:Grid ID="grdPreviousNames" runat="server" DisplayType="Light" DataKeyNames="Guid" ShowConfirmDeleteDialog="false" >
+                                        <Rock:Grid ID="grdPreviousNames" runat="server" DisplayType="Light" DataKeyNames="Guid" ShowConfirmDeleteDialog="false">
                                             <Columns>
                                                 <Rock:RockBoundField DataField="LastName" />
                                                 <Rock:DeleteField OnClick="grdPreviousNames_Delete" />
@@ -192,9 +196,9 @@
                             <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                         </div>
 
-                </div>
+                    </div>
 
-            </div>
+                </div>
             </div>
         </div>
 
