@@ -29,10 +29,10 @@ using Rock.Web.UI;
 namespace Rock.Workflow.Action
 {
     /// <summary>
-    /// Generates a new discount code on a registration template
+    /// Updates an existing discount code on a registration template
     /// </summary>
     [ActionCategory( "Registrations" )]
-    [Description( "Updates a new discount code on a registration template" )]
+    [Description( "Updates an existing discount code on a registration template" )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Update Discount Code" )]
 
