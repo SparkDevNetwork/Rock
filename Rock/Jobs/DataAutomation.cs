@@ -742,7 +742,8 @@ Move Adult Children: {moveAdultChildrenResult}
                             m.Person.BirthDate.HasValue &&
                             m.Person.BirthDate <= adultBirthdate &&
                             m.Person.RecordStatusValue != null &&
-                            m.Person.RecordStatusValue.Guid == activeRecordStatusGuid )
+                            m.Person.RecordStatusValue.Guid == activeRecordStatusGuid &&
+                            !m.Person.IsLockedAsChild )
                         .OrderBy( m => m.PersonId )
                         .Select( m => m.PersonId )
                         .Distinct()
