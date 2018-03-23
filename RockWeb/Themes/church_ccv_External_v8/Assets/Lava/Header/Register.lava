@@ -1,0 +1,7 @@
+{% comment %}
+{% include '~~/Assets/Lava/Header/Register.lava' %}
+{% endcomment %}
+
+{% unless CurrentPerson %}
+    <a id="masthead-navitem-register" class="masthead-navitem" onclick="displayLoginModal(true); displayCreateAccountPanel(false);">REGISTER</a>
+{% endunless %}

@@ -1,7 +1,6 @@
 <div class="masthead-navitems">
     <div class="dropdown">
        <a class="masthead-navitem" style="border: 0px;" href="/storyv2">About Us</a>
-      
       <ul class="dropdown-menu">
         <li><a href="/leadershipv2">Leadership</a></li>
         <li><a href="/kidsv2">Kids</a></li>
@@ -12,6 +11,7 @@
         <li><a href="/leadershipinstituteV2">Leadership Institute</a></li>
       </ul>
     </div>
+
     <a class="masthead-navitem" href="/experiencev2">THE EXPERIENCE</a>
         
     <div class="dropdown">
@@ -51,7 +51,7 @@
     <div class="dropdown">
       <a class="masthead-navitem" style="border: 0px;" href="/givev2">Give</a>
       <ul class="dropdown-menu">
-        <li><a href="/givev2">Give Now</a></li>
+        <li><a href="/givenowv2">Give Now</a></li>
       </ul>
     </div>
     

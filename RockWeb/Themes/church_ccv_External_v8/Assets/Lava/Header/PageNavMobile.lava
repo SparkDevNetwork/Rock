@@ -1,0 +1,74 @@
+<div class="masthead-fullmenu-title">
+    Menu<button class="material-icons masthead-fullmenu-close" type="button" onClick="toggleNavbar(false);">close</button>
+</div>
+<div class="masthead-fullmenu-navitems">
+    {% if CurrentPerson %}
+      <a class="masthead-fullmenu-navitem" href="/dashboardv2">My Dashboard</a>
+    {% endif %}
+
+    <a class="masthead-fullmenu-navitem" href="/nextstepsv2">Next Steps</a>
+        
+    <div class="dropdown">
+      <button class="dropdown-toggle masthead-fullmenu-navitem" type="button" data-toggle="dropdown" style="border: 0px;">About Us<b class="fa fa-caret-down"></b></button>
+      <ul class="dropdown-menu">
+        <li><a href="/storyv2">About Us</a></li>
+        <li><a href="/leadershipv2">Leadership</a></li>
+        <li><a href="/kidsv2">Kids</a></li>
+        <li><a href="/studentsv2">Students</a></li>
+        <li><a href="/specialneedsv2">Special Needs</a></li>
+        <li><a href="/missionsv2">Missions</a></li>
+        <li><a href="/starsv2">STARS Youth Sports</a></li>
+        <li><a href="/leadershipinstituteV2">Leadership Institute</a></li>
+      </ul>
+    </div>
+
+    <a class="masthead-fullmenu-navitem" href="/experiencev2">The Experience</a>
+    
+    <div class="dropdown">
+      <button class="dropdown-toggle masthead-fullmenu-navitem" type="button" data-toggle="dropdown" style="border: 0px;">Get Involved<b class="fa fa-caret-down"></b></button>
+      <ul class="dropdown-menu">
+        <li><a href="/nextstepsv2">Next Steps</a></li>
+        <li><a href="/eventsv2">Events</a></li>
+      </ul>
+    </div>
+
+    <div class="dropdown">
+      <button class="dropdown-toggle masthead-fullmenu-navitem" type="button" data-toggle="dropdown" style="border: 0px;">Our Campuses<b class="fa fa-caret-down"></b></button>
+      <ul class="dropdown-menu">
+        <li><a href="/anthemv2">Anthem</a></li>
+        <li><a href="/avondalev2">Avondale</a></li>
+        <li><a href="/chandlerv2">Chandler</a></li>
+        <li><a href="/eastvalleyv2">East Valley</a></li>
+        <li><a href="/midtownv2">Midtown Phoenix</a></li>
+        <li><a href="/northphxv2">North Phoenix</a></li>
+        <li><a href="/peoriav2">Peoria</a></li>
+        <li><a href="/scottsdalev2">Scottsdale</a></li>
+        <li><a href="/surprisev2">Surprise</a></li>
+      </ul>
+    </div>
+
+    <div class="dropdown">
+      <button class="dropdown-toggle masthead-fullmenu-navitem" type="button" data-toggle="dropdown" style="border: 0px;">Watch<b class="fa fa-caret-down"></b></button>
+      <ul class="dropdown-menu">
+        <li><a href="/watchv2">Message</a></li>
+        <li><a href="/archivev2">Archive</a></li>
+        <li><a href="/ccvlivev2">CCV Live</a></li>
+        <li><a href="/storiesv2">Stories</a></li>
+      </ul>
+    </div>
+
+    <div class="dropdown">
+      <button class="dropdown-toggle masthead-fullmenu-navitem" type="button" data-toggle="dropdown" style="border: 0px;">Give<b class="fa fa-caret-down"></b></button>
+      <ul class="dropdown-menu">
+        <li><a href="/givev2">Give</a></li>
+        <li><a href="/givenowv2">Give Now</a></li>
+      </ul>
+    </div>
+
+    {% if CurrentPerson %}
+      <a class="masthead-fullmenu-navitem" onclick="logout();">Logout</a>
+    {% else %}
+      <a class="masthead-fullmenu-navitem" onclick="displayLoginModal(true); displayCreateAccountPanel(false);">Register</a>
+      <a class="masthead-fullmenu-navitem" onclick="displayLoginModal(true);">Login</a>
+    {% endif %}
+</div>
