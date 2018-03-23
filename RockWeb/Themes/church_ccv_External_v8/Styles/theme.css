@@ -8318,12 +8318,6 @@ body {
     position: relative;
 }
 
-img {
-    width: 100% \9;
-    max-width: 100%;
-    height: auto;
-}
-
 .gm-style img {
     max-width: none;
 }
@@ -8503,77 +8497,7 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
     margin-right: 15px;
 }
 
-.masthead {
-    font-family: akrobat;
-	font-weight: bold;
-    font-size: 14px;
-    color: #999999;
-    line-height: 25px;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    background-color: transparent;
-	position: fixed;
-	width: 100%;
-	z-index: 999;
-}
 
-.masthead-upper {
-    margin: 5px 0px;
-}
-
-
-    .masthead-upper:before, .masthead-upper:after {
-        content: " ";
-        display: table;
-    }
-
-    .masthead-upper:after {
-        clear: both;
-    }
-
-.masthead-upper a {
-    color: inherit;
-}
-
-.masthead .navbar-toggle {
-    color: #FFFFFF;
-    background: none;
-    border-radius: 0;
-    margin-top: 0px;
-    margin-bottom: 0px;
-    margin-right: 30px;
-}
-
-    .masthead .navbar-toggle.collapsed {
-        background: none;
-    }
-
-.masthead-brand {
-	margin-left: 15px;
-}
-
-.masthead-brand .logo {
-    display: block;
-    float: left;
-    background-image: url(../assets/logo.svg);
-    background-repeat: no-repeat;
-    background-position: left center;
-    margin-left: 5px;
-    height: 35px;
-    width: 225px;
-}
-
-@media screen and (min-width: 1024px){
-    .masthead-brand .logo {
-        margin-left: 15px;
-        margin-top: 12px;
-    }
-
-    .masthead-navitems{
-        margin-top: 8px;
-    }
-
-}
 
 .navbar-collapse {
     box-shadow: none;
@@ -10433,36 +10357,17 @@ html,body{
     content: "\f107";
 }
 
-/* style for Campus Selector and dropdown menus in header*/
-.contextsetter-campus-navbar .navbar-nav .dropdown-menu, .masthead-navitems .dropdown-menu {
+/* style for dropdown menus in header*/
+.masthead-navitems .dropdown-menu {
     background: rgba(0,0,0,0.9);
     border-radius: 5px 5px;
     padding: 0px;
     font-size: 14px;
 }
 
-.contextsetter-campus-navbar .contextsetter-campus {
-    margin-top: 6px;
-    margin-right: 0px;
-	text-transform: uppercase;
-}
-
-.contextsetter-campus-navbar .contextsetter .navbar-link, .contextsetter-campus-navbar .contextsetter .navbar-link:hover {
-    background-color: transparent;
-    padding-top: 12px;
-}
-
-.contextsetter-campus-navbar .dropdown-menu li a, .masthead-navitems .dropdown-menu li a  {
+.masthead-navitems .dropdown-menu li a  {
     color: #999999;
     padding: 3px 5px;
-}
-
-.contextsetter-campus-navbar {
-    padding: 0px 8px;
-    color: #FFFFFF;
-    font-family: akrobat;
-    font-weight: bold;
-    font-size: 14px;
 }
 
 /* sytle for login block*/
@@ -10903,13 +10808,6 @@ html,body{
 .nav .open>a, .nav .open>a:hover, .nav .open>a:focus
 {
 	background-color: rgba( 0, 0, 0, 0 );
-}
-
-/* Header campus selector override */
-.contextsetter-campus-navbar .navbar-nav .dropdown-menu>li>a:hover, 
-.contextsetter-campus-navbar .navbar-nav .dropdown-menu>li>a:focus
-{
-	background-color: #7A1315;
 }
 
 /* Select A Day campus selector override */
@@ -11493,29 +11391,6 @@ html,body{
     flex-direction: column;
     align-items: center;
     justify-content: center;
-}
-
-/* Mobile View Styling */
-@media screen and (max-width: 800px) {
-    /* Hide Main-Feature and Subnavbar section in mobile view.  */    
-    .main-feature, #subnavbar-bg {
-        display: none;
-    }
-
-    /* Change header to Black */
-    .masthead {
-        background-color: #000;
-    }
-
-    /* Push first section down below header */
-    #section-a-bg {
-        padding: 40px 0px;
-    }
-
-    /* Style Form Fields */
-    .form-control {
-        width: 100%;
-    }
 }
 
 /* Event Form Entry Styling */

@@ -1,18 +1,172 @@
-{% comment %} Content file for Dashboard {% endcomment %}
-{% comment %} {% include '~~/Assets/Lava/MyDashboard/DashboardContent.lava' %} {% endcomment %}
+{% comment %} Default Content for Dashboard {% endcomment %}
+{% comment %} 
+    {% include '~~/Assets/Lava/MyDashboard/DashboardContent.lava' %} 
+{% endcomment %}
 
-{% comment %} Morning {% endcomment %}
-{% assign morningGreeting = "Good Morning, " %}
-{% assign morningMessage = "You're an early riser" %}
 
-{% comment %} Afternoon {% endcomment %}
-{% assign afternoonGreeting = "Good Afternoon, " %}
-{% assign afternoonMessage = "Hope your day is going great! Thanks for making God and faith a priority." %}
+{% comment %} Time Context Content {% endcomment %}
 
-{% comment %} Evening {% endcomment %}
-{% assign eveningGreeting = "Good Evening, " %}
-{% assign eveningMessage = "What a day! Thanks for making God and faith a priority." %}
+    {% comment %} Morning {% endcomment %}
+    {% assign morningGreeting = "Good Morning, " %}
+    {% assign morningMessage = "You're an early riser" %}
 
-{% comment %} Late Night {% endcomment %}
-{% assign nightGreeting = "Hello, " %}
-{% assign nightMessage = "Or should we call you night owl? Thanks for making God and faith a priority." %}
+    {% comment %} Afternoon {% endcomment %}
+    {% assign afternoonGreeting = "Good Afternoon, " %}
+    {% assign afternoonMessage = "Hope your day is going great! Thanks for making God and faith a priority." %}
+
+    {% comment %} Evening {% endcomment %}
+    {% assign eveningGreeting = "Good Evening, " %}
+    {% assign eveningMessage = "What a day! Thanks for making God and faith a priority." %}
+
+    {% comment %} Late Night {% endcomment %}
+    {% assign nightGreeting = "Hello, " %}
+    {% assign nightMessage = "Or should we call you night owl? Thanks for making God and faith a priority." %}
+
+{% comment %} End Time Context Content {% endcomment %}
+
+
+{% comment %} Default Modal Popup Content {% endcomment %}
+
+    {% capture modalsJSON %}
+    [
+        {
+            "Name" : "StartingPoint",
+            "Content": 
+            {
+                "Title": "Starting Point",
+                "Icon": "~~/Assets/Images/icon-nextstep-startingpoint.png",
+                "Image": "~~/Assets/Images/modal-startingpoint.jpg",
+                "Content": "Some text in the Starting Point modal.",
+                "Buttons": [
+                    {
+                        "Label": "Learn More",
+                        "Link": "/startingpointV2",
+                        "Class": "btn-secondary"
+                    }
+                ]
+            }
+        },
+        {
+            "Name" : "Baptism",
+            "Content": 
+            {
+                "Title": "Baptism",
+                "Icon": "~~/Assets/Images/icon-nextstep-baptism.png",
+                "Image": "~~/Assets/Images/modal-baptism.jpg",
+                "Content": "If you've made a commitment to Christ, it's time to take the next step and make your decision known. Baptism is the best way to express your faith and reflect your life change.",
+                "Buttons": [
+                    {
+                        "Label": "Learn More",
+                        "Link": "/baptismV2",
+                        "Class": "btn-secondary"
+                    }
+                ]
+            }
+        },
+        {
+            "Name" : "Worship",
+            "Content": 
+            {
+                "Title": "Worship",
+                "Icon": "~~/Assets/Images/icon-nextstep-worship.png",
+                "Image": "~~/Assets/Images/modal-worship.jpg",
+                "Content": "Some text in the Worship modal.",
+                "Buttons": [
+                    {
+                        "Label": "Learn More",
+                        "Link": "/worshipV2",
+                        "Class": "btn-secondary"
+                    }
+                ]
+            }
+        },
+        {
+            "Name" : "Connect",
+            "Content": 
+            {
+                "Title": "Connect",
+                "Icon": "~~/Assets/Images/icon-nextstep-connect.png",
+                "Image": "~~/Assets/Images/modal-connect.jpg",
+                "Content": "Some text in the Connect modal.",
+                "Buttons": [
+                    {
+                        "Label": "Learn More",
+                        "Link": "/connectV2",
+                        "Class": "btn-secondary"
+                    }
+                ]
+            }
+        },
+        {
+            "Name" : "Serve",
+            "Content": 
+            {
+                "Title": "Serve",
+                "Icon": "~~/Assets/Images/icon-nextstep-serve.png",
+                "Image": "~~/Assets/Images/modal-serve.jpg",
+                "Content": "Some text in the Serve modal.",
+                "Buttons": [
+                    {
+                        "Label": "Learn More",
+                        "Link": "/serveV2",
+                        "Class": "btn-secondary"
+                    }
+                ]
+            }
+        },
+        {
+            "Name" : "Give",
+            "Content": 
+            {
+                "Title": "Give",
+                "Icon": "~~/Assets/Images/icon-nextstep-give.png",
+                "Image": "~~/Assets/Images/modal-give.jpg",
+                "Content": "Some text in the Give modal.",
+                "Buttons": [
+                    {
+                        "Label": "Learn More",
+                        "Link": "/giveV2",
+                        "Class": "btn-secondary"
+                    }
+                ]
+            }
+        },
+        {
+            "Name" : "Share",
+            "Content": 
+            {
+                "Title": "Share",
+                "Icon": "~~/Assets/Images/icon-nextstep-share.png",
+                "Image": "~~/Assets/Images/modal-share.jpg",
+                "Content": "Some text in the Share modal.",
+                "Buttons": [
+                    {
+                        "Label": "Learn More",
+                        "Link": "/shareV2",
+                        "Class": "btn-secondary"
+                    }
+                ]
+            }
+        },
+        {
+            "Name" : "Coach",
+            "Content": 
+            {
+                "Title": "Coach",
+                "Icon": "~~/Assets/Images/icon-nextstep-coach.png",
+                "Image": "~~/Assets/Images/modal-coach.jpg",
+                "Content": "Some text in the Coach modal.",
+                "Buttons": [
+                    {
+                        "Label": "Learn More",
+                        "Link": "/coachV2",
+                        "Class": "btn-secondary"
+                    }
+                ]
+            }
+        }
+    ]
+    {% endcapture %}
+
+{% comment %} End Default Modal Content  {% endcomment %}
+ 

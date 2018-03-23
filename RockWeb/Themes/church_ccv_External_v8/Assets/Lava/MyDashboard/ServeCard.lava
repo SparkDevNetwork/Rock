@@ -51,7 +51,7 @@
                                         {% assign leaderServingDay = 'Sunday Services' %}
                                 {% endif %}
 
-                                <div class="person-row">
+                                <div class="person-row-summary">
                                     <div>
                                         <img src="{{ member.Person.PhotoUrl }}" width="60" height="60" style="border-radius: 50%;">
                                     </div>

@@ -12,10 +12,11 @@ window.onload = (typeof window.onload != 'function') ?
 
 function handleOnLoad() {
   // setup a callback for when the media query triggers
-  const mq = window.matchMedia( "(min-width: 800px)" );
-  mq.addListener( navbarQueryTriggered );
+  // CU: Temporarily disabling
+  //const mq = window.matchMedia( "(min-width: 800px)" );
+  //mq.addListener( navbarQueryTriggered );
   
-  navbarQueryTriggered( mq );
+  //navbarQueryTriggered( mq );
 }
 
 $(document).scroll( function() {

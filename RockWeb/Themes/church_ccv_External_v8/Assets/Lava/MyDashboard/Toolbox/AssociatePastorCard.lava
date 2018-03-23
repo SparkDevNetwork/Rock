@@ -1,0 +1,30 @@
+{% comment %} 
+    {% include '~~/Assets/Lava/Toolboxes/AssociatePastorCard.lava' %}  
+ {% endcomment %}
+
+ <div class="dashboard-card associate-pastor-card">
+    <div class="title">
+        <h3>Associate Pastor</h3>
+    </div>
+    <div class="group-header">
+        <h5>{{ DatamartSummary.AssociatePastor | Campus | Property:'Name' }}</h5>
+    </div>
+    <div class="person-row-summary">
+        <div>
+            <img src="{{ DatamartSummary.AssociatePastor.PhotoUrl }}" width="60" height="60" style="border-radius: 50%;">
+        </div>
+        <div class="person-info">
+            <div>
+                <h5>{{ DatamartSummary.AssociatePastor.FullName }}</h5>
+            </div>
+        </div>
+        <div class="person-contact">
+            <a href="tel:{{ DatamartSummary.AssociatePastor | PhoneNumber:'business'}}">
+                <span class="material-icons person-row-phone-button">phone</span>
+            </a>
+            <a href="/page/1751?person={{ DatamartSummary.AssociatePastor.Id }}">
+                <span class="material-icons person-row-email-button">email</span>
+            </a>
+        </div>
+    </div>
+ <div>

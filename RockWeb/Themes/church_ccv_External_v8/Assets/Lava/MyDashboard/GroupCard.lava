@@ -12,22 +12,23 @@
     51 - CCV Group Future Coach (assistant coach)
     52 - CCV Group Admin
     114 - Roster Guide
+    133 - Next Gen Group Coach
+    134 - Next Gen Group Co-Coach
 TODO: Add Other Group Type leader roles
 {% endcomment %}
-{% assign groupAdminIds = '50,51,52,114' %}
+{% assign groupAdminIds = '50,51,52,114,133,134' %}
 
 {% comment %} 
 ***** Coach ID's *****
 50 - CCV Group Coach
 114 - Roster Guide
+133 - Next Gen Group Coach
 {% endcomment %}
-{% assign groupCoachIds = '50,114' %}
+{% assign groupCoachIds = '50,114,133' %}
 
 {% comment %} Used for show/hide the admin elements (IE contact, add person...) {% endcomment %}
 {% assign showAdminElements = false %}
 {% assign isCoach = false %}
-
-{% comment %} Default values of lava settings {% endcomment %}
 
 {% comment %} Check if user in any groups, if not display Call To Action Serving {% endcomment %}
 {% assign numberOfGroups = Groups | Size %}
@@ -63,7 +64,7 @@ TODO: Add Other Group Type leader roles
                                 {% if showAdminElements == true %}                                
                                     <a href="/toolboxv2?GroupId={{ group.Group.Id }}">
                                         <div>
-                                            <span>{{ group.Group.Name | Truncate: 40 }}</span>
+                                            <span>{{ group.Group.Name | Truncate: 30 }}</span>
                                             <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path></svg>
                                         </div>
                                     </a>
@@ -76,26 +77,21 @@ TODO: Add Other Group Type leader roles
                                 {% endif %}
                             </div>
 
-                            {% comment %} Show Coach Video if Admin {% endcomment %}
+                            {% comment %} Show Coach Video if Admin and group is a CCV group {% endcomment %}
                             {% if showAdminElements == true %}
-                                <div class="coach-video-row">
-                                    <div class="coach-video">
-                                        <div>
-                                            <a href="//fast.wistia.net/embed/playlists/ukdxoyinc8?autoAdvance=false&media_0_0%5BautoPlay%5D=true&media_0_0%5BcontrolsVisibleOnLoad%5D=false&popover=true&version=v1&videoFoam=false&videoOptions%5BautoPlay%5D=false&videoOptions%5BinlineOptionsOnly%5D=true&videoOptions%5BplayerColor%5D=7A1315&videoOptions%5Bversion%5D=v1&videoOptions%5BvideoHeight%5D=720&videoOptions%5BvideoWidth%5D=1280&videoOptions%5BvolumeControl%5D=true" class="wistia-popover[height=720,playerColor=7A1315,width=1280]"><img src="http://embed.wistia.com/deliveries/49d1624d91f5d9e4cd8bd1fcaec0561e83efa730.jpg?image_play_button=true&image_play_button_color=7A1315e0&image_crop_resized=100x56" alt="" /></a>
+                                {% if group.Group.GroupTypeId == 49 %}
+                                    <div class="coach-video-row">
+                                        <div class="coach-video">
+                                            <a href="//fast.wistia.net/embed/playlists/ukdxoyinc8?autoAdvance=false&media_0_0%5BautoPlay%5D=true&media_0_0%5BcontrolsVisibleOnLoad%5D=false&popover=true&version=v1&videoFoam=false&videoOptions%5BautoPlay%5D=false&videoOptions%5BinlineOptionsOnly%5D=true&videoOptions%5BplayerColor%5D=7A1315&videoOptions%5Bversion%5D=v1&videoOptions%5BvideoHeight%5D=720&videoOptions%5BvideoWidth%5D=1280&videoOptions%5BvolumeControl%5D=true" class="wistia-popover[height=720,playerColor=7A1315,width=1280]"><img src="//embed-ssl.wistia.com/deliveries/49d1624d91f5d9e4cd8bd1fcaec0561e83efa730.jpg?image_play_button=true&image_play_button_color=7A1315e0&image_crop_resized=70x50" alt="" /></a>
                                             <script charset="ISO-8859-1" src="//fast.wistia.com/assets/external/popover-v1.js"></script>
                                         </div>
-                                        <div>
-                                            <h5>Upcoming</h5>
-                                            <h5>Coach Video</h5>
+                                        <div class="coach-video-text">
+                                            <h5>Upcoming Coach Video</h5>
+                                            <div class="coach-video-text-seperator"></div>
+                                            <h5>Upcoming Coach Guide</h5>
                                         </div>
                                     </div>
-                                    <div class="coach-guide">
-                                        <div>
-                                            <h5>Upcoming</h5>
-                                            <h5>Coach Guide</h5>
-                                        </div>
-                                    </div>
-                                </div>
+                                {% endif %}
                             {% endif %}
                         </div>
 
@@ -110,7 +106,7 @@ TODO: Add Other Group Type leader roles
                                 {% assign isCoach = false %}
                             {% endif %}
 
-                                <div class="person-row">
+                                <div class="person-row-summary">
                                     <div>
                                         <img src="{{ member.Person.PhotoUrl }}" width="60" height="60" style="border-radius: 50%;">
                                     </div>

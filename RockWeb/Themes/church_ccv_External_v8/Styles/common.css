@@ -1,7 +1,4 @@
 /* Start Standard Layout Styling */
-.masthead {
-    background-color: transparent;
-}
 
 .main-feature {
     padding-top: 75px;
@@ -65,16 +62,97 @@
     max-width: 1280px;
     margin: 0 auto;
 }
+
+.nextstep-icon-inactive {
+    background-color: #7A1315;
+    border-radius: 50%;
+}
+
+.nextstep-icon-active {
+    background: linear-gradient(rgb(208, 221, 41), rgb(139, 179, 63));
+    border-radius: 50%;
+}
+
+/* Adjust page background for large screens */
+@media screen and (min-width: 1600px){
+    .page-background {
+        background-size: contain;
+    }
+}
+
 /* End Standard Layout Styling */
 
 
 /*Start Main Navbar Styling*/
+
+.masthead {
+    font-family: akrobat;
+	font-weight: bold;
+    font-size: 14px;
+    color: #FFFFFF;
+    line-height: 25px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: transparent;
+	position: fixed;
+	width: 100%;
+	z-index: 999;
+}
+
+.masthead-upper {
+    margin: 5px 0px;
+}
+
+.masthead-upper:before, .masthead-upper:after {
+    content: " ";
+    display: table;
+}
+
+.masthead-upper:after {
+    clear: both;
+}
+
+.masthead-upper a {
+    color: inherit;
+}
+
+.masthead .navbar-toggle {
+    color: #FFFFFF;
+    background: none;
+    border-radius: 0;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    margin-right: 30px;
+}
+
+.masthead .navbar-toggle.collapsed {
+    background: none;
+}
+
+.masthead-brand {
+	margin-left: 15px;
+}
+
+.masthead-brand .logo {
+    display: block;
+    float: left;
+    background-image: url(../assets/logo.svg);
+    background-repeat: no-repeat;
+    background-position: left center;
+    margin-left: 5px;
+    height: 35px;
+    width: 225px;
+    margin-left: 15px;
+    margin-top: 12px;
+}
+
 .masthead-navitems {
    list-style-type: none;
    text-transform: uppercase;
    display: flex;
    line-height: 40px;
    padding-left: 13px;
+   margin-top: 8px;
 }
 
 .masthead-navitems a{
@@ -139,13 +217,31 @@
    text-decoration: none;
    color: #FFFFFF;
 }
+
+.masthead-navbar-login {
+    display: flex;
+    flex-direction: row-reverse;
+}
+
+/* Mobile styling for header */
+@media screen and (max-width: 500px){
+    .masthead-brand .logo {
+        margin-left: 0;
+    }
+
+    .masthead .navbar-toggle {
+        margin-right: 0;
+    }
+
+}
+
 /*End Main Navbar Styling*/
 
 
 /* Start Hamburger Menu aka Full Menu*/
 /* Show Hamburger Menu on any device smaller than 1024px */
 /* Overriding Bootstrap media query */
-@media (max-width: 1024px) {
+@media (max-width: 1100px) {
    .navbar-toggle {
        display: inline-block;
    }
@@ -366,19 +462,15 @@ hr {
     font-family: akrobat;
     font-weight: bold;
     font-size: 18px;
-    margin-top: 20px;
+    margin-top: 7px;
 }
 
-@media screen and (min-width: 380px) {
-    .event-campus-setter a {
-        margin-top: 4px;
-    }
-}
-
-@media screen and (min-width: 768px) {
-    .event-campus-setter a {
-        margin-top: 7px;
-    }
+.event-campus-setter .navbar-nav .open .dropdown-menu {
+    position: absolute;
+    right: 15px;
+    background-color: #FFFFFF;
+    top: unset;
+    left: unset;
 }
 
 .event-card .header {
@@ -452,4 +544,38 @@ hr {
    margin: 0px;
 }
 
+/* Fix Box around calling href and event card bug */
+.nav-button:focus, .event-card:focus {
+    outline:none!important
+}
+
+/* Mobile Styling Event Card */
+@media screen and (max-width: 500px){
+    .event-cards-header h3 {
+        font-size: 24px;
+    }
+
+    .contextsetter {
+        margin: 0;
+    }
+
+
+}
+
 /* End Event Card Styling */
+
+
+/* Start Mobile View Styling  *** DO WE NEED, or left over from pmg2 days? *** */
+@media screen and (max-width: 800px) {
+    /* Push first section down below header */
+    #section-a-bg {
+        padding: 40px 0px;
+    }
+
+    /* Style Form Fields */
+    .form-control {
+        width: 100%;
+    }
+}
+
+/* End Mobile View Styling */

@@ -1,6 +1,8 @@
-{% comment %} {% include '~~/Assets/Lava/MyDashboard/DashboardTitle.lava' %} {% endcomment %}
+{% comment %} 
+    {% include '~~/Assets/Lava/MyDashboard/DashboardTitle.lava' %} 
+{% endcomment %}
 
-{% comment %} Content file that includes greetings and messages {% endcomment %}
+{% comment %} Dashboard Default Content File {% endcomment %}
 {% include '~~/Assets/Lava/MyDashboard/DashboardContent.lava' %}
 
 <div class="title-container">
@@ -37,7 +39,7 @@
         background = "page-background-night";
     }
 
-    // apply context
+    // apply content
     $("#titleGreeting").html(titleGreeting + "{{ CurrentPerson.FirstName }}");
     $("#titleMessage").html(titleMessage);
     $(".page-background").toggleClass(background);

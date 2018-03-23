@@ -2,34 +2,32 @@
 .page-background {   
     background-color: #EBEBEB;
     margin: auto;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
 }
 
 .page-background-morning {  
-    background: url("/Themes/church_ccv_External_v8/Assets/Images/dashboard-hero.jpg") no-repeat fixed;
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-dashboard-morning.jpg");
     background-color: #EBEBEB;
     background-position: center top;
-    background-size: cover;
 }
 
 .page-background-afternoon {  
-    background: url("/Themes/church_ccv_External_v8/Assets/Images/dashboard-hero.jpg") no-repeat fixed;
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-dashboard-day.jpg");
     background-color: #EBEBEB;
     background-position: center top;
-    background-size: cover;
 }
 
 .page-background-evening {  
-    background: url("/Themes/church_ccv_External_v8/Assets/Images/dashboard-hero.jpg") no-repeat fixed;
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-dashboard-evening.jpg");
     background-color: #EBEBEB;
     background-position: center top;
-    background-size: cover;
 }
 
 .page-background-night {  
-    background: url("/Themes/church_ccv_External_v8/Assets/Images/dashboard-hero.jpg") no-repeat fixed;
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-dashboard-night.jpg");
     background-color: #EBEBEB;
     background-position: center top;
-    background-size: cover;
 }
 
 #subnavbar-bg {
@@ -38,7 +36,6 @@
 
 
 /* Dashboard Title */
-
 .title-container {
     margin-top: 76px;
 }
@@ -59,10 +56,27 @@
     font-weight: normal;
 }
 
+/* Mobile Styling Dashboard Title */
+@media screen and (max-width: 500px){
+    .title-container {
+        margin-top: unset;
+    }
+
+    .title-greeting {
+        font-size: 24px;
+        font-weight: bold;
+    }
+
+    .title-message {
+        font-size: 16px;
+        line-height: unset;
+    }
+}
+
 /* End Dashboard Title */
 
-/* NextSteps Nav */
 
+/* NextSteps Nav */
 .next-steps-nav {
     height: 210px;
 }
@@ -70,7 +84,6 @@
 .outer-circle {
     bottom: 0;
     left: 35%;
-    width: 410px;
     height: 210px;
     padding: 42px; /* 42px = 30px*1.4 (30px = half the width of a link with img, 1.4 = sqrt(2)) */
     margin: 0 auto;
@@ -80,10 +93,11 @@
     display: block;
     position: absolute;
     bottom: -50%; 
-    left: 50%;
+    left: 0;
+    right: 0;
     width: 60px; 
     height: 60px;
-    margin: -2em;
+    margin: -2em auto;
     opacity: 0;
     transition-property: all;
     transition-duration: .5s;
@@ -119,7 +133,6 @@
     border-radius: 50%;
     margin: 0 auto;
     margin-top: -100px;
-    z-index: .5;
 }
 
 .inner-circle-text {
@@ -149,16 +162,260 @@
     text-decoration: none;
 }
 
+/* Mobile styling next steps nav */
+@media screen and (max-width: 500px){
+    .next-steps-nav {
+        height: 150px;
+        margin-left: -25px;
+        margin-right: -25px;
+        margin-top: 20px;
+    }
+    .outer-circle {
+        padding: 31px; /* 31px = 22px*1.4 (22px = half the width of a link with img, 1.4 = sqrt(2)) */
+    }
+
+    .outer-circle-link {
+        bottom: -50%; 
+        width: 44px; 
+        height: 44px;
+
+    }
+    
+    .outer-circle-link-open {
+        bottom: 5%;
+        opacity: 1;
+    }
+    
+    .outer-circle img { 
+        width: 44px;
+        height: 44px; 
+    }
+
+    /* Degree rotations for outer circle steps icons */
+    .deg188 { transform: rotate(188deg) translate(130px) rotate(-188deg) }
+    .deg209-5 { transform: rotate(209.5deg) translate(120px) rotate(-209.5deg); }
+    .deg233 { transform: rotate(233deg) translate(115px) rotate(-233deg); }
+    .deg257-5 { transform: rotate(257.5deg) translate(110px) rotate(-257.5deg); }
+    .deg282-5 { transform: rotate(282.5deg) translate(110px) rotate(-282.5deg); }
+    .deg307 { transform: rotate(307deg) translate(115px) rotate(-307deg); }
+    .deg330-5 { transform: rotate(330.5deg) translate(120px) rotate(-330.5deg); }
+    .deg352 { transform: rotate(352deg) translate(130px) rotate(-352deg); }
+
+    .inner-circle {
+        width: 130px;
+        height: 130px;
+        margin: 0 auto;
+        top: -80%;
+    }
+
+    .inner-circle-text svg {
+        height: 30px; 
+        width: 30px; 
+        margin-top: 5px;
+        margin-bottom: -4px;
+    }
+    
+    .inner-circle a {
+        font-size: 16px;
+    }
+
+}
+
+/* Popover Styling */
+.popover {
+    background-color: #FFFFFF;
+    border-color: #FFFFFF;
+    text-align: center;
+}
+
+.popover-content {
+    color: #7A1315;
+    font-family: akrobat;
+}
+
+/* Next Step Modal Styling */
+.nextstep-modal {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+}
+
+.nextstep-modal-container {
+    display: flex;
+    flex-wrap: wrap;
+    border-radius: 6px;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    box-shadow: 0 3px 9px rgba(0, 0, 0, 0.5);
+}
+
+.nextstep-modal-image img {
+    object-fit: cover;
+    height: 330px;
+    width: 400px;
+}
+
+.nextstep-modal-content {
+    width: 340px;
+    /* height: 330px; */
+    background-color: #FFFFFF;
+}
+
+.nextstep-modal-content-header {
+    padding: 10px; 
+}
+
+.nextstep-modal-content-header .close {
+    opacity: 1;
+}
+
+.nextstep-modal-close {
+    color: #424242;
+}
+
+.nextstep-modal-content-title {
+    display: flex;
+    align-items: center;
+    margin-left: 20px;
+    margin-top: 10px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #EEEEEE;
+}
+
+.nextstep-modal-content-title img {
+    width: 40px;
+    height: 40px;
+}
+
+.nextstep-modal-content-title h4 {
+    margin: unset;
+    margin-left: 8px;
+    font-size: 26px;
+    line-height: 31px;
+    font-weight: bold;
+}
+
+.nextstep-modal-content-body {
+    padding: 20px 30px;
+    height: 150px;
+}
+
+#modalContentBaptism {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.nextstep-modal-content-body p {
+    font-family: heebo;
+    color: #707270;
+    font-size: 14px;
+    line-height: 26px;
+    margin: unset;
+}
+
+.nextstep-modal-footer {
+    display: flex;
+    justify-content: space-between;
+    flex-direction: row-reverse;
+    padding-left: 30px;
+    padding-right: 30px;
+    padding-top: 15px;
+}
+
+.nextstep-modal-footer a {
+    min-width: 130px;
+    min-height: 50px;
+    font-family: akrobat;
+    font-weight: bold;
+    font-size: 18px;
+    line-height: 24px;
+    padding-top: 11px;
+}
+
+.nextstep-modal-baptism-buttons {
+    display: flex;
+    justify-content: space-between;
+}
+
+.btn-baptism {
+    color: #FFFFFF;
+    background-color: #7A1315;
+    border-color: #7A1315;
+    font-family: akrobat;
+    font-weight: bold;
+    font-size: 19px;
+    line-height: 24px;
+    white-space: normal;
+    padding-top: 11px;
+    min-width: 130px;
+    min-height: 50px;
+}
+
+.btn-baptism-2-rows {
+    font-size: 15px;
+    padding-top: 8px;
+    line-height: 15px;
+}
+
+
+.btn-secondary {
+    color: #FFFFFF;
+    background-color: #999999;
+    border-color: #999999;
+}
+
+/* Fix Blue Box around calling href bug */
+.modal-open .modal , a:focus , .close:focus {
+    outline:none!important
+}
+
+/* Mobile styling next steps modal */
+@media screen and (max-width: 500px){
+    .nextstep-modal-image img {
+        height: unset;
+        width: 300px;
+    }
+    
+    .nextstep-modal-content {
+        width: 300px;
+        height: 300px;
+    }
+
+    .nextstep-modal-container {
+        width: 300px
+    }
+
+    .nextstep-modal-content-body {
+        padding: 10px 30px;
+        height: 130px;
+    }
+
+    .btn-baptism, .nextstep-modal-footer a {
+        min-width: 100px;
+        min-height: 40px;
+        font-size: 14px;
+        padding-top: 6px;
+    }
+
+}
+
 /* End Next Steps Nav */
 
 /* Dashboard Card */
 
 .dashboard-row {
-    margin-top: 40px;
+    margin: 40px 20px 0 20px;
 }
 
 .dashboard-card {
-    box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px; 
+    box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px;
+    transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms; 
     border-radius: 5px;
     border: unset;
     border-width: unset;
@@ -167,7 +424,7 @@
     background-color: #FFFFFF; 
     z-index: 1; 
     overflow: hidden;
-    margin: 20px 0; 
+    margin: 20px 5px; 
 }
 
 /* Card Title Section */
@@ -179,21 +436,28 @@
     align-items: center;
 }
 
+.dashboard-card .title h4 {
+    font-size: 26px;
+    margin: 14px 0 16px 15px;
+}
+
 .dashboard-card .title .dropdown-toggle {
     border: 0;
     background-color: unset;
     padding-top: 5px;
+    margin-right: 3px;
 }
 
 .panel-dropdown-menu {
     top: unset;
-    left: unset;
+    left: 45%;
+    width: 220px;
 }
 
 /* Card Content Section */
 .dashboard-card .content {
     overflow-y: auto; 
-    height: 400px;
+    height: 405px;
     display: flex; 
     flex-direction: column;
 }
@@ -216,10 +480,14 @@
     padding: 10px 15px;
 }
 
-.person-row {
-    padding: 5px 20px; 
+.person-row-summary {
+    padding: 0 20px; 
     display: flex; 
     align-items: center;
+}
+
+.person-row-summary img {
+    margin: 10px;
 }
 
 .person-info {
@@ -238,7 +506,6 @@
 .person-row-email-button, .person-row-phone-button {
     color: rgba(0, 0, 0, 0.87); 
     position: relative; 
-    font-size: 28px; 
     display: inline-block; 
     user-select: none; 
     transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
@@ -295,23 +562,48 @@
     font-weight: bold;
 }
 
+/* Mobile Styling Dashboard Card */
+@media screen and (max-width: 500px){
+    .dashboard-row {
+        margin-top: 0;
+    }
+
+    .dashboard-card {
+        margin-top: 0;
+    }
+
+    .panel-dropdown-menu {
+        left: unset;
+        right: 15px;
+        width: auto;
+        text-align: center;
+    }
+}
+
+/* Dashboard Events Scroller */
+.dashboard-events-row {
+    margin: 0 40px;
+}
+
 /* End Dashboard Card */
 
 /* Group Card */
 .group-header {
-    background-color: rgb(230, 230, 230);
-    padding: 15px;
+    background-color: #EEEEEE;
+    padding: 15px 30px;
+    margin-bottom: 10px;
 }
 
 .group-name-row {
     display: flex;
     justify-content: space-between;
+/* margin-left: 15px; */
 }
 
 .group-header a {
     display: inline-block; 
     font-family: akrobat;
-    font-size: 16px; 
+    font-size: 18px; 
     color: #7A1315; 
     transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms; 
     overflow: hidden; 
@@ -358,16 +650,30 @@
     align-items: center;
 }
 
+.coach-video-text {
+    display: flex;
+    justify-content: space-between;
+    margin-left: 20px;
+    text-align: center;
+}
+
+.coach-video-text-seperator {
+    border-left: 2px solid black;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
 .coach-video a img {
     border-radius: 5px;
+    max-width: unset;
 }
 
 .coach-video h5 {
     margin-left: 20px;
+    text-align: center;
 }
 
 .coach-guide {
-    border-left: 2px solid black;
     padding-left: 15px;
     height: 45px;
     display: flex;
@@ -382,6 +688,33 @@
     width: 100%;
 }
 
+/* Mobile Styling Group Card */
+
+@media screen and (max-width: 500px){
+    .group-header a {
+        overflow: unset;
+        margin-right: 11px;
+    }
+
+    .coach-video-text {
+        margin-left: 30px;
+    }
+}
+
+/* Phones smaller than iPhone Plus size */
+@media screen and (max-width: 413px) {
+    .group-header a span {
+        white-space: normal;
+    }
+
+    .group-header a {
+        margin-left: 10px;
+    }
+
+    .coach-video-text {
+        margin-left: unset;
+    }
+}
 /* End Group Card */
 
 /* Call To Action Info Card */
@@ -476,3 +809,249 @@
 }
 
 /* End Call To Action Info Card */
+
+/* Start Baptism Dashboard (Photo / Certificate) */
+
+.baptism-print-button {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 30px;
+}
+
+.baptism-dashboard-container {
+    margin: 30px;
+    display: flex;
+    justify-content: space-around;
+}
+
+.baptism-dashboard-image {
+    flex-shrink: 0;
+    position: relative;
+}
+
+.baptism-dashboard-image img {
+    width: 1024px;
+}
+
+.baptism-certificate-name-container {
+    position: absolute;
+    top: 300px;
+    left: 0;
+    width: 1024px;
+    display: flex;
+}
+
+.baptism-certificate-name {
+    font-size: 36px;
+    font-weight: bold;
+    font-family: akrobat;
+    margin: 0 auto;
+}
+
+.baptism-certificate-date-container {
+    position: absolute;
+    width: 290px;
+    top: 574px;
+    left: 680px;
+    display: flex;
+}
+
+.baptism-certificate-date {
+    font-size: 18px;
+    font-family: akrobat;
+    color: #707270;
+    margin: 0 auto;
+}
+
+/* Fix Blue Box around calling href bug */
+.baptism-print-button :focus {
+    outline:none!important
+}
+
+/* End Baptism Dashboard */
+
+/* Toolbox Card */
+.toolbox-card-outer-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+  
+.toolbox-card p {
+    line-height: 1.5;
+}
+
+.toolbox-card {
+    color: rgba(0, 0, 0, 0.87);
+    background-color: #ffffff;
+    transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.12);
+    border-radius: 5px;
+    z-index: 1;
+    padding: 25px;
+    margin: 0 20px 25px 20px;
+}
+
+.current-series-video {
+    padding: 25px;
+}
+
+.subnav {
+    display: flex;
+    padding: 10px 0px 25px 0px;
+    flex-wrap: wrap;
+}
+
+.subnav > div {
+    text-decoration: none;
+    text-transform: uppercase;
+    padding: 0.2em 1em;
+    color: #707270;
+
+    font-family: akrobat;
+    font-size: 1.6rem;
+    font-weight: normal;
+}
+
+.subnav > div:hover {
+    cursor: pointer;
+    color: #7a1315;
+}
+
+.subnav-div-selected {
+    color: #7a1315 !important;
+}
+
+  
+.group-info-banner {
+    display: flex;
+    flex-wrap: nowrap;
+    background-color: #eeeeee;
+    padding: 10px 0px 10px 0px;
+}
+
+.group-info-banner > div {
+    text-decoration: none;
+
+    padding: 0.2em 1em;
+    color: #707270;
+
+    font-family: akrobat;
+    font-size: 1.6rem;
+    font-weight: normal;
+}
+
+.latest-series-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+@media screen and (min-width: 650px) {
+    .latest-series-info {
+    flex-direction: row;
+    }
+}
+
+.latest-series-info-element {
+    display: flex;
+    flex-direction: column;
+}
+
+.toolbox-past-messages {
+    display: flex;
+    flex-direction: column;
+}
+
+@media screen and (min-width: 650px) {
+    .toolbox-past-messages {
+        display: flex;
+        flex-wrap: wrap;
+        flex-direction: row;
+        justify-content: space-evenly;
+    }
+}
+
+.toolbox-video-card {
+    color: rgba(0, 0, 0, 0.87);
+    background-color: #ffffff;
+    transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.12);
+    border-radius: 5px;
+    z-index: 1;
+    padding: 15px;
+    margin: 25px 10px 25px 10px;
+    display: flex;
+    flex-direction: column;
+    min-width: 175px;
+}
+
+.discussion-guide-icon {
+    font-size: 1.4em; 
+    padding-right: 5px; 
+    color: black;
+}
+
+/* End Toolbox Card */
+  
+/* Toolbox Group Member Card */
+
+.toolbox-group-members-card {
+    margin: 0;
+    height: 670px;
+    max-height: 670px;
+}
+
+.toolbox-group-members-card .title a {
+    color: #424242;
+}
+
+.toolbox-group-members-card .content {
+    height: 625px;
+}
+
+.person-row {
+    display: flex;
+    flex-direction: column;
+}
+
+.person-row-details {
+    display: flex;
+    flex-direction: column;
+}
+
+
+/* End Toolbox Group Member Card */
+
+/* Toolbox Associate Pastor Card */
+
+.associate-pastor-card {
+    background-color: #ffffff;
+    transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.12);
+    border-radius: 5px;
+    margin: 40px 0 0 0;
+    height: 230px;
+}
+
+.associate-pastor-card .title h3 {
+    font-size: 26px;
+    margin: 14px 0 14px 15px;
+}
+
+.associate-pastor-card .group-header h5 {
+    font-size: 18px;
+    margin-left: 15px;
+}
+
+.associate-pastor-card .person-row-summary img {
+    margin: 25px 10px 25px 10px;
+}
+
+
+  /* End Toolbox Associate Pastor Card */
+  

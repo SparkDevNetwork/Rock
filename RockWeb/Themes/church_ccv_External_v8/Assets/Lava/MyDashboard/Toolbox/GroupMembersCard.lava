@@ -1,0 +1,76 @@
+{% comment %} 
+    {% include '~~/Assets/Lava/Toolboxes/GroupMembersCard.lava' %}  
+ {% endcomment %}
+
+ {% assign group = Groups | First %}
+
+{% if group != null and group != '' %}
+    <div class="dashboard-card toolbox-group-members-card">
+        {% comment %} Include card header {% endcomment %}
+        {% include '~~/Assets/Lava/MyDashboard/Toolbox/_GroupMembersCard_Header.lava' %}
+        <div class="content">
+            <div>
+                <div class="group-header">
+                    <a onclick="">
+                        <div>
+                            <span style="text-transform: none; color: #424242;" class="material-icons">email</span>
+                            <span>Group Email</span>
+                            <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path></svg>
+                        </div>
+                    </a>
+                </div>
+
+                {% comment %} Render Group Members {% endcomment %}
+                {% for member in group.Group.Members %}
+
+                    <div class="person-row">
+                        <div class="person-row-summary">
+                            <div>
+                                <img src="{{ member.Person.PhotoUrl }}" width="60" height="60" style="border-radius: 50%;">
+                            </div>
+                            <div class="person-info">
+                                <div>
+                                    <h5>{{ member.Person.FullName }}</h5>
+                                </div>
+                            </div>
+                            <div class="person-contact">
+                                {% assign cellPhone = member.Person | PhoneNumber:'Mobile', true %}
+                                {% assign homePhone = member.Person | PhoneNumber:'Home' %}
+
+                                {% if cellPhone %}
+                                    <a href="tel:{{cellPhone}}">
+                                        <span class="material-icons person-row-phone-button">phone</span>
+                                    </a>
+                                {% elseif homePhone %}
+                                    <a href="tel:{{homePhone}}">
+                                        <span class="material-icons person-row-phone-button">phone</span>
+                                    </a>
+                                {% endif %}
+                                <a href="/page/1751?person={{ member.Person.Id }}">
+                                    <span class="material-icons person-row-email-button">email</span>
+                                </a>
+                                <button data-toggle="collapse" data-target="#personDetails-{{ forloop.index }}">
+                                    <i class="material-icons">keyboard_arrow_down</i>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="personDetails-{{ forloop.index }}" class="person-row-details">
+                            <span>a</span>
+                            <span>b</span>
+                            <span>c</span>
+                            <span>a</span>
+                            <span>b</span>
+                            <span>c</span>
+                            <span>a</span>
+                            <span>b</span>
+                            <span>c</span>
+                        </div>
+                    </div>
+
+                {% endfor %}
+
+            </div>
+        </div>
+
+    </div>
+{% endif %}
