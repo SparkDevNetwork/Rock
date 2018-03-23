@@ -1,0 +1,72 @@
+{% comment %} 
+    {% include '~~/Assets/Lava/MyDashboard/BaptismDashboard.lava' %}  
+{% endcomment %}
+
+{% comment %} Photo Display {% endcomment %}
+{% if PageParameter.display == 'photo' %}
+
+    {% comment %} Check for a photo before rendering {% endcomment %}
+    {% assign baptismPhoto = CurrentPerson | Attribute:'BaptismPhoto' %}
+    {% if baptismPhoto != null and baptismPhoto != '' %}
+        <div class="baptism-print-button">
+            <input type='button' id='btnPrint' class="btn btn-primary" value='Print'>
+        </div>
+        <div id="divBaptismDashboard" class="baptism-dashboard-container">
+            <div class="baptism-dashboard-image">
+                {{ CurrentPerson | Attribute:'BaptismPhoto' }}
+            </div>
+        </div>
+    {% else %}
+        <div class="baptism-dashboard-container">
+            No Baptism Photo.
+        </div>
+    {% endif %}
+
+{% endif %}
+
+
+{% comment %} Certificate Display {% endcomment %}
+
+{% if PageParameter.display == 'certificate' %}
+
+    {% comment %} Check if baptized by CCV before rendering {% endcomment %}
+    {% assign ccvBaptized = CurrentPerson | Attribute:'BaptizedHere' %}
+    {% if ccvBaptized == 'Yes' %}
+        <div class="baptism-print-button">
+            <input type='button' id='btnPrint' class="btn btn-primary" value='Print'>
+        </div>
+        <div id="divBaptismDashboard" class="baptism-dashboard-container">
+            <div class="baptism-dashboard-image">
+                <img src="~~/Assets/Images/baptism/baptism-certificate-{{ CurrentPerson | Campus | Property:'ShortCode' | Downcase }}.jpg"/>
+                <div class="baptism-certificate-name-container">
+                    <span class="baptism-certificate-name">{{ CurrentPerson.FullName }}</span>
+                </div>
+                <div class="baptism-certificate-date-container">
+                    <span class="baptism-certificate-date">{{ CurrentPerson | Attribute:'BaptismDate' | Date:'MMMM d, yyyy' }}</span>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="baptism-dashboard-container">
+            No Baptism Certificate.
+        </div>
+    {% endif %}
+
+{% endif %}
+
+<script>
+    // Disable right click menu to prevent saving blank certificate image
+    $('.baptism-dashboard-image').on('contextmenu', 'img', function(e){
+        return false;
+    });
+
+    // Disable right click menu on inner div to match no menu on image
+    $('.baptism-dashboard-image').on('contextmenu', 'div', function(e){
+        return false;
+    });
+
+    // print only the baptism dashboard div
+    $('#btnPrint').click(function() {
+        $('#divBaptismDashboard').printThis();
+    });
+</script>
