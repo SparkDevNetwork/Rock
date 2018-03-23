@@ -394,17 +394,17 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                 DateTime? emptyDate = null;
 
                 var filteredQueryWithMinistryLeader = filteredQuery.OrderByDescending( vs => vs.SentDate ).OrderByDescending( vs => vs.CompletedDate ).Select( vs =>
-                                            new {
-                                                Name = vs.PersonName,
-                                                Id = vs.Id,
-                                                SentDate = vs.SentDate,
-                                                CompletedDate = (vs.SentDate == vs.CompletedDate) ? emptyDate : vs.CompletedDate,
-                                                State = VolunteerScreening.GetState( vs.SentDate, vs.CompletedDate, vs.Workflow.Status ),
-                                                Campus = campusCache.Where( c => c.Guid == vs.CampusGuid.AsGuid() ).SingleOrDefault().Name,
-                                                MinistryLeader = TryGetMinistryLead( vs.Workflow, ministryLeadResult, paService ),
-                                                ApplicationType = ParseApplicationType( vs.Workflow, starsQueryResult )
-                                            } ).ToList();
-
+                                                new {
+                                                    Name = vs.PersonName,
+                                                    Id = vs.Id,
+                                                    SentDate = vs.SentDate,
+                                                    CompletedDate = (vs.SentDate == vs.CompletedDate) ? emptyDate : vs.CompletedDate,
+                                                    State = VolunteerScreening.GetState( vs.SentDate, vs.CompletedDate, vs.Workflow.Status ),
+                                                    Campus = TryGetCampus( campusCache, vs.CampusGuid ),
+                                                    MinistryLeader = TryGetMinistryLead( vs.Workflow, ministryLeadResult, paService ),
+                                                    ApplicationType = ParseApplicationType( vs.Workflow, starsQueryResult )
+                                                } ).ToList();
+                
                 // Ministry Leader
                 string ministryLeader = rFilter.GetUserPreference( "Ministry Leader" );
                 if( string.IsNullOrWhiteSpace( ministryLeader ) == false )
@@ -545,6 +545,19 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                     return sApplicationType_Standard;
                 }
             }
+        }
+
+        string TryGetCampus( List<CampusCache> campusCache, string campusGuid )
+        {
+            // this should never be null, but if something happens to the underlying workflow data, it can be.
+            // Doing this prevents the entire global list from breaking due to that.
+            CampusCache campus = campusCache.Where( c => c.Guid == campusGuid.AsGuid() ).SingleOrDefault();
+            if ( campus != null )
+            {
+                return campus.Name;
+            }
+
+            return "No Campus";
         }
 
         public class MinistryLeadResult

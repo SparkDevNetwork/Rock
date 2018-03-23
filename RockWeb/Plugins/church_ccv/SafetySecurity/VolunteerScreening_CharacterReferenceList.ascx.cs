@@ -117,38 +117,71 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
 
         #region Internal Methods
 
+        class WorkflowWithAttribs
+        {
+            public int WorkflowId;
+            public string WorkflowName;
+            public DateTime? CreatedDateTime;
+            public List<KeyValuePair<string, string>> AttribValues;
+
+            public string GetAttribValue( string key )
+            {
+                return AttribValues.Where( av => av.Key == key ).SingleOrDefault( ).Value;
+            }
+        }
+
         private void Render( RockContext rockContext )
         {
             // get all completed character references
-            var charRefWorkflows = new WorkflowService( rockContext ).Queryable( ).AsNoTracking( ).Where( wf => wf.WorkflowTypeId == sCharacterReferenceWorkflowId && wf.Status == "Completed" ).ToList( );
-            
-            foreach ( Workflow workflow in charRefWorkflows )
-            {
-                workflow.LoadAttributes( );
-            }
+            var charRefWorkflows = new WorkflowService( rockContext ).Queryable( ).AsNoTracking( ).Where( wf => wf.WorkflowTypeId == sCharacterReferenceWorkflowId && wf.Status == "Completed" );
 
+            var attribQuery = new AttributeService( rockContext ).Queryable( ).AsNoTracking( );
+            var avQuery = new AttributeValueService( rockContext ).Queryable( ).AsNoTracking( );
+            var attribWithValue = attribQuery.Join( avQuery, a => a.Id, av => av.AttributeId, ( a, av ) => new { Attribute = a, AttribValue = av } )
+                                             .Where( a => a.Attribute.EntityTypeQualifierColumn.Equals( "WorkflowTypeId", StringComparison.OrdinalIgnoreCase ) );
+
+            // now for each pending covenant, get the key / value for the attributes we need
+            List<WorkflowWithAttribs> workflowList = new List<WorkflowWithAttribs>( );
+            foreach( var workflow in charRefWorkflows )
+            {
+                WorkflowWithAttribs workflowWithAttribs = new WorkflowWithAttribs( );
+                workflowWithAttribs.WorkflowId = workflow.Id;
+                workflowWithAttribs.WorkflowName = workflow.Name;
+                workflowWithAttribs.CreatedDateTime = workflow.CreatedDateTime;
+
+                workflowWithAttribs.AttribValues = attribWithValue.Where( av => av.AttribValue.EntityId == workflow.Id &&
+                                                                                (av.Attribute.Key == "CompletionNumber" || 
+                                                                                 av.Attribute.Key == "ApplicantFirstName" ||
+                                                                                 av.Attribute.Key == "ApplicantLastName") )
+                                                                    .Select( a => new { a.Attribute.Key, a.AttribValue.Value } ).AsEnumerable( )
+                                                                    .Select( o => new KeyValuePair<string, string>( o.Key, o.Value ) )
+                                                                    .ToList( );
+
+                workflowList.Add( workflowWithAttribs );
+            }
+            
             // the header should show the "total completed". We could use the total number of completed, but security wanted to continue the counting
             // from their prior system, so the base isn't 0. The number is set once in the Workflow, so we just sort the workflows by their CompletionNumber, and take the top.
-            charRefWorkflows = charRefWorkflows.OrderByDescending( wf => int.Parse( wf.AttributeValues["CompletionNumber"].Value ) ).ToList( );
+            workflowList = workflowList.OrderByDescending( wf => int.Parse( wf.GetAttribValue( "CompletionNumber") ) ).ToList( );
 
             // update the header text (take the highest numbered completion number)
-            lHeader.Text = string.Format( "<h4>Total Responses ({0})</h4>", charRefWorkflows.First( ).AttributeValues["CompletionNumber"] );
+            lHeader.Text = string.Format( "<h4>Total Responses ({0})</h4>", workflowList.First( ).GetAttribValue("CompletionNumber") );
 
             // render the grid
-            BindGrid( rockContext, charRefWorkflows );
+            BindGrid( rockContext, workflowList );
         }
 
         /// <summary>
         /// Binds the grid.
         /// </summary>
-        private void BindGrid( RockContext rockContext, List<Workflow> charRefWorkflows )
+        private void BindGrid( RockContext rockContext, List<WorkflowWithAttribs> charRefWorkflows )
         {
             gGrid.DataSource = charRefWorkflows.Select( wf => 
                     new {
-                            CompletionNumber = wf.AttributeValues["CompletionNumber"].Value,
-                            Id = wf.Id,
+                            CompletionNumber = wf.GetAttribValue("CompletionNumber"),
+                            Id = wf.WorkflowId,
                             Date = wf.CreatedDateTime.Value.ToShortDateString( ),
-                            VolunteerApplicantsName = wf.AttributeValues["ApplicantFirstName"].Value + " " + wf.AttributeValues["ApplicantLastName"].Value
+                            VolunteerApplicantsName = wf.GetAttribValue("ApplicantFirstName") + " " + wf.GetAttribValue("ApplicantLastName")
                         } ).ToList( );
 
             gGrid.DataBind();
