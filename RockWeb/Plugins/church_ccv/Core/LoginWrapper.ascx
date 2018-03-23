@@ -43,7 +43,7 @@
         var pageId = "<%=LoginWrapper_GetPageId( ) %>";
 
         $.ajax({
-            url: "/api/Web/Logout?currPageId=" + pageId,
+            url: "/api/RockAuth/Logout?currPageId=" + pageId,
             type: "GET",
             xhrFields: {
                 withCredentials: true

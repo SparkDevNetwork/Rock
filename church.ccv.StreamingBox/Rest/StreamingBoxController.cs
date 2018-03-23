@@ -26,7 +26,7 @@ using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.Data;
 
-namespace chuch.ccv.StreamingBox.Rest
+namespace church.ccv.StreamingBox.Rest
 {
     public class StreamingBoxController : Rock.Rest.ApiControllerBase
     {

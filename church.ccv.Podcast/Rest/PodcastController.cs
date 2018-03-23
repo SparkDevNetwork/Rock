@@ -34,7 +34,7 @@ using Newtonsoft.Json;
 using System.Globalization;
 using System.Net;
 
-namespace chuch.ccv.Podcast.Rest
+namespace church.ccv.Podcast.Rest
 {
     public partial class PodcastController : Rock.Rest.ApiController<Category>
     {

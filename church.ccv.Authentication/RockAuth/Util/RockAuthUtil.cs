@@ -1,4 +1,4 @@
-﻿using church.ccv.Web.Model;
+﻿using church.ccv.Authentication.RockAuth.Model;
 using RestSharp;
 using Rock;
 using Rock.Communication;
@@ -9,14 +9,11 @@ using Rock.Web.Cache;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 using System.Web.Security;
 
-namespace church.ccv.Web.Data
+namespace church.ccv.Authentication.RockAuth
 {
-    class WebUtil
+    class Util
     {
         public static LoginResponse Login( LoginData loginData )
         {
@@ -38,16 +35,12 @@ namespace church.ccv.Web.Data
                         // if the account isn't locked or needing confirmation
                         if ( ( userLogin.IsConfirmed ?? true ) && !( userLogin.IsLockedOut ?? false ) )
                         {
-                            // then proceed to the final step, validating them with PMG2's site
-                            if ( PMG2Login( loginData.Username, loginData.Password ) )
-                            {
-                                // generate their cookie
-                                UserLoginService.UpdateLastLogin( loginData.Username );
-                                Rock.Security.Authorization.SetAuthCookie( loginData.Username, bool.Parse( loginData.Persist ), false );
+                            // generate their cookie
+                            UserLoginService.UpdateLastLogin( loginData.Username );
+                            Rock.Security.Authorization.SetAuthCookie( loginData.Username, bool.Parse( loginData.Persist ), false );
 
-                                // no issues!
-                                loginResponse = LoginResponse.Success;
-                            }
+                            // no issues!
+                            loginResponse = LoginResponse.Success;
                         }
                         else
                         {
@@ -103,25 +96,6 @@ namespace church.ccv.Web.Data
             }
 
             return shouldRedirectUser;
-        }
-
-        protected static bool PMG2Login( string username, string password )
-        {
-            // contact PMG2's site and attempt to login with the same credentials
-            string pmg2RootSite = GlobalAttributesCache.Value( "PMG2Server" );
-            
-            var restClient = new RestClient(
-                string.Format( pmg2RootSite + "auth?user[username]={0}&user[password]={1}", username, password ) );
-
-            var restRequest = new RestRequest( Method.POST );
-            var restResponse = restClient.Execute( restRequest );
-
-            if ( restResponse.StatusCode == HttpStatusCode.Created )
-            {
-                return true;
-            }
-
-            return false;
         }
 
         public static bool CreatePersonWithLogin( PersonWithLoginModel personWithLoginModel )
@@ -223,7 +197,7 @@ namespace church.ccv.Web.Data
                                     false,
                                     false );
 
-                    WebUtil.SendConfirmAccountEmail( newLogin, createLoginModel.ConfirmAccountUrl, createLoginModel.ConfirmAccountEmailTemplateGuid, createLoginModel.AppUrl, createLoginModel.ThemeUrl );
+                    SendConfirmAccountEmail( newLogin, createLoginModel.ConfirmAccountUrl, createLoginModel.ConfirmAccountEmailTemplateGuid, createLoginModel.AppUrl, createLoginModel.ThemeUrl );
 
                     response = CreateLoginModel.Response.Created;
                 }
@@ -232,7 +206,7 @@ namespace church.ccv.Web.Data
                     // they DO have a login, so simply email the person being worked on a list of them.
                     response = CreateLoginModel.Response.Emailed;
 
-                    WebUtil.SendForgotPasswordEmail( person.Email, createLoginModel.ConfirmAccountUrl, createLoginModel.ForgotPasswordEmailTemplateGuid, createLoginModel.AppUrl, createLoginModel.ThemeUrl );
+                    SendForgotPasswordEmail( person.Email, createLoginModel.ConfirmAccountUrl, createLoginModel.ForgotPasswordEmailTemplateGuid, createLoginModel.AppUrl, createLoginModel.ThemeUrl );
                 }
             }
             catch

@@ -429,8 +429,6 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
             //bool rememberMe = cbRememberMe.Checked;
             Rock.Security.Authorization.SetAuthCookie( userLogin.UserName, rememberMe, false );
 
-            // TODO: Login PMG2...do we need to remove the response.End below?
-
             // Generate Church Online Platform login Url
             string chOPUrl = LoginChOP( userLogin.Person );
 

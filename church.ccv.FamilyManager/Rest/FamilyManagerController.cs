@@ -33,7 +33,7 @@ using Rock.Rest.Controllers;
 using System.Collections.Generic;
 using Rock.Web.Cache;
 
-namespace chuch.ccv.FamilyManager.Rest
+namespace church.ccv.FamilyManager.Rest
 {
     public class FamilyManagerController : Rock.Rest.ApiControllerBase
     {

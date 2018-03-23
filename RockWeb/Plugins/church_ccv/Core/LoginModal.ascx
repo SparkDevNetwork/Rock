@@ -371,7 +371,7 @@
             else {
 
                 $.ajax({
-                    url: "/api/Web/Login",
+                    url: "/api/RockAuth/Login",
                     contentType: "application/json",
                     data: JSON.stringify(
                         {
@@ -421,7 +421,7 @@
 
                 // invoke the send email api
                 $.ajax({
-                    url: "/api/Web/SendConfirmAccountEmail" +
+                    url: "/api/RockAuth/SendConfirmAccountEmail" +
                          "?confirmAccountUrl=" + encodeURI(confirmAccountUrl) +
                          "&confirmAccountEmailTemplateGuid=" + confirmAccountEmailTemplateGuid +
                          "&appUrl=" + encodeURI(appUrl) +
@@ -602,7 +602,7 @@
 
         // see if the given email and lastname are already registered with one or more people
         $.ajax({
-            url: "api/web/CheckDuplicates?lastName=" + lastname + "&email=" + email,
+            url: "api/RockAuth/CheckDuplicates?lastName=" + lastname + "&email=" + email,
             type: "GET"
         }).done(function (duplicatesList) {
 
@@ -635,7 +635,7 @@
         var themeUrl = "<%=LoginModal_GetThemeUrl( ) %>";
 
         $.ajax({
-            url: "api/web/CreatePersonWithLogin",
+            url: "api/RockAuth/CreatePersonWithLogin",
             type: "POST",
             contentType: "application/json",
             data:
@@ -670,7 +670,7 @@
         var themeUrl = "<%=LoginModal_GetThemeUrl( ) %>";
 
         $.ajax({
-            url: "api/web/CreateLogin",
+            url: "api/RockAuth/CreateLogin",
             type: "POST",
             contentType: "application/json",
             data:
@@ -801,7 +801,7 @@
             else {
 
                 $.ajax({
-                    url: "/api/Web/SendForgotPasswordEmail" +
+                    url: "/api/RockAuth/SendForgotPasswordEmail" +
                          "?confirmAccountUrl=" + encodeURI(confirmAccountUrl) +
                          "&forgotPasswordEmailTemplateGuid=" + forgotPasswordEmailTemplateGuid +
                          "&appUrl=" + encodeURI(appUrl) +

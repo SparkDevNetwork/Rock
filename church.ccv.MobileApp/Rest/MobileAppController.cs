@@ -30,7 +30,7 @@ using Rock.Data;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace chuch.ccv.MobileApp.Rest
+namespace church.ccv.MobileApp.Rest
 {
     public class MobileAppController : Rock.Rest.ApiControllerBase
     {
