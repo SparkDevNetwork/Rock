@@ -312,24 +312,24 @@
 /* End Hamburger Menu aka Full Menu*/
 
 
-p {
-   line-height: 2.50;
-}
-
 .ccvRed {
    color: rgb(122,19,21)
-}
-
-hr {
-   border-top: 1px solid #707270;
-   margin-top: 30px;
-   margin-bottom: 20px;
 }
 
 .infoSection {
    padding-top: 50px;
    padding-bottom: 50px;
 }
+
+.infoSection p {
+    line-height: 2.25;
+ } 
+ 
+.infoSection hr {
+    border-top: 1px solid #707270;
+    margin-top: 30px;
+    margin-bottom: 20px;
+ }
 
 .graphicSection {
    padding-top: 150px;

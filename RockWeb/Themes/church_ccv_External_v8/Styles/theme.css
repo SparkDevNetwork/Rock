@@ -8332,14 +8332,6 @@ body {
     margin-right: auto;
 }
 
-a {
-    color: #bc1d20;
-}
-
-    a:hover {
-        color: #7a1315;
-    }
-
 .img-full {
     width: 100%;
     height: auto;

@@ -5,9 +5,11 @@
  <div class="title">
     <h4>Members</h4>
     <div>
-        <a href="#" onclick="btnAddGroupMember({{ group.Group.Id }},{{ group.Group.GroupType.DefaultGroupRoleId }}); return false;">
-            <i class="material-icons">person_add</i>
-        </a>
+        {% if renderAddButton == 'true' %}
+            <a href="#" onclick="btnAddGroupMember({{ group.Group.Id }},{{ group.Group.GroupType.DefaultGroupRoleId }}); return false;">
+                <i class="material-icons">person_add</i>
+            </a>
+        {% endif %}
         <button class="dropdown-toggle" type="button" data-toggle="dropdown">
             <span class="material-icons pull-right">more_vert</span>
         </button>

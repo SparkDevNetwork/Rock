@@ -413,6 +413,12 @@
     margin: 40px 20px 0 20px;
 }
 
+@media screen and (max-width: 500px) {
+    .dashboard-row {
+        margin: 40px 0 0 0;
+    }
+}
+
 .dashboard-card {
     box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px;
     transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms; 
@@ -495,6 +501,7 @@
     flex-direction: column; 
     width: 80%; 
     margin-left: 10px;
+    white-space: normal;
 }
 
 .person-contact {
@@ -1008,6 +1015,10 @@
     color: #424242;
 }
 
+.toolbox-group-members-card .title a:hover {
+    text-decoration: none;
+}
+
 .toolbox-group-members-card .content {
     height: 625px;
 }
@@ -1017,9 +1028,50 @@
     flex-direction: column;
 }
 
+.toolbox-group-members-card .person-contact {
+    margin-left: 20px;
+}
+
 .person-row-details {
     display: flex;
     flex-direction: column;
+    margin-left: 110px;
+}
+
+@media screen and (max-width: 500px) {
+    .person-row-details {
+        margin-left: 60px;
+    }
+}
+
+.person-row-details p {
+    margin: 0;
+    line-height: 26px;
+    font-family: heebo;
+    font-size: 14px;
+    color: #707270;
+}
+
+.person-row-details a {
+    color: #8f3839;
+}
+
+.person-row-details a:hover {
+    text-decoration: none;
+}
+
+.person-details-toggle {
+    background-color: unset;
+    border: unset;
+    padding: unset;
+}
+
+.person-row-details .person-details-additional-child {
+    margin-left: 34px;
+}
+
+.person-row-details .person-details-additional-address {
+    margin-left: 58px;
 }
 
 
@@ -1045,7 +1097,6 @@
 
 .associate-pastor-card .group-header h5 {
     font-size: 18px;
-    margin-left: 15px;
 }
 
 .associate-pastor-card .person-row-summary img {
