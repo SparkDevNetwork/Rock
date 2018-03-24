@@ -41,9 +41,9 @@
     {
         // show/hide panels and set their hidden field css values
         $("#hfAddGroupMemberCSS").val("hidden");
-        togglePanel("hide", "pnlAddGroupMember");
+        toggleAddPanel("hide", "pnlAddGroupMember");
         $("#hfGroupViewCSS").val("");
-        togglePanel("show", "pnlGroupView");
+        toggleAddPanel("show", "pnlGroupView");
 
         // clear any error messages
         //var errorMessage = $("#nbGroupMemberErrorMessage");
@@ -52,7 +52,7 @@
     }
 
     // sets a panel css to show / hide the panel
-    function togglePanel(state, panel) {
+    function toggleAddPanel(state, panel) {
         var panel = $(`#${panel}`);
 
         switch (state)
@@ -69,9 +69,9 @@
     function btnAddGroupMember(groupId, defaultGroupRoleId)
     {
         // show/hide panels and set their hidden field css values
-        togglePanel("hide", "pnlGroupView");
+        toggleAddPanel("hide", "pnlGroupView");
         $("#hfGroupViewCSS").val("hidden");
-        togglePanel('show', "pnlAddGroupMember");
+        toggleAddPanel('show', "pnlAddGroupMember");
         $("#hfAddGroupMemberCSS").val("");
 
         // set hidden field values used by group service

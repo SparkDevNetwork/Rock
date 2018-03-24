@@ -29,8 +29,8 @@ namespace Plugins.church_ccv.Groups
     [GroupTypesField( "Include Group Types", "The group types to display in the list.  If none are selected, all group types will be included.", false, "", "", 4 )]
     [GroupTypesField( "Exclude Group Types", "The group types to exclude from the list (only valid if including all groups).", false, "", "", 5 )]
     [CodeEditorField( "Lava Template", "The lava template to use to format the group list.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, "{% include '~~/Assets/Lava/GroupListSidebar.lava' %}", "", 6 )]
-    [CodeEditorField( "Add Group Member Panel Pre HTML", "The pre lava template to use to wrap the add group member panel.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, true, "", "", 7 )]
-    [CodeEditorField( "Add Group Member Panel Post HTML", "The pst lava template to use to wrap the add group member panel.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, true, "", "", 8 )]
+    [CodeEditorField( "Add Group Member Panel Pre HTML", "The pre lava template to use to wrap the add group member panel.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, "", "", 7 )]
+    [CodeEditorField( "Add Group Member Panel Post HTML", "The pst lava template to use to wrap the add group member panel.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, "", "", 8 )]
     [BooleanField( "Enable Debug", "Shows the fields available to merge in lava.", false, "", 9 )]
     public partial class CCVGroupListPersonalizedLava : RockBlock
     {
