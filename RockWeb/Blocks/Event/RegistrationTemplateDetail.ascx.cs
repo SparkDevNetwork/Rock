@@ -1130,6 +1130,7 @@ namespace RockWeb.Blocks.Event
                     fee.AllowMultiple = feeUI.AllowMultiple;
                     fee.Order = feeUI.Order;
                     fee.IsActive = feeUI.IsActive;
+                    fee.IsRequired = feeUI.IsRequired;
                 }
 
                 rockContext.SaveChanges();
