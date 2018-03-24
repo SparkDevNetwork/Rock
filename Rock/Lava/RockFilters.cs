@@ -142,6 +142,12 @@ namespace Rock.Lava
             }
 
             var inputString = input.ToString();
+
+            if (inputString.Length <= length )
+            {
+                return inputString;
+            }
+
             return inputString.Right( length );
         }
 
