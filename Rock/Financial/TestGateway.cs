@@ -35,6 +35,7 @@ namespace Rock.Financial
     [Export( typeof( GatewayComponent ) )]
     [ExportMetadata( "ComponentName", "TestGateway" )]
 
+    [TextField( "Declined Card Numbers", "Enter partial card numbers that you wish to be declined separated by commas. Any card number that ends with a number matching a value entered here will be declined.", false, "", "", 0 )]
     public class TestGateway : GatewayComponent
     {
 
@@ -97,6 +98,8 @@ namespace Rock.Financial
         {
             errorMessage = string.Empty;
 
+            string cardNumber = string.Empty;
+
             CreditCardPaymentInfo ccPayment = paymentInfo as CreditCardPaymentInfo;
             if ( ccPayment != null )
             {
@@ -105,10 +108,31 @@ namespace Rock.Financial
                     errorMessage = "Error processing Credit Card!";
                     return null;
                 }
+
+                cardNumber = ccPayment.Number;
+            }
+
+            SwipePaymentInfo swipePayment = paymentInfo as SwipePaymentInfo;
+            if ( swipePayment != null )
+            {
+                cardNumber = swipePayment.Number;
+            }
+
+            if ( !string.IsNullOrWhiteSpace( cardNumber ) )
+            {
+                var declinedNumers = GetAttributeValue( financialGateway, "DeclinedCardNumbers" );
+                if ( !string.IsNullOrWhiteSpace( declinedNumers ) )
+                {
+                    if ( declinedNumers.SplitDelimitedValues().Any( n => cardNumber.EndsWith( n ) ) )
+                    {
+                        errorMessage = "Error processing Credit Card!";
+                        return null;
+                    }
+                }
             }
 
             var transaction = new FinancialTransaction();
-            transaction.TransactionCode = "T" + RockDateTime.Now.ToString("yyyyMMddHHmmssFFF");
+            transaction.TransactionCode = "T" + RockDateTime.Now.ToString( "yyyyMMddHHmmssFFF" );
             return transaction;
         }
 
