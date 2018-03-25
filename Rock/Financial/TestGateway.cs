@@ -98,42 +98,14 @@ namespace Rock.Financial
         {
             errorMessage = string.Empty;
 
-            string cardNumber = string.Empty;
-
-            CreditCardPaymentInfo ccPayment = paymentInfo as CreditCardPaymentInfo;
-            if ( ccPayment != null )
+            if ( ValidateCard( financialGateway, paymentInfo, out errorMessage ) )
             {
-                if ( ccPayment.Code == "911" )
-                {
-                    errorMessage = "Error processing Credit Card!";
-                    return null;
-                }
-
-                cardNumber = ccPayment.Number;
+                var transaction = new FinancialTransaction();
+                transaction.TransactionCode = "T" + RockDateTime.Now.ToString( "yyyyMMddHHmmssFFF" );
+                return transaction;
             }
 
-            SwipePaymentInfo swipePayment = paymentInfo as SwipePaymentInfo;
-            if ( swipePayment != null )
-            {
-                cardNumber = swipePayment.Number;
-            }
-
-            if ( !string.IsNullOrWhiteSpace( cardNumber ) )
-            {
-                var declinedNumers = GetAttributeValue( financialGateway, "DeclinedCardNumbers" );
-                if ( !string.IsNullOrWhiteSpace( declinedNumers ) )
-                {
-                    if ( declinedNumers.SplitDelimitedValues().Any( n => cardNumber.EndsWith( n ) ) )
-                    {
-                        errorMessage = "Error processing Credit Card!";
-                        return null;
-                    }
-                }
-            }
-
-            var transaction = new FinancialTransaction();
-            transaction.TransactionCode = "T" + RockDateTime.Now.ToString( "yyyyMMddHHmmssFFF" );
-            return transaction;
+            return null;
         }
 
         /// <summary>
@@ -165,14 +137,19 @@ namespace Rock.Financial
         {
             errorMessage = string.Empty;
 
-            var scheduledTransaction = new FinancialScheduledTransaction();
-            scheduledTransaction.IsActive = true;
-            scheduledTransaction.StartDate = schedule.StartDate;
-            scheduledTransaction.NextPaymentDate = schedule.StartDate;
-            scheduledTransaction.TransactionCode = "T" + RockDateTime.Now.ToString("yyyyMMddHHmmssFFF");
-            scheduledTransaction.GatewayScheduleId = "P" + RockDateTime.Now.ToString("yyyyMMddHHmmssFFF");
-            scheduledTransaction.LastStatusUpdateDateTime = RockDateTime.Now;
-            return scheduledTransaction;
+            if ( ValidateCard( financialGateway, paymentInfo, out errorMessage ) )
+            {
+                var scheduledTransaction = new FinancialScheduledTransaction();
+                scheduledTransaction.IsActive = true;
+                scheduledTransaction.StartDate = schedule.StartDate;
+                scheduledTransaction.NextPaymentDate = schedule.StartDate;
+                scheduledTransaction.TransactionCode = "T" + RockDateTime.Now.ToString( "yyyyMMddHHmmssFFF" );
+                scheduledTransaction.GatewayScheduleId = "P" + RockDateTime.Now.ToString( "yyyyMMddHHmmssFFF" );
+                scheduledTransaction.LastStatusUpdateDateTime = RockDateTime.Now;
+                return scheduledTransaction;
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -263,6 +240,49 @@ namespace Rock.Financial
         {
             errorMessage = string.Empty;
             return string.Empty;
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        private bool ValidateCard( FinancialGateway financialGateway, PaymentInfo paymentInfo, out string errorMessage )
+        {
+            string cardNumber = string.Empty;
+
+            CreditCardPaymentInfo ccPayment = paymentInfo as CreditCardPaymentInfo;
+            if ( ccPayment != null )
+            {
+                if ( ccPayment.Code == "911" )
+                {
+                    errorMessage = "Error processing Credit Card!";
+                    return false;
+                }
+
+                cardNumber = ccPayment.Number;
+            }
+
+            SwipePaymentInfo swipePayment = paymentInfo as SwipePaymentInfo;
+            if ( swipePayment != null )
+            {
+                cardNumber = swipePayment.Number;
+            }
+
+            if ( !string.IsNullOrWhiteSpace( cardNumber ) )
+            {
+                var declinedNumers = GetAttributeValue( financialGateway, "DeclinedCardNumbers" );
+                if ( !string.IsNullOrWhiteSpace( declinedNumers ) )
+                {
+                    if ( declinedNumers.SplitDelimitedValues().Any( n => cardNumber.EndsWith( n ) ) )
+                    {
+                        errorMessage = "Error processing Credit Card!";
+                        return false;
+                    }
+                }
+            }
+
+            errorMessage = string.Empty;
+            return true;
         }
 
         #endregion
