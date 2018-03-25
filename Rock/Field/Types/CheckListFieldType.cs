@@ -334,11 +334,18 @@ namespace Rock.Field.Types
 
         #region Private
 
+        /// <summary>
+        /// Gets the URL decoded values.
+        /// </summary>
+        /// <param name="keyValuePairs">The key value pairs.</param>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
         public string GetUrlDecodedValues( List<KeyValuePair> keyValuePairs, string value )
         {
             var values = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList();
             return keyValuePairs.Where( a => values.Contains( a.Key ) ).Select( a => a.Value ).ToList().AsDelimited( "," );
         }
+
         #endregion
     }
 }

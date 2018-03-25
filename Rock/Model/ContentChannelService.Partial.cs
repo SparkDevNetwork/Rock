@@ -57,6 +57,21 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Determines whether the specified content channel is manually sorted
+        /// </summary>
+        /// <param name="contentChannelId">The content channel ID.</param>
+        /// <returns>
+        ///   <c>true</c> if manually sorted otherwise, <c>false</c>.
+        /// </returns>
+        public bool IsManuallySorted( int contentChannelId )
+        {
+            return Queryable()
+                    .Where( c => c.Id == contentChannelId )
+                    .Select( c => c.ItemsManuallyOrdered )
+                    .FirstOrDefault();
+        }
+
+        /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.ContentChannel">ContentChannel</see> that are descendants of a specified content channel type.
         /// WARNING: This will fail (max recursion) if there is a circular reference in the ContentChannelAssociation table.
         /// </summary>

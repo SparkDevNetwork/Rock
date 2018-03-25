@@ -124,7 +124,7 @@ namespace Rock.Web
                     }
                 }
 
-                // If page has not been specified get the site by the domain and use the site's default page
+                // If page has not been specified get the site by the domain 
                 if ( string.IsNullOrEmpty( pageId ) )
                 {
                     SiteCache site = SiteCache.GetSiteByDomain( httpRequest.Url.Host );
@@ -145,9 +145,30 @@ namespace Rock.Web
 
                     if ( site != null )
                     {
+                        // First default to the site's default page
+                        if ( string.IsNullOrWhiteSpace( pageId ) )
+                        {
+                            if ( site.DefaultPageId.HasValue )
+                            {
+                                pageId = site.DefaultPageId.Value.ToString();
+                            }
+                            else
+                            {
+                                throw new SystemException( "Invalid Site Configuration" );
+                            }
+
+                            if ( site.DefaultPageRouteId.HasValue )
+                            {
+                                routeId = site.DefaultPageRouteId.Value;
+                            }
+                        }
+
                         // Check to see if this is a short link route
                         if ( requestContext.RouteData.Values.ContainsKey( "shortlink" ) )
                         {
+                            pageId = string.Empty;
+                            routeId = 0;
+
                             string shortlink = requestContext.RouteData.Values["shortlink"].ToString();
                             using ( var rockContext = new Rock.Data.RockContext() )
                             {
@@ -205,6 +226,7 @@ namespace Rock.Web
                                 if ( site.MobilePageId.HasValue )
                                 {
                                     pageId = site.MobilePageId.Value.ToString();
+                                    routeId = 0;
                                 }
                                 else if ( !string.IsNullOrWhiteSpace( site.ExternalUrl ) )
                                 {
@@ -213,29 +235,10 @@ namespace Rock.Web
                                 }
                             }
                         }
-
-                        if ( string.IsNullOrWhiteSpace( pageId ) )
-                        {
-                            if ( site.DefaultPageId.HasValue )
-                            {
-                                pageId = site.DefaultPageId.Value.ToString();
-                            }
-
-                            if ( site.DefaultPageRouteId.HasValue )
-                            {
-                                routeId = site.DefaultPageRouteId.Value;
-                            }
-                        }
-                    }
-
-                    if ( string.IsNullOrEmpty( pageId ) )
-                    {
-                        throw new SystemException( "Invalid Site Configuration" );
                     }
                 }
 
                 PageCache page = null;
-
                 if ( !string.IsNullOrEmpty( pageId ) )
                 {
                     int pageIdNumber = 0;
@@ -268,13 +271,15 @@ namespace Rock.Web
                         }
 
                         page = PageCache.Read( site.PageNotFoundPageId ?? 0 );
+                        requestContext.HttpContext.Response.StatusCode = 404;
+                        requestContext.HttpContext.Response.TrySkipIisCustomErrors = true;
                     }
                     else
                     {
                         // no 404 page found for the site, return the default 404 error page
                         return (System.Web.UI.Page)BuildManager.CreateInstanceFromVirtualPath( "~/Http404Error.aspx", typeof( System.Web.UI.Page ) );
                     }
-
+                      
                 }
 
                 string theme = page.Layout.Site.Theme;

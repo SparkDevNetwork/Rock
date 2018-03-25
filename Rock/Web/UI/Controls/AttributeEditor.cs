@@ -1019,7 +1019,7 @@ namespace Rock.Web.UI.Controls
                 _lKey = new RockLiteral();
                 _lKey.Label = "Key";
                 _lKey.ID = "lKey";
-                _lKey.Visible = false;  
+                _lKey.Visible = false;
                 Controls.Add( _lKey );
 
                 _tbKey = new RockTextBox();
@@ -1091,7 +1091,7 @@ namespace Rock.Web.UI.Controls
                 _lFieldType = new RockLiteral();
                 _lFieldType.Label = "Field Type";
                 _lFieldType.ID = "_lFieldType";
-                _lFieldType.Visible = false;  
+                _lFieldType.Visible = false;
                 Controls.Add( _lFieldType );
 
                 _ddlFieldType = new RockDropDownList();
@@ -1104,7 +1104,7 @@ namespace Rock.Web.UI.Controls
                 _ddlFieldType.EnhanceForLongLists = true;
                 Controls.Add( _ddlFieldType );
 
-                _phQualifiers = new DynamicPlaceholder(); 
+                _phQualifiers = new DynamicPlaceholder();
                 _phQualifiers.ID = "phQualifiers";
                 Controls.Add( _phQualifiers );
 
@@ -1142,7 +1142,8 @@ namespace Rock.Web.UI.Controls
             // Load qualifier data now so the save event handler has access to it.
             if ( Page.IsPostBack && FieldTypeId.HasValue )
             {
-                UpdateQualifiers();
+                var fieldTypeId = ViewState["FieldTypeId"] as int? ?? FieldTypeId.Value;
+                UpdateQualifiers( fieldTypeId );
             }
 
             ReloadQualifiers = Page.IsPostBack && FieldTypeId.HasValue;
@@ -1159,7 +1160,8 @@ namespace Rock.Web.UI.Controls
             // Reload qualifiers in case any postback events caused them to change.
             if ( ReloadQualifiers )
             {
-                UpdateQualifiers();
+                var fieldTypeId = ViewState["FieldTypeId"] as int? ?? FieldTypeId.Value;
+                UpdateQualifiers( fieldTypeId );
             }
 
             // Recreate the qualifiers and default control in case they changed due to new field type or
@@ -1247,7 +1249,7 @@ namespace Rock.Web.UI.Controls
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            
+
             writer.RenderEndTag();
 
             writer.RenderEndTag();  // row
@@ -1435,7 +1437,7 @@ namespace Rock.Web.UI.Controls
                 this.DefaultValue = attribute.DefaultValue;
 
                 this.ReloadQualifiers = false;
-                
+
                 SetSubTitleOnModal( attribute );
             }
 
@@ -1558,9 +1560,9 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Reads the qualifiers and default value from the page contents.
         /// </summary>
-        protected void UpdateQualifiers()
+        protected void UpdateQualifiers( int fieldTypeId )
         {
-            var field = Rock.Web.Cache.FieldTypeCache.Read( FieldTypeId.Value ).Field;
+            var field = Rock.Web.Cache.FieldTypeCache.Read( fieldTypeId ).Field;
             var qualifierControls = new List<Control>();
             foreach ( Control control in _phQualifiers.Controls )
             {
@@ -1572,7 +1574,7 @@ namespace Rock.Web.UI.Controls
 
             Qualifiers = field.ConfigurationValues( qualifierControls );
         }
-        
+
         /// <summary>
         /// Set the Subtitle of modal dialog
         /// </summary>
@@ -1580,7 +1582,7 @@ namespace Rock.Web.UI.Controls
         protected void SetSubTitleOnModal( Model.Attribute attribute )
         {
             ModalDialog modalDialog = this.FirstParentControlOfType<ModalDialog>();
-            if ( modalDialog != null && string.IsNullOrEmpty(modalDialog.SubTitle) )
+            if ( modalDialog != null && ( string.IsNullOrEmpty( modalDialog.SubTitle ) || modalDialog.SubTitle.StartsWith( "Id: " ) ) )
             {
                 modalDialog.SubTitle = string.Format( "Id: {0}", attribute.Id );
             }

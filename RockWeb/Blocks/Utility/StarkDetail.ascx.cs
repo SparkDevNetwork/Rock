@@ -77,6 +77,12 @@ namespace RockWeb.Blocks.Utility
         {
             base.OnLoad( e );
 
+            var txtName = new TextBox();
+            txtName.ID = this.ClientID + "tb";
+            txtName.Text = "hello";
+            ph1.Controls.Add( txtName );
+
+            
             if ( !Page.IsPostBack )
             {
                 // added for your convenience

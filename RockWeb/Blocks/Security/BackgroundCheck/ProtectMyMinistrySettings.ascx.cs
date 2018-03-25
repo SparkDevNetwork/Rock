@@ -148,7 +148,6 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                     SetSettingValue( rockContext, settings, "UserName", tbUserName.Text );
                     SetSettingValue( rockContext, settings, "Password", tbPassword.Text, true );
                     SetSettingValue( rockContext, settings, "ReturnURL", urlWebHook.Text );
-                    SetSettingValue( rockContext, settings, "TestMode", cbTestMode.Checked.ToString() );
                     SetSettingValue( rockContext, settings, "Active", cbActive.Checked.ToString() );
                     rockContext.SaveChanges();
 
@@ -381,7 +380,6 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         /// </summary>
         public void ShowNew()
         {
-            hlMode.Visible = false;
             hlActive.Visible = false;
 
             imgPromotion.ImageUrl = PROMOTION_IMAGE_URL;
@@ -419,7 +417,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
             }
 
             nbSSLWarning.Visible = !GetSettingValue( settings, "ReturnURL" ).StartsWith( "https://" );
-            nbSSLWarning.NotificationBoxType = GetSettingValue( settings, "TestMode" ).AsBoolean() ? NotificationBoxType.Warning : NotificationBoxType.Danger;
+            nbSSLWarning.NotificationBoxType = NotificationBoxType.Warning;
 
             pnlNew.Visible = false;
             pnlViewDetails.Visible = true;
@@ -441,7 +439,6 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
             tbPassword.Text = GetSettingValue( settings, "Password", true );
             urlWebHook.Text = GetSettingValue( settings, "ReturnURL" );
             cbActive.Checked = GetSettingValue( settings, "Active" ).AsBoolean();
-            cbTestMode.Checked = GetSettingValue( settings, "TestMode" ).AsBoolean();
 
             BindPackageGrid();
 
@@ -548,11 +545,6 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         /// <param name="settings">The settings.</param>
         public void ShowHighlightLabels( List<AttributeValue> settings )
         {
-            bool testMode = GetSettingValue( settings, "TestMode" ).AsBoolean();
-            hlMode.LabelType = testMode ? LabelType.Primary : LabelType.Success;
-            hlMode.Text = testMode ? "In Test Mode" : "In Live Mode";
-            hlMode.Visible = true;
-
             bool active = GetSettingValue( settings, "Active" ).AsBoolean();
             hlActive.LabelType = active ? LabelType.Success : LabelType.Danger;
             hlActive.Text = active ? "Active" : "Inactive";

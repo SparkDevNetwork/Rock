@@ -72,13 +72,16 @@
                             <Rock:PersonPicker ID="ppContact" runat="server" Label="Contact" EnableSelfSelection="true" OnSelectPerson="ppContact_SelectPerson" />
                             <Rock:PhoneNumberBox ID="pnPhone" runat="server" Label="Phone" />
                             <Rock:EmailBox ID="tbEmail" runat="server" Label="Email" />
-                            <asp:PlaceHolder ID="phAttributeEdits" runat="server" EnableViewState="false"></asp:PlaceHolder>
                         </div>
 
                     </div>
 
                     <Rock:HtmlEditor ID="htmlOccurrenceNote" runat="server" Label="Occurrence Note" />
                 
+                    <Rock:PanelWidget ID="wpAttributes" runat="server" Title="Attribute Values">
+                        <asp:PlaceHolder ID="phAttributeEdits" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                    </Rock:PanelWidget>
+
                     <div class="actions">
                         <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                         <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />

@@ -415,14 +415,8 @@ namespace RockWeb.Blocks.WorkFlow
             CanManage = canManage;
             CanViewList = canViewList;
 
-            if ( workflowType.IsActive.HasValue )
-            {
-                IsActive = workflowType.IsActive.Value;
-            }
-            else
-            {
-                IsActive = true;
-            }
+            IsActive = workflowType.IsActive;
+        
             
         }
     }

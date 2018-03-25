@@ -31,7 +31,7 @@ namespace Rock.Model
     /// <summary>
     /// Service/Data access class for <see cref="Rock.Model.FinancialTransactionDetail"/> entity objects.
     /// </summary>
-    public partial class FinancialTransactionDetailService 
+    public partial class FinancialTransactionDetailService
     {
 
         /// <summary>
@@ -65,9 +65,9 @@ namespace Rock.Model
         /// <param name="currencyTypeIds">The currency type ids.</param>
         /// <param name="sourceTypeIds">The source type ids.</param>
         /// <returns></returns>
-        public static DataSet GetGivingAnalyticsAccountTotals( DateTime? start, DateTime? end, List<int> accountIds, List<int> currencyTypeIds, List<int> sourceTypeIds )
+        public static DataSet GetGivingAnalyticsAccountTotals( DateTime? start, DateTime? end, List<int> accountIds, List<int> currencyTypeIds, List<int> sourceTypeIds, List<int> transactionTypeIds )
         {
-            var parameters = GetGivingAnalyticsParameters( start, end, null, null, accountIds, currencyTypeIds, sourceTypeIds );
+            var parameters = GetGivingAnalyticsParameters( start, end, null, null, accountIds, currencyTypeIds, sourceTypeIds, transactionTypeIds );
             return DbService.GetDataSet( "spFinance_GivingAnalyticsQuery_AccountTotals", System.Data.CommandType.StoredProcedure, parameters, 300 );
         }
 
@@ -80,9 +80,9 @@ namespace Rock.Model
         /// <param name="currencyTypeIds">The currency type ids.</param>
         /// <param name="sourceTypeIds">The source type ids.</param>
         /// <returns></returns>
-        public static DataSet GetGivingAnalyticsTransactionData( DateTime? start, DateTime? end, List<int> accountIds, List<int> currencyTypeIds, List<int> sourceTypeIds )
+        public static DataSet GetGivingAnalyticsTransactionData( DateTime? start, DateTime? end, List<int> accountIds, List<int> currencyTypeIds, List<int> sourceTypeIds, List<int> transactionTypeIds )
         {
-            var parameters = GetGivingAnalyticsParameters( start, end, null, null, accountIds, currencyTypeIds, sourceTypeIds );
+            var parameters = GetGivingAnalyticsParameters( start, end, null, null, accountIds, currencyTypeIds, sourceTypeIds, transactionTypeIds );
             return DbService.GetDataSet( "[dbo].[spFinance_GivingAnalyticsQuery_TransactionData]", System.Data.CommandType.StoredProcedure, parameters, 300 );
         }
 
@@ -108,14 +108,14 @@ namespace Rock.Model
         /// <param name="sourceTypeIds">The source type ids.</param>
         /// <returns></returns>
         public static DataSet GetGivingAnalyticsPersonSummary( DateTime? start, DateTime? end, decimal? minAmount, decimal? maxAmount,
-            List<int> accountIds, List<int> currencyTypeIds, List<int> sourceTypeIds )
+            List<int> accountIds, List<int> currencyTypeIds, List<int> sourceTypeIds, List<int> transactionTypeIds )
         {
-            var parameters = GetGivingAnalyticsParameters( start, end, minAmount, maxAmount, accountIds, currencyTypeIds, sourceTypeIds );
+            var parameters = GetGivingAnalyticsParameters( start, end, minAmount, maxAmount, accountIds, currencyTypeIds, sourceTypeIds, transactionTypeIds );
             return DbService.GetDataSet( "spFinance_GivingAnalyticsQuery_PersonSummary", System.Data.CommandType.StoredProcedure, parameters, 300 );
         }
 
         private static Dictionary<string, object> GetGivingAnalyticsParameters( DateTime? start, DateTime? end, decimal? minAmount, decimal? maxAmount,
-            List<int> accountIds, List<int> currencyTypeIds, List<int> sourceTypeIds )
+            List<int> accountIds, List<int> currencyTypeIds, List<int> sourceTypeIds, List<int> transactionTypeIds )
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>();
 
@@ -141,17 +141,22 @@ namespace Rock.Model
 
             if ( accountIds != null && accountIds.Any() )
             {
-                parameters.Add( "AccountIds", accountIds.AsDelimited(",") );
+                parameters.Add( "AccountIds", accountIds.AsDelimited( "," ) );
             }
 
             if ( currencyTypeIds != null && currencyTypeIds.Any() )
             {
-                parameters.Add( "CurrencyTypeIds", currencyTypeIds.AsDelimited(",") );
+                parameters.Add( "CurrencyTypeIds", currencyTypeIds.AsDelimited( "," ) );
             }
 
             if ( sourceTypeIds != null && sourceTypeIds.Any() )
             {
-                parameters.Add( "SourceTypeIds", sourceTypeIds.AsDelimited(",") );
+                parameters.Add( "SourceTypeIds", sourceTypeIds.AsDelimited( "," ) );
+            }
+
+            if ( transactionTypeIds != null && transactionTypeIds.Any() )
+            {
+                parameters.Add( "TransactionTypeIds", transactionTypeIds.AsDelimited( "," ) );
             }
 
             return parameters;

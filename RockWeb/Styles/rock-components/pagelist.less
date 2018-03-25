@@ -77,6 +77,10 @@
           }
         }
 
+        &:focus {
+          text-decoration: none;
+        }
+
         div.notification {
           position: absolute;
           top: -10px;
@@ -172,8 +176,28 @@
   }
 }
 
-@media @md {
-  // tablet portrait and larger
+@media @md-only {
+  // desktop and larger
+  .list-as-blocks {
+    ul {
+      li {
+        width: 23.5%;
+        margin: 0 1% @spacing-md-px;
+
+        &:nth-child(4n) {
+          margin-right: 0;
+        }
+
+        &:nth-child(4n+1) {
+          margin-left: 0;
+        }
+      }
+    }
+  }
+}
+
+@media @lg {
+  // desktop and larger
   .list-as-blocks {
     ul {
       li {

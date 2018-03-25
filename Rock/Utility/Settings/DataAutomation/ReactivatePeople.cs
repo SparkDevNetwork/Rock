@@ -28,11 +28,22 @@ namespace Rock.Utility.Settings.DataAutomation
         /// </summary>
         public ReactivatePeople()
         {
+            IsLastContributionEnabled = true;
             LastContributionPeriod = 90;
+
+            IsAttendanceInServiceGroupEnabled = true;
             AttendanceInServiceGroupPeriod = 90;
+
+            IsAttendanceInGroupTypeEnabled = true;
             AttendanceInGroupTypeDays = 90;
+
+            IsPrayerRequestEnabled = true;
             PrayerRequestPeriod = 90;
+
+            IsPersonAttributesEnabled = true;
             PersonAttributesDays = 90;
+
+            IsInteractionsEnabled = true;
         }
 
         /// <summary>
@@ -153,7 +164,7 @@ namespace Rock.Utility.Settings.DataAutomation
         /// <value>
         /// The include data view.
         /// </value>
-        public string IncludeDataView { get; set; }
+        public int? IncludeDataView { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is exclude data view enabled.
@@ -169,7 +180,7 @@ namespace Rock.Utility.Settings.DataAutomation
         /// <value>
         /// The exclude data view.
         /// </value>
-        public string ExcludeDataView { get; set; }
+        public int? ExcludeDataView { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is interactions enabled.

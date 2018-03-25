@@ -37,7 +37,7 @@ namespace Rockweb.Blocks.Crm
     /// View a person's DISC assessment.
     /// This is used with permission from Greg Wiens: http://www.gregwiens.com/scid/
     /// </summary>
-    [DisplayName( "Disc Result" )]
+    [DisplayName( "DISC Result" )]
     [Category( "CRM" )]
     [Description( "View the results of a DISC assessment." )]
     public partial class DiscResult : Rock.Web.UI.RockBlock

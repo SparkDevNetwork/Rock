@@ -1871,14 +1871,15 @@ namespace RockWeb.Blocks.Event
             fee.AllowMultiple = cbAllowMultiple.Checked;
             fee.DiscountApplies = cbDiscountApplies.Checked;
             fee.IsActive = cbFeeIsActive.Checked;
+            fee.IsRequired = cbFeeIsRequired.Checked;
 
             if ( fee.FeeType == RegistrationFeeType.Single )
             {
-                fee.CostValue = cCost.Text;
+                fee.CostValue = cCost.Text.Replace("$", "");
             }
             else
             {
-                fee.CostValue = kvlMultipleFees.Value;
+                fee.CostValue = kvlMultipleFees.Value.Replace("$", "");
             }
             
             hfFeeGuid.Value = string.Empty;
@@ -2139,6 +2140,7 @@ namespace RockWeb.Blocks.Event
                 pwDetails.Expanded = false;
             }
 
+            pdAuditDetails.Visible = false;
             SetEditMode( true );
 
             LoadDropDowns( rockContext );
@@ -2799,7 +2801,8 @@ namespace RockWeb.Blocks.Event
                         Cost = FormatFeeCost( f.CostValue ),
                         f.AllowMultiple,
                         f.DiscountApplies,
-                        f.IsActive
+                        f.IsActive,
+                        f.IsRequired
                     } )
                     .ToList();
                 gFees.DataBind();
@@ -2832,6 +2835,7 @@ namespace RockWeb.Blocks.Event
             cbAllowMultiple.Checked = fee.AllowMultiple;
             cbDiscountApplies.Checked = fee.DiscountApplies;
             cbFeeIsActive.Checked = fee.IsActive;
+            cbFeeIsRequired.Checked = fee.IsRequired;
 
             ShowDialog( "Fees" );
         }

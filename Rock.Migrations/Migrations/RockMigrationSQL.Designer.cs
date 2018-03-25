@@ -19,7 +19,7 @@ namespace Rock.Migrations.Migrations {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class RockMigrationSQL {
@@ -4289,6 +4289,94 @@ namespace Rock.Migrations.Migrations {
         public static string _201802092340176_Rollup_0209_ufnUtility_CsvToTable {
             get {
                 return ResourceManager.GetString("_201802092340176_Rollup_0209_ufnUtility_CsvToTable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[spCheckin_AttendanceAnalyticsQuery_Attendees]&apos;) AND type in (N&apos;P&apos;, N&apos;PC&apos;))
+        ///DROP PROCEDURE [dbo].[spCheckin_AttendanceAnalyticsQuery_Attendees]
+        ///GO
+        ///
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns the people that attended based on selected filter criteria
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* Id 
+        ///		* NickName
+        ///		* LastName
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&apos;GroupTypeId&apos; datatype=&apos;int&apos;&gt;The Check-in Area Group Type Id (only attendance for this a [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201802260423490_Rollup_0225_spCheckin_AttendanceAnalyticsQuery_Attendees {
+            get {
+                return ResourceManager.GetString("_201802260423490_Rollup_0225_spCheckin_AttendanceAnalyticsQuery_Attendees", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[spCheckin_AttendanceAnalyticsQuery_NonAttendees]&apos;) AND type in (N&apos;P&apos;, N&apos;PC&apos;))
+        ///DROP PROCEDURE [dbo].[spCheckin_AttendanceAnalyticsQuery_NonAttendees]
+        ///GO
+        ///
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns any person ids for people that have attended previously but who have not attended since the beginning date
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* PersonId 
+        ///		* SundayDate - Last time attended
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&apos;GroupTypeIds&apos; data [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201802260423490_Rollup_0225_spCheckin_AttendanceAnalyticsQuery_NonAttendees {
+            get {
+                return ResourceManager.GetString("_201802260423490_Rollup_0225_spCheckin_AttendanceAnalyticsQuery_NonAttendees", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to -- Update AttributeValues
+        ///----------------------------------------------------------------------------------------------------------------
+        ///
+        ///-- Fix NameValue AttributeValue for Request Set Name for the External Inquiryworkflow
+        ///UPDATE [AttributeValue]
+        ///SET [Value] = &apos;{{ Workflow | Attribute:&apos;&apos;FirstName&apos;&apos; }} {{ Workflow | Attribute:&apos;&apos;LastName&apos;&apos; }} ( {{ Workflow | Attribute:&apos;&apos;Topic&apos;&apos; }} )&apos;
+        ///WHERE AttributeId in (select Id from Attribute where [Guid] = &apos;93852244-A667-4749-961A-D47F88675BE4&apos;)
+        ///	AND [Value] =  [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201803201440110_UpdateLegacyLava {
+            get {
+                return ResourceManager.GetString("_201803201440110_UpdateLegacyLava", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to BEGIN TRY
+        ///    ALTER TABLE Person
+        ///
+        ///    DROP COLUMN DaysUntilAnniversary
+        ///END TRY
+        ///
+        ///BEGIN CATCH
+        ///END CATCH
+        ///
+        ///ALTER TABLE Person ADD DaysUntilAnniversary AS (
+        ///    CASE 
+        ///        -- if there anniversary is Feb 29 and their next anniversary is this year and it isn&apos;t a leap year, set their anniversary to Feb 28 (this year)
+        ///        WHEN (
+        ///                DATEPART(MONTH, AnniversaryDate) = 2
+        ///                AND DATEPART(DAY, AnniversaryDate) = 29
+        ///                AND datepart(month, sysdatetime()) &lt; 3
+        ///    [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201803201617508_DaysUntilAnniversary {
+            get {
+                return ResourceManager.GetString("_201803201617508_DaysUntilAnniversary", resourceCulture);
             }
         }
     }

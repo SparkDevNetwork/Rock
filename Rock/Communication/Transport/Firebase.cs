@@ -203,6 +203,10 @@ namespace Rock.Communication.Transport
                                         {
                                             recipient.StatusNote = "Firebase failed to notify devices";
                                         }
+                                        else
+                                        {
+                                            recipient.SendDateTime = RockDateTime.Now;
+                                        }
 
                                         recipient.Status = status;
                                         recipient.TransportEntityTypeName = this.GetType().FullName;

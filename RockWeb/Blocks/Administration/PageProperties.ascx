@@ -16,6 +16,7 @@
                     <Rock:HighlightLabel ID="hlblSiteName" runat="server" />
                 </div>
             </div>
+            <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <asp:Panel ID="pnlBody" runat="server" CssClass="panel-body">
 
                 <asp:HiddenField ID="hfPageId" runat="server" />
@@ -139,7 +140,7 @@
                                                     <p><i class="fa fa-bolt"></i><strong>Sweet!</strong> Your package was imported successfully.</p>
                                                     <asp:Repeater ID="rptImportWarnings" runat="server" Visible="False">
                                                         <HeaderTemplate>
-                                                            <p><i class="fa fa-exclamation-triangle"></i>Just a quick head's up...</p>
+                                                            <p><i class="fa fa-exclamation-triangle"></i>Just a quick heads up...</p>
                                                             <ul>
                                                         </HeaderTemplate>
                                                         <ItemTemplate>

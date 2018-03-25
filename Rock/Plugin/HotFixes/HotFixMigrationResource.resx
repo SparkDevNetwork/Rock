@@ -130,4 +130,19 @@
   <data name="_043_MoreMigrationRollupsForV7_3_ufnUtility_CsvToTable" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>043_moremigrationrollupsforv7_3_ufnutility_csvtotable.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
+  <data name="_047_DataAutomation_FixBenevolenceCaseWorker" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>047_dataautomation_fixbenevolencecaseworker.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_047_DataAutomation_ShortLinkInteractionFix" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>047_dataautomation_shortlinkinteractionfix.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_049_GivingAnalyticsAccounts_AccountTotals" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>049_GivingAnalyticsAccounts_AccountTotals.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+  </data>
+  <data name="_049_GivingAnalyticsAccounts_PersonSummary" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>049_GivingAnalyticsAccounts_PersonSummary.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+  </data>
+  <data name="_049_GivingAnalyticsAccounts_TransactionData" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>049_GivingAnalyticsAccounts_TransactionData.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+  </data>
 </root>

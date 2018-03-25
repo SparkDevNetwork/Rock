@@ -22,7 +22,6 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
-using Rock.SystemKey;
 
 namespace Rock.Web.UI.Controls
 {
@@ -34,33 +33,6 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:BootstrapButton runat=server></{0}:BootstrapButton>" )]
     public class BootstrapButton : LinkButton
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BootstrapButton" /> class.
-        /// </summary>
-        public BootstrapButton()
-            : base()
-        {
-            var completeTextSetting = Rock.Web.SystemSettings.GetValue( SystemSetting.BOOTSTRAP_BUTTON_COMPLETE_TEXT );
-            this._completedText = !string.IsNullOrEmpty( CompletedText ) ? CompletedText : completeTextSetting;
-
-            var dataLoadingTextSetting = Rock.Web.SystemSettings.GetValue( SystemSetting.BOOTSTRAP_BUTTON_DATA_LOADING_TEXT );
-            this._dataLoadingText = !string.IsNullOrEmpty( DataLoadingText ) ? DataLoadingText : dataLoadingTextSetting;
-            if ( string.IsNullOrEmpty( _dataLoadingText ) )
-            {
-                _dataLoadingText =  "<i class='fa fa-refresh fa-spin working'></i>";
-            }
-        }
-
-        #region fields
-
-        private bool _isButtonClicked;
-
-        private string _completedText;
-
-        private string _dataLoadingText;
-
-        #endregion
-
         /// <summary>
         /// Gets or sets text to use when the button has been clicked.
         /// </summary>
@@ -124,6 +96,8 @@ namespace Rock.Web.UI.Controls
             get { return ViewState["CompletedMessage"] as string ?? string.Empty; }
             set { ViewState["CompletedMessage"] = value; }
         }
+
+        private bool _isButtonClicked = false;
 
         /// <summary>
         /// Adds the attributes of the <see cref="T:System.Web.UI.WebControls.LinkButton" /> control to the output stream for rendering on the client.

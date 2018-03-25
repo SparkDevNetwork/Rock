@@ -34,9 +34,9 @@ namespace RockWeb.Blocks.Security
     [Category( "Security" )]
     [Description( "Block for user to confirm a newly created login account, usually from an email that was sent to them." )]
 
-    [CodeEditorField( "Confirmed Caption", "", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "{0}, Your account has been confirmed.  Thank you for creating the account", "Captions", 0 )]
-    [CodeEditorField( "Reset Password Caption", "", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "{0}, Enter a new password for your '{1}' account", "Captions", 1 )]
-    [CodeEditorField( "Password Reset Caption", "", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "{0}, The password for your '{1}' account has been changed", "Captions", 2 )]
+    [CodeEditorField( "Confirmed Caption", "", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "{0}, your account has been confirmed.  Thank you for creating the account.", "Captions", 0 )]
+    [CodeEditorField( "Reset Password Caption", "", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "{0}, enter a new password for your '{1}' account.", "Captions", 1 )]
+    [CodeEditorField( "Password Reset Caption", "", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "{0}, the password for your '{1}' account has been changed.", "Captions", 2 )]
     [CodeEditorField( "Delete Caption", "", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "Are you sure you want to delete the '{0}' account?", "Captions", 3 )]
     [CodeEditorField( "Deleted Caption", "", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "The account has been deleted.", "Captions", 4 )]
     [CodeEditorField( "Invalid Caption", "", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "The confirmation code you've entered is not valid.  Please enter a valid confirmation code or <a href='{0}'>create a new account</a>.", "Captions", 5 )]

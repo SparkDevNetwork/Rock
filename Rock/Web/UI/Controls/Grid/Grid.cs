@@ -169,7 +169,7 @@ namespace Rock.Web.UI.Controls
                     result = string.Format( "No {0} Found", RowItemText.Pluralize() );
                 }
 
-                return result;
+                return $"<span class='table-empty'>{result}</span>";
             }
 
             set
@@ -232,6 +232,35 @@ namespace Rock.Web.UI.Controls
                 ViewState["ExportFilename"] = value;
             }
         }
+
+        /// <summary>
+
+        /// Gets or sets a value indicating whether to show the action buttons in the header.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the action buttons will be shown in the header; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowActionsInHeader { get; set; } = true;
+
+        /// Gets or sets the worksheet and title name on the excel file.
+        /// If this property is null then the grid will use it's 
+        /// caption or the page tile in that order.
+        /// </summary>
+        /// <value>
+        /// The name of the export title.
+        /// </value>
+        public string ExportTitleName
+        {
+            get
+            {
+                return ViewState["ExportTitleName"] as string;
+            }
+            set
+            {
+                ViewState["ExportTitleName"] = value;
+            }
+        }
+
 
         /// <summary>
         /// Gets or sets a value indicating whether [hide delete button for is system].
@@ -696,6 +725,12 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
+            // disable showing buttons in the header of light grids
+            if ( DisplayType == GridDisplayType.Light )
+            {
+                ShowActionsInHeader = false;
+            }
+
             base.OnLoad( e );
         }
 
@@ -951,6 +986,27 @@ namespace Rock.Web.UI.Controls
                 _actionRow.Cells.Add( cell );
 
                 cell.Controls.Add( _gridActions );
+
+                // Add the action row to the top of the header
+                if ( ShowActionsInHeader )
+                {
+                    var actionHeaderRow = base.CreateRow( 0, 0, DataControlRowType.Header, DataControlRowState.Normal );
+                    actionHeaderRow.ID = "actionHeaderRow";
+                    actionHeaderRow.TableSection = TableRowSection.TableHeader;
+                    _table.Rows.AddAt( 0, actionHeaderRow );
+
+                    var mirrorControl = new ControlMirror();
+                    mirrorControl.ID = "actionMirror";
+                    mirrorControl.ControlToMirror = _gridActions;
+
+                    TableCell actionHeaderCell = new TableCell();
+                    actionHeaderCell.ColumnSpan = this.Columns.Count;
+                    actionHeaderCell.CssClass = "grid-actions";
+                    actionHeaderRow.Cells.Add( actionHeaderCell );
+
+                    actionHeaderCell.Controls.Add( mirrorControl );
+                }
+
 
                 if ( !this.ShowActionRow )
                 {
@@ -1550,15 +1606,21 @@ namespace Rock.Web.UI.Controls
 
             ExcelPackage excel = new ExcelPackage();
 
-            // if the grid has a caption customize on it
-            if ( !string.IsNullOrEmpty( this.Caption ) )
+            if ( !string.IsNullOrEmpty( this.ExportTitleName ) )
             {
+                // If we have a Export Title Name then use it
+                workSheetName = this.ExportTitleName;
+                title = this.ExportTitleName;
+            }
+            else if ( !string.IsNullOrEmpty( this.Caption ) )
+            {
+                // Then try the caption
                 workSheetName = this.Caption;
                 title = this.Caption;
             }
-            // otherwise use the page title
             else
             {
+                // otherwise use the page title
                 var pageTitle = ( Page as RockPage )?.PageTitle;
 
                 if ( !string.IsNullOrEmpty( pageTitle ) )
@@ -1567,6 +1629,7 @@ namespace Rock.Web.UI.Controls
                     title = pageTitle;
                 }
             }
+
             excel.Workbook.Properties.Title = title;
 
             // add author info
@@ -1683,6 +1746,8 @@ namespace Rock.Web.UI.Controls
                 DataTable data = this.DataSourceAsDataTable;
                 columnCounter = 0;
 
+                var encryptedColumns = new List<int>();
+
                 // Set up the columns
                 foreach ( DataColumn column in data.Columns )
                 {
@@ -1694,6 +1759,12 @@ namespace Rock.Web.UI.Controls
 
                     // Set the initial column format
                     worksheet.Column( columnCounter ).Style.Numberformat.Format = ExcelHelper.DefaultColumnFormat( column.DataType );
+
+                    // Check to see if this is an encrypted column
+                    if ( gridField is EncryptedField )
+                    {
+                        encryptedColumns.Add( columnCounter - 1 );
+                    }
                 }
 
                 // print data
@@ -1703,7 +1774,9 @@ namespace Rock.Web.UI.Controls
 
                     for ( int i = 0; i < data.Columns.Count; i++ )
                     {
-                        var value = rowView.Row[i].ReverseCurrencyFormatting();
+                        var value = encryptedColumns.Contains( i ) ? Security.Encryption.DecryptString( rowView.Row[i].ToString() ) : rowView.Row[i];
+                        value = value.ReverseCurrencyFormatting();
+
                         int columnIndex = i + 1;
                         ExcelHelper.SetExcelValue( worksheet.Cells[rowCounter, columnIndex], value );
 
@@ -1911,6 +1984,11 @@ namespace Rock.Web.UI.Controls
                                 if ( dataField is LavaBoundField )
                                 {
                                     propValue = ( dataField as LavaBoundField ).GetFormattedDataValue( propValue );
+                                }
+
+                                if ( dataField is HtmlField )
+                                {
+                                    propValue = ( dataField as HtmlField ).FormatDataValue( propValue );
                                 }
 
                                 if ( propValue != null )

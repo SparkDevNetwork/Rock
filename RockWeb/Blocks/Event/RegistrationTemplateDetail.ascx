@@ -205,6 +205,7 @@
                                 <Rock:BoolField DataField="AllowMultiple" HeaderText="Enable<br />Quantity" HtmlEncode="false" HeaderStyle-HorizontalAlign="Center" />
                                 <Rock:BoolField DataField="DiscountApplies" HeaderText="Discount<br />Applies" HtmlEncode="false" HeaderStyle-HorizontalAlign="Center" />
                                 <Rock:BoolField DataField="IsActive" HeaderText="Is<br />Active" HtmlEncode="false" HeaderStyle-HorizontalAlign="Center" />
+                                <Rock:BoolField DataField="IsRequired" HeaderText="Is<br />Required" HtmlEncode="false" HeaderStyle-HorizontalAlign="Center" />
                                 <Rock:EditField OnClick="gFees_Edit" />
                                 <Rock:DeleteField OnClick="gFees_Delete" />
                             </Columns>
@@ -470,10 +471,13 @@
                         <Rock:CurrencyBox ID="cCost" runat="server" Label="Cost" ValidationGroup="Fee" />
                         <Rock:KeyValueList ID="kvlMultipleFees" runat="server" Label="Costs" ValidationGroup="Fee" KeyPrompt="Option" ValuePrompt="Cost" />
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-3">
                         <Rock:RockCheckBox ID="cbAllowMultiple" runat="server" Label="Enable Quantity" ValidationGroup="Fee" Text="Yes" Help="Should registrants be able to select more than one of this item?" CssClass="form-check"/>
                         <Rock:RockCheckBox ID="cbDiscountApplies" runat="server" Label="Discount Applies" ValidationGroup="Fee" Text="Yes" Help="Should discounts be applied to this fee?" />
-                        <Rock:RockCheckBox ID="cbFeeIsActive" runat="server" Label="Is Active" ValidationGroup="Fee" Text="Yes" Help="Unchecking this will remove the fee option for new registrations but will not effect the existing registrants." />
+                        <Rock:RockCheckBox ID="cbFeeIsActive" runat="server" Label="Is Active" ValidationGroup="Fee" Text="Yes" Help="Unchecking this will remove the fee for new registrations but will not effect the existing registrants." />
+                    </div>
+                    <div class="col-md-3">
+                        <Rock:RockCheckBox ID="cbFeeIsRequired" runat="server" Label="Is Required" ValidationGroup="Fee" Text="Yes" Help="Checking this will mark the fee for new registrations required." />
                     </div>
                 </div>
             </Content>

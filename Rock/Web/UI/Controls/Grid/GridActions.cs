@@ -271,28 +271,6 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
-            // controls for add
-            _aAdd = new HtmlGenericControl( "a" );
-            Controls.Add( _aAdd );
-            _aAdd.ID = "aAdd";
-            _aAdd.Attributes.Add( "href", "#" );
-            _aAdd.Attributes.Add( "class", "btn-add btn btn-default btn-sm" );
-            _aAdd.InnerText = "Add";
-
-            _lbAdd = new LinkButton();
-            Controls.Add( _lbAdd );
-            _lbAdd.ID = "lbAdd";
-            _lbAdd.CssClass = "btn-add btn btn-default btn-sm";
-            _lbAdd.ToolTip = "Alt+N";
-            _lbAdd.Click += lbAdd_Click;
-            _lbAdd.CausesValidation = false;
-            _lbAdd.PreRender += lb_PreRender;
-            _lbAdd.AccessKey = "n";
-            Controls.Add( _lbAdd );
-            HtmlGenericControl iAdd = new HtmlGenericControl( "i" );
-            iAdd.Attributes.Add( "class", "fa fa-plus-circle" );
-            _lbAdd.Controls.Add( iAdd );
-
             // control for communicate
             _lbCommunicate = new LinkButton();
             Controls.Add( _lbCommunicate );
@@ -304,7 +282,7 @@ namespace Rock.Web.UI.Controls
             _lbCommunicate.PreRender += lb_PreRender;
             Controls.Add( _lbCommunicate );
             HtmlGenericControl iCommunicate = new HtmlGenericControl( "i" );
-            iCommunicate.Attributes.Add( "class", "fa fa-comment" );
+            iCommunicate.Attributes.Add( "class", "fa fa-comment fa-fw" );
             _lbCommunicate.Controls.Add( iCommunicate );
 
             // control for person merge
@@ -318,7 +296,7 @@ namespace Rock.Web.UI.Controls
             _lbPersonMerge.PreRender += lb_PreRender;
             Controls.Add( _lbPersonMerge );
             HtmlGenericControl iPersonMerge = new HtmlGenericControl( "i" );
-            iPersonMerge.Attributes.Add( "class", "fa fa-users" );
+            iPersonMerge.Attributes.Add( "class", "fa fa-users fa-fw" );
             _lbPersonMerge.Controls.Add( iPersonMerge );
 
             // control for bulk update
@@ -332,7 +310,7 @@ namespace Rock.Web.UI.Controls
             _lbBulkUpdate.PreRender += lb_PreRender;
             Controls.Add( _lbBulkUpdate );
             HtmlGenericControl iBulkUpdate = new HtmlGenericControl( "i" );
-            iBulkUpdate.Attributes.Add( "class", "fa fa-truck" );
+            iBulkUpdate.Attributes.Add( "class", "fa fa-truck fa-fw" );
             _lbBulkUpdate.Controls.Add( iBulkUpdate );
             
             // controls for excel export
@@ -352,7 +330,7 @@ namespace Rock.Web.UI.Controls
             _lbExcelExport.CausesValidation = false;
             Controls.Add( _lbExcelExport );
             HtmlGenericControl iExcelExport = new HtmlGenericControl( "i" );
-            iExcelExport.Attributes.Add( "class", "fa fa-table" );
+            iExcelExport.Attributes.Add( "class", "fa fa-table fa-fw" );
             _lbExcelExport.Controls.Add( iExcelExport );
 
             // control for merge template
@@ -366,8 +344,30 @@ namespace Rock.Web.UI.Controls
             _lbMergeTemplate.PreRender += lb_PreRender;
             Controls.Add( _lbMergeTemplate );
             HtmlGenericControl iMergeTemplate = new HtmlGenericControl( "i" );
-            iMergeTemplate.Attributes.Add( "class", "fa fa-files-o" );
+            iMergeTemplate.Attributes.Add( "class", "fa fa-files-o fa-fw" );
             _lbMergeTemplate.Controls.Add( iMergeTemplate );
+
+            // controls for add
+            _aAdd = new HtmlGenericControl( "a" );
+            Controls.Add( _aAdd );
+            _aAdd.ID = "aAdd";
+            _aAdd.Attributes.Add( "href", "#" );
+            _aAdd.Attributes.Add( "class", "btn-add btn btn-default btn-sm" );
+            _aAdd.InnerText = "Add";
+
+            _lbAdd = new LinkButton();
+            Controls.Add( _lbAdd );
+            _lbAdd.ID = "lbAdd";
+            _lbAdd.CssClass = "btn-add btn btn-default btn-sm";
+            _lbAdd.ToolTip = "Alt+N";
+            _lbAdd.Click += lbAdd_Click;
+            _lbAdd.CausesValidation = false;
+            _lbAdd.PreRender += lb_PreRender;
+            _lbAdd.AccessKey = "n";
+            Controls.Add( _lbAdd );
+            HtmlGenericControl iAdd = new HtmlGenericControl( "i" );
+            iAdd.Attributes.Add( "class", "fa fa-plus-circle fa-fw" );
+            _lbAdd.Controls.Add( iAdd );
         }
 
         /// <summary>

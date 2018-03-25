@@ -284,7 +284,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                                 if ( guid.HasValue )
                                 {
                                     var workflowType = workflowTypeService.Get( guid.Value );
-                                    if ( workflowType != null && workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                                    if ( workflowType != null && workflowType.IsActive && workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                                     {
                                         string url = string.Format( "~/WorkflowEntry/{0}?PersonId={1}", workflowType.Id, Person.Id );
                                         sbActions.AppendFormat(
@@ -372,11 +372,11 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             {
                 if (GetAttributeValue( "DisplayMiddleName" ).AsBoolean() && !String.IsNullOrWhiteSpace(Person.MiddleName))
                 {
-                    nameText = string.Format( "<span class='first-word'>{0}</span> <span class='middlename'>{1}</span> <span class='lastname'>{2}</span>", Person.NickName, Person.MiddleName, Person.LastName );
+                    nameText = string.Format( "<span class='first-word nickname'>{0}</span> <span class='middlename'>{1}</span> <span class='lastname'>{2}</span>", Person.NickName, Person.MiddleName, Person.LastName );
                 }
                 else
                 {
-                    nameText = string.Format( "<span class='first-word'>{0}</span> <span class='lastname'>{1}</span>", Person.NickName, Person.LastName );
+                    nameText = string.Format( "<span class='first-word nickname'>{0}</span> <span class='lastname'>{1}</span>", Person.NickName, Person.LastName );
                 }
 
                 // Prefix with Title if they have a Title with IsFormal=True

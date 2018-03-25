@@ -1394,7 +1394,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
 
             SetEditMode( true );
 
-            cbIsActive.Checked = workflowType.IsActive ?? false;
+            cbIsActive.Checked = workflowType.IsActive;
             tbName.Text = workflowType.Name;
             tbDescription.Text = workflowType.Description;
             cpCategory.SetValue( workflowType.CategoryId );
@@ -1464,7 +1464,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                 hlType.Visible = false;
             }
 
-            lWorkflowTypeDescription.Text = workflowType.Description;
+            lWorkflowTypeDescription.Text = workflowType.Description.ConvertMarkdownToHtml();
 
             if ( workflowType.ActivityTypes.Count > 0 )
             {
