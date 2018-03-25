@@ -1216,9 +1216,25 @@ Move Adult Children: {moveAdultChildrenResult}
 
         #region Helper Classes
 
+        /// <summary>
+        /// Helper class for tracking person/campus values
+        /// </summary>
         public class PersonCampus
         {
+            /// <summary>
+            /// Gets or sets the person identifier.
+            /// </summary>
+            /// <value>
+            /// The person identifier.
+            /// </value>
             public int PersonId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the campus identifier.
+            /// </summary>
+            /// <value>
+            /// The campus identifier.
+            /// </value>
             public int CampusId { get; set; }
         }
 
