@@ -164,6 +164,7 @@ namespace Rock.Lava
         /// Updates all occurrances of GlobalAttribute legacy lava for the string
         /// </summary>
         /// <param name="lavaText">The lava text.</param>
+        /// <param name="isUpdated">if set to <c>true</c> [is updated].</param>
         /// <returns></returns>
         public string ReplaceGlobal( string lavaText, ref bool isUpdated )
         {

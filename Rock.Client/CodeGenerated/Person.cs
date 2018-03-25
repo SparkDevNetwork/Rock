@@ -102,6 +102,9 @@ namespace Rock.Client
         private bool _IsEmailActive = true;
 
         /// <summary />
+        public bool IsLockedAsChild { get; set; }
+
+        /// <summary />
         public bool IsSystem { get; set; }
 
         /// <summary />
@@ -225,6 +228,7 @@ namespace Rock.Client
             this.InactiveReasonNote = source.InactiveReasonNote;
             this.IsDeceased = source.IsDeceased;
             this.IsEmailActive = source.IsEmailActive;
+            this.IsLockedAsChild = source.IsLockedAsChild;
             this.IsSystem = source.IsSystem;
             this.LastName = source.LastName;
             this.MaritalStatusValueId = source.MaritalStatusValueId;
@@ -268,6 +272,9 @@ namespace Rock.Client
 
         /// <summary />
         public DefinedValue ConnectionStatusValue { get; set; }
+
+        /// <summary />
+        public int? DaysUntilAnniversary { get; set; }
 
         /// <summary />
         public int? DaysUntilBirthday { get; set; }

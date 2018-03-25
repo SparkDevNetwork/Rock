@@ -27,8 +27,10 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:ControlMirror runat=server></{0}:ControlMirror>" )]
     public class ControlMirror : WebControl
     {
-        // This will be automatically populated on each Page_Load
-        // with the value of the Mirror control's ControlID attribute.
+        /// <summary>
+        /// This will be automatically populated on each Page_Load
+        /// with the value of the Mirror control's ControlID attribute.
+        /// </summary>
         public string ControlID = null;
 
         /// <summary>
@@ -39,6 +41,10 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public Control ControlToMirror { get; set; }
 
+        /// <summary>
+        /// Renders the control to the specified HTML writer.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         protected override void Render( HtmlTextWriter writer )
         {
             if ( ControlID != null )

@@ -234,7 +234,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-
         /// Gets or sets a value indicating whether to show the action buttons in the header.
         /// </summary>
         /// <value>
@@ -242,6 +241,7 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public bool ShowActionsInHeader { get; set; } = true;
 
+        /// <summary>
         /// Gets or sets the worksheet and title name on the excel file.
         /// If this property is null then the grid will use it's 
         /// caption or the page tile in that order.

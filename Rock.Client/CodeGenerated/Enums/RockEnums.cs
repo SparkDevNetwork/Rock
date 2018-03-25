@@ -638,6 +638,7 @@ namespace Rock.Client.Enums
         PreDelete = 0x2,
         PostDelete = 0x3,
         ImmediatePostSave = 0x4,
+        PostAdd = 0x5,
     }
 
     #pragma warning restore CS1591

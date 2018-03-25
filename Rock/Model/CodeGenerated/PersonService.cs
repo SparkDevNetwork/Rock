@@ -113,6 +113,7 @@ namespace Rock.Model
             target.InactiveReasonNote = source.InactiveReasonNote;
             target.IsDeceased = source.IsDeceased;
             target.IsEmailActive = source.IsEmailActive;
+            target.IsLockedAsChild = source.IsLockedAsChild;
             target.IsSystem = source.IsSystem;
             target.LastName = source.LastName;
             target.MaritalStatusValueId = source.MaritalStatusValueId;
