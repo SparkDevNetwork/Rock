@@ -35,8 +35,8 @@
                                 <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" HtmlEncode="false" />
                                 <Rock:DateField DataField="RequestDate" HeaderText="Requested" SortExpression="RequestDate" />
                                 <Rock:DateField DataField="ResponseDate" HeaderText="Completed" SortExpression="ResponseDate" />
-                                <Rock:RockBoundField ItemStyle-HorizontalAlign="Center" DataField="RecordFoundLabel" HeaderText="Record Found" SortExpression="RecordFound" HtmlEncode="false" />
-                                <asp:HyperLinkField HeaderText="Report" DataNavigateUrlFields="ResponseDocumentId" DataNavigateUrlFormatString="~/GetFile.ashx?id={0}" DataTextField="ResponseDocumentText" ItemStyle-HorizontalAlign="Center"  />
+                                <Rock:RockBoundField ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center" DataField="RecordFoundLabel" HeaderText="Record Found" SortExpression="RecordFound" HtmlEncode="false" />
+                                <asp:HyperLinkField HeaderText="Report" DataNavigateUrlFields="ResponseDocumentId" DataNavigateUrlFormatString="~/GetFile.ashx?id={0}" DataTextField="ResponseDocumentText" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center"  />
                                 <Rock:LinkButtonField HeaderText="Log" Text="<i class='fa fa-file-code-o fa-lg'></i>" OnClick="gRequest_Data" HeaderStyle-CssClass="" ItemStyle-CssClass="" ColumnPriority="DesktopLarge" />
                                 <Rock:EditField OnClick="gRequest_ViewWorkflow" IconCssClass="fa fa-cogs" ToolTip="View Workflow" />
 
