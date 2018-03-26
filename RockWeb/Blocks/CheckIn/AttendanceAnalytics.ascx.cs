@@ -54,6 +54,7 @@ namespace RockWeb.Blocks.CheckIn
     [BooleanField( "Show Schedule Filter", "Should the Schedules filter be displayed", true, "", 8)]
     [BooleanField( "Show Campus Filter", "Should the Campus filter be displayed?", true, "", 9)]
     [BooleanField( "Show View By Option", "Should the option to view 'Attendees' vs 'Parents of Attendees' vs 'Children of Attendees' be displayed when viewing the grid? If not displayed, the grid will always show attendees.", true, "", 10 )]
+    [BooleanField( "Show Bulk Update Option", "Should the Bulk Update option be allowed from the attendance grid?", true, "", 11 )]
 
     [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", "", true, false, Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK, "", 5 )]
     public partial class AttendanceAnalytics : RockBlock
@@ -129,8 +130,8 @@ namespace RockWeb.Blocks.CheckIn
             gAttendeesAttendance.GridRebind += gAttendeesAttendance_GridRebind;
 
             gAttendeesAttendance.EntityTypeId = EntityTypeCache.Read<Rock.Model.Person>().Id;
+            gAttendeesAttendance.Actions.ShowBulkUpdate = GetAttributeValue( "ShowBulkUpdateOption" ).AsBoolean( true );
             gAttendeesAttendance.Actions.ShowMergePerson = !_isGroupSpecific;
-            gAttendeesAttendance.Actions.ShowBulkUpdate = !_isGroupSpecific;
             gAttendeesAttendance.Actions.ShowMergeTemplate = !_isGroupSpecific;
 
             dvpDataView.AutoLoadItems = false;
