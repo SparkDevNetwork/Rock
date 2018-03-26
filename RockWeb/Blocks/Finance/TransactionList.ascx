@@ -49,7 +49,7 @@
                             <Rock:RockDropDownList ID="ddlSourceType" runat="server" Label="Source Type" />
                             <Rock:CampusPicker ID="campCampusBatch" runat="server" Label="Campus (of Batch)" />
                             <Rock:CampusPicker ID="campCampusAccount" runat="server" Label="Campus (of Account)" />
-                            <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" />
+                            <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" IncludeBusinesses="true" />
                             <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
                         </Rock:GridFilter>
 
