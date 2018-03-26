@@ -729,8 +729,10 @@ namespace RockWeb.Blocks.Event
             cb.Label = CreateLabel( fee );
             cb.SelectedIconCssClass = "fa fa-check-square-o fa-lg";
             cb.UnSelectedIconCssClass = "fa fa-square-o fa-lg";
-            phFees.Controls.Add( cb );
+            cb.Required = fee.IsRequired;
 
+            phFees.Controls.Add( cb );
+            
             if ( fee.IsRequired )
             {
                 cb.Checked = true;
@@ -750,6 +752,7 @@ namespace RockWeb.Blocks.Event
             numUpDown.Label = CreateLabel( fee );
             numUpDown.Minimum = fee.IsRequired == true ? 1: 0;
             numUpDown.Required = fee.IsRequired;
+
             phFees.Controls.Add( numUpDown );
 
             if ( setValues && feeValues != null && feeValues.Any() )
@@ -1024,13 +1027,24 @@ namespace RockWeb.Blocks.Event
                     foreach ( var optionKeyVal in options )
                     {
                         string optionFieldId = string.Format( "{0}_{1}", fieldId, optionKeyVal.Key );
-                        var numUpDown = phFees.FindControl( optionFieldId ) as NumberUpDown;
-                        if ( numUpDown != null && numUpDown.Value > 0 )
+                        var numUpDownGroups = phFees.ControlsOfTypeRecursive<NumberUpDownGroup>();
+
+                        foreach ( NumberUpDownGroup numberUpDownGroup in numUpDownGroups )
                         {
-                            result.Add( new FeeInfo( optionKeyVal.Key, numUpDown.Value, optionCosts[optionKeyVal.Key] ) );
+                            foreach ( NumberUpDown numberUpDown in numberUpDownGroup.ControlGroup )
+                            {
+                                if ( numberUpDown.ID == optionFieldId && numberUpDown.Value > 0 )
+                                {
+                                    result.Add( new FeeInfo( optionKeyVal.Key, numberUpDown.Value, optionCosts[optionKeyVal.Key] ) );
+                                }
+                            }
+                            //var numUpDown = phFees.FindControl( optionFieldId ) as NumberUpDown;
+                            //if ( numUpDown != null && numUpDown.Value > 0 )
+                            //{
+                            //    result.Add( new FeeInfo( optionKeyVal.Key, numUpDown.Value, optionCosts[optionKeyVal.Key] ) );
+                            //}
                         }
                     }
-
                     if ( result.Any() )
                     {
                         return result;
