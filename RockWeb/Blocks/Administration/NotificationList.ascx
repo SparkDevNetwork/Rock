@@ -16,9 +16,12 @@
                 <asp:Repeater ID="rptNotifications" OnItemDataBound="rptNotifications_ItemDataBound" OnItemCommand="rptProjects_ItemCommand" runat="server" >
                     <ItemTemplate>
                         <div class="alert" id="rptNotificationAlert" runat="server">
-                            <div class="pull-right"><asp:LinkButton runat="server" CssClass="action" CommandName="Close" CommandArgument='<%#Eval("Guid") %>'><i class="fa fa-times"></i></asp:LinkButton></div>
-                            <h4><%# Eval("Notification.Title") %></h4>
-                            <p><%# Eval("Notification.Message") %></p>
+                            <div class="pull-right"><asp:LinkButton runat="server" CssClass="action" CommandName="Close" CommandArgument='<%#Eval("Guid") %>' CausesValidation="false"><i class="fa fa-times"></i></asp:LinkButton></div>
+                            <h4>
+                                <i id="iIconCssClass" runat="server" class='<%# Eval("Notification.IconCssClass") %>'></i>
+                                <span><%# Eval("Notification.Title") %></span>
+                            </h4>
+                            <div class="notification-content"><%# Eval("Notification.Message") %></div>
                         </div>
                     </ItemTemplate>
                 </asp:Repeater>

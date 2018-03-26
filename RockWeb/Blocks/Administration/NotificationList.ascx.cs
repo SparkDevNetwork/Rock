@@ -142,7 +142,8 @@ namespace RockWeb.Blocks.Utility
                     var notificationItem = notificationRecipientService.Get( notificationRecipientGuid.Value );
                     if ( notificationItem != null )
                     {
-                        notificationRecipientService.Delete( notificationItem );
+                        notificationItem.Read = true;
+                        notificationItem.ReadDateTime = RockDateTime.Now;
                     }
 
                     var toHide = e.Item.FindControl( "rptNotificationAlert" );
@@ -168,6 +169,9 @@ namespace RockWeb.Blocks.Utility
             var div = e.Item.FindControl( "rptNotificationAlert" ) as HtmlGenericControl;
             string alertType = notificationRecipient.Notification.Classification.ToString().ToLowerInvariant();
             div.AddCssClass( "alert-" + alertType );
+
+            var icon = e.Item.FindControl( "iIconCssClass" ) as HtmlGenericControl;
+            icon.Visible = !string.IsNullOrWhiteSpace( notificationRecipient.Notification.IconCssClass );
         }
     }
 }
