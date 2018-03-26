@@ -105,6 +105,12 @@ namespace Rock.Communication
                     }
                 }
 
+                // If there have not been any EnabledLavaCommands explicitely set, then use the global defaults.
+                if ( rockMessage.EnabledLavaCommands == null )
+                {
+                    rockMessage.EnabledLavaCommands = GlobalAttributesCache.Read().GetValue( "DefaultEnabledLavaCommands" );
+                }
+
                 // Use the transport to send communication
                 var transport = Transport;
                 if ( transport != null && transport.IsActive )
