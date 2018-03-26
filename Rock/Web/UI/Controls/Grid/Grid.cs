@@ -50,8 +50,10 @@ namespace Rock.Web.UI.Controls
         #region Fields
 
         private Table _table;
-        private GridViewRow _actionRow;
-        private GridActions _gridActions;
+        private GridViewRow _actionHeaderRow;
+        private GridViewRow _actionFooterRow;
+        private GridActions _footerGridActions;
+        private ControlMirror _headerGridActionsMirror;
         private bool PreDataBound = true;
 
         private Dictionary<DataControlField, string> _columnDataPriorities;
@@ -567,29 +569,29 @@ namespace Rock.Web.UI.Controls
         #region Action Row Properties
 
         /// <summary>
-        /// Gets the action row.
+        /// Gets the action row ( both the header and footer, which are mirrored )
         /// </summary>
         [DesignerSerializationVisibility( DesignerSerializationVisibility.Hidden ), Browsable( false )]
         public virtual GridViewRow ActionRow
         {
             get
             {
-                if ( this._actionRow == null )
+                if ( this._actionFooterRow == null )
                 {
                     this.EnsureChildControls();
                 }
 
-                return this._actionRow;
+                return this._actionFooterRow;
             }
         }
 
         /// <summary>
-        /// Gets the actions control
+        /// Gets the actions control ( both the header and footer, which are mirrored )
         /// </summary>
         [DesignerSerializationVisibility( DesignerSerializationVisibility.Hidden ), Browsable( false )]
         public virtual GridActions Actions
         {
-            get { return this._gridActions; }
+            get { return this._footerGridActions; }
         }
 
         /// <summary>
@@ -637,8 +639,12 @@ namespace Rock.Web.UI.Controls
             base.PageSize = 50;
             base.PageIndex = 0;
 
-            _gridActions = new GridActions( this );
-            _gridActions.ID = "gridActions";
+            _footerGridActions = new GridActions( this );
+            _footerGridActions.ID = "footerGridActions";
+
+            _headerGridActionsMirror = new ControlMirror();
+            _headerGridActionsMirror.ID = "headerGridActionsMirror";
+            _headerGridActionsMirror.ControlToMirror = _footerGridActions;
 
             // set default DisplayType
             DisplayType = GridDisplayType.Full;
@@ -973,45 +979,41 @@ namespace Rock.Web.UI.Controls
                     }
                 }
 
-                bool testpreload = PreDataBound;
-                int testrows = CurrentPageRows;
+                // Footer Action Row
+                _actionFooterRow = base.CreateRow( -1, -1, DataControlRowType.Footer, DataControlRowState.Normal );
+                _actionFooterRow.ID = "actionFooterRow";
+                _table.Rows.Add( _actionFooterRow );
 
-                _actionRow = base.CreateRow( -1, -1, DataControlRowType.Footer, DataControlRowState.Normal );
-                _actionRow.ID = "actionRow";
-                _table.Rows.Add( _actionRow );
+                TableCell actionFooterCell = new TableCell();
+                actionFooterCell.ColumnSpan = this.Columns.Count + (this.CustomColumns?.Count ?? 0);
+                actionFooterCell.CssClass = "grid-actions";
+                _actionFooterRow.Cells.Add( actionFooterCell );
 
-                TableCell cell = new TableCell();
-                cell.ColumnSpan = this.Columns.Count + (this.CustomColumns?.Count ?? 0);
-                cell.CssClass = "grid-actions";
-                _actionRow.Cells.Add( cell );
-
-                cell.Controls.Add( _gridActions );
-
-                // Add the action row to the top of the header
-                if ( ShowActionsInHeader )
-                {
-                    var actionHeaderRow = base.CreateRow( 0, 0, DataControlRowType.Header, DataControlRowState.Normal );
-                    actionHeaderRow.ID = "actionHeaderRow";
-                    actionHeaderRow.TableSection = TableRowSection.TableHeader;
-                    _table.Rows.AddAt( 0, actionHeaderRow );
-
-                    var mirrorControl = new ControlMirror();
-                    mirrorControl.ID = "actionMirror";
-                    mirrorControl.ControlToMirror = _gridActions;
-
-                    TableCell actionHeaderCell = new TableCell();
-                    actionHeaderCell.ColumnSpan = this.Columns.Count;
-                    actionHeaderCell.CssClass = "grid-actions";
-                    actionHeaderRow.Cells.Add( actionHeaderCell );
-
-                    actionHeaderCell.Controls.Add( mirrorControl );
-                }
-
+                actionFooterCell.Controls.Add( _footerGridActions );
 
                 if ( !this.ShowActionRow )
                 {
-                    _actionRow.Visible = false;
+                    _actionFooterRow.Visible = false;
                 }
+
+                // Header Action row (mirror of footer actions)
+                _actionHeaderRow = base.CreateRow( 0, 0, DataControlRowType.Header, DataControlRowState.Normal );
+                _actionHeaderRow.ID = "actionHeaderRow";
+                _actionHeaderRow.TableSection = TableRowSection.TableHeader;
+                _table.Rows.AddAt( 0, _actionHeaderRow );
+
+                TableCell actionHeaderCell = new TableCell();
+                actionHeaderCell.ColumnSpan = this.Columns.Count + ( this.CustomColumns?.Count ?? 0 );
+                actionHeaderCell.CssClass = "grid-actions";
+                _actionHeaderRow.Cells.Add( actionHeaderCell );
+
+                actionHeaderCell.Controls.Add( _headerGridActionsMirror );
+                
+                if ( !this.ShowActionsInHeader )
+                {
+                    _headerGridActionsMirror.Visible = false;
+                }
+                
             }
 
             return result;
