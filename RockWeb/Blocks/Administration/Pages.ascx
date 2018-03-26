@@ -18,7 +18,7 @@
          </Rock:ModalDialog>
 
         <div class="grid">
-            <Rock:Grid ID="rGrid" runat="server" AllowPaging="false" RowItemText="page" OnRowSelected="rGrid_Edit">
+            <Rock:Grid ID="rGrid" runat="server" AllowPaging="false" RowItemText="page" OnRowSelected="rGrid_Edit" ShowActionsInHeader="false">
                 <Columns>
                     <Rock:ReorderField />
                     <Rock:RockBoundField DataField="Id" HeaderText="Id" />
