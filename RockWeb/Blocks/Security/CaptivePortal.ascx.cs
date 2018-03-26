@@ -30,9 +30,9 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Security
 {
-    [DisplayName( "WiFi Welcome" )]
+    [DisplayName( "Captive Portal" )]
     [Category( "Security" )]
-    [Description( "Controls access to WiFi." )]
+    [Description( "Controls access to Wi-Fi." )]
     [TextField( "MAC Address Paramameter", "The query string parameter used for the MAC Address", true, "client_mac", "", 0, "MacAddressParam" )]
     [TextField( "Release Link", "The URL to redirect users to after registration.", true, "", "", 1, "ReleaseLink" )]
     [BooleanField("Show First Name", "Show or hide the First Name field. If it is visible then it will be required.", true, "", 2, "ShowFirstName", IsRequired = true )]
@@ -41,9 +41,9 @@ namespace RockWeb.Blocks.Security
     [BooleanField( "Show Email", "Show or hide the Email field. If it is visible then it will be required.", true, "", 5, "ShowEmail", IsRequired = true )]
     [BooleanField( "Show Acceptance Checkbox", "Show or hide the \"I Accept\" checkbox. If it is visible then it will be required. This should be visible if the \"Terms And Conditions\" are also visible.", true, "", 6, "ShowAccept", IsRequired = true )]
     [TextField( "Acceptance Checkbox Label", "Text used to signify user agreement with the Terms and Conditions", true, "I Accept", "", 7, "AcceptanceLabel" )]
-    [TextField( "Button Text", "Text to display on the button", true, "Connect To WiFi", "", 8, "ButtonText" )]
+    [TextField( "Button Text", "Text to display on the button", true, "Connect To Wi-Fi", "", 8, "ButtonText" )]
     [BooleanField( "Show Legal Note", "Show or hide the Terms and Conditions. This should be always be visible unless users are being automatically connected without any agreement needed.", true, "", 9, "ShowLegalNote", IsRequired = true )]
-    [CodeEditorField ( "Legal Note", "A legal note outlining the Terms and Conditions for using WiFi", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, false, DEFAULT_LEGAL_NOTE, "", 10, "LegalNote" )]
+    [CodeEditorField ( "Legal Note", "A legal note outlining the Terms and Conditions for using Wi-Fi.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, false, DEFAULT_LEGAL_NOTE, "", 10, "LegalNote" )]
     public partial class CaptivePortal : RockBlock
     {
         #region Block Setting Strings
@@ -65,7 +65,7 @@ namespace RockWeb.Blocks.Security
 <body>
     <h1>Terms & Conditions</h1>
     <p>
-        This free WiFi service(""Service"") is provided by {{ 'Global' | Attribute:'OrganizationName' }}
+        This free Wi-Fi service(""Service"") is provided by {{ 'Global' | Attribute:'OrganizationName' }}
         (""Organization"") to its guests. Please read the Service Terms and Conditions below. To use the Service, users must accept these Service Terms and Conditions.
     </p>
 
@@ -81,7 +81,7 @@ namespace RockWeb.Blocks.Security
                     The provisioning of the Service may reveal location-specific data, usage and retention of which are subject to the local standard privacy policy and jurisdiction;
                 </li>
                 <li>
-                    Every user is entitled to 20 continuous minutes free WiFi service every day at the Company's designated locations(s). If the connection is disconnected within the 20 minutes due to any reason, the users cannot use the Service again on the same day;
+                    Every user is entitled to 20 continuous minutes free Wi-Fi service every day at the Company's designated locations(s). If the connection is disconnected within the 20 minutes due to any reason, the users cannot use the Service again on the same day;
                 </li>
                 <li>
                     The Organization excludes all liability or responsibility for any cost, claim, damage, or loss to the user or to any third party whether direct or indirect of any kind including revenue, loss or profits or any consequential loss in contract,
@@ -337,7 +337,7 @@ namespace RockWeb.Blocks.Security
             }
 
             btnConnect.Enabled = false;
-            btnConnect.Text = "Unable to connect to WiFi due to errors";
+            btnConnect.Text = "Unable to connect to Wi-Fi due to errors";
         }
 
         /// <summary>
