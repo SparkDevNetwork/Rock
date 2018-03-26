@@ -34,8 +34,11 @@ namespace RockWeb.Blocks.Reporting
     [Category( "Reporting" )]
     [Description( "Presents the details of a interaction using Lava" )]
 
-    [CodeEditorField( "Default Template", "The Lava template to use as default.", Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 300, false, order: 2, defaultValue: @"
-    <div class='panel panel-block'>
+    [CodeEditorField( "Default Template", "The Lava template to use as default.", Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 300, false, order: 2, defaultValue: DEFAULT_LAVA_TEMPLATE )]
+    public partial class InteractionDetail : Rock.Web.UI.RockBlock
+    {
+        #region Block Setting Strings
+        protected const string DEFAULT_LAVA_TEMPLATE = @"<div class='panel panel-block'>
         <div class='panel-heading'>
 	        <h1 class='panel-title'>
                 <i class='fa fa-user'></i>
@@ -51,7 +54,7 @@ namespace RockWeb.Blocks.Reporting
                         <dt>Operation</dt><dd>{{ Interaction.Operation }}<dd/>
                         
                         {% if InteractionEntityName != '' %}
-                            <dt>Related Entity</dt><dd>{{ InteractionEntityName }}<dd/>
+                            <dt>Entity Name</dt><dd>{{ InteractionEntityName }}<dd/>
                         {% endif %}
                     </dl>
                 </div>
@@ -73,9 +76,9 @@ namespace RockWeb.Blocks.Reporting
                 </div>
             </div>
         </div>
-    </div>" )]
-    public partial class InteractionDetail : Rock.Web.UI.RockBlock
-    {
+    </div>";
+        #endregion
+
         #region Base Control Methods
 
         /// <summary>
