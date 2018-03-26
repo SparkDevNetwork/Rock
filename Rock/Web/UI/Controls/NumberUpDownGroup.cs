@@ -24,27 +24,50 @@ using Rock;
 
 namespace Rock.Web.UI.Controls
 {
+    /// <summary>
+    /// A wrapper class for a collection of NumberUpDown controls
+    /// </summary>
+    /// <seealso cref="System.Web.UI.WebControls.CompositeControl" />
+    /// <seealso cref="Rock.Web.UI.Controls.IRockControl" />
+    /// <seealso cref="Rock.Web.UI.Controls.IDisplayRequiredIndicator" />
     [ToolboxData( "<{0}:NumberUpDownGroup runat=server></{0}:NumberUpDown>" )]
     public class NumberUpDownGroup : CompositeControl, IRockControl, IDisplayRequiredIndicator
     {
+        /// <summary>
+        /// Gets or sets the group custom validator.
+        /// </summary>
+        /// <value>
+        /// The group custom validator.
+        /// </value>
         public CustomValidator GroupCustomValidator { get; set; }
 
         private List<NumberUpDown> _controlGroup = new List<NumberUpDown>();
-        
+
+        /// <summary>
+        /// Gets or sets the collection of NumberUpDown objects.
+        /// </summary>
+        /// <value>
+        /// The control group.
+        /// </value>
         public List<NumberUpDown> ControlGroup
         {
             get
             {
                 return _controlGroup;
             }
+
             set
             {
                 _controlGroup = value;
             }
         }
 
-        public string requiredLabel { get; set; }
-
+        /// <summary>
+        /// Gets or sets the label.
+        /// </summary>
+        /// <value>
+        /// The label text
+        /// </value>
         [Bindable( true )]
         [Category( "Appearance" )]
         [DefaultValue( "" )]
@@ -55,14 +78,27 @@ namespace Rock.Web.UI.Controls
             {
                 return ViewState["Label"] as string ?? string.Empty;
             }
+
             set
             {
                 ViewState["Label"] = value;
             }
         }
 
+        /// <summary>
+        /// Gets the help block.
+        /// </summary>
+        /// <value>
+        /// The help block.
+        /// </value>
         public HelpBlock HelpBlock { get; set; }
 
+        /// <summary>
+        /// Gets or sets the help text.
+        /// </summary>
+        /// <value>
+        /// The help text.
+        /// </value>
         [Bindable( true )]
         [Category( "Appearance" )]
         [DefaultValue( "" )]
@@ -73,6 +109,7 @@ namespace Rock.Web.UI.Controls
             {
                 return HelpBlock != null ? HelpBlock.Text : string.Empty;
             }
+
             set
             {
                 if ( HelpBlock != null )
@@ -82,8 +119,20 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets the warning block.
+        /// </summary>
+        /// <value>
+        /// The warning block.
+        /// </value>
         public WarningBlock WarningBlock { get; set; }
 
+        /// <summary>
+        /// Gets or sets the warning text.
+        /// </summary>
+        /// <value>
+        /// The warning text.
+        /// </value>
         [Bindable( true )]
         [Category( "Appearance" )]
         [DefaultValue( "" )]
@@ -94,6 +143,7 @@ namespace Rock.Web.UI.Controls
             {
                 return WarningBlock != null ? WarningBlock.Text : string.Empty;
             }
+
             set
             {
                 if ( WarningBlock != null )
@@ -103,31 +153,50 @@ namespace Rock.Web.UI.Controls
             }
         }
 
-        
-       [Bindable( true )]
-       [Category( "Behavior" )]
-       [DefaultValue( "false" )]
-       [Description( "Is the value required?" )]
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="IRockControl" /> is required.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if required; otherwise, <c>false</c>.
+        /// </value>
+        [Bindable( true )]
+        [Category( "Behavior" )]
+        [DefaultValue( "false" )]
+        [Description( "Is the value required?" )]
         public bool Required
         {
             get
             {
                 return ViewState["Required"] as bool? ?? false;
             }
+
             set
             {
                 ViewState["Required"] = value;
             }
         }
 
+        /// <summary>
+        /// Gets the required field validator.
+        /// </summary>
+        /// <value>
+        /// The required field validator.
+        /// </value>
         public RequiredFieldValidator RequiredFieldValidator { get; set; }
 
+        /// <summary>
+        /// Gets or sets the required error message.  If blank, the LabelName name will be used
+        /// </summary>
+        /// <value>
+        /// The required error message.
+        /// </value>
         public string RequiredErrorMessage
         {
             get
             {
                 return GroupCustomValidator != null ? GroupCustomValidator.ErrorMessage : string.Empty;
             }
+
             set
             {
                 if ( GroupCustomValidator != null )
@@ -136,10 +205,19 @@ namespace Rock.Web.UI.Controls
                 }
             }
         }
-        
+
+        /// <summary>
+        /// Gets or sets the validation group.
+        /// </summary>
+        /// <value>
+        /// The validation group.
+        /// </value>
         public string ValidationGroup
         {
-            get { return ViewState["ValidationGroup"] as string; }
+            get {
+                return ViewState["ValidationGroup"] as string;
+            }
+
             set
             {
                 ViewState["ValidationGroup"] = value;
@@ -149,29 +227,33 @@ namespace Rock.Web.UI.Controls
                     GroupCustomValidator.ValidationGroup = value;
                 }
             }
-
-            //get
-            //{
-            //    return GroupCustomValidator.ValidationGroup;
-            //}
-            //set
-            //{
-            //    GroupCustomValidator.ValidationGroup = value;
-            //}
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether to show the Required indicator when Required=true
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [display required indicator]; otherwise, <c>false</c>.
+        /// </value>
         public bool DisplayRequiredIndicator
         {
             get
             {
                 return ViewState["DisplayRequiredIndicator"] as bool? ?? true;
             }
+
             set
             {
                 ViewState["DisplayRequiredIndicator"] = value;
             }
         }
 
+        /// <summary>
+        /// Returns true if ... is valid.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+        /// </value>
         public bool IsValid
         {
             get
@@ -180,18 +262,28 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets the form group class.
+        /// </summary>
+        /// <value>
+        /// The form group class.
+        /// </value>
         public string FormGroupCssClass
         {
             get
             {
                 return ViewState["FormGroupCssClass"] as string ?? string.Empty;
             }
+
             set
             {
                 ViewState["FormGroupCssClass"] = value;
             }
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NumberUpDownGroup"/> class.
+        /// </summary>
         public NumberUpDownGroup() : base()
         {
             GroupCustomValidator = new CustomValidator
@@ -203,6 +295,11 @@ namespace Rock.Web.UI.Controls
             WarningBlock = new WarningBlock();
         }
 
+        /// <summary>
+        /// This is where you implment the simple aspects of rendering your control.  The rest
+        /// will be handled by calling RenderControlHelper's RenderControl() method.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
             foreach ( var control in ControlGroup )
@@ -225,6 +322,10 @@ namespace Rock.Web.UI.Controls
             GroupCustomValidator.RenderControl( writer );
         }
 
+        /// <summary>
+        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
             if ( this.Visible )
@@ -234,6 +335,9 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
+        /// </summary>
         protected override void CreateChildControls()
         {
             base.CreateChildControls();

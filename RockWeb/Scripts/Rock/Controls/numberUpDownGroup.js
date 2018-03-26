@@ -10,31 +10,21 @@
       clientValidate: function (validator, args)
       {
         var $numberUpDownGroup = $(validator).closest('.number-up-down-group');
-        var $quantitites = $numberUpDownGroup.find('.numberincrement-value');
-        var required = $numberUpDownGroup.hasClass('required');
-        
-        
         var isValid = true;
-        
-        //if ( required == true ) {
-            // if required, at least one of the values has to be greater than 0
-            //isValid = false;
 
-           // ($numberUpDownGroup).find('.numberincrement-value').each(function (i) {
-            //    if (i.va)
-            //}
+        if ($numberUpDownGroup.hasClass('required') == true) {
+            isValid = false;
 
+            $numberUpDownGroup.find('.numberincrement-value').each(function (i) {
+                if (parseInt(this.outerText, 10) > 0) {
+                    isValid = true;
+                }
+            });
+        }
 
-            //if ($quantitites).each(
-            //    function (i) {
-            //        if (text) {
-            //            isValid = false;
-            //            validator.errormessage = itemLabelText + " is Required";
-            //        }
-            //    });
-
-
-        //}
+        if (isValid == false) {
+            validator.errormessage = $numberUpDownGroup.find('label').text() + " is Required";
+        }
 
         var control = $numberUpDownGroup
         if (isValid)
