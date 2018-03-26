@@ -50,7 +50,7 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
-    <Compile Include="Communication\Transport\MailgunHtml.cs" />
+    <Compile Include="Communication\Transport\MailgunHttp.cs" />
     <Compile Include="Communication\Transport\MailgunSmtp.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
