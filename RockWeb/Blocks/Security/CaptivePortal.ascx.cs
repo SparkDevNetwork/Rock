@@ -46,7 +46,7 @@ namespace RockWeb.Blocks.Security
     [CodeEditorField ( "Legal Note", "A legal note outlining the Terms and Conditions for using WiFi", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, false, DEFAULT_LEGAL_NOTE, "", 10, "LegalNote" )]
     public partial class CaptivePortal : RockBlock
     {
-        #region DefaultLegalNote
+        #region Block Setting Strings
         protected const string DEFAULT_LEGAL_NOTE = @"<!DOCTYPE html>
 <html>
 <head>
