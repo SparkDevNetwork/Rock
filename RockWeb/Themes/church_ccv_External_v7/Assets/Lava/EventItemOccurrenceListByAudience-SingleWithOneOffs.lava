@@ -24,14 +24,25 @@ list, but marked differently.
       </div>
       <div class="list-group">
         {% for occurrence in EventItemOccurrences %}
+          {% assign eventFirstDate = occurrence.Schedule.iCalendarContent | DatesFromICal| First %}
+          {% assign eventTime = eventFirstDate | Date:'h:mm tt' %}
+
           {% comment %}<a class="list-group-item" href="{{ RegistrationPage }}?RegistrationInstanceId={{ occurrence.Linkages | Select: 'RegistrationInstanceId' }}">{% endcomment %}
           {% if occurrence.EventItemId == regularEventId %}
             <a class="list-group-item" href="{{ RegistrationPage }}?EventOccurrenceId={{ occurrence.Id }}">
-              {{ occurrence.Schedule.iCalendarContent | DatesFromICal| First | Date: 'dddd, MMM d / h:mmtt'  }}
+              {% if eventTime == "12:00 AM" %}
+                 {{ eventFirstDate | Date: 'dddd, MMM d'  }}
+              {% else %}
+                 {{ eventFirstDate | Date: 'dddd, MMM d / h:mmtt'  }}
+              {% endif %}
             </a>
           {% else %}
             <a class="list-group-item" href="{{ RegistrationPage }}?EventOccurrenceId={{ occurrence.Id }}">
-              {{ occurrence.Schedule.iCalendarContent | DatesFromICal| First | Date: 'dddd, MMM d / h:mmtt'  }}
+              {% if eventTime == "12:00 AM" %}
+                 {{ eventFirstDate | Date: 'dddd, MMM d'  }}
+              {% else %}
+                 {{ eventFirstDate | Date: 'dddd, MMM d / h:mmtt'  }}
+              {% endif %}
               <small class="text-muted" style="display: inline-block;">
                 {{ occurrence.EventItem.Name }}
               </small>

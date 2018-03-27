@@ -34,7 +34,12 @@
       <ul class="list-unstyled">
         {% for scheduledDate in scheduledDates %}
         <li>
-            {{  scheduledDate | Date:'dddd, MMMM d, yyyy @ h:mm tt' }}
+            {% assign eventTime = scheduledDate | Date:'h:mm tt' %}
+            {% if eventTime == "12:00 AM" %}
+               {{  scheduledDate | Date:'dddd, MMMM d, yyyy' }}
+            {% else %}
+               {{  scheduledDate | Date:'dddd, MMMM d, yyyy @ h:mm tt' }}
+            {% endif %}
         </li>
         {% endfor %}
       </ul>
