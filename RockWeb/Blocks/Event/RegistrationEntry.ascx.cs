@@ -4286,7 +4286,7 @@ namespace RockWeb.Blocks.Event
                     Label = string.Format( "{0}", optionKeyVal.Value ),
                     Minimum = 0
                 };
-                numberUpDownGroup.ControlGroup.Add( numUpDown );
+                numberUpDownGroup.Controls.Add( numUpDown );
 
                 if ( setValues && feeValues != null && feeValues.Any() )
                 {
@@ -4298,34 +4298,6 @@ namespace RockWeb.Blocks.Event
             }
 
             phFees.Controls.Add( numberUpDownGroup );
-
-            //HtmlGenericControl feeAllowMultiple = new HtmlGenericControl( "div" );
-            //phFees.Controls.Add( feeAllowMultiple );
-
-            //feeAllowMultiple.AddCssClass( "feetype-allowmultiples" );
-
-            //Label titleLabel = new Label();
-            //feeAllowMultiple.Controls.Add( titleLabel );
-            //titleLabel.CssClass = "control-label";
-            //titleLabel.Text = fee.Name;
-
-            //foreach ( var optionKeyVal in options )
-            //{
-            //    var numUpDown = new NumberUpDown();
-            //    numUpDown.ID = string.Format( "fee_{0}_{1}", fee.Id, optionKeyVal.Key );
-            //    numUpDown.Label = string.Format( "{0}", optionKeyVal.Value );
-            //    numUpDown.Minimum = 0;
-            //    numUpDown.CssClass = "fee-allowmultiple";
-            //    feeAllowMultiple.Controls.Add( numUpDown );
-
-            //    if ( setValues && feeValues != null && feeValues.Any() )
-            //    {
-            //        numUpDown.Value = feeValues
-            //            .Where( f => f.Option == optionKeyVal.Key )
-            //            .Select( f => f.Quantity )
-            //            .FirstOrDefault();
-            //    }
-            //}
         }
 
         /// <summary>
@@ -4637,10 +4609,17 @@ namespace RockWeb.Blocks.Event
                     foreach ( var optionKeyVal in options )
                     {
                         string optionFieldId = string.Format( "{0}_{1}", fieldId, optionKeyVal.Key );
-                        var numUpDown = phFees.FindControl( optionFieldId ) as NumberUpDown;
-                        if ( numUpDown != null && numUpDown.Value > 0 )
+                        var numUpDownGroups = phFees.ControlsOfTypeRecursive<NumberUpDownGroup>();
+
+                        foreach ( NumberUpDownGroup numberUpDownGroup in numUpDownGroups )
                         {
-                            result.Add( new FeeInfo( optionKeyVal.Key, numUpDown.Value, optionCosts[optionKeyVal.Key] ) );
+                            foreach ( NumberUpDown numberUpDown in numberUpDownGroup.ControlGroup )
+                            {
+                                if ( numberUpDown.ID == optionFieldId && numberUpDown.Value > 0 )
+                                {
+                                    result.Add( new FeeInfo( optionKeyVal.Key, numberUpDown.Value, optionCosts[optionKeyVal.Key] ) );
+                                }
+                            }
                         }
                     }
 
