@@ -76,7 +76,7 @@ namespace RockWeb.Blocks.Crm
                 }
                 else
                 {
-                    nbError.Text =  "No Personal Device Found to show the interations";
+                    nbError.Text =  "No Personal Device Found to show the interactions";
                     nbError.Visible = true;
                     return;
                 }
@@ -122,7 +122,7 @@ namespace RockWeb.Blocks.Crm
                         .FirstOrDefault();
                     if ( personalDevice.PersonAlias != null )
                     {
-                        lblHeading.Text = string.Format( "{0} Device Interactions", personalDevice.PersonAlias.Person.FullName );
+                        lblHeading.Text = string.Format( "{0} Device Interactions", personalDevice.PersonAlias.Person.FullName.ToPossessive() );
                     }
                     else
                     {
