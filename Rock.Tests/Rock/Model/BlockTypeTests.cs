@@ -47,7 +47,7 @@ namespace Rock.Tests.Rock.Model
         /// <summary>
         /// Should serialize a BlockType into a JSON string.
         /// </summary>
-        [Fact]
+        [Fact( Skip = "Need a mock for Global Attributes" )]
         public void ExportJson()
         {
             var blockType = new BlockType { Name = "Foo" };
