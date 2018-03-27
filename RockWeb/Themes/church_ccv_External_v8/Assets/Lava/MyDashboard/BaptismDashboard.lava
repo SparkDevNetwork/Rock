@@ -1,57 +1,65 @@
 {% comment %} 
-    {% include '~~/Assets/Lava/MyDashboard/BaptismDashboard.lava' %}  
+    {% include '~~/Assets/Lava/BaptismDashboard.lava' %}  
 {% endcomment %}
+
+{% comment %} Get the target person {% endcomment %}
+{% assign person = PageParameter.paguid | PersonByAliasGuid %}
 
 {% comment %} Photo Display {% endcomment %}
 {% if PageParameter.display == 'photo' %}
-
-    {% comment %} Check for a photo before rendering {% endcomment %}
-    {% assign baptismPhoto = CurrentPerson | Attribute:'BaptismPhoto' %}
-    {% if baptismPhoto != null and baptismPhoto != '' %}
-        <div class="baptism-print-button">
-            <input type='button' id='btnPrint' class="btn btn-primary" value='Print'>
-        </div>
-        <div id="divBaptismDashboard" class="baptism-dashboard-container">
-            <div class="baptism-dashboard-image">
-                {{ CurrentPerson | Attribute:'BaptismPhoto' }}
-            </div>
-        </div>
-    {% else %}
-        <div class="baptism-dashboard-container">
-            No Baptism Photo.
-        </div>
-    {% endif %}
-
+   
+    <div style="text-align: center;">
+       {% comment %} Check for a photo {% endcomment %}
+       {% if person | Attribute:'BaptismPhoto' %}
+           <br/>
+           <div class="baptism-print-button">
+               <input type='button' id='btnPrint' class="btn btn-primary" value='Print'>
+           </div>
+           <br/>
+           <div id="divBaptismDashboard" class="baptism-dashboard-container" style="display: inline-block;">
+               <div class="baptism-dashboard-image">
+                   {{ person | Attribute:'BaptismPhoto' }}
+               </div>
+           </div>
+       {% else %}
+           <div class="baptism-dashboard-container" style="display: inline-block;">
+               No Baptism Photo.
+           </div>
+       {% endif %}
+    </div>
 {% endif %}
 
 
 {% comment %} Certificate Display {% endcomment %}
 
 {% if PageParameter.display == 'certificate' %}
-
-    {% comment %} Check if baptized by CCV before rendering {% endcomment %}
-    {% assign ccvBaptized = CurrentPerson | Attribute:'BaptizedHere' %}
-    {% if ccvBaptized == 'Yes' %}
-        <div class="baptism-print-button">
-            <input type='button' id='btnPrint' class="btn btn-primary" value='Print'>
-        </div>
-        <div id="divBaptismDashboard" class="baptism-dashboard-container">
-            <div class="baptism-dashboard-image">
-                <img src="~~/Assets/Images/baptism/baptism-certificate-{{ CurrentPerson | Campus | Property:'ShortCode' | Downcase }}.jpg"/>
-                <div class="baptism-certificate-name-container">
-                    <span class="baptism-certificate-name">{{ CurrentPerson.FullName }}</span>
-                </div>
-                <div class="baptism-certificate-date-container">
-                    <span class="baptism-certificate-date">{{ CurrentPerson | Attribute:'BaptismDate' | Date:'MMMM d, yyyy' }}</span>
-                </div>
-            </div>
-        </div>
-    {% else %}
-        <div class="baptism-dashboard-container">
-            No Baptism Certificate.
-        </div>
-    {% endif %}
-
+   
+    <div style="text-align: center;">
+       {% comment %} Check if baptized by CCV {% endcomment %}
+       {% assign ccvBaptized = person | Attribute:'BaptizedHere' %}
+       <br/>
+       {% if ccvBaptized == 'Yes' %}
+           <div class="baptism-print-button">
+               <input type='button' id='btnPrint' class="btn btn-primary" value='Print'>
+           </div>
+           <br/>
+           <div id="divBaptismDashboard" class="baptism-dashboard-container" style="display: inline-block;">
+               <div class="baptism-dashboard-image">
+                   <img src="~~/Assets/Images/baptism/baptism-certificate-{{ person | Campus | Property:'ShortCode' | Downcase }}.jpg"/>
+                   <div class="baptism-certificate-name-container">
+                       <span class="baptism-certificate-name">{{ person.FullName }}</span>
+                   </div>
+                   <div class="baptism-certificate-date-container">
+                       <span class="baptism-certificate-date">{{ person | Attribute:'BaptismDate' | Date:'MMMM d, yyyy' }}</span>
+                   </div>
+               </div>
+           </div>
+       {% else %}
+           <div class="baptism-dashboard-container" style="display: inline-block;">
+               No Baptism Certificate.
+           </div>
+       {% endif %}
+    </div>
 {% endif %}
 
 <script>
@@ -65,7 +73,6 @@
         return false;
     });
 
-    // print only the baptism dashboard div
     $('#btnPrint').click(function() {
         $('#divBaptismDashboard').printThis();
     });
