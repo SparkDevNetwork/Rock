@@ -2168,7 +2168,7 @@ namespace RockWeb.Blocks.Event
             {
                 var placements = new Dictionary<int, List<int>>();
 
-                var colIndex = gGroupPlacements.Columns.IndexOf( col ).ToString();
+                var colIndex = gGroupPlacements.GetColumnIndex( col ).ToString();
                 foreach ( GridViewRow row in gGroupPlacements.Rows )
                 {
                     GroupPicker gp = row.FindControl( "groupPicker_" + colIndex.ToString() ) as GroupPicker;
@@ -2898,7 +2898,7 @@ namespace RockWeb.Blocks.Event
                             .ToList();
                     }
 
-                    var discountCodeHeader = gRegistrations.Columns.GetColumnByHeaderText( "Discount Code" );
+                    var discountCodeHeader = gRegistrations.GetColumnByHeaderText( "Discount Code" );
                     if ( discountCodeHeader != null )
                     {
                         discountCodeHeader.Visible = GetAttributeValue( "DisplayDiscountCodes" ).AsBoolean();

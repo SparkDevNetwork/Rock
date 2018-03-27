@@ -1110,14 +1110,14 @@ namespace RockWeb.Blocks.Connection
                     e.Row.AddCssClass( "inactive" );
 
                     var deleteField = gConnectionOpportunityWorkflows.Columns.OfType<DeleteField>().First();
-                    var cell = ( e.Row.Cells[gConnectionOpportunityWorkflows.Columns.IndexOf( deleteField )] as DataControlFieldCell ).Controls[0];
+                    var cell = ( e.Row.Cells[gConnectionOpportunityWorkflows.GetColumnIndex( deleteField )] as DataControlFieldCell ).Controls[0];
                     if ( cell != null )
                     {
                         cell.Visible = false;
                     }
 
                     var editField = gConnectionOpportunityWorkflows.Columns.OfType<EditField>().First();
-                    cell = ( e.Row.Cells[gConnectionOpportunityWorkflows.Columns.IndexOf( editField )] as DataControlFieldCell ).Controls[0];
+                    cell = ( e.Row.Cells[gConnectionOpportunityWorkflows.GetColumnIndex( editField )] as DataControlFieldCell ).Controls[0];
                     if ( cell != null )
                     {
                         cell.Visible = false;

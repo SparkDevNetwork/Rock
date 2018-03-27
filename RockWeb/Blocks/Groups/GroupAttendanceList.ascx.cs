@@ -215,7 +215,7 @@ namespace RockWeb.Blocks.Groups
                 if ( occurrence == null )
                 {
                     var deleteField = gOccurrences.Columns.OfType<DeleteField>().First();
-                    var cell = e.Row.Cells[gOccurrences.Columns.IndexOf( deleteField )];
+                    var cell = e.Row.Cells[gOccurrences.GetColumnIndex( deleteField )];
                     var lb = cell.ControlsOfTypeRecursive<LinkButton>().FirstOrDefault();
                     if ( lb != null )
                     {
