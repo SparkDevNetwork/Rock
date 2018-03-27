@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -89,11 +89,30 @@ namespace RockWeb.Blocks.Event
         private const string MINIMUM_PAYMENT_KEY = "MinimumPayment";
 
         // protected variables
-        public decimal PercentComplete = 0;
+        private decimal _percentComplete = 0;
 
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// Gets or sets the percent complete.
+        /// </summary>
+        /// <value>
+        /// The percent complete.
+        /// </value>
+        public decimal PercentComplete
+        {
+            get
+            {
+                return _percentComplete;
+            }
+
+            set
+            {
+                _percentComplete = value;
+            }
+        }
 
         // The selected registration instance
         private RegistrationInstance RegistrationInstanceState { get; set; }
@@ -106,7 +125,9 @@ namespace RockWeb.Blocks.Event
 
         // Digital Signature Fields
         private bool SignInline { get; set; }
+
         private string DigitalSignatureComponentTypeName { get; set; }
+
         private DigitalSignatureComponent DigitalSignatureComponent { get; set; }
 
         // Info about each current registration
@@ -150,6 +171,7 @@ namespace RockWeb.Blocks.Event
                 {
                     return RegistrationTemplate.RegistrationTerm;
                 }
+
                 return "Registration";
             }
         }
@@ -168,6 +190,7 @@ namespace RockWeb.Blocks.Event
                 {
                     return RegistrationTemplate.RegistrantTerm;
                 }
+
                 return "Person";
             }
         }
@@ -186,6 +209,7 @@ namespace RockWeb.Blocks.Event
                 {
                     return RegistrationTemplate.FeeTerm;
                 }
+
                 return "Additional Option";
             }
         }
@@ -204,6 +228,7 @@ namespace RockWeb.Blocks.Event
                 {
                     return RegistrationTemplate.DiscountCodeTerm;
                 }
+
                 return "Discount Code";
             }
         }
@@ -245,6 +270,7 @@ namespace RockWeb.Blocks.Event
                     {
                         return int.MaxValue;
                     }
+
                     return RegistrationTemplate.MaxRegistrants;
                 }
 
@@ -386,7 +412,6 @@ namespace RockWeb.Blocks.Event
 
             // register navigation event to enable support for the back button
             var sm = ScriptManager.GetCurrent( Page );
-            //sm.EnableSecureHistoryState = false;
             sm.Navigate += sm_Navigate;
 
             // Show save account info based on if checkbox is checked
@@ -415,7 +440,6 @@ namespace RockWeb.Blocks.Event
                                 ShowWarning(
                                     string.Format( "{0} Full", RegistrationTerm ),
                                     string.Format( "<p>There are not any more {0} available for {1}.</p>", RegistrationTerm.ToLower().Pluralize(), RegistrationInstanceState.Name ) );
-
                             }
                             else
                             {
@@ -468,7 +492,6 @@ namespace RockWeb.Blocks.Event
                 // Show or Hide the Credit card entry panel based on if a saved account exists and it's selected or not.
                 divNewCard.Style[HtmlTextWriterStyle.Display] = ( rblSavedCC.Items.Count == 0 || rblSavedCC.Items[rblSavedCC.Items.Count - 1].Selected ) ? "block" : "none";
             }
-
         }
 
         public override List<BreadCrumb> GetBreadCrumbs( PageReference pageReference )
@@ -537,7 +560,6 @@ namespace RockWeb.Blocks.Event
                 {
                     this.AddHistory( "event", string.Format( "1,{0},{1}", CurrentRegistrantIndex, CurrentFormIndex ) );
                 }
-
             }
 
             base.OnPreRender( e );
@@ -554,7 +576,7 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="HistoryEventArgs"/> instance containing the event data.</param>
-        void sm_Navigate( object sender, HistoryEventArgs e )
+        protected void sm_Navigate( object sender, HistoryEventArgs e )
         {
             var state = e.State["event"];
 
@@ -568,9 +590,9 @@ namespace RockWeb.Blocks.Event
 
                 if ( commands.Count() == 3 )
                 {
-                    panelId = Int32.Parse( commands[0] );
-                    registrantId = Int32.Parse( commands[1] );
-                    formId = Int32.Parse( commands[2] );
+                    panelId = int.Parse( commands[0] );
+                    registrantId = int.Parse( commands[1] );
+                    formId = int.Parse( commands[2] );
                 }
 
                 switch ( panelId )
@@ -582,16 +604,19 @@ namespace RockWeb.Blocks.Event
                             ShowRegistrant();
                             break;
                         }
+
                     case 2:
                         {
                             ShowSummary();
                             break;
                         }
+
                     case 3:
                         {
                             ShowPayment();
                             break;
                         }
+
                     default:
                         {
                             ShowHowMany();
@@ -636,6 +661,7 @@ namespace RockWeb.Blocks.Event
             {
                 registrantPages += 1;
             }
+
             ProgressBarSteps = ( numHowMany.Value * registrantPages ) + ( Using3StepGateway ? 3 : 2 );
 
             ShowRegistrant( true, false );
@@ -710,9 +736,12 @@ namespace RockWeb.Blocks.Event
             }
             else
             {
-                ShowError( "Invalid or Missing Document Signature",
-                    string.Format( "This {0} requires that you sign a {1} for each registrant, but it appears that you may have cancelled or skipped signing this document.",
-                        RegistrationTemplate.RegistrationTerm, RegistrationTemplate.RequiredSignatureDocumentTemplate.Name ) );
+                string errorMessage = string.Format(
+                        "This {0} requires that you sign a {1} for each registrant, but it appears that you may have cancelled or skipped signing this document.",
+                        RegistrationTemplate.RegistrationTerm,
+                        RegistrationTemplate.RequiredSignatureDocumentTemplate.Name );
+
+                ShowError( "Invalid or Missing Document Signature", errorMessage );
             }
         }
 
@@ -1055,6 +1084,7 @@ namespace RockWeb.Blocks.Event
                             {
                                 transaction.FinancialGateway.LoadAttributes( rockContext );
                             }
+
                             referenceNumber = gateway.GetReferenceNumber( transaction, out errorMessage );
                             paymentDetail = transaction.FinancialPaymentDetail;
                         }
@@ -1152,8 +1182,6 @@ namespace RockWeb.Blocks.Event
                 }
             }
         }
-
-
 
         #endregion
 
@@ -1379,7 +1407,6 @@ namespace RockWeb.Blocks.Event
                 RegistrationTemplate.RequiredSignatureDocumentTemplate != null &&
                 RegistrationTemplate.RequiredSignatureDocumentTemplate.ProviderEntityType != null )
             {
-
                 var provider = DigitalSignatureContainer.GetComponent( RegistrationTemplate.RequiredSignatureDocumentTemplate.ProviderEntityType.Name );
                 if ( provider != null && provider.IsActive )
                 {
@@ -1395,7 +1422,8 @@ namespace RockWeb.Blocks.Event
             {
                 registrantPages += 2;
             }
-            this.ProgressBarSteps = numHowMany.Value * registrantPages + 2;
+
+            this.ProgressBarSteps = (numHowMany.Value * registrantPages) + 2;
 
             return true;
         }
@@ -1431,10 +1459,12 @@ namespace RockWeb.Blocks.Event
                                 f.PersonFieldType == RegistrationPersonFieldType.LastName ) &&
                                 f.FieldSource == RegistrationFieldSource.PersonField ) )
                         {
-                            registrant.FieldValues.AddOrReplace( field.Id,
+                            registrant.FieldValues.AddOrReplace(
+                                field.Id,
                                 new FieldValueObject( field, field.PersonFieldType == RegistrationPersonFieldType.FirstName ? CurrentPerson.NickName : CurrentPerson.LastName ) );
                         }
                     }
+
                     registrant.Cost = cost;
                     registrant.FamilyGuid = RegistrationState.FamilyGuid;
                     if ( RegistrationState.Registrants.Count >= RegistrationState.SlotsAvailable )
@@ -1462,6 +1492,7 @@ namespace RockWeb.Blocks.Event
                     {
                         registrant.OnWaitList = true;
                     }
+
                     RegistrationState.Registrants.Add( registrant );
                 }
 
@@ -1517,28 +1548,34 @@ namespace RockWeb.Blocks.Event
                     {
                         validationErrors.Add( "First Name on Card is required" );
                     }
+
                     if ( txtCardLastName.Visible && string.IsNullOrWhiteSpace( txtCardLastName.Text ) )
                     {
                         validationErrors.Add( "Last Name on Card is required" );
                     }
+
                     if ( txtCardName.Visible && string.IsNullOrWhiteSpace( txtCardName.Text ) )
                     {
                         validationErrors.Add( "Name on Card is required" );
                     }
+
                     var rgx = new System.Text.RegularExpressions.Regex( @"[^\d]" );
-                    string ccNum = rgx.Replace( txtCreditCard.Text, "" );
+                    string ccNum = rgx.Replace( txtCreditCard.Text, string.Empty );
                     if ( string.IsNullOrWhiteSpace( ccNum ) )
                     {
                         validationErrors.Add( "Card Number is required" );
                     }
+
                     if ( !mypExpiration.SelectedDate.HasValue )
                     {
                         validationErrors.Add( "Card Expiration Date is required" );
                     }
+
                     if ( string.IsNullOrWhiteSpace( txtCVV.Text ) )
                     {
                         validationErrors.Add( "Card Security Code is required" );
                     }
+
                     if ( acBillingAddress.Visible && (
                         string.IsNullOrWhiteSpace( acBillingAddress.Street1 ) ||
                         string.IsNullOrWhiteSpace( acBillingAddress.City ) ||
@@ -1548,7 +1585,6 @@ namespace RockWeb.Blocks.Event
                         validationErrors.Add( "Billing Address is required" );
                     }
                 }
-
             }
 
             return validationErrors;
@@ -1623,7 +1659,6 @@ namespace RockWeb.Blocks.Event
                             ProcessPostSave( isNewRegistration, registration, previousRegistrantPersonIds, rockContext );
                         }
                     }
-
                 }
                 catch ( Exception ex )
                 {
@@ -1658,7 +1693,9 @@ namespace RockWeb.Blocks.Event
                             }
                         }
                     }
-                    catch { }
+                    catch
+                    {
+                    }
 
                     return ( int? ) null;
                 }
@@ -1758,14 +1795,12 @@ namespace RockWeb.Blocks.Event
                     RegistrationState.PreviousPaymentTotal = registrationService.GetTotalPayments( registration.Id );
                 }
             }
-
             catch ( Exception postSaveEx )
             {
                 ShowWarning( "The following occurred after processing your " + RegistrationTerm, postSaveEx.Message );
                 ExceptionLogService.LogException( postSaveEx, Context, RockPage.PageId, RockPage.Layout.SiteId, CurrentPersonAlias );
             }
         }
-
 
         /// <summary>
         /// Saves the registration.
@@ -1864,7 +1899,7 @@ namespace RockWeb.Blocks.Event
                 // Businesses have no first name.  This resolves null reference issues downstream.
                 if ( CurrentPerson != null && CurrentPerson.FirstName == null )
                 {
-                    CurrentPerson.FirstName = "";
+                    CurrentPerson.FirstName = string.Empty;
                 }
 
                 if ( CurrentPerson != null && CurrentPerson.NickName == null )
@@ -1940,6 +1975,7 @@ namespace RockWeb.Blocks.Event
                 {
                     person.ConnectionStatusValueId = dvcConnectionStatus.Id;
                 }
+
                 if ( dvcRecordStatus != null )
                 {
                     person.RecordStatusValueId = dvcRecordStatus.Id;
@@ -1956,8 +1992,6 @@ namespace RockWeb.Blocks.Event
                 {
                     History.EvaluateChange( registrationChanges, "Registrar", string.Empty, registration.ToString() );
                 }
-
-
             }
 
             // if this registration was marked as temporary (started from another page, then specified in the url), set IsTemporary to False now that we are done
@@ -1972,15 +2006,15 @@ namespace RockWeb.Blocks.Event
 
             try
             {
-
                 Task.Run( () =>
                     HistoryService.SaveChanges(
                         new RockContext(),
                         typeof( Registration ),
                         Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
                         registration.Id,
-                        registrationChanges, true, CurrentPersonAliasId )
-                );
+                        registrationChanges,
+                        true,
+                        CurrentPersonAliasId ) );
 
                 // Get each registrant
                 foreach ( var registrantInfo in RegistrationState.Registrants.ToList() )
@@ -2005,7 +2039,7 @@ namespace RockWeb.Blocks.Event
                                 ( registrant.Person.FirstName.Equals( firstName, StringComparison.OrdinalIgnoreCase ) || registrant.Person.NickName.Equals( firstName, StringComparison.OrdinalIgnoreCase ) ) &&
                                 registrant.Person.LastName.Equals( lastName, StringComparison.OrdinalIgnoreCase ) ) )
                             {
-                                //
+                                // Do nothing
                             }
                             else
                             {
@@ -2101,7 +2135,6 @@ namespace RockWeb.Blocks.Event
                             .Select( f => f.Value.FieldValue )
                             .FirstOrDefault();
 
-
                         if ( fieldValue != null )
                         {
                             switch ( field.PersonFieldType )
@@ -2112,6 +2145,7 @@ namespace RockWeb.Blocks.Event
                                         {
                                             campusId = fieldValue.ToString().AsIntegerOrNull();
                                         }
+
                                         break;
                                     }
 
@@ -2161,6 +2195,7 @@ namespace RockWeb.Blocks.Event
                                             History.EvaluateChange( personChanges, "Marital Status", DefinedValueCache.GetName( person.MaritalStatusValueId ), DefinedValueCache.GetName( newMaritalStatusId ) );
                                             person.MaritalStatusValueId = newMaritalStatusId;
                                         }
+
                                         break;
                                     }
 
@@ -2248,7 +2283,6 @@ namespace RockWeb.Blocks.Event
 
                                     Helper.SaveAttributeValue( person, attribute, newValue, rockContext );
                                     History.EvaluateChange( personChanges, attribute.Name, formattedOriginalValue, formattedNewValue );
-
                                 }
                             }
                         }
@@ -2282,8 +2316,8 @@ namespace RockWeb.Blocks.Event
                                     f.Option == dbFee.Option &&
                                     f.Quantity > 0 ) )
                         {
-                            registrantChanges.Add( string.Format( "Removed '{0}' Fee (Quantity:{1:N0}, Cost:{2:C2}, Option:{3}",
-                                dbFee.RegistrationTemplateFee.Name, dbFee.Quantity, dbFee.Cost, dbFee.Option ) );
+                            registrantChanges.Add(
+                                string.Format( "Removed '{0}' Fee (Quantity:{1:N0}, Cost:{2:C2}, Option:{3}", dbFee.RegistrationTemplateFee.Name, dbFee.Quantity, dbFee.Cost, dbFee.Option ) );
 
                             registrant.Fees.Remove( dbFee );
                             registrantFeeService.Delete( dbFee );
@@ -2400,8 +2434,10 @@ namespace RockWeb.Blocks.Event
                             registration.Id,
                             registrantChanges,
                             "Registrant: " + person.FullName,
-                            null, null, true, CurrentPersonAliasId )
-                    );
+                            null,
+                            null,
+                            true,
+                            CurrentPersonAliasId ) );
 
                     // Clear this registran't family guid so it's not updated again
                     registrantInfo.FamilyGuid = Guid.Empty;
@@ -2435,9 +2471,7 @@ namespace RockWeb.Blocks.Event
                 }
 
                 rockContext.SaveChanges();
-
             }
-
             catch ( Exception ex )
             {
                 using ( var newRockContext = new RockContext() )
@@ -2460,7 +2494,6 @@ namespace RockWeb.Blocks.Event
             }
 
             return registration;
-
         }
 
         /// <summary>
@@ -2476,8 +2509,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="multipleFamilyGroupIds">The multiple family group ids.</param>
         /// <param name="singleFamilyId">The single family identifier.</param>
         /// <returns></returns>
-        private Person SavePerson( RockContext rockContext, Person person, Guid familyGuid, int? campusId, Location location, int adultRoleId, int childRoleId,
-            Dictionary<Guid, int> multipleFamilyGroupIds, ref int? singleFamilyId )
+        private Person SavePerson( RockContext rockContext, Person person, Guid familyGuid, int? campusId, Location location, int adultRoleId, int childRoleId, Dictionary<Guid, int> multipleFamilyGroupIds, ref int? singleFamilyId )
         {
             int? familyId = null;
 
@@ -2505,7 +2537,6 @@ namespace RockWeb.Blocks.Event
                         ( RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Yes && singleFamilyId.HasValue )
                     )
                 {
-
                     // Add person to existing family
                     var age = person.Age;
                     int familyRoleId = age.HasValue && age < 18 ? childRoleId : adultRoleId;
@@ -2514,12 +2545,10 @@ namespace RockWeb.Blocks.Event
                         multipleFamilyGroupIds[familyGuid] :
                         singleFamilyId.Value;
                     PersonService.AddPersonToFamily( person, true, multipleFamilyGroupIds[familyGuid], familyRoleId, rockContext );
-
                 }
-
-                // otherwise create a new family
                 else
                 {
+                    // otherwise create a new family
                     // Create Person/Family
                     var familyGroup = PersonService.SaveNewPerson( person, rockContext, campusId, false );
                     if ( familyGroup != null )
@@ -2536,7 +2565,6 @@ namespace RockWeb.Blocks.Event
                 }
             }
 
-
             if ( familyId.HasValue && location != null )
             {
                 var homeLocationType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
@@ -2549,7 +2577,13 @@ namespace RockWeb.Blocks.Event
                             rockContext,
                             familyGroup,
                             Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME,
-                            location.Street1, location.Street2, location.City, location.State, location.PostalCode, location.Country, true );
+                            location.Street1,
+                            location.Street2,
+                            location.City,
+                            location.State,
+                            location.PostalCode,
+                            location.Country,
+                            true );
                     }
                 }
             }
@@ -2587,6 +2621,7 @@ namespace RockWeb.Blocks.Event
                         {
                             oldPhoneNumber = phone.NumberFormattedWithCountryCode;
                         }
+
                         phone.CountryCode = PhoneNumber.CleanNumber( phoneNumber.CountryCode );
                         phone.Number = cleanNumber;
 
@@ -2708,7 +2743,6 @@ namespace RockWeb.Blocks.Event
                     {
                         Rock.Security.Role.Flush( group.Id );
                     }
-
                 }
             }
         }
@@ -2864,8 +2898,9 @@ namespace RockWeb.Blocks.Event
                             typeof( FinancialBatch ),
                             Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
                             transaction.BatchId.Value,
-                            batchChanges, true, CurrentPersonAliasId )
-                    );
+                            batchChanges,
+                            true,
+                            CurrentPersonAliasId ) );
                 }
 
                 List<string> registrationChanges = new List<string>();
@@ -2876,8 +2911,9 @@ namespace RockWeb.Blocks.Event
                         typeof( Registration ),
                         Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
                         registration.Id,
-                        registrationChanges, true, CurrentPersonAliasId )
-                );
+                        registrationChanges,
+                        true,
+                        CurrentPersonAliasId ) );
 
                 TransactionCode = transaction.TransactionCode;
 
@@ -2887,7 +2923,6 @@ namespace RockWeb.Blocks.Event
             {
                 return false;
             }
-
         }
 
         /// <summary>
@@ -3038,6 +3073,7 @@ namespace RockWeb.Blocks.Event
                 {
                     lbSummaryPrev.Visible = false;
                 }
+
                 ShowSummary();
             }
             else
@@ -3089,9 +3125,15 @@ namespace RockWeb.Blocks.Event
                     {
                         int slots = RegistrationState.SlotsAvailable.Value;
                         int wait = numHowMany.Value - slots;
-                        nbWaitingList.Text = string.Format( "<p>This {0} only has capacity for {1} more {2}. The first {3}{2} you add will be registered for {4}. The remaining {5}{6} will be added to the waitlist.",
-                            RegistrationTerm.ToLower(), slots, RegistrantTerm.PluralizeIf( slots > 1 ).ToLower(), ( slots > 1 ? slots.ToString() + " " : "" ),
-                            RegistrationInstanceState.Name, ( wait > 1 ? wait.ToString() + " " : "" ), RegistrantTerm.PluralizeIf( wait > 1 ).ToLower() );
+                        nbWaitingList.Text = string.Format(
+                            "<p>This {0} only has capacity for {1} more {2}. The first {3}{2} you add will be registered for {4}. The remaining {5}{6} will be added to the waitlist.",
+                            RegistrationTerm.ToLower(),
+                            slots,
+                            RegistrantTerm.PluralizeIf( slots > 1 ).ToLower(),
+                            slots > 1 ? slots.ToString() + " " : string.Empty,
+                            RegistrationInstanceState.Name,
+                            wait > 1 ? wait.ToString() + " " : string.Empty,
+                            RegistrantTerm.PluralizeIf( wait > 1 ).ToLower() );
                         nbWaitingList.Visible = true;
                     }
                 }
@@ -3212,6 +3254,7 @@ namespace RockWeb.Blocks.Event
                     {
                         title += " (cont)";
                     }
+
                     lRegistrantTitle.Text = title;
 
                     nbType.Visible = RegistrationState.RegistrantCount > RegistrationState.SlotsAvailable;
@@ -3233,7 +3276,9 @@ namespace RockWeb.Blocks.Event
                         nbDigitalSignature.Heading = "Signature Required";
                         nbDigitalSignature.Text = string.Format(
                             "This {0} requires that you sign a {1} for each registrant, please follow the prompts below to digitally sign this document for {2}.",
-                            RegistrationTemplate.RegistrationTerm, RegistrationTemplate.RequiredSignatureDocumentTemplate.Name, registrantName );
+                            RegistrationTemplate.RegistrationTerm,
+                            RegistrationTemplate.RequiredSignatureDocumentTemplate.Name,
+                            registrantName );
 
                         var errors = new List<string>();
                         string inviteLink = DigitalSignatureComponent.GetInviteLink( RegistrationTemplate.RequiredSignatureDocumentTemplate.ProviderTemplateKey, out errors );
@@ -3361,7 +3406,6 @@ namespace RockWeb.Blocks.Event
             {
                 pnlPaymentInfo.Visible = false;
             }
-
         }
 
         /// <summary>
@@ -3411,7 +3455,6 @@ namespace RockWeb.Blocks.Event
                     {
                         lSuccess.Text = "You have successfully completed this " + RegistrationTerm.ToLower();
                     }
-
                 }
 
                 if ( nbAmountPaid.Visible = true &&
@@ -3470,7 +3513,7 @@ namespace RockWeb.Blocks.Event
             pnlSuccess.Visible = CurrentPanel == 4;
 
             lSummaryAndPaymentTitle.Text = ( currentPanel == 2 && RegistrationTemplate != null ) ? "Review " + RegistrationTemplate.RegistrationTerm : "Payment Method";
-            lPaymentInfoTitle.Text = currentPanel == 2 ? "<h4>Payment Method</h4>" : "";
+            lPaymentInfoTitle.Text = currentPanel == 2 ? "<h4>Payment Method</h4>" : string.Empty;
         }
 
         /// <summary>
@@ -3506,7 +3549,8 @@ namespace RockWeb.Blocks.Event
         {
             RockPage.AddScriptLink( ResolveUrl( "~/Scripts/jquery.creditCardTypeDetector.js" ) );
 
-            string script = string.Format( @"
+            string script = string.Format(
+                @"
     // Adjust the label of 'is in the same family' based on value of first name entered
     $('input.js-first-name').change( function() {{
         var name = $(this).val();
@@ -3655,36 +3699,37 @@ namespace RockWeb.Blocks.Event
         $('#iframeRequiredDocument').attr('src', $('#{21}').val() );
     }}
 
-", nbAmountPaid.ClientID                 // {0}
-            , hfTotalCost.ClientID                   // {1}
-            , hfMinimumDue.ClientID                  // {2}
-            , hfPreviouslyPaid.ClientID              // {3}
-            , lRemainingDue.ClientID                 // {4}
-            , hfTriggerScroll.ClientID               // {5}
-            , GlobalAttributesCache.Value( "CurrencySymbol" ) // {6}
-            , hfStep2Url.ClientID                    // {7}
-            , hfStep2ReturnQueryString.ClientID      // {8}
-            , this.Page.ClientScript.GetPostBackEventReference( lbStep2Return, "" ) // {9}
-            , this.BlockValidationGroup              // {10}
-            , txtCreditCard.ClientID                 // {11}
-            , mypExpiration.ClientID                 // {12}
-            , txtCVV.ClientID                        // {13}
-            , hfStep2AutoSubmit.ClientID             // {14}
-            , acBillingAddress.ClientID              // {15}
-            , txtCardFirstName.ClientID              // {16}
-            , txtCardLastName.ClientID               // {17}
-            , txtCardName.ClientID                  // {18}
-            , hfRequiredDocumentQueryString.ClientID // {19}
-            , this.Page.ClientScript.GetPostBackEventReference( lbRequiredDocumentNext, "" ) // {20}
-            , hfRequiredDocumentLinkUrl.ClientID     // {21}
-            , GetAttributeValue( "FamilyTerm" )      // {22}
-);
+", 
+                nbAmountPaid.ClientID,                 // {0}
+                hfTotalCost.ClientID,                   // {1}
+                hfMinimumDue.ClientID,                  // {2}
+                hfPreviouslyPaid.ClientID,              // {3}
+                lRemainingDue.ClientID,                 // {4}
+                hfTriggerScroll.ClientID,               // {5}
+                GlobalAttributesCache.Value( "CurrencySymbol" ), // {6}
+                hfStep2Url.ClientID,                    // {7}
+                hfStep2ReturnQueryString.ClientID,      // {8}
+                this.Page.ClientScript.GetPostBackEventReference( lbStep2Return, string.Empty ), // {9}
+                this.BlockValidationGroup,              // {10}
+                txtCreditCard.ClientID,                 // {11}
+                mypExpiration.ClientID,                 // {12}
+                txtCVV.ClientID,                        // {13}
+                hfStep2AutoSubmit.ClientID,             // {14}
+                acBillingAddress.ClientID,              // {15}
+                txtCardFirstName.ClientID,              // {16}
+                txtCardLastName.ClientID,               // {17}
+                txtCardName.ClientID,                  // {18}
+                hfRequiredDocumentQueryString.ClientID, // {19}
+                this.Page.ClientScript.GetPostBackEventReference( lbRequiredDocumentNext, string.Empty ), // {20}
+                hfRequiredDocumentLinkUrl.ClientID,     // {21}
+                GetAttributeValue( "FamilyTerm" ) );      // {22}
 
             ScriptManager.RegisterStartupScript( Page, Page.GetType(), "registrationEntry", script, true );
 
             if ( Using3StepGateway )
             {
-                string submitScript = string.Format( @"
+                string submitScript = string.Format(
+                    @"
     $('#{0}').val('');
     $('#{1}_monthDropDownList').val('');
     $('#{1}_yearDropDownList_').val('');
@@ -3692,8 +3737,7 @@ namespace RockWeb.Blocks.Event
 ",
                 txtCreditCard.ClientID,     // {0}
                 mypExpiration.ClientID,     // {1}
-                txtCVV.ClientID             // {2}
-                );
+                txtCVV.ClientID );             // {2}
 
                 ScriptManager.RegisterOnSubmitStatement( Page, Page.GetType(), "clearCCFields", submitScript );
             }
@@ -3716,6 +3760,7 @@ namespace RockWeb.Blocks.Event
                     {
                         CreateRegistrantControls( setValues );
                     }
+
                     break;
                 case 2:
                     CreateSummaryControls( setValues );
@@ -3735,6 +3780,7 @@ namespace RockWeb.Blocks.Event
                     {
                         ParseRegistrantControls();
                     }
+
                     break;
                 case 2:
                     ParseSummaryControls();
@@ -4147,6 +4193,7 @@ namespace RockWeb.Blocks.Event
                             var value = fieldValue.ToString().AsInteger();
                             ddlConnectionStatus.SetValue( value );
                         }
+
                         break;
                     }
             }

@@ -1040,6 +1040,7 @@ namespace RockWeb.Blocks.Event
                             }
                         }
                     }
+
                     if ( result.Any() )
                     {
                         return result;
