@@ -1924,7 +1924,7 @@ function(item) {
                     var templateFields = gAttendeesAttendance.Columns.OfType<TemplateField>();
                     foreach ( var templateField in templateFields )
                     {
-                        var cellIndex = gAttendeesAttendance.Columns.IndexOf( templateField );
+                        var cellIndex = gAttendeesAttendance.GetColumnIndex( templateField );
                         var cell = e.Row.Cells[cellIndex] as DataControlFieldCell;
                         templateField.InitializeCell( cell, DataControlCellType.DataCell, e.Row.RowState, e.Row.RowIndex );
                     }

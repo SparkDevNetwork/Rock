@@ -720,7 +720,6 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             Group family = null;
             Person adult1 = null;
             Person adult2 = null;
-            int? maritalStatusId = null;
 
             // If there is a logged in person, attempt to find their family and spouse.
             if ( GetAttributeValue("AllowUpdates").AsBoolean() && CurrentPerson != null )

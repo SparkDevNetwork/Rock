@@ -394,7 +394,7 @@ namespace RockWeb.Blocks.Finance
             {
                 var batchRow = e.Row.DataItem as BatchRow;
                 var deleteField = gBatchList.Columns.OfType<DeleteField>().First();
-                var cell = ( e.Row.Cells[gBatchList.Columns.IndexOf( deleteField )] as DataControlFieldCell ).Controls[0];
+                var cell = ( e.Row.Cells[gBatchList.GetColumnIndex( deleteField )] as DataControlFieldCell ).Controls[0];
 
                 if ( batchRow != null )
                 {
