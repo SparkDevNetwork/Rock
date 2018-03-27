@@ -551,6 +551,12 @@ namespace Rock
                     return content ?? string.Empty;
                 }
 
+                // If there have not been any EnabledLavaCommands explicitely set, then use the global defaults.
+                if ( enabledLavaCommands == null )
+                {
+                    enabledLavaCommands = GlobalAttributesCache.Read().GetValue( "DefaultEnabledLavaCommands" );
+                }
+
                 Template template = GetTemplate( content );
                 template.Registers.AddOrReplace( "EnabledCommands", enabledLavaCommands );
                 template.InstanceAssigns.AddOrReplace( "CurrentPerson", currentPersonOverride );

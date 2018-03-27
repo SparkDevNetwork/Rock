@@ -226,9 +226,10 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( control != null && control is RockTextOrDropDownList )
+            var editControl = control as RockTextOrDropDownList;
+            if ( editControl != null )
             {
-                return ( (RockTextOrDropDownList)control ).SelectedValue;
+                return editControl.SelectedValue;
             }
 
             return string.Empty;
@@ -242,12 +243,10 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value != null )
+            var editControl = control as RockTextOrDropDownList;
+            if ( editControl != null )
             {
-                if ( control != null && control is RockTextOrDropDownList )
-                {
-                    ( (RockTextOrDropDownList)control ).SelectedValue = value;
-                }
+                editControl.SetValue( value );
             }
         }
 

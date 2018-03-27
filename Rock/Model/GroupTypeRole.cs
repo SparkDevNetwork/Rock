@@ -15,12 +15,14 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -143,6 +145,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool CanEdit { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance can manage members.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance can manage members; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool CanManageMembers { get; set; }
 
         #endregion
 

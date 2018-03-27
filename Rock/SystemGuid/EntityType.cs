@@ -246,5 +246,10 @@ namespace Rock.SystemGuid
         /// The guid for the Test Financial Gateway entity type
         /// </summary>
         public const string FINANCIAL_GATEWAY_TEST_GATEWAY = "C22B0247-7C9F-411B-A1F5-0051FCBAC199";
+
+        /// <summary>
+        /// The HTTP module component
+        /// </summary>
+        public const string HTTP_MODULE_COMPONENT = "EDE69F48-5E05-4260-B360-DA37DFD1AB83";
     }
 }

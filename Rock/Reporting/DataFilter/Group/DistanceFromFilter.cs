@@ -242,22 +242,31 @@ function() {
                 {
                     return null;
                 }
-
-                var selectedLocationGeoPoint = location.GeoPoint;
-                double miles = selectionValues[2].AsDoubleOrNull() ?? 0;
-                double meters = miles * Location.MetersPerMile;
-
+                
                 GroupService groupService = new GroupService( (RockContext)serviceInstance.Context );
 
                 var qry = groupService.Queryable()
                     .Where( p => p.GroupLocations
                         .Where( l => l.GroupLocationTypeValue.Guid == groupLocationTypeValueGuid )
                         .Where( l => l.IsMappedLocation ).Any() );
+                
+                // if a specific point was selected (whether a marker, or an address), we'll do a radial search
+                if( location.GeoPoint != null )
+                {
+                    double miles = selectionValues[2].AsDoubleOrNull() ?? 0;
+                    double meters = miles * Location.MetersPerMile;
 
-                // limit to distance LessThan specified distance (dbGeography uses meters for distance units)
-                qry = qry
-                    .Where( p => p.GroupLocations.Any( l => l.Location.GeoPoint.Distance( selectedLocationGeoPoint ) <= meters ) );
-
+                    // limit to distance LessThan specified distance (dbGeography uses meters for distance units)
+                    qry = qry
+                        .Where( p => p.GroupLocations.Any( l => l.Location.GeoPoint.Distance( location.GeoPoint ) <= meters ) );
+                }
+                // otherwise if a geo fence was drawn, see what points intersect within it
+                else if ( location.GeoFence != null )
+                {
+                    qry = qry
+                        .Where( p => p.GroupLocations.Any( l => l.Location.GeoPoint.Intersects( location.GeoFence )  ) );
+                }
+                
                 Expression extractedFilterExpression = FilterExpressionExtractor.Extract<Rock.Model.Group>( qry, parameterExpression, "p" );
 
                 return extractedFilterExpression;

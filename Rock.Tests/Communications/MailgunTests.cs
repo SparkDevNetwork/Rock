@@ -32,11 +32,11 @@ namespace Rock.Tests.Communications
 
             rockEmailMessage.AddRecipient( "ethan@sparkdevnetwork.org" );
 
-            MailGunHtml mailGunHtml = new MailGunHtml();
-            mailGunHtml.Send( rockEmailMessage, 0, null, out errorMessages );
+            var mailgunHttp = new MailgunHttp();
+            mailgunHttp.Send( rockEmailMessage, 0, null, out errorMessages );
 
             Assert.True( !errorMessages.Any() );
-            Assert.Equal( System.Net.HttpStatusCode.OK, mailGunHtml.Response.StatusCode );
+            Assert.Equal( System.Net.HttpStatusCode.OK, mailgunHttp.Response.StatusCode );
         }
     }
 }

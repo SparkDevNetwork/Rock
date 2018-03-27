@@ -568,6 +568,7 @@ namespace Rock.Web.UI.Controls
                 var ce_{0} = ace.edit('codeeditor-div-{0}');
                 ce_{0}.setTheme('ace/theme/{1}');
                 ce_{0}.getSession().setMode('ace/mode/{2}');
+                ce_{0}.getSession().setUseWrapMode(true);
                 ce_{0}.setShowPrintMargin(false);
                 $('#codeeditor-div-{0}').data('aceEditor', ce_{0});
 

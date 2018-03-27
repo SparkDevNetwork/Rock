@@ -504,6 +504,26 @@ namespace Rock.Model
         [DataMember]
         public int? PrimaryFamilyId { get; set; }
 
+        /// <summary>
+        /// Gets or sets a flag indicating if the Person is locked as child.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if the Person is locked as child; otherwise <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsLockedAsChild {
+            get
+            {
+                return _isLockedAsChild;
+            }
+
+            set
+            {
+                _isLockedAsChild = value;
+            }
+        }
+        private bool _isLockedAsChild = false;
+
         #endregion
 
         #region Constructors
@@ -1050,8 +1070,8 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the number of days until their next birthday. This is a computed column and can be used
-        /// in LinqToSql queries, but there is no in-memory calculation. Avoid using property outside
-        /// a linq query
+        /// in LinqToSql queries, but there is no in-memory calculation. Avoid using this property outside of 
+        /// a linq query. Use DaysToBirthday property instead
         /// NOTE: If their birthday is Feb 29, and this isn't a leap year, it'll treat Feb 28th as their birthday when doing this calculation
         /// </summary>
         /// <value>
@@ -1223,10 +1243,12 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the number of days until the Person's birthday.
+        /// Gets the number of days until the Person's birthday. This is an in-memory calculation. If needed in a LinqToSql query
+        /// use DaysUntilBirthday property instead
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the number of days until the Person's birthday. If the person's birthdate is not available returns Int.MaxValue
+        /// A <see cref="System.Int32"/> representing the number of days until the Person's birthday. If the person's birthdate is 
+        /// not available returns Int.MaxValue
         /// </value>
         [DataMember]
         [NotMapped]
@@ -1309,6 +1331,53 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the number of days until the Person's anniversary. This is an in-memory calculation. If needed in a LinqToSql query
+        /// use DaysUntilAnniversary property instead
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the number of days until the Person's anniversary. If the person's anniversary 
+        /// is not available returns Int.MaxValue
+        /// </value>
+        [DataMember]
+        [NotMapped]
+        public virtual int DaysToAnniversary
+        {
+            get
+            {
+                if ( AnniversaryDate.HasValue )
+                {
+                    var today = RockDateTime.Today;
+
+                    int day = AnniversaryDate.Value.Day;
+                    int month = AnniversaryDate.Value.Month;
+                    int year = today.Year;
+                    if ( month < today.Month || ( month == today.Month && day < today.Day ) )
+                    {
+                        year++;
+                    }
+
+                    DateTime aday = DateTime.MinValue;
+                    while ( !DateTime.TryParse( month.ToString() + "/" + day.ToString() + "/" + year.ToString(), out aday ) && day > 28 )
+                    {
+                        day--;
+                    }
+
+                    if ( aday != DateTime.MinValue )
+                    {
+                        return Convert.ToInt32( aday.Subtract( today ).TotalDays );
+                    }
+                }
+
+                return int.MaxValue;
+            }
+            private set
+            {
+                // intentionally blank
+            }
+
+        }
+
+        /// <summary>
         /// Gets the next anniversary.
         /// </summary>
         /// <value>
@@ -1340,6 +1409,19 @@ namespace Rock.Model
             }
 
         }
+
+        /// <summary>
+        /// Gets or sets the number of days until their next anniversay. This is a computed column and can be used
+        /// in LinqToSql queries, but there is no in-memory calculation. Avoid using property outside of
+        /// a linq query. Use DaysToAnniversary instead.
+        /// NOTE: If their anniversay is Feb 29, and this isn't a leap year, it'll treat Feb 28th as their anniversay when doing this calculation
+        /// </summary>
+        /// <value>
+        /// The the number of days until their next anniversary
+        /// </value>
+        [DataMember]
+        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
+        public int? DaysUntilAnniversary { get; set; }
 
         /// <summary>
         /// Gets or sets the grade offset, which is the number of years until their graduation date.  This is used to determine which Grade (Defined Value) they are in
@@ -1474,6 +1556,15 @@ namespace Rock.Model
                 return true;
             }
         }
+
+        /// <summary>
+        /// Gets or sets the history changes.
+        /// </summary>
+        /// <value>
+        /// The history changes.
+        /// </value>
+        [NotMapped]
+        private List<string> HistoryChanges { get; set; }
 
         #endregion
 
@@ -1673,6 +1764,7 @@ namespace Rock.Model
             var dictionary = base.ToDictionary();
             dictionary.AddOrIgnore( "Age", AgePrecise );
             dictionary.AddOrIgnore( "DaysToBirthday", DaysToBirthday );
+            dictionary.AddOrIgnore( "DaysToAnniversary", DaysToAnniversary );
             dictionary.AddOrIgnore( "FullName", FullName );
             dictionary.AddOrIgnore( "PrimaryAliasId", this.PrimaryAliasId );
             return dictionary;
@@ -1685,11 +1777,7 @@ namespace Rock.Model
         /// <param name="entry">The entry.</param>
         public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
         {
-            if ( entry.State == EntityState.Deleted )
-            {
-                // If PersonRecord is getting deleted, don't do any of the presavechanges
-                return;
-            }
+            var rockContext = (RockContext)dbContext;
 
             var inactiveStatus = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
             var deceased = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED.AsGuid() );
@@ -1709,7 +1797,6 @@ namespace Rock.Model
                     var dbPropertyEntry = entry.Property( "RecordStatusValueId" );
                     if ( dbPropertyEntry != null && dbPropertyEntry.IsModified )
                     {
-                        var rockContext = (RockContext)dbContext;
                         foreach ( var groupMember in new GroupMemberService( rockContext )
                             .Queryable()
                             .Where( m =>
@@ -1765,6 +1852,110 @@ namespace Rock.Model
                 Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
             }
 
+            HistoryChanges = new List<string>();
+
+            switch ( entry.State )
+            {
+                case System.Data.Entity.EntityState.Added:
+                    {
+                        HistoryChanges.Add( "Person Created" );
+
+                        History.EvaluateChange( HistoryChanges, "Record Type", (int?)null, RecordTypeValue, RecordTypeValueId );
+                        History.EvaluateChange( HistoryChanges, "Record Status", (int?)null, RecordStatusValue, RecordStatusValueId );
+                        History.EvaluateChange( HistoryChanges, "Record Status Reason", (int?)null, RecordStatusReasonValue, RecordStatusReasonValueId );
+                        History.EvaluateChange( HistoryChanges, "Inactive Reason Note", string.Empty, InactiveReasonNote );
+                        History.EvaluateChange( HistoryChanges, "Connection Status", (int?)null, ConnectionStatusValue, ConnectionStatusValueId );
+                        History.EvaluateChange( HistoryChanges, "Review Reason", (int?)null, ReviewReasonValue, ReviewReasonValueId );
+                        History.EvaluateChange( HistoryChanges, "Review Reason Note", string.Empty, ReviewReasonNote );
+                        History.EvaluateChange( HistoryChanges, "Deceased", (bool?)null, IsDeceased );
+                        History.EvaluateChange( HistoryChanges, "Title", (int?)null, TitleValue, TitleValueId );
+                        History.EvaluateChange( HistoryChanges, "First Name", string.Empty, FirstName );
+                        History.EvaluateChange( HistoryChanges, "Nick Name", string.Empty, NickName );
+                        History.EvaluateChange( HistoryChanges, "Middle Name", string.Empty, MiddleName );
+                        History.EvaluateChange( HistoryChanges, "Last Name", string.Empty, LastName );
+                        History.EvaluateChange( HistoryChanges, "Suffix", (int?)null, SuffixValue, SuffixValueId );
+                        History.EvaluateChange( HistoryChanges, "Birth Date", null, BirthDate );
+                        History.EvaluateChange( HistoryChanges, "Gender", null, Gender );
+                        History.EvaluateChange( HistoryChanges, "Marital Status", (int?)null, MaritalStatusValue, MaritalStatusValueId );
+                        History.EvaluateChange( HistoryChanges, "Anniversary Date", null, AnniversaryDate );
+                        History.EvaluateChange( HistoryChanges, "Graduation Year", null, GraduationYear );
+                        History.EvaluateChange( HistoryChanges, "Giving Id", null, GivingId );
+                        History.EvaluateChange( HistoryChanges, "Email", string.Empty, Email );
+                        History.EvaluateChange( HistoryChanges, "Email Active", (bool?)null, IsEmailActive );
+                        History.EvaluateChange( HistoryChanges, "Email Note", string.Empty, EmailNote );
+                        History.EvaluateChange( HistoryChanges, "Email Preference", null, EmailPreference );
+                        History.EvaluateChange( HistoryChanges, "Communication Preference", null, CommunicationPreference );
+                        History.EvaluateChange( HistoryChanges, "System Note", string.Empty, SystemNote );
+
+                        if ( PhotoId.HasValue )
+                        {
+                            HistoryChanges.Add( "Added a photo." );
+                        }
+
+                        break;
+                    }
+
+                case System.Data.Entity.EntityState.Modified:
+                    {
+                        History.EvaluateChange( HistoryChanges, "Record Type", entry.OriginalValues["RecordTypeValueId"].ToStringSafe().AsIntegerOrNull(), RecordTypeValue, RecordTypeValueId );
+                        History.EvaluateChange( HistoryChanges, "Record Status", entry.OriginalValues["RecordStatusValueId"].ToStringSafe().AsIntegerOrNull(), RecordStatusValue, RecordStatusValueId );
+                        History.EvaluateChange( HistoryChanges, "Record Status Reason", entry.OriginalValues["RecordStatusReasonValueId"].ToStringSafe().AsIntegerOrNull(), RecordStatusReasonValue, RecordStatusReasonValueId );
+                        History.EvaluateChange( HistoryChanges, "Inactive Reason Note", entry.OriginalValues["InactiveReasonNote"].ToStringSafe(), InactiveReasonNote );
+                        History.EvaluateChange( HistoryChanges, "Connection Status", entry.OriginalValues["ConnectionStatusValueId"].ToStringSafe().AsIntegerOrNull(), ConnectionStatusValue, ConnectionStatusValueId );
+                        History.EvaluateChange( HistoryChanges, "Review Reason", entry.OriginalValues["ReviewReasonValueId"].ToStringSafe().AsIntegerOrNull(), ReviewReasonValue, ReviewReasonValueId );
+                        History.EvaluateChange( HistoryChanges, "Review Reason Note", entry.OriginalValues["ReviewReasonNote"].ToStringSafe(), ReviewReasonNote );
+                        History.EvaluateChange( HistoryChanges, "Deceased", entry.OriginalValues["IsDeceased"].ToStringSafe().AsBoolean(), IsDeceased );
+                        History.EvaluateChange( HistoryChanges, "Title", entry.OriginalValues["TitleValueId"].ToStringSafe().AsIntegerOrNull(), TitleValue, TitleValueId );
+                        History.EvaluateChange( HistoryChanges, "First Name", entry.OriginalValues["FirstName"].ToStringSafe(), FirstName );
+                        History.EvaluateChange( HistoryChanges, "Nick Name", entry.OriginalValues["NickName"].ToStringSafe(), NickName );
+                        History.EvaluateChange( HistoryChanges, "Middle Name", entry.OriginalValues["MiddleName"].ToStringSafe(), MiddleName );
+                        History.EvaluateChange( HistoryChanges, "Last Name", entry.OriginalValues["LastName"].ToStringSafe(), LastName );
+                        History.EvaluateChange( HistoryChanges, "Suffix", entry.OriginalValues["SuffixValueId"].ToStringSafe().AsIntegerOrNull(), SuffixValue, SuffixValueId );
+                        History.EvaluateChange( HistoryChanges, "Birth Date", entry.OriginalValues["BirthDate"].ToStringSafe().AsDateTime(), BirthDate );
+                        History.EvaluateChange( HistoryChanges, "Gender", entry.OriginalValues["Gender"].ToStringSafe().ConvertToEnum<Gender>(), Gender );
+                        History.EvaluateChange( HistoryChanges, "Marital Status", entry.OriginalValues["MaritalStatusValueId"].ToStringSafe().AsIntegerOrNull(), MaritalStatusValue, MaritalStatusValueId );
+                        History.EvaluateChange( HistoryChanges, "Anniversary Date", entry.OriginalValues["AnniversaryDate"].ToStringSafe().AsDateTime(), AnniversaryDate );
+                        History.EvaluateChange( HistoryChanges, "Graduation Year", entry.OriginalValues["GraduationYear"].ToStringSafe().AsIntegerOrNull(), GraduationYear );
+                        History.EvaluateChange( HistoryChanges, "Giving Id", entry.OriginalValues["GivingId"].ToStringSafe(), GivingId );
+                        History.EvaluateChange( HistoryChanges, "Email", entry.OriginalValues["Email"].ToStringSafe(), Email );
+                        History.EvaluateChange( HistoryChanges, "Email Active", entry.OriginalValues["IsEmailActive"].ToStringSafe().AsBoolean(), IsEmailActive );
+                        History.EvaluateChange( HistoryChanges, "Email Note", entry.OriginalValues["EmailNote"].ToStringSafe(), EmailNote );
+                        History.EvaluateChange( HistoryChanges, "Email Preference", entry.OriginalValues["EmailPreference"].ToStringSafe().ConvertToEnum<EmailPreference>(), EmailPreference );
+                        History.EvaluateChange( HistoryChanges, "Communication Preference", entry.OriginalValues["CommunicationPreference"].ToStringSafe().ConvertToEnum<CommunicationType>(), CommunicationPreference );
+                        History.EvaluateChange( HistoryChanges, "System Note", entry.OriginalValues["SystemNote"].ToStringSafe(), SystemNote );
+
+                        int? originalPhotoId = entry.OriginalValues["PhotoId"].ToStringSafe().AsIntegerOrNull();
+                        if ( originalPhotoId.HasValue )
+                        {
+                            if ( PhotoId.HasValue )
+                            {
+                                if ( PhotoId.Value != originalPhotoId.Value )
+                                {
+                                    HistoryChanges.Add( "Modified the photo." );
+                                }
+                            }
+                            else
+                            {
+                                HistoryChanges.Add( "Deleted the photo." );
+                            }
+                        }
+                        else if (PhotoId.HasValue )
+                        {
+                            HistoryChanges.Add( "Added a photo." );
+                        }
+
+                        break;
+                    }
+
+                case System.Data.Entity.EntityState.Deleted:
+                    {
+                        HistoryChanges.Add( "Deleted" );
+
+                        // If PersonRecord is getting deleted, don't do any of the remaining presavechanges
+                        return;
+                    }
+            }
+
             base.PreSaveChanges( dbContext, entry );
         }
 
@@ -1774,6 +1965,11 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public override void PostSaveChanges( Data.DbContext dbContext )
         {
+            if ( HistoryChanges != null && HistoryChanges.Any() )
+            {
+                HistoryService.SaveChanges( (RockContext)dbContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), this.Id, HistoryChanges, true, this.ModifiedByPersonAliasId );
+            }
+
             base.PostSaveChanges( dbContext );
 
             PersonService.UpdatePersonAgeClassification( this.Id, dbContext as RockContext );
@@ -1856,6 +2052,16 @@ namespace Rock.Model
                 TopSignalIconCssClass = topSignal?.SignalType.SignalIconCssClass;
                 TopSignalColor = topSignal?.SignalType.SignalColor;
             }
+        }
+
+        /// <summary>
+        /// Gets the phone number.
+        /// </summary>
+        /// <param name="phoneType">Type of the phone.</param>
+        /// <returns></returns>
+        public PhoneNumber GetPhoneNumber( Guid phoneType )
+        {
+            return PhoneNumbers.FirstOrDefault( n => n.NumberTypeValue.Guid == phoneType );
         }
 
         #endregion

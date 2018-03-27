@@ -23,8 +23,8 @@
                     <Rock:EmailBox ID="tbEmail" runat="server" Label="Email" Required="true" />
 
                     <Rock:DateRangePicker ID="drpDateRange" runat="server" Label="Date Range" />
-                    <Rock:CurrencyBox ID="tbTotalAmount" runat="server" Label="Total Pledge Amount" MinimumValue="0" Required="true" />
-                    <Rock:RockDropDownList ID="ddlFrequency" runat="server" Label="Gift Frequency" />
+                    <Rock:CurrencyBox ID="tbTotalAmount" runat="server" Label="Total Pledge Amount" MinimumValue="0" Required="true" Help="The total amount that you are pledging. If you intend to give $100 monthly for one year, enter $1,200." />
+                    <Rock:RockDropDownList ID="ddlFrequency" runat="server" Label="Gift Frequency" Help="How often you expect to be making gifts towards the total amount." />
 
                     <div class="actions">
                         <asp:LinkButton ID="btnSave" AccessKey="s" runat="server" ToolTip="Alt+s" Text="Save" OnClick="btnSave_Click" CssClass="btn btn-primary" />

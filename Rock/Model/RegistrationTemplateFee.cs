@@ -115,6 +115,15 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public bool IsActive { get; set; } = true;
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is required.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is required; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsRequired { get; set; }
+
         #endregion
 
         #region Virtual Properties

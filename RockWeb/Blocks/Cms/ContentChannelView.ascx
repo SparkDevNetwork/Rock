@@ -56,7 +56,7 @@
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:RockCheckBox ID="cbSetPageTitle" runat="server" Label="Set Page Title" Text="Yes"
-                                        Help="When enabled will update the page title with the channel's name unless there is a item id in the query string then it will display the item's title." />
+                                        Help="When enabled will update the page title with the channel's name unless there is an item id in the query string then it will display the item's title." />
                                     <Rock:RockCheckBox ID="cbMergeContent" runat="server" Label="Merge Content" Text="Yes"
                                         Help="Enabling this option will result in the content data and attribute values to be merged using the liquid template engine." />
                                     <Rock:PagePicker ID="ppDetailPage" runat="server" Label="Detail Page" />
@@ -84,7 +84,7 @@
                                         <legend>Social Media Settings</legend>
 
                                         <Rock:RockCheckBox ID="cbSetRssAutodiscover" runat="server" Label="Set RSS Autodiscover Link" Text="Yes"
-                                            Help="Set's an RSS autodiscover link to the header section of the page." />
+                                            Help="Sets an RSS autodiscover link to the header section of the page." />
 
                                         <Rock:RockDropDownList ID="ddlMetaDescriptionAttribute" runat="server" Label="Meta Description Attribute"
                                             Help="Attribute to use for the page's meta description." />

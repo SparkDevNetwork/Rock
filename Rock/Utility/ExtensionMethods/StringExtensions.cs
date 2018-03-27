@@ -50,6 +50,16 @@ namespace Rock
         }
 
         /// <summary>
+        /// Removes all non alpha numeric characters from a string
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static string RemoveAllNonAlphaNumericCharacters( this string str )
+        {
+            return string.Concat( str.Where( c => char.IsLetterOrDigit( c ) ) );
+        }
+
+        /// <summary>
         /// Determines whether the string is not null or whitespace.
         /// </summary>
         /// <param name="str">The string.</param>
@@ -99,6 +109,20 @@ namespace Rock
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Determines whether the string is valid mac address.
+        /// Works with colons, dashes, or no seperators
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns>
+        ///   <c>true</c> if valid mac address otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsValidMacAddress( this string str )
+        {
+            Regex regex = new Regex( "^([0-9a-fA-F]{2}(?:[:-]?[0-9a-fA-F]{2}){5})$" );
+            return regex.IsMatch( str );
         }
 
         /// <summary>

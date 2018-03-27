@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Data.Entity.Infrastructure;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -375,6 +374,72 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Evaluates a group type value change.
+        /// </summary>
+        /// <param name="historyMessages">The history messages.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <param name="oldGroupTypeId">The old defined value identifier.</param>
+        /// <param name="newGroupType">The new defined value.</param>
+        /// <param name="newGroupTypeId">The new defined value identifier.</param>
+        public static void EvaluateChange( List<string> historyMessages, string propertyName, int? oldGroupTypeId, GroupType newGroupType, int? newGroupTypeId )
+        {
+            EvaluateChange( historyMessages, propertyName, oldGroupTypeId, newGroupType, newGroupTypeId, string.Empty, false );
+        }
+
+        /// <summary>
+        /// Evaluates the change.
+        /// </summary>
+        /// <param name="historyMessages">The history messages.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <param name="oldGroupTypeId">The old defined value identifier.</param>
+        /// <param name="newGroupType">The new defined value.</param>
+        /// <param name="newGroupTypeId">The new defined value identifier.</param>
+        /// <param name="blankValue">The blank value.</param>
+        /// <param name="isSensitive">if set to <c>true</c> [is sensitive].</param>
+        public static void EvaluateChange( List<string> historyMessages, string propertyName, int? oldGroupTypeId, GroupType newGroupType, int? newGroupTypeId, string blankValue, bool isSensitive )
+        {
+            if ( !oldGroupTypeId.Equals( newGroupTypeId ) )
+            {
+                string oldStringValue = GetGroupTypeValue( null, oldGroupTypeId, blankValue );
+                string newStringValue = GetGroupTypeValue( newGroupType, newGroupTypeId, blankValue );
+                EvaluateChange( historyMessages, propertyName, oldStringValue, newStringValue, isSensitive );
+            }
+        }
+
+        /// <summary>
+        /// Evaluates a campus change.
+        /// </summary>
+        /// <param name="historyMessages">The history messages.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <param name="oldCampusId">The old defined value identifier.</param>
+        /// <param name="newCampus">The new defined value.</param>
+        /// <param name="newCampusId">The new defined value identifier.</param>
+        public static void EvaluateChange( List<string> historyMessages, string propertyName, int? oldCampusId, Campus newCampus, int? newCampusId )
+        {
+            EvaluateChange( historyMessages, propertyName, oldCampusId, newCampus, newCampusId, string.Empty, false );
+        }
+
+        /// <summary>
+        /// Evaluates the change.
+        /// </summary>
+        /// <param name="historyMessages">The history messages.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <param name="oldCampusId">The old defined value identifier.</param>
+        /// <param name="newCampus">The new defined value.</param>
+        /// <param name="newCampusId">The new defined value identifier.</param>
+        /// <param name="blankValue">The blank value.</param>
+        /// <param name="isSensitive">if set to <c>true</c> [is sensitive].</param>
+        public static void EvaluateChange( List<string> historyMessages, string propertyName, int? oldCampusId, Campus newCampus, int? newCampusId, string blankValue, bool isSensitive )
+        {
+            if ( !oldCampusId.Equals( newCampusId ) )
+            {
+                string oldStringValue = GetCampusValue( null, oldCampusId, blankValue );
+                string newStringValue = GetCampusValue( newCampus, newCampusId, blankValue );
+                EvaluateChange( historyMessages, propertyName, oldStringValue, newStringValue, isSensitive );
+            }
+        }
+
+        /// <summary>
         /// Evaluates the person alias change.
         /// </summary>
         /// <param name="historyMessages">The history messages.</param>
@@ -410,6 +475,111 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Evaluates the person alias change.
+        /// </summary>
+        /// <param name="historyMessages">The history messages.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <param name="oldGroupId">The old person alias identifier.</param>
+        /// <param name="newGroup">The new person alias.</param>
+        /// <param name="newGroupId">The new person alias identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        public static void EvaluateChange( List<string> historyMessages, string propertyName, int? oldGroupId, Group newGroup, int? newGroupId, RockContext rockContext )
+        {
+            EvaluateChange( historyMessages, propertyName, oldGroupId, newGroup, newGroupId, rockContext, string.Empty, false );
+        }
+
+        /// <summary>
+        /// Evaluates the change.
+        /// </summary>
+        /// <param name="historyMessages">The history messages.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <param name="oldGroupId">The old person alias identifier.</param>
+        /// <param name="newGroup">The new person alias.</param>
+        /// <param name="newGroupId">The new person alias identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="blankValue">The blank value.</param>
+        /// <param name="isSensitive">if set to <c>true</c> [is sensitive].</param>
+        public static void EvaluateChange( List<string> historyMessages, string propertyName, int? oldGroupId, Group newGroup, int? newGroupId, RockContext rockContext, string blankValue, bool isSensitive )
+        {
+            if ( !oldGroupId.Equals( newGroupId ) )
+            {
+                string oldStringValue = GetValue<Group>( null, oldGroupId, rockContext, blankValue );
+                string newStringValue = GetValue<Group>( newGroup, newGroupId, rockContext, blankValue );
+                EvaluateChange( historyMessages, propertyName, oldStringValue, newStringValue, isSensitive );
+            }
+        }
+
+        /// <summary>
+        /// Evaluates the person alias change.
+        /// </summary>
+        /// <param name="historyMessages">The history messages.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <param name="oldGroupTypeRoleId">The old person alias identifier.</param>
+        /// <param name="newGroupTypeRole">The new person alias.</param>
+        /// <param name="newGroupTypeRoleId">The new person alias identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        public static void EvaluateChange( List<string> historyMessages, string propertyName, int? oldGroupTypeRoleId, GroupTypeRole newGroupTypeRole, int? newGroupTypeRoleId, RockContext rockContext )
+        {
+            EvaluateChange( historyMessages, propertyName, oldGroupTypeRoleId, newGroupTypeRole, newGroupTypeRoleId, rockContext, string.Empty, false );
+        }
+
+        /// <summary>
+        /// Evaluates the change.
+        /// </summary>
+        /// <param name="historyMessages">The history messages.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <param name="oldGroupTypeRoleId">The old person alias identifier.</param>
+        /// <param name="newGroupTypeRole">The new person alias.</param>
+        /// <param name="newGroupTypeRoleId">The new person alias identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="blankValue">The blank value.</param>
+        /// <param name="isSensitive">if set to <c>true</c> [is sensitive].</param>
+        public static void EvaluateChange( List<string> historyMessages, string propertyName, int? oldGroupTypeRoleId, GroupTypeRole newGroupTypeRole, int? newGroupTypeRoleId, RockContext rockContext, string blankValue, bool isSensitive )
+        {
+            if ( !oldGroupTypeRoleId.Equals( newGroupTypeRoleId ) )
+            {
+                string oldStringValue = GetValue<GroupTypeRole>( null, oldGroupTypeRoleId, rockContext, blankValue );
+                string newStringValue = GetValue<GroupTypeRole>( newGroupTypeRole, newGroupTypeRoleId, rockContext, blankValue );
+                EvaluateChange( historyMessages, propertyName, oldStringValue, newStringValue, isSensitive );
+            }
+        }
+
+        /// <summary>
+        /// Evaluates the person alias change.
+        /// </summary>
+        /// <param name="historyMessages">The history messages.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <param name="oldLocationId">The old person alias identifier.</param>
+        /// <param name="newLocation">The new person alias.</param>
+        /// <param name="newLocationId">The new person alias identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        public static void EvaluateChange( List<string> historyMessages, string propertyName, int? oldLocationId, Location newLocation, int? newLocationId, RockContext rockContext )
+        {
+            EvaluateChange( historyMessages, propertyName, oldLocationId, newLocation, newLocationId, rockContext, string.Empty, false );
+        }
+
+        /// <summary>
+        /// Evaluates the change.
+        /// </summary>
+        /// <param name="historyMessages">The history messages.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <param name="oldLocationId">The old person alias identifier.</param>
+        /// <param name="newLocation">The new person alias.</param>
+        /// <param name="newLocationId">The new person alias identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="blankValue">The blank value.</param>
+        /// <param name="isSensitive">if set to <c>true</c> [is sensitive].</param>
+        public static void EvaluateChange( List<string> historyMessages, string propertyName, int? oldLocationId, Location newLocation, int? newLocationId, RockContext rockContext, string blankValue, bool isSensitive )
+        {
+            if ( !oldLocationId.Equals( newLocationId ) )
+            {
+                string oldStringValue = GetValue<Location>( null, oldLocationId, rockContext, blankValue );
+                string newStringValue = GetValue<Location>( newLocation, newLocationId, rockContext, blankValue );
+                EvaluateChange( historyMessages, propertyName, oldStringValue, newStringValue, isSensitive );
+            }
+        }
+
+        /// <summary>
         /// Gets the value.
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -437,10 +607,29 @@ namespace Rock.Model
             {
                 return GetDefinedValueValue( entity as DefinedValue, id, blankValue );
             }
-
+            if ( typeof( T ) == typeof( GroupType ) )
+            {
+                return GetGroupTypeValue( entity as GroupType, id, blankValue );
+            }
+            if ( typeof( T ) == typeof( Campus ) )
+            {
+                return GetCampusValue( entity as Campus, id, blankValue );
+            }
             if ( typeof( T ) == typeof( PersonAlias ) )
             {
                 return GetPersonAliasValue( entity as PersonAlias, id, rockContext, blankValue );
+            }
+            if ( typeof( T ) == typeof( Location ) )
+            {
+                return GetLocationValue( entity as Location, id, rockContext, blankValue );
+            }
+            if ( typeof( T ) == typeof( Group ) )
+            {
+                return GetGroupValue( entity as Group, id, rockContext, blankValue );
+            }
+            if ( typeof( T ) == typeof( GroupTypeRole ) )
+            {
+                return GetGroupTypeRoleValue( entity as GroupTypeRole, id, rockContext, blankValue );
             }
 
             if ( entity == null && id.HasValue )
@@ -525,6 +714,197 @@ namespace Rock.Model
              }
 
             return person != null ? string.Format( "{0} [{1}]", person.FullName, person.Id ) : blankValue;
+        }
+
+        /// <summary>
+        /// Gets the value.
+        /// </summary>
+        /// <param name="groupType">The defined value.</param>
+        /// <param name="groupTypeId">The defined value identifier.</param>
+        /// <returns></returns>
+        public static string GetGroupTypeValue( GroupType groupType, int? groupTypeId )
+        {
+            return GetGroupTypeValue( groupType, groupTypeId, string.Empty );
+        }
+
+        /// <summary>
+        /// Gets the defined value value.
+        /// </summary>
+        /// <param name="groupType">The defined value.</param>
+        /// <param name="groupTypeId">The defined value identifier.</param>
+        /// <param name="blankValue">The blank value.</param>
+        /// <returns></returns>
+        public static string GetGroupTypeValue( GroupType groupType, int? groupTypeId, string blankValue )
+        {
+            if ( groupType != null )
+            {
+                return groupType.Name;
+            }
+
+            if ( groupTypeId.HasValue )
+            {
+                var dv = GroupTypeCache.Read( groupTypeId.Value );
+                if ( dv != null )
+                {
+                    return dv.Name;
+                }
+            }
+
+            return blankValue;
+        }
+
+        /// <summary>
+        /// Gets the value.
+        /// </summary>
+        /// <param name="campus">The defined value.</param>
+        /// <param name="campusId">The defined value identifier.</param>
+        /// <returns></returns>
+        public static string GetCampusValue( Campus campus, int? campusId )
+        {
+            return GetCampusValue( campus, campusId, string.Empty );
+        }
+
+        /// <summary>
+        /// Gets the defined value value.
+        /// </summary>
+        /// <param name="campus">The defined value.</param>
+        /// <param name="campusId">The defined value identifier.</param>
+        /// <param name="blankValue">The blank value.</param>
+        /// <returns></returns>
+        public static string GetCampusValue( Campus campus, int? campusId, string blankValue )
+        {
+            if ( campus != null )
+            {
+                return campus.Name;
+            }
+
+            if ( campusId.HasValue )
+            {
+                var dv = CampusCache.Read( campusId.Value );
+                if ( dv != null )
+                {
+                    return dv.Name;
+                }
+            }
+
+            return blankValue;
+        }
+
+        /// <summary>
+        /// Gets the value.
+        /// </summary>
+        /// <param name="location">The person alias.</param>
+        /// <param name="locationId">The person alias identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private static string GetLocationValue( Location location, int? locationId, RockContext rockContext )
+        {
+            return GetLocationValue( location, locationId, rockContext, string.Empty );
+        }
+
+        /// <summary>
+        /// Gets the value.
+        /// </summary>
+        /// <param name="location">The person alias.</param>
+        /// <param name="locationId">The person alias identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="blankValue">The blank value.</param>
+        /// <returns></returns>
+        private static string GetLocationValue( Location location, int? locationId, RockContext rockContext, string blankValue )
+        {
+            if ( location != null )
+            {
+                return location.ToString();
+            }
+
+            if ( locationId.HasValue )
+            { 
+                var loc =new LocationService( rockContext ).Get( locationId.Value );
+                if ( loc != null )
+                {
+                    return loc.ToString();
+                }
+            }
+
+            return blankValue;
+        }
+
+        /// <summary>
+        /// Gets the value.
+        /// </summary>
+        /// <param name="group">The person alias.</param>
+        /// <param name="groupId">The person alias identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private static string GetGroupValue( Group group, int? groupId, RockContext rockContext )
+        {
+            return GetGroupValue( group, groupId, rockContext, string.Empty );
+        }
+
+        /// <summary>
+        /// Gets the value.
+        /// </summary>
+        /// <param name="group">The person alias.</param>
+        /// <param name="groupId">The person alias identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="blankValue">The blank value.</param>
+        /// <returns></returns>
+        private static string GetGroupValue( Group group, int? groupId, RockContext rockContext, string blankValue )
+        {
+            if ( group != null )
+            {
+                return group.Name;
+            }
+
+            if ( groupId.HasValue )
+            {
+                var grp = new GroupService( rockContext ).Get( groupId.Value );
+                if ( grp != null )
+                {
+                    return grp.Name;
+                }
+            }
+
+            return blankValue;
+        }
+
+        /// <summary>
+        /// Gets the value.
+        /// </summary>
+        /// <param name="groupTypeRole">The person alias.</param>
+        /// <param name="groupTypeRoleId">The person alias identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private static string GetGroupTypeRoleValue( GroupTypeRole groupTypeRole, int? groupTypeRoleId, RockContext rockContext )
+        {
+            return GetGroupTypeRoleValue( groupTypeRole, groupTypeRoleId, rockContext, string.Empty );
+        }
+
+        /// <summary>
+        /// Gets the value.
+        /// </summary>
+        /// <param name="groupTypeRole">The person alias.</param>
+        /// <param name="groupTypeRoleId">The person alias identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="blankValue">The blank value.</param>
+        /// <returns></returns>
+        private static string GetGroupTypeRoleValue( GroupTypeRole groupTypeRole, int? groupTypeRoleId, RockContext rockContext, string blankValue )
+        {
+            if ( groupTypeRole != null )
+            {
+                return groupTypeRole.Name;
+            }
+
+            if ( groupTypeRoleId.HasValue )
+            {
+                var role = new GroupTypeRoleService( rockContext ).Get( groupTypeRoleId.Value );
+                if ( role != null )
+                {
+                    return role.Name;
+                }
+            }
+
+            return blankValue;
         }
 
         #endregion

@@ -33,7 +33,7 @@ using Rock.Web.Cache;
 namespace Rock.Slingshot
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class BulkImporter
     {
@@ -69,7 +69,7 @@ namespace Rock.Slingshot
         public OnProgressEvent OnProgress;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public enum ImportUpdateType
         {
@@ -277,7 +277,6 @@ namespace Rock.Slingshot
                 tableList.Add( "Campus" );
             }
 
-
             if ( new FinancialAccountService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ) )
             {
                 tableList.Add( "Financial Account" );
@@ -329,7 +328,6 @@ namespace Rock.Slingshot
             {
                 tableList.Add( "Location" );
             }
-
 
             if ( new NoteService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ) )
             {
@@ -431,9 +429,11 @@ namespace Rock.Slingshot
                     case FinancialBatchImport.BatchStatus.Closed:
                         financialBatch.Status = BatchStatus.Closed;
                         break;
+
                     case FinancialBatchImport.BatchStatus.Open:
                         financialBatch.Status = BatchStatus.Open;
                         break;
+
                     case FinancialBatchImport.BatchStatus.Pending:
                         financialBatch.Status = BatchStatus.Pending;
                         break;
@@ -706,7 +706,7 @@ namespace Rock.Slingshot
 
                 foreach ( var groupMemberImport in groupWithMembers.GroupMemberImports )
                 {
-                    var groupRoleId = groupTypeRoleLookup.GetValueOrNull(groupMemberImport.RoleName);
+                    var groupRoleId = groupTypeRoleLookup.GetValueOrNull( groupMemberImport.RoleName );
                     var personId = personIdLookup.GetValueOrNull( groupMemberImport.PersonForeignId );
                     if ( groupId.HasValue && groupRoleId.HasValue && personId.HasValue )
                     {
@@ -1162,8 +1162,8 @@ WHERE gta.GroupTypeId IS NULL" );
 
                     Location location = new Location();
 
-                    location.Street1 = address.Street1;
-                    location.Street2 = address.Street2;
+                    location.Street1 = address.Street1.Truncate( 50 );
+                    location.Street2 = address.Street2.Truncate( 50 );
                     location.City = address.City;
                     location.County = address.County;
                     location.State = address.State;
@@ -1235,22 +1235,22 @@ WHERE gta.GroupTypeId IS NULL" );
             {
                 // manually update ValueAsDateTime since the tgrAttributeValue_InsertUpdate trigger won't fire during when using BulkInsert
                 var rowsUpdated = rockContext.Database.ExecuteSqlCommand( @"
-UPDATE [AttributeValue] SET ValueAsDateTime = 
-		CASE WHEN 
-			LEN(value) < 50 and 
-			ISNULL(value,'') != '' and 
+UPDATE [AttributeValue] SET ValueAsDateTime =
+		CASE WHEN
+			LEN(value) < 50 and
+			ISNULL(value,'') != '' and
 			ISNUMERIC([value]) = 0 THEN
-				CASE WHEN [value] LIKE '____-__-__T%__:__:%' THEN 
+				CASE WHEN [value] LIKE '____-__-__T%__:__:%' THEN
 					ISNULL( TRY_CAST( TRY_CAST( LEFT([value],19) AS datetimeoffset ) as datetime) , TRY_CAST( value as datetime ))
 				ELSE
 					TRY_CAST( [value] as datetime )
 				END
 		END
-        where (CASE WHEN 
-			LEN(value) < 50 and 
-			ISNULL(value,'') != '' and 
+        where (CASE WHEN
+			LEN(value) < 50 and
+			ISNULL(value,'') != '' and
 			ISNUMERIC([value]) = 0 THEN
-				CASE WHEN [value] LIKE '____-__-__T%__:__:%' THEN 
+				CASE WHEN [value] LIKE '____-__-__T%__:__:%' THEN
 					ISNULL( TRY_CAST( TRY_CAST( LEFT([value],19) AS datetimeoffset ) as datetime) , TRY_CAST( value as datetime ))
 				ELSE
 					TRY_CAST( [value] as datetime )
@@ -1316,7 +1316,7 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
             person.BirthDay = personImport.BirthDay;
             person.BirthMonth = personImport.BirthMonth;
             person.BirthYear = personImport.BirthYear;
-            person.Gender = ( Gender ) personImport.Gender;
+            person.Gender = (Gender)personImport.Gender;
             person.MaritalStatusValueId = personImport.MaritalStatusValueId;
             person.AnniversaryDate = personImport.AnniversaryDate;
             person.GraduationYear = personImport.GraduationYear;
@@ -1329,7 +1329,7 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
 
             person.IsEmailActive = personImport.IsEmailActive;
             person.EmailNote = personImport.EmailNote;
-            person.EmailPreference = ( EmailPreference ) personImport.EmailPreference;
+            person.EmailPreference = (EmailPreference)personImport.EmailPreference;
             person.InactiveReasonNote = personImport.InactiveReasonNote;
             person.CreatedDateTime = personImport.CreatedDateTime;
             person.ModifiedDateTime = personImport.ModifiedDateTime;
@@ -1514,11 +1514,11 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
 
             List<BinaryFile> binaryFilesToInsert = new List<BinaryFile>();
             Dictionary<PhotoImport.PhotoImportType, Dictionary<int, Guid>> photoTypeForeignIdBinaryFileGuidDictionary = new Dictionary<PhotoImport.PhotoImportType, Dictionary<int, Guid>>();
-            foreach( var photoImportType in Enum.GetValues(typeof(PhotoImport.PhotoImportType)).OfType<PhotoImport.PhotoImportType>() )
+            foreach ( var photoImportType in Enum.GetValues( typeof( PhotoImport.PhotoImportType ) ).OfType<PhotoImport.PhotoImportType>() )
             {
                 photoTypeForeignIdBinaryFileGuidDictionary.Add( photoImportType, new Dictionary<int, Guid>() );
             }
-            
+
             var binaryFileService = new BinaryFileService( rockContext );
 
             HashSet<string> alreadyExists = new HashSet<string>( binaryFileService.Queryable().Where( a => a.ForeignKey != null && a.ForeignKey != "" ).Select( a => a.ForeignKey ).Distinct().ToList() );
@@ -1646,7 +1646,7 @@ WHERE (
 		)
 	AND AttributeId = @AttributeId
 
--- set the Photo for the Families 
+-- set the Photo for the Families
 INSERT INTO AttributeValue (
 	IsSystem
 	,AttributeId
