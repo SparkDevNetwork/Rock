@@ -704,7 +704,7 @@ namespace Rock.Web.UI.Controls
                     // For each SelectField evaluate the checkbox/radiobutton to see if the cell was selected.  
                     foreach ( var col in this.Columns.OfType<SelectField>() )
                     {
-                        var colIndex = this.Columns.IndexOf( col ).ToString();
+                        var colIndex = this.GetColumnIndex( col ).ToString();
 
                         col.SelectedKeys = new List<object>();
 
@@ -926,12 +926,53 @@ namespace Rock.Web.UI.Controls
                     insertPosition++;
                 }
 
-                return columns;
+                this.CreatedColumns = columns;
+                return this.CreatedColumns as ICollection;
             }
             else
             {
-                return base.CreateColumns( dataSource, useDataSource );
+                var defaultResult = base.CreateColumns( dataSource, useDataSource );
+                this.CreatedColumns = defaultResult.Cast<DataControlField>().ToList();
+                return defaultResult;
             }
+        }
+
+        private List<DataControlField> CreatedColumns { get; set; }
+
+        /// <summary>
+        /// The Column Index of the specified dataField in a Rock Grid.
+        /// Use this instead of Columns.IndexOf (it doesn't return the correct result when grid has custom columns)
+        /// </summary>
+        /// <param name="dataControlField">The data control field.</param>
+        /// <returns></returns>
+        public int GetColumnIndex( DataControlField dataControlField )
+        {
+            if ( CustomColumns != null && CustomColumns.Any() )
+            {
+                return this.CreatedColumns.IndexOf( dataControlField );
+            }
+            else
+            {
+                return this.Columns.IndexOf( dataControlField );
+            }
+        }
+
+        /// <summary>
+        /// Gets the first grid column that matches the header text.
+        /// </summary>
+        /// <param name="headerText">The header text.</param>
+        /// <returns></returns>
+        public DataControlField GetColumnByHeaderText( string headerText )
+        {
+            foreach ( DataControlField column in this.CreatedColumns )
+            {
+                if ( column.HeaderText == headerText )
+                {
+                    return column;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -1183,7 +1224,7 @@ namespace Rock.Web.UI.Controls
                 {
                     if ( string.IsNullOrWhiteSpace( col.DataSelectedField ) && col.SelectedKeys.Any() )
                     {
-                        var colIndex = this.Columns.IndexOf( col ).ToString();
+                        var colIndex = this.GetColumnIndex( col ).ToString();
                         CheckBox cbSelect = e.Row.FindControl( "cbSelect_" + colIndex ) as CheckBox;
                         if ( cbSelect != null )
                         {
@@ -1248,7 +1289,7 @@ namespace Rock.Web.UI.Controls
                             var dcf = column as DataControlField;
                             if ( dcf != null && dcf.SortExpression == this.SortProperty.Property )
                             {
-                                e.Row.Cells[this.Columns.IndexOf( dcf )].AddCssClass( sortProperty.Direction.ToString().ToLower() );
+                                e.Row.Cells[this.GetColumnIndex( dcf )].AddCssClass( sortProperty.Direction.ToString().ToLower() );
                                 break;
                             }
                         }
