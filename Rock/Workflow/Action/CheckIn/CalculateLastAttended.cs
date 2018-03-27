@@ -24,6 +24,10 @@ using System.Linq;
 using Rock.Data;
 using Rock.Model;
 
+//----
+//CCV CORE
+// 3-27-2018 - CFU - Reduced attendance window from 6 months to 10 days to fix performance issue during check in.
+//----
 namespace Rock.Workflow.Action.CheckIn
 {
     /// <summary>
@@ -49,7 +53,7 @@ namespace Rock.Workflow.Action.CheckIn
             var checkInState = GetCheckInState( entity, out errorMessages );
             if ( checkInState != null )
             {
-                DateTime sixMonthsAgo = RockDateTime.Today.AddMonths( -6 );
+                DateTime daysBack = RockDateTime.Today.AddDays( -10 );
                 var attendanceService = new AttendanceService( rockContext );
 
                 foreach ( var family in checkInState.CheckIn.GetFamilies( true ) )
@@ -68,7 +72,7 @@ namespace Rock.Workflow.Action.CheckIn
                                 .Where( a =>
                                     a.PersonAlias.PersonId == person.Person.Id &&
                                     a.Group.GroupTypeId == groupType.GroupType.Id &&
-                                    a.StartDateTime >= sixMonthsAgo )
+                                    a.StartDateTime >= daysBack )
                                 .Select( a => new
                                 {
                                     a.StartDateTime,
