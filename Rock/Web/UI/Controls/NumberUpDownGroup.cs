@@ -41,7 +41,7 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public CustomValidator GroupCustomValidator { get; set; }
 
-        private List<NumberUpDown> _controlGroup = new List<NumberUpDown>();
+        //private List<NumberUpDown> _controlGroup = new List<NumberUpDown>();
 
         /// <summary>
         /// Gets or sets the collection of NumberUpDown objects.
@@ -53,12 +53,20 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return _controlGroup;
-            }
+                var controlGroup = new List<NumberUpDown>();
 
-            set
-            {
-                _controlGroup = value;
+                foreach ( Control control in Controls )
+                {
+                    if ( control is NumberUpDown )
+                    {
+                        var numberUpDown = control as NumberUpDown;
+                        if (numberUpDown != null )
+                        {
+                            controlGroup.Add( numberUpDown );
+                        }
+                    }
+                }
+                return controlGroup;
             }
         }
 
@@ -291,6 +299,7 @@ namespace Rock.Web.UI.Controls
                 ValidationGroup = this.ValidationGroup
             };
 
+           // ControlGroup = new List<NumberUpDown>();
             HelpBlock = new HelpBlock();
             WarningBlock = new WarningBlock();
         }

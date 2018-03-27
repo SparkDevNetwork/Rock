@@ -804,7 +804,7 @@ namespace RockWeb.Blocks.Event
                     Label = string.Format( "{0}", optionKeyVal.Value ),
                     Minimum = 0
                 };
-                numberUpDownGroup.ControlGroup.Add( numUpDown );
+                numberUpDownGroup.Controls.Add( numUpDown );
 
                 if ( setValues && feeValues != null && feeValues.Any() )
                 {
@@ -1038,11 +1038,6 @@ namespace RockWeb.Blocks.Event
                                     result.Add( new FeeInfo( optionKeyVal.Key, numberUpDown.Value, optionCosts[optionKeyVal.Key] ) );
                                 }
                             }
-                            //var numUpDown = phFees.FindControl( optionFieldId ) as NumberUpDown;
-                            //if ( numUpDown != null && numUpDown.Value > 0 )
-                            //{
-                            //    result.Add( new FeeInfo( optionKeyVal.Key, numUpDown.Value, optionCosts[optionKeyVal.Key] ) );
-                            //}
                         }
                     }
                     if ( result.Any() )
