@@ -93,6 +93,10 @@ textarea:focus,
 // 2. Bootstrap Overrides    */
 // -------------------------
 
+.btn-xs, .btn-group-xs>.btn {
+  line-height: 1;
+}
+
 .input-group-addon,
 .form-control {
   height: 38px;
@@ -335,7 +339,7 @@ td.grid-actions {
     &:after {
       content: "";
       background-image: url(../../../Assets/Images/rock-logo-circle-white.svg);
-      background-size: calc(@navbarside-width * .45);
+      background-size: calc(@navbarside-width * .525);
       background-position: center center;
       background-repeat: no-repeat;
       opacity: 0.7;
@@ -467,6 +471,10 @@ td.grid-actions {
           background-size: cover;
           margin-top: 17px;
           margin-right: 12px;
+
+          &[style*=no-photo] {
+            opacity: .4;
+          }
         }
 
         span {
