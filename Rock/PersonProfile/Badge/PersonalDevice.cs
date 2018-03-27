@@ -81,7 +81,7 @@ namespace Rock.PersonProfile.Badge
 
                                         if (devicesNumber > 0) {{
         
-                                            labelContent = devicesNumber + ' device found.';                                    
+                                            labelContent = 'There are ' + devicesNumber + ' devices linked to this individual.'                                    
         
                                             if (linkUrl != '') {{
                                                 badgeContent = '<a href=\'' + linkUrl + '\'><div class=\'badge-content \'><i class=\'fa fa-mobile badge-icon\'></i><span class=\'deviceCount\'>' + devicesNumber + '</span></div></a>';
