@@ -104,7 +104,7 @@ namespace RockWeb.Blocks.Reporting
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "interactionId" ).AsInteger() );
+                ShowDetail( PageParameter( "InteractionId" ).AsInteger() );
             }
         }
 
@@ -121,7 +121,7 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            ShowDetail( PageParameter( "interactionId" ).AsInteger() );
+            ShowDetail( PageParameter( "InteractionId" ).AsInteger() );
         }
 
         #endregion
