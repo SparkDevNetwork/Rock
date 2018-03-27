@@ -41,8 +41,6 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public CustomValidator GroupCustomValidator { get; set; }
 
-        //private List<NumberUpDown> _controlGroup = new List<NumberUpDown>();
-
         /// <summary>
         /// Gets or sets the collection of NumberUpDown objects.
         /// </summary>
@@ -66,6 +64,7 @@ namespace Rock.Web.UI.Controls
                         }
                     }
                 }
+
                 return controlGroup;
             }
         }
