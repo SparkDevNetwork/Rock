@@ -321,6 +321,19 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether to show the count down
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [show count down]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowCountDown
+        {
+            get { return ViewState["ShowCountDown"] as bool? ?? false; }
+            set { ViewState["ShowCountDown"] = value; }
+        }
+
+
         #endregion
 
         private HiddenField _hfDisableVrm;
@@ -379,7 +392,7 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Visible )
             {
-                if ( this.MaxLength != 0 )
+                if ( this.MaxLength != 0  && this.ShowCountDown)
                 {
                     writer.AddAttribute( "class", "pull-right badge" );
                     writer.AddAttribute( HtmlTextWriterAttribute.Id, this.ClientID + "_em" );
@@ -469,7 +482,7 @@ namespace Rock.Web.UI.Controls
                 RenderDataValidator( writer );
             }
 
-            if ( this.MaxLength != 0 )
+            if ( this.MaxLength != 0 && this.ShowCountDown )
             {
                 string scriptFormat = string.Format( @"
         $('#{0}').limit({{maxChars: {1}, counter:'#{2}', normalClass:'badge', warningClass:'badge-warning', overLimitClass: 'badge-danger'}});

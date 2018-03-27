@@ -111,6 +111,15 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Sets the value.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        public void SetValue( string value)
+        {
+            this.SelectedValue = value;
+        }
+
+        /// <summary>
         /// Gets or sets the label.
         /// </summary>
         /// <value>

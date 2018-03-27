@@ -68,7 +68,14 @@ namespace RockWeb.Blocks.Finance
         <small>Requested: {{ Request.RequestDateTime | Date:'M/d/yyyy' }} Status: <strong>{{ Request.RequestStatusValue.Value }}</strong></small></h4>
     </div>
 </div>
-
+<div class=""row"">
+    <div class=""col-md-12"">
+        <h4>Attributes:</h4>
+        {% for attribute in Request.AttributeValues %}
+            <p>{{ attribute.AttributeName }}: {{ attribute.ValueFormatted }}</p>
+        {% endfor %}
+    </div>
+</div>
 <div class=""row"">
     <div class=""col-xs-4"">
         <h4>Requested by</h3>
@@ -107,15 +114,18 @@ namespace RockWeb.Blocks.Finance
             <h4>Case Worker</h4>
             <p>
                 <strong>{{ caseworker.FullName }}</strong> <br />
-                {{ Request.Location.FormattedHtmlAddress }} <br />
-                {% if Request.HomePhoneNumber %}
-                   Home Phone: {{ Request.HomePhoneNumber }} <br />
+                {{ caseworker | Address:'Home' }} <br />
+				{% assign CaseWorkerHome = caseworker | PhoneNumber:'Home' %}
+				{% assign CaseWorkerCell = caseworker | PhoneNumber:'Mobile' %}
+				{% assign CaseWorkerWork = caseworker | PhoneNumber:'Work' %}
+                {% if CaseWorkerHome %}
+                   Home Phone: {{ CaseWorkerHome }} <br />
                 {% endif %}
-                {% if Request.CellPhoneNumber %}
-                   Cell Phone: {{ Request.CellPhoneNumber }}
+                {% if CaseWorkerCell %}
+                   Cell Phone: {{ CaseWorkerCell }} <br />
                 {% endif %}
-                {% if Request.WorkPhoneNumber %}
-                    {{ Request.WorkPhoneNumber }}
+                {% if CaseWorkerWork %}
+                   Work Phone: {{ CaseWorkerWork }}
                 {% endif %}
             </p>
         {% endif %}

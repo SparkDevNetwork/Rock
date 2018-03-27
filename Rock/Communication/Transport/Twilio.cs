@@ -223,6 +223,7 @@ namespace Rock.Communication.Transport
                                             MessageResource response = SendToTwilio( fromPhone, callbackUrl, attachmentMediaUrls, message, twilioNumber );
 
                                             recipient.Status = CommunicationRecipientStatus.Delivered;
+                                            recipient.SendDateTime = RockDateTime.Now;
                                             recipient.TransportEntityTypeName = this.GetType().FullName;
                                             recipient.UniqueMessageId = response.Sid;
 

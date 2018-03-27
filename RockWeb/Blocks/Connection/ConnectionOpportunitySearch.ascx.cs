@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.Connection
     [Description( "Allows users to search for an opportunity to join" )]
 
     [CodeEditorField( "Lava Template", "Lava template to use to display the list of opportunities.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/OpportunitySearch.lava' %}", "", 0 )]
-    [BooleanField( "Enable Campus Context", "If the page has a campus context it's value will be used as a filter", true, order: 1 )]
+    [BooleanField( "Enable Campus Context", "If the page has a campus context its value will be used as a filter", true, order: 1 )]
     [BooleanField( "Set Page Title", "Determines if the block should set the page title with the connection type name.", false, order: 2 )]
     [BooleanField( "Display Name Filter", "Display the name filter", false, order: 3 )]
     [BooleanField( "Display Campus Filter", "Display the campus filter", true, order: 4 )]

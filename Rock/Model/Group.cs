@@ -20,6 +20,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -433,8 +434,16 @@ namespace Rock.Model
                 return _supportedActions;
             }
         }
-
         private Dictionary<string, string> _supportedActions;
+
+        /// <summary>
+        /// Gets or sets the history changes.
+        /// </summary>
+        /// <value>
+        /// The history changes.
+        /// </value>
+        [NotMapped]
+        private List<string> HistoryChanges { get; set; }
 
         #endregion
 
@@ -527,7 +536,12 @@ namespace Rock.Model
                                     return true;
                                 }
 
-                                if ( ( action == Authorization.MANAGE_MEMBERS || action == Authorization.EDIT ) && role.CanEdit )
+                                if ( action == Authorization.MANAGE_MEMBERS && ( role.CanEdit || role.CanManageMembers ) )
+                                {
+                                    return true;
+                                }
+
+                                if ( action == Authorization.EDIT && role.CanEdit )
                                 {
                                     return true;
                                 }
@@ -585,34 +599,91 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Pres the save changes.
+        /// Method that will be called on an entity immediately before the item is saved by context
         /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        /// <param name="state">The state.</param>
-        public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.EntityState state )
+        /// <param name="dbContext"></param>
+        /// <param name="entry"></param>
+        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry )
         {
-            if ( state == System.Data.Entity.EntityState.Deleted )
-            {
-                // manually delete any grouprequirements of this group since it can't be cascade deleted
-                var groupRequirementService = new GroupRequirementService( dbContext as RockContext );
-                var groupRequirements = groupRequirementService.Queryable().Where( a => a.GroupId.HasValue && a.GroupId == this.Id ).ToList();
-                if ( groupRequirements.Any() )
-                {
-                    groupRequirementService.DeleteRange( groupRequirements );
-                }
+            var rockContext = (RockContext)dbContext;
 
-                // manually set any attendance search group ids to null
-                var attendanceService = new AttendanceService( dbContext as RockContext );
-                foreach ( var attendance in attendanceService.Queryable()
-                    .Where( a =>
-                        a.SearchResultGroupId.HasValue &&
-                        a.SearchResultGroupId.Value == this.Id ) )
-                {
-                    attendance.SearchResultGroupId = null;
-                }
+            HistoryChanges = new List<string>();
+
+            switch ( entry.State )
+            {
+                case System.Data.Entity.EntityState.Added:
+                    {
+                        HistoryChanges.Add( "Group Created" );
+
+                        History.EvaluateChange( HistoryChanges, "Name", string.Empty, Name );
+                        History.EvaluateChange( HistoryChanges, "Description", string.Empty, Description );
+                        History.EvaluateChange( HistoryChanges, "Group Type", (int?)null, GroupType, GroupTypeId );
+                        History.EvaluateChange( HistoryChanges, "Campus", (int?)null, Campus, CampusId );
+                        History.EvaluateChange( HistoryChanges, "Security Role", (bool?)null, IsSecurityRole );
+                        History.EvaluateChange( HistoryChanges, "Active", (bool?)null, IsActive );
+                        History.EvaluateChange( HistoryChanges, "Allow Guests", (bool?)null, AllowGuests );
+                        History.EvaluateChange( HistoryChanges, "Public", (bool?)null, IsPublic );
+                        History.EvaluateChange( HistoryChanges, "Group Capacity", (int?)null, GroupCapacity );
+
+                        break;
+                    }
+
+                case System.Data.Entity.EntityState.Modified:
+                    {
+                        History.EvaluateChange( HistoryChanges, "Name", entry.OriginalValues["Name"].ToStringSafe(), Name );
+                        History.EvaluateChange( HistoryChanges, "Description", entry.OriginalValues["Description"].ToStringSafe(), Description );
+                        History.EvaluateChange( HistoryChanges, "Group Type", entry.OriginalValues["GroupTypeId"].ToStringSafe().AsIntegerOrNull(), GroupType, GroupTypeId );
+                        History.EvaluateChange( HistoryChanges, "Campus", entry.OriginalValues["CampusId"].ToStringSafe().AsIntegerOrNull(), Campus, CampusId );
+                        History.EvaluateChange( HistoryChanges, "Security Role", entry.OriginalValues["IsSecurityRole"].ToStringSafe().AsBoolean(), IsSecurityRole );
+                        History.EvaluateChange( HistoryChanges, "Active", entry.OriginalValues["IsActive"].ToStringSafe().AsBoolean(), IsActive );
+                        History.EvaluateChange( HistoryChanges, "Allow Guests", entry.OriginalValues["AllowGuests"].ToStringSafe().AsBooleanOrNull(), AllowGuests );
+                        History.EvaluateChange( HistoryChanges, "Public", entry.OriginalValues["IsPublic"].ToStringSafe().AsBoolean(), IsPublic );
+                        History.EvaluateChange( HistoryChanges, "Group Capacity", entry.OriginalValues["GroupCapacity"].ToStringSafe().AsIntegerOrNull(), GroupCapacity );
+
+                        break;
+                    }
+
+                case System.Data.Entity.EntityState.Deleted:
+                    {
+                        HistoryChanges.Add( "Deleted" );
+
+                        // manually delete any grouprequirements of this group since it can't be cascade deleted
+                        var groupRequirementService = new GroupRequirementService( rockContext );
+                        var groupRequirements = groupRequirementService.Queryable().Where( a => a.GroupId.HasValue && a.GroupId == this.Id ).ToList();
+                        if ( groupRequirements.Any() )
+                        {
+                            groupRequirementService.DeleteRange( groupRequirements );
+                        }
+
+                        // manually set any attendance search group ids to null
+                        var attendanceService = new AttendanceService( rockContext );
+                        foreach ( var attendance in attendanceService.Queryable()
+                            .Where( a =>
+                                a.SearchResultGroupId.HasValue &&
+                                a.SearchResultGroupId.Value == this.Id ) )
+                        {
+                            attendance.SearchResultGroupId = null;
+                        }
+
+                        break;
+                    }
             }
 
-            base.PreSaveChanges( dbContext, state );
+            base.PreSaveChanges( dbContext, entry );
+        }
+
+        /// <summary>
+        /// Posts the save changes.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        public override void PostSaveChanges( Data.DbContext dbContext )
+        {
+            if ( HistoryChanges != null && HistoryChanges.Any() )
+            {
+                HistoryService.SaveChanges( (RockContext)dbContext, typeof( Group ), Rock.SystemGuid.Category.HISTORY_GROUP_CHANGES.AsGuid(), this.Id, HistoryChanges, true, this.ModifiedByPersonAliasId );
+            }
+
+            base.PostSaveChanges( dbContext );
         }
 
         /// <summary>

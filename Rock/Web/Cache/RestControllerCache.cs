@@ -172,11 +172,14 @@ namespace Rock.Web.Cache
 
         private static RestControllerCache LoadById2( int id, RockContext rockContext )
         {
-            var RestControllerService = new RestControllerService( rockContext );
-            var RestControllerModel = RestControllerService.Get( id );
-            if ( RestControllerModel != null )
+            if ( id > 0 )
             {
-                return new RestControllerCache( RestControllerModel );
+                var RestControllerService = new RestControllerService( rockContext );
+                var RestControllerModel = RestControllerService.Get( id );
+                if ( RestControllerModel != null )
+                {
+                    return new RestControllerCache( RestControllerModel );
+                }
             }
 
             return null;

@@ -39,8 +39,7 @@ namespace RockWeb.Blocks.Crm
 <div class=""panel panel-block"">       
     <div class=""panel-heading"">
         <h4 class=""panel-title"">
-            <i class=""fa fa-mobile""></i>
-            {{ Person.FullName }}
+            <div class=""panel-panel-title""><i class=""fa fa-mobile""></i> {{ Person.FullName }}</div>
         </h4>
     </div>
     <div class=""panel-body"">

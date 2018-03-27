@@ -786,6 +786,14 @@ namespace Rock.Web.UI
                         Site.RedirectToChangePasswordPage( true, true );
                     }
                 }
+
+                // Check if there is a ROCK_PERSONALDEVICE_ADDRESS cookie, link person to device
+                if ( Request.Cookies["rock_wifi"] != null )
+                {
+                    HttpCookie httpCookie = Request.Cookies["rock_wifi"];
+                    LinkPersonAliasToDevice( ( int ) CurrentPersonAliasId, httpCookie.Values["ROCK_PERSONALDEVICE_ADDRESS"] );
+                    Response.Cookies["rock_wifi"].Expires = DateTime.Now.AddDays( -1 );
+                }
             }
 
             // If a PageInstance exists
@@ -972,15 +980,17 @@ namespace Rock.Web.UI
                     canAdministratePage = _pageCache.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
                     canEditPage = _pageCache.IsAuthorized( Authorization.EDIT, CurrentPerson );
 
-                    if ( !canAdministratePage && !canEditPage )
+                    // If the current person isn't allowed to edit or administrate the page, check to see if they are being impersonated by someone who
+                    // may have edit and/or administrate access to the page.
+                    if ( !canAdministratePage || !canEditPage )
                     {
-                        // if the current user is impersonated by an Admin, then show the admin bar
+                        // if the current user is being impersonated by another user (typically an admin), then check their security
                         var impersonatedByUser = Session["ImpersonatedByUser"] as UserLogin;
                         var currentUserIsImpersonated = ( HttpContext.Current?.User?.Identity?.Name ?? string.Empty ).StartsWith( "rckipid=" );
                         if ( impersonatedByUser != null && currentUserIsImpersonated )
                         {
-                            canAdministratePage = _pageCache.IsAuthorized( Authorization.ADMINISTRATE, impersonatedByUser.Person );
-                            canEditPage = _pageCache.IsAuthorized( Authorization.EDIT, impersonatedByUser.Person );
+                            canAdministratePage = canAdministratePage || _pageCache.IsAuthorized( Authorization.ADMINISTRATE, impersonatedByUser.Person );
+                            canEditPage = canEditPage || _pageCache.IsAuthorized( Authorization.EDIT, impersonatedByUser.Person );
                         }
                     }
 
@@ -1220,7 +1230,7 @@ namespace Rock.Web.UI
                         phLoadStats = new PlaceHolder();
                         adminFooter.Controls.Add( phLoadStats );
 
-                        // If the current user is Impersonated by an admin, show a link on the admin bar to login back in as the original user
+                        // If the current user is Impersonated by another user, show a link on the admin bar to login back in as the original user
                         var impersonatedByUser = Session["ImpersonatedByUser"] as UserLogin;
                         var currentUserIsImpersonated = ( HttpContext.Current?.User?.Identity?.Name ?? string.Empty ).StartsWith( "rckipid=" );
                         if ( canAdministratePage && currentUserIsImpersonated && impersonatedByUser != null)
@@ -1448,7 +1458,7 @@ namespace Rock.Web.UI
                 Authorization.SignOut();
                 UserLoginService.UpdateLastLogin( impersonatedByUser.UserName );
                 Rock.Security.Authorization.SetAuthCookie( impersonatedByUser.UserName, false, false );
-                Response.Redirect( PageReference.BuildUrl( false ), false );
+                Response.Redirect( PageReference.BuildUrl( true ), false );
                 Context.ApplicationInstance.CompleteRequest();
             }
         }
@@ -2119,6 +2129,70 @@ Sys.Application.add_load(function () {
             trigger.ControlID = "rock-config-trigger";
             trigger.EventName = "Click";
             updatePanel.Triggers.Add( trigger );
+        }
+
+        /// <summary>
+        /// Links the person alias to device.
+        /// </summary>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <param name="MacAddress">The mac address.</param>
+        public void LinkPersonAliasToDevice(int personAliasId, string MacAddress)
+        {
+            RockContext rockContext = new RockContext();
+            PersonalDeviceService personalDeviceService = new PersonalDeviceService( rockContext );
+            PersonalDevice personalDevice = personalDeviceService.GetByMACAddress( MacAddress );
+
+            // It's possible that the device was deleted from the DB but a cookie still exists
+            if ( personalDevice == null)
+            {
+                return;
+            }
+
+            if (personalDevice.PersonAliasId == personAliasId)
+            {
+                return;
+            }
+
+            // If there isn't a PersonAlias then we are changing an existing device to a new alias
+            bool deviceSwitchingAPersonAlias = personalDevice.PersonAliasId != null;
+
+            personalDevice.PersonAliasId = personAliasId;
+            rockContext.SaveChanges();
+
+            // If we switched to a new user then we don't want to over-write the old interactions with a new alias
+            if ( deviceSwitchingAPersonAlias )
+            {
+                return;
+            }
+
+            // Get a list of InteractionComponent.Id to filter for the Interactions
+            int? wifiPresenceId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WIFI_PRESENCE.AsGuid() ).Id;
+            var wifiChannelIds = new InteractionChannelService( rockContext ).Queryable().Where( c => c.ChannelTypeMediumValueId == wifiPresenceId ).Select( c => c.Id).ToList();
+            var componentIds = new InteractionComponentService( rockContext ).Queryable().Where( c => wifiChannelIds.Contains( c.ChannelId ) ).Select( c => c.Id ).ToList();
+
+            if ( componentIds.Count > 0 )
+            {
+                // Get a querable for the WiFi interactions with the device id but a null person alias id
+                InteractionService interactionService = new InteractionService( rockContext );
+
+                var interactionsCount = interactionService
+                    .Queryable()
+                    .Where( i => componentIds.Contains( i.InteractionComponentId ) )
+                    .Where( i => i.PersonalDeviceId == personalDevice.Id )
+                    .Where( i => i.PersonAliasId == null ).Count();
+                
+                if ( interactionsCount > 0 )
+                // Use BulkUpdate to set the PersonAliasId
+                {
+                    var interactions = interactionService
+                    .Queryable()
+                    .Where( i => componentIds.Contains( i.InteractionComponentId ) )
+                    .Where( i => i.PersonalDeviceId == personalDevice.Id )
+                    .Where( i => i.PersonAliasId == null );
+
+                    rockContext.BulkUpdate( interactions, i => new Interaction { PersonAliasId = personAliasId } );
+                }
+            }
         }
 
         #endregion

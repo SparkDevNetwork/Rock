@@ -203,6 +203,7 @@
                                     <Rock:BoolField DataField="ReceiveRequirementsNotifications" HeaderText="Receives Requirements Notifications" />
                                     <Rock:BoolField DataField="CanView" HeaderText="Can View" />
                                     <Rock:BoolField DataField="CanEdit" HeaderText="Can Edit" />
+                                    <Rock:BoolField DataField="CanManageMembers" HeaderText="Can Manage Members" />
                                     <Rock:RockBoundField DataField="MinCount" HeaderText="Minimum Required" DataFormatString="{0:N0}" />
                                     <Rock:RockBoundField DataField="MaxCount" HeaderText="Maximum Allowed" DataFormatString="{0:N0}" />
                                     <Rock:RockTemplateField HeaderText="Default">
@@ -366,11 +367,11 @@
                                 <Rock:RockCheckBox ID="cbShowConnectionStatus" runat="server" Label="Show Connection Status" Text="Yes"
                                     Help="Check this option to show the person's connection status as a column in the group member list." />
                                 <Rock:RockCheckBox ID="cbShowMaritalStatus" runat="server" Label="Show Marital Status" Text="Yes"
-                                    Help="Check this option to show the person's martial status as a column in the group member list." />
+                                    Help="Check this option to show the person's marital status as a column in the group member list." />
                             </div>
                         </div>
 
-                        <Rock:CodeEditor ID="ceGroupLavaTemplate" Visible="True" runat="server" Label="Group View Lava Template" EditorMode="Lava" EditorHeight="275" Help="This Lava template will be used by the Group Details block when viewing a group. This allows you to customize the layout of a group base on it's type." />
+                        <Rock:CodeEditor ID="ceGroupLavaTemplate" Visible="True" runat="server" Label="Group View Lava Template" EditorMode="Lava" EditorHeight="275" Help="This Lava template will be used by the Group Details block when viewing a group. This allows you to customize the layout of a group base on its type." />
                     </Rock:PanelWidget>
 
                     <div class="actions">
@@ -412,6 +413,7 @@
                         <Rock:RockCheckBox ID="cbReceiveRequirementsNotifications" runat="server" Label="Receive Requirements Notifications" Text="Yes" Help="Should this role receive notifications of group members who do not meet their requirements? In order for these notifications to be emailed you will need to setup a 'Process Group Requirements Notification Job'." />
                         <Rock:RockCheckBox ID="cbCanView" runat="server" Label="Can View" Text="Yes" Help="Should users with this role be able to view this group regardless of the security settings on the group?" />
                         <Rock:RockCheckBox ID="cbCanEdit" runat="server" Label="Can Edit" Text="Yes" Help="Should users with this role be able to edit the details and members of this group regardless of the security settings on the group?" />
+                        <Rock:RockCheckBox ID="cbCanManageMembers" runat="server" Label="Can Manage Members" Text="Yes" Help="Should users with this role be able to manage the members of this group regardless of the security settings on the group?" />
                     </div>
                     <div class="col-md-6">
                         <Rock:NumberBox ID="nbMinimumRequired" runat="server" NumberType="Integer" Label="Minimum Required" Help="The minimum number of people with this role that group should allow." />

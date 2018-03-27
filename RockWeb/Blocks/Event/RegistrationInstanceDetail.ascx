@@ -137,6 +137,9 @@
                     <li id="liPayments" runat="server">
                         <asp:LinkButton ID="lbPayments" runat="server" Text="Payments" OnClick="lbTab_Click" />
                     </li>
+                    <li id="liFees" runat="server">
+                        <asp:LinkButton ID="lbFees" runat="server" Text="Fees" OnClick="lbTab_Click" />
+                    </li>
                     <li id="liLinkage" runat="server">
                         <asp:LinkButton ID="lbLinkage" runat="server" Text="Linkages" OnClick="lbTab_Click" />
                     </li>
@@ -311,6 +314,39 @@
                                             <asp:Literal ID="lRegistrants" runat="server" />
                                         </ItemTemplate>
                                     </Rock:RockTemplateField>
+                                </Columns>
+                            </Rock:Grid>
+                        </div>
+                    </div>
+                </asp:Panel>
+
+                <asp:Panel ID="pnlFees" runat="server" Visible="false" CssClass="panel panel-block">
+                    <div class="panel-heading">
+                        <h1 class="panel-title">
+                            <i class="fa fa-money"></i>
+                            Fees
+                        </h1>
+                    </div>
+                    <div class="panel-body">
+                        <Rock:ModalAlert ID="mdFeesGridWarning" runat="server" />
+                        <div class="grid grid-panel">
+                            <Rock:GridFilter ID="fFees" runat="server" OnDisplayFilterValue="fFees_DisplayFilterValue" OnClearFilterClick="fFees_ClearFilterCick">
+                                <Rock:SlidingDateRangePicker ID="sdrpFeeDateRange" runat="server" Label="Fee Date Range" />
+                                <Rock:RockDropDownList ID="ddlFeeName" runat="server" Label="Fee Name" AutoPostBack="true" OnSelectedIndexChanged="ddlFeeName_SelectedIndexChanged" ></Rock:RockDropDownList>
+                                <Rock:RockCheckBoxList ID="cblFeeOptions" runat="server" Label="Fee Options"></Rock:RockCheckBoxList>
+                            </Rock:GridFilter>
+                            <Rock:Grid ID="gFees" runat="server" DisplayType="Full" AllowSorting="true" RowItemText="Fee" ExportSource="DataSource" >
+                                <Columns>
+                                        <Rock:RockBoundField HeaderText ="Registration ID" DataField="RegistrationId" ExcelExportBehavior="AlwaysInclude" Visible="false" />
+                                        <Rock:DateField HeaderText ="Registration Date" DataField="RegistrationDate" />
+                                        <Rock:RockBoundField HeaderText ="Registered By" DataField="RegisteredByName" />
+                                        <Rock:RockBoundField HeaderText ="Registrant" DataField="RegistrantName" />
+                                        <Rock:RockBoundField HeaderText ="Registrant ID" DataField="RegistrantId" ExcelExportBehavior="AlwaysInclude" Visible="false" />
+		                                <Rock:RockBoundField HeaderText ="Fee Name" DataField="FeeName" />
+                                        <Rock:RockBoundField HeaderText ="Option" DataField="Option" />
+		                                <Rock:RockBoundField HeaderText ="Quanity" DataField="Quanity" />
+                                        <Rock:CurrencyField HeaderText ="Cost" DataField="Cost" />
+                                        <Rock:CurrencyField HeaderText ="Fee Total" DataField="FeeTotal"  />
                                 </Columns>
                             </Rock:Grid>
                         </div>

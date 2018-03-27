@@ -128,9 +128,10 @@ namespace Rock.Transactions
                         if ( interactionChannel == null )
                         {
                             interactionChannel = new InteractionChannel();
-                            interactionChannel.Name = "UrlShortener";
+                            interactionChannel.Name = "Short Links";
                             interactionChannel.ChannelTypeMediumValueId = channelMediumTypeValueId;
                             interactionChannel.ComponentEntityTypeId = EntityTypeCache.Read<Rock.Model.PageShortLink>().Id; ;
+                            interactionChannel.Guid = SystemGuid.InteractionChannel.SHORT_LINKS.AsGuid();
                             interactionChannelService.Add( interactionChannel );
                             rockContext.SaveChanges();
                         }

@@ -40,7 +40,6 @@ namespace Rock.Security.BackgroundCheck
 
     [TextField( "User Name", "Protect My Ministry User Name", true, "", "", 0 )]
     [EncryptedTextField( "Password", "Protect My Ministry Password", true, "", "", 1, null, true )]
-    [BooleanField( "Test Mode", "Should requests be sent in 'test' mode?", false, "", 2 )]
     [UrlLinkField( "Request URL", "The Protect My Ministry URL to send requests to.", true, "https://services.priorityresearch.com/webservice/default.cfm", "", 3 )]
     [UrlLinkField( "Return URL", "The Web Hook URL for Protect My Ministry to send results to (e.g. 'http://www.mysite.com/Webhooks/ProtectMyMinistry.ashx').", true, "", "", 4 )]
     public class ProtectMyMinistry : BackgroundCheckComponent
@@ -117,11 +116,6 @@ namespace Rock.Security.BackgroundCheck
                         new XElement( "Password", password )
                     )
                 );
-
-                if ( GetAttributeValue( "TestMode" ).AsBoolean() )
-                {
-                    rootElement.Add( new XElement( "TestMode", "YES" ) );
-                }
 
                 rootElement.Add( new XElement( "ReturnResultURL", GetAttributeValue( "ReturnURL" ) ) );
 

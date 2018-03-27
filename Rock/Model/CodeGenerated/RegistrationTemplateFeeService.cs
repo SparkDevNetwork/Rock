@@ -101,6 +101,7 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IsActive = source.IsActive;
+            target.IsRequired = source.IsRequired;
             target.Name = source.Name;
             target.Order = source.Order;
             target.RegistrationTemplateId = source.RegistrationTemplateId;

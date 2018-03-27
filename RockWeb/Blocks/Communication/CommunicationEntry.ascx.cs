@@ -262,19 +262,28 @@ namespace RockWeb.Blocks.Communication
                     CommunicationId = communication.Id;
                 }
 
-                // If viewing a new, transient, draft, or denied communication, use this block
-                // otherwise, set this block visible=false and if there is a communication detail block on this page, it'll be shown instead
-                if ( communication == null ||
-                    communication.Status == CommunicationStatus.Transient ||
-                    communication.Status == CommunicationStatus.Draft ||
-                    communication.Status == CommunicationStatus.Denied ||
-                    ( communication.Status == CommunicationStatus.PendingApproval && _editingApproved ) )
+                if ( communication == null )
                 {
-                    // Make sure they are authorized to view
-                    if ( communication == null || 
-                        communication.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson ) ||
-                        ( communication.CreatedByPersonAlias != null && CurrentPersonId.HasValue  && communication.CreatedByPersonAlias.PersonId == CurrentPersonId.Value ) )
+                    // if this is a new communication, create a communication object temporarily so we can do the auth and edit logic
+                    communication = new Rock.Model.Communication() { Status = CommunicationStatus.Transient };
+                    communication.CreatedByPersonAlias = this.CurrentPersonAlias;
+                    communication.CreatedByPersonAliasId = this.CurrentPersonAliasId;
+                    communication.SenderPersonAlias = this.CurrentPersonAlias;
+                    communication.SenderPersonAliasId = CurrentPersonAliasId;
+                }
+
+                // If viewing a new, transient, draft, or are the approver of a pending-approval communication, use this block
+                // otherwise, set this block visible=false and if there is a communication detail block on this page, it'll be shown instead
+                CommunicationStatus[] editableStatuses = new CommunicationStatus[] { CommunicationStatus.Transient, CommunicationStatus.Draft, CommunicationStatus.Denied };
+                if ( editableStatuses.Contains( communication.Status ) || ( communication.Status == CommunicationStatus.PendingApproval && _editingApproved ) )
+                {
+                    // Make sure they are authorized to edit, or the owner, or the approver/editor
+                    bool isAuthorizedEditor = communication.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson );
+                    bool isCreator = ( communication.CreatedByPersonAlias != null && CurrentPersonId.HasValue && communication.CreatedByPersonAlias.PersonId == CurrentPersonId.Value );
+                    bool isApprovalEditor = communication.Status == CommunicationStatus.PendingApproval && _editingApproved;
+                    if ( isAuthorizedEditor || isCreator || isApprovalEditor )
                     {
+                        // communication is either new or ok to edit
                         ShowDetail( communication );
                     }
                     else
@@ -285,10 +294,9 @@ namespace RockWeb.Blocks.Communication
                 }
                 else
                 {
-                    // Otherwise, use the communication detail block
+                    // Not an editable communication, so hide this block. If there is a CommunicationDetail block on this page, it'll be shown instead
                     this.Visible = false;
                 }
-
             }
         }
 

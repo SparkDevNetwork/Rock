@@ -478,7 +478,8 @@ namespace RockWeb.Blocks.Core
 
             if ( _isEntityTypeConfigured )
             {
-                attribute = Rock.Attribute.Helper.SaveAttributeEdits( edtAttribute, _entityTypeId, _entityQualifierColumn, _entityQualifierValue );
+                var entityTypeId = _entityTypeId.HasValue && _entityTypeId > 0 ? _entityTypeId : null;
+                attribute = Rock.Attribute.Helper.SaveAttributeEdits( edtAttribute, entityTypeId, _entityQualifierColumn, _entityQualifierValue );
             }
             else
             {
@@ -705,7 +706,7 @@ namespace RockWeb.Blocks.Core
             }
 
             Type type = null;
-            if ( attributeModel.EntityTypeId.HasValue )
+            if ( attributeModel.EntityTypeId.HasValue && attributeModel.EntityTypeId > 0)
             {
                 type = EntityTypeCache.Read( attributeModel.EntityTypeId.Value ).GetEntityType();
             }

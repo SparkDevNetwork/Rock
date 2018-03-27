@@ -62,9 +62,9 @@
 
                         <fieldset>
 
-                            <p class="description">
+                            <div class="description">
                                 <asp:Literal ID="lDescription" runat="server"></asp:Literal>
-                            </p>
+                            </div>
 
                             <div class="row">
                                 <div class="col-md-6">

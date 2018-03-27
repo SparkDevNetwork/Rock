@@ -191,16 +191,9 @@ namespace Rock.Workflow.Action
 
             if ( updated )
             {
-                var changes = new List<string>();
-                History.EvaluateChange(
-                    changes,
-                    string.Format( "{0} Phone", phoneType.Value ),
-                    oldValue,
-                    phoneNumber.NumberFormattedWithCountryCode );
-
-                if ( changes.Any() )
+                if ( oldValue != phoneNumber.NumberFormattedWithCountryCode )
                 {
-                    changes.Add( string.Format( "<em>(Updated by the '{0}' workflow)</em>", action.ActionTypeCache.ActivityType.WorkflowType.Name ) );
+                    var changes = new List<string> { string.Format( "<em>(Phone was updated by the '{0}' workflow)</em>", action.ActionTypeCache.ActivityType.WorkflowType.Name ) };
                     HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), personId.Value, changes, false );
                 }
 

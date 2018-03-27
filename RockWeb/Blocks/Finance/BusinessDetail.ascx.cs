@@ -111,7 +111,6 @@ namespace RockWeb.Blocks.Finance
             var rockContext = new RockContext();
 
             var personService = new PersonService( rockContext );
-            var changes = new List<string>();
             Person business = null;
 
             if ( int.Parse( hfBusinessId.Value ) != 0 )
@@ -127,20 +126,12 @@ namespace RockWeb.Blocks.Finance
             }
 
             // Business Name
-            History.EvaluateChange( changes, "Last Name", business.LastName, tbBusinessName.Text );
             business.LastName = tbBusinessName.Text;
 
             // Phone Number
             var businessPhoneTypeId = new DefinedValueService( rockContext ).GetByGuid( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK ) ).Id;
 
-            string oldPhoneNumber = string.Empty;
-            string newPhoneNumber = string.Empty;
-
             var phoneNumber = business.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == businessPhoneTypeId );
-            if ( phoneNumber != null )
-            {
-                oldPhoneNumber = phoneNumber.NumberFormattedWithCountryCode;
-            }
 
             if ( !string.IsNullOrWhiteSpace( PhoneNumber.CleanNumber( pnbPhone.Number ) ) )
             {
@@ -153,8 +144,6 @@ namespace RockWeb.Blocks.Finance
                 phoneNumber.Number = PhoneNumber.CleanNumber( pnbPhone.Number );
                 phoneNumber.IsMessagingEnabled = cbSms.Checked;
                 phoneNumber.IsUnlisted = cbUnlisted.Checked;
-
-                newPhoneNumber = phoneNumber.NumberFormattedWithCountryCode;
             }
             else
             {
@@ -165,19 +154,11 @@ namespace RockWeb.Blocks.Finance
                 }
             }
 
-            History.EvaluateChange(
-                changes,
-                string.Format( "{0} Phone", DefinedValueCache.GetName( businessPhoneTypeId ) ),
-                oldPhoneNumber,
-                newPhoneNumber );
-
             // Record Type - this is always "business". it will never change.
             business.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
 
             // Record Status
-            int? newRecordStatusId = ddlRecordStatus.SelectedValueAsInt();
-            History.EvaluateChange( changes, "Record Status", DefinedValueCache.GetName( business.RecordStatusValueId ), DefinedValueCache.GetName( newRecordStatusId ) );
-            business.RecordStatusValueId = newRecordStatusId;
+            business.RecordStatusValueId = ddlRecordStatus.SelectedValueAsInt(); ;
 
             // Record Status Reason
             int? newRecordStatusReasonId = null;
@@ -185,18 +166,12 @@ namespace RockWeb.Blocks.Finance
             {
                 newRecordStatusReasonId = ddlReason.SelectedValueAsInt();
             }
-
-            History.EvaluateChange( changes, "Record Status Reason", DefinedValueCache.GetName( business.RecordStatusReasonValueId ), DefinedValueCache.GetName( newRecordStatusReasonId ) );
             business.RecordStatusReasonValueId = newRecordStatusReasonId;
 
             // Email
             business.IsEmailActive = true;
-            History.EvaluateChange( changes, "Email", business.Email, tbEmail.Text );
             business.Email = tbEmail.Text.Trim();
-
-            var newEmailPreference = rblEmailPreference.SelectedValue.ConvertToEnum<EmailPreference>();
-            History.EvaluateChange( changes, "EmailPreference", business.EmailPreference, newEmailPreference );
-            business.EmailPreference = newEmailPreference;
+            business.EmailPreference = rblEmailPreference.SelectedValue.ConvertToEnum<EmailPreference>();
 
             if ( !business.IsValid )
             {
@@ -206,18 +181,7 @@ namespace RockWeb.Blocks.Finance
 
             rockContext.WrapTransaction( () =>
             {
-                if ( rockContext.SaveChanges() > 0 )
-                {
-                    if ( changes.Any() )
-                    {
-                        HistoryService.SaveChanges(
-                            rockContext,
-                            typeof( Person ),
-                            Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                            business.Id,
-                            changes );
-                    }
-                }
+                rockContext.SaveChanges();
 
                 // Add/Update Family Group
                 var familyGroupType = GroupTypeCache.GetFamilyGroupType();
@@ -261,21 +225,13 @@ namespace RockWeb.Blocks.Finance
                     if ( workLocation != null )
                     {
                         groupLocationService.Delete( workLocation );
-                        History.EvaluateChange( changes, "Address", workLocation.Location.ToString(), string.Empty );
                     }
                 }
                 else
                 {
-                    var oldValue = string.Empty;
-
                     var newLocation = new LocationService( rockContext ).Get(
                         acAddress.Street1, acAddress.Street2, acAddress.City, acAddress.State, acAddress.PostalCode, acAddress.Country );
-
-                    if ( workLocation != null )
-                    {
-                        oldValue = workLocation.Location.ToString();
-                    }
-                    else
+                    if ( workLocation == null )
                     {
                         workLocation = new GroupLocation();
                         groupLocationService.Add( workLocation );
@@ -284,8 +240,6 @@ namespace RockWeb.Blocks.Finance
                     }
                     workLocation.Location = newLocation;
                     workLocation.IsMailingLocation = true;
-
-                    History.EvaluateChange( changes, "Address", oldValue, newLocation.ToString() );
                 }
 
                 rockContext.SaveChanges();

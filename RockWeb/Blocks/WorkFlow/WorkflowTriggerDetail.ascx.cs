@@ -209,6 +209,7 @@ namespace RockWeb.Blocks.WorkFlow
             var rockContext = new RockContext();
             WorkflowTriggerService WorkflowTriggerService = new WorkflowTriggerService( rockContext );
             AttributeService attributeService = new AttributeService( rockContext );
+            bool usePreviousValue = false;
 
             int WorkflowTriggerId = int.Parse( hfWorkflowTriggerId.Value );
 
@@ -228,9 +229,20 @@ namespace RockWeb.Blocks.WorkFlow
             workflowTrigger.EntityTypeId = ddlEntityType.SelectedValueAsInt().Value;
             workflowTrigger.EntityTypeQualifierColumn = ddlQualifierColumn.SelectedValue;
 
+            //
+            // If the trigger type is PreSave, PostSave or ImmediatePostSave then we have
+            // a previous value option.
+            //
+            if ( workflowTrigger.WorkflowTriggerType == WorkflowTriggerType.PreSave ||
+                workflowTrigger.WorkflowTriggerType == WorkflowTriggerType.PostSave ||
+                workflowTrigger.WorkflowTriggerType == WorkflowTriggerType.ImmediatePostSave )
+            {
+                usePreviousValue = true;
+            }
+
             // If the trigger type is PreSave and the tbQualifierValue does not exist,
             // use the previous and alt qualifier value
-            if ( workflowTrigger.WorkflowTriggerType == WorkflowTriggerType.PreSave ) 
+            if ( usePreviousValue ) 
             {
                 if ( !string.IsNullOrEmpty( tbQualifierValue.Text ) )
                 {
@@ -305,13 +317,20 @@ namespace RockWeb.Blocks.WorkFlow
         /// <param name="workflowTrigger">The workflow trigger.</param>
         private void ShowQualifierValues( WorkflowTrigger workflowTrigger )
         {
-            bool showPreSave = false;
+            bool usePreviousValue = false;
+            bool showPreviousField = false;
+
             if ( workflowTrigger != null )
             {
-                showPreSave = ( workflowTrigger.WorkflowTriggerType == WorkflowTriggerType.PreSave );
-                if ( showPreSave
-                    && ! string.IsNullOrEmpty( workflowTrigger.EntityTypeQualifierValue )
-                    && workflowTrigger.EntityTypeQualifierValue != workflowTrigger.EntityTypeQualifierValuePrevious )
+                if ( workflowTrigger.WorkflowTriggerType == WorkflowTriggerType.PreSave ||
+                    workflowTrigger.WorkflowTriggerType == WorkflowTriggerType.PostSave ||
+                    workflowTrigger.WorkflowTriggerType == WorkflowTriggerType.ImmediatePostSave )
+                {
+                    usePreviousValue = true;
+                }
+
+                if ( usePreviousValue
+                    && ( !string.IsNullOrEmpty( workflowTrigger.EntityTypeQualifierValue ) || !string.IsNullOrEmpty( workflowTrigger.EntityTypeQualifierValuePrevious ) ) )
                 {
                     tbQualifierValueAlt.Text = workflowTrigger.EntityTypeQualifierValue;
                     tbPreviousQualifierValue.Text = workflowTrigger.EntityTypeQualifierValuePrevious;
@@ -322,7 +341,14 @@ namespace RockWeb.Blocks.WorkFlow
                 }
             }
 
-            if ( rblTriggerType.SelectedValue == ( (int)WorkflowTriggerType.PreSave ).ToStringSafe() || showPreSave )
+            if ( rblTriggerType.SelectedValue == ( ( int ) WorkflowTriggerType.PreSave ).ToStringSafe() ||
+                rblTriggerType.SelectedValue == ( ( int ) WorkflowTriggerType.PostSave ).ToStringSafe() ||
+                rblTriggerType.SelectedValue == ( ( int ) WorkflowTriggerType.ImmediatePostSave ).ToStringSafe() )
+            {
+                showPreviousField = true;
+            }
+
+            if ( showPreviousField || usePreviousValue )
             {
                 tbQualifierValue.Label = "Or value is";
                 tbPreviousQualifierValue.Visible = true;

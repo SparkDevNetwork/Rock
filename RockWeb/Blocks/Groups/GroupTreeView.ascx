@@ -93,6 +93,8 @@
                 var scrollIndicator = scrollbCategory.find('.track');
                 <%=hfSelectedGroupId.ClientID%>IScroll = new IScroll(scrollContainer[0], {
                     mouseWheel: false,
+                    eventPassthrough: true,
+                    preventDefault: false,
                     scrollX: true,
                     scrollY: false,
                     indicators: {

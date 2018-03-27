@@ -132,15 +132,30 @@ namespace Rock.Workflow.Action
             if ( !errorMessages.Any() )
             {
                 var groupMemberService = new GroupMemberService( rockContext );
-                var groupMember = new GroupMember();
-                groupMember.PersonId = person.Id;
-                groupMember.GroupId = group.Id;
+                var groupMember = groupMemberService.GetByGroupIdAndPersonIdAndPreferredGroupRoleId( group.Id, person.Id, groupRoleId.Value );
+                if ( groupMember == null )
+                {
+                    groupMember = new GroupMember();
+                    groupMember.PersonId = person.Id;
+                    groupMember.GroupId = group.Id;
+                    groupMemberService.Add( groupMember );
+                }
+                else
+                {
+                    action.AddLogEntry( $"{person.FullName} was already a member of the selected group.", true );
+                }
+
                 groupMember.GroupRoleId = groupRoleId.Value;
                 groupMember.GroupMemberStatus = GroupMemberStatus.Active;
+
                 if ( groupMember.IsValidGroupMember( rockContext ) )
                 {
-                    groupMemberService.Add( groupMember );
                     rockContext.SaveChanges();
+
+                    if ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
+                    {
+                        Rock.Security.Role.Flush( group.Id );
+                    }
                 }
                 else
                 {

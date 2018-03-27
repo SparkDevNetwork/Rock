@@ -61,6 +61,7 @@ namespace RockWeb.Blocks.Reporting
     [IntegerField( "Timeout", "The amount of time in xxx to allow the query to run before timing out.", false, 30, Category = "CustomSetting" )]
     [TextField( "Merge Fields", "Any fields to make available as merge fields for any new communications", false, "", "CustomSetting" )]
     [TextField( "Communication Recipient Person Id Columns", "Columns that contain a communication recipient person id.", false, "", "CustomSetting" )]
+    [TextField( "Encrypted Fields", "Any fields that need to be decrypted before displaying their value", false, "", "CustomSetting" )]
     [CodeEditorField( "Page Title Lava", "Optional Lava for setting the page title. If nothing is provided then the page's title will be used.",
         CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, "", "CustomSetting" )]
     [BooleanField( "Paneled Grid", "Add the 'grid-panel' class to the grid to allow it to fit nicely in a block.", false, "Advanced" )]
@@ -240,8 +241,8 @@ namespace RockWeb.Blocks.Reporting
             SetAttributeValue( "ShowExcelExport", cbShowExcelExport.Checked.ToString() );
             SetAttributeValue( "ShowMergeTemplate", cbShowMergeTemplate.Checked.ToString() );
             SetAttributeValue( "ShowGridFilter", cbShowGridFilter.Checked.ToString() );
-
             SetAttributeValue( "MergeFields", tbMergeFields.Text );
+            SetAttributeValue( "EncryptedFields", tbEncryptedFields.Text );
             SaveAttributeValues();
 
             mdEdit.Hide();
@@ -404,8 +405,8 @@ namespace RockWeb.Blocks.Reporting
             cbShowExcelExport.Checked = GetAttributeValue( "ShowExcelExport" ).AsBoolean();
             cbShowMergeTemplate.Checked = GetAttributeValue( "ShowMergeTemplate" ).AsBoolean();
             cbShowGridFilter.Checked = GetAttributeValue( "ShowGridFilter" ).AsBoolean();
-
             tbMergeFields.Text = GetAttributeValue( "MergeFields" );
+            tbEncryptedFields.Text = GetAttributeValue( "EncryptedFields" );
         }
 
         /// <summary>
@@ -674,6 +675,7 @@ namespace RockWeb.Blocks.Reporting
         {
             bool showColumns = GetAttributeValue( "ShowColumns" ).AsBoolean();
             var columnList = GetAttributeValue( "Columns" ).SplitDelimitedValues().ToList();
+            var encryptedFields = GetAttributeValue( "EncryptedFields" ).SplitDelimitedValues().ToList();
 
             int rowsToEval = 10;
             if ( dataTable.Rows.Count < 10 )
@@ -780,6 +782,11 @@ namespace RockWeb.Blocks.Reporting
                 }
                 else
                 {
+                    if ( encryptedFields.Contains( dataTableColumn.ColumnName ) )
+                    {
+                        bf = new EncryptedField();
+                    }
+
                     bf.HtmlEncode = false;
 
                     if ( GridFilter != null )

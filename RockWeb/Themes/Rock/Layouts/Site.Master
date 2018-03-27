@@ -24,8 +24,6 @@
     protected override void OnInit( EventArgs e )
     {
         base.OnInit( e );
-
-        lLogoSvg.Text = System.IO.File.ReadAllText( HttpContext.Current.Request.MapPath("~/Assets/Images/rock-logo.svg") );
     }
 
 </script>
@@ -58,69 +56,57 @@
 
     <form id="form1" runat="server">
 
-        <div id="page-wrapper">
+    <div class="page-wrapper">
 
-            <nav class="navbar-default navbar-static-side" role="navigation">
+        <nav class="navbar navbar-fixed-top rock-top-header">
+            <div class="navbar-toggle navbar-toggle-side-left collapsed" data-toggle="collapse" data-target=".navbar-static-side">
+                <i class="fa fa-bars"></i>
+            </div>
+            <asp:HyperLink ID="hlHomeCorner" runat="server" NavigateUrl="~" ToolTip="Rock RMS" CssClass="navbar-brand-corner" />
+            <asp:HyperLink ID="hlHomeCenter" runat="server" NavigateUrl="~" ToolTip="Rock RMS" CssClass="navbar-brand-center" />
 
-                <div class="navbar-header">
-                    <asp:HyperLink ID="hlHome" runat="server" NavigateUrl="~" ToolTip="Rock">
-                        <div class="logo"></div>
-                    </asp:HyperLink>
+            <div class="header-content collapse navbar-collapse" role="navigation">
+                <div class="clearfix">
+                    <!-- bookmark markup goes here -->
+
+                    <div class="navbar-zone-login"><Rock:Zone Name="Login" runat="server" /></div>
+                    <div class="navbar-zone-header"><Rock:Zone Name="Header" runat="server" /></div>
                 </div>
-
-                <Rock:Zone Name="Navigation" runat="server" />
-            </nav>
-
-            <div id="content-wrapper">
-
-                <header>
-                    <!-- Brand Bar -->
-                    <nav class="navbar navbar-default navbar-static-top">
-
-
-			                <div class="navbar-header">
-                                <div class="navbar-minimize">
-                                    <i class="fa fa-bars"></i>
-                                </div>
-			                </div>
-
-                            <div class="navbar-mobile-logo">
-                                <asp:Literal ID="lLogoSvg" runat="server" EnableViewState="false" />
-                            </div>
-
-                            <div class="navbar-content">
-                                <div class="navbar-zone-login pull-right"><Rock:Zone Name="Login" runat="server" /></div>
-                                <div class="navbar-zone-header divided"><Rock:Zone Name="Header" runat="server" /></div>
-			                </div>
-                    </nav>
-
-                </header>
-
-                <main>
-                    <asp:ContentPlaceHolder ID="feature" runat="server"></asp:ContentPlaceHolder>
-
-                    <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
-                </main>
-
-                 <footer>
-
-
-                        <hr />
-
-                        <div class="row">
-                            <div class="col-md-8">
-                                <Rock:Zone Name="Footer" runat="server" />
-                            </div>
-                            <div class="col-md-4">
-
-                            </div>
-                        </div>
-
-	            </footer>
-
+            </div>
+            
+            <div id="header-collapse" class="collapsed" data-toggle="collapse" data-target=".header-content">
+                <i class="fa fa-chevron-down"></i>
             </div>
 
-	    </div>
+        </nav>
+
+       <nav class="navbar-default navbar-static-side" role="navigation">
+           <div class="navbar-toggle-side-left" data-toggle="collapse" data-target=".navbar-static-side">
+               <i class="fa fa-bars"></i>
+           </div>
+           <Rock:Zone Name="Navigation" runat="server" />
+        </nav>
+
+        <div id="content-wrapper">
+            
+
+            <asp:ContentPlaceHolder ID="feature" runat="server"></asp:ContentPlaceHolder>
+
+            <div class="main-content">
+                <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
+
+                <div class="main-footer">
+                    <Rock:Zone Name="Footer" runat="server" />
+                </div>
+            </div>
+
+            
+        </div>
+
+        
+    </div>
+
+        
 
         <%-- controls for scriptmanager and update panel --%>
         <asp:ScriptManager ID="sManager" runat="server"/>
@@ -145,15 +131,12 @@
         Sys.Application.add_load( function () {
             $('.navbar-side > li').hover(function () {
                 if (!$('body').hasClass('zone-highlight')) {
-                    $(this).doTimeout('hover', 250, 'addClass', 'open');
+                    $(this).doTimeout('hover', 50, 'addClass', 'open');
                 }
             }, function () {
-                $(this).doTimeout('hover', 250, 'removeClass', 'open');
+                $(this).doTimeout('hover', 50, 'removeClass', 'open');
             });
-        });
 
-
-        $(document).ready(function () {
 
             // enable sidbar sub menus
             $('.navbar-side li').click(function () {
@@ -166,7 +149,7 @@
             });
 
             // show/hide sidebar nav
-            $('.navbar-minimize').click(function () {
+            $('.navbar-toggle-side-left').click(function () {
                 if ($('.navbar-static-side').is(":visible")) {
                     $('body').addClass('navbar-side-close').removeClass('navbar-side-open');
                 } else {

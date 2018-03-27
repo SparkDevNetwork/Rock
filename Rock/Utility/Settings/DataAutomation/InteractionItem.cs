@@ -33,6 +33,7 @@ namespace Rock.Utility.Settings.DataAutomation
             Guid = guid;
             Name = name;
             LastInteractionDays = 90;
+            IsInteractionTypeEnabled = true;
         }
 
         /// <summary>

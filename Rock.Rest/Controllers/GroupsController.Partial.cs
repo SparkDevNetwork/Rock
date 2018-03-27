@@ -553,60 +553,6 @@ namespace Rock.Rest.Controllers
             GroupService.AddNewGroupAddress( rockContext, group, locationType.Guid.ToString(), street1, street2, city, state, postalCode, country, true );
         }
 
-        /// <summary>
-        /// Puts the specified identifier.
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <param name="group">The group.</param>
-        public override void Put( int id, Group group )
-        {
-            var familyGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
-            if ( familyGroupType != null && familyGroupType.Id == group.GroupTypeId )
-            {
-                SetProxyCreation( true );
-
-                var rockContext = (RockContext)Service.Context;
-                var existingGroup = Service.Get( id );
-                if ( existingGroup != null )
-                {
-                    var changes = new List<string>();
-                    string oldCampus = existingGroup.Campus != null ? existingGroup.Campus.Name : string.Empty;
-                    string newCampus = group.Campus != null ? group.Campus.Name : string.Empty;
-                    if ( group.CampusId.HasValue && string.IsNullOrWhiteSpace( newCampus ) )
-                    {
-                        var campus = CampusCache.Read( group.CampusId.Value );
-                        newCampus = campus != null ? campus.Name : string.Empty;
-                    }
-
-                    History.EvaluateChange( changes, "Campus", oldCampus, newCampus );
-
-                    if ( changes.Any() )
-                    {
-                        System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
-
-                        int? modifiedByPersonAliasId = group.ModifiedAuditValuesAlreadyUpdated ? group.ModifiedByPersonAliasId : (int?)null;
-
-                        foreach ( var fm in existingGroup.Members )
-                        {
-                            HistoryService.SaveChanges(
-                                rockContext,
-                                typeof( Person ),
-                                Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
-                                fm.PersonId,
-                                changes,
-                                existingGroup.Name,
-                                typeof( Group ),
-                                existingGroup.Id,
-                                true,
-                                modifiedByPersonAliasId );
-                        }
-                    }
-                }
-            }
-
-            base.Put( id, group );
-        }
-
         #region MapInfo methods
 
         /// <summary>

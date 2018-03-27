@@ -99,7 +99,7 @@
                                 <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                                 <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" />
                                 <div class="pull-right">
-                                    <asp:LinkButton ID="lbDataView" runat="server" Text="Data View" CssClass="btn btn-link" OnClick="lbDataView_Click" />
+                                    <asp:HyperLink ID="lbDataView" runat="server" Text="Data View" CssClass="btn btn-link" />
                                     <asp:LinkButton ID="btnCopy" runat="server" Tooltip="Copy Report" CssClass="btn btn-default btn-sm fa fa-clone" OnClick="btnCopy_Click" />
                                     <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" />
                                 </div>

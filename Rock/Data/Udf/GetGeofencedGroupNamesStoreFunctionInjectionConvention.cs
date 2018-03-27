@@ -16,14 +16,13 @@
 //
 using System.Data.Entity.Core.Metadata.Edm;
 using System.Data.Entity.Infrastructure;
-using System.Data.Entity.ModelConfiguration.Conventions;
 
 namespace Rock.Data
 {
     /// <summary>
     /// pattern from https://github.com/divega/UdfCodeFirstSample
     /// </summary>
-    public class GetGeofencingGroupNamesStoreFunctionInjectionConvention : IStoreModelConvention<EdmModel>
+    public class GetGeofencingGroupNamesStoreFunctionInjectionConvention : IRockStoreModelConvention<EdmModel>
     {
         /// <summary>
         /// Applies the specified item.

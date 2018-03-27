@@ -529,15 +529,21 @@ namespace RockWeb.Blocks.Event
             {
                 // make sure that a URL with navigation history parameters is really from a browser navigation and not a Link or Refresh
                 hfAllowNavigate.Value = true.ToTrueFalse();
-                if ( CurrentPanel != 1 )
+                try
                 {
-                    this.AddHistory( "event", string.Format( "{0},0,0", CurrentPanel ) );
+                    if ( CurrentPanel != 1 )
+                    {
+                        this.AddHistory( "event", string.Format( "{0},0,0", CurrentPanel ) );
+                    }
+                    else
+                    {
+                        this.AddHistory( "event", string.Format( "1,{0},{1}", CurrentRegistrantIndex, CurrentFormIndex ) );
+                    }
                 }
-                else
+                catch ( System.InvalidOperationException )
                 {
-                    this.AddHistory( "event", string.Format( "1,{0},{1}", CurrentRegistrantIndex, CurrentFormIndex ) );
+                    // Swallow this exception 
                 }
-
             }
 
             base.OnPreRender( e );
@@ -1889,16 +1895,7 @@ namespace RockWeb.Blocks.Event
                         var person = personService.Get( CurrentPerson.Id );
                         if ( person != null )
                         {
-                            var personChanges = new List<string>();
-                            History.EvaluateChange( personChanges, "Email", person.Email, registration.ConfirmationEmail );
                             person.Email = registration.ConfirmationEmail;
-
-                            HistoryService.SaveChanges(
-                                new RockContext(),
-                                typeof( Person ),
-                                Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                                person.Id,
-                                personChanges, true, CurrentPersonAliasId );
                         }
                     }
                 }
@@ -1996,7 +1993,6 @@ namespace RockWeb.Blocks.Event
                 {
                     var registrantChanges = new List<string>();
                     var personChanges = new List<string>();
-                    var familyChanges = new List<string>();
 
                     RegistrationRegistrant registrant = null;
                     Person person = null;
@@ -2189,6 +2185,14 @@ namespace RockWeb.Blocks.Event
                                 case RegistrationPersonFieldType.WorkPhone:
                                     {
                                         SavePhone( fieldValue, person, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid(), personChanges );
+                                        break;
+                                    }
+
+                                case RegistrationPersonFieldType.ConnectionStatus:
+                                    {
+                                        var newConnectionStatusId = fieldValue.ToString().AsIntegerOrNull() ?? dvcConnectionStatus.Id;
+                                        History.EvaluateChange( personChanges, "Connection Status", DefinedValueCache.GetName( person.ConnectionStatusValueId ), DefinedValueCache.GetName( newConnectionStatusId ) );
+                                        person.ConnectionStatusValueId = newConnectionStatusId;
                                         break;
                                     }
                             }
@@ -3082,7 +3086,7 @@ namespace RockWeb.Blocks.Event
 
                 if ( !RegistrationState.SlotsAvailable.HasValue || RegistrationState.SlotsAvailable.Value <= 0 )
                 {
-                    nbWaitingList.Text = string.Format( "<p>This {0} has reached it's capacity. Complete the registration below to be added to the waitlist.</p>", RegistrationTerm );
+                    nbWaitingList.Text = string.Format( "<p>This {0} has reached its capacity. Complete the registration below to be added to the waitlist.</p>", RegistrationTerm );
                     nbWaitingList.Visible = true;
                 }
                 else
@@ -4132,6 +4136,25 @@ namespace RockWeb.Blocks.Event
 
                         break;
                     }
+
+                case RegistrationPersonFieldType.ConnectionStatus:
+                    {
+                        var ddlConnectionStatus = new RockDropDownList();
+                        ddlConnectionStatus.ID = "ddlConnectionStatus";
+                        ddlConnectionStatus.Label = "Connection Status";
+                        ddlConnectionStatus.Required = field.IsRequired;
+                        ddlConnectionStatus.ValidationGroup = BlockValidationGroup;
+                        ddlConnectionStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ), true );
+
+                        phRegistrantControls.Controls.Add( ddlConnectionStatus );
+
+                        if ( setValue && fieldValue != null )
+                        {
+                            var value = fieldValue.ToString().AsInteger();
+                            ddlConnectionStatus.SetValue( value );
+                        }
+                        break;
+                    }
             }
         }
 
@@ -4452,6 +4475,12 @@ namespace RockWeb.Blocks.Event
                         }
 
                         break;
+                    }
+
+                case RegistrationPersonFieldType.ConnectionStatus:
+                    {
+                        var ddlConnectionStatus = phRegistrantControls.FindControl( "ddlConnectionStatus" ) as RockDropDownList;
+                        return ddlConnectionStatus != null ? ddlConnectionStatus.SelectedValueAsInt() : null;
                     }
             }
 

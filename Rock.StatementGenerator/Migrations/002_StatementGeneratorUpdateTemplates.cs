@@ -78,6 +78,7 @@ namespace Rock.StatementGenerator.Migrations
         /// <param name="definedValueGuid">The defined value unique identifier.</param>
         /// <param name="value">The value.</param>
         /// <param name="description">The description.</param>
+        /// <param name="order">The order.</param>
         private void UpdateDefinedValueIfNotModified( string definedValueGuid, string value, string description, int order )
         {
             Sql( $@"

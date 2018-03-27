@@ -1082,7 +1082,7 @@ namespace RockWeb.Blocks.Connection
                 WorkflowsState.Add( workflowTypeStateObj );
             }
 
-            var workflowType = new WorkflowTypeService( new RockContext() ).Get( ddlWorkflowType.SelectedValueAsId().Value );
+            var workflowType = new WorkflowTypeService( new RockContext() ).Get( wpWorkflowType.SelectedValueAsId().Value );
             if ( workflowType != null )
             {
                 workflowTypeStateObj.WorkflowTypeId = workflowType.Id;
@@ -1170,29 +1170,11 @@ namespace RockWeb.Blocks.Connection
         /// <param name="connectionOpportunityWorkflowGuid">The connection opportunity workflow unique identifier.</param>
         protected void gConnectionOpportunityWorkflows_ShowEdit( Guid connectionOpportunityWorkflowGuid )
         {
-            ddlWorkflowType.Items.Clear();
-            ddlWorkflowType.Items.Add( new ListItem( string.Empty, string.Empty ) );
-
-            foreach ( var workflowType in new WorkflowTypeService( new RockContext() ).Queryable().OrderBy( w => w.Name ) )
-            {
-                if ( workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
-                {
-                    ddlWorkflowType.Items.Add( new ListItem( workflowType.Name, workflowType.Id.ToString() ) );
-                }
-            }
 
             var workflowTypeStateObj = WorkflowsState.FirstOrDefault( l => l.Guid.Equals( connectionOpportunityWorkflowGuid ) );
             if ( workflowTypeStateObj != null )
             {
-                if ( workflowTypeStateObj.WorkflowTypeId == null )
-                {
-                    ddlWorkflowType.SelectedValue = "0";
-                }
-                else
-                {
-                    ddlWorkflowType.SelectedValue = workflowTypeStateObj.WorkflowTypeId.ToString();
-                }
-
+                wpWorkflowType.SetValue( workflowTypeStateObj.WorkflowTypeId );
                 ddlTriggerType.SelectedValue = workflowTypeStateObj.TriggerType.ConvertToInt().ToString();
             }
 
