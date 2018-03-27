@@ -1437,7 +1437,7 @@ namespace Rock.Web.UI.Controls
 
                     if ( rockPage.Request != null && rockPage.Request.Url != null )
                     {
-                        communication.UrlReferrer = rockPage.Request.Url.AbsoluteUri;
+                        communication.UrlReferrer = rockPage.Request.Url.AbsoluteUri.TrimForMaxLength( communication, "UrlReferrer" );
                     }
 
                     communicationService.Add( communication );
