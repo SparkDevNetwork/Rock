@@ -844,11 +844,12 @@ Rock.controls.fileUploader.initialize({{
 
             if ( eventArgument == "FileRemoved" )
             {
+                int? deletedBinaryFileId = this.BinaryFileId;
                 this.BinaryFileId = 0;
 
                 if ( FileRemoved != null )
                 {
-                    FileRemoved( this, new FileUploaderEventArgs( this.BinaryFileId ) );
+                    FileRemoved( this, new FileUploaderEventArgs( deletedBinaryFileId ) );
                 }
             }
         }

@@ -71,6 +71,7 @@
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
     <Compile Include="Auth0Authentication.cs" />
+    <Compile Include="Auth0ManagementUserInfo.cs" />
     <Compile Include="Auth0TokenResponse.cs" />
     <Compile Include="Auth0UserInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

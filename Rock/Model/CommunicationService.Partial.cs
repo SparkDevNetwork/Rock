@@ -73,6 +73,7 @@ namespace Rock.Model
         /// <param name="recipientStatus">The recipient status.</param>
         /// <param name="senderPersonAliasId">The sender person alias identifier.</param>
         /// <returns></returns>
+        [Obsolete( "Use method with send date time argument" )]
         public Communication CreateEmailCommunication
         (
             List<string> recipientEmails,
@@ -84,6 +85,42 @@ namespace Rock.Model
             bool bulkCommunication,
             CommunicationRecipientStatus recipientStatus = CommunicationRecipientStatus.Delivered,
             int? senderPersonAliasId = null )
+        {
+            DateTime? sendDateTime = null;
+            if ( recipientStatus == CommunicationRecipientStatus.Delivered )
+            {
+                sendDateTime = RockDateTime.Now;
+            }
+
+            return CreateEmailCommunication( recipientEmails, fromName, fromAddress, replyTo, subject, message, bulkCommunication, sendDateTime, recipientStatus, senderPersonAliasId );
+        }
+
+        /// <summary>
+        /// Creates the email communication.
+        /// </summary>
+        /// <param name="recipientEmails">The recipient emails.</param>
+        /// <param name="fromName">From name.</param>
+        /// <param name="fromAddress">From address.</param>
+        /// <param name="replyTo">The reply to.</param>
+        /// <param name="subject">The subject.</param>
+        /// <param name="message">The message.</param>
+        /// <param name="bulkCommunication">if set to <c>true</c> [bulk communication].</param>\
+        /// <param name="sendDateTime">The send date time.</param>
+        /// <param name="recipientStatus">The recipient status.</param>
+        /// <param name="senderPersonAliasId">The sender person alias identifier.</param>
+        /// <returns></returns>
+        public Communication CreateEmailCommunication
+        (
+            List<string> recipientEmails,
+            string fromName,
+            string fromAddress,
+            string replyTo,
+            string subject,
+            string message,
+            bool bulkCommunication,
+            DateTime? sendDateTime,
+            CommunicationRecipientStatus recipientStatus = CommunicationRecipientStatus.Delivered,
+            int? senderPersonAliasId = null)
         {
             var recipients = new PersonService( (RockContext)this.Context )
                 .Queryable()
@@ -105,7 +142,7 @@ namespace Rock.Model
                 communication.Message = message;
                 communication.IsBulkCommunication = bulkCommunication;
                 communication.FutureSendDateTime = null;
-
+                communication.SendDateTime = sendDateTime;
                 // add each person as a recipient to the communication
                 foreach ( var person in recipients )
                 {
@@ -115,6 +152,7 @@ namespace Rock.Model
                         var communicationRecipient = new CommunicationRecipient();
                         communicationRecipient.PersonAliasId = personAliasId.Value;
                         communicationRecipient.Status = recipientStatus;
+                        communicationRecipient.SendDateTime = sendDateTime;
                         communication.Recipients.Add( communicationRecipient );
                     }
                 }

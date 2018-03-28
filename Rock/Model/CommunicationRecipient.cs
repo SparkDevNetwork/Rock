@@ -91,6 +91,15 @@ namespace Rock.Model
         public string StatusNote { get; set; }
 
         /// <summary>
+        /// Gets or sets the datetime that communication was sent.
+        /// </summary>
+        /// <value>
+        /// The send date time.
+        /// </value>
+        [DataMember]
+        public DateTime? SendDateTime { get; set; }
+
+        /// <summary>
         /// Gets or sets the datetime that communication was opened by recipient.
         /// </summary>
         /// <value>

@@ -265,7 +265,7 @@ namespace RockWeb.Blocks.Connection
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
                 var connectionOpportunity = e.Row.DataItem as ConnectionOpportunity;
-                var lStatus = e.Row.FindControl( "lStatus" ) as RockLiteral;
+                var lStatus = e.Row.FindControl( "lStatus" ) as Literal;
                 if ( connectionOpportunity != null && lStatus != null )
                 {
                     lStatus.Text = connectionOpportunity.IsActive ? "<span class='label label-success'>Active</span>" : "<span class='label label-default'>Inactive</span>";

@@ -143,5 +143,32 @@ namespace Rock.Security
             }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether the Rock UI should prompt for the username
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [prompt for user name]; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool PromptForUserName
+        {
+            get
+            {
+                return ServiceType == AuthenticationServiceType.Internal;
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the Rock UI should prompt for a password
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [prompt for password]; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool PromptForPassword
+        {
+            get
+            {
+                return ServiceType == AuthenticationServiceType.Internal;
+            }
+        }
     }
 }
