@@ -115,7 +115,7 @@ namespace RockWeb.Blocks.Security
                 {
                     nbAlert.Text = "Invalid or insufficient data supplied";
                     nbAlert.Visible = true;
-                    DisableControls();
+                    ShowControls( false );
                     return;
                 }
 
@@ -154,15 +154,19 @@ namespace RockWeb.Blocks.Security
                 else if ( isAnExistingDevice )
                 {
                     // if the user is not logged in but we have the device lets try to get a person
-                    person = personService.Get( personalDevice.PersonAlias.PersonId );
-                    if ( person != null )
+                    //person = personService.Get( personalDevice.PersonAlias.PersonId );
+                    if ( personalDevice.PersonAliasId != null )
                     {
-                        Prefill( person );
-                        RockPage.LinkPersonAliasToDevice( ( int ) personalDevice.PersonAliasId, macAddress );
-                        hfPersonAliasId.Value = personalDevice.PersonAliasId.ToString();
+                        person = personService.Get( personalDevice.PersonAlias.PersonId );
+                        if ( person != null )
+                        {
+                            Prefill( person );
+                            RockPage.LinkPersonAliasToDevice( ( int ) personalDevice.PersonAliasId, macAddress );
+                            hfPersonAliasId.Value = personalDevice.PersonAliasId.ToString();
+                        }
                     }
                 }
-                
+
                 // Direct connect if no controls are visible
                 if ( !ShowControls() )
                 {
@@ -199,19 +203,12 @@ namespace RockWeb.Blocks.Security
         /// <returns>Returns true if the device was created, false it already existed</returns>
         private PersonalDevice CreateDevice(string macAddress )
         {
-            RockContext rockContext = new RockContext();
-            PersonalDeviceService personalDeviceService = new PersonalDeviceService( rockContext );
-            PersonalDevice personalDevice = new PersonalDevice();
-            personalDevice.MACAddress = macAddress;
-
-            // Parse the UA string and try to get the info we want
-            UAParser.ClientInfo client = UAParser.Parser.GetDefault().Parse( Request.UserAgent );
-
             // Get the device type Mobile or Computer
             DefinedTypeCache definedTypeCache = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSONAL_DEVICE_TYPE.AsGuid() );
             DefinedValueCache definedValueCache = null;
 
-            string clientType = Request.Browser.IsMobileDevice == true ? "Mobile" : "Computer";
+            var clientType = InteractionDeviceType.GetClientType( Request.UserAgent );
+            clientType = clientType == "Mobile" || clientType == "Tablet" ? "Mobile" : "Computer";
 
             if ( definedTypeCache != null )
             {
@@ -223,13 +220,17 @@ namespace RockWeb.Blocks.Security
                 }
             }
 
+            PersonalDevice personalDevice = new PersonalDevice();
+            personalDevice.MACAddress = macAddress;
             personalDevice.PersonalDeviceTypeValueId = definedValueCache != null ? definedValueCache.Id : ( int? ) null;
 
+            // Parse the UA string and try to get the info we want
+            UAParser.ClientInfo client = UAParser.Parser.GetDefault().Parse( Request.UserAgent );
+
             // get the OS
-            string platform = client.OS.Family;
+            string platform = client.OS.Family.Split( ' ' ).First();
 
             definedTypeCache = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSONAL_DEVICE_PLATFORM.AsGuid() );
-
             if (definedTypeCache != null )
             {
                 definedValueCache = definedTypeCache.DefinedValues.FirstOrDefault( v => v.Value == platform );
@@ -251,6 +252,8 @@ namespace RockWeb.Blocks.Security
                 client.OS.PatchMinor ?? "0" );
 
             // Add and save it
+            RockContext rockContext = new RockContext();
+            PersonalDeviceService personalDeviceService = new PersonalDeviceService( rockContext );
             personalDeviceService.Add( personalDevice );
             rockContext.SaveChanges();
             return personalDevice;
@@ -308,39 +311,6 @@ namespace RockWeb.Blocks.Security
         }
 
         /// <summary>
-        /// Disables the user fillable controls.
-        /// </summary>
-        protected void DisableControls()
-        {
-            if ( tbFirstName.Visible )
-            {
-                tbFirstName.Text = string.Empty;
-                tbFirstName.Enabled = false;
-            }
-
-            if ( tbLastName.Visible )
-            {
-                tbLastName.Text = string.Empty;
-                tbLastName.Enabled = false;
-            }
-
-            if ( tbMobilePhone.Visible )
-            {
-                tbMobilePhone.Text = string.Empty;
-                tbMobilePhone.Enabled = false;
-            }
-
-            if ( tbEmail.Visible )
-            {
-                tbEmail.Text = string.Empty;
-                tbEmail.Enabled = false;
-            }
-
-            btnConnect.Enabled = false;
-            btnConnect.Text = "Unable to connect to Wi-Fi due to errors";
-        }
-
-        /// <summary>
         /// Handles the Click event of the btnConnect control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -365,14 +335,15 @@ namespace RockWeb.Blocks.Security
 
             PersonService personService = new PersonService( new RockContext() );
             int mobilePhoneTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
-            
+
             // Use the entered info to try and find an existing user
+            string mobilePhoneNumber = tbMobilePhone.Text.RemoveAllNonAlphaNumericCharacters();
             Person person = personService
                 .Queryable()
                 .Where( p => p.FirstName == tbFirstName.Text )
                 .Where( p => p.LastName == tbLastName.Text )
                 .Where( p => p.Email == tbEmail.Text )
-                .Where( p => p.PhoneNumbers.Where( n => n.NumberTypeValueId == mobilePhoneTypeId ).FirstOrDefault().Number == tbMobilePhone.Text.RemoveAllNonAlphaNumericCharacters() )
+                .Where( p => p.PhoneNumbers.Where( n => n.NumberTypeValueId == mobilePhoneTypeId ).FirstOrDefault().Number == mobilePhoneNumber )
                 .FirstOrDefault();
             
             // If no known person record then create one
@@ -400,24 +371,30 @@ namespace RockWeb.Blocks.Security
         /// Shows the controls according to the attribute values. If they are visible then they are also required.
         /// </summary>
         /// <returns>If any control is visible then true, else false.</returns>
-        protected bool ShowControls()
+        protected bool ShowControls( bool isEnabled = true )
         {
             tbFirstName.Visible = GetAttributeValue( "ShowFirstName" ).AsBoolean();
             tbFirstName.Required = GetAttributeValue( "ShowFirstName" ).AsBoolean();
+            tbFirstName.Enabled = isEnabled;
 
             tbLastName.Visible = GetAttributeValue( "ShowLastName" ).AsBoolean();
             tbLastName.Required = GetAttributeValue( "ShowLastName" ).AsBoolean();
+            tbLastName.Enabled = isEnabled;
 
             tbMobilePhone.Visible = GetAttributeValue( "ShowMobilePhone" ).AsBoolean();
             tbMobilePhone.Required = GetAttributeValue( "ShowMobilePhone" ).AsBoolean();
+            tbMobilePhone.Enabled = isEnabled;
 
             tbEmail.Visible = GetAttributeValue( "ShowEmail" ).AsBoolean();
             tbEmail.Required = GetAttributeValue( "ShowEmail" ).AsBoolean();
-            
+            tbEmail.Enabled = isEnabled;
+
             cbAcceptTAC.Visible = GetAttributeValue( "ShowAccept" ).AsBoolean();
             cbAcceptTAC.Text = GetAttributeValue( "AcceptanceLabel" );
+            cbAcceptTAC.Enabled = isEnabled;
 
-            btnConnect.Text = GetAttributeValue( "ButtonText" );
+            btnConnect.Text = isEnabled ? GetAttributeValue( "ButtonText" ) : "Unable to connect to Wi-Fi due to errors";
+            btnConnect.Enabled = isEnabled;
 
             if ( iframeLegalNotice.Visible = GetAttributeValue( "ShowLegalNote" ).AsBoolean() )
             {
