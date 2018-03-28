@@ -828,52 +828,40 @@ namespace RockWeb.Blocks.Crm
 
             string newEmailNote = tbEmailNote.Text;
 
-
             int? newReviewReason = ddlReviewReason.SelectedValueAsInt();
             string newSystemNote = tbSystemNote.Text;
             string newReviewReasonNote = tbReviewReasonNote.Text;
 
             int inactiveStatusId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ).Id;
 
-            var allChanges = new Dictionary<int, List<string>>();
-
             var people = personService.Queryable( true ).Where( p => ids.Contains( p.Id ) ).ToList();
             foreach ( var person in people )
             {
-                var changes = new List<string>();
-                allChanges.Add( person.Id, changes );
-
                 if ( SelectedFields.Contains( ddlTitle.ClientID ) )
                 {
-                    History.EvaluateChange( changes, "Title", DefinedValueCache.GetName( person.TitleValueId ), DefinedValueCache.GetName( newTitleId ) );
                     person.TitleValueId = newTitleId;
                 }
 
                 if ( SelectedFields.Contains( ddlSuffix.ClientID ) )
                 {
-                    History.EvaluateChange( changes, "Suffix", DefinedValueCache.GetName( person.SuffixValueId ), DefinedValueCache.GetName( newSuffixId ) );
                     person.SuffixValueId = newSuffixId;
                 }
 
                 if ( SelectedFields.Contains( ddlStatus.ClientID ) )
                 {
-                    History.EvaluateChange( changes, "Connection Status", DefinedValueCache.GetName( person.ConnectionStatusValueId ), DefinedValueCache.GetName( newConnectionStatusId ) );
                     person.ConnectionStatusValueId = newConnectionStatusId;
                 }
 
                 if ( SelectedFields.Contains( ddlRecordStatus.ClientID ) )
                 {
-                    History.EvaluateChange( changes, "Record Status", DefinedValueCache.GetName( person.RecordStatusValueId ), DefinedValueCache.GetName( newRecordStatusId ) );
                     person.RecordStatusValueId = newRecordStatusId;
 
                     if ( newRecordStatusId.HasValue && newRecordStatusId.Value == inactiveStatusId )
                     {
-                        History.EvaluateChange( changes, "Inactive Reason", DefinedValueCache.GetName( person.RecordStatusReasonValueId ), DefinedValueCache.GetName( newInactiveReasonId ) );
                         person.RecordStatusReasonValueId = newInactiveReasonId;
 
                         if ( !string.IsNullOrWhiteSpace( newInactiveReasonNote ) )
                         {
-                            History.EvaluateChange( changes, "Inactive Reason Note", person.InactiveReasonNote, newInactiveReasonNote );
                             person.InactiveReasonNote = newInactiveReasonNote;
                         }
                     }
@@ -881,67 +869,56 @@ namespace RockWeb.Blocks.Crm
 
                 if ( SelectedFields.Contains( ddlGender.ClientID ) )
                 {
-                    History.EvaluateChange( changes, "Gender", person.Gender, newGender );
                     person.Gender = newGender;
                 }
 
                 if ( SelectedFields.Contains( ddlMaritalStatus.ClientID ) )
                 {
-                    History.EvaluateChange( changes, "Marital Status", DefinedValueCache.GetName( person.MaritalStatusValueId ), DefinedValueCache.GetName( newMaritalStatusId ) );
                     person.MaritalStatusValueId = newMaritalStatusId;
                 }
 
                 if ( SelectedFields.Contains( ddlGradePicker.ClientID ) )
                 {
-                    History.EvaluateChange( changes, "Graduation Year", person.GraduationYear, newGraduationYear );
                     person.GraduationYear = newGraduationYear;
                 }
 
                 if ( SelectedFields.Contains( ddlIsEmailActive.ClientID ) )
                 {
-                    History.EvaluateChange( changes, "Email Is Active", person.IsEmailActive, newEmailActive );
                     person.IsEmailActive = newEmailActive;
                 }
 
                 if ( SelectedFields.Contains( ddlCommunicationPreference.ClientID ) )
                 {
-                    History.EvaluateChange( changes, "Communication Preference", person.CommunicationPreference, newCommunicationPreference );
                     person.CommunicationPreference = newCommunicationPreference.Value;
                 }
 
                 if ( SelectedFields.Contains( ddlEmailPreference.ClientID ) )
                 {
-                    History.EvaluateChange( changes, "Email Preference", person.EmailPreference, newEmailPreference );
                     person.EmailPreference = newEmailPreference.Value;
                 }
 
                 if ( SelectedFields.Contains( ddlEmailPreference.ClientID ) )
                 {
-                    History.EvaluateChange( changes, "Email Preference", person.EmailPreference, newEmailPreference );
                     person.EmailPreference = newEmailPreference.Value;
                 }
 
                 if ( SelectedFields.Contains( tbEmailNote.ClientID ) )
                 {
-                    History.EvaluateChange( changes, "Email Note", person.EmailNote, newEmailNote );
                     person.EmailNote = newEmailNote;
                 }
 
                 if ( SelectedFields.Contains( tbSystemNote.ClientID ) )
                 {
-                    History.EvaluateChange( changes, "System Note", person.SystemNote, newSystemNote );
                     person.SystemNote = newSystemNote;
                 }
 
                 if ( SelectedFields.Contains( ddlReviewReason.ClientID ) )
                 {
-                    History.EvaluateChange( changes, "Review Reason", DefinedValueCache.GetName( person.ReviewReasonValueId ), DefinedValueCache.GetName( newReviewReason ) );
                     person.ReviewReasonValueId = newReviewReason;
                 }
 
                 if ( SelectedFields.Contains( tbReviewReasonNote.ClientID ) )
                 {
-                    History.EvaluateChange( changes, "Review Reason Note", person.ReviewReasonNote, newReviewReasonNote );
                     person.ReviewReasonNote = newReviewReasonNote;
                 }
             }
@@ -1128,22 +1105,11 @@ namespace RockWeb.Blocks.Crm
                             {
                                 formattedNewValue = attribute.FieldType.Field.FormatValue( null, newValue, attribute.QualifierValues, false );
                             }
-
-                            History.EvaluateChange( allChanges[person.Id], attribute.Name, formattedOriginalValue, formattedNewValue );
                         }
                     }
                 }
             }
 
-            // Create the history records
-            foreach ( var changes in allChanges )
-            {
-                if ( changes.Value.Any() )
-                {
-                    HistoryService.AddChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                        changes.Key, changes.Value );
-                }
-            }
             rockContext.SaveChanges();
 
             #endregion

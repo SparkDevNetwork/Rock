@@ -57,11 +57,12 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
     [CodeEditorField( "Remote Authorization Prompt Message", "Optional text (HTML) to display above remote authorization options.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, defaultValue: "Login with social account", order: 9 )]
     [RemoteAuthsField( "Remote Authorization Types", "Which of the active remote authorization types should be displayed as an option for user to use for authentication.", false, "", "", 10 )]
     [BooleanField( "Show Internal Login", "Show the default (non-remote) login", defaultValue: true, order: 11 )]
+    [BooleanField( "Redirect to Single External Auth Provider", "Redirect straight to the external authentication provider if only one is configured and the internal login is disabled.", defaultValue: false, order: 12 )]
 
-    [CodeEditorField( "Prompt Message", "Optional text (HTML) to display above username and password fields.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, @"", "", 12 )]
-    [LinkedPage( "Redirect Page", "Page to redirect user to upon successful login. The 'returnurl' query string will always override this setting for database authenticated logins. Redirect Page Setting will override third-party authentication 'returnurl'.", false, "", "", 13 )]
+    [CodeEditorField( "Prompt Message", "Optional text (HTML) to display above username and password fields.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, @"", "", 13 )]
+    [LinkedPage( "Redirect Page", "Page to redirect user to upon successful login. The 'returnurl' query string will always override this setting for database authenticated logins. Redirect Page Setting will override third-party authentication 'returnurl'.", false, "", "", 14 )]
 
-    [CodeEditorField( "Invalid PersonToken Text", "The text to show when a person is logged out due to an invalid persontoken. <span class='tip tip-lava'></span>.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, @"<div class='alert alert-warning'>The login token you provided is no longer valid. Please login below.</div>", "", 14 )]
+    [CodeEditorField( "Invalid PersonToken Text", "The text to show when a person is logged out due to an invalid persontoken. <span class='tip tip-lava'></span>.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, @"<div class='alert alert-warning'>The login token you provided is no longer valid. Please login below.</div>", "", 15 )]
     public partial class Login : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -87,10 +88,10 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
         {
             btnNewAccount.Visible = !GetAttributeValue( "HideNewAccount" ).AsBoolean();
             btnNewAccount.Text = this.GetAttributeValue( "NewAccountButtonText" ) ?? "Register";
-
+            
             phExternalLogins.Controls.Clear();
 
-            int activeAuthProviders = 0;
+            List<AuthenticationComponent> activeAuthProviders = new List<AuthenticationComponent>();
 
             var selectedGuids = new List<Guid>();
             GetAttributeValue( "RemoteAuthorizationTypes" ).SplitDelimitedValues()
@@ -131,7 +132,7 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
                         }
                     }
 
-                    activeAuthProviders++;
+                    activeAuthProviders.Add( component );
 
                     LinkButton lbLogin = new LinkButton();
                     phExternalLogins.Controls.Add( lbLogin );
@@ -153,8 +154,34 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
             }
 
             // adjust the page layout based on the RemoteAuth and InternalLogin options
-            pnlRemoteAuthLogins.Visible = activeAuthProviders > 0;
-            pnlInternalAuthLogin.Visible = this.GetAttributeValue( "ShowInternalLogin" ).AsBooleanOrNull() ?? true;
+            pnlRemoteAuthLogins.Visible = activeAuthProviders.Any();
+            bool showInternalLogin = this.GetAttributeValue( "ShowInternalLogin" ).AsBooleanOrNull() ?? true;
+            pnlInternalAuthLogin.Visible = showInternalLogin;
+
+            if ( activeAuthProviders.Count() == 1 && !showInternalLogin )
+            {
+                var singleAuthProvider = activeAuthProviders[0];
+                bool redirecttoSingleExternalAuthProvider = this.GetAttributeValue( "RedirecttoSingleExternalAuthProvider" ).AsBoolean();
+                
+                if ( redirecttoSingleExternalAuthProvider )
+                {
+                    Uri remoteAuthLoginUri = singleAuthProvider.GenerateLoginUrl( this.Request );
+                    if ( remoteAuthLoginUri != null )
+                    {
+                        if ( IsUserAuthorized( Rock.Security.Authorization.ADMINISTRATE ) )
+                        {
+                            nbAdminRedirectPrompt.Text = string.Format( "If you did not have Administrate permissions on this block, you would have been redirected to the <a href='{0}'>{1}</a> url.", remoteAuthLoginUri.AbsoluteUri, singleAuthProvider.LoginButtonText );
+                            nbAdminRedirectPrompt.Visible = true;
+                        }
+                        else
+                        {
+                            Response.Redirect( remoteAuthLoginUri.AbsoluteUri, false );
+                            Context.ApplicationInstance.CompleteRequest();
+                            return;
+                        }
+                    }
+                }
+            }
 
             if ( pnlInternalAuthLogin.Visible && pnlRemoteAuthLogins.Visible )
             {

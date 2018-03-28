@@ -112,11 +112,20 @@ namespace Rock.Transactions
         public Guid? RecipientGuid { get; set; }
 
         /// <summary>
+        /// Gets or sets the datetime that communication was sent.
+        /// </summary>
+        /// <value>
+        /// The send date time.
+        /// </value>
+        public DateTime? SendDateTime { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="SaveCommunicationTransaction"/> class.
         /// </summary>
         public SaveCommunicationTransaction()
         {
             RecipientStatus = CommunicationRecipientStatus.Delivered;
+            SendDateTime = RockDateTime.Now;
             BulkCommunication = false;
         }
 
@@ -183,7 +192,7 @@ namespace Rock.Transactions
                 }
 
                 var communication = new CommunicationService( rockContext ).CreateEmailCommunication(
-                    RecipientEmails, FromName, FromAddress, ReplyTo, Subject, HtmlMessage, BulkCommunication,
+                    RecipientEmails, FromName, FromAddress, ReplyTo, Subject, HtmlMessage, BulkCommunication, SendDateTime,
                     RecipientStatus, senderPersonAliasId );
 
                 if ( communication != null && communication.Recipients.Count() == 1 && RecipientGuid.HasValue )

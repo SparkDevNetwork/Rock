@@ -18,31 +18,34 @@
 .fa-font-face( @fa-theme-weight-name );
 
 .state-drag .dropzone {
-	border: 1px solid yellow;
+  border: 1px solid yellow;
 }
 
 .state-drag .structure-dropzone {
-	border: 1px solid green;
+  border: 1px solid green;
 }
 
 .structure-dropzone {
-	border: 1px dotted blue;
-	min-height: 36px;
-	width: 100%;
+  width: 100%;
+  min-height: 36px;
+  border: 1px dotted blue;
 }
 
 .dropzone {
-	border: 1px dotted rgba(0, 0, 0, 0.3);
-	min-height: 24px;
-	width: 100%;
+  width: 100%;
+  min-height: 24px;
+  border: 1px dotted rgba(0, 0, 0, .3);
 }
 
 .editor-toolbar-container {
-  background-color: @panel-heading-bg;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  padding: 12px 12px 0 12px;
+  overflow: auto;
   font-family: @font-family-sans-serif;
   color: @text-color;
-  overflow: auto;
-  padding: 12px 12px 0 12px;
+  background-color: @panel-heading-bg;
 }
 
 .editor-toolbar-container p {
@@ -50,55 +53,55 @@
 }
 
 .editor-toolbar-container:after {
-  content: "";
   display: table;
   clear: both;
+  content: "";
 }
 
 .component-separator {
-  width: 24px;
   float: left;
+  width: 24px;
   height: 20px;
 }
 
 .component {
-  cursor: pointer;
   overflow: auto;
+  cursor: pointer;
 }
 
 .component.selected {
-	border: 1px solid red;
+  border: 1px solid red;
 }
 
 .component[data-state=component] {
-	display: table;
-	width: 100%;
+  display: table;
+  width: 100%;
 }
 
 .component[data-state=template] {
-  border: 1px solid @btn-default-border;
-  text-align: center;
-  padding: 4px;
-  margin-bottom: 12px;
-  font-size: 11px;
-  font-family: @font-family-sans-serif;
-  background-color: @btn-default-bg;
-  color: @btn-default-color;
-  border-radius: 4px;
-  width: 40px;
   float: left;
+  width: 40px;
+  padding: 4px;
   margin-right: 8px;
+  margin-bottom: 12px;
+  font-family: @font-family-sans-serif;
+  font-size: 11px;
+  color: @btn-default-color;
+  text-align: center;
   cursor: move;
+  background-color: @btn-default-bg;
+  border: 1px solid @btn-default-border;
+  border-radius: 4px;
 }
 
 .component[data-state=template] i {
-	font-size: 22px;
+  font-size: 22px;
 }
 
 // miniturize the image component when dragging to make it easier to 
 // precisly place it in tight areas
 .gu-mirror.component-image img {
-    max-width: 150px;
+  max-width: 150px;
 }
 
 /*
@@ -110,13 +113,14 @@ that the mirror image is appended to the mirrorContainer, not to its initial con
 elements with nested rules, like .list .item { padding: 10px; }.*/
 .gu-mirror {
   position: fixed !important;
-  margin: 0 !important;
   z-index: 9999 !important;
-  opacity: 0.8;
-  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=80)";
-  filter: alpha(opacity=80);
+  margin: 0 !important;
   font-family: Arial, Helvetica, sans-serif;
   cursor: move;
+      filter: alpha(opacity=80);
+  opacity: .8;
+
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=80)";
 }
 
 /* Is a helper class to apply display: none to an element. */
@@ -127,20 +131,21 @@ elements with nested rules, like .list .item { padding: 10px; }.*/
 /* Is added to the mirrorContainer element when dragging. You can use it to style the mirrorContainer while something is being dragged. */
 .gu-unselectable {
   -webkit-user-select: none !important;
-  -moz-user-select: none !important;
-  -ms-user-select: none !important;
-  user-select: none !important;
+     -moz-user-select: none !important;
+      -ms-user-select: none !important;
+          user-select: none !important;
 }
 
 /* Is added to the source element when its mirror image is dragged. It just adds opacity to it.*/
-.gu-transit { 
-  opacity: 0.2;
-  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=20)";
-  filter: alpha(opacity=20);
+.gu-transit {
   float: none !important; /* added to override the float from the component */
+      filter: alpha(opacity=20);
+  opacity: .2;
+
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=20)";
 }
 
 /* MP: workaround for https://github.com/bevacqua/dragula/issues/421 */
-.gu-transit .container{
-    display: none;
+.gu-transit .container {
+  display: none;
 }

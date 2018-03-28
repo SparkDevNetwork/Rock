@@ -883,7 +883,7 @@ namespace RockWeb.Blocks.Groups
             //    GroupTypeRole. If that role exists and has a MaxCount, check that we haven't met or exceeded it yet.
             if ( GetAttributeValue( "HideOvercapacityGroups" ).AsBoolean() )
             {
-                groupQry = groupQry.Where( g => g.GroupCapacity == null || g.Members.Count() < g.GroupCapacity );
+                groupQry = groupQry.Where( g => g.GroupCapacity == null || g.ActiveMembers().Count() < g.GroupCapacity );
 
                 groupQry = groupQry.Where( g =>
                      g.GroupType == null ||

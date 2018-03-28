@@ -346,6 +346,7 @@ namespace RockWeb.Blocks.Connection
                     }
 
                     connectionType.Name = tbName.Text;
+                    connectionType.IsActive = cbActive.Checked;
                     connectionType.Description = tbDescription.Text;
                     connectionType.IconCssClass = tbIconCssClass.Text;
                     connectionType.DaysUntilRequestIdle = nbDaysUntilRequestIdle.Text.AsInteger();
@@ -1366,6 +1367,7 @@ namespace RockWeb.Blocks.Connection
 
             // General
             tbName.Text = connectionType.Name;
+            cbActive.Checked = connectionType.IsActive;
             tbDescription.Text = connectionType.Description;
             tbIconCssClass.Text = connectionType.IconCssClass;
             nbDaysUntilRequestIdle.Text = connectionType.DaysUntilRequestIdle.ToString();

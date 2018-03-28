@@ -20,6 +20,7 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
+using Humanizer;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -71,7 +72,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _lbAddChild );
             _lbAddChild.ID = "_btnAddChild";
             _lbAddChild.Click += lbAddChild_Click;
-            _lbAddChild.AddCssClass( "add btn btn-xs btn-action pull-right" );
+            _lbAddChild.AddCssClass( "add btn btn-xs btn-default pull-right" );
             _lbAddChild.CausesValidation = false;
 
             var iAddFilter = new HtmlGenericControl( "i" );
@@ -111,7 +112,7 @@ namespace Rock.Web.UI.Controls
                     {
                         i++;
                         var childRow = control as PreRegistrationChildRow;
-                        childRow.Caption = childRow.ExistingName.IsNotNullOrWhitespace() ? childRow.ExistingName : $"Child {i}";
+                        childRow.Caption = $"{i.ToOrdinalWords().Titleize()} Child";
                         childRow.RenderControl( writer );
                     }
                 }
