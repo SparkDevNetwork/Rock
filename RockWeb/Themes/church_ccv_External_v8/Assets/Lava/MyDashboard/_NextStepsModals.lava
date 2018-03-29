@@ -2,7 +2,7 @@
 {% include '~~/Assets/Lava/MyDashboard/DashboardContent.lava' %} 
 
 {% comment %} Assign modal content to object {% endcomment %}
-{% assign modals = modalsJSON | FromJSON %}
+{% assign modals = stepsContentJSON | FromJSON %}
 
 {% comment %} Loop through all modals in content {% endcomment %}
 {% for modal in modals %}
@@ -16,7 +16,7 @@
             </div>
             <div class="nextstep-modal-content">
                 <div class="nextstep-modal-content-header">
-                    <button type="button" class="close" data-dismiss="modal"><i class="material-icons nextstep-modal-close">close</i></button>
+                    <button type="button" class="close" data-dismiss="modal"><i class="mdi mdi-close nextstep-modal-close"></i></button>
                     <div class="nextstep-modal-content-title">
                         {% if modal.Content.Icon != "" %}
                             <img class="nextstep-icon-inactive" src='{{ modal.Content.Icon }}'>
