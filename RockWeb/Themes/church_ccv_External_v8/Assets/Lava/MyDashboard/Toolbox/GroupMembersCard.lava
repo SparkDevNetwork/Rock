@@ -5,6 +5,10 @@
  {% assign group = Groups | First %}
 
 {% if group != null and group != '' %}
+    {% comment %} Load default content for badges {% endcomment %}
+    {% include '~~/Assets/Lava/MyDashboard/DashboardContent.lava' %}
+    {% assign stepsContent = stepsContentJSON | FromJSON %}
+
     <div class="dashboard-card toolbox-group-members-card">
         {% comment %} Include card header, tell header card to render add button {% endcomment %}
         {% assign renderAddButton = 'true' %}
@@ -13,16 +17,17 @@
             <div>
                 <div class="group-header">
                     <a onclick="">
-                        <div>
-                            <span style="text-transform: none; color: #424242;" class="material-icons">email</span>
+                        <div class="group-header-content">
+                            <i class="mdi mdi-email dashboard-icon"></i>
                             <span>Group Email</span>
-                            <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path></svg>
+                            <i class="mdi mdi-chevron-right dashboard-icon" style="color: #7A1315; margin: 0;"></i>
                         </div>
                     </a>
                 </div>
 
                 {% comment %} Render Group Members {% endcomment %}
                 {% for member in group.Group.Members %}
+                    {% assign personIndex = forloop.index %}
 
                     <div class="person-row">
                         <div class="person-row-summary">
@@ -40,24 +45,28 @@
 
                                 {% if cellPhone %}
                                     <a href="tel:+1{{cellPhone}}">
-                                        <span class="material-icons person-row-phone-button">phone</span>
+                                    <i class="mdi mdi-phone dashboard-icon"></i>
                                     </a>
                                 {% elseif homePhone %}
                                     <a href="tel:+1{{homePhone}}">
-                                        <span class="material-icons person-row-phone-button">phone</span>
+                                    <i class="mdi mdi-phone dashboard-icon"></i>
                                     </a>
                                 {% endif %}
                                 <a href="/page/1751?person={{ member.Person.Id }}">
-                                    <span class="material-icons person-row-email-button">email</span>
+                                    <i class="mdi mdi-email dashboard-icon"></i>
                                 </a>
-                                <button type="button" data-toggle="collapse" data-target="#personDetails{{ forloop.index }}" class="person-details-toggle">
-                                    <i id="personDetailsToggle{{ forloop.index }}" class="material-icons">keyboard_arrow_down</i>
+                                <button type="button" data-toggle="collapse" data-target="#personDetails{{ personIndex }}" class="person-details-toggle">
+                                    <i id="personDetailsToggle{{ personIndex }}" class="mdi mdi-chevron-down dashboard-icon" style="color: #7A1315"></i>
                                 </button>
                             </div>
                         </div>
-                        <div id="personDetails{{ forloop.index }}" class="collapse">
+                        <div id="personDetails{{ personIndex }}" class="collapse">
                             <div class="person-row-details">
-                                <p>Steps Circles Will Go Here</p>
+                                <div id="personBadges{{ personIndex }}" class="person-badges">
+                                    {% for step in stepsContent %}
+                                        <img id="{{ step.Name }}Badge{{ personIndex }}" class="nextstep-icon-loading" src='{{ step.Content.Icon }}'>
+                                    {% endfor %}
+                                </div>
                                 {% if cellPhone %}
                                     <p>{{ cellPhone }} (Mobile)</p>
                                 {% endif %}
@@ -99,12 +108,324 @@
                     </div>
                     <script>
                         // on details collapse change toggle icon
-                        $('#personDetails{{ forloop.index }}').on('shown.bs.collapse', function() {
-                            $('#personDetailsToggle{{ forloop.index }}').html('keyboard_arrow_up');
+                        $('#personDetails{{ personIndex }}').on('shown.bs.collapse', function() {
+                            toggleChevron('#personDetailsToggle{{ personIndex }}');
                         });
-                        $('#personDetails{{ forloop.index }}').on('hidden.bs.collapse', function() {
-                            $('#personDetailsToggle{{ forloop.index }}').html('keyboard_arrow_down');
+                        $('#personDetails{{ personIndex }}').on('hidden.bs.collapse', function() {
+                            toggleChevron('#personDetailsToggle{{ personIndex }}');
                         });
+                        // on details click, query badges API for person selected
+                        $('#personDetailsToggle{{ personIndex }}').on('click', function() {
+                            // Check if query has already been made
+                            if(!$('#personDetailsToggle{{ personIndex }}').hasClass('badge-data-received')) {
+                                 // Start loading animation
+                                $('#personBadges{{ personIndex }}').toggleClass('nextstep-loading-badges');
+
+                                // Make API calls for badges
+                                // if current person query api for steps taken
+                                var currentPersonGuid = '{{ member.Person.Guid }}';
+                                if (currentPersonGuid !== '') {
+                                    $.getJSON('/api/CCV/Badges/StepsBar/'+currentPersonGuid, function(data, status){
+                                        console.log('#personDetailsToggle{{ personIndex }} Badges: ', data);
+                                        for (var key in data) {
+                                            if (data.hasOwnProperty(key)) {
+                                                var keyData = data[key];
+                                                // Process response
+                                                switch (key) {
+                                                    case 'BaptismResult': {
+                                                        updateBaptismBadge('#BaptismBadge{{ personIndex }}', keyData);
+                                                        break;
+                                                    };
+                                                    case 'IsWorshipper': {
+                                                        updateWorshipBadge('#WorshipBadge{{ personIndex }}', keyData);
+                                                        break;
+                                                    };   
+                                                    case 'ConnectionResult': {
+                                                        updateConnectBadge('#ConnectBadge{{ personIndex }}', keyData);
+                                                        break;
+                                                    };
+                                                    case 'ServingResult': {
+                                                        updateServeBadge('#ServeBadge{{ personIndex }}', keyData);
+                                                        break;
+                                                    };  
+                                                    case 'IsTithing': {
+                                                        updateGiveBadge('#GiveBadge{{ personIndex }}', keyData);
+                                                        break;
+                                                    };  
+                                                    case 'SharedStoryResult': {
+                                                        updateShareBadge('#ShareBadge{{ personIndex }}', keyData);
+                                                        break;
+                                                    };    
+                                                    case 'CoachingResult': {
+                                                        updateCoachBadge('#CoachBadge{{ personIndex }}', keyData);
+                                                        break;
+                                                    };                        
+                                                    default:
+                                                        break;
+                                                }
+                                            }
+                                        }
+                                        // if success add received class so we dont request on the next click
+                                        if (status === 'success') {
+                                            $('#personDetailsToggle{{ personIndex }}').toggleClass('badge-data-received');
+                                        }
+                                        // Stop loading animation
+                                        $('#personBadges{{ personIndex }}').toggleClass('nextstep-loading-badges');
+                                    });
+                                }
+                            }
+                            
+                            // Check if query has already been made
+                            if(!$('#personDetailsToggle{{ personIndex }}').hasClass('startingpoint-data-received')) {
+                                 // Start loading animation
+                                $('#personBadges{{ personIndex }}').toggleClass('nextstep-loading-startingpoint');
+
+                                // If current person query api for starting point step
+                                var currentPersonId = '{{ member.Person.Id }}'
+                                if (currentPersonId !== '') {
+                                    $.getJSON('/api/CCV/Badges/TakenStartingPoint/'+currentPersonId, function(data, status){
+                                        // process response
+                                        updateStartingPointBadge('#StartingPointBadge{{ personIndex }}', data);
+
+                                        // if success add received class so we dont request on the next click
+                                        if (status === 'success') {
+                                            $('#personDetailsToggle{{ personIndex }}').toggleClass('startingpoint-data-received');
+                                        }
+                                        // Stop loading animation
+                                        $('#personBadges{{ personIndex }}').toggleClass('nextstep-loading-startingpoint');
+                                    });
+                                }
+                            }                            
+                        });
+
+                        // Update starting point badge icon and relative popover
+                        updateStartingPointBadge = function(element, data) {
+                            switch (data.Status) {
+                                case 0: {
+                                    // has not attended starting point
+                                    statusValue = 'Has not taken Starting Point.';
+                                                                        
+                                    // change color of icon
+                                    toggleInactiveBadge(element);
+                                    break;
+                                }
+                                case 1: {
+                                    // attended starting point
+                                    statusValue = `Took Starting Point on ${data.DateFormatted}!`;
+                                    
+                                    // change color of icon
+                                    toggleActiveBadge(element);
+                                    break;
+                                }
+                                case 2: { 
+                                    // registered for starting point
+                                    statusValue = `Registered to take Starting Point on ${data.DateFormatted}!`;
+                                    
+                                    // change color of icon
+                                    toggleInactiveBadge(element);                                  
+                                    break;
+                                }
+                                default: 
+                                    break;
+                            }
+
+                            activatePopOver(element, statusValue);
+                        }
+
+                        // Update baptism badge icon and update relative popover
+                        updateBaptismBadge = function(element, data) {
+                            switch (data.BaptismStatus) {
+                                case 0: {
+                                    // is not baptised
+                                    statusValue = 'Is not baptized.'; 
+
+                                    // change color of icon
+                                    toggleInactiveBadge(element);                          
+                                    break;
+                                }
+                                case 1: {
+                                    // is baptised
+                                    statusValue = `Was baptised on ${data.BaptismDateFormatted}!`;
+
+                                    // change color of icon
+                                    toggleActiveBadge(element);
+                                    break;
+                                }
+                                case 2: {
+                                    // regestered to be baptised
+                                    statusValue = `Registered for baptism on ${moment( new Date(data.BaptismRegistrationDate)).format("M/D/YYYY")}!`;
+                                    
+                                    // change color of icon
+                                    toggleInactiveBadge(element);
+                                    break;
+                                }
+                                default: 
+                                    break;
+                            }
+
+                            activatePopOver(element, statusValue);
+                        }
+
+                        // Update worship badge icon and update relative popover
+                        updateWorshipBadge = function(element, data) {
+                            if (data) {
+                                // is worshiping 
+                                statusValue = 'Worships regularly.';
+
+                                // change color of icon 
+                                toggleActiveBadge(element);
+                            } else {
+                                // is not worshiping
+                                statusValue = 'Does not worship regularly.';
+
+                                // change color of icon 
+                                toggleInactiveBadge(element);
+                            }
+
+                            activatePopOver(element, statusValue);
+                        }
+
+                        // Update connect badge icon and update relative popover
+                        updateConnectBadge = function(element, data) {
+                            switch (data.ConnectionStatus) {
+                                case 0: {
+                                    // in a group
+                                    statusValue = `Is in a CCV group (eariest active group ${moment( new Date(data.ConnectedSince)).format("M/D/YYYY")}).`; 
+
+                                    // change color of icon
+                                    toggleActiveBadge(element);
+                                    break;
+                                }
+                                case 1: {
+                                    // not in a group
+                                    statusValue = 'Is not connected to a CCV group.'; 
+
+                                    // change color of icon 
+                                    toggleInactiveBadge(element);
+                                    break;
+                                }
+                                case 2: { 
+                                    // registered for a group
+                                    statusValue = 'Is registered for a CCV group.'; 
+
+                                    // change color of icon 
+                                    toggleInactiveBadge(element);
+                                    break;
+                                }
+                                default: 
+                                    break;
+                            }
+
+                            activatePopOver(element, statusValue);
+                        }
+
+                        // Update serve badge icon and update relative popover
+                        updateServeBadge = function(element, data) {
+                            switch (data.ServingStatus) {
+                                case 0: {
+                                    // Not serving
+                                    statusValue = 'Is not serving.'; 
+
+                                    // change color of icon 
+                                    toggleInactiveBadge(element);
+                                    break;
+                                }
+                                case 1: {
+                                    // Registered to serve
+                                    statusValue = 'Is registered to serve.';
+
+                                    // change color of icon 
+                                    toggleInactiveBadge(element);
+                                    break;
+                                }
+                                case 2: { 
+                                    // Is Serving
+                                    statusValue = `Is serving (earliest active group ${moment( new Date(data.ServingSince)).format("M/D/YYYY")}).`; 
+
+                                    // change color of icon
+                                    toggleActiveBadge(element);
+                                    break;
+                                }
+                                default: 
+                                    break;
+                            }
+
+                            activatePopOver(element, statusValue);
+                        }
+
+                        // Update give badge icon and update relative popover
+                        updateGiveBadge = function(element, data) {
+                            if (data) {
+                                // giving
+                                statusValue = 'Is giving.'; 
+
+                                // change color of icon
+                                toggleActiveBadge(element);
+                            } else {
+                                // not giving
+                                statusValue = 'Is not giving.';
+
+                                // change color of icon 
+                                toggleInactiveBadge(element);
+                            }
+
+                            activatePopOver(element, statusValue);
+                        }
+
+                        // Update share badge icon and update relative popover
+                        updateShareBadge = function(element, data) {
+                            if (data.SharedStory) {
+                                // Story shared
+                                statusValue = 'Has shared a story.'; 
+
+                                // update modal content
+                                $('#modalContentShare').html(statusValue);            
+
+                                // change color of icon
+                                toggleActiveBadge(element);
+                            } else {
+                                // Story not shared
+                                statusValue = 'Has not shared a story.';
+
+                                // change color of icon 
+                                toggleInactiveBadge(element);
+                            }
+
+                            activatePopOver(element, statusValue);
+                        }
+
+                        // Update active coach icon and update relative popover
+                        updateCoachBadge = function(element, data) {
+                            if (data.IsCoaching) {
+                                // is Coach
+                                statusValue = `Is coaching (earliest active group ${moment( new Date(data.CoachingSince)).format("M/D/YYYY")}).`; 
+
+                                // change color of icon
+                                toggleActiveBadge(element);
+                            } else {
+                                // is not Coach
+                                statusValue = 'Is not coaching.';
+
+                                // change color of icon 
+                                toggleInactiveBadge(element);
+                            }
+
+                            activatePopOver(element, statusValue);
+                        }
+
+                        // Toggle nextstep badge active color
+                        toggleActiveBadge = function(element) {
+                            $(element).toggleClass('nextstep-icon-active nextstep-icon-loading');
+                        }
+
+                        // Toggle nextstep badge inactive color
+                        toggleInactiveBadge = function(element) {
+                            $(element).toggleClass('nextstep-icon-inactive nextstep-icon-loading');
+                        }
+
+                        toggleChevron = function(element) {
+                            $(element).toggleClass('mdi-chevron-down mdi-chevron-up');
+                        }
                      </script>
 
                 {% endfor %}
@@ -113,5 +434,4 @@
         </div>
 
     </div>
-
 {% endif %}
