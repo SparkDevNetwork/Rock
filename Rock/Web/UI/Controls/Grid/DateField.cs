@@ -42,7 +42,7 @@ namespace Rock.Web.UI.Controls
 
         /// <summary>
         /// Gets or sets a value indicating whether value should be treated as a birth date and
-        /// the age displayed (i.e. "xx/xx/xxxx (37 yo)").
+        /// the age displayed (i.e. "xx/xx/xxxx (37 yr)").
         /// </summary>
         /// <value>
         /// <c>true</c> if the age will be included; otherwise, <c>false</c>.
@@ -122,11 +122,11 @@ namespace Rock.Web.UI.Controls
                 {
                     if ( now.TotalMonths( dateValue ) <= 18 )
                     {
-                        return string.Format( "{0} ({1} mo)", base.FormatDataValue( dataValue, encode ), now.TotalMonths( dateValue ) );
+                        return string.Format( "{0} ({1} {2})", base.FormatDataValue( dataValue, encode ), now.TotalMonths( dateValue ), now.TotalMonths( dateValue ) > 1 ? "mos" : "mo");
                     }
                     else
                     {
-                        return string.Format( "{0} ({1} yo)", base.FormatDataValue( dataValue, encode ), now.TotalYears( dateValue ) );
+                        return string.Format( "{0} ({1} {2})", base.FormatDataValue( dataValue, encode ), now.TotalYears( dateValue ), "yr".PluralizeIf( now.TotalYears( dateValue ) > 1) );
                     }
                 }
             }
