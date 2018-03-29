@@ -139,19 +139,12 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    padding-top: 20px;
 }
 
-.inner-circle-text svg {
-    display: inline-block; 
-    color: rgba(0, 0, 0, 0.87); 
-    fill: #7A1315; 
-    height: 40px; 
-    width: 40px; 
-    user-select: none; 
-    transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms; 
-    transform: rotate(270deg);
-    vertical-align: middle; 
-    margin-top: 20px;
+.inner-circle-text i {
+    color: #7A1315; 
+    font-size: 30px;
 }
 
 .inner-circle a {
@@ -301,7 +294,7 @@
 }
 
 .nextstep-modal-content-body {
-    padding: 20px 30px;
+    padding: 20px 30px 0 30px;
     height: 150px;
 }
 
@@ -340,29 +333,14 @@
 
 .nextstep-modal-baptism-buttons {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-around;
+    align-items: center;
 }
 
-.btn-baptism {
-    color: #FFFFFF;
-    background-color: #7A1315;
-    border-color: #7A1315;
-    font-family: akrobat;
-    font-weight: bold;
-    font-size: 19px;
-    line-height: 24px;
-    white-space: normal;
-    padding-top: 11px;
-    min-width: 130px;
-    min-height: 50px;
+.nextstep-modal-baptism-icon {
+    color: #424242; 
+    font-size: 40px;
 }
-
-.btn-baptism-2-rows {
-    font-size: 15px;
-    padding-top: 8px;
-    line-height: 15px;
-}
-
 
 .btn-secondary {
     color: #FFFFFF;
@@ -454,6 +432,11 @@
     margin-right: 3px;
 }
 
+.dashboard-title-icon {
+    color: #424242; 
+    font-size: 24px;
+}
+
 .panel-dropdown-menu {
     top: unset;
     left: 45%;
@@ -506,17 +489,13 @@
 
 .person-contact {
     display: flex;
-    min-width: 76px;
     justify-content: flex-end;
 }
 
-.person-row-email-button, .person-row-phone-button {
-    color: rgba(0, 0, 0, 0.87); 
-    position: relative; 
-    display: inline-block; 
-    user-select: none; 
-    transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
-    margin-right: 10px;
+.dashboard-icon {
+    color: #424242; 
+    font-size: 24px;
+    margin: 0 10px;
 }
 
 .item-title span {
@@ -597,18 +576,25 @@
 /* Group Card */
 .group-header {
     background-color: #EEEEEE;
-    padding: 15px 30px;
+    padding: 13px 30px;
     margin-bottom: 10px;
 }
 
 .group-name-row {
     display: flex;
     justify-content: space-between;
-/* margin-left: 15px; */
+}
+
+.group-name-row-content {
+    display: flex;
+}
+
+.group-header-content {
+    display: flex;
+    align-items: center;
 }
 
 .group-header a {
-    display: inline-block; 
     font-family: akrobat;
     font-size: 18px; 
     color: #7A1315; 
@@ -617,6 +603,7 @@
     text-transform: uppercase;
     text-decoration: none;
     white-space: nowrap;
+    line-height: 22px;
 }
 
 .group-header h5 {
@@ -625,23 +612,8 @@
 }
 
 .group-header a span {
-    position: relative; 
-    vertical-align: middle; 
     text-transform: uppercase; 
     font-weight: bold; 
-}
-
-.group-header a svg {
-    display: inline-block; 
-    color: rgba(0, 0, 0, 0.87); 
-    fill: #7A1315; 
-    height: 24px; 
-    width: 24px; 
-    user-select: none; 
-    transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms; 
-    vertical-align: middle; 
-    margin-left: 0px; 
-    margin-right: 12px;
 }
 
 .coach-video-row {
@@ -896,8 +868,22 @@
     box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.12);
     border-radius: 5px;
     z-index: 1;
-    padding: 25px;
     margin: 0 20px 25px 20px;
+}
+
+.toolbox-card .header h4 {
+    font-size: 26px;
+    line-height: 31px;
+    margin: 14px 30px 20px 30px;
+}
+
+.toolbox-card-content {
+    margin: 20px 30px;
+}
+
+.toolbox-card-content h3 {
+    font-size: 26px;
+    line-height: 31px;
 }
 
 .current-series-video {
@@ -906,19 +892,19 @@
 
 .subnav {
     display: flex;
-    padding: 10px 0px 25px 0px;
+    padding: 0px 30px 18px 15px;
     flex-wrap: wrap;
 }
 
 .subnav > div {
     text-decoration: none;
     text-transform: uppercase;
-    padding: 0.2em 1em;
     color: #707270;
-
+    padding: 0 15px;
     font-family: akrobat;
-    font-size: 1.6rem;
-    font-weight: normal;
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 17px;
 }
 
 .subnav > div:hover {
@@ -929,24 +915,28 @@
 .subnav-div-selected {
     color: #7a1315 !important;
 }
-
   
 .group-info-banner {
     display: flex;
     flex-wrap: nowrap;
     background-color: #eeeeee;
-    padding: 10px 0px 10px 0px;
+    padding: 14px 5px 10px 5px;
 }
 
 .group-info-banner > div {
     text-decoration: none;
 
-    padding: 0.2em 1em;
+    padding: 0 25px 0 25px;
     color: #707270;
 
-    font-family: akrobat;
-    font-size: 1.6rem;
+    font-family: heebo;
+    font-size: 14px;
     font-weight: normal;
+    line-height: 26px;
+}
+
+.group-info-banner > div > span {
+    padding-left: 10px;
 }
 
 .latest-series-info {
@@ -965,6 +955,56 @@
     flex-direction: column;
 }
 
+.latest-series-info-element:last-child {
+    margin-right: 50px;
+}
+
+.latest-series-info-element > div > p {
+    font-size: 12px;
+    line-height: 18px;
+    color: #707270;
+    margin-bottom: 0;
+
+}
+
+.latest-series-info-element > div > h5 {
+    font-family: heebo;
+    font-size: 18px;
+    line-height: 27px;
+    color: #010001;
+    font-weight: normal;
+    margin-top: 6px;
+}
+
+.latest-series-title {
+    background-color: #EEEEEE;
+}
+
+.latest-series-title > div > p {
+    font-family: heebo;
+    font-size: 18px;
+    line-height: 36px;
+    font-weight: normal;
+    color: #707270;
+    margin: 12px 0 12px 5px;
+}
+
+.discussion-guide a {
+    text-decoration: none;
+}
+
+.discussion-guide > div > a > h5 {
+    font-family: akrobat;
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 22px;
+    color: #7A1315;
+}
+
+.previous-weeks {
+    margin: 20px 30px 20px 30px;
+}
+
 .toolbox-past-messages {
     display: flex;
     flex-direction: column;
@@ -975,7 +1015,7 @@
         display: flex;
         flex-wrap: wrap;
         flex-direction: row;
-        justify-content: space-evenly;
+        justify-content: space-between;
     }
 }
 
@@ -988,17 +1028,37 @@
     box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.12);
     border-radius: 5px;
     z-index: 1;
-    padding: 15px;
-    margin: 25px 10px 25px 10px;
+    width: 30%;
     display: flex;
     flex-direction: column;
-    min-width: 175px;
+}
+
+.toolbox-video-card img {
+    border-radius: 5px 5px 0 0;
+}
+
+.toolbox-video-card > div > p {
+    margin: 16px;
+    font-family: heebo;
+    font-weight: normal;
+    color: #707270;
 }
 
 .discussion-guide-icon {
-    font-size: 1.4em; 
-    padding-right: 5px; 
-    color: black;
+    font-size: 18px; 
+    padding-right: 14px; 
+    color: #424242; 
+}
+/* Group Details */
+.group-picture img {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.group-heading {
+    border-bottom: 1px solid #EEEEEE;
+    margin-bottom: 0;
+    padding-bottom: 18px;
 }
 
 /* End Toolbox Card */
@@ -1074,6 +1134,36 @@
     margin-left: 58px;
 }
 
+/* Group Member Badges Styling */
+.person-badges img {
+    width: 24px;
+    height: 24px;
+    margin-bottom: 10px;
+}
+
+
+
+
+/* Flash class and keyframe animation */
+.nextstep-loading {
+    -webkit-animation: flash linear 1s infinite;
+    animation: flash linear 1s infinite;
+}
+    @-webkit-keyframes flash {
+        0% { opacity: 1; } 
+        50% { opacity: .1; } 
+        100% { opacity: 1; }
+    }
+    @keyframes flash {
+        0% { opacity: 1; } 
+        50% { opacity: .1; } 
+        100% { opacity: 1; }
+    }
+
+/* Fix Blue Box around calling href bug */
+.person-details-toggle:focus {
+    outline:none!important
+}
 
 /* End Toolbox Group Member Card */
 

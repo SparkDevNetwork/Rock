@@ -59,7 +59,7 @@ function tryToggleInfoBanner( sectionName ) {
 {% endfor %}
 
 <div class="header">
-   <h1>{{ group.Name }}</h1>
+   <h4>{{ group.Name }}</h4>
 </div>
 
 <div class="subnav">

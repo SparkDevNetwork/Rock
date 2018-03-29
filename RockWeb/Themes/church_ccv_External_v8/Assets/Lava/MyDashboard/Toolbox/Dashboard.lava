@@ -36,15 +36,15 @@
 {% endfor %}
 {% comment %} End get first valid message {% endcomment %}
 
-<div style="margin-bottom: 30px;">
+<div class="toolbox-card-content latest-series-content">
    <h3>STUDY MATERIALS</h3>
    <div class="latest-series-info">
       <div class="latest-series-info-element">
          <div>
             <p>MATERIALS FOR WEEK OF</p>
          </div>
-         <div style="margin-top: -15px;">
-            <h5 style="color: black;">
+         <div>
+            <h5>
                {% assign today = 'Now' | DateAdd: -6 %}
                {{ today | SundayDate }}
             </h5>
@@ -55,8 +55,8 @@
          <div>
             <p>SERIES</p>
          </div>
-         <div style="margin-top: -15px;">
-            <h5 style="color: black;">{{ firstSeries.Name }}</h5>
+         <div>
+            <h5>{{ firstSeries.Name }}</h5>
          </div>
       </div>
 
@@ -64,8 +64,8 @@
          <div>
             <p>WEEK</p>
          </div>
-         <div style="margin-top: -15px;">
-            <h5 style="color: black;">{{ firstSeries.Messages | Size }}</h5>
+         <div>
+            <h5>{{ firstSeries.Messages | Size }}</h5>
          </div>
       </div>
    </div>
@@ -81,16 +81,18 @@
          </div>
       </div>
    </div>
-   <div class="row" style="background-color: #eeeeee; margin-left: 0px; margin-right: 0px; padding-top: 10px;">
-      <div class="col-md-6">
-         <p style="font-size: 1.75rem" >{{ firstMessage.Name }} - Week {{ firstSeries.Messages | Size }}</p>
-      </div>
-   </div>
-   <div class="row" style="padding-top: 15px;">
-      <div class="col-md-12">
-         <a href="{{firstMessage.Attributes.DiscussionGuideUrl}}"> <h5><i class="fa fa-file-text discussion-guide-icon"></i> DISCUSSION GUIDE</h5></a>
-      </div>
-   </div>
+  <div class="container-fluid">
+    <div class="row latest-series-title">
+        <div class="col-md-6">
+          <p>{{ firstMessage.Name }} - Week {{ firstSeries.Messages | Size }}</p>
+        </div>
+    </div>
+    <div class="row discussion-guide">
+        <div class="col-md-12" style="margin-left: -15px;">
+          <a href="{{firstMessage.Attributes.DiscussionGuideUrl}}"> <h5><i class="fa fa-file-text discussion-guide-icon"></i> DISCUSSION GUIDE</h5></a>
+        </div>
+    </div>
+  </div>
 </div>
 
 
@@ -108,46 +110,48 @@
 
 {% assign numToRender = 3 %}
 
-<h3>PREVIOUS WEEKS</h3>
-<div class="toolbox-past-messages">
- {% for series in SeriesList.Children offset:firstSeriesIndex %}
+<div class="previous-weeks">
+  <h3>PREVIOUS WEEKS</h3>
+  <div class="toolbox-past-messages">
+  {% for series in SeriesList.Children offset:firstSeriesIndex %}
 
-   {% for message in series.Messages offset:firstMessageIndex %}
-      
-      <div class="toolbox-video-card">
-         <div>
-            <script src="https://fast.wistia.com/embed/medias/{{message.Attributes.WistiaId}}.jsonp" async></script>
-            <script src="https://fast.wistia.com/assets/external/E-v1.js" async></script>
-            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-               <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-                  <span class="wistia_embed wistia_async_{{message.Attributes.WistiaId}} popover=true popoverAnimateThumbnail=true videoFoam=true" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
-               </div>
-            </div>
-         </div>
-         <div>
-            <p>{{ message.Name | Truncate:20,'...'}}</p>
-         </div>
-         <div>
-            <p style="line-height: 0">Week - {{ forloop.rindex }}</p>
-         </div>         
-         <div>
-            <a href="{{message.Attributes.DiscussionGuideUrl}}"><h6 style="font-size: 1em;" ><i class="fa fa-file-text discussion-guide-icon"></i> Discussion Guide</h6></a>
-         </div>
-      </div>
+    {% for message in series.Messages offset:firstMessageIndex %}
+        
+        <div class="toolbox-video-card">
+          <div>
+              <script src="https://fast.wistia.com/embed/medias/{{message.Attributes.WistiaId}}.jsonp" async></script>
+              <script src="https://fast.wistia.com/assets/external/E-v1.js" async></script>
+              <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                    <span class="wistia_embed wistia_async_{{message.Attributes.WistiaId}} popover=true popoverAnimateThumbnail=true videoFoam=true" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                </div>
+              </div>
+          </div>
+          <div>
+              <p>{{ message.Name | Truncate:20,'...'}}</p>
+          </div>
+          <div>
+              <p style="line-height: 0; margin-top: 0">Week - {{ forloop.rindex }}</p>
+          </div>         
+          <div class="discussion-guide" style="margin-left: 16px; margin-bottom: 16px;">
+              <a href="{{message.Attributes.DiscussionGuideUrl}}"><h5><i class="fa fa-file-text discussion-guide-icon"></i> Discussion Guide</h5></a>
+          </div>
+        </div>
 
-   {% assign numToRender = numToRender | Minus: 1 %}
-      {% if numToRender == 0 %}
-         {% break %}
-      {% endif %}
+    {% assign numToRender = numToRender | Minus: 1 %}
+        {% if numToRender == 0 %}
+          {% break %}
+        {% endif %}
 
-   {% endfor %}
+    {% endfor %}
 
-   {% comment %} Reset the firstMessageIndex in case it had an offset for the first iteration of this loop {% endcomment %}
-   {% assign firstMessageIndex = 0 %}
+    {% comment %} Reset the firstMessageIndex in case it had an offset for the first iteration of this loop {% endcomment %}
+    {% assign firstMessageIndex = 0 %}
 
-   {% if numToRender == 0 %}
-      {% break %}
-   {% endif %}
+    {% if numToRender == 0 %}
+        {% break %}
+    {% endif %}
 
-{% endfor %}
+  {% endfor %}
+  </div>
 </div>

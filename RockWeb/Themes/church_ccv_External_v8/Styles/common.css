@@ -63,6 +63,8 @@
     margin: 0 auto;
 }
 
+
+/* Nextstep Common Styling */
 .nextstep-icon-inactive {
     background-color: #7A1315;
     border-radius: 50%;
@@ -72,6 +74,29 @@
     background: linear-gradient(rgb(208, 221, 41), rgb(139, 179, 63));
     border-radius: 50%;
 }
+
+.nextstep-icon-loading {
+    background-color: #707270;
+    border-radius: 50%;
+}
+
+/* Loading Animation for Nextstep icons */
+.nextstep-loading-badges, .nextstep-loading-startingpoint {
+    -webkit-animation: flash linear 1s infinite;
+    animation: flash linear 1s infinite;
+}
+    @-webkit-keyframes flash {
+        0% { opacity: 1; } 
+        50% { opacity: .1; } 
+        100% { opacity: 1; }
+    }
+    @keyframes flash {
+        0% { opacity: 1; } 
+        50% { opacity: .1; } 
+        100% { opacity: 1; }
+    }
+
+/* End Nextstep Common Styling */
 
 /* Adjust page background for large screens */
 @media screen and (min-width: 1600px){
@@ -395,19 +420,12 @@
 .event-cards-header .nav-buttons {
     display: flex;
     justify-content: flex-end;
-    margin-top: 15px;
 }
 
 .event-cards-header .nav-button {
     color: #7A1315; 
-    position: relative; 
-    font-size: 2rem; 
-    display: inline-block; 
-    user-select: none; 
+    font-size: 24px; 
     transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms; 
-    padding-left: 1rem; 
-    vertical-align: text-bottom; 
-    min-width: 30px;
     background-color: unset;
     border-width: unset;
     border-style: unset;
@@ -457,12 +475,12 @@
     margin-bottom: 25px;
 }
 
-.event-campus-setter a {
+.event-campus-setter .nav a {
     color: #7A1315;
     font-family: akrobat;
     font-weight: bold;
     font-size: 18px;
-    margin-top: 7px;
+    margin-top: 2px;
 }
 
 .event-campus-setter .navbar-nav .open .dropdown-menu {
@@ -526,17 +544,12 @@
     font-weight: bold; 
 }
 
-.event-card .link a svg {
-    display: inline-block; 
-    color: rgba(0, 0, 0, 0.87); 
-    fill: rgb(122, 19, 21); 
-    height: 24px; 
-    width: 24px; 
-    user-select: none; 
-    transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms; 
-    vertical-align: middle; 
+.event-card .link a i {
+    color: #7A1315; 
+    font-size: 24px; 
     margin-left: 0px; 
     margin-right: 12px;
+    vertical-align: middle;
 }
 
 .divider {
