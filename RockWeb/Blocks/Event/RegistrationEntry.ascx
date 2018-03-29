@@ -45,8 +45,8 @@
         <asp:Panel id="pnlRegistrantFields" runat="server" >
 
             <div class="js-registration-same-family">
-                <asp:Panel ID="pnlFamilyOptions" runat="server" CssClass="well">
-                    <Rock:RockRadioButtonList ID="rblFamilyOptions" runat="server" Label="Registrant is in the same family as" RepeatDirection="Vertical" Required="true" RequiredErrorMessage="Answer to which family is required." DataTextField="Value" DataValueField="Key" />
+                <asp:Panel ID="pnlFamilyOptions" runat="server" CssClass="well family-highlight">
+                    <Rock:RockRadioButtonList ID="rblFamilyOptions" runat="server" Label="Registrant is in the same immediate family as" RepeatDirection="Vertical" Required="true" RequiredErrorMessage="Answer to which family is required." DataTextField="Value" DataValueField="Key" />
                 </asp:Panel>
             </div>
         
