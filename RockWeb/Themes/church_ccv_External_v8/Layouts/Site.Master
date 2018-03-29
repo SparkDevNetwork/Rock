@@ -40,6 +40,7 @@
   <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>"/>
   <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>"/>
   <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/common.css", true) %>"/>
+  <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/Vendor/materialdesignicons.min.css", true) %>"/>
 
   <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 
@@ -49,7 +50,7 @@
   <link rel="apple-touch-icon-precomposed" sizes="114x114" href="<%# ResolveRockUrl("~~/Assets/Icons/touch-icon-iphone-retina.png", true) %>">
   <link rel="apple-touch-icon-precomposed" sizes="72x72" href="<%# ResolveRockUrl("~~/Assets/Icons/touch-icon-ipad.png", true) %>">
   <link rel="apple-touch-icon-precomposed" href="<%# ResolveRockUrl("~~/Assets/Icons/touch-icon-iphone.png", true) %>">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
 
 </head>
 <body>
