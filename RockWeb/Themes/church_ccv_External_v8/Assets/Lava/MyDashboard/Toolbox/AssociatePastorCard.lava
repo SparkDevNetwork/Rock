@@ -44,10 +44,10 @@
         </div>
         <div class="person-contact">
             <a href="tel:{{ associatePastor | PhoneNumber:'business'}}">
-                <span class="material-icons person-row-phone-button">phone</span>
+                <i class="mdi mdi-phone dashboard-icon"></i>
             </a>
             <a href="/page/1751?person={{ associatePastor.Id }}">
-                <span class="material-icons person-row-email-button">email</span>
+                <i class="mdi mdi-email dashboard-icon"></i>
             </a>
         </div>
     </div>

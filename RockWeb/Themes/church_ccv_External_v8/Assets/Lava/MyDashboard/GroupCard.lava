@@ -63,13 +63,13 @@ TODO: Add Other Group Type leader roles
                                 {% comment %} Admin Header {% endcomment %}
                                 {% if showAdminElements == true %}                                
                                     <a href="/toolboxv2?GroupId={{ group.Group.Id }}">
-                                        <div>
+                                        <div class="group-name-row-content">
                                             <span>{{ group.Group.Name | Truncate: 30 }}</span>
-                                            <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path></svg>
+                                            <i class="mdi mdi-chevron-right dashboard-icon" style="color: #7A1315; margin: 0;"></i>
                                         </div>
                                     </a>
                                     <a href="#" onclick="btnAddGroupMember({{ group.Group.Id }},{{ group.Group.GroupType.DefaultGroupRoleId }}); return false;">
-                                        <i class="material-icons">person_add</i>
+                                        <i class="mdi mdi-account-plus dashboard-title-icon"></i>
                                     </a>
                                 {% else %}
                                     {% comment %} Regular Header {% endcomment %}
@@ -123,15 +123,15 @@ TODO: Add Other Group Type leader roles
 
                                             {% if cellPhone %}
                                                 <a href="tel:{{cellPhone}}">
-                                                    <span class="material-icons person-row-phone-button">phone</span>
+                                                    <i class="mdi mdi-phone dashboard-icon"></i>
                                                 </a>
                                             {% elseif homePhone %}
                                                 <a href="tel:{{homePhone}}">
-                                                    <span class="material-icons person-row-phone-button">phone</span>
+                                                    <i class="mdi mdi-phone dashboard-icon"></i>
                                                 </a>
                                             {% endif %}
                                             <a href="/page/1751?person={{ member.Person.Id }}">
-                                                <span class="material-icons person-row-email-button">email</span>
+                                                <i class="mdi mdi-email dashboard-icon"></i>
                                             </a>
                                         {% endif %}
                                     </div>

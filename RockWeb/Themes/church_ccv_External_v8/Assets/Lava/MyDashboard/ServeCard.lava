@@ -16,7 +16,7 @@
             <h4>Serve</h4>
             <div>
                 <button class="dropdown-toggle" type="button" data-toggle="dropdown">
-                    <span class="material-icons pull-right">more_vert</span>
+                    <i class="mdi mdi-dots-vertical dashboard-title-icon"></i>
                 </button>
                 <ul class="dropdown-menu panel-dropdown-menu">
                     <li><a href="/servev2">CCV Serving Opportunities</a></li>
@@ -63,7 +63,7 @@
                                     </div>
                                     <div>
                                         <a href="/page/1751?person={{ member.Person.Id }}">
-                                            <span class="material-icons person-row-email-button">email</span>
+                                            <i class="mdi mdi-email dashboard-icon"></i>
                                         </a>
                                     </div>
                                 </div>

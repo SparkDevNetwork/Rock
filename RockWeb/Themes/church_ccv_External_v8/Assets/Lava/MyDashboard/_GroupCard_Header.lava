@@ -3,7 +3,7 @@
     <h4>Group</h4>
     <div>
         <button class="dropdown-toggle" type="button" data-toggle="dropdown">
-            <span class="material-icons pull-right">more_vert</span>
+            <i class="mdi mdi-dots-vertical dashboard-title-icon"></i>
         </button>
         <ul class="dropdown-menu panel-dropdown-menu">
             <li><a href="/page/1751?person={{ DatamartSummary.AssociatePastor.Id }}">Contact Associate Pastor<br /><h5>{{ DatamartSummary.AssociatePastor.FullName }}</h5></a></li>
