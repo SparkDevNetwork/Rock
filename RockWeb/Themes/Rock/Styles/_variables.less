@@ -239,11 +239,11 @@
 //// Row Striping
 @grid-row-even-bg: @panel-bg;         // The even rows background color.
 @grid-row-even-color: @text-color;  // The even rows text color.
-@grid-row-odd-bg: #f5f5f5;         // The odd rows background color.
+@grid-row-odd-bg: #f6f6f6;         // The odd rows background color.
 @grid-row-odd-color: @text-color;   // The odd rows text color.
 
 //// Hover
-@grid-hover-bg: desaturate( lighten(@brand-color, 42%), 30%);            // Row background color when hovered over.
+@grid-hover-bg: darken(@grid-row-odd-bg, 2%); //desaturate( lighten(@brand-color, 42%), 30%);            // Row background color when hovered over.
 @grid-hover-color: @text-color;     // Row text color when hovered over.
 
 //// Section Headers
