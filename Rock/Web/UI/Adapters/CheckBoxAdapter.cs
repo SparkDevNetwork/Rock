@@ -55,13 +55,16 @@ namespace Rock.Web.UI.Adapters
 
                 // always render the label tag for the checkbox, even if the checkbox doesn't have text
                 bool renderCheckboxLabel = true;
+                var textCssClass = "label-text";
                 if ( renderCheckboxLabel )
                 {
                     var containerCssClass = "checkbox";
+                    
 
                     if ( cb is RockCheckBox )
                     {
                         containerCssClass += " " + ( cb as RockCheckBox ).ContainerCssClass;
+                        textCssClass += " " + ( cb as RockCheckBox ).TextCssClass;
                     }
 
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, containerCssClass );
@@ -122,7 +125,7 @@ namespace Rock.Web.UI.Adapters
 
                 if ( renderCheckboxLabel )
                 {
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "label-text" );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, textCssClass );
                     writer.RenderBeginTag( HtmlTextWriterTag.Span );
                     
                     if ( cb.Text.Length > 0 )
