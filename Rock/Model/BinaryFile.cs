@@ -324,7 +324,17 @@ namespace Rock.Model
                 if ( StorageProvider != null )
                 {
                     this.BinaryFileTypeId = entry.OriginalValues["BinaryFileTypeId"].ToString().AsInteger();
-                    StorageProvider.DeleteContent( this );
+
+                    try
+                    {
+                        StorageProvider.DeleteContent( this );
+                    }
+                    catch ( Exception ex )
+                    {
+                        // If an exception occurred while trying to delete provider's file, log the exception, but continue with the delete.
+                        ExceptionLogService.LogException( ex );
+                    }
+
                     this.BinaryFileTypeId = null;
                 }
             }
@@ -369,6 +379,7 @@ namespace Rock.Model
                         }
                     }
                 }
+
 
                 else if ( entry.State == System.Data.Entity.EntityState.Modified )
                 {
