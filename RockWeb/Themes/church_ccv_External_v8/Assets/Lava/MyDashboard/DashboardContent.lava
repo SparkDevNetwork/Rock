@@ -25,23 +25,23 @@
 {% comment %} End Time Context Content {% endcomment %}
 
 
-{% comment %} Default Modal Popup Content {% endcomment %}
+{% comment %} Default Content For Steps Modals, Popovers, and Badges {% endcomment %}
 
-    {% capture modalsJSON %}
+    {% capture stepsContentJSON %}
     [
         {
             "Name" : "StartingPoint",
             "Content": 
             {
                 "Title": "Starting Point",
-                "Icon": "~~/Assets/Images/icon-nextstep-startingpoint.png",
-                "Image": "~~/Assets/Images/modal-startingpoint.jpg",
-                "Content": "Some text in the Starting Point modal.",
+                "Icon": "/Themes/church_ccv_External_v8/Assets/Images/icon-nextstep-startingpoint.png",
+                "Image": "/Themes/church_ccv_External_v8/Assets/Images/modal-startingpoint.jpg",
+                "Content": "Starting Point will give you a sneak peek into the basic beliefs and practices of CCV, equip you with the essentials of the Christian faith, and show you opportunities where you can get involved. This is your first step in getting connected with CCV and a prerequisite to becoming a member.",
                 "Buttons": [
                     {
                         "Label": "Learn More",
                         "Link": "/startingpointV2",
-                        "Class": "btn-secondary"
+                        "Class": "btn-primary"
                     }
                 ]
             }
@@ -51,14 +51,14 @@
             "Content": 
             {
                 "Title": "Baptism",
-                "Icon": "~~/Assets/Images/icon-nextstep-baptism.png",
-                "Image": "~~/Assets/Images/modal-baptism.jpg",
-                "Content": "If you've made a commitment to Christ, it's time to take the next step and make your decision known. Baptism is the best way to express your faith and reflect your life change.",
+                "Icon": "/Themes/church_ccv_External_v8/Assets/Images/icon-nextstep-baptism.png",
+                "Image": "/Themes/church_ccv_External_v8/Assets/Images/modal-baptism.jpg",
+                "Content": "If you've made a commitment to Christ, it's time to take the next step and make your decision known. Baptism is the best way to express your faith and reflect your life change. Find out more about baptism through Starting Point, register online or contact your associate pastor.",
                 "Buttons": [
                     {
                         "Label": "Learn More",
                         "Link": "/baptismV2",
-                        "Class": "btn-secondary"
+                        "Class": "btn-primary"
                     }
                 ]
             }
@@ -68,14 +68,14 @@
             "Content": 
             {
                 "Title": "Worship",
-                "Icon": "~~/Assets/Images/icon-nextstep-worship.png",
-                "Image": "~~/Assets/Images/modal-worship.jpg",
+                "Icon": "/Themes/church_ccv_External_v8/Assets/Images/icon-nextstep-worship.png",
+                "Image": "/Themes/church_ccv_External_v8/Assets/Images/modal-worship.jpg",
                 "Content": "Some text in the Worship modal.",
                 "Buttons": [
                     {
-                        "Label": "Learn More",
-                        "Link": "/worshipV2",
-                        "Class": "btn-secondary"
+                        "Label": "Locations & Times",
+                        "Link": "/campuses",
+                        "Class": "btn-primary"
                     }
                 ]
             }
@@ -85,14 +85,14 @@
             "Content": 
             {
                 "Title": "Connect",
-                "Icon": "~~/Assets/Images/icon-nextstep-connect.png",
-                "Image": "~~/Assets/Images/modal-connect.jpg",
-                "Content": "Some text in the Connect modal.",
+                "Icon": "/Themes/church_ccv_External_v8/Assets/Images/icon-nextstep-connect.png",
+                "Image": "/Themes/church_ccv_External_v8/Assets/Images/modal-connect.jpg",
+                "Content": "Life was not meant to be lived alone. Gather weekly with others to build a community and impact it for the better.",
                 "Buttons": [
                     {
-                        "Label": "Learn More",
+                        "Label": "Find a Group",
                         "Link": "/connectV2",
-                        "Class": "btn-secondary"
+                        "Class": "btn-primary"
                     }
                 ]
             }
@@ -102,14 +102,14 @@
             "Content": 
             {
                 "Title": "Serve",
-                "Icon": "~~/Assets/Images/icon-nextstep-serve.png",
-                "Image": "~~/Assets/Images/modal-serve.jpg",
-                "Content": "Some text in the Serve modal.",
+                "Icon": "/Themes/church_ccv_External_v8/Assets/Images/icon-nextstep-serve.png",
+                "Image": "/Themes/church_ccv_External_v8/Assets/Images/modal-serve.jpg",
+                "Content": "Serving others is one of the most effective ways to live out your faith. In a world focused on personal gain, there is perhaps no greater way to show others what a life devoted to Christ is about.",
                 "Buttons": [
                     {
-                        "Label": "Learn More",
+                        "Label": "Serve at CCV",
                         "Link": "/serveV2",
-                        "Class": "btn-secondary"
+                        "Class": "btn-primary"
                     }
                 ]
             }
@@ -119,14 +119,14 @@
             "Content": 
             {
                 "Title": "Give",
-                "Icon": "~~/Assets/Images/icon-nextstep-give.png",
-                "Image": "~~/Assets/Images/modal-give.jpg",
+                "Icon": "/Themes/church_ccv_External_v8/Assets/Images/icon-nextstep-give.png",
+                "Image": "/Themes/church_ccv_External_v8/Assets/Images/modal-give.jpg",
                 "Content": "Some text in the Give modal.",
                 "Buttons": [
                     {
                         "Label": "Learn More",
                         "Link": "/giveV2",
-                        "Class": "btn-secondary"
+                        "Class": "btn-primary"
                     }
                 ]
             }
@@ -136,14 +136,14 @@
             "Content": 
             {
                 "Title": "Share",
-                "Icon": "~~/Assets/Images/icon-nextstep-share.png",
-                "Image": "~~/Assets/Images/modal-share.jpg",
-                "Content": "Some text in the Share modal.",
+                "Icon": "/Themes/church_ccv_External_v8/Assets/Images/icon-nextstep-share.png",
+                "Image": "/Themes/church_ccv_External_v8/Assets/Images/modal-share.jpg",
+                "Content": "We each have a story. Sharing your faith is how we affect positive change in this world. This can be done through the bravery of sharing your personal faith story as well as inviting others to join you at church.",
                 "Buttons": [
                     {
-                        "Label": "Learn More",
+                        "Label": "Share Your Story",
                         "Link": "/shareV2",
-                        "Class": "btn-secondary"
+                        "Class": "btn-primary"
                     }
                 ]
             }
@@ -153,14 +153,14 @@
             "Content": 
             {
                 "Title": "Coach",
-                "Icon": "~~/Assets/Images/icon-nextstep-coach.png",
-                "Image": "~~/Assets/Images/modal-coach.jpg",
+                "Icon": "/Themes/church_ccv_External_v8/Assets/Images/icon-nextstep-coach.png",
+                "Image": "/Themes/church_ccv_External_v8/Assets/Images/modal-coach.jpg",
                 "Content": "Some text in the Coach modal.",
                 "Buttons": [
                     {
                         "Label": "Learn More",
                         "Link": "/coachV2",
-                        "Class": "btn-secondary"
+                        "Class": "btn-primary"
                     }
                 ]
             }
@@ -168,5 +168,5 @@
     ]
     {% endcapture %}
 
-{% comment %} End Default Modal Content  {% endcomment %}
+{% comment %} End Default Steps Content  {% endcomment %}
  
