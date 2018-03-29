@@ -3448,14 +3448,14 @@ namespace RockWeb.Blocks.Event
             RockPage.AddScriptLink( ResolveUrl( "~/Scripts/jquery.creditCardTypeDetector.js" ) );
 
             string script = string.Format( @"
-    // Adjust the label of 'is in the same family' based on value of first name entered
+    // Adjust the label of 'is in the same immediate family' based on value of first name entered
     $('input.js-first-name').change( function() {{
         var name = $(this).val();
         if ( name == null || name == '') {{
             name = '{22}';
         }}
         var $lbl = $('div.js-registration-same-family').find('label.control-label')
-        $lbl.text( name + ' is in the same family as');
+        $lbl.text( name + ' is in the same immediate family as');
     }} );
     $('input.js-your-first-name').change( function() {{
         var name = $(this).val();
@@ -3465,7 +3465,7 @@ namespace RockWeb.Blocks.Event
             name += ' is';
         }}
         var $lbl = $('div.js-registration-same-family').find('label.control-label')
-        $lbl.text( name + ' in the same family as');
+        $lbl.text( name + ' in the same immediate family as');
     }} );
 
     // Adjust the Family Member dropdown when registrant chooses none of the above
@@ -3728,7 +3728,7 @@ namespace RockWeb.Blocks.Event
                                 "None of the above" );
                             rblFamilyOptions.DataSource = familyOptions;
                             rblFamilyOptions.DataBind();
-                            rblFamilyOptions.Label = string.Format( "{0} is in the same family as", lRegistrantTitle.Text );
+                            rblFamilyOptions.Label = string.Format( "{0} is in the same immediate family as", lRegistrantTitle.Text );
                             rblFamilyOptions.Visible = true;
                         }
                         else
@@ -4627,8 +4627,8 @@ namespace RockWeb.Blocks.Event
                 }
 
                 rblRegistrarFamilyOptions.Label = string.IsNullOrWhiteSpace( tbYourFirstName.Text ) ?
-                    "You are in the same family as" :
-                    tbYourFirstName.Text + " is in the same family as";
+                    "You are in the same immediate family as" :
+                    tbYourFirstName.Text + " is in the same immediate family as";
 
                 cbUpdateEmail.Visible = CurrentPerson != null && !string.IsNullOrWhiteSpace( CurrentPerson.Email );
 
