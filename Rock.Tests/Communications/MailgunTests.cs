@@ -11,7 +11,7 @@ namespace Rock.Tests.Communications
 {
     public class MailgunTests
     {
-        [Fact]
+        [Fact( Skip = "need way of mocking RockContext" )]
         public void HttpSendRockMessage()
         {
             var errorMessages = new List<string>();
