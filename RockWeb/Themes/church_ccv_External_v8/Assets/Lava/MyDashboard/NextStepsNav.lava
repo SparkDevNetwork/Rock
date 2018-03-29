@@ -1,7 +1,7 @@
 {% comment %} {% include '~~/Assets/Lava/MyDashboard/NextStepsNav.lava' %} {% endcomment %}
 
 {% comment %} Modals for next steps {% endcomment %}
-{% include '~~/Assets/Lava/MyDashboard/NextStepsModals.lava' %}
+{% include '~~/Assets/Lava/MyDashboard/_NextStepsModals.lava' %}
 
 {% comment %} Render nav icons for next steps modals {% endcomment %}
 <div class="next-steps-nav">
@@ -18,7 +18,7 @@
     <div class="inner-circle">
         <a href="#" onClick="toggleNextStepsMenu(); return false;">
             <div class="inner-circle-text">
-                <span><svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path></svg></span>
+                <span><i class="mdi mdi-chevron-up"></i></span>
                 <span>My Next Steps</span>
             </div>
         </a>
@@ -39,7 +39,7 @@
     });
 
     // toggle the next steps menu open / close
-    function toggleNextStepsMenu() {
+    toggleNextStepsMenu = function() {
         $('.outer-circle-link').toggleClass('outer-circle-link-open');
     };
 
@@ -61,7 +61,7 @@
                 placement: 'top',
                 template: popOverTemplate,
                 html: true
-            })
+            });
         }
 
     }
@@ -71,23 +71,23 @@
         switch (data.Status) {
             case 0: {
                 // has not attended starting point
-                statusValue = 'You have not taken Starting Point'; 
+                statusValue = 'You have not taken Starting Point.'; 
                 break;
             }
             case 1: {
                 // attended starting point
-                statusValue = 'Took Starting Point on ' + data.DateFormatted;
+                statusValue = `Congratulations! You completed this step on ${data.DateFormatted}.`;
 
                 // Update modal content
                 $('#modalContentStartingPoint').html(statusValue);
 
                 // change color of icon
-                $('#startingPoint').toggleClass('nextstep-icon-inactive nextstep-icon-active');
+                toggleActiveIcon('#startingPoint');
                 break;
             }
             case 2: { 
                 // registered for starting point
-                statusValue = 'Registered to take Starting Point on ' + data.DateFormatted;
+                statusValue = `Registered to take Starting Point on ${data.DateFormatted}.`;
                 
                 // update modal content
                 $('#modalContentStartingPoint').html(statusValue);
@@ -105,12 +105,12 @@
         switch (data.BaptismStatus) {
             case 0: {
                 // is not baptised
-                statusValue = 'You are not baptized'; 
+                statusValue = 'You are not baptized.'; 
                 break;
             }
             case 1: {
                 // is baptised
-                statusValue = `You were baptised on {{ CurrentPerson | Attribute:'BaptismDate' | Date:'MMMM d, yyyy' }}!`
+                statusValue = `Congratulations! You took one of the most important steps in the life of a Christian on ${data.BaptismDateFormatted}.`;
 
                 // Update modal content
                 var htmlContent = "<p>" + statusValue + "</p>";
@@ -118,25 +118,29 @@
                 htmlContent += `<div class="nextstep-modal-baptism-buttons">
                                     {% assign baptizedHere = CurrentPerson | Attribute:'BaptizedHere' %}
                                     {% if baptizedHere == 'Yes' %}
-                                        <a class="btn btn-baptism btn-baptism-2-rows" href="/baptismdashboardV2?display=certificate">Baptism<br />Certificate</a>
+                                        <a href="/baptismdashboardV2?display=certificate&paguid={{ CurrentPerson.PrimaryAlias.Guid }}">
+                                            <i class="mdi mdi-certificate nextstep-modal-baptism-icon"></i>
+                                        </a>
                                     {% endif %}
                                     {% assign baptismPhoto = CurrentPerson | Attribute:'BaptismPhoto' %}
                                     {% if baptismPhoto != null and baptismPhoto != '' %}
-                                        <a class="btn btn-baptism btn-baptism-2-rows" href="/baptismdashboardV2?display=photo">Baptism<br />Photo</a>
+                                        <a href="/baptismdashboardV2?display=photo&paguid={{ CurrentPerson.PrimaryAlias.Guid }}">
+                                            <i class="fa fa-picture-o nextstep-modal-baptism-icon"></i>
+                                        </a>
                                     {% endif %}  
                                 </div>`;
                 $('#modalContentBaptism').html(htmlContent);
 
                 // change color of icon
-                $('#baptism').toggleClass('nextstep-icon-inactive nextstep-icon-active');
+                toggleActiveIcon('#baptism');
                 break;
             }
             case 2: {
                 // regestered to be baptised
-                statusValue = 'Registered for baptism on ' + moment( new Date(data.BaptismRegistrationDate)).format("M/D/YYYY");
+                statusValue = `Registered for baptism on ${moment( new Date(data.BaptismRegistrationDate)).format("M/D/YYYY")}!`;
                 
                 // Update modal content
-                $('#modalContentBaptism').html(statusValue);  
+                $('#modalContentBaptism').html(statusValue);
                 break;
             }
             default: 
@@ -150,19 +154,19 @@
     renderWorship = function(data) {
         if (data) {
             // is worshiping 
-            statusValue = 'You worship regularly';
+            statusValue = 'It’s good to see you! Thank you for joining us regularly. Invite a friend next week.';
 
             // update modal content
             $('#modalContentWorship').html(statusValue);
 
             // change color of icon 
-            $('#worship').toggleClass('nextstep-icon-inactive nextstep-icon-active');
+            toggleActiveIcon('#worship');
         } else {
             // is not worshiping
-            statusValue = 'Join us this weekend for worship!'
+            statusValue = 'Join us this weekend for worship!';
         }
 
-        activatePopOver('#worship', statusValue)
+        activatePopOver('#worship', statusValue);
     }
 
     // Render active connect icon and update relative popover and modal content
@@ -170,23 +174,23 @@
         switch (data.ConnectionStatus) {
             case 0: {
                 // in a group
-                statusValue = 'You are in a CCV group (eariest active group ' + moment( new Date(data.ConnectedSince)).format("M/D/YYYY") + ')'; 
+                statusValue = `You’re in a group! It’s time to reach your community and impact it for the better.`; 
 
                 // update modal content
                 $('#modalContentConnect').html(statusValue);
 
                 // change color of icon
-                $('#connect').toggleClass('nextstep-icon-inactive nextstep-icon-active');
+                toggleActiveIcon('#connect');
                 break;
             }
             case 1: {
                 // not in a group
-                statusValue = 'You are not connected to a CCV group'; 
+                statusValue = 'You are not connected to a CCV group.'; 
                 break;
             }
             case 2: { 
                 // registered for a group
-                statusValue = 'You are registered for a CCV group'; 
+                statusValue = 'You are registered for a CCV group.'; 
 
                 // update modal content
                 $('#modalContentConnect').html(statusValue);
@@ -196,7 +200,7 @@
                 break;
         }
 
-        activatePopOver('#connect', statusValue)
+        activatePopOver('#connect', statusValue);
     }
 
     // Render active serve icon and update relative popover and modal content
@@ -204,12 +208,12 @@
         switch (data.ServingStatus) {
             case 0: {
                 // Not serving
-                statusValue = 'You are not serving'; 
+                statusValue = 'You are not serving.'; 
                 break;
             }
             case 1: {
                 // Registered to serve
-                statusValue = 'You are registered to serve';
+                statusValue = 'You are registered to serve.';
 
                 // update modal content
                 $('#modalContentServe').html(statusValue);
@@ -217,116 +221,120 @@
             }
             case 2: { 
                 // Is Serving
-                statusValue = 'You are serving (earliest active group ' + moment( new Date(data.ServingSince)).format("M/D/YYYY") + ')'; 
+                statusValue = `Thank you for the time that you invest into our ministries. We couldn’t do it without you!`; 
                 
                 // update modal content
                 $('#modalContentServe').html(statusValue);
 
                 // change color of icon
-                $('#serve').toggleClass('nextstep-icon-inactive nextstep-icon-active');
+                toggleActiveIcon('#serve');
                 break;
             }
             default: 
                 break;
         }
 
-        activatePopOver('#serve', statusValue)
+        activatePopOver('#serve', statusValue);
     }
 
     // Render active give icon and update relative popover and modal content
     renderGive = function(data) {
         if (data) {
             // giving
-            statusValue = 'You are giving'; 
+            statusValue = `For Christians, tithing (a word meaning 'tenth') is the starting point. Tithing is giving the first 10% of our income back to the local church. If you call CCV your home, we encourage you to give generously, knowing that your money is being used to support the mission of Jesus Christ – both here in the Valley, and around the world.`; 
 
             // update modal content
             $('#modalContentGive').html(statusValue);
 
             // change color of icon
-            $('#give').toggleClass('nextstep-icon-inactive nextstep-icon-active');
+            toggleActiveIcon('#give');
         } else {
             // not giving
-            statusValue = 'You are not giving';
+            statusValue = 'You are not giving.';
         }
 
-        activatePopOver('#give', statusValue)
+        activatePopOver('#give', statusValue);
     }
 
     // Render active share icon and update relative popover and modal content
     renderShare = function(data) {
         if (data.SharedStory) {
             // Story shared
-            statusValue = 'You have shared a story'; 
+            statusValue = 'You’ve shared with us how God has changed your life; don’t stop there, share your story with others too. It just might be the encouragement that leads someone else to Christ.'; 
 
             // update modal content
             $('#modalContentShare').html(statusValue);            
 
             // change color of icon
-            $('#share').toggleClass('nextstep-icon-inactive nextstep-icon-active');
+            toggleActiveIcon('#share');
         } else {
             // Story not shared
-            statusValue = 'You have not shared a story'
+            statusValue = 'You have not shared a story.';
         }
 
-        activatePopOver('#share', statusValue)
+        activatePopOver('#share', statusValue);
     }
 
     // Render active coach icon and update relative popover and modal content
     renderCoach = function(data) {
         if (data.IsCoaching) {
             // is Coach
-            statusValue = 'You are coaching (earliest active group ' + moment( new Date(data.CoachingSince)).format("M/D/YYYY") + ')'; 
+            statusValue = `Thank you for leading people through their Next Steps at CCV. Do you know someone that would make a good Coach? Ask them to join you.`; 
 
             // update modal content
             $('#modalContentCoach').html(statusValue);
 
             // change color of icon
-            $('#coach').toggleClass('nextstep-icon-inactive nextstep-icon-active');
+            toggleActiveIcon('#coach');
         } else {
             // is not Coach
-            statusValue = 'You are not coaching'
+            statusValue = 'You are not coaching.';
         }
 
-        activatePopOver('#coach', statusValue)
+        activatePopOver('#coach', statusValue);
+    }
+
+    toggleActiveIcon = function(element) {
+        $(element).toggleClass('nextstep-icon-inactive nextstep-icon-active');
     }
 
     // Get Steps data from api
     Sys.Application.add_load(function(){
         // if current person query api for steps taken
-        var currentPersonGuid = '{{ CurrentPerson.Guid }}'
+        var currentPersonGuid = '{{ CurrentPerson.Guid }}';
         if (currentPersonGuid !== '') {
             $.getJSON('/api/CCV/Badges/StepsBar/'+currentPersonGuid, function(data){
                 for (var key in data) {
                     if (data.hasOwnProperty(key)) {
-                        var keyData = data[key]
+                        var keyData = data[key];
                         // Process response
                         switch (key) {
                             case 'BaptismResult': {
-                                renderBaptism(keyData)
+                                renderBaptism(keyData);
                                 break;
                             };
                             case 'IsWorshipper': {
-                                renderWorship(keyData)
+                                renderWorship(keyData);
                                 break;
                             };   
                             case 'ConnectionResult': {
-                                renderConnect(keyData)
+                                renderConnect(keyData);
                                 break;
                             };
                             case 'IsTithing': {
-                                renderGive(keyData)
+                                renderGive(keyData);
                                 break;
                             };   
                             case 'ServingResult': {
-                                renderServe(keyData)
+                                renderServe(keyData);
                                 break;
                             };  
                             case 'CoachingResult': {
-                                renderCoach(keyData)
+                                renderCoach(keyData);
                                 break;
                             };  
                             case 'SharedStoryResult': {
-                                renderShare(keyData)
+                                renderShare(keyData);
                                 break;
                             };                           
                             default:
@@ -338,7 +346,7 @@
         }
         
         // If current person query api for starting point step
-        var currentPersonId = '{{ CurrentPerson.Id }}'
+        var currentPersonId = '{{ CurrentPerson.Id }}';
         if (currentPersonId !== '') {
             $.getJSON('/api/CCV/Badges/TakenStartingPoint/'+currentPersonId, function(data){
                 // process response
