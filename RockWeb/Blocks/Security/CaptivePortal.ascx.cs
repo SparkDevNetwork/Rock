@@ -132,7 +132,7 @@ namespace RockWeb.Blocks.Security
                 bool isAnExistingDevice = DoesPersonalDeviceExist( macAddress );
                 if ( isAnExistingDevice )
                 {
-                    personalDevice = personalDeviceService.GetByMACAddress( macAddress );
+                    personalDevice = VerifyDeviceInfo( macAddress );
                 }
                 else
                 {
@@ -151,10 +151,10 @@ namespace RockWeb.Blocks.Security
                     RockPage.LinkPersonAliasToDevice( ( int ) CurrentPersonAliasId, macAddress );
                     hfPersonAliasId.Value = CurrentPersonAliasId.ToString();
                 }
-                else if ( isAnExistingDevice )
+
+                if ( isAnExistingDevice )
                 {
                     // if the user is not logged in but we have the device lets try to get a person
-                    //person = personService.Get( personalDevice.PersonAlias.PersonId );
                     if ( personalDevice.PersonAliasId != null )
                     {
                         person = personService.Get( personalDevice.PersonAlias.PersonId );
@@ -201,9 +201,53 @@ namespace RockWeb.Blocks.Security
         /// Creates the device if new.
         /// </summary>
         /// <returns>Returns true if the device was created, false it already existed</returns>
-        private PersonalDevice CreateDevice(string macAddress )
+        private PersonalDevice CreateDevice( string macAddress )
         {
-            // Get the device type Mobile or Computer
+            UAParser.ClientInfo client = UAParser.Parser.GetDefault().Parse( Request.UserAgent );
+
+            RockContext rockContext = new RockContext();
+            PersonalDeviceService personalDeviceService = new PersonalDeviceService( rockContext );
+
+            PersonalDevice personalDevice = new PersonalDevice();
+            personalDevice.MACAddress = macAddress;
+
+            personalDevice.PersonalDeviceTypeValueId = GetDeviceTypeValueId();
+            personalDevice.PlatformValueId = GetDevicePlatformValueId( client );
+            personalDevice.DeviceVersion = GetDeviceOsVersion( client );
+
+            personalDeviceService.Add( personalDevice );
+            rockContext.SaveChanges();
+
+            return personalDevice;
+        }
+
+        /// <summary>
+        /// Gets the current device platform info and updates the obj if needed.
+        /// </summary>
+        /// <param name="personalDevice">The personal device.</param>
+        private PersonalDevice VerifyDeviceInfo( string macAddress )
+        {
+            UAParser.ClientInfo client = UAParser.Parser.GetDefault().Parse( Request.UserAgent );
+
+            RockContext rockContext = new RockContext();
+            PersonalDeviceService personalDeviceService = new PersonalDeviceService( rockContext );
+
+            PersonalDevice personalDevice = personalDeviceService.GetByMACAddress( macAddress );
+            personalDevice.PersonalDeviceTypeValueId = GetDeviceTypeValueId();
+            personalDevice.PlatformValueId = GetDevicePlatformValueId( client );
+            personalDevice.DeviceVersion = GetDeviceOsVersion( client );
+
+            rockContext.SaveChanges();
+
+            return personalDevice;
+        }
+
+        /// <summary>
+        /// Uses the Request information to determine if the device is mobile or not
+        /// </summary>
+        /// <returns>DevinedValueId for "Mobile" or "Computer", Mobile includes Tablet. Null if there is a data issue and the DefinedType is missing</returns>
+        private int? GetDeviceTypeValueId()
+        {
             DefinedTypeCache definedTypeCache = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSONAL_DEVICE_TYPE.AsGuid() );
             DefinedValueCache definedValueCache = null;
 
@@ -218,45 +262,53 @@ namespace RockWeb.Blocks.Security
                 {
                     definedValueCache = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSONAL_DEVICE_TYPE_COMPUTER.AsGuid() );
                 }
+
+                return definedValueCache.Id;
             }
 
-            PersonalDevice personalDevice = new PersonalDevice();
-            personalDevice.MACAddress = macAddress;
-            personalDevice.PersonalDeviceTypeValueId = definedValueCache != null ? definedValueCache.Id : ( int? ) null;
+            return null;
+        }
 
-            // Parse the UA string and try to get the info we want
-            UAParser.ClientInfo client = UAParser.Parser.GetDefault().Parse( Request.UserAgent );
-
+        /// <summary>
+        /// Parses ClientInfo to find the OS family
+        /// </summary>
+        /// <param name="client">The client.</param>
+        /// <returns>DefinedValueId for the found OS. Uses "Other" if the OS is not in DefinedValue. Null if there is a data issue and the DefinedType is missing</returns>
+        private int? GetDevicePlatformValueId( UAParser.ClientInfo client )
+        {
             // get the OS
             string platform = client.OS.Family.Split( ' ' ).First();
 
-            definedTypeCache = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSONAL_DEVICE_PLATFORM.AsGuid() );
-            if (definedTypeCache != null )
+            DefinedTypeCache definedTypeCache = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSONAL_DEVICE_PLATFORM.AsGuid() );
+            DefinedValueCache definedValueCache = null;
+            if ( definedTypeCache != null )
             {
                 definedValueCache = definedTypeCache.DefinedValues.FirstOrDefault( v => v.Value == platform );
 
-                if (definedValueCache == null )
+                if ( definedValueCache == null )
                 {
                     definedValueCache = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSONAL_DEVICE_PLATFORM_OTHER.AsGuid() );
                 }
+
+                return definedValueCache.Id;
             }
 
-            personalDevice.PlatformValueId = definedValueCache != null ? definedValueCache.Id : ( int? ) null;
+            return null;
+        }
 
-            // Get the OS version
-            personalDevice.DeviceVersion = string.Format(
+        /// <summary>
+        /// Parses ClientInfo and gets the device os version. If it cannot be determined returns "0.0.0.0"
+        /// </summary>
+        /// <param name="client">The client.</param>
+        /// <returns></returns>
+        private string GetDeviceOsVersion( UAParser.ClientInfo client )
+        {
+            return string.Format(
                 "{0}.{1}.{2}.{3}",
                 client.OS.Major ?? "0",
                 client.OS.Minor ?? "0",
                 client.OS.Patch ?? "0",
                 client.OS.PatchMinor ?? "0" );
-
-            // Add and save it
-            RockContext rockContext = new RockContext();
-            PersonalDeviceService personalDeviceService = new PersonalDeviceService( rockContext );
-            personalDeviceService.Add( personalDevice );
-            rockContext.SaveChanges();
-            return personalDevice;
         }
 
         /// <summary>
