@@ -93,6 +93,11 @@ textarea:focus,
 // 2. Bootstrap Overrides    */
 // -------------------------
 
+.btn-group.open .dropdown-toggle {
+  -webkit-box-shadow: 0;
+  box-shadow: 0;
+}
+
 .btn-xs, .btn-group-xs>.btn {
   line-height: 1;
 }
@@ -110,9 +115,9 @@ textarea:focus,
   color: @alert-danger-bg;
 }
 
-.form-group label {
+/*.form-group label {
   font-weight: @font-weight-semibold;
-}
+}*/ // commented out as it made radio list labels bold
 
 .nav .open > a,
 .nav .open > a:focus,
@@ -130,14 +135,20 @@ textarea:focus,
   border-width: @table-column-border-width;
 }
 
-.table > tbody > tr > td,
-.table > tbody > tr > th,
-.table > tfoot > tr > td,
-.table > tfoot > tr > th,
-.table > thead > tr > td,
-.table > thead > tr > th {
+.grid .table > tbody > tr > td,
+.grid .table > tbody > tr > th,
+.grid .table > tfoot > tr > td,
+.grid .table > tfoot > tr > th,
+.grid .table > thead > tr > td,
+.grid .table > thead > tr > th {
   border-width: @table-column-border-width;
   border-top-width: 1px;
+  padding: 18px 12px;
+}
+
+.grid .table > tbody > tr > td.grid-columncommand {
+  padding-top: 14px;
+  padding-bottom: 0;
 }
 
 .table-bordered > thead > tr > td,
@@ -197,6 +208,10 @@ textarea:focus,
   margin: -35px;
   margin-top: -16px;
   margin-bottom: 24px;
+
+  @media (max-width: @screen-md-min) {
+    margin-left: -12px;
+  }
 }
 
 .help-message {
@@ -231,6 +246,15 @@ textarea:focus,
 
 .panel-widget > .panel-heading {
   background-color: @gray-lighter;
+}
+
+.panel .panel-heading .panel-options {
+  margin: -15px -15px -15px 10px;
+
+  button {
+    padding: 13px 12px 12px;
+    background-color: transparent;
+  }
 }
 
 // grid styles
@@ -325,7 +349,7 @@ td.grid-actions {
     font-size: 1.500em;
     color: #fff;
     margin-top: 12px;
-    margin-left: 27px;
+    margin-left: calc(@navbarside-width * .24);
     cursor: pointer;
   }
 
@@ -593,7 +617,7 @@ td.grid-actions {
     font-size: 1.500em;
     display: block;
     padding-top: 22px;
-    padding-left: 38px;
+    padding-left: calc(@navbarside-width * .37);
     border-bottom: 1px solid lighten(@navbarside-background-color, 10%);
     cursor: pointer;
 
@@ -814,10 +838,8 @@ body.navbar-side-close {
 // splash screen
 #splash {
   #content {
-    position: absolute;
-    top: 50%;
-    margin-top: -300px;
-    width: 100%;
+    margin: 70px auto 0;
+    width: 85%;
   }
 
   #logo {
@@ -828,7 +850,7 @@ body.navbar-side-close {
   }
 
   .login-block {
-    max-width: 400px;
+    max-width: 600px;
     margin: 0 auto;
 
     legend {
