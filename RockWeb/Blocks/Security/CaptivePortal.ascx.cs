@@ -34,7 +34,7 @@ namespace RockWeb.Blocks.Security
     [Category( "Security" )]
     [Description( "Controls access to Wi-Fi." )]
     [TextField( "MAC Address Paramameter", "The query string parameter used for the MAC Address", true, "client_mac", "", 0, "MacAddressParam" )]
-    [TextField( "Release Link", "The URL to redirect users to after registration.", true, "", "", 1, "ReleaseLink" )]
+    [TextField( "Release Link", "The full URL to redirect users to after registration.", true, "", "", 1, "ReleaseLink" )]
     [BooleanField("Show First Name", "Show or hide the First Name field. If it is visible then it will be required.", true, "", 2, "ShowFirstName", IsRequired = true )]
     [BooleanField( "Show Last Name", "Show or hide the Last Name field. If it is visible then it will be required.", true, "", 3, "ShowLastName", IsRequired = true )]
     [BooleanField( "Show Mobile Phone", "Show or hide the Mobile Phone Number field. If it is visible then it will be required.", true, "", 4, "ShowMobilePhone", IsRequired = true )]
@@ -113,7 +113,16 @@ namespace RockWeb.Blocks.Security
                 string macAddress = RockPage.PageParameter( GetAttributeValue( "MacAddressParam" ) );
                 if ( string.IsNullOrWhiteSpace( macAddress ) || !macAddress.IsValidMacAddress() )
                 {
-                    nbAlert.Text = "Invalid or insufficient data supplied";
+                    nbAlert.Text = "Missing or invalid MAC Address";
+                    nbAlert.Visible = true;
+                    ShowControls( false );
+                    return;
+                }
+
+                string releaseLink = GetAttributeValue( "ReleaseLink" );
+                if ( string.IsNullOrWhiteSpace( releaseLink ) || !releaseLink.IsValidUrl() )
+                {
+                    nbAlert.Text = "Missing or invalid Release Link";
                     nbAlert.Visible = true;
                     ShowControls( false );
                     return;
