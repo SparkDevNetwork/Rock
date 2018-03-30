@@ -810,12 +810,13 @@ span.field-name {
   border-radius: 4px;
 }
 
+/* white-space was nowrap but changed to inherit; see discussion at https://github.com/SparkDevNetwork/Rock/commit/e4230496c8a1dc199f1bbb26f95dfa025d64dd02#r28278277 */
 span.field-value {
   padding: 2px 4px;
   font-family: Monaco,Menlo,Consolas,"Courier New",monospace;
   font-size: 90%;
   color: @pagetitle-text-color;
-  white-space: nowrap;
+  white-space: inherit;
   background-color: @pagetitle-bg;
   border-radius: 4px;
 }
