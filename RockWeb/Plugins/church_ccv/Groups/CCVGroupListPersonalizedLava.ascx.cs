@@ -23,7 +23,6 @@ namespace Plugins.church_ccv.Groups
     [Category( "CCV > Groups" )]
     [Description( "Lists all group that the person is a member of using a Lava template. CCV Customized to include features for coach toolboxes" )]
 
-    [LinkedPage( "Communication Page", "The communication page to use for sending emails to the group members.", false, "", "", 1 )]
     [GroupField( "Parent Group", "If a group is chosen, only the groups under this group will be displayed.", false, "", "", 2 )]
     [IntegerField( "Cache Duration", "Length of time in seconds to cache which groups are descendants of the parent group.", false, 3600, "", 3 )]
     [GroupTypesField( "Include Group Types", "The group types to display in the list.  If none are selected, all group types will be included.", false, "", "", 4 )]
@@ -339,42 +338,6 @@ namespace Plugins.church_ccv.Groups
             }
 
             return false;
-        }
-
-
-        /// <summary>
-        /// Sends the communication.
-        /// </summary>
-        protected void SendCommunication( List<int?> primaryAliasIds, int groupId )
-        {
-            // create communication
-            if ( this.CurrentPerson != null && groupId != -1 && !string.IsNullOrWhiteSpace( GetAttributeValue( "CommunicationPage" ) ) )
-            {
-                var rockContext = new RockContext();
-                var service = new Rock.Model.CommunicationService( rockContext );
-                var communication = new Rock.Model.Communication();
-                communication.IsBulkCommunication = false;
-                communication.Status = Rock.Model.CommunicationStatus.Transient;
-
-                communication.SenderPersonAliasId = this.CurrentPersonAliasId;
-
-                service.Add( communication );
-
-                // Get the primary aliases
-                foreach ( int personAlias in primaryAliasIds )
-                {
-                    var recipient = new Rock.Model.CommunicationRecipient();
-                    recipient.PersonAliasId = personAlias;
-                    communication.Recipients.Add( recipient );
-                }
-
-                rockContext.SaveChanges();
-
-                Dictionary<string, string> queryParameters = new Dictionary<string, string>();
-                queryParameters.Add( "CommunicationId", communication.Id.ToString() );
-
-                NavigateToLinkedPage( "CommunicationPage", queryParameters );
-            }
         }
 
         [DotLiquid.LiquidType( "Group", "Role", "IsLeader", "GroupType", "CanView", "CanEdit" )]
