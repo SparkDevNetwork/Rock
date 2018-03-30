@@ -153,6 +153,10 @@
     <Compile Include="Migrations\201803282333320_FrontPorch.Designer.cs">
       <DependentUpon>201803282333320_FrontPorch.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201803301619284_Rollup_0330.cs" />
+    <Compile Include="Migrations\201803301619284_Rollup_0330.Designer.cs">
+      <DependentUpon>201803301619284_Rollup_0330.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.cs" />
     <Compile Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.Designer.cs">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
@@ -2797,6 +2801,9 @@
     <EmbeddedResource Include="Migrations\201803282333320_FrontPorch.resx">
       <DependentUpon>201803282333320_FrontPorch.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201803301619284_Rollup_0330.resx">
+      <DependentUpon>201803301619284_Rollup_0330.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.resx">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
     </EmbeddedResource>
@@ -4759,6 +4766,9 @@
     </Content>
     <Content Include="Migrations\201803201617508_DaysUntilAnniversary.sql">
       <DependentUpon>201803201617508_DaysUntilAnniversary.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201803301619284_Rollup_0330.sql">
+      <DependentUpon>201803301619284_Rollup_0330.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 7.0\Version 1.7.0\201707182207536_AttendanceAnalyticsQuery_NonAttendees.sql">
       <DependentUpon>201707182207536_PageShortLinks.cs</DependentUpon>
