@@ -68,7 +68,7 @@ namespace Rock.Constants
         /// <returns></returns>
         public static string TextLengthInvalid( string itemFieldName, int maxLength )
         {
-            return string.Format( "Whoops. Would you mind reducing the length of your  {0} to {1} Characters?", itemFieldName.SplitCase().ToLower(), maxLength.ToString() );
+            return string.Format( "Whoops. Would you mind reducing the length of your {0} to {1} characters?", itemFieldName.SplitCase().ToLower(), maxLength );
         }
     }
 
