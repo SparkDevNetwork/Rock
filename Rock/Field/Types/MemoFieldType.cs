@@ -90,9 +90,9 @@ namespace Rock.Field.Types
             controls.Add( cbCountDown );
             cbCountDown.AutoPostBack = true;
             cbCountDown.CheckedChanged += OnQualifierUpdated;
-            cbCountDown.Label = "Show Count Down";
+            cbCountDown.Label = "Show Character Limit Countdown";
             cbCountDown.Text = "Yes";
-            cbCountDown.Help = "When set, displays the count down.";
+            cbCountDown.Help = "When set, displays a countdown showing how many characters remain (for the Max Characters setting).";
 
             return controls;
         }
@@ -108,7 +108,7 @@ namespace Rock.Field.Types
             configurationValues.Add( NUMBER_OF_ROWS, new ConfigurationValue( "Rows", "The number of rows to display (default is 3).", "" ) );
             configurationValues.Add( ALLOW_HTML, new ConfigurationValue( "Allow HTML", "Controls whether server should prevent HTML from being entered in this field or not.", "" ) );
             configurationValues.Add( MAX_CHARACTERS, new ConfigurationValue( "Max Characters", "The maximum number of characters to allow. Leave this field empty to allow for an unlimited amount of text.", "" ) );
-            configurationValues.Add( SHOW_COUNT_DOWN, new ConfigurationValue( "Show Count Down", "When set, displays the count down.", "" ) );
+            configurationValues.Add( SHOW_COUNT_DOWN, new ConfigurationValue( "Show Character Limit Countdown", "When set, displays a countdown showing how many characters remain (for the Max Characters setting).", "" ) );
 
             if ( controls != null )
             {
