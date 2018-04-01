@@ -22,6 +22,9 @@ using Rock.Model;
 
 namespace Rock.Field.Types
 {
+    /// <summary>
+    /// Select multiple Interaction Channels from a checkbox list. Stored as a comma-delimited list of InteractionChannel Guids
+    /// </summary>
     public class InteractionChannelsFieldType : SelectFromListFieldType
     {
         /// <summary>

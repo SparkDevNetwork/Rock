@@ -351,6 +351,7 @@
     <Compile Include="Attribute\AttributeCategoryFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeFieldAttribute.cs" />
     <Compile Include="Attribute\ComparisonFieldAttribute.cs" />
+    <Compile Include="Attribute\InteractionChannelFieldAttribute.cs" />
     <Compile Include="Attribute\InteractionChannelsFieldAttribute.cs" />
     <Compile Include="Attribute\LabelFieldAttribute.cs" />
     <Compile Include="Attribute\LavaFieldAttribute.cs" />
@@ -1186,6 +1187,7 @@
     <Compile Include="PersonProfile\Badge\Giving.cs" />
     <Compile Include="PersonProfile\Badge\GroupTypeAttendance.cs" />
     <Compile Include="PersonProfile\Badge\InDataView.cs" />
+    <Compile Include="PersonProfile\Badge\InteractionsInRange.cs" />
     <Compile Include="Plugin\HotFixes\038_LabelFieldType.cs" />
     <Compile Include="Plugin\HotFixes\046_EnableSmartyStreetsIfNoActiveLocationSrv.cs" />
     <Compile Include="Plugin\HotFixes\045_FamilyRegistration.cs" />
