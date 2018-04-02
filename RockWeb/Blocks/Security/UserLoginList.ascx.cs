@@ -65,7 +65,7 @@ namespace RockWeb.Blocks.Security
             {
                 _personId = person.Id;
 
-                var personNameField = gUserLogins.ColumnsOfType<HyperLinkField>().FirstOrDefault( a => a.HeaderText == "Person" );
+                var personNameField = gUserLogins.ColumnsOfType<PersonField>().FirstOrDefault( a => a.HeaderText == "Person" );
                 if ( personNameField != null )
                 {
                     // Hide the person name column
@@ -471,13 +471,7 @@ namespace RockWeb.Blocks.Security
             }
 
             gUserLogins.EntityTypeId = EntityTypeCache.Read<UserLogin>().Id;
-            gUserLogins.DataSource = qry
-                .Sort( sortProperty )
-                .Select( l => new UserLoginGrid
-                {
-                    UserloginObject = l
-                } )
-                .ToList();
+            gUserLogins.DataSource = qry.Sort( sortProperty ).ToList();
             gUserLogins.DataBind();
         }
 
@@ -488,21 +482,12 @@ namespace RockWeb.Blocks.Security
         /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
         protected void gUserLogins_RowDataBound( object sender, GridViewRowEventArgs e )
         {
-            if ( e.Row.RowType != DataControlRowType.DataRow || e.Row.DataItem == null )
-            {
-                return;
-            }
-
-            var dataItem = ( UserLoginGrid ) e.Row.DataItem;
-
-            UserLogin userLogin = dataItem.UserloginObject;
+            UserLogin userLogin = e.Row.DataItem as UserLogin;
             Literal lUserNameOrRemoteProvider = e.Row.FindControl( "lUserNameOrRemoteProvider" ) as Literal;
             Literal lProviderName = e.Row.FindControl( "lProviderName" ) as Literal;
-
             if ( userLogin != null )
             {
                 lUserNameOrRemoteProvider.Text = userLogin.UserName;
-
                 if ( userLogin.EntityTypeId.HasValue )
                 {
                     var entityType = EntityTypeCache.Read( userLogin.EntityTypeId.Value );
@@ -656,110 +641,5 @@ namespace RockWeb.Blocks.Security
         }
 
         #endregion
-
-
-        /// <summary>
-        /// Wraps the UserLogin object to expose person props to the grid.
-        /// </summary>
-        public class UserLoginGrid : DotLiquid.Drop
-        {
-            public UserLogin UserloginObject { get; set; }
-
-            public int Id
-            {
-                get
-                {
-                    return UserloginObject.Id;
-                }
-            }
-
-            public string UserName
-            {
-                get
-                {
-                    return UserloginObject.UserName;
-                }
-            }
-
-            public int? PersonId
-            {
-                get
-                {
-                    return UserloginObject.PersonId;
-                }
-            }
-
-            public string PersonName
-            {
-                get
-                {
-                    return UserloginObject.Person.FullName;
-                }
-            }
-
-            public string PersonLastName
-            {
-                get
-                {
-                    return UserloginObject.Person.LastName;
-                }
-            }
-
-            public string PersonNickName
-            {
-                get
-                {
-                    return UserloginObject.Person.NickName;
-                }
-            }
-
-            public string ProviderName
-            {
-                get
-                {
-                    return UserloginObject.EntityType.FriendlyName;
-                }
-            }
-
-            public DateTime? CreatedDateTime
-            {
-                get
-                {
-                    return UserloginObject.CreatedDateTime;
-                }
-            }
-
-            public DateTime? LastLoginDateTime
-            {
-                get
-                {
-                    return UserloginObject.LastLoginDateTime;
-                }
-            }
-
-            public bool? IsConfirmed
-            {
-                get
-                {
-                    return UserloginObject.IsConfirmed;
-                }
-            }
-
-            public bool? IsLockedOut
-            {
-                get
-                {
-                    return UserloginObject.IsLockedOut;
-                }
-            }
-
-            public bool? IsPasswordChangeRequired
-            {
-                get
-                {
-                    return UserloginObject.IsPasswordChangeRequired;
-                }
-            }
-        }
     }
 }
