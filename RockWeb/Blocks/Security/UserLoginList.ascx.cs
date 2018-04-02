@@ -661,7 +661,7 @@ namespace RockWeb.Blocks.Security
         /// <summary>
         /// Wraps the UserLogin object to expose person props to the grid.
         /// </summary>
-        public class UserLoginGrid
+        public class UserLoginGrid : DotLiquid.Drop
         {
             public UserLogin UserloginObject { get; set; }
 
