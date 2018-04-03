@@ -37,7 +37,7 @@ namespace Rock.Plugin.HotFixes
             RockMigrationHelper.AddPage( true, "7625A63E-6650-4886-B605-53C2234FA5E1", "325B7BFD-8B80-44FD-A951-4E4763DA6C0D", "Family Registration", "", "3B31B9A2-DE35-4407-8E7D-3633F93906CD", "" ); // Site:External Website
             RockMigrationHelper.AddPageRoute( "3B31B9A2-DE35-4407-8E7D-3633F93906CD", "FamilyRegistration", "E518B93B-26AB-42A8-989A-6A2DA864EF25" );// for Page:Family Registration
 
-            RockMigrationHelper.AddPage( true, "3B31B9A2-DE35-4407-8E7D-3633F93906CD", "325B7BFD-8B80-44FD-A951-4E4763DA6C0D", "Famiy Registration", "", "B37D22BE-D2A8-4EFA-8B2B-2E0EFF6EDB44", "" ); // Site:External Website
+            RockMigrationHelper.AddPage( true, "3B31B9A2-DE35-4407-8E7D-3633F93906CD", "325B7BFD-8B80-44FD-A951-4E4763DA6C0D", "Family Registration", "", "B37D22BE-D2A8-4EFA-8B2B-2E0EFF6EDB44", "" ); // Site:External Website
             RockMigrationHelper.AddPageRoute( "B37D22BE-D2A8-4EFA-8B2B-2E0EFF6EDB44", "FamilyRegistrationSuccess", "7C47D437-E576-48EE-B308-FDD81C4F9386" );// for Page:Family Registration Success
             Sql( @"
     UPDATE [Page] SET [BreadCrumbDisplayName] = 0 WHERE [Guid] = 'B37D22BE-D2A8-4EFA-8B2B-2E0EFF6EDB44'
@@ -48,9 +48,9 @@ namespace Rock.Plugin.HotFixes
             RockMigrationHelper.AddBlock( true, "3B31B9A2-DE35-4407-8E7D-3633F93906CD", "", "CACB9D1A-A820-4587-986A-D66A69EE9948", "Page Menu", "Sidebar1", @"", @"", 0, "A2388785-4FCD-4FBC-9EAF-F007FA7ADA99" );
             // Add Block to Page: Family Registration, Site: External Website
             RockMigrationHelper.AddBlock( true, "3B31B9A2-DE35-4407-8E7D-3633F93906CD", "", "463A454A-6370-4B4A-BCA1-415F2D9B0CB7", "Family Pre Registration", "Main", @"", @"", 0, "4EB7A683-F28D-4708-BF7E-BC9A80FA1A06" );
-            // Add Block to Page: Famiy Registration, Site: External Website
+            // Add Block to Page: Family Registration, Site: External Website
             RockMigrationHelper.AddBlock( true, "B37D22BE-D2A8-4EFA-8B2B-2E0EFF6EDB44", "", "19B61D65-37E3-459F-A44F-DEF0089118A3", "HTML Content", "Main", @"", @"", 0, "DC006503-C69E-49CC-B384-EB199AFED5BD" );
-            // Add Block to Page: Famiy Registration, Site: External Website
+            // Add Block to Page: Family Registration, Site: External Website
             RockMigrationHelper.AddBlock( true, "B37D22BE-D2A8-4EFA-8B2B-2E0EFF6EDB44", "", "CACB9D1A-A820-4587-986A-D66A69EE9948", "Page Menu", "Sidebar1", @"", @"", 0, "91742CE0-FC1B-4E1B-B046-24748DD5F6CC" );
             
             // Add/Update HtmlContent for Block: HTML Content
@@ -193,21 +193,21 @@ that is created/updated, and 'RelatedChildren', which is a list of the children 
             // Attrib Value for Block:Family Pre Registration, Attribute:Marital Status Page: Family Registration, Site: External Website
             RockMigrationHelper.AddBlockAttributeValue( "4EB7A683-F28D-4708-BF7E-BC9A80FA1A06", "2CD1A897-651E-45DA-8CB4-7D7F0DF73B2A", @"Optional" );
 
-            // Attrib Value for Block:Page Menu, Attribute:Include Page List Page: Famiy Registration, Site: External Website
+            // Attrib Value for Block:Page Menu, Attribute:Include Page List Page: Family Registration, Site: External Website
             RockMigrationHelper.AddBlockAttributeValue( "91742CE0-FC1B-4E1B-B046-24748DD5F6CC", "0A49DABE-42EE-40E5-9E06-0E6530944865", @"" );
-            // Attrib Value for Block:Page Menu, Attribute:Is Secondary Block Page: Famiy Registration, Site: External Website
+            // Attrib Value for Block:Page Menu, Attribute:Is Secondary Block Page: Family Registration, Site: External Website
             RockMigrationHelper.AddBlockAttributeValue( "91742CE0-FC1B-4E1B-B046-24748DD5F6CC", "C80209A8-D9E0-4877-A8E3-1F7DBF64D4C2", @"False" );
-            // Attrib Value for Block:Page Menu, Attribute:CSS File Page: Famiy Registration, Site: External Website
+            // Attrib Value for Block:Page Menu, Attribute:CSS File Page: Family Registration, Site: External Website
             RockMigrationHelper.AddBlockAttributeValue( "91742CE0-FC1B-4E1B-B046-24748DD5F6CC", "7A2010F0-0C0C-4CC5-A29B-9CBAE4DE3A22", @"" );
-            // Attrib Value for Block:Page Menu, Attribute:Include Current Parameters Page: Famiy Registration, Site: External Website
+            // Attrib Value for Block:Page Menu, Attribute:Include Current Parameters Page: Family Registration, Site: External Website
             RockMigrationHelper.AddBlockAttributeValue( "91742CE0-FC1B-4E1B-B046-24748DD5F6CC", "EEE71DDE-C6BC-489B-BAA5-1753E322F183", @"False" );
-            // Attrib Value for Block:Page Menu, Attribute:Number of Levels Page: Famiy Registration, Site: External Website
+            // Attrib Value for Block:Page Menu, Attribute:Number of Levels Page: Family Registration, Site: External Website
             RockMigrationHelper.AddBlockAttributeValue( "91742CE0-FC1B-4E1B-B046-24748DD5F6CC", "6C952052-BC79-41BA-8B88-AB8EA3E99648", @"1" );
-            // Attrib Value for Block:Page Menu, Attribute:Include Current QueryString Page: Famiy Registration, Site: External Website
+            // Attrib Value for Block:Page Menu, Attribute:Include Current QueryString Page: Family Registration, Site: External Website
             RockMigrationHelper.AddBlockAttributeValue( "91742CE0-FC1B-4E1B-B046-24748DD5F6CC", "E4CF237D-1D12-4C93-AFD7-78EB296C4B69", @"False" );
-            // Attrib Value for Block:Page Menu, Attribute:Template Page: Famiy Registration, Site: External Website
+            // Attrib Value for Block:Page Menu, Attribute:Template Page: Family Registration, Site: External Website
             RockMigrationHelper.AddBlockAttributeValue( "91742CE0-FC1B-4E1B-B046-24748DD5F6CC", "1322186A-862A-4CF1-B349-28ECB67229BA", @"{% include '~~/Assets/Lava/PageSubNav.lava' %}" );
-            // Attrib Value for Block:Page Menu, Attribute:Root Page Page: Famiy Registration, Site: External Website
+            // Attrib Value for Block:Page Menu, Attribute:Root Page Page: Family Registration, Site: External Website
             RockMigrationHelper.AddBlockAttributeValue( "91742CE0-FC1B-4E1B-B046-24748DD5F6CC", "41F1C42E-2395-4063-BD4F-031DF8D5B231", @"7625a63e-6650-4886-b605-53c2234fa5e1" );
         }
 
@@ -269,9 +269,9 @@ that is created/updated, and 'RelatedChildren', which is a list of the children 
             // Attrib for BlockType: Family Pre Registration:Suffix
             RockMigrationHelper.DeleteAttribute( "54E5EE57-3133-42E1-A6E6-1B1781A7FF30" );
 
-            // Remove Block: Page Menu, from Page: Famiy Registration, Site: External Website
+            // Remove Block: Page Menu, from Page: Family Registration, Site: External Website
             RockMigrationHelper.DeleteBlock( "91742CE0-FC1B-4E1B-B046-24748DD5F6CC" );
-            // Remove Block: HTML Content, from Page: Famiy Registration, Site: External Website
+            // Remove Block: HTML Content, from Page: Family Registration, Site: External Website
             RockMigrationHelper.DeleteBlock( "DC006503-C69E-49CC-B384-EB199AFED5BD" );
             // Remove Block: Family Pre Registration, from Page: Family Registration, Site: External Website
             RockMigrationHelper.DeleteBlock( "4EB7A683-F28D-4708-BF7E-BC9A80FA1A06" );
@@ -279,7 +279,7 @@ that is created/updated, and 'RelatedChildren', which is a list of the children 
             RockMigrationHelper.DeleteBlock( "A2388785-4FCD-4FBC-9EAF-F007FA7ADA99" );
 
             RockMigrationHelper.DeleteBlockType( "463A454A-6370-4B4A-BCA1-415F2D9B0CB7" ); // Family Pre Registration
-            RockMigrationHelper.DeletePage( "B37D22BE-D2A8-4EFA-8B2B-2E0EFF6EDB44" ); //  Page: Famiy Registration, Layout: LeftSidebar, Site: External Website
+            RockMigrationHelper.DeletePage( "B37D22BE-D2A8-4EFA-8B2B-2E0EFF6EDB44" ); //  Page: Family Registration, Layout: LeftSidebar, Site: External Website
             RockMigrationHelper.DeletePage( "3B31B9A2-DE35-4407-8E7D-3633F93906CD" ); //  Page: Family Registration, Layout: LeftSidebar, Site: External Website
 
         }
