@@ -924,6 +924,22 @@ namespace Rock.Web.UI.Controls
         public int? GradeOffset { get; set; }
 
         /// <summary>
+        /// Gets or sets the mobile phone number.
+        /// </summary>
+        /// <value>
+        /// The mobile phone number.
+        /// </value>
+        public string MobilePhoneNumber { get; set; }
+
+        /// <summary>
+        /// Gets or sets the mobile country code.
+        /// </summary>
+        /// <value>
+        /// The mobile country code.
+        /// </value>
+        public string MobileCountryCode { get; set; }
+
+        /// <summary>
         /// Gets or sets the type of the relationship.
         /// </summary>
         /// <value>
@@ -954,6 +970,10 @@ namespace Rock.Web.UI.Controls
             BirthDate = person.BirthDate;
             GradeOffset = person.GradeOffset;
             Age = person.Age;
+
+            var mobilePhone = person.GetPhoneNumber( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
+            MobilePhoneNumber = mobilePhone?.Number;
+            MobileCountryCode = mobilePhone?.CountryCode;
         }
 
         /// <summary>

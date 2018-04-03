@@ -1,15 +1,18 @@
 ﻿var RockCodeEditor = function (context, keepEditorContent) {
     var ui = $.summernote.ui;
-    var $codeEditor = $('#codeeditor-div-' + context.options.codeEditorOptions.controlId);
-    var $codeEditorContainer = $codeEditor.closest('.code-editor-container');
-    $codeEditorContainer.hide();
-    $codeEditorContainer.height(context.layoutInfo.editingArea.height());
-    $inCodeEditorModeHiddenField = $('#' + context.options.codeEditorOptions.inCodeEditorModeHiddenFieldId);
-    $inCodeEditorModeHiddenField.val("0");
+    initializeCodeEditor(context);
 
-    // move code editor into summernote div
-    var element = $codeEditorContainer.detach();
-    context.layoutInfo.editingArea.closest('.note-editor').append(element);
+    function initializeCodeEditor(context) {
+        var $codeEditor = $('#codeeditor-div-' + context.options.codeEditorOptions.controlId);
+        var $codeEditorContainer = $codeEditor.closest('.code-editor-container');
+        $codeEditorContainer.hide();
+        $codeEditorContainer.height(context.layoutInfo.editingArea.height());
+        var $inCodeEditorModeHiddenField = $('#' + context.options.codeEditorOptions.inCodeEditorModeHiddenFieldId);
+        $inCodeEditorModeHiddenField.val("0");
+        // move code editor into summernote div
+        var element = $codeEditorContainer.detach();
+        context.layoutInfo.editingArea.closest('.note-editor').append(element);
+    }
 
     // create button
     var button = ui.button({
@@ -17,6 +20,11 @@
         tooltip: 'Code Editor',
         className: 'btn-codeview', // swap out the default btn-codeview with the RockCodeEditor
         click: function () {
+
+            var $codeEditor = $('#codeeditor-div-' + context.options.codeEditorOptions.controlId);
+            var $codeEditorContainer = $codeEditor.closest('.code-editor-container');
+            var $inCodeEditorModeHiddenField = $('#' + context.options.codeEditorOptions.inCodeEditorModeHiddenFieldId);
+
             if ($codeEditorContainer.is(':visible')) {
                 context.invoke('toolbar.updateCodeview', true);
                 var content = ace.edit($codeEditor.attr('id')).getValue();
