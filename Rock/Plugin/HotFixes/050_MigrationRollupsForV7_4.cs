@@ -40,4 +40,3 @@ WHERE [Message] LIKE '%<!-- prevent Gmail on iOS font size manipulation -->
         }
     }
 }
-}
