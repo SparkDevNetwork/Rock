@@ -349,7 +349,7 @@
 }
 
 /* Fix Blue Box around calling href bug */
-.modal-open .modal , a:focus , .close:focus {
+.modal-open .modal , a:focus , .close:focus, button:focus {
     outline:none!important
 }
 
@@ -435,6 +435,7 @@
 .dashboard-title-icon {
     color: #424242; 
     font-size: 24px;
+    margin: 0 5px;
 }
 
 .panel-dropdown-menu {
@@ -449,6 +450,7 @@
     height: 405px;
     display: flex; 
     flex-direction: column;
+    padding-bottom: 20px;
 }
 
 .dashboard-card .content .header {
@@ -576,13 +578,15 @@
 /* Group Card */
 .group-header {
     background-color: #EEEEEE;
-    padding: 13px 30px;
-    margin-bottom: 10px;
+    padding: 13px 20px 13px 30px;
+    border-bottom: 1px solid #ddd; 
+    /* margin-bottom: 10px; */
 }
 
 .group-name-row {
     display: flex;
     justify-content: space-between;
+    align-items: center;
 }
 
 .group-name-row-content {
@@ -602,22 +606,39 @@
     overflow: hidden; 
     text-transform: uppercase;
     text-decoration: none;
-    white-space: nowrap;
+    white-space: normal;
     line-height: 22px;
 }
 
 .group-header h5 {
-    font-size: 16px; 
+    font-size: 18px; 
     margin: 0px 0px .05rem; 
+    max-width: 60%;
 }
 
-.group-header a span {
+.group-header span {
+    font-family: akrobat;
+    font-size: 18px; 
+    color: #7A1315; 
     text-transform: uppercase; 
     font-weight: bold; 
+    white-space: normal;
+    line-height: 22px;
+}
+
+.group-details-toggle {
+    border: none;
+    background-color: unset;
+    padding: 0;
+}
+
+.group-header-icon {
+    font-size: 26px;
+    color: #7A1315; 
+    margin: 0;
 }
 
 .coach-video-row {
-    margin-top: 15px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -793,7 +814,7 @@
 
 .baptism-print-button {
     display: flex;
-    justify-content: space-around;
+    justify-content: space-evenly;
     margin-top: 30px;
 }
 
@@ -1081,6 +1102,7 @@
 
 .toolbox-group-members-card .content {
     height: 625px;
+    padding-bottom: 20px;
 }
 
 .person-row {
@@ -1194,5 +1216,49 @@
 }
 
 
-  /* End Toolbox Associate Pastor Card */
+/* End Toolbox Associate Pastor Card */
+
+/* Dashboard Communication Page */
+.communication-card {
+    background-color: #ffffff;
+    transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.12);
+    border-radius: 5px;
+    margin: 40px 20px 20px 20px;
+    padding: 20px 30px 20px 30px; 
+}
+
+.communication-card .recipients .list-unstyled {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.recipients .recipient {
+    min-width: 25%;
+    width: unset;
+}
+
+/* Undo hard coded communication styling */
+.communication-card .well {
+    padding: unset;
+    margin-bottom: unset;
+    min-height: unset;
+}
+
+/* Mobile Device Styling */
+@media screen and (max-width: 500px) {
+    .communication-card .recipients .list-unstyled {
+        flex-direction: column;
+    }
+
+    /* Hide WYSIWYG buttons (they look hideous) */
+    .note-toolbar.panel-heading {
+        visibility: hidden;
+    }
+}
+
+
+/* End Dashboard Communication Page */
   
