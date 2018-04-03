@@ -16,20 +16,17 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Web;
-using System.Xml;
-using System.Text;
 using System.Net;
 
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
-using Rock.Web.Cache;
 
 using DDay.iCal;
+using DDay.iCal.Serialization.iCalendar;
+
 using System.Globalization;
 
 namespace RockWeb
@@ -42,6 +39,9 @@ namespace RockWeb
         private HttpRequest request;
         private HttpResponse response;
 
+        /// <summary>
+        /// Gets a value indicating whether another request can use the <see cref="T:System.Web.IHttpHandler" /> instance.
+        /// </summary>
         public bool IsReusable
         {
             get
@@ -50,11 +50,16 @@ namespace RockWeb
             }
         }
 
+        /// <summary>
+        /// Processes the request.
+        /// </summary>
+        /// <param name="httpContext">The HTTP context.</param>
         public void ProcessRequest( HttpContext httpContext )
         {
             request = httpContext.Request;
             response = httpContext.Response;
 
+            // TODO: if querystring value is missing then check the request body
             if ( !ValidateSecurity( httpContext ) )
             {
                 return;
@@ -68,16 +73,96 @@ namespace RockWeb
                 return;
             }
 
-            
+            iCalendar icalendar = CreateICalendar( calendarProps );
 
+            iCalendarSerializer serializer = new iCalendarSerializer();
+            string s = serializer.SerializeToString( icalendar );
 
-            iCalendar icalendar = new iCalendar();
-            
-
-
+            response.Clear();
+            response.ClearHeaders();
+            response.ClearContent();
+            response.AddHeader( "content-disposition", string.Format( "attachment; filename={0}_ical.ics", calendarProps.StartDate.ToString( "yyyy-MM-dd" ) ) );
+            response.ContentType = "text/calendar";
+            response.Write( s );
         }
 
+        /// <summary>
+        /// Creates the iCalendar object and populates it with events
+        /// </summary>
+        /// <param name="calendarProps">The calendar props.</param>
+        /// <returns></returns>
+        private iCalendar CreateICalendar( CalendarProps calendarProps )
+        {
+            // Get a list of Rock Calendar Events filtered by calendarProps
+            List<EventItem> eventItems = GetEventItems( calendarProps );
 
+            // Create the iCalendar
+            iCalendar icalendar = new iCalendar();
+            icalendar.AddLocalTimeZone();
+
+            // Create each of the events for the calendar(s)
+            foreach ( EventItem eventItem in eventItems )
+            {
+                foreach ( EventItemOccurrence occurrence in eventItem.EventItemOccurrences )
+                {
+                    iCalendarSerializer serializer = new iCalendarSerializer();
+                    iCalendarCollection ical = ( iCalendarCollection ) serializer.Deserialize( occurrence.Schedule.iCalendarContent.ToStreamReader() );
+
+                    foreach ( var icalEvent in ical[0].Events )
+                    {
+                        Event ievent = icalEvent.Copy<Event>();
+                        ievent.Summary = eventItem.Name;
+                        icalendar.Events.Add( ievent );
+                    }
+                }
+            }
+
+            return icalendar;
+        }
+
+        /// <summary>
+        /// Uses the filter information in the CalendarProps object to get a list of events
+        /// </summary>
+        /// <param name="calendarProps">The calendar props.</param>
+        /// <returns></returns>
+        private List<EventItem> GetEventItems( CalendarProps calendarProps )
+        {
+            RockContext rockContext = new RockContext();
+
+            EventCalendarItemService eventCalendarItemService = new EventCalendarItemService( rockContext );
+            var eventIdsForCalendar = eventCalendarItemService
+                .Queryable()
+                .Where( i => i.EventCalendarId == calendarProps.CalendarId )
+                .Select( i => i.EventItemId )
+                .ToList();
+
+            EventItemService eventItemService = new EventItemService( rockContext );
+            var eventQueryable = eventItemService
+                .Queryable( "EventItemAudiences, EventItemOccurrences.Schedule" )
+                .Where( e => eventIdsForCalendar.Contains( e.Id ) )
+                .Where( e => e.EventItemOccurrences.Any( o => o.Schedule.EffectiveStartDate >= calendarProps.StartDate && o.Schedule.EffectiveEndDate <= calendarProps.EndDate ) )
+                .Where( e => e.IsActive == true )
+                .Where( e => e.IsApproved );
+
+            // For Campus
+            if ( calendarProps.CampusIds.Any() )
+            {
+                eventQueryable = eventQueryable.Where( e => e.EventItemOccurrences.Any( c => !c.CampusId.HasValue || calendarProps.CampusIds.Contains( c.CampusId.Value ) ) );
+            }
+
+            // For Audience
+            if ( calendarProps.AudienceIds.Any() )
+            {
+                eventQueryable = eventQueryable.Where( e => e.EventItemAudiences.Any( c => calendarProps.AudienceIds.Contains( c.DefinedValueId ) ) );
+            }
+
+            return eventQueryable.ToList();
+        }
+
+        /// <summary>
+        /// Sends the not authorized response
+        /// </summary>
+        /// <param name="httpContext">The HTTP context.</param>
         private void SendNotAuthorized( HttpContext httpContext )
         {
             httpContext.Response.StatusCode = HttpStatusCode.Forbidden.ConvertToInt();
@@ -85,12 +170,22 @@ namespace RockWeb
             httpContext.ApplicationInstance.CompleteRequest();
         }
 
+        /// <summary>
+        /// Sends the bad request response
+        /// </summary>
+        /// <param name="httpContext">The HTTP context.</param>
+        /// <param name="addlInfo">The addl information.</param>
         private void SendBadRequest( HttpContext httpContext, string addlInfo = "" )
         {
             httpContext.Response.StatusCode = HttpStatusCode.BadRequest.ConvertToInt();
             httpContext.Response.StatusDescription = "Request is inavalid or malformed. " + addlInfo;
         }
 
+        /// <summary>
+        /// Ensure the current user is authorized to view the calendar. If all are allowed then current user is not evaluated.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <returns></returns>
         private bool ValidateSecurity( HttpContext context )
         {
             int calendarId;
@@ -140,21 +235,26 @@ namespace RockWeb
             // Security check made sure the calendar ID is good so no need to check it again.
             calendarProps.CalendarId = int.Parse( request.QueryString["calendarid"] );
 
-            string campusIdQueryString = request.QueryString["campusIds"] != null ? request.QueryString["campusIds"] : string.Empty;
+            string campusIdQueryString = request.QueryString["campusids"] != null ? request.QueryString["campusids"] : string.Empty;
             calendarProps.CampusIds = ParseIds( campusIdQueryString );
 
-            string audienceIdQueryString = request.QueryString["audienceIds"] != null ? request.QueryString["audienceIds"] : string.Empty;
+            string audienceIdQueryString = request.QueryString["audienceids"] != null ? request.QueryString["audienceids"] : string.Empty;
             calendarProps.AudienceIds = ParseIds( audienceIdQueryString );
 
-            string startDate = request.QueryString["startDate"] != null ? request.QueryString["startDate"] : string.Empty;
-            calendarProps.StartDate = DateTime.ParseExact( startDate, "yyyyMMDD", CultureInfo.InvariantCulture );
+            string startDate = request.QueryString["startDate"];
+            if ( !string.IsNullOrWhiteSpace( startDate ) )
+            {
+                calendarProps.StartDate = DateTime.ParseExact( startDate, "yyyyMMDD", CultureInfo.InvariantCulture );
+            }
 
-            string endDate = request.QueryString["endDate"] != null ? request.QueryString["endDate"] : string.Empty;
-            calendarProps.EndDate = DateTime.ParseExact( endDate, "yyyyMMDD", CultureInfo.InvariantCulture );
+            string endDate = request.QueryString["endDate"];
+            if ( !string.IsNullOrWhiteSpace( endDate ) )
+            {
+                calendarProps.EndDate = DateTime.ParseExact( endDate, "yyyyMMDD", CultureInfo.InvariantCulture );
+            }
 
             return calendarProps;
         }
-
 
         /// <summary>
         /// Parses a query string for a list of Ids
@@ -188,17 +288,44 @@ namespace RockWeb
         /// </summary>
         private class CalendarProps
         {
-            DateTime _startDate;
-            DateTime _endDate;
+            private DateTime? _startDate;
+            private DateTime? _endDate;
 
+            /// <summary>
+            /// Gets or sets the calendar id.
+            /// </summary>
+            /// <value>
+            /// The calendar identifier.
+            /// </value>
             public int CalendarId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the campus ids. Leave empty to return all campuses
+            /// </summary>
+            /// <value>
+            /// The campus ids.
+            /// </value>
             public List<int> CampusIds { get; set; }
+
+            /// <summary>
+            /// Gets or sets the audience ids list. leave empty to return all audiences
+            /// </summary>
+            /// <value>
+            /// The audience ids.
+            /// </value>
             public List<int> AudienceIds { get; set; }
+
+            /// <summary>
+            /// Gets or sets the start date. if not explictly set returns current date
+            /// </summary>
+            /// <value>
+            /// The start date.
+            /// </value>
             public DateTime StartDate
             {
                 get
                 {
-                    return _startDate != null ? _startDate : DateTime.Now.Date;
+                    return _startDate != null ? (DateTime) _startDate : DateTime.Now.Date;
                 }
 
                 set
@@ -207,11 +334,17 @@ namespace RockWeb
                 }
             }
 
+            /// <summary>
+            /// Gets or sets the end date. If not explictly set returns two months from current date.
+            /// </summary>
+            /// <value>
+            /// The end date.
+            /// </value>
             public DateTime EndDate
             {
                 get
                 {
-                    return _endDate != null ? _endDate : DateTime.Now.AddMonths( 2 ).Date;
+                    return _endDate != null ? (DateTime) _endDate : DateTime.Now.AddMonths( 2 ).Date;
                 }
 
                 set
@@ -219,9 +352,6 @@ namespace RockWeb
                     _endDate = value;
                 }
             }
-
-
         }
-
     }
 }
