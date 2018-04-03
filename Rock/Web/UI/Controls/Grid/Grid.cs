@@ -964,6 +964,11 @@ namespace Rock.Web.UI.Controls
         /// <returns></returns>
         public DataControlField GetColumnByHeaderText( string headerText )
         {
+            if ( CustomColumns == null || !CustomColumns.Any() )
+            {
+                return null;
+            }
+
             foreach ( DataControlField column in this.CreatedColumns )
             {
                 if ( column.HeaderText == headerText )
