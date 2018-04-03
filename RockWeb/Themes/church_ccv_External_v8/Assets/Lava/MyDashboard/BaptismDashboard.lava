@@ -7,59 +7,55 @@
 
 {% comment %} Photo Display {% endcomment %}
 {% if PageParameter.display == 'photo' %}
-   
-    <div style="text-align: center;">
-       {% comment %} Check for a photo {% endcomment %}
-       {% if person | Attribute:'BaptismPhoto' %}
-           <br/>
-           <div class="baptism-print-button">
-               <input type='button' id='btnPrint' class="btn btn-primary" value='Print'>
-           </div>
-           <br/>
-           <div id="divBaptismDashboard" class="baptism-dashboard-container" style="display: inline-block;">
-               <div class="baptism-dashboard-image">
-                   {{ person | Attribute:'BaptismPhoto' }}
-               </div>
-           </div>
-       {% else %}
-           <div class="baptism-dashboard-container" style="display: inline-block;">
-               No Baptism Photo.
-           </div>
-       {% endif %}
-    </div>
+
+    {% comment %} Check for a photo {% endcomment %}
+    {% if person | Attribute:'BaptismPhoto' %}
+        <div class="baptism-print-button">
+            <a class="btn btn-primary" href="javascript:history.back()">Back</a>
+            <input type='button' id='btnPrint' class="btn btn-primary" value='Print'>
+        </div>
+        <div id="divBaptismDashboard" class="baptism-dashboard-container">
+            <div class="baptism-dashboard-image">
+                {{ person | Attribute:'BaptismPhoto' }}
+            </div>
+        </div>
+    {% else %}
+        <div class="baptism-dashboard-container">
+            No Baptism Photo.
+        </div>
+    {% endif %}
+
 {% endif %}
 
 
 {% comment %} Certificate Display {% endcomment %}
 
 {% if PageParameter.display == 'certificate' %}
-   
-    <div style="text-align: center;">
-       {% comment %} Check if baptized by CCV {% endcomment %}
-       {% assign ccvBaptized = person | Attribute:'BaptizedHere' %}
-       <br/>
-       {% if ccvBaptized == 'Yes' %}
-           <div class="baptism-print-button">
-               <input type='button' id='btnPrint' class="btn btn-primary" value='Print'>
-           </div>
-           <br/>
-           <div id="divBaptismDashboard" class="baptism-dashboard-container" style="display: inline-block;">
-               <div class="baptism-dashboard-image">
-                   <img src="~~/Assets/Images/baptism/baptism-certificate-{{ person | Campus | Property:'ShortCode' | Downcase }}.jpg"/>
-                   <div class="baptism-certificate-name-container">
-                       <span class="baptism-certificate-name">{{ person.FullName }}</span>
-                   </div>
-                   <div class="baptism-certificate-date-container">
-                       <span class="baptism-certificate-date">{{ person | Attribute:'BaptismDate' | Date:'MMMM d, yyyy' }}</span>
-                   </div>
-               </div>
-           </div>
-       {% else %}
-           <div class="baptism-dashboard-container" style="display: inline-block;">
-               No Baptism Certificate.
-           </div>
-       {% endif %}
-    </div>
+
+    {% comment %} Check if baptized by CCV {% endcomment %}
+    {% assign ccvBaptized = person | Attribute:'BaptizedHere' %}
+    {% if ccvBaptized == 'Yes' %}
+        <div class="baptism-print-button">
+            <a class="btn btn-primary" href="javascript:history.back()">Back</a>
+            <input type='button' id='btnPrint' class="btn btn-primary" value='Print'>
+        </div>
+        <div id="divBaptismDashboard" class="baptism-dashboard-container">
+            <div class="baptism-dashboard-image">
+                <img src="~~/Assets/Images/baptism/baptism-certificate-{{ person | Campus | Property:'ShortCode' | Downcase }}.jpg"/>
+                <div class="baptism-certificate-name-container">
+                    <span class="baptism-certificate-name">{{ person.FullName }}</span>
+                </div>
+                <div class="baptism-certificate-date-container">
+                    <span class="baptism-certificate-date">{{ person | Attribute:'BaptismDate' | Date:'MMMM d, yyyy' }}</span>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="baptism-dashboard-container">
+            No Baptism Certificate.
+        </div>
+    {% endif %}
+
 {% endif %}
 
 <script>
