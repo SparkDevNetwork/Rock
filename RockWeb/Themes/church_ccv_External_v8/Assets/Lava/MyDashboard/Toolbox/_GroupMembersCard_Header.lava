@@ -6,12 +6,12 @@
     <h4>Members</h4>
     <div>
         {% if renderAddButton == 'true' %}
-            <a href="#" onclick="btnAddGroupMember({{ group.Group.Id }},{{ group.Group.GroupType.DefaultGroupRoleId }}); return false;">
-                <i class="mdi mdi-account-plus dashboard-title-icon"></i>
+            <a href="#" onclick="btnAddGroupMember({{ group.Id }},{{ group.GroupType.DefaultGroupRoleId }}); return false;">
+                <i class="mdi mdi-account-plus dashboard-title-icon tooltip-add-group-member"></i>
             </a>
         {% endif %}
         <button class="dropdown-toggle" type="button" data-toggle="dropdown">
-            <i class="mdi mdi-dots-vertical dashboard-title-icon"></i>
+            <i class="mdi mdi-dots-vertical dashboard-title-icon tooltip-more-options"></i>
         </button>
         <ul class="dropdown-menu panel-dropdown-menu">
             <li><a href="/page/1751?person={{ DatamartSummary.AssociatePastor.Id }}">Something will go here</h5></a></li>

@@ -2,7 +2,15 @@
     {% include '~~/Assets/Lava/Toolboxes/GroupMembersCard.lava' %}  
  {% endcomment %}
 
- {% assign group = Groups | First %}
+{% comment %} {% assign group = Groups | First %} {% endcomment %}
+
+{% assign groupId = PageParameter.GroupId %}
+
+{% for currGroup in Groups %}
+   {% if currGroup.Group.Id == groupId %}
+      {% assign group = currGroup.Group %}
+   {% endif %}
+{% endfor %}
 
 {% if group != null and group != '' %}
     {% comment %} Load default content for badges {% endcomment %}
@@ -16,17 +24,19 @@
         <div class="content">
             <div>
                 <div class="group-header">
-                    <a onclick="">
+                    <a href="/page/1751?group={{ group.Id }}">
                         <div class="group-header-content">
-                            <i class="mdi mdi-email dashboard-icon"></i>
-                            <span>Group Email</span>
-                            <i class="mdi mdi-chevron-right dashboard-icon" style="color: #7A1315; margin: 0;"></i>
-                        </div>
+                            <div class="tooltip-email-group" style="display: flex; align-items: center;">
+                                <i class="mdi mdi-email dashboard-icon"></i>
+                                <span>Group Email</span>
+                                <i class="mdi mdi-chevron-right dashboard-icon" style="color: #7A1315; margin: 0;"></i>
+                            </div>
+                      </div>
                     </a>
                 </div>
 
                 {% comment %} Render Group Members {% endcomment %}
-                {% for member in group.Group.Members %}
+                {% for member in group.Members %}
                     {% assign personIndex = forloop.index %}
 
                     <div class="person-row">
@@ -45,18 +55,18 @@
 
                                 {% if cellPhone %}
                                     <a href="tel:+1{{cellPhone}}">
-                                    <i class="mdi mdi-phone dashboard-icon"></i>
+                                    <i class="mdi mdi-phone dashboard-icon tooltip-phone-person"></i>
                                     </a>
                                 {% elseif homePhone %}
                                     <a href="tel:+1{{homePhone}}">
-                                    <i class="mdi mdi-phone dashboard-icon"></i>
+                                    <i class="mdi mdi-phone dashboard-icon tooltip-phone-person"></i>
                                     </a>
                                 {% endif %}
                                 <a href="/page/1751?person={{ member.Person.Id }}">
-                                    <i class="mdi mdi-email dashboard-icon"></i>
+                                    <i class="mdi mdi-email dashboard-icon tooltip-email-person"></i>
                                 </a>
                                 <button type="button" data-toggle="collapse" data-target="#personDetails{{ personIndex }}" class="person-details-toggle">
-                                    <i id="personDetailsToggle{{ personIndex }}" class="mdi mdi-chevron-down dashboard-icon" style="color: #7A1315"></i>
+                                    <i id="personDetailsToggle{{ personIndex }}" class="mdi mdi-chevron-down dashboard-icon tooltip-person-details" style="color: #7A1315"></i>
                                 </button>
                             </div>
                         </div>
@@ -80,7 +90,7 @@
                                     <p>Birthday: {{ member.Person.BirthDate | Date:'M/d/yyyy' }} ({{ member.Person.Age }} yrs. old)</p>
                                 {% endif %}
                                 {% if member.Person.AnniversaryDate != null and member.Person.AnniversaryDate != '' %}
-                                    <p>Anniversary: {{ member.Person.AnniversaryDate | Date:'M/d/yyyy' }} ({{ member.Person.AnniversaryDate | DateDiff:'Now','Y' }} yrs.)</p>
+                                    <p>Anniversary: {{ member.Person.AnniversaryDate | Date:'M/d/yyyy' }} ({{ member.Person.AnniversaryDate | DateDiff:'Now','M' | DividedBy:12 | Floor }} yrs.)</p>
                                 {% endif %}
                                 {% assign spouse = member.Person | Parents | First %}
                                 {% if spouse != null and spuse != '' %}
@@ -426,6 +436,14 @@
                         toggleChevron = function(element) {
                             $(element).toggleClass('mdi-chevron-down mdi-chevron-up');
                         }
+
+                        // Activate Tooltips
+                        activatePopOver('.tooltip-more-options', 'More Options');
+                        activatePopOver('.tooltip-add-group-member', 'Add Group Member');
+                        activatePopOver('.tooltip-email-group', 'Email Group');
+                        activatePopOver('.tooltip-email-person', 'Email');
+                        activatePopOver('.tooltip-phone-person', 'Call');
+                        activatePopOver('.tooltip-person-details', 'Person Details');
                      </script>
 
                 {% endfor %}
