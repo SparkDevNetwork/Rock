@@ -1205,6 +1205,7 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
+    <Compile Include="Plugin\HotFixes\050_MigrationRollupsForV7_4.cs" />
     <Compile Include="Reporting\DataFilter\FinancialScheduledTransactionDetail\AccountFilter.cs" />
     <Compile Include="Reporting\DataFilter\BenevolenceRequest\CampusActiveFilter.cs" />
     <Compile Include="Reporting\DataFilter\BenevolenceRequest\CampusesActiveFilter.cs" />
