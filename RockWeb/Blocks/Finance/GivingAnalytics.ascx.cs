@@ -52,7 +52,6 @@ namespace RockWeb.Blocks.Finance
     {
         #region Fields
 
-        private RockContext _rockContext = null;
         private bool FilterIncludedInURL = false;
 
         private Dictionary<int, Dictionary<int, string>> _campusAccounts = null;
@@ -116,8 +115,6 @@ namespace RockWeb.Blocks.Finance
             lTotal.ID = "lTotal";
 
             dvpDataView.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Person ) ).Id;
-
-            _rockContext = new RockContext();
 
             pnlViewBy.Visible = !GetAttributeValue( "HideViewByOptions" ).AsBoolean();
         }
@@ -921,15 +918,16 @@ function(item) {
             {
                 qryTasks.Add( Task.Run( () =>
                 {
+                    var threadRockContext = new RockContext();
                     var ti = new TaskInfo { name = "Get DataView People", start = DateTime.Now };
                     taskInfos.Add( ti );
 
                     dataViewGivingIds = new List<string>();
-                    var dataView = new DataViewService( _rockContext ).Get( dataViewId.Value );
+                    var dataView = new DataViewService( threadRockContext ).Get( dataViewId.Value );
                     if ( dataView != null )
                     {
                         var errorMessages = new List<string>();
-                        var dvPersonService = new PersonService( _rockContext );
+                        var dvPersonService = new PersonService( threadRockContext );
                         ParameterExpression paramExpression = dvPersonService.ParameterExpression;
                         Expression whereExpression = dataView.GetExpression( dvPersonService, paramExpression, out errorMessages );
 
@@ -1179,8 +1177,6 @@ function(item) {
                         personInfo.IsChild = (bool)row["IsChild"];
                     }
 
-                    personInfo.AccountAmounts = new Dictionary<int, decimal>();
-
                     personInfoList.Add( personInfo );
                 }
 
@@ -1257,20 +1253,23 @@ function(item) {
                     taskInfos.Add( ti );
 
                     dataViewPersonIds = new List<int>();
-                    var dataView = new DataViewService( _rockContext ).Get( dataViewId.Value );
-                    if ( dataView != null )
+                    using ( var threadRockContext = new RockContext() )
                     {
-                        var errorMessages = new List<string>();
-                        var dvPersonService = new PersonService( _rockContext );
-                        ParameterExpression paramExpression = dvPersonService.ParameterExpression;
-                        Expression whereExpression = dataView.GetExpression( dvPersonService, paramExpression, out errorMessages );
+                        var dataView = new DataViewService( threadRockContext ).Get( dataViewId.Value );
+                        if ( dataView != null )
+                        {
+                            var errorMessages = new List<string>();
+                            var dvPersonService = new PersonService( threadRockContext );
+                            ParameterExpression paramExpression = dvPersonService.ParameterExpression;
+                            Expression whereExpression = dataView.GetExpression( dvPersonService, paramExpression, out errorMessages );
 
-                        SortProperty sort = null;
-                        var dataViewPersonIdQry = dvPersonService
-                            .Queryable().AsNoTracking()
-                            .Where( paramExpression, whereExpression, sort )
-                            .Select( p => p.Id );
-                        dataViewPersonIds = dataViewPersonIdQry.ToList();
+                            SortProperty sort = null;
+                            var dataViewPersonIdQry = dvPersonService
+                                .Queryable().AsNoTracking()
+                                .Where( paramExpression, whereExpression, sort )
+                                .Select( p => p.Id );
+                            dataViewPersonIds = dataViewPersonIdQry.ToList();
+                        }
                     }
 
                     ti.end = DateTime.Now;
@@ -1341,23 +1340,26 @@ function(item) {
                 // Add columns for the selected account totals
                 if ( accountIds.Any() )
                 {
-                    var accounts = new FinancialAccountService( _rockContext )
-                        .Queryable().AsNoTracking()
-                        .Where( a => accountIds.Contains( a.Id ) )
-                        .ToList();
-
-                    foreach ( int accountId in accountIds )
+                    using ( var threadRockContext = new RockContext() )
                     {
-                        var account = accounts.FirstOrDefault( a => a.Id == accountId );
-                        if ( account != null )
+                        var accounts = new FinancialAccountService( threadRockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( a => accountIds.Contains( a.Id ) )
+                            .ToList();
+
+                        foreach ( int accountId in accountIds )
                         {
-                            gGiversGifts.Columns.Add(
-                                new GivingAnalyticsAccountField
-                                {
-                                    DataField = string.Format( "Account_{0}", account.Id ),
-                                    HeaderText = account.Name,
-                                    SortExpression = string.Format( "Account:{0}", account.Id ),
-                                } );
+                            var account = accounts.FirstOrDefault( a => a.Id == accountId );
+                            if ( account != null )
+                            {
+                                gGiversGifts.Columns.Add(
+                                    new GivingAnalyticsAccountField
+                                    {
+                                        DataField = string.Format( "Account_{0}", account.Id ),
+                                        HeaderText = account.Name,
+                                        SortExpression = string.Format( "Account:{0}", account.Id ),
+                                    } );
+                            }
                         }
                     }
                 }
@@ -1471,11 +1473,13 @@ function(item) {
                 personInfoList = personInfoList.Where( c => dataViewPersonIds.Contains( c.Id ) ).ToList();
             }
 
+            var rockContext = new RockContext();
+
             // if dataview was selected and it includes people not in the result set, 
             if ( dataViewId.HasValue && rblDataViewAction.SelectedValue == "All" && dataViewPersonIds.Any() )
             {
                 // Query for the names of each of these people
-                foreach ( var person in new PersonService( _rockContext )
+                foreach ( var person in new PersonService( rockContext )
                     .Queryable().AsNoTracking()
                     .Where( p => dataViewPersonIds.Contains( p.Id ) )
                     .Select( p => new
@@ -1579,7 +1583,7 @@ function(item) {
                     {
                         // Get the givingleaderids that gave any amount during the pattern's date range. These
                         // are needed so that we know who to exclude from the result set
-                        previousGivingIds = new FinancialTransactionDetailService( _rockContext )
+                        previousGivingIds = new FinancialTransactionDetailService( rockContext )
                             .Queryable().AsNoTracking()
                             .Where( d =>
                                 d.Transaction.TransactionDateTime.HasValue &&
@@ -1858,6 +1862,11 @@ function(item) {
 
     public class PersonInfo
     {
+        public PersonInfo()
+        {
+            this.AccountAmounts = new Dictionary<int, decimal>();
+        }
+
         public int Id { get; set; }
         public Guid Guid { get; set; }
         public string NickName { get; set; }
