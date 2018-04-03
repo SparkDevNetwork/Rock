@@ -170,11 +170,11 @@ namespace RockWeb.Blocks.Reporting
                         .Where( a =>
                             a.ChannelId == _channelId.Value );
 
-                    var personAliasId = GetPersonAliasId();
-                    if ( personAliasId.HasValue )
+                    var personId = GetPersonId();
+                    if ( personId.HasValue )
                     {
                         var interactionQry = new InteractionService( rockContext ).Queryable();
-                        interactionComponentQry = interactionComponentQry.Where( a => interactionQry.Any( b => b.PersonAliasId == personAliasId.Value && b.InteractionComponentId == a.Id ) );
+                        interactionComponentQry = interactionComponentQry.Where( a => interactionQry.Any( b => b.PersonAlias.PersonId == personId.Value && b.InteractionComponentId == a.Id ) );
                     }
 
                     interactionComponentQry = interactionComponentQry
@@ -209,9 +209,9 @@ namespace RockWeb.Blocks.Reporting
                         queryStringNext.Add( "ChannelId", _channelId.ToString() );
                         queryStringNext.Add( "Page", ( pageNumber + 1 ).ToString() );
 
-                        if ( personAliasId.HasValue )
+                        if ( personId.HasValue )
                         {
-                            queryStringNext.Add( "PersonAliasId", personAliasId.Value.ToString() );
+                            queryStringNext.Add( "PersonId", personId.Value.ToString() );
                         }
 
                         var pageReferenceNext = new Rock.Web.PageReference( CurrentPageReference.PageId, CurrentPageReference.RouteId, queryStringNext );
@@ -225,9 +225,9 @@ namespace RockWeb.Blocks.Reporting
                         queryStringPrev.Add( "ChannelId", _channelId.ToString() );
                         queryStringPrev.Add( "Page", ( pageNumber - 1 ).ToString() );
 
-                        if ( personAliasId.HasValue )
+                        if ( personId.HasValue )
                         {
-                            queryStringPrev.Add( "PersonAliasId", personAliasId.Value.ToString() );
+                            queryStringPrev.Add( "PersonId", personId.Value.ToString() );
                         }
 
                         var pageReferencePrev = new Rock.Web.PageReference( CurrentPageReference.PageId, CurrentPageReference.RouteId, queryStringPrev );
@@ -242,30 +242,28 @@ namespace RockWeb.Blocks.Reporting
         }
 
         /// <summary>
-        /// Get the person alias through query list or context.
+        /// Get the person through query list or context.
         /// </summary>
-        public int? GetPersonAliasId()
+        public int? GetPersonId()
         {
             int? personId = PageParameter( "PersonId" ).AsIntegerOrNull();
             int? personAliasId = PageParameter( "PersonAliasId" ).AsIntegerOrNull();
 
-            if ( personId.HasValue )
+            if ( personAliasId.HasValue )
             {
-                personAliasId = new PersonAliasService( new RockContext() ).GetPrimaryAliasId( personId.Value );
+                personId = new PersonAliasService( new RockContext() ).GetPersonId( personAliasId.Value );
             }
 
-
-
-            if ( !personAliasId.HasValue )
+            if ( !personId.HasValue )
             {
                 var person = ContextEntity<Person>();
                 if ( person != null )
                 {
-                    personAliasId = person.PrimaryAliasId;
+                    personId = person.Id;
                 }
             }
 
-            return personAliasId;
+            return personId;
         }
 
         #endregion
