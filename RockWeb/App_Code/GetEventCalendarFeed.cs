@@ -110,8 +110,45 @@ namespace RockWeb
 
                     foreach ( var icalEvent in ical[0].Events )
                     {
+                        // We get all of the schedule info from Schedule.iCalendarContent
                         Event ievent = icalEvent.Copy<Event>();
-                        ievent.Summary = eventItem.Name;
+
+                        // This is the subject in outlook
+                        ievent.Summary = !string.IsNullOrEmpty( eventItem.Name ) ? eventItem.Name : string.Empty;
+
+                        // body
+                        ievent.Description = !string.IsNullOrEmpty( eventItem.Description ) ? eventItem.Description : string.Empty;
+
+                        // Add occurrence note to the description
+                        if ( !string.IsNullOrEmpty( occurrence.Note ) )
+                        {
+                            ievent.Description += Environment.NewLine;
+                            ievent.Description += occurrence.Note;
+                        }
+
+                        // classification: "PUBLIC", "PRIVATE", "CONFIDENTIAL"
+                        ievent.Class = "PUBLIC";
+
+                        if ( !string.IsNullOrEmpty( eventItem.DetailsUrl ) )
+                        {
+                            ievent.Url = new Uri( eventItem.DetailsUrl );
+                        }
+
+                        ievent.Location = !string.IsNullOrEmpty( occurrence.Location ) ? occurrence.Location : string.Empty;
+
+                        // add the photo if it exists. Might want to add content channels too.
+                        if ( eventItem.PhotoId != null )
+                        {
+                            ievent.Attachments.Add( new Attachment( eventItem.Photo.ContentsToString() ) );// this is not working.
+                        }
+
+                        // organizer  - ORGANIZER;CN=John Smith:mailto:jsmith@example.com
+                        // contact - textual contact info, my include name, phone, emai;
+
+                        // optional and can occur more than once
+                        // categories - comma delmited list of whatever, might use audience
+                        // comment - Any text
+
                         icalendar.Events.Add( ievent );
                     }
                 }
