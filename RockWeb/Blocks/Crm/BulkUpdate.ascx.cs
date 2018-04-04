@@ -90,15 +90,20 @@ namespace RockWeb.Blocks.Crm
                 var workflowTypeService = new WorkflowTypeService( rockContext );
                 foreach ( var workflowType in new WorkflowTypeService( rockContext )
                     .Queryable().AsNoTracking()
-                    .Where( t => guidList.Contains( t.Guid ) )
+                    .Where( t => 
+                        guidList.Contains( t.Guid ) &&
+                        ( !t.IsActive.HasValue || t.IsActive.Value ) )
                     .ToList() )
                 {
-                    ListItem item = new ListItem( workflowType.Name, workflowType.Id.ToString() );
-                    rlbWorkFlowType.Items.Add( item );
+                    if ( workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                    {
+                        ListItem item = new ListItem( workflowType.Name, workflowType.Id.ToString() );
+                        rlbWorkFlowType.Items.Add( item );
+                    }
                 }
             }
 
-            if ( !guidList.Any() )
+            if ( rlbWorkFlowType.Items.Count <= 0 )
             {
                 pwWorkFlows.Visible = false;
             }
