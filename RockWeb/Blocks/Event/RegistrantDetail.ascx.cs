@@ -50,10 +50,28 @@ namespace RockWeb.Blocks.Event
     {
         #region Properties
 
+        /// <summary>
+        /// Gets or sets the TemplateState
+        /// </summary>
+        /// <value>
+        /// The state of the template.
+        /// </value>
         private RegistrationTemplate TemplateState { get; set; }
 
+        /// <summary>
+        /// Gets or sets the RegistrantSate
+        /// </summary>
+        /// <value>
+        /// The state of the registrant.
+        /// </value>
         private RegistrantInfo RegistrantState { get; set; }
 
+        /// <summary>
+        /// Gets or sets the registration instance identifier.
+        /// </summary>
+        /// <value>
+        /// The registration instance identifier.
+        /// </value>
         private int RegistrationInstanceId { get; set; }
 
         #endregion
@@ -530,7 +548,7 @@ namespace RockWeb.Blocks.Event
         #region Methods
 
         /// <summary>
-        /// Loads the state.
+        /// Creates the RegistrantState and TemplateState obj and loads the UI with values.
         /// </summary>
         private void LoadState()
         {
@@ -662,6 +680,9 @@ namespace RockWeb.Blocks.Event
             }
         }
 
+        /// <summary>
+        /// Navigates to registration parent page with the ID as a parameter
+        /// </summary>
         private void NavigateToRegistration()
         {
             if ( RegistrantState != null )
