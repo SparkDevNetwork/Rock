@@ -23,6 +23,7 @@
                         <Rock:RockDropDownList ID="ddlInvalidReason" runat="server" Label="Invalid Reason" />
                         <Rock:NumberBox ID="nbMoveDistance" runat="server" NumberType="Double" Label="Move Distance"></Rock:NumberBox>
                         <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" />
+                        <Rock:CampusPicker ID="cpCampus" Label="Campus" runat="server" />
                     </Rock:GridFilter>
                 </div>
 
