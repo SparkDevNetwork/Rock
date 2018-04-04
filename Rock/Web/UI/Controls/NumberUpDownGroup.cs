@@ -312,11 +312,11 @@ namespace Rock.Web.UI.Controls
         {
             foreach ( var control in ControlGroup )
             {
-                writer.AddAttribute( HtmlTextWriterAttribute.Style, "margin: 10px;" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "margin-l-sm margin-b-sm" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 // control label
-                writer.AddAttribute( HtmlTextWriterAttribute.Style, "margin-bottom: 10px;" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "margin-b-sm" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.Write( control.Label );
                 writer.RenderEndTag();
@@ -338,7 +338,7 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Visible )
             {
-                writer.AddAttribute( HtmlTextWriterAttribute.Style, "margin-bottom: 25px;" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "margin-b-md" );
                 RockControlHelper.RenderControl( this, writer );
             }
         }
