@@ -267,6 +267,7 @@ namespace RockWeb.Blocks.Communication
                 }
 
                 template.Name = copyName.Truncate( 100 );
+                template.IsSystem = false;
                 templateCopy.Guid = Guid.NewGuid();
                 service.Add( templateCopy );
                 rockContext.SaveChanges();

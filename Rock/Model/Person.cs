@@ -504,6 +504,26 @@ namespace Rock.Model
         [DataMember]
         public int? PrimaryFamilyId { get; set; }
 
+        /// <summary>
+        /// Gets or sets a flag indicating if the Person is locked as child.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if the Person is locked as child; otherwise <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsLockedAsChild {
+            get
+            {
+                return _isLockedAsChild;
+            }
+
+            set
+            {
+                _isLockedAsChild = value;
+            }
+        }
+        private bool _isLockedAsChild = false;
+
         #endregion
 
         #region Constructors

@@ -19,7 +19,7 @@ namespace Rock.Plugin.HotFixes {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class HotFixMigrationResource {
@@ -199,6 +199,80 @@ namespace Rock.Plugin.HotFixes {
         public static string _047_DataAutomation_ShortLinkInteractionFix {
             get {
                 return ResourceManager.GetString("_047_DataAutomation_ShortLinkInteractionFix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ALTER PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery_AccountTotals]
+        ///	  @StartDate datetime = NULL
+        ///	, @EndDate datetime = NULL
+        ///	, @AccountIds varchar(max) = NULL
+        ///	, @CurrencyTypeIds varchar(max) = NULL
+        ///	, @SourceTypeIds varchar(max) = NULL
+        ///	, @TransactionTypeIds varchar(max) = NULL
+        ///	WITH RECOMPILE
+        ///AS
+        ///
+        ///BEGIN
+        ///
+        ///	SET @StartDate = COALESCE( CONVERT( date, @StartDate ), &apos;1900-01-01&apos; )
+        ///	SET @EndDate = COALESCE( @EndDate, &apos;2100-01-01&apos; )
+        ///
+        ///	DECLARE @AccountTbl TABLE ( [Id] int )
+        ///	INSERT INTO @AccountT [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _049_GivingAnalyticsAccounts_AccountTotals {
+            get {
+                return ResourceManager.GetString("_049_GivingAnalyticsAccounts_AccountTotals", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ALTER PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery_PersonSummary]
+        ///	  @StartDate datetime = NULL
+        ///	, @EndDate datetime = NULL
+        ///	, @MinAmount decimal(18,2) = NULL
+        ///	, @MaxAmount decimal(18,2) = NULL
+        ///	, @AccountIds varchar(max) = NULL
+        ///	, @CurrencyTypeIds varchar(max) = NULL
+        ///	, @SourceTypeIds varchar(max) = NULL
+        ///	, @TransactionTypeIds varchar(max) = NULL
+        ///	WITH RECOMPILE
+        ///AS
+        ///
+        ///BEGIN
+        ///
+        ///	SET @StartDate = COALESCE( CONVERT( date, @StartDate ), &apos;1900-01-01&apos; )
+        ///	SET @EndDate = COALESCE( @EndDate, &apos;2100-01- [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _049_GivingAnalyticsAccounts_PersonSummary {
+            get {
+                return ResourceManager.GetString("_049_GivingAnalyticsAccounts_PersonSummary", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ALTER PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery_TransactionData]
+        ///	  @StartDate datetime = NULL
+        ///	, @EndDate datetime = NULL
+        ///	, @AccountIds varchar(max) = NULL
+        ///	, @CurrencyTypeIds varchar(max) = NULL
+        ///	, @SourceTypeIds varchar(max) = NULL
+        ///	, @TransactionTypeIds varchar(max) = NULL
+        ///	WITH RECOMPILE
+        ///AS
+        ///
+        ///BEGIN
+        ///
+        ///	SET @StartDate = COALESCE( CONVERT( date, @StartDate ), &apos;1900-01-01&apos; )
+        ///	SET @EndDate = COALESCE( @EndDate, &apos;2100-01-01&apos; )
+        ///
+        ///	DECLARE @AccountTbl TABLE ( [Id] int )
+        ///	INSERT INTO @Accoun [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _049_GivingAnalyticsAccounts_TransactionData {
+            get {
+                return ResourceManager.GetString("_049_GivingAnalyticsAccounts_TransactionData", resourceCulture);
             }
         }
     }

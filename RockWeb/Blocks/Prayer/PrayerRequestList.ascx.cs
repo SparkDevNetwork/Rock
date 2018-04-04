@@ -119,11 +119,11 @@ namespace RockWeb.Blocks.Prayer
             gPrayerRequests.IsDeleteEnabled = _canAddEditDelete;
 
             // if there is a Person as the ContextEntity, there is no need to show the Name column
-            gPrayerRequests.Columns.GetColumnByHeaderText( "Name" ).Visible = this.ContextEntity<Rock.Model.Person>() == null;
+            gPrayerRequests.GetColumnByHeaderText( "Name" ).Visible = this.ContextEntity<Rock.Model.Person>() == null;
 
 
-            gPrayerRequests.Columns.GetColumnByHeaderText( "Prayer Count" ).Visible = GetAttributeValue( "ShowPrayerCount" ).AsBoolean();
-            gPrayerRequests.Columns.GetColumnByHeaderText( "Approved?" ).Visible = GetAttributeValue( "ShowApprovedColumn" ).AsBoolean();
+            gPrayerRequests.GetColumnByHeaderText( "Prayer Count" ).Visible = GetAttributeValue( "ShowPrayerCount" ).AsBoolean();
+            gPrayerRequests.GetColumnByHeaderText( "Approved?" ).Visible = GetAttributeValue( "ShowApprovedColumn" ).AsBoolean();
         }
 
         /// <summary>

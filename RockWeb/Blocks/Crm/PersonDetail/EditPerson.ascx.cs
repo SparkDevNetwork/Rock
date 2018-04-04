@@ -350,6 +350,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     person.EmailPreference = rblEmailPreference.SelectedValue.ConvertToEnum<EmailPreference>();
                     person.CommunicationPreference = rblCommunicationPreference.SelectedValueAsEnum<CommunicationType>(); ;
                     person.GivingGroupId = ddlGivingGroup.SelectedValueAsId();
+                    person.IsLockedAsChild = cbLockAsChild.Checked;
 
                     // Save the Envelope Number attribute if it exists and has changed
                     var personGivingEnvelopeAttribute = AttributeCache.Read( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
@@ -631,6 +632,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
 
             ddlGivingGroup.SetValue( Person.GivingGroupId );
+            cbLockAsChild.Checked = Person.IsLockedAsChild;
             var personGivingEnvelopeAttribute = AttributeCache.Read( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
             rcwEnvelope.Visible = GlobalAttributesCache.Read().EnableGivingEnvelopeNumber && personGivingEnvelopeAttribute != null;
             if ( personGivingEnvelopeAttribute != null )

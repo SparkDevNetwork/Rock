@@ -30,6 +30,14 @@ namespace Rock.Web.UI.Controls
     public class WorkflowTypePicker : ItemPicker
     {
         /// <summary>
+        /// Gets or sets a value indicating whether [show in active].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show in active]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowInactive { get; set; }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -37,6 +45,7 @@ namespace Rock.Web.UI.Controls
         {
             ItemRestUrlExtraParams = "?getCategorizedItems=true&showUnnamedEntityItems=true&showCategoriesThatHaveNoChildren=false";
             ItemRestUrlExtraParams += "&entityTypeId=" + EntityTypeCache.Read( Rock.SystemGuid.EntityType.WORKFLOW_TYPE.AsGuid() ).Id;
+            ItemRestUrlExtraParams += "&includeInactiveItems=" + ShowInactive;
             this.IconCssClass = "fa fa-cogs";
             base.OnInit( e );
         }

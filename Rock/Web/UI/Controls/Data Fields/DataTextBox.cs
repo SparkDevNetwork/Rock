@@ -225,6 +225,10 @@ namespace Rock.Web.UI.Controls
             dataValidator.IsValid = false;
         }
 
+        /// <summary>
+        /// Renders the base control.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
         public override void RenderBaseControl( HtmlTextWriter writer )
         {
             if ( !this.MaxLengthFromPropertyName && this.MaxLength != 0 )

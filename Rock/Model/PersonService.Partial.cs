@@ -30,7 +30,7 @@ namespace Rock.Model
     /// Data Access/Service class for <see cref="Rock.Model.Person"/> entity objects.
     /// </summary>
     public partial class PersonService
-    {     
+    {
         /// <summary>
         /// Gets the specified unique identifier.
         /// </summary>
@@ -878,7 +878,7 @@ namespace Rock.Model
                     SortedMembers = m.Group.Members.Select( x => new
                     {
                         GroupMember = x,
-                        PersonGroupOrder = m.GroupOrder 
+                        PersonGroupOrder = m.GroupOrder
                     } )
                 } )
                 .SelectMany( x => x.SortedMembers )
@@ -1345,7 +1345,7 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.Person" /> associated with the provided Key, otherwise null.
         /// </returns>
         [Obsolete( "Use GetByEncryptedKey( string encryptedKey, bool followMerges, int? pageId ) instead" )]
-        public Person GetByEncryptedKey( string encryptedKey, bool followMerges)
+        public Person GetByEncryptedKey( string encryptedKey, bool followMerges )
         {
             return GetByEncryptedKey( encryptedKey, true, true, null );
         }
@@ -1423,7 +1423,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="userLoginId">The user login identifier.</param>
         /// <returns></returns>
-        public Person GetByUserLoginId(int userLoginId)
+        public Person GetByUserLoginId( int userLoginId )
         {
             UserLogin userLogin = new UserLoginService( new RockContext() ).Get( userLoginId );
             return Get( userLogin.PersonId.Value );
@@ -1537,7 +1537,7 @@ namespace Rock.Model
             //// 2) Opposite Gender as Person, if Gender of both Persons is known
             //// 3) Both Persons are Married
             int marriedDefinedValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() ).Id;
-            
+
             if ( person.MaritalStatusValueId != marriedDefinedValueId )
             {
                 return default( TResult );
@@ -1560,8 +1560,8 @@ namespace Rock.Model
                 // In the future, we may need to implement and check a GLOBAL Attribute "BibleStrict" with this logic: 
                 .Where( m => m.Person.Gender != person.Gender || m.Person.Gender == Gender.Unknown || person.Gender == Gender.Unknown )
                 .Where( m => m.Person.MaritalStatusValueId == marriedDefinedValueId )
-                .OrderBy( m => groupOrderQuery.FirstOrDefault(x => x.GroupId == m.GroupId && x.PersonId == person.Id).GroupOrder ?? int.MaxValue )
-                .ThenBy( m => DbFunctions.DiffDays(m.Person.BirthDate ?? new DateTime(1, 1, 1), person.BirthDate ?? new DateTime( 1, 1, 1 ) ) )
+                .OrderBy( m => groupOrderQuery.FirstOrDefault( x => x.GroupId == m.GroupId && x.PersonId == person.Id ).GroupOrder ?? int.MaxValue )
+                .ThenBy( m => DbFunctions.DiffDays( m.Person.BirthDate ?? new DateTime( 1, 1, 1 ), person.BirthDate ?? new DateTime( 1, 1, 1 ) ) )
                 .ThenBy( m => m.PersonId )
                 .Select( selector )
                 .FirstOrDefault();
@@ -1618,7 +1618,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IEnumerable<GroupMember> GetRelatedPeople( List<int> personIds, List<int> roleIds )
         {
-            var rockContext = (RockContext)this.Context;
+            var rockContext = ( RockContext ) this.Context;
             var groupMemberService = new GroupMemberService( rockContext );
 
             Guid groupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid();
@@ -1626,15 +1626,15 @@ namespace Rock.Model
 
             var knownRelationshipGroups = groupMemberService
                 .Queryable().AsNoTracking()
-                .Where( m => 
-                    m.Group.GroupType.Guid == groupTypeGuid && 
+                .Where( m =>
+                    m.Group.GroupType.Guid == groupTypeGuid &&
                     m.GroupRole.Guid == ownerRoleGuid &&
                     personIds.Contains( m.PersonId ) )
                 .Select( m => m.GroupId );
 
             var related = groupMemberService
                 .Queryable().AsNoTracking()
-                .Where( g => 
+                .Where( g =>
                     knownRelationshipGroups.Contains( g.GroupId ) &&
                     roleIds.Contains( g.GroupRoleId ) &&
                     !personIds.Contains( g.PersonId ) )
@@ -2342,7 +2342,7 @@ namespace Rock.Model
         /// </returns>
         public static int UpdatePersonAgeClassificationAll( RockContext rockContext )
         {
-           return UpdatePersonAgeClassifications( null, rockContext );
+            return UpdatePersonAgeClassifications( null, rockContext );
         }
 
         /// <summary>
@@ -2403,8 +2403,13 @@ namespace Rock.Model
 
             // update records that aren't marked as Adult but now should be
             int updatedAdultCount = rockContext.BulkUpdate(
-                adultBasedOnBirthdateOrFamilyRole.Where( a => a.AgeClassification != AgeClassification.Adult ),
+                adultBasedOnBirthdateOrFamilyRole.Where( a => a.AgeClassification != AgeClassification.Adult && !a.IsLockedAsChild ),
                 p => new Person { AgeClassification = AgeClassification.Adult } );
+
+            // update records that aren marked as Adult but now should be child as IsLockedAsChild is marked as true
+            int updatedLockedChildCount = rockContext.BulkUpdate(
+                adultBasedOnBirthdateOrFamilyRole.Where( a => a.AgeClassification == AgeClassification.Adult && a.IsLockedAsChild ),
+                p => new Person { AgeClassification = AgeClassification.Child } );
 
             // update records that aren't marked as Child but now should be
             int updatedChildCount = rockContext.BulkUpdate(
@@ -2413,7 +2418,7 @@ namespace Rock.Model
 
             // NOTE: A person can't become 'AgeClassification.Unknown' if they have already bet set to Adult or Child so we don't have to recalculate for new AgeClassification.Unknown
 
-            return updatedAdultCount + updatedAdultCount;
+            return updatedAdultCount + updatedAdultCount + updatedLockedChildCount;
         }
 
         /// <summary>
@@ -2472,7 +2477,7 @@ FROM (
 	WHERE (
 			p.PrimaryFamilyId IS NULL
 			OR (p.PrimaryFamilyId != pf.CalculatedPrimaryFamilyId)
-		    )" );
+			)" );
 
             if ( personId.HasValue )
             {

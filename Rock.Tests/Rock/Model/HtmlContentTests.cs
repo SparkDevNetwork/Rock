@@ -57,7 +57,7 @@ namespace Rock.Tests.Rock.Model
             };
 
             var result = html.ToJson();
-            const string key = "\"Content\": \"Foo\"";
+            const string key = "\"Content\":\"Foo\"";
             Assert.NotEqual( result.IndexOf( key ), -1 );
         }
     }

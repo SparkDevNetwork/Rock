@@ -90,7 +90,8 @@ namespace RockWeb.Blocks.Crm
                 var workflowTypeService = new WorkflowTypeService( rockContext );
                 foreach ( var workflowType in new WorkflowTypeService( rockContext )
                     .Queryable().AsNoTracking()
-                    .Where( t => guidList.Contains( t.Guid ) )
+                    .Where( t => guidList.Contains( t.Guid ) &&
+                    t.IsActive )
                     .ToList() )
                 {
                     ListItem item = new ListItem( workflowType.Name, workflowType.Id.ToString() );

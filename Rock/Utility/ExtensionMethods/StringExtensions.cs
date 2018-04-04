@@ -126,6 +126,20 @@ namespace Rock
         }
 
         /// <summary>
+        /// Determines whether the string is a valid http(s) URL
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns>
+        ///   <c>true</c> if [is valid URL] [the specified string]; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsValidUrl( this string str )
+        {
+            Uri uriResult;
+            return Uri.TryCreate( str, UriKind.Absolute, out uriResult )
+                && ( uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps );
+        }
+
+        /// <summary>
         /// Makes the Int64 hash code from the provided string.
         /// </summary>
         /// <param name="str">The string.</param>

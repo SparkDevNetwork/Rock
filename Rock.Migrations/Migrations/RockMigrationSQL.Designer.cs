@@ -4379,5 +4379,21 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201803201617508_DaysUntilAnniversary", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DECLARE @FullWidthLayout int = ( SELECT TOP 1 [Id] FROM [Layout] WHERE [Guid] = &apos;D65F783D-87A9-4CC9-8110-E83466A0EADB&apos; )
+        ///DECLARE @PersonProfilePageId int = ( SELECT TOP 1 [Id] FROM [Page] WHERE [Guid] = &apos;08DBD8A5-2C35-4146-B4A8-0F7652348B25&apos; )
+        ///DECLARE @PersonalDevicesPageId int = ( SELECT TOP 1 [Id] FROM [Page] WHERE [Guid] = &apos;B2786294-99DC-477E-871D-2E28FCE00A98&apos; )
+        ///
+        ///IF @FullWidthLayout IS NOT NULL AND @PersonProfilePageId IS NOT NULL AND @PersonalDevicesPageId IS NOT NULL 
+        ///BEGIN
+        ///
+        ///	-- Move personal d [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201803301619284_Rollup_0330 {
+            get {
+                return ResourceManager.GetString("_201803301619284_Rollup_0330", resourceCulture);
+            }
+        }
     }
 }

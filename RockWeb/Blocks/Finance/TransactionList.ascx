@@ -49,7 +49,7 @@
                             <Rock:RockDropDownList ID="ddlSourceType" runat="server" Label="Source Type" />
                             <Rock:CampusPicker ID="campCampusBatch" runat="server" Label="Campus (of Batch)" />
                             <Rock:CampusPicker ID="campCampusAccount" runat="server" Label="Campus (of Account)" />
-                            <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" />
+                            <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" IncludeBusinesses="true" />
                             <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
                         </Rock:GridFilter>
 
@@ -59,6 +59,7 @@
                             RowItemText="Transaction" AllowSorting="true" ExportSource="ColumnOutput" >
                             <Columns>
                                 <Rock:SelectField></Rock:SelectField>
+                                <Rock:RockLiteralField ID="lPersonId" HeaderText="Person Id" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                 <Rock:RockLiteralField ID="lPersonFullNameReversed" HeaderText="Person" 
                                     SortExpression="_PERSONNAME_" /> 
                                 <Rock:RockBoundField DataField="TransactionDateTime" HeaderText="Date / Time" SortExpression="TransactionDateTime" />                

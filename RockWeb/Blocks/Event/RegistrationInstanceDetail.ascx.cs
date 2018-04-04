@@ -1168,7 +1168,15 @@ namespace RockWeb.Blocks.Event
                 }
 
                 // Set the campus
-                var lCampus = e.Row.FindControl( "lCampus" ) as Literal;
+                var lCampus = e.Row.FindControl( "lRegistrantsCampus" ) as Literal;
+                
+                // if it's null, try looking for the "lGroupPlacementsCampus" control since this RowDataBound event is shared between
+                // two different grids.
+                if ( lCampus == null )
+                {
+                    lCampus = e.Row.FindControl( "lGroupPlacementsCampus" ) as Literal;
+                }
+                
                 if ( lCampus != null && PersonCampusIds != null )
                 {
                     if ( registrant.PersonAlias != null )
@@ -2089,7 +2097,7 @@ namespace RockWeb.Blocks.Event
                 }
 
                 // Set the campus
-                var lCampus = e.Row.FindControl( "lCampus" ) as Literal;
+                var lCampus = e.Row.FindControl( "lWaitlistCampus" ) as Literal;
                 if ( lCampus != null && PersonCampusIds != null )
                 {
                     if ( registrant.PersonAlias != null )
@@ -2168,7 +2176,7 @@ namespace RockWeb.Blocks.Event
             {
                 var placements = new Dictionary<int, List<int>>();
 
-                var colIndex = gGroupPlacements.Columns.IndexOf( col ).ToString();
+                var colIndex = gGroupPlacements.GetColumnIndex( col ).ToString();
                 foreach ( GridViewRow row in gGroupPlacements.Rows )
                 {
                     GroupPicker gp = row.FindControl( "groupPicker_" + colIndex.ToString() ) as GroupPicker;
@@ -2898,7 +2906,7 @@ namespace RockWeb.Blocks.Event
                             .ToList();
                     }
 
-                    var discountCodeHeader = gRegistrations.Columns.GetColumnByHeaderText( "Discount Code" );
+                    var discountCodeHeader = gRegistrations.GetColumnByHeaderText( "Discount Code" );
                     if ( discountCodeHeader != null )
                     {
                         discountCodeHeader.Visible = GetAttributeValue( "DisplayDiscountCodes" ).AsBoolean();
@@ -3695,18 +3703,21 @@ namespace RockWeb.Blocks.Event
                                 var birthdateField = new DateField();
                                 birthdateField.DataField = dataFieldExpression;
                                 birthdateField.HeaderText = "Birthdate";
+                                birthdateField.IncludeAge = true;
                                 birthdateField.SortExpression = dataFieldExpression;
                                 gRegistrants.Columns.Add( birthdateField );
 
                                 var birthdateField2 = new DateField();
                                 birthdateField2.DataField = dataFieldExpression;
                                 birthdateField2.HeaderText = "Birthdate";
+                                birthdateField2.IncludeAge = true;
                                 birthdateField2.SortExpression = dataFieldExpression;
                                 gGroupPlacements.Columns.Add( birthdateField2 );
 
                                 var birthdateField3 = new DateField();
                                 birthdateField3.DataField = dataFieldExpression;
                                 birthdateField3.HeaderText = "Birthdate";
+                                birthdateField3.IncludeAge = true;
                                 birthdateField3.SortExpression = dataFieldExpression;
                                 gWaitList.Columns.Add( birthdateField3 );
 

@@ -16,6 +16,7 @@
                 <div class="grid grid-panel">
                     <Rock:GridFilter ID="gfFilter" runat="server" OnApplyFilterClick="gfFilter_ApplyFilterClick" OnDisplayFilterValue="gfFilter_DisplayFilterValue">
                         <Rock:DefinedValuePicker ID="ddlMediumValue" runat="server" Label="Medium Type" Help="The Medium Type that identify the Content Channel." />
+                        <Rock:RockCheckBox ID="cbIncludeInactive" runat="server" Label="Include Inactive Channels" Text="Yes" />
                     </Rock:GridFilter>
                     <ul class="list-group margin-all-md">
                         <asp:Repeater ID="rptChannel" runat="server">

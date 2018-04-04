@@ -152,7 +152,7 @@ namespace Rock.Web.UI.Controls
                 }
 
                 InitialItemParentIds = parentAccountIds.AsDelimited( "," );
-                ItemName = account.PublicName;
+                ItemName = this.DisplayPublicName ? account.PublicName : account.Name;
             }
             else
             {
