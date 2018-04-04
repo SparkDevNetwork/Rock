@@ -376,7 +376,7 @@ namespace Rock.Web.UI.Controls
             Value = Value > Maximum ? Maximum : Value;
             Value = Value < Minimum ? Minimum : Value;
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "numberincrement " + CssClass );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "numberincrement margin-t-sm " + CssClass );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             _hfMin.RenderControl( writer );
