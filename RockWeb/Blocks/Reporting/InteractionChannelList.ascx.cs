@@ -58,12 +58,12 @@ namespace RockWeb.Blocks.Reporting
     </a>
 {% endif %}" )]
 
-    [InteractionChannelsField( "Interaction Channels", "Select interaction channel to limit the display. No selection will show all.", false,  "", "", order: 3 )]
     public partial class InteractionChannelList : Rock.Web.UI.RockBlock
     {
         #region Fields
 
         private const string MEDIUM_TYPE_FILTER = "Medium Type";
+        private const string INCLUDE_INACTIVE_FILTER = "Include Inactive";
 
         #endregion
 
@@ -121,6 +121,7 @@ namespace RockWeb.Blocks.Reporting
         protected void gfFilter_ApplyFilterClick( object sender, EventArgs e )
         {
             gfFilter.SaveUserPreference( MEDIUM_TYPE_FILTER, ddlMediumValue.SelectedValue );
+            gfFilter.SaveUserPreference( INCLUDE_INACTIVE_FILTER, cbIncludeInactive.Checked.ToString() );
             ShowList();
         }
 
@@ -140,6 +141,13 @@ namespace RockWeb.Blocks.Reporting
                     {
                         var mediumTypeValue = DefinedValueCache.Read( mediumTypeValueId.Value );
                         e.Value = mediumTypeValue.Value;
+                    }
+                    break;
+                case INCLUDE_INACTIVE_FILTER:
+                    var includeFilterValue = e.Value.AsBooleanOrNull();
+                    if ( includeFilterValue.HasValue )
+                    {
+                        e.Value = includeFilterValue.Value.ToYesNo();
                     }
                     break;
                 default:
@@ -164,6 +172,9 @@ namespace RockWeb.Blocks.Reporting
 
             var channelMediumValueId = gfFilter.GetUserPreference( MEDIUM_TYPE_FILTER ).AsIntegerOrNull();
             ddlMediumValue.SetValue( channelMediumValueId );
+
+            var includeInactive = gfFilter.GetUserPreference( INCLUDE_INACTIVE_FILTER ).AsBooleanOrNull() ?? false;
+            cbIncludeInactive.Checked = includeInactive;
         }
 
         /// <summary>
@@ -182,17 +193,9 @@ namespace RockWeb.Blocks.Reporting
                     channelQry = channelQry.Where( a => a.ChannelTypeMediumValueId == channelMediumValueId.Value );
                 }
 
-                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "InteractionChannels" ) ) )
+                if ( !cbIncludeInactive.Checked )
                 {
-                    var selectedChannelIds = Array.ConvertAll( GetAttributeValue( "InteractionChannels" ).Split( ',' ), s => new Guid( s ) ).ToList();
-                    channelQry = channelQry.Where( a => selectedChannelIds.Contains( a.Guid ) );
-                }
-
-                var personAliasId = GetPersonAliasId();
-                if ( personAliasId.HasValue )
-                {
-                    var interactionQry = new InteractionService( rockContext ).Queryable();
-                    channelQry = channelQry.Where( a => interactionQry.Any( b => b.PersonAliasId == personAliasId.Value && b.InteractionComponent.ChannelId == a.Id ) );
+                    channelQry = channelQry.Where( a => a.IsActive );
                 }
 
                 // Parse the default template so that it does not need to be parsed multiple times
@@ -229,31 +232,6 @@ namespace RockWeb.Blocks.Reporting
                 rptChannel.DataSource = channelItems;
                 rptChannel.DataBind();
             }
-        }
-
-        /// <summary>
-        /// Get the person alias through query list or context.
-        /// </summary>
-        public int? GetPersonAliasId()
-        {
-            int? personId = PageParameter( "PersonId" ).AsIntegerOrNull();
-            int? personAliasId = PageParameter( "PersonAliasId" ).AsIntegerOrNull();
-
-            if ( personId.HasValue )
-            {
-                personAliasId = new PersonAliasService( new RockContext() ).GetPrimaryAliasId( personId.Value );
-            }
-
-            if ( !personAliasId.HasValue )
-            {
-                var person = ContextEntity<Person>();
-                if ( person != null )
-                {
-                    personAliasId = person.PrimaryAliasId;
-                }
-            }
-
-            return personAliasId;
         }
 
         #endregion
