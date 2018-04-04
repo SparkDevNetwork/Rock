@@ -114,41 +114,108 @@ namespace RockWeb.Blocks.Event
             }
         }
 
-        // The selected registration instance
+        /// <summary>
+        /// Gets or sets the selected registration instance
+        /// </summary>
+        /// <value>
+        /// The state of the registration instance.
+        /// </value>
         private RegistrationInstance RegistrationInstanceState { get; set; }
 
-        // The selected group from linkage
+        /// <summary>
+        /// Gets or sets the group identifier.
+        /// </summary>
+        /// <value>
+        /// The group identifier.
+        /// </value>
         private int? GroupId { get; set; }
 
-        // The selected campus from event item occurrence or query string
+        /// <summary>
+        /// Gets or sets the campus identifier.
+        /// </summary>
+        /// <value>
+        /// The campus identifier.
+        /// </value>
         private int? CampusId { get; set; }
 
-        // Digital Signature Fields
+        /// <summary>
+        /// Digital signature fields
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [sign inline]; otherwise, <c>false</c>.
+        /// </value>
         private bool SignInline { get; set; }
 
+        /// <summary>
+        /// Gets or sets the name of the digital signature component type.
+        /// </summary>
+        /// <value>
+        /// The name of the digital signature component type.
+        /// </value>
         private string DigitalSignatureComponentTypeName { get; set; }
 
+        /// <summary>
+        /// Gets or sets the digital signature component.
+        /// </summary>
+        /// <value>
+        /// The digital signature component.
+        /// </value>
         private DigitalSignatureComponent DigitalSignatureComponent { get; set; }
 
-        // Info about each current registration
+        /// <summary>
+        /// Gets or sets the state of the registration.
+        /// </summary>
+        /// <value>
+        /// The state of the registration.
+        /// </value>
         protected RegistrationInfo RegistrationState { get; set; }
 
-        // The current panel to display ( HowMany
+        /// <summary>
+        /// Gets or sets the current panel. 
+        /// </summary>
+        /// <value>
+        /// The current panel.
+        /// </value>
         private int CurrentPanel { get; set; }
 
-        // The current registrant index
+        /// <summary>
+        /// Gets or sets the index of the current registrant.
+        /// </summary>
+        /// <value>
+        /// The index of the current registrant.
+        /// </value>
         private int CurrentRegistrantIndex { get; set; }
 
-        // The current form index
+        /// <summary>
+        /// Gets or sets the index of the current form.
+        /// </summary>
+        /// <value>
+        /// The index of the current form.
+        /// </value>
         private int CurrentFormIndex { get; set; }
 
-        // The URL for the Step-2 Iframe Url
+        /// <summary>
+        /// Gets or sets the step2 i frame URL.
+        /// </summary>
+        /// <value>
+        /// The step2 i frame URL.
+        /// </value>
         protected string Step2IFrameUrl { get; set; }
 
-        // The minimum payment that is due 
+        /// <summary>
+        /// Gets or sets the minimum payment.
+        /// </summary>
+        /// <value>
+        /// The minimum payment.
+        /// </value>
         private decimal? minimumPayment { get; set; }
 
-        // The registration template.
+        /// <summary>
+        /// Gets the registration template.
+        /// </summary>
+        /// <value>
+        /// The registration template.
+        /// </value>
         private RegistrationTemplate RegistrationTemplate
         {
             get
@@ -494,6 +561,15 @@ namespace RockWeb.Blocks.Event
             }
         }
 
+        /// <summary>
+        /// Returns breadcrumbs specific to the block that should be added to navigation
+        /// based on the current page reference.  This function is called during the page's
+        /// oninit to load any initial breadcrumbs.
+        /// </summary>
+        /// <param name="pageReference">The <see cref="T:Rock.Web.PageReference" />.</param>
+        /// <returns>
+        /// A <see cref="T:System.Collections.Generic.List`1" /> of block related <see cref="T:Rock.Web.UI.BreadCrumb">BreadCrumbs</see>.
+        /// </returns>
         public override List<BreadCrumb> GetBreadCrumbs( PageReference pageReference )
         {
             var breadCrumbs = new List<BreadCrumb>();
@@ -833,6 +909,11 @@ namespace RockWeb.Blocks.Event
             hfTriggerScroll.Value = "true";
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbPaymentPrev control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbPaymentPrev_Click( object sender, EventArgs e )
         {
             if ( CurrentPanel == 3 )
@@ -849,6 +930,11 @@ namespace RockWeb.Blocks.Event
             hfTriggerScroll.Value = "true";
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbStep2Return control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbStep2Return_Click( object sender, EventArgs e )
         {
             if ( CurrentPanel == 2 || CurrentPanel == 3 )
@@ -1519,6 +1605,10 @@ namespace RockWeb.Blocks.Event
 
         #region Save Methods
 
+        /// <summary>
+        /// Validates the summary.
+        /// </summary>
+        /// <returns></returns>
         private List<string> ValidateSummary()
         {
             var validationErrors = new List<string>();
@@ -1704,6 +1794,13 @@ namespace RockWeb.Blocks.Event
             return registration != null ? registration.Id : ( int? ) null;
         }
 
+        /// <summary>
+        /// Sends notifications after the registration is saved
+        /// </summary>
+        /// <param name="isNewRegistration">if set to <c>true</c> [is new registration].</param>
+        /// <param name="registration">The registration.</param>
+        /// <param name="previousRegistrantPersonIds">The previous registrant person ids.</param>
+        /// <param name="rockContext">The rock context.</param>
         private void ProcessPostSave( bool isNewRegistration, Registration registration, List<int> previousRegistrantPersonIds, RockContext rockContext )
         {
             try
@@ -2801,6 +2898,15 @@ namespace RockWeb.Blocks.Event
             return SaveTransaction( gateway, registration, transaction, paymentInfo, rockContext );
         }
 
+        /// <summary>
+        /// Saves the transaction.
+        /// </summary>
+        /// <param name="gateway">The gateway.</param>
+        /// <param name="registration">The registration.</param>
+        /// <param name="transaction">The transaction.</param>
+        /// <param name="paymentInfo">The payment information.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
         private bool SaveTransaction( GatewayComponent gateway, Registration registration, FinancialTransaction transaction, PaymentInfo paymentInfo, RockContext rockContext )
         {
             if ( transaction != null )
@@ -3022,6 +3128,11 @@ namespace RockWeb.Blocks.Event
             return SaveTransaction( gateway, registration, transaction, null, rockContext );
         }
 
+        /// <summary>
+        /// Creates a CreditCardPaymentInfo obj using data in the UI and RegistrationState
+        /// </summary>
+        /// <param name="gateway">The gateway.</param>
+        /// <returns></returns>
         private CreditCardPaymentInfo GetCCPaymentInfo( GatewayComponent gateway )
         {
             var ccPaymentInfo = new CreditCardPaymentInfo( txtCreditCard.Text, txtCVV.Text, mypExpiration.SelectedDate.Value );
@@ -3108,6 +3219,9 @@ namespace RockWeb.Blocks.Event
             }
         }
 
+        /// <summary>
+        /// Shows the waiting list notice.
+        /// </summary>
         private void ShowWaitingListNotice()
         {
             if ( RegistrationTemplate.WaitListEnabled )
@@ -3205,6 +3319,10 @@ namespace RockWeb.Blocks.Event
             }
         }
 
+        /// <summary>
+        /// Checks if the registrant is on the waitlist, the template form is external, and the template is set to Show waitlist
+        /// </summary>
+        /// <returns>true or the value of ShowOnWaitlist</returns>
         private bool FormHasWaitFields()
         {
             if ( RegistrationTemplate != null && RegistrationState != null && RegistrationState.Registrants.Count > CurrentRegistrantIndex )
@@ -3748,7 +3866,7 @@ namespace RockWeb.Blocks.Event
         #region Dynamic Control Methods
 
         /// <summary>
-        /// Creates the dynamic controls fore each panel
+        /// Creates the dynamic controls for currennt panel
         /// </summary>
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
         private void CreateDynamicControls( bool setValues )
@@ -3769,7 +3887,7 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
-        /// Parses the dynamic controls.
+        /// Parses the dynamic controls based on the CurrentPanel
         /// </summary>
         private void ParseDynamicControls()
         {
@@ -4221,6 +4339,11 @@ namespace RockWeb.Blocks.Event
             }
         }
 
+        /// <summary>
+        /// Creates the label for a registration fee following the name (cost) format
+        /// </summary>
+        /// <param name="fee">The fee.</param>
+        /// <returns></returns>
         private string CreateLabel( RegistrationTemplateFee fee )
         {
             string label = fee.Name;
@@ -4233,6 +4356,11 @@ namespace RockWeb.Blocks.Event
             return label;
         }
 
+        /// <summary>
+        /// Parses the registration temple fee option string
+        /// </summary>
+        /// <param name="fee">The fee.</param>
+        /// <returns></returns>
         private Dictionary<string, string> ParseOptions( RegistrationTemplateFee fee )
         {
             var options = new Dictionary<string, string>();
@@ -4254,6 +4382,12 @@ namespace RockWeb.Blocks.Event
             return options;
         }
 
+        /// <summary>
+        /// Builds the single option single quantity checkbox
+        /// </summary>
+        /// <param name="fee">The fee.</param>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
+        /// <param name="feeValues">The fee values.</param>
         private void BuildSingleOptionSingleQuantity( RegistrationTemplateFee fee, bool setValues, List<FeeInfo> feeValues )
         {
             var cb = new RockCheckBox();
@@ -4276,6 +4410,12 @@ namespace RockWeb.Blocks.Event
             }
         }
 
+        /// <summary>
+        /// Builds the single option multiple quantity NumberUpDown control
+        /// </summary>
+        /// <param name="fee">The fee.</param>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
+        /// <param name="feeValues">The fee values.</param>
         private void BuildSingleOptionMultipleQuantity( RegistrationTemplateFee fee, bool setValues, List<FeeInfo> feeValues )
         {
             var numUpDown = new NumberUpDown();
@@ -4291,7 +4431,13 @@ namespace RockWeb.Blocks.Event
                 numUpDown.Value = feeValues.First().Quantity;
             }
         }
-        
+
+        /// <summary>
+        /// Builds the multiple option single quantity fee ddl
+        /// </summary>
+        /// <param name="fee">The fee.</param>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
+        /// <param name="feeValues">The fee values.</param>
         private void BuildMultipleOptionSingleQuantity( RegistrationTemplateFee fee, bool setValues, List<FeeInfo> feeValues )
         {
             var ddl = new RockDropDownList();
@@ -4315,7 +4461,13 @@ namespace RockWeb.Blocks.Event
                     .FirstOrDefault() );
             }
         }
-        
+
+        /// <summary>
+        /// Builds the multiple option multiple quantity numberupdowngroup control
+        /// </summary>
+        /// <param name="fee">The fee.</param>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
+        /// <param name="feeValues">The fee values.</param>
         private void BuildMultipleOptionMultipleQuantity( RegistrationTemplateFee fee, bool setValues, List<FeeInfo> feeValues )
         {
             Dictionary<string, string> options = ParseOptions( fee );
@@ -4755,6 +4907,10 @@ namespace RockWeb.Blocks.Event
 
         #region Summary/Payment Controls
 
+        /// <summary>
+        /// Creates the summary controls.
+        /// </summary>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
         private void CreateSummaryControls( bool setValues )
         {
             lRegistrationTerm.Text = RegistrationTerm;
@@ -5133,6 +5289,10 @@ namespace RockWeb.Blocks.Event
             }
         }
 
+        /// <summary>
+        /// Binds the saved accounts to radio button list
+        /// </summary>
+        /// <param name="component">The component.</param>
         private void BindSavedAccounts( GatewayComponent component )
         {
             var currentValue = rblSavedCC.SelectedValue;
@@ -5172,6 +5332,9 @@ namespace RockWeb.Blocks.Event
             }
         }
 
+        /// <summary>
+        /// Udpates RegistrationState props using info from the UI controls
+        /// </summary>
         private void ParseSummaryControls()
         {
             if ( RegistrationState != null )
