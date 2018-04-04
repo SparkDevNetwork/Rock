@@ -305,6 +305,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                 // ...and some block settings
                 var familyRelationships = GetAttributeValue( "FamilyRelationships" ).SplitDelimitedValues().AsIntegerList();
                 var canCheckinRelationships = GetAttributeValue( "CanCheckinRelationships" ).SplitDelimitedValues().AsIntegerList();
+                var showChildMobilePhone = GetAttributeValue( "ChildMobilePhone" ) != "Hide";
 
                 // ...and some service objects
                 var personService = new PersonService( _rockContext );
@@ -466,7 +467,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
 
                         person.Guid = child.Guid;
                         person.RecordTypeValueId = recordTypePersonId;
-                        person.RecordStatusReasonValueId = recordStatusValue != null ? recordStatusValue.Id : (int?)null;
+                        person.RecordStatusValueId = recordStatusValue != null ? recordStatusValue.Id : (int?)null;
                         person.ConnectionStatusValueId = connectionStatusValue != null ? connectionStatusValue.Id : (int?)null;
                     }
 
@@ -478,6 +479,12 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                     person.GradeOffset = child.GradeOffset;
 
                     _rockContext.SaveChanges();
+
+                    // Save the mobile phone number
+                    if ( showChildMobilePhone )
+                    {
+                        SavePhoneNumber( person.Id, child.MobilePhoneNumber, child.MobileCountryCode );
+                    }
 
                     // Save the attributes for the child
                     person.LoadAttributes();
@@ -720,7 +727,6 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             Group family = null;
             Person adult1 = null;
             Person adult2 = null;
-            int? maritalStatusId = null;
 
             // If there is a logged in person, attempt to find their family and spouse.
             if ( GetAttributeValue("AllowUpdates").AsBoolean() && CurrentPerson != null )
@@ -1081,6 +1087,8 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                         childRow.BirthDate = child.BirthDate;
                         childRow.GradeOffset = child.GradeOffset;
                         childRow.RelationshipType = child.RelationshipType;
+                        childRow.MobilePhone = child.MobilePhoneNumber;
+                        childRow.MobilePhoneCountryCode = child.MobileCountryCode;
 
                         childRow.SetAttributeValues( child );
                     }
@@ -1155,7 +1163,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                     adult.NickName = tbFirstName.Text;
                     adult.LastName = tbLastName.Text;
                     adult.RecordTypeValueId = recordTypePersonId;
-                    adult.RecordStatusReasonValueId = recordStatusValue != null ? recordStatusValue.Id : (int?)null;
+                    adult.RecordStatusValueId = recordStatusValue != null ? recordStatusValue.Id : (int?)null;
                     adult.ConnectionStatusValueId = connectionStatusValue != null ? connectionStatusValue.Id : (int?)null;
                 }
 
@@ -1267,9 +1275,14 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                 person.Gender = childRow.Gender;
                 person.SetBirthDate( childRow.BirthDate );
                 person.GradeOffset = childRow.GradeOffset;
+
                 person.LoadAttributes();
 
                 var child = new PreRegistrationChild( person );
+
+                child.MobilePhoneNumber = childRow.MobilePhone;
+                child.MobileCountryCode = childRow.MobilePhoneCountryCode;
+
                 child.RelationshipType = childRow.RelationshipType;
 
                 var attributeKeys = GetCategoryAttributeList( "ChildAttributeCategories" ).Select( a => a.Key ).ToList();
@@ -1531,7 +1544,19 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
         /// <param name="pnb">The PNB.</param>
         private void SavePhoneNumber( int personId, PhoneNumberBox pnb )
         {
-            string phone = PhoneNumber.CleanNumber( pnb.Number );
+            SavePhoneNumber( personId, pnb.Number, pnb.CountryCode );
+        }
+
+        /// <summary>
+        /// Saves the phone number.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="number">The number.</param>
+        /// <param name="countryCode">The country code.</param>
+        private void SavePhoneNumber( int personId, string number, string countryCode )
+        {
+
+            string phone = PhoneNumber.CleanNumber( number );
 
             var phoneNumberService = new PhoneNumberService( _rockContext );
 
@@ -1556,7 +1581,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                         phoneNumber.NumberTypeValueId = phType.Id;
                     }
 
-                    phoneNumber.CountryCode = PhoneNumber.CleanNumber( pnb.CountryCode );
+                    phoneNumber.CountryCode = PhoneNumber.CleanNumber( countryCode );
                     phoneNumber.Number = phone;
                 }
                 else

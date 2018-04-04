@@ -356,6 +356,8 @@
     <Compile Include="Attribute\CheckListFieldAttribute.cs" />
     <Compile Include="Attribute\ComparisonFieldAttribute.cs" />
     <Compile Include="Attribute\ContentChannelItemFieldAttribute.cs" />
+    <Compile Include="Attribute\InteractionChannelFieldAttribute.cs" />
+    <Compile Include="Attribute\InteractionChannelsFieldAttribute.cs" />
     <Compile Include="Attribute\LabelFieldAttribute.cs" />
     <Compile Include="Attribute\LavaFieldAttribute.cs" />
     <Compile Include="Attribute\TimeZoneFieldAttribute.cs" />
@@ -574,6 +576,7 @@
     <Compile Include="Field\Types\CheckListFieldType.cs" />
     <Compile Include="Field\Types\ContentChannelItemFieldType.cs" />
     <Compile Include="Field\Types\MonthDayFieldType.cs" />
+    <Compile Include="Field\Types\InteractionChannelsFieldType.cs" />
     <Compile Include="Field\Types\LabelFieldType.cs" />
     <Compile Include="Field\Types\TimeZoneFieldType.cs" />
     <Compile Include="Field\Types\GroupMemberFieldType.cs" />
@@ -1210,6 +1213,7 @@
     <Compile Include="PersonProfile\Badge\InDataView.cs" />
     <Compile Include="PersonProfile\Badge\TopPersonSignal.cs" />
     <Compile Include="PersonProfile\Badge\PersonalDevice.cs" />
+    <Compile Include="PersonProfile\Badge\InteractionsInRange.cs" />
     <Compile Include="Plugin\HotFixes\038_LabelFieldType.cs" />
     <Compile Include="Plugin\HotFixes\046_EnableSmartyStreetsIfNoActiveLocationSrv.cs" />
     <Compile Include="Plugin\HotFixes\045_FamilyRegistration.cs" />
@@ -1221,11 +1225,13 @@
     <Compile Include="Plugin\HotFixes\042_FixShortLinkUrlInteractionChannel.cs" />
     <Compile Include="Plugin\HotFixes\048_InteractionSessionPerformance.cs" />
     <Compile Include="Plugin\HotFixes\047_DataAutomation.cs" />
+    <Compile Include="Plugin\HotFixes\049_UpdateGivingAnalyticsAccounts.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <DependentUpon>HotFixMigrationResource.resx</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
+    <Compile Include="Plugin\HotFixes\050_MigrationRollupsForV7_4.cs" />
     <Compile Include="Reporting\DataFilter\FinancialScheduledTransactionDetail\AccountFilter.cs" />
     <Compile Include="Reporting\DataFilter\BenevolenceRequest\CampusActiveFilter.cs" />
     <Compile Include="Reporting\DataFilter\BenevolenceRequest\CampusesActiveFilter.cs" />
@@ -1540,6 +1546,8 @@
     <Compile Include="Web\HttpModules\ResponseHeaders.cs" />
     <Compile Include="Web\HttpModules\HttpModuleComponent.cs" />
     <Compile Include="Web\HttpModules\HttpModuleContainer.cs" />
+    <Compile Include="Web\UI\Adapters\ListControlAdaptor.cs" />
+    <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />
     <Compile Include="Web\UI\Controls\Captcha.cs" />
     <Compile Include="Web\UI\Controls\Communication\PushNotification.cs" />
     <Compile Include="Web\Cache\WorkflowActionFormAttributeCache.cs" />
@@ -1761,7 +1769,6 @@
     <Compile Include="Web\RockRouteHandler.cs" />
     <Compile Include="Web\SystemSettings.cs" />
     <Compile Include="Web\UI\Adapters\CheckBoxAdapter.cs" />
-    <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />
     <Compile Include="Web\UI\Adapters\DropDownListAdapter.cs" />
     <Compile Include="Web\UI\Adapters\RadioButtonAdapter.cs" />
     <Compile Include="Web\UI\Adapters\RadioButtonListAdapter.cs" />
@@ -2059,6 +2066,8 @@
     <Compile Include="Workflow\Action\People\PersonTagAdd.cs" />
     <Compile Include="Workflow\Action\People\PersonTagRemove.cs" />
     <Compile Include="Workflow\Action\People\SetPersonAttribute.cs" />
+    <Compile Include="Workflow\Action\Registrations\GenerateDiscountCode.cs" />
+    <Compile Include="Workflow\Action\Registrations\UpdateDiscountCode.cs" />
     <Compile Include="Workflow\Action\Utility\InteractionAdd.cs" />
     <Compile Include="Workflow\Action\Utility\CreateShortLink.cs" />
     <Compile Include="Workflow\Action\Utility\LavaRun.cs" />
@@ -2138,6 +2147,15 @@
     </Content>
     <Content Include="Plugin\HotFixes\047_DataAutomation_ShortLinkInteractionFix.sql">
       <DependentUpon>047_DataAutomation.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\049_GivingAnalyticsAccounts_AccountTotals.sql">
+      <DependentUpon>049_UpdateGivingAnalyticsAccounts.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\049_GivingAnalyticsAccounts_PersonSummary.sql">
+      <DependentUpon>049_UpdateGivingAnalyticsAccounts.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\049_GivingAnalyticsAccounts_TransactionData.sql">
+      <DependentUpon>049_UpdateGivingAnalyticsAccounts.cs</DependentUpon>
     </Content>
     <Content Include="Scripts\jquery-1.12.4.intellisense.js" />
     <Content Include="Scripts\jquery-1.12.4.js" />

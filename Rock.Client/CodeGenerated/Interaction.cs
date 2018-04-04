@@ -59,7 +59,7 @@ namespace Rock.Client
         public DateTime InteractionDateTime { get; set; }
 
         /// <summary />
-        public DateTime InteractionEndDateTime { get; set; }
+        public DateTime? InteractionEndDateTime { get; set; }
 
         /// <summary />
         public int? InteractionSessionId { get; set; }

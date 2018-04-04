@@ -26,7 +26,7 @@
 @required-field-color: @alert-danger-bg; // Color of the small dot that denotes required fields. #color
 
 // Navbar Styling *show in editor*
-@side-nav-width: 100px;
+@side-nav-width: 80px;
 
 // Bootstrap Colors *show in editor*
 @brand-success: #7accbe; // #color
@@ -59,7 +59,7 @@
 @navbartop-color: #fff;
 
 @panel-bg: #fff; // The background color of the panel body.
-@panel-heading-bg: #f7f7f7; // The background color of the panel's header.
+@panel-heading-bg: #eaeaea; // The background color of the panel's header.
 
 @body-bg: @body-background;
 
@@ -94,9 +94,6 @@
 @border-radius-base: 0; // The global setting for rounding corners.
 @border-radius-large: @border-radius-base;
 @border-radius-small: @border-radius-base;
-
-
-
 
 
 //// Heading Sizes
@@ -193,7 +190,7 @@
 @input-group-addon-border-color: @input-border;             // Used for pre (dollar signs, etc.) and post ( percent signs) input addons as well as picker borders (highly recommended that you use the same color as the input border).
 
 //// Picker
-@picker-action-bg: @panel-heading-bg;     // The background color of the actions bar at the bottom of the picker dropdown.
+@picker-action-bg: #f7f7f7;     // The background color of the actions bar at the bottom of the picker dropdown.
 
 
 //// Date Picker
@@ -210,9 +207,10 @@
 @panel-border:                #e0e0e0;        // The panel's border color.
 @panel-top-border-color:      darken(@panel-border, 10%);    // Color of the panel's top border often used as an accent color.
 @panel-border-radius:         @border-radius-base;
+@panel-subheading:            #f7f7f7;
+@drawer-bg:                   @panel-subheading;
 //--
-
-@panel-heading-text-color:    #6a6a6a;             // The heading's text color.
+@panel-heading-text-color: #6a6a6a;             // The heading's text color.
 @panel-heading-border:        @panel-heading-bg;             // The headings border color.
 //--
 @panel-following-active-bg:   @brand-color;   // The background color of the following square when it's active at the top of panels that support the following feature (e.g. Group Details block).
@@ -225,27 +223,27 @@
 @grid-padding: 8px;         // The default padding of the grid cells.
 
 //// Filter Section
-@grid-filter-bg: @panel-heading-bg;        // The background color of the filter section of the grid.
+@grid-filter-bg: @panel-subheading;        // The background color of the filter section of the grid.
 @grid-filter-color: @panel-heading-text-color; // The text color of the filter section of the grid.
 
 //// Grid Header
-@grid-column-header-bg: @panel-heading-bg;                        // The background color of the grid header.
+@grid-column-header-bg: @panel-subheading;                        // The background color of the grid header.
 @grid-column-header-text-color: @panel-heading-text-color;     // The text color of the grid header.
 @grid-column-header-font-size: 14px;                    // The font size of the grid header.
 @grid-column-header-font-weight: @font-weight-semibold; // The font weight of the grid header.
 @grid-column-header-border-color: @grid-border-color;    // The border color of the grid header.
 //--
-@grid-column-header-bold-bg: darken(@panel-heading-bg, 30%);                   // Background color for bold table headers like the merge person page.
+@grid-column-header-bold-bg: darken(@panel-subheading, 30%);                   // Background color for bold table headers like the merge person page.
 @grid-column-header-bold-color: #fff;             // The text color for bold table headers like the merge person page.
 
 //// Row Striping
 @grid-row-even-bg: @panel-bg;         // The even rows background color.
 @grid-row-even-color: @text-color;  // The even rows text color.
-@grid-row-odd-bg: #f5f5f5;         // The odd rows background color.
+@grid-row-odd-bg: #f6f6f6;         // The odd rows background color.
 @grid-row-odd-color: @text-color;   // The odd rows text color.
 
 //// Hover
-@grid-hover-bg: desaturate( lighten(@brand-color, 42%), 30%);            // Row background color when hovered over.
+@grid-hover-bg: darken(@grid-row-odd-bg, 2%); //desaturate( lighten(@brand-color, 42%), 30%);            // Row background color when hovered over.
 @grid-hover-color: @text-color;     // Row text color when hovered over.
 
 //// Section Headers
@@ -253,16 +251,16 @@
 @grid-section-color: @theme-4-text;  // Some grids like the person merge grid have section headers to group like rows. This styles the text of these rows.
 
 //// Pager Section
-@grid-pager-bg: @panel-heading-bg;
+@grid-pager-bg: @panel-subheading;
 @grid-pager-color: @panel-heading-text-color;
 //--
-@grid-pager-button-bg: @panel-heading-bg;
+@grid-pager-button-bg: @panel-subheading;
 @grid-pager-button-color: @text-color;
 @grid-pager-button-border: darken(@grid-pager-button-bg, 15%);
 @grid-pager-button-active-bg: lighten(@grid-pager-button-bg, 5%);
 
 //// Footer
-@grid-footer-bg: @panel-heading-bg;
+@grid-footer-bg: @panel-subheading;
 @grid-footer-text-color: @panel-heading-text-color;
 @grid-footer-font-size: 10px;
 @grid-footer-font-weight: 300;
@@ -272,7 +270,7 @@
 @grid-footer-button-border: darken(@grid-footer-bg, 15%);
 
 // Popover
-@popover-title-bg: @panel-heading-bg; // The background color for popovers
+@popover-title-bg: @panel-subheading; // The background color for popovers
 
 // Person Profile
 //// Bio Bar

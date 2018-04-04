@@ -284,7 +284,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                                 if ( guid.HasValue )
                                 {
                                     var workflowType = workflowTypeService.Get( guid.Value );
-                                    if ( workflowType != null && workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                                    if ( workflowType != null && workflowType.IsActive && workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                                     {
                                         string url = string.Format( "~/WorkflowEntry/{0}?PersonId={1}", workflowType.Id, Person.Id );
                                         sbActions.AppendFormat(

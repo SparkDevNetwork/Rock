@@ -239,7 +239,7 @@ namespace Rock.Web.UI.Controls
             var grid = control as Grid;
             if ( grid != null )
             {
-                ColumnIndex = grid.Columns.IndexOf( this );
+                ColumnIndex = grid.GetColumnIndex( this );
             }
 
             string script = string.Format( @"

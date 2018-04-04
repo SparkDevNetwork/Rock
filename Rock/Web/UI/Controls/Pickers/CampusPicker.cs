@@ -35,7 +35,6 @@ namespace Rock.Web.UI.Controls
             : base()
         {
             Label = "Campus";
-            CampusIds = CampusCache.All().Select( c => c.Id ).ToList();
         }
 
         /// <summary>
@@ -59,8 +58,16 @@ namespace Rock.Web.UI.Controls
         /// </value>
         private List<int> CampusIds
         {
-            get { return ViewState["CampusIds"] as List<int> ?? new List<int>(); }
-            set { ViewState["CampusIds"] = value; }
+            get
+            {
+                return ViewState["CampusIds"] as List<int> ?? CampusCache.All().Select( c => c.Id ).ToList();
+
+            }
+
+            set
+            {
+                ViewState["CampusIds"] = value;
+            }
         }
 
         /// <summary>
@@ -71,7 +78,11 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public bool IncludeInactive
         {
-            get { return ViewState["IncludeInactive"] as bool? ?? true; }
+            get
+            {
+                return ViewState["IncludeInactive"] as bool? ?? true;
+            }
+
             set
             {
                 ViewState["IncludeInactive"] = value;

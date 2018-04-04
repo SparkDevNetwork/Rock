@@ -36,7 +36,7 @@
         <div id="divLayout" runat="server" class="tab-pane" >
             
             <div class="grid">
-                <Rock:Grid ID="gLayoutBlocks" runat="server" AllowPaging="false" EmptyDataText="No Layout Blocks Found" OnRowSelected="gLayoutBlocks_Edit">
+                <Rock:Grid ID="gLayoutBlocks" runat="server" AllowPaging="false" EmptyDataText="No Layout Blocks Found" OnRowSelected="gLayoutBlocks_Edit" ShowActionsInHeader="false">
                     <Columns>
                         <Rock:ReorderField />
                         <Rock:RockBoundField DataField="Name" HeaderText="Name" />

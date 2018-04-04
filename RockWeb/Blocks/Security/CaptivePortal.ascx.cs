@@ -30,23 +30,23 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Security
 {
-    [DisplayName( "WiFi Welcome" )]
+    [DisplayName( "Captive Portal" )]
     [Category( "Security" )]
-    [Description( "Controls access to WiFi." )]
+    [Description( "Controls access to Wi-Fi." )]
     [TextField( "MAC Address Paramameter", "The query string parameter used for the MAC Address", true, "client_mac", "", 0, "MacAddressParam" )]
-    [TextField( "Release Link", "The URL to redirect users to after registration.", true, "", "", 1, "ReleaseLink" )]
+    [TextField( "Release Link", "The full URL to redirect users to after registration.", true, "", "", 1, "ReleaseLink" )]
     [BooleanField("Show First Name", "Show or hide the First Name field. If it is visible then it will be required.", true, "", 2, "ShowFirstName", IsRequired = true )]
     [BooleanField( "Show Last Name", "Show or hide the Last Name field. If it is visible then it will be required.", true, "", 3, "ShowLastName", IsRequired = true )]
     [BooleanField( "Show Mobile Phone", "Show or hide the Mobile Phone Number field. If it is visible then it will be required.", true, "", 4, "ShowMobilePhone", IsRequired = true )]
     [BooleanField( "Show Email", "Show or hide the Email field. If it is visible then it will be required.", true, "", 5, "ShowEmail", IsRequired = true )]
     [BooleanField( "Show Acceptance Checkbox", "Show or hide the \"I Accept\" checkbox. If it is visible then it will be required. This should be visible if the \"Terms And Conditions\" are also visible.", true, "", 6, "ShowAccept", IsRequired = true )]
     [TextField( "Acceptance Checkbox Label", "Text used to signify user agreement with the Terms and Conditions", true, "I Accept", "", 7, "AcceptanceLabel" )]
-    [TextField( "Button Text", "Text to display on the button", true, "Connect To WiFi", "", 8, "ButtonText" )]
+    [TextField( "Button Text", "Text to display on the button", true, "Connect To Wi-Fi", "", 8, "ButtonText" )]
     [BooleanField( "Show Legal Note", "Show or hide the Terms and Conditions. This should be always be visible unless users are being automatically connected without any agreement needed.", true, "", 9, "ShowLegalNote", IsRequired = true )]
-    [CodeEditorField ( "Legal Note", "A legal note outlining the Terms and Conditions for using WiFi", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, false, DEFAULT_LEGAL_NOTE, "", 10, "LegalNote" )]
+    [CodeEditorField ( "Legal Note", "A legal note outlining the Terms and Conditions for using Wi-Fi.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, false, DEFAULT_LEGAL_NOTE, "", 10, "LegalNote" )]
     public partial class CaptivePortal : RockBlock
     {
-        #region DefaultLegalNote
+        #region Block Setting Strings
         protected const string DEFAULT_LEGAL_NOTE = @"<!DOCTYPE html>
 <html>
 <head>
@@ -65,7 +65,7 @@ namespace RockWeb.Blocks.Security
 <body>
     <h1>Terms & Conditions</h1>
     <p>
-        This free WiFi service(""Service"") is provided by {{ 'Global' | Attribute:'OrganizationName' }}
+        This free Wi-Fi service(""Service"") is provided by {{ 'Global' | Attribute:'OrganizationName' }}
         (""Organization"") to its guests. Please read the Service Terms and Conditions below. To use the Service, users must accept these Service Terms and Conditions.
     </p>
 
@@ -81,7 +81,7 @@ namespace RockWeb.Blocks.Security
                     The provisioning of the Service may reveal location-specific data, usage and retention of which are subject to the local standard privacy policy and jurisdiction;
                 </li>
                 <li>
-                    Every user is entitled to 20 continuous minutes free WiFi service every day at the Company's designated locations(s). If the connection is disconnected within the 20 minutes due to any reason, the users cannot use the Service again on the same day;
+                    Every user is entitled to 20 continuous minutes free Wi-Fi service every day at the Company's designated locations(s). If the connection is disconnected within the 20 minutes due to any reason, the users cannot use the Service again on the same day;
                 </li>
                 <li>
                     The Organization excludes all liability or responsibility for any cost, claim, damage, or loss to the user or to any third party whether direct or indirect of any kind including revenue, loss or profits or any consequential loss in contract,
@@ -113,9 +113,18 @@ namespace RockWeb.Blocks.Security
                 string macAddress = RockPage.PageParameter( GetAttributeValue( "MacAddressParam" ) );
                 if ( string.IsNullOrWhiteSpace( macAddress ) || !macAddress.IsValidMacAddress() )
                 {
-                    nbAlert.Text = "Invalid or insufficient data supplied";
+                    nbAlert.Text = "Missing or invalid MAC Address";
                     nbAlert.Visible = true;
-                    DisableControls();
+                    ShowControls( false );
+                    return;
+                }
+
+                string releaseLink = GetAttributeValue( "ReleaseLink" );
+                if ( string.IsNullOrWhiteSpace( releaseLink ) || !releaseLink.IsValidUrl() )
+                {
+                    nbAlert.Text = "Missing or invalid Release Link";
+                    nbAlert.Visible = true;
+                    ShowControls( false );
                     return;
                 }
 
@@ -132,7 +141,7 @@ namespace RockWeb.Blocks.Security
                 bool isAnExistingDevice = DoesPersonalDeviceExist( macAddress );
                 if ( isAnExistingDevice )
                 {
-                    personalDevice = personalDeviceService.GetByMACAddress( macAddress );
+                    personalDevice = VerifyDeviceInfo( macAddress );
                 }
                 else
                 {
@@ -151,18 +160,22 @@ namespace RockWeb.Blocks.Security
                     RockPage.LinkPersonAliasToDevice( ( int ) CurrentPersonAliasId, macAddress );
                     hfPersonAliasId.Value = CurrentPersonAliasId.ToString();
                 }
-                else if ( isAnExistingDevice )
+
+                if ( isAnExistingDevice )
                 {
                     // if the user is not logged in but we have the device lets try to get a person
-                    person = personService.Get( personalDevice.PersonAlias.PersonId );
-                    if ( person != null )
+                    if ( personalDevice.PersonAliasId != null )
                     {
-                        Prefill( person );
-                        RockPage.LinkPersonAliasToDevice( ( int ) personalDevice.PersonAliasId, macAddress );
-                        hfPersonAliasId.Value = personalDevice.PersonAliasId.ToString();
+                        person = personService.Get( personalDevice.PersonAlias.PersonId );
+                        if ( person != null )
+                        {
+                            Prefill( person );
+                            RockPage.LinkPersonAliasToDevice( ( int ) personalDevice.PersonAliasId, macAddress );
+                            hfPersonAliasId.Value = personalDevice.PersonAliasId.ToString();
+                        }
                     }
                 }
-                
+
                 // Direct connect if no controls are visible
                 if ( !ShowControls() )
                 {
@@ -197,21 +210,58 @@ namespace RockWeb.Blocks.Security
         /// Creates the device if new.
         /// </summary>
         /// <returns>Returns true if the device was created, false it already existed</returns>
-        private PersonalDevice CreateDevice(string macAddress )
+        private PersonalDevice CreateDevice( string macAddress )
         {
+            UAParser.ClientInfo client = UAParser.Parser.GetDefault().Parse( Request.UserAgent );
+
             RockContext rockContext = new RockContext();
             PersonalDeviceService personalDeviceService = new PersonalDeviceService( rockContext );
+
             PersonalDevice personalDevice = new PersonalDevice();
             personalDevice.MACAddress = macAddress;
 
-            // Parse the UA string and try to get the info we want
+            personalDevice.PersonalDeviceTypeValueId = GetDeviceTypeValueId();
+            personalDevice.PlatformValueId = GetDevicePlatformValueId( client );
+            personalDevice.DeviceVersion = GetDeviceOsVersion( client );
+
+            personalDeviceService.Add( personalDevice );
+            rockContext.SaveChanges();
+
+            return personalDevice;
+        }
+
+        /// <summary>
+        /// Gets the current device platform info and updates the obj if needed.
+        /// </summary>
+        /// <param name="personalDevice">The personal device.</param>
+        private PersonalDevice VerifyDeviceInfo( string macAddress )
+        {
             UAParser.ClientInfo client = UAParser.Parser.GetDefault().Parse( Request.UserAgent );
 
-            // Get the device type Mobile or Computer
+            RockContext rockContext = new RockContext();
+            PersonalDeviceService personalDeviceService = new PersonalDeviceService( rockContext );
+
+            PersonalDevice personalDevice = personalDeviceService.GetByMACAddress( macAddress );
+            personalDevice.PersonalDeviceTypeValueId = GetDeviceTypeValueId();
+            personalDevice.PlatformValueId = GetDevicePlatformValueId( client );
+            personalDevice.DeviceVersion = GetDeviceOsVersion( client );
+
+            rockContext.SaveChanges();
+
+            return personalDevice;
+        }
+
+        /// <summary>
+        /// Uses the Request information to determine if the device is mobile or not
+        /// </summary>
+        /// <returns>DevinedValueId for "Mobile" or "Computer", Mobile includes Tablet. Null if there is a data issue and the DefinedType is missing</returns>
+        private int? GetDeviceTypeValueId()
+        {
             DefinedTypeCache definedTypeCache = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSONAL_DEVICE_TYPE.AsGuid() );
             DefinedValueCache definedValueCache = null;
 
-            string clientType = Request.Browser.IsMobileDevice == true ? "Mobile" : "Computer";
+            var clientType = InteractionDeviceType.GetClientType( Request.UserAgent );
+            clientType = clientType == "Mobile" || clientType == "Tablet" ? "Mobile" : "Computer";
 
             if ( definedTypeCache != null )
             {
@@ -221,39 +271,53 @@ namespace RockWeb.Blocks.Security
                 {
                     definedValueCache = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSONAL_DEVICE_TYPE_COMPUTER.AsGuid() );
                 }
+
+                return definedValueCache.Id;
             }
 
-            personalDevice.PersonalDeviceTypeValueId = definedValueCache != null ? definedValueCache.Id : ( int? ) null;
+            return null;
+        }
 
+        /// <summary>
+        /// Parses ClientInfo to find the OS family
+        /// </summary>
+        /// <param name="client">The client.</param>
+        /// <returns>DefinedValueId for the found OS. Uses "Other" if the OS is not in DefinedValue. Null if there is a data issue and the DefinedType is missing</returns>
+        private int? GetDevicePlatformValueId( UAParser.ClientInfo client )
+        {
             // get the OS
-            string platform = client.OS.Family;
+            string platform = client.OS.Family.Split( ' ' ).First();
 
-            definedTypeCache = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSONAL_DEVICE_PLATFORM.AsGuid() );
-
-            if (definedTypeCache != null )
+            DefinedTypeCache definedTypeCache = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSONAL_DEVICE_PLATFORM.AsGuid() );
+            DefinedValueCache definedValueCache = null;
+            if ( definedTypeCache != null )
             {
                 definedValueCache = definedTypeCache.DefinedValues.FirstOrDefault( v => v.Value == platform );
 
-                if (definedValueCache == null )
+                if ( definedValueCache == null )
                 {
                     definedValueCache = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSONAL_DEVICE_PLATFORM_OTHER.AsGuid() );
                 }
+
+                return definedValueCache.Id;
             }
 
-            personalDevice.PlatformValueId = definedValueCache != null ? definedValueCache.Id : ( int? ) null;
+            return null;
+        }
 
-            // Get the OS version
-            personalDevice.DeviceVersion = string.Format(
+        /// <summary>
+        /// Parses ClientInfo and gets the device os version. If it cannot be determined returns "0.0.0.0"
+        /// </summary>
+        /// <param name="client">The client.</param>
+        /// <returns></returns>
+        private string GetDeviceOsVersion( UAParser.ClientInfo client )
+        {
+            return string.Format(
                 "{0}.{1}.{2}.{3}",
                 client.OS.Major ?? "0",
                 client.OS.Minor ?? "0",
                 client.OS.Patch ?? "0",
                 client.OS.PatchMinor ?? "0" );
-
-            // Add and save it
-            personalDeviceService.Add( personalDevice );
-            rockContext.SaveChanges();
-            return personalDevice;
         }
 
         /// <summary>
@@ -308,39 +372,6 @@ namespace RockWeb.Blocks.Security
         }
 
         /// <summary>
-        /// Disables the user fillable controls.
-        /// </summary>
-        protected void DisableControls()
-        {
-            if ( tbFirstName.Visible )
-            {
-                tbFirstName.Text = string.Empty;
-                tbFirstName.Enabled = false;
-            }
-
-            if ( tbLastName.Visible )
-            {
-                tbLastName.Text = string.Empty;
-                tbLastName.Enabled = false;
-            }
-
-            if ( tbMobilePhone.Visible )
-            {
-                tbMobilePhone.Text = string.Empty;
-                tbMobilePhone.Enabled = false;
-            }
-
-            if ( tbEmail.Visible )
-            {
-                tbEmail.Text = string.Empty;
-                tbEmail.Enabled = false;
-            }
-
-            btnConnect.Enabled = false;
-            btnConnect.Text = "Unable to connect to WiFi due to errors";
-        }
-
-        /// <summary>
         /// Handles the Click event of the btnConnect control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -365,14 +396,15 @@ namespace RockWeb.Blocks.Security
 
             PersonService personService = new PersonService( new RockContext() );
             int mobilePhoneTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
-            
+
             // Use the entered info to try and find an existing user
+            string mobilePhoneNumber = tbMobilePhone.Text.RemoveAllNonAlphaNumericCharacters();
             Person person = personService
                 .Queryable()
                 .Where( p => p.FirstName == tbFirstName.Text )
                 .Where( p => p.LastName == tbLastName.Text )
                 .Where( p => p.Email == tbEmail.Text )
-                .Where( p => p.PhoneNumbers.Where( n => n.NumberTypeValueId == mobilePhoneTypeId ).FirstOrDefault().Number == tbMobilePhone.Text.RemoveAllNonAlphaNumericCharacters() )
+                .Where( p => p.PhoneNumbers.Where( n => n.NumberTypeValueId == mobilePhoneTypeId ).FirstOrDefault().Number == mobilePhoneNumber )
                 .FirstOrDefault();
             
             // If no known person record then create one
@@ -400,24 +432,30 @@ namespace RockWeb.Blocks.Security
         /// Shows the controls according to the attribute values. If they are visible then they are also required.
         /// </summary>
         /// <returns>If any control is visible then true, else false.</returns>
-        protected bool ShowControls()
+        protected bool ShowControls( bool isEnabled = true )
         {
             tbFirstName.Visible = GetAttributeValue( "ShowFirstName" ).AsBoolean();
             tbFirstName.Required = GetAttributeValue( "ShowFirstName" ).AsBoolean();
+            tbFirstName.Enabled = isEnabled;
 
             tbLastName.Visible = GetAttributeValue( "ShowLastName" ).AsBoolean();
             tbLastName.Required = GetAttributeValue( "ShowLastName" ).AsBoolean();
+            tbLastName.Enabled = isEnabled;
 
             tbMobilePhone.Visible = GetAttributeValue( "ShowMobilePhone" ).AsBoolean();
             tbMobilePhone.Required = GetAttributeValue( "ShowMobilePhone" ).AsBoolean();
+            tbMobilePhone.Enabled = isEnabled;
 
             tbEmail.Visible = GetAttributeValue( "ShowEmail" ).AsBoolean();
             tbEmail.Required = GetAttributeValue( "ShowEmail" ).AsBoolean();
-            
+            tbEmail.Enabled = isEnabled;
+
             cbAcceptTAC.Visible = GetAttributeValue( "ShowAccept" ).AsBoolean();
             cbAcceptTAC.Text = GetAttributeValue( "AcceptanceLabel" );
+            cbAcceptTAC.Enabled = isEnabled;
 
-            btnConnect.Text = GetAttributeValue( "ButtonText" );
+            btnConnect.Text = isEnabled ? GetAttributeValue( "ButtonText" ) : "Unable to connect to Wi-Fi due to errors";
+            btnConnect.Enabled = isEnabled;
 
             if ( iframeLegalNotice.Visible = GetAttributeValue( "ShowLegalNote" ).AsBoolean() )
             {

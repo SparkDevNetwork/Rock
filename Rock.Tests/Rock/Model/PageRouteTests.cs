@@ -41,7 +41,7 @@ namespace Rock.Tests.Rock.Model
             };
 
             var result = pageRoute.ToJson();
-            var key = string.Format( "\"Guid\": \"{0}\"", guid );
+            var key = string.Format( "\"Guid\":\"{0}\"", guid );
             Assert.NotEqual( result.IndexOf( key ), -1 );
         }
 

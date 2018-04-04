@@ -1006,10 +1006,10 @@ namespace RockWeb.Blocks.Connection
             }
             try
             {
-                connectionWorkflow.WorkflowType = new WorkflowTypeService( new RockContext() ).Get( ddlWorkflowType.SelectedValueAsId().Value );
+                connectionWorkflow.WorkflowType = new WorkflowTypeService( new RockContext() ).Get( wpWorkflowType.SelectedValueAsId().Value );
             }
             catch { }
-            connectionWorkflow.WorkflowTypeId = ddlWorkflowType.SelectedValueAsId().Value;
+            connectionWorkflow.WorkflowTypeId = wpWorkflowType.SelectedValueAsId().Value;
             connectionWorkflow.TriggerType = ddlTriggerType.SelectedValueAsEnum<ConnectionWorkflowTriggerType>();
             connectionWorkflow.QualifierValue = String.Format( "|{0}|{1}|", ddlPrimaryQualifier.SelectedValue, ddlSecondaryQualifier.SelectedValue );
             connectionWorkflow.ConnectionTypeId = 0;
@@ -1070,41 +1070,10 @@ namespace RockWeb.Blocks.Connection
             ConnectionWorkflow connectionWorkflow = WorkflowsState.FirstOrDefault( l => l.Guid.Equals( connectionWorkflowGuid ) );
             if ( connectionWorkflow != null )
             {
-                ddlWorkflowType.Items.Clear();
-                ddlWorkflowType.Items.Add( new ListItem( string.Empty, string.Empty ) );
-
-                foreach ( var workflowType in new WorkflowTypeService( new RockContext() ).Queryable().OrderBy( w => w.Name ) )
-                {
-                    if ( workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
-                    {
-                        ddlWorkflowType.Items.Add( new ListItem( workflowType.Name, workflowType.Id.ToString() ) );
-                    }
-                }
-
-                if ( connectionWorkflow.WorkflowTypeId == null )
-                {
-                    ddlWorkflowType.SelectedValue = "0";
-                }
-                else
-                {
-                    ddlWorkflowType.SelectedValue = connectionWorkflow.WorkflowTypeId.ToString();
-                }
-
+                wpWorkflowType.SetValue( connectionWorkflow.WorkflowTypeId );
                 ddlTriggerType.SelectedValue = connectionWorkflow.TriggerType.ConvertToInt().ToString();
             }
-            else
-            {
-                ddlWorkflowType.Items.Clear();
-                ddlWorkflowType.Items.Add( new ListItem( string.Empty, string.Empty ) );
-
-                foreach ( var workflowType in new WorkflowTypeService( new RockContext() ).Queryable().OrderBy( w => w.Name ) )
-                {
-                    if ( workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
-                    {
-                        ddlWorkflowType.Items.Add( new ListItem( workflowType.Name, workflowType.Id.ToString() ) );
-                    }
-                }
-            }
+         
 
             hfAddConnectionWorkflowGuid.Value = connectionWorkflowGuid.ToString();
             UpdateTriggerQualifiers();

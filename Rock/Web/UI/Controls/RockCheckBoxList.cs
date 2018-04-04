@@ -17,6 +17,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Constants;
@@ -251,6 +252,34 @@ namespace Rock.Web.UI.Controls
         #endregion
 
         /// <summary>
+        /// Gets or sets the number of columns to display in the <see cref="T:System.Web.UI.WebControls.CheckBoxList" /> control.
+        /// If RepeatDirection is Horizontal, this will default to 4 columns
+        /// </summary>
+        public override int RepeatColumns
+        {
+            get
+            {
+                if ( this.RepeatDirection == RepeatDirection.Horizontal )
+                {
+                    // unless set specifically, default Horizontal to 4 columns
+                    return _repeatColumns ?? 4;
+                }
+                else
+                {
+                    return _repeatColumns ?? 0;
+                }
+            }
+
+            set
+            {
+                _repeatColumns = value;
+            }
+        }
+
+        private int? _repeatColumns;
+        
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -349,7 +378,22 @@ namespace Rock.Web.UI.Controls
         {
             _hfCheckListBoxId.RenderControl( writer );
 
-            writer.AddAttribute( "class", "controls js-rockcheckboxlist" );
+            StringBuilder cssClassBuilder = new StringBuilder( "controls js-rockcheckboxlist rockcheckboxlist" );
+            if ( this.RepeatDirection == RepeatDirection.Horizontal )
+            {
+                cssClassBuilder.Append( " rockcheckboxlist-horizontal" );
+            }
+            else
+            {
+                cssClassBuilder.Append( " rockcheckboxlist-vertical" );
+            }
+
+            if ( this.RepeatColumns > 0 )
+            {
+                cssClassBuilder.Append( " in-columns" );
+            }
+
+            writer.AddAttribute( "class", cssClassBuilder.ToString() );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             if ( Items.Count == 0 )
@@ -358,8 +402,11 @@ namespace Rock.Web.UI.Controls
             }
 
             base.RenderControl( writer );
+
             CustomValidator.RenderControl( writer );
+
             writer.RenderEndTag();
+
             if ( DisplayAsCheckList )
             {
                 string script = string.Format( @"

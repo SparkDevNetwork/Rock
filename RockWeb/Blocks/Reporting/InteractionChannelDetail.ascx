@@ -43,6 +43,7 @@
                         </div>
                         <div class="col-md-6">
                             <Rock:NumberBox ID="nbRetentionDuration" runat="server" Label="Retention Duration" NumberType="Integer" />
+                            <Rock:RockCheckBox ID="cbIsActive" runat="server" Text="Active" />
                         </div>
                     </div>
 
