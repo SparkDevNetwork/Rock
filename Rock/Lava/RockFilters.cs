@@ -1981,6 +1981,33 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Loads a person by their alias guid
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static Person PersonByAliasGuid( DotLiquid.Context context, object input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            Guid? personAliasGuid = input.ToString().AsGuidOrNull();
+
+            if ( personAliasGuid.HasValue )
+            {
+                var rockContext = new RockContext();
+
+                return new PersonAliasService( rockContext ).Get( personAliasGuid.Value ).Person;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Persons the by alias identifier.
         /// </summary>
         /// <param name="context">The context.</param>
