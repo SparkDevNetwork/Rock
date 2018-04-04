@@ -1629,7 +1629,7 @@ function(item) {
                 var cellPhoneType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
                 if ( homePhoneType != null && cellPhoneType != null )
                 {
-                    phoneNumbers = new PhoneNumberService( _rockContext )
+                    phoneNumbers = new PhoneNumberService( rockContext )
                         .Queryable().AsNoTracking()
                         .Where( n => 
                             personIds.Contains( n.PersonId ) &&
@@ -1647,7 +1647,7 @@ function(item) {
                 if ( familyGroupType != null && homeAddressDv != null )
                 {
 
-                    foreach ( var item in new GroupMemberService( _rockContext )
+                    foreach ( var item in new GroupMemberService( rockContext )
                         .Queryable().AsNoTracking()
                         .Where( m =>                            
                             personIds.Contains( m.PersonId ) &&
