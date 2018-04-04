@@ -695,6 +695,10 @@ namespace RockWeb.Blocks.Event
 
         #region Build Controls
 
+        /// <summary>
+        /// Builds the controls for Fields and Fees.
+        /// </summary>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
         private void BuildControls( bool setValues )
         {
             if ( RegistrantState != null && TemplateState != null )
@@ -704,6 +708,10 @@ namespace RockWeb.Blocks.Event
             }
         }
 
+        /// <summary>
+        /// Builds the controls for the Fields placeholder.
+        /// </summary>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
         private void BuildFields( bool setValues )
         {
             phFields.Controls.Clear();
@@ -742,6 +750,11 @@ namespace RockWeb.Blocks.Event
             }
         }
 
+        /// <summary>
+        /// Builds the checkbox control for single-option single-quantity fees.
+        /// </summary>
+        /// <param name="fee">The fee.</param>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
         private void BuildFeeSingleOptionSingleQuantity( RegistrationTemplateFee fee, bool setValues )
         {
             var feeValues = GetFeeValues( fee );
@@ -765,6 +778,11 @@ namespace RockWeb.Blocks.Event
             }
         }
 
+        /// <summary>
+        /// Builds the NumberUpDown control for single-option multi-quantity fees.
+        /// </summary>
+        /// <param name="fee">The fee.</param>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
         private void BuildFeeSingleOptionMultiQuantity( RegistrationTemplateFee fee, bool setValues )
         {
             var feeValues = GetFeeValues( fee );
@@ -782,6 +800,11 @@ namespace RockWeb.Blocks.Event
             }
         }
 
+        /// <summary>
+        /// Builds the DropDownList contorl for multi-option single-quantity fees.
+        /// </summary>
+        /// <param name="fee">The fee.</param>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
         private void BuildFeeMultiOptionSingleQuantity( RegistrationTemplateFee fee, bool setValues )
         {
             var feeValues = GetFeeValues( fee );
@@ -807,6 +830,11 @@ namespace RockWeb.Blocks.Event
             }
         }
 
+        /// <summary>
+        /// Builds the NumberUpDownGroup control for multi-option multi-quantity fees.
+        /// </summary>
+        /// <param name="fee">The fee.</param>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
         private void BuildFeeMultiOptionMultiQuantity( RegistrationTemplateFee fee, bool setValues )
         {
             var feeValues = GetFeeValues( fee );
@@ -839,6 +867,11 @@ namespace RockWeb.Blocks.Event
             phFees.Controls.Add( numberUpDownGroup );
         }
 
+        /// <summary>
+        /// Creates the label.
+        /// </summary>
+        /// <param name="fee">The fee.</param>
+        /// <returns></returns>
         private string CreateLabel( RegistrationTemplateFee fee )
         {
             string label = fee.Name;
@@ -851,6 +884,11 @@ namespace RockWeb.Blocks.Event
             return label;
         }
 
+        /// <summary>
+        /// Gets the fee values from RegistrantState
+        /// </summary>
+        /// <param name="fee">The fee.</param>
+        /// <returns></returns>
         private List<FeeInfo> GetFeeValues( RegistrationTemplateFee fee )
         {
             var feeValues = new List<FeeInfo>();
@@ -862,6 +900,11 @@ namespace RockWeb.Blocks.Event
             return feeValues;
         }
 
+        /// <summary>
+        /// Parse the CostValue string add it to a dictionary
+        /// </summary>
+        /// <param name="fee">The fee.</param>
+        /// <returns></returns>
         private Dictionary<string, string> ParseOptions ( RegistrationTemplateFee fee )
         {
             var options = new Dictionary<string, string>();
@@ -883,6 +926,10 @@ namespace RockWeb.Blocks.Event
             return options;
         }
 
+        /// <summary>
+        /// Builds the fees controls in the fee placeholder.
+        /// </summary>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
         private void BuildFees( bool setValues )
         {
             phFees.Controls.Clear();
@@ -927,6 +974,9 @@ namespace RockWeb.Blocks.Event
 
         #region Parse Controls
 
+        /// <summary>
+        /// Parses the controls.
+        /// </summary>
         private void ParseControls ()
         {
             if ( RegistrantState != null && TemplateState != null )
@@ -936,6 +986,9 @@ namespace RockWeb.Blocks.Event
             }
         }
 
+        /// <summary>
+        /// Parses the fields.
+        /// </summary>
         private void ParseFields()
         {
             if ( TemplateState.Forms != null )
@@ -977,6 +1030,9 @@ namespace RockWeb.Blocks.Event
             }
         }
 
+        /// <summary>
+        /// Loop through all the fees adn call ParseFee for each one. Creates the fee controls and populates with data.
+        /// </summary>
         private void ParseFees()
         {
             if ( TemplateState.Fees != null )
@@ -992,6 +1048,11 @@ namespace RockWeb.Blocks.Event
             }
         }
 
+        /// <summary>
+        /// Create the control and assign the fee data.
+        /// </summary>
+        /// <param name="fee">The fee.</param>
+        /// <returns></returns>
         private List<FeeInfo> ParseFee( RegistrationTemplateFee fee )
         {
             string fieldId = string.Format( "fee_{0}", fee.Id );
