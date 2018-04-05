@@ -3615,6 +3615,11 @@ namespace RockWeb.Blocks.Event
         {
             CurrentPanel = currentPanel;
 
+            if ( CurrentPanel == 2 )
+            {
+                AutoApplyDiscounts();
+            }               
+
             CreateDynamicControls( true );
 
             pnlHowMany.Visible = CurrentPanel <= 0;
@@ -5367,6 +5372,83 @@ namespace RockWeb.Blocks.Event
         #endregion
 
         #endregion
+
+        /// <summary>
+        /// Applies the first automatic discount that matches the set limits.
+        /// </summary>
+        private void AutoApplyDiscounts()
+        {
+            if ( RegistrationState != null )
+            {
+                RegistrationState.Registrants.ForEach( r => r.DiscountApplies = true );
+
+                var discounts = RegistrationTemplate.Discounts
+                        .Where( d => d.AutoApplyDiscount )
+                        .OrderBy( d => d.Order )
+                        .ToList();
+
+                foreach ( var discount in discounts )
+                {
+                    bool validDiscount = true;
+
+                    if ( validDiscount && discount.MinRegistrants.HasValue && RegistrationState.RegistrantCount < discount.MinRegistrants.Value )
+                    {
+                        nbDiscountCode.Visible = true;
+                        validDiscount = false;
+                    }
+
+                    if ( validDiscount && discount.StartDate.HasValue && RockDateTime.Today < discount.StartDate.Value )
+                    {
+                        nbDiscountCode.Visible = true;
+                        validDiscount = false;
+                    }
+
+                    if ( validDiscount && discount.EndDate.HasValue && RockDateTime.Today > discount.EndDate.Value )
+                    {
+                        nbDiscountCode.Visible = true;
+                        validDiscount = false;
+                    }
+
+                    if ( validDiscount && discount.MaxUsage.HasValue && RegistrationInstanceState != null )
+                    {
+                        using ( var rockContext = new RockContext() )
+                        {
+                            var instances = new RegistrationService( rockContext )
+                                .Queryable().AsNoTracking()
+                                .Where( r =>
+                                    r.RegistrationInstanceId == RegistrationInstanceState.Id &&
+                                    ( !RegistrationState.RegistrationId.HasValue || r.Id != RegistrationState.RegistrationId.Value ) &&
+                                    r.DiscountCode == discount.Code )
+                                .Count();
+                            if ( instances >= discount.MaxUsage.Value )
+                            {
+                                nbDiscountCode.Visible = true;
+                                validDiscount = false;
+                            }
+                        }
+                    }
+
+                    if ( validDiscount && discount.MaxRegistrants.HasValue )
+                    {
+                        for ( int i = 0; i < RegistrationState.Registrants.Count; i++ )
+                        {
+                            RegistrationState.Registrants[i].DiscountApplies = i < discount.MaxRegistrants.Value;
+                        }
+                    }
+
+                    RegistrationState.DiscountCode = validDiscount ? discount.Code : string.Empty;
+                    RegistrationState.DiscountPercentage = validDiscount ? discount.DiscountPercentage : 0.0m;
+                    RegistrationState.DiscountAmount = validDiscount ? discount.DiscountAmount : 0.0m;
+
+                    if ( validDiscount )
+                    {
+                        nbDiscountCode.Visible = true;
+                        nbDiscountCode.Text = string.Format( "The {0} '{1}' was applied automatically.", DiscountCodeTerm, discount.Code );
+                        break;
+                    }
+                }
+            }
+        }
 
         #endregion
     }
