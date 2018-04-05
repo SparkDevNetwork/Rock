@@ -1,9 +1,19 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Person.ascx.cs" Inherits="RockWeb.Blocks.CheckIn.Manager.Person" %>
 
+<script type="text/javascript">
+    Sys.Application.add_load(function () {
+        $('.js-cancel-checkin').click(function (event) {
+            event.stopImmediatePropagation();
+            var personName = $('H4.js-checkin-person-name').first().text();
+            return Rock.dialogs.confirmDelete(event, 'Checkin for ' + personName);
+        });
+    });
+</script>
+
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
-        <h4><asp:Literal ID="lName" runat="server"></asp:Literal></h4>
+        <h4 class="js-checkin-person-name"><asp:Literal ID="lName" runat="server"></asp:Literal></h4>
 
         <div class="row">
             <div class="col-sm-3">
@@ -38,6 +48,15 @@
             </ul>
         </Rock:RockControlWrapper>
         
+        <Rock:RockControlWrapper ID="rcwRelationships" runat="server" Label="Related People" CssClass="list-unstyled">
+            <ul class="list-unstyled list-horizontal">
+                <asp:Repeater ID="rptrRelationships" runat="server" OnItemDataBound="rptrRelationships_ItemDataBound">
+                    <ItemTemplate>
+                        <li><a class="btn btn-action" href='<%# Eval("Url") %>' ><asp:Literal ID="lRelationshipsIcon" runat="server" /> <%# Eval("FullName") %> <small><%# Eval("Note") %></small></a> </li>
+                    </ItemTemplate>
+                </asp:Repeater>
+            </ul>
+        </Rock:RockControlWrapper>
 
         <Rock:RockControlWrapper ID="rcwCheckinHistory" runat="server" Label="Check-in History">
             <Rock:Grid ID="gHistory" runat="server" DisplayType="Light" AllowPaging="false" CssClass="table-condensed">
@@ -60,6 +79,7 @@
                             <%# Eval("Code") %>
                         </ItemTemplate>
                     </Rock:RockTemplateField>
+                    <Rock:DeleteField OnClick="gHistory_Delete" ButtonCssClass="js-cancel-checkin btn btn-xs btn-danger" Tooltip="Delete This Checkin" />
                 </Columns>
             </Rock:Grid>
         </Rock:RockControlWrapper>

@@ -102,7 +102,7 @@ namespace RockWeb.Blocks.Crm
                 }
             }
 
-            if ( !guidList.Any() )
+            if ( rlbWorkFlowType.Items.Count <= 0 )
             {
                 pwWorkFlows.Visible = false;
             }
