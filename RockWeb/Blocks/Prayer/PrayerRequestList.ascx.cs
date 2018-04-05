@@ -45,6 +45,7 @@ namespace RockWeb.Blocks.Prayer
     [BooleanField( "Show Prayer Count", "If enabled, the block will show the current prayer count for each request in the list.", false, "", 2 )]
     [BooleanField( "Show 'Approved' column", "If enabled, the Approved column will be shown with a Yes/No toggle button.", true, "", 3, "ShowApprovedColumn" )]
     [BooleanField( "Show Grid Filter", "If enabled, the grid filter will be visible.", true, "", 4 )]
+    [BooleanField( "Show Public Only", "If enabled, it will limit the list only to the prayer requests that are public.", false, order: 5 )]
 
     [ContextAware( typeof( Rock.Model.Person ) )]
     public partial class PrayerRequestList : RockBlock, ICustomGridColumns
@@ -185,7 +186,11 @@ namespace RockWeb.Blocks.Prayer
             ddlUrgentFilter.SetValue( gfFilter.GetUserPreference( FilterSetting.UrgentStatus ) );
 
             // Set the Public Status filter
-            ddlPublicFilter.SetValue( gfFilter.GetUserPreference( FilterSetting.PublicStatus ) );
+            ddlPublicFilter.Visible = !( this.GetAttributeValue( "ShowPublicOnly" ).AsBooleanOrNull() ?? false );
+            if ( !ddlPublicFilter.Visible )
+            {
+                gfFilter.SaveUserPreference( FilterSetting.PublicStatus, string.Empty );
+            }
 
             // Set the Active Status filter
             ddlActiveFilter.SetValue( gfFilter.GetUserPreference( FilterSetting.ActiveStatus ) );
@@ -514,15 +519,22 @@ namespace RockWeb.Blocks.Prayer
             }
 
             // Filter by public/non-public
-            if ( ddlPublicFilter.SelectedIndex > -1 )
+            if ( !ddlPublicFilter.Visible )
             {
-                if ( ddlPublicFilter.SelectedValue == "non-public" )
+                prayerRequests = prayerRequests.Where( a => a.IsPublic == true );
+            }
+            else
+            {
+                if ( ddlPublicFilter.SelectedIndex > -1 )
                 {
-                    prayerRequests = prayerRequests.Where( a => a.IsPublic == false || !a.IsPublic.HasValue );
-                }
-                else if ( ddlPublicFilter.SelectedValue == "public" )
-                {
-                    prayerRequests = prayerRequests.Where( a => a.IsPublic == true );
+                    if ( ddlPublicFilter.SelectedValue == "non-public" )
+                    {
+                        prayerRequests = prayerRequests.Where( a => a.IsPublic == false || !a.IsPublic.HasValue );
+                    }
+                    else if ( ddlPublicFilter.SelectedValue == "public" )
+                    {
+                        prayerRequests = prayerRequests.Where( a => a.IsPublic == true );
+                    }
                 }
             }
 
