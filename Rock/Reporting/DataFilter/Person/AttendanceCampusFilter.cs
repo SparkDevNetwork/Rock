@@ -85,6 +85,10 @@ namespace Rock.Reporting.DataFilter.Person
         /// controls parent container can be referenced through a '$content' variable that is set by the control before
         /// referencing this property.
         /// </summary>
+        /// <param name="entityType">The System Type of the entity to which the filter will be applied.</param>
+        /// <returns>
+        /// The client format script.
+        /// </returns>
         /// <value>
         /// The client format script.
         /// </value>
@@ -156,7 +160,11 @@ function() {
         /// <summary>
         /// Creates the child controls.
         /// </summary>
-        /// <returns></returns>
+        /// <param name="entityType">The System Type of the entity to which the filter will be applied.</param>
+        /// <param name="filterControl">The control that serves as the container for the filter controls.</param>
+        /// <returns>
+        /// The array of new controls created to implement the filter.
+        /// </returns>
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
             var campusesPicker = new CampusesPicker();
@@ -405,7 +413,7 @@ function() {
             var qry = new PersonService( rockContext ).Queryable()
                   .Where( p => attendanceQry.Count( xx => xx.PersonAlias.PersonId == p.Id ) == attended );
 
-            var compareEqualExpression = FilterExpressionExtractor.Extract<Person>( qry, parameterExpression, "p" ) as BinaryExpression;
+            var compareEqualExpression = FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" ) as BinaryExpression;
             var result = FilterExpressionExtractor.AlterComparisonType( comparisonType, compareEqualExpression, null );
 
             return result;
