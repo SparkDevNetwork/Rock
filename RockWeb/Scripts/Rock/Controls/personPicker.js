@@ -93,8 +93,7 @@
                     var $div = $('<div/>').attr('class', 'radio'),
 
                         $label = $('<label/>')
-                            .html(item.Name + inactiveWarning + quickSummaryInfo + ' <i class="fa fa-refresh fa-spin margin-l-md loading-notification" style="display: none; opacity: .4;"></i>')
-                            .addClass('rollover-container')
+                            .html('<span class="label-text">' + item.Name + inactiveWarning + quickSummaryInfo + '</span><i class="fa fa-refresh fa-spin margin-l-md loading-notification" style="display: none; opacity: .4;"></i>')
                             .prependTo($div),
 
                         $radio = $('<input type="radio" name="person-id" />')

@@ -34,7 +34,7 @@
 @text-muted:             @gray-light; // The muted color for text #color #color
 @text-selection-bg:      #afd074; // Text selection background color (used when people select text with the mouse). #color
 @text-selection-color:   #fff;    // Text selection text color (used when people select text with the mouse). #color
-@font-family-sans-serif: 'OpenSans', 'Helvetica Neue', Helvetica, Arial, sans-serif; // The base font to use for text. Be sure when defining this font that the various weights are configured.
+@font-family-sans-serif: "OpenSans", "Helvetica Neue", Helvetica, Arial, sans-serif; // The base font to use for text. Be sure when defining this font that the various weights are configured.
 @font-size-base:          14px; // The default text size.
 @line-height-base:        1.428571429; // The default line height.
 //--
@@ -59,12 +59,12 @@
 
 // Font Sizes
 //// Heading Sizes
-@font-size-h1:            floor(@font-size-base * 2.60); // ~36px
+@font-size-h1:            floor(@font-size-base * 2.6); // ~36px
 @font-size-h2:            floor(@font-size-base * 2.15); // ~30px
-@font-size-h3:            ceil(@font-size-base * 1.70); // ~24px
+@font-size-h3:            ceil(@font-size-base * 1.7); // ~24px
 @font-size-h4:            ceil(@font-size-base * 1.25); // ~18px
 @font-size-h5:            @font-size-base;
-@font-size-h6:            ceil(@font-size-base * 0.85); // ~12px
+@font-size-h6:            ceil(@font-size-base * .85); // ~12px
 
 // Page Areas
 //// Header
@@ -101,7 +101,7 @@
 @adminbar-bg: @theme-2;
 @adminbar-text-color: @theme-2-text;
 
-// Global Styles 
+// Global Styles
 @border-radius-base: 4px;       // The global setting for rounding corners.
 
 @photo-border: @theme-3;   // Standard border color for photos.
@@ -258,7 +258,7 @@
 @modal-body-text-color: @text-color;
 @modal-footer-bg: @theme-5;
 @modal-footer-text-color: @theme-5-text;
-@modal-dropshadow-color: rgba(0,0,0,0.6);
+@modal-dropshadow-color: rgba(0,0,0,.6);
 
 //// Backdrop
 @modal-backdrop-bg:           #000;
@@ -301,7 +301,7 @@
 // Smart Search
 @smartsearch-bg: rgba(255, 255, 255, .1);
 @smartsearch-border-color: #2c2c2c;
-@smartsearch-box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) inset, 0 1px 0 rgba(255, 255, 255, 0.15);
+@smartsearch-box-shadow: 0 1px 2px rgba(0, 0, 0, .1) inset, 0 1px 0 rgba(255, 255, 255, .15);
 @smartsearch-input-text-color: @header-text-color;
 @smartsearch-input-selection-background: #2e2e2e;
 @smartsearch-input-selection-text-color: #fff;
