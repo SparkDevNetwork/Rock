@@ -16,11 +16,25 @@
                 <Rock:NotificationBox ID="nbError" runat="server" NotificationBoxType="Danger" Visible="false"></Rock:NotificationBox>
 
                 <div class="grid grid-panel">
+                    <Rock:GridFilter ID="gfInteractions" runat="server">
+                        <Rock:SlidingDateRangePicker id="sdpDateRange" runat="server" Label="Date Range" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange" />
+                        <Rock:RockCheckBox ID="cbShowUnassignedDevices" runat="server" Label="Show Unassigned Devices" Text="Yes" />
+                        <Rock:RockCheckBox ID="cbPresentDevices" runat="server" Label="Present Devices" Text="Yes" />
+                    </Rock:GridFilter>
                     <Rock:Grid ID="gInteractions" runat="server" AllowSorting="true">
                         <Columns>
                             <Rock:RockBoundField DataField="InteractionDateTime" HeaderText="Date / Time" SortExpression="InteractionDateTime" />
-                            <Rock:RockBoundField DataField="Operation" HeaderText="Interaction Type" SortExpression="Operation" />
                             <Rock:RockBoundField DataField="InteractionSummary" HeaderText="Details" SortExpression="InteractionSummary" />
+                            <Rock:RockTemplateField HeaderText="Assigned Individual">
+                                <ItemTemplate>
+                                    <%#  Eval( "PersonalDevice.PersonAlias" ) != null ? "<a href='"+ string.Format( "{0}{1}", ResolveRockUrl( "~/Person/" ) , Eval("PersonalDevice.PersonAlias.PersonId")) +"'>"+ Eval("PersonalDevice.PersonAlias.Person.FullName") +"</a>":"" %>
+                                </ItemTemplate>
+                            </Rock:RockTemplateField>
+                            <Rock:RockTemplateField ItemStyle-HorizontalAlign="Right">
+                                <ItemTemplate>
+                                    <%# IsCurrentlyPresent((DateTime?) Eval( "InteractionEndDateTime" )) ? "<span class='label label-success'>Currently Present</span>":"" %>
+                                </ItemTemplate>
+                            </Rock:RockTemplateField>
                         </Columns>
                     </Rock:Grid>
                 </div>
