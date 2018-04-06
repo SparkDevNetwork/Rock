@@ -61,7 +61,7 @@ namespace Rock.Web.UI.Adapters
         /// <returns></returns>
         public override string GetInputName( ListControl listControl, int itemIndex )
         {
-            return $"{listControl.UniqueID}${itemIndex++}";
+            return $"{listControl.UniqueID}${itemIndex}";
         }
     }
 }

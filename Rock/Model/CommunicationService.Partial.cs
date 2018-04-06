@@ -185,7 +185,7 @@ namespace Rock.Model
             return Queryable()
                 .Where( c =>
                     ( c.Status == CommunicationStatus.Approved || ( includePending && c.Status == CommunicationStatus.PendingApproval ) ) &&
-                    qryPendingRecipients.Where( r => r.CommunicationId == c.Id ).Any() &&
+                    ( qryPendingRecipients.Where( r => r.CommunicationId == c.Id ).Any() || c.ListGroupId.HasValue ) &&
                     (
                         ( !c.FutureSendDateTime.HasValue && c.CreatedDateTime.HasValue && c.CreatedDateTime.Value.CompareTo( beginWindow ) >= 0 && c.CreatedDateTime.Value.CompareTo( endWindow ) <= 0 ) ||
                         ( c.FutureSendDateTime.HasValue && c.FutureSendDateTime.Value.CompareTo( beginWindow ) >= 0 && ( includeFuture || c.FutureSendDateTime.Value.CompareTo( nowDate ) <= 0 ) )

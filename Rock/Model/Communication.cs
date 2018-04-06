@@ -28,6 +28,7 @@ using Newtonsoft.Json;
 using Rock.Data;
 using Rock.Communication;
 using Rock.Web.Cache;
+using System.Data.Entity;
 
 namespace Rock.Model
 {
@@ -201,12 +202,15 @@ namespace Rock.Model
         /// A Json formatted <see cref="System.String"/> that contains any additional merge fields for the Communication.
         /// </value>
         [DataMember]
-        public string AdditionalMergeFieldsJson {
-            get {
+        public string AdditionalMergeFieldsJson
+        {
+            get
+            {
                 return AdditionalMergeFields.ToJson();
             }
 
-            set {
+            set
+            {
                 AdditionalMergeFields = value.FromJsonOrNull<List<string>>() ?? new List<string>();
             }
         }
@@ -393,7 +397,8 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.CommunicationRecipient">CommunicationRecipients</see> of the Communication.
         /// </value>
         [DataMember]
-        public virtual ICollection<CommunicationRecipient> Recipients {
+        public virtual ICollection<CommunicationRecipient> Recipients
+        {
             get { return _recipients ?? ( _recipients = new Collection<CommunicationRecipient>() ); }
             set { _recipients = value; }
         }
@@ -407,7 +412,8 @@ namespace Rock.Model
         /// The attachments.
         /// </value>
         [DataMember]
-        public virtual ICollection<CommunicationAttachment> Attachments {
+        public virtual ICollection<CommunicationAttachment> Attachments
+        {
             get { return _attachments ?? ( _attachments = new Collection<CommunicationAttachment>() ); }
             set { _attachments = value; }
         }
@@ -421,8 +427,10 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [Obsolete( "MediumData is no longer used. Communication now has specific properties for medium data." )]
-        public virtual Dictionary<string, string> MediumData {
-            get {
+        public virtual Dictionary<string, string> MediumData
+        {
+            get
+            {
                 // Get the MediumData from the new property values. This is provided due to the fact that there may be Lava that is 
                 // referencing the "MediumData" property of a communication.
 
@@ -475,7 +483,8 @@ namespace Rock.Model
         /// A <see cref="System.Collections.Generic.List{String}"/> of values containing the additional merge field list.
         /// </value>
         [DataMember]
-        public virtual List<string> AdditionalMergeFields {
+        public virtual List<string> AdditionalMergeFields
+        {
             get { return _additionalMergeFields; }
             set { _additionalMergeFields = value; }
         }
@@ -497,8 +506,10 @@ namespace Rock.Model
         /// The attachment binary file ids
         /// </value>
         [NotMapped]
-        public virtual IEnumerable<int> EmailAttachmentBinaryFileIds {
-            get {
+        public virtual IEnumerable<int> EmailAttachmentBinaryFileIds
+        {
+            get
+            {
                 return this.Attachments.Where( a => a.CommunicationType == CommunicationType.Email ).Select( a => a.BinaryFileId ).ToList();
             }
         }
@@ -510,8 +521,10 @@ namespace Rock.Model
         /// The attachment binary file ids
         /// </value>
         [NotMapped]
-        public virtual IEnumerable<int> SMSAttachmentBinaryFileIds {
-            get {
+        public virtual IEnumerable<int> SMSAttachmentBinaryFileIds
+        {
+            get
+            {
                 return this.Attachments.Where( a => a.CommunicationType == CommunicationType.SMS ).Select( a => a.BinaryFileId ).ToList();
             }
         }
@@ -534,8 +547,10 @@ namespace Rock.Model
         /// this object, Rock will check the default authorization on the current type, and
         /// then the authorization on the Rock.Security.GlobalDefault entity
         /// </summary>
-        public override Security.ISecured ParentAuthority {
-            get {
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
                 return this.CommunicationTemplate ?? base.ParentAuthority;
             }
         }
@@ -671,6 +686,90 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Refresh the recipients list.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public void RefreshCommunicationRecipientList( RockContext rockContext )
+        {
+            if ( !this.ListGroupId.HasValue )
+            {
+                return;
+            }
+
+            var emailMediumEntityType = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );
+            var smsMediumEntityType = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() );
+
+            var personInCommunicationList = new GroupMemberService( rockContext )
+                .Queryable()
+                .Where( a => a.GroupId == this.ListGroupId )
+                .ToList();
+
+            var communicationRecipientService = new CommunicationRecipientService( rockContext );
+
+            var existingRecipients = GetRecipientsQry( rockContext )
+                                .ToList();
+
+            //Get all the List member which is not part of communiation recipents 
+            var newMemberInList = personInCommunicationList.Where( a => !existingRecipients.Any( b => b.PersonAliasId == a.Person.PrimaryAliasId ) );
+
+            foreach ( var newMember in newMemberInList )
+            {
+                var communicationRecipient = new CommunicationRecipient();
+                communicationRecipient.PersonAliasId = newMember.Person.PrimaryAliasId.Value;
+                communicationRecipient.Status = CommunicationRecipientStatus.Pending;
+                communicationRecipient.CommunicationId = this.Id;
+
+                if ( this.CommunicationType == CommunicationType.Email )
+                {
+                    communicationRecipient.MediumEntityTypeId = emailMediumEntityType.Id;
+                }
+                else if ( this.CommunicationType == CommunicationType.SMS )
+                {
+                    communicationRecipient.MediumEntityTypeId = smsMediumEntityType.Id;
+                }
+                else if ( this.CommunicationType == CommunicationType.RecipientPreference )
+                {
+                    newMember.LoadAttributes();
+
+                    var preferredCommunicationTypeAttribute = AttributeCache.Read( Rock.SystemGuid.Attribute.GROUPMEMBER_COMMUNICATION_LIST_PREFERRED_COMMUNICATION_MEDIUM.AsGuid() );
+
+                    CommunicationType? recipientPreference = ( CommunicationType? ) preferredCommunicationTypeAttribute.DefaultValue.AsIntegerOrNull();
+
+                    recipientPreference = ( CommunicationType? ) newMember.GetAttributeValue( preferredCommunicationTypeAttribute.Key ).AsIntegerOrNull();
+
+                    if ( recipientPreference == CommunicationType.SMS )
+                    {
+                        communicationRecipient.MediumEntityTypeId = smsMediumEntityType.Id;
+                    }
+                    else if ( recipientPreference == CommunicationType.Email )
+                    {
+                        communicationRecipient.MediumEntityTypeId = emailMediumEntityType.Id;
+                    }
+                    else
+                    {
+                        communicationRecipient.MediumEntityTypeId = emailMediumEntityType.Id;
+                    }
+                }
+                else
+                {
+                    throw new Exception( "Unexpected CommunicationType: " + this.CommunicationType.ConvertToString() );
+                }
+
+                communicationRecipientService.Add( communicationRecipient );
+            }
+
+            //Get all pending communiation recipents that is no longer part of the group list member
+            var missingMemberInList = existingRecipients.Where( a => !personInCommunicationList.Any( b => b.Person.PrimaryAliasId == a.PersonAliasId ) );
+
+            foreach ( var missingMember in missingMemberInList )
+            {
+                communicationRecipientService.Delete( missingMember );
+            }
+
+            rockContext.SaveChanges();
+        }
+        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>
@@ -685,7 +784,7 @@ namespace Rock.Model
         /// Method that will be called on an entity immediately after the item is saved by context
         /// </summary>
         /// <param name="dbContext">The database context.</param>
-        public override void PostSaveChanges( DbContext dbContext )
+        public override void PostSaveChanges( Rock.Data.DbContext dbContext )
         {
             // ensure any attachments have the binaryFile.IsTemporary set to False
             var attachmentBinaryFilesIds = this.Attachments.Select( a => a.BinaryFileId ).ToList();
@@ -726,6 +825,11 @@ namespace Rock.Model
         {
             if ( communication != null && communication.Status == CommunicationStatus.Approved )
             {
+                using ( RockContext rockContext = new RockContext() )
+                {
+                    communication.RefreshCommunicationRecipientList( rockContext );
+                }
+
                 foreach ( var medium in communication.GetMediums() )
                 {
                     medium.Send( communication );

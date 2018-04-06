@@ -356,6 +356,8 @@
     <Compile Include="Attribute\CheckListFieldAttribute.cs" />
     <Compile Include="Attribute\ComparisonFieldAttribute.cs" />
     <Compile Include="Attribute\ContentChannelItemFieldAttribute.cs" />
+    <Compile Include="Attribute\InteractionChannelFieldAttribute.cs" />
+    <Compile Include="Attribute\InteractionChannelsFieldAttribute.cs" />
     <Compile Include="Attribute\LabelFieldAttribute.cs" />
     <Compile Include="Attribute\LavaFieldAttribute.cs" />
     <Compile Include="Attribute\TimeZoneFieldAttribute.cs" />
@@ -574,6 +576,7 @@
     <Compile Include="Field\Types\CheckListFieldType.cs" />
     <Compile Include="Field\Types\ContentChannelItemFieldType.cs" />
     <Compile Include="Field\Types\MonthDayFieldType.cs" />
+    <Compile Include="Field\Types\InteractionChannelsFieldType.cs" />
     <Compile Include="Field\Types\LabelFieldType.cs" />
     <Compile Include="Field\Types\TimeZoneFieldType.cs" />
     <Compile Include="Field\Types\GroupMemberFieldType.cs" />
@@ -1210,6 +1213,7 @@
     <Compile Include="PersonProfile\Badge\InDataView.cs" />
     <Compile Include="PersonProfile\Badge\TopPersonSignal.cs" />
     <Compile Include="PersonProfile\Badge\PersonalDevice.cs" />
+    <Compile Include="PersonProfile\Badge\InteractionsInRange.cs" />
     <Compile Include="Plugin\HotFixes\038_LabelFieldType.cs" />
     <Compile Include="Plugin\HotFixes\046_EnableSmartyStreetsIfNoActiveLocationSrv.cs" />
     <Compile Include="Plugin\HotFixes\045_FamilyRegistration.cs" />
@@ -1227,6 +1231,7 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
+    <Compile Include="Plugin\HotFixes\050_MigrationRollupsForV7_4.cs" />
     <Compile Include="Reporting\DataFilter\FinancialScheduledTransactionDetail\AccountFilter.cs" />
     <Compile Include="Reporting\DataFilter\BenevolenceRequest\CampusActiveFilter.cs" />
     <Compile Include="Reporting\DataFilter\BenevolenceRequest\CampusesActiveFilter.cs" />
@@ -1558,6 +1563,7 @@
     <Compile Include="Web\UI\Controls\ControlMirror.cs" />
     <Compile Include="Web\UI\Controls\ListItems.cs" />
     <Compile Include="Web\UI\Controls\NumberBoxBase.cs" />
+    <Compile Include="Web\UI\Controls\NumberUpDownGroup.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ContentChannelItemPicker.cs" />
     <Compile Include="Web\UI\Controls\PreRegistration\Children.cs" />
     <Compile Include="Web\UI\Controls\PreRegistration\ChildRow.cs" />
