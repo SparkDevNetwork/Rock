@@ -21,7 +21,6 @@ using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration.Conventions;
 using System.Linq;
 using System.Reflection;
-using InteractivePreGeneratedViews;
 using Rock.Model;
 
 namespace Rock.Data
@@ -29,18 +28,16 @@ namespace Rock.Data
     /// <summary>
     /// Helper class to set view cache
     /// </summary>
+    [Obsolete( "Does nothing. No longer needed," )]
     public static class RockInteractiveViews
     {
         /// <summary>
         /// Sets the view factory.
         /// </summary>
         /// <param name="path">The path.</param>
+        [Obsolete("Does nothing. No longer needed,")]
         public static void SetViewFactory( string path )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                InteractiveViews.SetViewCacheFactory( rockContext, new FileViewCacheFactory( path ) );
-            }
         }
     }
 
