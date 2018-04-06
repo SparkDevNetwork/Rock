@@ -15,6 +15,12 @@ namespace Rock
         {
             try
             {
+                if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+                {
+                    System.Diagnostics.Debug.WriteLine( string.Format( "Application_Initialize: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
+                }
+
+                var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
                 // Step 1: Load registered HTTP Modules - http://blog.davidebbo.com/2011/02/register-your-http-modules-at-runtime.html
                 var activeHttpModules = Rock.Web.HttpModules.HttpModuleContainer.GetActiveComponents(); // takes 8 seconds :(
@@ -24,6 +30,10 @@ namespace Rock
                     HttpApplication.RegisterModule( httpModule.GetType() );
                 }
 
+                if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+                {
+                    System.Diagnostics.Debug.WriteLine( string.Format( "WebStartup.Initialize/ConnectToDatabase - {0} ms", stopwatch.Elapsed.TotalMilliseconds ) );
+                }
             }
             catch ( Exception ) { } // incase something bad happens when access the database, like a problem with a migration
         }
