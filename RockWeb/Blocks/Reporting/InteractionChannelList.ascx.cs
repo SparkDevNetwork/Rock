@@ -63,6 +63,7 @@ namespace RockWeb.Blocks.Reporting
         #region Fields
 
         private const string MEDIUM_TYPE_FILTER = "Medium Type";
+        private const string INCLUDE_INACTIVE_FILTER = "Include Inactive";
 
         #endregion
 
@@ -120,6 +121,7 @@ namespace RockWeb.Blocks.Reporting
         protected void gfFilter_ApplyFilterClick( object sender, EventArgs e )
         {
             gfFilter.SaveUserPreference( MEDIUM_TYPE_FILTER, ddlMediumValue.SelectedValue );
+            gfFilter.SaveUserPreference( INCLUDE_INACTIVE_FILTER, cbIncludeInactive.Checked.ToString() );
             ShowList();
         }
 
@@ -139,6 +141,13 @@ namespace RockWeb.Blocks.Reporting
                     {
                         var mediumTypeValue = DefinedValueCache.Read( mediumTypeValueId.Value );
                         e.Value = mediumTypeValue.Value;
+                    }
+                    break;
+                case INCLUDE_INACTIVE_FILTER:
+                    var includeFilterValue = e.Value.AsBooleanOrNull();
+                    if ( includeFilterValue.HasValue )
+                    {
+                        e.Value = includeFilterValue.Value.ToYesNo();
                     }
                     break;
                 default:
@@ -163,6 +172,9 @@ namespace RockWeb.Blocks.Reporting
 
             var channelMediumValueId = gfFilter.GetUserPreference( MEDIUM_TYPE_FILTER ).AsIntegerOrNull();
             ddlMediumValue.SetValue( channelMediumValueId );
+
+            var includeInactive = gfFilter.GetUserPreference( INCLUDE_INACTIVE_FILTER ).AsBooleanOrNull() ?? false;
+            cbIncludeInactive.Checked = includeInactive;
         }
 
         /// <summary>
@@ -179,6 +191,11 @@ namespace RockWeb.Blocks.Reporting
                 if ( channelMediumValueId.HasValue )
                 {
                     channelQry = channelQry.Where( a => a.ChannelTypeMediumValueId == channelMediumValueId.Value );
+                }
+
+                if ( !cbIncludeInactive.Checked )
+                {
+                    channelQry = channelQry.Where( a => a.IsActive );
                 }
 
                 // Parse the default template so that it does not need to be parsed multiple times

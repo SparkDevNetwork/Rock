@@ -38,6 +38,7 @@ namespace RockWeb
     {
         private HttpRequest request;
         private HttpResponse response;
+        private string interactionDeviceType;
 
         /// <summary>
         /// Gets a value indicating whether another request can use the <see cref="T:System.Web.IHttpHandler" /> instance.
@@ -58,6 +59,7 @@ namespace RockWeb
         {
             request = httpContext.Request;
             response = httpContext.Response;
+            interactionDeviceType = InteractionDeviceType.GetClientType( request.UserAgent );
 
             // TODO: if querystring value is missing then check the request body
             if ( !ValidateSecurity( httpContext ) )
@@ -112,17 +114,25 @@ namespace RockWeb
                     {
                         // We get all of the schedule info from Schedule.iCalendarContent
                         Event ievent = icalEvent.Copy<Event>();
-
+                        
                         ievent.Summary = !string.IsNullOrEmpty( eventItem.Name ) ? eventItem.Name : string.Empty;
                         ievent.Location = !string.IsNullOrEmpty( occurrence.Location ) ? occurrence.Location : string.Empty;
+
+                        ievent.DTStart.SetTimeZone( icalendar.TimeZones[0] );
+                        ievent.DTEnd.SetTimeZone( icalendar.TimeZones[0] );
 
                         // Rock has more descriptions than iCal so lets concantenate them
                         string description = !string.IsNullOrEmpty( eventItem.Description ) ? eventItem.Description : string.Empty;
                         description += @"<br\><br\>";
                         description += !string.IsNullOrEmpty( occurrence.Note ) ? occurrence.Note : string.Empty;
-                        ievent.Description = description.ConvertBrToCrLf().SanitizeHtml();
 
-                        // HTML version of the description for outlook except 2016 where it doesn't work.
+                        // Don't set the description prop for outlook to force it to use the X-ALT-DESC property which can have marup.
+                        if ( interactionDeviceType != "Outlook" )
+                        {
+                            ievent.Description = description.ConvertBrToCrLf().SanitizeHtml();
+                        }
+
+                        // HTML version of the description for outlook
                         ievent.AddProperty( "X-ALT-DESC;FMTTYPE=text/html", "<html>" + description + "</html>" );
 
                         // classification: "PUBLIC", "PRIVATE", "CONFIDENTIAL"
@@ -151,11 +161,12 @@ namespace RockWeb
                             ievent.Categories.Add( a.DefinedValue.Value );
                         }
                         
-                        if ( eventItem.PhotoId != null )
-                        {
-                            // The DDay Attachment obj doesn't allow you to name the attachment. Nice huh? So just add prop manually...
-                            ievent.AddProperty( "ATTACH;VALUE=BINARY;ENCODING=BASE64;X-FILENAME=\"" + eventItem.Photo.FileName + "\"", Convert.ToBase64String( eventItem.Photo.ContentStream.ReadBytesToEnd().ToArray() ) );
-                        }
+                        // No attachments for now.
+                        //if ( eventItem.PhotoId != null )
+                        //{
+                        //    // The DDay Attachment obj doesn't allow you to name the attachment. Nice huh? So just add prop manually...
+                        //    ievent.AddProperty( "ATTACH;VALUE=BINARY;ENCODING=BASE64;X-FILENAME=\"" + eventItem.Photo.FileName + "\"", Convert.ToBase64String( eventItem.Photo.ContentStream.ReadBytesToEnd().ToArray() ) );
+                        //}
 
                         icalendar.Events.Add( ievent );
                     }

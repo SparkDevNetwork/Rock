@@ -947,7 +947,8 @@ namespace Rock.Web.UI.Controls
         /// <returns></returns>
         public int GetColumnIndex( DataControlField dataControlField )
         {
-            if ( CustomColumns != null && CustomColumns.Any() )
+            // If the grid has custom columns and the columns have been created, get the index of the column from CreatedColumns
+            if ( CustomColumns != null && CustomColumns.Any() && this.CreatedColumns != null )
             {
                 return this.CreatedColumns.IndexOf( dataControlField );
             }
@@ -964,11 +965,25 @@ namespace Rock.Web.UI.Controls
         /// <returns></returns>
         public DataControlField GetColumnByHeaderText( string headerText )
         {
-            foreach ( DataControlField column in this.CreatedColumns )
+            // If the grid has custom columns and the columns have been created, get the datacontrolfield from CreatedColumns
+            if ( CustomColumns != null && CustomColumns.Any() && this.CreatedColumns != null )
             {
-                if ( column.HeaderText == headerText )
+                foreach ( DataControlField column in this.CreatedColumns )
                 {
-                    return column;
+                    if ( column.HeaderText == headerText )
+                    {
+                        return column;
+                    }
+                }
+            }
+            else
+            {
+                foreach ( DataControlField column in this.Columns )
+                {
+                    if ( column.HeaderText == headerText )
+                    {
+                        return column;
+                    }
                 }
             }
 

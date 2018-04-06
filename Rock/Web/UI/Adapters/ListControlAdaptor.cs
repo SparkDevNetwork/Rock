@@ -199,6 +199,7 @@ namespace Rock.Web.UI.Adapters
                     writer.AddAttribute( "id", itemId );
                     writer.AddAttribute( "type", inputTagType );
                     var inputName = GetInputName( listControl, itemIndex );
+                    itemIndex++;
                     writer.AddAttribute( "name", inputName );
                     writer.AddAttribute( "value", li.Value );
                     if ( li.Selected )
