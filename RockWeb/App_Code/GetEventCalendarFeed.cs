@@ -286,13 +286,13 @@ namespace RockWeb
             string audienceIdQueryString = request.QueryString["audienceids"] != null ? request.QueryString["audienceids"] : string.Empty;
             calendarProps.AudienceIds = ParseIds( audienceIdQueryString );
 
-            string startDate = request.QueryString["startDate"];
+            string startDate = request.QueryString["startdate"];
             if ( !string.IsNullOrWhiteSpace( startDate ) )
             {
                 calendarProps.StartDate = DateTime.ParseExact( startDate, "yyyyMMdd", CultureInfo.InvariantCulture );
             }
 
-            string endDate = request.QueryString["endDate"];
+            string endDate = request.QueryString["enddate"];
             if ( !string.IsNullOrWhiteSpace( endDate ) )
             {
                 calendarProps.EndDate = DateTime.ParseExact( endDate, "yyyyMMdd", CultureInfo.InvariantCulture );
