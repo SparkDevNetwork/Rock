@@ -1,0 +1,14 @@
+{% comment %}
+{% include '~~/Assets/Lava/Colombia/TOC.lava' %}
+{% endcomment %}
+
+<ul>
+<li><a href="/page/1779?ChurchName=biblica-koinonia">Biblica Koinonia(Biblical Fellowship) (Peoria)</a></li>
+<li><a href="/page/1779?ChurchName=jesucristo-es-la-luz">Jesucristo es La Luz (Anthem)</a></li>
+<li><a href="/page/1779?ChurchName=casa-de-oracion-jesus-el-pan-de-vida">Casa de Oracion Jesus el Pan de Vida (Avondale)</a></li>
+<li><a href="/page/1779?ChurchName=iglesia-aliento-del-cielo">Iglesia Aliento del Cielo (East Valley)</a></li>
+<li><a href="/page/1779?ChurchName=iglesia-de-lo-alto">Iglesia de lo Alto (Midtown)</a></li>
+<li><a href="/page/1779?ChurchName=centro-de-restauracion-principe-de-paz">Centro de Restauracion Principe de Paz (Scottsdale)</a></li>
+<li><a href="/page/1779?ChurchName=dios-con-nosotros">Dios Con Nosotros (Surprise)</a></li>
+<li><a href="/page/1779?ChurchName=christian-community-el-redil">Christian Community "El Redil" (Chandler)</a></li>
+</ul>

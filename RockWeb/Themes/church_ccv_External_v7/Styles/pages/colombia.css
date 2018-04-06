@@ -1,0 +1,81 @@
+.container {
+   margin-top: -30px; /*Hack to remove padding below nav bar*/
+}
+
+#zone-feature {
+   background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("/Themes/church_ccv_external_v7/Assets/Images/colombia/colombia-hero.jpg");
+   background-position: center top;
+   background-size: cover;
+   margin: auto;
+}
+
+.header {
+  color: white;
+}
+
+.info-header {
+   color: #889165;
+}
+
+.lead-info {
+   font-size: 1.25em;
+}
+
+.padding-wrapper {
+   margin-top: 60px; /*Hack to remove padding below nav bar*/
+}
+
+@media screen and (min-width: 1200px) {
+   .padding-wrapper {
+      margin-left: 125px;
+      margin-right: 125px;
+   }
+}
+
+.static-church-info {
+   display: flex; 
+   flex-direction: column; 
+   margin-top:50px;
+}
+
+.pastor-bio {
+   display: flex;
+   flex-direction: column;
+}
+
+.pastor-img {
+   height: 100%; 
+   align-self: left;
+}
+
+@media screen and (min-width: 490px) {
+   .static-church-info {
+      flex-direction: row; 
+      flex-wrap: nowrap; 
+      justify-content: space-around; 
+   }
+
+   .pastor-img {
+      align-self: center;
+   }
+
+   .pastor-bio {
+      margin-left:25px;
+   }
+}
+
+.previous-button {
+   background-color: #889165;
+   color: white;
+}
+
+.latest-update-button {
+   background-color: white;
+   color:  #889165;
+   border-color: #889165;
+   border-width: 1px;
+}
+
+p {
+   color: #505050;
+}
