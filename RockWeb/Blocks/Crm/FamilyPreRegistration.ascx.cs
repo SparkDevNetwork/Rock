@@ -466,13 +466,18 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                         personService.Add( person );
 
                         person.Guid = child.Guid;
+                        person.NickName = child.NickName.FixCase();
+                        person.LastName = child.LastName.FixCase();
                         person.RecordTypeValueId = recordTypePersonId;
                         person.RecordStatusValueId = recordStatusValue != null ? recordStatusValue.Id : (int?)null;
                         person.ConnectionStatusValueId = connectionStatusValue != null ? connectionStatusValue.Id : (int?)null;
                     }
+                    else
+                    {
+                        person.NickName = child.NickName;
+                        person.LastName = child.LastName;
+                    }
 
-                    person.NickName = child.NickName;
-                    person.LastName = child.LastName;
                     person.SuffixValueId = child.SuffixValueId;
                     person.Gender = child.Gender;
                     person.SetBirthDate( child.BirthDate );
@@ -1160,8 +1165,8 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                     adult = new Person();
                     personService.Add( adult );
 
-                    adult.NickName = tbFirstName.Text;
-                    adult.LastName = tbLastName.Text;
+                    adult.NickName = tbFirstName.Text.FixCase();
+                    adult.LastName = tbLastName.Text.FixCase();
                     adult.RecordTypeValueId = recordTypePersonId;
                     adult.RecordStatusValueId = recordStatusValue != null ? recordStatusValue.Id : (int?)null;
                     adult.ConnectionStatusValueId = connectionStatusValue != null ? connectionStatusValue.Id : (int?)null;
@@ -1413,7 +1418,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
         {
             // If we don't have an existing family, create a new family
             var family = new Group();
-            family.Name = lastName + " Family";
+            family.Name = lastName.FixCase() + " Family";
             family.GroupTypeId = familyGroupTypeId;
 
             // If the campus selection was visible, set the families campus based on selection, otherwise, use default campus value
