@@ -81,7 +81,7 @@ namespace RockWeb
             response.Clear();
             response.ClearHeaders();
             response.ClearContent();
-            response.AddHeader( "content-disposition", string.Format( "attachment; filename={0}_ical.ics", calendarProps.StartDate.ToString( "yyyy-MM-dd" ) ) );
+            response.AddHeader( "content-disposition", string.Format( "attachment; filename={0}_ical.ics", DateTime.Now.ToString( "yyyy-MM-dd_hhmmss" ) ) );
             response.ContentType = "text/calendar";
             response.Write( s );
         }
@@ -113,18 +113,17 @@ namespace RockWeb
                         // We get all of the schedule info from Schedule.iCalendarContent
                         Event ievent = icalEvent.Copy<Event>();
 
-                        // This is the subject in outlook
                         ievent.Summary = !string.IsNullOrEmpty( eventItem.Name ) ? eventItem.Name : string.Empty;
+                        ievent.Location = !string.IsNullOrEmpty( occurrence.Location ) ? occurrence.Location : string.Empty;
 
-                        // body
-                        ievent.Description = !string.IsNullOrEmpty( eventItem.Description ) ? eventItem.Description : string.Empty;
+                        // Rock has more descriptions than iCal so lets concantenate them
+                        string description = !string.IsNullOrEmpty( eventItem.Description ) ? eventItem.Description : string.Empty;
+                        description += @"<br\><br\>";
+                        description += !string.IsNullOrEmpty( occurrence.Note ) ? occurrence.Note : string.Empty;
+                        ievent.Description = description.ConvertBrToCrLf().SanitizeHtml();
 
-                        // Add occurrence note to the description
-                        if ( !string.IsNullOrEmpty( occurrence.Note ) )
-                        {
-                            ievent.Description += Environment.NewLine;
-                            ievent.Description += occurrence.Note;
-                        }
+                        // HTML version of the description for outlook except 2016 where it doesn't work.
+                        ievent.AddProperty( "X-ALT-DESC;FMTTYPE=text/html", "<html>" + description + "</html>" );
 
                         // classification: "PUBLIC", "PRIVATE", "CONFIDENTIAL"
                         ievent.Class = "PUBLIC";
@@ -133,21 +132,30 @@ namespace RockWeb
                         {
                             ievent.Url = new Uri( eventItem.DetailsUrl );
                         }
+                        
+                        ievent.Organizer = new Organizer(string.Format("MAILTO:{0}", occurrence.ContactPersonAlias.Person.Email ) );
+                        ievent.Organizer.CommonName = occurrence.ContactPersonAlias.Person.FullName;
 
-                        ievent.Location = !string.IsNullOrEmpty( occurrence.Location ) ? occurrence.Location : string.Empty;
+                        // Outlook doesn't seems to use Contacts or Comments
+                        string contactName = !string.IsNullOrEmpty( occurrence.ContactPersonAlias.Person.FullName ) ? "Name: " + occurrence.ContactPersonAlias.Person.FullName : string.Empty;
+                        string contactEmail = !string.IsNullOrEmpty( occurrence.ContactEmail ) ? ", Email: " + occurrence.ContactEmail : string.Empty;
+                        string contactPhone = !string.IsNullOrEmpty( occurrence.ContactPhone ) ? ", Phone: " + occurrence.ContactPhone : string.Empty;
+                        string contactInfo = contactName + contactEmail + contactPhone;
 
-                        // add the photo if it exists. Might want to add content channels too.
+                        ievent.Contacts.Add( contactInfo );
+                        ievent.Comments.Add( contactInfo );
+
+                        // TODO: categories - comma delmited list of whatever, might use audience
+                        foreach ( var a in eventItem.EventItemAudiences )
+                        {
+                            ievent.Categories.Add( a.DefinedValue.Value );
+                        }
+                        
                         if ( eventItem.PhotoId != null )
                         {
-                            ievent.Attachments.Add( new Attachment( eventItem.Photo.ContentsToString() ) );// this is not working.
+                            // The DDay Attachment obj doesn't allow you to name the attachment. Nice huh? So just add prop manually...
+                            ievent.AddProperty( "ATTACH;VALUE=BINARY;ENCODING=BASE64;X-FILENAME=\"" + eventItem.Photo.FileName + "\"", Convert.ToBase64String( eventItem.Photo.ContentStream.ReadBytesToEnd().ToArray() ) );
                         }
-
-                        // organizer  - ORGANIZER;CN=John Smith:mailto:jsmith@example.com
-                        // contact - textual contact info, my include name, phone, emai;
-
-                        // optional and can occur more than once
-                        // categories - comma delmited list of whatever, might use audience
-                        // comment - Any text
 
                         icalendar.Events.Add( ievent );
                     }
@@ -281,13 +289,13 @@ namespace RockWeb
             string startDate = request.QueryString["startDate"];
             if ( !string.IsNullOrWhiteSpace( startDate ) )
             {
-                calendarProps.StartDate = DateTime.ParseExact( startDate, "yyyyMMDD", CultureInfo.InvariantCulture );
+                calendarProps.StartDate = DateTime.ParseExact( startDate, "yyyyMMdd", CultureInfo.InvariantCulture );
             }
 
             string endDate = request.QueryString["endDate"];
             if ( !string.IsNullOrWhiteSpace( endDate ) )
             {
-                calendarProps.EndDate = DateTime.ParseExact( endDate, "yyyyMMDD", CultureInfo.InvariantCulture );
+                calendarProps.EndDate = DateTime.ParseExact( endDate, "yyyyMMdd", CultureInfo.InvariantCulture );
             }
 
             return calendarProps;
