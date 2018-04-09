@@ -68,7 +68,7 @@ namespace Rock.Lava
         /// </returns>
         public static string ToString( object input )
         {
-            return input.ToString();
+            return input?.ToString();
         }
 
         /// <summary>
@@ -3078,7 +3078,7 @@ namespace Rock.Lava
 
             var mergeFields = context.Environments.SelectMany( a => a ).ToDictionary( k => k.Key, v => v.Value );
 
-            var allFields = mergeFields.Union( context.Scopes.SelectMany( a => a ).ToDictionary( k => k.Key, v => v.Value ) );
+            var allFields = mergeFields.Union( context.Scopes.SelectMany( a => a ).DistinctBy(x => x.Key).ToDictionary( k => k.Key, v => v.Value ) );
 
             // if a specific MergeField was specified as the Input, limit the help to just that MergeField
             if ( input != null && allFields.Any( a => a.Value == input ) )

@@ -161,6 +161,10 @@
     <Compile Include="Migrations\201804041350066_AddIsActiveToInteractionChannel.Designer.cs">
       <DependentUpon>201804041350066_AddIsActiveToInteractionChannel.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201804051503546_AutoDiscounts.cs" />
+    <Compile Include="Migrations\201804051503546_AutoDiscounts.Designer.cs">
+      <DependentUpon>201804051503546_AutoDiscounts.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.cs" />
     <Compile Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.Designer.cs">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
@@ -2810,6 +2814,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201804041350066_AddIsActiveToInteractionChannel.resx">
       <DependentUpon>201804041350066_AddIsActiveToInteractionChannel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201804051503546_AutoDiscounts.resx">
+      <DependentUpon>201804051503546_AutoDiscounts.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.resx">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
