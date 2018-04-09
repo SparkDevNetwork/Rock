@@ -35,15 +35,14 @@ namespace RockWeb.Blocks.Security
     [Description( "Controls access to Wi-Fi." )]
     [TextField( "MAC Address Paramameter", "The query string parameter used for the MAC Address", true, "client_mac", "", 0, "MacAddressParam" )]
     [TextField( "Release Link", "The full URL to redirect users to after registration.", true, "", "", 1, "ReleaseLink" )]
-    [BooleanField("Show First Name", "Show or hide the First Name field. If it is visible then it will be required.", true, "", 2, "ShowFirstName", IsRequired = true )]
-    [BooleanField( "Show Last Name", "Show or hide the Last Name field. If it is visible then it will be required.", true, "", 3, "ShowLastName", IsRequired = true )]
-    [BooleanField( "Show Mobile Phone", "Show or hide the Mobile Phone Number field. If it is visible then it will be required.", true, "", 4, "ShowMobilePhone", IsRequired = true )]
-    [BooleanField( "Show Email", "Show or hide the Email field. If it is visible then it will be required.", true, "", 5, "ShowEmail", IsRequired = true )]
-    [BooleanField( "Show Acceptance Checkbox", "Show or hide the \"I Accept\" checkbox. If it is visible then it will be required. This should be visible if the \"Terms And Conditions\" are also visible.", true, "", 6, "ShowAccept", IsRequired = true )]
-    [TextField( "Acceptance Checkbox Label", "Text used to signify user agreement with the Terms and Conditions", true, "I Accept", "", 7, "AcceptanceLabel" )]
-    [TextField( "Button Text", "Text to display on the button", true, "Connect To Wi-Fi", "", 8, "ButtonText" )]
-    [BooleanField( "Show Legal Note", "Show or hide the Terms and Conditions. This should be always be visible unless users are being automatically connected without any agreement needed.", true, "", 9, "ShowLegalNote", IsRequired = true )]
-    [CodeEditorField ( "Legal Note", "A legal note outlining the Terms and Conditions for using Wi-Fi.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, false, DEFAULT_LEGAL_NOTE, "", 10, "LegalNote" )]
+    [BooleanField("Show Name", "Show or hide the Name fields. If it is visible then it will be required.", true, "", 2, "ShowName", IsRequired = true )]
+    [BooleanField( "Show Mobile Phone", "Show or hide the Mobile Phone Number field. If it is visible then it will be required.", true, "", 3, "ShowMobilePhone", IsRequired = true )]
+    [BooleanField( "Show Email", "Show or hide the Email field. If it is visible then it will be required.", true, "", 4, "ShowEmail", IsRequired = true )]
+    [BooleanField( "Show Acceptance Checkbox", "Show or hide the \"I Accept\" checkbox. If it is visible then it will be required. This should be visible if the \"Terms And Conditions\" are also visible.", true, "", 5, "ShowAccept", IsRequired = true )]
+    [TextField( "Acceptance Checkbox Label", "Text used to signify user agreement with the Terms and Conditions", true, "I Accept", "", 6, "AcceptanceLabel" )]
+    [TextField( "Button Text", "Text to display on the button", true, "Connect To Wi-Fi", "", 7, "ButtonText" )]
+    [BooleanField( "Show Legal Note", "Show or hide the Terms and Conditions. This should be always be visible unless users are being automatically connected without any agreement needed.", true, "", 8, "ShowLegalNote", IsRequired = true )]
+    [CodeEditorField ( "Legal Note", "A legal note outlining the Terms and Conditions for using Wi-Fi.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, false, DEFAULT_LEGAL_NOTE, "", 9, "LegalNote" )]
     public partial class CaptivePortal : RockBlock
     {
         #region Block Setting Strings
@@ -350,13 +349,16 @@ namespace RockWeb.Blocks.Security
             {
                 tbFirstName.Text = person.FirstName;
                 tbFirstName.Enabled = CurrentPerson == null;
-            }
 
-            if (tbLastName.Visible)
-            {
                 tbLastName.Text = person.LastName;
                 tbLastName.Enabled = CurrentPerson == null;
             }
+
+            //if (tbLastName.Visible)
+            //{
+            //    tbLastName.Text = person.LastName;
+            //    tbLastName.Enabled = CurrentPerson == null;
+            //}
 
             if ( tbMobilePhone.Visible )
             {
@@ -434,12 +436,12 @@ namespace RockWeb.Blocks.Security
         /// <returns>If any control is visible then true, else false.</returns>
         protected bool ShowControls( bool isEnabled = true )
         {
-            tbFirstName.Visible = GetAttributeValue( "ShowFirstName" ).AsBoolean();
-            tbFirstName.Required = GetAttributeValue( "ShowFirstName" ).AsBoolean();
+            tbFirstName.Visible = GetAttributeValue( "ShowName" ).AsBoolean();
+            tbFirstName.Required = GetAttributeValue( "ShowName" ).AsBoolean();
             tbFirstName.Enabled = isEnabled;
 
-            tbLastName.Visible = GetAttributeValue( "ShowLastName" ).AsBoolean();
-            tbLastName.Required = GetAttributeValue( "ShowLastName" ).AsBoolean();
+            tbLastName.Visible = GetAttributeValue( "ShowName" ).AsBoolean();
+            tbLastName.Required = GetAttributeValue( "ShowName" ).AsBoolean();
             tbLastName.Enabled = isEnabled;
 
             tbMobilePhone.Visible = GetAttributeValue( "ShowMobilePhone" ).AsBoolean();
