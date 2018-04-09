@@ -58,35 +58,42 @@ namespace RockWeb
         /// <param name="httpContext">The HTTP context.</param>
         public void ProcessRequest( HttpContext httpContext )
         {
-            request = httpContext.Request;
-            response = httpContext.Response;
-            interactionDeviceType = InteractionDeviceType.GetClientType( request.UserAgent );
-
-            // TODO: if querystring value is missing then check the request body
-            if ( !ValidateSecurity( httpContext ) )
+            try
             {
-                return;
+                request = httpContext.Request;
+                response = httpContext.Response;
+                interactionDeviceType = InteractionDeviceType.GetClientType( request.UserAgent );
+
+                if ( !ValidateSecurity( httpContext ) )
+                {
+                    return;
+                }
+
+                RockContext rockContext = new RockContext();
+                CalendarProps calendarProps = ValidateRequestData( httpContext );
+
+                if ( calendarProps == null )
+                {
+                    return;
+                }
+
+                iCalendar icalendar = CreateICalendar( calendarProps );
+
+                iCalendarSerializer serializer = new iCalendarSerializer();
+                string s = serializer.SerializeToString( icalendar );
+
+                response.Clear();
+                response.ClearHeaders();
+                response.ClearContent();
+                response.AddHeader( "content-disposition", string.Format( "attachment; filename={0}_ical.ics", DateTime.Now.ToString( "yyyy-MM-dd_hhmmss" ) ) );
+                response.ContentType = "text/calendar";
+                response.Write( s );
             }
-
-            RockContext rockContext = new RockContext();
-            CalendarProps calendarProps = ValidateRequestData( httpContext );
-
-            if ( calendarProps == null )
+            catch (Exception ex)
             {
-                return;
+                ExceptionLogService.LogException( ex, httpContext );
+                SendBadRequest( httpContext );
             }
-
-            iCalendar icalendar = CreateICalendar( calendarProps );
-
-            iCalendarSerializer serializer = new iCalendarSerializer();
-            string s = serializer.SerializeToString( icalendar );
-
-            response.Clear();
-            response.ClearHeaders();
-            response.ClearContent();
-            response.AddHeader( "content-disposition", string.Format( "attachment; filename={0}_ical.ics", DateTime.Now.ToString( "yyyy-MM-dd_hhmmss" ) ) );
-            response.ContentType = "text/calendar";
-            response.Write( s );
         }
 
         /// <summary>
@@ -262,6 +269,7 @@ namespace RockWeb
         {
             httpContext.Response.StatusCode = HttpStatusCode.BadRequest.ConvertToInt();
             httpContext.Response.StatusDescription = "Request is inavalid or malformed. " + addlInfo;
+            httpContext.ApplicationInstance.CompleteRequest();
         }
 
         /// <summary>
@@ -284,7 +292,7 @@ namespace RockWeb
 
             if ( eventCalendar == null )
             {
-                SendNotAuthorized( context );
+                SendBadRequest( context );
                 return false;
             }
 
