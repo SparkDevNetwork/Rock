@@ -47,7 +47,7 @@ namespace RockWeb.Blocks.Crm
             {% for item in PersonalDevices %}
                 <div class=""col-md-3 col-sm-4"">                  
                     <div class=""well margin-b-none rollover-container"">                        
-                        <a class=""pull-right rollover-item btn btn-xs btn-danger"" href=""#"" onclick=""Rock.dialogs.confirm('Are you sure you want to delete this Device?', function (result) { if (result ){{ item.PersonalDevice.Id | Postback:'DeleteDevice' }}}) ""><i class=""fa fa-times""></i></a>
+                        <a class=""pull-right rollover-item btn btn-xs btn-danger"" href=""#"" onclick=""Rock.dialogs.confirm('Are you sure you want to delete this device?', function (result) { if (result ){{ item.PersonalDevice.Id | Postback:'DeleteDevice' }}}) ""><i class=""fa fa-times""></i></a>
                         <div style=""min-height: 120px;"">
                             <h3 class=""margin-v-none"">
                                 {% if item.DeviceIconCssClass != '' %}
