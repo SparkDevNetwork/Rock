@@ -76,6 +76,9 @@ namespace Rock.Client
         /// <summary />
         public string InteractionListTemplate { get; set; }
 
+        /// <summary />
+        public bool IsActive { get; set; }
+
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
@@ -143,6 +146,7 @@ namespace Rock.Client
             this.InteractionDetailTemplate = source.InteractionDetailTemplate;
             this.InteractionEntityTypeId = source.InteractionEntityTypeId;
             this.InteractionListTemplate = source.InteractionListTemplate;
+            this.IsActive = source.IsActive;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.RetentionDuration = source.RetentionDuration;
