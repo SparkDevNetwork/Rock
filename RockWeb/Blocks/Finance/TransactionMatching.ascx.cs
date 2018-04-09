@@ -44,6 +44,7 @@ namespace RockWeb.Blocks.Finance
     [LinkedPage( "Add Family Link", "Select the page where a new family can be added. If specified, a link will be shown which will open in a new window when clicked", false, "6a11a13d-05ab-4982-a4c2-67a8b1950c74,af36e4c2-78c6-4737-a983-e7a78137ddc7", "", 2 )]
     [LinkedPage( "Add Business Link", "Select the page where a new business can be added. If specified, a link will be shown which will open in a new window when clicked", false, "", "", 3 )]
     [LinkedPage( "Batch Detail Page", "Select the page for displaying batch details", false, "", "", 3)]
+    [LinkedPage( "Transaction Detail Page", "Select the page to return to, if this block was being used to edit a single transaction.", false, "", "", 4 )]
     public partial class TransactionMatching : RockBlock, IDetailBlock
     {
         #region Properties
@@ -301,6 +302,15 @@ namespace RockWeb.Blocks.Finance
 
             hfBatchId.Value = batchId.ToString();
             hfTransactionId.Value = string.Empty;
+
+            int? specificTransactionId = PageParameter( "TransactionId" ).AsIntegerOrNull();
+            if ( specificTransactionId.HasValue )
+            {
+                hfBackNextHistory.Value = specificTransactionId.Value.ToString();
+                btnPrevious.Visible = false;
+                btnCancel.Visible = true;
+                btnNext.Text = "Save";
+            }
 
             NavigateToTransaction( Direction.Next );
         }
@@ -996,7 +1006,41 @@ namespace RockWeb.Blocks.Finance
                 MarkTransactionAsNotProcessedByCurrentUser( hfTransactionId.Value.AsInteger() );
             }
 
-            NavigateToTransaction( Direction.Next );
+            int? specificTransactionId = PageParameter( "TransactionId" ).AsIntegerOrNull();
+            if ( specificTransactionId.HasValue )
+            {
+                var qryParams = new Dictionary<string, string>();
+                int? batchId = hfBatchId.Value.AsIntegerOrNull();
+                if ( batchId.HasValue )
+                {
+                    qryParams.Add( "BatchId", batchId.Value.ToString() );
+                }
+                qryParams.Add( "TransactionId", specificTransactionId.Value.ToString() );
+
+                NavigateToLinkedPage( "TransactionDetailPage", qryParams );
+            }
+            else
+            {
+                NavigateToTransaction( Direction.Next );
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnCancel_Click( object sender, EventArgs e )
+        {
+            var qryParams = new Dictionary<string, string>();
+            int? batchId = hfBatchId.Value.AsIntegerOrNull();
+            if ( batchId.HasValue )
+            {
+                qryParams.Add( "BatchId", batchId.Value.ToString() );
+            }
+            qryParams.Add( "TransactionId", PageParameter( "TransactionId" ).AsInteger().ToString() );
+
+            NavigateToLinkedPage( "TransactionDetailPage", qryParams );
         }
 
         /// <summary>
@@ -1199,5 +1243,6 @@ namespace RockWeb.Blocks.Finance
         }
 
         #endregion
+
     }
 }
