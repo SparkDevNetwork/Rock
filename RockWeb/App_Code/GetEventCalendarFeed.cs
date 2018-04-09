@@ -28,6 +28,7 @@ using DDay.iCal;
 using DDay.iCal.Serialization.iCalendar;
 
 using System.Globalization;
+using Rock.Web.Cache;
 
 namespace RockWeb
 {
@@ -122,9 +123,7 @@ namespace RockWeb
                         ievent.DTEnd.SetTimeZone( icalendar.TimeZones[0] );
 
                         // Rock has more descriptions than iCal so lets concantenate them
-                        string description = !string.IsNullOrEmpty( eventItem.Description ) ? eventItem.Description : string.Empty;
-                        description += @"<br\><br\>";
-                        description += !string.IsNullOrEmpty( occurrence.Note ) ? occurrence.Note : string.Empty;
+                        string description = CreateEventDescription( eventItem, occurrence );
 
                         // Don't set the description prop for outlook to force it to use the X-ALT-DESC property which can have marup.
                         if ( interactionDeviceType != "Outlook" )
@@ -161,12 +160,12 @@ namespace RockWeb
                             ievent.Categories.Add( a.DefinedValue.Value );
                         }
                         
-                        // No attachments for now.
-                        //if ( eventItem.PhotoId != null )
-                        //{
-                        //    // The DDay Attachment obj doesn't allow you to name the attachment. Nice huh? So just add prop manually...
-                        //    ievent.AddProperty( "ATTACH;VALUE=BINARY;ENCODING=BASE64;X-FILENAME=\"" + eventItem.Photo.FileName + "\"", Convert.ToBase64String( eventItem.Photo.ContentStream.ReadBytesToEnd().ToArray() ) );
-                        //}
+                        //// No attachments for now.
+                        ////if ( eventItem.PhotoId != null )
+                        ////{
+                        ////    // The DDay Attachment obj doesn't allow you to name the attachment. Nice huh? So just add prop manually...
+                        ////    ievent.AddProperty( "ATTACH;VALUE=BINARY;ENCODING=BASE64;X-FILENAME=\"" + eventItem.Photo.FileName + "\"", Convert.ToBase64String( eventItem.Photo.ContentStream.ReadBytesToEnd().ToArray() ) );
+                        ////}
 
                         icalendar.Events.Add( ievent );
                     }
@@ -174,6 +173,34 @@ namespace RockWeb
             }
 
             return icalendar;
+        }
+
+        /// <summary>
+        /// Creates the event description from the lava template. Default is used if one is not specified in the request.
+        /// </summary>
+        /// <param name="eventItem">The event item.</param>
+        /// <param name="occurrence">The occurrence.</param>
+        /// <returns></returns>
+        private string CreateEventDescription( EventItem eventItem, EventItemOccurrence occurrence )
+        {
+            // get the lava template
+            int templateDefinedValueId = 0;
+            DefinedValueCache iCalTemplateDefinedValue = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.DEFAULT_ICAL_DESCRIPTION );
+
+            if ( request.QueryString["templateid"] != null )
+            {
+                int.TryParse( request.QueryString["templateid"], out templateDefinedValueId );
+                if ( templateDefinedValueId > 0 )
+                {
+                    iCalTemplateDefinedValue = DefinedValueCache.Read( templateDefinedValueId );
+                }
+            }
+
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+            mergeFields.Add( "EventItem", eventItem );
+            mergeFields.Add( "EventItemOccurrence", occurrence );
+
+            return iCalTemplateDefinedValue.GetAttributeValue( "Template" ).ResolveMergeFields( mergeFields );
         }
 
         /// <summary>
