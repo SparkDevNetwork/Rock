@@ -1628,7 +1628,7 @@ namespace RockWeb.Blocks.Connection
                     var authorizedWorkflows = new List<ConnectionWorkflow>();
                     foreach ( var manualWorkflow in manualWorkflows )
                     {
-                        if ( manualWorkflow.WorkflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                        if ( manualWorkflow.WorkflowType.IsActive && manualWorkflow.WorkflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                         {
                             authorizedWorkflows.Add( manualWorkflow );
                         }

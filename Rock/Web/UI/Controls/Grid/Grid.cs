@@ -97,6 +97,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [enable sticky headers].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable sticky headers]; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool EnableStickyHeaders
+        {
+            get { return this.ViewState["EnableStickyHeaders"] as bool? ?? false; }
+            set { ViewState["EnableStickyHeaders"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [show confirm delete dialog].
         /// </summary>
         /// <value>
@@ -839,6 +851,15 @@ namespace Rock.Web.UI.Controls
 
             this.AddCssClass( "grid-table" );
             this.AddCssClass( "table" );
+
+            if ( this.EnableStickyHeaders )
+            {
+                // javascript hook for sticky headers
+                this.AddCssClass( "js-sticky-headers" );
+
+                // styling hook for sticky headers
+                this.AddCssClass( "sticky-headers" );
+            }
 
             if ( DisplayType == GridDisplayType.Light )
             {

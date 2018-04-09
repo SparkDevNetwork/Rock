@@ -94,12 +94,15 @@ namespace RockWeb.Blocks.Crm
                     t.IsActive )
                     .ToList() )
                 {
-                    ListItem item = new ListItem( workflowType.Name, workflowType.Id.ToString() );
-                    rlbWorkFlowType.Items.Add( item );
+                    if ( workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                    {
+                        ListItem item = new ListItem( workflowType.Name, workflowType.Id.ToString() );
+                        rlbWorkFlowType.Items.Add( item );
+                    }
                 }
             }
 
-            if ( !guidList.Any() )
+            if ( rlbWorkFlowType.Items.Count <= 0 )
             {
                 pwWorkFlows.Visible = false;
             }
