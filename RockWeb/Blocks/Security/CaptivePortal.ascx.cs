@@ -354,12 +354,6 @@ namespace RockWeb.Blocks.Security
                 tbLastName.Enabled = CurrentPerson == null;
             }
 
-            //if (tbLastName.Visible)
-            //{
-            //    tbLastName.Text = person.LastName;
-            //    tbLastName.Enabled = CurrentPerson == null;
-            //}
-
             if ( tbMobilePhone.Visible )
             {
                 PhoneNumberService phoneNumberService = new PhoneNumberService( new RockContext() );
