@@ -165,33 +165,15 @@ namespace RockWeb.Blocks.Finance
         {
             var context = new RockContext();
             var person = new PersonService( context ).Get( ppSource.PersonId.Value );
-            var changes = new List<string>();
-
             person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON ).Id;
-
-            History.EvaluateChange( changes, "Connection Status", DefinedValueCache.GetName( person.ConnectionStatusValueId ), DefinedValueCache.GetName( dvpPersonConnectionStatus.SelectedValueAsInt() ) );
             person.ConnectionStatusValueId = dvpPersonConnectionStatus.SelectedValueAsInt();
-
-            History.EvaluateChange( changes, "First Name", person.FirstName, tbPersonFirstName.Text.Trim() );
             person.FirstName = tbPersonFirstName.Text.Trim();
-
-            History.EvaluateChange( changes, "Nick Name", person.NickName, tbPersonFirstName.Text.Trim() );
             person.NickName = tbPersonFirstName.Text.Trim();
-
-            History.EvaluateChange( changes, "Last Name", person.LastName, tbPersonLastName.Text.Trim() );
             person.LastName = tbPersonLastName.Text.Trim();
-
-            History.EvaluateChange( changes, "Gender", person.Gender, rblGender.SelectedValueAsEnum<Gender>() );
             person.Gender = rblGender.SelectedValueAsEnum<Gender>();
-
-            History.EvaluateChange( changes, "Marital Status", DefinedValueCache.GetName( person.MaritalStatusValueId ), DefinedValueCache.GetName( dvpMaritalStatus.SelectedValueAsId() ) );
             person.MaritalStatusValueId = dvpMaritalStatus.SelectedValueAsId();
 
             context.SaveChanges();
-            if ( changes.Count > 0 )
-            {
-                HistoryService.SaveChanges( context, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), person.Id, changes );
-            }
 
             ppSource.SetValue( null );
 
@@ -214,46 +196,19 @@ namespace RockWeb.Blocks.Finance
         {
             var context = new RockContext();
             var person = new PersonService( context ).Get( ppSource.PersonId.Value );
-            var changes = new List<string>();
 
             person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS ).Id;
-
-            History.EvaluateChange( changes, "Connection Status", DefinedValueCache.GetName( person.ConnectionStatusValueId ), DefinedValueCache.GetName( null ) );
             person.ConnectionStatusValueId = null;
-
-            History.EvaluateChange( changes, "Title", DefinedValueCache.GetName( person.TitleValueId ), DefinedValueCache.GetName( null ) );
             person.TitleValueId = null;
-
-            History.EvaluateChange( changes, "First Name", person.FirstName, null );
             person.FirstName = null;
-
-            History.EvaluateChange( changes, "Nick Name", person.NickName, null );
             person.NickName = null;
-
-            History.EvaluateChange( changes, "Middle Name", person.MiddleName, null );
             person.MiddleName = null;
-
-            History.EvaluateChange( changes, "Last Name", person.LastName, tbBusinessName.Text.Trim() );
             person.LastName = tbBusinessName.Text.Trim();
-
-            History.EvaluateChange( changes, "Suffix", DefinedValueCache.GetName( person.SuffixValueId ), DefinedValueCache.GetName( null ) );
             person.SuffixValueId = null;
-
-            History.EvaluateChange( changes, "Birth Month", person.BirthMonth, null );
-            History.EvaluateChange( changes, "Birth Day", person.BirthDay, null );
-            History.EvaluateChange( changes, "Birth Year", person.BirthYear, null );
             person.SetBirthDate( null );
-
-            History.EvaluateChange( changes, "Gender", person.Gender, Gender.Unknown );
             person.Gender = Gender.Unknown;
-
-            History.EvaluateChange( changes, "Marital Status", DefinedValueCache.GetName( person.MaritalStatusValueId ), DefinedValueCache.GetName( null ) );
             person.MaritalStatusValueId = null;
-
-            History.EvaluateChange( changes, "Anniversary Date", person.AnniversaryDate, null );
             person.AnniversaryDate = null;
-
-            History.EvaluateChange( changes, "Graduation Year", person.GraduationYear, null );
             person.GraduationYear = null;
 
             //
@@ -304,10 +259,6 @@ namespace RockWeb.Blocks.Finance
             family.Members.Where( m => m.PersonId == person.Id ).First().GroupRoleId = adultRoleId;
 
             context.SaveChanges();
-            if ( changes.Count > 0 )
-            {
-                HistoryService.SaveChanges( context, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), person.Id, changes );
-            }
 
             ppSource.SetValue( null );
 
