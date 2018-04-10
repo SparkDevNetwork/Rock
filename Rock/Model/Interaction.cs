@@ -196,6 +196,16 @@ namespace Rock.Model
         [MaxLength( 50 )]
         public string Content { get; set; }
 
+        /// <summary>
+        /// Gets or sets the term(s).
+        /// </summary>
+        /// <value>
+        /// The term.
+        /// </value>
+        [DataMember]
+        [MaxLength( 50 )]
+        public string Term { get; set; }
+
         #endregion
 
         #region Virtual Properties

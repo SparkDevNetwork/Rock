@@ -182,6 +182,7 @@ namespace Rock.Transactions
                                 interaction.Medium = urlParams.Get( "utm_medium" ).Truncate( 25 );
                                 interaction.Campaign = urlParams.Get( "utm_campaign" ).Truncate( 50 );
                                 interaction.Content = urlParams.Get( "utm_content" ).Truncate( 50 );
+                                interaction.Term = urlParams.Get( "utm_term" ).Truncate( 50 );
                             }
 
                             rockContext.SaveChanges();
