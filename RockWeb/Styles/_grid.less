@@ -1,4 +1,4 @@
-﻿/*
+/*
     Used to manage styles related to Rock's internal grid component
 
     1. Bootstrap Overrides
@@ -19,14 +19,14 @@
 // -------------------------
 
 /* If th has a required class, render the required field indicator after the column heading */
-.table thead th.required:after {
+.table thead th.required::after {
   margin-left: 4px;
   font-family: @fa-font-face;
-  font-weight: 900;
   font-size: 6px;
+  font-weight: 900;
   color: #eca9a7;
   vertical-align: super;
-  content: '\f111';
+  content: "\f111";
 }
 
 .table > tbody > tr > td {
@@ -49,13 +49,13 @@ td.grid-select-cell {
 
 td.wrap-contents {
   -webkit-hyphens: auto;
-     -moz-hyphens: auto;
-          hyphens: auto;
+  -moz-hyphens: auto;
+
+  -ms-hyphens: auto;
+  hyphens: auto;
   // keep cells from scrolling off screen
   -ms-word-break: break-all;
-      word-break: break-all;
-
-      -ms-hyphens: auto;
+  word-break: break-all;
 }
 
 .table {
@@ -225,7 +225,7 @@ td.wrap-contents {
     margin-bottom: 0;
 
     li {
-       > a {
+      > a {
         color: @grid-pager-button-color;
         background-color: @grid-pager-button-bg;
         border-color: @grid-pager-button-border;
@@ -395,7 +395,7 @@ td.grid-col-actions {
 // 9. Row Types
 // -------------------------
 .table > tbody > tr.grid-section-header {
-   > td {
+  > td {
     color: @grid-section-color;
     background-color: @grid-section-bg;
   }
@@ -436,19 +436,19 @@ tr.row-highlight {
 
 // inactive row
 .table > tbody > tr.is-inactive {
-   > td {
+  > td {
     color: lighten(@grid-row-even-color, 30%);
   }
 }
 
 .table > tbody > tr.is-inactive-person {
-   > td {
+  > td {
     color: lighten(@grid-row-even-color, 30%);
   }
 }
 
 .table > tbody > tr.is-deceased {
-   > td {
+  > td {
     color: @brand-danger;
   }
 }
