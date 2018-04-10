@@ -89,7 +89,7 @@ namespace Rock.Model
         public PhoneNumber GetNumberByPersonIdAndType( int personId, string definedValueGuid)
         {
             int mobilePhoneTypeId = Rock.Web.Cache.DefinedValueCache.Read( definedValueGuid ).Id;
-            return Queryable().Where( p => p.NumberTypeValueId == mobilePhoneTypeId ).FirstOrDefault();
+            return Queryable().Where( p => p.PersonId == personId && p.NumberTypeValueId == mobilePhoneTypeId ).FirstOrDefault();
         }
     }
 }
