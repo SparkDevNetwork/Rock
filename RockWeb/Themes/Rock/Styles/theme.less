@@ -1,4 +1,4 @@
-﻿// Inspired By
+// Inspired By
 // http://tattek.com/minimal/#
 // http://192.241.236.31/test4.smartadmin/#ajax/dashboard.html
 // http://webapplayers.com/inspinia_admin-v1.2/form_basic.html
@@ -13,7 +13,7 @@
 @import "../../../Styles/_rock-variables.less";
 @import "_variables.less";
 @import "_variable-overrides.less";
-
+@import "_root.less";
 
 /*
   Rock Theme Styles
@@ -43,7 +43,8 @@ main {
   display: block;
 }
 
-h3, h4,
+h3,
+h4,
 legend {
   font-weight: normal;
 }
@@ -59,7 +60,7 @@ a:hover {
   text-decoration: none;
 }
 
-input[type=text],
+input[type="text"],
 textarea,
 .form-control {
   -webkit-transition: all .3s ease-in-out;
@@ -68,7 +69,7 @@ textarea,
   -o-transition: all .3s ease-in-out;
 }
 
-input[type=text]:focus,
+input[type="text"]:focus,
 textarea:focus,
 .form-control:focus {
   border: 1px solid rgba(238, 118, 36, .6);
@@ -127,8 +128,9 @@ textarea:focus,
 }
 
 .label {
-  border-radius: 0; // labels always have curves
   font-weight: 400; // make the font light
+
+  border-radius: 0; // labels always have curves
 }
 
 .table-bordered > tbody > tr > td {
@@ -141,9 +143,9 @@ textarea:focus,
 .grid .table > tfoot > tr > th,
 .grid .table > thead > tr > td,
 .grid .table > thead > tr > th {
+  padding: 18px 12px;
   border-width: @table-column-border-width;
   border-top-width: 1px;
-  padding: 18px 12px;
 }
 
 .grid .table > tbody > tr > td.grid-columncommand {
@@ -159,9 +161,11 @@ textarea:focus,
 
 .breadcrumb > .active { // make the active item in the breadcrumbs not look like a link
   color: @text-color;
+  color: var(--text-color);
 }
 
-.btn.active, .btn:active { // removes the shadow from the toggles
+.btn.active,
+.btn:active { // removes the shadow from the toggles
   -webkit-box-shadow: none;
   box-shadow: none;
 }
@@ -202,6 +206,7 @@ textarea:focus,
 
 .rating-input i {
   color: @brand-primary;
+  color: var(--brand-primary);
 }
 
 .wizard {
@@ -219,18 +224,18 @@ textarea:focus,
 }
 
 .grid-actions .form-control {
-  font-size: .8em;
   height: 37px;
+  font-size: .8em;
+  background-color: @grid-column-header-bg;
   border: 0;
   box-shadow: none;
-  background-color: @grid-column-header-bg;
 }
 
 .panel-block {
 
   > .panel-heading {
-    font-size: 1.125em;
     padding: 15px;
+    font-size: 1.125em;
     border-bottom: 1px solid @panel-border;
   }
 }
@@ -260,8 +265,8 @@ textarea:focus,
 // grid styles
 
 td.grid-actions {
-  font-size: 1em;
   padding: 0 !important;
+  font-size: 1em;
 
   a.btn {
     opacity: .7;
@@ -280,17 +285,17 @@ td.grid-actions {
     margin-left: 8px;
   }
 
-  .checkbox input[type=checkbox] + span.label-text:before,
-  .radio input[type=radio] + span.label-text:before {
+  .checkbox input[type="checkbox"] + span.label-text::before,
+  .radio input[type="radio"] + span.label-text::before {
     margin: 0;
   }
 }
 
 .grid-actions {
   .btn {
+    font-size: 1.125em;
     background-color: transparent;
     border: 0;
-    font-size: 1.125em;
 
     &:hover {
       background-color: @btn-default-bg;
@@ -299,6 +304,7 @@ td.grid-actions {
 }
 
 /*#endregion */
+
 /*#region
 // 4. Theme Styling          */
 // -------------------------
@@ -312,8 +318,9 @@ td.grid-actions {
 }
 
 .rock-top-header {
-  background-color: @brand-color;
   margin-bottom: 0;
+  background-color: @brand-color;
+  background-color: var(--brand-color);
   border: 0;
 
   @media (max-width: @screen-sm-max) {
@@ -346,41 +353,43 @@ td.grid-actions {
 
   .navbar-toggle {
     float: left;
-    font-size: 1.500em;
-    color: #fff;
     margin-top: 12px;
     margin-left: calc(@navbarside-width * .24);
+    font-size: 1.5em;
+    color: #fff;
     cursor: pointer;
   }
 
   .navbar-brand-corner {
-    display: none;
-    background-color: @navbarside-background-color;
-    color: #fff;
-    height: @navbar-top-height;
-    width: @navbarside-width;
     position: relative;
-    border-bottom: 1px solid lighten(@navbarside-background-color, 10%);
-    padding: 6px;
-    background-size: 45px;
+    display: none;
     float: left;
+    width: @navbarside-width;
+    height: @navbar-top-height;
+    padding: 6px;
+    color: #fff;
+    background-color: @navbarside-background-color;
+    background-color: var(--navbarside-background-color);
+    background-size: 45px;
+    border-bottom: 1px solid lighten(@navbarside-background-color, 10%);
 
-    &:after {
-      content: "";
-      background-image: url(../../../Assets/Images/rock-logo-circle-white.svg);
-      background-size: calc(@navbarside-width * .525);
-      background-position: center center;
-      background-repeat: no-repeat;
-      opacity: 0.7;
-      top: 0;
-      left: 0;
-      bottom: 0;
-      right: 0;
+    &::after {
       position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      content: "";
+      background-image: url("../../../Assets/Images/rock-logo-circle-white.svg");
+      background-repeat: no-repeat;
+      background-position: center center;
+      background-size: calc(@navbarside-width * .525);
+      opacity: .7;
     }
 
     &:hover {
       background-color: @navbarside-background-color;
+      background-color: var(--navbarside-background-color);
     }
 
     @media (min-width: @screen-sm-min) {
@@ -390,13 +399,13 @@ td.grid-actions {
 
   .navbar-brand-center {
     display: block;
-    height: @navbar-top-height;
     width: @navbar-top-height;
-    background-image: url(../../../Assets/Images/rock-logo-circle-white.svg);
-    background-repeat: no-repeat;
-    background-size: 45px;
-    background-position: center center;
+    height: @navbar-top-height;
     margin: 0 auto;
+    background-image: url("../../../Assets/Images/rock-logo-circle-white.svg");
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: 45px;
 
     @media (min-width: @screen-sm-min) {
       display: none;
@@ -411,20 +420,20 @@ td.grid-actions {
     }
 
     a {
-      font-size: 1em;
-      color: @navbartop-color;
-      line-height: 14px;
       padding: 0 16px;
+      font-size: 1em;
+      line-height: 14px;
+      color: @navbartop-color;
 
       &:hover,
       &:focus {
-        opacity: .8;
         background-color: transparent;
+        opacity: .8;
       }
 
       @media (min-width: @screen-sm-min) {
-        line-height: @navbar-top-height;
         margin-left: 24px;
+        line-height: @navbar-top-height;
 
         & > li {
           float: left;
@@ -436,12 +445,12 @@ td.grid-actions {
 
   .smartsearch {
     float: right;
+    width: 340px;
     height: 50px;
     margin: 15px 0;
+    font-size: .875em;
     color: @navbartop-color;
     border: 0;
-    width: 340px;
-    font-size: 0.875em;
 
     i {
       margin-top: 14px;
@@ -449,9 +458,9 @@ td.grid-actions {
     }
 
     input.searchinput {
-      color: @navbartop-color;
-      margin-top: 10px;
       padding-left: 30px;
+      margin-top: 10px;
+      color: @navbartop-color;
     }
 
     .dropdown {
@@ -464,7 +473,6 @@ td.grid-actions {
 
       .dropdown-menu {
         font-size: 1em;
-        ;
       }
     }
 
@@ -486,22 +494,22 @@ td.grid-actions {
       min-width: inherit;
 
       > a {
-        color: @navbartop-color;
-        line-height: @navbar-top-height;
         padding: 0 18px;
+        line-height: @navbar-top-height;
+        color: @navbartop-color;
 
 
         .profile-photo {
-          height: 43px;
-          width: 43px;
-          border-radius: 50%;
           float: left;
-          background-repeat: no-repeat;
-          background-size: cover;
+          width: 43px;
+          height: 43px;
           margin-top: 17px;
           margin-right: 12px;
+          background-repeat: no-repeat;
+          background-size: cover;
+          border-radius: 50%;
 
-          &[style*=no-photo] {
+          &[style*="no-photo"] {
             opacity: .4;
           }
         }
@@ -510,7 +518,7 @@ td.grid-actions {
           display: none;
         }
 
-        .fa-caret-down:before {
+        .fa-caret-down::before {
           content: @fa-var-chevron-down;
         }
 
@@ -521,8 +529,8 @@ td.grid-actions {
       }
 
       .dropdown-menu {
-        left: auto;
         right: 0;
+        left: auto;
       }
     }
   }
@@ -541,45 +549,48 @@ td.grid-actions {
     border: 0;
 
     a {
-      color: @navbartop-color;
-      line-height: 34px;
       width: 100%;
+      line-height: 34px;
+      color: @navbartop-color;
 
       &:hover {
-        background-color: @brand-color;
         color: #fff;
+        background-color: @brand-color;
+        background-color: var(--brand-color);
         opacity: 1;
       }
 
       @media (min-width: @screen-sm-min) {
         color: @text-color;
+        color: var(--text-color);
       }
     }
 
     @media (min-width: @screen-sm-min) {
-      &:after {
+      &::after {
+        position: absolute;
+        top: -8px;
+        left: 75px;
+        display: inline-block;
+        margin-left: -6px;
+        content: "";
+        border-right: 8px solid transparent;
         border-bottom: 8px solid #fff;
         border-left: 8px solid transparent;
-        border-right: 8px solid transparent;
-        top: -8px;
-        content: "";
-        display: inline-block;
-        left: 75px;
-        margin-left: -6px;
-        position: absolute;
       }
     }
   }
 
   #header-collapse { // the collapse for the bookmarks search and login status
-    color: @navbarside-color;
-    background-color: lighten(@brand-color, 30%);
-    width: 100%;
-    font-size: 1em;
-    text-align: center;
-    padding: 12px 0;
+
     display: none;
+    width: 100%;
+    padding: 12px 0;
+    font-size: 1em;
+    color: @navbarside-color;
+    text-align: center;
     cursor: pointer;
+    background-color: lighten(@brand-color, 30%);
 
     @media (max-width: @screen-sm-min) {
       display: block;
@@ -597,62 +608,63 @@ td.grid-actions {
 
 .navbar-static-side {
   position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1031;
   display: none;
   width: @navbarside-width;
+  height: 100%;
   color: @navbarside-color;
   background-color: @navbarside-background-color;
-  height: 100%;
-  left: 0;
-  top: 0;
-  z-index: 1031;
+  background-color: var(--navbarside-background-color);
 
   @media (min-width: @screen-sm-min) {
-    z-index: auto;
     position: absolute;
     top: auto;
+    z-index: auto;
   }
 
   .navbar-toggle-side-left {
-    height: @navbar-top-height;
-    font-size: 1.500em;
     display: block;
+    height: @navbar-top-height;
     padding-top: 22px;
     padding-left: calc(@navbarside-width * .37);
-    border-bottom: 1px solid lighten(@navbarside-background-color, 10%);
+    font-size: 1.5em;
     cursor: pointer;
+    border-bottom: 1px solid lighten(@navbarside-background-color, 10%);
 
     @media (min-width: @screen-sm-min) {
       display: none;
     }
   }
 
-  &:before {
-    content: "";
+  &::before {
     position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
     z-index: -1;
     width: inherit;
-    top: 0;
-    left: 0;
-    bottom: 0;
+    content: "";
     background-color: inherit;
   }
 
   .navbar-side {
+    position: fixed;
+    z-index: @zindex-navbar-fixed;
     display: inline-block;
     width: 100%;
-    cursor: default;
-    position: fixed;
     width: @navbarside-width;
-    z-index: @zindex-navbar-fixed;
+    cursor: default;
 
     & > li {
       margin-top: 0;
       text-align: center;
-      border-top: 1px solid lighten( @navbarside-background-color, 7%);
       cursor: pointer;
+      border-top: 1px solid lighten(@navbarside-background-color, 7%);
 
       &:last-child {
-        border-bottom: 1px solid lighten( @navbarside-background-color, 7%);
+        border-bottom: 1px solid lighten(@navbarside-background-color, 7%);
       }
 
       &:first-child {
@@ -681,12 +693,12 @@ td.grid-actions {
         z-index: 9999;
         display: none;
         width: 280px;
+        height: 100%;
         padding: 9px 20px;
+        padding-bottom: 72px;
+        overflow-y: auto;
         text-align: left;
         background-color: @navbarside-sub-bg;
-        height: 100%;
-        overflow-y: auto;
-        padding-bottom: 72px;
 
         li {
 
@@ -709,12 +721,12 @@ td.grid-actions {
         }
 
         li.title {
+          padding: 9px 20px;
+          margin: -9px -20px 0;
           margin-bottom: 24px;
           font-size: 1.5em;
           font-weight: @font-weight-light;
           color: @navbarside-color;
-          margin: -9px -20px 0;
-          padding: 9px 20px;
           background-color: lighten(@navbarside-sub-bg, 15%);
         }
 
@@ -734,14 +746,14 @@ td.grid-actions {
       }
 
       .nav-childpages::-webkit-scrollbar {
-        background-color: transparent;
         width: 10px;
+        background-color: transparent;
       }
 
       .nav-childpages::-webkit-scrollbar-thumb {
-        border-radius: 10px;
         width: 10px;
         background-color: rgba(0,0,0, .2);
+        border-radius: 10px;
       }
     }
 
@@ -803,24 +815,25 @@ body.navbar-side-close {
   }
 
   .page-title {
-    background-color: @pagetitle-background;
     padding: 20px 35px;
+    background-color: @pagetitle-background;
+    background-color: var(--pagetitle-background);
 
     .title {
-      font-size: 1.750em;
       margin: 0;
+      font-size: 1.75em;
     }
 
     .page-icon {
-      float: left;
       display: none;
+      float: left;
     }
 
     .breadcrumb {
       padding: 4px 0 0;
-      background-color: transparent;
       margin: 0;
-      font-size: 0.875em;
+      font-size: .875em;
+      background-color: transparent;
 
       i {
         display: none;
@@ -851,15 +864,16 @@ body.navbar-side-close {
 // splash screen
 #splash {
   #content {
-    margin: 70px auto 0;
     width: 85%;
+    margin: 70px auto 0;
   }
 
   #logo {
-    margin: 0 auto 40px;
-    fill: @brand-color;
     width: 120px;
     height: 120px;
+    margin: 0 auto 40px;
+    fill: @brand-color;
+    fill: var(--brand-color);
   }
 
   .login-block {
@@ -879,9 +893,9 @@ body.navbar-side-close {
 // workflow page
 .workflow-activity {
   & > .panel-heading {
+    color: #fff;
     background-color: @btn-action-bg;
     border-color: @btn-action-bg;
-    color: #fff;
 
     a.btn-link {
       color: #fff;
@@ -889,9 +903,9 @@ body.navbar-side-close {
   }
 
   .btn-action.add-action {
+    color: @panel-heading-text-color;
     background-color: @gray-lighter;
     border-color: darken(@gray-lighter, 10%);
-    color: @panel-heading-text-color;
   }
 }
 
@@ -900,7 +914,9 @@ body.navbar-side-close {
     padding: 0;
   }
 }
+
 /*#endregion */
+
 /*#region
 // 5. Specific Page Styling        */
 // -------------------------
@@ -911,7 +927,7 @@ body.navbar-side-close {
   }
 
   .name .firstname {
-    font-size: 0.488em;
+    font-size: .488em;
     font-weight: @font-weight-light;
   }
 
@@ -921,15 +937,16 @@ body.navbar-side-close {
 }
 
 // family edit
-.editgroup-list li.member .radio .label-text:before {
+.editgroup-list li.member .radio .label-text::before {
   width: 16px;
   height: 16px;
   padding-left: 1px;
-  line-height: 12px;
   font-size: 8px;
+  line-height: 12px;
 }
 
 /*#endregion */
+
 /*#region
 // 6. Components          */
 // -------------------------
@@ -945,7 +962,8 @@ body.navbar-side-close {
   cursor: pointer;
 }
 
-.checkbox-inline:first-child, .radio-inline:first-child {
+.checkbox-inline:first-child,
+.radio-inline:first-child {
   padding-left: 0;
 }
 
@@ -953,84 +971,91 @@ body.navbar-side-close {
   margin-top: -5px;
 }*/ // horizontal checkbox lists were being thrown off
 
-.checkbox input[type=checkbox],
-.checkbox-inline input[type=checkbox],
-.radio input[type=radio],
-.radio-inline input[type=radio] {
-  margin: 0;
+.checkbox input[type="checkbox"],
+.checkbox-inline input[type="checkbox"],
+.radio input[type="radio"],
+.radio-inline input[type="radio"] {
   display: none;
   width: 22px;
+  margin: 0;
 }
 
-.checkbox input[type=checkbox]:checked + span.label-text:before,
-.checkbox-inline input[type=checkbox]:checked + span.label-text:before,
-.radio input[type=radio]:checked + span.label-text:before,
-.radio-inline input[type=radio]:checked + span.label-text:before {
-  content: @fa-var-check;
-  color: @brand-color;
-  border-color: @brand-color;
+.checkbox input[type="checkbox"]:checked + span.label-text::before,
+.checkbox-inline input[type="checkbox"]:checked + span.label-text::before,
+.radio input[type="radio"]:checked + span.label-text::before,
+.radio-inline input[type="radio"]:checked + span.label-text::before {
   font-weight: @fa-theme-weight;
+  color: @brand-color;
+  color: var(--brand-color);
+  content: @fa-var-check;
+  border-color: @brand-color;
+  border-color: var(--brand-color);
 }
 
-.radio-inline input[type=radio] + span.label-text:before,
-.radio input[type=radio] + span.label-text:before {
-  border-radius: 50%;
-  line-height: 17px;
+.radio-inline input[type="radio"] + span.label-text::before,
+.radio input[type="radio"] + span.label-text::before {
   font-size: 14px;
+  line-height: 17px;
+  border-radius: 50%;
 }
 
-.radio input[type=radio]:checked + span.label-text:before,
-.radio-inline input[type=radio]:checked + span.label-text:before {
-  content: @fa-var-circle;
+.radio input[type="radio"]:checked + span.label-text::before,
+.radio-inline input[type="radio"]:checked + span.label-text::before {
   font-weight: 900;
+  content: @fa-var-circle;
 }
 
-.checkbox input[type=checkbox] + span.label-text:before,
-.radio input[type=radio] + span.label-text:before,
-.checkbox-inline input[type=checkbox] + span.label-text:before,
-.radio-inline input[type=radio] + span.label-text:before {
-  content: "";
+.checkbox input[type="checkbox"] + span.label-text::before,
+.radio input[type="radio"] + span.label-text::before,
+.checkbox-inline input[type="checkbox"] + span.label-text::before,
+.radio-inline input[type="radio"] + span.label-text::before {
+  display: inline-block;
   width: 22px;
   height: 22px;
-  display: inline-block;
-  border: 2px solid @input-border;
   margin-right: 5px;
-  font-size: 14px;
   font-family: FontAwesome;
+  font-size: 14px;
   font-weight: 400;
   line-height: 19px;
-  vertical-align: bottom;
   text-align: center;
-  background-color: #fff;
-  cursor: pointer;
+  vertical-align: bottom;
   pointer-events: none;
+  cursor: pointer;
+  content: "";
+  background-color: #fff;
+  border: 2px solid @input-border;
 }
 
-.radio input[type=radio] + span.label-text:before,
-.radio-inline input[type=radio] + span.label-text:before {
+.radio input[type="radio"] + span.label-text::before,
+.radio-inline input[type="radio"] + span.label-text::before {
   font-size: 13px;
 }
 
 // slider styling
 .irs-bar-edge {
+  background: @brand-color !important;
+  background: var(--brand-color) !important;
   border: 1px solid @brand-color !important;
-  background: @brand-color !important;
-  background: @brand-color !important;
+  border-color: var(--brand-color) !important;
 }
 
 .irs-bar {
+  background: @brand-color !important;
+  background: var(--brand-color) !important;
   border: 1px solid @brand-color !important;
-  background: @brand-color !important;
-  background: @brand-color !important;
+  border-color: var(--brand-color) !important;
 }
 
-.irs-from, .irs-to, .irs-single {
+.irs-from,
+.irs-to,
+.irs-single {
   background: @brand-color !important;
+  background: var(--brand-color) !important;
 }
 
 .irs-slider {
-  border: 1px solid #AAA !important;
   background: #fff !important;
+  border: 1px solid #aaa !important;
   box-shadow: none !important;
 }
 
