@@ -474,7 +474,7 @@ namespace Rock.Web.UI
                 List<Rock.Web.UI.Controls.Grid> gridsOnBlock = this.ControlsOfTypeRecursive<Rock.Web.UI.Controls.Grid>().ToList();
                 foreach ( var grid in gridsOnBlock )
                 {
-                    grid.EnableStickyHeaders = this.GetAttributeValue( CustomGridOptionsConfig.EnableStickerHeadersAttributeKey ).AsBoolean();
+                    grid.EnableStickyHeaders = this.GetAttributeValue( CustomGridOptionsConfig.EnableStickyHeadersAttributeKey ).AsBoolean();
                 }
             }
         }
