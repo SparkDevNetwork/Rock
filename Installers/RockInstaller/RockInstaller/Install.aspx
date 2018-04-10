@@ -127,16 +127,23 @@
             });
 
             //
-            // logic for install start
+            // logic for install start (install occurs after filling out Organization Information settings)
             //
 
-            $('body').on('click', '#btnEmailSettingsNext', function (e) {
+            $('body').on('click', '#btnOrgInfoNext', function (e) {
 
-                var formIsValid = validateForm('#pnlEmailSettings');
+                var formIsValid = validateForm('#pnlOrgInfo');
                 var validationMessages = '';
 
+                // ensure inputs are valid urls
+                if (!validateURL($('#txtOrgWebsite').val())) {
+                    $('#txtOrgWebsite').closest('.form-group').addClass('has-error');
+                    validationMessages += "<p>Organization website must be in the format http://www.yoursite.com</p>";
+                    formIsValid = false;
+                }
+
                 if (formIsValid) {
-                    $('#pnlEmailSettings').fadeOut(function () {
+                    $('#pnlOrgInfo').fadeOut(function () {
                         $('#pnlInstallWatch').fadeIn();
                         startInstall();
                     });
@@ -171,11 +178,11 @@
                         "website": $('#txtOrgWebsite').val()
                     },
                     "emailSettings": {
-                        "server": $('#txtEmailServer').val(),
-                        "port": $('#txtEmailServerPort').val(),
-                        "useSsl": $('#cbEmailUseSsl').is(':checked'),
-                        "relayUsername": $('#txtEmailUsername').val(),
-                        "relayPassword": $('#txtEmailPassword').val()
+                        "server": "",
+                        "port": "",
+                        "useSsl": false,
+                        "relayUsername": "",
+                        "relayPassword": ""
                     },
                     "installerProperties": {
                         "installVersion": baseVersion,
@@ -474,83 +481,6 @@
                                     $('#pnlHostingConfig').fadeIn();
                                 });
                             });
-
-                            $('body').on('click', '#btnOrgInfoNext', function (e) {
-
-                                var formIsValid = validateForm('#pnlOrgInfo');
-                                var validationMessages = '';
-
-                                // ensure inputs are valid urls
-                                if (!validateURL($('#txtOrgWebsite').val())) {
-                                    $('#txtOrgWebsite').closest('.form-group').addClass('has-error');
-                                    validationMessages += "<p>Organization website must be in the format http://www.yoursite.com</p>";
-                                    formIsValid = false;
-                                }
-
-                                if (formIsValid) {
-                                    $('#pnlOrgInfo').fadeOut(function () {
-                                        $('#pnlEmailSettings').fadeIn();
-                                    });
-                                } else {
-                                    if (validationMessages.length > 0) {
-                                        $("#pnlOrgInfo .validation-summary").html("<div class='alert alert-danger'>" + validationMessages + "</div>");
-                                    }
-                                }
-                            });
-                        </script>
-
-                    </div>
-
-                    <!-- email config panel -->
-                    <div id="pnlEmailSettings" style="display: none;">
-                        <h1>Email Server Settings</h1>
-						
-					    <p>Email is an essential part of the Rock RMS.  Please provide a few details about your email environment.  You can change 
-					    these values at any time inside the app. 
-					    </p>
-
-					    <div class="form-group">
-						    <label class="control-label" for="inputEmail">Email Server</label>
-						    <asp:TextBox ID="txtEmailServer" runat="server" placeholder="mail.yourorg.com" CssClass="required-field form-control" Text=""></asp:TextBox>
-					    </div>
-							
-					    <div class="form-group">
-						    <label class="control-label" for="inputEmail">Email Server SMTP Port (default is 25)</label>
-						    <asp:TextBox ID="txtEmailServerPort" runat="server" placeholder="mail.yourorg.com" CssClass="required-field form-control" Text="25"></asp:TextBox>
-					    </div>
-							
-					    <div class="form-group">
-						    <label class="control-label" for="inputEmail">Use SSL For SMTP (default no)</label>
-						    <asp:CheckBox ID="cbEmailUseSsl" runat="server" />
-					    </div>
-							
-					    <div class="form-group">
-						    <label class="control-label" for="inputEmail">Relay Email Username (optional) * if server requires authentication</label>
-						    <asp:TextBox ID="txtEmailUsername" runat="server" Text="" CssClass="form-control"></asp:TextBox>
-					    </div>
-							
-					    <div class="form-group">
-						    <label class="control-label" for="inputEmail">Relay Email Password (optional )</label>
-						    <div class="row">
-                                <div class="col-md-8"><asp:TextBox ID="txtEmailPassword" TextMode="Password" runat="server" Text="" CssClass="form-control password-field"></asp:TextBox></div>
-							    <div class="col-md-4" style="padding-top: 6px;">
-                                    <input id="show-password-email" type="checkbox" class="show-password" />
-                                    <label for="show-password-email" id="show-password-email-label" style="font-weight:normal;">Show Password</label>
-                                </div>
-                            </div>
-					    </div>
-
-                        <div class="btn-list clearfix">
-                            <a id="btnEmailSettingsBack" class="btn btn-default pull-left"><i class='fa fa-chevron-left'></i>  Back</a>
-						    <a id="btnEmailSettingsNext" class="btn btn-primary pull-right">Next <i class='fa fa-chevron-right'></i></a>
-					    </div>
-
-                        <script>
-                            $('body').on('click', '#btnEmailSettingsBack', function (e) {
-                                $('#pnlEmailSettings').fadeOut(function () {
-                                    $('#pnlOrgInfo').fadeIn();
-                                });
-                            });
                         </script>
 
                     </div>
@@ -634,7 +564,7 @@
 <script language="CS" runat="server">
     
     const string baseStorageUrl = "https://rockrms.blob.core.windows.net/install/";
-    const string baseVersion = "2_7_0";
+    const string baseVersion = "2_8_0";
 
     string storageUrl = string.Empty;
     bool isDebug = false;
@@ -679,8 +609,6 @@
             txtOrgName.Text = "Rock Solid Church (install)";
             txtOrgEmail.Text = "info@rocksolidchurchdemo.com";
             txtOrgPhone.Text = "(602) 555-5555";
-
-            txtEmailServer.Text = "mail.rocksolidchurchdemo.com";
 
             storageUrl = "/";
         }
