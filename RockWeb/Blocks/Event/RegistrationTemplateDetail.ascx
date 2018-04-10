@@ -444,7 +444,7 @@
                         <Rock:NumberBox ID="nbDiscountPercentage" runat="server" AppendText="%" CssClass="input-width-md" Label="Discount Percentage" NumberType="Integer" ValidationGroup="Discount"  />
                         <Rock:CurrencyBox ID="cbDiscountAmount" runat="server" CssClass="input-width-md" Label="Discount Amount" ValidationGroup="Discount" />
                         <Rock:RockCheckBox ID="cbcAutoApplyDiscount" runat="server" Label="Auto Apply Discount" 
-                            Help="Will automatically apply the discount if the registration meet the criteria.  If multiple automatic discounts exist, only the first one that meets the criteria will be applied." />
+                            Help="Will automatically apply the discount if the registration meets the criteria.  If multiple automatic discounts exist, only the first one that meets the criteria will be applied." />
                     </div>
                     <div class="col-md-6">
                         <Rock:NumberBox ID="nbDiscountMaxUsage" runat="server" NumberType="Integer" MinimumValue="0" Label="Maximum Usage" 
