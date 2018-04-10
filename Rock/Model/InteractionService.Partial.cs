@@ -35,6 +35,7 @@ namespace Rock.Model
         /// <param name="interactionComponentId">The interaction component identifier.</param>
         /// <param name="entityId">The entity identifier.</param>
         /// <param name="operation">The operation.</param>
+        /// <param name="interactionSummary">The interaction summary.</param>
         /// <param name="interactionData">The interaction data.</param>
         /// <param name="personAliasId">The person alias identifier.</param>
         /// <param name="dateTime">The date time.</param>
@@ -43,9 +44,9 @@ namespace Rock.Model
         /// <param name="deviceClientType">Type of the device client.</param>
         /// <param name="deviceTypeData">The device type data.</param>
         /// <param name="ipAddress">The ip address.</param>
-        /// <param name="browserSessionId">The browser session identifier (RockSessionId).</param>
+        /// <param name="browserSessionId">The browser session identifier.</param>
         /// <returns></returns>
-        public Interaction AddInteraction( int interactionComponentId, int? entityId, string operation, string interactionData, int? personAliasId, DateTime dateTime,
+        public Interaction AddInteraction( int interactionComponentId, int? entityId, string operation, string interactionSummary, string interactionData, int? personAliasId, DateTime dateTime,
             string deviceApplication, string deviceOs, string deviceClientType, string deviceTypeData, string ipAddress, Guid? browserSessionId )
         {
             Interaction interaction = new Interaction();
@@ -55,6 +56,7 @@ namespace Rock.Model
             interaction.InteractionData = interactionData.IsNotNullOrWhitespace() ? PersonToken.ObfuscateRockMagicToken( interactionData ) : string.Empty;
             interaction.InteractionDateTime = dateTime;
             interaction.PersonAliasId = personAliasId;
+            interaction.InteractionSummary = interactionSummary;
 
             int? deviceTypeId = null;
             if ( deviceApplication.IsNotNullOrWhitespace() && deviceOs.IsNotNullOrWhitespace() && deviceClientType.IsNotNullOrWhitespace() )
@@ -90,11 +92,33 @@ namespace Rock.Model
         /// <param name="deviceClientType">Type of the device client.</param>
         /// <param name="deviceTypeData">The device type data.</param>
         /// <param name="ipAddress">The ip address.</param>
+        /// <param name="browserSessionId">The browser session identifier (RockSessionId).</param>
+        /// <returns></returns>
+        public Interaction AddInteraction( int interactionComponentId, int? entityId, string operation, string interactionData, int? personAliasId, DateTime dateTime,
+            string deviceApplication, string deviceOs, string deviceClientType, string deviceTypeData, string ipAddress, Guid? browserSessionId )
+        {
+            return AddInteraction( interactionComponentId, entityId, operation, string.Empty, interactionData, personAliasId, dateTime, deviceApplication, deviceOs, deviceClientType, deviceTypeData, ipAddress, browserSessionId );
+        }
+
+        /// <summary>
+        /// Adds the interaction.
+        /// </summary>
+        /// <param name="interactionComponentId">The interaction component identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="operation">The operation.</param>
+        /// <param name="interactionData">The interaction data.</param>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <param name="dateTime">The date time.</param>
+        /// <param name="deviceApplication">The device application.</param>
+        /// <param name="deviceOs">The device os.</param>
+        /// <param name="deviceClientType">Type of the device client.</param>
+        /// <param name="deviceTypeData">The device type data.</param>
+        /// <param name="ipAddress">The ip address.</param>
         /// <returns></returns>
         public Interaction AddInteraction( int interactionComponentId, int? entityId, string operation, string interactionData, int? personAliasId, DateTime dateTime,
             string deviceApplication, string deviceOs, string deviceClientType, string deviceTypeData, string ipAddress )
         {
-            return AddInteraction( interactionComponentId, entityId, operation, interactionData, personAliasId, dateTime, deviceApplication, deviceOs, deviceClientType, deviceTypeData, ipAddress, null );
+            return AddInteraction( interactionComponentId, entityId, operation, string.Empty, interactionData, personAliasId, dateTime, deviceApplication, deviceOs, deviceClientType, deviceTypeData, ipAddress, null );
         }
 
         /// <summary>

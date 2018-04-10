@@ -1358,34 +1358,6 @@ namespace Rock.Web.UI
                         Response.Cache.SetExpires( RockDateTime.Now.AddSeconds( _pageCache.OutputCacheDuration ) );
                         Response.Cache.SetValidUntilExpires( true );
                     }
-
-                    // create a page view transaction if enabled
-                    if ( !Page.IsPostBack && _pageCache != null )
-                    {
-                        if ( _pageCache.Layout.Site.EnablePageViews )
-                        {
-                            PageViewTransaction transaction = new PageViewTransaction();
-                            transaction.DateViewed = RockDateTime.Now;
-                            transaction.PageId = _pageCache.Id;
-                            transaction.SiteId = _pageCache.Layout.Site.Id;
-                            if ( CurrentPersonAlias != null )
-                            {
-                                transaction.PersonAliasId = CurrentPersonAlias.Id;
-                            }
-
-                            transaction.IPAddress = GetClientIpAddress();
-                            transaction.UserAgent = Request.UserAgent ?? "";
-                            transaction.Url = Request.Url.ToString();
-                            transaction.PageTitle = _pageCache.PageTitle;
-                            var sessionId = Session["RockSessionID"];
-                            if ( sessionId != null )
-                            {
-                                transaction.SessionId = sessionId.ToString();
-                            }
-
-                            RockQueue.TransactionQueue.Enqueue( transaction );
-                        }
-                    }
                 }
 
                 stopwatchInitEvents.Restart();
@@ -1441,6 +1413,45 @@ namespace Rock.Web.UI
                         ID="lblShowDebugTimings",
                         Text = string.Format( "<pre>{0}</pre>", slDebugTimings.ToString() )
                     } );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Page.LoadComplete" /> event at the end of the page load stage.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> that contains the event data.</param>
+        protected override void OnLoadComplete( EventArgs e )
+        {
+            base.OnLoadComplete( e );
+
+            // create a page view transaction if enabled
+            // moved this from OnLoad so we could get the updated title (if Lava or the block changed it)
+            if ( !Page.IsPostBack && _pageCache != null )
+            {
+                if ( _pageCache.Layout.Site.EnablePageViews )
+                {
+                    PageViewTransaction transaction = new PageViewTransaction();
+                    transaction.DateViewed = RockDateTime.Now;
+                    transaction.PageId = _pageCache.Id;
+                    transaction.SiteId = _pageCache.Layout.Site.Id;
+                    if ( CurrentPersonAlias != null )
+                    {
+                        transaction.PersonAliasId = CurrentPersonAlias.Id;
+                    }
+
+                    transaction.IPAddress = GetClientIpAddress();
+                    transaction.UserAgent = Request.UserAgent ?? "";
+                    transaction.Url = Request.Url.ToString();
+                    transaction.PageTitle = _pageCache.PageTitle;
+                    transaction.BrowserTitle = this.BrowserTitle;
+                    var sessionId = Session["RockSessionID"];
+                    if ( sessionId != null )
+                    {
+                        transaction.SessionId = sessionId.ToString();
+                    }
+
+                    RockQueue.TransactionQueue.Enqueue( transaction );
                 }
             }
         }
