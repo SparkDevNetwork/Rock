@@ -1620,7 +1620,8 @@ namespace RockWeb.Blocks.Event
         {
             var validationErrors = new List<string>();
 
-            if ( ( RegistrationState.DiscountCode ?? string.Empty ) != tbDiscountCode.Text )
+            var autoDiscounts = RegistrationTemplate.Discounts.Where( d => d.AutoApplyDiscount ).Select( d => d.Code ).ToList();
+            if ( ( RegistrationState.DiscountCode ?? string.Empty ) != tbDiscountCode.Text && !autoDiscounts.Contains( RegistrationState.DiscountCode ) )
             {
                 validationErrors.Add( "A discount code has not been applied! Please click the 'Apply' button to apply (or clear) a discount code." );
             }
