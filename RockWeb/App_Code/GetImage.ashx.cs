@@ -390,6 +390,23 @@ namespace RockWeb
             try
             {
                 ResizeSettings settings = new ResizeSettings( queryString );
+
+                if ( settings["mode"] == null || settings["mode"] == "clip") 
+                {
+                    settings.Add( "mode", "max" );
+                    
+                    if ( !string.IsNullOrEmpty(settings["width"]) && !string.IsNullOrEmpty(settings["height"])) {
+                        if ( settings["width"].AsInteger() > settings["height"].AsInteger() ) 
+                        {
+                            settings.Remove( "height" );
+                        } 
+                        else 
+                        {
+                            settings.Remove( "width" );
+                        }
+                    }
+                }
+
                 MemoryStream resizedStream = new MemoryStream();
 
                 ImageBuilder.Current.Build( fileContent, resizedStream, settings );
