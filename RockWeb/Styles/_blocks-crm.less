@@ -1,4 +1,4 @@
-﻿/*
+/*
     Used to manage styles related to the person details page
 
     1. Page Styles
@@ -260,10 +260,10 @@
 
 .originate-call {
   &:before {
-    content: @fa-var-phone-square;
+    margin-right: 6px;
     font-family: @fa-font-face;
     font-weight: @fa-theme-weight;
-    margin-right: 6px;
+    content: @fa-var-phone-square;
   }
 }
 
@@ -307,13 +307,13 @@
 
   &:before {
     font-family: @fa-font-face;
-    font-weight: @fa-theme-weight;
     font-size: 45px;
+    font-weight: @fa-theme-weight;
     color: @brand-success;
     content: @fa-var-circle;
   }
 
-  &.era-loss:before {
+  &.era-loss::before {
     color: #ee7624;
   }
 
@@ -449,21 +449,21 @@
   .duration-metric {
     &:before {
       font-family: @fa-font-face;
-      font-weight: @fa-theme-weight;
       font-size: 45px;
+      font-weight: @fa-theme-weight;
       color: #e5d24d;
       content: @fa-var-circle;
     }
 
-    &.duration-months:before {
+    &.duration-months::before {
       color: #69ad5e;
     }
 
-    &.duration-years:before {
+    &.duration-years::before {
       color: #56789e;
     }
 
-    &.duration-new:before {
+    &.duration-new::before {
       color: #d25555;
     }
 
@@ -500,8 +500,8 @@
 
     &:before {
       font-family: @fa-font-face;
-      font-weight: @fa-theme-weight;
       font-size: 45px;
+      font-weight: @fa-theme-weight;
       color: @brand-warning;
       content: @fa-var-square;
     }
@@ -580,13 +580,13 @@
     span.signal {
       position: absolute;
       top: 10px;
-      left: 0px;
+      left: 0;
       width: 100%;
       padding-left: 17%;
       font-size: 16px;
       font-weight: 700;
-      text-align: center;
       color: @persondetails-badge-bg;
+      text-align: center;
     }
   }
 }
@@ -719,9 +719,9 @@
         border-radius: @border-radius-base;
 
         .person-image {
+          -webkit-filter: grayscale(0%);
           filter: grayscale(0%);
           filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 1 0\'/></filter></svg>#grayscale");
-          -webkit-filter: grayscale(0%);
         }
       }
     }
@@ -860,14 +860,16 @@ span.field-value {
     > tbody > tr > td {
       position: relative;
       padding-left: 35%;
+
       /* Behave  like a "row" */
       border: 0;
       border-bottom: 1px solid @gray-lighter;
     }
 
-    td:before {
+    td::before {
       /* Now like a table header */
       position: absolute;
+
       /* Top/left values mimic padding */
       top: 8px;
       left: 6px;
@@ -885,6 +887,7 @@ span.field-value {
         display: block;
         width: 100%;
         padding: 6px;
+
         /* Top/left values mimic padding */
         font-size: @grid-column-header-font-size;
         font-weight: @grid-column-header-font-weight;
@@ -894,6 +897,7 @@ span.field-value {
         border-bottom: 2px solid @grid-column-header-border-color;
       }
     }
+
     /* Label the data */
     tbody {
       td:nth-of-type(1):before {
@@ -1063,11 +1067,11 @@ span.field-value {
 // -------------------------
 
 .person-bio {
-  div.deceased h1.title.name:after {
+  div.deceased h1.title.name::after {
     margin-left: 12px;
     font-size: 14px;
     color: @brand-danger;
-    content: 'Deceased';
+    content: "Deceased";
   }
 }
 
@@ -1077,10 +1081,10 @@ span.field-value {
       background-color: darken(@gray-light, 10%);
     }
 
-    .person-info:after {
+    .person-info::after {
       font-size: 10px;
       color: @brand-danger;
-      content: 'Deceased';
+      content: "Deceased";
     }
   }
 }

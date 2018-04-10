@@ -1,6 +1,6 @@
-﻿/*
+/*
     Used to manage styles related to Rock's dashboard
-    
+
     1. Basic Widgets
 
 */
@@ -11,20 +11,20 @@
 // panel extensions    ->      .panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
 .panel-dashboard {
   height: 220px;
-  margin: 24px 0 0 ;
+  margin: 24px 0 0;
 
   .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
 }
 
 
 .metriccard {
-  border: 1px solid @panel-border;
-  border-top: 4px solid @brand-primary;
   position: relative;
-  overflow: hidden;
   padding: 2px;
   padding-bottom: 24px;
   margin-bottom: 24px;
+  overflow: hidden;
+  border: 1px solid @panel-border;
+  border-top: 4px solid @brand-primary;
 
   &.metriccard-info {
     border-top-color: @brand-info;
@@ -43,16 +43,16 @@
   }
 
   h1 {
-    font-size: 16px;
     margin-top: 4px;
     margin-bottom: 0;
+    font-size: 16px;
   }
 
   .value {
-    font-size: 45px;
     display: block;
-    text-align: center;
+    font-size: 45px;
     line-height: 72px;
+    text-align: center;
 
     &.large {
       font-size: 65px;
@@ -61,8 +61,8 @@
 
   i {
     position: absolute;
-    bottom: 0;
     right: 4px;
+    bottom: 0;
     font-size: 80px;
     opacity: .1;
   }
