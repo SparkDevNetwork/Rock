@@ -59,6 +59,7 @@
                             RowItemText="Transaction" AllowSorting="true" ExportSource="ColumnOutput" >
                             <Columns>
                                 <Rock:SelectField></Rock:SelectField>
+                                <Rock:RockLiteralField ID="lPersonId" HeaderText="Person Id" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                 <Rock:RockLiteralField ID="lPersonFullNameReversed" HeaderText="Person" 
                                     SortExpression="_PERSONNAME_" /> 
                                 <Rock:RockBoundField DataField="TransactionDateTime" HeaderText="Date / Time" SortExpression="TransactionDateTime" />                

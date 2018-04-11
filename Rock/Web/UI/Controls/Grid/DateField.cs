@@ -41,6 +41,19 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether value should be treated as a birth date and
+        /// the age displayed (i.e. "xx/xx/xxxx (37 yo)").
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if the age will be included; otherwise, <c>false</c>.
+        /// </value>
+        public bool IncludeAge
+        {
+            get { return ViewState["IncludeAge"] as bool? ?? false; }
+            set { ViewState["IncludeAge"] = value; }
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="DateField" /> class.
         /// </summary>
         public DateField()
@@ -85,23 +98,36 @@ namespace Rock.Web.UI.Controls
             {
                 dataValue = ( dataValue as string ).AsDateTime();
             }
-            
-            if ( FormatAsElapsedTime )
+
+            DateTime dateValue = DateTime.MinValue;
+            if ( dataValue is DateTime )
             {
-                DateTime dateValue = DateTime.MinValue;
-                if ( dataValue is DateTime )
-                {
-                    dateValue = ( (DateTime)dataValue );
-                }
+                dateValue = ( ( DateTime ) dataValue );
+            }
 
-                if ( dataValue is DateTime? )
-                {
-                    dateValue = ( (DateTime?)dataValue ) ?? DateTime.MinValue; ;
-                }
+            if ( dataValue is DateTime? )
+            {
+                dateValue = ( ( DateTime? ) dataValue ) ?? DateTime.MinValue;
+            }
 
-                if ( dateValue != DateTime.MinValue )
+            if ( dateValue != DateTime.MinValue )
+            {
+                if ( FormatAsElapsedTime )
                 {
                     return string.Format( "<span class='date-field' title='{0}'>{1}</span>", dateValue.ToString(), dateValue.ToElapsedString() );
+                }
+
+                DateTime now = RockDateTime.Now;
+                if ( IncludeAge && dateValue < now )
+                {
+                    if ( now.TotalMonths( dateValue ) <= 18 )
+                    {
+                        return string.Format( "{0} ({1} mo)", base.FormatDataValue( dataValue, encode ), now.TotalMonths( dateValue ) );
+                    }
+                    else
+                    {
+                        return string.Format( "{0} ({1} yo)", base.FormatDataValue( dataValue, encode ), now.TotalYears( dateValue ) );
+                    }
                 }
             }
 

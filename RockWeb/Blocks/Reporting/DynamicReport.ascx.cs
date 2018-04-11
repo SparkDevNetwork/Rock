@@ -116,9 +116,9 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void gReport_GridRebind( object sender, EventArgs e )
+        protected void gReport_GridRebind( object sender, GridRebindEventArgs e )
         {
-            BindReportGrid();
+            BindReportGrid(e.IsCommunication);
         }
 
         /// <summary>
@@ -478,7 +478,7 @@ namespace RockWeb.Blocks.Reporting
         /// <summary>
         /// Binds the report grid.
         /// </summary>
-        private void BindReportGrid()
+        private void BindReportGrid(bool isCommunication = false)
         {
             var rockContext = new RockContext();
             var reportService = new ReportService( rockContext );
@@ -510,7 +510,7 @@ namespace RockWeb.Blocks.Reporting
 
                 DataViewFilterOverrides dataViewFilterOverrides = ReportingHelper.GetFilterOverridesFromControls( report.DataView, phFilters );
 
-                ReportingHelper.BindGrid( report, gReport, this.CurrentPerson, dataViewFilterOverrides, null, false, out errorMessage );
+                ReportingHelper.BindGrid( report, gReport, this.CurrentPerson, dataViewFilterOverrides, null, isCommunication, out errorMessage );
 
                 if ( report.EntityTypeId != EntityTypeCache.GetId<Rock.Model.Person>() )
                 {

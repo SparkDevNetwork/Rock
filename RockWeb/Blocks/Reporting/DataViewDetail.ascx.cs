@@ -636,7 +636,7 @@ $(document).ready(function() {
             lReadOnlyTitle.Text = dataView.Name.FormatAsHtmlTitle();
             hlblDataViewId.Text = "Id: " + dataView.Id.ToString();
 
-            lDescription.Text = dataView.Description;
+            lDescription.Text = dataView.Description.ConvertMarkdownToHtml();
 
             DescriptionList descriptionListMain = new DescriptionList();
 

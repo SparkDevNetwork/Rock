@@ -90,6 +90,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rock.Rest\Controllers\CodeGenerated\CommunicationControllerTests.cs" />
     <Compile Include="Rock\Lava\RockFiltersTests.cs" />
+    <Compile Include="Rock\Lava\LegacyLavaUpdaterTest.cs" />
     <Compile Include="Rock\Model\BlockTests.cs" />
     <Compile Include="Rock\Model\BlockTypeTests.cs" />
     <Compile Include="Rock\Model\HtmlContentTests.cs" />

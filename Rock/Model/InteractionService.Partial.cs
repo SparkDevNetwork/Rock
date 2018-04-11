@@ -66,7 +66,7 @@ namespace Rock.Model
             // If we don't have an BrowserSessionId, IPAddress or a devicetype, there is nothing useful about the session
             // but at least one of these has a value, then we should lookup or create a session
             if ( browserSessionId.HasValue || ipAddress.IsNotNullOrWhitespace() || deviceTypeId.HasValue )
-            { 
+            {
                 var session = this.GetInteractionSession( browserSessionId, ipAddress, deviceTypeId );
                 interaction.InteractionSessionId = session.Id;
             }
@@ -161,6 +161,31 @@ namespace Rock.Model
 
                 return interactionSession;
             }
+        }
+
+        /// <summary>
+        /// Bulk updates null Interaction.PersonAliasId for the provided PersonalDeviceId
+        /// </summary>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <param name="personalDeviceId">The personal device identifier.</param>
+        /// <returns></returns>
+        public int UpdateInteractionsWithPersonAliasIdForDeviceId( int personAliasId, int personalDeviceId )
+        {
+            var interactionsCount = Queryable()
+                .Where( i => i.PersonalDeviceId == personalDeviceId )
+                .Where( i => i.PersonAliasId == null ).Count();
+
+            if ( interactionsCount > 0 )
+            {
+                var interactions = Queryable()
+                    .Where( i => i.PersonalDeviceId == personalDeviceId )
+                    .Where( i => i.PersonAliasId == null );
+                
+                // Use BulkUpdate to set the PersonAliasId
+                new RockContext().BulkUpdate( interactions, i => new Interaction { PersonAliasId = personAliasId } );
+            }
+
+            return interactionsCount;
         }
     }
 }

@@ -51,30 +51,17 @@ namespace Rock.Migrations
 
         private void UpdateLabels()
         {
-            var rockContext = new RockContext();
-
-            // Get all of the labels' binary files
-            var binaryFileService = new BinaryFileService( rockContext );
-            var binaryFiles = binaryFileService.Queryable().Where( b => b.BinaryFileTypeId == 1 ).Select( b => b.Id ).ToList();
-            BinaryFile binaryFile = null;
-            string labelText = string.Empty;
-
-            // Open the file and remove the string "^JUS"
-            foreach ( int binaryFileId in binaryFiles )
-            {
-                binaryFile = binaryFileService.Get( binaryFileId );
-                labelText = binaryFile.ContentsToString().Replace( "^JUS", string.Empty );
-
-                using ( var stream = new MemoryStream() )
-                {
-                    var writer = new StreamWriter( stream );
-                    writer.Write( labelText );
-                    writer.Flush();
-                    stream.Position = 0;
-                    binaryFile.ContentStream = stream;
-                    rockContext.SaveChanges();
-                }
-            }
+            // Update all BinaryFiles that are Labels and remove the string "^JUS" if it exists
+            Sql( @"
+UPDATE BinaryFileData
+SET Content = convert(VARBINARY(max), replace(Convert(VARCHAR(max), content), '^JUS', ''))
+WHERE Id IN (
+		SELECT Id
+		FROM BinaryFile
+		WHERE BinaryFileTypeId = 1
+		)
+	AND Convert(VARCHAR(max), content) LIKE '%^JUS%'
+" );
         }
 
         private void BusinessTransactionDetailPages()

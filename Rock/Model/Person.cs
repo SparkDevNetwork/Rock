@@ -504,6 +504,26 @@ namespace Rock.Model
         [DataMember]
         public int? PrimaryFamilyId { get; set; }
 
+        /// <summary>
+        /// Gets or sets a flag indicating if the Person is locked as child.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if the Person is locked as child; otherwise <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsLockedAsChild {
+            get
+            {
+                return _isLockedAsChild;
+            }
+
+            set
+            {
+                _isLockedAsChild = value;
+            }
+        }
+        private bool _isLockedAsChild = false;
+
         #endregion
 
         #region Constructors
@@ -1050,8 +1070,8 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the number of days until their next birthday. This is a computed column and can be used
-        /// in LinqToSql queries, but there is no in-memory calculation. Avoid using property outside
-        /// a linq query
+        /// in LinqToSql queries, but there is no in-memory calculation. Avoid using this property outside of 
+        /// a linq query. Use DaysToBirthday property instead
         /// NOTE: If their birthday is Feb 29, and this isn't a leap year, it'll treat Feb 28th as their birthday when doing this calculation
         /// </summary>
         /// <value>
@@ -1223,10 +1243,12 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the number of days until the Person's birthday.
+        /// Gets the number of days until the Person's birthday. This is an in-memory calculation. If needed in a LinqToSql query
+        /// use DaysUntilBirthday property instead
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the number of days until the Person's birthday. If the person's birthdate is not available returns Int.MaxValue
+        /// A <see cref="System.Int32"/> representing the number of days until the Person's birthday. If the person's birthdate is 
+        /// not available returns Int.MaxValue
         /// </value>
         [DataMember]
         [NotMapped]
@@ -1309,6 +1331,53 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the number of days until the Person's anniversary. This is an in-memory calculation. If needed in a LinqToSql query
+        /// use DaysUntilAnniversary property instead
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the number of days until the Person's anniversary. If the person's anniversary 
+        /// is not available returns Int.MaxValue
+        /// </value>
+        [DataMember]
+        [NotMapped]
+        public virtual int DaysToAnniversary
+        {
+            get
+            {
+                if ( AnniversaryDate.HasValue )
+                {
+                    var today = RockDateTime.Today;
+
+                    int day = AnniversaryDate.Value.Day;
+                    int month = AnniversaryDate.Value.Month;
+                    int year = today.Year;
+                    if ( month < today.Month || ( month == today.Month && day < today.Day ) )
+                    {
+                        year++;
+                    }
+
+                    DateTime aday = DateTime.MinValue;
+                    while ( !DateTime.TryParse( month.ToString() + "/" + day.ToString() + "/" + year.ToString(), out aday ) && day > 28 )
+                    {
+                        day--;
+                    }
+
+                    if ( aday != DateTime.MinValue )
+                    {
+                        return Convert.ToInt32( aday.Subtract( today ).TotalDays );
+                    }
+                }
+
+                return int.MaxValue;
+            }
+            private set
+            {
+                // intentionally blank
+            }
+
+        }
+
+        /// <summary>
         /// Gets the next anniversary.
         /// </summary>
         /// <value>
@@ -1340,6 +1409,19 @@ namespace Rock.Model
             }
 
         }
+
+        /// <summary>
+        /// Gets or sets the number of days until their next anniversay. This is a computed column and can be used
+        /// in LinqToSql queries, but there is no in-memory calculation. Avoid using property outside of
+        /// a linq query. Use DaysToAnniversary instead.
+        /// NOTE: If their anniversay is Feb 29, and this isn't a leap year, it'll treat Feb 28th as their anniversay when doing this calculation
+        /// </summary>
+        /// <value>
+        /// The the number of days until their next anniversary
+        /// </value>
+        [DataMember]
+        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
+        public int? DaysUntilAnniversary { get; set; }
 
         /// <summary>
         /// Gets or sets the grade offset, which is the number of years until their graduation date.  This is used to determine which Grade (Defined Value) they are in
@@ -1682,6 +1764,7 @@ namespace Rock.Model
             var dictionary = base.ToDictionary();
             dictionary.AddOrIgnore( "Age", AgePrecise );
             dictionary.AddOrIgnore( "DaysToBirthday", DaysToBirthday );
+            dictionary.AddOrIgnore( "DaysToAnniversary", DaysToAnniversary );
             dictionary.AddOrIgnore( "FullName", FullName );
             dictionary.AddOrIgnore( "PrimaryAliasId", this.PrimaryAliasId );
             return dictionary;
