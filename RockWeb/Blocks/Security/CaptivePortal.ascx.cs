@@ -147,25 +147,23 @@ namespace RockWeb.Blocks.Security
                     personalDevice = CreateDevice( macAddress );
                     CreateDeviceCookie( macAddress );
                 }
-
-                // Get the person
-                Person person = null;
-                PersonService personService = new PersonService( rockContext );
-
-                // See if they are logged in first
+                
+                // See if user is logged and link the alias to the device.
                 if ( CurrentPerson != null )
                 {
                     Prefill( CurrentPerson );
                     RockPage.LinkPersonAliasToDevice( ( int ) CurrentPersonAliasId, macAddress );
                     hfPersonAliasId.Value = CurrentPersonAliasId.ToString();
                 }
-
-                if ( isAnExistingDevice )
+                else if ( isAnExistingDevice )
                 {
                     // if the user is not logged in but we have the device lets try to get a person
                     if ( personalDevice.PersonAliasId != null )
                     {
-                        person = personService.Get( personalDevice.PersonAlias.PersonId );
+                        // Get the person
+                        PersonService personService = new PersonService( rockContext );
+                        Person person = personService.Get( personalDevice.PersonAlias.PersonId );
+
                         if ( person != null )
                         {
                             Prefill( person );
@@ -178,16 +176,14 @@ namespace RockWeb.Blocks.Security
                 // Direct connect if no controls are visible
                 if ( !ShowControls() )
                 {
-                    string redirectUrl = string.Format( "{0}?{1}={2}", GetAttributeValue( "ReleaseLink" ), GetAttributeValue( "MacAddressParam" ), macAddress );
-
-                    // Nothing to show then just redirect back to FP with the mac
+                    // Nothing to show means nothing to enter. Redirect user back to FP with the primary alias ID and query string
                     if ( IsUserAuthorized( Rock.Security.Authorization.ADMINISTRATE ) )
                     {
-                        nbAlert.Text = string.Format( "If you did not have Administrative permissions on this block you would have been redirected to: <a href='{0}'>{0}</a>.", redirectUrl );
+                        nbAlert.Text = string.Format( "If you did not have Administrative permissions on this block you would have been redirected to: <a href='{0}'>{0}</a>.", CreateRedirectUrl( null ) );
                     }
                     else
                     {
-                        Response.Redirect( redirectUrl );
+                        Response.Redirect( CreateRedirectUrl( null ) );
                         return;
                     }
                 }
@@ -305,12 +301,18 @@ namespace RockWeb.Blocks.Security
         }
 
         /// <summary>
-        /// Parses ClientInfo and gets the device os version. If it cannot be determined returns "0.0.0.0"
+        /// Parses ClientInfo and gets the device os version. If it cannot be determined returns the OS family string without the platform
         /// </summary>
         /// <param name="client">The client.</param>
         /// <returns></returns>
         private string GetDeviceOsVersion( UAParser.ClientInfo client )
         {
+            if ( client.OS.Major == null )
+            {
+                string platform = client.OS.Family.Split( ' ' ).First();
+                return client.OS.Family.Replace( platform, string.Empty ).Trim();
+            }
+
             return string.Format(
                 "{0}.{1}.{2}.{3}",
                 client.OS.Major ?? "0",
@@ -386,7 +388,7 @@ namespace RockWeb.Blocks.Security
             if ( hfPersonAliasId.Value != string.Empty)
             {
                 UpdatePersonInfo();
-                Response.Redirect( string.Format( "{0}?{1}={2}", GetAttributeValue( "ReleaseLink" ), GetAttributeValue( "MacAddressParam" ), hfMacAddress.Value ) );
+                Response.Redirect( CreateRedirectUrl( int.Parse( hfPersonAliasId.Value ) ) );
                 return;
             }
 
@@ -417,11 +419,26 @@ namespace RockWeb.Blocks.Security
             }
 
             // Link new device to person alias
-            RockPage.LinkPersonAliasToDevice( person.Aliases.FirstOrDefault().Id, hfMacAddress.Value );
+            RockPage.LinkPersonAliasToDevice( person.PrimaryAlias.Id, hfMacAddress.Value );
 
             // Send them back to Front Porch
-            Response.Redirect( string.Format( "{0}?{1}={2}", GetAttributeValue( "ReleaseLink" ), GetAttributeValue( "MacAddressParam" ), hfMacAddress.Value ) );
+            Response.Redirect( CreateRedirectUrl( person.PrimaryAlias.Id ) );
             return;
+        }
+
+        /// <summary>
+        /// Redirects the specified person to the release link URL
+        /// </summary>
+        /// <param name="primaryAliasId">if null then the id parameter is not created for the returned URL</param>
+        /// <returns></returns>
+        protected string CreateRedirectUrl( int? primaryAliasId )
+        {
+            if ( primaryAliasId != null )
+            {
+                return string.Format( "{0}?id={1}&{2}", GetAttributeValue( "ReleaseLink" ), primaryAliasId, Request.QueryString );
+            }
+
+            return string.Format( "{0}?{1}", GetAttributeValue( "ReleaseLink" ), Request.QueryString );
         }
 
         /// <summary>
@@ -472,23 +489,34 @@ namespace RockWeb.Blocks.Security
         /// </summary>
         private void UpdatePersonInfo()
         {
-            RockContext rockContext = new RockContext();
-            Person person = new PersonService( rockContext ).Get( CurrentPerson.Id );
-            int mobilePhoneTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
-
-            person.Email = tbEmail.Text;
-
-            if ( !person.PhoneNumbers.Where( n => n.NumberTypeValueId == mobilePhoneTypeId ).Any() )
+            using ( RockContext rockContext = new RockContext() )
             {
-                person.PhoneNumbers.Add( new PhoneNumber { IsSystem = false, Number = tbMobilePhone.Text.RemoveAllNonAlphaNumericCharacters(), NumberTypeValueId = mobilePhoneTypeId } );
-            }
-            else
-            {
-                PhoneNumber phoneNumber = person.PhoneNumbers.Where( p => p.NumberTypeValueId == mobilePhoneTypeId ).FirstOrDefault();
-                phoneNumber.Number = tbMobilePhone.Text.RemoveAllNonAlphaNumericCharacters();
-            }
+                int? personId = CurrentPersonId ?? new PersonAliasService( rockContext ).GetPersonId( int.Parse( hfPersonAliasId.Value ) );
 
-            rockContext.SaveChanges();
+                // If we can't get a person ID then just return
+                if( personId == null )
+                {
+                    return;
+                }
+
+                Person person = new PersonService( rockContext ).Get( ( int ) personId );
+
+                int mobilePhoneTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
+
+                person.Email = tbEmail.Text;
+
+                if ( !person.PhoneNumbers.Where( n => n.NumberTypeValueId == mobilePhoneTypeId ).Any() )
+                {
+                    person.PhoneNumbers.Add( new PhoneNumber { IsSystem = false, Number = tbMobilePhone.Text.RemoveAllNonAlphaNumericCharacters(), NumberTypeValueId = mobilePhoneTypeId } );
+                }
+                else
+                {
+                    PhoneNumber phoneNumber = person.PhoneNumbers.Where( p => p.NumberTypeValueId == mobilePhoneTypeId ).FirstOrDefault();
+                    phoneNumber.Number = tbMobilePhone.Text.RemoveAllNonAlphaNumericCharacters();
+                }
+
+                rockContext.SaveChanges();
+            }
         }
     }
 }
