@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/Stark/Styles/bootstrap.css") %>" />
     <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/Stark/Styles/theme.css") %>" />
 
-    <script src="<%# ResolveUrl("~/Scripts/jquery-1.12.4.min.js") %>">
+    <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" ) %>">
         $(document).ready(function () {
             $(".stack-trace").hide();
             
