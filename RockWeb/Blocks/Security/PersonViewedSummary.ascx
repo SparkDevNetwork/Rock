@@ -17,7 +17,7 @@
                             <Rock:Grid ID="gViewedBy" runat="server" DisplayType="Full" AllowSorting="true" EmptyDataText="No Profiles Found" OnRowSelected="gViewedBy_RowSelected">
                                 <Columns>
                                     <Rock:RockBoundField DataField="FullName" HeaderText="Person" SortExpression="FullName" />
-                                    <Rock:RockTemplateField HeaderText="Age" SortExpression="Age" ItemStyle-HorizontalAlign="Right"><ItemTemplate><%# ((DateTime?)Eval("BirthDate")).Age() %></ItemTemplate></Rock:RockTemplateField>
+                                    <Rock:RockTemplateField HeaderText="Age" SortExpression="Age" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right"><ItemTemplate><%# ((DateTime?)Eval("BirthDate")).Age() %></ItemTemplate></Rock:RockTemplateField>
                                     <Rock:RockBoundField DataField="Gender" HeaderText="Gender" SortExpression="Gender" />
                                     <Rock:RockBoundField DataField="FirstViewedDate" HeaderText="First Viewed" SortExpression="FirstViewedDate" />
                                     <Rock:RockBoundField DataField="LastViewedDate" HeaderText="Last Viewed" SortExpression="LastViewedDate" />
@@ -39,7 +39,7 @@
                             <Rock:Grid ID="gViewed" runat="server" DisplayType="Full" AllowSorting="true" EmptyDataText="No Profiles Found" OnRowSelected="gViewed_RowSelected">
                                 <Columns>
                                     <Rock:RockBoundField DataField="FullName" HeaderText="Person" SortExpression="FullName" />
-                                    <Rock:RockTemplateField HeaderText="Age" SortExpression="Age" ItemStyle-HorizontalAlign="Right"><ItemTemplate><%# ((DateTime?)Eval("BirthDate")).Age() %></ItemTemplate></Rock:RockTemplateField>
+                                    <Rock:RockTemplateField HeaderText="Age" SortExpression="Age" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right"><ItemTemplate><%# ((DateTime?)Eval("BirthDate")).Age() %></ItemTemplate></Rock:RockTemplateField>
                                     <Rock:RockBoundField DataField="Gender" HeaderText="Gender" SortExpression="Gender" />
                                     <Rock:RockBoundField DataField="FirstViewedDate" HeaderText="First Viewed" SortExpression="FirstViewedDate" />
                                     <Rock:RockBoundField DataField="LastViewedDate" HeaderText="Last Viewed" SortExpression="LastViewedDate" />

@@ -37,7 +37,7 @@
                                         <ItemTemplate><%# AccountName( (int)Eval("AccountId") ) %></ItemTemplate>
                                     </Rock:RockTemplateField>
                                     <Rock:RockBoundField DataField="Summary" SortExpression="Summary" />
-                                    <Rock:CurrencyField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" />
+                                    <Rock:CurrencyField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                                 </Columns>
                             </Rock:Grid>
                             <div class="actions pull-right">
@@ -54,7 +54,7 @@
                                             <ItemTemplate><%# AccountName( (int)Eval("AccountId") ) %></ItemTemplate>
                                         </Rock:RockTemplateField>
                                         <Rock:RockBoundField DataField="Summary" SortExpression="Summary" />
-                                        <Rock:CurrencyField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" />
+                                        <Rock:CurrencyField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right"/>
                                         <Rock:EditField OnClick="gAccountsEdit_EditClick" />
                                         <Rock:DeleteField OnClick="gAccountsEdit_DeleteClick" />
                                     </Columns>
