@@ -9,7 +9,7 @@ namespace Rock.Tests.Rock.Lava
 {
     public class LegacyLavaUpdaterTest
     {
-        [Fact]
+        [Fact( Skip = "Cannot run these tests remotely" )]
         public void UpdateLegacyLava()
         {
             LegacyLavaUpdater legacyLavaUpdater = new LegacyLavaUpdater();
@@ -36,7 +36,7 @@ namespace Rock.Tests.Rock.Lava
         /// <summary>
         /// Confirms that the _url string is replaced if it is in a lava tag
         /// </summary>
-        [Fact]
+        [Fact( Skip = "Cannot run these tests remotely" )]
         public void ReplaceUrlOnLavaString()
         {
             LegacyLavaUpdater legacyLavaUpdater = new LegacyLavaUpdater();
@@ -52,7 +52,7 @@ namespace Rock.Tests.Rock.Lava
         /// <summary>
         /// Confirms that the URL replacer will loop through the entire string.
         /// </summary>
-        [Fact]
+        [Fact( Skip = "Cannot run these tests remotely" )]
         public void ReplaceMultipleUrlOnLavaString()
         {
             LegacyLavaUpdater legacyLavaUpdater = new LegacyLavaUpdater();
@@ -65,14 +65,14 @@ namespace Rock.Tests.Rock.Lava
             Assert.Equal( expectedText, afterText );
         }
 
-        [Fact]
+        [Fact( Skip = "Cannot run these tests remotely" )]
         public void CheckSystemEmail()
         {
             LegacyLavaUpdater legacyLavaUpdater = new LegacyLavaUpdater();
             legacyLavaUpdater.CheckSystemEmail();
         }
 
-        [Fact]
+        [Fact( Skip = "Cannot run these tests remotely" )]
         public void CheckDotNotation()
         {
             bool isUpdated = false;
@@ -83,7 +83,7 @@ namespace Rock.Tests.Rock.Lava
             Assert.Equal( expectedText, afterText );
         }
 
-        [Fact]
+        [Fact( Skip = "Cannot run these tests remotely" )]
         public void UpdateLegacyLavaFiles()
         {
             LegacyLavaUpdater legacyLavaUpdater = new LegacyLavaUpdater();
@@ -94,7 +94,7 @@ namespace Rock.Tests.Rock.Lava
         /// <summary>
         /// Make sure we don't match the Report attribute and output Attribute:'Report'edBy
         /// </summary>
-        [Fact]
+        [Fact( Skip = "Cannot run these tests remotely" )]
         public void CheckDotNotationPartialMatches()
         {
             bool isUpdated = false;
