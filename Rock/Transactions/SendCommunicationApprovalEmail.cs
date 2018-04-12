@@ -135,8 +135,8 @@ namespace Rock.Transactions
                                                     communication.SenderPersonAlias.Person.FullName,
                                                     typeName,
                                                     communicationDetails,
-                                                    communication.GetRecipientCount(rockContext),
-                                                    ApprovalPageUrl);
+                                                    communication.GetRecipientsQry( rockContext ).Count(),
+                                                    ApprovalPageUrl );
 
                             var emailMessage = new RockEmailMessage();
                             emailMessage.AddRecipient( approver.Person.Email );

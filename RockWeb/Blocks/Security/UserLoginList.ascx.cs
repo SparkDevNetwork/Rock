@@ -495,10 +495,6 @@ namespace RockWeb.Blocks.Security
                     {
                         var component = AuthenticationContainer.GetComponent( entityType.Name );
                         lProviderName.Text = entityType.FriendlyName;
-                        if ( !component.PromptForUserName )
-                        {
-                            lUserNameOrRemoteProvider.Text = "(External)";
-                        }
                     }
                 }
             }
@@ -562,7 +558,6 @@ namespace RockWeb.Blocks.Security
         private void SetUIControls()
         {
             tbUserNameEdit.Visible = true;
-            lUserNameExternal.Visible = false;
             rcwPassword.Visible = false;
             tbPassword.Required = false;
             tbPasswordConfirm.Required = false;
@@ -581,8 +576,7 @@ namespace RockWeb.Blocks.Security
                     }
 
                     rcwPassword.Visible = component.PromptForPassword;
-                    tbUserNameEdit.Visible = component.PromptForUserName;
-                    lUserNameExternal.Visible = !component.PromptForUserName;
+                    tbUserNameEdit.Visible = true;
 
                     if ( component.PromptForPassword )
                     {
