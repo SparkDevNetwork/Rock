@@ -65,13 +65,96 @@ namespace Rock.Jobs
             string inactivateResult = InactivatePeople( context );
             string updateFamilyCampusResult = UpdateFamilyCampus( context );
             string moveAdultChildrenResult = MoveAdultChildren( context );
+            string genderAutofill = GenderAutoFill( context );
 
-            context.UpdateLastStatusMessage( $@"Reactivate People: {reactivateResult},
+            context.UpdateLastStatusMessage( $@"Reactivate People: {reactivateResult}
 Inactivate People: {inactivateResult}
 Update Family Campus: {updateFamilyCampusResult}
 Move Adult Children: {moveAdultChildrenResult}
+Gender Autofill: {genderAutofill}
 " );
         }
+
+        /// <summary>
+        /// Autofill Person.Gender based on the first name if the confidence level meets the min threshold specified in SystemSetting.GENDER_AUTO_FILL_CONFIDENCE.
+        /// Children autofill is based on confidence level alone.
+        /// Adults will not autofill a gender that is already taken by another adult in the same family.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <returns></returns>
+        private string GenderAutoFill( IJobExecutionContext context )
+        {
+            context.UpdateLastStatusMessage( $"Processing Gender Autofill" );
+
+            string autofillConfidence = Web.SystemSettings.GetValue( SystemSetting.GENDER_AUTO_FILL_CONFIDENCE );
+            if ( string.IsNullOrWhiteSpace( autofillConfidence ) )
+            {
+                return "Not Enabled";
+            }
+
+            double autofillConfidencePercent = 0.00;
+            double.TryParse( autofillConfidence, out autofillConfidencePercent );
+            if ( autofillConfidencePercent == 0 )
+            {
+                return "Not Enabled";
+            }
+
+            int recordsProcessed = 0;
+            int recordsUpdated = 0;
+            int recordsWithError = 0;
+
+            using ( RockContext rockContext = new RockContext() )
+            {
+                var personService = new PersonService( rockContext );
+                List<Person> persons = personService.Queryable().Where( p => p.Gender == Gender.Unknown ).ToList();
+
+                var nameGenderLookupService = new MetaFirstNameGenderLookupService( rockContext );
+
+                foreach ( Person person in persons )
+                {
+                    try
+                    {
+                        // find the name
+                        MetaFirstNameGenderLookup metaFirstNameGenderLookup = nameGenderLookupService.Queryable().Where( n => n.FirstName == person.FirstName ).FirstOrDefault();
+                        if ( metaFirstNameGenderLookup != null )
+                        {
+                            List<Person> otherAdults = new List<Person>();
+
+                            // If the person is an adult we want to get the other adults in the family
+                            // Adults will not update their gender if there is another adult in the family with the same gender
+                            if ( person.AgeClassification == AgeClassification.Adult )
+                            {
+                                otherAdults = person.GetFamilyMembers( false, rockContext ).Where( m => m.Person.AgeClassification == AgeClassification.Adult ).Select( m => m.Person ).ToList();
+                            }
+
+                            //Adults = Change based on the confidence unless they are in a family as an adult where there is another adult with the same gender
+                            if ( (double) metaFirstNameGenderLookup.FemalePercent >= autofillConfidencePercent && ! otherAdults.Any( a => a.Gender == Gender.Female ) )
+                            {
+                                person.Gender = Gender.Female;
+                                recordsUpdated += 1;
+                            }
+                            else if ( (double) metaFirstNameGenderLookup.MalePercent >= autofillConfidencePercent && ! otherAdults.Any( a => a.Gender == Gender.Male ) )
+                            {
+                                person.Gender = Gender.Male;
+                                recordsUpdated += 1;
+                            }
+                        }
+
+                        recordsProcessed += 1;
+                        rockContext.SaveChanges();
+                    }
+                    catch ( Exception ex )
+                    {
+                        // log but don't throw
+                        ExceptionLogService.LogException( new Exception( $"Exception occurred trying to autofill gender for PersonId:{person.Id}.", ex ), _httpContext );
+                        recordsWithError += 1;
+                    }
+                }
+            }
+
+            return $"{recordsProcessed:N0} people were processed; {recordsUpdated:N0} genders were updated; {recordsWithError:N0} records logged an exception";
+        }
+
 
         #region Reactivate People
 
