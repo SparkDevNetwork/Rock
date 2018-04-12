@@ -1,9 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="NcoaResults.ascx.cs" Inherits="RockWeb.Blocks.Crm.NcoaResults" %>
 
-<style>
-
-</style>
-
 <asp:UpdatePanel ID="upNcoaResults" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlDetails" runat="server" CssClass="panel panel-block">
@@ -71,7 +67,7 @@
                                     <div class="col-md-4 col-xs-12">
                                         <div class="row">
                                             <div class="col-lg-5 col-md-12">
-                                                    <dl>
+                                                <dl>
                                                     <dt><%# Eval("MoveDistance") == null ? string.Empty:"Move Distance" %></dt>
                                                     <dd><%# Eval("MoveDistance") %></dd>
                                                 </dl>
@@ -94,15 +90,14 @@
                         </ItemTemplate>
                     </asp:Repeater>
 
-                 <div class="ncoaResult-nav">
-                    <asp:HyperLink ID="hlNext" CssClass="btn btn-primary btn-next" runat="server" Text="Next <i class='fa fa-chevron-right'></i>" />
-                    <asp:HyperLink ID="hlPrev" CssClass="btn btn-primary btn-prev" runat="server" Text="<i class='fa fa-chevron-left'></i> Prev" />
+                    <div class="ncoaResult-nav">
+                        <asp:HyperLink ID="hlNext" CssClass="btn btn-primary btn-next" runat="server" Text="Next <i class='fa fa-chevron-right'></i>" />
+                        <asp:HyperLink ID="hlPrev" CssClass="btn btn-primary btn-prev" runat="server" Text="<i class='fa fa-chevron-left'></i> Prev" />
+                    </div>
+
                 </div>
 
-               </div>
 
-
-            </div>
             </div>
 
         </asp:Panel>

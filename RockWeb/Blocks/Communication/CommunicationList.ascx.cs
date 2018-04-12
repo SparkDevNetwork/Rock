@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -64,14 +65,14 @@ namespace RockWeb.Blocks.Communication
             gCommunication.Actions.ShowAdd = false;
             gCommunication.GridRebind += gCommunication_GridRebind;
 
-            // The created by column/filter should only be displayed if user is allowed to approve
+            // The created by filter and details column should only be displayed if user is allowed to approve
             canApprove = this.IsUserAuthorized( "Approve" );
             ppSender.Visible = canApprove;
 
-            var createdByBoundField = gCommunication.ColumnsOfType<RockBoundField>().FirstOrDefault( a => a.HeaderText == "Created By" );
-            if ( createdByBoundField != null )
+            var detailsField = gCommunication.ColumnsOfType<RockLiteralField>().FirstOrDefault( a => a.HeaderText == "Details" );
+            if ( detailsField != null )
             {
-                createdByBoundField.Visible = canApprove;
+                detailsField.Visible = canApprove;
             }
         }
 
@@ -202,7 +203,25 @@ namespace RockWeb.Blocks.Communication
                 if ( communicationItem != null )
                 {
                     // Hide delete button if there are any successful recipients
-                    e.Row.Cells[9].Controls[0].Visible = communicationItem.DeliveredRecipients <= 0;
+                    e.Row.Cells.OfType<DataControlFieldCell>().First( a => a.ContainingField is DeleteField ).Controls[0].Visible = communicationItem.DeliveredRecipients <= 0;
+
+                    Literal lDetails = e.Row.FindControl( "lDetails" ) as Literal;
+                    if ( lDetails != null )
+                    {
+                        string rockUrlRoot = ResolveRockUrl( "/" );
+                        var details = new StringBuilder();
+                        if ( communicationItem.CreatedDateTime.HasValue && communicationItem.Sender != null )
+                        {
+                            details.AppendFormat( "Created on {1} by {0}<br/>", communicationItem.Sender.GetAnchorTag( rockUrlRoot ),
+                                communicationItem.CreatedDateTime.Value.ToShortDateString() );
+                        }
+                        if ( communicationItem.ReviewedDateTime.HasValue && communicationItem.Reviewer != null )
+                        {
+                            details.AppendFormat( "Reviewed on {1} by {0}", communicationItem.Reviewer.GetAnchorTag( rockUrlRoot ),
+                                communicationItem.ReviewedDateTime.Value.ToShortDateString() );
+                        }
+                        lDetails.Text = details.ToString();
+                    }
 
                     Literal lEmailAnalyticsLink = e.Row.FindControl( "lEmailAnalyticsLink" ) as Literal;
                     if ( lEmailAnalyticsLink != null )
@@ -412,7 +431,7 @@ namespace RockWeb.Blocks.Communication
                     Subject = string.IsNullOrEmpty( c.Subject ) ? c.Name : c.Subject,
                     CreatedDateTime = c.CreatedDateTime,
                     SendDateTime = c.SendDateTime ?? c.FutureSendDateTime,
-                    SendDateTimeFormat = c.SendDateTime == null && c.FutureSendDateTime != null ? "<span class='label label-default'>Future</span>&nbsp;" : "",
+                    SendDateTimePrefix = c.SendDateTime == null && c.FutureSendDateTime != null ? "<span class='label label-info'>Future</span>&nbsp;" : "",
                     Sender = c.SenderPersonAlias != null ? c.SenderPersonAlias.Person : null,
                     ReviewedDateTime = c.ReviewedDateTime,
                     Reviewer = c.ReviewerPersonAlias != null ? c.ReviewerPersonAlias.Person : null,
@@ -470,6 +489,7 @@ namespace RockWeb.Blocks.Communication
             public CommunicationType CommunicationType { get; set; }
             public DateTime? CreatedDateTime { get; set; }
             public string Subject { get; set; }
+            public string SendDateTimePrefix { get; set; }
             public DateTime? SendDateTime { get; set; }
             public Person Sender { get; set; }
             public DateTime? ReviewedDateTime { get; set; }
@@ -485,13 +505,10 @@ namespace RockWeb.Blocks.Communication
             {
                 get
                 {
-                    return _sendDateTimeFormat + string.Format( "{0:g}", SendDateTime );
-                }
-                set
-                {
-                    _sendDateTimeFormat = value;
+                    return SendDateTime.HasValue ? SendDateTimePrefix + SendDateTime.Value.ToShortDateTimeString() : string.Empty;
                 }
             }
+
             public string TypeIconCssClass
             {
                 get
@@ -517,8 +534,6 @@ namespace RockWeb.Blocks.Communication
                     return iconCssClass;
                 }
             }
-
-            private string _sendDateTimeFormat;
         }
 
     }

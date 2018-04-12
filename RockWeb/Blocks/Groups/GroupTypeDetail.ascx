@@ -367,11 +367,11 @@
                                 <Rock:RockCheckBox ID="cbShowConnectionStatus" runat="server" Label="Show Connection Status" Text="Yes"
                                     Help="Check this option to show the person's connection status as a column in the group member list." />
                                 <Rock:RockCheckBox ID="cbShowMaritalStatus" runat="server" Label="Show Marital Status" Text="Yes"
-                                    Help="Check this option to show the person's martial status as a column in the group member list." />
+                                    Help="Check this option to show the person's marital status as a column in the group member list." />
                             </div>
                         </div>
 
-                        <Rock:CodeEditor ID="ceGroupLavaTemplate" Visible="True" runat="server" Label="Group View Lava Template" EditorMode="Lava" EditorHeight="275" Help="This Lava template will be used by the Group Details block when viewing a group. This allows you to customize the layout of a group base on it's type." />
+                        <Rock:CodeEditor ID="ceGroupLavaTemplate" Visible="True" runat="server" Label="Group View Lava Template" EditorMode="Lava" EditorHeight="275" Help="This Lava template will be used by the Group Details block when viewing a group. This allows you to customize the layout of a group base on its type." />
                     </Rock:PanelWidget>
 
                     <div class="actions">

@@ -18,7 +18,7 @@ using System.Collections.Generic;
 
 namespace Rock.Utility.Settings.DataAutomation
 {
- 
+
     /// <summary>
     /// Settings for controlling when people should be automatically inactivated
     /// </summary>
@@ -29,11 +29,19 @@ namespace Rock.Utility.Settings.DataAutomation
         /// </summary>
         public InactivatePeople()
         {
+            IsNoLastContributionEnabled = true;
             NoLastContributionPeriod = 500;
-            NoAttendanceInServiceGroupPeriod = 500;
+
+            IsNoAttendanceInGroupTypeEnabled = true;
             NoAttendanceInGroupTypeDays = 500;
+
+            IsNoPrayerRequestEnabled = true;
             NoPrayerRequestPeriod = 500;
+
+            IsNoPersonAttributesEnabled = true;
             NoPersonAttributesDays = 500;
+
+            IsNoInteractionsEnabled = true;
         }
 
         /// <summary>
@@ -59,22 +67,6 @@ namespace Rock.Utility.Settings.DataAutomation
         /// The no last contribution period.
         /// </value>
         public int NoLastContributionPeriod { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is no attendance in service group enabled.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is no attendance in service group enabled; otherwise, <c>false</c>.
-        /// </value>
-        public bool IsNoAttendanceInServiceGroupEnabled { get; set; }
-
-        /// <summary>
-        /// Gets or sets the no attendance in service group period.
-        /// </summary>
-        /// <value>
-        /// The no attendance in service group period.
-        /// </value>
-        public int NoAttendanceInServiceGroupPeriod { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is no attendance in group type enabled.
@@ -154,7 +146,7 @@ namespace Rock.Utility.Settings.DataAutomation
         /// <value>
         /// The not in dataview.
         /// </value>
-        public string NotInDataview { get; set; }
+        public int? NotInDataview { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is no interactions enabled.

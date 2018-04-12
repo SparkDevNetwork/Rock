@@ -14,7 +14,6 @@
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-shield"></i> Protect My Ministry</h1>
                 <div class="panel-labels">
-                    <Rock:HighlightLabel ID="hlMode" runat="server" LabelType="Type" />
                     <Rock:HighlightLabel ID="hlActive" runat="server" />
                 </div>
 
@@ -76,7 +75,6 @@
                             <Rock:UrlLinkBox ID="urlWebHook" runat="server" Label="Result Webhook" Required="true"
                                 Help="The URL that Protect My Ministry should use when sending background check results back to your server." />
                             <Rock:RockCheckBox id="cbActive" runat="server" Label="Active" />
-                            <Rock:RockCheckBox ID="cbTestMode" runat="server" Label="Test Mode" />
                         </div>
                     </div>
                     <div class="actions">

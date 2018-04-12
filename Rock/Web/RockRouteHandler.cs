@@ -271,6 +271,8 @@ namespace Rock.Web
                         }
 
                         page = PageCache.Read( site.PageNotFoundPageId ?? 0 );
+                        requestContext.HttpContext.Response.StatusCode = 404;
+                        requestContext.HttpContext.Response.TrySkipIisCustomErrors = true;
                     }
                     else
                     {

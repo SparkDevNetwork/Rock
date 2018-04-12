@@ -203,6 +203,9 @@ namespace RockWeb.Blocks.Administration
         {
             SetEditMode( false );
 
+            pdAuditDetails.Visible = true;
+            pdAuditDetails.SetEntity( page, ResolveRockUrl( "~" ) );
+
             string pageIconHtml = !string.IsNullOrWhiteSpace( page.IconCssClass ) ?
                 pageIconHtml = string.Format( "<i class='{0} fa-2x' ></i>", page.IconCssClass ) : string.Empty;
 
@@ -410,6 +413,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="page">The page.</param>
         private void ShowEditDetails( Rock.Model.Page page )
         {
+            pdAuditDetails.Visible = false;
             if ( page.Id > 0 )
             {
                 lTitle.Text = ActionTitle.Edit( Rock.Model.Page.FriendlyTypeName ).FormatAsHtmlTitle();

@@ -1,0 +1,46 @@
+﻿{{ Group | Attribute:'OpportunityTitle' | AddMetaTagToHead:'property','twitter:title' }}
+{{ Group | Attribute:'OpportunitySummary' | AddMetaTagToHead:'property','twitter:description' }}
+{{ Group | Attribute:'OpportunityTitle' | AddMetaTagToHead:'property','og:title' }}
+{{ Group | Attribute:'OpportunitySummary' | AddMetaTagToHead:'property','og:description' }}
+{% assign opportunityPhotoUrl = item | Attribute:'OpportunityPhoto','Url' %}
+{% if opportunityPhotoUrl != '' %}
+{{ opportunityPhotoUrl | AddMetaTagToHead:'property','og:image' }}
+{{ opportunityPhotoUrl | AddMetaTagToHead:'property','twitter:image' }}
+{{ 'summary_large_image' | AddMetaTagToHead:'property','twitter:card' }}
+{% endif %}
+
+{% assign setPageTitleToOpportunityTitle = Block | Attribute:'SetPageTitletoOpportunityTitle','RawValue' %}
+{% if setPageTitleToOpportunityTitle != true %}
+<h1>{{ Group | Attribute:'OpportunityTitle' }}</h1>
+{% endif %}
+
+<div class='opportunity-whenwhere margin-b-lg lead'>
+    {% assign dateRangeParts = Group | Attribute:'OpportunityDateRange','RawValue' | Split:',' %}
+    {% assign dateRangePartsSize = dateRangeParts | Size %}
+    {% if dateRangePartsSize == 2 %}
+    {{ dateRangeParts[0] | Date:'MMMM dd, yyyy' }} to {{ dateRangeParts[1] | Date:'MMMM dd, yyyy' }}<br />
+    {% elsif dateRangePartsSize == 1  %}
+    {{ dateRangeParts[0] | Date:'MMMM dd, yyyy' }}
+    {% endif %}
+    {{ Group | Attribute:'OpportunityLocation' }}
+</div>
+<div class='opportunity-summary'>
+    {{ Group | Attribute:'OpportunitySummary' }}
+</div>
+<ul class='socialsharing margin-b-lg'>
+    <li>
+        <a href='http://www.facebook.com/share.php?u=<url>' onclick='return fbs_click()' target='_blank' class='socialicon socialicon-facebook' title='' data-original-title='Share via Facebook'>
+            <i class='fa fa-fw fa-facebook'></i>
+        </a>
+    </li>
+    <li>
+        <a href='http://twitter.com/home?status={{ Group | Attribute:'OpportunityTitle' | Escape }}%20{{ 'Global' | Page:'Url' | Escape }}' class='socialicon socialicon-twitter' title='' data-original-title='Share via Twitter'>
+            <i class='fa fa-fw fa-twitter'></i>
+        </a>
+    </li>
+    <li>
+        <a href='mailto:?subject={{ Group | Attribute:'OpportunityTitle' | Escape }}&body=%0D%0A{{ 'Global' | Page:'Url' }}' class='socialicon socialicon-email' title='' data-original-title='Share via Email'>
+            <i class='fa fa-fw fa-envelope-o'></i>
+        </a>
+    </li>
+</ul>

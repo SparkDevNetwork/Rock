@@ -77,7 +77,30 @@ namespace Rock.Workflow
         }
 
         /// <summary>
-        /// Triggerses the specified entity type name.
+        /// Gets a collection of Workflow Triggers for the specified criteria.
+        /// </summary>
+        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <returns></returns>
+        public static List<WorkflowTrigger> Triggers( string entityTypeName )
+        {
+            var triggers = new List<WorkflowTrigger>();
+
+            lock ( obj )
+            {
+                if ( EntityTriggers != null && EntityTriggers.ContainsKey( entityTypeName ) )
+                {
+                    foreach ( var trigger in EntityTriggers[entityTypeName] )
+                    {
+                        triggers.Add( trigger );
+                    }
+                }
+            }
+
+            return triggers;
+        }
+
+        /// <summary>
+        /// Gets a collection of Workflow Triggers for the specified criteria.
         /// </summary>
         /// <param name="entityTypeName">Name of the entity type.</param>
         /// <param name="triggerType">Type of the trigger.</param>

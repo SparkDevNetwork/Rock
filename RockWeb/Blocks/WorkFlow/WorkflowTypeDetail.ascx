@@ -132,9 +132,9 @@
 
                 <fieldset id="fieldsetViewDetails" runat="server">
 
-                    <p class="description">
+                    <div class="description">
                         <asp:Literal ID="lWorkflowTypeDescription" runat="server" EnableViewState="false"></asp:Literal>
-                    </p>
+                    </div>
 
                     <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" EnableViewState="false" />
 

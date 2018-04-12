@@ -564,25 +564,25 @@ namespace Rock.Model
                     status.GroupRequirement = requirementStatus.GroupRequirement;
                     status.PersonId = groupMemberWithIssues.GroupMember.PersonId;
 
-                    DateTime occuranceDate = new DateTime();
+                    DateTime occurrenceDate = new DateTime();
 
                     if ( requirementStatus.RequirementMetDateTime == null)
                     {
                         status.MeetsGroupRequirement = MeetsGroupRequirement.NotMet;
-                        occuranceDate = requirementStatus.RequirementFailDateTime ?? currentDateTime; 
+                        occurrenceDate = requirementStatus.RequirementFailDateTime ?? currentDateTime; 
                     }
                     else if (requirementStatus.RequirementWarningDateTime.HasValue)
                     {
                         status.MeetsGroupRequirement = MeetsGroupRequirement.MeetsWithWarning;
-                        occuranceDate = requirementStatus.RequirementWarningDateTime.Value;
+                        occurrenceDate = requirementStatus.RequirementWarningDateTime.Value;
                     }
                     else
                     {
                         status.MeetsGroupRequirement = MeetsGroupRequirement.Meets;
-                        occuranceDate = requirementStatus.RequirementMetDateTime.Value;
+                        occurrenceDate = requirementStatus.RequirementMetDateTime.Value;
                     }
                     
-                    statuses.Add( status, occuranceDate );
+                    statuses.Add( status, occurrenceDate );
                 }
 
                 // also add any groupRequirements that they don't have statuses for (and therefore haven't met)

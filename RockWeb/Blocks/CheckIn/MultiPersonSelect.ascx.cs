@@ -45,7 +45,7 @@ namespace RockWeb.Blocks.CheckIn
     [TextField( "Title", "Title to display. Use {0} for family name.", false, "{0}", "Text", 7 )]
     [TextField( "Caption", "", false, "Select People", "Text", 8 )]
     [TextField( "Option Title", "Title to display on option screen. Use {0} for person's full name.", false, "{0}", "Text", 9 )]
-    [TextField( "Option Sub Title", "Sub-title to display on option screen. Use {0} for person's nick name.", false, "Please select the options that {0} would like to attend.", "Text", 10 )]
+    [TextField( "Option Sub Title", "Subtitle to display on option screen. Use {0} for person's nickname.", false, "Please select the options that {0} would like to attend.", "Text", 10 )]
     [TextField( "No Option Message", "", false, "Sorry, there are currently not any available areas that the selected people can check into.", "Text", 11 )]
 
     public partial class MultiPersonSelect : CheckInBlock

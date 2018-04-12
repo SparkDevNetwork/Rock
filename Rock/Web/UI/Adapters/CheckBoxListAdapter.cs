@@ -81,6 +81,12 @@ namespace Rock.Web.UI.Adapters
                     }
                 }
 
+                if ( cbl.RepeatDirection == RepeatDirection.Vertical && cbl.RepeatColumns > 1 )
+                {
+                    writer.AddAttribute( "class", "row" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                }
+
                 int i = 0;
                 foreach (ListItem li in cbl.Items)
                 {
@@ -148,7 +154,12 @@ namespace Rock.Web.UI.Adapters
                     writer.RenderBeginTag(HtmlTextWriterTag.Input);
                     writer.RenderEndTag();
 
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "label-text" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Span );
+
                     writer.Write(li.Text);
+
+                    writer.RenderEndTag();      // Span
 
                     writer.RenderEndTag();      // Label
 
@@ -162,7 +173,12 @@ namespace Rock.Web.UI.Adapters
                         Page.ClientScript.RegisterForEventValidation(cbl.UniqueID, li.Value);
                     }
                 }
-                
+
+                if ( cbl.RepeatDirection == RepeatDirection.Vertical && cbl.RepeatColumns > 1 )
+                {
+                    writer.RenderEndTag();   // div
+                }
+
                 if ( Page != null && Page.ClientScript != null )
                 {
                     Page.ClientScript.RegisterForEventValidation( cbl.UniqueID );

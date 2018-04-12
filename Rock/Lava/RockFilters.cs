@@ -143,6 +143,12 @@ namespace Rock.Lava
             }
 
             var inputString = input.ToString();
+
+            if (inputString.Length <= length )
+            {
+                return inputString;
+            }
+
             return inputString.Right( length );
         }
 
@@ -722,6 +728,43 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// URLs the encode.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string UrlEncode( string input )
+        {
+            return EscapeDataString( input );
+        }
+
+        /// <summary>
+        /// Uns the escape data string.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string UnescapeDataString( string input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+            else
+            {
+                return Uri.UnescapeDataString( input );
+            }
+        }
+
+        /// <summary>
+        /// URLs the decode.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string UrlDecode( string input )
+        {
+            return UnescapeDataString( input );
+        }
+
+        /// <summary>
         /// Tests if the inputted string matches the regex
         /// </summary>
         /// <param name="input">The input.</param>
@@ -838,6 +881,22 @@ namespace Rock.Lava
                 default:
                     return string.Empty;
             }
+        }
+
+        /// <summary>
+        /// Sanitizes a SQL string by replacing any occurrences of "'" with "''".
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns>Sanitized string that can be used in a SQL statement.</returns>
+        /// <example>{% sql %}SELECT * FROM [Person] WHERE [LastName] = '{{ Name | SanitizeSql }}'{% endsql %}</example>
+        public static string SanitizeSql( string input )
+        {
+            if ( input == null )
+            {
+                return input;
+            }
+
+            return input.Replace( "'", "''" );
         }
 
         #endregion

@@ -243,39 +243,39 @@ namespace Rock.Model
         public string FromName { get; set; }
 
         /// <summary>
-        /// Gets or sets from email.
+        /// Gets or sets from email address.
         /// </summary>
         /// <value>
-        /// From email.
+        /// From email address.
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
         public string FromEmail { get; set; }
 
         /// <summary>
-        /// Gets or sets the reply to email.
+        /// Gets or sets the reply to email address.
         /// </summary>
         /// <value>
-        /// The reply to email.
+        /// The reply to email address.
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
         public string ReplyToEmail { get; set; }
 
         /// <summary>
-        /// Gets or sets the cc emails.
+        /// Gets or sets a comma separated list of CC'ed email addresses.
         /// </summary>
         /// <value>
-        /// The cc emails.
+        /// A comma separated list of CC'ed email addresses.
         /// </value>
         [DataMember]
         public string CCEmails { get; set; }
 
         /// <summary>
-        /// Gets or sets the BCC emails.
+        /// Gets or sets a comma separated list of BCC'ed email addresses.
         /// </summary>
         /// <value>
-        /// The BCC emails.
+        /// A comma separated list of BCC'ed email addresses.
         /// </value>
         [DataMember]
         public string BCCEmails { get; set; }

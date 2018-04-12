@@ -8,6 +8,7 @@
                 <h1 class="panel-title"><i class="fa fa-file-text-o"></i>
                     <asp:Literal ID="lTitle" runat="server" /></h1>
             </div>
+            <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body">
 
                 <asp:HiddenField ID="hfCommunicationTemplateId" runat="server" />
