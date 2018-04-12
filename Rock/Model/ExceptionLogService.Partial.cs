@@ -167,8 +167,8 @@ namespace Rock.Model
                     var exceptionLogService = new ExceptionLogService( rockContext );
                     exceptionLogService.Add( exceptionLog );
 
-                    // call SaveChanges with 'disablePrePostProcessing=true' just in case the pre/post processing would also cause exceptions
-                    rockContext.SaveChanges( true );
+                    // make sure to call the regular SaveChanges so that CreatedBy,CreatedByDateTime, etc get set properly. If any of the post processing happens to also create an excpetion, we can just log to the exception file instead
+                    rockContext.SaveChanges();
                 }
 
                 // Recurse if inner exception is found

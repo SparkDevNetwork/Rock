@@ -715,6 +715,7 @@
     <Compile Include="Jobs\ProcessNcoaResults.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
+    <Compile Include="Jobs\PostV74DataMigrations.cs" />
     <Compile Include="Jobs\MigrateCommunicationMediumData.cs" />
     <Compile Include="Jobs\MigrateInteractionsData.cs" />
     <Compile Include="Jobs\ProcessBIAnalytics.cs" />

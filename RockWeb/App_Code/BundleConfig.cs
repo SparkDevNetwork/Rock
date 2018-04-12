@@ -30,6 +30,10 @@ public class BundleConfig
     {
         // start with a clean bundles (this seems to have fixed the javascript errors that would occur on the first time you debug after opening the solution)
         bundles.ResetAll();
+        
+        bundles.Add( new ScriptBundle( "~/Scripts/Bundles/RockJQueryLatest" ).Include(
+            "~/Scripts/jquery-3.3.1.min.js",
+            "~/Scripts/jquery-migrate-3.0.0.min.js" ) );
 
         bundles.Add( new ScriptBundle( "~/bundles/WebFormsJs" ).Include(
             "~/Scripts/WebForms/WebForms.js",
