@@ -508,7 +508,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnUseSimpleEditor_Click( object sender, EventArgs e )
         {
-            var simpleCommunicationPageRef = new Rock.Web.PageReference( this.GetAttributeValue( "SimpleCommunicationPage"), this.CurrentPageReference.Parameters, this.CurrentPageReference.QueryString );
+            var simpleCommunicationPageRef = new Rock.Web.PageReference( this.GetAttributeValue( "SimpleCommunicationPage" ), this.CurrentPageReference.Parameters, this.CurrentPageReference.QueryString );
             NavigateToPage( simpleCommunicationPageRef );
         }
 
@@ -1056,7 +1056,7 @@ namespace RockWeb.Blocks.Communication
             var templateQuery = new CommunicationTemplateService( rockContext ).Queryable().Where( a => a.IsActive );
 
             int? categoryId = cpCommunicationTemplate.SelectedValue.AsIntegerOrNull();
-            if (categoryId.HasValue && categoryId > 0)
+            if ( categoryId.HasValue && categoryId > 0 )
             {
                 templateQuery = templateQuery.Where( a => a.CategoryId == categoryId );
             }
@@ -1199,7 +1199,7 @@ namespace RockWeb.Blocks.Communication
 
             // if this communication already has an Email Content specified, since they picked (or re-picked) a template, 
             // we'll have to start over on the EmailEditorHtml since the content is dependent on the template
-            hfEmailEditorHtml.Value = communicationTemplate.Message.ResolveMergeFields( Rock.Lava.LavaHelper.GetCommonMergeFields( null) );
+            hfEmailEditorHtml.Value = communicationTemplate.Message.ResolveMergeFields( Rock.Lava.LavaHelper.GetCommonMergeFields( null ) );
 
             hfEmailAttachedBinaryFileIds.Value = communicationTemplate.GetAttachments( CommunicationType.Email ).Select( a => a.BinaryFileId ).ToList().AsDelimited( "," );
             UpdateEmailAttachedFiles( false );
@@ -1238,7 +1238,7 @@ namespace RockWeb.Blocks.Communication
         {
             CommunicationTemplate selectedTemplate = null;
             int? selectedTemplateId = hfSelectedCommunicationTemplateId.Value.AsIntegerOrNull();
-            if (selectedTemplateId.HasValue)
+            if ( selectedTemplateId.HasValue )
             {
                 selectedTemplate = new CommunicationTemplateService( new RockContext() ).Get( selectedTemplateId.Value );
             }
@@ -1406,9 +1406,9 @@ namespace RockWeb.Blocks.Communication
 
                         // for the test email, just use the current person as the recipient, but copy/paste the AdditionalMergeValuesJson to our test recipient so it has the same as the real recipients
                         var testRecipient = new CommunicationRecipient();
-                        if ( communication.GetRecipientCount( rockContext ) > 0 )
+                        if ( communication.Recipients.Any() )
                         {
-                            var recipient = communication.GetRecipientsQry( rockContext ).FirstOrDefault();
+                            var recipient = communication.Recipients.First();
                             testRecipient.AdditionalMergeValuesJson = recipient.AdditionalMergeValuesJson;
                         }
 
@@ -2041,7 +2041,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSMSSendTest_Click( object sender, EventArgs e )
         {
-            if (ddlSMSFrom.SelectedValue.IsNullOrWhiteSpace())
+            if ( ddlSMSFrom.SelectedValue.IsNullOrWhiteSpace() )
             {
                 nbSMSTestResult.NotificationBoxType = NotificationBoxType.Danger;
                 nbSMSTestResult.Text = "A 'From' number must be specified.";
@@ -2145,7 +2145,7 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
 
             int maxRecipients = GetAttributeValue( "MaximumRecipients" ).AsIntegerOrNull() ?? int.MaxValue;
             bool userCanApprove = IsUserAuthorized( "Approve" );
-            var recipientCount = communication.GetRecipientCount( rockContext );
+            var recipientCount = communication.Recipients.Count();
             string message = string.Empty;
             if ( recipientCount > maxRecipients && !userCanApprove )
             {
@@ -2381,10 +2381,10 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
                 {
                     var communicationListGroupMemberCommunicationTypeList = new GroupMemberService( rockContext ).Queryable()
                         .Where( a => a.GroupId == communication.ListGroupId.Value && a.GroupMemberStatus == GroupMemberStatus.Active )
-                        .Join( attributeValueQry, gm => gm.Id, av => av.EntityId, (gm, av) => new { gm.PersonId, av.ValueAsNumeric } )
+                        .Join( attributeValueQry, gm => gm.Id, av => av.EntityId, ( gm, av ) => new { gm.PersonId, av.ValueAsNumeric } )
                         .ToList();
                     rockContext.Database.Connection.Open();
-                    foreach( var communicationListGroupMemberCommunicationType in communicationListGroupMemberCommunicationTypeList )
+                    foreach ( var communicationListGroupMemberCommunicationType in communicationListGroupMemberCommunicationTypeList )
                     {
                         var recipientPreference = ( CommunicationType? ) communicationListGroupMemberCommunicationType.ValueAsNumeric;
                         communicationListGroupMemberCommunicationTypeLookup.AddOrIgnore( communicationListGroupMemberCommunicationType.PersonId, recipientPreference );
