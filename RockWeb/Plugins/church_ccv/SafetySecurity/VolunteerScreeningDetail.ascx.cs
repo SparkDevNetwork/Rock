@@ -200,11 +200,11 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                             List<int?> attribIds = new AttributeValueService( rockContext ).Queryable( ).AsNoTracking( ).Where( av => av.Attribute.Key == "VolunteerScreeningInstanceId" && av.ValueAsNumeric == vsInstance.Id ).Select( av => av.EntityId ).ToList( );
                             if( attribIds.Count > 0 )
                             { 
-                                Workflow bgCheckWorkflow = new WorkflowService( rockContext ).Queryable( ).AsNoTracking( ).Where( wf => wf.WorkflowTypeId == sBackgroundCheck_WorkflowId && attribIds.Contains( wf.Id ) ).SingleOrDefault( );
+                                Workflow bgCheckWorkflow = new WorkflowService( rockContext ).Queryable( ).AsNoTracking( ).Where( wf => wf.WorkflowTypeId == sBackgroundCheck_WorkflowId && attribIds.Contains( wf.Id ) ).FirstOrDefault( );
                                 if ( bgCheckWorkflow != null )
                                 {
                                     // since there is one, let them view the date and doc (which may or may not be filled in)
-                                    bgCheckText = "<a href=/WorkflowEntry/" + sBackgroundCheck_WorkflowId.ToString( ) + "/" + bgCheckWorkflow.Id + ">Background Check In Progress</a>";
+                                    bgCheckText = "Background Check In Progress";
                                 }
                             }
                             
