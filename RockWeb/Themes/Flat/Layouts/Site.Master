@@ -23,7 +23,7 @@
     <meta charset="utf-8">
     <title></title>
     
-    <script src="<%# ResolveRockUrl("~/Scripts/jquery-1.12.4.min.js" ) %>"></script>
+    <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" ) %>"></script>
 
     <script src="<%# ResolveRockUrl("~~/Scripts/jquery.flexslider-min.js" ) %>" ></script>
     <script src="<%# ResolveRockUrl("~~/Scripts/theme.js", true) %>" ></script>
