@@ -554,9 +554,9 @@ namespace RockWeb.Blocks.Communication
                         }
 
                         var testRecipient = new CommunicationRecipient();
-                        if ( communication.GetRecipientCount( rockContext ) > 0 )
+                        if ( communication.Recipients.Any() )
                         {
-                            var recipient = communication.GetRecipientsQry( rockContext ).FirstOrDefault();
+                            var recipient = communication.Recipients.FirstOrDefault();
                             testRecipient.AdditionalMergeValuesJson = recipient.AdditionalMergeValuesJson;
                         }
 
@@ -645,7 +645,7 @@ namespace RockWeb.Blocks.Communication
                         communication.Status = CommunicationStatus.Draft;
                         rockContext.SaveChanges();
 
-                        if ( CheckApprovalRequired( communication.GetRecipientCount( rockContext ) ) && !IsUserAuthorized( "Approve" ) )
+                        if ( CheckApprovalRequired( communication.Recipients.Count() ) && !IsUserAuthorized( "Approve" ) )
                         {
                             communication.Status = CommunicationStatus.PendingApproval;
                             message = "Communication has been submitted for approval.";
