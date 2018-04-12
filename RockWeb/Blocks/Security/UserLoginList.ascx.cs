@@ -65,7 +65,7 @@ namespace RockWeb.Blocks.Security
             {
                 _personId = person.Id;
 
-                var personNameField = gUserLogins.ColumnsOfType<HyperLinkField>().FirstOrDefault( a => a.HeaderText == "Person" );
+                var personNameField = gUserLogins.ColumnsOfType<PersonField>().FirstOrDefault( a => a.HeaderText == "Person" );
                 if ( personNameField != null )
                 {
                     // Hide the person name column
@@ -641,7 +641,5 @@ namespace RockWeb.Blocks.Security
         }
 
         #endregion
-
-        
     }
 }
