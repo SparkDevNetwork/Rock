@@ -1359,12 +1359,13 @@ namespace RockWeb.Blocks.Communication
             {
                 CleanupOrphanedTestCommunications();
             }
-            catch( Exception ex)
+            catch ( Exception ex )
             {
                 this.LogException( ex );
             }
 
             Rock.Model.Communication communication = UpdateCommunication( new RockContext() );
+            var personToClone = CurrentPerson;
 
             if ( communication != null )
             {
@@ -1412,9 +1413,8 @@ namespace RockWeb.Blocks.Communication
                         }
 
                         testRecipient.Status = CommunicationRecipientStatus.Pending;
-                        testRecipient.PersonAliasId = CurrentPersonAliasId.Value;
 
-                        var testPerson = CurrentPerson.Clone( false );
+                        var testPerson = personToClone.Clone( false );
                         testPerson.Id = 0;
                         testPerson.Guid = Guid.NewGuid();
                         if ( mediumEntityTypeId == EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() ).Id )
@@ -1481,27 +1481,49 @@ namespace RockWeb.Blocks.Communication
                     }
                     finally
                     {
-                        // make sure we delete the test communication record we created to send the test 
-                        if ( communicationService != null && testCommunication != null )
+                        try
                         {
-                            communicationService.Delete( testCommunication );
-                            rockContext.SaveChanges( disablePrePostProcessing: true );
-                        }
-
-                        // make sure we delete the Person record we created to send the test 
-                        using ( var deleteRockContext = new RockContext() )
-                        {
-                            var personToDeleteService = new PersonService( deleteRockContext );
-                            var personAliasToDeleteService = new PersonAliasService( deleteRockContext );
-
-                            if ( testPersonId.HasValue )
+                            // make sure we delete the test communication record we created to send the test 
+                            if ( communicationService != null && testCommunication != null )
                             {
-                                var personToDelete = personToDeleteService.Get( testPersonId.Value );
-                                personAliasToDeleteService.DeleteRange( personToDelete.Aliases );
-                                personToDelete.Aliases = null;
-                                personToDeleteService.Delete( personToDelete );
-                                deleteRockContext.SaveChanges( disablePrePostProcessing: true );
+                                communicationService.Delete( testCommunication );
+                                rockContext.SaveChanges( disablePrePostProcessing: true );
                             }
+
+                            // make sure we delete the Person record we created to send the test 
+                            using ( var deleteRockContext = new RockContext() )
+                            {
+                                var personToDeleteService = new PersonService( deleteRockContext );
+                                var personAliasToDeleteService = new PersonAliasService( deleteRockContext );
+
+                                if ( testPersonId.HasValue )
+                                {
+                                    var personToDelete = personToDeleteService.Get( testPersonId.Value );
+
+                                    foreach ( var alias in personToDelete.Aliases.ToList() )
+                                    {
+                                        string errorMessage;
+                                        if ( personAliasToDeleteService.CanDelete( alias, out errorMessage ) )
+                                        {
+                                            personAliasToDeleteService.Delete( alias );
+                                        }
+                                        else
+                                        {
+                                            // if we are unable to delete the personalias (maybe something referenced it in the brief window), just point it back to the person that was cloned
+                                            alias.PersonId = personToClone.Id;
+                                        }
+                                    }
+
+                                    personToDelete.Aliases = null;
+                                    personToDeleteService.Delete( personToDelete );
+                                    deleteRockContext.SaveChanges( disablePrePostProcessing: true );
+                                }
+                            }
+                        }
+                        catch ( Exception ex )
+                        {
+                            // just log the exception, don't show it
+                            ExceptionLogService.LogException( ex );
                         }
                     }
                 }
@@ -1518,6 +1540,7 @@ namespace RockWeb.Blocks.Communication
             {
                 PersonService personToDeleteService = new PersonService( deleteRockContext );
                 PersonAliasService personAliasToDeleteService = new PersonAliasService( deleteRockContext );
+                PersonDuplicateService personDuplicateService = new PersonDuplicateService( deleteRockContext );
 
                 // check for any test communication artifacts that didn't clean up correctly
                 var forTestCommunicationPersonQry = personToDeleteService.Queryable().Where( a => a.ForeignKey == "_ForTestCommunication_" );
@@ -1527,17 +1550,36 @@ namespace RockWeb.Blocks.Communication
                     var communicationToDeleteQry = communicationToDeleteService.Queryable().Where( a => a.Recipients.Any( r => forTestCommunicationPersonQry.Any( p => p.Id == r.PersonAlias.PersonId ) ) );
                     foreach ( var testCommunicationToDelete in communicationToDeleteQry.ToList() )
                     {
-                        communicationToDeleteService.Delete( testCommunicationToDelete );
+                        try
+                        {
+                            communicationToDeleteService.Delete( testCommunicationToDelete );
+                        }
+                        catch ( Exception ex )
+                        {
+                            ExceptionLogService.LogException( ex );
+                        }
                     }
 
                     foreach ( var personToDelete in forTestCommunicationPersonQry )
                     {
-                        foreach ( var personToDeleteAlias in personToDelete.Aliases.ToList() )
+                        try
                         {
-                            personAliasToDeleteService.Delete( personToDeleteAlias );
-                        }
+                            foreach ( var personToDeleteAlias in personToDelete.Aliases.ToList() )
+                            {
+                                foreach ( var duplicatePerson in personDuplicateService.Queryable().Where( a => a.DuplicatePersonAliasId == personToDeleteAlias.Id || a.PersonAliasId == personToDeleteAlias.Id ) )
+                                {
+                                    personDuplicateService.Delete( duplicatePerson );
+                                }
 
-                        personToDeleteService.Delete( personToDelete );
+                                personAliasToDeleteService.Delete( personToDeleteAlias );
+                            }
+
+                            personToDeleteService.Delete( personToDelete );
+                        }
+                        catch ( Exception ex )
+                        {
+                            ExceptionLogService.LogException( ex );
+                        }
                     }
 
                     deleteRockContext.SaveChanges( disablePrePostProcessing: true );
