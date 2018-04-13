@@ -179,11 +179,13 @@ namespace Rock.Model
             target.FileSize = source.FileSize;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.Height = source.Height;
             target.IsSystem = source.IsSystem;
             target.IsTemporary = source.IsTemporary;
             target.MimeType = source.MimeType;
             target.Path = source.Path;
             target.StorageEntitySettings = source.StorageEntitySettings;
+            target.Width = source.Width;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
