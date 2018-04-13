@@ -67,7 +67,7 @@ namespace RockWeb.Blocks.Reporting
 			{% endfor %}	
             <div class ='nav-paging'>
             {% if PreviousPageNavigateUrl != null and PreviousPageNavigateUrl != ''  %}
-                <a Id ='lPrev' class = 'btn btn-primary btn-prev' href='{{ PreviousPageNavigateUrl }}'><i class='fa fa-chevron-left'></i>Prev<a/>
+                <a Id ='lPrev' class = 'btn btn-primary btn-prev' href='{{ PreviousPageNavigateUrl }}'><i class='fa fa-chevron-left'></i> Prev<a/>
             {% endif %}
             {% if NextPageNavigateUrl != null and NextPageNavigateUrl != ''  %}
                 <a Id ='hlNext' class = 'btn btn-primary btn-next' href='{{ NextPageNavigateUrl }}'> Next <i class='fa fa-chevron-right'></i><a/>

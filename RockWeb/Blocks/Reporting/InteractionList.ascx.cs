@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.Reporting
 
 	        {% for interaction in Interactions %}
 		        {% if InteractionDetailPage != null and InteractionDetailPage != ''  %}
-                    <a href = '{{ InteractionDetailPage }}?interactionId={{ interaction.Id }}'>
+                    <a href = '{{ InteractionDetailPage }}?InteractionId={{ interaction.Id }}'>
                 {% endif %}
 		        
 		         <div class='panel panel-widget'>

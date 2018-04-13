@@ -29,6 +29,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Reporting
@@ -60,6 +61,7 @@ namespace RockWeb.Blocks.Reporting
 {% endif %}" )]
 
     [InteractionChannelsField( "Interaction Channels", "Select interaction channel to limit the display. No selection will show all.", false,  "", "", order: 3 )]
+    [ContextAware( typeof( Person ) )]
     public partial class InteractionChannelList : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -189,11 +191,11 @@ namespace RockWeb.Blocks.Reporting
                     channelQry = channelQry.Where( a => selectedChannelIds.Contains( a.Guid ) );
                 }
 
-                var personAliasId = GetPersonAliasId();
-                if ( personAliasId.HasValue )
+                var personId = GetPersonId();
+                if ( personId.HasValue )
                 {
                     var interactionQry = new InteractionService( rockContext ).Queryable();
-                    channelQry = channelQry.Where( a => interactionQry.Any( b => b.PersonAliasId == personAliasId.Value && b.InteractionComponent.ChannelId == a.Id ) );
+                    channelQry = channelQry.Where( a => interactionQry.Any( b => b.PersonAlias.PersonId == personId.Value && b.InteractionComponent.ChannelId == a.Id ) );
                 }
 
                 // Parse the default template so that it does not need to be parsed multiple times
@@ -236,26 +238,30 @@ namespace RockWeb.Blocks.Reporting
         /// <summary>
         /// Get the person alias through query list or context.
         /// </summary>
-        public int? GetPersonAliasId()
+        private int? GetPersonId()
         {
             int? personId = PageParameter( "PersonId" ).AsIntegerOrNull();
-            int? personAliasId = PageParameter( "PersonAliasId" ).AsIntegerOrNull();
 
-            if ( personId.HasValue )
-            {
-                personAliasId = new PersonAliasService( new RockContext() ).GetPrimaryAliasId( personId.Value );
-            }
 
-            if ( !personAliasId.HasValue )
+            if ( !personId.HasValue )
             {
                 var person = ContextEntity<Person>();
                 if ( person != null )
                 {
-                    personAliasId = person.PrimaryAliasId;
+                    personId = person.Id;
                 }
             }
 
-            return personAliasId;
+			if ( !personId.HasValue )
+			{
+	            int? personAliasId = PageParameter( "PersonAliasId" ).AsIntegerOrNull();
+	            if ( personAliasId.HasValue )
+	            {
+	                personId = new PersonAliasService( new RockContext() ).GetPersonId( personAliasId.Value );
+	            }
+			}
+			
+            return personId;
         }
 
         #endregion

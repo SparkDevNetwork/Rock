@@ -75,7 +75,7 @@ namespace RockWeb.Blocks.Reporting
 	        <div class='panel-body'>
 		        <ol>
 		        {% for interaction in session.Interactions %}
-    			    <li><a href = '{{ interaction.InteractionData }}'>{{ interaction.InteractionComponent.Name }}</a></li>
+    			    <li><a href='{{ interaction.InteractionData }}'>{{ interaction.InteractionSummary }}</a></li>
 		        {% endfor %}				
 		        </ol>
 	        </div>
