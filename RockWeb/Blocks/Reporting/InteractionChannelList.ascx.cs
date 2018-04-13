@@ -256,13 +256,6 @@ namespace RockWeb.Blocks.Reporting
         private int? GetPersonId()
         {
             int? personId = PageParameter( "PersonId" ).AsIntegerOrNull();
-            int? personAliasId = PageParameter( "PersonAliasId" ).AsIntegerOrNull();
-
-            if ( personAliasId.HasValue )
-            {
-                personId = new PersonAliasService( new RockContext() ).GetPersonId( personAliasId.Value );
-            }
-
             if ( !personId.HasValue )
             {
                 var person = ContextEntity<Person>();
@@ -272,6 +265,15 @@ namespace RockWeb.Blocks.Reporting
                 }
             }
 
+			if ( !personId.HasValue )
+			{
+	            int? personAliasId = PageParameter( "PersonAliasId" ).AsIntegerOrNull();
+	            if ( personAliasId.HasValue )
+	            {
+	                personId = new PersonAliasService( new RockContext() ).GetPersonId( personAliasId.Value );
+	            }
+			}
+			
             return personId;
         }
 
