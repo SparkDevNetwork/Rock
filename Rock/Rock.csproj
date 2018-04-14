@@ -351,6 +351,7 @@
     <Compile Include="Attribute\AttributeCategoryFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeFieldAttribute.cs" />
     <Compile Include="Attribute\ComparisonFieldAttribute.cs" />
+    <Compile Include="Attribute\GenderFieldAttribute.cs" />
     <Compile Include="Attribute\InteractionChannelFieldAttribute.cs" />
     <Compile Include="Attribute\InteractionChannelsFieldAttribute.cs" />
     <Compile Include="Attribute\LabelFieldAttribute.cs" />
@@ -566,6 +567,7 @@
     <Compile Include="Field\IFieldType.cs" />
     <Compile Include="Field\ILinkableFieldType.cs" />
     <Compile Include="Field\SelectFromListFieldType.cs" />
+    <Compile Include="Field\Types\GenderFieldType.cs" />
     <Compile Include="Field\Types\InteractionChannelsFieldType.cs" />
     <Compile Include="Field\Types\LabelFieldType.cs" />
     <Compile Include="Field\Types\TimeZoneFieldType.cs" />
@@ -1969,6 +1971,7 @@
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsByAge.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsByGrade.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsByGradeAndAge.cs" />
+    <Compile Include="Workflow\Action\CheckIn\FilterGroupsByGender.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsByLastName.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsBySpecialNeeds.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterLocationsBySchedule.cs" />
