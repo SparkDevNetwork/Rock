@@ -386,7 +386,7 @@ namespace RockWeb.Blocks.Connection
                     connectionRequest.AssignedGroupMemberStatus = ddlPlacementGroupStatus.SelectedValueAsEnumOrNull<GroupMemberStatus>();
                     connectionRequest.AssignedGroupMemberAttributeValues = GetGroupMemberAttributeValues();
 
-                    connectionRequest.Comments = tbComments.Text.ScrubHtmlAndConvertCrLfToBr();
+                    connectionRequest.Comments = tbComments.Text.SanitizeHtml();
                     connectionRequest.FollowupDate = dpFollowUp.SelectedDate;
 
                     if ( !Page.IsValid )
@@ -1542,7 +1542,7 @@ namespace RockWeb.Blocks.Connection
                 lPortrait.Text = string.Empty; ;
             }
 
-            lComments.Text = connectionRequest != null && connectionRequest.Comments != null ? connectionRequest.Comments.ScrubHtmlAndConvertCrLfToBr() : string.Empty;
+            lComments.Text = connectionRequest != null && connectionRequest.Comments != null ? connectionRequest.Comments.ConvertMarkdownToHtml() : string.Empty;
             lRequestDate.Text = connectionRequest != null && connectionRequest.CreatedDateTime.HasValue ? connectionRequest.CreatedDateTime.Value.ToShortDateString() : string.Empty;
             if ( connectionRequest != null && connectionRequest.AssignedGroup != null )
             {
@@ -1706,7 +1706,7 @@ namespace RockWeb.Blocks.Connection
             }
 
             // Coments
-            tbComments.Text = connectionRequest.Comments.ScrubHtmlAndConvertCrLfToBr();
+            tbComments.Text = connectionRequest.Comments;//.SanitizeHtml();
 
             // Status
             rblStatus.Items.Clear();
