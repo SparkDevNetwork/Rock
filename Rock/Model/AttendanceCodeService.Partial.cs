@@ -67,7 +67,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Returns a new <see cref="Rock.Model.AttendanceCode" /> with a specified number of alpha characters followed by
-        /// another specified number of numeric characters.  The numeric character sequence will not repeat for "today" so 
+        /// another specified number of numeric characters.  The numeric character sequence will not repeat for "today" so
         /// ensure that you're using a sufficient numericLength otherwise it will be unable to find a unique number.
         /// Also note as the issued numeric codes reaches the maximum (from the set of possible), it will take longer and
         /// longer to find an unused number.
@@ -116,26 +116,46 @@ namespace Rock.Model
                     // Find a good alphanumeric code prefix
                     if ( alphaNumericLength > 0 || alphaLength > 0 )
                     {
+                        var maxCodes = alphaNumericLength > 0 ? Math.Pow( alphaCharacters.Length + codeCharacters.Length, alphaNumericLength )
+                            : Math.Pow( alphaCharacters.Length, alphaLength );
+
                         alphaNumericCode =
                             ( alphaNumericLength > 0 ? GenerateRandomCode( alphaNumericLength ) : string.Empty ) +
                             ( alphaLength > 0 ? GenerateRandomAlphaCode( alphaLength ) : string.Empty );
-                        while ( noGood.Any( s => alphaNumericCode.Contains( s ) ) || _todaysCodes.Contains( alphaNumericCode ) )
+                        int i = 0;
+                        while ( i <= maxCodes && ( noGood.Any( s => alphaNumericCode.Contains( s ) ) || _todaysCodes.Contains( alphaNumericCode ) ) )
                         {
                             alphaNumericCode =
                                 ( alphaNumericLength > 0 ? GenerateRandomCode( alphaNumericLength ) : string.Empty ) +
                                 ( alphaLength > 0 ? GenerateRandomAlphaCode( alphaLength ) : string.Empty );
+                            i++;
+                        }
+
+                        // exited an infinite loop, don't allow the last calculated code to be used
+                        if ( i > maxCodes )
+                        {
+                            alphaNumericCode = string.Empty;
                         }
                     }
 
                     // Find a good unique numeric code for today
                     if ( numericLength > 0 )
                     {
+                        var maxCodes = Math.Pow( codeCharacters.Length, numericLength );
                         if ( isRandomized )
                         {
                             numericCode = GenerateRandomNumericCode( numericLength );
-                            while ( noGood.Any( s => s == numericCode ) || _todaysCodes.Any( c => c.EndsWith( numericCode ) ) )
+                            int i = 0;
+                            while ( i <= maxCodes && ( noGood.Any( s => s == numericCode ) || _todaysCodes.Any( c => c.EndsWith( numericCode ) ) ) )
                             {
                                 numericCode = GenerateRandomNumericCode( numericLength );
+                                i++;
+                            }
+
+                            // exited an infinite loop, don't allow the last calculated code to be used
+                            if ( i > maxCodes )
+                            {
+                                numericCode = string.Empty;
                             }
                         }
                         else
@@ -155,15 +175,21 @@ namespace Rock.Model
                     }
 
                     string code = alphaNumericCode + numericCode;
-                    _todaysCodes.Add( code );
+                    if ( !string.IsNullOrWhiteSpace( code ) )
+                    {
+                        _todaysCodes.Add( code );
 
-                    var attendanceCode = new AttendanceCode();
-                    attendanceCode.IssueDateTime = RockDateTime.Now;
-                    attendanceCode.Code = code;
-                    service.Add( attendanceCode );
-                    rockContext.SaveChanges();
-
-                    return attendanceCode;
+                        var attendanceCode = new AttendanceCode();
+                        attendanceCode.IssueDateTime = RockDateTime.Now;
+                        attendanceCode.Code = code;
+                        service.Add( attendanceCode );
+                        rockContext.SaveChanges();
+                        return attendanceCode;
+                    }
+                    else
+                    {
+                        return null;
+                    }
                 }
             }
         }
