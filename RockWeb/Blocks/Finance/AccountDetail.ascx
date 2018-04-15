@@ -67,7 +67,7 @@
 
                     <div class="row">
                         <div class="col-md-12">
-                            <Rock:CodeEditor ID="cePublicDescription" runat="server" Label="Public description HTML" EditorMode="Html" EditorTheme="Rock" EditorHeight="250"
+                            <Rock:CodeEditor ID="cePublicDescription" runat="server" Label="Public description HTML" EditorMode="Lava" EditorTheme="Rock" EditorHeight="250"
                                 Help="Additional HTML content to include with the account." />
                         </div>
                     </div>
