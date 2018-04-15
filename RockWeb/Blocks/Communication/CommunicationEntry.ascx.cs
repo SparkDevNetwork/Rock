@@ -809,11 +809,6 @@ namespace RockWeb.Blocks.Communication
 
             CommunicationId = communication.Id;
 
-            var firstMedium = communication.GetMediums().FirstOrDefault();
-            if ( firstMedium != null && firstMedium.EntityType != null )
-            {
-                MediumEntityTypeId = firstMedium.EntityType.Id;
-            }
             BindMediums();
 
             CommunicationData = new CommunicationDetails();
@@ -890,15 +885,15 @@ namespace RockWeb.Blocks.Communication
                     }
                 }
             }
+            if ( !MediumEntityTypeId.HasValue || MediumEntityTypeId.Value == 0 && mediums.Any() )
+            {
+                MediumEntityTypeId = mediums.First().Key;
+            }
 
             LoadTemplates();
 
             divMediums.Visible = mediums.Count() > 1;
 
-            if ( !MediumEntityTypeId.HasValue || MediumEntityTypeId.Value == 0 && mediums.Any() )
-            {
-                MediumEntityTypeId = mediums.First().Key;
-            }
             rptMediums.DataSource = mediums;
             rptMediums.DataBind();
         }
