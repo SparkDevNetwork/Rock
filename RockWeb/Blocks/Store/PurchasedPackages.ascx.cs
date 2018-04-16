@@ -104,6 +104,11 @@ namespace RockWeb.Blocks.Store
             DisplayPackages();
         }
 
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptPurchasedProducts control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
         protected void rptPurchasedProducts_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
             var package = e.Item.DataItem as Package;
@@ -127,6 +132,12 @@ namespace RockWeb.Blocks.Store
                 lbInstall.Attributes.Add( "disabled", "disabled" );
                 lbInstall.CssClass = "btn btn-default margin-b-md";
             }
+            else if ( installedPackage == null )
+            {
+                lbInstall.Text = "Install";
+
+                lVersionNotes.Text = String.Format( "<p><strong>Latest Version</strong><br/>{0}</p>", latestVersion.VersionLabel );
+            }
             else if ( installedPackage.VersionId != latestVersion.Id )
             {
                 lbInstall.Text = "Update";
@@ -143,6 +154,11 @@ namespace RockWeb.Blocks.Store
             }
         }
 
+        /// <summary>
+        /// Handles the ItemCommand event of the rptPurchasedProducts control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
         protected void rptPurchasedProducts_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
             var queryParams = new Dictionary<string, string>();
