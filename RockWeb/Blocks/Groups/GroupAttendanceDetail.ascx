@@ -6,7 +6,7 @@
     </Triggers>
     <ContentTemplate>
 
-        <div class="panel panel-block">
+        <asp:Panel ID="pnlAttendance" runat="server" CssClass="panel panel-block">
 
             <div class="panel-heading clearfix">
                 <h1 class="panel-title pull-left">
@@ -60,8 +60,11 @@
                                         <Rock:RockCheckBox ID="cbMember" runat="server" Checked='<%# Eval("Attended") %>' Text='<%# string.Concat(Eval("MergedTemplate"), " ", Eval("FullName"))%>' />
                                     </ItemTemplate>
                                 </asp:ListView>
+                                <div class="pull-right margin-b-lg margin-l-md">
+                                    <Rock:PersonPicker ID="ppAddPerson" runat="server" CssClass="picker-menu-right" OnSelectPerson="ppAddPerson_SelectPerson" />
+                                </div>
                                 <div class="pull-right margin-b-lg">
-                                    <Rock:PersonPicker ID="ppAddPerson" runat="server" CssClass="picker-menu-right" PersonName="Add New Attendee" OnSelectPerson="ppAddPerson_SelectPerson" />
+                                    <asp:LinkButton ID="lbAddMember" runat="server" CssClass="btn btn-default" OnClick="lbAddMember_Click" CausesValidation="false" Visible="false"><i class="fa fa-plus"></i> Add Group Member</asp:LinkButton>
                                 </div>
                             </div>
 
@@ -96,8 +99,7 @@
 
             </div>
 
-        </div>
-
+        </asp:Panel>
 
         <script>
             Sys.Application.add_load(function () {
