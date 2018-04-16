@@ -1163,7 +1163,7 @@ namespace RockWeb.Blocks.Crm
                 {
                     var groupMemberService = new GroupMemberService( rockContext );
 
-                    var existingMembersQuery = groupMemberService.Queryable( "Group" )
+                    var existingMembersQuery = groupMemberService.Queryable( true ).Include( a => a.Group )
                                                                  .Where( m => m.GroupId == group.Id
                                                                               && ids.Contains( m.PersonId ) );
 
@@ -1177,7 +1177,7 @@ namespace RockWeb.Blocks.Crm
                             // Load the batch of GroupMember items into the context and delete them.
                             groupMemberService = new GroupMemberService( context );
 
-                            var batchGroupMembers = groupMemberService.Queryable().Where( x => items.Contains( x.Id ) ).ToList();
+                            var batchGroupMembers = groupMemberService.Queryable( true ).Where( x => items.Contains( x.Id ) ).ToList();
 
                             // also unregister them from any registration groups
                             RegistrationRegistrantService registrantService = new RegistrationRegistrantService( context );
