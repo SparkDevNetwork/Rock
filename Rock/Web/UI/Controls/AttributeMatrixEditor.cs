@@ -294,7 +294,13 @@ namespace Rock.Web.UI.Controls
             }
 
             _phMatrixItemAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( attributeMatrixItem, _phMatrixItemAttributes, true, GetValidationGroupForAttributeControls() );
+
+            // set the validation group on the controls and save button
+            string validationGroup = GetValidationGroupForAttributeControls();
+            Rock.Attribute.Helper.AddEditControls( attributeMatrixItem, _phMatrixItemAttributes, true, validationGroup );
+
+            // Make sure to set the validategroup on the save button to match, just in case it changed since CreateChildControls
+            _btnSaveMatrixItem.ValidationGroup = validationGroup;
 
             _gMatrixItems.Visible = false;
             _pnlEditMatrixItem.Visible = true;
@@ -365,7 +371,7 @@ namespace Rock.Web.UI.Controls
                     return;
                 }
 
-                var attributeMatrixItemList = attributeMatrix.AttributeMatrixItems.OrderBy(a => a.Order).ThenBy(a => a.Id).ToList();
+                var attributeMatrixItemList = attributeMatrix.AttributeMatrixItems.OrderBy( a => a.Order ).ThenBy( a => a.Id ).ToList();
 
                 foreach ( var attributeMatrixItem in attributeMatrixItemList )
                 {
