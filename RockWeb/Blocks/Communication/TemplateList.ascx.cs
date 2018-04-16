@@ -38,6 +38,8 @@ namespace RockWeb.Blocks.Communication
     [Description( "Lists the available communication templates that can used when creating new communications." )]
 
     [LinkedPage( "Detail Page" )]
+    [BooleanField( "Enable Personal Templates", "Should support for personal templates be enabled? These are templates that a user can create and are personal to them.", false, "", 1 )]
+
     public partial class TemplateList : RockBlock, ICustomGridColumns
     {
         #region fields
@@ -369,6 +371,12 @@ namespace RockWeb.Blocks.Communication
         {
             var rockContext = new RockContext();
             var communicationTemplateQry = new CommunicationTemplateService( rockContext ).Queryable( "CreatedByPersonAlias.Person" );
+
+            var privateCol = gCommunicationTemplates.ColumnsOfType<RockBoundField>().FirstOrDefault(c => c.DataField == "SenderPersonAlias.Person.FullName" );
+            if ( privateCol != null )
+            {
+                privateCol.Visible = GetAttributeValue( "EnablePersonalTemplates" ).AsBoolean();
+            }
 
             if ( _canEdit )
             {

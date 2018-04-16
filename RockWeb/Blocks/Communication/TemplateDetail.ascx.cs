@@ -22,8 +22,11 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Humanizer;
+
 using Rock;
+using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -40,8 +43,12 @@ namespace RockWeb.Blocks.Communication
     [DisplayName( "Template Detail" )]
     [Category( "Communication" )]
     [Description( "Used for editing a communication template that can be selected when creating a new communication, SMS, etc. to people." )]
+
+    [BooleanField( "Enable Personal Templates", "Should support for personal templates be enabled? These are templates that a user can create and are personal to them.", false, "", 0 )]
     public partial class TemplateDetail : RockBlock
     {
+        private bool _enablePersonalTemplate;
+
         #region Base Control Methods
 
         /// <summary>
@@ -50,6 +57,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
+            _enablePersonalTemplate = GetAttributeValue( "EnablePersonalTemplates" ).AsBoolean();
             base.OnInit( e );
         }
 
@@ -113,37 +121,37 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            if ( Page.IsValid )
+            if (Page.IsValid)
             {
                 var rockContext = new RockContext();
 
-                var communicationTemplateService = new CommunicationTemplateService( rockContext );
-                var communicationTemplateAttachmentService = new CommunicationTemplateAttachmentService( rockContext );
-                var binaryFileService = new BinaryFileService( rockContext );
+                var communicationTemplateService = new CommunicationTemplateService(rockContext);
+                var communicationTemplateAttachmentService = new CommunicationTemplateAttachmentService(rockContext);
+                var binaryFileService = new BinaryFileService(rockContext);
 
                 CommunicationTemplate communicationTemplate = null;
                 int? communicationTemplateId = hfCommunicationTemplateId.Value.AsIntegerOrNull();
-                if ( communicationTemplateId.HasValue )
+                if (communicationTemplateId.HasValue)
                 {
-                    communicationTemplate = communicationTemplateService.Get( communicationTemplateId.Value );
+                    communicationTemplate = communicationTemplateService.Get(communicationTemplateId.Value);
                 }
 
                 bool newTemplate = false;
-                if ( communicationTemplate == null )
+                if (communicationTemplate == null)
                 {
                     newTemplate = true;
                     communicationTemplate = new Rock.Model.CommunicationTemplate();
-                    communicationTemplateService.Add( communicationTemplate );
+                    communicationTemplateService.Add(communicationTemplate);
                 }
 
                 communicationTemplate.Name = tbName.Text;
                 communicationTemplate.IsActive = cbIsActive.Checked;
                 communicationTemplate.Description = tbDescription.Text;
 
-                if ( communicationTemplate.ImageFileId != imgTemplatePreview.BinaryFileId )
+                if (communicationTemplate.ImageFileId != imgTemplatePreview.BinaryFileId)
                 {
-                    var oldImageTemplatePreview = binaryFileService.Get( communicationTemplate.ImageFileId ?? 0 );
-                    if ( oldImageTemplatePreview != null )
+                    var oldImageTemplatePreview = binaryFileService.Get(communicationTemplate.ImageFileId ?? 0);
+                    if (oldImageTemplatePreview != null)
                     {
                         // the old image template preview won't be needed anymore, so make it IsTemporary and have it get cleaned up later
                         oldImageTemplatePreview.IsTemporary = true;
@@ -153,10 +161,10 @@ namespace RockWeb.Blocks.Communication
                 communicationTemplate.ImageFileId = imgTemplatePreview.BinaryFileId;
 
                 // Ensure that the ImagePreview is not set as IsTemporary=True
-                if ( communicationTemplate.ImageFileId.HasValue )
+                if (communicationTemplate.ImageFileId.HasValue)
                 {
-                    var imageTemplatePreview = binaryFileService.Get( communicationTemplate.ImageFileId.Value );
-                    if ( imageTemplatePreview != null && imageTemplatePreview.IsTemporary )
+                    var imageTemplatePreview = binaryFileService.Get(communicationTemplate.ImageFileId.Value);
+                    if (imageTemplatePreview != null && imageTemplatePreview.IsTemporary)
                     {
                         imageTemplatePreview.IsTemporary = false;
                     }
@@ -166,10 +174,10 @@ namespace RockWeb.Blocks.Communication
                 communicationTemplate.LogoBinaryFileId = imgTemplateLogo.BinaryFileId;
 
                 // Ensure that the ImagePreview is not set as IsTemporary=True
-                if ( communicationTemplate.LogoBinaryFileId.HasValue )
+                if (communicationTemplate.LogoBinaryFileId.HasValue)
                 {
-                    var newImageTemplateLogo = binaryFileService.Get( communicationTemplate.LogoBinaryFileId.Value );
-                    if ( newImageTemplateLogo != null && newImageTemplateLogo.IsTemporary )
+                    var newImageTemplateLogo = binaryFileService.Get(communicationTemplate.LogoBinaryFileId.Value);
+                    if (newImageTemplateLogo != null && newImageTemplateLogo.IsTemporary)
                     {
                         newImageTemplateLogo.IsTemporary = false;
                     }
@@ -186,16 +194,19 @@ namespace RockWeb.Blocks.Communication
                 var binaryFileIds = hfAttachedBinaryFileIds.Value.SplitDelimitedValues().AsIntegerList();
 
                 // delete any attachments that are no longer included
-                foreach ( var attachment in communicationTemplate.Attachments.Where( a => !binaryFileIds.Contains( a.BinaryFileId ) ).ToList() )
+                foreach (var attachment in communicationTemplate.Attachments
+                    .Where(a => !binaryFileIds.Contains(a.BinaryFileId)).ToList())
                 {
-                    communicationTemplate.Attachments.Remove( attachment );
-                    communicationTemplateAttachmentService.Delete( attachment );
+                    communicationTemplate.Attachments.Remove(attachment);
+                    communicationTemplateAttachmentService.Delete(attachment);
                 }
 
                 // add any new attachments that were added
-                foreach ( var attachmentBinaryFileId in binaryFileIds.Where( a => !communicationTemplate.Attachments.Any( x => x.BinaryFileId == a ) ) )
+                foreach (var attachmentBinaryFileId in binaryFileIds.Where(a =>
+                    !communicationTemplate.Attachments.Any(x => x.BinaryFileId == a)))
                 {
-                    communicationTemplate.Attachments.Add( new CommunicationTemplateAttachment { BinaryFileId = attachmentBinaryFileId } );
+                    communicationTemplate.Attachments.Add(
+                        new CommunicationTemplateAttachment {BinaryFileId = attachmentBinaryFileId});
                 }
 
                 communicationTemplate.Subject = tbEmailSubject.Text;
@@ -205,6 +216,11 @@ namespace RockWeb.Blocks.Communication
                 communicationTemplate.SMSMessage = tbSMSTextMessage.Text;
 
                 communicationTemplate.CategoryId = cpCategory.SelectedValueAsInt();
+
+                if (_enablePersonalTemplate)
+                {
+                    communicationTemplate.SenderPersonAliasId = ppSenderPerson.PersonAliasId;
+                }
 
                 if ( communicationTemplate != null )
                 {
@@ -342,6 +358,18 @@ namespace RockWeb.Blocks.Communication
             cbIsActive.Checked = communicationTemplate.IsActive;
             tbDescription.Text = communicationTemplate.Description;
             cpCategory.SetValue( communicationTemplate.CategoryId );
+
+            if (_enablePersonalTemplate)
+            {
+                ppSenderPerson.Visible = true;
+                ppSenderPerson.SetValue(communicationTemplate.SenderPersonAlias != null
+                    ? communicationTemplate.SenderPersonAlias.Person
+                    : null);
+            }
+            else
+            {
+                ppSenderPerson.Visible = false;
+            }
 
             imgTemplatePreview.BinaryFileId = communicationTemplate.ImageFileId;
             imgTemplateLogo.BinaryFileId = communicationTemplate.LogoBinaryFileId;
