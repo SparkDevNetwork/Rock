@@ -53,6 +53,9 @@ WHERE [Message] LIKE '%<!-- prevent Gmail on iOS font size manipulation -->
                   ,'FF760EF9-66BD-4A4D-AF95-749AA789ACAF'
                   );
             END" );
+
+            // Fix for https://github.com/SparkDevNetwork/Rock/issues/2813
+            Sql( HotFixMigrationResource._050_MigrationRollupsForV7_4_spAnalytics_ETL_Campus );
         }
 
 
