@@ -2846,8 +2846,6 @@ namespace Rock.Web.UI.Controls
             }
 
             int? entityTypeId = null;
-            string dataKeyColumn = this.DataKeyNames.FirstOrDefault() ?? "Id";
-            PropertyInfo idProp = dataSourceObjectType.GetProperty( dataKeyColumn );
 
             if ( this.EntityTypeId.HasValue )
             {
@@ -2875,6 +2873,18 @@ namespace Rock.Web.UI.Controls
                     }
                 }
             }
+
+            string entityIdColumn;
+            if ( entityTypeId.HasValue && entityTypeId.Value == EntityTypeCache.GetId<Rock.Model.Person>() )
+            {
+                entityIdColumn = this.PersonIdField ?? "Id";
+            }
+            else
+            {
+                entityIdColumn = this.DataKeyNames.FirstOrDefault() ?? "Id";
+            }
+
+            PropertyInfo idProp = dataSourceObjectType.GetProperty( entityIdColumn );
 
             // first try to get the SelectedKeys from the SelectField (if there is one)
             HashSet<int> selectedKeys = new HashSet<int>( this.SelectedKeys.Select( a => a as int? ).Where( a => a.HasValue ).Select( a => a.Value ).Distinct().ToList() );
