@@ -304,7 +304,7 @@ namespace RockWeb.Blocks.Administration
         {
             ddlNotificationStatus.BindToEnum<JobNotificationStatus>();
 
-            int? jobEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( "Rock.Model.ServiceJob" ).Id;
+            int? jobEntityTypeId = Rock.Cache.CacheEntityType.Get( "Rock.Model.ServiceJob" ).Id;
 
             var jobs = Rock.Reflection.FindTypes( typeof( Quartz.IJob ) ).Values;
 

@@ -24,7 +24,7 @@ using System.Web.UI;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
 
@@ -254,7 +254,7 @@ function ()
             filterControl.Controls.Add( nbCount );
 
             // Populate the Data View Picker
-            ddlDataView.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.GroupMember ) ).Id;
+            ddlDataView.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.GroupMember ) ).Id;
 
             return new Control[] {ddlDataView, ddlCompare, nbCount};
         }

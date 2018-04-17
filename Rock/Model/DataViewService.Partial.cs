@@ -22,7 +22,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Rock.Data;
 using Rock.Reporting.DataFilter;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Model
 {
@@ -64,7 +64,7 @@ namespace Rock.Model
             var dataView = Queryable().AsNoTracking().FirstOrDefault( d => d.Id == dataViewId );
             if ( dataView != null && dataView.EntityTypeId.HasValue )
             {
-                var cachedEntityType = EntityTypeCache.Read( dataView.EntityTypeId.Value );
+                var cachedEntityType = CacheEntityType.Get( dataView.EntityTypeId.Value );
                 if ( cachedEntityType != null && cachedEntityType.AssemblyName != null )
                 {
                     Type entityType = cachedEntityType.GetEntityType();

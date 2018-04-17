@@ -260,7 +260,7 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public override void PostSaveChanges( Data.DbContext dbContext )
         {
-            Web.Cache.InteractionChannelCache.Flush( this.Id );
+            Cache.CacheInteractionChannel.Remove( this.Id );
 
             base.PostSaveChanges( dbContext );
         }

@@ -52,7 +52,7 @@ namespace Rock.Field.Types
                     Guid? pageGuid = valuePair[0].AsGuidOrNull();
                     if ( pageGuid.HasValue )
                     {
-                        var page = Rock.Web.Cache.PageCache.Read( pageGuid.Value );
+                        var page = Rock.Cache.CachePage.Get( pageGuid.Value );
                         if ( page != null )
                         {
                             if ( valuePair.Length > 1 )

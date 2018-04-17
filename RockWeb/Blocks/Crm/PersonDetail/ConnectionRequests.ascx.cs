@@ -26,7 +26,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
@@ -112,7 +112,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             string connectionName;
                             if ( connectionRequest.CampusId.HasValue )
                             {
-                                connectionName = string.Format( "{0} ({1})", connectionRequest.ConnectionOpportunity, CampusCache.Read( connectionRequest.CampusId.Value ) );
+                                connectionName = string.Format( "{0} ({1})", connectionRequest.ConnectionOpportunity, CacheCampus.Get( connectionRequest.CampusId.Value ) );
                             }
                             else
                             {

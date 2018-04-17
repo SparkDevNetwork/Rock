@@ -32,7 +32,7 @@ using System.Xml.Linq;
 
 using Rock;
 using Rock.Attribute;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
@@ -109,7 +109,7 @@ namespace RockWeb.Blocks.Examples
 
                     if ( entityTypeId == null )
                     {
-                        var entityType = EntityTypeCache.Read( PageParameter( "EntityType" ).AsGuid() );
+                        var entityType = CacheEntityType.Get( PageParameter( "EntityType" ).AsGuid() );
 
                         if ( entityType != null )
                         {
@@ -236,7 +236,7 @@ namespace RockWeb.Blocks.Examples
                 }
             }
 
-            foreach ( var entity in EntityTypeCache.All().Where( t => t.IsEntity ) )
+            foreach ( var entity in CacheEntityType.All().Where( t => t.IsEntity ) )
             {
                 var type = entity.GetEntityType();
                 if ( type != null && type.InheritsOrImplements( typeof( Rock.Data.Entity<> ) ) )
@@ -283,8 +283,8 @@ namespace RockWeb.Blocks.Examples
             pnlKey.Visible = false;
             lCategoryName.Text = string.Empty;
 
-            EntityTypeCache entityType = null;
-            var entityTypeList = new List<EntityTypeCache>();
+            CacheEntityType entityType = null;
+            var entityTypeList = new List<CacheEntityType>();
             if ( categoryGuid.HasValue )
             {
                 var category = EntityCategories.Where( c => c.Guid.Equals( categoryGuid ) ).FirstOrDefault();
@@ -293,7 +293,7 @@ namespace RockWeb.Blocks.Examples
                     lCategoryName.Text = category.Name + " Models";
                     pnlModels.Visible = true;
 
-                    entityTypeList = category.RockEntityIds.Select( a => EntityTypeCache.Read( a ) ).Where( a => a != null ).ToList();
+                    entityTypeList = category.RockEntityIds.Select( a => CacheEntityType.Get( a ) ).Where( a => a != null ).ToList();
                     if ( entityTypeId.HasValue )
                     {
                         entityType = entityTypeList.Where( t => t.Id == entityTypeId.Value ).FirstOrDefault();

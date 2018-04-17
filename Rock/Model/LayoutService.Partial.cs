@@ -20,7 +20,7 @@ using System.IO;
 using System.Linq;
 
 using Rock.Data;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Model
 {
@@ -44,8 +44,21 @@ namespace Rock.Model
         /// </summary>
         /// <param name="physWebAppPath">A <see cref="System.String" /> containing the physical path to Rock on the server.</param>
         /// <param name="site">The site.</param>
-        public static void RegisterLayouts( string physWebAppPath, SiteCache site )
+        [Obsolete]
+        public static void RegisterLayouts( string physWebAppPath, Web.Cache.SiteCache site )
         {
+            RegisterLayouts( physWebAppPath, CacheSite.Get( site.Id ) );
+        }
+
+        /// <summary>
+        /// Registers any layouts in a particular site's theme folder that do not currently have any layouts registered in Rock.
+        /// </summary>
+        /// <param name="physWebAppPath">A <see cref="System.String" /> containing the physical path to Rock on the server.</param>
+        /// <param name="site">The site.</param>
+        public static void RegisterLayouts( string physWebAppPath, CacheSite site )
+        {
+
+
             // Dictionary for block types.  Key is path, value is friendly name
             var list = new Dictionary<string, string>();
 
@@ -92,7 +105,7 @@ namespace Rock.Model
         /// <returns></returns>
         public override Guid? GetGuid( int id )
         {
-            var cacheItem = Rock.Web.Cache.LayoutCache.Read( id );
+            var cacheItem = Rock.Cache.CacheLayout.Get( id );
             if ( cacheItem != null )
             {
                 return cacheItem.Guid;

@@ -23,7 +23,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Jobs;
 using Rock.Communication;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Transactions
 {
@@ -77,10 +77,10 @@ namespace Rock.Transactions
 
                     if ( approvers.Any() )
                     {
-                        string fromName = Rock.Web.Cache.GlobalAttributesCache.Value("OrganizationName");
-                        string fromEmail = Rock.Web.Cache.GlobalAttributesCache.Value( "OrganizationEmail" );
+                        string fromName = CacheGlobalAttributes.Value("OrganizationName");
+                        string fromEmail = CacheGlobalAttributes.Value( "OrganizationEmail" );
                         string subject = "Pending Communication Requires Approval";
-                        var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "PublicApplicationRoot" );
+                        var appRoot = CacheGlobalAttributes.Value( "PublicApplicationRoot" );
                         string communicationDetails = string.Empty;
                         string typeName = communication.CommunicationType.ConvertToString();
 
@@ -107,7 +107,7 @@ namespace Rock.Transactions
                         // create approval link if one was not provided
                         if ( ApprovalPageUrl == null )
                         {
-                            ApprovalPageUrl = string.Format( "{0}Communication/{1}", Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "InternalApplicationRoot" ), communication.Id );
+                            ApprovalPageUrl = string.Format( "{0}Communication/{1}", CacheGlobalAttributes.Value( "InternalApplicationRoot" ), communication.Id );
                         }
 
                         foreach ( var approver in approvers )

@@ -25,7 +25,7 @@ using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
 
@@ -275,7 +275,7 @@ function ()
             filterControl.Controls.Add( ddlRoleType );
 
             // Populate the Data View Picker
-            int entityTypeId = EntityTypeCache.Read( typeof( Model.Group ) ).Id;
+            int entityTypeId = CacheEntityType.Get( typeof( Model.Group ) ).Id;
             ddlDataView.EntityTypeId = entityTypeId;
 
             return new Control[] { ddlDataView, ddlGroupMemberStatus, ddlRoleType };

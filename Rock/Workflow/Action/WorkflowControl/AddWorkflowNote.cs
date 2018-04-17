@@ -22,7 +22,7 @@ using System.ComponentModel.Composition;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Workflow.Action
 {
@@ -63,7 +63,7 @@ namespace Rock.Workflow.Action
                 note.Caption = string.Empty;
                 note.Text = text;
 
-                var noteType = NoteTypeCache.Read( GetAttributeValue( action, "NoteType" ).AsGuid() );
+                var noteType = CacheNoteType.Get( GetAttributeValue( action, "NoteType" ).AsGuid() );
                 if ( noteType != null )
                 {
                     note.NoteTypeId = noteType.Id;

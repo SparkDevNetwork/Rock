@@ -29,7 +29,7 @@ using Rock.MergeTemplates;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -59,8 +59,8 @@ namespace RockWeb.Blocks.Core
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
-            cpCategory.EntityTypeId = EntityTypeCache.Read( Rock.SystemGuid.EntityType.MERGE_TEMPLATE.AsGuid() ).Id;
-            btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.MergeTemplate ) ).Id;
+            cpCategory.EntityTypeId = CacheEntityType.Get( Rock.SystemGuid.EntityType.MERGE_TEMPLATE.AsGuid() ).Id;
+            btnSecurity.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.MergeTemplate ) ).Id;
         }
 
         /// <summary>
@@ -193,7 +193,7 @@ namespace RockWeb.Blocks.Core
             mergeTemplate.PersonAliasId = ppPerson.PersonAliasId;
             mergeTemplate.CategoryId = cpCategory.SelectedValue.AsInteger();
 
-            int personalMergeTemplateCategoryId = CategoryCache.Read( Rock.SystemGuid.Category.PERSONAL_MERGE_TEMPLATE.AsGuid() ).Id;
+            int personalMergeTemplateCategoryId = CacheCategory.Get( Rock.SystemGuid.Category.PERSONAL_MERGE_TEMPLATE.AsGuid() ).Id;
             if ( mergeTemplate.PersonAliasId.HasValue )
             {
                 if ( mergeTemplate.CategoryId == 0 )
@@ -435,7 +435,7 @@ namespace RockWeb.Blocks.Core
                 ppPerson.Visible = false;
                 ppPerson.Required = false;
                 cpCategory.Visible = true;
-                cpCategory.ExcludedCategoryIds = CategoryCache.Read( Rock.SystemGuid.Category.PERSONAL_MERGE_TEMPLATE.AsGuid() ).Id.ToString();
+                cpCategory.ExcludedCategoryIds = CacheCategory.Get( Rock.SystemGuid.Category.PERSONAL_MERGE_TEMPLATE.AsGuid() ).Id.ToString();
             }
             else if ( mergeTemplateOwnership == MergeTemplateOwnership.Personal )
             {
@@ -486,7 +486,7 @@ namespace RockWeb.Blocks.Core
         protected void fuTemplateBinaryFile_FileUploaded( object sender, EventArgs e )
         {
             nbFileTypeWarning.Visible = false;
-            var mergeTemplateEntityType = EntityTypeCache.Read( ddlMergeTemplateType.SelectedValue.AsInteger() );
+            var mergeTemplateEntityType = CacheEntityType.Get( ddlMergeTemplateType.SelectedValue.AsInteger() );
             var binaryFile = new BinaryFileService( new RockContext() ).Get( fuTemplateBinaryFile.BinaryFileId ?? 0 );
             if ( binaryFile != null )
             {
@@ -517,7 +517,7 @@ namespace RockWeb.Blocks.Core
                                 if ( testMergeTemplateType.SupportedFileExtensions.Contains( fileExtension ) )
                                 {
                                     mergeTemplateType = testMergeTemplateType;
-                                    var entityType = EntityTypeCache.Read( mergeTemplateType.EntityType.Id );
+                                    var entityType = CacheEntityType.Get( mergeTemplateType.EntityType.Id );
                                     if ( entityType != null )
                                     {
                                         ddlMergeTemplateType.SetValue( entityType.Id );

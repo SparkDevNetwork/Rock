@@ -27,7 +27,7 @@ using Newtonsoft.Json;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using Rock.Security;
@@ -58,7 +58,7 @@ namespace RockWeb.Blocks.Cms
         #region Properties
 
         protected int? SelectedChannelId { get; set; }
-        public List<AttributeCache> AvailableAttributes { get; set; }
+        public List<CacheAttribute> AvailableAttributes { get; set; }
 
         #endregion
 
@@ -550,7 +550,7 @@ namespace RockWeb.Blocks.Cms
                 if ( selectedChannel.IsTaggingEnabled )
                 {
                     itemTags = items.ToDictionary( i => i.Guid, v => "" );
-                    var entityTypeId = EntityTypeCache.Read( Rock.SystemGuid.EntityType.CONTENT_CHANNEL_ITEM.AsGuid() ).Id;
+                    var entityTypeId = CacheEntityType.Get( Rock.SystemGuid.EntityType.CONTENT_CHANNEL_ITEM.AsGuid() ).Id;
                     var testedTags = new Dictionary<int, string>();
 
                     foreach ( var taggedItem in new TaggedItemService( rockContext )
@@ -707,8 +707,8 @@ namespace RockWeb.Blocks.Cms
 
         protected void BindAttributes( ContentChannel channel )
         {
-            AvailableAttributes = new List<AttributeCache>();
-            int entityTypeId = EntityTypeCache.Read( typeof( Rock.Model.ContentChannelItem ) ).Id;
+            AvailableAttributes = new List<CacheAttribute>();
+            int entityTypeId = CacheEntityType.Get( typeof( Rock.Model.ContentChannelItem ) ).Id;
             string channelId = channel.Id.ToString();
             string channelTypeId = channel.ContentChannelTypeId.ToString();
             foreach ( var attributeModel in new AttributeService( new RockContext() ).Queryable()
@@ -724,7 +724,7 @@ namespace RockWeb.Blocks.Cms
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name ) )
             {
-                AvailableAttributes.Add( Rock.Web.Cache.AttributeCache.Read( attributeModel ) );       
+                AvailableAttributes.Add( Rock.Cache.CacheAttribute.Get( attributeModel ) );       
             }
         }
 
@@ -748,7 +748,7 @@ namespace RockWeb.Blocks.Cms
                 gContentChannelItems.Columns.Add( titleField );
 
                 // Add Attribute columns
-                int entityTypeId = EntityTypeCache.Read( typeof( Rock.Model.ContentChannelItem ) ).Id;
+                int entityTypeId = CacheEntityType.Get( typeof( Rock.Model.ContentChannelItem ) ).Id;
                 string channelId = channel.Id.ToString();
                 string channelTypeId = channel.ContentChannelTypeId.ToString();
                 foreach ( var attribute in AvailableAttributes )

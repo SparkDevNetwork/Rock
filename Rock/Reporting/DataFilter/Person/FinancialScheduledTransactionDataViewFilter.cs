@@ -26,7 +26,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
 
@@ -217,7 +217,7 @@ function() {
             filterControl.Controls.Add(ddlDataView);
 
             // Populate the Data View Picker
-            int entityTypeId = EntityTypeCache.Read(typeof(Model.FinancialScheduledTransaction)).Id;
+            int entityTypeId = CacheEntityType.Get(typeof(Model.FinancialScheduledTransaction)).Id;
             ddlDataView.EntityTypeId = entityTypeId;
 
             return new Control[] { ddlDataView };

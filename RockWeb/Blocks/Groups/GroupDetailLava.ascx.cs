@@ -27,7 +27,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Groups
@@ -469,7 +469,7 @@ namespace RockWeb.Blocks.Groups
             Group group = new GroupService( rockContext ).Get( groupMember.GroupId );
             if ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
             {
-                Rock.Security.Role.Flush( group.Id );
+                Rock.Cache.CacheRole.Remove( group.Id );
             }
 
             pnlEditGroupMember.Visible = false;
@@ -781,7 +781,7 @@ namespace RockWeb.Blocks.Groups
             var rockContext = new RockContext();
             ddlMember.Items.Clear();
 
-            var groupType = GroupTypeCache.Read( group.GroupTypeId );
+            var groupType = CacheGroupType.Get( group.GroupTypeId );
             if ( groupType != null )
             {
                 // only allow editing groups with single locations

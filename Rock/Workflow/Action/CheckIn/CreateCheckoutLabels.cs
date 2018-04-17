@@ -25,7 +25,7 @@ using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Workflow.Action.CheckIn
 {
@@ -78,7 +78,7 @@ namespace Rock.Workflow.Action.CheckIn
                             var key = string.Format( "{0}:{1}", attendanceRec.Group.Id, attendanceRec.Location.Id );
                             if ( !person.Labels.Any( l => l.LabelKey.StartsWith( key ) ) )
                             {
-                                var groupType = GroupTypeCache.Read( attendanceRec.Group.GroupTypeId );
+                                var groupType = CacheGroupType.Get( attendanceRec.Group.GroupTypeId );
                                 if ( groupType != null )
                                 {
                                     var groupLocAttendance = attendanceRecs
@@ -169,7 +169,7 @@ namespace Rock.Workflow.Action.CheckIn
             return false;
         }
 
-        private List<KioskLabel> GetGroupTypeLabels( GroupTypeCache groupType )
+        private List<KioskLabel> GetGroupTypeLabels( CacheGroupType groupType )
         {
             var labels = new List<KioskLabel>();
 
@@ -181,7 +181,7 @@ namespace Rock.Workflow.Action.CheckIn
                     Guid? binaryFileGuid = groupType.GetAttributeValue( attribute.Key ).AsGuidOrNull();
                     if ( binaryFileGuid != null )
                     {
-                        var labelCache = KioskLabel.Read( binaryFileGuid.Value );
+                        var labelCache = KioskLabel.Get( binaryFileGuid.Value );
                         labelCache.Order = attribute.Value.Order;
                         if ( labelCache != null && labelCache.LabelType == KioskLabelType.Checkout )
                         {

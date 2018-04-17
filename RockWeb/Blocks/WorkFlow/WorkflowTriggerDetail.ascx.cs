@@ -26,7 +26,7 @@ using Rock;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Security;
@@ -161,7 +161,7 @@ namespace RockWeb.Blocks.WorkFlow
         {
             ddlQualifierColumn.Items.Clear();
 
-            var entityType = EntityTypeCache.Read( ddlEntityType.SelectedValueAsInt().Value );
+            var entityType = CacheEntityType.Get( ddlEntityType.SelectedValueAsInt().Value );
             if ( entityType != null )
             {
                 Type type = entityType.GetEntityType();
@@ -281,7 +281,7 @@ namespace RockWeb.Blocks.WorkFlow
 
             rockContext.SaveChanges();
 
-            Rock.Workflow.TriggerCache.Refresh();
+            CacheWorkflowTriggers.Remove();
 
             NavigateToParentPage();
         }

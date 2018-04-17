@@ -24,7 +24,7 @@ using Rock;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace RockWeb
 {
@@ -120,7 +120,7 @@ namespace RockWeb
                 int? siteId = ( GetSavedValue( "Rock:SiteId" ) ?? string.Empty ).ToString().AsIntegerOrNull();
                 if ( !partialPostback && siteId.HasValue )
                 {
-                    var site = SiteCache.Read( siteId.Value );
+                    var site = CacheSite.Get( siteId.Value );
                     if ( site != null && !string.IsNullOrWhiteSpace( site.ErrorPage ) )
                     {
                         Context.Response.Redirect( site.ErrorPage, false );

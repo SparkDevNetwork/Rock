@@ -28,6 +28,7 @@ namespace Rock.Web.Cache
     /// Cached WorkflowActivityType
     /// </summary>
     [Serializable]
+    [Obsolete( "Use Rock.Cache.CacheWorkflowActivityTyp instead" )]
     public class WorkflowActivityTypeCache : CachedModel<WorkflowActivityType>
     {
         #region Constructors

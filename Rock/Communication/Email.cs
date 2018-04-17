@@ -22,7 +22,7 @@ using System.Web;
 using Humanizer;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Communication
 {
@@ -94,7 +94,7 @@ namespace Rock.Communication
                 var errorMessages = new List<string>();
 
                 var emailMessage = new RockEmailMessage();
-                emailMessage.FromEmail = GlobalAttributesCache.Value( "OrganizationEmail" );
+                emailMessage.FromEmail = CacheGlobalAttributes.Value( "OrganizationEmail" );
                 emailMessage.Subject = subject;
                 emailMessage.SetRecipients( recipients );
                 emailMessage.Message = message;

@@ -24,7 +24,7 @@ using Rock;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -92,7 +92,7 @@ namespace Rock.Field.Types
                     int? entityTypeId = ( (EntityTypePicker)controls[0] ).SelectedValueAsInt();
                     if ( entityTypeId.HasValue )
                     {
-                        var entityType = EntityTypeCache.Read( entityTypeId.Value );
+                        var entityType = CacheEntityType.Get( entityTypeId.Value );
                         configurationValues[ENTITY_TYPE_NAME_KEY].Value = entityType != null ? entityType.Name : string.Empty;
                     }
                 }
@@ -112,7 +112,7 @@ namespace Rock.Field.Types
             {
                 if ( controls[0] != null && controls[0] is EntityTypePicker && configurationValues.ContainsKey( ENTITY_TYPE_NAME_KEY ) )
                 {
-                    var entityType = EntityTypeCache.Read( configurationValues[ENTITY_TYPE_NAME_KEY].Value );
+                    var entityType = CacheEntityType.Get( configurationValues[ENTITY_TYPE_NAME_KEY].Value );
                     ( (EntityTypePicker)controls[0] ).SetValue( entityType != null ? entityType.Id : (int?)null );
                 }
             }
@@ -173,7 +173,7 @@ namespace Rock.Field.Types
                     entityTypeName = configurationValues[ENTITY_TYPE_NAME_KEY].Value;
                     if ( !string.IsNullOrWhiteSpace( entityTypeName ) && entityTypeName != None.IdValue )
                     {
-                        var entityType = EntityTypeCache.Read( entityTypeName );
+                        var entityType = CacheEntityType.Get( entityTypeName );
                         if ( entityType != null )
                         {
                             entityTypeId = entityType.Id;

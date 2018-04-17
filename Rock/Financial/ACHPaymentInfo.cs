@@ -16,7 +16,7 @@
 //
 using System;
 
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Financial
 {
@@ -80,9 +80,9 @@ namespace Rock.Financial
         /// <summary>
         /// Gets the currency type value.
         /// </summary>
-        public override DefinedValueCache CurrencyTypeValue
+        public override CacheDefinedValue CurrencyTypeValue
         {
-            get { return DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH ) ); }
+            get { return CacheDefinedValue.Get( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH ) ); }
         }
 
     }

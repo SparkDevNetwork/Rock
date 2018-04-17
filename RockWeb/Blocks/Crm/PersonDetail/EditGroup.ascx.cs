@@ -27,7 +27,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -52,13 +52,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [BooleanField("New Person Email", "Should an Email field be displayed when adding a new person to the family?", false, "", 8 )]
     public partial class EditGroup : PersonBlock
     {
-        private GroupTypeCache _groupType = null;
+        private CacheGroupType _groupType = null;
         private bool _isFamilyGroupType = false;
         private Group _group = null;
         private bool _canEdit = false;
         private bool _showAge = false;
         private bool _showEmail = false;
-        private DefinedValueCache _showPhoneType = null;
+        private CacheDefinedValue _showPhoneType = null;
 
         protected string basePersonUrl { get; set; }
         protected string GroupTypeName { get; set; }
@@ -88,7 +88,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 string state = ViewState["DefaultState"] as string;
                 if ( state == null )
                 {
-                    string orgLocGuid = GlobalAttributesCache.Value( "OrganizationAddress" );
+                    string orgLocGuid = CacheGlobalAttributes.Value( "OrganizationAddress" );
                     if ( !string.IsNullOrWhiteSpace( orgLocGuid ) )
                     {
                         Guid locGuid = Guid.Empty;
@@ -138,7 +138,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
             else
             {
-                _groupType = GroupTypeCache.Read( _group.GroupTypeId );
+                _groupType = CacheGroupType.Get( _group.GroupTypeId );
 
                 rblNewPersonRole.DataSource = _groupType.Roles.OrderBy( r => r.Order ).ToList();
                 rblNewPersonRole.DataBind();
@@ -149,7 +149,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 }
                 else
                 {
-                    _groupType = GroupTypeCache.GetFamilyGroupType();
+                    _groupType = CacheGroupType.GetFamilyGroupType();
                     _isFamilyGroupType = true;
                 }
 
@@ -168,7 +168,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             _canEdit = IsUserAuthorized( Authorization.EDIT );
 
-            var campusi = CampusCache.All();
+            var campusi = CacheCampus.All();
             cpCampus.Campuses = campusi;
             cpCampus.Visible = campusi.Any();
 
@@ -177,8 +177,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 cpCampus.Required = GetAttributeValue( "RequireCampus" ).AsBoolean( true );
 
                 ddlRecordStatus.Visible = true;
-                ddlRecordStatus.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS.AsGuid() ), true );
-                ddlReason.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON.AsGuid() ), true );
+                ddlRecordStatus.BindToDefinedType( CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS.AsGuid() ), true );
+                ddlReason.BindToDefinedType( CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON.AsGuid() ), true );
             }
             else
             {
@@ -186,10 +186,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 ddlRecordStatus.Visible = false;
             }
 
-            ddlNewPersonTitle.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_TITLE.AsGuid() ), true );
-            ddlNewPersonSuffix.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid() ), true );
-            ddlNewPersonMaritalStatus.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ), true );
-            ddlNewPersonConnectionStatus.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ), true );
+            ddlNewPersonTitle.BindToDefinedType( CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_TITLE.AsGuid() ), true );
+            ddlNewPersonSuffix.BindToDefinedType( CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid() ), true );
+            ddlNewPersonMaritalStatus.BindToDefinedType( CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ), true );
+            ddlNewPersonConnectionStatus.BindToDefinedType( CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ), true );
 
             lvMembers.DataKeyNames = new string[] { "Index" };
             lvMembers.ItemDataBound += lvMembers_ItemDataBound;
@@ -222,7 +222,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             btnCancel.OnClientClick = string.Format( "javascript:$('#{0}').val('');return true;", confirmExit.ClientID );
 
             _showEmail = GetAttributeValue( "NewPersonEmail" ).AsBoolean();
-            _showPhoneType = DefinedValueCache.Read( GetAttributeValue( "NewPersonPhone" ).AsGuid() );
+            _showPhoneType = CacheDefinedValue.Get( GetAttributeValue( "NewPersonPhone" ).AsGuid() );
         }
 
         /// <summary>
@@ -320,7 +320,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         }
 
                         // Does the family have any deceased members?
-                        var inactiveStatus = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
+                        var inactiveStatus = CacheDefinedValue.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
                         if ( _group.Members.Where( m => m.Person.RecordStatusValueId == inactiveStatus ).Any() )
                         {
                             HasDeceasedMembers = true;
@@ -475,7 +475,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void ddlRecordStatus_SelectedIndexChanged( object sender, EventArgs e )
         {
-            var inactiveStatus = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
+            var inactiveStatus = CacheDefinedValue.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
             if ( HasDeceasedMembers && ddlRecordStatus.SelectedValueAsInt() != inactiveStatus )
             {
                 ddlRecordStatus.Warning = "Note: the status of deceased people will not be changed.";
@@ -606,7 +606,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var connectionStatusGuid = GetAttributeValue( "DefaultConnectionStatus" ).AsGuidOrNull();
             if ( connectionStatusGuid.HasValue )
             {
-                var defaultConnectionStatus = DefinedValueCache.Read( connectionStatusGuid.Value );
+                var defaultConnectionStatus = CacheDefinedValue.Get( connectionStatusGuid.Value );
                 if ( defaultConnectionStatus != null )
                 {
                     ddlNewPersonConnectionStatus.SetValue( defaultConnectionStatus.Id );
@@ -1080,8 +1080,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 	                    rockContext.SaveChanges();
 	
 	                    // SAVE GROUP MEMBERS
-	                    var recordStatusInactiveId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
-	                    var reasonStatusReasonDeceasedId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED ) ).Id;
+	                    var recordStatusInactiveId = CacheDefinedValue.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
+	                    var reasonStatusReasonDeceasedId = CacheDefinedValue.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED ) ).Id;
 	                    int? recordStatusValueID = ddlRecordStatus.SelectedValueAsInt();
 	                    int? reasonValueId = ddlReason.SelectedValueAsInt();
 	                    var newGroups = new List<Group>();
@@ -1145,7 +1145,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 	
 	                                person.IsEmailActive = true;
 	                                person.EmailPreference = EmailPreference.EmailAllowed;
-	                                person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+	                                person.RecordTypeValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
 	                            }
 	                            else
 	                            {
@@ -1207,7 +1207,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 	                                        // If this person is 18 or older, create them as an Adult in their new group
 	                                        if ((groupMember.Person.Age ?? 0) >= 18)
 	                                        {
-	                                            var familyGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
+	                                            var familyGroupType = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
 	                                            groupMember.GroupRoleId = familyGroupType.Roles.First( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
 	                                        }
 	
@@ -1344,7 +1344,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 	
 	                    _group.LoadAttributes();
 
-                        Dictionary<string, AttributeValueCache> originalGroupAttributes = new Dictionary<string, AttributeValueCache>();
+                        Dictionary<string, CacheAttributeValue> originalGroupAttributes = new Dictionary<string, CacheAttributeValue>();
                         foreach ( var attribute in _group.AttributeValues )
                         {
                             originalGroupAttributes.Add( attribute.Key, attribute.Value );
@@ -1497,7 +1497,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// </summary>
         private void BindLocations()
         {
-            int homeLocationTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() ).Id;
+            int homeLocationTypeId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() ).Id;
 
             // If there are not any addresses with a Map Location, set the first home location to be a mapped location
             if ( !GroupAddresses.Any( l => l.IsLocation == true ) )
@@ -1785,7 +1785,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             Id = -1; // Adding
             LocationIsDirty = true;
 
-            string orgLocGuid = GlobalAttributesCache.Value( "OrganizationAddress" );
+            string orgLocGuid = CacheGlobalAttributes.Value( "OrganizationAddress" );
         }
 
         public string FormattedAddress
@@ -1800,7 +1800,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     this.State,
                     this.PostalCode ).ReplaceWhileExists( "  ", " " );
 
-                var countryValue = Rock.Web.Cache.DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES ) )
+                var countryValue = Rock.Cache.CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES ) )
                     .DefinedValues
                     .Where( v => v.Value.Equals( this.Country, StringComparison.OrdinalIgnoreCase ) )
                     .FirstOrDefault();

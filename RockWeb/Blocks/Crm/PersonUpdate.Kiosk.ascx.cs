@@ -25,7 +25,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using Rock.Communication;
@@ -366,7 +366,7 @@ namespace RockWeb.Blocks.Crm
             if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "WorkflowType" ) ) )
             {
                 var workflowService = new WorkflowService( rockContext );
-                var workflowType = WorkflowTypeCache.Read( new Guid( GetAttributeValue( "WorkflowType" ) ) );
+                var workflowType = CacheWorkflowType.Get( new Guid( GetAttributeValue( "WorkflowType" ) ) );
 
                 if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                 {

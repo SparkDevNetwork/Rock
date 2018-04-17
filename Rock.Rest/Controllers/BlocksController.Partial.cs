@@ -53,23 +53,23 @@ namespace Rock.Rest.Controllers
             base.Delete( id );
 
             // flush all the cache stuff that involves the block
-            Rock.Web.Cache.BlockCache.Flush( id );
+            Rock.Cache.CacheBlock.Remove( id );
 
             if ( siteId.HasValue )
             {
-                Rock.Web.Cache.PageCache.FlushSiteBlocks( siteId.Value );
+                Rock.Cache.CachePage.RemoveSiteBlocks( siteId.Value );
             }
 
             if ( layoutId.HasValue )
             {
-                Rock.Web.Cache.PageCache.FlushLayoutBlocks( layoutId.Value );
+                Rock.Cache.CachePage.RemoveLayoutBlocks( layoutId.Value );
             }
 
             if ( pageId.HasValue )
             {
-                Rock.Web.Cache.PageCache.Flush( pageId.Value );
-                var page = Rock.Web.Cache.PageCache.Read( pageId.Value );
-                page.FlushBlocks();
+                Rock.Cache.CachePage.Remove( pageId.Value );
+                var page = Rock.Cache.CachePage.Get( pageId.Value );
+                page.RemoveBlocks();
             }
         }
 
@@ -98,29 +98,29 @@ namespace Rock.Rest.Controllers
 
             CheckCanEdit( model, person );
 
-            Rock.Web.Cache.BlockCache.Flush( id );
+            Rock.Cache.CacheBlock.Remove( id );
 
             if ( model.SiteId.HasValue && model.SiteId != block.SiteId )
             {
-                Rock.Web.Cache.PageCache.FlushSiteBlocks( model.SiteId.Value );
+                Rock.Cache.CachePage.RemoveSiteBlocks( model.SiteId.Value );
             }
             else if ( model.LayoutId.HasValue && model.LayoutId != block.LayoutId )
             {
-                Rock.Web.Cache.PageCache.FlushLayoutBlocks( model.LayoutId.Value );
+                Rock.Cache.CachePage.RemoveLayoutBlocks( model.LayoutId.Value );
             }
 
             if ( block.SiteId.HasValue )
             {
-                Rock.Web.Cache.PageCache.FlushSiteBlocks( block.SiteId.Value );
+                Rock.Cache.CachePage.RemoveSiteBlocks( block.SiteId.Value );
             }
             else if ( block.LayoutId.HasValue )
             {
-                Rock.Web.Cache.PageCache.FlushLayoutBlocks( block.LayoutId.Value );
+                Rock.Cache.CachePage.RemoveLayoutBlocks( block.LayoutId.Value );
             }
             else
             {
-                var page = Rock.Web.Cache.PageCache.Read( block.PageId.Value );
-                page.FlushBlocks();
+                var page = Rock.Cache.CachePage.Get( block.PageId.Value );
+                page.RemoveBlocks();
             }
 
             model.Zone = block.Zone;

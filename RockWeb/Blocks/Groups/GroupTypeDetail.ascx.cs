@@ -30,7 +30,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.UniversalSearch;
 using Rock.Web;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
@@ -217,7 +217,7 @@ namespace RockWeb.Blocks.Groups
             gGroupTypeAttributes.GridReorder += gGroupTypeAttributes_GridReorder;
 
             SecurityField groupTypeAttributeSecurityField = gGroupTypeAttributes.Columns.OfType<SecurityField>().FirstOrDefault();
-            groupTypeAttributeSecurityField.EntityTypeId = EntityTypeCache.GetId<Attribute>() ?? 0;
+            groupTypeAttributeSecurityField.EntityTypeId = CacheEntityType.GetId<Attribute>() ?? 0;
 
             gGroupAttributesInherited.Actions.ShowAdd = false;
             gGroupAttributesInherited.EmptyDataText = Server.HtmlEncode( None.Text );
@@ -231,7 +231,7 @@ namespace RockWeb.Blocks.Groups
             gGroupAttributes.GridReorder += gGroupAttributes_GridReorder;
 
             SecurityField groupAttributeSecurityField = gGroupAttributes.Columns.OfType<SecurityField>().FirstOrDefault();
-            groupAttributeSecurityField.EntityTypeId = EntityTypeCache.GetId<Attribute>() ?? 0;
+            groupAttributeSecurityField.EntityTypeId = CacheEntityType.GetId<Attribute>() ?? 0;
 
             gGroupMemberAttributesInherited.Actions.ShowAdd = false;
             gGroupMemberAttributesInherited.EmptyDataText = Server.HtmlEncode( None.Text );
@@ -245,7 +245,7 @@ namespace RockWeb.Blocks.Groups
             gGroupMemberAttributes.GridReorder += gGroupMemberAttributes_GridReorder;
 
             SecurityField groupMemberAttributeSecurityField = gGroupMemberAttributes.Columns.OfType<SecurityField>().FirstOrDefault();
-            groupMemberAttributeSecurityField.EntityTypeId = EntityTypeCache.GetId<Attribute>() ?? 0;
+            groupMemberAttributeSecurityField.EntityTypeId = CacheEntityType.GetId<Attribute>() ?? 0;
 
             gMemberWorkflowTriggers.DataKeyNames = new string[] { "Guid" };
             gMemberWorkflowTriggers.Actions.ShowAdd = true;
@@ -617,12 +617,12 @@ namespace RockWeb.Blocks.Groups
                 }
             } );
 
-            GroupTypeCache.Flush( groupType.Id );
-            AttributeCache.FlushEntityAttributes();
+            CacheGroupType.Remove( groupType.Id );
+            CacheAttribute.RemoveEntityAttributes();
 
             if ( triggersUpdated )
             {
-                GroupMemberWorkflowTriggerService.FlushCachedTriggers();
+                GroupMemberWorkflowTriggerService.RemoveCachedTriggers();
             }
 
             NavigateToParentPage();
@@ -668,7 +668,7 @@ namespace RockWeb.Blocks.Groups
         public void ShowDetail( int groupTypeId )
         {
             // determine if indexing is enabled
-            var groupEntityType = EntityTypeCache.Read( Rock.SystemGuid.EntityType.GROUP.AsGuid() );
+            var groupEntityType = CacheEntityType.Get( Rock.SystemGuid.EntityType.GROUP.AsGuid() );
             cbEnableIndexing.Visible = IndexContainer.IndexingEnabled && groupEntityType.IsIndexingEnabled;
 
             GroupType groupType = null;
@@ -1319,7 +1319,7 @@ namespace RockWeb.Blocks.Groups
 
                 attributeService.Delete( attr );
                 rockContext.SaveChanges();
-                Rock.Web.Cache.AttributeCache.Flush( attr.Id );
+                Rock.Cache.CacheAttribute.Remove( attr.Id );
             }
 
             // Update the Attributes that were assigned in the UI
@@ -1803,7 +1803,7 @@ namespace RockWeb.Blocks.Groups
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
-                attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
+                attribute.FieldTypeId = CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
                 edtGroupTypeAttributes.ActionTitle = ActionTitle.Add( "attribute for group type " + tbName.Text );
             }
             else
@@ -1956,7 +1956,7 @@ namespace RockWeb.Blocks.Groups
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
-                attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
+                attribute.FieldTypeId = CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
                 if (hfGroupTypeId.Value.AsInteger() > 0)
                 {
                     attribute.EntityTypeQualifierColumn = "GroupTypeId";
@@ -2115,7 +2115,7 @@ namespace RockWeb.Blocks.Groups
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
-                attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
+                attribute.FieldTypeId = CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
                 edtGroupMemberAttributes.ActionTitle = ActionTitle.Add( "attribute for members in groups of group type " + tbName.Text );
             }
             else

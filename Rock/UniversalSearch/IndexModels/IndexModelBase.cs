@@ -19,14 +19,11 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using Rock.Attribute;
-using Rock.Model;
-using Rock.Web.Cache;
-using Rock.UniversalSearch.IndexModels.Attributes;
+using Rock.Cache;
 using Rock.Data;
-using Newtonsoft.Json;
+using Rock.Model;
+using Rock.UniversalSearch.IndexModels.Attributes;
 
 namespace Rock.UniversalSearch.IndexModels
 {
@@ -121,7 +118,7 @@ namespace Rock.UniversalSearch.IndexModels
             string result = string.Empty;
 
             // get template from entity type
-            var sourceModelEntity = EntityTypeCache.All().Where( e => e.Name == this.SourceIndexModel ).FirstOrDefault();
+            var sourceModelEntity = CacheEntityType.All().Where( e => e.Name == this.SourceIndexModel ).FirstOrDefault();
 
             if ( sourceModelEntity != null ) {
                 var template = sourceModelEntity.IndexResultTemplate;
@@ -151,7 +148,7 @@ namespace Rock.UniversalSearch.IndexModels
         public virtual string GetDocumentUrl( Dictionary<string, object> displayOptions = null )
         {
             // get template from entity type
-            var sourceModelEntity = EntityTypeCache.All().Where( e => e.Name == this.SourceIndexModel ).FirstOrDefault();
+            var sourceModelEntity = CacheEntityType.All().Where( e => e.Name == this.SourceIndexModel ).FirstOrDefault();
 
             if ( sourceModelEntity != null )
             {
@@ -220,14 +217,14 @@ namespace Rock.UniversalSearch.IndexModels
         /// </summary>
         /// <param name="indexModel">The index model.</param>
         /// <param name="sourceModel">The source model.</param>
-        protected static void AddIndexableAttributes( IndexModelBase indexModel, IHasAttributes sourceModel )
+        protected static void AddIndexableAttributes( IndexModelBase indexModel, Data.IHasAttributes sourceModel )
         {
             sourceModel.LoadAttributes();
 
             foreach ( var attributeValue in sourceModel.AttributeValues )
             {
                 // check that the attribute is marked as IsIndexEnabled
-                var attribute = AttributeCache.Read(attributeValue.Value.AttributeId);
+                var attribute = CacheAttribute.Get(attributeValue.Value.AttributeId);
 
                 if ( attribute.IsIndexEnabled )
                 {

@@ -17,7 +17,7 @@
 using System;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -48,7 +48,7 @@ namespace Rock.Web.UI.Controls
         {
             if ( dataValue != null )
             {
-                return string.Format( "{0}{1:N}", GlobalAttributesCache.Value( "CurrencySymbol" ), dataValue );
+                return string.Format( "{0}{1:N}", CacheGlobalAttributes.Value( "CurrencySymbol" ), dataValue );
             }
             return base.FormatDataValue( dataValue, encode );
         }

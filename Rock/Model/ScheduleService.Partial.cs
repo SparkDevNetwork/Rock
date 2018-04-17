@@ -20,7 +20,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Model
 {
@@ -198,7 +198,7 @@ namespace Rock.Model
 
                     if ( campusId.HasValue )
                     {
-                        var familyGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
+                        var familyGroupType = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
                         var campusQry = new GroupMemberService( rockContext )
                             .Queryable()
                             .Where( g =>
@@ -337,7 +337,7 @@ namespace Rock.Model
                     if ( newOccurrences.Any() )
                     {
                         // Filter Exclusions
-                        var groupType = GroupTypeCache.Read( group.GroupTypeId );
+                        var groupType = CacheGroupType.Get( group.GroupTypeId );
                         foreach ( var exclusion in groupType.GroupScheduleExclusions )
                         {
                             if ( exclusion.Start.HasValue && exclusion.End.HasValue )

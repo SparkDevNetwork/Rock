@@ -29,7 +29,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -134,7 +134,7 @@ namespace RockWeb.Blocks.Reporting
 
             gReport.GridRebind += gReport_GridRebind;
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Report.FriendlyTypeName );
-            btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Report ) ).Id;
+            btnSecurity.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.Report ) ).Id;
 
             //// set postback timeout to whatever the DatabaseTimeout is plus an extra 5 seconds so that page doesn't timeout before the database does
             //// note: this only makes a difference on Postback, not on the initial page visit
@@ -771,7 +771,7 @@ namespace RockWeb.Blocks.Reporting
 
             if ( entityTypeId.HasValue )
             {
-                Type entityType = EntityTypeCache.Read( entityTypeId.Value, rockContext ).GetEntityType();
+                Type entityType = CacheEntityType.Get( entityTypeId.Value, rockContext ).GetEntityType();
                 var entityFields = Rock.Reporting.EntityHelper.GetEntityFields( entityType, true, false );
                 ddlFields.Items.Clear();
 
@@ -792,7 +792,7 @@ namespace RockWeb.Blocks.Reporting
                     {
                         if ( entityField.AttributeGuid.HasValue )
                         {
-                            var attribute = AttributeCache.Read( entityField.AttributeGuid.Value );
+                            var attribute = CacheAttribute.Get( entityField.AttributeGuid.Value );
                             if (attribute != null )
                             {
                                 // only show the Attribute field in the drop down if they have VIEW Auth to it
@@ -818,7 +818,7 @@ namespace RockWeb.Blocks.Reporting
 
                     if ( entityField.FieldKind == FieldKind.Attribute && entityField.AttributeGuid.HasValue )
                     {
-                        var attribute = AttributeCache.Read( entityField.AttributeGuid.Value );
+                        var attribute = CacheAttribute.Get( entityField.AttributeGuid.Value );
                         if ( attribute != null )
                         {
                             listItem.Attributes.Add( "title", attribute.Description );
@@ -836,7 +836,7 @@ namespace RockWeb.Blocks.Reporting
                 {
                     if ( component.IsAuthorized( Authorization.VIEW, this.RockPage.CurrentPerson ) )
                     {
-                        var selectEntityType = EntityTypeCache.Read( component.TypeName, true, rockContext );
+                        var selectEntityType = CacheEntityType.Get( component.TypeName, true, rockContext );
                         var listItem = new ListItem();
                         listItem.Text = component.GetTitle( selectEntityType.GetEntityType() );
                         listItem.Value = string.Format( "{0}|{1}", ReportFieldType.DataSelectComponent, component.TypeId );
@@ -1038,7 +1038,7 @@ namespace RockWeb.Blocks.Reporting
         {
             // Get the Type for the Data Select Component used in this column.
             // If the column refers to a Type that does not exist, ignore and continue.
-            var componentType = EntityTypeCache.Read( dataSelectComponentId, rockContext ).GetEntityType();
+            var componentType = CacheEntityType.Get( dataSelectComponentId, rockContext ).GetEntityType();
 
             if ( componentType == null )
                 return null;
@@ -1311,7 +1311,7 @@ namespace RockWeb.Blocks.Reporting
             switch ( reportFieldType )
             {
                 case ReportFieldType.Property:
-                    var entityType = EntityTypeCache.Read( entityTypeId, rockContext ).GetEntityType();
+                    var entityType = CacheEntityType.Get( entityTypeId, rockContext ).GetEntityType();
                     var entityField = EntityHelper.GetEntityFields( entityType ).FirstOrDefault( a => a.Name == fieldSelection );
                     if ( entityField != null )
                     {
@@ -1322,7 +1322,7 @@ namespace RockWeb.Blocks.Reporting
                     break;
 
                 case ReportFieldType.Attribute:
-                    var attribute = AttributeCache.Read( fieldSelection.AsGuid(), rockContext );
+                    var attribute = CacheAttribute.Get( fieldSelection.AsGuid(), rockContext );
                     if ( attribute != null )
                     {
                         defaultColumnHeaderText = attribute.Name;
@@ -1371,7 +1371,7 @@ namespace RockWeb.Blocks.Reporting
                 else
                 {
                     // if this EntityField is not available for the current person, but this reportField already has it configured, let them keep it
-                    var attribute = AttributeCache.Read( fieldSelection.AsGuid(), rockContext );
+                    var attribute = CacheAttribute.Get( fieldSelection.AsGuid(), rockContext );
                     ddlFields.Items.Add( new ListItem( attribute.Name, selectedValue ) );
                     ddlFields.SelectedValue = selectedValue;
                 }

@@ -20,7 +20,7 @@ using System.Linq;
 using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -44,7 +44,7 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( EventArgs e )
         {
             ItemRestUrlExtraParams = "?getCategorizedItems=true&showUnnamedEntityItems=true&showCategoriesThatHaveNoChildren=false";
-            ItemRestUrlExtraParams += "&entityTypeId=" + EntityTypeCache.Read( Rock.SystemGuid.EntityType.WORKFLOW_TYPE.AsGuid() ).Id;
+            ItemRestUrlExtraParams += "&entityTypeId=" + CacheEntityType.Get( Rock.SystemGuid.EntityType.WORKFLOW_TYPE.AsGuid() ).Id;
             ItemRestUrlExtraParams += "&includeInactiveItems=" + ShowInactive;
             this.IconCssClass = "fa fa-cogs";
             base.OnInit( e );

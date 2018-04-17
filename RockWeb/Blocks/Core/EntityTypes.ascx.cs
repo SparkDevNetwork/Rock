@@ -27,7 +27,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Security;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -222,7 +222,7 @@ namespace RockWeb.Blocks.Core
 
             rockContext.SaveChanges();
 
-            EntityTypeCache.Flush( entityType.Id );
+            CacheEntityType.Remove( entityType.Id );
 
             hfEntityTypeId.Value = string.Empty;
 

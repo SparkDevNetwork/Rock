@@ -26,8 +26,8 @@ using System.Text;
 
 using Rock.Data;
 using Rock.Reporting;
+using Rock.Cache;
 using Rock.Security;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -245,7 +245,7 @@ namespace Rock.Model
 
                     if ( this.EntityTypeId.HasValue )
                     {
-                        var entityType = Rock.Web.Cache.EntityTypeCache.Read( this.EntityTypeId.Value );
+                        var entityType = Rock.Cache.CacheEntityType.Get( this.EntityTypeId.Value );
                         if ( entityType != null )
                         {
                             var component = Rock.Reporting.DataFilterContainer.GetComponent( entityType.Name );
@@ -365,7 +365,7 @@ namespace Rock.Model
             {
                 if ( EntityTypeId.HasValue )
                 {
-                    var entityType = EntityTypeCache.Read( EntityTypeId.Value );
+                    var entityType = CacheEntityType.Get( EntityTypeId.Value );
                     var component = Rock.Reporting.DataFilterContainer.GetComponent( entityType.Name );
                     if ( component != null )
                     {
@@ -428,7 +428,7 @@ namespace Rock.Model
         {
             if ( this.ExpressionType == FilterExpressionType.Filter && this.EntityTypeId.HasValue )
             {
-                return this.ToString( EntityTypeCache.Read( this.EntityTypeId.Value ).GetEntityType() );
+                return this.ToString( CacheEntityType.Get( this.EntityTypeId.Value ).GetEntityType() );
             }
             else 
             {

@@ -27,7 +27,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -79,7 +79,7 @@ namespace RockWeb.Blocks.Communication
             createdByField.Visible = _canEdit;
 
             SecurityField securityField = gCommunicationTemplates.ColumnsOfType<SecurityField>().FirstOrDefault();
-            securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.CommunicationTemplate ) ).Id;
+            securityField.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.CommunicationTemplate ) ).Id;
 
             // make a custom delete confirmation dialog
             gCommunicationTemplates.ShowConfirmDeleteDialog = false;
@@ -169,7 +169,7 @@ namespace RockWeb.Blocks.Communication
                         int? categoryId = e.Value.AsIntegerOrNull();
                         if ( categoryId.HasValue && categoryId > 0 )
                         {
-                            var category = Rock.Web.Cache.CategoryCache.Read( categoryId.Value );
+                            var category = Rock.Cache.CacheCategory.Get( categoryId.Value );
                             if ( category != null )
                             {
                                 e.Value = category.Name;

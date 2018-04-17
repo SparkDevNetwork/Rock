@@ -28,7 +28,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Connection
@@ -175,7 +175,7 @@ namespace RockWeb.Blocks.Connection
                 rFilter.SaveUserPreference( "State", "State", "0;-2" );
 
                 // NOTE: Don't include Inactive Campuses for the "Campus Filter for Page"
-                cpCampusFilterForPage.Campuses = CampusCache.All( false );
+                cpCampusFilterForPage.Campuses = CacheCampus.All( false );
                 cpCampusFilterForPage.Items[0].Text = "All";
 
                 cpCampusFilterForPage.SelectedCampusId = GetUserPreference( CAMPUS_SETTING ).AsIntegerOrNull();
@@ -847,7 +847,7 @@ namespace RockWeb.Blocks.Connection
                 }
 
                 cblCampusGridFilter.Visible = !cpCampusFilterForPage.SelectedCampusId.HasValue;
-                cblCampusGridFilter.DataSource = CampusCache.All();
+                cblCampusGridFilter.DataSource = CacheCampus.All();
                 cblCampusGridFilter.DataBind();
                 cblCampusGridFilter.SetValues( rFilter.GetUserPreference( "Campus" ).SplitDelimitedValues().AsIntegerList() );
 

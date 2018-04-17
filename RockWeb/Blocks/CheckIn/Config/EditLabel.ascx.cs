@@ -31,7 +31,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.CheckIn.Config
@@ -95,7 +95,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                     }
 
                     ddlDevice.Items.Clear();
-                    var printerDeviceType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_PRINTER.AsGuid() );
+                    var printerDeviceType = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_PRINTER.AsGuid() );
                     if ( printerDeviceType != null )
                     {
                         foreach ( var device in new DeviceService( rockContext )

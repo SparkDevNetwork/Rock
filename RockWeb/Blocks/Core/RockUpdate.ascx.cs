@@ -37,7 +37,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Services.NuGet;
 using Rock.VersionInfo;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace RockWeb.Blocks.Core
 {
@@ -71,7 +71,7 @@ namespace RockWeb.Blocks.Core
             {
                 if ( nuGetService == null )
                 {
-                    var globalAttributesCache = GlobalAttributesCache.Read();
+                    var globalAttributesCache = CacheGlobalAttributes.Get();
                     string packageSource = globalAttributesCache.GetValue( "UpdateServerUrl" );
                     if ( packageSource.ToLowerInvariant().Contains( "rockalpha" ) || packageSource.ToLowerInvariant().Contains( "rockbeta" ) )
                     {
@@ -132,7 +132,7 @@ namespace RockWeb.Blocks.Core
                 {
                     pnlNoUpdates.Visible = false;
                     pnlError.Visible = true;
-                    nbErrors.Text = string.Format( "Your UpdateServerUrl is not valid. It is currently set to: {0}", GlobalAttributesCache.Read().GetValue( "UpdateServerUrl" ) );
+                    nbErrors.Text = string.Format( "Your UpdateServerUrl is not valid. It is currently set to: {0}", CacheGlobalAttributes.Get().GetValue( "UpdateServerUrl" ) );
                 }
                 else
                 {
@@ -338,7 +338,7 @@ namespace RockWeb.Blocks.Core
             List<Release> releases = new List<Release>();
 
             var releaseProgram = ReleaseProgram.PRODUCTION;
-            var updateUrl = GlobalAttributesCache.Read().GetValue( "UpdateServerUrl" );
+            var updateUrl = CacheGlobalAttributes.Get().GetValue( "UpdateServerUrl" );
             if ( updateUrl.Contains( ReleaseProgram.ALPHA ) )
             {
                 releaseProgram = ReleaseProgram.ALPHA;
@@ -842,7 +842,7 @@ namespace RockWeb.Blocks.Core
 
                     if ( cbIncludeStats.Checked )
                     {
-                        var globalAttributes = GlobalAttributesCache.Read();
+                        var globalAttributes = CacheGlobalAttributes.Get();
                         organizationName = globalAttributes.GetValue( "OrganizationName" );
                         publicUrl = globalAttributes.GetValue( "PublicApplicationRoot" );
 
@@ -924,11 +924,11 @@ namespace RockWeb.Blocks.Core
 
             if ( ex.Message.Contains( "404" ) )
             {
-                nbErrors.Text = string.Format( "It appears that someone configured your <code>UpdateServerUrl</code> setting incorrectly: {0}", GlobalAttributesCache.Read().GetValue( "UpdateServerUrl" ) );
+                nbErrors.Text = string.Format( "It appears that someone configured your <code>UpdateServerUrl</code> setting incorrectly: {0}", CacheGlobalAttributes.Get().GetValue( "UpdateServerUrl" ) );
             }
             else if ( ex.Message.Contains( "could not be resolved" ) )
             {
-                nbErrors.Text = string.Format( "I think either the update server is down or your <code>UpdateServerUrl</code> setting is incorrect: {0}", GlobalAttributesCache.Read().GetValue( "UpdateServerUrl" ) );
+                nbErrors.Text = string.Format( "I think either the update server is down or your <code>UpdateServerUrl</code> setting is incorrect: {0}", CacheGlobalAttributes.Get().GetValue( "UpdateServerUrl" ) );
             }
             else if ( ex.Message.Contains( "Unable to connect" ) )
             {

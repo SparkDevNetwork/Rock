@@ -22,8 +22,8 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Data;
+using Rock.Cache;
 using Rock.Security;
-using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -666,7 +666,7 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
-            var globalAttributesCache = GlobalAttributesCache.Read();
+            var globalAttributesCache = CacheGlobalAttributes.Get();
 
             string imageFileTypeWhiteList = globalAttributesCache.GetValue( "ContentImageFiletypeWhitelist" );
             string fileTypeBlackList = globalAttributesCache.GetValue( "ContentFiletypeBlacklist" );

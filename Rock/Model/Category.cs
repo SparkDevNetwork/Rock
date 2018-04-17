@@ -22,8 +22,8 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Cache;
 using Rock.Security;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -196,10 +196,10 @@ namespace Rock.Model
         {
             get
             {
-                var entityTypeCache = EntityTypeCache.Read( this.EntityTypeId );
+                var entityTypeCache = CacheEntityType.Get( this.EntityTypeId );
                 if ( entityTypeCache == null && this.EntityType != null )
                 {
-                    entityTypeCache = EntityTypeCache.Read( this.EntityType.Id );
+                    entityTypeCache = CacheEntityType.Get( this.EntityType.Id );
                 }
 
                 if ( entityTypeCache != null )

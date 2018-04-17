@@ -565,7 +565,7 @@ namespace Rock.Model
                 }
                 catch { }
 
-                return new Uri( Rock.Web.Cache.GlobalAttributesCache.Read().GetValue( "PublicApplicationRoot" ) );
+                return new Uri( Rock.Cache.CacheGlobalAttributes.Get().GetValue( "PublicApplicationRoot" ) );
             }
         }
 

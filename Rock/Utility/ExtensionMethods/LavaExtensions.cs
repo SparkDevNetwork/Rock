@@ -27,7 +27,7 @@ using DotLiquid;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock
 {
@@ -78,7 +78,7 @@ namespace Rock
                 var globalAttributes = new Dictionary<string, object>();
 
                 // Lava Help Text does special stuff for GlobalAttribute, but it still needs the list of possible Global Attribute MergeFields to generate the help text
-                globalAttributes.Add( "GlobalAttribute", GlobalAttributesCache.GetLegacyMergeFields( null ) );
+                globalAttributes.Add( "GlobalAttribute", CacheGlobalAttributes.GetLegacyMergeFields( null ) );
                 lavaDebugPanel.Append( formatLavaDebugInfo( globalAttributes.LiquidizeChildren( 0, rockContext ) ) );
             }
 
@@ -142,7 +142,7 @@ namespace Rock
             if ( myObject is IEntity )
             {
                 var entity = myObject as IEntity;
-                var entityTypeCache = EntityTypeCache.Read( entityType, false, rockContext );
+                var entityTypeCache = CacheEntityType.Get( entityType, false, rockContext );
                 if ( entity != null && entityTypeCache != null )
                 {
                     if ( entityHistory == null )
@@ -301,9 +301,9 @@ namespace Rock
                 }
 
                 // Add the attributes if this object has attributes
-                if ( liquidObject is Rock.Attribute.IHasAttributes )
+                if ( liquidObject is IHasAttributes )
                 {
-                    var objWithAttrs = (Rock.Attribute.IHasAttributes)liquidObject;
+                    var objWithAttrs = (IHasAttributes)liquidObject;
                     if ( objWithAttrs.Attributes == null )
                     {
                         rockContext = rockContext ?? new RockContext();
@@ -541,7 +541,7 @@ namespace Rock
         /// <returns></returns>
         public static string ResolveMergeFields( this string content, IDictionary<string, object> mergeObjects, Person currentPersonOverride )
         {
-            var enabledCommands = GlobalAttributesCache.Read().GetValue( "DefaultEnabledLavaCommands" );
+            var enabledCommands = CacheGlobalAttributes.Get().GetValue( "DefaultEnabledLavaCommands" );
             return content.ResolveMergeFields( mergeObjects, currentPersonOverride, enabledCommands );
         }
 
@@ -565,7 +565,7 @@ namespace Rock
                 // If there have not been any EnabledLavaCommands explicitely set, then use the global defaults.
                 if ( enabledLavaCommands == null )
                 {
-                    enabledLavaCommands = GlobalAttributesCache.Read().GetValue( "DefaultEnabledLavaCommands" );
+                    enabledLavaCommands = CacheGlobalAttributes.Value( "DefaultEnabledLavaCommands" );
                 }
 
                 Template template = GetTemplate( content );
@@ -609,7 +609,7 @@ namespace Rock
         /// <returns></returns>
         public static string ResolveMergeFields( this string content, IDictionary<string, object> mergeObjects, bool encodeStrings = false, bool throwExceptionOnErrors = false )
         {
-            var enabledCommands = GlobalAttributesCache.Read().GetValue( "DefaultEnabledLavaCommands" );
+            var enabledCommands = CacheGlobalAttributes.Get().GetValue( "DefaultEnabledLavaCommands" );
             return content.ResolveMergeFields( mergeObjects, enabledCommands, encodeStrings, throwExceptionOnErrors );
         }
 
@@ -631,7 +631,7 @@ namespace Rock
                     return content ?? string.Empty;
                 }
 
-                if ( GlobalAttributesCache.Read().LavaSupportLevel == Lava.LavaSupportLevel.LegacyWithWarning && mergeObjects.ContainsKey( "GlobalAttribute" ) )
+                if ( CacheGlobalAttributes.Get().LavaSupportLevel == Lava.LavaSupportLevel.LegacyWithWarning && mergeObjects.ContainsKey( "GlobalAttribute" ) )
                 {
                     if ( hasLegacyGlobalAttributeLavaMergeFields.IsMatch( content ) )
                     {
@@ -699,7 +699,7 @@ namespace Rock
             }
 
             // Get template from cache
-            var template = LavaTemplateCache.Read( content ).Template;
+            var template = CacheLavaTemplate.Get( content ).Template;
 
             // Clear any previous errors
             template.Errors.Clear();

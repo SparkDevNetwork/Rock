@@ -25,7 +25,7 @@ using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Workflow.Action
 {
@@ -102,12 +102,12 @@ namespace Rock.Workflow.Action
             {
                 var timedOut = false;
 
-                WorkflowActivityTypeCache unopenedActivityType = null;
+                CacheWorkflowActivityType unopenedActivityType = null;
                 int? unopenedTimeout = null;
                 Guid? guid = GetAttributeValue( action, "UnopenedTimeoutActivity" ).AsGuidOrNull();
                 if ( guid.HasValue )
                 {
-                    unopenedActivityType = WorkflowActivityTypeCache.Read( guid.Value );
+                    unopenedActivityType = CacheWorkflowActivityType.Get( guid.Value );
                     unopenedTimeout = GetAttributeValue( action, "UnopenedTimeoutLength" ).AsIntegerOrNull();
 
                     if ( emailStatus != OPENED_STATUS &&
@@ -122,12 +122,12 @@ namespace Rock.Workflow.Action
                     }
                 }
 
-                WorkflowActivityTypeCache noActionActivityType = null;
+                CacheWorkflowActivityType noActionActivityType = null;
                 int? noActionTimeout = null;
                 guid = GetAttributeValue( action, "NoActionTimeoutActivity" ).AsGuidOrNull();
                 if ( guid.HasValue )
                 {
-                    noActionActivityType = WorkflowActivityTypeCache.Read( guid.Value );
+                    noActionActivityType = CacheWorkflowActivityType.Get( guid.Value );
                     noActionTimeout = GetAttributeValue( action, "NoActionTimeoutLength" ).AsIntegerOrNull();
 
                     if ( emailStatus != CLICKED_STATUS &&
@@ -167,19 +167,19 @@ namespace Rock.Workflow.Action
                 attribute.EntityTypeQualifierValue = action.Activity.ActivityTypeId.ToString();
                 attribute.Name = "DateTime Sent";
                 attribute.Key = AttrKey;
-                attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT.AsGuid() ).Id;
+                attribute.FieldTypeId = CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT.AsGuid() ).Id;
 
                 // Need to save the attribute now (using different context) so that an attribute id is returned.
                 using ( var newRockContext = new RockContext() )
                 {
                     new AttributeService( newRockContext ).Add( attribute );
                     newRockContext.SaveChanges();
-                    AttributeCache.FlushEntityAttributes();
-                    WorkflowActivityTypeCache.Flush( action.Activity.ActivityTypeId );
+                    CacheAttribute.RemoveEntityAttributes();
+                    CacheWorkflowActivityType.Remove( action.Activity.ActivityTypeId );
                 }
 
-                action.Activity.Attributes.Add( AttrKey, AttributeCache.Read( attribute ) );
-                var attributeValue = new AttributeValueCache();
+                action.Activity.Attributes.Add( AttrKey, CacheAttribute.Get( attribute ) );
+                var attributeValue = new CacheAttributeValue();
                 attributeValue.AttributeId = attribute.Id;
                 attributeValue.Value = RockDateTime.Now.ToString( "o" );
                 action.Activity.AttributeValues.Add( AttrKey, attributeValue );
@@ -220,19 +220,19 @@ namespace Rock.Workflow.Action
                 attribute.EntityTypeQualifierValue = action.Activity.ActivityTypeId.ToString();
                 attribute.Name = "Email Status";
                 attribute.Key = AttrKey;
-                attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT.AsGuid() ).Id;
+                attribute.FieldTypeId = CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT.AsGuid() ).Id;
 
                 // Need to save the attribute now (using different context) so that an attribute id is returned.
                 using ( var newRockContext = new RockContext() )
                 {
                     new AttributeService( newRockContext ).Add( attribute );
                     newRockContext.SaveChanges();
-                    AttributeCache.FlushEntityAttributes();
-                    WorkflowActivityTypeCache.Flush( action.Activity.ActivityTypeId );
+                    CacheAttribute.RemoveEntityAttributes();
+                    CacheWorkflowActivityType.Remove( action.Activity.ActivityTypeId );
                 }
 
-                action.Activity.Attributes.Add( AttrKey, AttributeCache.Read( attribute ) );
-                var attributeValue = new AttributeValueCache();
+                action.Activity.Attributes.Add( AttrKey, CacheAttribute.Get( attribute ) );
+                var attributeValue = new CacheAttributeValue();
                 attributeValue.AttributeId = attribute.Id;
                 attributeValue.Value = string.Empty;
                 action.Activity.AttributeValues.Add( AttrKey, attributeValue );
@@ -260,7 +260,7 @@ namespace Rock.Workflow.Action
             Guid? fromGuid = fromValue.AsGuidOrNull();
             if ( fromGuid.HasValue )
             {
-                var attribute = AttributeCache.Read( fromGuid.Value, rockContext );
+                var attribute = CacheAttribute.Get( fromGuid.Value, rockContext );
                 if ( attribute != null )
                 {
                     string fromAttributeValue = action.GetWorklowAttributeValue( fromGuid.Value );
@@ -300,7 +300,7 @@ namespace Rock.Workflow.Action
             Guid? guid = to.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                var attribute = AttributeCache.Read( guid.Value, rockContext );
+                var attribute = CacheAttribute.Get( guid.Value, rockContext );
                 if ( attribute != null )
                 {
                     string toValue = action.GetWorklowAttributeValue( guid.Value );
@@ -435,7 +435,7 @@ namespace Rock.Workflow.Action
                 if ( activityGuid.HasValue )
                 {
                     var workflow = action.Activity.Workflow;
-                    var activityType = WorkflowActivityTypeCache.Read( activityGuid.Value );
+                    var activityType = CacheWorkflowActivityType.Get( activityGuid.Value );
                     if ( workflow != null && activityType != null )
                     {
                         WorkflowActivity.Activate( activityType, workflow );

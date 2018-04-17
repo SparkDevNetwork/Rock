@@ -16,18 +16,17 @@
 //
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Runtime.Caching;
+
+using Rock.Cache;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
 
 namespace Rock.CheckIn
 {
     /// <summary>
     /// Cached Check-in Label
     /// </summary>
-    public class KioskLabel
+    public class KioskLabel : ItemCache<KioskLabel>
     {
         /// <summary>
         /// Prevents a default instance of the <see cref="KioskLabel"/> class from being created.
@@ -87,80 +86,74 @@ namespace Rock.CheckIn
         #region Static Methods
 
         /// <summary>
-        /// Caches the key.
-        /// </summary>
-        /// <param name="guid">The unique identifier.</param>
-        /// <returns></returns>
-        private static string CacheKey( Guid guid )
-        {
-            return string.Format( "Rock:CheckIn:KioskLabel:{0}", guid );
-        }
-
-        /// <summary>
         /// Reads the specified label by guid.
         /// </summary>
         /// <param name="guid">The unique identifier.</param>
         /// <returns></returns>
+        [Obsolete( "Use Get( Guid guid ) instead.")]
         public static KioskLabel Read( Guid guid )
         {
-            string cacheKey = KioskLabel.CacheKey( guid );
+            return Get( guid );
+        }
 
-            RockMemoryCache cache = RockMemoryCache.Default;
-            KioskLabel label = cache[cacheKey] as KioskLabel;
+        /// <summary>
+        /// Gets the specified label by guid.
+        /// </summary>
+        /// <param name="guid">The unique identifier.</param>
+        /// <returns></returns>
+        public static KioskLabel Get( Guid guid )
+        {
+            var now = RockDateTime.Now;
+            var timespan = now.Date.AddDays( 1 ).Subtract( now );
+            return GetOrAddExisting( guid.ToString(), () => Create( guid ), timespan );
+        }
 
-            if ( label != null )
+        private static KioskLabel Create( Guid guid )
+        {
+            using ( var rockContext = new RockContext() )
             {
-                return label;
-            }
-            else
-            {
-                using ( var rockContext = new RockContext() )
+                var file = new BinaryFileService( rockContext ).Get( guid );
+                if ( file != null )
                 {
-                    var file = new BinaryFileService( rockContext ).Get( guid );
-                    if ( file != null )
+                    var label = new KioskLabel();
+                    label.Guid = file.Guid;
+                    label.Url = string.Format( "{0}GetFile.ashx?id={1}", System.Web.VirtualPathUtility.ToAbsolute( "~" ), file.Id );
+                    label.MergeFields = new Dictionary<string, string>();
+                    label.FileContent = file.ContentsToString();
+
+                    file.LoadAttributes( rockContext );
+
+                    label.LabelType = file.GetAttributeValue( "core_LabelType" ).ConvertToEnum<KioskLabelType>();
+
+                    string attributeValue = file.GetAttributeValue( "MergeCodes" );
+                    if ( !string.IsNullOrWhiteSpace( attributeValue ) )
                     {
-                        label = new KioskLabel();
-                        label.Guid = file.Guid;
-                        label.Url = string.Format( "{0}GetFile.ashx?id={1}", System.Web.VirtualPathUtility.ToAbsolute( "~" ), file.Id );
-                        label.MergeFields = new Dictionary<string, string>();
-                        label.FileContent = file.ContentsToString();
-
-                        file.LoadAttributes( rockContext );
-
-                        label.LabelType = file.GetAttributeValue( "core_LabelType" ).ConvertToEnum<KioskLabelType>();
-
-                        string attributeValue = file.GetAttributeValue( "MergeCodes" );
-                        if ( !string.IsNullOrWhiteSpace( attributeValue ) )
+                        string[] nameValues = attributeValue.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+                        foreach ( string nameValue in nameValues )
                         {
-                            string[] nameValues = attributeValue.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
-                            foreach ( string nameValue in nameValues )
+                            string[] nameAndValue = nameValue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
+                            if ( nameAndValue.Length == 2 && !label.MergeFields.ContainsKey( nameAndValue[0] ) )
                             {
-                                string[] nameAndValue = nameValue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
-                                if ( nameAndValue.Length == 2 && !label.MergeFields.ContainsKey( nameAndValue[0] ) )
-                                {
-                                    label.MergeFields.Add( nameAndValue[0], nameAndValue[1] );
+                                label.MergeFields.Add( nameAndValue[0], nameAndValue[1] );
 
-                                    int definedValueId = int.MinValue;
-                                    if ( int.TryParse( nameAndValue[1], out definedValueId ) )
+                                int definedValueId = int.MinValue;
+                                if ( int.TryParse( nameAndValue[1], out definedValueId ) )
+                                {
+                                    var definedValue = CacheDefinedValue.Get( definedValueId );
+                                    if ( definedValue != null )
                                     {
-                                        var definedValue = DefinedValueCache.Read( definedValueId );
-                                        if ( definedValue != null )
+                                        string mergeField = definedValue.GetAttributeValue( "MergeField" );
+                                        if ( mergeField != null )
                                         {
-                                            string mergeField = definedValue.GetAttributeValue( "MergeField" );
-                                            if ( mergeField != null )
-                                            {
-                                                label.MergeFields[nameAndValue[0]] = mergeField;
-                                            }
+                                            label.MergeFields[nameAndValue[0]] = mergeField;
                                         }
                                     }
                                 }
                             }
                         }
-
-                        cache.Set( cacheKey, label, new CacheItemPolicy { AbsoluteExpiration = DateTimeOffset.Now.Date.AddDays( 1 ) } );
-
-                        return label;
                     }
+
+                    return label;
                 }
             }
 
@@ -171,10 +164,19 @@ namespace Rock.CheckIn
         /// Flushes the specified guid.
         /// </summary>
         /// <param name="guid">The unique identifier.</param>
-        public static void Flush( Guid guid)
+        [Obsolete( "Use Remove( Guid guid ) instead.")]
+        public static void Flush( Guid guid )
         {
-            RockMemoryCache cache = RockMemoryCache.Default;
-            cache.Remove( KioskLabel.CacheKey( guid ) );
+            Remove( guid );
+        }
+
+        /// <summary>
+        /// Flushes the specified guid.
+        /// </summary>
+        /// <param name="guid">The unique identifier.</param>
+        public static void Remove( Guid guid)
+        {
+            Remove( guid.ToString() );
         }
 
         #endregion

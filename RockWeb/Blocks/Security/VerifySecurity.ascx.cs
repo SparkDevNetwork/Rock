@@ -188,7 +188,7 @@ namespace RockWeb.Blocks.Security
                     // See if person is in role authorized
                     if ( !matchFound && authRule.GroupId.HasValue )
                     {
-                        Role role = Role.Read( authRule.GroupId.Value );
+                        var role = Rock.Cache.CacheRole.Get( authRule.GroupId.Value );
                         if ( role != null && role.IsPersonInRole( person.Guid ) )
                         {
                             matchFound = true;
@@ -414,7 +414,7 @@ namespace RockWeb.Blocks.Security
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnClearCache_Click( object sender, EventArgs e )
         {
-            Authorization.Flush();
+            Authorization.Clear();
             nbCacheCleared.Visible = true;
 
             if ( pnlResult.Visible )
@@ -452,7 +452,7 @@ namespace RockWeb.Blocks.Security
                     explicitAuth.AllowOrDeny = "A";
                     rockContext.SaveChanges();
 
-                    Authorization.ReloadAction( entity.TypeId, entity.Id, auth.Action );
+                    Authorization.RefreshAction( entity.TypeId, entity.Id, auth.Action );
                 }
                 else
                 {
