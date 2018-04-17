@@ -2996,7 +2996,7 @@ namespace Rock.Web.UI.Controls
             }
 
             string entityIdColumn;
-            if ( entityTypeId.HasValue && entityTypeId.Value == EntityTypeCache.GetId<Rock.Model.Person>() )
+            if ( entityTypeId.HasValue && entityTypeId.Value == CacheEntityType.GetId<Model.Person>() )
             {
                 entityIdColumn = this.PersonIdField ?? "Id";
             }
