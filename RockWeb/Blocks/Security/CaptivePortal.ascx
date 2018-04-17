@@ -34,21 +34,21 @@
                 </div>
 
                 <%-- box here to display T&C --%>
-                <div class="row">
+                <div>
                     <div>
                         <iframe id="iframeLegalNotice" runat="server" style="width: 100%; height: 400px; background-color: #fff;"></iframe>
                     </div>
                 </div>
                 
                 <%-- Checkbox here to indicate agreement with T&C --%>
-                <div class="row" >
+                <div>
                     <div style="display: inline-block;">
                         <Rock:RockCheckBox ID="cbAcceptTAC" runat="server" ValidationGroup="CaptivePortal" />
                     </div>
                 </div>
 
                 <%-- Button here to connect --%>
-                <div class="actions row">
+                <div class="actions">
                     <div>
                         <asp:LinkButton ID="btnConnect" runat="server" Text="Connect To WiFi" CssClass="btn btn-primary" OnClick="btnConnect_Click" style="width:100%;" ValidationGroup="CaptivePortal" />
                     </div>
