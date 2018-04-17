@@ -228,6 +228,11 @@ namespace RockWeb.Blocks.Core
                         } );
                 }
 
+                if ( TagEntityType != null )
+                {
+                    gReport.EntityTypeId = TagEntityType.Id;
+                }
+
                 gReport.DataSource = results.ToList();
                 gReport.DataBind();
             }
