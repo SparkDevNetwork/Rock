@@ -296,7 +296,7 @@ namespace RockWeb.Plugins.church_ccv.AdultMinistries
                 {
                     // the workflows store the campus by guid, so convert the selected Ids to guids
                     List<Guid> selectedCampusNames = campusCache.Where( cc => campusIds.Contains( cc.Id ) ).Select( cc => cc.Guid ).ToList( );
-                    filteredList = filteredList.Where( wf => selectedCampusNames.Contains( wf.AttribValues.Where( av => av.Key == "Campus" ).FirstOrDefault( ).Value.ToStringSafe( ).AsGuid( ) ) ).ToList();
+                    filteredList = filteredList.Where( wf => wf.AttribValues.Where( av => av.Key == "Campus" ).FirstOrDefault().Value.IsNullOrWhiteSpace() || selectedCampusNames.Contains( wf.AttribValues.Where( av => av.Key == "Campus" ).FirstOrDefault( ).Value.ToStringSafe( ).AsGuid( ) ) ).ToList();
                 }
                 
                 // Build Query so that the Applicant is populated for filtering / sorting
