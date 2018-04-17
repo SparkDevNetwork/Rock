@@ -132,7 +132,7 @@ namespace RockWeb
                         // Rock has more descriptions than iCal so lets concantenate them
                         string description = CreateEventDescription( eventItem, occurrence );
 
-                        // Don't set the description prop for outlook to force it to use the X-ALT-DESC property which can have marup.
+                        // Don't set the description prop for outlook to force it to use the X-ALT-DESC property which can have markup.
                         if ( interactionDeviceType != "Outlook" )
                         {
                             ievent.Description = description.ConvertBrToCrLf().SanitizeHtml();
@@ -148,18 +148,22 @@ namespace RockWeb
                         {
                             ievent.Url = new Uri( eventItem.DetailsUrl );
                         }
-                        
-                        ievent.Organizer = new Organizer(string.Format("MAILTO:{0}", occurrence.ContactPersonAlias.Person.Email ) );
-                        ievent.Organizer.CommonName = occurrence.ContactPersonAlias.Person.FullName;
 
-                        // Outlook doesn't seems to use Contacts or Comments
-                        string contactName = !string.IsNullOrEmpty( occurrence.ContactPersonAlias.Person.FullName ) ? "Name: " + occurrence.ContactPersonAlias.Person.FullName : string.Empty;
-                        string contactEmail = !string.IsNullOrEmpty( occurrence.ContactEmail ) ? ", Email: " + occurrence.ContactEmail : string.Empty;
-                        string contactPhone = !string.IsNullOrEmpty( occurrence.ContactPhone ) ? ", Phone: " + occurrence.ContactPhone : string.Empty;
-                        string contactInfo = contactName + contactEmail + contactPhone;
+                        // add contact infor if it exists
+                        if ( occurrence.ContactPersonAlias != null )
+                        {
+                            ievent.Organizer = new Organizer( string.Format( "MAILTO:{0}", occurrence.ContactPersonAlias.Person.Email ) );
+                            ievent.Organizer.CommonName = occurrence.ContactPersonAlias.Person.FullName;
 
-                        ievent.Contacts.Add( contactInfo );
-                        ievent.Comments.Add( contactInfo );
+                            // Outlook doesn't seems to use Contacts or Comments
+                            string contactName = !string.IsNullOrEmpty( occurrence.ContactPersonAlias.Person.FullName ) ? "Name: " + occurrence.ContactPersonAlias.Person.FullName : string.Empty;
+                            string contactEmail = !string.IsNullOrEmpty( occurrence.ContactEmail ) ? ", Email: " + occurrence.ContactEmail : string.Empty;
+                            string contactPhone = !string.IsNullOrEmpty( occurrence.ContactPhone ) ? ", Phone: " + occurrence.ContactPhone : string.Empty;
+                            string contactInfo = contactName + contactEmail + contactPhone;
+
+                            ievent.Contacts.Add( contactInfo );
+                            ievent.Comments.Add( contactInfo );
+                        }
 
                         // TODO: categories - comma delmited list of whatever, might use audience
                         foreach ( var a in eventItem.EventItemAudiences )
