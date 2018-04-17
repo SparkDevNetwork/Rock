@@ -15,6 +15,14 @@
             <div class="panel-heading">
                 <h1 class="panel-title"><asp:Literal ID="lCalendarIcon" runat="server" />
                     <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
+                <div class="pull-right">
+                    <button id="btnCopyToClipboard" runat="server" disabled="disabled"
+                        data-toggle="tooltip" data-placement="top" data-trigger="hover" data-delay="250" title="Copy Feed URL to Clipboard"
+                        class="btn btn-info btn-xs btn-copy-to-clipboard"
+                        onclick="$(this).attr('data-original-title', 'Copied').tooltip('show').attr('data-original-title', 'Copy Link to Clipboard');return false;">
+                        <i class="fa fa-calendar-alt"></i> Export Calendar Feed
+                    </button>
+                </div>
             </div>
             <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body">
