@@ -56,6 +56,9 @@ WHERE [Message] LIKE '%<!-- prevent Gmail on iOS font size manipulation -->
 
             // Fix for https://github.com/SparkDevNetwork/Rock/issues/2813
             Sql( HotFixMigrationResource._050_MigrationRollupsForV7_4_spAnalytics_ETL_Campus );
+
+            // Fix for https://github.com/SparkDevNetwork/Rock/issues/2809
+            Sql( HotFixMigrationResource._050_MigrationRollupsForV7_4_spCrm_PersonMerge );
         }
 
 
