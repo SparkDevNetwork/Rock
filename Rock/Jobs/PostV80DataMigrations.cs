@@ -28,6 +28,7 @@ namespace Rock.Jobs
         public void Execute( IJobExecutionContext context )
         {
             CreateIndexInteractionsForeignKey();
+            UpdateInteractionSummaryForPageViews();
             DeleteJob( context.GetJobId() );
         }
 
@@ -91,5 +92,38 @@ namespace Rock.Jobs
             }
         }
 
+        /// <summary>
+        /// Updates the interaction summary on Interactions for page views.
+        /// </summary>
+        public static void UpdateInteractionSummaryForPageViews()
+        {
+            using ( RockContext rockContext = new RockContext() )
+            {
+                string sqlQuery = @"DECLARE @ChannelMediumValueId INT;
+                                    SELECT 
+	                                    @ChannelMediumValueId = [Id]
+                                    FROM 
+	                                    [DefinedValue]
+                                    WHERE [Guid]='{0}'
+                                    UPDATE 
+	                                    A
+                                    SET
+	                                    A.[InteractionSummary] = B.[Name]
+                                    FROM
+	                                    [Interaction] A INNER JOIN 
+	                                    [InteractionComponent] B 
+                                    ON
+	                                    A.[InteractionComponentId] = B.[Id]
+                                    WHERE
+	                                    B.[ChannelId]  IN (SELECT
+							                                    [Id]
+						                                    FROM
+							                                    [InteractionChannel]
+						                                    WHERE 
+							                                    [ChannelTypeMediumValueId]=@ChannelMediumValueId)";
+
+                rockContext.Database.ExecuteSqlCommand( string.Format(sqlQuery, SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE ) );
+            }
+        }
     }
 }
