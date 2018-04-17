@@ -101,6 +101,14 @@ namespace RockWeb.Blocks.Event
 
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upEventCalendar );
+
+            // Setup for being able to copy text to clipboard
+            RockPage.AddScriptLink( this.Page, "~/Scripts/clipboard.js/clipboard.min.js" );
+            string script = string.Format( @"
+    new Clipboard('#{0}');
+    $('#{0}').tooltip();
+", btnCopyToClipboard.ClientID );
+            ScriptManager.RegisterStartupScript( btnCopyToClipboard, btnCopyToClipboard.GetType(), "share-copy", script, true );
         }
 
         /// <summary>
@@ -113,7 +121,15 @@ namespace RockWeb.Blocks.Event
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "EventCalendarId" ).AsInteger() );
+                var calendarEventId = PageParameter( "EventCalendarId" ).AsInteger();
+
+                // Set URL in feed button
+                var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+                btnCopyToClipboard.Attributes["data-clipboard-text"] = string.Format( "{0}GetEventCalendarFeed.ashx?CalendarId={1}", globalAttributes.GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash(), calendarEventId );
+                btnCopyToClipboard.Disabled = false;
+
+
+                ShowDetail( calendarEventId );
             }
             else
             {
@@ -962,6 +978,5 @@ namespace RockWeb.Blocks.Event
         #endregion
 
         #endregion
-
     }
 }
