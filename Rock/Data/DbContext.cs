@@ -30,6 +30,7 @@ using Rock.Workflow;
 
 using Audit = Rock.Model.Audit;
 using System.Linq.Expressions;
+using Rock.Cache;
 
 namespace Rock.Data
 {
@@ -129,7 +130,7 @@ namespace Rock.Data
             // Try to get the current person alias and id
             PersonAlias personAlias = GetCurrentPersonAlias();
 
-            bool enableAuditing = Rock.Web.Cache.GlobalAttributesCache.Value( "EnableAuditing" ).AsBoolean();
+            bool enableAuditing = Rock.Cache.CacheGlobalAttributes.Value( "EnableAuditing" ).AsBoolean();
 
             // Evaluate the current context for items that have changes
             var updatedItems = RockPreSave( this, personAlias, enableAuditing );
@@ -493,7 +494,7 @@ namespace Rock.Data
 
             // Look at each trigger for this entity and for the given trigger type
             // and see if it's a match.
-            foreach ( var trigger in TriggerCache.Triggers( entity.TypeName, triggerType ).Where( t => t.IsActive == true ) )
+            foreach ( var trigger in CacheWorkflowTriggers.Triggers( entity.TypeName, triggerType ).Where( t => t.IsActive == true ) )
             {
                 bool match = true;
 
@@ -522,7 +523,7 @@ namespace Rock.Data
                     // If it's one of the pre or immediate triggers, fire it immediately; otherwise queue it.
                     if ( triggerType == WorkflowTriggerType.PreSave || triggerType == WorkflowTriggerType.PreDelete || triggerType == WorkflowTriggerType.ImmediatePostSave )
                     {
-                        var workflowType = Web.Cache.WorkflowTypeCache.Read( trigger.WorkflowTypeId );
+                        var workflowType = Cache.CacheWorkflowType.Get( trigger.WorkflowTypeId );
                         if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                         {
                             var workflow = Rock.Model.Workflow.Activate( workflowType, trigger.WorkflowName );
@@ -689,7 +690,7 @@ namespace Rock.Data
 
                 if ( audit.Details.Any() )
                 {
-                    var entityType = Rock.Web.Cache.EntityTypeCache.Read( rockEntityType );
+                    var entityType = Rock.Cache.CacheEntityType.Get( rockEntityType );
                     if ( entityType != null )
                     {
                         string title;
@@ -812,7 +813,7 @@ namespace Rock.Data
                         {
                             Audit.AuditType = AuditType.Modify;
 
-                            var triggers = TriggerCache.Triggers( entity.TypeName )
+                            var triggers = CacheWorkflowTriggers.Triggers( entity.TypeName )
                                 .Where( t => t.WorkflowTriggerType == WorkflowTriggerType.ImmediatePostSave || t.WorkflowTriggerType == WorkflowTriggerType.PostSave );
 
                             if ( triggers.Any() )

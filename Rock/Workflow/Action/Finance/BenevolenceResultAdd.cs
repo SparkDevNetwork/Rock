@@ -23,7 +23,7 @@ using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 
 namespace Rock.Workflow.Action
@@ -89,7 +89,7 @@ namespace Rock.Workflow.Action
             var nextSteps = GetAttributeValue( action, "NextSteps", true ).ResolveMergeFields( mergeFields );
 
             // get result type
-            var resultType = DefinedValueCache.Read( GetAttributeValue( action, "ResultType", true ).AsGuid() );
+            var resultType = CacheDefinedValue.Get( GetAttributeValue( action, "ResultType", true ).AsGuid() );
             if (resultType == null )
             {
                 var errorMessage = "A valid result type was not provided.";

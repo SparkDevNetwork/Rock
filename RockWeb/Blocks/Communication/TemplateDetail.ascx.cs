@@ -31,7 +31,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -504,7 +504,7 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private void LoadDropDowns()
         {
-            ddlSMSFrom.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM ) ), true, true );
+            ddlSMSFrom.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM ) ), true, true );
         }
 
         /// <summary>

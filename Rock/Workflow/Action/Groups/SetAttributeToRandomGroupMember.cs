@@ -26,7 +26,7 @@ using Rock.Workflow;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Workflow.Action
 {
@@ -113,15 +113,15 @@ namespace Rock.Workflow.Action
                 Guid selectPersonGuid = GetAttributeValue( action, "SelectedPerson" ).AsGuid();
                 if ( !selectPersonGuid.IsEmpty() )
                 {
-                    var selectedPersonAttribute = AttributeCache.Read( selectPersonGuid, rockContext );
+                    var selectedPersonAttribute = CacheAttribute.Get( selectPersonGuid, rockContext );
                     if ( selectedPersonAttribute != null )
                     {
                         // If this is a person type attribute
-                        if ( selectedPersonAttribute.FieldTypeId == FieldTypeCache.Read( Rock.SystemGuid.FieldType.PERSON.AsGuid(), rockContext ).Id )
+                        if ( selectedPersonAttribute.FieldTypeId == CacheFieldType.Get( Rock.SystemGuid.FieldType.PERSON.AsGuid(), rockContext ).Id )
                         {
                             SetWorkflowAttributeValue( action, selectPersonGuid, selectedGroupMember.PrimaryAliasGuid.ToString() );
                         }
-                        else if ( selectedPersonAttribute.FieldTypeId == FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT.AsGuid(), rockContext ).Id )
+                        else if ( selectedPersonAttribute.FieldTypeId == CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT.AsGuid(), rockContext ).Id )
                         {
                             SetWorkflowAttributeValue( action, selectPersonGuid, Person.FormatFullName(selectedGroupMember.NickName, selectedGroupMember.LastName, selectedGroupMember.SuffixValueId)  );
                         }

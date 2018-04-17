@@ -18,7 +18,7 @@ using System;
 using System.Linq;
 using Rock.Constants;
 using Rock.Data;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -54,7 +54,7 @@ namespace Rock.Web.UI.Controls
             this.DataTextField = UseAbbreviation ? "Id" : "Value";
 
             _rebindRequired = false;
-            var definedType = DefinedTypeCache.Read( new Guid( SystemGuid.DefinedType.LOCATION_ADDRESS_STATE ) );
+            var definedType = CacheDefinedType.Get( new Guid( SystemGuid.DefinedType.LOCATION_ADDRESS_STATE ) );
             var stateList = definedType.DefinedValues.OrderBy( v => v.Order ).Select( v => new { Id = v.Value, Value = v.Description } ).ToList();
             this.DataSource = stateList;
 
@@ -83,7 +83,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return GlobalAttributesCache.Read().OrganizationState;
+                return CacheGlobalAttributes.Get().OrganizationState;
             }
         }
 

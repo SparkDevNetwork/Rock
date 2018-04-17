@@ -25,7 +25,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using System.ComponentModel;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Cache;
 using System.Web.UI.WebControls;
 
 namespace RockWeb.Blocks.Cms
@@ -152,7 +152,7 @@ namespace RockWeb.Blocks.Cms
                     int? siteId = e.Value.AsIntegerOrNull();
                     if ( siteId.HasValue )
                     {
-                        var site = SiteCache.Read( siteId.Value );
+                        var site = CacheSite.Get( siteId.Value );
                         if ( site != null )
                         {
                             e.Value = site.Name;
@@ -182,7 +182,7 @@ namespace RockWeb.Blocks.Cms
         private void BindFilter()
         {
             ddlSite.Items.Clear();
-            foreach ( SiteCache site in new SiteService( new RockContext() ).Queryable().OrderBy( s => s.Name ).Select( a => a.Id ).ToList().Select( a => SiteCache.Read( a ) ) )
+            foreach ( CacheSite site in new SiteService( new RockContext() ).Queryable().OrderBy( s => s.Name ).Select( a => a.Id ).ToList().Select( a => CacheSite.Get( a ) ) )
             {
                 ddlSite.Items.Add( new ListItem( site.Name, site.Id.ToString() ) );
             }
@@ -197,7 +197,7 @@ namespace RockWeb.Blocks.Cms
         {
             PageRouteService pageRouteService = new PageRouteService( new RockContext() );
             SortProperty sortProperty = gPageRoutes.SortProperty;
-            gPageRoutes.EntityTypeId = EntityTypeCache.Read<PageRoute>().Id;
+            gPageRoutes.EntityTypeId = CacheEntityType.Get<PageRoute>().Id;
 
             var queryable = pageRouteService.Queryable();
 

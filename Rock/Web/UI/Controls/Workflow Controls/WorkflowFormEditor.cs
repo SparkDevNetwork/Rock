@@ -23,7 +23,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Workflow;
 
 namespace Rock.Web.UI.Controls
@@ -147,7 +147,7 @@ namespace Rock.Web.UI.Controls
                 _ddlActionAttribute.Items.Add( new ListItem() );
                 foreach ( var attributeItem in workflowTypeAttributes )
                 {
-                    var fieldType = FieldTypeCache.Read( attributeItem.Value.FieldTypeId );
+                    var fieldType = CacheFieldType.Get( attributeItem.Value.FieldTypeId );
                     if ( fieldType != null && fieldType.Field is Rock.Field.Types.TextFieldType )
                     {
                         var li = new ListItem( attributeItem.Value.Name, attributeItem.Key.ToString() );

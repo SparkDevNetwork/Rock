@@ -16,7 +16,7 @@
 //
 using System;
 using System.Web.UI;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -54,14 +54,14 @@ namespace Rock.Web.UI.Controls
                     dataValueAsGuid = ( dataValue as string ).AsGuidOrNull();
                 }
 
-                FieldTypeCache fieldTypeCache = null;
+                CacheFieldType fieldTypeCache = null;
                 if ( dataValueAsInt.HasValue )
                 {
-                    fieldTypeCache = FieldTypeCache.Read( dataValueAsInt.Value );
+                    fieldTypeCache = CacheFieldType.Get( dataValueAsInt.Value );
                 }
                 else if ( dataValueAsGuid.HasValue )
                 {
-                    fieldTypeCache = FieldTypeCache.Read( dataValueAsGuid.Value );
+                    fieldTypeCache = CacheFieldType.Get( dataValueAsGuid.Value );
                 }
 
                 dataValue = fieldTypeCache != null ? fieldTypeCache.Name : null;

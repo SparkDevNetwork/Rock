@@ -22,8 +22,8 @@ using System.Reflection;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
+using Rock.Cache;
 using Rock.Security;
-using Rock.Web.Cache;
 
 namespace Rock.Rest.Controllers
 {
@@ -105,7 +105,7 @@ namespace Rock.Rest.Controllers
 
             IService serviceInstance = null;
 
-            var cachedEntityType = EntityTypeCache.Read( entityTypeId );
+            var cachedEntityType = CacheEntityType.Get( entityTypeId );
             if ( cachedEntityType != null )
             {
                 qry = qry.Where( a => a.EntityTypeId == entityTypeId );

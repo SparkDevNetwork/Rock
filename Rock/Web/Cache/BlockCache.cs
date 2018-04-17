@@ -29,6 +29,7 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
+    [Obsolete( "Use Rock.Cache.CacheBlock instead" )]
     public class BlockCache : CachedModel<Block>
     {
         #region Constructors

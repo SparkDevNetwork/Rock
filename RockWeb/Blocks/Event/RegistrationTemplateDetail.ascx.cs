@@ -30,7 +30,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
@@ -469,7 +469,7 @@ namespace RockWeb.Blocks.Event
             gFees.GridRebind += gFees_GridRebind;
             gFees.GridReorder += gFees_GridReorder;
             
-            btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.RegistrationTemplate ) ).Id;
+            btnSecurity.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.RegistrationTemplate ) ).Id;
 
             string deleteScript = @"
     $('a.js-delete-template').click(function( e ){
@@ -556,7 +556,7 @@ namespace RockWeb.Blocks.Event
                 }
             }
 
-            breadCrumbs.Add( new BreadCrumb( this.PageCache.PageTitle, pageReference ) );
+            breadCrumbs.Add( new BreadCrumb( this.CachePage.PageTitle, pageReference ) );
             return breadCrumbs;
         }
         
@@ -993,7 +993,7 @@ namespace RockWeb.Blocks.Event
                     registrationTemplateFeeService.Delete( fee );
                 }
 
-                int? entityTypeId = EntityTypeCache.Read( typeof( Rock.Model.RegistrationRegistrant ) ).Id;
+                int? entityTypeId = CacheEntityType.Get( typeof( Rock.Model.RegistrationRegistrant ) ).Id;
                 var qualifierColumn = "RegistrationTemplateId";
                 var qualifierValue = registrationTemplate.Id.ToString();
 
@@ -1025,7 +1025,7 @@ namespace RockWeb.Blocks.Event
                     if ( canDeleteAttribute )
                     {
                         attributeService.Delete( attr );
-                        Rock.Web.Cache.AttributeCache.Flush( attr.Id );
+                        Rock.Cache.CacheAttribute.Remove( attr.Id );
                     }
                 }
 
@@ -1068,7 +1068,7 @@ namespace RockWeb.Blocks.Event
                                 formFieldUI.FieldSource == RegistrationFieldSource.RegistrationAttribute &&
                                 formFieldUI.Attribute != null )
                             {
-                                var attr = AttributeCache.Read( formFieldUI.Attribute.Guid, rockContext );
+                                var attr = CacheAttribute.Get( formFieldUI.Attribute.Guid, rockContext );
                                 if ( attr != null )
                                 {
                                     formField.AttributeId = attr.Id;
@@ -1136,7 +1136,7 @@ namespace RockWeb.Blocks.Event
 
                 rockContext.SaveChanges();
 
-                AttributeCache.FlushEntityAttributes();
+                CacheAttribute.RemoveEntityAttributes();
 
                 // If this is a new template, give the current user and the Registration Administrators role administrative 
                 // rights to this template, and staff, and staff like roles edit rights
@@ -2263,7 +2263,7 @@ namespace RockWeb.Blocks.Event
                     foreach ( var formField in form.Fields.OrderBy( a => a.Order ) )
                     {
                         string formFieldName = ( formField.Attribute != null ) ? formField.Attribute.Name : formField.PersonFieldType.ConvertToString();
-                        string fieldTypeName = ( formField.Attribute != null ) ? FieldTypeCache.GetName( formField.Attribute.FieldTypeId ) : string.Empty;
+                        string fieldTypeName = ( formField.Attribute != null ) ? CacheFieldType.GetName( formField.Attribute.FieldTypeId ) : string.Empty;
                         attributeText += string.Format( 
                             @"<div class='row'>
                                 <div class='col-sm-1'></div>
@@ -2560,7 +2560,7 @@ namespace RockWeb.Blocks.Event
                 }
 
                 var attribute = new Attribute();
-                attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
+                attribute.FieldTypeId = CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
 
                 if ( formField.FieldSource == RegistrationFieldSource.PersonAttribute )
                 {

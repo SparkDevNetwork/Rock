@@ -28,7 +28,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.Groups
     {
         #region Private Variables
 
-        private DefinedValueCache _inactiveStatus = null;
+        private CacheDefinedValue _inactiveStatus = null;
         private Group _group = null;
         private bool _canView = false;
         private Dictionary<int, Dictionary<int, string>> _groupMembersWithRegistrations = new Dictionary<int, Dictionary<int, string>>();
@@ -65,7 +65,7 @@ namespace RockWeb.Blocks.Groups
         /// <value>
         /// The available attributes.
         /// </value>
-        public List<AttributeCache> AvailableAttributes { get; set; }
+        public List<CacheAttribute> AvailableAttributes { get; set; }
 
         /// <summary>
         /// Gets or sets the signed person ids.
@@ -87,7 +87,7 @@ namespace RockWeb.Blocks.Groups
         {
             base.LoadViewState( savedState );
 
-            AvailableAttributes = ViewState["AvailableAttributes"] as List<AttributeCache>;
+            AvailableAttributes = ViewState["AvailableAttributes"] as List<CacheAttribute>;
 
             AddDynamicControls();
         }
@@ -444,7 +444,7 @@ namespace RockWeb.Blocks.Groups
                 var campusId = e.Value.AsIntegerOrNull();
                 if ( campusId.HasValue )
                 {
-                    var campusCache = CampusCache.Read( campusId.Value );
+                    var campusCache = CacheCampus.Get( campusId.Value );
                     if ( campusCache != null )
                     {
                         e.Value = campusCache.Name;
@@ -538,7 +538,7 @@ namespace RockWeb.Blocks.Groups
                 if ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
                 {
                     // person removed from SecurityRole, Flush
-                    Rock.Security.Role.Flush( group.Id );
+                    Rock.Cache.CacheRole.Remove( group.Id );
                 }
             }
 
@@ -605,7 +605,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             cblGroupMemberStatus.BindToEnum<GroupMemberStatus>();
-            cpCampusFilter.Campuses = CampusCache.All();
+            cpCampusFilter.Campuses = CacheCampus.All();
 
             BindAttributes();
             AddDynamicControls();
@@ -645,7 +645,7 @@ namespace RockWeb.Blocks.Groups
         private void BindAttributes()
         {
             // Parse the attribute filters 
-            AvailableAttributes = new List<AttributeCache>();
+            AvailableAttributes = new List<CacheAttribute>();
             if ( _group != null )
             {
                 var rockContext = new RockContext();
@@ -661,7 +661,7 @@ namespace RockWeb.Blocks.Groups
                     .ThenBy( a => a.Order )
                     .ThenBy( a => a.Name ) )
                 {
-                    AvailableAttributes.Add( AttributeCache.Read( attributeModel ) );
+                    AvailableAttributes.Add( CacheAttribute.Get( attributeModel ) );
                 }
 
                 var inheritedAttribute = ( new GroupMember() { GroupId = _group.Id } ).GetInheritedAttributes( rockContext );
@@ -732,7 +732,7 @@ namespace RockWeb.Blocks.Groups
                         boundField.AttributeId = attribute.Id;
                         boundField.HeaderText = attribute.Name;
 
-                        var attributeCache = Rock.Web.Cache.AttributeCache.Read( attribute.Id );
+                        var attributeCache = Rock.Cache.CacheAttribute.Get( attribute.Id );
                         if ( attributeCache != null )
                         {
                             boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
@@ -1111,7 +1111,7 @@ namespace RockWeb.Blocks.Groups
                         }
                     }
 
-                    _inactiveStatus = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE );
+                    _inactiveStatus = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE );
 
                     SortProperty sortProperty = gGroupMembers.SortProperty;
 
@@ -1143,10 +1143,10 @@ namespace RockWeb.Blocks.Groups
                     // we need to save the group members into the grid's object list
                     gGroupMembers.ObjectList = new Dictionary<string, object>();
                     groupMembersList.ForEach( m => gGroupMembers.ObjectList.Add( m.Id.ToString(), m ) );
-                    gGroupMembers.EntityTypeId = EntityTypeCache.Read( Rock.SystemGuid.EntityType.GROUP_MEMBER.AsGuid() ).Id;
+                    gGroupMembers.EntityTypeId = CacheEntityType.Get( Rock.SystemGuid.EntityType.GROUP_MEMBER.AsGuid() ).Id;
 
-                    var homePhoneType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
-                    var cellPhoneType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
+                    var homePhoneType = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
+                    var cellPhoneType = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
 
                     // If exporting to Excel, the selectAll option will be true, and home location should be calculated
                     var homeLocations = new Dictionary<int, Location>();

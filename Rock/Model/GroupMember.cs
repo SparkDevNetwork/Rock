@@ -27,7 +27,7 @@ using System.Runtime.Serialization;
 using Humanizer;
 using Rock.Data;
 using Rock.Transactions;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Model
 {
@@ -350,7 +350,7 @@ namespace Rock.Model
                 }
 
                 // process universal search indexing if required
-                var groupType = GroupTypeCache.Read( group.GroupTypeId );
+                var groupType = CacheGroupType.Get( group.GroupTypeId );
                 if ( groupType != null && groupType.IsIndexEnabled )
                 {
                     IndexEntityTransaction transaction = new IndexEntityTransaction();
@@ -441,7 +441,7 @@ namespace Rock.Model
             // load group including members to save queries in group member validation
             var group = this.Group ?? new GroupService( rockContext ).Queryable( "Members" ).Where( g => g.Id == this.GroupId ).FirstOrDefault();
 
-            var groupType = GroupTypeCache.Read( group.GroupTypeId );
+            var groupType = CacheGroupType.Get( group.GroupTypeId );
             var groupRole = groupType.Roles.First( a => a.Id == this.GroupRoleId );
 
             var existingGroupMembership = group.Members.Where( m => m.PersonId == this.PersonId );
@@ -720,8 +720,8 @@ namespace Rock.Model
         /// <summary>
         /// Get a list of all inherited Attributes that should be applied to this entity.
         /// </summary>
-        /// <returns>A list of all inherited AttributeCache objects.</returns>
-        public override List<AttributeCache> GetInheritedAttributes( Rock.Data.RockContext rockContext )
+        /// <returns>A list of all inherited CacheAttribute objects.</returns>
+        public override List<Cache.CacheAttribute> GetInheritedAttributes( Rock.Data.RockContext rockContext )
         {
             var group = this.Group;
             if ( group == null && this.GroupId > 0 )
@@ -736,7 +736,7 @@ namespace Rock.Model
                 var groupType = group.GroupType;
                 if ( groupType == null && group.GroupTypeId > 0 )
                 {
-                    // Can't use GroupTypeCache here since it loads attributes and would
+                    // Can't use CacheGroupType here since it loads attributes and would
                     // result in a recursive stack overflow situation.
                     groupType = new GroupTypeService( rockContext )
                         .Queryable().AsNoTracking()

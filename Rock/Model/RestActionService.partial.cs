@@ -27,7 +27,7 @@ namespace Rock.Model
         /// <returns></returns>
         public override Guid? GetGuid( int id )
         {
-            var campus = Rock.Web.Cache.RestActionCache.Read( id );
+            var campus = Rock.Cache.CacheRestAction.Get( id );
             if ( campus != null )
             {
                 return campus.Guid;

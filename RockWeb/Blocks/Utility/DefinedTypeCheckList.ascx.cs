@@ -24,7 +24,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -101,7 +101,7 @@ $('.checklist-item label strong, .checklist-desc-toggle').on('click', function (
                                 {
                                     value.SetAttributeValue( attributeKey, cbValue.Checked.ToString() );
                                     value.SaveAttributeValues( rockContext );
-                                    DefinedValueCache.Flush( value.Id );
+                                    CacheDefinedValue.Remove( value.Id );
                                 }
                             }
                         }
@@ -145,7 +145,7 @@ $('.checklist-item label strong, .checklist-desc-toggle').on('click', function (
             Guid guid = Guid.Empty;
             if ( Guid.TryParse( GetAttributeValue( "DefinedType" ), out guid ) )
             {
-                var definedType = DefinedTypeCache.Read( guid );
+                var definedType = CacheDefinedType.Get( guid );
                 if ( definedType != null )
                 {
                     // Get the values

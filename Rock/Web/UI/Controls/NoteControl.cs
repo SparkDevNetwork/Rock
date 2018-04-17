@@ -23,8 +23,8 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
+using Rock.Cache;
 using Rock.Security;
-using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -96,18 +96,18 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The note types.
         /// </value>
-        public List<NoteTypeCache> NoteTypes
+        public List<CacheNoteType> NoteTypes
         {
             get
             {
                 EnsureChildControls();
-                var result = new List<NoteTypeCache>();
+                var result = new List<CacheNoteType>();
                 foreach( ListItem li in _ddlNoteType.Items )
                 {
                     int? id = li.Value.AsIntegerOrNull();
                     if ( id.HasValue )
                     {
-                        var noteType = NoteTypeCache.Read( id.Value );
+                        var noteType = CacheNoteType.Get( id.Value );
                         {
                             if ( noteType != null )
                             {
@@ -470,7 +470,7 @@ namespace Rock.Web.UI.Controls
             {
                 if ( NoteTypeId.HasValue )
                 {
-                    var noteType = NoteTypeCache.Read( NoteTypeId.Value );
+                    var noteType = CacheNoteType.Get( NoteTypeId.Value );
                     if ( noteType != null )
                     {
                         return noteType.CssClass;
@@ -487,7 +487,7 @@ namespace Rock.Web.UI.Controls
             {
                 if ( NoteTypeId.HasValue )
                 {
-                    var noteType = NoteTypeCache.Read( NoteTypeId.Value );
+                    var noteType = CacheNoteType.Get( NoteTypeId.Value );
                     if ( noteType != null )
                     {
                         return noteType.IconCssClass;
@@ -614,7 +614,7 @@ namespace Rock.Web.UI.Controls
 
             _sbSecurity.ID = "_sbSecurity";
             _sbSecurity.Attributes["class"] = "btn btn-security btn-xs security pull-right";
-            _sbSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Note ) ).Id;
+            _sbSecurity.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.Note ) ).Id;
 
             _dtCreateDate.ID = this.ID + "_tbCreateDate";
             _dtCreateDate.Label = "Note Created Date";
@@ -765,7 +765,7 @@ namespace Rock.Web.UI.Controls
 
                     if ( DisplayNoteTypeHeading & this.NoteTypeId.HasValue )
                     {
-                        var noteType = NoteTypeCache.Read( this.NoteTypeId.Value );
+                        var noteType = CacheNoteType.Get( this.NoteTypeId.Value );
                         if ( noteType != null )
                         {
                             writer.RenderBeginTag( HtmlTextWriterTag.Strong );

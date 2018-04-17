@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock
 {
@@ -141,7 +141,7 @@ namespace Rock
             // If the object is a string...
             if ( exportValueString != null )
             {
-                var currencySymbol = GlobalAttributesCache.Value( "CurrencySymbol" );
+                var currencySymbol = CacheGlobalAttributes.Value( "CurrencySymbol" );
 
                 // ... that contains the currency symbol ...
                 if ( exportValueString.Contains( currencySymbol ) )

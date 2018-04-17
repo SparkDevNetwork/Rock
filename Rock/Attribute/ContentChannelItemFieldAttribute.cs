@@ -48,7 +48,7 @@ namespace Rock.Attribute
                 Guid guid = Guid.Empty;
                 if ( Guid.TryParse( contentChannelGuid, out guid ) )
                 {
-                    var contentChannel = Rock.Web.Cache.ContentChannelCache.Read( guid );
+                    var contentChannel = Rock.Cache.CacheContentChannel.Get( guid );
                     if ( contentChannel != null )
                     {
                         var configValue = new Field.ConfigurationValue( contentChannel.Id.ToString() );

@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.UI;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -181,7 +181,7 @@ namespace Rock.Field.Types
                 {
                     if ( isDefinedType )
                     {
-                        var definedValue = DefinedValueCache.Read( nameAndValue[1].AsInteger() );
+                        var definedValue = CacheDefinedValue.Get( nameAndValue[1].AsInteger() );
                         if ( definedValue != null )
                         {
                             nameAndValue[1] = definedValue.Value;
@@ -324,7 +324,7 @@ namespace Rock.Field.Types
                 {
                     if ( isDefinedType )
                     {
-                        var definedValue = DefinedValueCache.Read( nameAndValue[1].AsInteger() );
+                        var definedValue = CacheDefinedValue.Get( nameAndValue[1].AsInteger() );
                         if ( definedValue != null )
                         {
                             values.Add( new KeyValuePair<string, object>( nameAndValue[0], definedValue ) );

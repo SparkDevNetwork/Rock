@@ -23,7 +23,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Model
 {
@@ -140,17 +140,17 @@ namespace Rock.Model
         /// The activity type cache.
         /// </value>
         [LavaInclude]
-        public virtual WorkflowActivityTypeCache ActivityTypeCache
+        public virtual CacheWorkflowActivityType ActivityTypeCache
         {
             get
             {
                 if ( ActivityTypeId > 0 )
                 {
-                    return WorkflowActivityTypeCache.Read( ActivityTypeId );
+                    return CacheWorkflowActivityType.Get( ActivityTypeId );
                 }
                 else if ( ActivityType != null )
                 {
-                    return WorkflowActivityTypeCache.Read( ActivityType.Id );
+                    return CacheWorkflowActivityType.Get( ActivityType.Id );
                 }
                 return null;
             }
@@ -339,7 +339,7 @@ namespace Rock.Model
 
             if ( this.Workflow != null )
             {
-                var workflowType = this.Workflow.WorkflowTypeCache;
+                var workflowType = this.Workflow.CacheWorkflowType;
                 if( force || (
                     workflowType != null && (
                     workflowType.LoggingLevel == WorkflowLoggingLevel.Activity ||
@@ -386,7 +386,7 @@ namespace Rock.Model
         /// <param name="activityType">The <see cref="Rock.Model.WorkflowActivityType"/> to activate.</param>
         /// <param name="workflow">The persisted <see cref="Rock.Model.Workflow"/> instance that this Workflow activity belongs to.</param>
         /// <returns>The activated <see cref="Rock.Model.WorkflowActivity"/>.</returns>
-        [Obsolete( "For improved performance, use the Activate method that takes a WorkflowActivityTypeCache parameter instead. IMPORTANT NOTE: When using the new method, the WorkflowActivity object that is returned by that method will not have the ActitivtyType property set. If you are referencing the ActivityType property on a Workflow Activity returned by that method, you will get a Null Reference Exception! You should use the new ActivityTypeCache property on the workflow activity instead." )]
+        [Obsolete( "For improved performance, use the Activate method that takes a CacheWorkflowActivityType parameter instead. IMPORTANT NOTE: When using the new method, the WorkflowActivity object that is returned by that method will not have the ActitivtyType property set. If you are referencing the ActivityType property on a Workflow Activity returned by that method, you will get a Null Reference Exception! You should use the new ActivityTypeCache property on the workflow activity instead." )]
         public static WorkflowActivity Activate( WorkflowActivityType activityType, Workflow workflow )
         {
             using ( var rockContext = new RockContext() )
@@ -404,12 +404,12 @@ namespace Rock.Model
         /// <returns>
         /// The activated <see cref="Rock.Model.WorkflowActivity" />.
         /// </returns>
-        [Obsolete( "For improved performance, use the Activate method that takes a WorkflowActivityTypeCache parameter instead. IMPORTANT NOTE: When using the new method, the WorkflowActivity object that is returned by that method will not have the ActitivtyType property set. If you are referencing the ActivityType property on a Workflow Activity returned by that method, you will get a Null Reference Exception! You should use the new ActivityTypeCache property on the workflow activity instead." )]
+        [Obsolete( "For improved performance, use the Activate method that takes a CacheWorkflowActivityType parameter instead. IMPORTANT NOTE: When using the new method, the WorkflowActivity object that is returned by that method will not have the ActitivtyType property set. If you are referencing the ActivityType property on a Workflow Activity returned by that method, you will get a Null Reference Exception! You should use the new ActivityTypeCache property on the workflow activity instead." )]
         public static WorkflowActivity Activate( WorkflowActivityType activityType, Workflow workflow, RockContext rockContext )
         {
             if ( activityType != null )
             {
-                var activityTypeCache = WorkflowActivityTypeCache.Read( activityType.Id );
+                var activityTypeCache = CacheWorkflowActivityType.Get( activityType.Id );
                 var activity = Activate( activityTypeCache, workflow, rockContext );
                 if ( activity != null )
                 {
@@ -429,7 +429,24 @@ namespace Rock.Model
         /// <returns>
         /// The activated <see cref="Rock.Model.WorkflowActivity" />.
         /// </returns>
-        public static WorkflowActivity Activate( WorkflowActivityTypeCache activityTypeCache, Workflow workflow )
+        [Obsolete]
+        public static WorkflowActivity Activate( Web.Cache.WorkflowActivityTypeCache activityTypeCache, Workflow workflow )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                return Activate( activityTypeCache, workflow, rockContext );
+            }
+        }
+
+        /// <summary>
+        /// Activates the specified WorkflowActivity
+        /// </summary>
+        /// <param name="activityTypeCache">The activity type cache.</param>
+        /// <param name="workflow">The persisted <see cref="Rock.Model.Workflow" /> instance that this Workflow activity belongs to.</param>
+        /// <returns>
+        /// The activated <see cref="Rock.Model.WorkflowActivity" />.
+        /// </returns>
+        public static WorkflowActivity Activate( CacheWorkflowActivityType activityTypeCache, Workflow workflow )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -446,7 +463,22 @@ namespace Rock.Model
         /// <returns>
         /// The activated <see cref="Rock.Model.WorkflowActivity" />.
         /// </returns>
-        public static WorkflowActivity Activate( WorkflowActivityTypeCache activityTypeCache, Workflow workflow, RockContext rockContext )
+        [Obsolete]
+        public static WorkflowActivity Activate( Web.Cache.WorkflowActivityTypeCache activityTypeCache, Workflow workflow, RockContext rockContext )
+        {
+            return Activate( CacheWorkflowActivityType.Get( activityTypeCache.Id ), workflow, rockContext );
+        }
+
+        /// <summary>
+        /// Activates the specified WorkflowActivity
+        /// </summary>
+        /// <param name="activityTypeCache">The activity type cache.</param>
+        /// <param name="workflow">The persisted <see cref="Rock.Model.Workflow" /> instance that this Workflow activity belongs to.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>
+        /// The activated <see cref="Rock.Model.WorkflowActivity" />.
+        /// </returns>
+        public static WorkflowActivity Activate( CacheWorkflowActivityType activityTypeCache, Workflow workflow, RockContext rockContext )
         {
             var activity = new WorkflowActivity();
             activity.Workflow = workflow;

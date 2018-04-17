@@ -23,7 +23,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.UniversalSearch;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Search.Other
 {

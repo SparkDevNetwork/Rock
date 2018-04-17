@@ -18,7 +18,7 @@ using System;
 using System.Web.Http;
 using System.Collections.Generic;
 using System.Linq;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 using Rock.VersionInfo;
 using Rock.Rest.Filters;
@@ -92,7 +92,7 @@ namespace Rock.Rest.Controllers
                 {
                     int id = idParts[0].AsInteger();
                     Guid guid = idParts[1].AsGuid();
-                    var campus = CampusCache.Read( guid );
+                    var campus = CacheCampus.Get( guid );
                     if ( campus != null )
                     {
                         return campus.Id;

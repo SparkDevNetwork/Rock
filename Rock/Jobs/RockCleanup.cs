@@ -16,17 +16,18 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+
 using Quartz;
 using Rock.Attribute;
-using Rock.Model;
+using Rock.Cache;
 using Rock.Data;
-using System.Data.Entity;
-using Rock.Web.Cache;
 using Rock.Field.Types;
-using System.Reflection;
+using Rock.Model;
 
 namespace Rock.Jobs
 {
@@ -277,16 +278,16 @@ namespace Rock.Jobs
 
             //// Add any missing Implied/Known relationship groups
             // Known Relationship Group
-            AddMissingRelationshipGroups( GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS ), Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() );
+            AddMissingRelationshipGroups( CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS ), Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() );
 
             // Implied Relationship Group
-            AddMissingRelationshipGroups( GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_IMPLIED_RELATIONSHIPS ), Rock.SystemGuid.GroupRole.GROUPROLE_IMPLIED_RELATIONSHIPS_OWNER.AsGuid() );
+            AddMissingRelationshipGroups( CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_IMPLIED_RELATIONSHIPS ), Rock.SystemGuid.GroupRole.GROUPROLE_IMPLIED_RELATIONSHIPS_OWNER.AsGuid() );
 
             // Find family groups that have no members or that have only 'inactive' people (record status) and mark the groups inactive.
             using ( var familyRockContext = new Rock.Data.RockContext() )
             {
-                int familyGroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
-                int recordStatusInactiveValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() ).Id;
+                int familyGroupTypeId = CacheGroupType.GetFamilyGroupType().Id;
+                int recordStatusInactiveValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() ).Id;
 
                 var activeFamilyWithNoActiveMembers = new GroupService( familyRockContext ).Queryable()
                     .Where( a => a.GroupTypeId == familyGroupTypeId && a.IsActive == true )
@@ -306,7 +307,7 @@ namespace Rock.Jobs
         /// </summary>
         /// <param name="relationshipGroupType">Type of the relationship group.</param>
         /// <param name="ownerRoleGuid">The owner role unique identifier.</param>
-        private static void AddMissingRelationshipGroups( GroupTypeCache relationshipGroupType, Guid ownerRoleGuid )
+        private static void AddMissingRelationshipGroups( CacheGroupType relationshipGroupType, Guid ownerRoleGuid )
         {
             if ( relationshipGroupType != null )
             {
@@ -691,7 +692,7 @@ WHERE ic.ChannelId = @channelId
                 AttributeMatrixService attributeMatrixService = new AttributeMatrixService( rockContext );
                 AttributeMatrixItemService attributeMatrixItemService = new AttributeMatrixItemService( rockContext );
 
-                var matrixFieldTypeId = FieldTypeCache.Read<MatrixFieldType>().Id;
+                var matrixFieldTypeId = CacheFieldType.Get<MatrixFieldType>().Id;
                 // get a list of attribute Matrix Guids that are actually in use
                 var usedAttributeMatrices = new AttributeValueService( rockContext ).Queryable().Where( a => a.Attribute.FieldTypeId == matrixFieldTypeId ).Select( a => a.Value ).ToList().AsGuidList();
 
@@ -709,12 +710,12 @@ WHERE ic.ChannelId = @channelId
 
             // clean up other orphaned entity attributes
             Type rockContextType = typeof( Rock.Data.RockContext );
-            foreach ( var cachedType in EntityTypeCache.All().Where( e => e.IsEntity ) )
+            foreach ( var cachedType in CacheEntityType.All().Where( e => e.IsEntity ) )
             {
                 Type entityType = cachedType.GetEntityType();
                 if ( entityType != null &&
                     typeof( IEntity ).IsAssignableFrom( entityType ) &&
-                    typeof( IHasAttributes ).IsAssignableFrom( entityType ) &&
+                    typeof( Data.IHasAttributes ).IsAssignableFrom( entityType ) &&
                     !entityType.Namespace.Equals( "Rock.Rest.Controllers" ) )
                 {
                     try
@@ -752,14 +753,14 @@ WHERE ic.ChannelId = @channelId
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        private int CleanupOrphanedAttributeValuesForEntityType<T>() where T : Rock.Data.Entity<T>, IHasAttributes, new()
+        private int CleanupOrphanedAttributeValuesForEntityType<T>() where T : Rock.Data.Entity<T>,  Data.IHasAttributes, new()
         {
             int recordsDeleted = 0;
 
             using ( RockContext rockContext = new RockContext() )
             {
                 var attributeValueService = new AttributeValueService( rockContext );
-                int? entityTypeId = EntityTypeCache.GetId<T>();
+                int? entityTypeId = CacheEntityType.GetId<T>();
                 var entityIdsQuery = new Service<T>( rockContext ).Queryable().Select( a => a.Id );
                 var orphanedAttributeValues = attributeValueService.Queryable().Where( a => a.EntityId.HasValue && a.Attribute.EntityTypeId == entityTypeId.Value && !entityIdsQuery.Contains( a.EntityId.Value ) ).ToList();
                 if ( orphanedAttributeValues.Any() )

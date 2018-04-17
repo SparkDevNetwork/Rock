@@ -26,7 +26,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Security
@@ -100,13 +100,13 @@ namespace RockWeb.Blocks.Security
                 Guid? locationTypeGuid = GetAttributeValue( "LocationType" ).AsGuidOrNull();
                 if ( locationTypeGuid.HasValue )
                 {
-                    var addressTypeDv = DefinedValueCache.Read( locationTypeGuid.Value );
+                    var addressTypeDv = CacheDefinedValue.Get( locationTypeGuid.Value );
 
                     var familyGroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuidOrNull();
 
                     if ( familyGroupTypeGuid.HasValue )
                     {
-                        var familyGroupType = GroupTypeCache.Read( familyGroupTypeGuid.Value );
+                        var familyGroupType = CacheGroupType.Get( familyGroupTypeGuid.Value );
 
                         RockContext rockContext = new RockContext();
                         var address = new GroupLocationService( rockContext ).Queryable()

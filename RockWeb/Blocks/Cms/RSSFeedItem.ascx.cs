@@ -31,7 +31,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -98,26 +98,17 @@ namespace RockWeb.Blocks.Cms
         private void ClearCache()
         {
             SyndicationFeedHelper.ClearCachedFeed( GetAttributeValue( "RSSFeedUrl" ) );
-            RockMemoryCache cache = RockMemoryCache.Default;
-            cache.Remove( TemplateCacheKey );
+            RockCache.Remove( TemplateCacheKey );
         }
 
         private Template GetTemplate()
         {
-            RockMemoryCache cache = RockMemoryCache.Default;
-            Template template = null;
+            return RockCache.GetOrAddExisting( TemplateCacheKey, () => LoadTemplate() ) as Template;
+        }
 
-            if ( cache[TemplateCacheKey] != null )
-            {
-                template = (Template)cache[TemplateCacheKey];
-            }
-            else
-            {
-                template = Template.Parse( GetAttributeValue( "Template" ) );
-                cache.Set( TemplateCacheKey, template, new CacheItemPolicy() );
-            }
-
-            return template;
+        private Template LoadTemplate()
+        {
+            return Template.Parse( GetAttributeValue( "Template" ) );
         }
 
         private string LoadDebugData( Dictionary<string, object> feedDictionary )

@@ -26,7 +26,7 @@ using System.Data.Entity;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using Rock.Security;
@@ -131,7 +131,7 @@ namespace RockWeb.Blocks.Event
                 // filter occurrences for campus (always include the "All Campuses" events)
                 if ( GetAttributeValue( "UseCampusContext" ).AsBoolean() )
                 {
-                    var campusEntityType = EntityTypeCache.Read( "Rock.Model.Campus" );
+                    var campusEntityType = CacheEntityType.Get( "Rock.Model.Campus" );
                     var contextCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
 
                     if ( contextCampus != null )

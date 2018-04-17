@@ -29,7 +29,7 @@ using Rock.Lava;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -70,7 +70,7 @@ namespace RockWeb.Blocks.Reporting
 
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Metric.FriendlyTypeName );
 
-            btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Metric ) ).Id;
+            btnSecurity.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.Metric ) ).Id;
 
             ddlDataView.Help = @"NOTE: When using DataView to populate Metrics, multiple partitions is not supported.
 
@@ -80,7 +80,7 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
 ";
 
             // Metric supports 0 or more Categories, so the entityType is actually MetricCategory, not Metric
-            cpMetricCategories.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.MetricCategory ) ).Id;
+            cpMetricCategories.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.MetricCategory ) ).Id;
 
             lcMetricsChart.Options.SetChartStyle( GetAttributeValue( "ChartStyle" ).AsGuidOrNull() );
 
@@ -276,9 +276,9 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
             metric.IsCumulative = cbIsCumulative.Checked;
             metric.EnableAnalytics = cbEnableAnalytics.Checked;
 
-            int sourceTypeDataView = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_DATAVIEW.AsGuid() ).Id;
-            int sourceTypeSQL = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_SQL.AsGuid() ).Id;
-            int sourceTypeLava = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_LAVA.AsGuid() ).Id;
+            int sourceTypeDataView = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_DATAVIEW.AsGuid() ).Id;
+            int sourceTypeSQL = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_SQL.AsGuid() ).Id;
+            int sourceTypeLava = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_LAVA.AsGuid() ).Id;
 
             var personService = new PersonService( rockContext );
             var metricChampionPerson = personService.Get( ppMetricChampionPerson.SelectedValue ?? 0 );
@@ -548,7 +548,7 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
         protected void ddlSourceType_SelectedIndexChanged( object sender, EventArgs e )
         {
             int? sourceValueTypeId = ddlSourceType.SelectedValueAsId();
-            var sourceValueType = DefinedValueCache.Read( sourceValueTypeId ?? 0 );
+            var sourceValueType = CacheDefinedValue.Get( sourceValueTypeId ?? 0 );
             pnlSQLSourceType.Visible = false;
             pnlDataviewSourceType.Visible = false;
             if ( sourceValueType != null )
@@ -612,7 +612,7 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
                 // hide the panel drawer that show created and last modified dates
                 pdAuditDetails.Visible = false;
                 metric = new Metric { Id = 0, IsSystem = false };
-                metric.SourceValueTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_MANUAL.AsGuid() ).Id;
+                metric.SourceValueTypeId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_MANUAL.AsGuid() ).Id;
                 metric.MetricCategories = new List<MetricCategory>();
                 if ( parentCategoryId.HasValue )
                 {
@@ -706,7 +706,7 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
             tbIconCssClass.Text = metric.IconCssClass;
             cpMetricCategories.SetValues( metric.MetricCategories.Select( a => a.Category ) );
 
-            int manualSourceType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_MANUAL.AsGuid() ).Id;
+            int manualSourceType = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_MANUAL.AsGuid() ).Id;
 
             ddlSourceType.SetValue( metric.SourceValueTypeId ?? manualSourceType );
             tbYAxisLabel.Text = metric.YAxisLabel;
@@ -948,7 +948,7 @@ The Lava can include Lava merge fields:";
 
             var partitionList = MetricPartitionsState.OrderBy( a => a.Order ).ThenBy( a => a.Label ).Select( a =>
             {
-                var entityTypeCache = EntityTypeCache.Read( a.EntityTypeId ?? 0 );
+                var entityTypeCache = CacheEntityType.Get( a.EntityTypeId ?? 0 );
                 string label;
                 if ( a.Order == 0 && !a.EntityTypeId.HasValue )
                 {
@@ -1017,7 +1017,7 @@ The Lava can include Lava merge fields:";
                 var singlePartition = metric.MetricPartitions.First();
                 if ( singlePartition.EntityTypeId.HasValue )
                 {
-                    var entityTypeCache = EntityTypeCache.Read( singlePartition.EntityTypeId.Value );
+                    var entityTypeCache = CacheEntityType.Get( singlePartition.EntityTypeId.Value );
                     if ( entityTypeCache != null )
                     {
                         descriptionListMain.Add( "Partitioned by ", singlePartition.Label ?? entityTypeCache.FriendlyName );
@@ -1027,7 +1027,7 @@ The Lava can include Lava merge fields:";
             else if ( metric.MetricPartitions.Count() > 1 )
             {
                 var partitionNameList = metric.MetricPartitions.OrderBy( a => a.Order ).ThenBy( a => a.Label ).Where( a => a.EntityTypeId.HasValue ).ToList().Select( a => {
-                    var entityTypeCache = EntityTypeCache.Read( a.EntityTypeId.Value );
+                    var entityTypeCache = CacheEntityType.Get( a.EntityTypeId.Value );
                     return new
                     {
                         Label = a.Label,
@@ -1039,7 +1039,7 @@ The Lava can include Lava merge fields:";
             }
 
             // only show LastRun and Schedule label if SourceValueType is not Manual
-            int manualSourceType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_MANUAL.AsGuid() ).Id;
+            int manualSourceType = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_MANUAL.AsGuid() ).Id;
             ltLastRunDateTime.Visible = metric.SourceValueTypeId != manualSourceType;
             hlScheduleFriendlyText.Visible = metric.SourceValueTypeId != manualSourceType;
 
@@ -1384,10 +1384,10 @@ The Lava can include Lava merge fields:";
             
             if ( etpMetricPartitionEntityType.SelectedEntityTypeId.HasValue )
             {
-                var entityTypeCache = EntityTypeCache.Read( etpMetricPartitionEntityType.SelectedEntityTypeId.Value );
+                var entityTypeCache = CacheEntityType.Get( etpMetricPartitionEntityType.SelectedEntityTypeId.Value );
                 if ( entityTypeCache != null )
                 {
-                    if ( entityTypeCache.Id == EntityTypeCache.GetId<Rock.Model.DefinedValue>() )
+                    if ( entityTypeCache.Id == CacheEntityType.GetId<Rock.Model.DefinedValue>() )
                     {
                         ddlMetricPartitionDefinedTypePicker.Visible = true;
                         tbMetricPartitionEntityTypeQualifierColumn.Text = "DefinedTypeId";

@@ -22,7 +22,7 @@ using System.ComponentModel.Composition;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Workflow.Action
 {
@@ -75,7 +75,7 @@ namespace Rock.Workflow.Action
             Guid dateAttributeGuid = GetAttributeValue( action, "DateInAttribute" ).AsGuid();
             if ( !dateAttributeGuid.IsEmpty() )
             {
-                var attribute = AttributeCache.Read( dateAttributeGuid, rockContext );
+                var attribute = CacheAttribute.Get( dateAttributeGuid, rockContext );
                 if ( attribute != null )
                 {
                     DateTime? attributeDate = action.GetWorklowAttributeValue( dateAttributeGuid ).AsDateTime();
@@ -131,19 +131,19 @@ namespace Rock.Workflow.Action
                 attribute.EntityTypeQualifierValue = action.Activity.ActivityTypeId.ToString();
                 attribute.Name = "Delay Activated";
                 attribute.Key = AttrKey;
-                attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT.AsGuid() ).Id;
+                attribute.FieldTypeId = CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT.AsGuid() ).Id;
 
                 // Need to save the attribute now (using different context) so that an attribute id is returned.
                 using ( var newRockContext = new RockContext() )
                 {
                     new AttributeService( newRockContext ).Add( attribute );
                     newRockContext.SaveChanges();
-                    AttributeCache.FlushEntityAttributes();
-                    WorkflowActivityTypeCache.Flush( action.Activity.ActivityTypeId );
+                    CacheAttribute.RemoveEntityAttributes();
+                    CacheWorkflowActivityType.Remove( action.Activity.ActivityTypeId );
                 }
 
-                action.Activity.Attributes.Add( AttrKey, AttributeCache.Read( attribute ) );
-                var attributeValue = new AttributeValueCache();
+                action.Activity.Attributes.Add( AttrKey, CacheAttribute.Get( attribute ) );
+                var attributeValue = new CacheAttributeValue();
                 attributeValue.AttributeId = attribute.Id;
                 attributeValue.Value = dateActivated.ToString( "o" );
                 action.Activity.AttributeValues.Add( AttrKey, attributeValue );

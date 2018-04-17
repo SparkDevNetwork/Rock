@@ -22,7 +22,7 @@ using System.Text.RegularExpressions;
 using DotLiquid;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Lava.Blocks
 {
@@ -162,16 +162,16 @@ namespace Rock.Lava.Blocks
                     {
                         string type = parmWorkflowType;
                         string name = parmWorkflowName ?? string.Empty;
-                        WorkflowTypeCache workflowType = null;
+                        CacheWorkflowType workflowType = null;
 
                         /* Get the type of workflow */
                         if ( type.AsGuidOrNull() != null )
                         {
-                            workflowType = WorkflowTypeCache.Read( type.AsGuid() );
+                            workflowType = CacheWorkflowType.Get( type.AsGuid() );
                         }
                         else if ( type.AsIntegerOrNull() != null )
                         {
-                            workflowType = WorkflowTypeCache.Read( type.AsInteger() );
+                            workflowType = CacheWorkflowType.Get( type.AsInteger() );
                         }
 
                         /* Try to activate the workflow */
@@ -245,16 +245,16 @@ namespace Rock.Lava.Blocks
                                     if ( parmActivityType != null )
                                     {
                                         string type = parmActivityType.ToString();
-                                        WorkflowActivityTypeCache activityType = null;
+                                        CacheWorkflowActivityType activityType = null;
 
                                         /* Get the type of activity */
                                         if ( type.AsGuidOrNull() != null )
                                         {
-                                            activityType = WorkflowActivityTypeCache.Read( type.AsGuid() );
+                                            activityType = CacheWorkflowActivityType.Get( type.AsGuid() );
                                         }
                                         else if ( type.AsIntegerOrNull() != null )
                                         {
-                                            activityType = WorkflowActivityTypeCache.Read( type.AsInteger() );
+                                            activityType = CacheWorkflowActivityType.Get( type.AsInteger() );
                                         }
 
                                         if ( activityType != null )

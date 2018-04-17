@@ -30,6 +30,7 @@ namespace Rock.Web.Cache
     /// </summary>
     [Serializable]
     [DataContract]
+    [Obsolete( "Use Rock.Cache.CacheGroupType instead" )]
     public class GroupTypeCache : CachedModel<GroupType>
     {
         #region Constructors
@@ -735,6 +736,7 @@ namespace Rock.Web.Cache
     /// <summary>
     /// Cached version of GroupTypeRole
     /// </summary>
+    [Obsolete( "Use Rock.Cache.GroupTypeRoleCache instead" )]
     public class GroupTypeRoleCache
     {
         /// <summary>

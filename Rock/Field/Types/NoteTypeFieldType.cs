@@ -23,7 +23,7 @@ using System.Web.UI.WebControls;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -168,7 +168,7 @@ namespace Rock.Field.Types
             {
                 using ( var rockContext = new RockContext() )
                 {
-                    var noteType = NoteTypeCache.Read( value.AsGuid() );
+                    var noteType = CacheNoteType.Get( value.AsGuid() );
                     if ( noteType != null )
                     {
                         formattedValue = noteType.Name;
@@ -205,7 +205,7 @@ namespace Rock.Field.Types
                     entityTypeName = configurationValues[ENTITY_TYPE_NAME_KEY].Value;
                     if ( !string.IsNullOrWhiteSpace( entityTypeName ) && entityTypeName != None.IdValue )
                     {
-                        var entityType = EntityTypeCache.Read( entityTypeName );
+                        var entityType = CacheEntityType.Get( entityTypeName );
                         if ( entityType != null )
                         {
                             entityTypeId = entityType.Id;
@@ -300,7 +300,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            var noteType = NoteTypeCache.Read( guid );
+            var noteType = CacheNoteType.Get( guid );
             return noteType != null ? noteType.Id : (int?)null;
         }
 
@@ -312,7 +312,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var noteType = NoteTypeCache.Read( id ?? 0 );
+            var noteType = CacheNoteType.Get( id ?? 0 );
             string guidValue = noteType != null ? noteType.Guid.ToString() : string.Empty;
             SetEditValue( control, configurationValues, guidValue );
         }

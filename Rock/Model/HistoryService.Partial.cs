@@ -20,7 +20,7 @@ using System.IO;
 using System.Linq;
 
 using Rock.Data;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Model
 {
@@ -57,14 +57,14 @@ namespace Rock.Model
         /// <param name="modifiedByPersonAliasId">The modified by person alias identifier.</param>
         public static void AddChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, List<string> changes, string caption, Type relatedModelType, int? relatedEntityId, int? modifiedByPersonAliasId = null )
         {
-            var entityType = EntityTypeCache.Read( modelType );
-            var category = CategoryCache.Read( categoryGuid );
+            var entityType = CacheEntityType.Get( modelType );
+            var category = CacheCategory.Get( categoryGuid );
             var creationDate = RockDateTime.Now;
 
             int? relatedEntityTypeId = null;
             if ( relatedModelType != null )
             {
-                var relatedEntityType = EntityTypeCache.Read( relatedModelType );
+                var relatedEntityType = CacheEntityType.Get( relatedModelType );
                 if ( relatedModelType != null )
                 {
                     relatedEntityTypeId = relatedEntityType.Id;
@@ -147,7 +147,7 @@ namespace Rock.Model
         /// <param name="entityId">The entity identifier.</param>
         public static void DeleteChanges( RockContext rockContext, Type modelType, int entityId )
         {
-            var entityType = EntityTypeCache.Read( modelType );
+            var entityType = CacheEntityType.Get( modelType );
             if ( entityType != null  )
             {
                 var historyService = new HistoryService( rockContext );

@@ -24,7 +24,7 @@ using DotLiquid;
 using DotLiquid.Exceptions;
 using DotLiquid.Util;
 using Rock.Data;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Model;
 using System;
 
@@ -39,7 +39,7 @@ namespace Rock.Lava.Shortcodes
 
         string _markup = string.Empty;
         string _tagName = string.Empty;
-        LavaShortcodeCache _shortcode;
+        CacheLavaShortcode _shortcode;
 
         Dictionary<string, object> _internalMergeFields;
 
@@ -49,7 +49,7 @@ namespace Rock.Lava.Shortcodes
         public override void OnStartup()
         {
             // get all the inline dynamic shortcodes and register them
-            var inlineShortCodes = LavaShortcodeCache.All( false ).Where( s => s.TagType == TagType.Inline );
+            var inlineShortCodes = CacheLavaShortcode.All().Where( s => s.TagType == TagType.Inline );
 
             foreach(var shortcode in inlineShortCodes )
             {
@@ -69,7 +69,7 @@ namespace Rock.Lava.Shortcodes
         {
             _markup = markup;
             _tagName = tagName;
-            _shortcode = LavaShortcodeCache.Read( _tagName );
+            _shortcode = CacheLavaShortcode.Get( _tagName );
 
             base.Initialize( tagName, markup, tokens );
         }

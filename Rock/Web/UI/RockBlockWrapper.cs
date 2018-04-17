@@ -27,7 +27,7 @@ using Rock;
 using Rock.Data;
 using Rock.Field;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Web.UI
 {
@@ -83,7 +83,7 @@ namespace Rock.Web.UI
         /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter" /> that represents the output stream to render HTML content on the client.</param>
         protected override void Render( HtmlTextWriter writer )
         {
-            var blockCache = _rockBlock.BlockCache;
+            var blockCache = _rockBlock.CacheBlock;
 
             string preHtml = string.Empty;
             string postHtml = string.Empty;
@@ -114,7 +114,7 @@ namespace Rock.Web.UI
             StringWriter swOutput = null;
             HtmlTextWriter twOutput = null;
 
-            if ( _rockBlock.BlockCache.OutputCacheDuration > 0 )
+            if ( _rockBlock.CacheBlock.OutputCacheDuration > 0 )
             {
                 sbOutput = new StringBuilder();
                 swOutput = new StringWriter( sbOutput );
@@ -155,7 +155,7 @@ namespace Rock.Web.UI
                 twOutput.RenderBeginTag( HtmlTextWriterTag.Div );
             }
 
-            if ( _rockBlock.PageCache.IncludeAdminFooter && _adminControls.Any() )
+            if ( _rockBlock.CachePage.IncludeAdminFooter && _adminControls.Any() )
             {
                 // Add the config buttons
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "block-configuration config-bar" );
@@ -198,12 +198,9 @@ namespace Rock.Web.UI
                 twOutput.RenderEndTag();  // block-instance
                 twOutput.Write( postHtml );
 
-                CacheItemPolicy cacheDuration = new CacheItemPolicy();
-                cacheDuration.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( blockCache.OutputCacheDuration );
-
-                RockMemoryCache cache = RockMemoryCache.Default;
+                var expiration  = RockDateTime.Now.AddSeconds( blockCache.OutputCacheDuration );
                 string _blockCacheKey = string.Format( "Rock:BlockOutput:{0}", blockCache.Id );
-                cache.Set( _blockCacheKey, sbOutput.ToString(), cacheDuration );
+                RockCache.AddOrUpdate( _blockCacheKey, sbOutput.ToString(), expiration );
             }
         }
     }

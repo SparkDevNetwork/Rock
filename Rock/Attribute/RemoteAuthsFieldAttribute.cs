@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Attribute
 {

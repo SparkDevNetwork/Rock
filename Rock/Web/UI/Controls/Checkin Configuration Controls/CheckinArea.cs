@@ -248,7 +248,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="groupTypeAttribute">The group type attribute.</param>
         /// <returns></returns>
-        public static Dictionary<string, Rock.Web.Cache.AttributeCache> GetCheckinLabelAttributes( Dictionary<string, Rock.Web.Cache.AttributeCache> groupTypeAttribute )
+        public static Dictionary<string, Rock.Cache.CacheAttribute> GetCheckinLabelAttributes( Dictionary<string, Rock.Cache.CacheAttribute> groupTypeAttribute )
         {
             return groupTypeAttribute
                 .Where( a => a.Value.FieldType.Guid.Equals( new Guid( Rock.SystemGuid.FieldType.LABEL ) ) )

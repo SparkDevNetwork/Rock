@@ -25,7 +25,7 @@ using Quartz;
 using Rock.Data;
 using Rock.Model;
 using Rock.SystemKey;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Jobs
 {
@@ -172,21 +172,21 @@ Gender Autofill: {genderAutofill}
                 }
 
                 // Get the family group type
-                var familyGroupType = GroupTypeCache.Read( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
+                var familyGroupType = CacheGroupType.Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
                 if ( familyGroupType == null )
                 {
                     throw new Exception( "Could not determine the 'Family' group type." );
                 }
 
                 // Get the active record status defined value
-                var activeStatus = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
+                var activeStatus = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
                 if ( activeStatus == null )
                 {
                     throw new Exception( "Could not determine the 'Active' record status value." );
                 }
 
                 // Get the inactive record status defined value
-                var inactiveStatus = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
+                var inactiveStatus = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
                 if ( inactiveStatus == null )
                 {
                     throw new Exception( "Could not determine the 'Inactive' record status value." );
@@ -242,7 +242,7 @@ Gender Autofill: {genderAutofill}
                             p.RecordStatusValueId == inactiveStatus.Id );
 
                     // Check to see if any inactive reasons should be ignored, and if so filter the list to exclude those
-                    var invalidReasonDt = DefinedTypeCache.Read( SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON.AsGuid() );
+                    var invalidReasonDt = CacheDefinedType.Get( SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON.AsGuid() );
                     if ( invalidReasonDt != null )
                     {
                         var invalidReasonIds = invalidReasonDt.DefinedValues
@@ -340,28 +340,28 @@ Gender Autofill: {genderAutofill}
                 }
 
                 // Get the family group type
-                var familyGroupType = GroupTypeCache.Read( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
+                var familyGroupType = CacheGroupType.Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
                 if ( familyGroupType == null )
                 {
                     throw new Exception( "Could not determine the 'Family' group type." );
                 }
 
                 // Get the active record status defined value
-                var activeStatus = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
+                var activeStatus = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
                 if ( activeStatus == null )
                 {
                     throw new Exception( "Could not determine the 'Active' record status value." );
                 }
 
                 // Get the inactive record status defined value
-                var inactiveStatus = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
+                var inactiveStatus = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
                 if ( inactiveStatus == null )
                 {
                     throw new Exception( "Could not determine the 'Inactive' record status value." );
                 }
 
                 // Get the inactive record status defined value
-                var inactiveReason = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_NO_ACTIVITY.AsGuid() );
+                var inactiveReason = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_NO_ACTIVITY.AsGuid() );
                 if ( inactiveReason == null )
                 {
                     throw new Exception( "Could not determine the 'No Activity' record status reason value." );
@@ -490,7 +490,7 @@ Gender Autofill: {genderAutofill}
                 }
 
                 // Get the family group type and roles
-                var familyGroupType = GroupTypeCache.Read( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
+                var familyGroupType = CacheGroupType.Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
                 if ( familyGroupType == null )
                 {
                     throw new Exception( "Could not determine the 'Family' group type." );
@@ -517,7 +517,7 @@ Gender Autofill: {genderAutofill}
                         var startPeriod = RockDateTime.Now.AddDays( -settings.IgnoreIfManualUpdatePeriod );
 
                         // Find any families that has a campus manually added/updated within the configured number of days
-                        var personEntityTypeId = EntityTypeCache.Read( typeof( Person ) ).Id;
+                        var personEntityTypeId = CacheEntityType.Get( typeof( Person ) ).Id;
                         var familyIdsWithManualUpdate = new HistoryService( rockContext )
                             .Queryable().AsNoTracking()
                             .Where( m =>
@@ -796,7 +796,7 @@ Gender Autofill: {genderAutofill}
                 var familyChangesGuid = SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid();
 
                 // Get the family group type and roles
-                var familyGroupType = GroupTypeCache.Read( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
+                var familyGroupType = CacheGroupType.Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
                 if ( familyGroupType == null )
                 {
                     throw new Exception( "Could not determine the 'Family' group type." );
@@ -1087,7 +1087,7 @@ Gender Autofill: {genderAutofill}
         {
             if ( enabled )
             {
-                var contributionType = DefinedValueCache.Read( SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
+                var contributionType = CacheDefinedValue.Get( SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
                 if ( contributionType != null )
                 {
                     var startDate = RockDateTime.Now.AddDays( -periodInDays );
@@ -1189,7 +1189,7 @@ Gender Autofill: {genderAutofill}
             {
                 var startDate = RockDateTime.Now.AddDays( -periodInDays );
 
-                var personEntityTypeId = EntityTypeCache.Read( typeof( Person ) ).Id;
+                var personEntityTypeId = CacheEntityType.Get( typeof( Person ) ).Id;
 
                 var qry = new AttributeValueService( rockContext )
                     .Queryable().AsNoTracking()
@@ -1267,7 +1267,7 @@ Gender Autofill: {genderAutofill}
         private IQueryable<int> CreateEntitySetIdQuery( List<int> ids, RockContext rockContext )
         {
             var entitySet = new EntitySet();
-            entitySet.EntityTypeId = EntityTypeCache.Read<Rock.Model.Person>().Id;
+            entitySet.EntityTypeId = CacheEntityType.Get<Rock.Model.Person>().Id;
             entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( 5 );
 
             var service = new EntitySetService( rockContext );

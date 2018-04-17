@@ -24,7 +24,7 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.Administration
         #region Fields
 
         private bool canConfigure = false;
-        private Rock.Web.Cache.PageCache _page = null;
+        private Rock.Cache.CachePage _page = null;
 
         #endregion
 
@@ -87,7 +87,7 @@ namespace RockWeb.Blocks.Administration
             try
             {
                 int pageId = Convert.ToInt32( PageParameter( "EditPage" ) );
-                _page = Rock.Web.Cache.PageCache.Read( pageId );
+                _page = Rock.Cache.CachePage.Get( pageId );
 
                 if ( _page != null )
                 {
@@ -166,15 +166,15 @@ namespace RockWeb.Blocks.Administration
             pageService.Reorder( childPages, e.OldIndex, e.NewIndex );
             rockContext.SaveChanges();
 
-            Rock.Web.Cache.PageCache.Flush( _page.Id );
+            Rock.Cache.CachePage.Remove( _page.Id );
 
             foreach ( var page in childPages )
             {
-                // make sure the PageCache for all the re-ordered pages get flushed so the new Order is updated
-                Rock.Web.Cache.PageCache.Flush( page.Id );
+                // make sure the CachePage for all the re-ordered pages get flushed so the new Order is updated
+                Rock.Cache.CachePage.Remove( page.Id );
             }
 
-            _page.FlushChildPages();
+            _page.RemoveChildPages();
             PageUpdated = true;
 
             BindGrid();
@@ -236,12 +236,12 @@ namespace RockWeb.Blocks.Administration
 
                 rockContext.SaveChanges();
 
-                Rock.Web.Cache.PageCache.Flush( page.Id );
+                Rock.Cache.CachePage.Remove( page.Id );
                 PageUpdated = true;
 
                 if ( _page != null )
                 {
-                    _page.FlushChildPages();
+                    _page.RemoveChildPages();
                 }
             }
 
@@ -341,7 +341,7 @@ namespace RockWeb.Blocks.Administration
                     else
                     {
                         page.ParentPageId = null;
-                        page.LayoutId = PageCache.Read( RockPage.PageId ).LayoutId;
+                        page.LayoutId = CachePage.Get( RockPage.PageId ).LayoutId;
                     }
 
                     page.PageTitle = dtbPageName.Text;
@@ -375,11 +375,11 @@ namespace RockWeb.Blocks.Administration
                 {
                     rockContext.SaveChanges();
 
-                    PageCache.Flush( page.Id );
+                    CachePage.Remove( page.Id );
                     if ( _page != null )
                     {
                         Rock.Security.Authorization.CopyAuthorization( _page, page, rockContext );
-                        _page.FlushChildPages();
+                        _page.RemoveChildPages();
                     }
 
                     BindGrid();

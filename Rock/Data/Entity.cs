@@ -121,7 +121,7 @@ namespace Rock.Data
             get
             {
                 // Read should never return null since it will create entity type if it doesn't exist
-                return Rock.Web.Cache.EntityTypeCache.Read( typeof( T ) ).Id;
+                return Rock.Cache.CacheEntityType.Get( typeof( T ) ).Id;
             }
         }
 
@@ -570,7 +570,7 @@ namespace Rock.Data
         /// </value>
         public static string GetIndexResultTemplate()
         {
-            return Rock.Web.Cache.EntityTypeCache.Read( typeof( T ) ).IndexResultTemplate;
+            return Rock.Cache.CacheEntityType.Get( typeof( T ) ).IndexResultTemplate;
         }
 
         #endregion

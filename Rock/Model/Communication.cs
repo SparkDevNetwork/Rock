@@ -27,7 +27,7 @@ using Newtonsoft.Json;
 
 using Rock.Data;
 using Rock.Communication;
-using Rock.Web.Cache;
+using Rock.Cache;
 using System.Data.Entity;
 
 namespace Rock.Model
@@ -698,8 +698,8 @@ namespace Rock.Model
                 return;
             }
 
-            var emailMediumEntityType = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );
-            var smsMediumEntityType = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() );
+            var emailMediumEntityType = CacheEntityType.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );
+            var smsMediumEntityType = CacheEntityType.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() );
 
             var personInCommunicationList = new GroupMemberService( rockContext )
                 .Queryable()
@@ -733,7 +733,7 @@ namespace Rock.Model
                 {
                     newMember.LoadAttributes();
 
-                    var preferredCommunicationTypeAttribute = AttributeCache.Read( Rock.SystemGuid.Attribute.GROUPMEMBER_COMMUNICATION_LIST_PREFERRED_COMMUNICATION_MEDIUM.AsGuid() );
+                    var preferredCommunicationTypeAttribute = CacheAttribute.Get( Rock.SystemGuid.Attribute.GROUPMEMBER_COMMUNICATION_LIST_PREFERRED_COMMUNICATION_MEDIUM.AsGuid() );
 
                     CommunicationType? recipientPreference = ( CommunicationType? ) preferredCommunicationTypeAttribute.DefaultValue.AsIntegerOrNull();
 

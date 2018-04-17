@@ -121,7 +121,7 @@ namespace RockWeb.Blocks.Core
                 int? categoryId = e.Value.AsIntegerOrNull();
                 if ( categoryId.HasValue )
                 {
-                    var category = Rock.Web.Cache.CategoryCache.Read( categoryId.Value );
+                    var category = Rock.Cache.CacheCategory.Get( categoryId.Value );
                     if ( category != null )
                     {
                         e.Value = category.Name;

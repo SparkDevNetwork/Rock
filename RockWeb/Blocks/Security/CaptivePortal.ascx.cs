@@ -24,7 +24,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -252,8 +252,9 @@ namespace RockWeb.Blocks.Security
         /// <returns>DevinedValueId for "Mobile" or "Computer", Mobile includes Tablet. Null if there is a data issue and the DefinedType is missing</returns>
         private int? GetDeviceTypeValueId()
         {
-            DefinedTypeCache definedTypeCache = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSONAL_DEVICE_TYPE.AsGuid() );
-            DefinedValueCache definedValueCache = null;
+            // Get the device type Mobile or Computer
+            CacheDefinedType definedTypeCache = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSONAL_DEVICE_TYPE.AsGuid() );
+            CacheDefinedValue definedValueCache = null;
 
             var clientType = InteractionDeviceType.GetClientType( Request.UserAgent );
             clientType = clientType == "Mobile" || clientType == "Tablet" ? "Mobile" : "Computer";
@@ -264,7 +265,7 @@ namespace RockWeb.Blocks.Security
 
                 if ( definedValueCache == null )
                 {
-                    definedValueCache = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSONAL_DEVICE_TYPE_COMPUTER.AsGuid() );
+                    definedValueCache = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSONAL_DEVICE_TYPE_COMPUTER.AsGuid() );
                 }
 
                 return definedValueCache.Id;
@@ -283,15 +284,15 @@ namespace RockWeb.Blocks.Security
             // get the OS
             string platform = client.OS.Family.Split( ' ' ).First();
 
-            DefinedTypeCache definedTypeCache = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSONAL_DEVICE_PLATFORM.AsGuid() );
-            DefinedValueCache definedValueCache = null;
+            CacheDefinedType definedTypeCache = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSONAL_DEVICE_PLATFORM.AsGuid() );
+            CacheDefinedValue definedValueCache = null;
             if ( definedTypeCache != null )
             {
                 definedValueCache = definedTypeCache.DefinedValues.FirstOrDefault( v => v.Value == platform );
 
                 if ( definedValueCache == null )
                 {
-                    definedValueCache = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSONAL_DEVICE_PLATFORM_OTHER.AsGuid() );
+                    definedValueCache = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSONAL_DEVICE_PLATFORM_OTHER.AsGuid() );
                 }
 
                 return definedValueCache.Id;
@@ -393,8 +394,8 @@ namespace RockWeb.Blocks.Security
             }
 
             PersonService personService = new PersonService( new RockContext() );
-            int mobilePhoneTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
-
+            int mobilePhoneTypeId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
+            
             // Use the entered info to try and find an existing user
             string mobilePhoneNumber = tbMobilePhone.Text.RemoveAllNonAlphaNumericCharacters();
             Person person = personService
@@ -501,7 +502,7 @@ namespace RockWeb.Blocks.Security
 
                 Person person = new PersonService( rockContext ).Get( ( int ) personId );
 
-                int mobilePhoneTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
+                int mobilePhoneTypeId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
 
                 person.Email = tbEmail.Text;
 

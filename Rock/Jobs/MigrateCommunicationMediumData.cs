@@ -23,7 +23,7 @@ using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Jobs
 {
@@ -252,7 +252,7 @@ END
                 {
                     if ( !commDetails.SMSFromDefinedValueId.HasValue )
                     {
-                        var dv = DefinedValueCache.Read( mediumData["FromValue"].AsInteger() );
+                        var dv = CacheDefinedValue.Get( mediumData["FromValue"].AsInteger() );
                         commDetails.SMSFromDefinedValueId = dv != null ? dv.Id : ( int? ) null;
                     }
                     commDetails.SMSMessage = ConvertMediumData( mediumData, "Message", commDetails.SMSMessage );

@@ -28,8 +28,8 @@ using System.Security.Cryptography;
 using System.Text;
 using Rock.Data;
 using Rock.Financial;
+using Rock.Cache;
 using Rock.Security;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {

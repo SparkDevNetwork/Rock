@@ -26,7 +26,7 @@ using System.Runtime.Serialization;
 using System.Text;
 
 using Rock.Data;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Model
 {
@@ -511,7 +511,7 @@ namespace Rock.Model
         {
             get
             {
-                var campuses = CampusCache.All();
+                var campuses = CacheCampus.All();
 
                 int? campusId = null;
                 Location loc = this;
@@ -704,7 +704,7 @@ namespace Rock.Model
             string result = string.Format( "{0} {1} {2}, {3} {4}",
                 this.Street1, this.Street2, this.City, this.State, this.PostalCode ).ReplaceWhileExists( "  ", " " );
 
-            var countryValue = Rock.Web.Cache.DefinedTypeCache.Read( new Guid( SystemGuid.DefinedType.LOCATION_COUNTRIES ) )
+            var countryValue = Rock.Cache.CacheDefinedType.Get( new Guid( SystemGuid.DefinedType.LOCATION_COUNTRIES ) )
                 .DefinedValues
                 .Where( v => v.Value.Equals( this.Country, StringComparison.OrdinalIgnoreCase ) )
                 .FirstOrDefault();

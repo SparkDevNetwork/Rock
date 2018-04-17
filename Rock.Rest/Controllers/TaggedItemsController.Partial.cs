@@ -23,7 +23,7 @@ using System.Web.Http;
 
 using Rock.Model;
 using Rock.Rest.Filters;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Rest.Controllers
 {
@@ -61,7 +61,7 @@ namespace Rock.Rest.Controllers
                 int? categoryId = null;
                 if ( categoryGuid.HasValue )
                 {
-                    var category = CategoryCache.Read( categoryGuid.Value );
+                    var category = CacheCategory.Get( categoryGuid.Value );
                     categoryId = category != null ? category.Id : (int?)null;
                 }
 

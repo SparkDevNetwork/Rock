@@ -24,7 +24,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Workflow.Action
 {
@@ -77,14 +77,14 @@ namespace Rock.Workflow.Action
             Guid guid = personAttribute.AsGuid();
             if (!guid.IsEmpty())
             {
-                var attribute = AttributeCache.Read( guid, rockContext );
+                var attribute = CacheAttribute.Get( guid, rockContext );
                 if ( attribute != null )
                 {
                     string value = GetAttributeValue( action, "Person" );
                     guid = value.AsGuid();
                     if ( !guid.IsEmpty() )
                     {
-                        var attributePerson = AttributeCache.Read( guid, rockContext );
+                        var attributePerson = CacheAttribute.Get( guid, rockContext );
                         if ( attributePerson != null )
                         {
                             string attributePersonValue = action.GetWorklowAttributeValue( guid );

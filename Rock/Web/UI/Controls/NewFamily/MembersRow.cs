@@ -24,7 +24,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -263,7 +263,7 @@ namespace Rock.Web.UI.Controls
             {
                 if ( GroupTypeId.HasValue )
                 {
-                    var groupGroupType = GroupTypeCache.Read( GroupTypeId.Value );
+                    var groupGroupType = CacheGroupType.Get( GroupTypeId.Value );
                     if ( groupGroupType != null )
                     {
                         return groupGroupType.Roles;
@@ -632,7 +632,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="insertBlankOption">if set to <c>true</c> [insert blank option].</param>
         protected void BindListToDefinedType( ListControl listControl, string definedTypeGuid, bool insertBlankOption = false )
         {
-            var definedType = DefinedTypeCache.Read( new Guid( definedTypeGuid ) );
+            var definedType = CacheDefinedType.Get( new Guid( definedTypeGuid ) );
             listControl.BindToDefinedType( definedType, insertBlankOption );
         }
 

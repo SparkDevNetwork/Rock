@@ -30,7 +30,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
@@ -64,7 +64,7 @@ namespace RockWeb.Blocks.Connection
         /// <value>
         /// The search attributes.
         /// </value>
-        public List<AttributeCache> SearchAttributes { get; set; }
+        public List<CacheAttribute> SearchAttributes { get; set; }
 
         #endregion
 
@@ -78,7 +78,7 @@ namespace RockWeb.Blocks.Connection
         {
             base.LoadViewState( savedState );
 
-            SearchAttributes = ViewState["SearchAttributes"] as List<AttributeCache>;
+            SearchAttributes = ViewState["SearchAttributes"] as List<CacheAttribute>;
             if ( SearchAttributes != null )
             {
                 AddDynamicControls();
@@ -135,7 +135,7 @@ namespace RockWeb.Blocks.Connection
                     Guid guid = badgeGuid.AsGuid();
                     if ( guid != Guid.Empty )
                     {
-                        var personBadge = PersonBadgeCache.Read( guid );
+                        var personBadge = CachePersonBadge.Get( guid );
                         if ( personBadge != null )
                         {
                             blStatus.PersonBadges.Add( personBadge );
@@ -913,7 +913,7 @@ namespace RockWeb.Blocks.Connection
                     connectionRequest.ConnectionOpportunity != null &&
                     connectionRequest.ConnectionOpportunity.ConnectionType != null )
                 {
-                    cblCampus.DataSource = CampusCache.All();
+                    cblCampus.DataSource = CacheCampus.All();
                     cblCampus.DataBind();
 
                     if ( connectionRequest.CampusId.HasValue )
@@ -1719,7 +1719,7 @@ namespace RockWeb.Blocks.Connection
             // Campus
             ddlCampus.Items.Clear();
             ddlCampus.Items.Add( new ListItem( string.Empty, string.Empty ) );
-            foreach ( var campus in CampusCache.All() )
+            foreach ( var campus in CacheCampus.All() )
             {
                 var listItem = new ListItem( campus.Name, campus.Id.ToString() );
                 listItem.Selected = connectionRequest.CampusId.HasValue && campus.Id == connectionRequest.CampusId.Value;
@@ -2242,7 +2242,7 @@ namespace RockWeb.Blocks.Connection
                     connectionRequest.ConnectionOpportunity != null )
                 {
                     // Parse the attribute filters 
-                    SearchAttributes = new List<AttributeCache>();
+                    SearchAttributes = new List<CacheAttribute>();
 
                     int entityTypeId = new ConnectionOpportunity().TypeId;
                     foreach ( var attributeModel in new AttributeService( rockContext ).Queryable()
@@ -2254,7 +2254,7 @@ namespace RockWeb.Blocks.Connection
                         .OrderBy( a => a.Order )
                         .ThenBy( a => a.Name ) )
                     {
-                        SearchAttributes.Add( AttributeCache.Read( attributeModel ) );
+                        SearchAttributes.Add( CacheAttribute.Get( attributeModel ) );
                     }
                 }
             }
@@ -2455,7 +2455,7 @@ namespace RockWeb.Blocks.Connection
         {
             if ( connectionRequest != null && connectionWorkflow != null )
             {
-                var workflowType = connectionWorkflow.WorkflowTypeCache;
+                var workflowType = connectionWorkflow.CacheWorkflowType;
                 if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                 {
                     var workflow = Rock.Model.Workflow.Activate( workflowType, connectionWorkflow.WorkflowType.WorkTerm, rockContext );

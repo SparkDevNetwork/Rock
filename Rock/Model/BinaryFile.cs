@@ -24,7 +24,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Storage;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Model
 {
@@ -128,7 +128,7 @@ namespace Rock.Model
                 StorageProvider = null;
                 if ( value.HasValue )
                 {
-                    var entityType = EntityTypeCache.Read( value.Value );
+                    var entityType = CacheEntityType.Get( value.Value );
                     if ( entityType != null )
                     {
                         StorageProvider = ProviderContainer.GetComponent( entityType.Name );

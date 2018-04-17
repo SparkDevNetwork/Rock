@@ -24,7 +24,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -73,16 +73,16 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The attribute ids.
         /// </value>
-        public List<AttributeCache> AttributeList
+        public List<CacheAttribute> AttributeList
         {
             get
             {
                 if ( _attributeList == null )
                 {
-                    _attributeList = ViewState["AttributeList"] as List<AttributeCache>;
+                    _attributeList = ViewState["AttributeList"] as List<CacheAttribute>;
                     if ( _attributeList == null )
                     {
-                        _attributeList = new List<AttributeCache>();
+                        _attributeList = new List<CacheAttribute>();
                     }
                 }
                 return _attributeList;
@@ -94,7 +94,7 @@ namespace Rock.Web.UI.Controls
                 RecreateChildControls();
             }
         }
-        private List<AttributeCache> _attributeList = null;
+        private List<CacheAttribute> _attributeList = null;
 
         /// <summary>
         /// Sets the edit values.
