@@ -1078,7 +1078,11 @@ namespace RockWeb.Blocks.Communication
         {
             var rockContext = new RockContext();
 
-            var templateQuery = new CommunicationTemplateService( rockContext ).Queryable().Where( a => a.IsActive );
+            var templateQuery = new CommunicationTemplateService( rockContext )
+                .Queryable()
+                .Where( a => 
+                    a.IsActive &&
+                    ( !a.SenderPersonAliasId.HasValue || a.SenderPersonAliasId.Value == CurrentPersonAliasId ) );
 
             int? categoryId = cpCommunicationTemplate.SelectedValue.AsIntegerOrNull();
             if ( categoryId.HasValue && categoryId > 0 )

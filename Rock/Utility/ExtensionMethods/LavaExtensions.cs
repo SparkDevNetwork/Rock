@@ -242,7 +242,13 @@ namespace Rock
                                     var entryCollection = entityDbContext.Entry( myObject )?.Collection( key );
                                     if ( entryCollection.EntityEntry.State == System.Data.Entity.EntityState.Detached )
                                     {
-                                        propValue = "...";
+                                        // create a sample since we can't fetch real data
+                                        Type listOfType = propType.GenericTypeArguments[0];
+                                        var sampleListType = typeof( List<> ).MakeGenericType( listOfType );
+                                        var sampleList = Activator.CreateInstance(sampleListType) as IList;
+                                        var sampleItem = Activator.CreateInstance( listOfType );
+                                        sampleList.Add( sampleItem );
+                                        propValue = sampleList;
                                     }
                                     else
                                     {
