@@ -43,3 +43,16 @@
 .table > tfoot > tr > td {
 	vertical-align: middle;
 }
+
+// Fixes Duplicate Finder Table
+.table > thead > tr > th,
+.table > thead > tr > th > a:not(.btn),
+.table > tbody > tr.grid-row-bold td {
+	color: @theme-5-text;
+	border-color: @theme-4;
+}
+
+.table > tbody > tr.grid-row-bold:hover td {
+	background-color: @theme-4;
+	border-color: darken(@theme-4, 10%);
+}

@@ -1,5 +1,7 @@
 <%@ Master Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.RockMasterPage" %>
+
 <%@ Import Namespace="System.Web.Optimization" %>
+
 <!DOCTYPE html>
 
 <!--
