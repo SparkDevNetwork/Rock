@@ -15,7 +15,6 @@
   }
 
   .picker-label {
-    display: inline-block;
     float: left;
     width: 225px;
     padding: @padding-base-vertical @padding-base-horizontal;
@@ -100,8 +99,12 @@
     border-radius: 0 0 @border-radius-base @border-radius-base;
   }
 
-  .picker-select-item .label-text {
-    display: block;
+  .picker-select-item {
+    margin-left: 3px;
+
+    .label-text {
+      display: block;
+    }
   }
 
   // details used for pickers like person picker to show the details of the selected item
@@ -109,7 +112,6 @@
     margin-left: 29px;
 
     .person-image {
-      display: inline-block;
       float: left;
       width: 70px;
       height: 70px;
