@@ -17,7 +17,7 @@
 using System.Collections.Generic;
 using System.Web.UI;
 
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -117,7 +117,7 @@ namespace Rock.Field.Types
             string[] values = ( value ?? string.Empty ).Split( '|' );
             if ( values.Length == 2 )
             {
-                var entityType = EntityTypeCache.Read( values[0].AsGuid() );
+                var entityType = CacheEntityType.Get( values[0].AsGuid() );
                 if ( entityType != null )
                 {
                     formattedValue = entityType.FriendlyName + "|EntityId:" + values[1].AsIntegerOrNull();
@@ -164,7 +164,7 @@ namespace Rock.Field.Types
             EntityPicker entityPicker = control as EntityPicker;
             if ( entityPicker != null && entityPicker.EntityTypeId.HasValue )
             {
-                var entityType = EntityTypeCache.Read( entityPicker.EntityTypeId.Value );
+                var entityType = CacheEntityType.Get( entityPicker.EntityTypeId.Value );
                 if ( entityType != null )
                 {
                     return entityType.Guid.ToString() + "|" + entityPicker.EntityId;
@@ -188,7 +188,7 @@ namespace Rock.Field.Types
                 EntityPicker entityPicker = control as EntityPicker;
                 if ( entityPicker != null )
                 {
-                    var entityType = EntityTypeCache.Read( values[0].AsGuid() );
+                    var entityType = CacheEntityType.Get( values[0].AsGuid() );
                     if ( entityType != null )
                     {
                         entityPicker.EntityTypeId = entityType.Id;

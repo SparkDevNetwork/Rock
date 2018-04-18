@@ -26,7 +26,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -247,7 +247,7 @@ namespace RockWeb.Blocks.Prayer
                     }
                     else
                     {
-                        var category = Rock.Web.Cache.CategoryCache.Read( categoryId );
+                        var category = Rock.Cache.CacheCategory.Get( categoryId );
                         if ( category != null )
                         {
                             e.Value = category.Name;
@@ -277,11 +277,11 @@ namespace RockWeb.Blocks.Prayer
             SortProperty sortProperty = gPrayerComments.SortProperty;
 
             // Filter by Category.  First see if there is a Block Setting, otherwise use the Grid Filter
-            CategoryCache categoryFilter = null;
+            CacheCategory categoryFilter = null;
             var blockCategoryGuid = GetAttributeValue( "PrayerRequestCategory" ).AsGuidOrNull();
             if ( blockCategoryGuid.HasValue )
             {
-                categoryFilter = CategoryCache.Read( blockCategoryGuid.Value );
+                categoryFilter = CacheCategory.Get( blockCategoryGuid.Value );
             }
 
             if ( categoryFilter == null && catpPrayerCategoryFilter.Visible )
@@ -289,7 +289,7 @@ namespace RockWeb.Blocks.Prayer
                 int? filterCategoryId = catpPrayerCategoryFilter.SelectedValue.AsIntegerOrNull();
                 if ( filterCategoryId.HasValue )
                 {
-                    categoryFilter = CategoryCache.Read( filterCategoryId.Value );
+                    categoryFilter = CacheCategory.Get( filterCategoryId.Value );
                 }
             }
 
@@ -347,11 +347,11 @@ namespace RockWeb.Blocks.Prayer
             catpPrayerCategoryFilter.SetValue( prayerCategory );
 
             // only show the Filter if there isn't Category set in the Block Setting
-            CategoryCache blockCategory = null;
+            CacheCategory blockCategory = null;
             var blockCategoryGuid = GetAttributeValue( "PrayerRequestCategory" ).AsGuidOrNull();
             if ( blockCategoryGuid.HasValue )
             {
-                blockCategory = CategoryCache.Read( blockCategoryGuid.Value );
+                blockCategory = CacheCategory.Get( blockCategoryGuid.Value );
             }
 
             catpPrayerCategoryFilter.Visible = blockCategory == null;

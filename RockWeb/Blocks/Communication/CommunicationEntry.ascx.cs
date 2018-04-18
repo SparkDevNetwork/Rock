@@ -29,7 +29,7 @@ using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls.Communication;
 using Rock.Web.UI.Controls;
@@ -55,6 +55,7 @@ namespace RockWeb.Blocks.Communication
     [CustomDropdownListField( "Mode", "The mode to use ( 'Simple' mode will prevent users from searching/adding new people to communication).", "Full,Simple", true, "Full", "", 6 )]
     [BooleanField( "Allow CC/Bcc", "Allow CC and Bcc addresses to be entered for email communications?", false, "", 7, "AllowCcBcc" )]
     [BooleanField( "Show Attachment Uploader", "Should the attachment uploader be shown for email communications.", true, "", 8 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM, "Allowed SMS Numbers", "Set the allowed FROM numbers to appear when in SMS mode (if none are selected all numbers will be included). ", false, true, "", "", 9 )]
 
     [TextField( "Document Root Folder", "The folder to use as the root when browsing or uploading documents.", false, "~/Content", "", 0, Category = "HTML Editor Settings" )]
     [TextField( "Image Root Folder", "The folder to use as the root when browsing or uploading images.", false, "~/Content", "", 1, Category = "HTML Editor Settings" )]
@@ -400,7 +401,7 @@ namespace RockWeb.Blocks.Communication
                         }
                         else
                         {
-                            if ( MediumEntityTypeId == EntityTypeCache.Read( "Rock.Communication.Medium.Email" ).Id )
+                            if ( MediumEntityTypeId == CacheEntityType.Get( "Rock.Communication.Medium.Email" ).Id )
                             {
                                 if ( string.IsNullOrWhiteSpace( recipient.Email ) )
                                 {
@@ -437,7 +438,7 @@ namespace RockWeb.Blocks.Communication
                                     }
                                 }
                             }
-                            else if ( MediumEntityTypeId == EntityTypeCache.Read( "Rock.Communication.Medium.Sms" ).Id )
+                            else if ( MediumEntityTypeId == CacheEntityType.Get( "Rock.Communication.Medium.Sms" ).Id )
                             {
                                 if ( !recipient.HasSmsNumber )
                                 {
@@ -446,7 +447,7 @@ namespace RockWeb.Blocks.Communication
                                     textTooltip = "No phone number with SMS enabled.";
                                 }
                             }
-                            else if ( MediumEntityTypeId == EntityTypeCache.Read( "Rock.Communication.Medium.PushNotification" ).Id )
+                            else if ( MediumEntityTypeId == CacheEntityType.Get( "Rock.Communication.Medium.PushNotification" ).Id )
                             {
                                 if ( !recipient.HasNotificationsEnabled )
                                 {
@@ -554,9 +555,9 @@ namespace RockWeb.Blocks.Communication
                         }
 
                         var testRecipient = new CommunicationRecipient();
-                        if ( communication.GetRecipientCount( rockContext ) > 0 )
+                        if ( communication.Recipients.Any() )
                         {
-                            var recipient = communication.GetRecipientsQry( rockContext ).FirstOrDefault();
+                            var recipient = communication.Recipients.FirstOrDefault();
                             testRecipient.AdditionalMergeValuesJson = recipient.AdditionalMergeValuesJson;
                         }
 
@@ -645,7 +646,7 @@ namespace RockWeb.Blocks.Communication
                         communication.Status = CommunicationStatus.Draft;
                         rockContext.SaveChanges();
 
-                        if ( CheckApprovalRequired( communication.GetRecipientCount( rockContext ) ) && !IsUserAuthorized( "Approve" ) )
+                        if ( CheckApprovalRequired( communication.Recipients.Count() ) && !IsUserAuthorized( "Approve" ) )
                         {
                             communication.Status = CommunicationStatus.PendingApproval;
                             message = "Communication has been submitted for approval.";
@@ -809,11 +810,6 @@ namespace RockWeb.Blocks.Communication
 
             CommunicationId = communication.Id;
 
-            var firstMedium = communication.GetMediums().FirstOrDefault();
-            if ( firstMedium != null && firstMedium.EntityType != null )
-            {
-                MediumEntityTypeId = firstMedium.EntityType.Id;
-            }
             BindMediums();
 
             CommunicationData = new CommunicationDetails();
@@ -890,15 +886,15 @@ namespace RockWeb.Blocks.Communication
                     }
                 }
             }
+            if ( !MediumEntityTypeId.HasValue || MediumEntityTypeId.Value == 0 && mediums.Any() )
+            {
+                MediumEntityTypeId = mediums.First().Key;
+            }
 
             LoadTemplates();
 
             divMediums.Visible = mediums.Count() > 1;
 
-            if ( !MediumEntityTypeId.HasValue || MediumEntityTypeId.Value == 0 && mediums.Any() )
-            {
-                MediumEntityTypeId = mediums.First().Key;
-            }
             rptMediums.DataSource = mediums;
             rptMediums.DataBind();
         }
@@ -917,7 +913,11 @@ namespace RockWeb.Blocks.Communication
                 var medium = MediumContainer.GetComponentByEntityTypeId( MediumEntityTypeId );
                 if ( medium != null )
                 {
-                    foreach ( var template in new CommunicationTemplateService( new RockContext() ).Queryable().Where(a => a.IsActive)
+                    foreach ( var template in new CommunicationTemplateService( new RockContext() )
+                        .Queryable().AsNoTracking()
+                        .Where(a => 
+                            a.IsActive &&
+                            ( !a.SenderPersonAliasId.HasValue || a.SenderPersonAliasId.Value == CurrentPersonAliasId ) )
                         .OrderBy( t => t.Name ) )
                     {
                         if ( template.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
@@ -988,10 +988,10 @@ namespace RockWeb.Blocks.Communication
             string mediumName = string.Empty;
 
             // Get the current medium type
-            EntityTypeCache entityType = null;
+            CacheEntityType entityType = null;
             if ( MediumEntityTypeId.HasValue )
             {
-                entityType = EntityTypeCache.Read( MediumEntityTypeId.Value );
+                entityType = CacheEntityType.Get( MediumEntityTypeId.Value );
             }
 
             foreach ( var serviceEntry in MediumContainer.Instance.Components )
@@ -1024,6 +1024,10 @@ namespace RockWeb.Blocks.Communication
                 if ( mediumControl is Rock.Web.UI.Controls.Communication.Email )
                 {
                     ( (Rock.Web.UI.Controls.Communication.Email)mediumControl ).AllowCcBcc = GetAttributeValue( "AllowCcBcc" ).AsBoolean();
+                }
+                else if ( mediumControl is Rock.Web.UI.Controls.Communication.Sms )
+                {
+                    ( ( Rock.Web.UI.Controls.Communication.Sms )mediumControl ).SelectedNumbers = GetAttributeValue( "AllowedSMSNumbers" ).SplitDelimitedValues( true ).AsGuidList();
                 }
                 mediumControl.ID = "commControl";
                 mediumControl.IsTemplate = false;
@@ -1394,7 +1398,7 @@ namespace RockWeb.Blocks.Communication
             hlViewCommunication.NavigateUrl = CurrentPageReference.BuildUrl();
 
             // only show the Link if there is a CommunicationDetail block type on this page
-            hlViewCommunication.Visible = this.PageCache.Blocks.Any( a => a.BlockType.Guid == Rock.SystemGuid.BlockType.COMMUNICATION_DETAIL.AsGuid() );
+            hlViewCommunication.Visible = this.CachePage.Blocks.Any( a => a.BlockType.Guid == Rock.SystemGuid.BlockType.COMMUNICATION_DETAIL.AsGuid() );
 
             pnlResult.Visible = true;
 

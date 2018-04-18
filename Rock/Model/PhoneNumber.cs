@@ -24,7 +24,7 @@ using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 
 using Rock.Data;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Model
 {
@@ -222,15 +222,15 @@ namespace Rock.Model
                 case System.Data.Entity.EntityState.Added:
                     {
 
-                        History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone", DefinedValueCache.GetName( NumberTypeValueId ) ), string.Empty, NumberFormatted );
-                        History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone Unlisted", DefinedValueCache.GetName( NumberTypeValueId ) ), (bool?)null, IsUnlisted );
-                        History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone Messaging Enabled", DefinedValueCache.GetName( NumberTypeValueId ) ), (bool?)null, IsMessagingEnabled );
+                        History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone", CacheDefinedValue.GetName( NumberTypeValueId ) ), string.Empty, NumberFormatted );
+                        History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone Unlisted", CacheDefinedValue.GetName( NumberTypeValueId ) ), (bool?)null, IsUnlisted );
+                        History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone Messaging Enabled", CacheDefinedValue.GetName( NumberTypeValueId ) ), (bool?)null, IsMessagingEnabled );
                         break;
                     }
 
                 case System.Data.Entity.EntityState.Modified:
                     {
-                        string numberTypeName = DefinedValueCache.GetName( NumberTypeValueId );
+                        string numberTypeName = CacheDefinedValue.GetName( NumberTypeValueId );
                         int? oldPhoneNumberTypeId = entry.OriginalValues["NumberTypeValueId"].ToStringSafe().AsIntegerOrNull();
                         if ( ( oldPhoneNumberTypeId ?? 0 ) == ( NumberTypeValueId ?? 0 ) )
                         {
@@ -238,7 +238,7 @@ namespace Rock.Model
                         }
                         else
                         {
-                            History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone", DefinedValueCache.GetName( oldPhoneNumberTypeId ) ), entry.OriginalValues["NumberFormatted"].ToStringSafe(), string.Empty );
+                            History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone", CacheDefinedValue.GetName( oldPhoneNumberTypeId ) ), entry.OriginalValues["NumberFormatted"].ToStringSafe(), string.Empty );
                             History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone", numberTypeName ), string.Empty, NumberFormatted );
                         }
 
@@ -253,7 +253,7 @@ namespace Rock.Model
                         personId = entry.OriginalValues["PersonId"].ToStringSafe().AsInteger();
                         PersonHistoryChanges.AddOrIgnore( personId, new List<string>() );
                         int? oldPhoneNumberTypeId = entry.OriginalValues["NumberTypeValueId"].ToStringSafe().AsIntegerOrNull();
-                        History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone", DefinedValueCache.GetName( oldPhoneNumberTypeId ) ), entry.OriginalValues["NumberFormatted"].ToStringSafe(), string.Empty );
+                        History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone", CacheDefinedValue.GetName( oldPhoneNumberTypeId ) ), entry.OriginalValues["NumberFormatted"].ToStringSafe(), string.Empty );
 
                         return;
                     }
@@ -304,7 +304,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static string DefaultCountryCode()
         {
-            var definedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
+            var definedType = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
             if ( definedType != null )
             {
                 string countryCode = definedType.DefinedValues.OrderBy( v => v.Order ).Select( v => v.Value ).FirstOrDefault();
@@ -335,7 +335,7 @@ namespace Rock.Model
 
             number = CleanNumber( number );
 
-            var definedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
+            var definedType = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
             if ( definedType != null )
             {
                 var definedValues = definedType.DefinedValues.OrderBy( v => v.Order );

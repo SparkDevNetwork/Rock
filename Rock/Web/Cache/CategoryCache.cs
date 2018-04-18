@@ -30,6 +30,7 @@ namespace Rock.Web.Cache
     /// Information about a category that is cached by Rock. 
     /// </summary>
     [Serializable]
+    [Obsolete( "Use Rock.Cache.CacheCategory instead" )]
     public class CategoryCache : CachedModel<Category>
     {
         #region constructors

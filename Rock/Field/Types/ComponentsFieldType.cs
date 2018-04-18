@@ -20,7 +20,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock.Reporting;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -118,7 +118,7 @@ namespace Rock.Field.Types
             {
                 foreach ( Guid guid in value.SplitDelimitedValues().AsGuidList() )
                 {
-                    var entityType = EntityTypeCache.Read( guid );
+                    var entityType = CacheEntityType.Get( guid );
                     if ( entityType != null )
                     {
                         names.Add( entityType.FriendlyName );

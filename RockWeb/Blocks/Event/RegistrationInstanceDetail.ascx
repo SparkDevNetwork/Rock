@@ -189,17 +189,17 @@
                                         </ItemTemplate>
                                     </Rock:RockTemplateField>
                                     <Rock:DateTimeField DataField="CreatedDateTime" HeaderText="When" SortExpression="CreatedDateTime" />
-                                    <Rock:RockTemplateField HeaderText="Discount Code" ItemStyle-HorizontalAlign="Center" SortExpression="DiscountCode" Visible="false">
+                                    <Rock:RockTemplateField HeaderText="Discount Code" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" SortExpression="DiscountCode" Visible="false">
                                         <ItemTemplate>
                                             <asp:Label ID="lDiscount" runat="server" CssClass="label label-default" />
                                         </ItemTemplate>
                                     </Rock:RockTemplateField>
-                                    <Rock:RockTemplateField HeaderText="Total Cost" ItemStyle-HorizontalAlign="Right" SortExpression="TotalCost">
+                                    <Rock:RockTemplateField HeaderText="Total Cost"  HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" SortExpression="TotalCost">
                                         <ItemTemplate>
                                             <asp:Label ID="lCost" runat="server" CssClass="label label-info"></asp:Label>
                                         </ItemTemplate>
                                     </Rock:RockTemplateField>
-                                    <Rock:RockTemplateField HeaderText="Balance Due" ItemStyle-HorizontalAlign="Right" SortExpression="BalanceDue">
+                                    <Rock:RockTemplateField HeaderText="Balance Due"  HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" SortExpression="BalanceDue">
                                         <ItemTemplate>
                                             <Rock:HiddenFieldWithClass ID="hfHasPayments" runat="server" CssClass="js-has-payments" />
                                             <asp:Label ID="lBalance" runat="server" CssClass="label"></asp:Label>

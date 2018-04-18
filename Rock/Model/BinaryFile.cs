@@ -24,7 +24,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Storage;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Model
 {
@@ -128,7 +128,7 @@ namespace Rock.Model
                 StorageProvider = null;
                 if ( value.HasValue )
                 {
-                    var entityType = EntityTypeCache.Read( value.Value );
+                    var entityType = CacheEntityType.Get( value.Value );
                     if ( entityType != null )
                     {
                         StorageProvider = ProviderContainer.GetComponent( entityType.Name );
@@ -166,6 +166,24 @@ namespace Rock.Model
         [MaxLength( 2083 )]
         [DataMember]
         public string Path { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating the width of a file type.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the width in pixels of a file type.
+        /// </value>
+        [DataMember]
+        public int? Width { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating the height of a file type.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the height in pixels of a file type.
+        /// </value>
+        [DataMember]
+        public int? Height { get; set; }
 
         /// <summary>
         /// Gets or sets the content last modified.

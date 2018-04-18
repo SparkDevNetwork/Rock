@@ -1,6 +1,6 @@
-﻿/*
+/*
     Used to manage styles related to Rock's forms
-    
+
     1. Bootstrap Overrides / Additions
     2. Data Lists
     3. Input Sizing
@@ -21,7 +21,7 @@ legend {
 
 .checkbox-inline:first-child,
 .radio-inline:first-child {
-  // when inline checkbox lists wrap the first one on the first line sticks out more than subseqent lines. Confirmed that this is the same behavior on the BS site.  
+  // when inline checkbox lists wrap the first one on the first line sticks out more than subseqent lines. Confirmed that this is the same behavior on the BS site.
   padding-left: 30px;
 }
 
@@ -70,7 +70,7 @@ a.aspNetDisabled {
 
 .form-group.captcha {
   iframe {
-    border: 0px;
+    border: 0;
   }
 
   &.has-error {
@@ -162,11 +162,11 @@ a.aspNetDisabled {
 
 // highlight required fields
 .form-group.required {
-  .control-label:after {
+  .control-label::after {
     margin-left: 4px;
     font-family: @fa-font-face;
-    font-weight: @fa-theme-weight;
     font-size: 6px;
+    font-weight: @fa-theme-weight;
     color: @required-field-color;
     vertical-align: super;
     content: @fa-var-circle;

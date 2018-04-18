@@ -24,7 +24,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Financial;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Model
 {
@@ -185,12 +185,12 @@ namespace Rock.Model
                     reference.MaskedAccountNumber = this.FinancialPaymentDetail.AccountNumberMasked;
                     if ( this.FinancialPaymentDetail.CurrencyTypeValueId.HasValue )
                     {
-                        reference.InitialCurrencyTypeValue = DefinedValueCache.Read( this.FinancialPaymentDetail.CurrencyTypeValueId.Value );
+                        reference.InitialCurrencyTypeValue = CacheDefinedValue.Get( this.FinancialPaymentDetail.CurrencyTypeValueId.Value );
                         if ( reference.InitialCurrencyTypeValue != null &&
                             reference.InitialCurrencyTypeValue.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) ) &&
                             this.FinancialPaymentDetail.CreditCardTypeValueId.HasValue )
                         {
-                            reference.InitialCreditCardTypeValue = DefinedValueCache.Read( this.FinancialPaymentDetail.CreditCardTypeValueId.Value );
+                            reference.InitialCreditCardTypeValue = CacheDefinedValue.Get( this.FinancialPaymentDetail.CreditCardTypeValueId.Value );
                         }
                     }
                 }

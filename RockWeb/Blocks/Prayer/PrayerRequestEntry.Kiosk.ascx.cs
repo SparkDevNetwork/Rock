@@ -102,7 +102,7 @@ namespace RockWeb.Blocks.Prayer
             }
 
             Type type = new PrayerRequest().GetType();
-            this.PrayerRequestEntityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( type.FullName );
+            this.PrayerRequestEntityTypeId = Rock.Cache.CacheEntityType.GetId( type.FullName );
 
             int charLimit = GetAttributeValue( "CharacterLimit" ).AsInteger();
             if ( charLimit > 0 )

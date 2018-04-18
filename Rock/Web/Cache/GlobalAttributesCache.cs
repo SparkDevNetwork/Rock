@@ -34,6 +34,7 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
+    [Obsolete( "Use Rock.Cache.CacheGlobalAttributes instead" )]
     public class GlobalAttributesCache
     {
         #region Contants

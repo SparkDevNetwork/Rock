@@ -28,7 +28,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.Utility;
 using Rock.Web;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Site = Rock.Model.Site;
@@ -172,7 +172,7 @@ namespace RockWeb.Blocks.Cms
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
-                attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
+                attribute.FieldTypeId = CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
                 edtPageAttributes.ActionTitle = ActionTitle.Add( "attribute for pages of site " + tbSiteName.Text );
             }
             else
@@ -372,7 +372,7 @@ namespace RockWeb.Blocks.Cms
 
                 rockContext.SaveChanges();
 
-                SiteCache.Flush( site.Id );
+                CacheSite.Remove( site.Id );
             }
 
             NavigateToParentPage();
@@ -523,7 +523,7 @@ namespace RockWeb.Blocks.Cms
 
                 // add/update for the InteractionChannel for this site and set the RetentionPeriod
                 var interactionChannelService = new InteractionChannelService( rockContext );
-                int channelMediumWebsiteValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
+                int channelMediumWebsiteValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
                 var interactionChannelForSite = interactionChannelService.Queryable()
                     .Where( a => a.ChannelTypeMediumValueId == channelMediumWebsiteValueId && a.ChannelEntityId == site.Id ).FirstOrDefault();
 
@@ -537,7 +537,7 @@ namespace RockWeb.Blocks.Cms
 
                 interactionChannelForSite.Name = site.Name;
                 interactionChannelForSite.RetentionDuration = nbPageViewRetentionPeriodDays.Text.AsIntegerOrNull();
-                interactionChannelForSite.ComponentEntityTypeId = EntityTypeCache.Read<Rock.Model.Page>().Id;
+                interactionChannelForSite.ComponentEntityTypeId = CacheEntityType.Get<Rock.Model.Page>().Id;
 
                 rockContext.SaveChanges();
 
@@ -545,15 +545,15 @@ namespace RockWeb.Blocks.Cms
                     .Select( p => p.Id )
                     .ToList() )
                 {
-                    PageCache.Flush( pageId );
+                    CachePage.Remove( pageId );
                 }
-                SiteCache.Flush( site.Id );
-                AttributeCache.FlushEntityAttributes();
+                CacheSite.Remove( site.Id );
+                CacheAttribute.RemoveEntityAttributes();
 
                 // Create the default page is this is a new site
                 if ( !site.DefaultPageId.HasValue && newSite )
                 {
-                    var siteCache = SiteCache.Read( site.Id );
+                    var siteCache = CacheSite.Get( site.Id );
 
                     // Create the layouts for the site, and find the first one
                     LayoutService.RegisterLayouts( Request.MapPath( "~" ), siteCache );
@@ -589,7 +589,7 @@ namespace RockWeb.Blocks.Cms
 
                         rockContext.SaveChanges();
 
-                        SiteCache.Flush( site.Id );
+                        CacheSite.Remove( site.Id );
                     }
                 }
 
@@ -620,7 +620,7 @@ namespace RockWeb.Blocks.Cms
             {
                 attributeService.Delete( attr );
                 rockContext.SaveChanges();
-                Rock.Web.Cache.AttributeCache.Flush( attr.Id );
+                Rock.Cache.CacheAttribute.Remove( attr.Id );
             }
 
             // Update the Attributes that were assigned in the UI
@@ -880,7 +880,7 @@ namespace RockWeb.Blocks.Cms
             cbRedirectTablets.Checked = site.RedirectTablets;
             cbEnablePageViews.Checked = site.EnablePageViews;
 
-            int channelMediumWebsiteValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
+            int channelMediumWebsiteValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
             var interactionChannelForSite = new InteractionChannelService( new RockContext() ).Queryable()
                 .Where( a => a.ChannelTypeMediumValueId == channelMediumWebsiteValueId && a.ChannelEntityId == site.Id ).FirstOrDefault();
 
@@ -893,7 +893,7 @@ namespace RockWeb.Blocks.Cms
             tbIndexStartingLocation.Text = site.IndexStartingLocation;
 
             // disable the indexing features if indexing on site is disabled
-            var siteEntityType = EntityTypeCache.Read( "Rock.Model.Site" );
+            var siteEntityType = CacheEntityType.Get( "Rock.Model.Site" );
             if ( siteEntityType != null && !siteEntityType.IsIndexingEnabled )
             {
                 cbEnableIndexing.Visible = false;

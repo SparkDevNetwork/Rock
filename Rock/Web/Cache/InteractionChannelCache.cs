@@ -29,6 +29,7 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
+    [Obsolete( "Use Rock.Cache.CacheInteractionChannel instead" )]
     public class InteractionChannelCache : CachedModel<InteractionChannel>
     {
         #region Constructors

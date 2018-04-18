@@ -21,7 +21,7 @@ using System.Web;
 using Rock;
 using Rock.Extension;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Storage
 {
@@ -115,7 +115,7 @@ namespace Rock.Storage
 
                 if ( uri == null )
                 {
-                    uri = new Uri( GlobalAttributesCache.Read().GetValue( "PublicApplicationRoot" ) );
+                    uri = new Uri( CacheGlobalAttributes.Get().GetValue( "PublicApplicationRoot" ) );
                 }
 
                 if ( uri != null )

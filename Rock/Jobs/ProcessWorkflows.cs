@@ -23,7 +23,7 @@ using Quartz;
 
 using Rock.Model;
 using Rock.Data;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Jobs
 {
@@ -79,7 +79,7 @@ namespace Rock.Jobs
                     var workflow = workflowService.Queryable().FirstOrDefault( a => a.Id == workflowId );
                     if ( workflow != null )
                     {
-                        var workflowType = workflow.WorkflowTypeCache;
+                        var workflowType = workflow.CacheWorkflowType;
                         if ( workflowType != null )
                         {
                             try

@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Model
 {
@@ -209,7 +209,7 @@ namespace Rock.Model
 
             var rockContext = this.Context as Rock.Data.RockContext;
 
-            var registrationEntityType = EntityTypeCache.Read( typeof( Rock.Model.Registration ) );
+            var registrationEntityType = CacheEntityType.Get( typeof( Rock.Model.Registration ) );
             if ( registrationEntityType != null )
             {
                 foreach ( var transactionDetail in refundTransaction.TransactionDetails

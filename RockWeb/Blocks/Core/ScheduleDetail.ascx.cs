@@ -158,7 +158,7 @@ namespace RockWeb.Blocks.Core
             rockContext.SaveChanges();
             schedule.SaveAttributeValues( rockContext );
 
-            Rock.CheckIn.KioskDevice.FlushAll();
+            Rock.CheckIn.KioskDevice.Clear();
 
             var qryParams = new Dictionary<string, string>();
             qryParams["ScheduleId"] = schedule.Id.ToString();

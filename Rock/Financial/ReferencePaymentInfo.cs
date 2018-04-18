@@ -16,7 +16,7 @@
 //
 using System;
 
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Financial
 {
@@ -48,7 +48,7 @@ namespace Rock.Financial
         /// <value>
         /// The initial currency type value.
         /// </value>
-        public DefinedValueCache InitialCurrencyTypeValue { get; set; }
+        public CacheDefinedValue InitialCurrencyTypeValue { get; set; }
 
         /// <summary>
         /// Gets or sets the initial credit card type value id.
@@ -56,7 +56,7 @@ namespace Rock.Financial
         /// <value>
         /// The initial credit card type value id.
         /// </value>
-        public DefinedValueCache InitialCreditCardTypeValue { get; set; }
+        public CacheDefinedValue InitialCreditCardTypeValue { get; set; }
 
         /// <summary>
         /// Gets the account number.
@@ -69,7 +69,7 @@ namespace Rock.Financial
         /// <summary>
         /// Gets the currency type value.
         /// </summary>
-        public override DefinedValueCache CurrencyTypeValue
+        public override CacheDefinedValue CurrencyTypeValue
         {
             get { return InitialCurrencyTypeValue; }
         }
@@ -77,7 +77,7 @@ namespace Rock.Financial
         /// <summary>
         /// Gets the credit card type value id.
         /// </summary>
-        public override DefinedValueCache CreditCardTypeValue
+        public override CacheDefinedValue CreditCardTypeValue
         {
             get { return InitialCreditCardTypeValue; }
         }

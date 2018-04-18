@@ -29,6 +29,9 @@ BEGIN
 
 	DECLARE @OldGuid uniqueidentifier
 	DECLARE @NewGuid uniqueidentifier
+	DECLARE @GroupMemberStatusInactive INT = 0
+	DECLARE @GroupMemberStatusActive INT = 1
+	DECLARE @GroupMemberStatusPending INT = 2
 
 	SET @OldGuid = ( SELECT [Guid] FROM [Person] WHERE [Id] = @OldId )
 	SET @NewGuid = ( SELECT [Guid] FROM [Person] WHERE [Id] = @NewId )
@@ -47,6 +50,52 @@ BEGIN
 
 		-- Group Member
 		-----------------------------------------------------------------------------------------------
+
+		DECLARE @LessActiveGroupMembersIdsToDelete TABLE (id INT);
+
+		-- In the case when the old person and the new person are in the same group with the same role,
+		-- delete the groupmember record for the new person if it is 'less active' (Active > Pending > Inactive) then the old person. 
+		-- That will get that record out of the way so that the 'old' group member record can be assigned to the new person
+		INSERT INTO @LessActiveGroupMembersIdsToDelete
+		SELECT gmn.id
+		FROM [GroupMember] GMO
+		INNER JOIN [GroupTypeRole] GTR ON GTR.[Id] = GMO.[GroupRoleId]
+		INNER JOIN [GroupMember] GMN ON GMN.[GroupId] = GMO.[GroupId]
+			AND GMN.[PersonId] = @NewId
+			AND (
+				GTR.[MaxCount] <= 1
+				OR GMN.[GroupRoleId] = GMO.[GroupRoleId]
+				)
+		WHERE GMO.[PersonId] = @OldId
+			AND (
+				(
+					-- old person' group member status is Active but new person's status is not, so delete the new person's groupmember record so that we can set the old record to the new person id
+					gmn.GroupMemberStatus != @GroupMemberStatusActive
+					AND gmo.GroupMemberStatus = @GroupMemberStatusActive
+					)
+				OR (
+					-- old person's group member status is Pending but new person's group member status is Inactive, so delete the new person's groupmember record so that we can set the old record to the new person id
+					gmn.GroupMemberStatus = @GroupMemberStatusInactive
+					AND gmo.GroupMemberStatus = @GroupMemberStatusPending
+					)
+				)
+
+		-- NULL out RegistrationRegistrant Records for the @LessActiveGroupMembersIdsToDelete
+		UPDATE [RegistrationRegistrant]
+		SET [GroupMemberId] = NULL
+		WHERE [GroupMemberId] IN (
+				SELECT [Id]
+				FROM @LessActiveGroupMembersIdsToDelete
+				)
+
+		-- Delete the @LessActiveGroupMembersIdsToDelete
+		DELETE
+		FROM GroupMember
+		WHERE Id IN (
+				SELECT [Id]
+				FROM @LessActiveGroupMembersIdsToDelete
+				)
+		
 		-- Update any group members associated to old person to the new person where the new is not 
 		-- already in the group with the same role
 		UPDATE GMO

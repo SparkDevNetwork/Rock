@@ -26,7 +26,7 @@ using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -157,7 +157,7 @@ namespace RockWeb.Blocks.Core
                         int? categoryId = e.Value.AsIntegerOrNull();
                         if ( categoryId.HasValue )
                         {
-                            var category = Rock.Web.Cache.CategoryCache.Read( categoryId.Value );
+                            var category = Rock.Cache.CacheCategory.Get( categoryId.Value );
                             if ( category != null )
                             {
                                 e.Value = category.Name;
@@ -247,7 +247,7 @@ namespace RockWeb.Blocks.Core
         {
             if ( _entity != null )
             {
-                var entityTypeCache = EntityTypeCache.Read( _entity.GetType(), false );
+                var entityTypeCache = CacheEntityType.Get( _entity.GetType(), false );
                 if ( entityTypeCache != null )
                 {
                     var qry = new HistoryService( new RockContext() ).Queryable( "CreatedByPersonAlias.Person" )
@@ -333,7 +333,7 @@ namespace RockWeb.Blocks.Core
                         CreatedDateTime = h.CreatedDateTime
                     } ).ToList();
 
-                    gHistory.EntityTypeId = EntityTypeCache.Read<History>().Id;
+                    gHistory.EntityTypeId = CacheEntityType.Get<History>().Id;
                     gHistory.DataBind();
                 }
             }
@@ -350,7 +350,7 @@ namespace RockWeb.Blocks.Core
         /// <returns></returns>
         protected string FormatCaption( int categoryId, string caption, int? relatedEntityId, int? entityId = null )
         {
-            var category = CategoryCache.Read( categoryId );
+            var category = CacheCategory.Get( categoryId );
             if (category != null)
             {
                 string urlMask = category.GetAttributeValue( "UrlMask" );

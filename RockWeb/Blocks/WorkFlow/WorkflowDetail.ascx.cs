@@ -29,7 +29,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
@@ -610,7 +610,7 @@ namespace RockWeb.Blocks.WorkFlow
             int? activityTypeId = ddlActivateNewActivity.SelectedValueAsId();
             if (activityTypeId.HasValue)
             {
-                var activityType = WorkflowActivityTypeCache.Read(activityTypeId.Value);
+                var activityType = CacheWorkflowActivityType.Get(activityTypeId.Value);
                 if (activityType != null)
                 {
                     var activity = WorkflowActivity.Activate( activityType, Workflow );

@@ -24,8 +24,8 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
+using Rock.Cache;
 using Rock.Security;
-using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -136,7 +136,7 @@ namespace Rock.Reporting.DataFilter
         /// <returns></returns>
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
-            int entityTypeId = EntityTypeCache.Read( entityType ).Id;
+            int entityTypeId = CacheEntityType.Get( entityType ).Id;
 
             var ddlDataViews = new DataViewPicker();
             ddlDataViews.ID = filterControl.ID + "_0";
@@ -285,7 +285,7 @@ namespace Rock.Reporting.DataFilter
         /// </returns>
         private bool IsViewInFilter( int dataViewId, Rock.Model.DataViewFilter filter )
         {
-            if ( filter.EntityTypeId == EntityTypeCache.Read( this.GetType() ).Id )
+            if ( filter.EntityTypeId == CacheEntityType.Get( this.GetType() ).Id )
             {
                 int? filterDataViewId = filter.Selection.AsIntegerOrNull();
                 if ( filterDataViewId.HasValue )

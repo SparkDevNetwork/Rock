@@ -32,7 +32,7 @@ BEGIN
 	SELECT [Id]
 		,[Name]
 		,[Description]
-		,[IsActive]
+		,ISNULL([IsActive], 0)
 		,[ShortCode]
 		,[Url]
 		,[LocationId]
@@ -54,7 +54,7 @@ BEGIN
 	SET sc.[CampusId] = c.[Id]
 		,sc.[Name] = c.[Name]
 		,sc.[Description] = c.[Description]
-		,sc.[IsActive] = c.[IsActive]
+		,sc.[IsActive] = ISNULL(c.[IsActive], 0)
 		,sc.[ShortCode] = c.[ShortCode]
 		,sc.[Url] = c.[Url]
 		,sc.[LocationId] = c.[LocationId]
@@ -65,15 +65,15 @@ BEGIN
 	FROM AnalyticsSourceCampus sc
 	join [Campus] c on sc.[CampusId] = c.[Id]
 	WHERE sc.[Name] != c.[Name]
-		AND sc.[Description] != c.[Description]
-		AND sc.[IsActive] != c.[IsActive]
-		AND sc.[ShortCode] != c.[ShortCode]
-		AND sc.[Url] != c.[Url]
-		AND sc.[LocationId] != c.[LocationId]
-		AND sc.[PhoneNumber] != c.[PhoneNumber]
-		AND sc.[LeaderPersonAliasId] != c.[LeaderPersonAliasId]
-		AND sc.[ServiceTimes] != c.[ServiceTimes]
-		AND sc.[Order] != c.[Order]
+		OR sc.[Description] != c.[Description]
+		OR sc.[IsActive] != c.[IsActive]
+		OR sc.[ShortCode] != c.[ShortCode]
+		OR sc.[Url] != c.[Url]
+		OR sc.[LocationId] != c.[LocationId]
+		OR sc.[PhoneNumber] != c.[PhoneNumber]
+		OR sc.[LeaderPersonAliasId] != c.[LeaderPersonAliasId]
+		OR sc.[ServiceTimes] != c.[ServiceTimes]
+		OR sc.[Order] != c.[Order]
 
 	SET @RowsUpdated = @@ROWCOUNT;
 

@@ -286,7 +286,7 @@ function() {
             var accountGuids = selectionValues[2].Split( ',' ).Select( a => a.AsGuid() ).ToList();
             var accountIdList = new FinancialAccountService( (RockContext)serviceInstance.Context ).GetByGuids( accountGuids ).Select( a => a.Id ).ToList();
 
-            int transactionTypeContributionId = Rock.Web.Cache.DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
+            int transactionTypeContributionId = Rock.Cache.CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
 
             var financialTransactionsQry = new FinancialTransactionService( rockContext ).Queryable()
                 .Where( xx => xx.TransactionTypeValueId == transactionTypeContributionId );

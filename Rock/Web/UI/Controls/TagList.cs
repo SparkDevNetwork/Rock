@@ -24,8 +24,8 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
+using Rock.Cache;
 using Rock.Security;
-using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -97,7 +97,7 @@ namespace Rock.Web.UI.Controls
             {
                 if ( CategoryGuid.HasValue )
                 {
-                    var cat = CategoryCache.Read( CategoryGuid.Value );
+                    var cat = CacheCategory.Get( CategoryGuid.Value );
                     return cat != null ? cat.Id : (int?)null;
                 }
                 return null;
@@ -106,7 +106,7 @@ namespace Rock.Web.UI.Controls
             {
                 if ( value.HasValue )
                 {
-                    var cat = CategoryCache.Read( CategoryGuid.Value );
+                    var cat = CacheCategory.Get( CategoryGuid.Value );
                     CategoryGuid = cat != null ? cat.Guid : (Guid?)null;
                 }
                 else

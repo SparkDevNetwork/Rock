@@ -26,7 +26,7 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.SystemKey;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 
 using Rock.Utility.Settings.DataAutomation;
@@ -52,7 +52,7 @@ namespace RockWeb.Blocks.Administration
         private UpdateFamilyCampus _campusSettings = new UpdateFamilyCampus();
         private MoveAdultChildren _adultChildrenSettings = new MoveAdultChildren();
         private List<InteractionItem> _interactionChannelTypes = new List<InteractionItem>();
-        private List<CampusCache> _campuses = new List<CampusCache>();
+        private List<CacheCampus> _campuses = new List<CacheCampus>();
 
         #endregion
 
@@ -70,7 +70,7 @@ namespace RockWeb.Blocks.Administration
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
-            _campuses = CampusCache.All();
+            _campuses = CacheCampus.All();
         }
 
         /// <summary>
@@ -235,7 +235,7 @@ namespace RockWeb.Blocks.Administration
 
             ddlAttendanceOrGiving.BindToEnum<CampusCriteria>();
 
-            var knownRelGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
+            var knownRelGroupType = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
             if ( knownRelGroupType != null )
             {
                 rpParentRelationship.GroupTypeId = knownRelGroupType.Id;
@@ -313,10 +313,10 @@ namespace RockWeb.Blocks.Administration
             nbPersonAttributes.Text = _reactivateSettings.PersonAttributesDays.ToStringSafe();
             rlbPersonAttributes.SetValues( _reactivateSettings.PersonAttributes ?? new List<int>() );
             cbIncludeDataView.Checked = _reactivateSettings.IsIncludeDataViewEnabled;
-            dvIncludeDataView.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Person ) ).Id;
+            dvIncludeDataView.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.Person ) ).Id;
             dvIncludeDataView.SetValue( _reactivateSettings.IncludeDataView );
             cbExcludeDataView.Checked = _reactivateSettings.IsExcludeDataViewEnabled;
-            dvExcludeDataView.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Person ) ).Id;
+            dvExcludeDataView.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.Person ) ).Id;
             dvExcludeDataView.SetValue( _reactivateSettings.ExcludeDataView );
             cbInteractions.Checked = _reactivateSettings.IsInteractionsEnabled;
 
@@ -356,7 +356,7 @@ namespace RockWeb.Blocks.Administration
             nbNoPersonAttributes.Text = _inactivateSettings.NoPersonAttributesDays.ToStringSafe();
             rlbNoPersonAttributes.SetValues( _inactivateSettings.PersonAttributes ?? new List<int>() );
             cbNotInDataView.Checked = _inactivateSettings.IsNotInDataviewEnabled;
-            dvNotInDataView.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Person ) ).Id;
+            dvNotInDataView.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.Person ) ).Id;
             dvNotInDataView.SetValue( _inactivateSettings.NotInDataview );
             cbNoInteractions.Checked = _inactivateSettings.IsNoInteractionsEnabled;
 

@@ -27,8 +27,8 @@ using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
+using Rock.Cache;
 using Rock.Security;
-using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
@@ -72,12 +72,12 @@ namespace Rock.Jobs
 
             // Fetch the configured Workflow once if one was set, we'll use it later.
             Guid? workflowGuid = dataMap.GetString( "Workflow" ).AsGuidOrNull();
-            WorkflowTypeCache workflowType = null;
+            CacheWorkflowType workflowType = null;
             var workflowService = new WorkflowService( rockContext );
 
             if ( workflowGuid != null )
             {
-                workflowType = WorkflowTypeCache.Read( workflowGuid.Value );
+                workflowType = CacheWorkflowType.Get( workflowGuid.Value );
             }
 
             var qry = new FinancialScheduledTransactionService( rockContext )
@@ -157,7 +157,7 @@ namespace Rock.Jobs
         /// <param name="workflowType">Type of the workflow.</param>
         /// <param name="attributes">The attributes.</param>
         /// <param name="workflowNameSuffix">The workflow instance name suffix (the part that is tacked onto the end fo the name to distinguish one instance from another).</param>
-        protected void StartWorkflow( WorkflowService workflowService, WorkflowTypeCache workflowType, Dictionary<string, string> attributes, string workflowNameSuffix )
+        protected void StartWorkflow( WorkflowService workflowService, CacheWorkflowType workflowType, Dictionary<string, string> attributes, string workflowNameSuffix )
         {
             // launch workflow if configured
             if ( workflowType != null && ( workflowType.IsActive ?? true ) )

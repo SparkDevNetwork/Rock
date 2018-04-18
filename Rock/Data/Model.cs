@@ -23,8 +23,8 @@ using System.Runtime.Serialization;
 
 using Rock.Attribute;
 using Rock.Model;
+using Rock.Cache;
 using Rock.Security;
-using Rock.Web.Cache;
 using System.Text;
 
 namespace Rock.Data
@@ -298,7 +298,7 @@ namespace Rock.Data
         /// then the authorization on the Rock.Security.GlobalDefault entity
         /// </summary>
         [NotMapped]
-        public virtual Security.ISecured ParentAuthority
+        public virtual ISecured ParentAuthority
         {
             get
             {
@@ -317,7 +317,7 @@ namespace Rock.Data
         /// An optional additional parent authority.  (i.e for Groups, the GroupType is main parent
         /// authority, but parent group is an additional parent authority )
         /// </summary>
-        public virtual Security.ISecured ParentAuthorityPre
+        public virtual ISecured ParentAuthorityPre
         {
             get { return null; }
         }
@@ -353,7 +353,7 @@ namespace Rock.Data
         /// </returns>
         public virtual bool IsAuthorized( string action, Rock.Model.Person person )
         {
-            return Security.Authorization.Authorized( this, action, person );
+            return Authorization.Authorized( this, action, person );
         }
 
         /// <summary>
@@ -377,7 +377,7 @@ namespace Rock.Data
         /// </returns>
         public virtual bool IsPrivate( string action, Person person )
         {
-            return Security.Authorization.IsPrivate( this, action, person  );
+            return Authorization.IsPrivate( this, action, person  );
         }
 
         /// <summary>
@@ -388,7 +388,7 @@ namespace Rock.Data
         /// <param name="rockContext">The rock context.</param>
         public virtual void MakePrivate( string action, Person person, RockContext rockContext = null )
         {
-            Security.Authorization.MakePrivate( this, action, person, rockContext );
+            Authorization.MakePrivate( this, action, person, rockContext );
         }
 
         /// <summary>
@@ -399,7 +399,7 @@ namespace Rock.Data
         /// <param name="rockContext">The rock context.</param>
         public virtual void MakeUnPrivate( string action, Person person, RockContext rockContext = null )
         {
-            Security.Authorization.MakeUnPrivate( this, action, person, rockContext );
+            Authorization.MakeUnPrivate( this, action, person, rockContext );
         }
 
         /// <summary>
@@ -410,7 +410,7 @@ namespace Rock.Data
         /// <param name="rockContext">The rock context.</param>
         public virtual void AllowPerson( string action, Person person, RockContext rockContext = null )
         {
-            Security.Authorization.AllowPerson( this, action, person, rockContext );
+            Authorization.AllowPerson( this, action, person, rockContext );
         }
 
         /// <summary>
@@ -421,7 +421,7 @@ namespace Rock.Data
         /// <param name="rockContext">The rock context.</param>
         public virtual void AllowSecurityRole( string action, Group group, RockContext rockContext = null )
         {
-            Security.Authorization.AllowSecurityRole( this, action, group, rockContext );
+            Authorization.AllowSecurityRole( this, action, group, rockContext );
         }
 
         /// <summary>
@@ -447,7 +447,7 @@ namespace Rock.Data
                 object item = base[key];
                 if ( item == null )
                 {
-                    var lavaSupportLevel = GlobalAttributesCache.Read().LavaSupportLevel; 
+                    var lavaSupportLevel = CacheGlobalAttributes.Get().LavaSupportLevel; 
                     
                     if (this.Attributes == null)
                     {
@@ -590,7 +590,7 @@ namespace Rock.Data
         [NotMapped]
         [DataMember]
         [LavaIgnore]
-        public virtual Dictionary<string, AttributeCache> Attributes { get; set; }
+        public virtual Dictionary<string, CacheAttribute> Attributes { get; set; }
 
         /// <summary>
         /// Dictionary of all attributes and their value.  Key is the attribute key, and value is the associated attribute value
@@ -601,7 +601,7 @@ namespace Rock.Data
         [NotMapped]
         [DataMember]
         [LavaIgnore]
-        public virtual Dictionary<string, AttributeValueCache> AttributeValues { get; set; }
+        public virtual Dictionary<string, Cache.CacheAttributeValue> AttributeValues { get; set; }
 
         /// <summary>
         /// Gets the attribute value defaults.
@@ -695,8 +695,8 @@ namespace Rock.Data
         /// <summary>
         /// Get a list of all inherited Attributes that should be applied to this entity.
         /// </summary>
-        /// <returns>A list of all inherited AttributeCache objects.</returns>
-        public virtual List<AttributeCache> GetInheritedAttributes( Rock.Data.RockContext rockContext )
+        /// <returns>A list of all inherited CacheAttribute objects.</returns>
+        public virtual List<CacheAttribute> GetInheritedAttributes( Rock.Data.RockContext rockContext )
         {
             return null;
         }

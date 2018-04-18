@@ -25,7 +25,7 @@ using System.Runtime.Serialization;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Follow;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Model
 {
@@ -182,7 +182,7 @@ namespace Rock.Model
         {
             if ( EntityTypeId.HasValue )
             {
-                var entityType = EntityTypeCache.Read( EntityTypeId.Value );
+                var entityType = CacheEntityType.Get( EntityTypeId.Value );
                 if ( entityType != null )
                 {
                     return EventContainer.GetComponent( entityType.Name );

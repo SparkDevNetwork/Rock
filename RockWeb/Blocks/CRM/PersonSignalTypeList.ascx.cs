@@ -24,7 +24,7 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Security;
 
@@ -63,7 +63,7 @@ namespace RockWeb.Blocks.Crm
             }
 
             SecurityField securityField = gPersonSignalType.Columns[4] as SecurityField;
-            securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.SignalType ) ).Id;
+            securityField.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.SignalType ) ).Id;
         }
 
         /// <summary>

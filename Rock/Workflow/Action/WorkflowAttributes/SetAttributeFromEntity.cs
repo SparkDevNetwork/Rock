@@ -24,7 +24,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Workflow.Action
 {
@@ -59,7 +59,7 @@ namespace Rock.Workflow.Action
                 Guid guid = GetAttributeValue( action, "Attribute" ).AsGuid();
                 if ( !guid.IsEmpty() )
                 {
-                    var attribute = AttributeCache.Read( guid, rockContext );
+                    var attribute = CacheAttribute.Get( guid, rockContext );
                     if ( attribute != null )
                     {
                         // If a lava template was specified, use that to set the attribute value
@@ -74,7 +74,7 @@ namespace Rock.Workflow.Action
                         else
                         {
                             // Person is handled special since it needs the person alias id
-                            if ( entity is Person && attribute.FieldTypeId == FieldTypeCache.Read( SystemGuid.FieldType.PERSON.AsGuid(), rockContext ).Id )
+                            if ( entity is Person && attribute.FieldTypeId == CacheFieldType.Get( SystemGuid.FieldType.PERSON.AsGuid(), rockContext ).Id )
                             {
                                 var person = (Person)entity;
 

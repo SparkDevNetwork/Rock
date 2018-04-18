@@ -24,7 +24,7 @@ using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
@@ -171,14 +171,14 @@ namespace RockWeb.Blocks.Cms
             gChildItems.Actions.AddClick += gChildItems_Add;
             gChildItems.GridRebind += gChildItems_GridRebind;
             gChildItems.GridReorder += gChildItems_GridReorder;
-            gChildItems.EntityTypeId = EntityTypeCache.Read<ContentChannelItem>().Id;
+            gChildItems.EntityTypeId = CacheEntityType.Get<ContentChannelItem>().Id;
 
             gParentItems.DataKeyNames = new string[] { "Id" };
             gParentItems.AllowSorting = true;
             gParentItems.Actions.ShowAdd = false;
             gParentItems.IsDeleteEnabled = false;
             gParentItems.GridRebind += gParentItems_GridRebind;
-            gParentItems.EntityTypeId = EntityTypeCache.Read<ContentChannelItem>().Id;
+            gParentItems.EntityTypeId = CacheEntityType.Get<ContentChannelItem>().Id;
 
             string clearScript = string.Format( "$('#{0}').val('false');", hfIsDirty.ClientID );
             lbSave.OnClientClick = clearScript;
@@ -465,8 +465,9 @@ namespace RockWeb.Blocks.Cms
                 if ( contentItem != null )
                 {
                     bool isFiltered = false;
-                    var items = GetChildItems( contentItem, out isFiltered );
+                    var items = GetChildItems( contentItem, out isFiltered ).OrderBy( a => a.Order ).ToList();
 
+                    // If the list was filtered due to VIEW security, don't sort it
                     if ( !isFiltered )
                     {
                         var service = new ContentChannelItemService( rockContext );
@@ -744,7 +745,7 @@ namespace RockWeb.Blocks.Cms
 
             if ( contentItem.ContentChannel.IsTaggingEnabled )
             {
-                taglTags.EntityTypeId = EntityTypeCache.Read( typeof( ContentChannelItem ) ).Id;
+                taglTags.EntityTypeId = CacheEntityType.Get( typeof( ContentChannelItem ) ).Id;
                 taglTags.CategoryGuid = ( contentItem.ContentChannel != null && contentItem.ContentChannel.ItemTagCategory != null ) ?
                      contentItem.ContentChannel.ItemTagCategory.Guid : (Guid?)null;
                 taglTags.EntityGuid = contentItem.Guid;

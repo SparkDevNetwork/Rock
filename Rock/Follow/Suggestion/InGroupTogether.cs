@@ -25,7 +25,7 @@ using Rock;
 using Rock.Data;
 using Rock.Attribute;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Follow.Suggestion
 {
@@ -66,7 +66,7 @@ namespace Rock.Follow.Suggestion
         public override List<PersonEntitySuggestion> GetSuggestions( FollowingSuggestionType followingSuggestionType, List<int> followerPersonIds )
         {
             var suggestions = new List<PersonEntitySuggestion>();
-            var personAliasEntityType = EntityTypeCache.Read( typeof( Rock.Model.PersonAlias ) );
+            var personAliasEntityType = CacheEntityType.Get( typeof( Rock.Model.PersonAlias ) );
 
             bool isAutoFollow = GetAttributeValue( followingSuggestionType, "AutoFollow" ).AsBoolean();
 

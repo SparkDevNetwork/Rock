@@ -17,7 +17,7 @@
 using System.Collections.Generic;
 using System.Web.UI.WebControls;
 
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -33,7 +33,7 @@ namespace Rock.Web.UI.Controls
             : base()
         {
             Label = "EventCalendar";
-            EventCalendars = EventCalendarCache.All();
+            EventCalendars = CacheEventCalendar.All();
         }
 
         /// <summary>
@@ -42,14 +42,14 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The eventCalendars.
         /// </value>
-        public List<EventCalendarCache> EventCalendars
+        public List<CacheEventCalendar> EventCalendars
         {
             set
             {
                 this.Items.Clear();
                 this.Items.Add( new ListItem() );
 
-                foreach ( EventCalendarCache eventCalendar in value )
+                foreach ( CacheEventCalendar eventCalendar in value )
                 {
                     this.Items.Add( new ListItem( eventCalendar.Name, eventCalendar.Id.ToString() ) );
                 }

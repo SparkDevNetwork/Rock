@@ -29,6 +29,7 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
+    [Obsolete( "Use Rock.Cache.CacheEventCalendar instead" )]
     public class EventCalendarCache : CachedModel<EventCalendar>
     {
         #region Constructors

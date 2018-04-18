@@ -24,7 +24,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -64,7 +64,7 @@ namespace RockWeb.Blocks.Groups
             gGroupType.ColumnsOfType<ReorderField>().First().Visible = canEditBlock;
 
             SecurityField securityField = gGroupType.ColumnsOfType<SecurityField>().First();
-            securityField.EntityTypeId = EntityTypeCache.GetId<Rock.Model.GroupType>().Value;
+            securityField.EntityTypeId = CacheEntityType.GetId<Rock.Model.GroupType>().Value;
 
             BindFilter();
         }
@@ -114,7 +114,7 @@ namespace RockWeb.Blocks.Groups
                     int? id = e.Value.AsIntegerOrNull();
                     if ( id.HasValue )
                     {
-                        var purpose = DefinedValueCache.Read( id.Value );
+                        var purpose = CacheDefinedValue.Get( id.Value );
                         if ( purpose != null )
                         {
                             e.Value = purpose.Value;
@@ -179,7 +179,7 @@ namespace RockWeb.Blocks.Groups
                 groupTypeService.Delete( groupType );
                 rockContext.SaveChanges();
 
-                GroupTypeCache.Flush( groupTypeId );
+                CacheGroupType.Remove( groupTypeId );
             }
 
             BindGrid();
@@ -223,7 +223,7 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         private void BindFilter()
         {
-            ddlPurpose.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.GROUPTYPE_PURPOSE ) ), true );
+            ddlPurpose.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.GROUPTYPE_PURPOSE ) ), true );
             ddlPurpose.SelectedValue = rFilter.GetUserPreference( "Purpose" );
             ddlIsSystem.SelectedValue = rFilter.GetUserPreference( "System Group Types" );
             ddlIsSystem.SelectedValue = rFilter.GetUserPreference( "Shown in Navigation" );
@@ -246,7 +246,7 @@ namespace RockWeb.Blocks.Groups
                     a.IsSystem
                 } );
 
-            gGroupType.EntityTypeId = EntityTypeCache.GetId<GroupType>();
+            gGroupType.EntityTypeId = CacheEntityType.GetId<GroupType>();
             gGroupType.DataSource = selectQry.ToList();
             gGroupType.DataBind();
         }

@@ -109,7 +109,7 @@ namespace Rock.Reporting.DataFilter.Person
             string[] options = selection.Split( '|' );
             if ( options.Length >= 4 )
             {
-                var groupType = Rock.Web.Cache.GroupTypeCache.Read( options[0].AsGuid() );
+                var groupType = Rock.Cache.CacheGroupType.Get( options[0].AsGuid() );
 
                 ComparisonType comparisonType = options[1].ConvertToEnum<ComparisonType>( ComparisonType.GreaterThanOrEqualTo );
                 bool includeChildGroups = options.Length > 4 ? options[4].AsBoolean() : false;

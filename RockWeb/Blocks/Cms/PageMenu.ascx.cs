@@ -28,7 +28,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -86,21 +86,20 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void PageMenu_BlockUpdated( object sender, EventArgs e )
         {
-            RockMemoryCache cache = RockMemoryCache.Default;
-            cache.Remove( CacheKey() );
+            RockCache.Remove( CacheKey() );
         }
 
         private void Render()
         { 
             try
             {
-                PageCache currentPage = PageCache.Read( RockPage.PageId );
-                PageCache rootPage = null;
+                CachePage currentPage = CachePage.Get( RockPage.PageId );
+                CachePage rootPage = null;
 
                 Guid pageGuid = Guid.Empty;
                 if ( Guid.TryParse( GetAttributeValue( ROOT_PAGE ), out pageGuid ) )
                 {
-                    rootPage = PageCache.Read( pageGuid );
+                    rootPage = CachePage.Get( pageGuid );
                 }
 
                 // If a root page was not found, use current page
@@ -183,23 +182,12 @@ namespace RockWeb.Blocks.Cms
         private Template GetTemplate()
         {
             string cacheKey = CacheKey();
+            return RockCache.GetOrAddExisting( cacheKey, () => ParseTemplate() ) as Template;
+        }
 
-            RockMemoryCache cache = RockMemoryCache.Default;
-            Template template = cache[cacheKey] as Template;
-
-            if ( template != null )
-            {
-                return template;
-            }
-            else
-            {
-                template = Template.Parse( GetAttributeValue( "Template" ) );
-
-                var cachePolicy = new CacheItemPolicy();
-                cache.Set( cacheKey, template, cachePolicy );
-
-                return template;
-            }
+        private Template ParseTemplate()
+        {
+            return Template.Parse( GetAttributeValue( "Template" ) );
         }
 
         /// <summary>
@@ -219,7 +207,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         /// <param name="site">The site.</param>
         /// <returns>A dictionary of various page ids for the site.</returns>
-        private Dictionary<string, object> GetSiteProperties( SiteCache site )
+        private Dictionary<string, object> GetSiteProperties( CacheSite site )
         {
             var properties = new Dictionary<string, object>();
             properties.Add( "DefaultPageId", site.DefaultPageId );

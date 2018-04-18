@@ -181,7 +181,7 @@ function() {
             comparisonControl.ID = filterControl.ID + "_comparisonControl";
             filterControl.Controls.Add( comparisonControl );
 
-            var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+            var globalAttributes = Rock.Cache.CacheGlobalAttributes.Get();
 
             NumberBox numberBoxAmount = new NumberBox();
             numberBoxAmount.PrependText = globalAttributes.GetValue( "CurrencySymbol" ) ?? "$";
@@ -376,7 +376,7 @@ function() {
                 combineGiving = selectionValues[5].AsBooleanOrNull() ?? false;
             }
 
-            int transactionTypeContributionId = Rock.Web.Cache.DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
+            int transactionTypeContributionId = Rock.Cache.CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
 
             var financialTransactionQry = new FinancialTransactionService( rockContext ).Queryable()
                 .Where( xx => xx.AuthorizedPersonAliasId.HasValue )

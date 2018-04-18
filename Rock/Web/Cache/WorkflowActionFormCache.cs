@@ -28,6 +28,7 @@ namespace Rock.Web.Cache
     /// Cached WorkflowActionForm
     /// </summary>
     [Serializable]
+    [Obsolete( "Use Rock.Cache.CacheWorkflowActionForm instead" )]
     public class WorkflowActionFormCache : CachedModel<WorkflowActionForm>
     {
         #region Constructors

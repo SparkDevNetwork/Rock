@@ -21,7 +21,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Data;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -374,7 +374,7 @@ namespace Rock.Web.UI.Controls
             _ddlContentChannel.Items.Clear();
             _ddlContentChannel.Items.Add( new ListItem() );
 
-            var contentChannels = ContentChannelCache.All().OrderBy( a => a.Name ).ToList();
+            var contentChannels = CacheContentChannel.All().OrderBy( a => a.Name ).ToList();
 
             foreach ( var contentChannel in contentChannels )
             {

@@ -23,7 +23,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.UniversalSearch;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Model
 {
@@ -158,7 +158,7 @@ namespace Rock.Model
         /// <value>
         /// <c>true</c> if this instance is analytic supported; otherwise, <c>false</c>.
         /// </value>
-        [Obsolete( "Use EntityTypeCache.IsAnalyticsSupported(..) instead") ]
+        [Obsolete( "Use CacheEntityType.IsAnalyticsSupported(..) instead") ]
         public bool IsAnalyticSupported
         {
             get
@@ -184,7 +184,7 @@ namespace Rock.Model
         /// <value>
         /// <c>true</c> if this instance is analytic historical supported; otherwise, <c>false</c>.
         /// </value>
-        [Obsolete( "Use EntityTypeCache.IsAnalyticHistoricalSupported(..) instead" )]
+        [Obsolete( "Use CacheEntityType.IsAnalyticHistoricalSupported(..) instead" )]
         public bool IsAnalyticHistoricalSupported
         {
             get
@@ -326,7 +326,7 @@ namespace Rock.Model
                 object entity = null;
                 try
                 {
-                    var type = EntityTypeCache.Read( this ).GetEntityType();
+                    var type = CacheEntityType.Get( this ).GetEntityType();
                     entity = System.Activator.CreateInstance( type );
                 }
                 catch

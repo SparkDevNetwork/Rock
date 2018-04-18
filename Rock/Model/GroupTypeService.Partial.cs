@@ -189,7 +189,7 @@ namespace Rock.Model
             var qry = groupTypeService.Queryable();
 
             // limit to show only GroupTypes that have a group type purpose of Checkin Template
-            int groupTypePurposeCheckInTemplateId = Rock.Web.Cache.DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE ) ).Id;
+            int groupTypePurposeCheckInTemplateId = Rock.Cache.CacheDefinedValue.Get( new Guid( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE ) ).Id;
             qry = qry.Where( a => a.GroupTypePurposeValueId == groupTypePurposeCheckInTemplateId );
 
             foreach ( var groupTypeId in qry.Select( a => a.Id ) )
@@ -236,7 +236,7 @@ namespace Rock.Model
         /// <returns></returns>
         public override Guid? GetGuid( int id )
         {
-            var cacheItem = Rock.Web.Cache.GroupTypeCache.Read( id );
+            var cacheItem = Rock.Cache.CacheGroupType.Get( id );
             if ( cacheItem != null )
             {
                 return cacheItem.Guid;

@@ -22,7 +22,7 @@ using System.Web.UI.WebControls;
 
 using Newtonsoft.Json;
 using RestSharp;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -300,8 +300,8 @@ namespace Rock.Web.UI.Controls
         public Captcha() : base()
         {
             CustomValidator = new CustomValidator();
-            SiteKey = GlobalAttributesCache.Value( "core_GoogleReCaptchaSiteKey" );
-            SecretKey = GlobalAttributesCache.Value( "core_GoogleReCaptchaSecretKey" );
+            SiteKey = CacheGlobalAttributes.Value( "core_GoogleReCaptchaSiteKey" );
+            SecretKey = CacheGlobalAttributes.Value( "core_GoogleReCaptchaSecretKey" );
         }
 
         #endregion

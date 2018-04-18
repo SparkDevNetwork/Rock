@@ -1,4 +1,4 @@
-﻿/*
+/*
   Used to manage styles for specific blocks.
 
   1. Notes - block to display, add, edit, delete notes
@@ -338,7 +338,7 @@
     }
   }
 
-  .panel-title:before {
+  .panel-title::before {
     margin-right: 4px;
     font-family: @fa-font-face;
     font-weight: @fa-theme-weight;
@@ -347,7 +347,7 @@
 }
 
 .workflow-action {
-  .workflow-action-name:before {
+  .workflow-action-name::before {
     font-family: @fa-font-face;
     font-weight: @fa-theme-weight;
     content: @fa-var-cube;
@@ -408,14 +408,14 @@
           &:before {
             margin-top: 6px;
             font-family: @fa-font-face;
-            font-weight: @fa-theme-weight;
             font-size: 20px;
+            font-weight: @fa-theme-weight;
             content: @fa-var-chevron-up;
           }
         }
 
         &.collapsed {
-          i.panel-navigation:before {
+          i.panel-navigation::before {
             content: @fa-var-chevron-down;
           }
         }

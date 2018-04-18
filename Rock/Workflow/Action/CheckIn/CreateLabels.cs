@@ -25,7 +25,7 @@ using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Workflow.Action.CheckIn
 {
@@ -207,7 +207,7 @@ namespace Rock.Workflow.Action.CheckIn
         /// <param name="item">The item.</param>
         /// <param name="existingLabels">The existing labels.</param>
         /// <returns></returns>
-        public virtual List<KioskLabel> GetLabels( IHasAttributes item, List<KioskLabel> existingLabels )
+        public virtual List<KioskLabel> GetLabels( Data.IHasAttributes item, List<KioskLabel> existingLabels )
         {
             var labels = new List<KioskLabel>( existingLabels );
 
@@ -225,7 +225,7 @@ namespace Rock.Workflow.Action.CheckIn
                     {
                         if ( !labels.Any( l => l.Guid == binaryFileGuid.Value ) )
                         {
-                            var labelCache = KioskLabel.Read( binaryFileGuid.Value );
+                            var labelCache = KioskLabel.Get( binaryFileGuid.Value );
                             labelCache.Order = attribute.Value.Order;
                             if ( labelCache != null && (
                                 labelCache.LabelType == KioskLabelType.Family ||

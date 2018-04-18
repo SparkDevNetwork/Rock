@@ -18,7 +18,7 @@ using System.ComponentModel;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -39,7 +39,7 @@ namespace Rock.Web.UI.Controls
         {
             base.OnInit( e );
 
-            var globalAttributes = GlobalAttributesCache.Read();
+            var globalAttributes = CacheGlobalAttributes.Get();
             if (globalAttributes != null)
             {
                 this.PrependText = "<i class='fa fa-link'></i>";

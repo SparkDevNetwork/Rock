@@ -123,7 +123,7 @@ namespace RockWeb.Blocks.Core
 
                     // create a rockContext for the workflow so that it can save it's changes, without 
                     var workflowRockContext = new RockContext();
-                    var workflowType = Rock.Web.Cache.WorkflowTypeCache.Read( workflowTypeGuid );
+                    var workflowType = Rock.Cache.CacheWorkflowType.Get( workflowTypeGuid );
                     if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                     {
                         var workflow = Workflow.Activate( workflowType, binaryFile.FileName );
@@ -398,7 +398,7 @@ namespace RockWeb.Blocks.Core
                 binaryFile.SaveAttributeValues( rockContext );
             } );
 
-            Rock.CheckIn.KioskLabel.Flush( binaryFile.Guid );
+            Rock.CheckIn.KioskLabel.Remove( binaryFile.Guid );
 
             if ( !prevBinaryFileTypeId.Equals( binaryFile.BinaryFileTypeId ) )
             {
@@ -407,7 +407,7 @@ namespace RockWeb.Blocks.Core
                     ( prevBinaryFileTypeId.HasValue && prevBinaryFileTypeId.Value == checkInBinaryFileType.Id ) ||
                     ( binaryFile.BinaryFileTypeId.HasValue && binaryFile.BinaryFileTypeId.Value == checkInBinaryFileType.Id ) ) )
                 {
-                    Rock.CheckIn.KioskDevice.FlushAll();
+                    Rock.CheckIn.KioskDevice.Clear();
                 }
             }
 

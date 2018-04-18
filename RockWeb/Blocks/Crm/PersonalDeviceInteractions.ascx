@@ -24,15 +24,15 @@
                     <Rock:Grid ID="gInteractions" runat="server" AllowSorting="true">
                         <Columns>
                             <Rock:RockBoundField DataField="InteractionDateTime" HeaderText="Date / Time" SortExpression="InteractionDateTime" />
+                            <Rock:RockTemplateField>
+                                <ItemTemplate>
+                                    <%# IsCurrentlyPresent((DateTime?) Eval( "InteractionEndDateTime" )) ? "<span class='label label-success'>Currently Present</span>":"" %>
+                                </ItemTemplate>
+                            </Rock:RockTemplateField>
                             <Rock:RockBoundField DataField="InteractionSummary" HeaderText="Details" SortExpression="InteractionSummary" />
                             <Rock:RockTemplateField HeaderText="Assigned Individual">
                                 <ItemTemplate>
                                     <%#  Eval( "PersonalDevice.PersonAlias" ) != null ? "<a href='"+ string.Format( "{0}{1}", ResolveRockUrl( "~/Person/" ) , Eval("PersonalDevice.PersonAlias.PersonId")) +"'>"+ Eval("PersonalDevice.PersonAlias.Person.FullName") +"</a>":"" %>
-                                </ItemTemplate>
-                            </Rock:RockTemplateField>
-                            <Rock:RockTemplateField ItemStyle-HorizontalAlign="Right">
-                                <ItemTemplate>
-                                    <%# IsCurrentlyPresent((DateTime?) Eval( "InteractionEndDateTime" )) ? "<span class='label label-success'>Currently Present</span>":"" %>
                                 </ItemTemplate>
                             </Rock:RockTemplateField>
                         </Columns>

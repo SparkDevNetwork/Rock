@@ -18,7 +18,7 @@ using System.Collections.Generic;
 
 using Rock.Data;
 using Rock.Extension;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Security
 {
@@ -44,8 +44,8 @@ namespace Rock.Security
         /// True/False value of whether the request was successfully sent or not
         /// </returns>
         public abstract bool SendRequest( RockContext rockContext, Rock.Model.Workflow workflow, 
-            AttributeCache personAttribute, AttributeCache ssnAttribute, AttributeCache requestTypeAttribute, 
-            AttributeCache billingCodeAttribute, out List<string> errorMessages );
+            CacheAttribute personAttribute, CacheAttribute ssnAttribute, CacheAttribute requestTypeAttribute, 
+            CacheAttribute billingCodeAttribute, out List<string> errorMessages );
     }
 
 }

@@ -18,7 +18,7 @@ using System;
 using System.Linq;
 
 using Rock.Data;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Model
 {
@@ -31,7 +31,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IQueryable<FinancialTransactionDetail> GetPayments( int registrationId )
         {
-            int registrationEntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Registration ) ).Id;
+            int registrationEntityTypeId = CacheEntityType.Get( typeof( Rock.Model.Registration ) ).Id;
             return new FinancialTransactionDetailService( (RockContext)this.Context )
                 .Queryable( "Transaction" )
                 .Where( t =>

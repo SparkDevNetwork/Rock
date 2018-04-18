@@ -28,7 +28,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -162,8 +162,8 @@ namespace RockWeb.Blocks.CheckIn.Config
                 groupTypeService.Delete( groupType );
                 rockContext.SaveChanges();
 
-                GroupTypeCache.Flush( groupTypeId );
-                Rock.CheckIn.KioskDevice.FlushAll();
+                CacheGroupType.Remove( groupTypeId );
+                Rock.CheckIn.KioskDevice.Clear();
             }
 
             var pageRef = new PageReference( CurrentPageReference.PageId, CurrentPageReference.RouteId );
@@ -202,7 +202,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                 groupType = new GroupType();
                 groupTypeService.Add( groupType );
 
-                var templatePurpose = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid() );
+                var templatePurpose = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid() );
                 if ( templatePurpose != null )
                 {
                     groupType.GroupTypePurposeValueId = templatePurpose.Id;
@@ -237,7 +237,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                 groupType.SetAttributeValue( "core_checkin_RegularExpressionFilter", tbSearchRegex.Text );
                 groupType.SetAttributeValue( "core_checkin_ReuseSameCode", cbReuseCode.Checked.ToString() );
 
-                var searchType = DefinedValueCache.Read( ddlSearchType.SelectedValueAsInt() ?? 0 );
+                var searchType = CacheDefinedValue.Get( ddlSearchType.SelectedValueAsInt() ?? 0 );
                 if ( searchType != null )
                 {
                     groupType.SetAttributeValue( "core_checkin_SearchType", searchType.Guid.ToString() );
@@ -273,8 +273,8 @@ namespace RockWeb.Blocks.CheckIn.Config
                     ShowReadonlyDetails( groupType );
                 }
 
-                GroupTypeCache.Flush( groupType.Id );
-                Rock.CheckIn.KioskDevice.FlushAll();
+                CacheGroupType.Remove( groupType.Id );
+                Rock.CheckIn.KioskDevice.Clear();
             }
         }
 
@@ -419,7 +419,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                 tbSearchRegex.Text = groupType.GetAttributeValue( "core_checkin_RegularExpressionFilter" );
                 cbReuseCode.Checked = groupType.GetAttributeValue( "core_checkin_ReuseSameCode" ).AsBoolean( false );
 
-                var searchType = DefinedValueCache.Read( groupType.GetAttributeValue( "core_checkin_SearchType" ).AsGuid() );
+                var searchType = CacheDefinedValue.Get( groupType.GetAttributeValue( "core_checkin_SearchType" ).AsGuid() );
                 if ( searchType != null )
                 {
                     ddlSearchType.SetValue( searchType.Id.ToString() );
@@ -493,7 +493,7 @@ namespace RockWeb.Blocks.CheckIn.Config
             int? searchTypeId = ddlSearchType.SelectedValueAsId();
             if ( searchTypeId.HasValue )
             {
-                var nameSearch = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME.AsGuid() );
+                var nameSearch = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME.AsGuid() );
                 showPhoneFields = nameSearch == null || searchTypeId.Value != nameSearch.Id;
             }
 
@@ -588,7 +588,7 @@ namespace RockWeb.Blocks.CheckIn.Config
 
         private void LoadDropdowns()
         {
-            var searchTypes = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.CHECKIN_SEARCH_TYPE.AsGuid() );
+            var searchTypes = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.CHECKIN_SEARCH_TYPE.AsGuid() );
             if ( searchTypes != null )
             {
                 ddlSearchType.BindToDefinedType( searchTypes );

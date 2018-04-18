@@ -21,7 +21,7 @@ using System.IO;
 using System.Linq;
 
 using Rock.Data;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Model
 {
@@ -91,7 +91,7 @@ namespace Rock.Model
             }
 
             // Get the Block Entity Type
-            int? blockEntityTypeId = EntityTypeCache.Read( typeof( Block ) ).Id;
+            int? blockEntityTypeId = CacheEntityType.Get( typeof( Block ) ).Id;
 
             // for each BlockType
             foreach ( string path in list.Keys )
@@ -198,7 +198,7 @@ namespace Rock.Model
         /// <returns></returns>
         public override Guid? GetGuid( int id )
         {
-            var cacheItem = Rock.Web.Cache.BlockTypeCache.Read( id );
+            var cacheItem = Rock.Cache.CacheBlockType.Get( id );
             if ( cacheItem != null )
             {
                 return cacheItem.Guid;

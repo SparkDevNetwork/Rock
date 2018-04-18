@@ -132,7 +132,7 @@ namespace Rock.Field.Types
                 Guid guid = Guid.Empty;
                 if ( Guid.TryParse( value, out guid ) )
                 {
-                    var definedValue = Rock.Web.Cache.DefinedValueCache.Read( guid );
+                    var definedValue = Rock.Cache.CacheDefinedValue.Get( guid );
                     if ( definedValue != null )
                     {
                         formattedValue = definedValue.Value;
@@ -167,7 +167,7 @@ namespace Rock.Field.Types
                 Guid groupTypeGuid = Guid.Empty;
                 if ( Guid.TryParse( configurationValues[GROUP_TYPE_KEY].Value, out groupTypeGuid ) )
                 {
-                    var groupType = Rock.Web.Cache.GroupTypeCache.Read( groupTypeGuid );
+                    var groupType = Rock.Cache.CacheGroupType.Get( groupTypeGuid );
                     if (groupType != null)
                     {
                         var locationTypeValues = groupType.LocationTypeValues;
@@ -207,7 +207,7 @@ namespace Rock.Field.Types
                 int definedValueId = int.MinValue;
                 if ( int.TryParse( id, out definedValueId ) )
                 {
-                    var definedValue = Rock.Web.Cache.DefinedValueCache.Read( definedValueId );
+                    var definedValue = Rock.Cache.CacheDefinedValue.Get( definedValueId );
                     if ( definedValue != null )
                     {
                         return definedValue.Guid.ToString();
@@ -235,7 +235,7 @@ namespace Rock.Field.Types
                     Guid guid = Guid.Empty;
                     if ( Guid.TryParse( value, out guid ) )
                     {
-                        var definedValue = Rock.Web.Cache.DefinedValueCache.Read( guid );
+                        var definedValue = Rock.Cache.CacheDefinedValue.Get( guid );
                         if ( definedValue != null )
                         {
                             id = definedValue.Id.ToString();

@@ -31,6 +31,7 @@ namespace Rock.Web.Cache
     /// </summary>
     [Serializable]
     [DataContract]
+    [Obsolete( "Use Rock.Cache.CacheDefinedValue instead" )]
     public class DefinedValueCache : CachedModel<DefinedValue>
     {
         #region Constructors

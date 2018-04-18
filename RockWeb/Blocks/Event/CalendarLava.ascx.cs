@@ -26,7 +26,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using Rock.Store;
@@ -338,7 +338,7 @@ namespace RockWeb.Blocks.Event
 
             // Filter by campus
             var campusGuidList = GetAttributeValue( "Campuses" ).Split( ',' ).AsGuidList();
-            var campusIdList = CampusCache.All().Where( c => campusGuidList.Contains( c.Guid ) ).Select( c => c.Id );
+            var campusIdList = CacheCampus.All().Where( c => campusGuidList.Contains( c.Guid ) ).Select( c => c.Id );
             var selectedCampusIdList = cblCampus.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => a.Value.AsInteger() ).ToList();
 
             if ( selectedCampusIdList.Any() )
@@ -508,11 +508,11 @@ namespace RockWeb.Blocks.Event
 
             if ( campusGuidList.Any() )
             {
-                cblCampus.DataSource = CampusCache.All( false ).Where( c => campusGuidList.Contains( c.Guid ) );
+                cblCampus.DataSource = CacheCampus.All( false ).Where( c => campusGuidList.Contains( c.Guid ) );
             }
             else
             {
-                cblCampus.DataSource = CampusCache.All( false );
+                cblCampus.DataSource = CacheCampus.All( false );
             }
 
             cblCampus.DataBind();
@@ -529,7 +529,7 @@ namespace RockWeb.Blocks.Event
             if ( campusId.HasValue )
             {
                 // Check if there's a campus with this id.
-                var campus = CampusCache.Read( campusId.Value );
+                var campus = CacheCampus.Get( campusId.Value );
                 if ( campus != null )
                 {
                     cblCampus.SetValue( campusId.Value );
@@ -539,7 +539,7 @@ namespace RockWeb.Blocks.Event
             {
                 if ( GetAttributeValue( "EnableCampusContext" ).AsBoolean() )
                 {
-                    var contextCampus = RockPage.GetCurrentContext( EntityTypeCache.Read( "Rock.Model.Campus" ) ) as Campus;
+                    var contextCampus = RockPage.GetCurrentContext( CacheEntityType.Get( "Rock.Model.Campus" ) ) as Campus;
                     if ( contextCampus != null )
                     {
                         cblCampus.SetValue( contextCampus.Id );
@@ -550,7 +550,7 @@ namespace RockWeb.Blocks.Event
             // Setup Category Filter
             var selectedCategoryGuids = GetAttributeValue( "FilterCategories" ).SplitDelimitedValues( true ).AsGuidList();
             rcwCategory.Visible = selectedCategoryGuids.Any() && GetAttributeValue( "CategoryFilterDisplayMode" ).AsInteger() > 1;
-            var definedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE.AsGuid() );
+            var definedType = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE.AsGuid() );
             if ( definedType != null )
             {
                 cblCategory.DataSource = definedType.DefinedValues.Where( v => selectedCategoryGuids.Contains( v.Guid ) );

@@ -27,7 +27,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -76,8 +76,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             base.OnLoad( e );
 
-            personEntityTypeId = EntityTypeCache.Read( typeof( Person ) ).Id;
-            groupEntityTypeId = EntityTypeCache.Read( typeof( Group ) ).Id;
+            personEntityTypeId = CacheEntityType.Get( typeof( Person ) ).Id;
+            groupEntityTypeId = CacheEntityType.Get( typeof( Group ) ).Id;
 
             if ( Person != null )
             {
@@ -138,7 +138,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         int? categoryId = e.Value.AsIntegerOrNull();
                         if ( categoryId.HasValue )
                         {
-                            var category = Rock.Web.Cache.CategoryCache.Read( categoryId.Value );
+                            var category = Rock.Cache.CacheCategory.Get( categoryId.Value );
                             if ( category != null )
                             {
                                 e.Value = category.Name;
@@ -311,13 +311,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     }
 
                     // For related items, make sure user is authorized to view the history
-                    int? attributeEntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Attribute ) ).Id;
+                    int? attributeEntityTypeId = CacheEntityType.Get( typeof( Rock.Model.Attribute ) ).Id;
                     var groupService = new GroupService( rockContext );
                     foreach ( var history in histories.Where( h => h.RelatedEntityId.HasValue && h.RelatedEntityId.Value > 0 ).ToList() )
                     {
                         if ( history.RelatedEntityTypeId == attributeEntityTypeId )
                         {
-                            var attr = AttributeCache.Read( history.RelatedEntityId.Value );
+                            var attr = CacheAttribute.Get( history.RelatedEntityId.Value );
                             if ( attr == null || !attr.IsAuthorized( Authorization.VIEW, CurrentPerson ))
                             {
                                 histories.Remove( history );
@@ -349,7 +349,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         CreatedDateTime = h.CreatedDateTime
                     } ).ToList();
 
-                    gHistory.EntityTypeId = EntityTypeCache.Read<History>().Id;
+                    gHistory.EntityTypeId = CacheEntityType.Get<History>().Id;
                     gHistory.DataBind();
                 }
             }
@@ -385,7 +385,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             if ( entityId.HasValue && entityId.Value > 0 )
             {
-                var category = CategoryCache.Read( categoryId );
+                var category = CacheCategory.Get( categoryId );
                 if ( category != null )
                 {
                     string urlMask = category.GetAttributeValue( "UrlMask" );

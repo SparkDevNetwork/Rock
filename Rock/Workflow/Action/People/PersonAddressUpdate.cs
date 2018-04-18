@@ -24,7 +24,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Workflow.Action
 {
@@ -68,7 +68,7 @@ namespace Rock.Workflow.Action
             Guid? guidPersonAttribute = personAttributeValue.AsGuidOrNull();
             if ( guidPersonAttribute.HasValue )
             {
-                var attributePerson = AttributeCache.Read( guidPersonAttribute.Value, rockContext );
+                var attributePerson = CacheAttribute.Get( guidPersonAttribute.Value, rockContext );
                 if ( attributePerson != null || attributePerson.FieldType.Class != "Rock.Field.Types.PersonFieldType" )
                 {
                     string attributePersonValue = action.GetWorklowAttributeValue( guidPersonAttribute.Value );
@@ -98,15 +98,15 @@ namespace Rock.Workflow.Action
             }
 
             // determine the location type to edit
-            DefinedValueCache locationType = null;
+            CacheDefinedValue locationType = null;
             var locationTypeAttributeValue = action.GetWorklowAttributeValue( GetAttributeValue( action, "LocationTypeAttribute" ).AsGuid() );
             if ( locationTypeAttributeValue != null )
             {
-                locationType = DefinedValueCache.Read( locationTypeAttributeValue.AsGuid() );
+                locationType = CacheDefinedValue.Get( locationTypeAttributeValue.AsGuid() );
             }
             if ( locationType == null )
             {
-                locationType = DefinedValueCache.Read( GetAttributeValue( action, "LocationType" ).AsGuid() );
+                locationType = CacheDefinedValue.Get( GetAttributeValue( action, "LocationType" ).AsGuid() );
             }
             if ( locationType == null )
             {

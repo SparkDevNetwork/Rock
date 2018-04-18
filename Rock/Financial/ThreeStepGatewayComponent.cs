@@ -20,7 +20,7 @@ using System.Data;
 using Rock.Attribute;
 using Rock.Extension;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Financial
 {
