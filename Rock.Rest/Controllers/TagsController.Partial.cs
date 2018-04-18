@@ -22,7 +22,7 @@ using System.Web.Http;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Rest.Controllers
 {
@@ -86,7 +86,7 @@ namespace Rock.Rest.Controllers
 
             if ( categoryGuid.HasValue )
             {
-                var category = CategoryCache.Read( categoryGuid.Value );
+                var category = CacheCategory.Get( categoryGuid.Value );
                 if ( category != null )
                 {
                     tags = tags

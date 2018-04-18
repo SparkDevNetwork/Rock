@@ -31,6 +31,7 @@ namespace Rock.Web.Cache
     /// </summary>
     [Serializable]
     [DataContract]
+    [Obsolete( "Use Rock.Cache.CacheFieldType instead" )]
     public class FieldTypeCache : CachedModel<FieldType>
     {
         #region Constructors

@@ -32,6 +32,7 @@ namespace Rock.Web.Cache
     /// </summary>
     [Serializable]
     [DataContract]
+    [Obsolete( "Use Rock.Cache.CacheRestAction instead" )]
     public class RestActionCache : CachedModel<RestAction>
     {
         #region Constructors

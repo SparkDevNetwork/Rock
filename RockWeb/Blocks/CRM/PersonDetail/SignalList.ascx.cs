@@ -25,7 +25,7 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -274,7 +274,7 @@ namespace RockWeb.Blocks.CRM.PersonDetail
                 gSignal.DataSource = gridList.OrderBy( s => s.Order ).ThenBy( s => s.Id ).ToList();
             }
 
-            gSignal.EntityTypeId = EntityTypeCache.Read<Rock.Model.Device>().Id;
+            gSignal.EntityTypeId = CacheEntityType.Get<Rock.Model.Device>().Id;
             gSignal.DataBind();
         }
 

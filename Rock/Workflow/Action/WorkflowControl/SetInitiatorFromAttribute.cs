@@ -23,7 +23,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Workflow.Action
 {
@@ -56,10 +56,10 @@ namespace Rock.Workflow.Action
             if ( !guid.IsEmpty() )
             {
                 // Get the attribute
-                var attribute = AttributeCache.Read( guid, rockContext );
+                var attribute = CacheAttribute.Get( guid, rockContext );
                 if ( attribute != null )
                 {
-                    if ( attribute.FieldTypeId == FieldTypeCache.Read( SystemGuid.FieldType.PERSON.AsGuid(), rockContext ).Id )
+                    if ( attribute.FieldTypeId == CacheFieldType.Get( SystemGuid.FieldType.PERSON.AsGuid(), rockContext ).Id )
                     {
                         // If attribute type is a person, value should be person alias id
                         Guid? personAliasGuid = action.GetWorklowAttributeValue( guid ).AsGuidOrNull();

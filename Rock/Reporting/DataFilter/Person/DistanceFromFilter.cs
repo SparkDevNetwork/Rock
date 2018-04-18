@@ -23,7 +23,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.Person
@@ -217,13 +217,13 @@ function() {
                 }
                 
                 GroupMemberService groupMemberService = new GroupMemberService( rockContext );
-                var groupTypeFamilyId = GroupTypeCache.GetFamilyGroupType().Id;
+                var groupTypeFamilyId = CacheGroupType.GetFamilyGroupType().Id;
 
                 // limit to Family's Home Addresses that have are a real location (not a PO Box)
                 var groupMemberServiceQry = groupMemberService.Queryable()
                     .Where( xx => xx.Group.GroupTypeId == groupTypeFamilyId );
 
-                int groupLocationTypeHomeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() ).Id;
+                int groupLocationTypeHomeId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() ).Id;
 
                 // if a specific point was selected (whether a marker, or an address), we'll do a radial search
                 if( location.GeoPoint != null )

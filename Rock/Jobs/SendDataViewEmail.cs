@@ -27,7 +27,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Data;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web;
 using Rock.Communication;
 using System.Data.Entity;

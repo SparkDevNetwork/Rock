@@ -31,7 +31,7 @@ using System.Web.Compilation;
 using System.Text.RegularExpressions;
 using System.IO;
 using System.Text;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Data;
 using Rock.Web;
 
@@ -129,7 +129,7 @@ namespace RockWeb.Blocks.Cms
                 var rockContext = new RockContext();
                 var blockService = new BlockService( rockContext );
                 var block = blockService.Get( blockId.Value );
-                var page = Rock.Web.Cache.PageCache.Read( hfPageId.Value.AsInteger() );
+                var page = Rock.Cache.CachePage.Get( hfPageId.Value.AsInteger() );
                 if ( block != null && page != null )
                 {
                     List<Block> zoneBlocks = null;
@@ -156,19 +156,19 @@ namespace RockWeb.Blocks.Cms
 
                     foreach ( var zoneBlock in zoneBlocks )
                     {
-                        // make sure the BlockCache for all the re-ordered blocks get flushed so the new Order is updated
-                        BlockCache.Flush( zoneBlock.Id );
+                        // make sure the CacheBlock for all the re-ordered blocks get flushed so the new Order is updated
+                        CacheBlock.Remove( zoneBlock.Id );
                     }
 
-                    page.FlushBlocks();
+                    page.RemoveBlocks();
                     if ( block.LayoutId.HasValue )
                     {
-                        Rock.Web.Cache.PageCache.FlushLayoutBlocks( block.LayoutId.Value );
+                        Rock.Cache.CachePage.RemoveLayoutBlocks( block.LayoutId.Value );
                     }
 
                     if ( block.SiteId.HasValue )
                     {
-                        Rock.Web.Cache.PageCache.FlushSiteBlocks( block.SiteId.Value );
+                        Rock.Cache.CachePage.RemoveSiteBlocks( block.SiteId.Value );
                     }
 
                     ShowDetailForZone( ddlZones.SelectedValue );
@@ -193,7 +193,7 @@ namespace RockWeb.Blocks.Cms
         public void ShowDetail( int pageId )
         {
             hfPageId.Value = pageId.ToString();
-            var page = Rock.Web.Cache.PageCache.Read( pageId );
+            var page = Rock.Cache.CachePage.Get( pageId );
 
             this.Visible = page != null;
             LoadDropDowns();
@@ -208,7 +208,7 @@ namespace RockWeb.Blocks.Cms
         private void ShowDetailForZone( string zoneName )
         {
             int pageId = hfPageId.Value.AsInteger();
-            var page = Rock.Web.Cache.PageCache.Read( pageId );
+            var page = Rock.Cache.CachePage.Get( pageId );
 
             lZoneTitle.Text = string.Format( "{0} Zone", zoneName );
             lZoneIcon.Text = "<i class='fa fa-th-large'></i>";
@@ -244,7 +244,7 @@ namespace RockWeb.Blocks.Cms
 
             ddlZones.Items.Clear();
             ddlMoveToZoneList.Items.Clear();
-            var page = Rock.Web.Cache.PageCache.Read( pageId );
+            var page = Rock.Cache.CachePage.Get( pageId );
             if ( page != null )
             {
                 var zoneNames = FindZoneNames( page );
@@ -272,11 +272,11 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         /// <param name="layoutPath">The layout path.</param>
         /// <returns></returns>
-        private List<string> FindZoneNames( Rock.Web.Cache.PageCache page )
+        private List<string> FindZoneNames( Rock.Cache.CachePage page )
         {
             string theme = page.Layout.Site.Theme;
             string layout = page.Layout.FileName;
-            string layoutPath = Rock.Web.Cache.PageCache.FormatPath( theme, layout );
+            string layoutPath = Rock.Cache.CachePage.FormatPath( theme, layout );
 
             HtmlAgilityPack.HtmlDocument layoutAspx = new HtmlAgilityPack.HtmlDocument();
             layoutAspx.OptionFixNestedTags = true;
@@ -380,7 +380,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         /// <param name="block">The block.</param>
         /// <param name="pnlLayoutItem">The PNL layout item.</param>
-        private void AddAdminControls( BlockCache block, Panel pnlLayoutItem )
+        private void AddAdminControls( CacheBlock block, Panel pnlLayoutItem )
         {
             Panel pnlAdminButtons = new Panel { ID = "pnlBlockConfigButtons", CssClass = "pull-right actions" };
 
@@ -390,7 +390,7 @@ namespace RockWeb.Blocks.Cms
             pnlAdminButtons.Controls.Add( btnBlockProperties );
 
             // Block Security
-            int entityTypeBlockId = EntityTypeCache.Read<Rock.Model.Block>().Id;
+            int entityTypeBlockId = CacheEntityType.Get<Rock.Model.Block>().Id;
             SecurityButton btnBlockSecurity = new SecurityButton { ID = "btnBlockSecurity", EntityTypeId = entityTypeBlockId, EntityId = block.Id, Title = block.Name };
             btnBlockSecurity.AddCssClass( "btn btn-sm btn-security" );
             pnlAdminButtons.Controls.Add( btnBlockSecurity );
@@ -490,18 +490,18 @@ namespace RockWeb.Blocks.Cms
                     rockContext.SaveChanges();
 
                     // flush all the cache stuff that involves the block
-                    Rock.Web.Cache.BlockCache.Flush( blockId.Value );
+                    Rock.Cache.CacheBlock.Remove( blockId.Value );
 
                     if ( layoutId.HasValue )
                     {
-                        Rock.Web.Cache.PageCache.FlushLayoutBlocks( layoutId.Value );
+                        Rock.Cache.CachePage.RemoveLayoutBlocks( layoutId.Value );
                     }
 
                     if ( pageId.HasValue )
                     {
-                        Rock.Web.Cache.PageCache.Flush( pageId.Value );
-                        var page = Rock.Web.Cache.PageCache.Read( pageId.Value );
-                        page.FlushBlocks();
+                        Rock.Cache.CachePage.Remove( pageId.Value );
+                        var page = Rock.Cache.CachePage.Get( pageId.Value );
+                        page.RemoveBlocks();
                     }
 
                     ShowDetailForZone( ddlZones.SelectedValue );
@@ -532,7 +532,7 @@ namespace RockWeb.Blocks.Cms
                     ddlMoveToZoneList.SetValue( block.Zone );
                     cblBlockMovePageOrLayout.Items.Clear();
 
-                    var page = PageCache.Read( hfPageId.Value.AsInteger() );
+                    var page = CachePage.Get( hfPageId.Value.AsInteger() );
 
                     var listItemPage = new ListItem();
                     listItemPage.Text = "Page: " + page.ToString();
@@ -559,7 +559,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
         protected void rptBlocks_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
-            BlockCache block = e.Item.DataItem as BlockCache;
+            CacheBlock block = e.Item.DataItem as CacheBlock;
             if ( block != null )
             {
                 Panel pnlBlockEditWidget = e.Item.FindControl( "pnlBlockEditWidget" ) as Panel;
@@ -639,13 +639,13 @@ namespace RockWeb.Blocks.Cms
                 }
             }
 
-            var htmlContentBlockType = BlockTypeCache.Read( Rock.SystemGuid.BlockType.HTML_CONTENT.AsGuid() );
+            var htmlContentBlockType = CacheBlockType.Get( Rock.SystemGuid.BlockType.HTML_CONTENT.AsGuid() );
 
             ddlBlockType.SetValue( htmlContentBlockType.Id );
 
             rblAddBlockLocation.Items.Clear();
 
-            var page = PageCache.Read( hfPageId.Value.AsInteger() );
+            var page = CachePage.Get( hfPageId.Value.AsInteger() );
 
             var listItemPage = new ListItem();
             listItemPage.Text = string.Format( "Page ({0})", page.ToString() );
@@ -681,7 +681,7 @@ namespace RockWeb.Blocks.Cms
             var blockService = new BlockService( rockContext );
             var block = blockService.Get( blockId );
 
-            var page = PageCache.Read( hfPageId.Value.AsInteger() );
+            var page = CachePage.Get( hfPageId.Value.AsInteger() );
 
             if ( block != null )
             {
@@ -700,14 +700,14 @@ namespace RockWeb.Blocks.Cms
                 rockContext.SaveChanges();
 
                 // flush all the cache stuff that involves the block and page
-                Rock.Web.Cache.BlockCache.Flush( block.Id );
+                Rock.Cache.CacheBlock.Remove( block.Id );
 
-                Rock.Web.Cache.LayoutCache.Flush( page.LayoutId );
-                Rock.Web.Cache.PageCache.Flush( page.Id );
+                Rock.Cache.CacheLayout.Remove( page.LayoutId );
+                Rock.Cache.CachePage.Remove( page.Id );
 
                 // re-read the pageCache
-                page = Rock.Web.Cache.PageCache.Read( page.Id );
-                page.FlushBlocks();
+                page = Rock.Cache.CachePage.Get( page.Id );
+                page.RemoveBlocks();
 
                 mdBlockMove.Hide();
                 ShowDetailForZone( ddlZones.SelectedValue );
@@ -725,7 +725,7 @@ namespace RockWeb.Blocks.Cms
             {
                 BlockService blockService = new BlockService( rockContext );
 
-                var page = PageCache.Read( hfPageId.Value.AsInteger() );
+                var page = CachePage.Get( hfPageId.Value.AsInteger() );
 
                 Block block = new Rock.Model.Block();
                 block.Zone = ddlZones.SelectedValue;
@@ -761,11 +761,11 @@ namespace RockWeb.Blocks.Cms
 
                 if ( block.LayoutId.HasValue )
                 {
-                    Rock.Web.Cache.PageCache.FlushLayoutBlocks( page.LayoutId );
+                    Rock.Cache.CachePage.RemoveLayoutBlocks( page.LayoutId );
                 }
                 else
                 {
-                    page.FlushBlocks();
+                    page.RemoveBlocks();
                 }
 
                 mdAddBlock.Hide();
@@ -782,7 +782,7 @@ namespace RockWeb.Blocks.Cms
         {
             LinkButton btnNewBlockQuickSetting = sender as LinkButton;
 
-            BlockTypeCache quickSettingBlockType = BlockTypeCache.Read( btnNewBlockQuickSetting.CommandArgument.AsInteger()) ;
+            CacheBlockType quickSettingBlockType = CacheBlockType.Get( btnNewBlockQuickSetting.CommandArgument.AsInteger()) ;
 
             if ( quickSettingBlockType != null )
             {

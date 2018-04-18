@@ -30,7 +30,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
@@ -504,7 +504,7 @@ namespace RockWeb.Blocks.Event
         protected void lbCalendarsDetail_Click( object sender, EventArgs e )
         {
             var qryParams = new Dictionary<string, string>();
-            var pageCache = PageCache.Read( RockPage.PageId );
+            var pageCache = CachePage.Get( RockPage.PageId );
             if ( pageCache != null && pageCache.ParentPage != null && pageCache.ParentPage.ParentPage != null )
             {
                 NavigateToPage( pageCache.ParentPage.ParentPage.Guid, qryParams );
@@ -535,7 +535,7 @@ namespace RockWeb.Blocks.Event
             // Bind options to defined type, but remove any that have already been selected
             ddlAudience.Items.Clear();
 
-            var definedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE.AsGuid() );
+            var definedType = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE.AsGuid() );
             if ( definedType != null )
             {
                 ddlAudience.DataSource = definedType.DefinedValues
@@ -555,7 +555,7 @@ namespace RockWeb.Blocks.Event
         protected void gAudiences_Delete( object sender, RowEventArgs e )
         {
             Guid guid = (Guid)e.RowKeyValue;
-            var audience = DefinedValueCache.Read( guid );
+            var audience = CacheDefinedValue.Get( guid );
             if ( audience != null )
             {
                 AudiencesState.Remove( audience.Id );
@@ -910,8 +910,8 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void BindAudienceGrid()
         {
-            var values = new List<DefinedValueCache>();
-            AudiencesState.ForEach( a => values.Add( DefinedValueCache.Read( a ) ) );
+            var values = new List<CacheDefinedValue>();
+            AudiencesState.ForEach( a => values.Add( CacheDefinedValue.Get( a ) ) );
 
             gAudiences.DataSource = values
                 .OrderBy( v => v.Order )

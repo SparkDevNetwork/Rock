@@ -54,10 +54,10 @@ namespace Rock.Rest.Filters
                 actionPath += "?" + actionPathQueryString;
             }
 
-            ISecured item = Rock.Web.Cache.RestActionCache.Read( actionMethod + actionPath );
+            ISecured item = Rock.Cache.CacheRestAction.Get( actionMethod + actionPath );
             if ( item == null )
             {
-                item = Rock.Web.Cache.RestControllerCache.Read( controllerClassName );
+                item = Rock.Cache.CacheRestController.Get( controllerClassName );
                 if ( item == null )
                 {
                     item = new RestController();

@@ -66,7 +66,7 @@ namespace Rock.Workflow.Action.CheckIn
                                 {
                                     if ( location.Location.SoftRoomThreshold.HasValue )
                                     {
-                                        var locAttendance = KioskLocationAttendance.Read( location.Location.Id );
+                                        var locAttendance = KioskLocationAttendance.Get( location.Location.Id );
                                         if ( locAttendance != null &&
                                             !locAttendance.DistinctPersonIds.Contains( person.Person.Id ) &&
                                             location.Location.SoftRoomThreshold.Value <= locAttendance.CurrentCount )

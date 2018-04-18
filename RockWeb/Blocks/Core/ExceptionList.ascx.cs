@@ -27,7 +27,7 @@ using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using System.Data;
@@ -231,7 +231,7 @@ function(item) {
                     int siteId;
                     if ( int.TryParse( e.Value, out siteId ) )
                     {
-                        var site = SiteCache.Read( siteId );
+                        var site = CacheSite.Get( siteId );
                         if ( site != null )
                         {
                             e.Value = site.Name;
@@ -243,7 +243,7 @@ function(item) {
                     int pageId;
                     if ( int.TryParse( e.Value, out pageId ) )
                     {
-                        var page = PageCache.Read( pageId );
+                        var page = CachePage.Get( pageId );
                         if ( page != null )
                         {
                             e.Value = page.InternalName;

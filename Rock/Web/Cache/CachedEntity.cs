@@ -33,6 +33,7 @@ namespace Rock.Web.Cache
     /// <typeparam name="T"></typeparam>
     [Serializable]
     [DataContract]
+    [Obsolete( "Use Rock.Cache.EntityCache instead" )]
     public abstract class CachedEntity<T>  
         where T : Rock.Data.Entity<T>, new()
     {

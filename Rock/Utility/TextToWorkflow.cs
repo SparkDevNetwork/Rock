@@ -21,7 +21,7 @@ using System.Text.RegularExpressions;
 using System.Web;
 using Rock;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Utility
 {
@@ -43,13 +43,13 @@ namespace Rock.Utility
             bool foundWorkflow = false;
 
             // get TextToWorkflow defined types for this number
-            var definedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.TEXT_TO_WORKFLOW.AsGuid() );
+            var definedType = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.TEXT_TO_WORKFLOW.AsGuid() );
             if ( definedType != null && definedType.DefinedValues != null && definedType.DefinedValues.Any() )
             {
                 var smsWorkflows = definedType.DefinedValues.Where( v => v.Value.AsNumeric() == toPhone.AsNumeric() ).OrderBy( v => v.Order ).ToList();
 
                 // iterate through workflows looking for a keyword match
-                foreach ( DefinedValueCache dvWorkflow in smsWorkflows )
+                foreach ( CacheDefinedValue dvWorkflow in smsWorkflows )
                 {
                     string keywordExpression = dvWorkflow.GetAttributeValue( "KeywordExpression" );
                     //string workflowAttributes = dvWorkflow.GetAttributeValue( "WorkflowAttributes" );
@@ -103,7 +103,7 @@ namespace Rock.Utility
                                     var personService = new PersonService( rockContext );
                                     var groupMemberService = new GroupMemberService( rockContext );
 
-                                    var workflowType = WorkflowTypeCache.Read( workflowTypeGuid.Value );
+                                    var workflowType = CacheWorkflowType.Get( workflowTypeGuid.Value );
                                     if ( workflowType != null )
                                     {
                                         // Activate a new workflow
@@ -111,8 +111,8 @@ namespace Rock.Utility
 
                                         // give preference to people with the phone in the mobile phone type
                                         // first look for a person with the phone number as a mobile phone order by family role then age
-                                        var mobilePhoneType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
-                                        var familyGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+                                        var mobilePhoneType = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
+                                        var familyGroupType = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
 
                                         // Get all people phone number
                                         var peopleWithMobileNumber = personService.Queryable()

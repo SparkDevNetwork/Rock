@@ -26,7 +26,7 @@ using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.UniversalSearch.Crawler;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.UniversalSearch.IndexModels;
 using Rock.UniversalSearch;
 

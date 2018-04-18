@@ -21,7 +21,7 @@ using System.Linq;
 using Quartz;
 
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Attribute;
 using Rock.Financial;
 using Rock.Data;

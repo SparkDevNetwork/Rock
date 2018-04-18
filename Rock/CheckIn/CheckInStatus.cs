@@ -18,7 +18,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.CheckIn
 {
@@ -57,7 +57,7 @@ namespace Rock.CheckIn
         /// The type of the search.
         /// </value>
         [DataMember]
-        public DefinedValueCache SearchType { get; set; }
+        public CacheDefinedValue SearchType { get; set; }
 
         /// <summary>
         /// Gets or sets the search value that was scanned or entered by user

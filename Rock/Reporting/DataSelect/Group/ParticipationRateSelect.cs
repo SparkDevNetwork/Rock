@@ -23,7 +23,7 @@ using System.Linq.Expressions;
 using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataSelect.Group
@@ -239,7 +239,7 @@ namespace Rock.Reporting.DataSelect.Group
         public override System.Web.UI.Control[] CreateChildControls( System.Web.UI.Control parentControl )
         {
             // Define Control: Person Data View Picker
-            int entityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Person ) ).Id;
+            int entityTypeId = CacheEntityType.Get( typeof( Rock.Model.Person ) ).Id;
 
             var ddlDataView = new DataViewPicker();
             ddlDataView.ID = string.Format( "{0}_ddlDataView", parentControl.ID );

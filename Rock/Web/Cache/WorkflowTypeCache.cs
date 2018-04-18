@@ -29,6 +29,7 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
+    [Obsolete( "Use Rock.Cache.CacheWorkflowType instead" )]
     public class WorkflowTypeCache : CachedModel<WorkflowType>
     {
         #region Constructors

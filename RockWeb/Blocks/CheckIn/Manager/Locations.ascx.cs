@@ -29,7 +29,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.CheckIn.Manager
@@ -123,12 +123,12 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             nbWarning.Visible = false;
 
-            var campusEntityType = EntityTypeCache.Read( "Rock.Model.Campus" );
+            var campusEntityType = CacheEntityType.Get( "Rock.Model.Campus" );
             var campusContext = RockPage.GetCurrentContext( campusEntityType ) as Campus;
-            CampusCache campus = null;
+            CacheCampus campus = null;
             if ( campusContext != null )
             {
-                campus = CampusCache.Read( campusContext );
+                campus = CacheCampus.Get( campusContext );
             }
             else
             {
@@ -138,7 +138,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             if ( campus != null )
             {
 
-                var scheduleEntityType = EntityTypeCache.Read( "Rock.Model.Schedule" );
+                var scheduleEntityType = CacheEntityType.Get( "Rock.Model.Schedule" );
                 var scheduleContext = RockPage.GetCurrentContext( scheduleEntityType ) as Schedule;
                 string scheduleId = string.Empty;
                 if ( scheduleContext != null )
@@ -477,7 +477,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         {
                             location.SoftRoomThreshold = threshold;
                             rockContext.SaveChanges();
-                            Rock.CheckIn.KioskDevice.FlushAll();
+                            Rock.CheckIn.KioskDevice.Clear();
                         }
                     }
 
@@ -558,7 +558,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 if ( campusId.HasValue )
                 {
                     int? scheduleId = CurrentScheduleId.AsIntegerOrNull();
-                    NavData = GetNavigationData( CampusCache.Read( campusId.Value ), scheduleId );
+                    NavData = GetNavigationData( CacheCampus.Get( campusId.Value ), scheduleId );
                 }
                 BuildNavigationControls();
             }
@@ -598,7 +598,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         {
                             location.IsActive = tgl.Checked;
                             rockContext.SaveChanges();
-                            Rock.CheckIn.KioskDevice.FlushAll();
+                            Rock.CheckIn.KioskDevice.Clear();
                         }
                     }
                     NavData.Locations.Where( l => l.Id == id.Value ).ToList().ForEach( l => l.IsActive = tgl.Checked );
@@ -622,7 +622,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     {
                         location.SoftRoomThreshold = nbThreshold.Text.AsIntegerOrNull();
                         rockContext.SaveChanges();
-                        Rock.CheckIn.KioskDevice.FlushAll();
+                        Rock.CheckIn.KioskDevice.Clear();
 
                         NavData.Locations.Where( l => l.Id == id.Value ).ToList().ForEach( l => l.SoftThreshold = softThreshold );
                     }
@@ -698,14 +698,14 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
                                 rockContext.SaveChanges();
 
-                                Rock.CheckIn.KioskLocationAttendance.Flush( itemId.Value );
+                                Rock.CheckIn.KioskLocationAttendance.Remove( itemId.Value );
                             }
 
                             int? campusId = CurrentCampusId.AsIntegerOrNull();
                             if ( campusId.HasValue )
                             {
                                 int? scheduleId = CurrentScheduleId.AsIntegerOrNull();
-                                NavData = GetNavigationData( CampusCache.Read( campusId.Value ), scheduleId );
+                                NavData = GetNavigationData( CacheCampus.Get( campusId.Value ), scheduleId );
                             }
                             BuildNavigationControls();
                         }
@@ -718,9 +718,9 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
         #region Methods
 
-        private CampusCache GetDefaultCampus()
+        private CacheCampus GetDefaultCampus()
         {
-            return CampusCache.All().FirstOrDefault();
+            return CacheCampus.All().FirstOrDefault();
         }
 
         private string BuildCurrentPath( int? groupTypeId, int? locationId, int? groupId )
@@ -841,7 +841,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
         #region Get Navigation Data
 
-        private NavigationData GetNavigationData( CampusCache campus, int? scheduleId )
+        private NavigationData GetNavigationData( CacheCampus campus, int? scheduleId )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -891,7 +891,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     var chartTimes = GetChartTimes();
 
                     // Get the group types
-                    var parentGroupType = GroupTypeCache.Read( groupTypeTemplateGuid.Value );
+                    var parentGroupType = CacheGroupType.Get( groupTypeTemplateGuid.Value );
                     if ( parentGroupType != null )
                     {
                         foreach ( var childGroupType in parentGroupType.ChildGroupTypes )
@@ -1135,7 +1135,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             return times;
         }
 
-        private void AddGroupType( int? parentGroupTypeId, GroupTypeCache groupType, List<DateTime> chartTimes )
+        private void AddGroupType( int? parentGroupTypeId, CacheGroupType groupType, List<DateTime> chartTimes )
         {
             if ( groupType != null && !NavData.GroupTypes.Exists( g => g.Id == groupType.Id ) )
             {
@@ -1578,7 +1578,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             public List<int> ChildGroupTypeIds { get; set; }
             public List<int> ChildGroupIds { get; set; }
 
-            public NavigationGroupType( GroupTypeCache groupType, List<DateTime> chartTimes )
+            public NavigationGroupType( CacheGroupType groupType, List<DateTime> chartTimes )
             {
                 Id = groupType.Id;
                 Name = groupType.Name;

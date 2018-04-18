@@ -18,7 +18,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -129,7 +129,7 @@ namespace Rock.Field.Types
         {
             get
             {
-                var allCampuses = CampusCache.All();
+                var allCampuses = CacheCampus.All();
 
                 bool includeInactive = ( _configurationValues != null && _configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) && _configurationValues[INCLUDE_INACTIVE_KEY].Value.AsBoolean() );
 

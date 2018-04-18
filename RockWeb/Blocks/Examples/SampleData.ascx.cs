@@ -34,7 +34,7 @@ using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 
 using System.Globalization;
@@ -107,7 +107,7 @@ namespace RockWeb.Blocks.Examples
         /// <summary>
         /// The Entity Type Id for the Person entities.
         /// </summary>
-        private static int _personEntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Person ) ).Id;
+        private static int _personEntityTypeId = CacheEntityType.Get( typeof( Rock.Model.Person ) ).Id;
 
         /// <summary>
         /// The storage type to use for the people photos.
@@ -117,7 +117,7 @@ namespace RockWeb.Blocks.Examples
         /// <summary>
         /// The Authentication Database entity type.
         /// </summary>
-        private static int _authenticationDatabaseEntityTypeId = EntityTypeCache.Read( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id;
+        private static int _authenticationDatabaseEntityTypeId = CacheEntityType.Get( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id;
 
         /// <summary>
         /// Percent of additional time someone tends to NOT attend during the summer months (7-9)
@@ -198,7 +198,7 @@ namespace RockWeb.Blocks.Examples
         /// <summary>
         /// The contribution transaction type id
         /// </summary>
-        private static int _transactionTypeContributionId = Rock.Web.Cache.DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
+        private static int _transactionTypeContributionId = Rock.Cache.CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
 
         /// <summary>
         /// Magic kiosk Id used for attendance data.
@@ -509,7 +509,7 @@ namespace RockWeb.Blocks.Examples
             } );
 
             // make sure the database auth MEF component is initialized in case it hasn't done its first Load/Save Attributes yet (prevents possible lockup)
-            var authenticationComponent = Rock.Security.AuthenticationContainer.GetComponent( EntityTypeCache.Read(_authenticationDatabaseEntityTypeId).Name );
+            var authenticationComponent = Rock.Security.AuthenticationContainer.GetComponent( CacheEntityType.Get(_authenticationDatabaseEntityTypeId).Name );
 
             // Import the sample data
             // using RockContext in case there are multiple saves (like Attributes)
@@ -590,12 +590,12 @@ namespace RockWeb.Blocks.Examples
             }
 
             // Clear the static objects that contains all security roles and auth rules (so that it will be refreshed)
-            foreach ( var role in Rock.Security.Role.AllRoles() )
+            foreach ( var role in Rock.Cache.CacheRole.AllRoles() )
             {
-                Rock.Security.Role.Flush(role.Id);
+                Rock.Cache.CacheRole.Remove(role.Id);
             }
 
-            Rock.Security.Authorization.Flush();
+            Rock.Security.Authorization.Clear();
         }
 
         /// <summary>
@@ -680,10 +680,10 @@ namespace RockWeb.Blocks.Examples
                     continue;
                 }
 
-                int categoryId = CategoryCache.Read( element.Attribute( "categoryGuid" ).Value.Trim().AsGuid() ).Id;
+                int categoryId = CacheCategory.Get( element.Attribute( "categoryGuid" ).Value.Trim().AsGuid() ).Id;
 
                 // Find the group type and 
-                var groupType = GroupTypeCache.Read( element.Attribute( "groupTypeGuid" ).Value.Trim().AsGuid() );
+                var groupType = CacheGroupType.Get( element.Attribute( "groupTypeGuid" ).Value.Trim().AsGuid() );
 
                 RegistrantsSameFamily registrantsSameFamily;
                 if ( element.Attribute( "registrantsInSameFamily" ) != null )
@@ -777,7 +777,7 @@ namespace RockWeb.Blocks.Examples
                 // Find any Form elements and add them to the template
                 int formOrder = 0;
                 var registrationAttributeQualifierColumn = "RegistrationTemplateId";
-                int? registrationRegistrantEntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.RegistrationRegistrant ) ).Id;
+                int? registrationRegistrantEntityTypeId = CacheEntityType.Get( typeof( Rock.Model.RegistrationRegistrant ) ).Id;
                 if ( element.Elements( "forms" ).Count() > 0 )
                 {
                     foreach ( var formElement in element.Elements( "forms" ).Elements( "form" ) )
@@ -822,13 +822,15 @@ namespace RockWeb.Blocks.Examples
                                         attrState.Name = formFieldElement.Attribute( "name" ).Value.Trim();
                                         attrState.Key = attrState.Name.RemoveSpecialCharacters().Replace( " ", string.Empty );
                                         var type = formFieldElement.Attribute( "type" ).Value.Trim();
-                                        var fieldType = FieldTypeCache.All().Where( f => f.Name == type ).FirstOrDefault();
-                                        attrState.FieldTypeId = fieldType.Id;
-                                        var attribute = Helper.SaveAttributeEdits( attrState, registrationRegistrantEntityTypeId, registrationAttributeQualifierColumn, registrationTemplate.Id.ToString(), rockContext );
-                                        //rockContext.ChangeTracker.DetectChanges();
-                                        rockContext.SaveChanges( disablePrePostProcessing: true );
-                                        formField.Attribute = attribute;
-
+                                        var fieldType = CacheFieldType.All().Where( f => f.Name == type ).FirstOrDefault();
+                                        if ( fieldType != null )
+                                        {
+                                            attrState.FieldTypeId = fieldType.Id;
+                                            var attribute = Helper.SaveAttributeEdits( attrState, registrationRegistrantEntityTypeId, registrationAttributeQualifierColumn, registrationTemplate.Id.ToString(), rockContext );
+                                            //rockContext.ChangeTracker.DetectChanges();
+                                            rockContext.SaveChanges( disablePrePostProcessing: true );
+                                            formField.Attribute = attribute;
+                                        }
                                         break;
                                     default:
                                         throw new NotSupportedException( string.Format( "unknown form field source: {0}", formFieldElement.Attribute( "source" ).Value ) );
@@ -839,7 +841,7 @@ namespace RockWeb.Blocks.Examples
                                     formField.FieldSource == RegistrationFieldSource.RegistrationAttribute &&
                                     formField.Attribute != null )
                                 {
-                                    var attr = AttributeCache.Read( formField.Attribute.Guid, rockContext );
+                                    var attr = CacheAttribute.Get( formField.Attribute.Guid, rockContext );
                                     if ( attr != null )
                                     {
                                         formField.AttributeId = attr.Id;
@@ -1522,7 +1524,7 @@ namespace RockWeb.Blocks.Examples
             }
 
             GroupService groupService = new GroupService( rockContext );
-            DefinedTypeCache smallGroupTopicType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.SMALL_GROUP_TOPIC.AsGuid() );
+            CacheDefinedType smallGroupTopicType = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.SMALL_GROUP_TOPIC.AsGuid() );
 
             // Next create the group along with its members.
             foreach ( var elemGroup in elemGroups.Elements( "group" ) )
@@ -1544,16 +1546,16 @@ namespace RockWeb.Blocks.Examples
                 }
 
                 int? roleId;
-                GroupTypeCache groupType;
+                CacheGroupType groupType;
                 switch ( elemGroup.Attribute( "type" ).Value.Trim() )
                 {
                     case "serving":
-                        groupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_SERVING_TEAM.AsGuid() );
+                        groupType = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_SERVING_TEAM.AsGuid() );
                         group.GroupTypeId = groupType.Id;
                         roleId = groupType.DefaultGroupRoleId;
                         break;
                     case "smallgroup":
-                        groupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_SMALL_GROUP.AsGuid() );
+                        groupType = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_SMALL_GROUP.AsGuid() );
                         group.GroupTypeId = groupType.Id;
                         roleId = groupType.DefaultGroupRoleId;
                         break;
@@ -1578,7 +1580,7 @@ namespace RockWeb.Blocks.Examples
                 // Set the group's meeting location
                 if ( elemGroup.Attribute( "meetsAtHomeOfFamily" ) != null )
                 {
-                    int meetingLocationValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_MEETING_LOCATION.AsGuid() ).Id;
+                    int meetingLocationValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_MEETING_LOCATION.AsGuid() ).Id;
                     var groupLocation = new GroupLocation()
                     {
                         IsMappedLocation = false,
@@ -1669,7 +1671,7 @@ namespace RockWeb.Blocks.Examples
                 LocationService locationService = new LocationService( rockContext );
                 ScheduleService scheduleService = new ScheduleService( rockContext );
                 Guid locationTypeMeetingLocationGuid = new Guid( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_MEETING_LOCATION );
-                var locationTypeMeetingLocationId = Rock.Web.Cache.DefinedValueCache.Read( locationTypeMeetingLocationGuid ).Id;
+                var locationTypeMeetingLocationId = Rock.Cache.CacheDefinedValue.Get( locationTypeMeetingLocationGuid ).Id;
 
                 foreach ( var elemLocation in elemGroup.Elements( "location" ) )
                 {
@@ -1779,12 +1781,12 @@ namespace RockWeb.Blocks.Examples
                 // only person (person aliases) are supported now.
                 if ( entityTypeName.ToLower() == "person" )
                 {
-                    entityTypeId = EntityTypeCache.Read( typeof( Rock.Model.PersonAlias ) ).Id;
+                    entityTypeId = CacheEntityType.Get( typeof( Rock.Model.PersonAlias ) ).Id;
                     entityId =  _peopleAliasDictionary[entityGuid];
                 }
                 else if ( entityTypeName.ToLower() == "group" )
                 {
-                    entityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Group ) ).Id;
+                    entityTypeId = CacheEntityType.Get( typeof( Rock.Model.Group ) ).Id;
                     entityId = _groupDictionary[entityGuid];
                 }
 
@@ -2327,7 +2329,7 @@ namespace RockWeb.Blocks.Examples
             int weekNumber = 0;
             DateTime monthly = startingDate;
 
-            var currencyTypeCheck = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid() );
+            var currencyTypeCheck = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid() );
 
             var imageUrlNode = circularImageList.First ?? null;
             // foreach weekend or monthly between the starting and ending date...
@@ -2702,11 +2704,11 @@ namespace RockWeb.Blocks.Examples
 
                     if ( personElem.Attribute( "recordType" ) == null || ( personElem.Attribute( "recordType" ) != null && personElem.Attribute( "recordType" ).Value.Trim() == "person" ) )
                     {
-                        person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                        person.RecordTypeValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
                     }
                     else
                     {
-                        person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
+                        person.RecordTypeValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
                     }
 
                     if ( personElem.Attribute( "maritalStatus" ) != null )
@@ -2722,21 +2724,21 @@ namespace RockWeb.Blocks.Examples
                     switch ( personElem.Attribute( "recordStatus" ).Value.Trim() )
                     {
                         case "active":
-                            person.RecordStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
+                            person.RecordStatusValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
                             break;
                         case "inactive":
-                            person.RecordStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() ).Id;
+                            person.RecordStatusValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() ).Id;
                             if ( personElem.Attribute( "recordStatusReason") != null )
                             {
                                 person.RecordStatusReasonValueId = GetOrAddDefinedValueId( personElem.Attribute( "recordStatusReason" ).Value.Trim(), _recordStatusReasonDefinedType, rockContext );
-                                if ( person.RecordStatusReasonValueId == DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED.AsGuid() ).Id )
+                                if ( person.RecordStatusReasonValueId == CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED.AsGuid() ).Id )
                                 {
                                     person.IsDeceased = true;
                                 }
                             }
                             break;
                         default:
-                            person.RecordStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() ).Id;
+                            person.RecordStatusValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() ).Id;
                             break;
                     }
 
@@ -2767,17 +2769,17 @@ namespace RockWeb.Blocks.Examples
                         switch ( personElem.Attribute( "connectionStatus" ).Value.Trim().ToLower() )
                         {
                             case "member":
-                                person.ConnectionStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_MEMBER.AsGuid() ).Id;
+                                person.ConnectionStatusValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_MEMBER.AsGuid() ).Id;
                                 break;
                             case "attendee":
-                                person.ConnectionStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_ATTENDEE.AsGuid() ).Id;
+                                person.ConnectionStatusValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_ATTENDEE.AsGuid() ).Id;
                                 break;
                             case "web prospect":
-                                person.ConnectionStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_WEB_PROSPECT.AsGuid() ).Id;
+                                person.ConnectionStatusValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_WEB_PROSPECT.AsGuid() ).Id;
                                 break;
                             case "visitor":
                             default:
-                                person.ConnectionStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR.AsGuid() ).Id;
+                                person.ConnectionStatusValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR.AsGuid() ).Id;
                                 break;
                         }
                     }
@@ -2786,7 +2788,7 @@ namespace RockWeb.Blocks.Examples
                     {
                         var phoneNumber = new PhoneNumber
                         {
-                            NumberTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() ).Id,
+                            NumberTypeValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() ).Id,
                             Number = PhoneNumber.CleanNumber( personElem.Attribute( "homePhone" ).Value.Trim() )
                         };
 
@@ -2800,7 +2802,7 @@ namespace RockWeb.Blocks.Examples
                     {
                         var phoneNumber = new PhoneNumber
                         {
-                            NumberTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() ).Id,
+                            NumberTypeValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() ).Id,
                             Number = PhoneNumber.CleanNumber( personElem.Attribute( "mobilePhone" ).Value.Trim() )
                         };
 
@@ -2814,7 +2816,7 @@ namespace RockWeb.Blocks.Examples
                     {
                         var phoneNumber = new PhoneNumber
                         {
-                            NumberTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid() ).Id,
+                            NumberTypeValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid() ).Id,
                             Number = PhoneNumber.CleanNumber( personElem.Attribute( "workPhone" ).Value.Trim() )
                         };
 
@@ -2867,7 +2869,7 @@ namespace RockWeb.Blocks.Examples
 
 
         /// <summary>
-        /// Gets or adds a new DefinedValue to the given DefinedTypeCache and returns the Id of the value.
+        /// Gets or adds a new DefinedValue to the given CacheDefinedType and returns the Id of the value.
         /// </summary>
         /// <param name="theValue">The value.</param>
         /// <param name="aDefinedType">a definedTypeCache.</param>
@@ -3129,7 +3131,7 @@ namespace RockWeb.Blocks.Examples
         /// <returns></returns>
         public Group CreateNewFamily( List<GroupMember> familyMembers, int? campusId )
         {
-            var familyGroupType = GroupTypeCache.GetFamilyGroupType();
+            var familyGroupType = CacheGroupType.GetFamilyGroupType();
 
             if ( familyGroupType != null )
             {
@@ -3195,7 +3197,7 @@ namespace RockWeb.Blocks.Examples
                 Guid guid = Guid.Empty;
                 if ( Guid.TryParse( locationTypeGuid, out guid ) )
                 {
-                    var locationType = Rock.Web.Cache.DefinedValueCache.Read( guid );
+                    var locationType = Rock.Cache.CacheDefinedValue.Get( guid );
                     if ( locationType != null )
                     {
                         groupLocation.GroupLocationTypeValueId = locationType.Id;

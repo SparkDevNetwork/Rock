@@ -23,7 +23,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.PersonProfile.Badge
@@ -70,7 +70,7 @@ namespace Rock.PersonProfile.Badge
         /// </summary>
         /// <param name="badge">The badge.</param>
         /// <param name="writer">The writer.</param>
-        public override void Render( PersonBadgeCache badge, System.Web.UI.HtmlTextWriter writer )
+        public override void Render( CachePersonBadge badge, System.Web.UI.HtmlTextWriter writer )
         {
             Guid? groupTypeGuid = GetAttributeValue( badge, "GroupType" ).AsGuidOrNull();
             if ( groupTypeGuid.HasValue )
@@ -84,7 +84,7 @@ namespace Rock.PersonProfile.Badge
                 mergeFields.Add( "Person", this.Person );
                 using ( var rockContext = new RockContext() )
                 {
-                    var groupType = GroupTypeCache.Read( groupTypeGuid.Value );
+                    var groupType = CacheGroupType.Get( groupTypeGuid.Value );
                     int groupTypeId = groupType?.Id ?? 0;
                     mergeFields.Add( "GroupType", groupType );
                     mergeFields.Add( "Badge", badge );

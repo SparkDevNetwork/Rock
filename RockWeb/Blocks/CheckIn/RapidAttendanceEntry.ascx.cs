@@ -26,7 +26,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.CheckIn
@@ -340,7 +340,7 @@ namespace RockWeb.Blocks.CheckIn
             //
             if ( attendance.LocationId.HasValue )
             {
-                Rock.CheckIn.KioskLocationAttendance.Flush( attendance.LocationId.Value );
+                Rock.CheckIn.KioskLocationAttendance.Remove( attendance.LocationId.Value );
             }
 
             nbAttended.Text = string.Format( "{0} has been marked attended.", person.FullName );
@@ -414,7 +414,7 @@ namespace RockWeb.Blocks.CheckIn
 
             if ( attendance.LocationId != null )
             {
-                Rock.CheckIn.KioskLocationAttendance.Flush( attendance.LocationId.Value );
+                Rock.CheckIn.KioskLocationAttendance.Remove( attendance.LocationId.Value );
             }
 
             nbAttended.Text = string.Format( "{0} has been removed from attendance.", attendance.PersonAlias.Person.FullName );

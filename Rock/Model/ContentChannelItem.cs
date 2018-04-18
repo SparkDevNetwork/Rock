@@ -33,7 +33,7 @@ namespace Rock.Model
     /// 
     /// </summary>
     [RockDomain( "CMS" )]
-    [Table( "ContentChannelItem")]
+    [Table( "ContentChannelItem" )]
     [DataContract]
     public partial class ContentChannelItem : Model<ContentChannelItem>, IOrdered, IRockIndexable
     {
@@ -186,6 +186,31 @@ namespace Rock.Model
         public virtual PersonAlias ApprovedByPersonAlias { get; set; }
 
         /// <summary>
+        /// Gets the primary slug.
+        /// </summary>
+        /// <value>
+        /// The primary alias.
+        /// </value>
+        [NotMapped]
+        [LavaInclude]
+        public virtual string PrimarySlug
+        {
+            get
+            {
+                return ContentChannelItemSlugs.Where( a => a.IsPrimary ).Select( a => a.Slug ).FirstOrDefault( );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the content channel item slugs.
+        /// </summary>
+        /// <value>
+        /// The content channel item slugs.
+        /// </value>
+        [LavaInclude]
+        public virtual ICollection<ContentChannelItemSlug> ContentChannelItemSlugs { get; set; }
+
+        /// <summary>
         /// Gets or sets the child items.
         /// </summary>
         /// <value>
@@ -290,7 +315,7 @@ namespace Rock.Model
             var contentChannelItems = new ContentChannelItemService( rockContext ).Queryable()
                                             .Where( i =>
                                                 i.ContentChannel.IsIndexEnabled
-                                                && (i.ContentChannel.RequiresApproval == false || i.ContentChannel.ContentChannelType.DisableStatus || i.Status == ContentChannelItemStatus.Approved) );
+                                                && ( i.ContentChannel.RequiresApproval == false || i.ContentChannel.ContentChannelType.DisableStatus || i.Status == ContentChannelItemStatus.Approved ) );
 
             int recordCounter = 0;
 
@@ -324,7 +349,7 @@ namespace Rock.Model
             if ( itemEntity.ContentChannel != null && itemEntity.ContentChannel.IsIndexEnabled )
             {
                 // ensure it's meant to be indexed
-                if ( itemEntity.ContentChannel.IsIndexEnabled && (itemEntity.ContentChannel.RequiresApproval == false || itemEntity.ContentChannel.ContentChannelType.DisableStatus || itemEntity.Status == ContentChannelItemStatus.Approved) )
+                if ( itemEntity.ContentChannel.IsIndexEnabled && ( itemEntity.ContentChannel.RequiresApproval == false || itemEntity.ContentChannel.ContentChannelType.DisableStatus || itemEntity.Status == ContentChannelItemStatus.Approved ) )
                 {
                     var indexItem = ContentChannelItemIndex.LoadByModel( itemEntity );
                     IndexContainer.IndexDocument( indexItem );

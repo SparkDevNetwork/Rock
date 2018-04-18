@@ -27,7 +27,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -127,7 +127,7 @@ namespace RockWeb.Blocks.Prayer
 
             tbLastName.Required = GetAttributeValue( "RequireLastName" ).AsBooleanOrNull() ?? true;
 
-            cpCampus.Campuses = CampusCache.All( false );
+            cpCampus.Campuses = CacheCampus.All( false );
         }
 
         /// <summary>

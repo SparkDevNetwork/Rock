@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Web;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Attribute
 {
@@ -57,7 +57,7 @@ namespace Rock.Attribute
 
             if ( string.IsNullOrWhiteSpace( Name ) )
             {
-                var entityType = Rock.Web.Cache.EntityTypeCache.Read( new Guid( entityTypeGuid ) );
+                var entityType = Rock.Cache.CacheEntityType.Get( new Guid( entityTypeGuid ) );
                 name = ( entityType != null ? entityType.Name : "Entity" ) + " Attribute";
             }
 
@@ -95,7 +95,7 @@ namespace Rock.Attribute
 
             if ( entityTypeQualifierColumn.EndsWith( "Id" ) && entityTypeQualifierValue.AsGuid() != Guid.Empty )
             {
-                EntityTypeCache itemEntityType = EntityTypeCache.Read( "Rock.Model." + entityTypeQualifierColumn.Left( entityTypeQualifierColumn.Length - 2 ) );
+                CacheEntityType itemEntityType = CacheEntityType.Get( "Rock.Model." + entityTypeQualifierColumn.Left( entityTypeQualifierColumn.Length - 2 ) );
                 if ( itemEntityType.AssemblyName != null )
                 {
                     // get the actual type of what is being followed 
@@ -127,7 +127,7 @@ namespace Rock.Attribute
 
             if ( string.IsNullOrWhiteSpace( Name ) )
             {
-                var entityType = Rock.Web.Cache.EntityTypeCache.Read( new Guid( entityTypeGuid ) );
+                var entityType = Rock.Cache.CacheEntityType.Get( new Guid( entityTypeGuid ) );
                 name = ( entityType != null ? entityType.Name : "Entity" ) + " Attribute";
             }
 

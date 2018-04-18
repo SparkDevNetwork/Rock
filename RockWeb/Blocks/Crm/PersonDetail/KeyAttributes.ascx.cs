@@ -23,7 +23,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Security;
 using Rock.Data;
@@ -269,14 +269,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 if ( ViewMode == VIEW_MODE_EDIT )
                 {
-                    int personEntityTypeId = EntityTypeCache.Read( typeof( Person ) ).Id;
+                    int personEntityTypeId = CacheEntityType.Get( typeof( Person ) ).Id;
 
                     var rockContext = new RockContext();
                     rockContext.WrapTransaction( () =>
                     {
                         foreach ( int attributeId in AttributeList )
                         {
-                            var attribute = AttributeCache.Read( attributeId );
+                            var attribute = CacheAttribute.Get( attributeId );
 
                             if ( Person != null && 
                                 ViewMode == VIEW_MODE_EDIT && 
@@ -330,8 +330,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             ddlCategories.Items.Clear();
 
-            int attributeEntityTypeId = EntityTypeCache.Read("Rock.Model.Attribute").Id;
-            string personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id.ToString();
+            int attributeEntityTypeId = CacheEntityType.Get("Rock.Model.Attribute").Id;
+            string personEntityTypeId = CacheEntityType.Get( "Rock.Model.Person" ).Id.ToString();
 
             foreach ( var category in new CategoryService( new RockContext() ).Queryable()
                 .Where( c =>
@@ -395,7 +395,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 int attributeId = 0;
                 if ( Int32.TryParse( keyAttributeId, out attributeId ) )
                 {
-                    var attribute = Rock.Web.Cache.AttributeCache.Read( attributeId );
+                    var attribute = Rock.Cache.CacheAttribute.Get( attributeId );
                     if ( attribute != null && attribute.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                     {
                         AttributeList.Add( attribute.Id );
@@ -416,7 +416,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 foreach ( int attributeId in AttributeList )
                 {
-                    var attribute = AttributeCache.Read( attributeId );
+                    var attribute = CacheAttribute.Get( attributeId );
                     string attributeValue = Person.GetAttributeValue( attribute.Key );
                     string formattedValue = string.Empty;
 
@@ -469,7 +469,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             cblAttributes.Items.Clear();
 
-            int personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
+            int personEntityTypeId = CacheEntityType.Get( "Rock.Model.Person" ).Id;
 
             foreach ( var attribute in new AttributeService( new RockContext() ).Queryable()
                 .Where( a => 

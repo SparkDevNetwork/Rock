@@ -31,7 +31,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
@@ -135,7 +135,7 @@ namespace RockWeb.Blocks.Connection
             gWorkflows.GridRebind += gWorkflows_GridRebind;
 
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', 'This will also delete all the connection opportunities! Are you sure you wish to continue with the delete?');", ConnectionType.FriendlyTypeName );
-            btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.ConnectionType ) ).Id;
+            btnSecurity.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.ConnectionType ) ).Id;
 
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upConnectionType );
@@ -262,7 +262,7 @@ namespace RockWeb.Blocks.Connection
                     connectionTypeService.Delete( connectionType );
                     rockContext.SaveChanges();
 
-                    ConnectionWorkflowService.FlushCachedTriggers();
+                    ConnectionWorkflowService.RemoveCachedTriggers();
                 }
             }
 
@@ -432,7 +432,7 @@ namespace RockWeb.Blocks.Connection
                         }
                     } );
 
-                    ConnectionWorkflowService.FlushCachedTriggers();
+                    ConnectionWorkflowService.RemoveCachedTriggers();
 
                     var qryParams = new Dictionary<string, string>();
                     qryParams["ConnectionTypeId"] = connectionType.Id.ToString();
@@ -524,7 +524,7 @@ namespace RockWeb.Blocks.Connection
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
-                attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
+                attribute.FieldTypeId = CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
             }
             else
             {
@@ -622,7 +622,7 @@ namespace RockWeb.Blocks.Connection
                              a.Guid,
                              a.Name,
                              a.Description,
-                             FieldType = FieldTypeCache.GetName( a.FieldTypeId ),
+                             FieldType = CacheFieldType.GetName( a.FieldTypeId ),
                              a.IsRequired,
                              a.IsGridColumn,
                              a.AllowSearch
@@ -696,7 +696,7 @@ namespace RockWeb.Blocks.Connection
             {
                 attributeService.Delete( attr );
                 rockContext.SaveChanges();
-                Rock.Web.Cache.AttributeCache.Flush( attr.Id );
+                Rock.Cache.CacheAttribute.Remove( attr.Id );
             }
 
             // Update the Attributes that were assigned in the UI
@@ -705,7 +705,7 @@ namespace RockWeb.Blocks.Connection
                 var attribute = Helper.SaveAttributeEdits( attributeState, entityTypeId, qualifierColumn, qualifierValue, rockContext );
             }
 
-            AttributeCache.FlushEntityAttributes();
+            CacheAttribute.RemoveEntityAttributes();
         }
 
         #endregion

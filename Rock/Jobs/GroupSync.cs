@@ -27,7 +27,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Communication;
 
 namespace Rock.Jobs
@@ -95,7 +95,7 @@ namespace Rock.Jobs
                             .FirstOrDefault( s => s.Id == syncId );
 
                         // Ensure that the group's Sync Data View is a person dataview
-                        if ( sync.SyncDataView.EntityTypeId == EntityTypeCache.Read( typeof( Person ) ).Id )
+                        if ( sync.SyncDataView.EntityTypeId == CacheEntityType.Get( typeof( Person ) ).Id )
                         {
                             List<string> errorMessages = new List<string>();
 
@@ -192,7 +192,7 @@ namespace Rock.Jobs
                                                     groupMemberContext,
                                                     person,
                                                     AuthenticationServiceType.Internal,
-                                                    EntityTypeCache.Read( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id,
+                                                    CacheEntityType.Get( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id,
                                                     username,
                                                     newPassword,
                                                     true,
@@ -227,7 +227,7 @@ namespace Rock.Jobs
                             // If the group changed, and it was a security group, flush the security for the group
                             if ( hasSyncChanged && ( sync.Group.IsSecurityRole || sync.Group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) ) )
                             {
-                                Rock.Security.Role.Flush( sync.GroupId );
+                                Rock.Cache.CacheRole.Remove( sync.GroupId );
                             }
                         }
                     }

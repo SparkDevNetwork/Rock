@@ -24,7 +24,7 @@ using System.Net.Mail;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 using Twilio;
 using TwilioTypes = Twilio.Types;
@@ -154,7 +154,7 @@ namespace Rock.Communication.Transport
                 if ( hasPendingRecipients )
                 {
                     var currentPerson = communication.CreatedByPersonAlias?.Person;
-                    var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+                    var globalAttributes = Rock.Cache.CacheGlobalAttributes.Get();
                     string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, currentPerson );
 
@@ -178,9 +178,9 @@ namespace Rock.Communication.Transport
                         string authToken = GetAttributeValue( "Token" );
                         TwilioClient.Init( accountSid, authToken );
 
-                        var personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
-                        var communicationEntityTypeId = EntityTypeCache.Read( "Rock.Model.Communication" ).Id;
-                        var communicationCategoryId = CategoryCache.Read( Rock.SystemGuid.Category.HISTORY_PERSON_COMMUNICATIONS.AsGuid(), communicationRockContext ).Id;
+                        var personEntityTypeId = CacheEntityType.Get( "Rock.Model.Person" ).Id;
+                        var communicationEntityTypeId = CacheEntityType.Get( "Rock.Model.Communication" ).Id;
+                        var communicationCategoryId = CacheCategory.Get( Rock.SystemGuid.Category.HISTORY_PERSON_COMMUNICATIONS.AsGuid(), communicationRockContext ).Id;
 
                         string callbackUrl = publicAppRoot + "Webhooks/Twilio.ashx";
 
@@ -297,7 +297,7 @@ namespace Rock.Communication.Transport
             List<Uri> attachmentMediaUrls = new List<Uri>();
             if ( binaryFilesInfo.Any() )
             {
-                string publicAppRoot = Rock.Web.Cache.GlobalAttributesCache.Read().GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
+                string publicAppRoot = Rock.Cache.CacheGlobalAttributes.Get().GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
                 attachmentMediaUrls = binaryFilesInfo.Select( b =>
                 {
                     if ( b.MimeType.StartsWith( "image/", StringComparison.OrdinalIgnoreCase ) )
@@ -404,7 +404,7 @@ namespace Rock.Communication.Transport
         [Obsolete( "Use Send( Communication communication, Dictionary<string, string> mediumAttributes ) instead" )]
         public override void Send( Model.Communication communication )
         {
-            int mediumEntityId = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() )?.Id ?? 0;
+            int mediumEntityId = CacheEntityType.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() )?.Id ?? 0;
             Send( communication, mediumEntityId, null );
         }
 
@@ -434,13 +434,13 @@ namespace Rock.Communication.Transport
         public override void Send(Dictionary<string, string> mediumData, List<string> recipients, string appRoot, string themeRoot)
         {
             var message = new RockSMSMessage();
-            message.FromNumber = DefinedValueCache.Read( ( mediumData.GetValueOrNull( "FromValue" ) ?? string.Empty ).AsInteger() );
+            message.FromNumber = CacheDefinedValue.Get( ( mediumData.GetValueOrNull( "FromValue" ) ?? string.Empty ).AsInteger() );
             message.SetRecipients( recipients );
             message.ThemeRoot = themeRoot;
             message.AppRoot = appRoot;
 
             var errorMessages = new List<string>();
-            int mediumEntityId = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() )?.Id ?? 0;
+            int mediumEntityId = CacheEntityType.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() )?.Id ?? 0;
             Send( message, mediumEntityId, null, out errorMessages );
         }
 
@@ -458,10 +458,10 @@ namespace Rock.Communication.Transport
         public override void Send( List<string> recipients, string from, string subject, string body, string appRoot = null, string themeRoot = null )
         {
             var message = new RockSMSMessage();
-            message.FromNumber = DefinedValueCache.Read( from.AsInteger() );
+            message.FromNumber = CacheDefinedValue.Get( from.AsInteger() );
             if ( message.FromNumber == null )
             {
-                message.FromNumber = DefinedTypeCache.Read( SystemGuid.DefinedType.COMMUNICATION_SMS_FROM.AsGuid() )
+                message.FromNumber = CacheDefinedType.Get( SystemGuid.DefinedType.COMMUNICATION_SMS_FROM.AsGuid() )
                     .DefinedValues
                     .Where( v => v.Value == from )
                     .FirstOrDefault();
@@ -471,7 +471,7 @@ namespace Rock.Communication.Transport
             message.AppRoot = appRoot;
 
             var errorMessages = new List<string>();
-            int mediumEntityId = EntityTypeCache.Read( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() )?.Id ?? 0;
+            int mediumEntityId = CacheEntityType.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() )?.Id ?? 0;
             Send( message, mediumEntityId, null, out errorMessages );
         }
 

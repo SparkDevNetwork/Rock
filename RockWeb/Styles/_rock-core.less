@@ -85,13 +85,13 @@ iframe {
   &.tip-liquid,
   &.tip-lava {
     &:after {
-      content: '{{ Lava }}';
+      content: "{{ Lava }}";
     }
   }
 
   &.tip-html {
     &:after {
-      content: '< HTML />';
+      content: "< HTML />";
     }
   }
 }
@@ -155,8 +155,8 @@ a.warning {
 
 // make icons inside of a button fixed with
 .btn i.fa {
-  text-align: center;
   width: (20em / 16);
+  text-align: center;
 }
 
 // add new alert style
@@ -189,7 +189,7 @@ a.warning {
   }
 }
 
-// grid controls in asp.net center content using align=center but bootstrap overrides this 
+// grid controls in asp.net center content using align=center but bootstrap overrides this
 th[align=center] {
   text-align: center;
 }
@@ -588,7 +588,7 @@ th[align=center] {
   }
 }
 
-// paneleditor is used to provide a small edit surface in a panel header. 
+// paneleditor is used to provide a small edit surface in a panel header.
 // example: threshold editor on checkin manager for locations
 
 
@@ -632,38 +632,38 @@ th[align=center] {
   }
 
   &.facebook {
-    background-color: #3d5a96;
     color: #fff;
+    background-color: #3d5a96;
 
-  &.facebook:before {
-    margin-right: 12px;
-    font-family: '@{fa-font-face} Brands';
-    font-weight: 400;
-    content: @fa-var-facebook;
+    &.facebook::before {
+      margin-right: 12px;
+      font-family: "@{fa-font-face} Brands";
+      font-weight: 400;
+      content: @fa-var-facebook;
     }
   }
 
   &.google {
-    background-color: #ed4e23;
     color: #fff;
+    background-color: #ed4e23;
 
-  &.google:before {
-    margin-right: 12px;
-    font-family: '@{fa-font-face} Brands';
-    font-weight: 400;
-    content: @fa-var-google;
+    &.google::before {
+      margin-right: 12px;
+      font-family: "@{fa-font-face} Brands";
+      font-weight: 400;
+      content: @fa-var-google;
     }
   }
 
   &.twitter {
-    background-color: #2aa3ef;
     color: #fff;
+    background-color: #2aa3ef;
 
-  &.twitter:before {
-    margin-right: 12px;
-    font-family: '@{fa-font-face} Brands';
-    font-weight: 400;
-    content: @fa-var-twitter;
+    &.twitter::before {
+      margin-right: 12px;
+      font-family: "@{fa-font-face} Brands";
+      font-weight: 400;
+      content: @fa-var-twitter;
     }
   }
 }

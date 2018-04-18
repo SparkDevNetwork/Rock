@@ -25,7 +25,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Field;
 
 namespace Rock.Workflow.Action
@@ -62,7 +62,7 @@ namespace Rock.Workflow.Action
             Guid? guidPersonAttribute = personAttributeValue.AsGuidOrNull();
             if ( guidPersonAttribute.HasValue )
             {
-                var attributePerson = AttributeCache.Read( guidPersonAttribute.Value, rockContext );
+                var attributePerson = CacheAttribute.Get( guidPersonAttribute.Value, rockContext );
                 if ( attributePerson != null && attributePerson.FieldType.Class == "Rock.Field.Types.PersonFieldType" )
                 {
                     Guid? attributePersonValue = action.GetWorklowAttributeValue( guidPersonAttribute.Value ).AsGuidOrNull();
@@ -81,11 +81,11 @@ namespace Rock.Workflow.Action
             }
 
             //get entity type
-            EntityTypeCache entityType = null;
+            CacheEntityType entityType = null;
             Guid? guidEntityType = GetAttributeValue( action, "EntityType" ).AsGuidOrNull();
             if ( guidEntityType.HasValue )
             {
-                entityType = EntityTypeCache.Read( guidEntityType.Value );
+                entityType = CacheEntityType.Get( guidEntityType.Value );
                 if ( entityType == null )
                 {
                     errorMessages.Add( string.Format( "Entity Type could not be found for selected value ('{0}')!", guidPersonAttribute.ToString() ) );
@@ -137,7 +137,7 @@ namespace Rock.Workflow.Action
         /// <param name="rockContext">The rock context.</param>
         /// <param name="action">The action.</param>
         /// <returns></returns>
-        private List<IEntity> GetEntities( EntityTypeCache entityType, RockContext rockContext, WorkflowAction action )
+        private List<IEntity> GetEntities( CacheEntityType entityType, RockContext rockContext, WorkflowAction action )
         {
             var entityTypeService = new EntityTypeService( rockContext );
 
@@ -157,7 +157,7 @@ namespace Rock.Workflow.Action
             {
                 // If the value is a Guid, it could either be a guid of an attribute, or the entity's guid.
                 // Check for an attribute first.
-                var attribute = AttributeCache.Read( guidEntity.Value, rockContext );
+                var attribute = CacheAttribute.Get( guidEntity.Value, rockContext );
                 if ( attribute != null )
                 {
                     // It was for an attribute, get the value

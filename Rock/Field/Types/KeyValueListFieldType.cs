@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.UI;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -170,17 +170,18 @@ namespace Rock.Field.Types
             var values = new List<string>();
             string[] nameValues = value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
 
-            // url decode array items just in case they were UrlEncoded (in the KeyValueList controls)
-            nameValues = nameValues.Select( s => HttpUtility.UrlDecode( s ) ).ToArray();
-
             foreach ( string nameValue in nameValues )
             {
                 string[] nameAndValue = nameValue.Split( new char[] { '^' } );
+                
+                // url decode array items just in case they were UrlEncoded (in the KeyValueList controls)
+                nameAndValue = nameAndValue.Select( s => HttpUtility.UrlDecode( s ) ).ToArray();
+
                 if ( nameAndValue.Length == 2 )
                 {
                     if ( isDefinedType )
                     {
-                        var definedValue = DefinedValueCache.Read( nameAndValue[1].AsInteger() );
+                        var definedValue = CacheDefinedValue.Get( nameAndValue[1].AsInteger() );
                         if ( definedValue != null )
                         {
                             nameAndValue[1] = definedValue.Value;
@@ -323,7 +324,7 @@ namespace Rock.Field.Types
                 {
                     if ( isDefinedType )
                     {
-                        var definedValue = DefinedValueCache.Read( nameAndValue[1].AsInteger() );
+                        var definedValue = CacheDefinedValue.Get( nameAndValue[1].AsInteger() );
                         if ( definedValue != null )
                         {
                             values.Add( new KeyValuePair<string, object>( nameAndValue[0], definedValue ) );

@@ -37,7 +37,7 @@ namespace Rock.Web.UI.Controls
 
             this.Items.Clear();
             this.Items.Add( new ListItem() );
-            foreach ( var item in Rock.Web.Cache.FieldTypeCache.All() )
+            foreach ( var item in Rock.Cache.CacheFieldType.All() )
             {
                 this.Items.Add( new ListItem( item.Name, item.Id.ToString() ) );
             }

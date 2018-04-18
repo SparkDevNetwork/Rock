@@ -16,7 +16,7 @@
     <link rel="apple-touch-icon-precomposed" sizes="72x72" href="<%= Page.ResolveUrl("~/Assets/Icons/touch-icon-ipad.png") %>"/>
     <link rel="apple-touch-icon-precomposed" href="<%= Page.ResolveUrl("~/Assets/Icons/touch-icon-iphone.png") %>"/>
 
-    <script src="<%= ResolveUrl("~/Scripts/jquery-1.12.4.min.js") %>" ></script>
+    <script src="<%= System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" ) %>" ></script>
 
 </head>
 <body id="splash" class="error">

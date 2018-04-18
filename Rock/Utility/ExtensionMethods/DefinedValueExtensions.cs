@@ -33,7 +33,7 @@ namespace Rock
             if ( !id.HasValue )
                 return string.Empty;
 
-            var definedValue = Rock.Web.Cache.DefinedValueCache.Read( id.Value );
+            var definedValue = Rock.Cache.CacheDefinedValue.Get( id.Value );
             if ( definedValue != null )
                 return definedValue.Value;
             else

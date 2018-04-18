@@ -131,7 +131,7 @@ namespace Rock.Transactions
 
         private void LaunchWorkflow( RockContext rockContext, ConnectionWorkflow connectionWorkflow, string name )
         {
-            var workflowType = Web.Cache.WorkflowTypeCache.Read( connectionWorkflow.WorkflowTypeId.Value );
+            var workflowType = Cache.CacheWorkflowType.Get( connectionWorkflow.WorkflowTypeId.Value );
             if ( workflowType != null && ( workflowType.IsActive ?? true ) )
             {
                 ConnectionRequestActivity connectionRequestActivity = null;

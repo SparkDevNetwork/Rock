@@ -30,7 +30,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Utility;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
@@ -168,7 +168,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             LoadDropDowns();
 
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', 'This will also delete all the workflows of this type!');", WorkflowType.FriendlyTypeName );
-            btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.WorkflowType ) ).Id;
+            btnSecurity.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.WorkflowType ) ).Id;
         }
 
         /// <summary>
@@ -294,7 +294,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
 
                 rockContext.SaveChanges();
 
-                WorkflowTypeCache.Flush( workflowType.Id );
+                CacheWorkflowType.Remove( workflowType.Id );
             }
 
             // reload page
@@ -739,7 +739,8 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                 // Because the SaveAttributes above may have flushed the cached entity attribute cache, and it would get loaded again with
                 // a different context, manually reload the cache now with our context to prevent a database lock conflict (when database is 
                 // configured without snapshot isolation turned on)
-                AttributeCache.LoadEntityAttributes( rockContext );
+                CacheEntityAttributes.Remove();
+                CacheEntityAttributes.Get( rockContext );
 
                 int workflowActionTypeOrder = 0;
                 foreach ( var editorWorkflowActionType in editorWorkflowActivityType.ActionTypes )
@@ -798,7 +799,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                         int attributeOrder = 0;
                         foreach ( var editorAttribute in editorWorkflowActionType.WorkflowForm.FormAttributes.OrderBy( a => a.Order ) )
                         {
-                            int attributeId = AttributeCache.Read( editorAttribute.Attribute.Guid, rockContext ).Id;
+                            int attributeId = CacheAttribute.Get( editorAttribute.Attribute.Guid, rockContext ).Id;
 
                             var formAttribute = workflowActionType.WorkflowForm.FormAttributes
                                 .Where( a => a.AttributeId == attributeId )
@@ -835,7 +836,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                 }
             }
 
-            WorkflowTypeCache.Flush( workflowType.Id );
+            CacheWorkflowType.Remove( workflowType.Id );
 
             var qryParams = new Dictionary<string, string>();
             qryParams["workflowTypeId"] = workflowType.Id.ToString();
@@ -1049,7 +1050,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                 actionType.Order = activityType.ActionTypes.Any() ? activityType.ActionTypes.Max( a => a.Order ) + 1 : 0;
                 activityType.ActionTypes.Add( actionType );
 
-                var action = EntityTypeCache.Read( actionType.EntityTypeId );
+                var action = CacheEntityType.Get( actionType.EntityTypeId );
                 if ( action != null )
                 {
                     var rockContext = new RockContext();
@@ -1110,7 +1111,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                 var actionType = activityType.ActionTypes.Where( a => a.Guid.Equals( workflowActionTypeEditor.ActionTypeGuid ) ).FirstOrDefault();
                 if ( actionType != null )
                 {
-                    var action = EntityTypeCache.Read( actionType.EntityTypeId );
+                    var action = CacheEntityType.Get( actionType.EntityTypeId );
                     if ( action != null )
                     {
                         var rockContext = new RockContext();
@@ -1350,7 +1351,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
 
                     foreach ( var actionType in activityType.ActionTypes )
                     {
-                        var action = EntityTypeCache.Read( actionType.EntityTypeId );
+                        var action = CacheEntityType.Get( actionType.EntityTypeId );
                         if ( action != null )
                         {
                             Rock.Attribute.Helper.UpdateAttributes( action.GetEntityType(), actionType.TypeId, "EntityTypeId", actionType.EntityTypeId.ToString(), rockContext );
@@ -1958,7 +1959,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                     a.Name,
                     a.Description,
                     a.Key,
-                    FieldType = FieldTypeCache.GetName( a.FieldTypeId ),
+                    FieldType = CacheFieldType.GetName( a.FieldTypeId ),
                     a.IsRequired
                 } )
                 .ToList();
@@ -1999,7 +2000,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             {
                 attributeService.Delete( attr );
                 rockContext.SaveChanges();
-                Rock.Web.Cache.AttributeCache.Flush( attr.Id );
+                Rock.Cache.CacheAttribute.Remove( attr.Id );
             }
 
             // Update the Attributes that were assigned in the UI
@@ -2008,7 +2009,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                 Helper.SaveAttributeEdits( attribute, entityTypeId, qualifierColumn, qualifierValue, rockContext );
             }
 
-            AttributeCache.FlushEntityAttributes();
+            CacheAttribute.RemoveEntityAttributes();
         }
 
         private void SetAttributeEditor( Guid attributeGuid )
@@ -2018,7 +2019,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
-                attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
+                attribute.FieldTypeId = CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
                 edtAttributes.ActionTitle = ActionTitle.Add( "attribute for workflows of workflow type " + tbName.Text );
             }
             else
@@ -2079,7 +2080,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                 if ( attributeGuid.Equals( Guid.Empty ) )
                 {
                     attribute = new Attribute();
-                    attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
+                    attribute.FieldTypeId = CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
                     edtActivityAttributes.ActionTitle = ActionTitle.Add( "Add Activity Attribute" );
                 }
                 else

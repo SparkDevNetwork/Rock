@@ -12,7 +12,7 @@
 @modal-footer-background: #f1f1f1; // The header color for modal dialogs. #color
 @modal-backdrop-background: #000; // The backdrop color that overlays the page when a modal is displayed. #color
 
-@table-column-border-width: 0px; // The size of the column borders on tables. Set to 1px to show column separators on the grid.
+@table-column-border-width: 0; // The size of the column borders on tables. Set to 1px to show column separators on the grid.
 
 
 // Text *show in editor*
@@ -43,15 +43,14 @@
 @modal-header-text-color: #fff;
 @modal-body-bg: #fff;
 @modal-body-text-color: @text-color;
-@modal-dropshadow-color: rgba(0,0,0,0.6);
+@modal-dropshadow-color: rgba(0,0,0,.6);
 @modal-backdrop-opacity: .3;
 @modal-footer-text-color: #fff;
 
 
-
 // Helper Colors
 @text-selection-bg: @text-selection-background;
-@navbarside-color: rgba(255, 255, 255, 0.8);
+@navbarside-color: rgba(255, 255, 255, .8);
 @navbarside-sub-bg: lighten(@navbarside-background-color, 8%);
 
 @navbarside-width: @side-nav-width;
@@ -64,10 +63,9 @@
 @body-bg: @body-background;
 
 @brand-primary: @brand-color; // #color
-@brand-primary: @brand-color; // #color
-@brand-success: #7ACCBE; // #color
-@brand-warning: #FFC870; // #color
-@brand-danger: #EF6262; // #color
+@brand-success: #7accbe; // #color
+@brand-warning: #ffc870; // #color
+@brand-danger: #ef6262; // #color
 @brand-info: #8dcadf; // #color
 @brand-critical: #ee7624; // #color
 
@@ -97,15 +95,15 @@
 
 
 //// Heading Sizes
-@font-size-h1:            floor(@font-size-base * 2.60);    // ~36px
+@font-size-h1:            floor(@font-size-base * 2.6);    // ~36px
 @font-size-h2:            floor(@font-size-base * 2.15);    // ~30px
-@font-size-h3:            ceil(@font-size-base * 1.70);     // ~24px
+@font-size-h3:            ceil(@font-size-base * 1.7);     // ~24px
 @font-size-h4:            ceil(@font-size-base * 1.25);     // ~18px
 @font-size-h5:            @font-size-base;
-@font-size-h6:            ceil(@font-size-base * 0.85);     // ~12px
+@font-size-h6:            ceil(@font-size-base * .85);     // ~12px
 
 
-// Bootstrap Colors 
+// Bootstrap Colors
 
 //// Bootstrap Colors {The primary colors defined by the Bootstrap framework. [More Information](http://getbootstrap.com/customize/#colors)}
 
@@ -116,11 +114,11 @@
 @gray-light:             lighten(#000, 46.7%); // #color
 @gray-lighter:           lighten(#000, 93.5%); // #color
 
-// Calculated Colors 
+// Calculated Colors
 @link-hover-color:       lighten(@link-color, 15%); // The rollover color for all links. #color
 @text-muted:             lighten(@text-color, 30%); // The muted color for text #color
 
-// Page Areas 
+// Page Areas
 
 //// Header
 @header-bg:         @theme-3;       // The header background color. #color
@@ -159,7 +157,7 @@
 @adminbar-bg: @theme-2; // #color
 @adminbar-text-color: @theme-2-text; // #color
 
-// Global Styles 
+// Global Styles
 
 @well-bg: @body-bg;                     // The backgroud color for wells. Wells are used to group like content. #color
 @photo-border: @input-border;                // Standard border color for photos. #color
@@ -346,7 +344,7 @@
 // Smart Search
 @smartsearch-bg: rgba(255, 255, 255, .1);
 @smartsearch-border-color: #2c2c2c;
-@smartsearch-box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) inset, 0 1px 0 rgba(255, 255, 255, 0.15);
+@smartsearch-box-shadow: 0 1px 2px rgba(0, 0, 0, .1) inset, 0 1px 0 rgba(255, 255, 255, .15);
 @smartsearch-input-text-color: @header-text-color;
 @smartsearch-input-selection-background: #2e2e2e;
 @smartsearch-input-selection-text-color: #fff;
@@ -413,8 +411,8 @@
 @btn-link-disabled-color:        @gray-light;
 
 // Custom Alerts
-@alert-default-bg: @theme-6; 
-@alert-default-border: darken(@alert-default-bg, 10%); 
+@alert-default-bg: @theme-6;
+@alert-default-border: darken(@alert-default-bg, 10%);
 @alert-default-text: @theme-6-text;
 
 // Custom Labels { The bootstrap labels use the brand colors. }

@@ -17,7 +17,7 @@
 using System;
 using System.Linq;
 using System.Web.UI.WebControls;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -32,7 +32,7 @@ namespace Rock.Web.UI.Controls
         public GradePicker()
             : base()
         {
-            Label = GlobalAttributesCache.Read().GetValue( "core.GradeLabel" );
+            Label = CacheGlobalAttributes.Get().GetValue( "core.GradeLabel" );
 
             PopulateItems();
         }
@@ -47,7 +47,7 @@ namespace Rock.Web.UI.Controls
             // add blank item as first item
             this.Items.Add( new ListItem() );
 
-            var schoolGrades = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
+            var schoolGrades = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
             if ( schoolGrades != null )
             {
                 foreach ( var schoolGrade in schoolGrades.DefinedValues.OrderByDescending( a => a.Value.AsInteger() ) )
@@ -131,7 +131,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                var schoolGrades = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
+                var schoolGrades = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
                 return schoolGrades.DefinedValues.Select( a => a.Value.AsInteger() ).Max();
             }
         }
@@ -143,7 +143,7 @@ namespace Rock.Web.UI.Controls
         /// <returns></returns>
         public string GetJavascriptForYearPicker( YearPicker ypGraduationYear)
         {
-            DateTime gradeTransitionDate = GlobalAttributesCache.Read().GetValue( "GradeTransitionDate" ).AsDateTime() ?? new DateTime( RockDateTime.Now.Year, 6, 1 );
+            DateTime gradeTransitionDate = CacheGlobalAttributes.Get().GetValue( "GradeTransitionDate" ).AsDateTime() ?? new DateTime( RockDateTime.Now.Year, 6, 1 );
 
             // add a year if the next graduation mm/dd won't happen until next year
             int gradeOffsetRefactor = ( RockDateTime.Now < gradeTransitionDate ) ? 0 : 1;
@@ -195,11 +195,11 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The selected grade value unique identifier.
         /// </value>
-        public DefinedValueCache SelectedGradeValue
+        public CacheDefinedValue SelectedGradeValue
         {
             get
             {
-                return DefinedValueCache.Read( this.SelectedValue.AsGuid() );
+                return CacheDefinedValue.Get( this.SelectedValue.AsGuid() );
             }
             set
             {

@@ -24,7 +24,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
@@ -123,8 +123,8 @@ namespace RockWeb.Blocks.Core
                 gDefinedTypeAttributes.Columns[3].Visible = false;
                 gDefinedTypeAttributes.Actions.ShowAdd = false;
 
-                itemId = DefinedTypeCache.Read( definedTypeGuid.Value ).Id;
-                var definedType = DefinedTypeCache.Read( definedTypeGuid.Value );
+                itemId = CacheDefinedType.Get( definedTypeGuid.Value ).Id;
+                var definedType = CacheDefinedType.Get( definedTypeGuid.Value );
                 if ( definedType != null )
                 {
                     itemId = definedType.Id;
@@ -189,11 +189,11 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
-                DefinedTypeCache.Flush( definedTypeId );
+                CacheDefinedType.Remove( definedTypeId );
                 definedType = typeService.Get( definedTypeId );
             }
 
-            definedType.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
+            definedType.FieldTypeId = CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
             definedType.Name = tbTypeName.Text;
             definedType.CategoryId = cpCategory.SelectedValueAsInt();
             definedType.Description = tbTypeDescription.Text;
@@ -461,7 +461,7 @@ namespace RockWeb.Blocks.Core
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
-                attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
+                attribute.FieldTypeId = CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
                 edtDefinedTypeAttributes.ActionTitle = ActionTitle.Add( "attribute for defined type " + tbTypeName.Text );
             }
             else
@@ -511,7 +511,7 @@ namespace RockWeb.Blocks.Core
             foreach ( var attribute in attributes )
             {
                 attribute.Order = order++;
-                AttributeCache.Flush( attribute.Id );
+                CacheAttribute.Remove( attribute.Id );
             }
             
             var movedItem = attributes.Where( a => a.Order == e.OldIndex ).FirstOrDefault();
@@ -562,12 +562,12 @@ namespace RockWeb.Blocks.Core
                     return;
                 }
 
-                AttributeCache.Flush( attribute.Id );
+                CacheAttribute.Remove( attribute.Id );
                 attributeService.Delete( attribute );
                 rockContext.SaveChanges();
             }
 
-            AttributeCache.FlushEntityAttributes();
+            CacheAttribute.RemoveEntityAttributes();
 
             BindDefinedTypeAttributesGrid();            
         }
@@ -590,7 +590,7 @@ namespace RockWeb.Blocks.Core
         protected void btnSaveDefinedTypeAttribute_Click( object sender, EventArgs e )
         {
             var attribute = Rock.Attribute.Helper.SaveAttributeEdits( 
-                edtDefinedTypeAttributes, EntityTypeCache.Read( typeof( DefinedValue ) ).Id, "DefinedTypeId", hfDefinedTypeId.Value );
+                edtDefinedTypeAttributes, CacheEntityType.Get( typeof( DefinedValue ) ).Id, "DefinedTypeId", hfDefinedTypeId.Value );
 
             // Attribute will be null if it was not valid
             if (attribute == null)
@@ -601,7 +601,7 @@ namespace RockWeb.Blocks.Core
             pnlDetails.Visible = true;
             pnlDefinedTypeAttributes.Visible = false;
 
-            AttributeCache.FlushEntityAttributes();
+            CacheAttribute.RemoveEntityAttributes();
 
             BindDefinedTypeAttributesGrid();
 

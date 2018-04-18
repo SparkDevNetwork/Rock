@@ -115,7 +115,7 @@ namespace Rock.Reporting.DataSelect.Person
             comparisonControl.ID = parentControl.ID + "_0";
             parentControl.Controls.Add( comparisonControl );
 
-            var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+            var globalAttributes = Rock.Cache.CacheGlobalAttributes.Get();
 
             NumberBox numberBoxAmount = new NumberBox();
             numberBoxAmount.PrependText = globalAttributes.GetValue( "CurrencySymbol" ) ?? "$";
@@ -327,7 +327,7 @@ namespace Rock.Reporting.DataSelect.Person
                 useAnalytics = selectionValues[7].AsBooleanOrNull() ?? false;
             }
 
-            int transactionTypeContributionId = Rock.Web.Cache.DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
+            int transactionTypeContributionId = Rock.Cache.CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
 
             IQueryable<decimal> personTotalAmountQry;
 

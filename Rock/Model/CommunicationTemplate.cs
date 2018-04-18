@@ -335,6 +335,15 @@ namespace Rock.Model
         public virtual PersonAlias SenderPersonAlias { get; set; }
 
         /// <summary>
+        /// Gets a value indicating whether this instance is personal (has a SenderPersonAliasId value) or not
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is personal; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public virtual bool IsPersonal => SenderPersonAliasId.HasValue;
+
+        /// <summary>
         /// Gets or sets the logo binary file that email messages using this template can use for the logo in the message content
         /// </summary>
         /// <value>
@@ -582,6 +591,20 @@ namespace Rock.Model
         public bool HasSMSTemplate()
         {
             return !string.IsNullOrWhiteSpace( this.SMSMessage );
+        }
+
+        /// <summary>
+        /// Return <c>true</c> if the user is authorized to perform the selected action on this object.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <returns>
+        /// <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
+        /// </returns>
+        public override bool IsAuthorized(string action, Person person)
+        {
+            // The sender person should be authorized for any action.
+            return SenderPersonAlias?.PersonId == person?.Id || base.IsAuthorized(action, person);
         }
 
         /// <summary>

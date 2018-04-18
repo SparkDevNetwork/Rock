@@ -19,7 +19,7 @@ namespace Rock.Plugin.HotFixes {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class HotFixMigrationResource {
@@ -273,6 +273,58 @@ namespace Rock.Plugin.HotFixes {
         public static string _049_GivingAnalyticsAccounts_TransactionData {
             get {
                 return ResourceManager.GetString("_049_GivingAnalyticsAccounts_TransactionData", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF EXISTS (
+        ///        SELECT *
+        ///        FROM [sysobjects]
+        ///        WHERE [id] = OBJECT_ID(N&apos;[dbo].[spAnalytics_ETL_Campus]&apos;)
+        ///            AND OBJECTPROPERTY([id], N&apos;IsProcedure&apos;) = 1
+        ///        )
+        ///    DROP PROCEDURE [dbo].spAnalytics_ETL_Campus
+        ///GO
+        ///
+        ///-- EXECUTE [dbo].[spAnalytics_ETL_Campus] 
+        ///CREATE PROCEDURE [dbo].spAnalytics_ETL_Campus
+        ///AS
+        ///BEGIN
+        ///	DECLARE @RowsUpdated INT = 0
+        ///		,@RowsInserted INT = 0
+        ///
+        ///	INSERT INTO AnalyticsSourceCampus (
+        ///		[CampusId]
+        ///		,[Name]
+        ///		,[Description]
+        ///		,[IsActive]
+        ///		,[Sh [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _050_MigrationRollupsForV7_4_spAnalytics_ETL_Campus {
+            get {
+                return ResourceManager.GetString("_050_MigrationRollupsForV7_4_spAnalytics_ETL_Campus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This procedure merges the data from the non-primary person to the primary person.  It
+        ///		is used when merging people in Rock and should never be used outside of that process. 
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&quot;Old Id&quot; datatype=&quot;int&quot;&gt;The person id of the non-primary Person being merged&lt;/param&gt;
+        ///	&lt;param name=&quot;New Id&quot; datatype=&quot;int&quot;&gt;The person id of the primary Person being merged&lt;/param&gt;
+        ///	&lt;remarks&gt;	
+        ///		Uses the following constants:
+        ///			* Group Type - Family: 790E [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _050_MigrationRollupsForV7_4_spCrm_PersonMerge {
+            get {
+                return ResourceManager.GetString("_050_MigrationRollupsForV7_4_spCrm_PersonMerge", resourceCulture);
             }
         }
     }

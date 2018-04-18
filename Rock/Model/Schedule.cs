@@ -24,7 +24,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using DDay.iCal;
 using Rock.Data;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Model
 {
@@ -390,7 +390,7 @@ namespace Rock.Model
                 var exclusionDates = new List<DateRange>();
                 if ( this.CategoryId.HasValue && this.CategoryId.Value > 0 )
                 {
-                    var category = CategoryCache.Read( this.CategoryId.Value );
+                    var category = CacheCategory.Get( this.CategoryId.Value );
                     if ( category != null )
                     {
                         exclusionDates = category.ScheduleExclusions

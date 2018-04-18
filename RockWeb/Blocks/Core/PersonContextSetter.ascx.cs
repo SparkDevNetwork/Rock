@@ -24,7 +24,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Core
@@ -87,7 +87,7 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void LoadDropDowns()
         {
-            var personEntityType = EntityTypeCache.Read<Person>();
+            var personEntityType = CacheEntityType.Get<Person>();
             var currentPerson = RockPage.GetCurrentContext( personEntityType ) as Person;
 
             int? personIdParam = Request.QueryString["personId"].AsIntegerOrNull();

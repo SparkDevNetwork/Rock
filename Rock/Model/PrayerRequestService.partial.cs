@@ -42,7 +42,7 @@ namespace Rock.Model
             PrayerRequest prayerRequest = new PrayerRequest();
             Type type = prayerRequest.GetType();
 
-            var prayerRequestEntityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( type );
+            var prayerRequestEntityTypeId = Rock.Cache.CacheEntityType.GetId( type );
 
             // Get all PrayerRequest category Ids that are the **parent or child** of the given categoryIds.
             CategoryService categoryService = new CategoryService( (RockContext)Context );

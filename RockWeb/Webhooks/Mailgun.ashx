@@ -55,7 +55,7 @@ public class Mailgun : IHttpHandler
             string signature = request.Form["signature"];
             string apiKey = string.Empty;
 
-            var mailgunEntity = Rock.Web.Cache.EntityTypeCache.Read( "Rock.Communication.Transport.MailgunSmtp", false );
+            var mailgunEntity = Rock.Cache.CacheEntityType.Get( "Rock.Communication.Transport.MailgunSmtp", false );
             if ( mailgunEntity != null )
             {
                 apiKey = new AttributeValueService( rockContext )

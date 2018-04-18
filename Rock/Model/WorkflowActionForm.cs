@@ -24,7 +24,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Workflow;
 
 namespace Rock.Model
@@ -211,7 +211,7 @@ namespace Rock.Model
 
                     if ( details.Length > 1 )
                     {
-                        var definedValue = DefinedValueCache.Read( details[1].AsGuid() );
+                        var definedValue = CacheDefinedValue.Get( details[1].AsGuid() );
                         if ( definedValue != null )
                         {
                             button.Html = definedValue.GetAttributeValue( "ButtonHTML" );

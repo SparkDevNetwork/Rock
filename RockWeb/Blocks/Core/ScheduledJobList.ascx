@@ -17,8 +17,8 @@
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                             <Rock:DateTimeField DataField="LastSuccessfulRunDateTime" HeaderText="Last Successful Run" SortExpression="LastSuccessfulRunDateTime" />
                             <Rock:DateTimeField DataField="LastRunDateTime" HeaderText="Last Run Date" SortExpression="LastRunDateTime" />
-                            <Rock:RockLiteralField ID="lLastRunDurationSeconds" HeaderText="Last Run Duration" SortExpression="LastRunDurationSeconds" ItemStyle-HorizontalAlign="Center" />
-                            <Rock:RockLiteralField ID="lLastStatus" HeaderText="Last Status" SortExpression="LastStatus" ItemStyle-HorizontalAlign="Center" />
+                            <Rock:RockLiteralField ID="lLastRunDurationSeconds" HeaderText="Last Run Duration" SortExpression="LastRunDurationSeconds" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center" />
+                            <Rock:RockLiteralField ID="lLastStatus" HeaderText="Last Status" SortExpression="LastStatus" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center"/>
                             <Rock:RockBoundField DataField="LastStatusMessageAsHtml" HeaderText="Last Status Message" HtmlEncode="false" SortExpression="LastStatusMessage" TruncateLength="255" />
                             <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
                             <Rock:BoolField DataField="IsActive" HeaderText="Active" SortExpression="IsActive" />

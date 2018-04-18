@@ -30,6 +30,7 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
+    [Obsolete( "Use Rock.Cache.CacheRestController instead" )]
     public class RestControllerCache : CachedModel<RestController>
     {
         #region Constructors

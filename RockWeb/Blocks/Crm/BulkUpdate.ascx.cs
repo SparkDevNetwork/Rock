@@ -31,7 +31,7 @@ using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls.Communication;
 using Rock.Web.UI.Controls;
@@ -73,15 +73,15 @@ namespace RockWeb.Blocks.Crm
         {
             base.OnInit( e );
 
-            var personEntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Person ) ).Id;
+            var personEntityTypeId = CacheEntityType.Get( typeof( Rock.Model.Person ) ).Id;
 
-            ddlTitle.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_TITLE ) ), true );
-            ddlStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ) );
-            ddlMaritalStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS ) ) );
-            ddlSuffix.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_SUFFIX ) ), true );
-            ddlRecordStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ) );
-            ddlInactiveReason.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ) );
-            ddlReviewReason.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_REVIEW_REASON ) ), true );
+            ddlTitle.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_TITLE ) ), true );
+            ddlStatus.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ) );
+            ddlMaritalStatus.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS ) ) );
+            ddlSuffix.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_SUFFIX ) ), true );
+            ddlRecordStatus.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ) );
+            ddlInactiveReason.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ) );
+            ddlReviewReason.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_REVIEW_REASON ) ), true );
 
             rlbWorkFlowType.Items.Clear();
             var guidList = GetAttributeValue( "WorkflowTypes" ).SplitDelimitedValues().AsGuidList();
@@ -136,7 +136,7 @@ namespace RockWeb.Blocks.Crm
             ScriptManager.RegisterStartupScript( ddlGradePicker, ddlGradePicker.GetType(), "grade-selection-" + BlockId.ToString(), ddlGradePicker.GetJavascriptForYearPicker( ypGraduation ), true );
 
             ddlNoteType.Items.Clear();
-            var noteTypes = NoteTypeCache.GetByEntity( personEntityTypeId, string.Empty, string.Empty, true );
+            var noteTypes = CacheNoteType.GetByEntity( personEntityTypeId, string.Empty, string.Empty, true );
             foreach ( var noteType in noteTypes )
             {
                 if ( noteType.UserSelectable && noteType.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson ) )
@@ -269,7 +269,7 @@ namespace RockWeb.Blocks.Crm
 
             if ( !Page.IsPostBack )
             {
-                cpCampus.Campuses = CampusCache.All();
+                cpCampus.Campuses = CacheCampus.All();
                 Individuals = new List<Individual>();
                 SelectedFields = new List<string>();
 
@@ -434,37 +434,37 @@ namespace RockWeb.Blocks.Crm
             {
                 #region Individual Details Updates
 
-                int inactiveStatusId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ).Id;
+                int inactiveStatusId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ).Id;
 
                 var changes = new List<string>();
 
                 if ( SelectedFields.Contains( ddlTitle.ClientID ) )
                 {
                     int? newTitleId = ddlTitle.SelectedValueAsInt();
-                    EvaluateChange( changes, "Title", DefinedValueCache.GetName( newTitleId ) );
+                    EvaluateChange( changes, "Title", CacheDefinedValue.GetName( newTitleId ) );
                 }
 
                 if ( SelectedFields.Contains( ddlSuffix.ClientID ) )
                 {
                     int? newSuffixId = ddlSuffix.SelectedValueAsInt();
-                    EvaluateChange( changes, "Suffix", DefinedValueCache.GetName( newSuffixId ) );
+                    EvaluateChange( changes, "Suffix", CacheDefinedValue.GetName( newSuffixId ) );
                 }
 
                 if ( SelectedFields.Contains( ddlStatus.ClientID ) )
                 {
                     int? newConnectionStatusId = ddlStatus.SelectedValueAsInt();
-                    EvaluateChange( changes, "Connection Status", DefinedValueCache.GetName( newConnectionStatusId ) );
+                    EvaluateChange( changes, "Connection Status", CacheDefinedValue.GetName( newConnectionStatusId ) );
                 }
 
                 if ( SelectedFields.Contains( ddlRecordStatus.ClientID ) )
                 {
                     int? newRecordStatusId = ddlRecordStatus.SelectedValueAsInt();
-                    EvaluateChange( changes, "Record Status", DefinedValueCache.GetName( newRecordStatusId ) );
+                    EvaluateChange( changes, "Record Status", CacheDefinedValue.GetName( newRecordStatusId ) );
 
                     if ( newRecordStatusId.HasValue && newRecordStatusId.Value == inactiveStatusId )
                     {
                         int? newInactiveReasonId = ddlInactiveReason.SelectedValueAsInt();
-                        EvaluateChange( changes, "Inactive Reason", DefinedValueCache.GetName( newInactiveReasonId ) );
+                        EvaluateChange( changes, "Inactive Reason", CacheDefinedValue.GetName( newInactiveReasonId ) );
 
                         string newInactiveReasonNote = tbInactiveReasonNote.Text;
                         if ( !string.IsNullOrWhiteSpace( newInactiveReasonNote ) )
@@ -483,7 +483,7 @@ namespace RockWeb.Blocks.Crm
                 if ( SelectedFields.Contains( ddlMaritalStatus.ClientID ) )
                 {
                     int? newMaritalStatusId = ddlMaritalStatus.SelectedValueAsInt();
-                    EvaluateChange( changes, "Marital Status", DefinedValueCache.GetName( newMaritalStatusId ) );
+                    EvaluateChange( changes, "Marital Status", CacheDefinedValue.GetName( newMaritalStatusId ) );
                 }
 
                 if ( SelectedFields.Contains( ddlGradePicker.ClientID ) )
@@ -533,7 +533,7 @@ namespace RockWeb.Blocks.Crm
                 if ( SelectedFields.Contains( ddlReviewReason.ClientID ) )
                 {
                     int? newReviewReason = ddlReviewReason.SelectedValueAsInt();
-                    EvaluateChange( changes, "Review Reason", DefinedValueCache.GetName( newReviewReason ) );
+                    EvaluateChange( changes, "Review Reason", CacheDefinedValue.GetName( newReviewReason ) );
                 }
 
                 if ( SelectedFields.Contains( tbReviewReasonNote.ClientID ) )
@@ -547,7 +547,7 @@ namespace RockWeb.Blocks.Crm
                     int? newCampusId = cpCampus.SelectedCampusId;
                     if ( newCampusId.HasValue )
                     {
-                        var campus = CampusCache.Read( newCampusId.Value );
+                        var campus = CacheCampus.Get( newCampusId.Value );
                         if ( campus != null )
                         {
                             EvaluateChange( changes, "Campus (for all family members)", campus.Name );
@@ -580,17 +580,17 @@ namespace RockWeb.Blocks.Crm
 
                 var rockContext = new RockContext();
 
-                var selectedCategories = new List<CategoryCache>();
+                var selectedCategories = new List<CacheCategory>();
                 foreach ( string categoryGuid in GetAttributeValue( "AttributeCategories" ).SplitDelimitedValues() )
                 {
-                    var category = CategoryCache.Read( categoryGuid.AsGuid(), rockContext );
+                    var category = CacheCategory.Get( categoryGuid.AsGuid(), rockContext );
                     if ( category != null )
                     {
                         selectedCategories.Add( category );
                     }
                 }
 
-                var attributes = new List<AttributeCache>();
+                var attributes = new List<CacheAttribute>();
                 var attributeValues = new Dictionary<int, string>();
 
                 int categoryIndex = 0;
@@ -616,7 +616,7 @@ namespace RockWeb.Blocks.Crm
                         {
                             if ( attribute.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                             {
-                                var attributeCache = AttributeCache.Read( attribute.Id );
+                                var attributeCache = CacheAttribute.Get( attribute.Id );
 
                                 Control attributeControl = pw.FindControl( string.Format( "attribute_field_{0}", attribute.Id ) );
 
@@ -667,7 +667,7 @@ namespace RockWeb.Blocks.Crm
                                 var roleId = ddlGroupRole.SelectedValueAsInt();
                                 if ( roleId.HasValue )
                                 {
-                                    var groupType = GroupTypeCache.Read( group.GroupTypeId );
+                                    var groupType = CacheGroupType.Get( group.GroupTypeId );
                                     var role = groupType.Roles.Where( r => r.Id == roleId.Value ).FirstOrDefault();
                                     if ( role != null )
                                     {
@@ -836,7 +836,7 @@ namespace RockWeb.Blocks.Crm
             string newSystemNote = tbSystemNote.Text;
             string newReviewReasonNote = tbReviewReasonNote.Text;
 
-            int inactiveStatusId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ).Id;
+            int inactiveStatusId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ).Id;
 
             var people = personService.Queryable( true ).Where( p => ids.Contains( p.Id ) ).ToList();
             foreach ( var person in people )
@@ -968,7 +968,7 @@ namespace RockWeb.Blocks.Crm
             // Update following
             if ( SelectedFields.Contains( ddlFollow.ClientID ) )
             {
-                var personAliasEntityType = EntityTypeCache.Read( "Rock.Model.PersonAlias" );
+                var personAliasEntityType = CacheEntityType.Get( "Rock.Model.PersonAlias" );
                 if ( personAliasEntityType != null )
                 {
                     int personAliasEntityTypeId = personAliasEntityType.Id;
@@ -1034,17 +1034,17 @@ namespace RockWeb.Blocks.Crm
 
             #region Attributes
 
-            var selectedCategories = new List<CategoryCache>();
+            var selectedCategories = new List<CacheCategory>();
             foreach ( string categoryGuid in GetAttributeValue( "AttributeCategories" ).SplitDelimitedValues() )
             {
-                var category = CategoryCache.Read( categoryGuid.AsGuid(), rockContext );
+                var category = CacheCategory.Get( categoryGuid.AsGuid(), rockContext );
                 if ( category != null )
                 {
                     selectedCategories.Add( category );
                 }
             }
 
-            var attributes = new List<AttributeCache>();
+            var attributes = new List<CacheAttribute>();
             var attributeValues = new Dictionary<int, string>();
 
             int categoryIndex = 0;
@@ -1070,7 +1070,7 @@ namespace RockWeb.Blocks.Crm
                     {
                         if ( attribute.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                         {
-                            var attributeCache = AttributeCache.Read( attribute.Id );
+                            var attributeCache = CacheAttribute.Get( attribute.Id );
 
                             Control attributeControl = pw.FindControl( string.Format( "attribute_field_{0}", attribute.Id ) );
 
@@ -1126,7 +1126,7 @@ namespace RockWeb.Blocks.Crm
                 bool isAlert = cbIsAlert.Checked;
                 bool isPrivate = cbIsPrivate.Checked;
 
-                var noteType = NoteTypeCache.Read( ddlNoteType.SelectedValueAsId() ?? 0 );
+                var noteType = CacheNoteType.Get( ddlNoteType.SelectedValueAsId() ?? 0 );
                 if ( noteType != null )
                 {
                     var notes = new List<Note>();
@@ -1162,7 +1162,7 @@ namespace RockWeb.Blocks.Crm
                 {
                     var groupMemberService = new GroupMemberService( rockContext );
 
-                    var existingMembersQuery = groupMemberService.Queryable( "Group" )
+                    var existingMembersQuery = groupMemberService.Queryable( true ).Include( a => a.Group )
                                                                  .Where( m => m.GroupId == group.Id
                                                                               && ids.Contains( m.PersonId ) );
 
@@ -1176,7 +1176,7 @@ namespace RockWeb.Blocks.Crm
                             // Load the batch of GroupMember items into the context and delete them.
                             groupMemberService = new GroupMemberService( context );
 
-                            var batchGroupMembers = groupMemberService.Queryable().Where( x => items.Contains( x.Id ) ).ToList();
+                            var batchGroupMembers = groupMemberService.Queryable( true ).Where( x => items.Contains( x.Id ) ).ToList();
 
                             // also unregister them from any registration groups
                             RegistrationRegistrantService registrantService = new RegistrationRegistrantService( context );
@@ -1202,7 +1202,7 @@ namespace RockWeb.Blocks.Crm
                         gm.Group = group;
                         gm.GroupId = group.Id;
                         gm.LoadAttributes( rockContext );
-                        var selectedGroupAttributes = new List<AttributeCache>();
+                        var selectedGroupAttributes = new List<CacheAttribute>();
                         var selectedGroupAttributeValues = new Dictionary<string, string>();
                         foreach ( var attributeCache in gm.Attributes.Select( a => a.Value ) )
                         {
@@ -1309,7 +1309,7 @@ namespace RockWeb.Blocks.Crm
             #endregion
 
             #region Tag
-            var personEntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Person ) ).Id;
+            var personEntityTypeId = CacheEntityType.Get( typeof( Rock.Model.Person ) ).Id;
 
             if ( !string.IsNullOrWhiteSpace( ddlTagList.SelectedValue ) )
             {
@@ -1412,7 +1412,7 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlRecordStatus_SelectedIndexChanged( object sender, EventArgs e )
         {
-            ddlInactiveReason.Visible = ( ddlRecordStatus.SelectedValueAsInt() == DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id );
+            ddlInactiveReason.Visible = ( ddlRecordStatus.SelectedValueAsInt() == CacheDefinedValue.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id );
             tbInactiveReasonNote.Visible = ddlInactiveReason.Visible;
         }
 
@@ -1479,7 +1479,7 @@ namespace RockWeb.Blocks.Crm
             SetControlSelection( ddlStatus, "Connection Status" );
             SetControlSelection( ddlGender, "Gender" );
             SetControlSelection( ddlMaritalStatus, "Marital Status" );
-            SetControlSelection( ddlGradePicker, GlobalAttributesCache.Read().GetValue( "core.GradeLabel" ) );
+            SetControlSelection( ddlGradePicker, CacheGlobalAttributes.Get().GetValue( "core.GradeLabel" ) );
             ypGraduation.Enabled = ddlGradePicker.Enabled;
 
             SetControlSelection( cpCampus, "Campus" );
@@ -1509,10 +1509,10 @@ namespace RockWeb.Blocks.Crm
 
         private void BuildAttributes( RockContext rockContext, bool setValues = false )
         {
-            var selectedCategories = new List<CategoryCache>();
+            var selectedCategories = new List<CacheCategory>();
             foreach ( string categoryGuid in GetAttributeValue( "AttributeCategories" ).SplitDelimitedValues() )
             {
-                var category = CategoryCache.Read( categoryGuid.AsGuid(), rockContext );
+                var category = CacheCategory.Get( categoryGuid.AsGuid(), rockContext );
                 if ( category != null )
                 {
                     selectedCategories.Add( category );
@@ -1547,7 +1547,7 @@ namespace RockWeb.Blocks.Crm
                 {
                     if ( attribute.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                     {
-                        var attributeCache = AttributeCache.Read( attribute.Id );
+                        var attributeCache = CacheAttribute.Get( attribute.Id );
 
                         string clientId = string.Format( "{0}_attribute_field_{1}", pw.ClientID, attribute.Id );
                         bool controlEnabled = SelectedFields.Contains( clientId, StringComparer.OrdinalIgnoreCase );
@@ -1614,7 +1614,7 @@ namespace RockWeb.Blocks.Crm
                         SetControlSelection( ddlGroupMemberStatus, "Member Status" );
                     }
 
-                    var groupType = GroupTypeCache.Read( group.GroupTypeId );
+                    var groupType = CacheGroupType.Get( group.GroupTypeId );
                     ddlGroupRole.Items.Clear();
                     ddlGroupRole.DataSource = groupType.Roles.OrderBy( r => r.Order ).ToList();
                     ddlGroupRole.DataBind();
