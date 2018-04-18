@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Transactions
 {
@@ -82,15 +82,15 @@ namespace Rock.Transactions
         {
             if ( WorkflowDetails != null && WorkflowDetails.Any() )
             {
-                WorkflowTypeCache workflowType = null;
+                CacheWorkflowType workflowType = null;
                 if ( WorkflowTypeGuid.HasValue )
                 {
-                    workflowType = WorkflowTypeCache.Read( WorkflowTypeGuid.Value );
+                    workflowType = CacheWorkflowType.Get( WorkflowTypeGuid.Value );
                 }
 
                 if ( workflowType == null && WorkflowTypeId.HasValue )
                 {
-                    workflowType = WorkflowTypeCache.Read( WorkflowTypeId.Value );
+                    workflowType = CacheWorkflowType.Get( WorkflowTypeId.Value );
                 }
 
                 if ( workflowType != null && ( workflowType.IsActive ?? true ) )

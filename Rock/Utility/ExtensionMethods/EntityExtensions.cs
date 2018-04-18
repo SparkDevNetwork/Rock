@@ -110,7 +110,7 @@ namespace Rock
 
             if ( type.Namespace.Equals( "Rock.Model" ) )
             {
-                var entityType = Rock.Web.Cache.EntityTypeCache.Read( type, false );
+                var entityType = Rock.Cache.CacheEntityType.Get( type, false );
                 if ( entityType != null && entityType.FriendlyName != null )
                 {
                     return entityType.FriendlyName;

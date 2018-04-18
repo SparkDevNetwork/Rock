@@ -98,7 +98,7 @@ BEGIN
     INSERT INTO #PersonDuplicateByEmailTable (
         Email
         ,PersonAliasId
-      )
+    )
     SELECT [e].[Email] [Email]
         ,[pa].[Id] [PersonAliasId]
     FROM (
@@ -845,7 +845,8 @@ BEGIN
     JOIN PersonAlias pa2 ON pa2.Id = pd.DuplicatePersonAliasId
     JOIN Person p1 ON p1.Id = pa1.PersonId
     JOIN Person p2 ON p2.Id = pa2.PersonId
-    WHERE p1.MaritalStatusValueId = p2.MaritalStatusValueId
+	WHERE (p1.MaritalStatusValueId is not null and p2.MaritalStatusValueId is not null) 
+    and (p1.MaritalStatusValueId = p2.MaritalStatusValueId)
         AND @compareByMaritalStatus = 1
 
 	--PRINT'Update score for marital status matches: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
@@ -860,7 +861,8 @@ BEGIN
     INNER JOIN PersonAlias pa2 ON pa2.Id = pd.DuplicatePersonAliasId
     INNER JOIN Person p1 ON p1.Id = pa1.PersonId
     INNER JOIN Person p2 ON p2.Id = pa2.PersonId
-    WHERE p1.SuffixValueId = p2.SuffixValueId
+    WHERE (p1.SuffixValueId is not null and p2.SuffixValueId is not null) 
+	  AND (p1.SuffixValueId = p2.SuffixValueId)
         AND @compareBySuffix = 1
 
 	--PRINT'Update score for suffix matches: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)

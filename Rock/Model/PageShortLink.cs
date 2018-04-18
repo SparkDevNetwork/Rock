@@ -21,7 +21,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using System.Text;
 using Rock.Data;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Model
 {
@@ -78,6 +78,22 @@ namespace Rock.Model
         /// </value>
         [LavaInclude]
         public virtual Site Site { get; set; }
+
+        /// <summary>
+        /// Gets the short link URL.
+        /// </summary>
+        /// <value>
+        /// The short link URL.
+        /// </value>
+        [LavaInclude]
+        public virtual string ShortLinkUrl
+        {
+            get
+            {
+                string domain = new SiteService( new RockContext() ).GetDefaultDomainUri( this.SiteId ).ToString();
+                return domain.EnsureTrailingForwardslash() + this.Token;
+            }
+        }
 
         #endregion
 

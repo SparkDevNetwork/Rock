@@ -1,8 +1,8 @@
 IF OBJECT_ID(N'[dbo].[AnalyticsDimFinancialAccount]', 'V') IS NOT NULL
-    DROP VIEW AnalyticsDimFinancialAccount
+    DROP VIEW [dbo].[AnalyticsDimFinancialAccount]
 GO
 
-CREATE VIEW AnalyticsDimFinancialAccount
+CREATE VIEW [dbo].[AnalyticsDimFinancialAccount]
 AS
 SELECT fa.Id [AccountId]
     ,fa.[Name]

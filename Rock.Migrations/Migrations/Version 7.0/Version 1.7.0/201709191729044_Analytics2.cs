@@ -32,15 +32,15 @@ namespace Rock.Migrations
             // Drop views that were pointing to AnalyticsDimDate and re-create them after the rename
             Sql( @"
 IF OBJECT_ID(N'[dbo].[AnalyticsDimAttendanceDate]', 'V') IS NOT NULL
-    DROP VIEW AnalyticsDimAttendanceDate
+    DROP VIEW [dbo].AnalyticsDimAttendanceDate
 GO
 
 IF OBJECT_ID(N'[dbo].[AnalyticsDimFinancialTransactionDate]', 'V') IS NOT NULL
-    DROP VIEW AnalyticsDimFinancialTransactionDate
+    DROP VIEW [dbo].AnalyticsDimFinancialTransactionDate
 GO
 
 IF OBJECT_ID(N'[dbo].[AnalyticsDimPersonBirthDate]', 'V') IS NOT NULL
-    DROP VIEW AnalyticsDimPersonBirthDate
+    DROP VIEW [dbo].AnalyticsDimPersonBirthDate
 GO
 " );
 

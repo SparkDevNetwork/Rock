@@ -94,13 +94,11 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this InteractionSession target, InteractionSession source )
         {
             target.Id = source.Id;
-            target.DetailTemplate = source.DetailTemplate;
             target.DeviceTypeId = source.DeviceTypeId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.InteractionMode = source.InteractionMode;
             target.IpAddress = source.IpAddress;
-            target.ListTemplate = source.ListTemplate;
             target.SessionData = source.SessionData;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

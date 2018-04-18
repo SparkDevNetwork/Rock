@@ -26,7 +26,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
 
@@ -200,7 +200,7 @@ function() {
 
                 if (settings.GroupTypeGuid.HasValue)
                 {
-                    GroupTypeName = DefinedValueCache.Read( settings.GroupTypeGuid.Value, context ).Value;
+                    GroupTypeName = CacheDefinedValue.Get( settings.GroupTypeGuid.Value, context ).Value;
                 }
 
                 result = string.Format( "Group Type {0} is in filter: {1}",
@@ -232,7 +232,7 @@ function() {
             filterControl.Controls.Add( ddlDataView );
 
             // Populate the Data View Picker
-            int entityTypeId = EntityTypeCache.Read( typeof( GroupType ) ).Id;
+            int entityTypeId = CacheEntityType.Get( typeof( GroupType ) ).Id;
             ddlDataView.EntityTypeId = entityTypeId;
 
             return new Control[] { ddlDataView };

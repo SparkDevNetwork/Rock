@@ -74,12 +74,12 @@ namespace Rock.Jobs
                 int sendCount = 0;
                 int registrationInstanceCount = 0;
 
-                var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read().GetValue( "PublicApplicationRoot" );
+                var appRoot = Rock.Cache.CacheGlobalAttributes.Get().GetValue( "PublicApplicationRoot" );
 
                 RegistrationService registrationService = new RegistrationService( rockContext );
 
                 var currentDate = RockDateTime.Today;
-                var cutoffDays = dataMap.GetIntFromString( "CutoffDate" );
+                var cutoffDays = dataMap.GetString( "CutoffDate" ).AsIntegerOrNull() ?? 30;
 
                 var registrations = registrationService.Queryable( "RegistrationInstance" )
                                                 .Where( r =>

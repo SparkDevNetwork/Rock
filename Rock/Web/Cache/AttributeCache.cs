@@ -45,6 +45,7 @@ namespace Rock.Web.Cache
     [Serializable]
     [DataContract]
     [JsonConverter( typeof( Rock.Utility.AttributeCacheJsonConverter ) )]
+    [Obsolete( "Use Rock.Cache.CacheAttribute instead")]
     public class AttributeCache : CachedModel<Rock.Model.Attribute>
     {
         #region constructors
@@ -874,6 +875,7 @@ namespace Rock.Web.Cache
     /// 
     /// </summary>
     [Serializable]
+    [Obsolete( "Use Rock.Cache.EntityAttributes instead" )]
     internal class EntityAttributes
     {
         /// <summary>

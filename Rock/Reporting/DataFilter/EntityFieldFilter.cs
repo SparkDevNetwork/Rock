@@ -28,7 +28,7 @@ using System.Web.UI.WebControls;
 using Newtonsoft.Json;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter
@@ -83,18 +83,12 @@ namespace Rock.Reporting.DataFilter
 
             if ( entityFieldPickerIsHidden && ddlEntityField.SelectedItem != null )
             {
+                var filterLabel = filterControl.Label ?? ddlEntityField.SelectedItem.Text;
                 if ( filterControl.ShowCheckbox )
                 {
                     // special case when a filter is a entity field filter: render the checkbox here instead of in FilterField.cs
-                    filterControl.cbIncludeFilter.Text = ddlEntityField.SelectedItem.Text;
+                    filterControl.cbIncludeFilter.Text = filterLabel;
                     filterControl.cbIncludeFilter.RenderControl( writer );
-                }
-                else
-                {
-                    writer.AddAttribute( "class", "filterfield-label" );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Span );
-                    writer.Write( ddlEntityField.SelectedItem.Text );
-                    writer.RenderEndTag();
                 }
             }
 
@@ -338,7 +332,7 @@ namespace Rock.Reporting.DataFilter
 
             if ( entityField.AttributeGuid.HasValue )
             {
-                var attributeCache = AttributeCache.Read( entityField.AttributeGuid.Value );
+                var attributeCache = CacheAttribute.Get( entityField.AttributeGuid.Value );
                 var attributeId = attributeCache != null ? attributeCache.Id : 0;
 
                 attributeValues = attributeValues.Where( v => v.AttributeId == attributeId );

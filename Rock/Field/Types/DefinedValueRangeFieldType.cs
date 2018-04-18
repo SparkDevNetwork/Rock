@@ -21,7 +21,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Reporting;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -162,8 +162,8 @@ namespace Rock.Field.Types
                         useDescription = true;
                     }
 
-                    var lowerDefinedValue = DefinedValueCache.Read( valuePair[0].AsGuid() );
-                    var upperDefinedValue = DefinedValueCache.Read( valuePair[1].AsGuid() );
+                    var lowerDefinedValue = CacheDefinedValue.Get( valuePair[0].AsGuid() );
+                    var upperDefinedValue = CacheDefinedValue.Get( valuePair[1].AsGuid() );
                     if ( lowerDefinedValue != null || upperDefinedValue != null )
                     {
                         if ( useDescription )
@@ -221,7 +221,7 @@ namespace Rock.Field.Types
             if ( configurationValues != null && configurationValues.ContainsKey( DEFINED_TYPE_KEY ) )
             {
                 Guid definedTypeGuid = configurationValues.GetValueOrNull( DEFINED_TYPE_KEY ).AsGuid();
-                DefinedTypeCache definedType = DefinedTypeCache.Read( definedTypeGuid );
+                CacheDefinedType definedType = CacheDefinedType.Get( definedTypeGuid );
 
                 if ( definedType != null )
                 {
@@ -260,7 +260,11 @@ namespace Rock.Field.Types
             {
                 RockDropDownList lowerValueControl = pnlRange.Controls.OfType<RockDropDownList>().FirstOrDefault( a => a.ID.EndsWith( "_ddlLower" ) );
                 RockDropDownList upperValueControl = pnlRange.Controls.OfType<RockDropDownList>().FirstOrDefault( a => a.ID.EndsWith( "_ddlUpper" ) );
-                return string.Format( "{0},{1}", lowerValueControl.SelectedValue, upperValueControl.SelectedValue );
+
+                if ( !string.IsNullOrEmpty( lowerValueControl.SelectedValue ) || !string.IsNullOrEmpty( upperValueControl.SelectedValue ) )
+                {
+                    return string.Format( "{0},{1}", lowerValueControl.SelectedValue, upperValueControl.SelectedValue );
+                }
             }
 
             return null;

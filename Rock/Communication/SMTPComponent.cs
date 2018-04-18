@@ -25,7 +25,7 @@ using System.Text.RegularExpressions;
 using Rock.Data;
 using Rock.Model;
 using Rock.Transactions;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Communication.Transport
 {
@@ -134,7 +134,7 @@ namespace Rock.Communication.Transport
             {
 
                 // From - if none is set, use the one in the Organization's GlobalAttributes.
-                var globalAttributes = GlobalAttributesCache.Read();
+                var globalAttributes = CacheGlobalAttributes.Get();
                 string fromAddress = emailMessage.FromEmail;
                 if ( string.IsNullOrWhiteSpace( fromAddress ) )
                 {
@@ -249,7 +249,7 @@ namespace Rock.Communication.Transport
                                         var attachment = binaryFileService.Get( binaryFileId );
                                         if ( attachment != null )
                                         {
-                                            message.Attachments.Add( new Attachment( attachment.ContentStream, attachment.FileName ) );
+                                            message.Attachments.Add( new Attachment( attachment.ContentStream, attachment.FileName, attachment.MimeType ) );
                                         }
                                     }
                                 }
@@ -314,8 +314,8 @@ namespace Rock.Communication.Transport
 
                 if ( hasPendingRecipients )
                 {
-                    var currentPerson = communication.CreatedByPersonAlias.Person;
-                    var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+                    var currentPerson = communication.CreatedByPersonAlias?.Person;
+                    var globalAttributes = Rock.Cache.CacheGlobalAttributes.Get();
                     string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, currentPerson );
                     var cssInliningEnabled = communication.CommunicationTemplate?.CssInliningEnabled ?? false;
@@ -356,9 +356,9 @@ namespace Rock.Communication.Transport
 
                     using ( var smtpClient = GetSmtpClient() )
                     {
-                        var personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
-                        var communicationEntityTypeId = EntityTypeCache.Read( "Rock.Model.Communication" ).Id;
-                        var communicationCategoryId = CategoryCache.Read( Rock.SystemGuid.Category.HISTORY_PERSON_COMMUNICATIONS.AsGuid(), communicationRockContext ).Id;
+                        var personEntityTypeId = CacheEntityType.Get( "Rock.Model.Person" ).Id;
+                        var communicationEntityTypeId = CacheEntityType.Get( "Rock.Model.Communication" ).Id;
+                        var communicationCategoryId = CacheCategory.Get( Rock.SystemGuid.Category.HISTORY_PERSON_COMMUNICATIONS.AsGuid(), communicationRockContext ).Id;
 
                         bool recipientFound = true;
                         while ( recipientFound )
@@ -473,11 +473,12 @@ namespace Rock.Communication.Transport
                                         message.Attachments.Clear();
                                         foreach ( var binaryFile in communication.GetAttachments( CommunicationType.Email ).Select( a => a.BinaryFile ) )
                                         {
-                                            message.Attachments.Add( new Attachment( binaryFile.ContentStream, binaryFile.FileName ) );
+                                            message.Attachments.Add( new Attachment( binaryFile.ContentStream, binaryFile.FileName, binaryFile.MimeType ) );
                                         }
 
                                         smtpClient.Send( message );
                                         recipient.Status = CommunicationRecipientStatus.Delivered;
+                                        recipient.SendDateTime = RockDateTime.Now;
 
                                         string statusNote = StatusNote;
                                         if ( !string.IsNullOrWhiteSpace( statusNote ) )
@@ -512,7 +513,7 @@ namespace Rock.Communication.Transport
                                     {
                                         ExceptionLogService.LogException( ex );
                                         recipient.Status = CommunicationRecipientStatus.Failed;
-                                        recipient.StatusNote = "Exception: " + ex.Message;
+                                        recipient.StatusNote = "Exception: " + ex.Messages().AsDelimited( " => " );
                                     }
                                 }
 
@@ -539,11 +540,27 @@ namespace Rock.Communication.Transport
             bool valid = base.ValidRecipient( recipient, isBulkCommunication );
             if ( valid )
             {
-                if ( string.IsNullOrWhiteSpace( recipient?.PersonAlias?.Person?.Email ) )
+                var person = recipient?.PersonAlias?.Person;
+                if ( person != null )
                 {
-                    recipient.Status = CommunicationRecipientStatus.Failed;
-                    recipient.StatusNote = "No Email Address";
-                    valid = false;
+                    if ( string.IsNullOrWhiteSpace( person.Email ) )
+                    {
+                        recipient.Status = CommunicationRecipientStatus.Failed;
+                        recipient.StatusNote = "No Email Address";
+                        valid = false;
+                    }
+                    else if ( person.EmailPreference == Model.EmailPreference.DoNotEmail )
+                    {
+                        recipient.Status = CommunicationRecipientStatus.Failed;
+                        recipient.StatusNote = "Communication Preference of 'Do Not Send Communication'";
+                        valid = false;
+                    }
+                    else if ( person.EmailPreference == Model.EmailPreference.NoMassEmails && isBulkCommunication )
+                    {
+                        recipient.Status = CommunicationRecipientStatus.Failed;
+                        recipient.StatusNote = "Communication Preference of 'No Bulk Communication'";
+                        valid = false;
+                    }
                 }
             }
 
@@ -594,7 +611,7 @@ namespace Rock.Communication.Transport
         /// </summary>
         /// <param name="message">The message.</param>
         /// <param name="globalAttributes">The global attributes.</param>
-        private void CheckSafeSender( MailMessage message, GlobalAttributesCache globalAttributes )
+        private void CheckSafeSender( MailMessage message, CacheGlobalAttributes globalAttributes )
         {
             if ( message != null && message.From != null )
             {
@@ -602,7 +619,7 @@ namespace Rock.Communication.Transport
                 string fromName = message.From.DisplayName;
 
                 // Get the safe sender domains
-                var safeDomainValues = DefinedTypeCache.Read( SystemGuid.DefinedType.COMMUNICATION_SAFE_SENDER_DOMAINS.AsGuid() ).DefinedValues;
+                var safeDomainValues = CacheDefinedType.Get( SystemGuid.DefinedType.COMMUNICATION_SAFE_SENDER_DOMAINS.AsGuid() ).DefinedValues;
                 var safeDomains = safeDomainValues.Select( v => v.Value ).ToList();
 
                 // Check to make sure the From email domain is a safe sender
@@ -668,7 +685,7 @@ namespace Rock.Communication.Transport
         [Obsolete( "Use Send( Communication communication, Dictionary<string, string> mediumAttributes ) instead" )]
         public override void Send( Rock.Model.Communication communication )
         {
-            int mediumEntityId = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() )?.Id ?? 0;
+            int mediumEntityId = CacheEntityType.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() )?.Id ?? 0;
             Send( communication, mediumEntityId, null );
         }
 
@@ -710,7 +727,7 @@ namespace Rock.Communication.Transport
             message.CreateCommunicationRecord = createCommunicationHistory;
 
             var errorMessages = new List<string>();
-            int mediumEntityId = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() )?.Id ?? 0;
+            int mediumEntityId = CacheEntityType.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() )?.Id ?? 0;
             Send( message, mediumEntityId, null, out errorMessages );
         }
 
@@ -765,7 +782,7 @@ namespace Rock.Communication.Transport
             message.MessageMetaData = metaData;
 
             var errorMessages = new List<string>();
-            int mediumEntityId = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() )?.Id ?? 0;
+            int mediumEntityId = CacheEntityType.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() )?.Id ?? 0;
             Send( message, mediumEntityId, null, out errorMessages );
         }
 
@@ -851,7 +868,7 @@ namespace Rock.Communication.Transport
             }
 
             var errorMessages = new List<string>();
-            int mediumEntityId = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() )?.Id ?? 0;
+            int mediumEntityId = CacheEntityType.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() )?.Id ?? 0;
             Send( message, mediumEntityId, null, out errorMessages );
         }
 

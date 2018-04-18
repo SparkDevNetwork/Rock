@@ -27,7 +27,7 @@ using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace RockWeb.Blocks.CheckIn
 {
@@ -197,13 +197,6 @@ namespace RockWeb.Blocks.CheckIn
                                 p.SetAttributeValue( "AbilityLevel", selectedAbilityLevelGuid.ToUpperInvariant() );
                                 p.SaveAttributeValues( rockContext );
                                 person.Person.LoadAttributes( rockContext );
-
-                                // Record the changes to the person's history
-                                var oldValue = Rock.Web.Cache.DefinedValueCache.Read( _personAbilityLevelGuid );
-                                var newValue = Rock.Web.Cache.DefinedValueCache.Read( selectedAbilityLevelGuid );
-                                var abilityLevelChanges = new List<string>();
-                                History.EvaluateChange( abilityLevelChanges, "Ability Level", oldValue != null ? oldValue.Value : string.Empty, newValue != null ? newValue.Value : string.Empty );
-                                HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),person.Person.Id, abilityLevelChanges, true, person.Person.PrimaryAliasId );
                             }
                         }
                     }
@@ -250,7 +243,7 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
         protected void rSelection_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
-            var dvalue = e.Item.DataItem as CachedModel<DefinedValue>;
+            var dvalue = e.Item.DataItem as CacheDefinedValue;
             var guid = dvalue.Guid.ToString().ToUpper();
 
             // Once we've hit the person's ability level -OR- if their level is not yet set, 
@@ -319,7 +312,7 @@ namespace RockWeb.Blocks.CheckIn
                         person.Person.LoadAttributes();
                         _personAbilityLevelGuid = person.Person.GetAttributeValue( "AbilityLevel" ).ToUpper();
 
-                        var abilityLevelDType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_ABILITY_LEVEL_TYPE.AsGuid() );
+                        var abilityLevelDType = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_ABILITY_LEVEL_TYPE.AsGuid() );
                         if ( abilityLevelDType != null )
                         {
                             rSelection.DataSource = abilityLevelDType.DefinedValues.ToList();
@@ -359,7 +352,7 @@ namespace RockWeb.Blocks.CheckIn
                         person.Person.LoadAttributes();
                         _personAbilityLevelGuid = person.Person.GetAttributeValue( "AbilityLevel" ).ToUpper();
 
-                        var abilityLevelDType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_ABILITY_LEVEL_TYPE.AsGuid() );
+                        var abilityLevelDType = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_ABILITY_LEVEL_TYPE.AsGuid() );
                         if ( abilityLevelDType != null )
                         {
                             rSelection.DataSource = abilityLevelDType.DefinedValues.ToList();

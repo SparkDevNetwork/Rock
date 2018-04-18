@@ -30,6 +30,7 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
+    [Obsolete( "Use Rock.Cache.CacheRestController instead" )]
     public class RestControllerCache : CachedModel<RestController>
     {
         #region Constructors
@@ -172,11 +173,14 @@ namespace Rock.Web.Cache
 
         private static RestControllerCache LoadById2( int id, RockContext rockContext )
         {
-            var RestControllerService = new RestControllerService( rockContext );
-            var RestControllerModel = RestControllerService.Get( id );
-            if ( RestControllerModel != null )
+            if ( id > 0 )
             {
-                return new RestControllerCache( RestControllerModel );
+                var RestControllerService = new RestControllerService( rockContext );
+                var RestControllerModel = RestControllerService.Get( id );
+                if ( RestControllerModel != null )
+                {
+                    return new RestControllerCache( RestControllerModel );
+                }
             }
 
             return null;

@@ -23,7 +23,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a list of label files
     /// Stored as BinaryFile's Guid
     /// </summary>
-    public class LabelFieldType : BinaryFileFieldType 
+    public class LabelFieldType : BinaryFileFieldType
     {
 
         #region Configuration

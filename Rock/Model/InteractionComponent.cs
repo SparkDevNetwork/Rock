@@ -87,26 +87,6 @@ namespace Rock.Model
         [Required]
         public int ChannelId { get; set; }
 
-        /// <summary>
-        /// Gets or sets the list lava template.
-        /// Used when rendering the interaction component in a list using lava
-        /// </summary>
-        /// <value>
-        /// The list template.
-        /// </value>
-        [DataMember]
-        public string ListTemplate { get; set; }
-
-        /// <summary>
-        /// Gets or sets the detail lava template.
-        /// Used when rendering the interaction component's details using lava
-        /// </summary>
-        /// <value>
-        /// The detail template.
-        /// </value>
-        [DataMember]
-        public string DetailTemplate { get; set; }
-
         #endregion
 
         #region Virtual Properties
@@ -144,12 +124,12 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public override void PostSaveChanges( Data.DbContext dbContext )
         {
-            Web.Cache.InteractionComponentCache.Flush( this.Id );
+            Cache.CacheInteractionComponent.Remove( this.Id );
 
             if ( this.SaveState == System.Data.Entity.EntityState.Added ||
                 this.SaveState == System.Data.Entity.EntityState.Deleted )
             {
-                var channel = Web.Cache.InteractionChannelCache.Read( this.ChannelId );
+                var channel = Cache.CacheInteractionChannel.Get( this.ChannelId );
                 if ( channel != null )
                 {
                     if ( this.SaveState == System.Data.Entity.EntityState.Added )

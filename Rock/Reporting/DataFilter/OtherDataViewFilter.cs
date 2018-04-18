@@ -24,8 +24,8 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
+using Rock.Cache;
 using Rock.Security;
-using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -37,7 +37,7 @@ namespace Rock.Reporting.DataFilter
     [Description( "Filter entities using another dataview" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Other Data View Filter" )]
-    public class OtherDataViewFilter : DataFilterComponent
+    public class OtherDataViewFilter : DataFilterComponent, IDataFilterWithOverrides
     {
         #region Properties
 
@@ -136,7 +136,7 @@ namespace Rock.Reporting.DataFilter
         /// <returns></returns>
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
-            int entityTypeId = EntityTypeCache.Read( entityType ).Id;
+            int entityTypeId = CacheEntityType.Get( entityType ).Id;
 
             var ddlDataViews = new DataViewPicker();
             ddlDataViews.ID = filterControl.ID + "_0";
@@ -229,6 +229,25 @@ namespace Rock.Reporting.DataFilter
         /// <exception cref="System.Exception">Filter issue(s):  + errorMessages.AsDelimited( ;  )</exception>
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
+            return GetExpressionWithOverrides( entityType, serviceInstance, parameterExpression, null, selection );
+        }
+
+        #endregion
+
+        #region IDataFilterWithOverrides
+
+        /// <summary>
+        /// Gets the expression with overrides.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="serviceInstance">The service instance.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="dataViewFilterOverrides">The data view filter overrides.</param>
+        /// <param name="selection">The selection.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Exception">Filter issue(s): " + errorMessages.AsDelimited( "; " )</exception>
+        public Expression GetExpressionWithOverrides( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, DataViewFilterOverrides dataViewFilterOverrides,  string selection )
+        {
             var dataView = this.GetSelectedDataView( selection );
 
             if ( dataView != null && dataView.DataViewFilter != null )
@@ -239,7 +258,7 @@ namespace Rock.Reporting.DataFilter
                     // TODO: Should probably verify security again on the selected dataview and its filters,
                     // as that could be a moving target.
                     var errorMessages = new List<string>();
-                    Expression expression = dataView.GetExpression( serviceInstance, parameterExpression, out errorMessages );
+                    Expression expression = dataView.GetExpression( serviceInstance, parameterExpression, dataViewFilterOverrides, out errorMessages );
                     if ( errorMessages.Any() )
                     {
                         throw new System.Exception( "Filter issue(s): " + errorMessages.AsDelimited( "; " ) );
@@ -252,7 +271,7 @@ namespace Rock.Reporting.DataFilter
             return null;
         }
 
-        #endregion
+        #endregion IDataFilterWithOverrides
 
         #region Private Methods
 
@@ -266,7 +285,7 @@ namespace Rock.Reporting.DataFilter
         /// </returns>
         private bool IsViewInFilter( int dataViewId, Rock.Model.DataViewFilter filter )
         {
-            if ( filter.EntityTypeId == EntityTypeCache.Read( this.GetType() ).Id )
+            if ( filter.EntityTypeId == CacheEntityType.Get( this.GetType() ).Id )
             {
                 int? filterDataViewId = filter.Selection.AsIntegerOrNull();
                 if ( filterDataViewId.HasValue )

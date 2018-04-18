@@ -26,7 +26,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -100,7 +100,7 @@ namespace RockWeb.Blocks.Fundraising
             var rockContext = new RockContext();
             Group group = null;
             GroupMember groupMember = null;
-            int fundraisingOpportunityTypeId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FUNDRAISINGOPPORTUNITY ).Id;
+            int fundraisingOpportunityTypeId = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FUNDRAISINGOPPORTUNITY ).Id;
 
             pnlView.Visible = true;
             hfGroupId.Value = groupId.ToStringSafe();
@@ -149,7 +149,7 @@ namespace RockWeb.Blocks.Fundraising
 
             groupMembersQuery = groupMembersQuery.Sort( new SortProperty { Property = "Person.LastName, Person.NickName" } );
 
-            var entityTypeIdGroupMember = EntityTypeCache.GetId<Rock.Model.GroupMember>();
+            var entityTypeIdGroupMember = CacheEntityType.GetId<Rock.Model.GroupMember>();
 
             var groupMemberList = groupMembersQuery.ToList().Select( a =>
             {
@@ -171,7 +171,7 @@ namespace RockWeb.Blocks.Fundraising
                 decimal percentageAchieved = 0;
                 if ( individualFundraisingGoal != null )
                 {
-                    percentageAchieved = individualFundraisingGoal == 0 ? 0 : contributionTotal / ( 0.01M * individualFundraisingGoal.Value );
+                    percentageAchieved = individualFundraisingGoal == 0 ? 100 : contributionTotal / ( 0.01M * individualFundraisingGoal.Value );
                 }
 
                 var progressBarWidth = percentageAchieved;
@@ -200,7 +200,7 @@ namespace RockWeb.Blocks.Fundraising
 
             this.GroupIndividualFundraisingGoal = groupMemberList.Sum( a => decimal.Parse( a.IndividualFundraisingGoal ) );
             this.GroupContributionTotal = groupMemberList.Sum( a => decimal.Parse( a.ContributionTotal ) );
-            this.PercentComplete = decimal.Round( this.GroupContributionTotal == 0 ? 0 : this.GroupContributionTotal / ( this.GroupIndividualFundraisingGoal * 0.01M ), 2 );
+            this.PercentComplete = decimal.Round( this.GroupIndividualFundraisingGoal == 0 ? 100 : this.GroupContributionTotal / ( this.GroupIndividualFundraisingGoal * 0.01M ), 2 );
             this.ProgressCssClass = GetProgressCssClass( this.PercentComplete );
 
             rptFundingProgress.DataSource = groupMemberList;

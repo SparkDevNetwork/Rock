@@ -10,7 +10,7 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Attribute;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 
 public class PowerBiAuth : IHttpHandler, IReadOnlySessionState
@@ -43,7 +43,7 @@ public class PowerBiAuth : IHttpHandler, IReadOnlySessionState
                     biAccountValue = new DefinedValue();
                     definedValueService.Add( biAccountValue );
 
-                    var definedTypeId = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.POWERBI_ACCOUNTS.AsGuid() ).Id;
+                    var definedTypeId = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.POWERBI_ACCOUNTS.AsGuid() ).Id;
 
                     // get account info from session
                     string accountName = context.Session["PowerBiAccountName"] != null ? context.Session["PowerBiAccountName"].ToString() : string.Empty;

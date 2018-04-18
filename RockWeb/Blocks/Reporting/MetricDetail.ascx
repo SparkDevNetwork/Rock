@@ -15,7 +15,6 @@
                     <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" />
                     <Rock:HighlightLabel ID="hlScheduleFriendlyText" runat="server" />
                     <Rock:HighlightLabel ID="ltLastRunDateTime" runat="server" />
-                    <Rock:HighlightLabel ID="hlblMetricId" runat="server" />
                 </div>
             </div>
             <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
@@ -107,7 +106,7 @@
                                 <Rock:RockBoundField DataField="Label" HeaderText="Label" SortExpression="Label" />
                                 <Rock:RockBoundField DataField="EntityTypeName" HeaderText="Type" SortExpression="EntityTypeName" />
                                 <Rock:RockBoundField DataField="EntityTypeQualifier" HeaderText="" SortExpression="EntityTypeQualifier" />
-                                <Rock:BoolField DataField="IsRequired" HeaderText="Is Required" SortExpression="IsRequired" />
+                                <Rock:BoolField DataField="IsRequired" HeaderText="Is Required" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center" SortExpression="IsRequired" />
                                 <Rock:DeleteField OnClick="gMetricPartitions_Delete" />
                             </Columns>
                         </Rock:Grid>

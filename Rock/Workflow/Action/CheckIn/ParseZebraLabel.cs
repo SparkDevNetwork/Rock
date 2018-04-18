@@ -25,7 +25,7 @@ using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 
 namespace Rock.Workflow.Action
@@ -86,7 +86,7 @@ namespace Rock.Workflow.Action
                 }
 
                 // Save attribute value
-                var attributeValue = new AttributeValueCache();
+                var attributeValue = new CacheAttributeValue();
                 attributeValue.Value = newMergeFields.AsDelimited( "|" );
 
                 binaryFile.AttributeValues["MergeCodes"] = attributeValue;

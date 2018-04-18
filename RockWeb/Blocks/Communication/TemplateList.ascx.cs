@@ -27,7 +27,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -38,6 +38,8 @@ namespace RockWeb.Blocks.Communication
     [Description( "Lists the available communication templates that can used when creating new communications." )]
 
     [LinkedPage( "Detail Page" )]
+    [BooleanField( "Enable Personal Templates", "Should support for personal templates be enabled? These are templates that a user can create and are personal to them.", false, "", 1 )]
+
     public partial class TemplateList : RockBlock, ICustomGridColumns
     {
         #region fields
@@ -77,7 +79,7 @@ namespace RockWeb.Blocks.Communication
             createdByField.Visible = _canEdit;
 
             SecurityField securityField = gCommunicationTemplates.ColumnsOfType<SecurityField>().FirstOrDefault();
-            securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.CommunicationTemplate ) ).Id;
+            securityField.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.CommunicationTemplate ) ).Id;
 
             // make a custom delete confirmation dialog
             gCommunicationTemplates.ShowConfirmDeleteDialog = false;
@@ -167,7 +169,7 @@ namespace RockWeb.Blocks.Communication
                         int? categoryId = e.Value.AsIntegerOrNull();
                         if ( categoryId.HasValue && categoryId > 0 )
                         {
-                            var category = Rock.Web.Cache.CategoryCache.Read( categoryId.Value );
+                            var category = Rock.Cache.CacheCategory.Get( categoryId.Value );
                             if ( category != null )
                             {
                                 e.Value = category.Name;
@@ -267,6 +269,7 @@ namespace RockWeb.Blocks.Communication
                 }
 
                 template.Name = copyName.Truncate( 100 );
+                template.IsSystem = false;
                 templateCopy.Guid = Guid.NewGuid();
                 service.Add( templateCopy );
                 rockContext.SaveChanges();
@@ -368,6 +371,12 @@ namespace RockWeb.Blocks.Communication
         {
             var rockContext = new RockContext();
             var communicationTemplateQry = new CommunicationTemplateService( rockContext ).Queryable( "CreatedByPersonAlias.Person" );
+
+            var privateCol = gCommunicationTemplates.ColumnsOfType<RockBoundField>().FirstOrDefault(c => c.DataField == "SenderPersonAlias.Person.FullName" );
+            if ( privateCol != null )
+            {
+                privateCol.Visible = GetAttributeValue( "EnablePersonalTemplates" ).AsBoolean();
+            }
 
             if ( _canEdit )
             {

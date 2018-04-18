@@ -27,7 +27,7 @@ using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace RockWeb.Blocks.Communication
 {
@@ -164,7 +164,7 @@ namespace RockWeb.Blocks.Communication
         {
             var rockContext = new RockContext();
 
-            var jobEntityType = EntityTypeCache.Read( typeof( Rock.Model.ServiceJob ) );
+            var jobEntityType = CacheEntityType.Get( typeof( Rock.Model.ServiceJob ) );
 
             int expirationDays = GetJobAttributeValue("ExpirationPeriod", 3, rockContext );
             int delayMins = GetJobAttributeValue( "DelayPeriod", 30, rockContext );
@@ -202,7 +202,7 @@ namespace RockWeb.Blocks.Communication
                 queryable = queryable.OrderByDescending( c => c.SendDateTime );
             }
 
-            gCommunicationQueue.EntityTypeId = EntityTypeCache.Read<Rock.Model.Communication>().Id;
+            gCommunicationQueue.EntityTypeId = CacheEntityType.Get<Rock.Model.Communication>().Id;
             gCommunicationQueue.SetLinqDataSource( queryable );
             gCommunicationQueue.DataBind();
 
@@ -214,7 +214,7 @@ namespace RockWeb.Blocks.Communication
 
         private int GetJobAttributeValue( string key, int defaultValue, RockContext rockContext )
         {
-            var jobEntityType = EntityTypeCache.Read( typeof( Rock.Model.ServiceJob ) );
+            var jobEntityType = CacheEntityType.Get( typeof( Rock.Model.ServiceJob ) );
 
             int intValue = 3;
             var jobExpirationAttribute = new AttributeService( rockContext )

@@ -20,7 +20,7 @@ using System.Web;
 using Rock.Data;
 using Rock.Extension;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Workflow
 {
@@ -62,6 +62,16 @@ namespace Rock.Workflow
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
         public abstract Boolean Execute( RockContext rockContext, WorkflowAction action, Object entity, out List<string> errorMessages );
+
+        /// <summary>
+        /// Loads the attributes.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        [Obsolete("Don't Use this. The ActionTypeCache will already have the attributes loaded automatically")]
+        public void LoadAttributes( WorkflowAction action )
+        {
+            action.ActionType.LoadAttributes();
+        }
 
         /// <summary>
         /// Use GetAttributeValue( WorkflowAction action, string key) instead.  Workflow action attribute values are 
@@ -131,17 +141,17 @@ namespace Rock.Workflow
                 Guid? attributeGuid = value.AsGuidOrNull();
                 if ( attributeGuid.HasValue )
                 {
-                    var attribute = AttributeCache.Read( attributeGuid.Value );
+                    var attribute = CacheAttribute.Get( attributeGuid.Value );
                     if ( attribute != null )
                     {
                         value = action.GetWorklowAttributeValue( attributeGuid.Value );
                         if ( !string.IsNullOrWhiteSpace( value ) )
                         {
-                            if ( attribute.FieldTypeId == FieldTypeCache.Read( SystemGuid.FieldType.ENCRYPTED_TEXT.AsGuid() ).Id )
+                            if ( attribute.FieldTypeId == CacheFieldType.Get( SystemGuid.FieldType.ENCRYPTED_TEXT.AsGuid() ).Id )
                             {
                                 value = Security.Encryption.DecryptString( value );
                             }
-                            else if ( attribute.FieldTypeId == FieldTypeCache.Read( SystemGuid.FieldType.SSN.AsGuid() ).Id )
+                            else if ( attribute.FieldTypeId == CacheFieldType.Get( SystemGuid.FieldType.SSN.AsGuid() ).Id )
                             {
                                 value = Rock.Field.Types.SSNFieldType.UnencryptAndClean( value );
                             }
@@ -197,7 +207,7 @@ namespace Rock.Workflow
         /// <param name="action">The action.</param>
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
-        protected AttributeCache SetWorkflowAttributeValue( WorkflowAction action, string key, int? value )
+        protected CacheAttribute SetWorkflowAttributeValue( WorkflowAction action, string key, int? value )
         {
             return SetWorkflowAttributeValue( action, key, value.ToString() );
         }
@@ -208,7 +218,7 @@ namespace Rock.Workflow
         /// <param name="action">The action.</param>
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
-        protected AttributeCache SetWorkflowAttributeValue( WorkflowAction action, string key, decimal? value )
+        protected CacheAttribute SetWorkflowAttributeValue( WorkflowAction action, string key, decimal? value )
         {
             return SetWorkflowAttributeValue( action, key, value.ToString() );
         }
@@ -219,7 +229,7 @@ namespace Rock.Workflow
         /// <param name="action">The action.</param>
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
-        protected AttributeCache SetWorkflowAttributeValue( WorkflowAction action, string key, Guid? value )
+        protected CacheAttribute SetWorkflowAttributeValue( WorkflowAction action, string key, Guid? value )
         {
             return SetWorkflowAttributeValue( action, key, value.ToString() );
         }
@@ -230,7 +240,7 @@ namespace Rock.Workflow
         /// <param name="action">The action.</param>
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
-        protected AttributeCache SetWorkflowAttributeValue( WorkflowAction action, string key, string value )
+        protected CacheAttribute SetWorkflowAttributeValue( WorkflowAction action, string key, string value )
         {
             Guid? attrGuid = GetAttributeValue( action, key ).AsGuidOrNull();
             if ( attrGuid.HasValue )
@@ -246,9 +256,9 @@ namespace Rock.Workflow
         /// <param name="action">The action.</param>
         /// <param name="guid">The unique identifier.</param>
         /// <param name="value">The value.</param>
-        protected AttributeCache SetWorkflowAttributeValue( WorkflowAction action, Guid guid, string value )
+        protected CacheAttribute SetWorkflowAttributeValue( WorkflowAction action, Guid guid, string value )
         {
-            var attr = AttributeCache.Read( guid );
+            var attr = CacheAttribute.Get( guid );
             if ( attr != null )
             {
                 if ( attr.EntityTypeId == new Rock.Model.Workflow().TypeId )

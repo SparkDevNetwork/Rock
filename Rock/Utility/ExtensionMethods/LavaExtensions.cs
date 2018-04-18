@@ -27,7 +27,7 @@ using DotLiquid;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock
 {
@@ -78,7 +78,7 @@ namespace Rock
                 var globalAttributes = new Dictionary<string, object>();
 
                 // Lava Help Text does special stuff for GlobalAttribute, but it still needs the list of possible Global Attribute MergeFields to generate the help text
-                globalAttributes.Add( "GlobalAttribute", GlobalAttributesCache.GetLegacyMergeFields( null ) );
+                globalAttributes.Add( "GlobalAttribute", CacheGlobalAttributes.GetLegacyMergeFields( null ) );
                 lavaDebugPanel.Append( formatLavaDebugInfo( globalAttributes.LiquidizeChildren( 0, rockContext ) ) );
             }
 
@@ -142,7 +142,7 @@ namespace Rock
             if ( myObject is IEntity )
             {
                 var entity = myObject as IEntity;
-                var entityTypeCache = EntityTypeCache.Read( entityType, false, rockContext );
+                var entityTypeCache = CacheEntityType.Get( entityType, false, rockContext );
                 if ( entity != null && entityTypeCache != null )
                 {
                     if ( entityHistory == null )
@@ -165,13 +165,11 @@ namespace Rock
             if ( myObject is Drop )
             {
                 var result = new Dictionary<string, object>();
+                Type baseDrop = typeof( DropBase );
 
-                foreach ( var propInfo in entityType.GetProperties(
-                          BindingFlags.Public |
-                          BindingFlags.Instance |
-                          BindingFlags.DeclaredOnly ) )
+                foreach ( var propInfo in entityType.GetProperties( BindingFlags.Public | BindingFlags.Instance ) )
                 {
-                    if ( propInfo != null )
+                    if ( propInfo != null && propInfo.DeclaringType != baseDrop )
                     {
                         try
                         {
@@ -233,7 +231,8 @@ namespace Rock
                         try
                         {
                             object propValue = null;
-                            var propType = entityType.GetPropertyType( key );
+
+                            var propType = entityType.GetProperty( key )?.PropertyType;
                             if ( propType?.Name == "ICollection`1" )
                             {
                                 // if the property type is an ICollection, get the underlying query and just fetch one for an example (just in case there are 1000s of records)
@@ -241,28 +240,41 @@ namespace Rock
                                 if ( entityDbContext != null )
                                 {
                                     var entryCollection = entityDbContext.Entry( myObject )?.Collection( key );
-                                    if ( entryCollection.IsLoaded )
+                                    if ( entryCollection.EntityEntry.State == System.Data.Entity.EntityState.Detached )
                                     {
-                                        propValue = liquidObject[key];
+                                        // create a sample since we can't fetch real data
+                                        Type listOfType = propType.GenericTypeArguments[0];
+                                        var sampleListType = typeof( List<> ).MakeGenericType( listOfType );
+                                        var sampleList = Activator.CreateInstance(sampleListType) as IList;
+                                        var sampleItem = Activator.CreateInstance( listOfType );
+                                        sampleList.Add( sampleItem );
+                                        propValue = sampleList;
                                     }
                                     else
                                     {
-                                        try
+                                        if ( entryCollection.IsLoaded )
                                         {
-                                            var propQry = entryCollection.Query().Provider.CreateQuery<Rock.Data.IEntity>( entryCollection.Query().Expression );
-                                            int propCollectionCount = propQry.Count();
-                                            List<object> listSample = propQry.Take( 1 ).ToList().Cast<object>().ToList();
-                                            if ( propCollectionCount > 1 )
-                                            {
-                                                listSample.Add( $"({propCollectionCount - 1} more...)" );
-                                            }
-
-                                            propValue = listSample;
-                                        }
-                                        catch
-                                        {
-                                            // The Collection might be a database model that isn't an IEntity, so just do it the regular way
                                             propValue = liquidObject[key];
+                                        }
+                                        else
+                                        {
+                                            try
+                                            {
+                                                var propQry = entryCollection.Query().Provider.CreateQuery<Rock.Data.IEntity>( entryCollection.Query().Expression );
+                                                int propCollectionCount = propQry.Count();
+                                                List<object> listSample = propQry.Take( 1 ).ToList().Cast<object>().ToList();
+                                                if ( propCollectionCount > 1 )
+                                                {
+                                                    listSample.Add( $"({propCollectionCount - 1} more...)" );
+                                                }
+
+                                                propValue = listSample;
+                                            }
+                                            catch
+                                            {
+                                                // The Collection might be a database model that isn't an IEntity, so just do it the regular way
+                                                propValue = liquidObject[key];
+                                            }
                                         }
                                     }
                                 }
@@ -289,9 +301,9 @@ namespace Rock
                 }
 
                 // Add the attributes if this object has attributes
-                if ( liquidObject is Rock.Attribute.IHasAttributes )
+                if ( liquidObject is IHasAttributes )
                 {
-                    var objWithAttrs = (Rock.Attribute.IHasAttributes)liquidObject;
+                    var objWithAttrs = (IHasAttributes)liquidObject;
                     if ( objWithAttrs.Attributes == null )
                     {
                         rockContext = rockContext ?? new RockContext();
@@ -529,7 +541,7 @@ namespace Rock
         /// <returns></returns>
         public static string ResolveMergeFields( this string content, IDictionary<string, object> mergeObjects, Person currentPersonOverride )
         {
-            var enabledCommands = GlobalAttributesCache.Read().GetValue( "DefaultEnabledLavaCommands" );
+            var enabledCommands = CacheGlobalAttributes.Get().GetValue( "DefaultEnabledLavaCommands" );
             return content.ResolveMergeFields( mergeObjects, currentPersonOverride, enabledCommands );
         }
 
@@ -548,6 +560,12 @@ namespace Rock
                 if ( !content.HasMergeFields() )
                 {
                     return content ?? string.Empty;
+                }
+
+                // If there have not been any EnabledLavaCommands explicitely set, then use the global defaults.
+                if ( enabledLavaCommands == null )
+                {
+                    enabledLavaCommands = CacheGlobalAttributes.Value( "DefaultEnabledLavaCommands" );
                 }
 
                 Template template = GetTemplate( content );
@@ -591,7 +609,7 @@ namespace Rock
         /// <returns></returns>
         public static string ResolveMergeFields( this string content, IDictionary<string, object> mergeObjects, bool encodeStrings = false, bool throwExceptionOnErrors = false )
         {
-            var enabledCommands = GlobalAttributesCache.Read().GetValue( "DefaultEnabledLavaCommands" );
+            var enabledCommands = CacheGlobalAttributes.Get().GetValue( "DefaultEnabledLavaCommands" );
             return content.ResolveMergeFields( mergeObjects, enabledCommands, encodeStrings, throwExceptionOnErrors );
         }
 
@@ -613,7 +631,7 @@ namespace Rock
                     return content ?? string.Empty;
                 }
 
-                if ( GlobalAttributesCache.Read().LavaSupportLevel == Lava.LavaSupportLevel.LegacyWithWarning && mergeObjects.ContainsKey( "GlobalAttribute" ) )
+                if ( CacheGlobalAttributes.Get().LavaSupportLevel == Lava.LavaSupportLevel.LegacyWithWarning && mergeObjects.ContainsKey( "GlobalAttribute" ) )
                 {
                     if ( hasLegacyGlobalAttributeLavaMergeFields.IsMatch( content ) )
                     {
@@ -681,7 +699,7 @@ namespace Rock
             }
 
             // Get template from cache
-            var template = LavaTemplateCache.Read( content ).Template;
+            var template = CacheLavaTemplate.Get( content ).Template;
 
             // Clear any previous errors
             template.Errors.Clear();

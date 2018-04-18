@@ -15,7 +15,7 @@
 // </copyright>
 //
 using System;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Web.UI
 {
@@ -24,7 +24,7 @@ namespace Rock.Web.UI
     /// included in the attribute, a block property will automatically be added for user to set 
     /// the entity type when block is placed on a page
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class)]
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
     public class ContextAwareAttribute : System.Attribute
     {
         /// <summary>
@@ -33,7 +33,7 @@ namespace Rock.Web.UI
         /// <value>
         /// The type of the entity.
         /// </value>
-        public EntityTypeCache EntityType { get; set; }
+        public CacheEntityType EntityType { get; set; }
         
         /// <summary>
         /// Gets the default name of the parameter.
@@ -65,7 +65,7 @@ namespace Rock.Web.UI
         /// <param name="entityType">Type of the entity.</param>
         public ContextAwareAttribute( Type entityType )
         {
-            EntityType = EntityTypeCache.Read( entityType );
+            EntityType = CacheEntityType.Get( entityType );
             DefaultParameterName = entityType.Name + "Id";
         }
     }

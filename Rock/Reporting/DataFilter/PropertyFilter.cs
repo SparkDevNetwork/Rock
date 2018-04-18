@@ -26,7 +26,7 @@ using Newtonsoft.Json;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter
@@ -88,7 +88,7 @@ namespace Rock.Reporting.DataFilter
         /// <returns></returns>
         public override string GetTitle( Type entityType )
         {
-            return EntityTypeCache.Read( entityType ).FriendlyName + " Fields";
+            return CacheEntityType.Get( entityType ).FriendlyName + " Fields";
         }
 
         /// <summary>
@@ -145,6 +145,44 @@ namespace Rock.Reporting.DataFilter
         }
 
         /// <summary>
+        /// Gets the selection label.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="selection">The selection.</param>
+        /// <returns></returns>
+        public string GetSelectionLabel( Type entityType, string selection )
+        {
+            List<string> values;
+
+            // First value is the field id (property of attribute), remaining values are the field type's filter values
+            try
+            {
+                values = JsonConvert.DeserializeObject<List<string>>( selection );
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex, null );
+                return "Error";
+            }
+
+            if ( values.Count >= 1 )
+            {
+                // First value in array is always the name of the entity field being filtered
+                string fieldSelection = values[0];
+
+                var entityFields = EntityHelper.GetEntityFields( entityType );
+
+                var entityField = entityFields.FindFromFilterSelection( fieldSelection );
+                if ( entityField != null )
+                {
+                    return entityField.TitleWithoutQualifier;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Creates the child controls.
         /// </summary>
         /// <returns></returns>
@@ -164,7 +202,7 @@ namespace Rock.Reporting.DataFilter
             // add Empty option first
             ddlEntityField.Items.Add( new ListItem() );
             var rockBlock = filterControl.RockBlock();
-            var entityTypeCache = EntityTypeCache.Read( entityType, true );
+            var entityTypeCache = CacheEntityType.Get( entityType, true );
 
             this.entityFields = EntityHelper.GetEntityFields( entityType );
             foreach ( var entityField in this.entityFields.OrderBy(a => !a.IsPreviewable).ThenBy(a => a.FieldKind != FieldKind.Property ).ThenBy(a => a.Title) )
@@ -179,7 +217,7 @@ namespace Rock.Reporting.DataFilter
                         includeField = false;
                     }
                     
-                    var attribute = AttributeCache.Read( entityField.AttributeGuid.Value );
+                    var attribute = CacheAttribute.Get( entityField.AttributeGuid.Value );
                     if ( includeField && attribute != null && rockBlock != null )
                     {
                         // only show the Attribute field in the drop down if they have VIEW Auth to it

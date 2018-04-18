@@ -25,7 +25,7 @@ using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Workflow.Action.CheckIn
 {
@@ -60,9 +60,9 @@ namespace Rock.Workflow.Action.CheckIn
                     var memberService = new GroupMemberService( rockContext );
                     var groupService = new GroupService( rockContext );
 
-                    int personRecordTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
-                    int familyGroupTypeId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() ).Id;
-                    var dvInactive = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
+                    int personRecordTypeId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                    int familyGroupTypeId = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() ).Id;
+                    var dvInactive = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
 
                     IQueryable<int> familyIdQry = null;
 
@@ -115,7 +115,7 @@ namespace Rock.Workflow.Action.CheckIn
                             var entityIds = new List<int>();
 
                             var attributeValueService = new AttributeValueService( rockContext );
-                            var attr = AttributeCache.Read( SystemGuid.Attribute.FAMILY_CHECKIN_IDENTIFIERS.AsGuid() );
+                            var attr = CacheAttribute.Get( SystemGuid.Attribute.FAMILY_CHECKIN_IDENTIFIERS.AsGuid() );
                             if ( attr != null )
                             {
                                 entityIds = new AttributeValueService( rockContext )

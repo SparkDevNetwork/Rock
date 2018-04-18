@@ -27,7 +27,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Communication;
 
 namespace Rock.Jobs
@@ -148,7 +148,7 @@ namespace Rock.Jobs
                         // get list of leaders
                         var groupLeaders = group.Members.Where( m => m.GroupRole.IsLeader == true );
 
-                        var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "PublicApplicationRoot" );
+                        var appRoot = CacheGlobalAttributes.Get().GetValue( "PublicApplicationRoot", rockContext );
 
                         var recipients = new List<RecipientData>();
                         foreach ( var leader in groupLeaders.Where( l => l.Person != null && l.Person.Email != "" ) )

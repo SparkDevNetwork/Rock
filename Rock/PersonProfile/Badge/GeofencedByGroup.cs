@@ -22,7 +22,7 @@ using System.Linq;
 using Rock;
 using Rock.Attribute;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.PersonProfile.Badge
@@ -43,7 +43,7 @@ namespace Rock.PersonProfile.Badge
         /// </summary>
         /// <param name="badge">The badge.</param>
         /// <param name="writer">The writer.</param>
-        public override void Render( PersonBadgeCache badge, System.Web.UI.HtmlTextWriter writer )
+        public override void Render( CachePersonBadge badge, System.Web.UI.HtmlTextWriter writer )
         {
             Guid? groupTypeGuid = GetAttributeValue( badge, "GroupType" ).AsGuid();
             string badgeColor = GetAttributeValue( badge, "BadgeColor" );

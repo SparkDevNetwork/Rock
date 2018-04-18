@@ -132,9 +132,9 @@
 
                 <fieldset id="fieldsetViewDetails" runat="server">
 
-                    <p class="description">
+                    <div class="description">
                         <asp:Literal ID="lWorkflowTypeDescription" runat="server" EnableViewState="false"></asp:Literal>
-                    </p>
+                    </div>
 
                     <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" EnableViewState="false" />
 
@@ -172,13 +172,13 @@
 
         <asp:HiddenField ID="hfActiveDialog" runat="server" />
 
-        <Rock:ModalDialog ID="dlgAttribute" runat="server" Title="Workflow Attributes" OnSaveClick="dlgAttribute_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Attributes">
+        <Rock:ModalDialog ID="dlgAttribute" runat="server" Title="Workflow Attributes" OnSaveClick="dlgAttribute_SaveClick"  OnSaveThenAddClick="dlgAttribute_SaveThenAddClick"  OnCancelScript="clearActiveDialog();" ValidationGroup="Attributes">
             <Content>
                 <Rock:AttributeEditor ID="edtAttributes" runat="server" ShowActions="false" ValidationGroup="Attributes" />
             </Content>
         </Rock:ModalDialog>
 
-        <Rock:ModalDialog ID="dlgActivityAttribute" runat="server" Title="Activity Attributes" OnSaveClick="dlgActivityAttribute_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="ActivityAttributes">
+        <Rock:ModalDialog ID="dlgActivityAttribute" runat="server" Title="Activity Attributes" OnSaveClick="dlgActivityAttribute_SaveClick" OnSaveThenAddClick="dlgActivityAttribute_SaveThenAddClick" OnCancelScript="clearActiveDialog();" ValidationGroup="ActivityAttributes">
             <Content>
                 <asp:HiddenField ID="hfActivityTypeGuid" runat="server" />
                 <Rock:AttributeEditor ID="edtActivityAttributes" runat="server" ShowActions="false" ValidationGroup="ActivityAttributes" />

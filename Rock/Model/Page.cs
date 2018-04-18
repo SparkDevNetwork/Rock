@@ -224,7 +224,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
-        public bool MenuDisplayChildPages { get; set; }
+        public bool MenuDisplayChildPages { get; set; } = true;
 
         /// <summary>
         /// Gets or sets a value indicating whether the Page Name is displayed in the breadcrumb.
@@ -396,7 +396,7 @@ namespace Rock.Model
         {
             get
             {
-                var layout = Web.Cache.LayoutCache.Read( this.LayoutId );
+                var layout = Cache.CacheLayout.Get( this.LayoutId );
                 return layout != null ? layout.SiteId : 0;
             }
         }

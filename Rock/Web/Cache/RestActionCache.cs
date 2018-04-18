@@ -32,6 +32,7 @@ namespace Rock.Web.Cache
     /// </summary>
     [Serializable]
     [DataContract]
+    [Obsolete( "Use Rock.Cache.CacheRestAction instead" )]
     public class RestActionCache : CachedModel<RestAction>
     {
         #region Constructors
@@ -182,11 +183,14 @@ namespace Rock.Web.Cache
 
         private static RestActionCache LoadById2( int id, RockContext rockContext )
         {
-            var restActionService = new RestActionService( rockContext );
-            var restActionModel = restActionService.Get( id );
-            if ( restActionModel != null )
+            if ( id > 0 )
             {
-                return new RestActionCache( restActionModel );
+                var restActionService = new RestActionService( rockContext );
+                var restActionModel = restActionService.Get( id );
+                if ( restActionModel != null )
+                {
+                    return new RestActionCache( restActionModel );
+                }
             }
 
             return null;

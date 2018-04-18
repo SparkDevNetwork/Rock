@@ -6,7 +6,7 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
         
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-paint-brush"></i> Theme Editor</h1>
+                <h1 class="panel-title"><i class="fa fa-paint-brush"></i> <asp:Literal ID="lThemeName" runat="server" /></h1>
             </div>
             <div class="panel-body">
 
@@ -24,6 +24,12 @@
                                 <asp:LinkButton ID="btnBack" runat="server" CssClass="btn btn-link" Text="Cancel" OnClick="btnCancel_Click"  />
                             </div>
                         </div>
+                        
+                        <asp:Panel ID="pnlFontAwesomeSettings" runat="server">
+                            <Rock:RockDropDownList ID="ddlFontAwesomeIconWeight" runat="server" Label="Font Awesome Icon Weight" AutoPostBack="true" OnSelectedIndexChanged="ddlFontAwesomeIconWeight_SelectedIndexChanged" />
+                            <Rock:RockCheckBoxList ID="cblFontAwesomeAlternateFonts" runat="server" Label="Font Awesome Alternate Fonts" Help="It allows you to also load those fonts to. So if you want to use 'fas fa-cog' and 'far fa-cog' and 'fal fa-cog' all on the same theme you could." />
+                        </asp:Panel>
+
                         <Rock:CodeEditor ID="ceOverrides" runat="server" Label="CSS Overrides" EditorHeight="600"  />
                     </div>
                 </div>

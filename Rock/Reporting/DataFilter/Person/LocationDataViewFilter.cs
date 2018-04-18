@@ -26,7 +26,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
 
@@ -200,7 +200,7 @@ function() {
 
                 if (settings.LocationTypeGuid.HasValue)
                 {
-                    locationTypeName = DefinedValueCache.Read( settings.LocationTypeGuid.Value, context ).Value;
+                    locationTypeName = CacheDefinedValue.Get( settings.LocationTypeGuid.Value, context ).Value;
                 }
 
                 result = string.Format( "Location {0} is in filter: {1}",
@@ -236,7 +236,7 @@ function() {
             ddlLocationType.Label = "Address Type";
             ddlLocationType.Help = "Specifies the type of Address the filter will be applied to. If no value is selected, all of the Person's Addresses will be considered.";
 
-            var familyLocations = GroupTypeCache.GetFamilyGroupType().LocationTypeValues.OrderBy( a => a.Order ).ThenBy( a => a.Value );
+            var familyLocations = CacheGroupType.GetFamilyGroupType().LocationTypeValues.OrderBy( a => a.Order ).ThenBy( a => a.Value );
 
             foreach (var value in familyLocations)
             {
@@ -248,7 +248,7 @@ function() {
             parentControl.Controls.Add( ddlLocationType );
 
             // Populate the Data View Picker
-            int entityTypeId = EntityTypeCache.Read( typeof(Location) ).Id;
+            int entityTypeId = CacheEntityType.Get( typeof(Location) ).Id;
             ddlDataView.EntityTypeId = entityTypeId;
 
             return new Control[] {ddlDataView, ddlLocationType};
@@ -330,7 +330,7 @@ function() {
             }
 
             // Get all the Family Groups that have a Location matching one of the candidate Locations.
-            int familyGroupTypeId = GroupTypeCache.Read( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() ).Id;
+            int familyGroupTypeId = CacheGroupType.Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() ).Id;
 
             var groupLocationsQuery = new GroupLocationService( context ).Queryable()
                                                                          .Where( gl => gl.Group.GroupTypeId == familyGroupTypeId && locationQuery.Any( l => l.Id == gl.LocationId ) );
@@ -338,7 +338,7 @@ function() {
             // If a Location Type is specified, apply the filter condition.
             if (settings.LocationTypeGuid.HasValue)
             {
-                int groupLocationTypeId = DefinedValueCache.Read( settings.LocationTypeGuid.Value ).Id;
+                int groupLocationTypeId = CacheDefinedValue.Get( settings.LocationTypeGuid.Value ).Id;
 
                 groupLocationsQuery = groupLocationsQuery.Where( x => x.GroupLocationTypeValue.Id == groupLocationTypeId );
             }

@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -36,7 +36,7 @@ using Rock.Field.Types;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -117,10 +117,9 @@ namespace RockWeb.Blocks.Groups
 
     public partial class GroupFinder : RockBlockCustomSettings
     {
-
         #region Private Variables
         private Guid _targetPersonGuid = Guid.Empty;
-        Dictionary<string, string> _urlParms = new Dictionary<string, string>();
+        private Dictionary<string, string> _urlParms = new Dictionary<string, string>();
         #endregion
 
         #region Properties
@@ -145,7 +144,7 @@ namespace RockWeb.Blocks.Groups
         /// <value>
         /// The attribute filters.
         /// </value>
-        public List<AttributeCache> AttributeFilters { get; set; }
+        public List<CacheAttribute> AttributeFilters { get; set; }
 
         /// <summary>
         /// Gets or sets the _ attribute columns.
@@ -153,7 +152,7 @@ namespace RockWeb.Blocks.Groups
         /// <value>
         /// The _ attribute columns.
         /// </value>
-        public List<AttributeCache> AttributeColumns { get; set; }
+        public List<CacheAttribute> AttributeColumns { get; set; }
 
         #endregion
 
@@ -167,11 +166,10 @@ namespace RockWeb.Blocks.Groups
         {
             base.LoadViewState( savedState );
 
-            AttributeFilters = ViewState["AttributeFilters"] as List<AttributeCache>;
-            AttributeColumns = ViewState["AttributeColumns"] as List<AttributeCache>;
+            AttributeFilters = ViewState["AttributeFilters"] as List<CacheAttribute>;
+            AttributeColumns = ViewState["AttributeColumns"] as List<CacheAttribute>;
 
             BuildDynamicControls();
-
         }
 
         /// <summary>
@@ -217,7 +215,7 @@ namespace RockWeb.Blocks.Groups
 
                 if ( GetAttributeValue( "EnableCampusContext" ).AsBoolean() )
                 {
-                    var campusEntityType = EntityTypeCache.Read( "Rock.Model.Campus" );
+                    var campusEntityType = CacheEntityType.Get( "Rock.Model.Campus" );
                     var contextCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
 
                     if ( contextCampus != null )
@@ -260,7 +258,7 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        void Block_Updated( object sender, EventArgs e )
+        protected void Block_Updated( object sender, EventArgs e )
         {
             ShowView();
         }
@@ -294,9 +292,10 @@ namespace RockWeb.Blocks.Groups
             if ( rblFilterDOW.Visible )
             {
                 schFilters.Add( rblFilterDOW.SelectedValue );
-                schFilters.Add( cbFilterTimeOfDay.Checked ? "Time" : "" );
+                schFilters.Add( cbFilterTimeOfDay.Checked ? "Time" : string.Empty );
             }
-            SetAttributeValue( "ScheduleFilters", schFilters.Where( f => f != "" ).ToList().AsDelimited( "," ) );
+
+            SetAttributeValue( "ScheduleFilters", schFilters.Where( f => f != string.Empty ).ToList().AsDelimited( "," ) );
 
             SetAttributeValue( "DisplayCampusFilter", cbFilterCampus.Checked.ToString() );
             SetAttributeValue( "EnableCampusContext", cbCampusContext.Checked.ToString() );
@@ -382,7 +381,7 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
-        void registerColumn_Click( object sender, RowEventArgs e )
+        protected void registerColumn_Click( object sender, RowEventArgs e )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -407,11 +406,10 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        void gGroups_GridRebind( object sender, EventArgs e )
+        protected void gGroups_GridRebind( object sender, EventArgs e )
         {
             ShowResults();
         }
-
 
         #endregion
 
@@ -442,6 +440,7 @@ namespace RockWeb.Blocks.Groups
             {
                 rblFilterDOW.SetValue( "Days" );
             }
+
             cbFilterTimeOfDay.Checked = scheduleFilters.Contains( "Time" );
 
             SetGroupTypeOptions();
@@ -458,7 +457,7 @@ namespace RockWeb.Blocks.Groups
             cbCampusContext.Checked = GetAttributeValue( "EnableCampusContext" ).AsBoolean();
 
             cbShowMap.Checked = GetAttributeValue( "ShowMap" ).AsBoolean();
-            ddlMapStyle.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.MAP_STYLES.AsGuid() ) );
+            ddlMapStyle.BindToDefinedType( CacheDefinedType.Get( Rock.SystemGuid.DefinedType.MAP_STYLES.AsGuid() ) );
             ddlMapStyle.SetValue( GetAttributeValue( "MapStyle" ) );
             nbMapHeight.Text = GetAttributeValue( "MapHeight" );
             cbShowFence.Checked = GetAttributeValue( "ShowFence" ).AsBoolean();
@@ -485,6 +484,7 @@ namespace RockWeb.Blocks.Groups
                     li.Selected = true;
                 }
             }
+
             var ppFieldType = new PageReferenceFieldType();
             ppFieldType.SetEditValue( ppGroupDetailPage, null, GetAttributeValue( "GroupDetailPage" ) );
             ppFieldType.SetEditValue( ppRegisterPage, null, GetAttributeValue( "RegisterPage" ) );
@@ -506,7 +506,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( gtpGroupType.SelectedGroupTypeId.HasValue )
             {
-                var groupType = GroupTypeCache.Read( gtpGroupType.SelectedGroupTypeId.Value );
+                var groupType = CacheGroupType.Get( gtpGroupType.SelectedGroupTypeId.Value );
                 if ( groupType != null )
                 {
                     bool hasWeeklyschedule = ( groupType.AllowedScheduleTypes & ScheduleType.Weekly ) == ScheduleType.Weekly;
@@ -522,6 +522,7 @@ namespace RockWeb.Blocks.Groups
                         {
                             cblAttributes.Items.Add( new ListItem( attribute.Value.Name, attribute.Value.Guid.ToString() ) );
                         }
+
                         cblGridAttributes.Items.Add( new ListItem( attribute.Value.Name, attribute.Value.Guid.ToString() ) );
                     }
                 }
@@ -542,7 +543,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( targetPerson != null )
             {
-                lTitle.Text = String.Format( "<h4 class='margin-t-none'>Groups for {0}</h4>", targetPerson.FullName );
+                lTitle.Text = string.Format( "<h4 class='margin-t-none'>Groups for {0}</h4>", targetPerson.FullName );
                 acAddress.SetValues( targetPersonLocation );
                 acAddress.Visible = false;
                 phFilterControls.Visible = false;
@@ -551,21 +552,20 @@ namespace RockWeb.Blocks.Groups
 
                 if ( targetPersonLocation != null && targetPersonLocation.GeoPoint != null )
                 {
-                    lTitle.Text += String.Format( "<p>Search based on: {0}</p>", targetPersonLocation.ToString() );
+                    lTitle.Text += string.Format( "<p>Search based on: {0}</p>", targetPersonLocation.ToString() );
 
                     ShowResults();
                 }
                 else if ( targetPersonLocation != null )
                 {
-                    lTitle.Text += String.Format( "<p>The position of the address on file ({0}) could not be determined.</p>", targetPersonLocation.ToString() );
+                    lTitle.Text += string.Format( "<p>The position of the address on file ({0}) could not be determined.</p>", targetPersonLocation.ToString() );
                 }
                 else
                 {
-                    lTitle.Text += String.Format( "<p>The person does not have an address on file.</p>" );
+                    lTitle.Text += string.Format( "<p>The person does not have an address on file.</p>" );
                 }
             }
         }
-
 
         /// <summary>
         /// Shows the view.
@@ -623,29 +623,28 @@ namespace RockWeb.Blocks.Groups
         private void BindAttributes()
         {
             // Parse the attribute filters 
-            AttributeFilters = new List<AttributeCache>();
+            AttributeFilters = new List<CacheAttribute>();
             foreach ( string attr in GetAttributeValue( "AttributeFilters" ).SplitDelimitedValues() )
             {
                 Guid? attributeGuid = attr.AsGuidOrNull();
                 if ( attributeGuid.HasValue )
                 {
-                    var attribute = AttributeCache.Read( attributeGuid.Value );
+                    var attribute = CacheAttribute.Get( attributeGuid.Value );
                     if ( attribute != null && attribute.FieldType.Field.HasFilterControl() )
                     {
                         AttributeFilters.Add( attribute );
                     }
-
                 }
             }
 
             // Parse the attribute filters 
-            AttributeColumns = new List<AttributeCache>();
+            AttributeColumns = new List<CacheAttribute>();
             foreach ( string attr in GetAttributeValue( "AttributeColumns" ).SplitDelimitedValues() )
             {
                 Guid? attributeGuid = attr.AsGuidOrNull();
                 if ( attributeGuid.HasValue )
                 {
-                    var attribute = AttributeCache.Read( attributeGuid.Value );
+                    var attribute = CacheAttribute.Get( attributeGuid.Value );
                     if ( attribute != null )
                     {
                         AttributeColumns.Add( attribute );
@@ -661,8 +660,8 @@ namespace RockWeb.Blocks.Groups
         {
             // Clear attribute filter controls and recreate
             phFilterControls.Controls.Clear();
-            var ScheduleFilters = GetAttributeValue( "ScheduleFilters" ).SplitDelimitedValues().ToList();
-            if ( ScheduleFilters.Contains( "Days" ) )
+            var scheduleFilters = GetAttributeValue( "ScheduleFilters" ).SplitDelimitedValues().ToList();
+            if ( scheduleFilters.Contains( "Days" ) )
             {
                 var dowsFilterControl = new RockCheckBoxList();
                 dowsFilterControl.ID = "filter_dows";
@@ -671,21 +670,23 @@ namespace RockWeb.Blocks.Groups
                 dowsFilterControl.RepeatDirection = RepeatDirection.Horizontal;
                 AddFilterControl( dowsFilterControl, "Days of Week", "The day of week that group meets on." );
             }
-            if ( ScheduleFilters.Contains( "Day" ) )
+
+            if ( scheduleFilters.Contains( "Day" ) )
             {
-                var control = FieldTypeCache.Read( Rock.SystemGuid.FieldType.DAY_OF_WEEK ).Field.FilterControl( null, "filter_dow", false, Rock.Reporting.FilterMode.SimpleFilter );
+                var control = CacheFieldType.Get( Rock.SystemGuid.FieldType.DAY_OF_WEEK ).Field.FilterControl( null, "filter_dow", false, Rock.Reporting.FilterMode.SimpleFilter );
                 AddFilterControl( control, "Day of Week", "The day of week that group meets on." );
             }
-            if ( ScheduleFilters.Contains( "Time" ) )
+
+            if ( scheduleFilters.Contains( "Time" ) )
             {
-                var control = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TIME ).Field.FilterControl( null, "filter_time", false, Rock.Reporting.FilterMode.SimpleFilter );
+                var control = CacheFieldType.Get( Rock.SystemGuid.FieldType.TIME ).Field.FilterControl( null, "filter_time", false, Rock.Reporting.FilterMode.SimpleFilter );
                 AddFilterControl( control, "Time of Day", "The time of day that group meets." );
             }
             
             if ( GetAttributeValue( "DisplayCampusFilter" ).AsBoolean() )
             {
                 cblCampus.Visible = true;
-                cblCampus.DataSource = CampusCache.All().Where( c => c.IsActive == true );
+                cblCampus.DataSource = CacheCampus.All().Where( c => c.IsActive == true );
                 cblCampus.DataBind();
             }
             else
@@ -710,6 +711,7 @@ namespace RockWeb.Blocks.Groups
             {
                 gGroups.Columns.Remove( column );
             }
+
             if ( AttributeColumns != null )
             {
                 foreach ( var attribute in AttributeColumns )
@@ -723,7 +725,7 @@ namespace RockWeb.Blocks.Groups
                         boundField.AttributeId = attribute.Id;
                         boundField.HeaderText = attribute.Name;
 
-                        var attributeCache = AttributeCache.Read( attribute.Id );
+                        var attributeCache = CacheAttribute.Get( attribute.Id );
                         if ( attributeCache != null )
                         {
                             boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
@@ -757,7 +759,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             var pageSizes = new List<int>();
-            if ( !String.IsNullOrWhiteSpace( GetAttributeValue( "PageSizes" ) ) )
+            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PageSizes" ) ) )
             {
                 pageSizes = GetAttributeValue( "PageSizes" ).Split( ',' ).AsIntegerList();
             }
@@ -851,7 +853,7 @@ namespace RockWeb.Blocks.Groups
             var dowFilterControl = phFilterControls.FindControl( "filter_dow" );
             if ( dowFilterControl != null )
             {
-                var field = FieldTypeCache.Read( Rock.SystemGuid.FieldType.DAY_OF_WEEK ).Field;
+                var field = CacheFieldType.Get( Rock.SystemGuid.FieldType.DAY_OF_WEEK ).Field;
 
                 var filterValues = field.GetFilterValues( dowFilterControl, null, Rock.Reporting.FilterMode.SimpleFilter );
                 var expression = field.PropertyFilterExpression( null, filterValues, schedulePropertyExpression, "WeeklyDayOfWeek", typeof( DayOfWeek? ) );
@@ -861,7 +863,7 @@ namespace RockWeb.Blocks.Groups
             var timeFilterControl = phFilterControls.FindControl( "filter_time" );
             if ( timeFilterControl != null )
             {
-                var field = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TIME ).Field;
+                var field = CacheFieldType.Get( Rock.SystemGuid.FieldType.TIME ).Field;
 
                 var filterValues = field.GetFilterValues( timeFilterControl, null, Rock.Reporting.FilterMode.SimpleFilter );
                 var expression = field.PropertyFilterExpression( null, filterValues, schedulePropertyExpression, "WeeklyTimeOfDay", typeof( TimeSpan? ) );
@@ -883,7 +885,9 @@ namespace RockWeb.Blocks.Groups
             //    GroupTypeRole. If that role exists and has a MaxCount, check that we haven't met or exceeded it yet.
             if ( GetAttributeValue( "HideOvercapacityGroups" ).AsBoolean() )
             {
-                groupQry = groupQry.Where( g => g.GroupCapacity == null || g.Members.Count() < g.GroupCapacity );
+                groupQry = groupQry.Where(
+                    g => g.GroupCapacity == null ||
+                    g.Members.Where( m => m.GroupMemberStatus == GroupMemberStatus.Active ).Count() < g.GroupCapacity );
 
                 groupQry = groupQry.Where( g =>
                      g.GroupType == null ||
@@ -949,22 +953,23 @@ namespace RockWeb.Blocks.Groups
                 if ( fenceGroupTypeId.HasValue || showProximity )
                 {
                     personLocation = new LocationService( rockContext )
-                        .Get( acAddress.Street1, acAddress.Street2, acAddress.City,
-                            acAddress.State, acAddress.PostalCode, acAddress.Country );
+                        .Get( acAddress.Street1, acAddress.Street2, acAddress.City, acAddress.State, acAddress.PostalCode, acAddress.Country );
                 }
 
                 // If showing a map, and person's location was found, save a mapitem for this location
                 FinderMapItem personMapItem = null;
                 if ( showMap && personLocation != null && personLocation.GeoPoint != null )
                 {
-                    var infoWindow = string.Format( @"
+                    var infoWindow = string.Format(
+                        @"
 <div style='width:250px'>
     <div class='clearfix'>
 		<strong>Your Location</strong>
         <br/>{0}
     </div>
 </div>
-", personLocation.FormattedHtmlAddress );
+",
+                        personLocation.FormattedHtmlAddress );
 
                     personMapItem = new FinderMapItem( personLocation );
                     personMapItem.Name = "Your Location";
@@ -1035,7 +1040,7 @@ namespace RockWeb.Blocks.Groups
                         foreach ( var fence in fences )
                         {
                             var mapItem = new FinderMapItem( fence.Location );
-                            mapItem.EntityTypeId = EntityTypeCache.Read( "Rock.Model.Group" ).Id;
+                            mapItem.EntityTypeId = CacheEntityType.Get( "Rock.Model.Group" ).Id;
                             mapItem.EntityId = fence.GroupId;
                             mapItem.Name = fence.Group.Name;
                             fenceMapItems.Add( mapItem );
@@ -1061,7 +1066,6 @@ namespace RockWeb.Blocks.Groups
                 // If a map is to be shown
                 if ( showMap && groups.Any() )
                 {
-
                     Template template = Template.Parse( GetAttributeValue( "MapInfo" ) );
 
                     bool showDebug = UserCanEdit && GetAttributeValue( "MapInfoDebug" ).AsBoolean();
@@ -1093,7 +1097,7 @@ namespace RockWeb.Blocks.Groups
                             }
 
                             mergeFields.Add( "LinkedPages", linkedPages );
-                            mergeFields.Add( "CampusContext", RockPage.GetCurrentContext( EntityTypeCache.Read( "Rock.Model.Campus" ) ) as Campus );
+                            mergeFields.Add( "CampusContext", RockPage.GetCurrentContext( CacheEntityType.Get( "Rock.Model.Campus" ) ) as Campus );
 
                             // add collection of allowed security actions
                             Dictionary<string, object> securityActions = new Dictionary<string, object>();
@@ -1106,13 +1110,13 @@ namespace RockWeb.Blocks.Groups
 
                             if ( showDebug )
                             {
-                                lMapInfoDebug.Text = mergeFields.lavaDebugInfo( null, "<span class='label label-info'>Lava used for the map window.</span>", "" );
+                                lMapInfoDebug.Text = mergeFields.lavaDebugInfo( null, "<span class='label label-info'>Lava used for the map window.</span>", string.Empty );
                                 showDebug = false;
                             }
 
                             // Add a map item for group
                             var mapItem = new FinderMapItem( gl.Location );
-                            mapItem.EntityTypeId = EntityTypeCache.Read( "Rock.Model.Group" ).Id;
+                            mapItem.EntityTypeId = CacheEntityType.Get( "Rock.Model.Group" ).Id;
                             mapItem.EntityId = group.Id;
                             mapItem.Name = group.Name;
                             mapItem.InfoWindow = HttpUtility.HtmlEncode( infoWindow.Replace( Environment.NewLine, string.Empty ).Replace( "\n", string.Empty ).Replace( "\t", string.Empty ) );
@@ -1164,7 +1168,7 @@ namespace RockWeb.Blocks.Groups
                 }
 
                 mergeFields.Add( "LinkedPages", linkedPages );
-                mergeFields.Add( "CampusContext", RockPage.GetCurrentContext( EntityTypeCache.Read( "Rock.Model.Campus" ) ) as Campus );
+                mergeFields.Add( "CampusContext", RockPage.GetCurrentContext( CacheEntityType.Get( "Rock.Model.Campus" ) ) as Campus );
 
                 lLavaOverview.Text = template.ResolveMergeFields( mergeFields );
 
@@ -1195,7 +1199,7 @@ namespace RockWeb.Blocks.Groups
                 gGroups.DataSource = groups.Select( g =>
                 {
                     var qryMembers = new GroupMemberService( rockContext ).Queryable().Where( a => a.GroupId == g.Id );
-                    var groupType = GroupTypeCache.Read( g.GroupTypeId );
+                    var groupType = CacheGroupType.Get( g.GroupTypeId );
 
                     return new
                     {
@@ -1212,7 +1216,7 @@ namespace RockWeb.Blocks.Groups
                         Schedule = g.Schedule,
                         MemberCount = qryMembers.Count(),
                         AverageAge = Math.Round( qryMembers.Select( m => m.Person.BirthDate ).ToList().Select( a => Person.GetAge( a ) ).Average() ?? 0.0D ),
-                        Campus = g.Campus != null ? g.Campus.Name : "",
+                        Campus = g.Campus != null ? g.Campus.Name : string.Empty,
                         Distance = distances.Where( d => d.Key == g.Id )
                             .Select( d => d.Value ).FirstOrDefault()
                     };
@@ -1226,7 +1230,6 @@ namespace RockWeb.Blocks.Groups
 
             // Show the results
             pnlResults.Visible = true;
-
         }
 
         /// <summary>
@@ -1254,12 +1257,13 @@ namespace RockWeb.Blocks.Groups
         {
             if ( groupTypeGuid.HasValue )
             {
-                var groupType = GroupTypeCache.Read( groupTypeGuid.Value );
+                var groupType = CacheGroupType.Get( groupTypeGuid.Value );
                 if ( groupType != null )
                 {
                     return groupType.Id;
                 }
             }
+
             return null;
         }
 
@@ -1272,12 +1276,13 @@ namespace RockWeb.Blocks.Groups
         {
             if ( groupTypeId.HasValue )
             {
-                var groupType = GroupTypeCache.Read( groupTypeId.Value );
+                var groupType = CacheGroupType.Get( groupTypeId.Value );
                 if ( groupType != null )
                 {
                     return groupType.Guid.ToString();
                 }
             }
+
             return string.Empty;
         }
 
@@ -1309,7 +1314,7 @@ namespace RockWeb.Blocks.Groups
             string styleCode = "null";
             var markerColors = new List<string>();
 
-            DefinedValueCache dvcMapStyle = DefinedValueCache.Read( GetAttributeValue( "MapStyle" ).AsInteger() );
+            CacheDefinedValue dvcMapStyle = CacheDefinedValue.Get( GetAttributeValue( "MapStyle" ).AsInteger() );
             if ( dvcMapStyle != null )
             {
                 styleCode = dvcMapStyle.GetAttributeValue( "DynamicMapStyle" );
@@ -1318,6 +1323,7 @@ namespace RockWeb.Blocks.Groups
                     .ToList();
                 markerColors.ForEach( c => c = c.Replace( "#", string.Empty ) );
             }
+
             if ( !markerColors.Any() )
             {
                 markerColors.Add( "FE7569" );
@@ -1331,7 +1337,7 @@ namespace RockWeb.Blocks.Groups
             string latitude = "39.8282";
             string longitude = "-98.5795";
             string zoom = "4";
-            var orgLocation = GlobalAttributesCache.Read().OrganizationLocation;
+            var orgLocation = CacheGlobalAttributes.Get().OrganizationLocation;
             if ( orgLocation != null && orgLocation.GeoPoint != null )
             {
                 latitude = orgLocation.GeoPoint.Latitude.ToString();
@@ -1571,15 +1577,16 @@ namespace RockWeb.Blocks.Groups
 ";
 
             var locationJson = location != null ?
-                string.Format( "JSON.parse('{0}')", location.ToJson().Replace( Environment.NewLine, "" ).Replace( "\\", "\\\\" ).EscapeQuotes().Replace( "\x0A", "" ) ) : "null";
+                string.Format( "JSON.parse('{0}')", location.ToJson().Replace( Environment.NewLine, string.Empty ).Replace( "\\", "\\\\" ).EscapeQuotes().Replace( "\x0A", string.Empty ) ) : "null";
 
             var fencesJson = fences != null && fences.Any() ?
-                string.Format( "JSON.parse('{0}')", fences.ToJson().Replace( Environment.NewLine, "" ).Replace( "\\", "\\\\" ).EscapeQuotes().Replace( "\x0A", "" ) ) : "null";
+                string.Format( "JSON.parse('{0}')", fences.ToJson().Replace( Environment.NewLine, string.Empty ).Replace( "\\", "\\\\" ).EscapeQuotes().Replace( "\x0A", string.Empty ) ) : "null";
 
             var groupsJson = groups != null && groups.Any() ?
-                string.Format( "JSON.parse('{0}')", groups.ToJson().Replace( Environment.NewLine, "" ).Replace( "\\", "\\\\" ).EscapeQuotes().Replace( "\x0A", "" ) ) : "null";
+                string.Format( "JSON.parse('{0}')", groups.ToJson().Replace( Environment.NewLine, string.Empty ).Replace( "\\", "\\\\" ).EscapeQuotes().Replace( "\x0A", string.Empty ) ) : "null";
 
-            string mapScript = string.Format( mapScriptFormat,
+            string mapScript = string.Format(
+                mapScriptFormat,
                 locationJson,       // 0
                 fencesJson,         // 1
                 groupsJson,         // 2
@@ -1592,7 +1599,6 @@ namespace RockWeb.Blocks.Groups
                 zoom );             // 9
 
             ScriptManager.RegisterStartupScript( pnlMap, pnlMap.GetType(), "group-finder-map-script", mapScript, true );
-
         }
 
         private void ShowError( string message )
@@ -1620,7 +1626,7 @@ namespace RockWeb.Blocks.Groups
         /// <summary>
         /// A map item class specific to group finder
         /// </summary>
-        class FinderMapItem : MapItem
+        public class FinderMapItem : MapItem
         {
             /// <summary>
             /// Gets or sets the information window.
@@ -1637,7 +1643,6 @@ namespace RockWeb.Blocks.Groups
             public FinderMapItem( Location location )
                 : base( location )
             {
-
             }
         }
 

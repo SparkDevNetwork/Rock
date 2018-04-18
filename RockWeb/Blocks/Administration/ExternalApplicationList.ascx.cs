@@ -85,7 +85,7 @@ namespace RockWeb.Blocks.Administration
             {
                 var definedValue = e.Row.DataItem as DefinedValue;
                 
-                var downloadCellIndex = gExternalApplication.Columns.IndexOf( gExternalApplication.Columns.OfType<HyperLinkField>().First( a => a.Text == "Download" ) );
+                var downloadCellIndex = gExternalApplication.GetColumnIndex( gExternalApplication.Columns.OfType<HyperLinkField>().First( a => a.Text == "Download" ) );
                 if ( downloadCellIndex >= 0 )
                 {
                     string fileUrl = definedValue.GetAttributeValue("DownloadUrl");

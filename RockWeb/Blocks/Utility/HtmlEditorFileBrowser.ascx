@@ -15,9 +15,9 @@
             <ContentTemplate>
                 <div class="actions btn-group">
                     <asp:LinkButton ID="lbCreateFolder" runat="server" CssClass="btn btn-sm btn-default" OnClick="lbCreateFolder_Click" CausesValidation="false" ToolTip="New Folder"><i class="fa fa-plus"></i></asp:LinkButton>
-                    <asp:LinkButton ID="lbRenameFolder" runat="server" CssClass="btn btn-sm btn-default" OnClick="lbRenameFolder_Click" CausesValidation="false" ToolTip="Rename Folder"><i class="fa fa-pencil"></i></asp:LinkButton>
-                    <asp:LinkButton ID="lbMoveFolder" runat="server" CssClass="btn btn-sm btn-default" OnClick="lbMoveFolder_Click" CausesValidation="false" ToolTip="Move Folder"><i class="fa fa-external-link"></i></asp:LinkButton>
-                    <asp:LinkButton ID="lbDeleteFolder" runat="server" CssClass="btn btn-sm btn-default" OnClientClick="Rock.dialogs.confirmDelete(event, 'folder and all its contents');" OnClick="lbDeleteFolder_Click" CausesValidation="false" ToolTip="Delete Folder"><i class="fa fa-times"></i></asp:LinkButton>
+                    <asp:LinkButton ID="lbRenameFolder" runat="server" CssClass="btn btn-sm btn-default"  OnClientClick="if ($(this).attr('disabled') == 'disabled') { return false; }" OnClick="lbRenameFolder_Click" CausesValidation="false" ToolTip="Rename Folder"><i class="fa fa-pencil"></i></asp:LinkButton>
+                    <asp:LinkButton ID="lbMoveFolder" runat="server" CssClass="btn btn-sm btn-default"  OnClientClick="if ($(this).attr('disabled') == 'disabled') { return false; }" OnClick="lbMoveFolder_Click" CausesValidation="false" ToolTip="Move Folder"><i class="fa fa-external-link"></i></asp:LinkButton>
+                    <asp:LinkButton ID="lbDeleteFolder" runat="server" CssClass="btn btn-sm btn-default" OnClientClick="if ($(this).attr('disabled') == 'disabled') { return false; } Rock.dialogs.confirmDelete(event, 'folder and all its contents');" OnClick="lbDeleteFolder_Click" CausesValidation="false" ToolTip="Delete Folder"><i class="fa fa-times"></i></asp:LinkButton>
                     <asp:LinkButton ID="lbRefresh" runat="server" CssClass="btn btn-sm  btn-default" OnClick="lbRefresh_Click" CausesValidation="false" ToolTip="Refresh"><i class="fa fa-refresh"></i></asp:LinkButton>
                 </div>
 
@@ -63,7 +63,9 @@
                                     resize: false,
                                     listenY: true,
                                     listenX: false,
-                                }
+                                },
+                                click: false,
+                                preventDefaultException: { tagName: /.*/ }
                             });
 
                             $('.js-folder-treeview .treeview').on('rockTree:expand rockTree:collapse rockTree:dataBound rockTree:rendered', function (evt) {
@@ -84,7 +86,9 @@
                                     resize: false,
                                     listenY: true,
                                     listenX: false,
-                                }
+                            },
+                            click: false,
+                            preventDefaultException: { tagName: /.*/ }
                         });
 
                         // js for when a file delete is clicked

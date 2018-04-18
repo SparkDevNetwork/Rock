@@ -25,7 +25,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace RockWeb.Blocks.Crm
 {
@@ -225,7 +225,7 @@ namespace RockWeb.Blocks.Crm
             else if ( !string.IsNullOrEmpty( PageParameter( "Person" ) ) )
             {
                 // Just in case Person (Person Token) was used, look up by Impersonation Token
-                person = new PersonService( rockContext ).GetByImpersonationToken( PageParameter( "Person" ), false, this.PageCache.Id );
+                person = new PersonService( rockContext ).GetByImpersonationToken( PageParameter( "Person" ), false, this.CachePage.Id );
             }
 
             if ( person != null )
@@ -251,7 +251,7 @@ namespace RockWeb.Blocks.Crm
 
                 if ( siteId != -1 )
                 {
-                    var site = SiteCache.Read( siteId );
+                    var site = CacheSite.Get( siteId );
 
                     string siteName = string.Empty;
                     if (site != null )
@@ -259,7 +259,7 @@ namespace RockWeb.Blocks.Crm
                         siteName = site.Name;
                     }
                     // lookup the interactionDeviceType, and create it if it doesn't exist
-                    int channelMediumValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
+                    int channelMediumValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
 
                     var interactionChannelId = new InteractionChannelService( rockContext ).Queryable()
                                                         .Where( a => a.ChannelTypeMediumValueId == channelMediumValueId && a.ChannelEntityId == siteId )

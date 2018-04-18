@@ -142,7 +142,7 @@ namespace RockWeb.Blocks.CheckIn
                                 .OrderBy( l => l.PersonId )
                                 .ThenBy( l => l.Order ) )
                             {
-                                var labelCache = KioskLabel.Read( label.FileGuid );
+                                var labelCache = KioskLabel.Get( label.FileGuid );
                                 if ( labelCache != null )
                                 {
                                     if ( !string.IsNullOrWhiteSpace( label.PrinterAddress ) )

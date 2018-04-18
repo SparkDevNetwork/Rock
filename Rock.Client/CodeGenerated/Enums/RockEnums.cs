@@ -45,6 +45,15 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum AgeClassification
+    {
+        Unknown = 0x0,
+        Adult = 0x1,
+        Child = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum AttendanceGraphBy
     {
         Total = 0x0,
@@ -142,6 +151,7 @@ namespace Rock.Client.Enums
         Email = 0x1,
         SMS = 0x2,
         PushNotification = 0x3,
+        Other = 0x4,
     }
 
     /// <summary>
@@ -494,6 +504,7 @@ namespace Rock.Client.Enums
         HomePhone = 0x9,
         WorkPhone = 0xa,
         Grade = 0xb,
+        ConnectionStatus = 0xc,
     }
 
     /// <summary>
@@ -627,6 +638,7 @@ namespace Rock.Client.Enums
         PreDelete = 0x2,
         PostDelete = 0x3,
         ImmediatePostSave = 0x4,
+        PostAdd = 0x5,
     }
 
     #pragma warning restore CS1591

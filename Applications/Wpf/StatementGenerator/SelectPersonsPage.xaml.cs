@@ -97,9 +97,10 @@ namespace Rock.Apps.StatementGenerator
             else if ( radDataView.IsChecked ?? false )
             {
                 rockConfig.PersonSelectionOption = PersonSelectionOption.DataView;
-                if ( ddlDataView.SelectedValue != null )
+                var selectedDataView = ddlDataView.SelectedValue as Rock.Client.DataView;
+                if ( selectedDataView != null )
                 {
-                    ReportOptions.Current.DataViewId = ( int ) ddlDataView.SelectedValue.GetPropertyValue( "Id" );
+                    ReportOptions.Current.DataViewId = selectedDataView.Id;
                     ReportOptions.Current.PersonId = null;
                 }
                 else
@@ -116,15 +117,15 @@ namespace Rock.Apps.StatementGenerator
             else
             {
                 rockConfig.PersonSelectionOption = PersonSelectionOption.SingleIndividual;
-                if ( grdPersons.SelectedValue != null )
+                PersonSearchResult personSearchResult = grdPersons.SelectedValue as PersonSearchResult;
+                if ( personSearchResult == null && grdPersons.Items.Count == 1 )
                 {
-                    // they selected a person in the grid
-                    ReportOptions.Current.PersonId = ( int ) grdPersons.SelectedValue.GetPropertyValue( "Id" );
+                    personSearchResult = grdPersons.Items[0] as PersonSearchResult;
                 }
-                else if ( grdPersons.Items.Count == 1 )
+
+                if ( personSearchResult != null )
                 {
-                    // they didn't select a person in the grid, but there is only one listed. So, that is who they want to run the report for
-                    ReportOptions.Current.PersonId = ( int ) grdPersons.Items[0].GetPropertyValue( "Id" );
+                    ReportOptions.Current.PersonId = personSearchResult.Id;
                 }
                 else
                 {
@@ -259,7 +260,7 @@ namespace Rock.Apps.StatementGenerator
                 XmlNode root = doc.DocumentElement;
                 foreach ( var node in root.ChildNodes.OfType<XmlNode>() )
                 {
-                    personResults.Add( new
+                    personResults.Add( new PersonSearchResult
                     {
                         Id = node["Id"].InnerText.AsInteger(),
                         FullName = node["Name"].InnerText,
@@ -338,5 +339,17 @@ namespace Rock.Apps.StatementGenerator
             radPersons_Checked( sender, e );
             lblWarning.Visibility = Visibility.Collapsed;
         }
+    }
+
+    internal class PersonSearchResult
+    {
+        public int Id { get; set; }
+        public string FullName { get; set; }
+        public string Age { get; set; }
+        public string Gender { get; set; }
+        public string ToolTip { get; set; }
+        public string SpouseName { get; set; }
+        public string Email { get; set; }
+        public string Address { get; set; }
     }
 }

@@ -25,7 +25,7 @@ using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Jobs
 {
@@ -52,7 +52,7 @@ namespace Rock.Jobs
         {
             JobDataMap dataMap = context.JobDetail.JobDataMap;
 
-            var expireDays = dataMap.GetIntFromString( "ExpireDate" );
+            var expireDays = dataMap.GetString( "ExpireDate" ).AsIntegerOrNull() ?? 1;
 
             int remindersSent = 0;
 

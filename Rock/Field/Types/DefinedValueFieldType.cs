@@ -23,7 +23,7 @@ using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -236,7 +236,7 @@ namespace Rock.Field.Types
                 var names = new List<string>();
                 foreach ( Guid guid in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList() )
                 {
-                    var definedValue = Rock.Web.Cache.DefinedValueCache.Read( guid );
+                    var definedValue = Rock.Cache.CacheDefinedValue.Get( guid );
                     if ( definedValue != null )
                     {
                         names.Add( useDescription ? definedValue.Description : definedValue.Value );
@@ -272,7 +272,7 @@ namespace Rock.Field.Types
 
                 // if there are multiple defined values, just pick the first one as the sort value
                 Guid guid = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList().FirstOrDefault();
-                var definedValue = Rock.Web.Cache.DefinedValueCache.Read( guid );
+                var definedValue = Rock.Cache.CacheDefinedValue.Get( guid );
                 if ( definedValue != null )
                 {
                     // sort by Order then Description/Value (using a padded string)
@@ -305,7 +305,7 @@ namespace Rock.Field.Types
 
             if ( definedTypeId.HasValue )
             {
-                var definedType = DefinedTypeCache.Read( definedTypeId.Value );
+                var definedType = CacheDefinedType.Get( definedTypeId.Value );
 
             }
             if ( configurationValues != null && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean() )
@@ -357,7 +357,7 @@ namespace Rock.Field.Types
 
             foreach ( int definedValueId in definedValueIdList )
             {
-                var definedValue = Rock.Web.Cache.DefinedValueCache.Read( definedValueId );
+                var definedValue = Rock.Cache.CacheDefinedValue.Get( definedValueId );
                 if ( definedValue != null )
                 {
                     guids.Add( definedValue.Guid );
@@ -382,7 +382,7 @@ namespace Rock.Field.Types
                     var ids = new List<string>();
                     foreach ( Guid guid in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList() )
                     {
-                        var definedValue = Rock.Web.Cache.DefinedValueCache.Read( guid );
+                        var definedValue = Rock.Cache.CacheDefinedValue.Get( guid );
                         if ( definedValue != null )
                         {
                             ids.Add( definedValue.Id.ToString() );
@@ -552,7 +552,7 @@ namespace Rock.Field.Types
             var values = new List<string>();
             foreach ( Guid guid in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList() )
             {
-                var definedValue = Rock.Web.Cache.DefinedValueCache.Read( guid );
+                var definedValue = Rock.Cache.CacheDefinedValue.Get( guid );
                 if ( definedValue != null )
                 {
                     values.Add( useDescription ? definedValue.Description : definedValue.Value );
@@ -620,7 +620,7 @@ namespace Rock.Field.Types
                     // if this is not for an attribute value, look up the id for the defined value
                     if ( propertyName != "Value" || propertyType != typeof( string ) )
                     {
-                        var dv = DefinedValueCache.Read( value.AsGuid() );
+                        var dv = CacheDefinedValue.Get( value.AsGuid() );
                         tempValue = dv != null ? dv.Id.ToString() : string.Empty;
                     }
 
@@ -726,7 +726,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = DefinedValueCache.Read( guid );
+            var item = CacheDefinedValue.Get( guid );
             return item != null ? item.Id : (int?)null;
         }
 
@@ -738,10 +738,10 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            DefinedValueCache item = null;
+            CacheDefinedValue item = null;
             if ( id.HasValue )
             {
-                item = DefinedValueCache.Read( id.Value );
+                item = CacheDefinedValue.Get( id.Value );
             }
 
             string guidValue = item != null ? item.Guid.ToString() : string.Empty;

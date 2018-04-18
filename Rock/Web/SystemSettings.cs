@@ -21,7 +21,7 @@ using System.Runtime.Caching;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Web
 {
@@ -39,15 +39,23 @@ namespace Rock.Web
 
         #region Properties
 
-        private List<AttributeCache> Attributes { get; set; }
+        private List<CacheAttribute> Attributes { get; set; }
 
         #endregion
 
         #region Static Methods
 
-        private static string CacheKey()
+        private static string CacheKey
         {
-            return "Rock:SystemSettings";
+            get
+            {
+                return "Rock:SystemSettings";
+            }
+        }
+
+        private static SystemSettings Get()
+        {
+            return RockCache.GetOrAddExisting( CacheKey, () => LoadSettings() ) as SystemSettings;
         }
 
         /// <summary>
@@ -56,7 +64,7 @@ namespace Rock.Web
         /// <returns>the Guid of this Rock instance</returns>
         public static Guid GetRockInstanceId()
         {
-            var settings = SystemSettings.Read();
+            var settings = Get();
             var attributeCache = settings.Attributes.FirstOrDefault( a => a.Key.Equals( SystemSettingKeys.ROCK_INSTANCE_ID, StringComparison.OrdinalIgnoreCase ) );
             if ( attributeCache != null )
             {
@@ -73,7 +81,7 @@ namespace Rock.Web
         /// <returns></returns>
         public static string GetValue( string key )
         {
-            var settings = SystemSettings.Read();
+            var settings = Get();
             var attributeCache = settings.Attributes.FirstOrDefault( a => a.Key.Equals( key, StringComparison.OrdinalIgnoreCase ) );
             if ( attributeCache != null )
             {
@@ -98,7 +106,7 @@ namespace Rock.Web
             if ( attribute == null )
             {
                 attribute = new Rock.Model.Attribute();
-                attribute.FieldTypeId = FieldTypeCache.Read( new Guid( SystemGuid.FieldType.TEXT ) ).Id;
+                attribute.FieldTypeId = CacheFieldType.Get( new Guid( SystemGuid.FieldType.TEXT ) ).Id;
                 attribute.EntityTypeQualifierColumn = Rock.Model.Attribute.SYSTEM_SETTING_QUALIFIER;
                 attribute.EntityTypeQualifierValue = string.Empty;
                 attribute.Key = key;
@@ -114,13 +122,13 @@ namespace Rock.Web
 
             rockContext.SaveChanges();
 
-            AttributeCache.Flush( attribute.Id );
+            CacheAttribute.Remove( attribute.Id );
             if ( isNew )
             {
-                AttributeCache.FlushEntityAttributes();
+                CacheAttribute.RemoveEntityAttributes();
             }
 
-            var settings = SystemSettings.Read();
+            var settings = Get();
             var attributeCache = settings.Attributes.FirstOrDefault( a => a.Key.Equals( key, StringComparison.OrdinalIgnoreCase ) );
             if ( attributeCache != null )
             {
@@ -128,8 +136,9 @@ namespace Rock.Web
             }
             else
             {
-                settings.Attributes.Add( AttributeCache.Read( attribute.Id ) );
+                settings.Attributes.Add( CacheAttribute.Get( attribute.Id ) );
             }
+            RockCache.AddOrUpdate( CacheKey, settings );
         }
 
         /// <summary>
@@ -137,44 +146,38 @@ namespace Rock.Web
         /// will be read and added to cache
         /// </summary>
         /// <returns></returns>
-        private static SystemSettings Read()
+        private static SystemSettings LoadSettings()
         {
-            string cacheKey = SystemSettings.CacheKey();
+            var systemSettings = new SystemSettings();
+            systemSettings.Attributes = new List<CacheAttribute>();
 
-            RockMemoryCache cache = RockMemoryCache.Default;
-            SystemSettings systemSettings = cache[cacheKey] as SystemSettings;
+            var rockContext = new RockContext();
+            var attributeService = new Rock.Model.AttributeService( rockContext );
 
-            if ( systemSettings != null )
+            foreach ( Rock.Model.Attribute attribute in attributeService.GetSystemSettings() )
             {
-                return systemSettings;
+                var attributeCache = CacheAttribute.Get( attribute );
+                systemSettings.Attributes.Add( attributeCache );
             }
-            else
-            {
-                systemSettings = new SystemSettings();
-                systemSettings.Attributes = new List<AttributeCache>();
 
-                var rockContext = new RockContext();
-                var attributeService = new Rock.Model.AttributeService( rockContext );
-
-                foreach ( Rock.Model.Attribute attribute in attributeService.GetSystemSettings() )
-                {
-                    var attributeCache = AttributeCache.Read( attribute );
-                    systemSettings.Attributes.Add( attributeCache );
-                }
-
-                cache.Set( cacheKey, systemSettings, new CacheItemPolicy() );
-
-                return systemSettings;
-            }
+            return systemSettings;
         }
 
         /// <summary>
         /// Flushes this instance.
         /// </summary>
+        [Obsolete( "Use Remove() method instead")]
         public static void Flush()
         {
-            RockMemoryCache cache = RockMemoryCache.Default;
-            cache.Remove( SystemSettings.CacheKey() );
+            Remove();
+        }
+
+        /// <summary>
+        /// Removes this instance.
+        /// </summary>
+        public static void Remove()
+        {
+            RockCache.Remove( CacheKey );
         }
 
         #endregion

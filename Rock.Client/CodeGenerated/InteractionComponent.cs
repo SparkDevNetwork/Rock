@@ -44,9 +44,6 @@ namespace Rock.Client
         public string ComponentSummary { get; set; }
 
         /// <summary />
-        public string DetailTemplate { get; set; }
-
-        /// <summary />
         public int? EntityId { get; set; }
 
         /// <summary />
@@ -54,9 +51,6 @@ namespace Rock.Client
 
         /// <summary />
         public string ForeignKey { get; set; }
-
-        /// <summary />
-        public string ListTemplate { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -102,11 +96,9 @@ namespace Rock.Client
             this.ChannelId = source.ChannelId;
             this.ComponentData = source.ComponentData;
             this.ComponentSummary = source.ComponentSummary;
-            this.DetailTemplate = source.DetailTemplate;
             this.EntityId = source.EntityId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.ListTemplate = source.ListTemplate;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.CreatedDateTime = source.CreatedDateTime;

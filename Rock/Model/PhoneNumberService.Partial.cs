@@ -79,5 +79,17 @@ namespace Rock.Model
                 return Queryable().Where( n => n.Id == -1);
             }
         }
+
+        /// <summary>
+        /// Gets a PhoneNumber object for the supplied person ID and DefinedValue GUID
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="definedValueGuid">The type value unique identifier.</param>
+        /// <returns></returns>
+        public PhoneNumber GetNumberByPersonIdAndType( int personId, string definedValueGuid)
+        {
+            int mobilePhoneTypeId = Rock.Cache.CacheDefinedValue.Get( definedValueGuid ).Id;
+            return Queryable().Where( p => p.PersonId == personId && p.NumberTypeValueId == mobilePhoneTypeId ).FirstOrDefault();
+        }
     }
 }

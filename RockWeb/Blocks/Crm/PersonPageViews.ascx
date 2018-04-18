@@ -32,7 +32,7 @@
                                     <ol>
                                         <asp:Repeater ID="rptPageViews" runat="server" DataSource='<%# Eval("PageViews") %>'>
                                             <ItemTemplate>
-                                                <li><a href='<%# Eval("InteractionData") %>'><%# Eval("InteractionComponent.Name") %></a> <asp:Literal ID="lPageViewDuration" runat="server" /></li>
+                                                <li><a href='<%# Eval("InteractionData") %>'><%# Eval("InteractionSummary") %></a> <asp:Literal ID="lPageViewDuration" runat="server" /></li>
                                             </ItemTemplate>
                                         </asp:Repeater>
                                     </ol>

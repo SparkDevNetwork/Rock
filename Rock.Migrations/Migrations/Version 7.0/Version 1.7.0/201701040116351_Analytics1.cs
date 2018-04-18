@@ -477,20 +477,20 @@ INSERT INTO [dbo].[ServiceJob]
             RockMigrationHelper.DeletePage( "2660D554-D161-44A1-9763-A73C60559B50" ); //  Page: Calendar Dimension Settings, Layout: Full Width, Site: Rock RMS
 
             Sql( @"
-DROP VIEW AnalyticsDimPersonBirthDate;
-DROP VIEW AnalyticsDimAttendanceDate;
-DROP VIEW AnalyticsDimFinancialTransactionDate;
-DROP VIEW AnalyticsDimAttendanceLocation;
-DROP VIEW AnalyticsDimFamilyCurrent;
-DROP VIEW AnalyticsDimFamilyHeadOfHousehold;
-DROP VIEW AnalyticsDimFamilyHistorical;
-DROP VIEW AnalyticsDimFinancialAccount;
-DROP VIEW AnalyticsDimFinancialBatch;
-DROP VIEW AnalyticsDimFinancialTransactionType;
-DROP VIEW AnalyticsDimPersonCurrent;
-DROP VIEW AnalyticsDimPersonHistorical;
-DROP VIEW AnalyticsFactAttendance;
-DROP VIEW AnalyticsFactFinancialTransaction;
+DROP VIEW [dbo].AnalyticsDimPersonBirthDate;
+DROP VIEW [dbo].AnalyticsDimAttendanceDate;
+DROP VIEW [dbo].AnalyticsDimFinancialTransactionDate;
+DROP VIEW [dbo].AnalyticsDimAttendanceLocation;
+DROP VIEW [dbo].AnalyticsDimFamilyCurrent;
+DROP VIEW [dbo].AnalyticsDimFamilyHeadOfHousehold;
+DROP VIEW [dbo].AnalyticsDimFamilyHistorical;
+DROP VIEW [dbo].AnalyticsDimFinancialAccount;
+DROP VIEW [dbo].AnalyticsDimFinancialBatch;
+DROP VIEW [dbo].AnalyticsDimFinancialTransactionType;
+DROP VIEW [dbo].AnalyticsDimPersonCurrent;
+DROP VIEW [dbo].AnalyticsDimPersonHistorical;
+DROP VIEW [dbo].AnalyticsFactAttendance;
+DROP VIEW [dbo].AnalyticsFactFinancialTransaction;
 DROP PROCEDURE spAnalytics_ETL_Attendance;
 DROP PROCEDURE spAnalytics_ETL_Family;
 DROP PROCEDURE spAnalytics_ETL_FinancialTransaction;

@@ -30,6 +30,7 @@ namespace Rock.Security
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
+    [Obsolete( "Use Rock.Cache.CacheRole Instead")]
     public class Role
     {
         /// <summary>
@@ -151,7 +152,7 @@ namespace Rock.Security
                     var role = new Role();
                     role.Id = groupModel.Id;
                     role.Name = groupModel.Name;
-                    role.People = new ConcurrentDictionary<Guid,bool>();
+                    role.People = new ConcurrentDictionary<Guid, bool>();
 
                     var groupMembersQry = groupMemberService.Queryable().Where( a => a.GroupId == groupModel.Id );
 
@@ -166,7 +167,7 @@ namespace Rock.Security
                     }
 
                     role.IsSecurityTypeGroup = groupModel.GroupTypeId == securityGroupTypeId;
-                        
+
                     return role;
                 }
             }
@@ -187,9 +188,9 @@ namespace Rock.Security
 
             Rock.Model.GroupService groupService = new Rock.Model.GroupService( new RockContext() );
             foreach ( int id in groupService.Queryable()
-                .Where( g => 
+                .Where( g =>
                     g.IsActive &&
-                    ( g.GroupTypeId == securityGroupTypeId || g.IsSecurityRole == true  ) )
+                    ( g.GroupTypeId == securityGroupTypeId || g.IsSecurityRole == true ) )
                 .OrderBy( g => g.Name )
                 .Select( g => g.Id )
                 .ToList() )

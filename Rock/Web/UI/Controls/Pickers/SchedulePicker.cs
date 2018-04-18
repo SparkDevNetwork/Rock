@@ -21,7 +21,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -184,7 +184,7 @@ namespace Rock.Web.UI.Controls
         private void SetExtraRestParams( bool includeInactiveSchedules = false )
         {
             ItemRestUrlExtraParams = "?getCategorizedItems=true&showUnnamedEntityItems=false&showCategoriesThatHaveNoChildren=false";
-            ItemRestUrlExtraParams += "&entityTypeId=" + EntityTypeCache.Read( Rock.SystemGuid.EntityType.SCHEDULE.AsGuid() ).Id;
+            ItemRestUrlExtraParams += "&entityTypeId=" + CacheEntityType.Get( Rock.SystemGuid.EntityType.SCHEDULE.AsGuid() ).Id;
             ItemRestUrlExtraParams += "&includeInactiveItems=" + includeInactiveSchedules.ToTrueFalse();
         }
 

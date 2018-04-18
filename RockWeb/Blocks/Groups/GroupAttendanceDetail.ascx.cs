@@ -28,7 +28,7 @@ using Rock.Data;
 using Rock.MergeTemplates;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -44,7 +44,7 @@ namespace RockWeb.Blocks.Groups
     [WorkflowTypeField( "Workflow", "An optional workflow type to launch whenever attendance is saved. The Group will be used as the workflow 'Entity' when processing is started. Additionally if a 'StartDateTime' and/or 'Schedule' attribute exist, their values will be set with the corresponding saved attendance values.", false, false, "", "", 3 )]
     [MergeTemplateField( "Attendance Roster Template", "", false, "", "", 4 )]
     [CodeEditorField( "Lava Template", "An optional lava template to appear next to each person in the list.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, false, "", "", 5 )]
-
+    [BooleanField( "Restrict Future Occurrence Date", "Should user be prevented from selecting a future Occurrence date?", false, "", 6 )]
     public partial class GroupAttendanceDetail : RockBlock
     {
         #region Private Variables
@@ -90,13 +90,14 @@ namespace RockWeb.Blocks.Groups
                 _canEdit = true;
             }
 
+            dpOccurrenceDate.AllowFutureDateSelection = !GetAttributeValue( "RestrictFutureOccurrenceDate").AsBoolean();
             _allowAdd = GetAttributeValue( "AllowAdd" ).AsBoolean();
 
             _allowCampusFilter = GetAttributeValue( "AllowCampusFilter" ).AsBoolean();
             bddlCampus.Visible = _allowCampusFilter;
             if ( _allowCampusFilter )
             {
-                bddlCampus.DataSource = CampusCache.All();
+                bddlCampus.DataSource = CacheCampus.All();
                 bddlCampus.DataBind();
                 bddlCampus.Items.Insert( 0, new ListItem( "All Campuses", "0" ) );
             }
@@ -120,7 +121,7 @@ namespace RockWeb.Blocks.Groups
                 {
                     if ( _allowCampusFilter )
                     {
-                        var campus = CampusCache.Read( GetBlockUserPreference( "Campus" ).AsInteger() );
+                        var campus = CacheCampus.Get( GetBlockUserPreference( "Campus" ).AsInteger() );
                         if ( campus != null )
                         {
                             bddlCampus.Title = campus.Name;
@@ -238,7 +239,7 @@ namespace RockWeb.Blocks.Groups
                     }
                     if ( !campusId.HasValue && _allowCampusFilter )
                     {
-                        var campus = CampusCache.Read( bddlCampus.SelectedValueAsInt() ?? 0 );
+                        var campus = CacheCampus.Get( bddlCampus.SelectedValueAsInt() ?? 0 );
                         if ( campus != null )
                         {
                             campusId = campus.Id;
@@ -305,7 +306,7 @@ namespace RockWeb.Blocks.Groups
 
                 if ( _occurrence.LocationId.HasValue )
                 {
-                    Rock.CheckIn.KioskLocationAttendance.Flush( _occurrence.LocationId.Value );
+                    Rock.CheckIn.KioskLocationAttendance.Remove( _occurrence.LocationId.Value );
                 }
 
                 rockContext.SaveChanges();
@@ -313,7 +314,7 @@ namespace RockWeb.Blocks.Groups
                 Guid? workflowTypeGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
                 if ( workflowTypeGuid.HasValue )
                 {
-                    var workflowType = WorkflowTypeCache.Read( workflowTypeGuid.Value );
+                    var workflowType = CacheWorkflowType.Get( workflowTypeGuid.Value );
                     if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                     {
                         try
@@ -391,6 +392,7 @@ namespace RockWeb.Blocks.Groups
 
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
             mergeFields.Add( "Group", this._group );
+            mergeFields.Add("AttendanceDate", this._occurrence.Date);
 
             var mergeTemplate = new MergeTemplateService( rockContext ).Get( this.GetAttributeValue( "AttendanceRosterTemplate" ).AsGuid() );
 
@@ -464,7 +466,7 @@ namespace RockWeb.Blocks.Groups
         protected void bddlCampus_SelectionChanged( object sender, EventArgs e )
         {
             SetBlockUserPreference( "Campus", bddlCampus.SelectedValue );
-            var campus = CampusCache.Read( bddlCampus.SelectedValueAsInt() ?? 0 );
+            var campus = CacheCampus.Get( bddlCampus.SelectedValueAsInt() ?? 0 );
             bddlCampus.Title = campus != null ? campus.Name : "All Campuses";
             BindAttendees();
         }
@@ -842,7 +844,7 @@ namespace RockWeb.Blocks.Groups
             var campusAttendees = _attendees;
             if ( _allowCampusFilter )
             {
-                var campus = CampusCache.Read( bddlCampus.SelectedValueAsInt() ?? 0 );
+                var campus = CacheCampus.Get( bddlCampus.SelectedValueAsInt() ?? 0 );
                 if ( campus != null )
                 {
                     campusAttendees = _attendees.Where( a => a.CampusIds.Contains( campus.Id ) ).ToList();

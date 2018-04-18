@@ -23,8 +23,8 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Reporting;
+using Rock.Cache;
 using Rock.Security;
-using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -156,7 +156,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                var entityTypeCache = EntityTypeCache.Read( FilteredEntityTypeName );
+                var entityTypeCache = CacheEntityType.Get( FilteredEntityTypeName );
                 if ( entityTypeCache != null )
                 {
                     return entityTypeCache.GetEntityType();
@@ -330,6 +330,44 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the pre HTML.
+        /// </summary>
+        /// <value>
+        /// The pre HTML.
+        /// </value>
+        public string PreHtml
+        {
+            get
+            {
+                return ViewState["PreHtml"] as string;
+            }
+
+            set
+            {
+                ViewState["PreHtml"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the post HTML.
+        /// </summary>
+        /// <value>
+        /// The post HTML.
+        /// </value>
+        public string PostHtml
+        {
+            get
+            {
+                return ViewState["PostHtml"] as string;
+            }
+
+            set
+            {
+                ViewState["PostHtml"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this <see cref="FilterField" /> is expanded.
         /// </summary>
         /// <value>
@@ -459,6 +497,7 @@ namespace Rock.Web.UI.Controls
 
             cbIncludeFilter = new RockCheckBox();
             cbIncludeFilter.ContainerCssClass = "filterfield-checkbox";
+            cbIncludeFilter.TextCssClass = "control-label";
             Controls.Add( cbIncludeFilter );
             cbIncludeFilter.ID = this.ID + "_cbIncludeFilter";
         }
@@ -469,6 +508,11 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter" /> that represents the output stream to render HTML content on the client.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
+            if ( !string.IsNullOrEmpty( PreHtml ) )
+            {
+                writer.Write( PreHtml );
+            }
+
             DataFilterComponent component = null;
             string clientFormatString = string.Empty;
             if ( !string.IsNullOrWhiteSpace( FilterEntityTypeName ) )
@@ -595,6 +639,11 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
 
                 writer.RenderEndTag();
+            }
+
+            if ( !string.IsNullOrEmpty( PostHtml ) )
+            {
+                writer.Write( PostHtml );
             }
         }
 

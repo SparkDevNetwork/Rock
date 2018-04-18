@@ -37,12 +37,14 @@ namespace RockWeb.Blocks.CheckIn.Manager
     [Category( "Check-in > Manager" )]
     [Description( "Displays person and details about recent check-ins." )]
 
-    [LinkedPage("Manager Page", "Page used to manage check-in locations")]
+    [LinkedPage("Manager Page", "Page used to manage check-in locations", true, "", "", 0)]
+    [BooleanField("Show Related People", "Should anyone who is allowed to check-in the current person also be displayed with the family members?", false, "", 1)]
     public partial class Person : Rock.Web.UI.RockBlock
     {
         #region Fields
 
         // used for private variables
+        private int _deleteFieldIndex = 0;
 
         #endregion
 
@@ -68,6 +70,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
+            gHistory.DataKeyNames = new string[] { "Id" };
             gHistory.RowDataBound += gHistory_RowDataBound;
         }
 
@@ -124,7 +127,31 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     Literal lActive = (Literal)e.Row.FindControl( "lActive" );
                     lActive.Text = "<span class='label label-success'>Current</span>";
                 }
+                else
+                {
+                    var cell = ( e.Row.Cells[_deleteFieldIndex] as DataControlFieldCell ).Controls[0];
+                    if ( cell != null )
+                    {
+                        cell.Visible = false;
+                    }
+                }
             }
+        }
+
+        protected void gHistory_Delete( object sender, Rock.Web.UI.Controls.RowEventArgs e )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var service = new AttendanceService( rockContext );
+                var attendance = service.Get( e.RowKeyId );
+                if ( attendance != null )
+                {
+                    service.Delete( attendance );
+                    rockContext.SaveChanges();
+                }
+            }
+
+            ShowDetail( PageParameter( "Person" ).AsGuid() );
         }
 
         protected void rptrFamily_ItemDataBound( object sender, RepeaterItemEventArgs e )
@@ -145,6 +172,24 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 else
                 {
                     lFamilyIcon.Text = "<i class='fa fa-male'></i>";
+                }
+            }
+        }
+
+        protected void rptrRelationships_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
+            {
+                dynamic relatedMember = e.Item.DataItem as dynamic;
+                Literal lRelationshipsIcon = (Literal)e.Item.FindControl( "lRelationshipsIcon" );
+
+                if ( relatedMember.Gender == Gender.Female )
+                {
+                    lRelationshipsIcon.Text = "<i class='fa fa-female'></i>";
+                }
+                else
+                {
+                    lRelationshipsIcon.Text = "<i class='fa fa-male'></i>";
                 }
             }
         }
@@ -229,6 +274,53 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     rptrFamily.DataSource = familyMembers;
                     rptrFamily.DataBind();
 
+                    rcwRelationships.Visible = false;
+                    if ( GetAttributeValue("ShowRelatedPeople").AsBoolean() )
+                    {
+                        var roles = new List<int>();
+                        var krRoles = new GroupTypeRoleService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( r => r.GroupType.Guid.Equals( new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS ) ) )
+                            .ToList();
+
+                        foreach ( var role in krRoles )
+                        {
+                            role.LoadAttributes( rockContext );
+                            if ( role.GetAttributeValue( "CanCheckin").AsBoolean() &&
+                                role.Attributes.ContainsKey( "InverseRelationship" ) )
+                            {
+                                var inverseRoleGuid = role.GetAttributeValue( "InverseRelationship" ).AsGuidOrNull();
+                                if ( inverseRoleGuid.HasValue )
+                                {
+                                    var inverseRole = krRoles.FirstOrDefault( r => r.Guid == inverseRoleGuid.Value );
+                                    if ( inverseRole != null )
+                                    {
+                                        roles.Add( inverseRole.Id );
+                                    }
+                                }
+                            }
+                        }
+
+                        if ( roles.Any() )
+                        {
+                            var relatedMembers = personService.GetRelatedPeople( new List<int> { person.Id }, roles )
+                                .OrderBy( m => m.Person.LastName )
+                                .ThenBy( m => m.Person.NickName )
+                                .Select( m => new
+                                {
+                                    Url = urlRoot + m.Person.Guid.ToString(),
+                                    FullName = m.Person.FullName,
+                                    Gender = m.Person.Gender,
+                                    Note = " (" + m.GroupRole.Name + ")"
+                                } )
+                                .ToList();
+
+                            rcwRelationships.Visible = relatedMembers.Any();
+                            rptrRelationships.DataSource = relatedMembers;
+                            rptrRelationships.DataBind();
+                        }
+                    }
+
                     rptrPhones.DataSource = person.PhoneNumbers.Where( p => !p.IsUnlisted ).ToList();
                     rptrPhones.DataBind();
 
@@ -272,6 +364,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         .ThenByDescending( a => a.Schedule.StartTimeOfDay )
                         .Select( a => new AttendanceInfo
                         {
+                            Id = a.Id,
                             Date = a.StartDateTime,
                             GroupId = a.Group.Id,
                             Group = a.Group.Name,
@@ -297,6 +390,11 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     }
 
                     rcwCheckinHistory.Visible = attendances.Any();
+
+                    // Get the index of the delete column
+                    var deleteField = gHistory.Columns.OfType<Rock.Web.UI.Controls.DeleteField>().First();
+                    _deleteFieldIndex = gHistory.Columns.IndexOf( deleteField );
+
                     gHistory.DataSource = attendances;
                     gHistory.DataBind();
                 }
@@ -309,6 +407,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
         public class AttendanceInfo
         {
+            public int Id { get; set; }
             public DateTime Date { get; set; }
             public int GroupId { get; set; }
             public string Group { get; set; }
@@ -320,6 +419,6 @@ namespace RockWeb.Blocks.CheckIn.Manager
         }
 
         #endregion
-        
-}
+
+    }
 }

@@ -24,7 +24,7 @@ namespace Rock.Attribute
     /// <summary>
     /// Field Attribute for selecting checkbox options from an enum.
     /// </summary>
-    [AttributeUsage( AttributeTargets.Class, AllowMultiple = false, Inherited = true )]
+    [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class EnumsFieldAttribute : FieldAttribute
     {
         /// <summary>

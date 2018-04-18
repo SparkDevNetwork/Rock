@@ -21,7 +21,7 @@ using System.Web.UI;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -129,7 +129,7 @@ namespace Rock.Field.Types
             Guid guid = Guid.Empty;
             if ( Guid.TryParse( value, out guid ) )
             {
-                var entityType = EntityTypeCache.Read( guid );
+                var entityType = CacheEntityType.Get( guid );
                 if ( entityType != null )
                 {
                     formattedValue = entityType.FriendlyName;
@@ -159,7 +159,7 @@ namespace Rock.Field.Types
             if ( configurationValues != null )
             {
                 bool includeGlobal = false;
-                if ( configurationValues.ContainsKey( "includeglobal" ) && 
+                if ( configurationValues.ContainsKey( "includeglobal" ) &&
                     bool.TryParse(configurationValues["includeglobal"].Value, out includeGlobal) &&
                     !includeGlobal)
                 {
@@ -182,10 +182,17 @@ namespace Rock.Field.Types
             EntityTypePicker entityTypePicker = control as EntityTypePicker;
             if ( entityTypePicker != null && entityTypePicker.SelectedEntityTypeId.HasValue )
             {
-                var entityType = EntityTypeCache.Read(entityTypePicker.SelectedEntityTypeId.Value);
-                if (entityType != null)
+                if ( entityTypePicker.SelectedEntityTypeId == 0 && entityTypePicker.IncludeGlobalOption )
                 {
-                    return entityType.Guid.ToString();
+                    return Guid.Empty.ToString();
+                }
+                else
+                {
+                    var entityType = CacheEntityType.Get( entityTypePicker.SelectedEntityTypeId.Value );
+                    if ( entityType != null )
+                    {
+                        return entityType.Guid.ToString();
+                    }
                 }
             }
 
@@ -207,7 +214,7 @@ namespace Rock.Field.Types
                 if ( entityTypePicker != null )
                 {
                     int selectedValue = 0;
-                    var entityType = EntityTypeCache.Read(guid);
+                    var entityType = CacheEntityType.Get(guid);
                     if (entityType != null)
                     {
                         selectedValue = entityType.Id;

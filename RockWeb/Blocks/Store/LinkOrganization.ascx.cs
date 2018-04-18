@@ -25,7 +25,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using Rock.Store;
@@ -160,8 +160,8 @@ namespace RockWeb.Blocks.Store
 
         private void SetOrganization(Organization organization)
         {
-            GlobalAttributesCache globalCache = GlobalAttributesCache.Read();
-            globalCache.SetValue( "StoreOrganizationKey", organization.Key, true );
+            StoreService.SetOrganizationKey( organization.Key );
+            
             pnlAuthenicate.Visible = false;
             pnlSelectOrganization.Visible = false;
             pnlComplete.Visible = true;

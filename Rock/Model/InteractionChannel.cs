@@ -35,7 +35,7 @@ namespace Rock.Model
     [NotAudited]
     [Table( "InteractionChannel" )]
     [DataContract]
-    public partial class InteractionChannel : Model<InteractionChannel>
+    public partial class InteractionChannel : Model<InteractionChannel>, IHasActiveFlag
     {
 
         #region Entity Properties
@@ -120,24 +120,76 @@ namespace Rock.Model
         public int? ComponentCacheDuration { get; set; }
 
         /// <summary>
-        /// Gets or sets the list template.
-        /// Used when rendering the interaction channel in a list using lava
+        /// Gets or sets the channel list template.
         /// </summary>
         /// <value>
-        /// The list template.
+        /// The channel list template.
         /// </value>
         [DataMember]
-        public string ListTemplate { get; set; }
+        public string ChannelListTemplate { get; set; }
 
         /// <summary>
-        /// Gets or sets the detail template.
-        /// Used when rendering the interaction channel's details using lava
+        /// Gets or sets the channel detail template.
         /// </summary>
         /// <value>
-        /// The detail template.
+        /// The channel detail template.
         /// </value>
         [DataMember]
-        public string DetailTemplate { get; set; }
+        public string ChannelDetailTemplate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the component list template.
+        /// </summary>
+        /// <value>
+        /// The component list template.
+        /// </value>
+        [DataMember]
+        public string ComponentListTemplate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the component detail template.
+        /// </summary>
+        /// <value>
+        /// The component detail template.
+        /// </value>
+        [DataMember]
+        public string ComponentDetailTemplate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the session list template.
+        /// </summary>
+        /// <value>
+        /// The session list template.
+        /// </value>
+        [DataMember]
+        public string SessionListTemplate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the session detail template.
+        /// </summary>
+        /// <value>
+        /// The session detail template.
+        /// </value>
+        [DataMember]
+        public string SessionDetailTemplate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the interaction list template.
+        /// </summary>
+        /// <value>
+        /// The interaction list template.
+        /// </value>
+        [DataMember]
+        public string InteractionListTemplate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the interaction detail template.
+        /// </summary>
+        /// <value>
+        /// The interaction detail template.
+        /// </value>
+        [DataMember]
+        public string InteractionDetailTemplate { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [uses session].
@@ -150,6 +202,22 @@ namespace Rock.Model
         [DataMember]
         public bool UsesSession { get; set; }
 
+        /// <summary>
+        /// Gets or sets a flag indicating if this is an active group. This value is required.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this group is active, otherwise <c>false</c>.
+        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        [Previewable]
+        public bool IsActive
+        {
+            get { return _isActive; }
+            set { _isActive = value; }
+        }
+
+        private bool _isActive = true;
 
         #endregion
 
@@ -192,7 +260,7 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public override void PostSaveChanges( Data.DbContext dbContext )
         {
-            Web.Cache.InteractionChannelCache.Flush( this.Id );
+            Cache.CacheInteractionChannel.Remove( this.Id );
 
             base.PostSaveChanges( dbContext );
         }

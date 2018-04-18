@@ -32,6 +32,7 @@ namespace Rock.Web.Cache
     /// </summary>
     [Serializable]
     [DataContract]
+    [Obsolete( "Use Rock.Cache.LaveTemplateCache instead" )]
     public class LavaTemplateCache 
     {
         #region Constructors

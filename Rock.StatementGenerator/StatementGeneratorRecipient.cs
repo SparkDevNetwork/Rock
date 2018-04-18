@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 namespace Rock.StatementGenerator
 {
     /// <summary>
@@ -24,7 +26,7 @@ namespace Rock.StatementGenerator
     {
         /// <summary>
         /// Gets or sets the HTML.
-        /// NOTE: If this is NULL or OptedOut == True, don't show the statement
+        /// NOTE: If this is NULL/EmptyString or OptedOut == True, don't show the statement
         /// </summary>
         /// <value>
         /// The HTML.
@@ -71,6 +73,15 @@ namespace Rock.StatementGenerator
         public int? PersonId { get; set; }
 
         /// <summary>
+        /// Gets or sets the location identifier.
+        /// This is the Mailiing Address that the statement should be sent to
+        /// </summary>
+        /// <value>
+        /// The location identifier.
+        /// </value>
+        public Guid? LocationGuid { get; set; }
+
+        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>
@@ -78,7 +89,7 @@ namespace Rock.StatementGenerator
         /// </returns>
         public override string ToString()
         {
-            return $"GroupId:{GroupId}, PersonId:{PersonId}";
+            return $"GroupId:{GroupId}, PersonId:{PersonId}, LocationGuid:{LocationGuid}";
         }
     }
 }

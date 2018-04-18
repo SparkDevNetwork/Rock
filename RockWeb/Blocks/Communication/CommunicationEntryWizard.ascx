@@ -102,7 +102,7 @@
                     <asp:ValidationSummary ID="vsCommunicationDelivery" runat="server" HeaderText="Please Correct the Following" ValidationGroup="vgCommunicationDelivery" CssClass="alert alert-danger" />
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:RockTextBox ID="tbCommunicationName" runat="server" Label="Communication Name" Help="This name is used internally to describe the communication. It is not sent as a part of the communication." Required="true" ValidationGroup="vgCommunicationDelivery"/>
+                            <Rock:RockTextBox ID="tbCommunicationName" runat="server" Label="Communication Name" Help="This name is used internally to describe the communication. It is not sent as a part of the communication." Required="true" ValidationGroup="vgCommunicationDelivery" MaxLength="100"/>
                         </div>
                         <div class="col-md-6">
                             <Rock:Toggle ID="tglBulkCommunication" runat="server" OnText="Yes" OffText="No" ActiveButtonCssClass="btn-info" ButtonSizeCssClass="btn-xs" Help="Select this option if you are sending this email to a group of people. This will include the option for recipients to unsubscribe and will not send the email to any recipients that have already asked to be unsubscribed." Checked="false" Label="Is The Communication Bulk" />
@@ -250,7 +250,6 @@
                                                     <asp:ListItem Text="Slight" Value="125%" />
                                                     <asp:ListItem Text="1 &frac12; spacing" Value="150%" />
                                                     <asp:ListItem Text="Double space" Value="200%" />
-                                                    <asp:ListItem />
                                                 </Rock:RockDropDownList>
                                             </div>
                                         </div>
@@ -586,7 +585,7 @@
                                     <!-- Code Properties -->
                                     <div class="propertypanel propertypanel-code" data-component="code" style="display: none;">
 						                <h4 class="propertypanel-title">HTML</h4>
-                                        <Rock:CodeEditor ID="codeEditor" CssClass="js-component-code-codeEditor" runat="server" Height="350" EditorTheme="Rock" EditorMode="Html" OnChangeScript="updateCodeComponent(this, contents);" />
+                                        <Rock:CodeEditor ID="codeEditor" CssClass="js-component-code-codeEditor" runat="server" Height="350" EditorTheme="Rock" EditorMode="Lava" OnChangeScript="updateCodeComponent(this, contents);" />
                                         <div class="alert alert-danger" id="component-code-codeEditor-error"  style="display:none"></div>
 						
 
@@ -776,20 +775,20 @@
                                     <div class="component component-section" data-content="<div class='dropzone'></div>" data-state="template">
 					                    <i class="rk rk-one-column"></i> <br /> One
 				                    </div>
-                                    <div class="component component-section" data-content="<table width='100%'><tr><td width='50%' valign='top'><div class='dropzone'></div></td><td width='50%' valign='top'><div class='dropzone'></div></td></tr></table>" data-state="template">
+                                    <div class="component component-section" data-content="<table class='row'width='100%' ><tr><td class='dropzone columns large-6 small-6 first' width='50%' valign='top'></td><td class='dropzone columns large-6 small-6 last' width='50%' valign='top'></td></tr></table>" data-state="template">
 					                    <i class="rk rk-two-column"></i> <br /> Two
 				                    </div>
-                                    <div class="component component-section" data-content="<table width='100%'><tr><td width='33%' valign='top'><div class='dropzone'></div></td><td width='34%' valign='top'><div class='dropzone'></div></td><td width='33%' valign='top'><div class='dropzone'></div></td></tr></table>" data-state="template">
+                                    <div class="component component-section" data-content="<table class='row'width='100%' ><tr><td class='dropzone columns large-4 small-4 first' width='33%' valign='top'></td><td class='dropzone columns large-4 small-4' width='34%' valign='top'></td><td class='dropzone columns large-4 small-4 last' width='33%' valign='top'></td></tr></table>" data-state="template">
 					                    <i class="rk rk-three-column"></i> <br /> Three
 				                    </div>
                                     <!--
-                                    <div class="component component-section" data-content="<table width='100%'><tr><td width='25%' valign='top'><div class='dropzone'></div></td><td width='25%' valign='top'><div class='dropzone'></div></td><td width='25%' valign='top'><div class='dropzone'></div></td><td width='25%' valign='top'><div class='dropzone'></div></td></tr></table>" data-state="template">
+                                    <div class="component component-section" data-content="<table class='row' width='100%'><tr><td class='dropzone' width='25%' valign='top'></td><td class='dropzone columns large-3 small-3' width='25%' valign='top'></td><td class='dropzone columns large-3 small-3' width='25%' valign='top'></td><td class='dropzone columns large-3 small-3' width='25%' valign='top'></td></tr></table>" data-state="template">
 					                    <i class="rk rk-four-column"></i> <br /> Four
 				                    </div> -->
-                                    <div class="component component-section" data-content="<table width='100%'><tr><td width='33%' valign='top'><div class='dropzone'></div></td><td width='67%' valign='top'><div class='dropzone'></div></td></tr></table>" data-state="template">
+                                    <div class="component component-section" data-content="<table class='row'width='100%' ><tr><td class='dropzone columns large-4 small-4 first' width='33%' valign='top'></td><td class='dropzone columns large-8 small-8 last' width='67%' valign='top'></td></tr></table>" data-state="template">
 					                    <i class="rk rk-left-column"></i> <br /> Left
 				                    </div>
-                                    <div class="component component-section" data-content="<table width='100%'><tr><td width='67%' valign='top'><div class='dropzone'></div></td><td width='33%' valign='top'><div class='dropzone'></div></td></tr></table>" data-state="template">
+                                    <div class="component component-section" data-content="<table class='row'width='100%' ><tr><td class='dropzone columns large-8 small-8 first' width='67%' valign='top'></td><td class='dropzone columns large-4 small-4 last' width='33%' valign='top'></td></tr></table>" data-state="template">
 					                    <i class="rk rk-right-column"></i> <br /> Right
 				                    </div>
                                 </div>
@@ -834,7 +833,7 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:RockTextBox ID="tbFromName" runat="server" Label="From Name" Required="true" ValidationGroup="vgEmailSummary" />
+                            <Rock:RockTextBox ID="tbFromName" runat="server" Label="From Name" Required="true" ValidationGroup="vgEmailSummary" MaxLength="100" />
                         </div>
                         <div class="col-md-6">
                             <Rock:EmailBox ID="ebFromAddress" runat="server" Label="From Address" Required="true" ValidationGroup="vgEmailSummary"/>
@@ -866,7 +865,7 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:RockTextBox ID="tbEmailSubject" runat="server" Label="Email Subject" Help="<span class='tip tip-lava'></span>" Required="true" ValidationGroup="vgEmailSummary" />
+                            <Rock:RockTextBox ID="tbEmailSubject" runat="server" Label="Email Subject" Help="<span class='tip tip-lava'></span>" Required="true" ValidationGroup="vgEmailSummary" MaxLength="100" />
                             <asp:UpdatePanel ID="upEmailFileAttachments" runat="server">
                                 <ContentTemplate>
                                     <asp:HiddenField ID="hfEmailAttachedBinaryFileIds" runat="server" />
@@ -1212,7 +1211,7 @@
                 jqueryLoaderScript.async = false;
                 jqueryLoaderScript.className = "js-emaileditor-addon";
                 jqueryLoaderScript.type = "text/javascript";
-                jqueryLoaderScript.src = '<%=RockPage.ResolveRockUrl("~/Scripts/jquery-1.12.4.min.js", true ) %>';
+                jqueryLoaderScript.src = '<%=System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" ) %>';
 
                 var dragulaLoaderScript = document.createElement("script");
                 dragulaLoaderScript.async = false;

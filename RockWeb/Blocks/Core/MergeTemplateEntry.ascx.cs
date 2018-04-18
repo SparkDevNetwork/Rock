@@ -27,7 +27,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.MergeTemplates;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -129,8 +129,8 @@ namespace RockWeb.Blocks.Core
 
             if ( entitySet.EntityTypeId.HasValue )
             {
-                bool isPersonEntitySet = entitySet.EntityTypeId.Value == EntityTypeCache.GetId<Rock.Model.Person>();
-                bool isGroupMemberEntitySet = entitySet.EntityTypeId.Value == EntityTypeCache.GetId<Rock.Model.GroupMember>();
+                bool isPersonEntitySet = entitySet.EntityTypeId.Value == CacheEntityType.GetId<Rock.Model.Person>();
+                bool isGroupMemberEntitySet = entitySet.EntityTypeId.Value == CacheEntityType.GetId<Rock.Model.GroupMember>();
                 cbCombineFamilyMembers.Visible = isPersonEntitySet || isGroupMemberEntitySet;
             }
             else
@@ -202,11 +202,8 @@ namespace RockWeb.Blocks.Core
                     }
                 }
 
-                var uri = new UriBuilder( outputBinaryFileDoc.Url );
-                var qry = System.Web.HttpUtility.ParseQueryString( uri.Query );
-                qry["attachment"] = true.ToTrueFalse();
-                uri.Query = qry.ToString();
-                Response.Redirect( uri.ToString(), false );
+                string getFileUrl = string.Format( "{0}?Guid={1}&attachment=true", ResolveRockUrl( "~/GetFile.ashx" ), outputBinaryFileDoc.Guid );
+                Response.Redirect( getFileUrl, false );
                 Context.ApplicationInstance.CompleteRequest();
             }
             catch ( Exception ex )
@@ -266,7 +263,7 @@ namespace RockWeb.Blocks.Core
                     qryEntity = qryEntity.Take( fetchCount.Value );
                 }
 
-                var entityTypeCache = EntityTypeCache.Read( entitySet.EntityTypeId.Value );
+                var entityTypeCache = CacheEntityType.Get( entitySet.EntityTypeId.Value );
                 bool isPersonEntityType = entityTypeCache != null && entityTypeCache.Guid == Rock.SystemGuid.EntityType.PERSON.AsGuid();
                 bool isGroupMemberEntityType = entityTypeCache != null && entityTypeCache.Guid == Rock.SystemGuid.EntityType.GROUP_MEMBER.AsGuid();
                 bool combineFamilyMembers = cbCombineFamilyMembers.Visible && cbCombineFamilyMembers.Checked;
@@ -371,6 +368,10 @@ namespace RockWeb.Blocks.Core
                     foreach ( var groupMember in qryEntity.AsNoTracking().OfType<GroupMember>() )
                     {
                         var person = groupMember.Person;
+
+                        // Attach the person record to rockContext so that navigation properties can be still lazy-loaded if needed (if the lava template needs it)
+                        rockContext.People.Attach( person );
+
                         person.AdditionalLavaFields = new Dictionary<string, object>();
                         person.AdditionalLavaFields.Add( "GroupMember", groupMember );
                         mergeObjectsDictionary.AddOrIgnore( groupMember.PersonId, person );
@@ -499,7 +500,7 @@ namespace RockWeb.Blocks.Core
             {
                 var qry = entitySetService.GetEntityQuery( entitySetId ).Take( 15 );
 
-                EntityTypeCache itemEntityType = EntityTypeCache.Read( entitySet.EntityTypeId ?? 0 );
+                CacheEntityType itemEntityType = CacheEntityType.Get( entitySet.EntityTypeId ?? 0 );
                 gPreview.CreatePreviewColumns( itemEntityType.GetEntityType() );
 
                 gPreview.DataSource = qry.ToList();

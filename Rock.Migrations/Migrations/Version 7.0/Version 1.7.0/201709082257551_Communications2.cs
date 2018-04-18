@@ -156,6 +156,8 @@ IF object_id(N'[dbo].[FK_dbo.CommunicationTemplate_dbo.EntityType_ChannelEntityT
             WHEN 'Rock.Communication.Medium.Email' THEN 1
             WHEN 'Rock.Communication.Medium.Sms' THEN 2
             WHEN 'Rock.Communication.Medium.PushNotification' THEN 3
+            WHEN 'com.bricksandmortarstudio.Communication.Medium.AlphanumericSMS' THEN 2
+            ELSE 4
         END
     FROM [Communication] C
     INNER JOIN [EntityType] E ON E.[Id] = C.[MediumEntityTypeId]
@@ -227,10 +229,18 @@ END" );
             Sql( @"DECLARE @AttributeId int = (SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = 'D7941908-1F65-CC9B-416C-CCFABE4221B9' )
                   DECLARE @DefinedTypeId int = ( SELECT TOP 1 [Id] FROM [DefinedType] WHERE[Guid] = 'BCBE1494-23F5-3683-4EC5-C0B5CACE8A5A' )
 
-                  INSERT INTO[AttributeQualifier]
-                  ([IsSystem], [AttributeId], [Key], [Value], [Guid])
-                  VALUES
-                  ( 0, @AttributeId, 'definedtype', @DefinedTypeId, newid() )" );
+                  IF NOT EXISTS (
+		                SELECT *
+		                FROM AttributeQualifier
+		                WHERE [AttributeId] = @AttributeId
+                        AND [Key] = 'definedtype'
+		                )
+                  BEGIN                  
+                        INSERT INTO [AttributeQualifier]
+                            ([IsSystem], [AttributeId], [Key], [Value], [Guid])
+                            VALUES
+                            ( 0, @AttributeId, 'definedtype', @DefinedTypeId, newid() )
+                  END");
 
             // group attribute of category
             RockMigrationHelper.AddGroupTypeGroupAttribute( "D1D95777-FFA3-CBB3-4A6D-658706DAED33", SystemGuid.FieldType.CATEGORY, "Category", "The category for the communication list.", 0, "", "E3810936-182E-2585-4F8E-030A0E18B27A" );

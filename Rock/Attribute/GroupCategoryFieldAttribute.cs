@@ -15,7 +15,7 @@
 // </copyright>
 //
 using Rock.Field.Types;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Attribute
 {
@@ -58,7 +58,7 @@ namespace Rock.Attribute
                 throw new System.Exception( "groupTypeGuid must be specified" );
             }
 
-            int? groupTypeId = GroupTypeCache.Read( groupTypeGuid.AsGuid() )?.Id;
+            int? groupTypeId = CacheGroupType.Get( groupTypeGuid.AsGuid() )?.Id;
             if ( groupTypeId == null )
             {
                 throw new System.Exception( "A valid groupTypeGuid must be specified" );

@@ -27,7 +27,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -103,7 +103,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                     SetSettingValue( rockContext, settings, "Password", tbPasswordNew.Text, true );
 
                     string defaultReturnUrl = string.Format( "{0}Webhooks/ProtectMyMinistry.ashx",
-                        GlobalAttributesCache.Value( "PublicApplicationRoot" ).EnsureTrailingForwardslash() );
+                        CacheGlobalAttributes.Value( "PublicApplicationRoot" ).EnsureTrailingForwardslash() );
                     SetSettingValue( rockContext, settings, "ReturnURL", defaultReturnUrl );
 
                     rockContext.SaveChanges();
@@ -148,7 +148,6 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                     SetSettingValue( rockContext, settings, "UserName", tbUserName.Text );
                     SetSettingValue( rockContext, settings, "Password", tbPassword.Text, true );
                     SetSettingValue( rockContext, settings, "ReturnURL", urlWebHook.Text );
-                    SetSettingValue( rockContext, settings, "TestMode", cbTestMode.Checked.ToString() );
                     SetSettingValue( rockContext, settings, "Active", cbActive.Checked.ToString() );
                     rockContext.SaveChanges();
 
@@ -209,7 +208,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
         protected void gDefinedValues_GridReorder( object sender, GridReorderEventArgs e )
         {
-            var definedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PROTECT_MY_MINISTRY_PACKAGES.AsGuid() );
+            var definedType = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PROTECT_MY_MINISTRY_PACKAGES.AsGuid() );
             if ( definedType != null )
             {
                 var changedIds = new List<int>();
@@ -222,10 +221,10 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                     rockContext.SaveChanges();
                 }
 
-                DefinedTypeCache.Flush( definedType.Id );
+                CacheDefinedType.Remove( definedType.Id );
                 foreach ( int id in changedIds )
                 {
-                    Rock.Web.Cache.DefinedValueCache.Flush( id );
+                    Rock.Cache.CacheDefinedValue.Remove( id );
                 }
             }
 
@@ -265,8 +264,8 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                     definedValueService.Delete( value );
                     rockContext.SaveChanges();
 
-                    DefinedTypeCache.Flush( value.DefinedTypeId );
-                    DefinedValueCache.Flush( value.Id );
+                    CacheDefinedType.Remove( value.DefinedTypeId );
+                    CacheDefinedValue.Remove( value.Id );
                 }
 
                 BindPackageGrid();
@@ -277,7 +276,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         {
             int definedValueId = hfDefinedValueId.Value.AsInteger();
 
-            var definedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PROTECT_MY_MINISTRY_PACKAGES.AsGuid() );
+            var definedType = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PROTECT_MY_MINISTRY_PACKAGES.AsGuid() );
             if ( definedType != null )
             {
                 using ( var rockContext = new RockContext() )
@@ -307,7 +306,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                     int? dvJurisdictionCodeId = ddlMVRJurisdication.SelectedValueAsInt();
                     if ( dvJurisdictionCodeId.HasValue && dvJurisdictionCodeId.Value > 0 )
                     {
-                        var dvJurisdicationCode = DefinedValueCache.Read( dvJurisdictionCodeId.Value );
+                        var dvJurisdicationCode = CacheDefinedValue.Get( dvJurisdictionCodeId.Value );
                         if ( dvJurisdicationCode != null )
                         {
                             dvJurisdicationCodeGuid = dvJurisdicationCode.Guid;
@@ -323,8 +322,8 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                     definedValue.SetAttributeValue( "SendHomeStateMVR", cbSendStateMVR.Checked.ToString() );
                     definedValue.SaveAttributeValues( rockContext );
 
-                    DefinedTypeCache.Flush( definedType.Id );
-                    DefinedValueCache.Flush( definedValue.Id );
+                    CacheDefinedType.Remove( definedType.Id );
+                    CacheDefinedValue.Remove( definedValue.Id );
                 }
             }
 
@@ -348,7 +347,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         {
             using ( var rockContext = new RockContext() )
             {
-                var mvrJurisdicationCodes = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PROTECT_MY_MINISTRY_MVR_JURISDICTION_CODES.AsGuid() );
+                var mvrJurisdicationCodes = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PROTECT_MY_MINISTRY_MVR_JURISDICTION_CODES.AsGuid() );
                 if ( mvrJurisdicationCodes != null )
                 {
                     ddlMVRJurisdication.BindToDefinedType( mvrJurisdicationCodes, true, true );
@@ -381,7 +380,6 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         /// </summary>
         public void ShowNew()
         {
-            hlMode.Visible = false;
             hlActive.Visible = false;
 
             imgPromotion.ImageUrl = PROMOTION_IMAGE_URL;
@@ -419,7 +417,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
             }
 
             nbSSLWarning.Visible = !GetSettingValue( settings, "ReturnURL" ).StartsWith( "https://" );
-            nbSSLWarning.NotificationBoxType = GetSettingValue( settings, "TestMode" ).AsBoolean() ? NotificationBoxType.Warning : NotificationBoxType.Danger;
+            nbSSLWarning.NotificationBoxType = NotificationBoxType.Warning;
 
             pnlNew.Visible = false;
             pnlViewDetails.Visible = true;
@@ -441,7 +439,6 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
             tbPassword.Text = GetSettingValue( settings, "Password", true );
             urlWebHook.Text = GetSettingValue( settings, "ReturnURL" );
             cbActive.Checked = GetSettingValue( settings, "Active" ).AsBoolean();
-            cbTestMode.Checked = GetSettingValue( settings, "TestMode" ).AsBoolean();
 
             BindPackageGrid();
 
@@ -493,7 +490,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         /// <param name="definedValueId">The defined value identifier.</param>
         public void ShowPackageEdit( int definedValueId )
         {
-            var definedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PROTECT_MY_MINISTRY_PACKAGES.AsGuid() );
+            var definedType = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PROTECT_MY_MINISTRY_PACKAGES.AsGuid() );
             if ( definedType != null )
             {
                 DefinedValue definedValue = null;
@@ -524,7 +521,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                 Guid? mvrJurisdicationGuid = definedValue.GetAttributeValue( "MVRJurisdiction" ).AsGuidOrNull();
                 if ( mvrJurisdicationGuid.HasValue )
                 {
-                    var mvrJurisdication = DefinedValueCache.Read( mvrJurisdicationGuid.Value );
+                    var mvrJurisdication = CacheDefinedValue.Get( mvrJurisdicationGuid.Value );
                     if ( mvrJurisdication != null )
                     {
                         ddlMVRJurisdication.SetValue( mvrJurisdication.Id );
@@ -548,11 +545,6 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         /// <param name="settings">The settings.</param>
         public void ShowHighlightLabels( List<AttributeValue> settings )
         {
-            bool testMode = GetSettingValue( settings, "TestMode" ).AsBoolean();
-            hlMode.LabelType = testMode ? LabelType.Primary : LabelType.Success;
-            hlMode.Text = testMode ? "In Test Mode" : "In Live Mode";
-            hlMode.Visible = true;
-
             bool active = GetSettingValue( settings, "Active" ).AsBoolean();
             hlActive.LabelType = active ? LabelType.Success : LabelType.Danger;
             hlActive.Text = active ? "Active" : "Inactive";
@@ -604,7 +596,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         /// <returns></returns>
         private List<AttributeValue> GetSettings( RockContext rockContext )
         {
-            var pmmEntityType = EntityTypeCache.Read( typeof( Rock.Security.BackgroundCheck.ProtectMyMinistry ) );
+            var pmmEntityType = CacheEntityType.Get( typeof( Rock.Security.BackgroundCheck.ProtectMyMinistry ) );
             if ( pmmEntityType != null )
             {
                 var service = new AttributeValueService( rockContext );
@@ -661,7 +653,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
             }
             else
             {
-                var pmmEntityType = EntityTypeCache.Read( typeof( Rock.Security.BackgroundCheck.ProtectMyMinistry ) );
+                var pmmEntityType = CacheEntityType.Get( typeof( Rock.Security.BackgroundCheck.ProtectMyMinistry ) );
                 if ( pmmEntityType != null )
                 {
                     var attribute = new AttributeService( rockContext )

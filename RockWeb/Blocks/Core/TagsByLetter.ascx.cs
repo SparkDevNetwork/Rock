@@ -23,7 +23,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using System.Collections.Generic;
@@ -88,7 +88,7 @@ namespace RockWeb.Blocks.Core
 
             if ( !EntityTypeId.HasValue )
             {
-                var entityType = EntityTypeCache.Read( GetAttributeValue( "EntityType" ).AsGuid() );
+                var entityType = CacheEntityType.Get( GetAttributeValue( "EntityType" ).AsGuid() );
                 EntityTypeId = entityType != null ? entityType.Id : (int?)null;
             }
         }

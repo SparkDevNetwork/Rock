@@ -22,7 +22,7 @@ using System.Web;
 using Humanizer;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Communication
 {
@@ -44,8 +44,9 @@ namespace Rock.Communication
             // currently only processing hard bounces
             if ( bounceType == BounceType.HardBounce )
             {
-                // get people who have those emails
+                string bounceMessage = message.IsNotNullOrWhitespace() ? $" ({message})" : "";
 
+                // get people who have those emails
                 RockContext rockContext = new RockContext();
                 PersonService personService = new PersonService( rockContext );
 
@@ -54,8 +55,7 @@ namespace Rock.Communication
                 foreach ( var person in peopleWithEmail )
                 {
                     person.IsEmailActive = false;
-
-                    person.EmailNote = String.Format( "Email experienced a {0} on {1} ({2}).", bounceType.Humanize(), bouncedDateTime.ToShortDateString(), message );
+                    person.EmailNote = $"Email experienced a {bounceType.Humanize()} on {bouncedDateTime.ToShortDateString()}{bounceMessage}.";
                 }
 
                 rockContext.SaveChanges();
@@ -94,7 +94,7 @@ namespace Rock.Communication
                 var errorMessages = new List<string>();
 
                 var emailMessage = new RockEmailMessage();
-                emailMessage.FromEmail = GlobalAttributesCache.Value( "OrganizationEmail" );
+                emailMessage.FromEmail = CacheGlobalAttributes.Value( "OrganizationEmail" );
                 emailMessage.Subject = subject;
                 emailMessage.SetRecipients( recipients );
                 emailMessage.Message = message;

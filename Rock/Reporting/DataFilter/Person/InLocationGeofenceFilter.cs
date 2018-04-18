@@ -24,7 +24,7 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 using System.Web.UI.WebControls;
 
@@ -136,7 +136,7 @@ function() {
             lp.ID = filterControl.ID + "_lp";
             lp.Label = "Location";
             lp.AllowedPickerModes = LocationPickerMode.Named | LocationPickerMode.Polygon;
-            lp.CurrentPickerMode = lp.GetBestPickerModeForLocation( null );
+            lp.SetBestPickerModeForLocation( null );
             lp.CssClass = "col-lg-4";
             filterControl.Controls.Add( lp );
 
@@ -149,7 +149,7 @@ function() {
             ddlLocationType.Label = "Location Type";
             ddlLocationType.DataValueField = "Id";
             ddlLocationType.DataTextField = "Value";
-            DefinedTypeCache locationDefinedType = DefinedTypeCache.Read( SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() );
+            CacheDefinedType locationDefinedType = CacheDefinedType.Get( SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() );
             ddlLocationType.BindToDefinedType( locationDefinedType );
             ddlLocationType.Items.Insert( 0, new ListItem( "(All Location Types)", "" ) );
             panel.Controls.Add( ddlLocationType );
@@ -207,7 +207,7 @@ function() {
             if ( location != null )
             {
                 LocationPicker locationPicker = controls[0] as LocationPicker;
-                locationPicker.GetBestPickerModeForLocation( location );
+                locationPicker.SetBestPickerModeForLocation( location );
                 locationPicker.Location = location;
             }
 

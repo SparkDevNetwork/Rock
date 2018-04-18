@@ -22,7 +22,7 @@ using System.Reflection;
 using System.Web.UI;
 
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock;
 using System.Web.UI.WebControls;
@@ -58,7 +58,7 @@ namespace RockWeb.Blocks.Core
         /// <value>
         /// The type of the tag entity.
         /// </value>
-        public EntityTypeCache TagEntityType { get; set; }
+        public CacheEntityType TagEntityType { get; set; }
 
         #endregion
 
@@ -85,7 +85,7 @@ namespace RockWeb.Blocks.Core
                     pnlGrid.Visible = true;
                     lTaggedTitle.Text = "Tagged Items";
 
-                    TagEntityType = EntityTypeCache.Read( _tag.EntityTypeId ?? 0 );
+                    TagEntityType = CacheEntityType.Get( _tag.EntityTypeId ?? 0 );
                     if ( TagEntityType != null )
                     {
                         if ( TagEntityType.Name == "Rock.Model.Person" )
@@ -138,7 +138,7 @@ namespace RockWeb.Blocks.Core
                 var taggedItem = new TaggedItemService( rockContext ).Get( e.RowKeyId );
                 if ( taggedItem != null )
                 {
-                    var entityType = EntityTypeCache.Read( taggedItem.EntityTypeId );
+                    var entityType = CacheEntityType.Get( taggedItem.EntityTypeId );
                     if ( entityType != null )
                     {
                         var entity = GetGenericEntity( entityType.GetEntityType(), taggedItem.EntityGuid ) as IEntity;
@@ -228,6 +228,11 @@ namespace RockWeb.Blocks.Core
                         } );
                 }
 
+                if ( TagEntityType != null )
+                {
+                    gReport.EntityTypeId = TagEntityType.Id;
+                }
+
                 gReport.DataSource = results.ToList();
                 gReport.DataBind();
             }
@@ -235,7 +240,7 @@ namespace RockWeb.Blocks.Core
 
         public string GetItemName( int entityTypeId, Guid entityGuid )
         {
-            var entityType = EntityTypeCache.Read( entityTypeId );
+            var entityType = CacheEntityType.Get( entityTypeId );
             if ( entityType != null )
             {
                 var entity = GetGenericEntity( entityType.GetEntityType(), entityGuid ) as IEntity;

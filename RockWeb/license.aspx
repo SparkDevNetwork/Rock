@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/Rock/Styles/bootstrap.css") %>"/>
     <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/Rock/Styles/theme.css") %>" />
 
-    <script src="<%= ResolveUrl("~/Scripts/jquery-1.12.4.min.js") %>"></script>
+    <script src="<%= System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" ) %>"></script>
 
 </head>
 <body id="splash" class="error">
@@ -131,6 +131,8 @@
                             <li><a href="http://www.chartjs.org">Chart.js</a> (MIT)</li>
                             <li><a href="https://github.com/milkshakesoftware/PreMailer.Net">PreMailer.Net</a> (MIT)</li>
                             <li><a href="https://github.com/AngleSharp/AngleSharp">AngleSharp</a> (MIT)</li>
+                            <li><a href="https://github.com/vilppu/OpenHtmlToPdf">OpenHtmlToPdf</a> (Creative Commons - Attribution 3.0 Unported (CC BY 3.0))</li>
+                            <li><a href="http://www.pdfsharp.net">PDF Sharp</a> (MIT)</li>
                         </ul>
                     </div>
                 </div>

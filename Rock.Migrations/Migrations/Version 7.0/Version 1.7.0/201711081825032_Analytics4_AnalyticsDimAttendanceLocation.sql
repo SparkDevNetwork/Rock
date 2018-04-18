@@ -1,8 +1,8 @@
 IF OBJECT_ID(N'[dbo].[AnalyticsDimAttendanceLocation]', 'V') IS NOT NULL
-    DROP VIEW AnalyticsDimAttendanceLocation
+    DROP VIEW [dbo].AnalyticsDimAttendanceLocation
 GO
 
-CREATE VIEW AnalyticsDimAttendanceLocation
+CREATE VIEW [dbo].AnalyticsDimAttendanceLocation
 AS
 SELECT l.Id [LocationId]
 	,l.Name

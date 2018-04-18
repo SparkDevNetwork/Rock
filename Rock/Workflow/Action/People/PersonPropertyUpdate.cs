@@ -24,7 +24,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Workflow.Action
 {
@@ -38,7 +38,7 @@ namespace Rock.Workflow.Action
 
     [WorkflowAttribute("Person", "Workflow attribute that contains the person to update.", true, "", "", 0, null,
         new string[] { "Rock.Field.Types.PersonFieldType" } )]
-    [CustomDropdownListField("Property", "The property to update.", "Title^Title (Defined Value),FirstName^First Name (Text),NickName^Nick Name (Text),MiddleName^Middle Name (Text),LastName^Last Name (Text),Suffix^Suffix (Defined Value),Birthdate^Birthdate (Date/Text),Photo^Photo (Binary File/Integer of Binary File),Gender^Gender (Text or Integer [1=Male 2=Female 0=Unknown]),MaritalStatus^Marital Status (Defined Value),AnniversaryDate^Anniversary Date (Date),Email^Email (Text),EmailPreference^Email Preference (Text or Integer [0=EmailAllowed 1=NoMassEmails 2=DoNotEmail]),IsEmailActive^Is Email Active (Boolean),EmailNote^Email Note (Text),GraduationYear^Graduation Year (Integer),RecordStatus^Record Status (Defined Value),RecordStatusReason^Inactive Record Status Reason (Defined Value),InactiveReasonNote^Inactive Reason Note (Text),ConnectionStatus^Connection Status (Defined Value),IsDeceased^IsDeceased (Boolean),SystemNote^System Note (Text),", true, order: 1 )]
+    [CustomDropdownListField("Property", "The property to update.", "Title^Title (Defined Value),FirstName^First Name (Text),NickName^Nick Name (Text),MiddleName^Middle Name (Text),LastName^Last Name (Text),Suffix^Suffix (Defined Value),Birthdate^Birthdate (Date/Text),Photo^Photo (Binary File/Integer of Binary File),Gender^Gender (Text or Integer [1=Male 2=Female 0=Unknown]),MaritalStatus^Marital Status (Defined Value),AnniversaryDate^Anniversary Date (Date),CommunicationPreference^Communication Preference (Text or Integer [1=Email 2=SMS 3=PushNotification]),Email^Email (Text),EmailPreference^Email Preference (Text or Integer [0=EmailAllowed 1=NoMassEmails 2=DoNotEmail]),IsEmailActive^Is Email Active (Boolean),EmailNote^Email Note (Text),GraduationYear^Graduation Year (Integer),RecordStatus^Record Status (Defined Value),RecordStatusReason^Inactive Record Status Reason (Defined Value),InactiveReasonNote^Inactive Reason Note (Text),ConnectionStatus^Connection Status (Defined Value),IsDeceased^IsDeceased (Boolean),SystemNote^System Note (Text),", true, order: 1 )]
     [WorkflowTextOrAttribute( "Value", "Attribute Value", "The value or attribute value to set the person property to. <span class='tip tip-lava'></span>", false, "", "", 2, "Value" )]
     [BooleanField("Ignore Blank Values", "If a value is blank should it be ignored, or should it be used to wipe out the current value. This is helpful with working with defined values that can not be found.", true, order: 3)]
     public class PersonPropertyUpdate : ActionComponent
@@ -61,7 +61,7 @@ namespace Rock.Workflow.Action
             Guid guidPersonAttribute = personAttributeValue.AsGuid();
             if ( !guidPersonAttribute.IsEmpty() )
             {
-                var attributePerson = AttributeCache.Read( guidPersonAttribute, rockContext );
+                var attributePerson = CacheAttribute.Get( guidPersonAttribute, rockContext );
                 if ( attributePerson != null )
                 {
                     string attributePersonValue = action.GetWorklowAttributeValue( guidPersonAttribute );
@@ -266,6 +266,20 @@ namespace Rock.Workflow.Action
                         }
                         break;
                     }
+                case "CommunicationPreference":
+                    {
+                        var communicationPreference = updateValue.ConvertToEnumOrNull<CommunicationType>();
+                        if ( ignoreBlanks == false || communicationPreference.HasValue )
+                        {
+                            if ( !communicationPreference.HasValue )
+                            {
+                                communicationPreference = CommunicationType.Email;
+                            }
+                            person.CommunicationPreference = communicationPreference.Value;
+                            rockContext.SaveChanges();
+                        }
+                        break;
+                    }
                 case "Email":
                     {
                         if ( ignoreBlanks == false || !string.IsNullOrWhiteSpace( updateValue ) )
@@ -414,8 +428,8 @@ namespace Rock.Workflow.Action
 
             int? definedValueId = null;
 
-            var definedValues = DefinedTypeCache.Read( definedTypeGuid ).DefinedValues;
-            DefinedValueCache definedValue = null;
+            var definedValues = CacheDefinedType.Get( definedTypeGuid ).DefinedValues;
+            CacheDefinedValue definedValue = null;
 
             value = value.Trim();
 

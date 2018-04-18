@@ -29,7 +29,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Jobs
 {
@@ -81,7 +81,6 @@ namespace Rock.Jobs
         private JobStats _campusJobStats = new JobStats();
 
         private int? _commandTimeout = null;
-        private List<string> _sqlLogs = new List<string>();
 
         #endregion Private Fields
 
@@ -97,8 +96,6 @@ namespace Rock.Jobs
 
             // get the configured timeout, or default to 20 minutes if it is blank
             _commandTimeout = dataMap.GetString( "CommandTimeout" ).AsIntegerOrNull() ?? 1200;
-
-            int? commandTimeout = dataMap.GetString( "CommandTimeout" ).AsIntegerOrNull();
 
             StringBuilder results = new StringBuilder();
 
@@ -139,7 +136,7 @@ namespace Rock.Jobs
             {
                 try
                 {
-                    int rows = DbService.ExecuteCommand( "EXEC [dbo].[spAnalytics_ETL_FinancialTransaction]", System.Data.CommandType.Text, null, commandTimeout );
+                    int rows = DbService.ExecuteCommand( "EXEC [dbo].[spAnalytics_ETL_FinancialTransaction]", System.Data.CommandType.Text, null, _commandTimeout );
                     results.AppendLine( "FinancialTransaction ETL completed." );
 
                     context.UpdateLastStatusMessage( results.ToString() );
@@ -157,7 +154,7 @@ namespace Rock.Jobs
             {
                 try
                 {
-                    int rows = DbService.ExecuteCommand( "EXEC [dbo].[spAnalytics_ETL_Attendance]", System.Data.CommandType.Text, null, commandTimeout );
+                    int rows = DbService.ExecuteCommand( "EXEC [dbo].[spAnalytics_ETL_Attendance]", System.Data.CommandType.Text, null, _commandTimeout );
                     results.AppendLine( "Attendance ETL completed." );
 
                     context.UpdateLastStatusMessage( results.ToString() );
@@ -173,7 +170,7 @@ namespace Rock.Jobs
             // "Refresh Power BI Account Tokens"
             if ( dataMap.GetString( "RefreshPowerBIAccountTokens" ).AsBoolean() )
             {
-                var powerBiAccountsDefinedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.POWERBI_ACCOUNTS.AsGuid() );
+                var powerBiAccountsDefinedType = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.POWERBI_ACCOUNTS.AsGuid() );
                 if ( powerBiAccountsDefinedType?.DefinedValues?.Any() == true )
                 {
                     foreach ( var powerBiAccount in powerBiAccountsDefinedType.DefinedValues )
@@ -227,7 +224,7 @@ namespace Rock.Jobs
         /// </summary>
         /// <param name="attribute">The attribute.</param>
         /// <returns></returns>
-        private static bool UseFormatValueForUpdate( AttributeCache attribute )
+        private static bool UseFormatValueForUpdate( CacheAttribute attribute )
         {
             if ( attribute.FieldType.Field.AttributeValueFieldName == "Value" )
             {
@@ -263,7 +260,7 @@ namespace Rock.Jobs
         /// <param name="modelAnalyticAttributes">The model analytic attributes.</param>
         /// <param name="analyticsTableName">Name of the analytics table.</param>
         /// <param name="modelJobStats">The model job stats.</param>
-        private void UpdateAnalyticsSchemaForModel( List<EntityField> analyticsSourceFields, List<AttributeCache> modelAnalyticAttributes, string analyticsTableName, JobStats modelJobStats )
+        private void UpdateAnalyticsSchemaForModel( List<EntityField> analyticsSourceFields, List<CacheAttribute> modelAnalyticAttributes, string analyticsTableName, JobStats modelJobStats )
         {
             var dataSet = DbService.GetDataSetSchema( $"SELECT * FROM [{analyticsTableName}] where 1=0", System.Data.CommandType.Text, null );
             var dataTable = dataSet.Tables[0];
@@ -373,7 +370,7 @@ namespace Rock.Jobs
         /// <param name="analyticsTableModelIdColumnName">Name of the analytics table model identifier column.</param>
         /// <param name="modelJobStats">The model job stats.</param>
         /// <param name="hasCurrentRowIndicator">if set to <c>true</c> [has current row indicator].</param>
-        private void UpdateModelAttributeValues( List<AttributeCache> modelAnalyticAttributes, string analyticsTableName, string analyticsTableModelIdColumnName, JobStats modelJobStats, bool hasCurrentRowIndicator )
+        private void UpdateModelAttributeValues( List<CacheAttribute> modelAnalyticAttributes, string analyticsTableName, string analyticsTableModelIdColumnName, JobStats modelJobStats, bool hasCurrentRowIndicator )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -419,9 +416,9 @@ UPDATE [{analyticsTableName}]
                             var parameters = new Dictionary<string, object>();
                             parameters.Add( "@modelAttributeValue", modelAttributeValue );
                             parameters.Add( "@attributeValue", attributeValue );
-                            modelJobStats.AttributeFieldsUpdated += DbService.ExecuteCommand( updateSql, System.Data.CommandType.Text, parameters );
 
-                            _sqlLogs.Add( parameters.Select( a => $"/* {a.Key} = '{a.Value}' */" ).ToList().AsDelimited( "\n" ) + updateSql );
+                            modelJobStats.SqlLogs.Add( parameters.Select( a => $"/* {a.Key} = '{a.Value}' */" ).ToList().AsDelimited( "\n" ) + updateSql );
+                            modelJobStats.AttributeFieldsUpdated += DbService.ExecuteCommand( updateSql, System.Data.CommandType.Text, parameters, _commandTimeout );
                         }
                     }
                 }
@@ -441,9 +438,9 @@ UPDATE [{analyticsTableName}]
         {
             List<EntityField> analyticsSourcePersonHistoricalFields = EntityHelper.GetEntityFields( typeof( Rock.Model.AnalyticsSourcePersonHistorical ), false, false );
 
-            List<AttributeCache> personAnalyticAttributes = EntityHelper.GetEntityFields( typeof( Rock.Model.Person ) )
+            List<CacheAttribute> personAnalyticAttributes = EntityHelper.GetEntityFields( typeof( Rock.Model.Person ) )
                 .Where( a => a.FieldKind == FieldKind.Attribute && a.AttributeGuid.HasValue )
-                .Select( a => AttributeCache.Read( a.AttributeGuid.Value ) )
+                .Select( a => CacheAttribute.Get( a.AttributeGuid.Value ) )
                 .Where( a => a != null )
                 .Where( a => a.IsAnalytic )
                 .ToList();
@@ -477,7 +474,7 @@ UPDATE [{analyticsTableName}]
             {
                 if ( dataMap.GetString( "SaveSQLForDebug" ).AsBoolean() )
                 {
-                    LogSQL( "ProcessAnalyticsDimPerson.sql", _sqlLogs.AsDelimited( "\n" ).ToString() );
+                    LogSQL( "ProcessAnalyticsDimPerson.sql", _personJobStats.SqlLogs.AsDelimited( "\n" ).ToString() );
                 }
             }
         }
@@ -486,7 +483,7 @@ UPDATE [{analyticsTableName}]
         /// Marks Person Analytic rows as history if the formatted value of the attribute has changed
         /// </summary>
         /// <param name="personAnalyticAttributes">The person analytic attributes.</param>
-        private void MarkPersonAsHistoryUsingFormattedValue( List<AttributeCache> personAnalyticAttributes )
+        private void MarkPersonAsHistoryUsingFormattedValue( List<CacheAttribute> personAnalyticAttributes )
         {
             List<SqlCommand> markAsHistoryUsingFormattedValueScripts = new List<SqlCommand>();
 
@@ -530,9 +527,10 @@ UPDATE [AnalyticsSourcePersonHistorical]
                             var parameters = new Dictionary<string, object>();
                             parameters.Add( "@personAttributeValue", personAttributeValue );
                             parameters.Add( "@formattedValue", formattedValue );
-                            this._personJobStats.RowsMarkedAsHistory += DbService.ExecuteCommand( markAsHistorySQL, System.Data.CommandType.Text, parameters );
 
-                            _sqlLogs.Add( parameters.Select( a => $"/* {a.Key} = '{a.Value}' */" ).ToList().AsDelimited( "\n" ) + markAsHistorySQL );
+                            this._personJobStats.SqlLogs.Add( parameters.Select( a => $"/* {a.Key} = '{a.Value}' */" ).ToList().AsDelimited( "\n" ) + markAsHistorySQL );
+
+                            this._personJobStats.RowsMarkedAsHistory += DbService.ExecuteCommand( markAsHistorySQL, System.Data.CommandType.Text, parameters, _commandTimeout );
                         }
                     }
                 }
@@ -544,7 +542,7 @@ UPDATE [AnalyticsSourcePersonHistorical]
         /// </summary>
         /// <param name="personAnalyticAttributes">The person analytic attributes.</param>
         /// <returns></returns>
-        private void UpdatePersonAttributeValueUsingFormattedValue( List<AttributeCache> personAnalyticAttributes )
+        private void UpdatePersonAttributeValueUsingFormattedValue( List<CacheAttribute> personAnalyticAttributes )
         {
             // Update Attributes using GetFormattedValue...
             using ( var rockContext = new RockContext() )
@@ -580,9 +578,10 @@ UPDATE [AnalyticsSourcePersonHistorical]
                             var parameters = new Dictionary<string, object>();
                             parameters.Add( "@personAttributeValue", personAttributeValue );
                             parameters.Add( "@formattedValue", formattedValue );
-                            _personJobStats.AttributeFieldsUpdated += DbService.ExecuteCommand( updateSql, System.Data.CommandType.Text, parameters );
 
-                            _sqlLogs.Add( parameters.Select( a => $"/* {a.Key} = '{a.Value}' */" ).ToList().AsDelimited( "\n" ) + updateSql );
+                            _personJobStats.SqlLogs.Add( parameters.Select( a => $"/* {a.Key} = '{a.Value}' */" ).ToList().AsDelimited( "\n" ) + updateSql );
+
+                            _personJobStats.AttributeFieldsUpdated += DbService.ExecuteCommand( updateSql, System.Data.CommandType.Text, parameters, _commandTimeout );
                         }
                     }
                 }
@@ -594,7 +593,7 @@ UPDATE [AnalyticsSourcePersonHistorical]
         /// </summary>
         /// <param name="analyticsSourcePersonHistoricalFields">The analytics source person historical fields.</param>
         /// <param name="personAnalyticAttributes">The person analytic attributes.</param>
-        private void DoPersonMainPopulateETLs( List<EntityField> analyticsSourcePersonHistoricalFields, List<AttributeCache> personAnalyticAttributes )
+        private void DoPersonMainPopulateETLs( List<EntityField> analyticsSourcePersonHistoricalFields, List<CacheAttribute> personAnalyticAttributes )
         {
             // columns that should be considered when determining if a new History record is needed
             List<ColumnInfo> historyColumns = new List<ColumnInfo>();
@@ -690,9 +689,9 @@ DECLARE
     , @MaxExpireDate DATE = DateFromParts( 9999, 1, 1 )";
 
                 // throw script into logs in case 'Save SQL for Debug' is enabled
-                _sqlLogs.Add( "/* MarkAsHistoryScript */\n" + scriptDeclares + markAsHistoryScript );
-                _sqlLogs.Add( "/* UpdateETLScript */\n" + scriptDeclares + updateETLScript );
-                _sqlLogs.Add( "/* ProcessINSERTScript */\n" + scriptDeclares + processINSERTScript );
+                _personJobStats.SqlLogs.Add( "/* MarkAsHistoryScript */\n" + scriptDeclares + markAsHistoryScript );
+                _personJobStats.SqlLogs.Add( "/* UpdateETLScript */\n" + scriptDeclares + updateETLScript );
+                _personJobStats.SqlLogs.Add( "/* ProcessINSERTScript */\n" + scriptDeclares + processINSERTScript );
 
                 // Move Records To History that have changes in any of fields that trigger history
                 _personJobStats.RowsMarkedAsHistory += DbService.ExecuteCommand( scriptDeclares + markAsHistoryScript, CommandType.Text, null, _commandTimeout );
@@ -887,12 +886,12 @@ WHERE asph.CurrentRowIndicator = 1 AND (";
         private void ProcessFamilyBIAnalytics( IJobExecutionContext context, JobDataMap dataMap )
         {
             List<EntityField> analyticsSourceFamilyHistoricalFields = EntityHelper.GetEntityFields( typeof( Rock.Model.AnalyticsSourceFamilyHistorical ), false, false );
-            int groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
+            int groupTypeIdFamily = CacheGroupType.GetFamilyGroupType().Id;
             string groupTypeIdFamilyQualifier = groupTypeIdFamily.ToString();
 
-            List<AttributeCache> familyAnalyticAttributes = EntityHelper.GetEntityFields( typeof( Rock.Model.Group ), false, false )
+            List<CacheAttribute> familyAnalyticAttributes = EntityHelper.GetEntityFields( typeof( Rock.Model.Group ), false, false )
                 .Where( a => a.FieldKind == FieldKind.Attribute && a.AttributeGuid.HasValue )
-                .Select( a => AttributeCache.Read( a.AttributeGuid.Value ) )
+                .Select( a => CacheAttribute.Get( a.AttributeGuid.Value ) )
                 .Where( a => a != null )
                 .Where( a => a.EntityTypeQualifierColumn == "GroupTypeId" && a.EntityTypeQualifierValue == groupTypeIdFamilyQualifier )
                 .Where( a => a.IsAnalytic )
@@ -916,7 +915,7 @@ WHERE asph.CurrentRowIndicator = 1 AND (";
                 MarkFamilyAsHistoryUsingAttributeValues( familyAnalyticAttributes );
 
                 // run the main spAnalytics_ETL_Family stored proc to take care of all the non-attribute related data
-                var etlResult = DbService.GetDataTable( "EXEC [dbo].[spAnalytics_ETL_Family]", CommandType.Text, null );
+                var etlResult = DbService.GetDataTable( "EXEC [dbo].[spAnalytics_ETL_Family]", CommandType.Text, null, _commandTimeout );
                 if ( etlResult.Rows.Count == 1 )
                 {
                     _familyJobStats.RowsInserted = etlResult.Rows[0]["RowsInserted"] as int? ?? 0;
@@ -930,7 +929,7 @@ WHERE asph.CurrentRowIndicator = 1 AND (";
             {
                 if ( dataMap.GetString( "SaveSQLForDebug" ).AsBoolean() )
                 {
-                    LogSQL( "ProcessAnalyticsDimFamily.sql", _sqlLogs.AsDelimited( "\n" ).ToString() );
+                    LogSQL( "ProcessAnalyticsDimFamily.sql", _familyJobStats.SqlLogs.AsDelimited( "\n" ).ToString() );
                 }
             }
         }
@@ -939,7 +938,7 @@ WHERE asph.CurrentRowIndicator = 1 AND (";
         /// Marks Family Analytic rows as history if the value of the attribute has changed
         /// </summary>
         /// <param name="familyAnalyticAttributes">The family analytic attributes.</param>
-        private void MarkFamilyAsHistoryUsingAttributeValues( List<AttributeCache> familyAnalyticAttributes )
+        private void MarkFamilyAsHistoryUsingAttributeValues( List<CacheAttribute> familyAnalyticAttributes )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -985,9 +984,9 @@ UPDATE [AnalyticsSourceFamilyHistorical]
                         var parameters = new Dictionary<string, object>();
                         parameters.Add( "@familyAttributeValue", familyAttributeValue );
                         parameters.Add( "@attributeValue", attributeValue );
-                        this._familyJobStats.RowsMarkedAsHistory += DbService.ExecuteCommand( markAsHistorySQL, System.Data.CommandType.Text, parameters );
+                        this._familyJobStats.SqlLogs.Add( parameters.Select( a => $"/* {a.Key} = '{a.Value}' */" ).ToList().AsDelimited( "\n" ) + markAsHistorySQL );
 
-                        _sqlLogs.Add( parameters.Select( a => $"/* {a.Key} = '{a.Value}' */" ).ToList().AsDelimited( "\n" ) + markAsHistorySQL );
+                        this._familyJobStats.RowsMarkedAsHistory += DbService.ExecuteCommand( markAsHistorySQL, System.Data.CommandType.Text, parameters, _commandTimeout );
                     }
                 }
             }
@@ -1006,9 +1005,9 @@ UPDATE [AnalyticsSourceFamilyHistorical]
         {
             List<EntityField> analyticsSourceCampusFields = EntityHelper.GetEntityFields( typeof( Rock.Model.AnalyticsSourceCampus ), false, false );
 
-            List<AttributeCache> campusAnalyticAttributes = EntityHelper.GetEntityFields( typeof( Rock.Model.Campus ), false, false )
+            List<CacheAttribute> campusAnalyticAttributes = EntityHelper.GetEntityFields( typeof( Rock.Model.Campus ), false, false )
                 .Where( a => a.FieldKind == FieldKind.Attribute && a.AttributeGuid.HasValue )
-                .Select( a => AttributeCache.Read( a.AttributeGuid.Value ) )
+                .Select( a => CacheAttribute.Get( a.AttributeGuid.Value ) )
                 .Where( a => a != null )
                 .Where( a => a.IsAnalytic )
                 .ToList();
@@ -1019,7 +1018,7 @@ UPDATE [AnalyticsSourceFamilyHistorical]
                 UpdateAnalyticsSchemaForModel( analyticsSourceCampusFields, campusAnalyticAttributes, "AnalyticsSourceCampus", _campusJobStats );
 
                 // run the main spAnalytics_ETL_Campus stored proc to take care of all the non-attribute related data
-                var etlResult = DbService.GetDataTable( "EXEC [dbo].[spAnalytics_ETL_Campus]", CommandType.Text, null );
+                var etlResult = DbService.GetDataTable( "EXEC [dbo].[spAnalytics_ETL_Campus]", CommandType.Text, null, _commandTimeout );
                 if ( etlResult.Rows.Count == 1 )
                 {
                     _campusJobStats.RowsInserted = etlResult.Rows[0]["RowsInserted"] as int? ?? 0;
@@ -1033,7 +1032,7 @@ UPDATE [AnalyticsSourceFamilyHistorical]
             {
                 if ( dataMap.GetString( "SaveSQLForDebug" ).AsBoolean() )
                 {
-                    LogSQL( "ProcessAnalyticsDimCampus.sql", _sqlLogs.AsDelimited( "\n" ).ToString() );
+                    LogSQL( "ProcessAnalyticsDimCampus.sql", _campusJobStats.SqlLogs.AsDelimited( "\n" ).ToString() );
                 }
             }
         }
@@ -1190,6 +1189,11 @@ UPDATE [AnalyticsSourceFamilyHistorical]
             /// The attribute fields updated.
             /// </value>
             public int AttributeFieldsUpdated { get; set; }
+
+            /// <summary>
+            /// The SQL logs
+            /// </summary>
+            public List<string> SqlLogs = new List<string>();
 
             /// <summary>
             /// Gets the summary message.

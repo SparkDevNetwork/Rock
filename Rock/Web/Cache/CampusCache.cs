@@ -29,6 +29,7 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
+    [Obsolete( "Use Rock.Cache.CacheCampus instead" )]
     public class CampusCache : CachedModel<Campus>
     {
         #region Constructors
@@ -101,6 +102,15 @@ namespace Rock.Web.Cache
         /// The location identifier.
         /// </value>
         public int? LocationId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the time zone identifier (<see cref="System.TimeZoneInfo.Id"/>)
+        /// If this is not set, the Campus time zone will be the default Rock time zone (<see cref="Rock.RockDateTime.OrgTimeZoneInfo" /> )
+        /// </summary>
+        /// <value>
+        /// The time zone identifier. 
+        /// </value>
+        public string TimeZoneId { get; set; }
 
         /// <summary>
         /// Gets or sets the location.
@@ -188,6 +198,7 @@ namespace Rock.Web.Cache
                 this.ShortCode = campus.ShortCode;
                 this.Url = campus.Url;
                 this.LocationId = campus.LocationId;
+                this.TimeZoneId = campus.TimeZoneId;
                 this.PhoneNumber = campus.PhoneNumber;
                 this.LeaderPersonAliasId = campus.LeaderPersonAliasId;
                 this.RawServiceTimes = campus.ServiceTimes;

@@ -31,7 +31,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
@@ -135,7 +135,7 @@ namespace RockWeb.Blocks.Connection
             gWorkflows.GridRebind += gWorkflows_GridRebind;
 
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', 'This will also delete all the connection opportunities! Are you sure you wish to continue with the delete?');", ConnectionType.FriendlyTypeName );
-            btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.ConnectionType ) ).Id;
+            btnSecurity.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.ConnectionType ) ).Id;
 
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upConnectionType );
@@ -262,7 +262,7 @@ namespace RockWeb.Blocks.Connection
                     connectionTypeService.Delete( connectionType );
                     rockContext.SaveChanges();
 
-                    ConnectionWorkflowService.FlushCachedTriggers();
+                    ConnectionWorkflowService.RemoveCachedTriggers();
                 }
             }
 
@@ -346,6 +346,7 @@ namespace RockWeb.Blocks.Connection
                     }
 
                     connectionType.Name = tbName.Text;
+                    connectionType.IsActive = cbActive.Checked;
                     connectionType.Description = tbDescription.Text;
                     connectionType.IconCssClass = tbIconCssClass.Text;
                     connectionType.DaysUntilRequestIdle = nbDaysUntilRequestIdle.Text.AsInteger();
@@ -431,7 +432,7 @@ namespace RockWeb.Blocks.Connection
                         }
                     } );
 
-                    ConnectionWorkflowService.FlushCachedTriggers();
+                    ConnectionWorkflowService.RemoveCachedTriggers();
 
                     var qryParams = new Dictionary<string, string>();
                     qryParams["ConnectionTypeId"] = connectionType.Id.ToString();
@@ -523,7 +524,7 @@ namespace RockWeb.Blocks.Connection
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
-                attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
+                attribute.FieldTypeId = CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
             }
             else
             {
@@ -621,7 +622,7 @@ namespace RockWeb.Blocks.Connection
                              a.Guid,
                              a.Name,
                              a.Description,
-                             FieldType = FieldTypeCache.GetName( a.FieldTypeId ),
+                             FieldType = CacheFieldType.GetName( a.FieldTypeId ),
                              a.IsRequired,
                              a.IsGridColumn,
                              a.AllowSearch
@@ -695,7 +696,7 @@ namespace RockWeb.Blocks.Connection
             {
                 attributeService.Delete( attr );
                 rockContext.SaveChanges();
-                Rock.Web.Cache.AttributeCache.Flush( attr.Id );
+                Rock.Cache.CacheAttribute.Remove( attr.Id );
             }
 
             // Update the Attributes that were assigned in the UI
@@ -704,7 +705,7 @@ namespace RockWeb.Blocks.Connection
                 var attribute = Helper.SaveAttributeEdits( attributeState, entityTypeId, qualifierColumn, qualifierValue, rockContext );
             }
 
-            AttributeCache.FlushEntityAttributes();
+            CacheAttribute.RemoveEntityAttributes();
         }
 
         #endregion
@@ -1005,10 +1006,10 @@ namespace RockWeb.Blocks.Connection
             }
             try
             {
-                connectionWorkflow.WorkflowType = new WorkflowTypeService( new RockContext() ).Get( ddlWorkflowType.SelectedValueAsId().Value );
+                connectionWorkflow.WorkflowType = new WorkflowTypeService( new RockContext() ).Get( wpWorkflowType.SelectedValueAsId().Value );
             }
             catch { }
-            connectionWorkflow.WorkflowTypeId = ddlWorkflowType.SelectedValueAsId().Value;
+            connectionWorkflow.WorkflowTypeId = wpWorkflowType.SelectedValueAsId().Value;
             connectionWorkflow.TriggerType = ddlTriggerType.SelectedValueAsEnum<ConnectionWorkflowTriggerType>();
             connectionWorkflow.QualifierValue = String.Format( "|{0}|{1}|", ddlPrimaryQualifier.SelectedValue, ddlSecondaryQualifier.SelectedValue );
             connectionWorkflow.ConnectionTypeId = 0;
@@ -1069,41 +1070,10 @@ namespace RockWeb.Blocks.Connection
             ConnectionWorkflow connectionWorkflow = WorkflowsState.FirstOrDefault( l => l.Guid.Equals( connectionWorkflowGuid ) );
             if ( connectionWorkflow != null )
             {
-                ddlWorkflowType.Items.Clear();
-                ddlWorkflowType.Items.Add( new ListItem( string.Empty, string.Empty ) );
-
-                foreach ( var workflowType in new WorkflowTypeService( new RockContext() ).Queryable().OrderBy( w => w.Name ) )
-                {
-                    if ( workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
-                    {
-                        ddlWorkflowType.Items.Add( new ListItem( workflowType.Name, workflowType.Id.ToString() ) );
-                    }
-                }
-
-                if ( connectionWorkflow.WorkflowTypeId == null )
-                {
-                    ddlWorkflowType.SelectedValue = "0";
-                }
-                else
-                {
-                    ddlWorkflowType.SelectedValue = connectionWorkflow.WorkflowTypeId.ToString();
-                }
-
+                wpWorkflowType.SetValue( connectionWorkflow.WorkflowTypeId );
                 ddlTriggerType.SelectedValue = connectionWorkflow.TriggerType.ConvertToInt().ToString();
             }
-            else
-            {
-                ddlWorkflowType.Items.Clear();
-                ddlWorkflowType.Items.Add( new ListItem( string.Empty, string.Empty ) );
-
-                foreach ( var workflowType in new WorkflowTypeService( new RockContext() ).Queryable().OrderBy( w => w.Name ) )
-                {
-                    if ( workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
-                    {
-                        ddlWorkflowType.Items.Add( new ListItem( workflowType.Name, workflowType.Id.ToString() ) );
-                    }
-                }
-            }
+         
 
             hfAddConnectionWorkflowGuid.Value = connectionWorkflowGuid.ToString();
             UpdateTriggerQualifiers();
@@ -1366,6 +1336,7 @@ namespace RockWeb.Blocks.Connection
 
             // General
             tbName.Text = connectionType.Name;
+            cbActive.Checked = connectionType.IsActive;
             tbDescription.Text = connectionType.Description;
             tbIconCssClass.Text = connectionType.IconCssClass;
             nbDaysUntilRequestIdle.Text = connectionType.DaysUntilRequestIdle.ToString();

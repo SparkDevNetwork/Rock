@@ -1,8 +1,8 @@
 IF OBJECT_ID(N'[dbo].[AnalyticsDimPersonHistorical]', 'V') IS NOT NULL
-    DROP VIEW AnalyticsDimPersonHistorical
+    DROP VIEW [dbo].AnalyticsDimPersonHistorical
 GO
 
-CREATE VIEW AnalyticsDimPersonHistorical
+CREATE VIEW [dbo].AnalyticsDimPersonHistorical
 AS
 SELECT asph.*
 	,ms.Value [MaritalStatus]

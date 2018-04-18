@@ -85,9 +85,10 @@ DECLARE @AttributeId INT = (
 		)
 
 IF NOT EXISTS (
-		select *
+		SELECT *
 		FROM AttributeQualifier
-		WHERE [Guid] = 'C8FE5DF2-E174-4DEC-8B50-D478592E938F'
+		WHERE [AttributeId] = @AttributeId
+        AND [Key] = 'definedtype'
 		)
 BEGIN
 	INSERT INTO AttributeQualifier (

@@ -24,7 +24,7 @@ using Rock;
 using Rock.Data;
 using Rock.Attribute;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Follow.Event
 {

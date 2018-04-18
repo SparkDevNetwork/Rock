@@ -75,26 +75,6 @@ namespace Rock.Model
         [MaxLength( 45 )]
         public string IpAddress { get; set; }
 
-        /// <summary>
-        /// Gets or sets the list template.
-        /// Used when rendering the interaction session in a list using lava
-        /// </summary>
-        /// <value>
-        /// The list template.
-        /// </value>
-        [DataMember]
-        public string ListTemplate { get; set; }
-
-        /// <summary>
-        /// Gets or sets the detail template.
-        /// Used when rendering the interaction session's details using lava
-        /// </summary>
-        /// <value>
-        /// The detail template.
-        /// </value>
-        [DataMember]
-        public string DetailTemplate { get; set; }
-
         #endregion
 
         #region Virtual Properties

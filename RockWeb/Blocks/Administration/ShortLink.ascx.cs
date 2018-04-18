@@ -30,7 +30,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.Services.NuGet;
 using Rock.Web;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -214,13 +214,13 @@ namespace RockWeb.Blocks.Administration
         private void LoadSites( RockContext rockContext )
         {
             ddlSite.Items.Clear();
-            foreach ( SiteCache site in new SiteService( rockContext )
+            foreach ( CacheSite site in new SiteService( rockContext )
                 .Queryable().AsNoTracking()
                 .Where( s => s.EnabledForShortening )
                 .OrderBy( s => s.Name )
                 .Select( a => a.Id )
                 .ToList()
-                .Select( a => SiteCache.Read( a ) ) )
+                .Select( a => CacheSite.Get( a ) ) )
             {
                 ddlSite.Items.Add( new ListItem( site.Name, site.Id.ToString() ) );
             }

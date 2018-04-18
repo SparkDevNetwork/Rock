@@ -32,6 +32,7 @@
 
                 <div class="pull-right">
                     <asp:Literal ID="lStatusBarContent" runat="server" />
+                    <Rock:Toggle ID="tglShowActive" CssClass="margin-r-sm pull-left" runat="server" OffText="All Types" ActiveButtonCssClass="btn-info" ButtonSizeCssClass="btn-xs" OnText="Active Types" AutoPostBack="true" OnCheckedChanged="tglShowActive_CheckedChanged" Checked="true" />
                     <Rock:Toggle ID="tglMyOpportunities" CssClass="margin-r-sm pull-left" runat="server" OnText="My Requests" ActiveButtonCssClass="btn-info" ButtonSizeCssClass="btn-xs" OffText="All Requests" AutoPostBack="true" OnCheckedChanged="tglMyOpportunities_CheckedChanged" Checked="true" />
                     <asp:Label ID="lTotal" runat="server" CssClass="margin-r-sm pull-left label label-info" Style="line-height:1.6" />
                     <asp:LinkButton ID="lbConnectionTypes" runat="server" CssClass=" pull-right" OnClick="lbConnectionTypes_Click" CausesValidation="false"><i class="fa fa-gear"></i></asp:LinkButton>
@@ -87,7 +88,7 @@
                     <Rock:Grid ID="gRequests" runat="server" OnRowSelected="gRequests_Edit" CssClass="js-grid-requests" AllowSorting="true" OnRowDataBound="gRequests_RowDataBound" >
                         <Columns>
                             <Rock:SelectField />
-                            <Rock:RockLiteralField ID="lStatusIcons" HeaderText="" ItemStyle-HorizontalAlign="Left" />
+                            <Rock:RockLiteralField ID="lStatusIcons" HeaderText="" ItemStyle-HorizontalAlign="Left" HeaderStyle-HorizontalAlign="Left" />
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="PersonAlias.Person.LastName,PersonAlias.Person.NickName" />
                             <Rock:RockBoundField DataField="Campus" HeaderText="Campus" SortExpression="Campus.Name" />
                             <Rock:RockTemplateField HeaderText="Group" SortExpression="AssignedGroup.Name">

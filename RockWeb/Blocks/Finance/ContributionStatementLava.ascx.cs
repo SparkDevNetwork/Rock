@@ -25,7 +25,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using System.Data.Entity;
@@ -302,7 +302,7 @@ namespace RockWeb.Blocks.Finance
                 mergeFields.Add( "StatementEndDate", "12/31/" + statementYear.ToString() );
             }
 
-            var familyGroupTypeId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
+            var familyGroupTypeId = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
             var groupMemberQry = new GroupMemberService( rockContext ).Queryable().Where( m => m.Group.GroupTypeId == familyGroupTypeId );
 
             // get giving group members in order by family role (adult -> child) and then gender (male -> female)
@@ -390,17 +390,22 @@ namespace RockWeb.Blocks.Finance
             // add detailed pledge information
             foreach ( var pledge in pledges )
             {
-                var adjustedPedgeEndDate = pledge.PledgeEndDate.Value.Date.AddDays( 1 );
+                var adjustedPledgeEndDate = pledge.PledgeEndDate.Value.Date;
                 var statementYearEnd = new DateTime( statementYear + 1, 1, 1 );
-
-                if ( adjustedPedgeEndDate > statementYearEnd )
+                
+                if ( adjustedPledgeEndDate != DateTime.MaxValue.Date )
                 {
-                    adjustedPedgeEndDate = statementYearEnd;
+                    adjustedPledgeEndDate = adjustedPledgeEndDate.AddDays( 1 );
                 }
 
-                if ( adjustedPedgeEndDate > RockDateTime.Now )
+                if ( adjustedPledgeEndDate > statementYearEnd )
                 {
-                    adjustedPedgeEndDate = RockDateTime.Now;
+                    adjustedPledgeEndDate = statementYearEnd;
+                }
+
+                if ( adjustedPledgeEndDate > RockDateTime.Now )
+                {
+                    adjustedPledgeEndDate = RockDateTime.Now;
                 }
 
                 pledge.AmountGiven = new FinancialTransactionDetailService( rockContext ).Queryable()
@@ -408,7 +413,7 @@ namespace RockWeb.Blocks.Finance
                                                  t.AccountId == pledge.AccountId
                                                  && t.Transaction.AuthorizedPersonAliasId.HasValue && personAliasIds.Contains( t.Transaction.AuthorizedPersonAliasId.Value )
                                                  && t.Transaction.TransactionDateTime >= pledge.PledgeStartDate
-                                                 && t.Transaction.TransactionDateTime < adjustedPedgeEndDate )
+                                                 && t.Transaction.TransactionDateTime < adjustedPledgeEndDate )
                                             .Sum( t => ( decimal? ) t.Amount ) ?? 0;
 
                 pledge.AmountRemaining = ( pledge.AmountGiven > pledge.AmountPledged ) ? 0 : ( pledge.AmountPledged - pledge.AmountGiven );

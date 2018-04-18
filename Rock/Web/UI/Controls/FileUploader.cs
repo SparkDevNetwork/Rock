@@ -828,27 +828,28 @@ Rock.controls.fileUploader.initialize({{
             if ( eventArgument == "FileUploaded" && FileUploaded != null )
             {
                 EnsureChildControls();
-                
+
                 // grab the _hfBinaryFileId value of the Request.Params
                 _hfBinaryFileId.Value = System.Web.HttpContext.Current?.Request?.Params[_hfBinaryFileId.UniqueID];
 
-                if (IsBinaryFile)
+                if ( IsBinaryFile )
                 {
-                    FileUploaded( this, new FileUploaderEventArgs( this.UploadedContentFilePath ));
+                    FileUploaded( this, new FileUploaderEventArgs( this.BinaryFileId ) );
                 }
                 else
                 {
-                    FileUploaded( this, new FileUploaderEventArgs( this.BinaryFileId ));
+                    FileUploaded( this, new FileUploaderEventArgs( this.UploadedContentFilePath ) );
                 }
             }
 
             if ( eventArgument == "FileRemoved" )
             {
+                int? deletedBinaryFileId = this.BinaryFileId;
                 this.BinaryFileId = 0;
 
                 if ( FileRemoved != null )
                 {
-                    FileRemoved( this, new FileUploaderEventArgs( this.BinaryFileId ) );
+                    FileRemoved( this, new FileUploaderEventArgs( deletedBinaryFileId ) );
                 }
             }
         }

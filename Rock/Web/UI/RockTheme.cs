@@ -117,30 +117,40 @@ namespace Rock.Web.UI
                 {
                     FileInfo[] files = themeDirectory.GetFiles();
 
+                    // Good documentation on options
+                    // https://www.codeproject.com/Articles/710676/LESS-Web-config-DotlessConfiguration-Options
                     DotlessConfiguration dotLessConfiguration = new DotlessConfiguration();
                     dotLessConfiguration.MinifyOutput = true;
+                    dotLessConfiguration.DisableVariableRedefines = true;
                     //dotLessConfiguration.RootPath = themeDirectory.FullName;
-
-                    Directory.SetCurrentDirectory( themeDirectory.FullName );
-
-                    if ( files != null )
+                    var origDirectory = Directory.GetCurrentDirectory();
+                    try
                     {
-                        if ( this.AllowsCompile )
-                        {
-                            // don't compile files that start with an underscore
-                            foreach ( var file in files.Where( f => f.Name.EndsWith( ".less" ) && !f.Name.StartsWith( "_" ) ) )
-                            {
-                                string cssSource = LessWeb.Parse( File.ReadAllText( file.FullName ), dotLessConfiguration );
-                                File.WriteAllText( file.DirectoryName + @"\" + file.Name.Replace( ".less", ".css" ), cssSource );
+                        Directory.SetCurrentDirectory( themeDirectory.FullName );
 
-                                // check for compile errors (an empty css source returned)
-                                if (cssSource == string.Empty )
+                        if ( files != null )
+                        {
+                            if ( this.AllowsCompile )
+                            {
+                                // don't compile files that start with an underscore
+                                foreach ( var file in files.Where( f => f.Name.EndsWith( ".less" ) && !f.Name.StartsWith( "_" ) ) )
                                 {
-                                    messages += "A compile error occurred on " + file.Name;
-                                    compiledSuccessfully = false;
+                                    string cssSource = LessWeb.Parse( File.ReadAllText( file.FullName ), dotLessConfiguration );
+                                    File.WriteAllText( file.DirectoryName + @"\" + file.Name.Replace( ".less", ".css" ), cssSource );
+
+                                    // check for compile errors (an empty css source returned)
+                                    if ( cssSource == string.Empty )
+                                    {
+                                        messages += "A compile error occurred on " + file.Name;
+                                        compiledSuccessfully = false;
+                                    }
                                 }
                             }
                         }
+                    }
+                    finally
+                    {
+                        Directory.SetCurrentDirectory( origDirectory );
                     }
                 }
             }

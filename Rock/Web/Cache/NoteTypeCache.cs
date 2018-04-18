@@ -29,6 +29,7 @@ namespace Rock.Web.Cache
     /// Information about a NoteType that is cached by Rock. 
     /// </summary>
     [Serializable]
+    [Obsolete( "Use Rock.Cache.NoteTypeCache instead" )]
     public class NoteTypeCache : CachedModel<NoteType>
     {
         #region constructors
@@ -379,6 +380,7 @@ namespace Rock.Web.Cache
     /// 
     /// </summary>
     [Serializable]
+    [Obsolete( "Use Rock.Cache.EntityNoteTypes instead" )]
     internal class EntityNoteTypes
     {
         /// <summary>

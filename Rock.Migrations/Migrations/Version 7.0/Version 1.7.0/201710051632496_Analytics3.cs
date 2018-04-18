@@ -31,7 +31,7 @@ namespace Rock.Migrations
         {
             // Drop the AnalyticsDimFinancialTransactionType view to be consistent 
             Sql( @"IF OBJECT_ID(N'[dbo].[AnalyticsDimFinancialTransactionType]', 'V') IS NOT NULL
-    DROP VIEW AnalyticsDimFinancialTransactionType
+    DROP VIEW [dbo].AnalyticsDimFinancialTransactionType
 GO" );
             // MP: Set 'Default' Communication Template IsActive=1
             Sql( @"UPDATE CommunicationTemplate

@@ -30,6 +30,10 @@ public class BundleConfig
     {
         // start with a clean bundles (this seems to have fixed the javascript errors that would occur on the first time you debug after opening the solution)
         bundles.ResetAll();
+        
+        bundles.Add( new ScriptBundle( "~/Scripts/Bundles/RockJQueryLatest" ).Include(
+            "~/Scripts/jquery-3.3.1.min.js",
+            "~/Scripts/jquery-migrate-3.0.0.min.js" ) );
 
         bundles.Add( new ScriptBundle( "~/bundles/WebFormsJs" ).Include(
             "~/Scripts/WebForms/WebForms.js",
@@ -53,14 +57,15 @@ public class BundleConfig
             "~/Scripts/chosen.jquery.min.js",
             "~/Scripts/typeahead.min.js",
             "~/Scripts/jquery.fileupload.js",
+            "~/Scripts/jquery.stickytableheaders.js",
             "~/Scripts/iscroll.js",
             "~/Scripts/jcrop.min.js",
             "~/Scripts/ResizeSensor.js",       
             "~/Scripts/ion.rangeSlider/js/ion-rangeSlider/ion.rangeSlider.min.js",
-            "~/Scripts/Rock/Extensions/*.js",
-            "~/Scripts/React/shim.js" ) );
+            "~/Scripts/Rock/Extensions/*.js" ) );
 
         bundles.Add( new ScriptBundle( "~/Scripts/Bundles/RockUi" ).Include(
+            "~/Scripts/Rock/coreListeners.js",
             "~/Scripts/Rock/dialogs.js",
             "~/Scripts/Rock/settings.js",
             "~/Scripts/Rock/utility.js",

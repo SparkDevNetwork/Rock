@@ -30,7 +30,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Utility;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
@@ -168,7 +168,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             LoadDropDowns();
 
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', 'This will also delete all the workflows of this type!');", WorkflowType.FriendlyTypeName );
-            btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.WorkflowType ) ).Id;
+            btnSecurity.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.WorkflowType ) ).Id;
         }
 
         /// <summary>
@@ -294,7 +294,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
 
                 rockContext.SaveChanges();
 
-                WorkflowTypeCache.Flush( workflowType.Id );
+                CacheWorkflowType.Remove( workflowType.Id );
             }
 
             // reload page
@@ -657,8 +657,8 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             }
 
             var deletedActionTypes = from actionType in actionTypesInDB
-                                        where !actionTypesInUI.Select( u => u.Guid ).Contains( actionType.Guid )
-                                        select actionType;
+                                     where !actionTypesInUI.Select( u => u.Guid ).Contains( actionType.Guid )
+                                     select actionType;
             foreach ( var actionType in deletedActionTypes.ToList() )
             {
                 if ( actionType.WorkflowForm != null )
@@ -687,8 +687,8 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             // delete WorkflowActivityTypes that aren't assigned in the UI anymore
             List<WorkflowActivityType> activityTypesInDB = workflowActivityTypeService.Queryable().Where( a => a.WorkflowTypeId.Equals( workflowType.Id ) ).ToList();
             var deletedActivityTypes = from activityType in activityTypesInDB
-                                        where !ActivityTypesState.Select( u => u.Guid ).Contains( activityType.Guid )
-                                        select activityType;
+                                       where !ActivityTypesState.Select( u => u.Guid ).Contains( activityType.Guid )
+                                       select activityType;
             foreach ( var activityType in deletedActivityTypes.ToList() )
             {
                 // Delete any workflow activities of this type
@@ -739,7 +739,8 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                 // Because the SaveAttributes above may have flushed the cached entity attribute cache, and it would get loaded again with
                 // a different context, manually reload the cache now with our context to prevent a database lock conflict (when database is 
                 // configured without snapshot isolation turned on)
-                AttributeCache.LoadEntityAttributes( rockContext );
+                CacheEntityAttributes.Remove();
+                CacheEntityAttributes.Get( rockContext );
 
                 int workflowActionTypeOrder = 0;
                 foreach ( var editorWorkflowActionType in editorWorkflowActivityType.ActionTypes )
@@ -798,7 +799,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                         int attributeOrder = 0;
                         foreach ( var editorAttribute in editorWorkflowActionType.WorkflowForm.FormAttributes.OrderBy( a => a.Order ) )
                         {
-                            int attributeId = AttributeCache.Read( editorAttribute.Attribute.Guid, rockContext ).Id;
+                            int attributeId = CacheAttribute.Get( editorAttribute.Attribute.Guid, rockContext ).Id;
 
                             var formAttribute = workflowActionType.WorkflowForm.FormAttributes
                                 .Where( a => a.AttributeId == attributeId )
@@ -835,7 +836,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                 }
             }
 
-            WorkflowTypeCache.Flush( workflowType.Id );
+            CacheWorkflowType.Remove( workflowType.Id );
 
             var qryParams = new Dictionary<string, string>();
             qryParams["workflowTypeId"] = workflowType.Id.ToString();
@@ -952,34 +953,22 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgAttribute_SaveClick( object sender, EventArgs e )
         {
-            Rock.Model.Attribute attribute = new Rock.Model.Attribute();
-            edtAttributes.GetAttributeProperties( attribute );
-
-            // Controls will show warnings
-            if ( !attribute.IsValid )
-            {
-                return;
-            }
-
-            if ( AttributesState.Any( a => a.Guid.Equals( attribute.Guid ) ) )
-            {
-                attribute.Order = AttributesState.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault().Order;
-                AttributesState.RemoveEntity( attribute.Guid );
-            }
-            else
-            {
-                attribute.Order = AttributesState.Any() ? AttributesState.Max( a => a.Order ) + 1 : 0;
-            }
-
-            AttributesState.Add( attribute );
-
-            ReOrderAttributes( AttributesState );
-
-            BindAttributesGrid();
+            SaveAttributeToAttributeState();
 
             HideDialog();
 
             BuildControls( true );
+        }
+
+        /// <summary>
+        /// Handles the SaveThenAddClick event of the dlgAttribute control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void dlgAttribute_SaveThenAddClick( object sender, EventArgs e )
+        {
+            SaveAttributeToAttributeState();
+            SetAttributeEditor( Guid.Empty );
         }
 
         #endregion
@@ -1061,7 +1050,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                 actionType.Order = activityType.ActionTypes.Any() ? activityType.ActionTypes.Max( a => a.Order ) + 1 : 0;
                 activityType.ActionTypes.Add( actionType );
 
-                var action = EntityTypeCache.Read( actionType.EntityTypeId );
+                var action = CacheEntityType.Get( actionType.EntityTypeId );
                 if ( action != null )
                 {
                     var rockContext = new RockContext();
@@ -1122,7 +1111,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                 var actionType = activityType.ActionTypes.Where( a => a.Guid.Equals( workflowActionTypeEditor.ActionTypeGuid ) ).FirstOrDefault();
                 if ( actionType != null )
                 {
-                    var action = EntityTypeCache.Read( actionType.EntityTypeId );
+                    var action = CacheEntityType.Get( actionType.EntityTypeId );
                     if ( action != null )
                     {
                         var rockContext = new RockContext();
@@ -1197,29 +1186,36 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                 return;
             }
 
-            var activityTypeGuid = hfActivityTypeGuid.Value.AsGuid();
-
-            if ( ActivityAttributesState.ContainsKey( activityTypeGuid ) )
-            {
-                if ( ActivityAttributesState[activityTypeGuid].Any( a => a.Guid.Equals( attribute.Guid ) ) )
-                {
-                    attribute.Order = ActivityAttributesState[activityTypeGuid].Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault().Order;
-                    ActivityAttributesState[activityTypeGuid].RemoveEntity( attribute.Guid );
-                }
-                else
-                {
-                    attribute.Order = ActivityAttributesState[activityTypeGuid].Any() ? ActivityAttributesState[activityTypeGuid].Max( a => a.Order ) + 1 : 0;
-                }
-                ActivityAttributesState[activityTypeGuid].Add( attribute );
-
-                ReOrderAttributes( ActivityAttributesState[activityTypeGuid] );
-            }
+            var activityTypeGuid = SaveAttributeActivityToActivityAttributesState( attribute );
 
             HideDialog();
 
-            hfActivityTypeGuid.Value = string.Empty;
+            BuildControls( true, activityTypeGuid );
+        }
+
+        /// <summary>
+        /// Handles the SaveThenAddClick event of the dlgAttribute control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void dlgActivityAttribute_SaveThenAddClick( object sender, EventArgs e )
+        {
+            Rock.Model.Attribute attribute = new Rock.Model.Attribute();
+            edtActivityAttributes.GetAttributeProperties( attribute );
+
+            // Controls will show warnings
+            if ( !attribute.IsValid )
+            {
+                return;
+            }
+
+            var activityTypeGuid = SaveAttributeActivityToActivityAttributesState( attribute );
 
             BuildControls( true, activityTypeGuid );
+
+            ParseControls();
+
+            ShowActivityAttributeEdit( activityTypeGuid, Guid.Empty );
         }
 
         #endregion
@@ -1355,7 +1351,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
 
                     foreach ( var actionType in activityType.ActionTypes )
                     {
-                        var action = EntityTypeCache.Read( actionType.EntityTypeId );
+                        var action = CacheEntityType.Get( actionType.EntityTypeId );
                         if ( action != null )
                         {
                             Rock.Attribute.Helper.UpdateAttributes( action.GetEntityType(), actionType.TypeId, "EntityTypeId", actionType.EntityTypeId.ToString(), rockContext );
@@ -1399,7 +1395,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
 
             SetEditMode( true );
 
-            cbIsActive.Checked = workflowType.IsActive ?? false;
+            cbIsActive.Checked = workflowType.IsActive;
             tbName.Text = workflowType.Name;
             tbDescription.Text = workflowType.Description;
             cpCategory.SetValue( workflowType.CategoryId );
@@ -1469,7 +1465,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                 hlType.Visible = false;
             }
 
-            lWorkflowTypeDescription.Text = workflowType.Description;
+            lWorkflowTypeDescription.Text = workflowType.Description.ConvertMarkdownToHtml();
 
             if ( workflowType.ActivityTypes.Count > 0 )
             {
@@ -1495,7 +1491,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
 
                     foreach ( var actionType in activityType.ActionTypes.OrderBy( a => a.Order ) )
                     {
-                        actionTypeText += string.Format( "<li>{0}</li>" + Environment.NewLine, actionType.Name );
+                        actionTypeText += string.Format( "<li>{0} <small class='text-muted'>({1})</small></li>" + Environment.NewLine, actionType.Name, Rock.Workflow.ActionContainer.GetComponentName( actionType.WorkflowAction.ToString() ) );
                     }
 
                     string actionsTitle = activityType.ActionTypes.Count > 0 ? "Actions:" : "No Actions";
@@ -1963,7 +1959,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                     a.Name,
                     a.Description,
                     a.Key,
-                    FieldType = FieldTypeCache.GetName( a.FieldTypeId ),
+                    FieldType = CacheFieldType.GetName( a.FieldTypeId ),
                     a.IsRequired
                 } )
                 .ToList();
@@ -1976,22 +1972,8 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
         /// <param name="attributeGuid">The attribute unique identifier.</param>
         private void ShowAttributeEdit( Guid attributeGuid )
         {
-            Attribute attribute;
-            if ( attributeGuid.Equals( Guid.Empty ) )
-            {
-                attribute = new Attribute();
-                attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
-                edtAttributes.ActionTitle = ActionTitle.Add( "attribute for workflows of workflow type " + tbName.Text );
-            }
-            else
-            {
-                attribute = AttributesState.First( a => a.Guid.Equals( attributeGuid ) );
-                edtAttributes.ActionTitle = ActionTitle.Edit( "attribute for workflows of workflow type " + tbName.Text );
-            }
 
-            edtAttributes.ReservedKeyNames = AttributesState.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList();
-
-            edtAttributes.SetAttributeProperties( attribute, typeof( Workflow ) );
+            SetAttributeEditor( attributeGuid );
 
             ShowDialog( "Attributes" );
 
@@ -2018,7 +2000,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             {
                 attributeService.Delete( attr );
                 rockContext.SaveChanges();
-                Rock.Web.Cache.AttributeCache.Flush( attr.Id );
+                Rock.Cache.CacheAttribute.Remove( attr.Id );
             }
 
             // Update the Attributes that were assigned in the UI
@@ -2027,7 +2009,56 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                 Helper.SaveAttributeEdits( attribute, entityTypeId, qualifierColumn, qualifierValue, rockContext );
             }
 
-            AttributeCache.FlushEntityAttributes();
+            CacheAttribute.RemoveEntityAttributes();
+        }
+
+        private void SetAttributeEditor( Guid attributeGuid )
+        {
+            dlgActivityAttribute.SubTitle = string.Empty;
+            Attribute attribute;
+            if ( attributeGuid.Equals( Guid.Empty ) )
+            {
+                attribute = new Attribute();
+                attribute.FieldTypeId = CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
+                edtAttributes.ActionTitle = ActionTitle.Add( "attribute for workflows of workflow type " + tbName.Text );
+            }
+            else
+            {
+                attribute = AttributesState.First( a => a.Guid.Equals( attributeGuid ) );
+                edtAttributes.ActionTitle = ActionTitle.Edit( "attribute for workflows of workflow type " + tbName.Text );
+            }
+
+            edtAttributes.ReservedKeyNames = AttributesState.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList();
+
+            edtAttributes.SetAttributeProperties( attribute, typeof( Workflow ) );
+        }
+
+        private void SaveAttributeToAttributeState()
+        {
+            Rock.Model.Attribute attribute = new Rock.Model.Attribute();
+            edtAttributes.GetAttributeProperties( attribute );
+
+            // Controls will show warnings
+            if ( !attribute.IsValid )
+            {
+                return;
+            }
+
+            if ( AttributesState.Any( a => a.Guid.Equals( attribute.Guid ) ) )
+            {
+                attribute.Order = AttributesState.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault().Order;
+                AttributesState.RemoveEntity( attribute.Guid );
+            }
+            else
+            {
+                attribute.Order = AttributesState.Any() ? AttributesState.Max( a => a.Order ) + 1 : 0;
+            }
+
+            AttributesState.Add( attribute );
+
+            ReOrderAttributes( AttributesState );
+
+            BindAttributesGrid();
         }
 
         #endregion
@@ -2040,6 +2071,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
         /// <param name="attributeGuid">The attribute unique identifier.</param>
         private void ShowActivityAttributeEdit( Guid activityTypeGuid, Guid attributeGuid )
         {
+            dlgActivityAttribute.SubTitle = string.Empty;
             if ( ActivityAttributesState.ContainsKey( activityTypeGuid ) )
             {
                 var attributeList = ActivityAttributesState[activityTypeGuid];
@@ -2048,7 +2080,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                 if ( attributeGuid.Equals( Guid.Empty ) )
                 {
                     attribute = new Attribute();
-                    attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
+                    attribute.FieldTypeId = CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
                     edtActivityAttributes.ActionTitle = ActionTitle.Add( "Add Activity Attribute" );
                 }
                 else
@@ -2067,6 +2099,31 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             }
 
             BuildControls( true );
+        }
+
+        private Guid SaveAttributeActivityToActivityAttributesState( Attribute attribute )
+        {
+            var activityTypeGuid = hfActivityTypeGuid.Value.AsGuid();
+
+            if ( ActivityAttributesState.ContainsKey( activityTypeGuid ) )
+            {
+                if ( ActivityAttributesState[activityTypeGuid].Any( a => a.Guid.Equals( attribute.Guid ) ) )
+                {
+                    attribute.Order = ActivityAttributesState[activityTypeGuid].Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault().Order;
+                    ActivityAttributesState[activityTypeGuid].RemoveEntity( attribute.Guid );
+                }
+                else
+                {
+                    attribute.Order = ActivityAttributesState[activityTypeGuid].Any() ? ActivityAttributesState[activityTypeGuid].Max( a => a.Order ) + 1 : 0;
+                }
+                ActivityAttributesState[activityTypeGuid].Add( attribute );
+
+                ReOrderAttributes( ActivityAttributesState[activityTypeGuid] );
+            }
+
+            hfActivityTypeGuid.Value = string.Empty;
+
+            return activityTypeGuid;
         }
 
         #endregion

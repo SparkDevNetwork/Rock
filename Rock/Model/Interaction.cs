@@ -143,27 +143,14 @@ namespace Rock.Model
         [DataMember]
         public int? PersonalDeviceId { get; set; }
 
-        
-
         /// <summary>
-        /// Gets or sets the list template. 
-        /// Used when rendering the interaction in a list using lava
+        /// Gets or sets the interaction end date time.
         /// </summary>
         /// <value>
-        /// The list template.
+        /// The interaction end date time.
         /// </value>
         [DataMember]
-        public string ListTemplate { get; set; }
-
-        /// <summary>
-        /// Gets or sets the detail template.
-        /// Used when rendering the interaction's details using lava
-        /// </summary>
-        /// <value>
-        /// The detail template.
-        /// </value>
-        [DataMember]
-        public string DetailTemplate { get; set; }
+        public DateTime? InteractionEndDateTime { get; set; }
 
         #endregion
 
@@ -208,6 +195,16 @@ namespace Rock.Model
         [DataMember]
         [MaxLength( 50 )]
         public string Content { get; set; }
+
+        /// <summary>
+        /// Gets or sets the term(s).
+        /// </summary>
+        /// <value>
+        /// The term.
+        /// </value>
+        [DataMember]
+        [MaxLength( 50 )]
+        public string Term { get; set; }
 
         #endregion
 

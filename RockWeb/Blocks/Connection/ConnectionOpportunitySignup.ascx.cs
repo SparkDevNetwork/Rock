@@ -25,7 +25,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -41,15 +41,17 @@ namespace RockWeb.Blocks.Connection
     [BooleanField( "Display Home Phone", "Whether to display home phone", true, "", 0 )]
     [BooleanField( "Display Mobile Phone", "Whether to display mobile phone", true, "", 1 )]
     [CodeEditorField( "Lava Template", "Lava template to use to display the response message.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/OpportunityResponseMessage.lava' %}", "", 2 )]
-    [BooleanField( "Enable Campus Context", "If the page has a campus context it's value will be used as a filter", true, "", 4 )]
+    [BooleanField( "Enable Campus Context", "If the page has a campus context its value will be used as a filter", true, "", 4 )]
     [DefinedValueField( "2E6540EA-63F0-40FE-BE50-F2A84735E600", "Connection Status", "The connection status to use for new individuals (default: 'Web Prospect'.)", true, false, "368DD475-242C-49C4-A42C-7278BE690CC2", "", 5 )]
     [DefinedValueField( "8522BADD-2871-45A5-81DD-C76DA07E2E7E", "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, "283999EC-7346-42E3-B807-BCE9B2BABB49", "", 6 )]
+    [ConnectionOpportunityField( "Connection Opportunity", "If a Connection Opportunity is set, only details for it will be displayed (regardless of the querystring parameters).", false, "", "", 7 )]
     public partial class ConnectionOpportunitySignup : RockBlock, IDetailBlock
     {
         #region Fields
 
-        DefinedValueCache _homePhone = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
-        DefinedValueCache _cellPhone = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
+        CacheDefinedValue _homePhone = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
+        CacheDefinedValue _cellPhone = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
+        int _opportunityId = 0;
 
         #endregion
 
@@ -67,7 +69,7 @@ namespace RockWeb.Blocks.Connection
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlOpportunityDetail );
         }
- 
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
@@ -77,10 +79,11 @@ namespace RockWeb.Blocks.Connection
             base.OnLoad( e );
 
             nbErrorMessage.Visible = false;
+            _opportunityId = GetConnectionOpportunityId();
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "OpportunityId" ).AsInteger() );
+                ShowDetail( _opportunityId );
             }
         }
 
@@ -92,7 +95,7 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            ShowDetail( PageParameter( "OpportunityId" ).AsInteger() );
+            ShowDetail( GetConnectionOpportunityId() );
         }
 
         #endregion
@@ -113,10 +116,9 @@ namespace RockWeb.Blocks.Connection
                 var personService = new PersonService( rockContext );
 
                 // Get the opportunity and default status
-                int opportunityId = PageParameter( "OpportunityId" ).AsInteger();
                 var opportunity = opportunityService
                     .Queryable()
-                    .Where( o => o.Id == opportunityId )
+                    .Where( o => o.Id == _opportunityId )
                     .FirstOrDefault();
 
                 int defaultStatusId = opportunity.ConnectionType.ConnectionStatuses
@@ -135,7 +137,7 @@ namespace RockWeb.Blocks.Connection
                     int? campusId = cpCampus.SelectedCampusId;
 
                     // if a person guid was passed in from the query string use that
-                    if (RockPage.PageParameter("PersonGuid") != null && !string.IsNullOrWhiteSpace( RockPage.PageParameter( "PersonGuid" ) ) )
+                    if ( RockPage.PageParameter( "PersonGuid" ) != null && !string.IsNullOrWhiteSpace( RockPage.PageParameter( "PersonGuid" ) ) )
                     {
                         Guid? personGuid = RockPage.PageParameter( "PersonGuid" ).AsGuidOrNull();
 
@@ -143,10 +145,11 @@ namespace RockWeb.Blocks.Connection
                         {
                             person = personService.Get( personGuid.Value );
                         }
-                    } else if ( CurrentPerson != null &&
-                        CurrentPerson.LastName.Equals( lastName, StringComparison.OrdinalIgnoreCase ) &&
-                        (CurrentPerson.NickName.Equals( firstName, StringComparison.OrdinalIgnoreCase ) || CurrentPerson.FirstName.Equals( firstName, StringComparison.OrdinalIgnoreCase )) &&
-                        CurrentPerson.Email.Equals( email, StringComparison.OrdinalIgnoreCase ) )
+                    }
+                    else if ( CurrentPerson != null &&
+                      CurrentPerson.LastName.Equals( lastName, StringComparison.OrdinalIgnoreCase ) &&
+                      ( CurrentPerson.NickName.Equals( firstName, StringComparison.OrdinalIgnoreCase ) || CurrentPerson.FirstName.Equals( firstName, StringComparison.OrdinalIgnoreCase ) ) &&
+                      CurrentPerson.Email.Equals( email, StringComparison.OrdinalIgnoreCase ) )
                     {
                         // If the name and email entered are the same as current person (wasn't changed), use the current person
                         person = personService.Get( CurrentPerson.Id );
@@ -167,8 +170,8 @@ namespace RockWeb.Blocks.Connection
                     if ( person == null )
                     {
                         // If a match was not found, create a new person
-                        var dvcConnectionStatus = DefinedValueCache.Read( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
-                        var dvcRecordStatus = DefinedValueCache.Read( GetAttributeValue( "RecordStatus" ).AsGuid() );
+                        var dvcConnectionStatus = CacheDefinedValue.Get( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
+                        var dvcRecordStatus = CacheDefinedValue.Get( GetAttributeValue( "RecordStatus" ).AsGuid() );
 
                         person = new Person();
                         person.FirstName = firstName;
@@ -176,7 +179,7 @@ namespace RockWeb.Blocks.Connection
                         person.IsEmailActive = true;
                         person.Email = email;
                         person.EmailPreference = EmailPreference.EmailAllowed;
-                        person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                        person.RecordTypeValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
                         if ( dvcConnectionStatus != null )
                         {
                             person.ConnectionStatusValueId = dvcConnectionStatus.Id;
@@ -193,26 +196,15 @@ namespace RockWeb.Blocks.Connection
                     // If there is a valid person with a primary alias, continue
                     if ( person != null && person.PrimaryAliasId.HasValue )
                     {
-                        var changes = new List<string>();
-                        
+
                         if ( pnHome.Visible )
                         {
-                            SavePhone( pnHome, person, _homePhone.Guid, changes );
+                            SavePhone( pnHome, person, _homePhone.Guid );
                         }
 
                         if ( pnMobile.Visible )
                         {
-                            SavePhone( pnMobile, person, _cellPhone.Guid, changes );
-                        }
-
-                        if ( changes.Any() )
-                        {
-                            HistoryService.SaveChanges(
-                                rockContext,
-                                typeof( Person ),
-                                Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                                person.Id,
-                                changes );
+                            SavePhone( pnMobile, person, _cellPhone.Guid );
                         }
 
                         // Now that we have a person, we can create the connection request
@@ -247,7 +239,7 @@ namespace RockWeb.Blocks.Connection
                         rockContext.SaveChanges();
 
                         var mergeFields = new Dictionary<string, object>();
-                        mergeFields.Add( "Opportunity", new ConnectionOpportunityService( rockContext ).Get( PageParameter( "OpportunityId" ).AsInteger() ) );
+                        mergeFields.Add( "Opportunity", new ConnectionOpportunityService( rockContext ).Get( _opportunityId ) );
                         mergeFields.Add( "CurrentPerson", CurrentPerson );
                         mergeFields.Add( "Person", person );
 
@@ -291,7 +283,7 @@ namespace RockWeb.Blocks.Connection
                 }
 
                 // load campus dropdown
-                var campuses = CampusCache.All().Where( c => ( c.IsActive ?? false ) && opportunity.ConnectionOpportunityCampuses.Any( o => o.CampusId == c.Id ) ).ToList();
+                var campuses = CacheCampus.All().Where( c => ( c.IsActive ?? false ) && opportunity.ConnectionOpportunityCampuses.Any( o => o.CampusId == c.Id ) ).ToList();
                 cpCampus.Campuses = campuses;
                 cpCampus.Visible = campuses.Any();
 
@@ -320,11 +312,11 @@ namespace RockWeb.Blocks.Connection
 
                     if ( personGuid.HasValue )
                     {
-                        registrant = new PersonService(rockContext).Get( personGuid.Value );
+                        registrant = new PersonService( rockContext ).Get( personGuid.Value );
                     }
                 }
 
-                if (registrant == null && CurrentPerson != null )
+                if ( registrant == null && CurrentPerson != null )
                 {
                     registrant = CurrentPerson;
                 }
@@ -366,7 +358,7 @@ namespace RockWeb.Blocks.Connection
                     // set the campus to the context
                     if ( GetAttributeValue( "EnableCampusContext" ).AsBoolean() )
                     {
-                        var campusEntityType = EntityTypeCache.Read( "Rock.Model.Campus" );
+                        var campusEntityType = CacheEntityType.Get( "Rock.Model.Campus" );
                         var contextCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
 
                         if ( contextCampus != null )
@@ -378,14 +370,14 @@ namespace RockWeb.Blocks.Connection
 
                 // show debug info
                 var mergeFields = new Dictionary<string, object>();
-                mergeFields.Add( "Opportunity", new ConnectionOpportunityService( rockContext ).Get( PageParameter( "OpportunityId" ).AsInteger() ) );
+                mergeFields.Add( "Opportunity", new ConnectionOpportunityService( rockContext ).Get( _opportunityId ) );
                 mergeFields.Add( "CurrentPerson", CurrentPerson );
             }
         }
 
-        private void SavePhone( PhoneNumberBox phoneNumberBox, Person person, Guid phoneTypeGuid, List<string> changes )
+        private void SavePhone( PhoneNumberBox phoneNumberBox, Person person, Guid phoneTypeGuid )
         {
-            var numberType = DefinedValueCache.Read( phoneTypeGuid );
+            var numberType = CacheDefinedValue.Get( phoneTypeGuid );
             if ( numberType != null )
             {
                 var phone = person.PhoneNumbers.FirstOrDefault( p => p.NumberTypeValueId == numberType.Id );
@@ -406,12 +398,6 @@ namespace RockWeb.Blocks.Connection
                     }
                     phone.CountryCode = PhoneNumber.CleanNumber( phoneNumberBox.CountryCode );
                     phone.Number = newPhoneNumber;
-
-                    History.EvaluateChange(
-                        changes,
-                        string.Format( "{0} Phone", numberType.Value ),
-                        oldPhoneNumber,
-                        phone.NumberFormattedWithCountryCode );
                 }
 
             }
@@ -423,6 +409,29 @@ namespace RockWeb.Blocks.Connection
             nbErrorMessage.Text = string.Format( "<p>{0}</p>", message );
             nbErrorMessage.NotificationBoxType = NotificationBoxType.Danger;
             nbErrorMessage.Visible = true;
+        }
+
+        /// <summary>
+        /// Determines which item to display based on either the configuration or the connectionOpportunityId that was passed in.
+        /// </summary>
+        /// <returns>An <see cref="System.Int32"/> of the Id for a <see cref="Rock.Model.ConnectionOpportunity"/> or null if it was not found.</returns>
+        private int GetConnectionOpportunityId()
+        {
+            Guid? connectionOpportunityGuid = GetAttributeValue( "ConnectionOpportunity" ).AsGuidOrNull();
+            int itemId = default( int );
+
+            // A configured defined type takes precedence over any definedTypeId param value that is passed in.
+            if ( connectionOpportunityGuid.HasValue )
+            {
+                var opportunity = new ConnectionOpportunityService( new RockContext() ).Get( connectionOpportunityGuid.Value );
+                itemId = opportunity.Id;
+            }
+            else
+            {
+                itemId = PageParameter( "OpportunityId" ).AsInteger();
+            }
+
+            return itemId;
         }
 
         #endregion

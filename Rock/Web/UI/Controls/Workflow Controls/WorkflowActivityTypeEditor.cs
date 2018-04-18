@@ -20,7 +20,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -309,7 +309,7 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
                     a.Guid,
                     a.Name,
                     a.Description,
-                    FieldType = FieldTypeCache.GetName( a.FieldTypeId ),
+                    FieldType = CacheFieldType.GetName( a.FieldTypeId ),
                     a.IsRequired
                 } )
                 .ToList();
@@ -362,7 +362,7 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
             Controls.Add( _sbSecurity );
             _sbSecurity.ID = this.ID + "_sbSecurity";
             _sbSecurity.Attributes["class"] = "btn btn-security btn-xs security pull-right";
-            _sbSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.WorkflowActivityType ) ).Id;
+            _sbSecurity.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.WorkflowActivityType ) ).Id;
 
             _cbActivityTypeIsActive = new RockCheckBox { Text = "Active" };
             Controls.Add( _cbActivityTypeIsActive );
@@ -414,7 +414,7 @@ javascript:
             _lbAddActionType = new LinkButton();
             Controls.Add( _lbAddActionType );
             _lbAddActionType.ID = this.ID + "_lbAddAction";
-            _lbAddActionType.CssClass = "btn btn-xs btn-action";
+            _lbAddActionType.CssClass = "btn btn-xs btn-action add-action";
             _lbAddActionType.Click += lbAddActionType_Click;
             _lbAddActionType.CausesValidation = false;
             _lbAddActionType.Controls.Add( new LiteralControl { Text = "<i class='fa fa-plus'></i> Add Action" } );
@@ -437,6 +437,7 @@ javascript:
             _gAttributes.Actions.AddClick += gAttributes_Add;
             _gAttributes.GridRebind += gAttributes_Rebind;
             _gAttributes.GridReorder += gAttributes_Reorder;
+            _gAttributes.ShowActionsInHeader = false;
 
             var reorderField = new ReorderField();
             _gAttributes.Columns.Add( reorderField );

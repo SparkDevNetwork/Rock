@@ -23,7 +23,10 @@
 
         <div class="panel panel-block panel-analytics">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-check-square-o"></i>Giving Analytics</h1>
+                <h1 class="panel-title">
+                    <i class="fa fa-check-square-o"></i>
+                    Giving Analytics
+                </h1>
 
                 <div class="panel-labels">
                     <a href="#" onclick="$('.js-slidingdaterange-help').toggle()">
@@ -67,6 +70,7 @@
                                 </div>
                             </div>
                             </Rock:RockControlWrapper>
+                            <Rock:RockCheckBoxList ID="cblTransactionType" runat="server" Label="Transaction Types" RepeatDirection="Vertical" />
                         </div>
                         <Rock:RockCheckBoxList ID="cblCurrencyTypes" runat="server" FormGroupCssClass="currency-list js-currency-list" Label="Currency Types" RepeatDirection="Vertical" />
                         <Rock:RockCheckBoxList ID="cblTransactionSource" runat="server" FormGroupCssClass="source-list js-source-list" Label="Transaction Source" RepeatDirection="Vertical" />

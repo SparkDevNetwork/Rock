@@ -32,6 +32,7 @@ namespace Rock.Web.Cache
     /// </summary>
     [Serializable]
     [DataContract]
+    [Obsolete( "Use Rock.Cache.CacheInteractionComponent instead" )]
     public class InteractionComponentCache : CachedModel<InteractionComponent>
     {
         #region Constructors

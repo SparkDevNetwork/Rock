@@ -25,7 +25,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web;
-using Rock.Web.Cache;
+using Rock.Cache;
 using System.IO;
 using System.ComponentModel;
 using Rock.Security;
@@ -119,7 +119,7 @@ namespace RockWeb.Blocks.Crm
 
                     int? siteId = ddlSite.SelectedValueAsInt();
                     string token = tbToken.Text.Trim();
-                    string url = tbUrl.Text.Trim();
+                    string url = tbUrl.Text.RemoveCrLf().Trim();
 
                     if ( !siteId.HasValue )
                     {
@@ -316,13 +316,13 @@ namespace RockWeb.Blocks.Crm
             ddlSite.Items.Clear();
             using ( var rockContext = new RockContext() )
             {
-                foreach ( SiteCache site in new SiteService( rockContext )
+                foreach ( CacheSite site in new SiteService( rockContext )
                     .Queryable().AsNoTracking()
                     .Where( s => s.EnabledForShortening )
                     .OrderBy( s => s.Name )
                     .Select( a => a.Id )
                     .ToList()
-                    .Select( a => SiteCache.Read( a ) ) )
+                    .Select( a => CacheSite.Get( a ) ) )
                 {
                     ddlSite.Items.Add( new ListItem( site.Name, site.Id.ToString() ) );
                 }

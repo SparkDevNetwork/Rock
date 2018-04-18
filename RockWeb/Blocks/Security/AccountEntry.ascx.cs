@@ -27,7 +27,7 @@ using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Security
@@ -134,7 +134,7 @@ namespace RockWeb.Blocks.Security
                 // add phone number types
                 if ( pnlPhoneNumbers.Visible )
                 {
-                    var phoneNumberTypeDefinedType = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE ) );
+                    var phoneNumberTypeDefinedType = CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE ) );
 
                     if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PhoneTypes" ) ) )
                     {
@@ -612,8 +612,8 @@ namespace RockWeb.Blocks.Security
         {
             var rockContext = new RockContext();
 
-            DefinedValueCache dvcConnectionStatus = DefinedValueCache.Read( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
-            DefinedValueCache dvcRecordStatus = DefinedValueCache.Read( GetAttributeValue( "RecordStatus" ).AsGuid() );
+            CacheDefinedValue dvcConnectionStatus = CacheDefinedValue.Get( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
+            CacheDefinedValue dvcRecordStatus = CacheDefinedValue.Get( GetAttributeValue( "RecordStatus" ).AsGuid() );
 
             Person person = new Person();
             person.FirstName = tbFirstName.Text;
@@ -621,7 +621,7 @@ namespace RockWeb.Blocks.Security
             person.Email = tbEmail.Text;
             person.IsEmailActive = true;
             person.EmailPreference = EmailPreference.EmailAllowed;
-            person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+            person.RecordTypeValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
             if ( dvcConnectionStatus != null )
             {
                 person.ConnectionStatusValueId = dvcConnectionStatus.Id;
@@ -713,7 +713,7 @@ namespace RockWeb.Blocks.Security
                         var location = new LocationService( rockContext ).Get( acAddress.Street1, acAddress.Street2, acAddress.City, acAddress.State, acAddress.PostalCode, acAddress.Country );
                         groupLocation.Location = location;
 
-                        groupLocation.GroupLocationTypeValueId = DefinedValueCache.Read( locationTypeGuid ).Id;
+                        groupLocation.GroupLocationTypeValueId = CacheDefinedValue.Get( locationTypeGuid ).Id;
                         groupLocation.IsMailingLocation = true;
                         groupLocation.IsMappedLocation = true;
 
@@ -739,7 +739,7 @@ namespace RockWeb.Blocks.Security
                 rockContext,
                 person,
                 Rock.Model.AuthenticationServiceType.Internal,
-                EntityTypeCache.Read( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id,
+                CacheEntityType.Get( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id,
                 tbUserName.Text,
                 Password,
                 confirmed );

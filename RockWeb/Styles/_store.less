@@ -1,15 +1,15 @@
-﻿/*
+/*
     Used to manage styles related to Rock's store
     /* NOTE: This less file is not included in the core since it is only used
              internally. It must be included in the theme.
-    
+
     1. Promo Rotator
     2. Package Summary
     3. Package Detail
     4. Components
     5. Purchased Package
-    6. 
-    7. 
+    6.
+    7.
 */
 
 // 1. Promo Rotator
@@ -49,8 +49,11 @@
 // 2. Package Summary
 // -------------------------
 .packagesummary {
+  max-width: 282px;
   height: 250px;
+  margin-right: auto;
   margin-bottom: 24px;
+  margin-left: auto;
   cursor: pointer;
   background-color: #fff;
   border: 1px solid #ccc;
@@ -58,14 +61,14 @@
   .packagesummary-image-hover {
     width: 100%;
     height: 140px;
-    content: '';
+    content: "";
     background-color: #000;
     opacity: 0;
     -webkit-transition: opacity .25s ease-in;
-       -moz-transition: opacity .25s ease-in;
-        -ms-transition: opacity .25s ease-in;
-         -o-transition: opacity .25s ease-in;
-            transition: opacity .25s ease-in;
+    -moz-transition: opacity .25s ease-in;
+    -ms-transition: opacity .25s ease-in;
+    -o-transition: opacity .25s ease-in;
+    transition: opacity .25s ease-in;
   }
 
   &:hover .packagesummary-image-hover {
@@ -94,7 +97,7 @@
 }
 
 
-// 3. 
+// 3.
 // -------------------------
 
 .packagedetail-image {
@@ -110,7 +113,6 @@
 }
 
 
-
 // 4.
 // -------------------------
 
@@ -119,51 +121,8 @@
 // @fa-var-star-o: "\f006";
 
 .rating {
-  font-family: FontAwesome;
-
-  &.rating-0:before {
-    content: "\f006  \f006  \f006  \f006  \f006";
-  }
-
-  &.rating-05:before {
-    content: "\f089  \f006  \f006  \f006  \f006";
-  }
-
-  &.rating-1:before {
-    content: "\f005  \f006  \f006  \f006  \f006";
-  }
-
-  &.rating-15:before {
-    content: "\f005  \f089  \f006  \f006  \f006";
-  }
-
-  &.rating-2:before {
-    content: "\f005  \f005  \f006  \f006  \f006";
-  }
-
-  &.rating-25:before {
-    content: "\f005  \f005  \f089  \f006  \f006";
-  }
-
-  &.rating-3:before {
-    content: "\f005  \f005  \f005  \f006  \f006";
-  }
-
-  &.rating-35:before {
-    content: "\f005  \f005  \f005  \f089  \f006";
-  }
-
-  &.rating-4:before {
-    content: "\f005  \f005  \f005  \f005  \f006";
-  }
-
-  &.rating-45:before {
-    content: "\f005  \f005  \f005  \f005  \f089";
-  }
-
-  &.rating-5:before {
-    content: "\f005  \f005  \f005  \f005  \f005";
-  }
+  font-family: @fa-font-face;
+  font-weight: @fa-theme-weight;
 }
 
 .pricelabel {
@@ -215,13 +174,13 @@
 }
 
 
-// 5. 
+// 5.
 // -------------------------
 
 
-// 6. 
+// 6.
 // -------------------------
 
 
-// 7. 
+// 7.
 // -------------------------

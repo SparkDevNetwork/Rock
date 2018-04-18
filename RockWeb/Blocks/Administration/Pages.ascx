@@ -18,7 +18,7 @@
          </Rock:ModalDialog>
 
         <div class="grid">
-            <Rock:Grid ID="rGrid" runat="server" AllowPaging="false" RowItemText="page" OnRowSelected="rGrid_Edit">
+            <Rock:Grid ID="rGrid" runat="server" AllowPaging="false" RowItemText="page" OnRowSelected="rGrid_Edit" ShowActionsInHeader="false">
                 <Columns>
                     <Rock:ReorderField />
                     <Rock:RockBoundField DataField="Id" HeaderText="Id" />
@@ -41,8 +41,8 @@
             </fieldset>
 
             <div class="actions">
-                <asp:LinkButton ID="lbSave" runat="server" Text="Add" CssClass="btn btn-primary" onclick="lbSave_Click" />
-                <asp:LinkButton id="lbCancel" runat="server" Text="Cancel" CssClass="btn btn-link" OnClick="lbCancel_Click" CausesValidation="false" />
+                <asp:LinkButton ID="lbSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Add" CssClass="btn btn-primary" onclick="lbSave_Click" />
+                <asp:LinkButton id="lbCancel" runat="server"  AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" OnClick="lbCancel_Click" CausesValidation="false" />
             </div>
 
         </asp:Panel>

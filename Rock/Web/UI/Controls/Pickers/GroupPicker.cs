@@ -257,6 +257,33 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the selected group id.
+        /// </summary>
+        /// <value>
+        /// The group id.
+        /// </value>
+        public int? GroupId
+        {
+            get
+            {
+                int selectedId = this.SelectedValue.AsInteger();
+                if ( selectedId > 0 )
+                {
+                    return selectedId;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+
+            set
+            {
+                SetValue( value );
+            }
+        }
+
+        /// <summary>
         /// Gets the item rest URL.
         /// </summary>
         /// <value>

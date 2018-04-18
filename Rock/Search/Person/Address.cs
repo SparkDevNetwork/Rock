@@ -59,7 +59,7 @@ namespace Rock.Search.Person
 
             Guid groupTypefamilyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
             Guid homeAddressTypeGuid = new Guid( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME );
-            var homeAddressTypeValueId = Rock.Web.Cache.DefinedValueCache.Read( homeAddressTypeGuid, rockContext ).Id;
+            var homeAddressTypeValueId = Rock.Cache.CacheDefinedValue.Get( homeAddressTypeGuid, rockContext ).Id;
 
             var service = new GroupMemberService( rockContext );
             return service.Queryable()

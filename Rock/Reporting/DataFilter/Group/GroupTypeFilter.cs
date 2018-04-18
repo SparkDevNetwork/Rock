@@ -109,7 +109,7 @@ function() {
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 1 )
             {
-                var groupType = Rock.Web.Cache.GroupTypeCache.Read( selectionValues[0].AsGuid() );
+                var groupType = Rock.Cache.CacheGroupType.Get( selectionValues[0].AsGuid() );
 
                 if ( groupType != null )
                 {

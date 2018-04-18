@@ -26,7 +26,7 @@ using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Jobs
 {
@@ -165,7 +165,7 @@ namespace Rock.Jobs
                     foreach ( var keyVal in followedEntityIds )
                     {
                         // Get the entitytype
-                        EntityTypeCache itemEntityType = EntityTypeCache.Read( keyVal.Key );
+                        CacheEntityType itemEntityType = CacheEntityType.Get( keyVal.Key );
                         if ( itemEntityType.AssemblyName != null )
                         {
                             // get the actual type of what is being followed 

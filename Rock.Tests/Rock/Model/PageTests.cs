@@ -1,5 +1,5 @@
 ﻿using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -110,7 +110,7 @@ namespace Rock.Tests.Rock.Model
             };
 
             var result = page.ToJson();
-            const string key = "\"PageTitle\": \"FooPage\"";
+            const string key = "\"PageTitle\":\"FooPage\"";
             Assert.NotEqual( result.IndexOf( key ), -1 );
         }
 
@@ -128,7 +128,7 @@ namespace Rock.Tests.Rock.Model
 
             var result = page.ToJson();
             result = result.Substring( result.IndexOf( "\"Pages\":" ) + 7 );
-            const string key = "\"PageTitle\": \"BarPage\"";
+            const string key = "\"PageTitle\":\"BarPage\"";
             Assert.NotEqual( result.IndexOf( key ), -1 );
         }
 
@@ -144,9 +144,9 @@ namespace Rock.Tests.Rock.Model
             parent.Pages = new List<Page> { child };
             child.Pages = new List<Page> { grandchild };
             var result = parent.ToJson();
-            const string parentKey = "\"PageTitle\": \"Parent\"";
-            const string childKey = "\"PageTitle\": \"Child\"";
-            const string grandChildKey = "\"PageTitle\": \"Grandchild\"";
+            const string parentKey = "\"PageTitle\":\"Parent\"";
+            const string childKey = "\"PageTitle\":\"Child\"";
+            const string grandChildKey = "\"PageTitle\":\"Grandchild\"";
             Assert.NotEqual( result.IndexOf( parentKey ), -1 );
             Assert.NotEqual( result.IndexOf( childKey ), -1 );
             Assert.NotEqual( result.IndexOf( grandChildKey ), -1 );
@@ -265,11 +265,11 @@ namespace Rock.Tests.Rock.Model
             var obj = new Page
             {
                 InternalName = "Some Page",
-                Attributes = new Dictionary<string, AttributeCache> { { "foobar", null } }
+                Attributes = new Dictionary<string, CacheAttribute> { { "foobar", null } }
             };
 
-            // the AttributeCacheJsonConverter won't convert null to AttributeCache
-            var json = obj.ToJson().Replace( "\"foobar\": null", "\"foobar\": {}" );
+            // the AttributeCacheJsonConverter won't convert null to CacheAttribute
+            var json = obj.ToJson().Replace( "\"foobar\":null", "\"foobar\":{}" );
 
             var page = Page.FromJson( json );
             Assert.NotNull( page.Attributes );
@@ -285,9 +285,9 @@ namespace Rock.Tests.Rock.Model
             var obj = new Page
             {
                 InternalName = "Some Page",
-                AttributeValues = new Dictionary<string, AttributeValueCache>()
+                AttributeValues = new Dictionary<string, CacheAttributeValue>()
                 {
-                    { "foobar",  new AttributeValueCache( new AttributeValue { Value = "baz" } ) }
+                    { "foobar",  new CacheAttributeValue( new AttributeValue { Value = "baz" } ) }
                 }
             };
 

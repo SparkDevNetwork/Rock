@@ -112,11 +112,20 @@ namespace Rock.Transactions
         public Guid? RecipientGuid { get; set; }
 
         /// <summary>
+        /// Gets or sets the datetime that communication was sent.
+        /// </summary>
+        /// <value>
+        /// The send date time.
+        /// </value>
+        public DateTime? SendDateTime { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="SaveCommunicationTransaction"/> class.
         /// </summary>
         public SaveCommunicationTransaction()
         {
             RecipientStatus = CommunicationRecipientStatus.Delivered;
+            SendDateTime = RockDateTime.Now;
             BulkCommunication = false;
         }
 
@@ -172,14 +181,18 @@ namespace Rock.Transactions
         {
             using ( var rockContext = new RockContext() )
             {
-                var sender = new PersonService( rockContext )
-                    .Queryable().AsNoTracking()
-                    .Where( p => p.Email == FromAddress )
-                    .FirstOrDefault();
-                int? senderPersonAliasId = sender != null ? sender.PrimaryAliasId : (int?)null;
+                int? senderPersonAliasId = null;
+                if ( FromAddress.IsNotNullOrWhitespace() )
+                {
+                    var sender = new PersonService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( p => p.Email == FromAddress )
+                        .FirstOrDefault();
+                    senderPersonAliasId = sender != null ? sender.PrimaryAliasId : (int?)null;
+                }
 
                 var communication = new CommunicationService( rockContext ).CreateEmailCommunication(
-                    RecipientEmails, FromName, FromAddress, ReplyTo, Subject, HtmlMessage, BulkCommunication,
+                    RecipientEmails, FromName, FromAddress, ReplyTo, Subject, HtmlMessage, BulkCommunication, SendDateTime,
                     RecipientStatus, senderPersonAliasId );
 
                 if ( communication != null && communication.Recipients.Count() == 1 && RecipientGuid.HasValue )

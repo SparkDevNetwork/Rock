@@ -1,61 +1,64 @@
-﻿$(document).ready(function () {
-    Sys.Application.add_load(function () {
-        // handle what should happen when a different compare type is selected
-        function updateFilterControls(filterCompareControl) {
-            var $fieldCriteriaRow = $(filterCompareControl).closest('.field-criteria');
-            var compareValue = $(filterCompareControl).val();
-            var isNullCompare = (compareValue == 32 || compareValue == 64);
-            var isBetweenCompare = (compareValue == 4096);
-            if (isNullCompare) {
-                $fieldCriteriaRow.find('.js-filter-control').hide();
-                $fieldCriteriaRow.find('.js-filter-control-between').hide();
-            }
-            else if (isBetweenCompare) {
-                $fieldCriteriaRow.find('.js-filter-control').hide();
-                $fieldCriteriaRow.find('.js-filter-control-between').show();
-            }
-            else {
-                $fieldCriteriaRow.find('.js-filter-control').show();
-                $fieldCriteriaRow.find('.js-filter-control-between').hide();
-            }
+﻿var loadFunction = function () {
+    // handle what should happen when a different compare type is selected
+    function updateFilterControls(filterCompareControl) {
+        var $fieldCriteriaRow = $(filterCompareControl).closest('.field-criteria');
+        var compareValue = $(filterCompareControl).val();
+        var isNullCompare = (compareValue == 32 || compareValue == 64);
+        var isBetweenCompare = (compareValue == 4096);
+        if (isNullCompare) {
+            $fieldCriteriaRow.find('.js-filter-control').hide();
+            $fieldCriteriaRow.find('.js-filter-control-between').hide();
         }
+        else if (isBetweenCompare) {
+            $fieldCriteriaRow.find('.js-filter-control').hide();
+            $fieldCriteriaRow.find('.js-filter-control-between').show();
+        }
+        else {
+            $fieldCriteriaRow.find('.js-filter-control').show();
+            $fieldCriteriaRow.find('.js-filter-control-between').hide();
+        }
+    }
 
-        $('.js-filter-compare').each(function (e) {
-            updateFilterControls(this);
-        });
+    $('.js-filter-compare').each(function (e) {
+        updateFilterControls(this);
+    });
 
-        $('.js-filter-compare').change(function () {
-            updateFilterControls(this);
-        })
-
-        // handle property selection changes from the EntityFieldFilter
-        $('select.entity-property-selection').change(function () {
-            var $parentRow = $(this).closest('.js-filter-row');
-            $parentRow.find('div.field-criteria').hide();
-            $parentRow.find('div.field-criteria').eq($(this).find(':selected').index()).show();
-        });
-
-        // activity animation on filter field cootrol
-        $('.filter-item > header').click(function () {
-            $(this).siblings('.panel-body').slideToggle();
-            $(this).children('div.pull-left').children('div').slideToggle();
-
-            $expanded = $(this).children('input.filter-expanded');
-            $expanded.val($expanded.val() == 'True' ? 'False' : 'True');
-
-            $('a.filter-view-state > i', this).toggleClass('fa-chevron-down');
-            $('a.filter-view-state > i', this).toggleClass('fa-chevron-up');
-        });
-
-        // fix so that the Remove button will fire its event, but not the parent event 
-        $('.filter-item a.btn-danger').click(function (event) {
-            event.stopImmediatePropagation();
-        });
-
-        $('.filter-item-select').click(function (event) {
-            event.stopImmediatePropagation();
-        });
+    $('.js-filter-compare').change(function () {
+        updateFilterControls(this);
     })
+
+    // handle property selection changes from the EntityFieldFilter
+    $('select.entity-property-selection').change(function () {
+        var $parentRow = $(this).closest('.js-filter-row');
+        $parentRow.find('div.field-criteria').hide();
+        $parentRow.find('div.field-criteria').eq($(this).find(':selected').index()).show();
+    });
+
+    // activity animation on filter field cootrol
+    $('.filter-item > header').click(function () {
+        $(this).siblings('.panel-body').slideToggle();
+        $(this).children('div.pull-left').children('div').slideToggle();
+
+        $expanded = $(this).children('input.filter-expanded');
+        $expanded.val($expanded.val() == 'True' ? 'False' : 'True');
+
+        $('a.filter-view-state > i', this).toggleClass('fa-chevron-down');
+        $('a.filter-view-state > i', this).toggleClass('fa-chevron-up');
+    });
+
+    // fix so that the Remove button will fire its event, but not the parent event 
+    $('.filter-item a.btn-danger').click(function (event) {
+        event.stopImmediatePropagation();
+    });
+
+    $('.filter-item-select').click(function (event) {
+        event.stopImmediatePropagation();
+    });
+}
+
+$(document).ready(function () {
+    loadFunction();
+    Sys.Application.add_load(loadFunction);
 });
 
 //
@@ -198,6 +201,31 @@
                     if (lastAttendanceDateRangeText) {
                       result = result + ', last attendance to group in Date Range: ' + lastAttendanceDateRangeText;
                     }
+
+                    return result;
+                },
+
+                // NOTE: this is specifically for the Rock.Reporting.DataFilter.Person.HasPhoneFilter component
+                formatFilterForHasPhoneFilter: function ($content) {
+
+                    var has;
+                    if ($('.js-hasphoneoftype', $content).find(':selected').val() == "True") {
+                        has = "Has ";
+                    } else {
+                        has = "Doesn't have ";
+                    }
+
+                    var phoneType = $('.js-phonetype', $content).find(':selected').text();
+                    var sms = $('.js-hassms', $content).find(':selected').text();
+
+                    if (sms == 'Yes') {
+                        sms = ' and Has SMS Enabled';
+                    }
+                    else if (sms == 'No') {
+                        sms = " and Doesn't have SMS Enabled";
+                    }
+
+                    var result = has + phoneType + sms;
 
                     return result;
                 },

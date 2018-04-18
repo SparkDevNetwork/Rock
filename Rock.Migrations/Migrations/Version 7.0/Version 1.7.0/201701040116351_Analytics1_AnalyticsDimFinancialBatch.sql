@@ -1,8 +1,8 @@
 IF OBJECT_ID(N'[dbo].[AnalyticsDimFinancialBatch]', 'V') IS NOT NULL
-    DROP VIEW AnalyticsDimFinancialBatch
+    DROP VIEW [dbo].[AnalyticsDimFinancialBatch]
 GO
 
-CREATE VIEW AnalyticsDimFinancialBatch
+CREATE VIEW [dbo].AnalyticsDimFinancialBatch
 AS
 SELECT fb.Id [BatchId]
     ,fb.[Name]

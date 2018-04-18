@@ -23,8 +23,9 @@
                                 </p>
 
 					            <div class="packagesummary-footer">
-						            <div class="rating pull-left rating-{{ promo.PackageRating | Replace:'.','' }}">
-						            </div>
+						            <div class="rating pull-left">
+                          {{  promo.PackageRating | RatingMarkup }}
+                        </div>
 						            <div class="cost pull-right">
 							            {% if promo.PackagePrice == 0 %}
 								            Free

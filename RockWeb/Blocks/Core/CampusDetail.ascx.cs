@@ -18,14 +18,15 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
-
+using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Web;
+using Rock.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Core
@@ -45,8 +46,11 @@ namespace RockWeb.Blocks.Core
         {
             base.OnLoad( e );
 
+            var locationCampusValue = Rock.Cache.CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.LOCATION_TYPE_CAMPUS.AsGuid() );
+
             if ( !Page.IsPostBack )
             {
+                LoadDropDowns();
                 ShowDetail( PageParameter( "campusId" ).AsInteger() );
             }
             else
@@ -96,7 +100,7 @@ namespace RockWeb.Blocks.Core
             var rockContext = new RockContext();
             var campusService = new CampusService( rockContext );
             var locationService = new LocationService( rockContext );
-            var locationCampusValue = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.LOCATION_TYPE_CAMPUS.AsGuid() );
+            var locationCampusValue = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.LOCATION_TYPE_CAMPUS.AsGuid() );
 
             int campusId = int.Parse( hfCampusId.Value );
 
@@ -145,6 +149,7 @@ namespace RockWeb.Blocks.Core
             string postValue = campus.Location.GetFullStreetAddress();
 
             campus.ShortCode = tbCampusCode.Text;
+            campus.TimeZoneId = ddlTimeZone.SelectedValue;
 
             var personService = new PersonService( rockContext );
             var leaderPerson = personService.Get( ppCampusLeader.SelectedValue ?? 0 );
@@ -173,9 +178,25 @@ namespace RockWeb.Blocks.Core
 
             } );
 
-            Rock.Web.Cache.CampusCache.Flush( campus.Id );
+            Rock.Cache.CacheCampus.Remove( campus.Id );
 
             NavigateToParentPage();
+        }
+
+        /// <summary>
+        /// Loads the drop downs.
+        /// </summary>
+        public void LoadDropDowns()
+        {
+            ddlTimeZone.Items.Clear();
+            ddlTimeZone.Items.Add( new ListItem() );
+
+            foreach ( TimeZoneInfo timeZone in TimeZoneInfo.GetSystemTimeZones() )
+            {
+                ddlTimeZone.Items.Add( new ListItem( timeZone.DisplayName, timeZone.Id ) );
+            }
+
+            ddlTimeZone.Visible = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.ENABLE_MULTI_TIME_ZONE_SUPPORT ).AsBoolean();
         }
 
         /// <summary>
@@ -213,6 +234,7 @@ namespace RockWeb.Blocks.Core
             acAddress.SetValues( campus.Location );
 
             tbCampusCode.Text = campus.ShortCode;
+            ddlTimeZone.SetValue( campus.TimeZoneId );
             ppCampusLeader.SetValue( campus.LeaderPersonAlias != null ? campus.LeaderPersonAlias.Person : null );
             kvlServiceTimes.Value = campus.ServiceTimes;
 

@@ -61,7 +61,7 @@ namespace Rock.Rest
         {
             bool result = false;
 
-            var definedType = Rock.Web.Cache.DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.REST_API_ALLOWED_DOMAINS.AsGuid() );
+            var definedType = Rock.Cache.CacheDefinedType.Get( Rock.SystemGuid.DefinedType.REST_API_ALLOWED_DOMAINS.AsGuid() );
             if (definedType != null)
             {
                 result = definedType.DefinedValues.Select( v => v.Value ).Contains( origin, StringComparer.OrdinalIgnoreCase );

@@ -25,7 +25,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -358,7 +358,7 @@ namespace RockWeb.Blocks.Finance
             leftDescription.Add( "Is Tax Deductible", account.IsTaxDeductible );
             lLeftDetails.Text = leftDescription.Html;
             account.LoadAttributes();
-            Helper.AddDisplayControls( account, Helper.GetAttributeCategories( account, true, false ), lRightDetails, null, false );
+            Helper.AddDisplayControls( account, Helper.GetAttributeCategories( account, true, false ), phAttributesView, null, false );
         }
 
         /// <summary>
@@ -378,9 +378,9 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void LoadDropDowns()
         {
-            ddlAccountType.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_ACCOUNT_TYPE.AsGuid() ) );
+            ddlAccountType.BindToDefinedType( CacheDefinedType.Get( Rock.SystemGuid.DefinedType.FINANCIAL_ACCOUNT_TYPE.AsGuid() ) );
 
-            cpCampus.Campuses = CampusCache.All();
+            cpCampus.Campuses = CacheCampus.All();
             cpCampus.Visible = cpCampus.Items.Count > 0;
         }
 

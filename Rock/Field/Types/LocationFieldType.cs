@@ -49,7 +49,7 @@ namespace Rock.Field.Types
                 if ( locGuid.HasValue )
                 {
                     // Check to see if this is the org address first (to avoid db read)
-                    var globalAttributesCache = Web.Cache.GlobalAttributesCache.Read();
+                    var globalAttributesCache = Cache.CacheGlobalAttributes.Get();
                     var orgLocGuid = globalAttributesCache.GetValue( "OrganizationAddress" ).AsGuidOrNull();
                     if ( orgLocGuid.HasValue && orgLocGuid.Value == locGuid.Value )
                     {
@@ -133,6 +133,7 @@ namespace Rock.Field.Types
                     Guid guid;
                     Guid.TryParse( value, out guid );
                     var location = new LocationService( new RockContext() ).Get( guid );
+                    picker.SetBestPickerModeForLocation( location );
                     picker.Location = location;
                 }
             }

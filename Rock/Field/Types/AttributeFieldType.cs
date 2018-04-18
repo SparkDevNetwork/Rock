@@ -23,7 +23,7 @@ using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -124,7 +124,7 @@ namespace Rock.Field.Types
                     int? entityTypeId = ( (EntityTypePicker)controls[0] ).SelectedValue.AsIntegerOrNull();
                     if ( entityTypeId.HasValue )
                     {
-                        var entityType = EntityTypeCache.Read( entityTypeId.Value );
+                        var entityType = CacheEntityType.Get( entityTypeId.Value );
                         if ( entityType != null )
                         {
                             value = entityType.Guid.ToString();
@@ -167,7 +167,7 @@ namespace Rock.Field.Types
                     Guid? entityTypeGuid = configurationValues[ENTITY_TYPE_KEY].Value.AsGuidOrNull();
                     if ( entityTypeGuid.HasValue )
                     {
-                        var entityType = EntityTypeCache.Read( entityTypeGuid.Value );
+                        var entityType = CacheEntityType.Get( entityTypeGuid.Value );
                         if ( entityType != null )
                         {
                             value = entityType.Id.ToString();
@@ -214,7 +214,7 @@ namespace Rock.Field.Types
                 var names = new List<string>();
                 foreach ( Guid guid in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList() )
                 {
-                    var attribute = AttributeCache.Read( guid );
+                    var attribute = CacheAttribute.Get( guid );
                     if ( attribute != null )
                     {
                         names.Add( attribute.Name );
@@ -246,12 +246,12 @@ namespace Rock.Field.Types
 
             if ( configurationValues != null && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean() )
             {
-                editControl = new RockCheckBoxList { ID = id };
+                editControl = new RockListBox { ID = id };
                 editControl.AddCssClass( "checkboxlist-group" );
             }
             else
             {
-                editControl = new RockDropDownList { ID = id };
+                editControl = new RockDropDownList { ID = id, EnhanceForLongLists = true };
                 editControl.Items.Add( new ListItem() );
             }
 
@@ -260,7 +260,7 @@ namespace Rock.Field.Types
                 Guid? entityTypeGuid = configurationValues[ENTITY_TYPE_KEY].Value.AsGuidOrNull();
                 if ( entityTypeGuid.HasValue )
                 {
-                    var entityType = EntityTypeCache.Read( entityTypeGuid.Value );
+                    var entityType = CacheEntityType.Get( entityTypeGuid.Value );
                     if ( entityType != null )
                     {
                         Rock.Model.AttributeService attributeService = new Model.AttributeService( new RockContext() );
@@ -301,11 +301,11 @@ namespace Rock.Field.Types
                 {
                     ids.Add( ( (ListControl)control ).SelectedValue );
                 }
-                else if ( control is Rock.Web.UI.Controls.RockCheckBoxList )
+                else if ( control is Rock.Web.UI.Controls.RockListBox )
                 {
-                    var cblControl = control as Rock.Web.UI.Controls.RockCheckBoxList;
+                    var lbControl = control as Rock.Web.UI.Controls.RockListBox;
 
-                    ids.AddRange( cblControl.Items.Cast<ListItem>()
+                    ids.AddRange( lbControl.Items.Cast<ListItem>()
                         .Where( i => i.Selected )
                         .Select( i => i.Value ) );
                 }
@@ -315,7 +315,7 @@ namespace Rock.Field.Types
 
             foreach ( int attributeId in ids.AsIntegerList() )
             {
-                var attribute = Rock.Web.Cache.AttributeCache.Read( attributeId );
+                var attribute = Rock.Cache.CacheAttribute.Get( attributeId );
                 if ( attribute != null )
                 {
                     guids.Add( attribute.Guid.ToString() );
@@ -340,7 +340,7 @@ namespace Rock.Field.Types
                     var ids = new List<string>();
                     foreach ( Guid guid in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList() )
                     {
-                        var attribute = Rock.Web.Cache.AttributeCache.Read( guid );
+                        var attribute = Rock.Cache.CacheAttribute.Get( guid );
                         if ( attribute != null )
                         {
                             ids.Add( attribute.Id.ToString() );

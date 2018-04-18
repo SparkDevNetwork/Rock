@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Caching;
 using Rock.Data;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Model
 {
@@ -150,9 +150,8 @@ namespace Rock.Model
         /// <returns></returns>
         public static string GetCachedContent( int blockId, string entityValue )
         {
-            RockMemoryCache cache = RockMemoryCache.Default;
             string cacheKey = HtmlContentCacheKey( blockId, entityValue );
-            return cache[cacheKey] as string;
+            return RockCache.Get( cacheKey ) as string;
         }
 
         /// <summary>
@@ -164,8 +163,8 @@ namespace Rock.Model
         /// <param name="cacheDuration">Duration of the cache.</param>
         public static void AddCachedContent( int blockId, string entityValue, string html, int cacheDuration )
         {
-            RockMemoryCache cache = RockMemoryCache.Default;
-            cache.Set( HtmlContentCacheKey( blockId, entityValue ), html, new CacheItemPolicy { AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( cacheDuration ) } );
+            var expiration = RockDateTime.Now.AddSeconds( cacheDuration );
+            RockCache.AddOrUpdate( HtmlContentCacheKey( blockId, entityValue ), string.Empty, html, expiration );
         }
 
         /// <summary>
@@ -175,8 +174,7 @@ namespace Rock.Model
         /// <param name="entityValue">The entity value.</param>
         public static void FlushCachedContent( int blockId, string entityValue )
         {
-            RockMemoryCache cache = RockMemoryCache.Default;
-            cache.Remove( HtmlContentCacheKey( blockId, entityValue ) );
+            RockCache.Remove( HtmlContentCacheKey( blockId, entityValue ) );
         }
 
         #endregion
