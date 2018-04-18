@@ -45,7 +45,7 @@ body.navbar-side-open #content-wrapper {
 }
 
 #content-wrapper {
-	position: fixed;
+	position: absolute;
 	top: 0;
 	right: 0;
 	bottom: 0;
@@ -65,6 +65,10 @@ body.navbar-side-open #content-wrapper {
 @media (min-width: @screen-md-min) {
 	body #content-wrapper {
 		left: 65px;
+	}
+
+	body.navless #content-wrapper {
+		left: 0;
 	}
 }
 

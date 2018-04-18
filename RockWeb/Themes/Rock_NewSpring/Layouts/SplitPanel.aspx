@@ -18,7 +18,7 @@
     }
 
     #content-wrapper #page-content {
-        overflow-y: auto;
+        overflow-y: visible;
         padding: 40px 60px;
         margin-right: 50%;
     }
