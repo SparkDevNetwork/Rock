@@ -492,6 +492,7 @@ namespace Rock.SystemGuid
         /// Default RSS Channel Template
         /// </summary>
         public const string DEFAULT_RSS_CHANNEL = "D6149581-9EFC-40D8-BD38-E92C0717BEDA";
+        public const string DEFAULT_ICAL_DESCRIPTION = "DCBA4862-73E9-49B5-8AD5-08E17BE68025";
 
         #endregion
 
