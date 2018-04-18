@@ -465,8 +465,9 @@ namespace RockWeb.Blocks.Cms
                 if ( contentItem != null )
                 {
                     bool isFiltered = false;
-                    var items = GetChildItems( contentItem, out isFiltered );
+                    var items = GetChildItems( contentItem, out isFiltered ).OrderBy( a => a.Order ).ToList();
 
+                    // If the list was filtered due to VIEW security, don't sort it
                     if ( !isFiltered )
                     {
                         var service = new ContentChannelItemService( rockContext );
