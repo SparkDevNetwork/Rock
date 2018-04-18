@@ -30,7 +30,7 @@ namespace Rock
         #region IHasAttributes extensions
 
         /// <summary>
-        /// Loads the attribute.
+        /// Loads the attributes.
         /// </summary>
         /// <param name="entity">The entity.</param>
         public static void LoadAttributes( this Rock.Attribute.IHasAttributes entity )
@@ -46,6 +46,31 @@ namespace Rock
         public static void LoadAttributes( this Rock.Attribute.IHasAttributes entity, RockContext rockContext )
         {
             Rock.Attribute.Helper.LoadAttributes( entity, rockContext );
+        }
+
+        /// <summary>
+        /// Loads the attributes for all entities.
+        /// </summary>
+        /// <param name="entities">The entities.</param>
+        public static void LoadAttributes( this IEnumerable<Attribute.IHasAttributes> entities )
+        {
+            foreach ( var entity in entities )
+            {
+                Rock.Attribute.Helper.LoadAttributes( entity );
+            }
+        }
+
+        /// <summary>
+        /// Loads the attributes for all entities.
+        /// </summary>
+        /// <param name="entities">The entities.</param>
+        /// <param name="rockContext">The rock context.</param>
+        public static void LoadAttributes( this IEnumerable<Attribute.IHasAttributes> entities, RockContext rockContext )
+        {
+            foreach ( var entity in entities )
+            {
+                Rock.Attribute.Helper.LoadAttributes( entity, rockContext );
+            }
         }
 
         /// <summary>
@@ -81,7 +106,7 @@ namespace Rock
         /// <param name="entity">The entity.</param>
         /// <param name="key">The attribute key.</param>
         /// <param name="rockContext">The rock context.</param>
-        public static void SaveAttributeValue( this Rock.Attribute.IHasAttributes entity, string key, RockContext rockContext = null)
+        public static void SaveAttributeValue( this Rock.Attribute.IHasAttributes entity, string key, RockContext rockContext = null )
         {
             if ( entity.AttributeValues.ContainsKey( key ) )
             {
@@ -157,13 +182,13 @@ namespace Rock
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
         /// <returns></returns>
-        public static Dictionary<string, AttributeCache> GetAuthorizedAttributes ( this Rock.Attribute.IHasAttributes entity, string action, Person person)
+        public static Dictionary<string, AttributeCache> GetAuthorizedAttributes( this Rock.Attribute.IHasAttributes entity, string action, Person person )
         {
             var authorizedAttributes = new Dictionary<string, AttributeCache>();
 
             if ( entity != null )
             {
-                foreach( var item in entity.Attributes )
+                foreach ( var item in entity.Attributes )
                 {
                     if ( item.Value.IsAuthorized( action, person ) )
                     {
