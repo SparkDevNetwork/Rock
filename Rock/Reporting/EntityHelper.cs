@@ -488,7 +488,18 @@ namespace Rock.Reporting
         /// <value>
         /// The title without qualifier.
         /// </value>
-        public string TitleWithoutQualifier { get; set; }
+        public string TitleWithoutQualifier
+        {
+            get
+            {
+                return _titleWithoutQualifier ?? this.Title;
+            }
+            set
+            {
+                _titleWithoutQualifier = value;
+            }
+        }
+        private string _titleWithoutQualifier { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the attribute entity type qualifier.

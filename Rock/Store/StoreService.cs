@@ -125,13 +125,12 @@ namespace Rock.Store
         }
 
         /// <summary>
-        /// Organizations the is configured.
+        /// Returns true if the Organization has a StoreOrganizationKey
         /// </summary>
         /// <returns></returns>
         public static bool OrganizationIsConfigured()
         {
-            var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
-            string storeKey = globalAttributes.GetValue( "StoreOrganizationKey" );
+            var storeKey = StoreService.GetOrganizationKey();
 
             if ( string.IsNullOrWhiteSpace( storeKey ) )
             {
@@ -149,9 +148,35 @@ namespace Rock.Store
         /// <returns></returns>
         public static string GetOrganizationKey()
         {
-            var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
-            return globalAttributes.GetValue( "StoreOrganizationKey" );
+            string encryptedStoreKey = Rock.Web.SystemSettings.GetValue( "StoreOrganizationKey" );
+
+            string decryptedStoreKey = Rock.Security.Encryption.DecryptString( encryptedStoreKey );
+
+            if ( decryptedStoreKey == null )
+            {
+                // if the decryption fails, it could be that the StoreOrganizationKey isn't encrypted, so encrypt and store it again 
+                decryptedStoreKey = encryptedStoreKey;
+                SetOrganizationKey( decryptedStoreKey );
+            }
+
+            return decryptedStoreKey;
         }
 
+        /// <summary>
+        /// Sets the organization key.
+        /// </summary>
+        /// <param name="storeKey">The store key.</param>
+        public static void SetOrganizationKey( string storeKey )
+        {
+            Rock.Web.SystemSettings.SetValue( "StoreOrganizationKey", Rock.Security.Encryption.EncryptString( storeKey ) );
+        }
+
+        /// <summary>
+        /// Revokes the organization key.
+        /// </summary>
+        public static void RevokeOrganizationKey()
+        {
+            Rock.Web.SystemSettings.SetValue( "StoreOrganizationKey", null );
+        }
     }
 }

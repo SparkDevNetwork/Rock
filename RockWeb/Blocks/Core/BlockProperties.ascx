@@ -62,7 +62,7 @@
                                         <Rock:RockTextBox ID="tbItemClass" runat="server" Label="Item Class" />
                                     </div>
                                     <div class="col-md-7">
-                                        <Rock:CodeEditor ID="ceLavaTemplate" runat="server" Label="Lava Template" EditorMode="Lava" EditorHeight="275" />
+                                        <Rock:CodeEditor ID="ceLavaTemplate" runat="server" Help="The properties of the item in each row can be accessed using the 'Row' merge field. <span class='tip tip-lava'></span>" Label="Lava Template" EditorMode="Lava" EditorHeight="275" />
                                     </div>
                                     <div class="col-md-1">
                                     <asp:LinkButton ID="btnDeleteColumn" runat="server" CssClass="btn btn-danger btn-sm" OnClick="btnDeleteColumn_Click" ><i class="fa fa-times"></i></asp:LinkButton>    

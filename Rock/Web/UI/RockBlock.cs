@@ -463,13 +463,10 @@ namespace Rock.Web.UI
             this.BlockValidationGroup = string.Format( "{0}_{1}", this.GetType().BaseType.Name, BlockCache.Id );
 
             RockPage.BlockUpdated += Page_BlockUpdated;
-
-            if ( !Page.IsPostBack )
+            
+            if ( this is ICustomGridColumns )
             {
-                if ( this is ICustomGridColumns )
-                {
-                    AddCustomGridColumns();
-                }
+                AddCustomGridColumns();
             }
         }
 
@@ -531,22 +528,7 @@ namespace Rock.Web.UI
             var grid = this.ControlsOfTypeRecursive<Rock.Web.UI.Controls.Grid>().FirstOrDefault();
             if ( grid != null && additionalColumns != null && additionalColumns.ColumnsConfig.Any() )
             {
-                foreach ( var columnConfig in additionalColumns.ColumnsConfig )
-                {
-                    int insertPosition;
-                    if ( columnConfig.PositionOffsetType == CustomGridColumnsConfig.ColumnConfig.OffsetType.LastColumn )
-                    {
-                        insertPosition = grid.Columns.Count - columnConfig.PositionOffset;
-                    }
-                    else
-                    {
-                        insertPosition = columnConfig.PositionOffset;
-                    }
-
-                    var column = columnConfig.GetGridColumn();
-                    grid.Columns.Insert( insertPosition, column );
-                    insertPosition++;
-                }
+                grid.CustomColumns = additionalColumns.ColumnsConfig;
             }
         }
 

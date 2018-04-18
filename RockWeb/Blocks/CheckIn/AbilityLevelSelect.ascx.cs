@@ -197,13 +197,6 @@ namespace RockWeb.Blocks.CheckIn
                                 p.SetAttributeValue( "AbilityLevel", selectedAbilityLevelGuid.ToUpperInvariant() );
                                 p.SaveAttributeValues( rockContext );
                                 person.Person.LoadAttributes( rockContext );
-
-                                // Record the changes to the person's history
-                                var oldValue = Rock.Web.Cache.DefinedValueCache.Read( _personAbilityLevelGuid );
-                                var newValue = Rock.Web.Cache.DefinedValueCache.Read( selectedAbilityLevelGuid );
-                                var abilityLevelChanges = new List<string>();
-                                History.EvaluateChange( abilityLevelChanges, "Ability Level", oldValue != null ? oldValue.Value : string.Empty, newValue != null ? newValue.Value : string.Empty );
-                                HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),person.Person.Id, abilityLevelChanges, true, person.Person.PrimaryAliasId );
                             }
                         }
                     }

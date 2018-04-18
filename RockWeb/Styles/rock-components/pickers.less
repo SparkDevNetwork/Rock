@@ -4,6 +4,7 @@
 
 .picker {
   .clearfix();
+
   @media @sm {
     position: relative;
     width: 250px; // needed when floated right to keep the picker from shifting when the (x) appears to allow delete
@@ -20,8 +21,8 @@
     padding: @padding-base-vertical @padding-base-horizontal;
     font-size: @font-size-base;
     color: @input-color;
-    background-color: @input-group-addon-bg;
-    border: 1px solid @input-group-addon-border-color;
+    background-color: transparent;
+    border: 1px solid @input-border;
     border-radius: @border-radius-base;
 
     i {
@@ -77,10 +78,11 @@
     h4:first-child {
       margin-top: 0;
     }
-      @media (max-width: @screen-xs-max) {
-        position: static;
-        max-width: 100%;
-      }
+
+    @media (max-width: @screen-xs-max) {
+      position: static;
+      max-width: 100%;
+    }
   }
 
   &.picker-menu-right {
@@ -137,9 +139,9 @@
       position: relative;
 
       label {
-          position: absolute;
-          top: 0;
-          right: 0;
+        position: absolute;
+        top: 0;
+        right: 0;
       }
 
       img {

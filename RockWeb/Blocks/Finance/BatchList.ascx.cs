@@ -481,6 +481,13 @@ namespace RockWeb.Blocks.Finance
                             return;
                         }
 
+                        if ( batch.IsAutomated && batch.Status == BatchStatus.Pending && newStatus != BatchStatus.Pending )
+                        {
+                            errorMessage = string.Format( "{0} is an automated batch and the status can not be modified when the status is pending. The system will automatically set this batch to OPEN when all transactions have been downloaded.", batch.Name );
+                            maWarningDialog.Show( errorMessage, ModalAlertType.Warning );
+                            return;
+                        } 
+
                         batch.Status = newStatus;
 
                         if ( !batch.IsValid )
@@ -733,7 +740,7 @@ namespace RockWeb.Blocks.Finance
             string title = gfBatchFilter.GetUserPreference( "Title" );
             if ( !string.IsNullOrEmpty( title ) )
             {
-                qry = qry.Where( batch => batch.Name.StartsWith( title ) );
+                qry = qry.Where( batch => batch.Name.Contains( title ) );
             }
 
             // filter by accounting code
@@ -742,7 +749,7 @@ namespace RockWeb.Blocks.Finance
                 string accountingCode = gfBatchFilter.GetUserPreference( "Accounting Code" );
                 if ( !string.IsNullOrEmpty( accountingCode ) )
                 {
-                    qry = qry.Where( batch => batch.AccountingSystemCode.StartsWith( accountingCode ) );
+                    qry = qry.Where( batch => batch.AccountingSystemCode.Contains( accountingCode ) );
                 }
             }
 
@@ -981,7 +988,7 @@ namespace RockWeb.Blocks.Finance
         #region Attributes
 
         /// <summary>
-        /// Binds the attributes.
+        /// Binds the attributes
         /// </summary>
         private void BindAttributes()
         {

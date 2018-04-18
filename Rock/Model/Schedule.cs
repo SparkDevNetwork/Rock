@@ -369,7 +369,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="DDay.iCal.Event"/> representing the iCalendar event for this Schedule.
         /// </value>
-        public DDay.iCal.Event GetCalenderEvent() 
+        public virtual DDay.iCal.Event GetCalenderEvent()  
         {
             return ScheduleICalHelper.GetCalenderEvent( iCalendarContent );
         }

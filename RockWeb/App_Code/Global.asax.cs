@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.Entity;
+using System.Data.Entity.Migrations.Infrastructure;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
@@ -180,7 +181,7 @@ namespace RockWeb
                         // If any migrations ran (version was likely updated)
                         try
                         {
-                            Rock.Utility.SparkLinkHelper.SendToSpark();
+                            Rock.Utility.SparkLinkHelper.SendToSpark( rockContext );
                         }
                         catch ( Exception ex )
                         {
@@ -497,13 +498,13 @@ namespace RockWeb
         {
             try
             {
-                // log the reason that the application end was fired
+                // Log the reason that the application end was fired
                 HttpRuntime runtime = (HttpRuntime)typeof( System.Web.HttpRuntime ).InvokeMember( "_theRuntime", BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.GetField, null, null, null );
                 if ( runtime != null )
                 {
                     string shutDownMessage = (string)runtime.GetType().InvokeMember( "_shutDownMessage", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetField, null, runtime, null );
 
-                    // send debug info to debug window
+                    // Send debug info to debug window
                     System.Diagnostics.Debug.WriteLine( String.Format( "shutDownMessage:{0}", shutDownMessage ) );
 
                     LogMessage( APP_LOG_FILENAME, "Application Ended: " + shutDownMessage );
@@ -513,7 +514,7 @@ namespace RockWeb
                     LogMessage( APP_LOG_FILENAME, "Application Ended" );
                 }
 
-                // close out jobs infrastructure if running under IIS
+                // Close out jobs infrastructure if running under IIS
                 bool runJobsInContext = Convert.ToBoolean( ConfigurationManager.AppSettings["RunJobsInIISContext"] );
                 if ( runJobsInContext )
                 {
@@ -523,16 +524,23 @@ namespace RockWeb
                     }
                 }
 
-                // process the transaction queue
+                // Process the transaction queue
                 DrainTransactionQueue();
 
-                // mark any user login stored as 'IsOnline' in the database as offline
+                // Mark any user login stored as 'IsOnline' in the database as offline
                 MarkOnlineUsersOffline();
-            
+
+                // Auto-restart appdomain restarts (triggered by web.config changes, new dlls in the bin folder, etc.)
+                // These types of restarts don't cause the worker process to restart, but they do cause ASP.NET to unload 
+                // the current AppDomain and start up a new one. This will launch a web request which will auto-start Rock 
+                // in these cases.
+                // https://weblog.west-wind.com/posts/2013/oct/02/use-iis-application-initialization-for-keeping-aspnet-apps-alive
+                var client = new WebClient();
+                client.DownloadString( GetKeepAliveUrl() );
             }
             catch
             {
-                // intentionally ignore exception
+                // Intentionally ignore exception
             }
         }
 
@@ -559,9 +567,14 @@ namespace RockWeb
                     LogMessage( APP_LOG_FILENAME, "Migrating Database..." );
                     
                     var lastMigration = pendingMigrations.Last();
-                    
+
+                    // create a logger, but don't enable any of the logs
+                    var migrationLogger = new Rock.Migrations.RockMigrationsLogger() { LogVerbose = false, LogInfo = false, LogWarning = false };
+
+                    var migratorLoggingDecorator = new MigratorLoggingDecorator( migrator, migrationLogger );
+
                     // NOTE: we need to specify the last migration vs null so it won't detect/complain about pending changes
-                    migrator.Update( lastMigration );
+                    migratorLoggingDecorator.Update( lastMigration );
                     result = true;
                 }
 
@@ -1235,12 +1248,7 @@ namespace RockWeb
                     // add cache item again
                     AddCallBack();
 
-                    var keepAliveUrl = GlobalAttributesCache.Value( "KeepAliveUrl" );
-                    if ( string.IsNullOrWhiteSpace( keepAliveUrl ) )
-                    {
-                        keepAliveUrl = GlobalAttributesCache.Value( "InternalApplicationRoot" ) ?? string.Empty;
-                        keepAliveUrl = keepAliveUrl.EnsureTrailingForwardslash() + "KeepAlive.aspx";
-                    }
+                    var keepAliveUrl = GetKeepAliveUrl();
 
                     // call a page on the site to keep IIS alive 
                     if ( !string.IsNullOrWhiteSpace( keepAliveUrl ) )
@@ -1270,6 +1278,22 @@ namespace RockWeb
             {
                 LogError( ex, null );
             }
+        }
+
+        /// <summary>
+        /// Gets the keep alive URL.
+        /// </summary>
+        /// <returns></returns>
+        private static string GetKeepAliveUrl()
+        {
+            var keepAliveUrl = GlobalAttributesCache.Value( "KeepAliveUrl" );
+            if ( string.IsNullOrWhiteSpace( keepAliveUrl ) )
+            {
+                keepAliveUrl = GlobalAttributesCache.Value( "InternalApplicationRoot" ) ?? string.Empty;
+                keepAliveUrl = keepAliveUrl.EnsureTrailingForwardslash() + "KeepAlive.aspx";
+            }
+
+            return keepAliveUrl;
         }
 
         #endregion

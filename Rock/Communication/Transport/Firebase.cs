@@ -142,7 +142,7 @@ namespace Rock.Communication.Transport
 
                 if ( hasPendingRecipients )
                 {
-                    var currentPerson = communication.CreatedByPersonAlias.Person;
+                    var currentPerson = communication.CreatedByPersonAlias?.Person;
                     var globalAttributes = GlobalAttributesCache.Read();
                     string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
                     var mergeFields = Lava.LavaHelper.GetCommonMergeFields( null, currentPerson );
@@ -202,6 +202,10 @@ namespace Rock.Communication.Transport
                                         if ( failed )
                                         {
                                             recipient.StatusNote = "Firebase failed to notify devices";
+                                        }
+                                        else
+                                        {
+                                            recipient.SendDateTime = RockDateTime.Now;
                                         }
 
                                         recipient.Status = status;

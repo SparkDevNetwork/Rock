@@ -274,8 +274,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     var rockContext = new RockContext();
                     rockContext.WrapTransaction( () =>
                     {
-                        var changes = new List<string>();
-
                         foreach ( int attributeId in AttributeList )
                         {
                             var attribute = AttributeCache.Read( attributeId );
@@ -290,31 +288,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                     string originalValue = Person.GetAttributeValue( attribute.Key );
                                     string newValue = attribute.FieldType.Field.GetEditValue( attributeControl, attribute.QualifierValues );
                                     Rock.Attribute.Helper.SaveAttributeValue( Person, attribute, newValue, rockContext );
-
-                                    // Check for changes to write to history
-                                    if ( ( originalValue ?? string.Empty ).Trim() != ( newValue ?? string.Empty ).Trim() )
-                                    {
-                                        string formattedOriginalValue = string.Empty;
-                                        if ( !string.IsNullOrWhiteSpace( originalValue ) )
-                                        {
-                                            formattedOriginalValue = attribute.FieldType.Field.FormatValue( null, originalValue, attribute.QualifierValues, false );
-                                        }
-
-                                        string formattedNewValue = string.Empty;
-                                        if ( !string.IsNullOrWhiteSpace( newValue ) )
-                                        {
-                                            formattedNewValue = attribute.FieldType.Field.FormatValue( null, newValue, attribute.QualifierValues, false );
-                                        }
-
-                                        History.EvaluateChange( changes, attribute.Name, formattedOriginalValue, formattedNewValue );
-                                    }
                                 }
                             }
-                        }
-                        if ( changes.Any() )
-                        {
-                            HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                                Person.Id, changes );
                         }
                     } );
                 }

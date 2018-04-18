@@ -24,6 +24,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Security;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
 using Rock.Web.Cache;
@@ -356,6 +357,229 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool GroupAttendanceRequiresSchedule { get; set; }
+
+        /// <summary>
+        /// Gets or sets a lava template that can be used for generating  view details for Group.
+        /// </summary>
+        /// <value>
+        /// The Group View Lava Template.
+        /// </value>
+        [DataMember]
+        public string GroupViewLavaTemplate
+        {
+            get
+            {
+                if ( _groupViewLavaTemplate.IsNullOrWhiteSpace() )
+                {
+                    return _defaultLavaTemplate;
+                }
+                else
+                {
+                    return _groupViewLavaTemplate;
+                }
+            }
+            set
+            {
+                _groupViewLavaTemplate = value;
+            }
+        }
+        private string _groupViewLavaTemplate;
+        private string _defaultLavaTemplate = @"{% if Group.GroupType.GroupCapacityRule != 'None' and  Group.GroupCapacity != '' %}
+		{% assign warningLevel = ''warning'' %}
+
+		{% if Group.GroupType.GroupCapacityRule == 'Hard' %}
+			{% assign warningLevel = 'danger' %}
+		{% endif %}
+
+		{% assign activeMemberCount = countActive | Plus:1 %} {% comment %}the counter is zero based{% endcomment %}
+		{% assign overageAmount = activeMemberCount | Minus:Group.GroupCapacity %}
+
+		{% if overageAmount > 0 %}
+			<div class=""alert alert-{{ warningLevel }} margin-t-sm"">This group is over capacity by {{ overageAmount }} {{ 'individual' | PluralizeForQuantity:overageAmount }}.</div>
+		{% endif %}
+	{% endif %}
+	
+	
+	
+<p class='description'>{{ Group.Description }}</p>
+
+<div class=""row"">
+   <div class=""col-md-6"">
+        <dl>
+            {% if Group.ParentGroup != null %}
+            <dt> Parent Group </ dt>
+               <dd>{{ Group.ParentGroup.Name }}</dd>
+            {% endif %}
+            {% if Group.RequiredSignatureDocumentTemplate != null %}
+            <dt> Required Signed Document </dt>
+               <dd>{{ Group.RequiredSignatureDocumentTemplate.Name }}</ dd >
+            {% endif %}
+            {% if Group.Schedule != null %}
+
+            <dt> Schedule </dt>
+            <dd>{{ Group.Schedule.ToString() }}</ dd >
+            {% endif %}
+            {% if Group.GroupCapacity != null and Group.GroupCapacity != '' %}
+
+            <dt> Capacity </dt>
+
+            <dd>{{ Group.GroupCapacity }}</dd>
+            {% endif %}
+        </dl>
+        <dl>
+        {% for attribute in Group.AttributeValues %}
+        <dt>{{ attribute.AttributeName }}:</dt>
+
+<dd>{{ attribute.ValueFormatted }} </dd>
+        {% endfor %}
+        </dl>
+    </div>
+
+    <div class=""col-md-6 location-maps"">
+	{% assign googleAPIKey = 'Global' | Attribute: 'GoogleAPIKey' %}
+	{% assign staticMapStyle = MapStyle | Attribute: 'StaticMapStyle' %}
+
+	{% if Group.GroupLocations != null %}
+	{% assign groupLocations = Group.GroupLocations %}
+	{% assign locationCount = groupLocations | Size %}
+	    {% if locationCount > 0 and googleAPIKey != null and googleAPIKey !='' and staticMapStyle != null and staticMapStyle != '' %}
+		{% for groupLocation in groupLocations %}
+	    	{% if groupLocation.Location.GeoPoint != null and groupLocation.Location.GeoPoint != '' %}
+	    	{% capture markerPoints %}{{ groupLocation.Location.Latitude }},{{ groupLocation.Location.Longitude }}{% endcapture %}
+	    	{% assign mapLink = staticMapStyle | Replace:'{MarkerPoints}', markerPoints   %}
+	    	{% assign mapLink = mapLink | Replace:'{PolygonPoints}','' %}
+	    	{% assign mapLink = mapLink | Append:'&sensor=false&size=450x250&zoom=13&format=png&key=' %}
+            {% assign mapLink = mapLink | Append: googleAPIKey %}
+	    	<div class=""group-location-map"">
+	    	    {% if groupLocation.GroupLocationTypeValue != null %}
+	    	    <h4> {{ groupLocation.GroupLocationTypeValue.Value }} </h4>
+	    	    {% endif %}
+	    	    <a href = '{{ GroupMapUrl }}'>
+	    	    <img class='img-thumbnail' src='{{ mapLink }}'/>
+	    	    </a>
+	    	    {% if groupLocation.Location.FormattedAddress != null and groupLocation.Location.FormattedAddress != '' and ShowLocationAddresses == true %}
+	    	    {{ groupLocation.Location.FormattedAddress }}
+	    	    {% endif %}
+	    	 </div>
+		    {% endif %}
+		    {% if groupLocation.Location.GeoFence != null and groupLocation.Location.GeoFence != ''  %}
+
+		    {% assign mapLink = staticMapStyle | Replace:'{MarkerPoints}','' %}
+		    {% assign googlePolygon = 'enc:' | Append: groupLocation.Location.GooglePolygon %}
+	    	{% assign mapLink = mapLink | Replace:'{PolygonPoints}', googlePolygon  %}
+	    	{% assign mapLink = mapLink | Append:'&sensor=false&size=350x200&format=png&key=' %}
+	    	{% assign mapLink = mapLink | Append: googleAPIKey %}
+		    <div class='group-location-map'>
+		        {% if groupLocation.GroupLocationTypeValue != null %}
+		        <h4> {{ groupLocation.GroupLocationTypeValue.Value }} </h4>
+		        {% endif %}
+		    <a href = '{{ GroupMapUrl }}'><img class='img-thumbnail' src='{{ mapLink }}'/></a>
+		    </div>	
+		    {% endif %}
+		{% endfor %}
+		{% endif %}
+	{% endif %}
+	{% if Group.Linkages != null %}
+	{% assign linkages = Group.Linkages %}
+	{% assign linkageCount = linkages | Size %}
+	{% if linkageCount > 0 %}
+	{% assign countRegistration = 0 %}
+	{% assign countLoop = 0 %}
+	{% assign countEventItemOccurrences = 0 %}
+	{% assign countContentItems = 0 %}
+	{% for linkage in linkages %}
+		{% if linkage.RegistrationInstanceId != null and linkage.RegistrationInstanceId != '' %}
+			{% if countRegistration == 0 %}
+			<strong> Registrations</strong>
+			<ul class=""list-unstyled"">
+			{% endif %}
+			<li><a href = '{{ RegistrationInstancePage }}? RegistrationInstanceId = {{ linkage.RegistrationInstanceId }}'>{% if linkage.EventItemOccurrence != null %} {{ linkage.EventItemOccurrence.EventItem.Name }} ({% if linkage.EventItemOccurrence.Campus != null %} {{ linkage.EventItemOccurrence.Campus.Name }}  {% else %}  All Campuses {% endif %}) {% endif %} - {{ linkage.RegistrationInstance.Name }}</a></li>
+			{% assign countRegistration = countRegistration | Plus: 1 %}
+		{% endif %}
+		{% assign countLoop = countLoop | Plus: 1 %}
+		{% if countRegistration > 0 and countLoop == linkageCount  %}
+		</ul>
+		{% endif %}
+	{% endfor %}
+	{% assign countLoop = 0 %}
+	{% for linkage in linkages %}
+		{% if linkage.EventItemOccurrence != null and linkage.EventItemOccurrence.EventItem != null %}
+			{% if countEventItemOccurrences == 0 %}
+			<strong> Event Item Occurrences</strong>
+			<ul class=""list-unstyled"">
+			{% endif %}
+			<li><a href = '{{ EventItemOccurrencePage }}? EventItemOccurrenceId = {{ linkage.EventItemOccurrence.Id }}'>{% if linkage.EventItemOccurrence != null %} {{ linkage.EventItemOccurrence.EventItem.Name }} -{% if linkage.EventItemOccurrence.Campus != null %} {{ linkage.EventItemOccurrence.Campus.Name }}  {% else %}  All Campuses {% endif %} {% endif %}</a></li>
+			{% assign countEventItemOccurrences = countEventItemOccurrences | Plus: 1 %}
+		{% endif %}
+		{% assign countLoop = countLoop | Plus: 1 %}
+		{% if countEventItemOccurrences > 0  and countLoop == linkageCount %}
+			</ul>
+		{% endif %}
+	{% endfor %}
+	{% assign countLoop = 0 %}
+	{% for linkage in linkages %}
+		{% if linkage.EventItemOccurrence != null and linkage.EventItemOccurrence.EventItem != null %}
+			{% assign contentChannelItemsCount = linkage.EventItemOccurrence.ContentChannelItems | Size %}
+			{% if contentChannelItemsCount > 0 %}
+			{% assign contentChannelItems = linkage.EventItemOccurrence.ContentChannelItems %}
+				{% for contentChannelItem in contentChannelItems %}
+				{% if contentChannelItem.ContentChannelItem != null  %}
+					{% if countContentItems == 0 %}
+					<strong> Content Items</strong>
+					<ul class=""list-unstyled"">
+					{% endif %}
+					<li><a href = '{{ ContentItemPage }}? ContentItemId = {{ contentChannelItem.ContentChannelItemId }}'>{{ contentChannelItem.ContentChannelItem.Title }} <small>({{ contentChannelItem.ContentChannelItem.ContentChannelType.Name }})</small></a></li>
+					{% assign countContentItems = countContentItems | Plus: 1 %}
+				{% endif %}
+				{% endfor %}
+			{% endif %}
+    	{% endif %}
+    	{% assign countLoop = countLoop | Plus: 1 %}
+    	{% if countContentItems > 0 and countLoop == linkageCount %}
+			</ul>
+		{% endif %}
+	{% endfor %}
+	{% endif %}
+{% endif %}
+	</div>
+</div>";
+
+        /// <summary>
+        /// Gets or sets a flag indicating if specific groups are allowed to have their own member attributes.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this specific group are allowed to have their own member attributes, otherwise <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AllowSpecificGroupMemberAttributes { get; set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating if group requirements section is enabled for group of this type.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if group requirements section is enabled for group of this type, otherwise <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool EnableSpecificGroupRequirements { get; set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating if groups of this type are allowed to be sync'ed.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if groups of this type are allowed to be sync'ed, otherwise <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AllowGroupSync { get; set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating if groups of this type should be allowed to have Group Member Workflows.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if groups of this type should be allowed to have group member workflows, otherwise <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AllowSpecificGroupMemberWorkflows { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -529,6 +753,25 @@ namespace Rock.Model
         }
         private ICollection<GroupRequirement> _groupsRequirements;
 
+        /// <summary>
+        /// A dictionary of actions that this class supports and the description of each.
+        /// </summary>
+        public override Dictionary<string, string> SupportedActions {
+            get {
+                if ( _supportedActions == null )
+                {
+                    _supportedActions = new Dictionary<string, string>();
+                    _supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view." );
+                    _supportedActions.Add( Authorization.MANAGE_MEMBERS, "The roles and/or users that have access to manage the group members." );
+                    _supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit." );
+                    _supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
+                }
+                return _supportedActions;
+            }
+        }
+
+        private Dictionary<string, string> _supportedActions;
+
         #endregion
 
         #region Public Methods
@@ -562,6 +805,12 @@ namespace Rock.Model
                             parentIds.Add( parent.Id );
                             parent = parent.InheritedGroupType;
                         }
+                    }
+
+                    if ( string.IsNullOrEmpty( GroupViewLavaTemplate ) )
+                    {
+                        this.ValidationResults.Add( new ValidationResult( "Lava template for group view is mandatory." ) );
+                        return false;
                     }
                 }
 

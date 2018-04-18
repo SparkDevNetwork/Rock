@@ -114,6 +114,7 @@ namespace Rock.Model
             target.LifestyleGroupCode = source.LifestyleGroupCode;
             target.LifestyleGroupName = source.LifestyleGroupName;
             target.MaritalStatus = source.MaritalStatus;
+            target.MeanAge = source.MeanAge;
             target.NetWorth = source.NetWorth;
             target.NetWorthLevel = source.NetWorthLevel;
             target.NetworthRank = source.NetworthRank;

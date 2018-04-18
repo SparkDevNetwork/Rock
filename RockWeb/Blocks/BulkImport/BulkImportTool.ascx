@@ -54,7 +54,7 @@
             </div>
             <div class="panel-body">
                 <asp:ValidationSummary ID="vsBulkImport" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger"/>
-                <Rock:RockTextBox ID="tbForeignSystemKey" runat="server" Required="true" Label="Foreign System Key" Help="The Key used to uniquely identify the source system. For example, use the domain of the the source system's website: 'somechurch.ccbchurch.com'. Click 'Check Foreign System Key' to see what keys have already been used or to see if the key has already been used." />
+                <Rock:RockTextBox ID="tbForeignSystemKey" runat="server" Required="true" Label="Foreign System Key" Help="The Key used to uniquely identify the source system. For example, use the domain of the source system's website: 'somechurch.ccbchurch.com'. Click 'Check Foreign System Key' to see what keys have already been used or to see if the key has already been used." />
                 <asp:LinkButton ID="btnCheckForeignSystemKey" runat="server" CssClass="btn btn-xs btn-action margin-b-md" Text="Check Foreign System Key" CausesValidation="false" OnClick="btnCheckForeignSystemKey_Click" />
                 <Rock:NotificationBox ID="nbCheckForeignSystemKey" runat="server" CssClass="margin-b-md" NotificationBoxType="Warning" Visible="false" Dismissable="true" />
 

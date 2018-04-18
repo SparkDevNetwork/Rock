@@ -414,7 +414,7 @@ javascript:
             _lbAddActionType = new LinkButton();
             Controls.Add( _lbAddActionType );
             _lbAddActionType.ID = this.ID + "_lbAddAction";
-            _lbAddActionType.CssClass = "btn btn-xs btn-action";
+            _lbAddActionType.CssClass = "btn btn-xs btn-action add-action";
             _lbAddActionType.Click += lbAddActionType_Click;
             _lbAddActionType.CausesValidation = false;
             _lbAddActionType.Controls.Add( new LiteralControl { Text = "<i class='fa fa-plus'></i> Add Action" } );
@@ -437,6 +437,7 @@ javascript:
             _gAttributes.Actions.AddClick += gAttributes_Add;
             _gAttributes.GridRebind += gAttributes_Rebind;
             _gAttributes.GridReorder += gAttributes_Reorder;
+            _gAttributes.ShowActionsInHeader = false;
 
             var reorderField = new ReorderField();
             _gAttributes.Columns.Add( reorderField );

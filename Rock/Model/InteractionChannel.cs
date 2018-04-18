@@ -119,6 +119,90 @@ namespace Rock.Model
         [DataMember]
         public int? ComponentCacheDuration { get; set; }
 
+        /// <summary>
+        /// Gets or sets the channel list template.
+        /// </summary>
+        /// <value>
+        /// The channel list template.
+        /// </value>
+        [DataMember]
+        public string ChannelListTemplate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the channel detail template.
+        /// </summary>
+        /// <value>
+        /// The channel detail template.
+        /// </value>
+        [DataMember]
+        public string ChannelDetailTemplate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the component list template.
+        /// </summary>
+        /// <value>
+        /// The component list template.
+        /// </value>
+        [DataMember]
+        public string ComponentListTemplate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the component detail template.
+        /// </summary>
+        /// <value>
+        /// The component detail template.
+        /// </value>
+        [DataMember]
+        public string ComponentDetailTemplate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the session list template.
+        /// </summary>
+        /// <value>
+        /// The session list template.
+        /// </value>
+        [DataMember]
+        public string SessionListTemplate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the session detail template.
+        /// </summary>
+        /// <value>
+        /// The session detail template.
+        /// </value>
+        [DataMember]
+        public string SessionDetailTemplate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the interaction list template.
+        /// </summary>
+        /// <value>
+        /// The interaction list template.
+        /// </value>
+        [DataMember]
+        public string InteractionListTemplate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the interaction detail template.
+        /// </summary>
+        /// <value>
+        /// The interaction detail template.
+        /// </value>
+        [DataMember]
+        public string InteractionDetailTemplate { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [uses session].
+        /// Set to true if interactions in this channel from a web browser session (for example: PageViews).
+        /// Set to false if interactions in this channel are not associated with a web browser session (for example: communication clicks and opens from an email client or sms device).
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [uses session]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool UsesSession { get; set; }
+
+
         #endregion
 
         #region Virtual Properties

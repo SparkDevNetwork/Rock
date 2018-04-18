@@ -233,7 +233,8 @@ namespace Rock
                         try
                         {
                             object propValue = null;
-                            var propType = entityType.GetPropertyType( key );
+
+                            var propType = entityType.GetProperty( key )?.PropertyType;
                             if ( propType?.Name == "ICollection`1" )
                             {
                                 // if the property type is an ICollection, get the underlying query and just fetch one for an example (just in case there are 1000s of records)

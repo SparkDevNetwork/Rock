@@ -547,7 +547,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                             rockContext.SaveChanges();
 
                             int labelOrder = 0;
-                            int binaryFileFieldTypeID = FieldTypeCache.Read( Rock.SystemGuid.FieldType.BINARY_FILE.AsGuid() ).Id;
+                            int binaryFileFieldTypeID = FieldTypeCache.Read( Rock.SystemGuid.FieldType.LABEL.AsGuid() ).Id;
                             foreach ( var checkinLabelAttributeInfo in checkinArea.CheckinLabels )
                             {
                                 var attribute = new Rock.Model.Attribute();

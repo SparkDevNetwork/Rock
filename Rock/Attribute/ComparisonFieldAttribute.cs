@@ -19,13 +19,13 @@ using System;
 namespace Rock.Attribute
 {
     /// <summary>
-    /// Field Attribute to select a DefinedType.
+    /// Field Attribute to select a comparison type.
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class ComparisonFieldAttribute : FieldAttribute
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="DefinedValueFieldAttribute" /> class.
+        /// Initializes a new instance of the <see cref="ComparisonFieldAttribute"/> class.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>

@@ -239,7 +239,7 @@ namespace Rock.Field.Types
             {
                 if ( control != null && control is RockDropDownList )
                 {
-                    ( ( RockDropDownList ) control ).SetValue( value.ToUpper() );
+                    ( ( RockDropDownList ) control ).SetValue( value?.ToUpper() );
                 }
             }
         }

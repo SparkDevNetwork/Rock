@@ -40,7 +40,6 @@ namespace Rock.Security.BackgroundCheck
 
     [TextField( "User Name", "Protect My Ministry User Name", true, "", "", 0 )]
     [EncryptedTextField( "Password", "Protect My Ministry Password", true, "", "", 1, null, true )]
-    [BooleanField( "Test Mode", "Should requests be sent in 'test' mode?", false, "", 2 )]
     [UrlLinkField( "Request URL", "The Protect My Ministry URL to send requests to.", true, "https://services.priorityresearch.com/webservice/default.cfm", "", 3 )]
     [UrlLinkField( "Return URL", "The Web Hook URL for Protect My Ministry to send results to (e.g. 'http://www.mysite.com/Webhooks/ProtectMyMinistry.ashx').", true, "", "", 4 )]
     public class ProtectMyMinistry : BackgroundCheckComponent
@@ -117,11 +116,6 @@ namespace Rock.Security.BackgroundCheck
                         new XElement( "Password", password )
                     )
                 );
-
-                if ( GetAttributeValue( "TestMode" ).AsBoolean() )
-                {
-                    rootElement.Add( new XElement( "TestMode", "YES" ) );
-                }
 
                 rootElement.Add( new XElement( "ReturnResultURL", GetAttributeValue( "ReturnURL" ) ) );
 
@@ -350,7 +344,7 @@ namespace Rock.Security.BackgroundCheck
                             xSSNElement.Value = "XXX-XX-XXXX";
                         }
 
-                        backgroundCheck.ResponseXml = string.Format( @"
+                        backgroundCheck.ResponseData = string.Format( @"
 Request XML ({0}): 
 ------------------------ 
 {1}
@@ -548,7 +542,7 @@ Response XML ({2}):
                     xSSNElement.Value = "XXX-XX-XXXX";
                 }
 
-                backgroundCheck.ResponseXml = backgroundCheck.ResponseXml + string.Format( @"
+                backgroundCheck.ResponseData = backgroundCheck.ResponseData + string.Format( @"
 Response XML ({0}): 
 ------------------------ 
 {1}

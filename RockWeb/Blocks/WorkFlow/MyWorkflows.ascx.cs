@@ -411,7 +411,7 @@ namespace RockWeb.Blocks.WorkFlow
 
             foreach ( var workflowType in allWorkflowTypes )
             {
-                if ( ( workflowType.IsActive ?? true ) && workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                if ( workflowType.IsActive  && workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 {
                     foreach ( var activityType in workflowType.ActivityTypes.Where( a => a.ActionTypes.Any( f => f.WorkflowFormId.HasValue ) ) )
                     {

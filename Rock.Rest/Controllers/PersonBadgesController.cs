@@ -242,6 +242,25 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
+        /// Gets the Total number of personal devices
+        /// </summary>
+        /// <param name="personId">The person id.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/PersonBadges/PersonalDevicesNumber/{personId}" )]
+        public int GetPersonalDevicesNumber( int personId )
+        {
+            int channelMediumValueId = DefinedValueCache.Read( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
+
+            PersonalDeviceService personalDeviceService = new PersonalDeviceService( ( Rock.Data.RockContext ) Service.Context );
+            return personalDeviceService.Queryable()
+                                                .Where( a => a.PersonAlias.PersonId == personId )
+                                                .Count();
+
+        }
+
+        /// <summary>
         /// Gets the attendance summary data for the 24 month attendance badge
         /// </summary>
         /// <param name="personId">The person id.</param>

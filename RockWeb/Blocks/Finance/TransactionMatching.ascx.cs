@@ -41,7 +41,6 @@ namespace RockWeb.Blocks.Finance
     [Description( "Used to match transactions to an individual and allocate the transaction amount to financial account(s)." )]
 
     [AccountsField( "Accounts", "Select the accounts that transaction amounts can be allocated to.  Leave blank to show all accounts", false, "", "", 0 )]
-    [BooleanField("Show Selected Accounts Only", "If transaction already has allocated amounts, should only the accounts that transaction is allocated to be displayed by default?", false, "", 1 )]
     [LinkedPage( "Add Family Link", "Select the page where a new family can be added. If specified, a link will be shown which will open in a new window when clicked", false, "6a11a13d-05ab-4982-a4c2-67a8b1950c74,af36e4c2-78c6-4737-a983-e7a78137ddc7", "", 2 )]
     [LinkedPage( "Add Business Link", "Select the page where a new business can be added. If specified, a link will be shown which will open in a new window when clicked", false, "", "", 3 )]
     [LinkedPage( "Batch Detail Page", "Select the page for displaying batch details", false, "", "", 3)]
@@ -104,10 +103,16 @@ namespace RockWeb.Blocks.Finance
         {
             base.OnInit( e );
 
+            RockPage.AddCSSLink( ResolveRockUrl( "~/Styles/fluidbox.css" ) );
+            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/imagesloaded.min.js" ) );
+            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.fluidbox.min.js" ) );
+
             string script = string.Format( @"
     $('.transaction-image-thumbnail').click( function() {{
-        var $primaryImg = $('.transaction-image');
-        var primarySrc = $primaryImg.attr('src');
+        var $primaryHyperlink = $('.transaction-image a');
+        var $primaryImg = $('.transaction-image a img');
+        var primarySrc = $primaryHyperlink.attr('href');
+        $primaryHyperlink.attr('href', $(this).attr('src'));
         $primaryImg.attr('src', $(this).attr('src'));
         $(this).attr('src', primarySrc);
     }});
@@ -124,7 +129,7 @@ namespace RockWeb.Blocks.Finance
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
-            ScriptManager.RegisterStartupScript( imgPrimary, imgPrimary.GetType(), "imgPrimarySwap", script, true );
+            ScriptManager.RegisterStartupScript( lImage, lImage.GetType(), "imgPrimarySwap", script, true );
         }
 
         /// <summary>
@@ -604,8 +609,9 @@ namespace RockWeb.Blocks.Finance
                         var primaryImage = transactionToMatch.Images
                             .OrderBy( i => i.Order )
                             .FirstOrDefault();
-                        imgPrimary.ImageUrl = string.Format( "~/GetImage.ashx?id={0}", primaryImage.BinaryFileId );
-                        imgPrimary.Visible = true;
+
+                        lImage.Text = string.Format( "<a href='{0}'><img src='{0}'/></a>", ResolveRockUrl( string.Format( "~/GetImage.ashx?id={0}", primaryImage.BinaryFileId )) );
+                        lImage.Visible = true;
                         nbNoTransactionImageWarning.Visible = false;
 
                         rptrImages.DataSource = transactionToMatch.Images
@@ -616,7 +622,7 @@ namespace RockWeb.Blocks.Finance
                     }
                     else
                     {
-                        imgPrimary.Visible = false;
+                        lImage.Visible = false;
                         rptrImages.DataSource = null;
                         rptrImages.DataBind();
                         nbNoTransactionImageWarning.Visible = true;

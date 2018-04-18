@@ -96,6 +96,7 @@ namespace Rock.Model
             target.Id = source.Id;
             target.ChannelId = source.ChannelId;
             target.ComponentData = source.ComponentData;
+            target.ComponentSummary = source.ComponentSummary;
             target.EntityId = source.EntityId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;

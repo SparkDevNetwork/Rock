@@ -688,7 +688,9 @@ namespace RockWeb.Blocks.Communication
 
 
                             btnCancel.Visible = hasPendingRecipients;
-                            btnCopy.Visible = communication.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson );
+
+                            // Allow then to create a copy if they have VIEW (don't require full EDIT auth)
+                            btnCopy.Visible = communication.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson );
                             break;
                         }
                 }

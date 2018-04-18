@@ -50,7 +50,7 @@
                                         <Rock:ValueList ID="vMergeFields" runat="server" Label="Communication Merge Fields"
                                             Help="When creating a new communication from the report, fields from the report can be used as merge fields on the communication. Select any of the fields that you'd like to be available for the communication. If the same recipient has multiple results in this report, each result will be included in an 'AdditionalFields' list. These can be accessed using Lava in the communication. For example: {% for field in AdditionalFields %}{{ field.FieldName }}{% endfor %}" />
                                         <Rock:ValueList ID="vRecipientFields" runat="server" Label="Communication Recipient Fields"
-                                            Help="The field(s) that should be used to determine the recipient for a communication. If left blank, and this is a Person report, it will assume the 'Id' contains the recipient's person Id."/>
+                                            Help="Fields from the report that should be used to determine the recipient for a communication. Note that only fields that can be used as a recipient field can be selected. If left blank, and this is a Person report, it will assume the 'Id' contains the recipient's person Id."/>
                                     </div>
                                 </div>
                             </Rock:PanelWidget>
@@ -99,7 +99,7 @@
                                 <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                                 <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" />
                                 <div class="pull-right">
-                                    <asp:LinkButton ID="lbDataView" runat="server" Text="Data View" CssClass="btn btn-link" OnClick="lbDataView_Click" />
+                                    <asp:HyperLink ID="lbDataView" runat="server" Text="Data View" CssClass="btn btn-link" />
                                     <asp:LinkButton ID="btnCopy" runat="server" Tooltip="Copy Report" CssClass="btn btn-default btn-sm fa fa-clone" OnClick="btnCopy_Click" />
                                     <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" />
                                 </div>

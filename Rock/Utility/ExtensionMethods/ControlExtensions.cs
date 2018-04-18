@@ -344,12 +344,24 @@ namespace Rock
                 int? intValue = value.AsIntegerOrNull();
                 if ( listControl is Rock.Web.UI.Controls.CampusPicker && intValue.HasValue )
                 {
-                    // Campus Picker will add the item if neccessary, so needs to be handled differently
+                    // A Campus Picker can be configured to only load Active Campuses, but if trying to set the value to an Inactive Campus, it'll add that campus to the list
+                    // so this is a special case
                     ( (Rock.Web.UI.Controls.CampusPicker)listControl ).SelectedCampusId = intValue.Value;
                 }
                 else
                 {
                     var valueItem = listControl.Items.FindByValue( value );
+
+                    // if this is a Guid (string) but wasn't found, look and see if can find a match by converting the listitem.value and value to Guids first
+                    if ( valueItem == null )
+                    {
+                        Guid? valueAsGuid = value.AsGuidOrNull();
+                        if ( valueAsGuid.HasValue )
+                        {
+                            valueItem = listControl.Items.OfType<ListItem>()?.FirstOrDefault( a => a.Value.AsGuidOrNull() == valueAsGuid );
+                        }
+                    }
+
                     if ( valueItem == null && defaultValue != null )
                     {
                         valueItem = listControl.Items.FindByValue( defaultValue );

@@ -35,6 +35,7 @@ BEGIN
         ,@compareByGender BIT = 1
         ,@compareByCampus BIT = 1
         ,@compareByMaritalStatus BIT = 1
+        ,@compareBySuffix BIT = 1
     --
     -- Scores
     -- ones marked /**/ only added to score if already a potential match
@@ -49,7 +50,8 @@ BEGIN
         ,@cScoreWeightGender INT = 1 /**/
         ,@cScoreWeightCampus INT = 1 /**/
         ,@cScoreWeightMaritalStatus INT = 1 /**/
-    DECLARE @TotalCapacity INT = @cScoreWeightEmail + @cScoreWeightPartialName + @cScoreWeightFullFirstName + @cScoreWeightFullLastName + @cScoreWeightCellPhoneNumber + @cScoreWeightNonCellPhoneNumber + @cScoreWeightAddress + @cScoreWeightBirthdate + @cScoreWeightGender + @cScoreWeightCampus + @cScoreWeightMaritalStatus
+        ,@cScoreWeightSuffix INT = 4
+    DECLARE @TotalCapacity INT = @cScoreWeightEmail + @cScoreWeightPartialName + @cScoreWeightFullFirstName + @cScoreWeightFullLastName + @cScoreWeightCellPhoneNumber + @cScoreWeightNonCellPhoneNumber + @cScoreWeightAddress + @cScoreWeightBirthdate + @cScoreWeightGender + @cScoreWeightCampus + @cScoreWeightMaritalStatus + @cScoreWeightSuffix
     --
     -- Guids that this proc uses
     DECLARE @cGROUPTYPE_FAMILY_GUID UNIQUEIDENTIFIER = '790E3215-3B10-442B-AF69-616C0DCB998E'
@@ -96,11 +98,11 @@ BEGIN
     INSERT INTO #PersonDuplicateByEmailTable (
         Email
         ,PersonAliasId
-        )
+    )
     SELECT [e].[Email] [Email]
         ,[pa].[Id] [PersonAliasId]
     FROM (
-  SELECT [a].[Email]
+        SELECT [a].[Email]
         FROM (
             SELECT [Email]
                 ,COUNT(*) [EmailCount]
@@ -642,7 +644,13 @@ BEGIN
                 AND p.BirthDate IS NOT NULL
                 THEN @cScoreWeightBirthdate
             ELSE 0
-            END
+            END + CASE
+			-- add the Suffix Capacity
+			WHEN @compareBySuffix = 1
+				AND p.SuffixValueId IS NOT NULL
+				THEN @cScoreWeightSuffix
+			ELSE 0
+			END
     FROM PersonDuplicate pd
     JOIN PersonAlias pa ON pa.Id = pd.PersonAliasId
     JOIN Person p ON p.Id = pa.PersonId
@@ -837,10 +845,27 @@ BEGIN
     JOIN PersonAlias pa2 ON pa2.Id = pd.DuplicatePersonAliasId
     JOIN Person p1 ON p1.Id = pa1.PersonId
     JOIN Person p2 ON p2.Id = pa2.PersonId
-    WHERE p1.MaritalStatusValueId = p2.MaritalStatusValueId
+	WHERE (p1.MaritalStatusValueId is not null and p2.MaritalStatusValueId is not null) 
+    and (p1.MaritalStatusValueId = p2.MaritalStatusValueId)
         AND @compareByMaritalStatus = 1
 
 	--PRINT'Update score for marital status matches: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+	--SET @ms = GETDATE()
+
+    -- Increment the score on potential matches that have the same suffix
+    UPDATE pd
+    SET [Score] = [Score] + @cScoreWeightSuffix
+        ,[ScoreDetail] += '|Suffix'
+    FROM PersonDuplicate pd
+    INNER JOIN PersonAlias pa1 ON pa1.Id = pd.PersonAliasId
+    INNER JOIN PersonAlias pa2 ON pa2.Id = pd.DuplicatePersonAliasId
+    INNER JOIN Person p1 ON p1.Id = pa1.PersonId
+    INNER JOIN Person p2 ON p2.Id = pa2.PersonId
+    WHERE (p1.SuffixValueId is not null and p2.SuffixValueId is not null) 
+	  AND (p1.SuffixValueId = p2.SuffixValueId)
+        AND @compareBySuffix = 1
+
+	--PRINT'Update score for suffix matches: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
 	--SET @ms = GETDATE()
 
     /* 

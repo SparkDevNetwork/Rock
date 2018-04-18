@@ -45,9 +45,59 @@ namespace Rock.Web.UI.Controls
         ]
         public string DataLoadingText
         {
-            get { return ViewState["DataLoadingText"] as string ?? "<i class='fa fa-refresh fa-spin working'></i>"; }
+            get { return ViewState["DataLoadingText"] as string; }
             set { ViewState["DataLoadingText"] = value; }
         }
+
+        /// <summary>
+        /// Gets or sets the time in seconds to display the completed text and message before reverting back to the original text.
+        /// </summary>
+        /// <value>
+        /// The button text
+        /// </value>
+        [
+        Bindable( true ),
+        Description( "The time in seconds to display the completed text and message before reverting back to the original text." )
+        ]
+        public string CompletedDuration
+        {
+            get { return ViewState["CompletedDuration"] as string ?? string.Empty; }
+            set { ViewState["CompletedDuration"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the text to use for the button when the postback is completed.
+        /// </summary>
+        /// <value>
+        /// The button text
+        /// </value>
+        [
+        Bindable( true ),
+        Description( "The text to use for the button when the postback is completed." )
+        ]
+        public string CompletedText
+        {
+            get { return ViewState["CompletedText"] as string ?? string.Empty; }
+            set { ViewState["CompletedText"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the text to display to the right of the button when the postback is completed.
+        /// </summary>
+        /// <value>
+        /// The button text
+        /// </value>
+        [
+        Bindable( true ),
+        Description( "The text to display to the right of the button when the postback is completed." )
+        ]
+        public string CompletedMessage
+        {
+            get { return ViewState["CompletedMessage"] as string ?? string.Empty; }
+            set { ViewState["CompletedMessage"] = value; }
+        }
+
+        private bool _isButtonClicked = false;
 
         /// <summary>
         /// Adds the attributes of the <see cref="T:System.Web.UI.WebControls.LinkButton" /> control to the output stream for rendering on the client.
@@ -64,7 +114,7 @@ namespace Rock.Web.UI.Controls
 
             // Check for enabled/disabled
             bool isEnabled = base.IsEnabled;
-            if ( this.Enabled && !isEnabled && this.SupportsDisabledAttribute )
+            if ( ( this.Enabled && !isEnabled && this.SupportsDisabledAttribute ) || _isButtonClicked )
             {
                 writer.AddAttribute( HtmlTextWriterAttribute.Disabled, "disabled" );
             }
@@ -121,9 +171,32 @@ namespace Rock.Web.UI.Controls
             {
                 writer.AddAttribute( "data-loading-text", DataLoadingText );
             }
+            writer.AddAttribute( "data-completed-text", CompletedText );
+            writer.AddAttribute( "data-completed-message", CompletedMessage );
+            writer.AddAttribute( "data-timeout-text", CompletedDuration );
+            writer.AddAttribute( "data-init-text", Text );
 
             writer.AddAttribute( HtmlTextWriterAttribute.Onclick, "Rock.controls.bootstrapButton.showLoading(this);" );
             writer.AddAttribute( HtmlTextWriterAttribute.Href, postBackEventReference );
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.WebControls.LinkButton.Command" /> event of the <see cref="T:System.Web.UI.WebControls.LinkButton" /> control.
+        /// </summary>
+        /// <param name="e">A <see cref="T:System.Web.UI.WebControls.CommandEventArgs" /> that contains the event data.</param>
+        protected override void OnCommand( CommandEventArgs e )
+        {
+            base.OnCommand( e );
+
+            if ( CompletedText.IsNotNullOrWhitespace() || CompletedMessage.IsNotNullOrWhitespace() )
+            {
+                _isButtonClicked = true;
+                var script = string.Format(
+            @"
+            Rock.controls.bootstrapButton.onCompleted({0})", this.ClientID );
+                ScriptManager.RegisterStartupScript( this, this.GetType(), "BootstrapButton_" + this.ClientID, script, true );
+            }
+
         }
 
     }

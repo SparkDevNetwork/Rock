@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.ComponentModel;
 using System.Collections.Generic;
@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Core
     [BooleanField( "Show Binary File Type" )]
     [LinkedPage( "Edit Label Page", "Page used to edit and test the contents of a label file.", false, "", "", 0 )]
     [WorkflowTypeField( "Workflow", "An optional workflow to activate for any new file uploaded", false, false, "", "Advanced", order: 0 )]
-    [TextField("Workflow Button Text", "The button text to show for the rerun workflow button.", false, "Rerun Workflow", category:"Advanced", order: 1)]
+    [TextField("Workflow Button Text", "The button text to show for the rerun workflow button.", false, "Rerun Workflow", category: "Advanced", order: 1)]
     public partial class BinaryFileDetail : RockBlock, IDetailBlock
     {
         #region Properties
@@ -230,11 +230,8 @@ namespace RockWeb.Blocks.Core
             tbMimeType.Text = binaryFile.MimeType;
             ddlBinaryFileType.SetValue( binaryFile.BinaryFileTypeId );
 
-            btnEditLabelContents.Visible =
-                fsFile.BinaryFileId.HasValue &&
-                !string.IsNullOrWhiteSpace( GetAttributeValue( "EditLabelPage" ) ) &&
-                fsFile.BinaryFileTypeGuid == Rock.SystemGuid.BinaryFiletype.CHECKIN_LABEL.AsGuid();
-
+            btnEditLabelContents.Visible = IsLabelFile();
+            
             Guid? workflowTypeGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
             btnRerunWorkflow.Visible = workflowTypeGuid.HasValue;
 
@@ -271,10 +268,20 @@ namespace RockWeb.Blocks.Core
             btnSave.Visible = !readOnly;
         }
 
+        /// <summary>
+        /// Determines whether the instance is holding a label file
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if [is label file]; otherwise, <c>false</c>.
+        /// </returns>
+        private bool IsLabelFile()
+        {
+            return fsFile.BinaryFileId.HasValue && !string.IsNullOrWhiteSpace( GetAttributeValue( "EditLabelPage" ) ) && fsFile.BinaryFileTypeGuid == Rock.SystemGuid.BinaryFiletype.CHECKIN_LABEL.AsGuid();
+        }
+
         #endregion
 
         #region Edit Events
-
 
         /// <summary>
         /// Handles the Click event of the btnCancel control.
@@ -339,7 +346,19 @@ namespace RockWeb.Blocks.Core
                     binaryFile.BinaryFileTypeId = uploadedBinaryFile.BinaryFileTypeId;
                     binaryFile.FileSize = uploadedBinaryFile.FileSize;
                     var memoryStream = new MemoryStream();
-                    uploadedBinaryFile.ContentStream.CopyTo( memoryStream );
+
+                    // If this is a label file then we need to replace a string in the file that makes printing slower
+                    if ( IsLabelFile() )
+                    {
+                        var writer = new StreamWriter( memoryStream );
+                        writer.Write( uploadedBinaryFile.ContentsToString().Replace( "^JUS", string.Empty ) );
+                        writer.Flush();
+                    }
+                    else
+                    {
+                        uploadedBinaryFile.ContentStream.CopyTo( memoryStream );
+                    }
+
                     binaryFile.ContentStream = memoryStream;
                 }
             }
@@ -377,15 +396,13 @@ namespace RockWeb.Blocks.Core
 
                 rockContext.SaveChanges();
                 binaryFile.SaveAttributeValues( rockContext );
-
             } );
 
             Rock.CheckIn.KioskLabel.Flush( binaryFile.Guid );
 
             if ( !prevBinaryFileTypeId.Equals( binaryFile.BinaryFileTypeId ) )
             {
-                var checkInBinaryFileType = new BinaryFileTypeService( rockContext )
-                    .Get( Rock.SystemGuid.BinaryFiletype.CHECKIN_LABEL.AsGuid() );
+                var checkInBinaryFileType = new BinaryFileTypeService( rockContext ).Get( Rock.SystemGuid.BinaryFiletype.CHECKIN_LABEL.AsGuid() );
                 if ( checkInBinaryFileType != null && (
                     ( prevBinaryFileTypeId.HasValue && prevBinaryFileTypeId.Value == checkInBinaryFileType.Id ) ||
                     ( binaryFile.BinaryFileTypeId.HasValue && binaryFile.BinaryFileTypeId.Value == checkInBinaryFileType.Id ) ) )
@@ -437,11 +454,10 @@ namespace RockWeb.Blocks.Core
                 OrphanedBinaryFileIdList = tempList;
 
                 // load attributes, then get the attribute values from the UI
-                binaryFile.LoadAttributes(); 
-                Rock.Attribute.Helper.GetEditValues( phAttributes, binaryFile );
+                binaryFile.LoadAttributes();
+                Helper.GetEditValues( phAttributes, binaryFile );
 
                 LaunchFileUploadWorkflow( binaryFile, binaryFileService );
-
                 ShowBinaryFileDetail( binaryFile );
             }
         }

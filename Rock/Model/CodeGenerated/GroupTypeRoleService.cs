@@ -64,6 +64,12 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<GroupSync>( Context ).Queryable().Any( a => a.GroupTypeRoleId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupTypeRole.FriendlyTypeName, GroupSync.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<GroupType>( Context ).Queryable().Any( a => a.DefaultGroupRoleId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupTypeRole.FriendlyTypeName, GroupType.FriendlyTypeName );
@@ -107,6 +113,7 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.CanEdit = source.CanEdit;
+            target.CanManageMembers = source.CanManageMembers;
             target.CanView = source.CanView;
             target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;

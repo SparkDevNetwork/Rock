@@ -90,6 +90,7 @@ namespace RockWeb.Blocks.Connection
     {
         #region Fields
 
+        private const string TOGGLE_ACTIVE_SETTING = "MyConnectionOpportunities_ToggleShowActive";
         private const string TOGGLE_SETTING = "MyConnectionOpportunities_Toggle";
         private const string SELECTED_OPPORTUNITY_SETTING = "MyConnectionOpportunities_SelectedOpportunity";
         private const string CAMPUS_SETTING = "MyConnectionOpportunities_SelectedCampus";
@@ -129,9 +130,7 @@ namespace RockWeb.Blocks.Connection
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
 
             gRequests.DataKeyNames = new string[] { "Id" };
-            gRequests.Actions.ShowAdd = true;
             gRequests.Actions.AddClick += gRequests_Add;
-            gRequests.IsDeleteEnabled = true;
             gRequests.GridRebind += gRequests_GridRebind;
             gRequests.ShowConfirmDeleteDialog = false;
             gRequests.PersonIdField = "PersonId";
@@ -169,6 +168,7 @@ namespace RockWeb.Blocks.Connection
             if ( !Page.IsPostBack )
             {
                 tglMyOpportunities.Checked = GetUserPreference( TOGGLE_SETTING ).AsBoolean( true );
+                tglShowActive.Checked = GetUserPreference( TOGGLE_ACTIVE_SETTING ).AsBoolean( true );
                 SelectedOpportunityId = GetUserPreference( SELECTED_OPPORTUNITY_SETTING ).AsIntegerOrNull();
 
                 // Reset the state filter on every initial request to be Active and Past Due future follow up
@@ -239,6 +239,18 @@ namespace RockWeb.Blocks.Connection
         }
 
         /// <summary>
+        /// Handles the CheckedChanged event of the tglShowActive control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void tglShowActive_CheckedChanged( object sender, EventArgs e )
+        {
+            SetUserPreference( TOGGLE_ACTIVE_SETTING, tglShowActive.Checked.ToString() );
+            SummaryState = null;
+            BindSummaryData();
+        }
+
+        /// <summary>
         /// Handles the Click event of the lbConnectionTypes control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -289,7 +301,7 @@ namespace RockWeb.Blocks.Connection
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
             mergeFields.Add( "OpportunitySummary", DotLiquid.Hash.FromAnonymousObject( opportunitySummary ) );
 
-            string result = null; 
+            string result = null;
             using ( var rockContext = new RockContext() )
             {
                 var connectionOpportunity = new ConnectionOpportunityService( rockContext ).Queryable().AsNoTracking().FirstOrDefault( a => a.Id == opportunitySummary.Id );
@@ -348,7 +360,7 @@ namespace RockWeb.Blocks.Connection
 
             BindGrid();
         }
-        
+
         /// <summary>
         /// Rs the filter_ display filter value.
         /// </summary>
@@ -535,21 +547,27 @@ namespace RockWeb.Blocks.Connection
                 opportunities = opportunities.Where( o => typeFilter.Contains( o.ConnectionType.Guid ) );
             }
 
+            if ( tglShowActive.Checked )
+            {
+                opportunities = opportunities.Where( a => a.ConnectionType.IsActive );
+
+            }
+
             // Loop through opportunities
             foreach ( var opportunity in opportunities )
             {
-                // Check to see if person can view the opportunity because of admin rights to this block or admin rights to
+                // Check to see if person can edit the opportunity because of edit rights to this block or edit rights to
                 // the opportunity
-                bool canView = UserCanAdministrate || opportunity.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+                bool canEdit = UserCanEdit || opportunity.IsAuthorized( Authorization.EDIT, CurrentPerson );
                 bool campusSpecificConnector = false;
                 var campusIds = new List<int>();
 
                 if ( CurrentPersonId.HasValue )
                 {
                     // Check to see if person belongs to any connector group that is not campus specific
-                    if ( !canView )
+                    if ( !canEdit )
                     {
-                        canView = opportunity
+                        canEdit = opportunity
                             .ConnectionOpportunityConnectorGroups
                             .Any( g =>
                                 !g.CampusId.HasValue &&
@@ -557,9 +575,9 @@ namespace RockWeb.Blocks.Connection
                                 g.ConnectorGroup.Members.Any( m => m.PersonId == CurrentPersonId.Value ) );
                     }
 
-                    // If user is not yet authorized to view the opportunity, check to see if they are a member of one of the 
+                    // If user is not yet authorized to edit the opportunity, check to see if they are a member of one of the 
                     // campus-specific connector groups for the opportunity, and note the campus
-                    if ( !canView )
+                    if ( !canEdit )
                     {
                         foreach ( var groupCampus in opportunity
                             .ConnectionOpportunityConnectorGroups
@@ -569,11 +587,13 @@ namespace RockWeb.Blocks.Connection
                                 g.ConnectorGroup.Members.Any( m => m.PersonId == CurrentPersonId.Value ) ) )
                         {
                             campusSpecificConnector = true;
-                            canView = true;
+                            canEdit = true;
                             campusIds.Add( groupCampus.CampusId.Value );
                         }
                     }
                 }
+
+                var canView = canEdit || opportunity.IsAuthorized( Authorization.VIEW, CurrentPerson );
 
                 // Is user is authorized to view this opportunity type...
                 if ( canView )
@@ -614,30 +634,30 @@ namespace RockWeb.Blocks.Connection
                         //  (the request is active OR future follow-up who's time has come) 
                         //  AND 
                         //  (where the activity is more than DaysUntilRequestIdle days old OR no activity but created more than DaysUntilRequestIdle days ago)
-                    List<int> idleConnectionRequests = connectionRequestsQry
-                                        .Where( cr =>
-                                            (
-                                                cr.ConnectionState == ConnectionState.Active
-                                                || ( cr.ConnectionState == ConnectionState.FutureFollowUp && cr.FollowupDate.HasValue && cr.FollowupDate.Value < _midnightToday )
-                                            )
-                                            &&
-                                            (
-                                                ( cr.ConnectionRequestActivities.Any() && cr.ConnectionRequestActivities.Max( ra => ra.CreatedDateTime ) < SqlFunctions.DateAdd( "day", -cr.ConnectionOpportunity.ConnectionType.DaysUntilRequestIdle, currentDateTime ) )
-                                                || ( !cr.ConnectionRequestActivities.Any() && cr.CreatedDateTime < SqlFunctions.DateAdd( "day", -cr.ConnectionOpportunity.ConnectionType.DaysUntilRequestIdle, currentDateTime ) )
-                                            )
-                                        )
-                                        .Select( a => a.Id ).ToList();
-
-                    // get list of requests that have a status that is considered critical.
-                    List<int> criticalConnectionRequests = connectionRequestsQry
-                                                .Where( r =>
-                                                    r.ConnectionStatus.IsCritical
-                                                    && (
-                                                            r.ConnectionState == ConnectionState.Active
-                                                            || ( r.ConnectionState == ConnectionState.FutureFollowUp && r.FollowupDate.HasValue && r.FollowupDate.Value < _midnightToday )
-                                                       )
+                        List<int> idleConnectionRequests = connectionRequestsQry
+                                            .Where( cr =>
+                                                (
+                                                    cr.ConnectionState == ConnectionState.Active
+                                                    || ( cr.ConnectionState == ConnectionState.FutureFollowUp && cr.FollowupDate.HasValue && cr.FollowupDate.Value < _midnightToday )
                                                 )
-                                                .Select( a => a.Id ).ToList();
+                                                &&
+                                                (
+                                                    ( cr.ConnectionRequestActivities.Any() && cr.ConnectionRequestActivities.Max( ra => ra.CreatedDateTime ) < SqlFunctions.DateAdd( "day", -cr.ConnectionOpportunity.ConnectionType.DaysUntilRequestIdle, currentDateTime ) )
+                                                    || ( !cr.ConnectionRequestActivities.Any() && cr.CreatedDateTime < SqlFunctions.DateAdd( "day", -cr.ConnectionOpportunity.ConnectionType.DaysUntilRequestIdle, currentDateTime ) )
+                                                )
+                                            )
+                                            .Select( a => a.Id ).ToList();
+
+                        // get list of requests that have a status that is considered critical.
+                        List<int> criticalConnectionRequests = connectionRequestsQry
+                                                    .Where( r =>
+                                                        r.ConnectionStatus.IsCritical
+                                                        && (
+                                                                r.ConnectionState == ConnectionState.Active
+                                                                || ( r.ConnectionState == ConnectionState.FutureFollowUp && r.FollowupDate.HasValue && r.FollowupDate.Value < _midnightToday )
+                                                           )
+                                                    )
+                                                    .Select( a => a.Id ).ToList();
 
                         // Add the opportunity
                         var opportunitySummary = new OpportunitySummary
@@ -645,10 +665,11 @@ namespace RockWeb.Blocks.Connection
                             Id = opportunity.Id,
                             Name = opportunity.Name,
                             IsActive = opportunity.IsActive,
-	                        IconCssClass = opportunity.IconCssClass,
-	                        IdleConnectionRequests = idleConnectionRequests,
-	                        CriticalConnectionRequests = criticalConnectionRequests,
-                            DaysUntilRequestIdle = opportunity.ConnectionType.DaysUntilRequestIdle
+                            IconCssClass = opportunity.IconCssClass,
+                            IdleConnectionRequests = idleConnectionRequests,
+                            CriticalConnectionRequests = criticalConnectionRequests,
+                            DaysUntilRequestIdle = opportunity.ConnectionType.DaysUntilRequestIdle,
+                            CanEdit = canEdit
                         };
 
                         // If the user is limited requests with specific campus(es) set the list, otherwise leave it to be null
@@ -678,7 +699,7 @@ namespace RockWeb.Blocks.Connection
                     r.CampusId,
                     ConnectorPersonId = r.ConnectorPersonAlias != null ? r.ConnectorPersonAlias.PersonId : -1
                 } );
-                
+
 
             if ( cpCampusFilterForPage.SelectedCampusId.HasValue )
             {
@@ -862,6 +883,10 @@ namespace RockWeb.Blocks.Connection
 
             if ( opportunitySummary != null )
             {
+                gRequests.Actions.ShowAdd = opportunitySummary.CanEdit;
+                gRequests.IsDeleteEnabled = opportunitySummary.CanEdit;
+                gRequests.ColumnsOfType<DeleteField>().First().Visible = opportunitySummary.CanEdit;
+
                 using ( var rockContext = new RockContext() )
                 {
 
@@ -901,11 +926,11 @@ namespace RockWeb.Blocks.Connection
                     }
 
                     // Filter by State
-                    
+
                     if ( tglMyOpportunities.Checked )
                     {
                         requests = requests
-                            .Where( r => r.ConnectionState == ConnectionState.Active || 
+                            .Where( r => r.ConnectionState == ConnectionState.Active ||
                                     ( r.ConnectionState == ConnectionState.FutureFollowUp && r.FollowupDate.HasValue && r.FollowupDate.Value < _midnightToday ) );
                     }
                     else
@@ -1096,10 +1121,18 @@ namespace RockWeb.Blocks.Connection
             string css = string.Empty;
             switch ( connectionState )
             {
-                case ConnectionState.Active: css = "success"; break;
-                case ConnectionState.Inactive: css = "danger"; break;
-                case ConnectionState.FutureFollowUp: css = ( followupDate.HasValue && followupDate.Value >= RockDateTime.Today.AddDays( 1 ) ) ? "info" : "info"; break;
-                case ConnectionState.Connected: css = "success"; break;
+                case ConnectionState.Active:
+                    css = "success";
+                    break;
+                case ConnectionState.Inactive:
+                    css = "danger";
+                    break;
+                case ConnectionState.FutureFollowUp:
+                    css = ( followupDate.HasValue && followupDate.Value > RockDateTime.Today ) ? "info" : "danger";
+                    break;
+                case ConnectionState.Connected:
+                    css = "success";
+                    break;
             }
 
             string text = connectionState.ConvertToString();
@@ -1133,6 +1166,7 @@ namespace RockWeb.Blocks.Connection
             public bool CampusSpecificConnector { get; set; }
             public List<int> ConnectorCampusIds { get; set; }  // Will be null if user is a connector for all campuses
             public int DaysUntilRequestIdle { get; set; }
+            public bool CanEdit { get; set; }
             public int AssignedToYou
             {
                 get

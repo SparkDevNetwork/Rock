@@ -30,7 +30,7 @@ namespace Rock.Workflow.Action.CheckIn
     /// Removes (or excludes) any locations that are not active
     /// </summary>
     [ActionCategory( "Check-In" )]
-    [Description( "Sets the avialable schedules for each grouptype, group, and location" )]
+    [Description( "Sets the available schedules for each grouptype, group, and location" )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Set Available Schedules" )]
 
@@ -50,48 +50,55 @@ namespace Rock.Workflow.Action.CheckIn
             var checkInState = GetCheckInState( entity, out errorMessages );
             if ( checkInState != null )
             {
-                var family = checkInState.CheckIn.CurrentFamily;
-                if ( family != null )
+                ProcessForFamily( rockContext, checkInState.CheckIn.CurrentFamily );
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Processes this action for a check-in family.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="family">The family.</param>
+        public static void ProcessForFamily( RockContext rockContext, CheckInFamily family )
+        {
+            if ( family != null )
+            {
+                foreach ( var person in family.People )
                 {
-                    var remove = GetAttributeValue( action, "Remove" ).AsBoolean();
-
-                    foreach ( var person in family.People )
+                    foreach ( var groupType in person.GroupTypes )
                     {
-                        foreach ( var groupType in person.GroupTypes )
+                        foreach ( var group in groupType.Groups )
                         {
-                            foreach ( var group in groupType.Groups )
+                            foreach ( var location in group.Locations )
                             {
-                                foreach ( var location in group.Locations )
-                                {
-                                    location.AvailableForSchedule =
-                                        location.Schedules
-                                            .Where( s => !s.ExcludedByFilter )
-                                            .Select( s => s.Schedule.Id )
-                                            .ToList();
-                                }
-
-                                group.AvailableForSchedule =
-                                    group.Locations
-                                        .Where( l => !l.ExcludedByFilter )
-                                        .SelectMany( l => l.AvailableForSchedule )
-                                        .Distinct()
+                                location.AvailableForSchedule =
+                                    location.Schedules
+                                        .Where( s => !s.ExcludedByFilter )
+                                        .Select( s => s.Schedule.Id )
                                         .ToList();
                             }
 
-                            groupType.AvailableForSchedule =
-                                groupType.Groups
+                            group.AvailableForSchedule =
+                                group.Locations
                                     .Where( l => !l.ExcludedByFilter )
                                     .SelectMany( l => l.AvailableForSchedule )
                                     .Distinct()
                                     .ToList();
                         }
+
+                        groupType.AvailableForSchedule =
+                            groupType.Groups
+                                .Where( l => !l.ExcludedByFilter )
+                                .SelectMany( l => l.AvailableForSchedule )
+                                .Distinct()
+                                .ToList();
                     }
                 }
 
-                return true;
             }
-
-            return false;
         }
 
     }

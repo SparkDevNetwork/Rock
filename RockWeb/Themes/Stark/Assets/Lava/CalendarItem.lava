@@ -9,6 +9,10 @@
     <h1>{{ Event.Name }}</h1>
     {{ Event.Description }}
 
+    {% if Event.Summary != '' %}
+      {{ Event.Summary | AddMetaTagToHead:'name','description' }}
+    {% endif %}
+    
     {{ 'summary_large_image' | AddMetaTagToHead:'property','twitter:card' }}
     {{ Event.Name | AddMetaTagToHead:'property','twitter:title' }}
     {{ Event.Description | AddMetaTagToHead:'property','twitter:description' }}

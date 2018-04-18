@@ -52,6 +52,7 @@ namespace RockWeb.Blocks.Examples
         protected override void OnInit(EventArgs e)
         {
             base.OnInit(e);
+            RockPage.AddScriptLink( this.Page, "~/Scripts/React/shim.js" );
         }
 
         protected override void OnLoad(EventArgs e)
@@ -60,7 +61,6 @@ namespace RockWeb.Blocks.Examples
 
             if (!Page.IsPostBack)
             {
-  
                 var initialProps = new InitialProps();
                 initialProps.startingNumber = GetAttributeValue("StartingNumber").ToStringSafe().AsIntegerOrNull() ?? 0;
                 PageContent.Text = Render(initialProps);

@@ -7,7 +7,10 @@
 
             <div class="panel panel-block panel-analytics">
                 <div class="panel-heading">
-                    <h1 class="panel-title"><i class="fa fa-list"></i>Pledge Analytics</h1>
+                    <h1 class="panel-title">
+                        <i class="fa fa-list"></i>
+                        Pledge Analytics
+                    </h1>
 
                     <div class="panel-labels">
                     </div>

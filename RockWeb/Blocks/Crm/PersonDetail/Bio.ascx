@@ -40,7 +40,7 @@
                     <ul class="social-icons list-unstyled margin-t-sm">
                         <asp:Repeater ID="rptSocial" runat="server">
                             <ItemTemplate>
-                                <li class='icon icon-<%# Eval("name").ToString().ToLower() %>'><a href='<%# Eval("url") %>' target="_blank"><i class='<%# Eval("icon") %>'></i></a></li>
+                                <li class='icon icon-<%# Eval("name").ToString().ToLower() %>' <%# !string.IsNullOrEmpty( Eval("color").ToString())? "style='background-color:"+Eval("color").ToString()+"'":"" %> ><a href='<%# Eval("url") %>' target="_blank"><i class='<%# Eval("icon") %>'></i></a></li>
                             </ItemTemplate>
                         </asp:Repeater>
                     </ul>
@@ -55,7 +55,7 @@
 
                     <Rock:TagList ID="taglPersonTags" runat="server" CssClass="clearfix" />
 
-                    <div class="summary">
+                    <div class="summary clearfix">
                         <div class="demographics">
                             <asp:Literal ID="lAge" runat="server" />
                             <asp:Literal ID="lGender" runat="server" /><br />

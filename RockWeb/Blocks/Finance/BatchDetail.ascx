@@ -15,6 +15,7 @@
                     <Rock:HighlightLabel ID="hlBatchId" runat="server" LabelType="Info" />
                     <Rock:HighlightLabel ID="hlStatus" runat="server" />
                     <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" />
+                    <Rock:HighlightLabel ID="hlIsAutomated" runat="server" LabelType="Warning" Text="Automated" Visible="false" ToolTip="This is an automated batch. The system will automatically set this batch to OPEN when all transactions have been downloaded." />
                 </div>
             </div>
             <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
@@ -53,8 +54,8 @@
                     </div>
 
                     <div class="actions">
-                        <asp:LinkButton ID="lbSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="lbSave_Click" />
-                        <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" />
+                        <asp:LinkButton ID="lbSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="lbSave_Click" />
+                        <asp:LinkButton ID="lbCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" />
                     </div>
                 </div>
 

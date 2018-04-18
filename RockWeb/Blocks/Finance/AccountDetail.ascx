@@ -30,7 +30,7 @@
                             <asp:Literal ID="lLeftDetails" runat="server" />
                         </div>
                         <div class="col-md-6">
-                            <asp:Literal ID="lRightDetails" runat="server" />
+                            <asp:PlaceHolder ID="phAttributesView" runat="server" />
                         </div>
                     </div>
                        <div class="actions">

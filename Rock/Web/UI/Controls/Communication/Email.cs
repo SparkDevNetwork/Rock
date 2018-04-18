@@ -174,6 +174,7 @@ namespace Rock.Web.UI.Controls.Communication
             tbFromName = new RockTextBox();
             tbFromName.ID = string.Format( "tbFromName_{0}", this.ID );
             tbFromName.Label = "From Name";
+            tbFromName.MaxLength = 100;
             Controls.Add( tbFromName );
 
             lFromName = new RockLiteral();
@@ -200,6 +201,7 @@ namespace Rock.Web.UI.Controls.Communication
             tbSubject.ID = string.Format( "tbSubject_{0}", this.ID );
             tbSubject.Label = "Subject";
             tbSubject.Help = "<span class='tip tip-lava'></span>";
+            tbSubject.MaxLength = 100;
             Controls.Add( tbSubject );
 
             htmlMessage = new HtmlEditor();

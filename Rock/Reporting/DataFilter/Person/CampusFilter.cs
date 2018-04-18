@@ -109,14 +109,13 @@ namespace Rock.Reporting.DataFilter.Person
         /// </value>
         public override string GetClientFormatSelection( Type entityType )
         {
-            return string.Format( @"
+            return $@"
 function() {{
-    var campusPicker = $('.{0}', $content);
+    var campusPicker = $('.{this.ControlClassName}', $content);
     var campusName = $(':selected', campusPicker).text();
 
     return 'Campus: ' + campusName;
-}}
-", ControlClassName );
+}}";
         }
 
         /// <summary>

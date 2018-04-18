@@ -276,8 +276,8 @@ namespace Rock.Web.UI.Controls
             this.Attributes.Add( "data-max", "5" );
             this.Attributes.Add( "data-clearable", " " );
             this.Attributes.Add( "data-icon-lib", "fa" );
-            this.Attributes.Add( "data-active-icon", "fa-star" );
-            this.Attributes.Add( "data-inactive-icon", "fa-star-o" );
+            this.Attributes.Add( "data-active-icon", "fa-rating-selected" );
+            this.Attributes.Add( "data-inactive-icon", "fa-rating-unselected" );
             this.Attributes.Add( "data-clearable-icon", "fa-remove" );
         }
 

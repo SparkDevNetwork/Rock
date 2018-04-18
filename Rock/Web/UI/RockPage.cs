@@ -790,6 +790,14 @@ namespace Rock.Web.UI
                         Site.RedirectToChangePasswordPage( true, true );
                     }
                 }
+
+                // Check if there is a ROCK_PERSONALDEVICE_ADDRESS cookie, link person to device
+                if ( Request.Cookies["rock_wifi"] != null )
+                {
+                    HttpCookie httpCookie = Request.Cookies["rock_wifi"];
+                    LinkPersonAliasToDevice( ( int ) CurrentPersonAliasId, httpCookie.Values["ROCK_PERSONALDEVICE_ADDRESS"] );
+                    Response.Cookies["rock_wifi"].Expires = DateTime.Now.AddDays( -1 );
+                }
             }
 
             // If a PageInstance exists
@@ -975,15 +983,17 @@ namespace Rock.Web.UI
                     canAdministratePage = _pageCache.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
                     canEditPage = _pageCache.IsAuthorized( Authorization.EDIT, CurrentPerson );
 
-                    if ( !canAdministratePage && !canEditPage )
+                    // If the current person isn't allowed to edit or administrate the page, check to see if they are being impersonated by someone who
+                    // may have edit and/or administrate access to the page.
+                    if ( !canAdministratePage || !canEditPage )
                     {
-                        // if the current user is impersonated by an Admin, then show the admin bar
+                        // if the current user is being impersonated by another user (typically an admin), then check their security
                         var impersonatedByUser = Session["ImpersonatedByUser"] as UserLogin;
                         var currentUserIsImpersonated = ( HttpContext.Current?.User?.Identity?.Name ?? string.Empty ).StartsWith( "rckipid=" );
                         if ( impersonatedByUser != null && currentUserIsImpersonated )
                         {
-                            canAdministratePage = _pageCache.IsAuthorized( Authorization.ADMINISTRATE, impersonatedByUser.Person );
-                            canEditPage = _pageCache.IsAuthorized( Authorization.EDIT, impersonatedByUser.Person );
+                            canAdministratePage = canAdministratePage || _pageCache.IsAuthorized( Authorization.ADMINISTRATE, impersonatedByUser.Person );
+                            canEditPage = canEditPage || _pageCache.IsAuthorized( Authorization.EDIT, impersonatedByUser.Person );
                         }
                     }
 
@@ -1221,7 +1231,7 @@ namespace Rock.Web.UI
                         phLoadStats = new PlaceHolder();
                         adminFooter.Controls.Add( phLoadStats );
 
-                        // If the current user is Impersonated by an admin, show a link on the admin bar to login back in as the original user
+                        // If the current user is Impersonated by another user, show a link on the admin bar to login back in as the original user
                         var impersonatedByUser = Session["ImpersonatedByUser"] as UserLogin;
                         var currentUserIsImpersonated = ( HttpContext.Current?.User?.Identity?.Name ?? string.Empty ).StartsWith( "rckipid=" );
                         if ( canAdministratePage && currentUserIsImpersonated && impersonatedByUser != null)
@@ -1449,7 +1459,7 @@ namespace Rock.Web.UI
                 Authorization.SignOut();
                 UserLoginService.UpdateLastLogin( impersonatedByUser.UserName );
                 Rock.Security.Authorization.SetAuthCookie( impersonatedByUser.UserName, false, false );
-                Response.Redirect( PageReference.BuildUrl( false ), false );
+                Response.Redirect( PageReference.BuildUrl( true ), false );
                 Context.ApplicationInstance.CompleteRequest();
             }
         }
@@ -1633,7 +1643,7 @@ Sys.Application.add_load(function () {
     } else {
         $('.js-view-state-stats').html('ViewState Size: ' + ($('#__CVIEWSTATE').val().length / 1024).toFixed(0) + ' KB');
     }
-    $('.js-html-size-stats').html('Html Size: ' + ($('html').html().length / 1024).toFixed(0) + ' KB');
+    $('.js-html-size-stats').html('HTML Size: ' + ($('html').html().length / 1024).toFixed(0) + ' KB');
 });
 ";
                     ClientScript.RegisterStartupScript( this.Page.GetType(), "rock-js-view-state-size", script, true );
@@ -2069,6 +2079,39 @@ Sys.Application.add_load(function () {
             }
         }
 
+        /// <summary>
+        /// Clears the context cookie.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="pageSpecific">if set to <c>true</c> [page specific].</param>
+        /// <param name="refreshPage">if set to <c>true</c> [refresh page].</param>
+        public void ClearContextCookie( Type entityType, bool pageSpecific = false, bool refreshPage = true )
+        {
+            string cookieName = GetContextCookieName( pageSpecific );
+
+            var contextCookie = Request.Cookies[cookieName];
+            if ( contextCookie == null )
+            {
+                contextCookie = new HttpCookie( cookieName );
+            }
+
+            if ( entityType.IsDynamicProxyType() )
+            {
+                entityType = entityType.BaseType;
+            }
+
+            contextCookie.Values[entityType.FullName] = null;
+            contextCookie.Expires = RockDateTime.Now.AddYears( 1 );
+
+            Response.Cookies.Add( contextCookie );
+
+            if ( refreshPage )
+            {
+                Response.Redirect( Request.RawUrl, false );
+                Context.ApplicationInstance.CompleteRequest();
+            }
+        }
+
         private void GetCookieContext( string cookieName )
         {
             HttpCookie cookie = null;
@@ -2126,6 +2169,37 @@ Sys.Application.add_load(function () {
             trigger.ControlID = "rock-config-trigger";
             trigger.EventName = "Click";
             updatePanel.Triggers.Add( trigger );
+        }
+
+        /// <summary>
+        /// Links the person alias to device.
+        /// </summary>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <param name="MacAddress">The mac address.</param>
+        public void LinkPersonAliasToDevice(int personAliasId, string MacAddress)
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                PersonalDeviceService personalDeviceService = new PersonalDeviceService( rockContext );
+                PersonalDevice personalDevice = personalDeviceService.GetByMACAddress( MacAddress );
+
+                // It's possible that the device was deleted from the DB but a cookie still exists
+                if ( personalDevice == null )
+                {
+                    return;
+                }
+
+                // Assign the current Person.Alias to the device and save
+                if ( personalDevice.PersonAliasId == null || personalDevice.PersonAliasId != personAliasId )
+                {
+                    personalDevice.PersonAliasId = personAliasId;
+                    rockContext.SaveChanges();
+                }
+
+                // Update interactions for this device with this person.alias if they don't already have one.
+                InteractionService interactionService = new InteractionService( rockContext );
+                interactionService.UpdateInteractionsWithPersonAliasIdForDeviceId( personAliasId, personalDevice.Id );
+            }
         }
 
         #endregion

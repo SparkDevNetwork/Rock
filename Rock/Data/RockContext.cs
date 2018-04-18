@@ -18,17 +18,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration.Conventions;
-using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Web;
-using Rock.Model;
-using Rock.Utility;
-using Rock.Workflow;
-
 using InteractivePreGeneratedViews;
+using Rock.Model;
 
 namespace Rock.Data
 {
@@ -611,6 +605,14 @@ namespace Rock.Data
         public DbSet<DataViewFilter> DataViewFilters { get; set; }
 
         /// <summary>
+        /// Gets or sets the data view persisted values.
+        /// </summary>
+        /// <value>
+        /// The data view persisted values.
+        /// </value>
+        public DbSet<DataViewPersistedValue> DataViewPersistedValues { get; set; }
+
+        /// <summary>
         /// Gets or sets the Defined Types.
         /// </summary>
         /// <value>
@@ -1155,6 +1157,14 @@ namespace Rock.Data
         public DbSet<MetricValuePartition> MetricValuePartitions { get; set; }
 
         /// <summary>
+        /// Gets or sets the ncoa history.
+        /// </summary>
+        /// <value>
+        /// The ncoa historys.
+        /// </value>
+        public DbSet<NcoaHistory> NcoaHistorys { get; set; }
+
+        /// <summary>
         /// Gets or sets the notes.
         /// </summary>
         /// <value>
@@ -1256,8 +1266,16 @@ namespace Rock.Data
         /// <value>
         /// The person previous names.
         /// </value>
-        public DbSet<PersonPreviousName> PersonPreviousNames { get; set; }        
-        
+        public DbSet<PersonPreviousName> PersonPreviousNames { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Person Signals.
+        /// </summary>
+        /// <value>
+        /// the Person Vieweds.
+        /// </value>
+        public DbSet<PersonSignal> PersonSignals { get; set; }
+
         /// <summary>
         /// Gets or sets the Person Vieweds.
         /// </summary>
@@ -1440,6 +1458,14 @@ namespace Rock.Data
         /// <value>
         /// The signature documents.
         /// </value>
+        public DbSet<SignalType> SignalTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the signature documents.
+        /// </summary>
+        /// <value>
+        /// The signature documents.
+        /// </value>
         public DbSet<SignatureDocument> SignatureDocuments { get; set; }
 
         /// <summary>
@@ -1590,31 +1616,16 @@ namespace Rock.Data
 
         /// <summary>
         /// Use SqlBulkInsert to quickly insert a large number records.
-        /// WARNING: This will bypass the Rock and a bunch of the EF Framework, so be careful!
+        /// NOTE: This bypasses the Rock and a bunch of the EF Framework and automatically commits the changes to the database
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="records">The records.</param>
         /// <param name="useSqlBulkCopy">if set to <c>true</c> [use SQL bulk copy].</param>
-        public void BulkInsert<T>( IEnumerable<T> records, bool useSqlBulkCopy = true ) where T : class, IEntity
+        public void BulkInsert<T>( IEnumerable<T> records, bool useSqlBulkCopy ) where T : class, IEntity
         {
             if ( useSqlBulkCopy )
             {
-                // ensure CreatedDateTime and ModifiedDateTime is set
-                var currentDateTime = RockDateTime.Now;
-                foreach( var record in records )
-                {
-                    var model = record as IModel;
-                    if ( model != null )
-                    {
-                        model.CreatedDateTime = model.CreatedDateTime ?? currentDateTime;
-                        model.ModifiedDateTime = model.ModifiedDateTime ?? currentDateTime;
-                    }
-                }
-
-                // set timeout to 5 minutes, just in case (the default is 30 seconds)
-                EntityFramework.Utilities.Configuration.BulkCopyTimeout = 300;
-                EntityFramework.Utilities.Configuration.SqlBulkCopyOptions = System.Data.SqlClient.SqlBulkCopyOptions.CheckConstraints;
-                EntityFramework.Utilities.EFBatchOperation.For( this, this.Set<T>() ).InsertAll( records );
+                this.BulkInsert( records );
             }
             else
             {
@@ -1633,15 +1644,22 @@ namespace Rock.Data
         {
             ContextHelper.AddConfigurations( modelBuilder );
 
-            modelBuilder.Conventions.Add( new GetAddressStoreFunctionInjectionConvention() );
-            modelBuilder.Conventions.Add( new GetGeofencingGroupNamesStoreFunctionInjectionConvention() );
-            modelBuilder.Conventions.Add( new GetSpousePersonIdFromPersonIdStoreFunctionInjectionConvention() );
-
             try
             {
                 //// dynamically add plugin entities so that queryables can use a mixture of entities from different plugins and core
                 //// from http://romiller.com/2012/03/26/dynamically-building-a-model-with-code-first/, but using the new RegisterEntityType in 6.1.3
-                
+
+                // look for IRockStoreModelConvention classes
+                var modelConventionList = Reflection.FindTypes( typeof( Rock.Data.IRockStoreModelConvention<System.Data.Entity.Core.Metadata.Edm.EdmModel> ) )
+                    .Where( a => !a.Value.IsAbstract )
+                    .OrderBy( a => a.Key ).Select( a => a.Value );
+
+                foreach ( var modelConventionType in modelConventionList )
+                {
+                    var convention = ( IConvention ) Activator.CreateInstance( modelConventionType );
+                    modelBuilder.Conventions.Add( convention );
+                }
+
                 // look for IRockEntity classes
                 var entityTypeList = Reflection.FindTypes( typeof( Rock.Data.IRockEntity ) )
                     .Where( a => !a.Value.IsAbstract && ( a.Value.GetCustomAttribute<NotMappedAttribute>() == null ) && ( a.Value.GetCustomAttribute<System.Runtime.Serialization.DataContractAttribute>() != null ) )

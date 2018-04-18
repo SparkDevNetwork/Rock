@@ -106,5 +106,31 @@ namespace Rock.Web
 
             }
         }
+
+        /// <summary>
+        /// Gets a formatted list of the key/values. 
+        /// </summary>
+        /// <param name="format">The format. (This should contain {0} for the key and {1} for the value)</param>
+        /// <returns></returns>
+        public List<string> GetFormattedList( string format )
+        {
+            var items = new List<string>();
+
+            if ( _termDescriptionList.Any() )
+            {
+                foreach ( var pair in _termDescriptionList )
+                {
+                    string displayValue = pair.Value;
+                    if ( string.IsNullOrWhiteSpace( displayValue ) )
+                    {
+                        displayValue = Rock.Constants.None.TextHtml;
+                    }
+
+                    items.Add( string.Format( format, pair.Key, displayValue ) );
+                }
+            }
+
+            return items;
+        }
     }
 }

@@ -51,6 +51,8 @@
                 var scrollIndicator = scrollbCategory.find('.track');
                 locationIScroll = new IScroll(scrollContainer[0], {
                     mouseWheel: false,
+                    eventPassthrough: true,
+                    preventDefault: false,
                     scrollX: true,
                     scrollY: false,
                     indicators: {
@@ -59,7 +61,9 @@
                         resize: false,
                         listenX: true,
                         listenY: false,
-                    }
+                    },
+                    click: false,
+                    preventDefaultException: { tagName: /.*/ }
                 });
 
                 // resize scrollbar when the window resizes

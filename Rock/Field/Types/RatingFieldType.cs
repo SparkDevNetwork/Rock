@@ -131,7 +131,7 @@ namespace Rock.Field.Types
             var sb = new StringBuilder();
             for ( int i = 1; i <= GetMaxRating( configurationValues ); i++ )
             {
-                sb.AppendFormat( "<i class='fa fa-star{0}'></i>", i > rating ? "-o" : "" );
+                sb.AppendFormat( "<i class='fa fa-star{0}'></i>", i > rating ? "-unselected" : "-selected" );
             }
 
             return sb.ToString();

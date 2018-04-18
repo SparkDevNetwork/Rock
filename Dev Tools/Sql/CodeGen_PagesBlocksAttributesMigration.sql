@@ -559,11 +559,10 @@ create table #codeTable (
         CONVERT(nvarchar(50), ft.Guid)+ '","'+     
         a.Name+ '","'+  
         a.[Key]+ '","'+ 
-        ''+ '","'+ 
-        --ISNULL(a.Category,'')+ '","'+ 
-        ISNULL(a.Description,'')+ '",'+ 
+        ''+ '",@"'+ 
+		ISNULL(replace(a.[Description], '"', '""'),'') + '",'+ 
         CONVERT(varchar, a.[Order])+ ',@"'+ 
-        ISNULL(a.DefaultValue,'')+ '","'+
+        ISNULL(replace(a.[DefaultValue], '"', '""'),'') + '","'+
         CONVERT(nvarchar(50), a.Guid)+ '");' +
         @crlf
     from [Attribute] [a]

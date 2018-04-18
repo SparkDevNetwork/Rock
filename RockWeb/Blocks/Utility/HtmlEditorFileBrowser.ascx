@@ -63,7 +63,9 @@
                                     resize: false,
                                     listenY: true,
                                     listenX: false,
-                                }
+                                },
+                                click: false,
+                                preventDefaultException: { tagName: /.*/ }
                             });
 
                             $('.js-folder-treeview .treeview').on('rockTree:expand rockTree:collapse rockTree:dataBound rockTree:rendered', function (evt) {
@@ -84,7 +86,9 @@
                                     resize: false,
                                     listenY: true,
                                     listenX: false,
-                                }
+                            },
+                            click: false,
+                            preventDefaultException: { tagName: /.*/ }
                         });
 
                         // js for when a file delete is clicked

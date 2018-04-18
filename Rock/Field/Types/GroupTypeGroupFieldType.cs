@@ -169,7 +169,7 @@ namespace Rock.Field.Types
         public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             GroupTypeGroupPicker editControl = new GroupTypeGroupPicker { ID = id };
-            if ( configurationValues != null )
+            if ( configurationValues != null && configurationValues.ContainsKey( CONFIG_GROUP_PICKER_LABEL ) )
             {
                 editControl.GroupControlLabel = configurationValues[CONFIG_GROUP_PICKER_LABEL].Value;
             }
@@ -210,7 +210,10 @@ namespace Rock.Field.Types
                     }
                 }
 
-                return string.Format( "{0}|{1}", groupTypeGuid, groupGuid );
+                if ( groupTypeGuid.HasValue || groupGuid.HasValue )
+                {
+                    return string.Format( "{0}|{1}", groupTypeGuid, groupGuid );
+                }
             }
 
             return null;

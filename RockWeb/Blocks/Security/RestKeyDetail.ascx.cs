@@ -77,7 +77,6 @@ namespace RockWeb.Blocks.Security
             rockContext.WrapTransaction( () =>
             {
                 var personService = new PersonService( rockContext );
-                var changes = new List<string>();
                 var restUser = new Person();
                 if ( int.Parse( hfRestUserId.Value ) != 0 )
                 {
@@ -90,7 +89,6 @@ namespace RockWeb.Blocks.Security
                 }
 
                 // the rest user name gets saved as the last name on a person
-                History.EvaluateChange( changes, "Last Name", restUser.LastName, tbName.Text );
                 restUser.LastName = tbName.Text;
                 restUser.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER.AsGuid() ).Id;
                 if ( cbActive.Checked )
@@ -104,18 +102,7 @@ namespace RockWeb.Blocks.Security
 
                 if ( restUser.IsValid )
                 {
-                    if ( rockContext.SaveChanges() > 0 )
-                    {
-                        if ( changes.Any() )
-                        {
-                            HistoryService.SaveChanges(
-                                rockContext,
-                                typeof( Person ),
-                                Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                                restUser.Id,
-                                changes );
-                        }
-                    }
+                    rockContext.SaveChanges();
                 }
 
                 // the description gets saved as a system note for the person

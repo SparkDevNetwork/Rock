@@ -21,11 +21,15 @@ using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Reflection;
 using System.Web;
+using Z.EntityFramework.Plus;
 
 using Rock.Model;
 using Rock.Transactions;
 using Rock.UniversalSearch;
 using Rock.Workflow;
+
+using Audit = Rock.Model.Audit;
+using System.Linq.Expressions;
 
 namespace Rock.Data
 {
@@ -123,15 +127,7 @@ namespace Rock.Data
             SaveErrorMessages = new List<string>();
 
             // Try to get the current person alias and id
-            PersonAlias personAlias = null;
-            if ( HttpContext.Current != null && HttpContext.Current.Items.Contains( "CurrentPerson" ) )
-            {
-                var currentPerson = HttpContext.Current.Items["CurrentPerson"] as Person;
-                if ( currentPerson != null && currentPerson.PrimaryAlias != null )
-                {
-                    personAlias = currentPerson.PrimaryAlias;
-                }
-            }
+            PersonAlias personAlias = GetCurrentPersonAlias();
 
             bool enableAuditing = Rock.Web.Cache.GlobalAttributesCache.Value( "EnableAuditing" ).AsBoolean();
 
@@ -168,6 +164,24 @@ namespace Rock.Data
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Gets the current person alias.
+        /// </summary>
+        /// <returns></returns>
+        private PersonAlias GetCurrentPersonAlias()
+        {
+            if ( HttpContext.Current != null && HttpContext.Current.Items.Contains( "CurrentPerson" ) )
+            {
+                var currentPerson = HttpContext.Current.Items["CurrentPerson"] as Person;
+                if ( currentPerson != null && currentPerson.PrimaryAlias != null )
+                {
+                    return currentPerson.PrimaryAlias;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -334,6 +348,11 @@ namespace Rock.Data
                 }
                 else
                 {
+                    if ( item.Audit.AuditType == AuditType.Add )
+                    {
+                        TriggerWorkflows( item, WorkflowTriggerType.PostAdd, personAlias );
+                    }
+
                     TriggerWorkflows( item, WorkflowTriggerType.ImmediatePostSave, personAlias );
                     TriggerWorkflows( item, WorkflowTriggerType.PostSave, personAlias );
                 }
@@ -379,6 +398,86 @@ namespace Rock.Data
                 } );
             }
         }
+
+        #region Bulk Operations
+
+        /// <summary>
+        /// Use SqlBulkInsert to quickly insert a large number records.
+        /// NOTE: This bypasses the Rock and a bunch of the EF Framework and automatically commits the changes to the database
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="records">The records.</param>
+        public virtual void BulkInsert<T>( IEnumerable<T> records ) where T : class
+        {
+            // ensure CreatedDateTime and ModifiedDateTime is set
+            var currentDateTime = RockDateTime.Now;
+            foreach ( var record in records )
+            {
+                var model = record as IModel;
+                if ( model != null )
+                {
+                    model.CreatedDateTime = model.CreatedDateTime ?? currentDateTime;
+                    model.ModifiedDateTime = model.ModifiedDateTime ?? currentDateTime;
+                    var currentPersonAliasId = this.GetCurrentPersonAlias()?.Id;
+                    if ( currentPersonAliasId.HasValue )
+                    {
+                        model.CreatedByPersonAliasId = model.CreatedByPersonAliasId ?? currentPersonAliasId;
+                        model.ModifiedByPersonAliasId = model.ModifiedByPersonAliasId ?? currentPersonAliasId;
+                    }
+                }
+            }
+
+            // set timeout to 5 minutes, just in case (the default is 30 seconds)
+            EntityFramework.Utilities.Configuration.BulkCopyTimeout = 300;
+            EntityFramework.Utilities.Configuration.SqlBulkCopyOptions = System.Data.SqlClient.SqlBulkCopyOptions.CheckConstraints;
+            EntityFramework.Utilities.EFBatchOperation.For( this, this.Set<T>() ).InsertAll( records );
+        }
+
+        /// <summary>
+        /// Does a direct bulk UPDATE. 
+        /// Example: rockContext.BulkUpdate( personQuery, p => new Person { LastName = "Decker" } );
+        /// NOTE: This bypasses the Rock and a bunch of the EF Framework and automatically commits the changes to the database
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="queryable">The queryable for the records to update</param>
+        /// <param name="updateFactory">Linq expression to specify the updated property values</param>
+        /// <returns></returns>
+        public virtual int BulkUpdate<T>( IQueryable<T> queryable, Expression<Func<T, T>> updateFactory ) where T : class
+        {
+            var currentDateTime = RockDateTime.Now;
+            PersonAlias currentPersonAlias = this.GetCurrentPersonAlias();
+            var rockExpressionVisitor = new RockBulkUpdateExpressionVisitor( currentDateTime, currentPersonAlias );
+            rockExpressionVisitor.Visit( updateFactory );
+            int recordsUpdated = queryable.Update( updateFactory );
+            return recordsUpdated;
+        }
+
+        /// <summary>
+        /// Does a direct bulk DELETE.
+        /// Example: rockContext.BulkDelete( groupMembersToDeleteQuery );
+        /// NOTE: This bypasses the Rock and a bunch of the EF Framework and automatically commits the changes to the database
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="queryable">The queryable for the records to delete</param>
+        /// <param name="batchSize">The BatchSize property sets the amount of rows to delete in a single batch (Default 4000)</param>
+        /// <returns></returns>
+        public virtual int BulkDelete<T>( IQueryable<T> queryable, int? batchSize = null ) where T : class
+        {
+            int recordsUpdated;
+
+            if ( batchSize.HasValue )
+            {
+                recordsUpdated = queryable.Delete( d => d.BatchSize = batchSize.Value );
+            }
+            else
+            {
+                recordsUpdated = queryable.Delete();
+            }
+
+            return recordsUpdated;
+        }
+
+        #endregion Bulk Operations
 
         /// <summary>
         /// Triggers all the workflows of the given triggerType for the given entity item.
@@ -484,10 +583,17 @@ namespace Rock.Data
                     var currentValue = currentProperty != null ? currentProperty.ToString() : string.Empty;
                     var previousValue = string.Empty;
 
-                    var dbPropertyEntry = dbEntity.Property( propertyInfo.Name );
-                    if ( dbPropertyEntry != null )
+                    if ( item.OriginalValues != null && item.OriginalValues.ContainsKey( propertyInfo.Name ) )
                     {
-                        previousValue = dbEntity.State == EntityState.Added ? string.Empty : dbPropertyEntry.OriginalValue.ToStringSafe();
+                        previousValue = item.OriginalValues[propertyInfo.Name].ToStringSafe();
+                    }
+                    else
+                    {
+                        var dbPropertyEntry = dbEntity.Property( propertyInfo.Name );
+                        if ( dbPropertyEntry != null )
+                        {
+                            previousValue = item.Audit.AuditType == AuditType.Add ? string.Empty : dbPropertyEntry.OriginalValue.ToStringSafe();
+                        }
                     }
 
                     if ( trigger.WorkflowTriggerType == WorkflowTriggerType.PreDelete ||
@@ -496,13 +602,14 @@ namespace Rock.Data
                         match = ( previousValue == trigger.EntityTypeQualifierValue );
                     }
 
-                    if ( trigger.WorkflowTriggerType == WorkflowTriggerType.ImmediatePostSave ||
-                        trigger.WorkflowTriggerType == WorkflowTriggerType.PostSave )
+                    if ( trigger.WorkflowTriggerType == WorkflowTriggerType.PostAdd )
                     {
                         match = ( currentValue == trigger.EntityTypeQualifierValue );
                     }
 
-                    if ( trigger.WorkflowTriggerType == WorkflowTriggerType.PreSave )
+                    if ( trigger.WorkflowTriggerType == WorkflowTriggerType.ImmediatePostSave ||
+                        trigger.WorkflowTriggerType == WorkflowTriggerType.PostSave ||
+                        trigger.WorkflowTriggerType == WorkflowTriggerType.PreSave )
                     {
                         if ( hasCurrent && !hasPrevious )
                         {
@@ -523,11 +630,9 @@ namespace Rock.Data
                         }
                         else if ( !hasCurrent && !hasPrevious )
                         {
-                            // If they used an entity type qualifier column, at least one qualifier value is required.
-                            // TODO: log as silent exception? 
+                            match = previousValue != currentValue;
                         }
                     }
-
                 }
             }
             catch ( Exception ex )
@@ -672,6 +777,15 @@ namespace Rock.Data
             public Audit Audit { get; set; }
 
             /// <summary>
+            /// Gets or sets the collection of original entity values before the save occurs,
+            /// only valid when the entity-state is Modified.
+            /// </summary>
+            /// <value>
+            /// The original entity values.
+            /// </value>
+            public Dictionary<string, object> OriginalValues { get; set; }
+
+            /// <summary>
             /// Initializes a new instance of the <see cref="ContextItem" /> class.
             /// </summary>
             /// <param name="entity">The entity.</param>
@@ -697,6 +811,19 @@ namespace Rock.Data
                     case EntityState.Modified:
                         {
                             Audit.AuditType = AuditType.Modify;
+
+                            var triggers = TriggerCache.Triggers( entity.TypeName )
+                                .Where( t => t.WorkflowTriggerType == WorkflowTriggerType.ImmediatePostSave || t.WorkflowTriggerType == WorkflowTriggerType.PostSave );
+
+                            if ( triggers.Any() )
+                            {
+                                OriginalValues = new Dictionary<string, object>();
+                                foreach ( var p in DbEntityEntry.OriginalValues.PropertyNames )
+                                {
+                                    OriginalValues.Add( p, DbEntityEntry.OriginalValues[p] );
+                                }
+                            }
+
                             break;
                         }
                 }

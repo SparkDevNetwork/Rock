@@ -1,10 +1,3 @@
-/*
-<doc>
-	<summary>
-		This stored procedure returns data used by the giving analytics block
-	</summary>
-</doc>
-*/
 ALTER PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery_PersonSummary]
 	  @StartDate datetime = NULL
 	, @EndDate datetime = NULL
@@ -13,6 +6,7 @@ ALTER PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery_PersonSummary]
 	, @AccountIds varchar(max) = NULL
 	, @CurrencyTypeIds varchar(max) = NULL
 	, @SourceTypeIds varchar(max) = NULL
+	, @TransactionTypeIds varchar(max) = NULL
 	WITH RECOMPILE
 AS
 
@@ -32,6 +26,9 @@ BEGIN
 
 	DECLARE @SourceTypeTbl TABLE ( [Id] int )
 	INSERT INTO @SourceTypeTbl SELECT [Item] FROM ufnUtility_CsvToTable( ISNULL(@SourceTypeIds,'') )
+
+	DECLARE @TransactionTypeTbl TABLE ( [Id] int )
+	INSERT INTO @TransactionTypeTbl SELECT [Item] FROM ufnUtility_CsvToTable( ISNULL(@TransactionTypeIds,'') )
 
 	SELECT
 		[p].[Id],
@@ -86,10 +83,12 @@ BEGIN
 				LEFT OUTER JOIN @AccountTbl [tt1] ON [tt1].[id] = [ftd].[AccountId]
 				LEFT OUTER JOIN @CurrencyTypeTbl [tt2] ON [tt2].[id] = [fpd].[CurrencyTypeValueId]
 				LEFT OUTER JOIN @SourceTypeTbl [tt3] ON [tt3].[id] = [ft].[SourceTypeValueId]
+				LEFT OUTER JOIN @TransactionTypeTbl [tt4] ON [tt4].[id] = [ft].TransactionTypeValueId
 				WHERE [ft].[TransactionDateTime] BETWEEN @StartDate AND @EndDate
 				AND ( @AccountIds IS NULL OR [tt1].[Id] IS NOT NULL )
 				AND ( @CurrencyTypeIds IS NULL OR [tt2].[Id] IS NOT NULL )
 				AND ( @SourceTypeIds IS NULL OR [tt3].[Id] IS NOT NULL )
+				AND ( @TransactionTypeIds IS NULL OR [tt4].[Id] IS NOT NULL )
 			) AS [details]
 			GROUP BY [GivingId]
 		) AS [s]

@@ -269,6 +269,11 @@ namespace Rock.SystemGuid
         public const string KEY_VALUE_LIST = "73B02051-0D38-4AD9-BF81-A2D477DE4F70";
 
         /// <summary>
+        /// Label field type
+        /// </summary>
+        public const string LABEL = "8814CF68-435F-40F4-9A4C-ED6582835E0E";
+
+        /// <summary>
         /// The lava commands field type
         /// </summary>
         public const string LAVA_COMMANDS = "4BD9088F-5CC6-89B1-45FC-A2AAFFC7CC0D";
@@ -352,6 +357,11 @@ namespace Rock.SystemGuid
         /// Sliding Date Range field type
         /// </summary>
         public const string SLIDING_DATE_RANGE = "55810BC5-45EA-4044-B783-0CCE0A445C6F";
+
+        /// <summary>
+        /// Social Media Account field type
+        /// </summary>
+        public const string SOCIAL_MEDIA_ACCOUNT = "92C0E3A1-9F63-49D4-B23B-73624AC42546";
 
         /// <summary>
         /// Social Security Number

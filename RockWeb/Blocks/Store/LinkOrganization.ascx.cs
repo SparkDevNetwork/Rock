@@ -160,8 +160,8 @@ namespace RockWeb.Blocks.Store
 
         private void SetOrganization(Organization organization)
         {
-            GlobalAttributesCache globalCache = GlobalAttributesCache.Read();
-            globalCache.SetValue( "StoreOrganizationKey", organization.Key, true );
+            StoreService.SetOrganizationKey( organization.Key );
+            
             pnlAuthenicate.Visible = false;
             pnlSelectOrganization.Visible = false;
             pnlComplete.Visible = true;

@@ -108,6 +108,7 @@ namespace Rock.Model
             target.LifestyleClusterCode = source.LifestyleClusterCode;
             target.LifestyleClusterName = source.LifestyleClusterName;
             target.MaritalStatus = source.MaritalStatus;
+            target.MeanAge = source.MeanAge;
             target.MetaPersonicxLifestyleGroupId = source.MetaPersonicxLifestyleGroupId;
             target.NetWorth = source.NetWorth;
             target.NetWorthLevel = source.NetWorthLevel;

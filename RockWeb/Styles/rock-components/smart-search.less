@@ -19,15 +19,15 @@
     color: darken(@smartsearch-input-text-color, 25%);
   }
 
-    .nav > li > a {
-      padding: 4px 15px;
-    }
+  .nav > li > a {
+    padding: 4px 15px;
+  }
 
-      input::selection,
-      input::-moz-selection {
-        color: @smartsearch-input-selection-text-color;
-        background: @smartsearch-input-selection-background;
-      }
+  input::selection,
+  input::-moz-selection {
+    color: @smartsearch-input-selection-text-color;
+    background: @smartsearch-input-selection-background;
+  }
 
   &:focus {
     border-color: #595959;
@@ -88,6 +88,7 @@
     .navbar-link {
       color: @smartsearch-text-color;
       text-align: right;
+      width: 100%;
 
       span {
         padding-right: 4px;
@@ -110,6 +111,8 @@
       left: auto;
       // smart search type menu
       font-size: 12px;
+      top: 35px;
+      cursor: pointer;
     }
   }
 }

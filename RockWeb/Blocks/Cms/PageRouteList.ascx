@@ -11,6 +11,9 @@
             <div class="panel-body">
 
                 <div class="grid grid-panel">
+                      <Rock:GridFilter ID="gFilter" runat="server">
+                          <Rock:RockDropDownList ID="ddlSite" runat="server" Label="Site" />
+                    </Rock:GridFilter>
                     <Rock:Grid ID="gPageRoutes" runat="server" AllowSorting="true" RowItemText="Route" OnRowSelected="gPageRoutes_Edit">
                         <Columns>
                             <Rock:RockBoundField DataField="Route" HeaderText="Route" SortExpression="Route" />

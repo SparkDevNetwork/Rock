@@ -53,8 +53,7 @@ namespace Rock.Jobs
 
             if ( group != null )
             {
-                var notifications = Utility.SparkLinkHelper.SendToSpark();
-
+                var notifications = Utility.SparkLinkHelper.SendToSpark( rockContext );
                 if ( notifications.Count == 0 )
                 {
                     return;

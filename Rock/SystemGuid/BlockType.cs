@@ -49,6 +49,11 @@ namespace Rock.SystemGuid
         public const string COMMUNICATION_ENTRY = "D9834641-7F39-4CFA-8CB2-E64068127565";
 
         /// <summary>
+        /// The Communication Entry (Wizard) Block Type Guid
+        /// </summary>
+        public const string COMMUNICATION_ENTRY_WIZARD = "F7D464E2-5F7C-47BA-84DB-7CC7B0B623C0";
+
+        /// <summary>
         /// Content Channel View Block Type Guid
         /// </summary>
         public const string CONTENT_CHANNEL_VIEW = "143A2345-3E26-4ED0-A2FE-42AAF11B4C0F";

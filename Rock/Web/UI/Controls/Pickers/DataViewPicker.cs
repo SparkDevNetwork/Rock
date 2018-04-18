@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Web;
@@ -30,6 +32,26 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class DataViewPicker : RockDropDownList
     {
+
+        /// <summary>
+        /// Gets or sets a value indicating if items should be recreated whenever a property value is changed.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [automatic rebuild items]; otherwise, <c>false</c>.
+        /// </value>
+        public bool AutoLoadItems
+        {
+            get
+            {
+                return ViewState["AutoLoadItems"] as bool? ?? true;
+            }
+
+            set
+            {
+                ViewState["AutoLoadItems"] = value;
+            }
+        }
+
         /// <summary>
         /// Gets or sets the data view entity type identifier.
         /// </summary>
@@ -40,52 +62,80 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return _entityTypeId;
+                return ViewState["EntityTypeId"] as int?;
             }
 
             set
             {
-                _entityTypeId = value;
-                LoadDropDownItems();
+                ViewState["EntityTypeId"] = value;
+                if ( AutoLoadItems )
+                {
+                    LoadDropDownItems();
+                }
             }
         }
 
         /// <summary>
-        /// The data view entity type identifier
+        /// Gets or sets an optional list of category guids to limit dataviews by
         /// </summary>
-        private int? _entityTypeId;
+        /// <value>
+        /// The category guids.
+        /// </value>
+        public List<Guid> CategoryGuids
+        {
+            get
+            {
+                return ViewState["CategoryGuids"] as List<Guid>;
+            }
+
+            set
+            {
+                ViewState["CategoryGuids"] = value;
+
+                if ( AutoLoadItems )
+                {
+                    LoadDropDownItems();
+                }
+            }
+        }
 
         /// <summary>
         /// Loads the drop down items.
         /// </summary>
-        private void LoadDropDownItems()
+        public void LoadDropDownItems()
         {
             this.Items.Clear();
 
-            if ( _entityTypeId.HasValue )
+            if ( EntityTypeId.HasValue )
             {
                 // add Empty option first
                 this.Items.Add( new ListItem() );
+
+                // Get 
+                var categoryGuids = CategoryGuids ?? new List<Guid>();
 
                 using ( var rockContext = new RockContext() )
                 {
                     var allEntityFilters = new DataViewFilterService( rockContext )
                         .Queryable().AsNoTracking()
-                        .Where( f => f.EntityTypeId == _entityTypeId )
+                        .Where( f => f.EntityTypeId == EntityTypeId )
                         .ToList();
                         
                     foreach ( var dataView in new DataViewService( rockContext )
-                        .GetByEntityTypeId( _entityTypeId.Value )
+                        .GetByEntityTypeId( EntityTypeId.Value )
                         .Include( "EntityType" )
                         .Include( "Category" )
                         .Include( "DataViewFilter" )
                         .AsNoTracking() )
                     {
-                        var currentPerson = HttpContext.Current.Items["CurrentPerson"] as Person;
-                        if ( dataView.IsAuthorized( Authorization.VIEW, currentPerson ) &&
-                            dataView.DataViewFilter.IsAuthorized( Authorization.VIEW, currentPerson, allEntityFilters ) )
-                        {
-                            this.Items.Add( new ListItem( dataView.Name, dataView.Id.ToString() ) );
+                        if ( !categoryGuids.Any() || ( dataView.Category != null && categoryGuids.Contains( dataView.Category.Guid ) ) )
+                        { 
+                            var currentPerson = HttpContext.Current.Items["CurrentPerson"] as Person;
+                            if ( dataView.IsAuthorized( Authorization.VIEW, currentPerson ) &&
+                                dataView.DataViewFilter.IsAuthorized( Authorization.VIEW, currentPerson, allEntityFilters ) )
+                            {
+                                this.Items.Add( new ListItem( dataView.Name, dataView.Id.ToString() ) );
+                            }
                         }
                     }
                 }

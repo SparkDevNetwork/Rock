@@ -107,6 +107,12 @@ namespace RockWeb.Blocks.Administration
                     rGrid.Actions.ShowMergeTemplate = false;
                     rGrid.GridReorder += new GridReorderEventHandler( rGrid_GridReorder );
                     rGrid.GridRebind += new GridRebindEventHandler( rGrid_GridRebind );
+
+                    DialogPage dialogPage = this.Page as DialogPage;
+                    if ( dialogPage != null && _page.ParentPageId != null )
+                    {
+                        dialogPage.SubTitle = string.Format( "<a href='{0}' target='_parent' >parent page</a>", ResolveRockUrl("~/page/" + _page.ParentPageId ) );
+                    }
                 }
                 else
                 {

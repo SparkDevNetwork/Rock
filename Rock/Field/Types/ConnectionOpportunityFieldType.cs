@@ -33,10 +33,10 @@ namespace Rock.Field.Types
     /// </summary>
     public class ConnectionOpportunityFieldType : FieldType, IEntityFieldType
     {
-
         #region Configuration
 
         private const string INCLUDE_INACTIVE_KEY = "includeInactive";
+        private const string CONNECTION_TYPE_FILTER = "connectionTypeFilter";
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -46,6 +46,8 @@ namespace Rock.Field.Types
         {
             var configKeys = base.ConfigurationKeys();
             configKeys.Add( INCLUDE_INACTIVE_KEY );
+            configKeys.Add( CONNECTION_TYPE_FILTER );
+
             return configKeys;
         }
 
@@ -58,13 +60,25 @@ namespace Rock.Field.Types
             var controls = base.ConfigurationControls();
 
             // Add checkbox for deciding if the list should include inactive items
-            var cb = new RockCheckBox();
-            controls.Add( cb );
-            cb.AutoPostBack = true;
-            cb.CheckedChanged += OnQualifierUpdated;
-            cb.Label = "Include Inactive";
-            cb.Text = "Yes";
-            cb.Help = "When set, inactive connection opportunities will be included in the list.";
+            var cbIncludeInactive = new RockCheckBox();
+            controls.Add( cbIncludeInactive );
+            cbIncludeInactive.AutoPostBack = true;
+            cbIncludeInactive.CheckedChanged += OnQualifierUpdated;
+            cbIncludeInactive.Label = "Include Inactive";
+            cbIncludeInactive.Text = "Yes";
+            cbIncludeInactive.Help = "When set, inactive connection opportunities will be included in the list.";
+
+            // Add ConnectionType Filter ddl
+            var ddlConnectionTypeFilter = new RockDropDownList();
+            controls.Add( ddlConnectionTypeFilter );
+            ddlConnectionTypeFilter.Label = "Connection Type";
+            ddlConnectionTypeFilter.Help = "Select a Connection Type to limit selection to a specific connection type.  Leave blank to allow selection of connections from any connection type";
+            ddlConnectionTypeFilter.SelectedIndexChanged += OnQualifierUpdated;
+            ddlConnectionTypeFilter.AutoPostBack = true;
+
+            var connectionTypeService = new ConnectionTypeService( new RockContext() );
+            ddlConnectionTypeFilter.Items.Add( new ListItem() );
+            ddlConnectionTypeFilter.Items.AddRange( connectionTypeService.Queryable().Select( x => new ListItem { Text = x.Name, Value = x.Id.ToString() } ).ToArray() );
 
             return controls;
         }
@@ -78,12 +92,18 @@ namespace Rock.Field.Types
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
             configurationValues.Add( INCLUDE_INACTIVE_KEY, new ConfigurationValue( "Include Inactive", "When set, inactive connection opportunities will be included in the list.", string.Empty ) );
+            configurationValues.Add( CONNECTION_TYPE_FILTER, new ConfigurationValue( "Connection Type", "Select a Connection Type to limit selection to a specific connection type.  Leave blank to allow selection of connections from any connection type", string.Empty ) );
 
-            if ( controls != null )
+            if ( controls != null && controls.Count() == 2)
             {
-                if ( controls.Count > 0 && controls[0] != null && controls[0] is CheckBox )
+                if ( controls[0] != null && controls[0] is CheckBox )
                 {
                     configurationValues[INCLUDE_INACTIVE_KEY].Value = ( (CheckBox)controls[0] ).Checked.ToString();
+                }
+
+                if ( controls[1] != null && controls[1] is DropDownList )
+                {
+                    configurationValues[CONNECTION_TYPE_FILTER].Value = ( ( DropDownList ) controls[1] ).SelectedValue;
                 }
             }
 
@@ -97,11 +117,16 @@ namespace Rock.Field.Types
         /// <param name="configurationValues"></param>
         public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( controls != null && configurationValues != null )
+            if ( controls != null && controls.Count() == 2 && configurationValues != null )
             {
-                if ( controls.Count > 0 && controls[0] != null && controls[0] is CheckBox && configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) )
+                if ( controls[0] != null && controls[0] is CheckBox && configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) )
                 {
                     ( (CheckBox)controls[0] ).Checked = configurationValues[INCLUDE_INACTIVE_KEY].Value.AsBoolean();
+                }
+
+                if ( controls[1] != null && controls[1] is DropDownList && configurationValues.ContainsKey( CONNECTION_TYPE_FILTER ) )
+                {
+                    ( ( DropDownList ) controls[1] ).SelectedValue = configurationValues[CONNECTION_TYPE_FILTER].Value;
                 }
             }
         }
@@ -149,30 +174,43 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            var editControl = new RockDropDownList { ID = id };
-            editControl.Items.Add( new ListItem() );
-
-            bool includeInactive = ( configurationValues != null && configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) && configurationValues[INCLUDE_INACTIVE_KEY].Value.AsBoolean() );
+            bool includeInactive = false;
+            int? groupTypeFilterId = null;
+            
+            if ( configurationValues != null)
+            {
+                includeInactive = configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) && configurationValues[INCLUDE_INACTIVE_KEY].Value.AsBoolean();
+                groupTypeFilterId = configurationValues.ContainsKey( CONNECTION_TYPE_FILTER ) ? configurationValues[CONNECTION_TYPE_FILTER].Value.AsIntegerOrNull() : null;
+            }
 
             var opportunities = new ConnectionOpportunityService( new RockContext() )
                 .Queryable().AsNoTracking()
                 .Where( o => o.IsActive || includeInactive )
                 .OrderBy( o => o.ConnectionType.Name )
                 .ThenBy( o => o.Name )
-                .Select( o => new
-                {
-                    o.Guid,
-                    o.Name,
-                    ConnectionTypeName = o.ConnectionType.Name
-                } )
+                .Select( o => new { o.Guid, o.Name, o.ConnectionType } )
                 .ToList();
+
+            var editControl = new RockDropDownList { ID = id };
+            editControl.Items.Add( new ListItem() );
 
             if ( opportunities.Any() )
             {
                 foreach ( var opportunity in opportunities )
                 {
+                    if ( groupTypeFilterId != null && opportunity.ConnectionType.Id != groupTypeFilterId )
+                    {
+                        continue;
+                    }
+
                     var listItem = new ListItem( opportunity.Name, opportunity.Guid.ToString().ToUpper() );
-                    listItem.Attributes.Add( "OptionGroup", opportunity.ConnectionTypeName );
+
+                    // Don't add an option group if there is a filter since that would be only one group.
+                    if ( groupTypeFilterId == null )
+                    {
+                        listItem.Attributes.Add( "OptionGroup", opportunity.ConnectionType.Name );
+                    }
+
                     editControl.Items.Add( listItem );
                 }
 
@@ -208,10 +246,10 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            var picker = control as DropDownList;
-            if ( picker != null )
+            var editControl = control as ListControl;
+            if ( editControl != null )
             {
-                picker.SelectedValue = value.ToUpper();
+                editControl.SetValue( value );
             }
         }
 
@@ -274,7 +312,5 @@ namespace Rock.Field.Types
         }
 
         #endregion
-
-
     }
 }

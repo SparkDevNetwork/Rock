@@ -103,6 +103,15 @@ namespace Rock.Web.Cache
         public int? LocationId { get; set; }
 
         /// <summary>
+        /// Gets or sets the time zone identifier (<see cref="System.TimeZoneInfo.Id"/>)
+        /// If this is not set, the Campus time zone will be the default Rock time zone (<see cref="Rock.RockDateTime.OrgTimeZoneInfo" /> )
+        /// </summary>
+        /// <value>
+        /// The time zone identifier. 
+        /// </value>
+        public string TimeZoneId { get; set; }
+
+        /// <summary>
         /// Gets or sets the location.
         /// </summary>
         /// <value>
@@ -188,6 +197,7 @@ namespace Rock.Web.Cache
                 this.ShortCode = campus.ShortCode;
                 this.Url = campus.Url;
                 this.LocationId = campus.LocationId;
+                this.TimeZoneId = campus.TimeZoneId;
                 this.PhoneNumber = campus.PhoneNumber;
                 this.LeaderPersonAliasId = campus.LeaderPersonAliasId;
                 this.RawServiceTimes = campus.ServiceTimes;

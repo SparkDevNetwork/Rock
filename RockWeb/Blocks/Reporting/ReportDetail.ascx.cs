@@ -206,6 +206,17 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnPreRender( EventArgs e )
         {
+            if ( pnlEditDetails.Visible )
+            {
+                ConfigureKeyValueControls();
+            }
+        }
+
+        /// <summary>
+        /// Configures the key value controls (SortFields, MergeFields, CommunicationRecipientFields) based on the currently selected field widgets
+        /// </summary>
+        private void ConfigureKeyValueControls()
+        {
             // rebuild the CustomKeys list based on the current field titles
             kvSortFields.CustomKeys = new Dictionary<string, string>();
             vMergeFields.CustomValues = new Dictionary<string, string>();
@@ -213,7 +224,10 @@ namespace RockWeb.Blocks.Reporting
 
             foreach ( var panelWidget in phReportFields.ControlsOfTypeRecursive<PanelWidget>() )
             {
+                // default support sorting to true, unless this is a DataSelectComponent and DataSelectComponent doesn't support sorting
                 bool supportsSorting = true;
+
+                // default support recipients to false, unless this is a DataSelectComponent and DataSelectComponent supports recipients
                 bool supportsRecipients = false;
 
                 try
@@ -223,8 +237,6 @@ namespace RockWeb.Blocks.Reporting
                     var fieldTypeSelection = GetSelectedFieldTypeSelection( ddlFields );
                     if ( fieldTypeSelection != null )
                     {
-                        Type fieldType = null;
-
                         if ( fieldTypeSelection.ReportFieldType == ReportFieldType.DataSelectComponent )
                         {
                             var entityTypeId = fieldTypeSelection.FieldSelection.AsIntegerOrNull();
@@ -238,16 +250,16 @@ namespace RockWeb.Blocks.Reporting
                                         supportsSorting = false;
                                     }
 
-                                    fieldType = dataSelectComponent.ColumnFieldType;
+                                    var fieldType = dataSelectComponent.ColumnFieldType;
                                     if ( dataSelectComponent is IRecipientDataSelect )
                                     {
-                                        fieldType = ( (IRecipientDataSelect)dataSelectComponent ).RecipientColumnFieldType;
+                                        fieldType = ( ( IRecipientDataSelect ) dataSelectComponent ).RecipientColumnFieldType;
                                     }
+
+                                    supportsRecipients = fieldType.Equals( typeof( int ) ) || fieldType.Equals( typeof( IEnumerable<int> ) );
                                 }
                             }
                         }
-
-                        supportsRecipients = fieldType.Equals( typeof( int ) ) || fieldType.Equals( typeof( IEnumerable<int> ) );
                     }
                 }
                 catch
@@ -270,6 +282,10 @@ namespace RockWeb.Blocks.Reporting
                     vRecipientFields.CustomValues.Add( reportFieldGuid.ToString(), panelWidget.Title );
                 }
             }
+
+            kvSortFields.Enabled = kvSortFields.CustomKeys.Any();
+            vMergeFields.Enabled = vMergeFields.CustomValues.Any();
+            vRecipientFields.Enabled = vRecipientFields.CustomValues.Any();
         }
 
         #endregion
@@ -283,7 +299,7 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void etpEntityType_SelectedIndexChanged( object sender, EventArgs e )
         {
-            LoadDropdownsForEntityType( etpEntityType.SelectedEntityTypeId );
+            UpdateControlsForEntityType( etpEntityType.SelectedEntityTypeId );
         }
 
         /// <summary>
@@ -366,18 +382,6 @@ namespace RockWeb.Blocks.Reporting
         protected void btnToggleResults_Click( object sender, EventArgs e )
         {
             this.ShowResults = !this.ShowResults;
-        }
-
-        protected void lbDataView_Click( object sender, EventArgs e )
-        {
-            var rockContext = new RockContext();
-            var reportService = new ReportService( rockContext );
-            var report = reportService.Get( hfReportId.Value.AsInteger() );
-
-            if ( report != null && report.DataViewId.HasValue )
-            {
-                NavigateToLinkedPage( "DataViewPage", "DataViewId", report.DataViewId.Value );
-            }
         }
 
         #region Edit Events
@@ -746,13 +750,14 @@ namespace RockWeb.Blocks.Reporting
         }
 
         /// <summary>
-        /// Loads the DataView and Fields dropdowns based on the selected EntityType
+        /// Updates UI controls based on the selected entitytype
         /// </summary>
         /// <param name="entityTypeId">The entity type identifier.</param>
-        private void LoadDropdownsForEntityType( int? entityTypeId )
+        private void UpdateControlsForEntityType( int? entityTypeId )
         {
             ddlDataView.EntityTypeId = entityTypeId;
             ddlDataView.Enabled = entityTypeId.HasValue;
+            btnAddField.Enabled = entityTypeId.HasValue;
         }
 
         /// <summary>
@@ -1067,7 +1072,7 @@ namespace RockWeb.Blocks.Reporting
             tbDescription.Text = report.Description;
             cpCategory.SetValue( report.CategoryId );
             etpEntityType.SelectedEntityTypeId = report.EntityTypeId;
-            LoadDropdownsForEntityType( etpEntityType.SelectedEntityTypeId );
+            UpdateControlsForEntityType( etpEntityType.SelectedEntityTypeId );
             ddlDataView.SetValue( report.DataViewId );
             nbFetchTop.Text = report.FetchTop.ToString();
             tbQueryHint.Text = report.QueryHint;
@@ -1123,6 +1128,11 @@ namespace RockWeb.Blocks.Reporting
             if ( report.DataView != null )
             {
                 lbDataView.Visible = UserCanEdit;
+
+                var queryParams = new Dictionary<string, string>();
+                queryParams.Add("DataViewId", report.DataViewId.ToString());
+                lbDataView.NavigateUrl = LinkedPageUrl("DataViewPage", queryParams);
+
                 lbDataView.ToolTip = report.DataView.Name;
             }
             else

@@ -72,13 +72,16 @@
                             <Rock:PersonPicker ID="ppContact" runat="server" Label="Contact" EnableSelfSelection="true" OnSelectPerson="ppContact_SelectPerson" />
                             <Rock:PhoneNumberBox ID="pnPhone" runat="server" Label="Phone" />
                             <Rock:EmailBox ID="tbEmail" runat="server" Label="Email" />
-                            <asp:PlaceHolder ID="phAttributeEdits" runat="server" EnableViewState="false"></asp:PlaceHolder>
                         </div>
 
                     </div>
 
                     <Rock:HtmlEditor ID="htmlOccurrenceNote" runat="server" Label="Occurrence Note" />
                 
+                    <Rock:PanelWidget ID="wpAttributes" runat="server" Title="Attribute Values">
+                        <asp:PlaceHolder ID="phAttributeEdits" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                    </Rock:PanelWidget>
+
                     <div class="actions">
                         <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                         <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
@@ -123,7 +126,7 @@
                         <Rock:RockTextBox ID="tbEditLinkagePublicName" runat="server" Label="Public Name" Required="true" ValidationGroup="EditLinkage" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockTextBox ID="tbEditLinkageUrlSlug" runat="server" Label="URL Slug" ValidationGroup="EditLinkage" />
+                        <Rock:RockTextBox ID="tbEditLinkageUrlSlug" runat="server" Label="URL Slug" ValidationGroup="EditLinkage" Help="When creating an event occurrence that specifies a campus, a URL Slug MUST be used when registering in order for the registrant to be placed into the linked group." />
                     </div>
                 </div>
                 <Rock:RegistrationInstanceEditor ID="rieEditLinkage" runat="server" ValidationGroup="EditLinkage" />
@@ -137,9 +140,9 @@
                     <div class="col-md-6">
                         <Rock:RockDropDownList ID="ddlExistingLinkageTemplate" runat="server" Label="Registration Template" ValidationGroup="ExistingLinkage" 
                             AutoPostBack="true" OnSelectedIndexChanged="ddlExistingLinkageTemplate_SelectedIndexChanged" CausesValidation="false" 
-                            Required="true" />
+                            Required="true" EnhanceForLongLists="true" />
                         <Rock:RockDropDownList ID="ddlExistingLinkageInstance" runat="server" Label="Registration Instance" ValidationGroup="ExistingLinkage"
-                            Required="true" />
+                            Required="true" EnhanceForLongLists="true" />
                     </div>
                     <div class="col-md-6">
                         <Rock:GroupPicker ID="gpExistingLinkageGroup" runat="server" Label="Group" ValidationGroup="ExistingLinkage" />

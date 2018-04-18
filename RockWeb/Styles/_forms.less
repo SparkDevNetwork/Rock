@@ -68,7 +68,18 @@ a.aspNetDisabled {
   }
 }
 
+.form-group.captcha {
+  iframe {
+    border: 0px;
+  }
 
+  &.has-error {
+    iframe {
+      border: 1px solid @state-danger-text;
+      border-radius: 4px;
+    }
+  }
+}
 
 
 // styling to get rock controls to layout horizontal
@@ -157,11 +168,12 @@ a.aspNetDisabled {
 .form-group.required {
   .control-label:after {
     margin-left: 4px;
-    font-family: FontAwesome;
+    font-family: @fa-font-face;
+    font-weight: @fa-theme-weight;
     font-size: 6px;
     color: @required-field-color;
     vertical-align: super;
-    content: '\f111';
+    content: @fa-var-circle;
   }
 }
 

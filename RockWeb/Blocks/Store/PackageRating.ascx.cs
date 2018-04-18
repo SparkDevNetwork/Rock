@@ -31,6 +31,7 @@ using Rock.Attribute;
 using Rock.Store;
 using Rock.Utility;
 using Rock.VersionInfo;
+using System.Text;
 
 namespace RockWeb.Blocks.Store
 {
@@ -167,7 +168,7 @@ namespace RockWeb.Blocks.Store
             lVendorName.Text = package.Vendor.Name;
             imgPackageImage.ImageUrl = package.PackageIconBinaryFile.ImageUrl;
             lbPackageLink.PostBackUrl = package.SupportUrl;
-            lRatingSummary.Text = string.Format( "<div class='rating rating-{0} pull-left margin-r-sm'><small></small></div>", package.Rating.ToString().Replace( ".", "" ) );
+            lRatingSummary.Text = string.Format( "<div class='rating pull-left margin-r-sm'><small>{0}</small></div>", CreateRatingStars( package.Rating.ToString().AsInteger() ) );
 
             lAuthorInfo.Text = string.Format( "<a href='{0}'>{1}</a>", package.Vendor.Url, package.Vendor.Name );
 
@@ -308,6 +309,26 @@ namespace RockWeb.Blocks.Store
                 
             }
         }
+
+        private string CreateRatingStars(int rating )
+        {
+            var starCounter = 0;
+            StringBuilder starMarkup = new StringBuilder();
+
+            for (int i = 0; i < rating; i++ )
+            {
+                starMarkup.Append( "<i class='fa fa-rating-on'></i>" );
+                starCounter++;
+            }
+
+            for (int i = starCounter; i <= 5; i++ )
+            {
+                starMarkup.Append( "<i class='fa fa-rating-off'></i>" );
+            }
+
+            return starMarkup.ToString();
+        }
+
 
         private void ErrorCheck( string errorResponse )
         {

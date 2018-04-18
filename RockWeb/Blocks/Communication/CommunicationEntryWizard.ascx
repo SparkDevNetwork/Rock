@@ -102,7 +102,7 @@
                     <asp:ValidationSummary ID="vsCommunicationDelivery" runat="server" HeaderText="Please Correct the Following" ValidationGroup="vgCommunicationDelivery" CssClass="alert alert-danger" />
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:RockTextBox ID="tbCommunicationName" runat="server" Label="Communication Name" Help="This name is used internally to describe the communication. It is not sent as a part of the communication." Required="true" ValidationGroup="vgCommunicationDelivery"/>
+                            <Rock:RockTextBox ID="tbCommunicationName" runat="server" Label="Communication Name" Help="This name is used internally to describe the communication. It is not sent as a part of the communication." Required="true" ValidationGroup="vgCommunicationDelivery" MaxLength="100"/>
                         </div>
                         <div class="col-md-6">
                             <Rock:Toggle ID="tglBulkCommunication" runat="server" OnText="Yes" OffText="No" ActiveButtonCssClass="btn-info" ButtonSizeCssClass="btn-xs" Help="Select this option if you are sending this email to a group of people. This will include the option for recipients to unsubscribe and will not send the email to any recipients that have already asked to be unsubscribed." Checked="false" Label="Is The Communication Bulk" />
@@ -834,7 +834,7 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:RockTextBox ID="tbFromName" runat="server" Label="From Name" Required="true" ValidationGroup="vgEmailSummary" />
+                            <Rock:RockTextBox ID="tbFromName" runat="server" Label="From Name" Required="true" ValidationGroup="vgEmailSummary" MaxLength="100" />
                         </div>
                         <div class="col-md-6">
                             <Rock:EmailBox ID="ebFromAddress" runat="server" Label="From Address" Required="true" ValidationGroup="vgEmailSummary"/>
@@ -866,7 +866,7 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:RockTextBox ID="tbEmailSubject" runat="server" Label="Email Subject" Help="<span class='tip tip-lava'></span>" Required="true" ValidationGroup="vgEmailSummary" />
+                            <Rock:RockTextBox ID="tbEmailSubject" runat="server" Label="Email Subject" Help="<span class='tip tip-lava'></span>" Required="true" ValidationGroup="vgEmailSummary" MaxLength="100" />
                             <asp:UpdatePanel ID="upEmailFileAttachments" runat="server">
                                 <ContentTemplate>
                                     <asp:HiddenField ID="hfEmailAttachedBinaryFileIds" runat="server" />

@@ -120,7 +120,16 @@ namespace RockWeb.Blocks.Connection
                     .OrderBy( w => w.Name )
                     .ToList();
 
-                rptConnectionTypes.DataSource = allConnectionTypes.ToList();
+                var authorizedConnectionTypes = new List<ConnectionType>();
+                foreach ( var connectionType in allConnectionTypes )
+                {
+                    if ( UserCanEdit || connectionType.IsAuthorized( Authorization.VIEW, CurrentPerson ))
+                    {
+                        authorizedConnectionTypes.Add( connectionType );
+                    }
+                }
+
+                rptConnectionTypes.DataSource = authorizedConnectionTypes.ToList();
                 rptConnectionTypes.DataBind();
             }
         }

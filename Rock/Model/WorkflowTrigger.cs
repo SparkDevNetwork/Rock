@@ -219,7 +219,12 @@ namespace Rock.Model
         /// <summary>
         /// Immediate Post Save
         /// </summary>
-        ImmediatePostSave = 4
+        ImmediatePostSave = 4,
+
+        /// <summary>
+        /// Post Add
+        /// </summary>
+        PostAdd = 5,
     }
 
     #endregion

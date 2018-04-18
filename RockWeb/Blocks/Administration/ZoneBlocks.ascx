@@ -86,16 +86,19 @@
             <Rock:DataTextBox ID="tbBlockName" runat="server" SourceTypeName="Rock.Model.Block, Rock" PropertyName="Name" Required="true" 
                 ValidationGroup="ZoneBlockValidationGroup" CssClass="input-large"/>
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-sm-6">
                     <Rock:RockDropDownList ID="ddlBlockType" runat="server" Label="Type" AutoPostBack="true" OnSelectedIndexChanged="ddlBlockType_SelectedIndexChanged" EnhanceForLongLists="true" />
                 </div>
-                <div class="col-md-6 padding-t-md">
-                    <label>Common Block Types</label><br />
-                    <asp:Repeater ID="rptCommonBlockTypes" runat="server" OnItemDataBound="rptCommonBlockTypes_ItemDataBound">
-                        <ItemTemplate>
-                            <asp:LinkButton ID="btnNewBlockQuickSetting" runat="server" Text="Todo" CssClass="btn btn-default btn-xs" OnClick="btnNewBlockQuickSetting_Click" />
-                        </ItemTemplate>
-                    </asp:Repeater>
+                <div class="col-sm-6">
+                    <Rock:RockControlWrapper ID="rcwCommonBlockTypes" runat="server" Label="Common Block Types">
+                        <asp:Panel ID="pnlCommonBlockTypes" runat="server">
+                            <asp:Repeater ID="rptCommonBlockTypes" runat="server" OnItemDataBound="rptCommonBlockTypes_ItemDataBound">
+                                <ItemTemplate>
+                                    <asp:LinkButton ID="btnNewBlockQuickSetting" runat="server" Text="Todo" CssClass="btn btn-default btn-xs" OnClick="btnNewBlockQuickSetting_Click" />
+                                </ItemTemplate>
+                            </asp:Repeater>
+                        </asp:Panel>
+                    </Rock:RockControlWrapper>
                 </div>
             </div>
         </fieldset>

@@ -1,0 +1,222 @@
+{% assign publicApplicationRoot = 'Global' | Attribute:'PublicApplicationRoot' %}
+{% assign organizationName = 'Global' | Attribute:'OrganizationName' %}
+{% assign organizationAddress = 'Global' | Attribute:'OrganizationAddress' %}
+{% assign organizationWebsite = 'Global' | Attribute:'OrganizationWebsite' %}
+{% assign organizationEmail = 'Global' | Attribute:'OrganizationEmail' %}
+{% assign organizationPhone = 'Global' | Attribute:'OrganizationPhone' %}
+{% assign currencySymbol = 'Global' | Attribute:'CurrencySymbol' %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>
+    	{{ organizationName }} | Contribution Statement
+    </title>
+
+    <!-- Included CSS Files -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+   <style>
+        html, body {
+            height: auto;
+            width: 100%;
+            min-width: 100%;
+            margin: 0 0 0 0;
+            padding: 0 0 0 0;
+            vertical-align: top;
+			background-color: #FFFFFF
+        }
+        
+        /* helper classes not included in stock bs3 */
+        
+        .margin-t-md {
+            margin-top: 15px; !important
+        }
+		.margin-r-md {
+            margin-right: 15px; !important
+        }
+        .margin-b-md {
+            margin-bottom: 15px; !important
+        }
+		.margin-l-md {
+            margin-left: 15px; !important
+        }
+        .padding-t-md {
+            padding-top: 15px; !important
+        }
+		.padding-r-md {
+            padding-right: 15px; !important
+        }
+        .padding-b-md {
+            padding-bottom: 15px; !important
+        }
+		.padding-l-md {
+            padding-left: 15px; !important
+		}
+        
+        /* override bs table to remove borders */
+		.table td {
+			border-top: none !important;
+			border-right: none !important;
+			border-bottom: none !important;
+			border-left: none !important;
+		}
+    </style>
+
+<body>
+
+<!-- set top padding to help align logo and return address with envelope window -->
+<div style='padding-top:50px'>
+
+	<!-- set fixed height to help align recipient address with envelope window -->
+	<div class="row" style='height:230px'>
+		<div class="col-xs-6 pull-left">
+			<div>
+				<img src="{{ publicApplicationRoot }}GetImage.ashx?guid={{ LavaTemplate | Attribute:'Logo','RawValue' }}" width="240px" height="80px" />
+			</div>
+			
+			<div>
+				{{ organizationAddress }}
+			</div>
+		</div>
+		<div class="col-xs-6 text-right">
+			<h4>Contribution Summary for {{ Salutation }}</h4>
+			<p>{{ StatementStartDate | Date:'M/d/yyyy' }} - {{ StatementEndDate | Date:'M/d/yyyy' }}<p>
+		</div>
+	</div>
+
+	<h4>
+		{{ Salutation }} <br />
+		{{ StreetAddress1 }} <br />
+		{% if StreetAddress2 != '' %}
+			{{ StreetAddress2 }} <br />
+		{% endif %}
+		{{ City }}, {{ State }} {{ PostalCode }}
+	</h4>
+</div>
+
+<hr style="opacity: .5;" />
+
+<h2>Cash Gifts</h2>
+
+<table class="table table-condensed">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Type</th>
+            <th style="text-align:right">Total Amount</th>
+            <th>Account(s)</th>
+            <th style="text-align:right"></th>
+        </tr>
+    </thead>    
+
+    <tbody>
+    {% for transactionDetail in TransactionDetails %}
+        <tr>
+            <td>{{ transactionDetail.Transaction.TransactionDateTime | Date:'M/d/yyyy' }}</td>
+            <td>{{ transactionDetail.Transaction.FinancialPaymentDetail.CurrencyTypeValue.Value }}</td>
+            <td style="text-align:right">{{ currencySymbol }}{{ transactionDetail.Amount }}</td>
+            <td>{{ transactionDetail.Account.Name }}</td>
+            <td style="text-align:right">{{ currencySymbol }}{{ transactionDetail.Amount }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+    <tfoot>
+    </tfoot>
+</table>
+
+<hr style="opacity: 1; margin: 5px 0px 5px 0px" />
+
+<div class="row">
+    <div class="col-xs-6 pull-left">
+        <strong style='margin-left: 5px'>Cash Gifts Total</strong>
+    </div>
+    <div class="col-xs-6 text-right">
+        <strong>{{ currencySymbol }}{{ TotalContributionAmount }}</strong>
+    </div>
+</div>
+
+{% assign nonCashCount = TransactionDetailsNonCash | Size %}
+
+{% if nonCashCount > 0 %}
+	<hr style="opacity: .5;" />
+
+	<h2>Non-Cash Gifts</h2>
+
+	<table class="table table-condensed">
+		<thead>
+			<tr>
+				<th>Date</th>
+				<th>Fund</th>
+				<th>Description</th>
+				<th style="text-align:right">Amount</th>
+			</tr>
+		</thead>    
+
+		<tbody>
+		{% for transactionDetailNonCash in TransactionDetailsNonCash %}
+			<tr>
+				<td>{{ transactionDetailNonCash.Transaction.TransactionDateTime | Date:'M/d/yyyy' }}</td>
+				<td>{{ transactionDetailNonCash.Account.Name }}</td>
+				<td>{{ transactionDetailNonCash.Transaction.Summary }} {{ transactionDetailNonCash.Summary }}</td>
+				<td style="text-align:right">{{ currencySymbol }}{{ transactionDetailNonCash.Amount }}</td>
+			</tr>
+		{% endfor %}
+		</tbody>
+		<tfoot>
+		</tfoot>
+	</table>
+{% endif %}
+
+{% assign accountSummaryCount = AccountSummary | Size %}
+
+{% if accountSummaryCount > 0 %}
+	<hr style="opacity: .5;" />
+
+	<h2>Account Totals</h2>
+
+	{% for accountsummary in AccountSummary %}
+		<div class="row">
+			<div class="col-xs-3 pull-left">{{ accountsummary.AccountName }}</div>
+			<div class="col-xs-3 text-right">{{ currencySymbol }}{{ accountsummary.Total }}</div>
+			<div class="col-xs-6"></div>
+		</div>
+	{% endfor %}
+{% endif %}
+ 
+{% assign pledgeCount = Pledges | Size %}
+
+{% if pledgeCount > 0 %}
+    <hr style="opacity: .5;" />
+
+    <h2>Pledges</h2>
+ 
+    {% for pledge in Pledges %}
+        <div class="row">
+            <div class="col-xs-3">
+                <strong>{{ pledge.AccountName }}</strong>
+                
+                <p>
+                    Amt Pledged: {{ currencySymbol }}{{ pledge.AmountPledged }} <br />
+                    Amt Given: {{ currencySymbol }}{{ pledge.AmountGiven }} <br />
+                    Amt Remaining: {{ currencySymbol }}{{ pledge.AmountRemaining }}
+                </p>
+            </div>
+            <div class="col-xs-3">
+                <br />
+                <p>
+                    Percent Complete <br />
+                    {{ pledge.PercentComplete }}%
+                    <br />
+                </p>
+            </div>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<p class="text-center">
+    <!-- put your footer text here
+    -->
+</p>
+
+</body>
+</html>

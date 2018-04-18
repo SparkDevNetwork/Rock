@@ -133,6 +133,7 @@ namespace Rock.Field.Types
                     Guid guid;
                     Guid.TryParse( value, out guid );
                     var location = new LocationService( new RockContext() ).Get( guid );
+                    picker.SetBestPickerModeForLocation( location );
                     picker.Location = location;
                 }
             }

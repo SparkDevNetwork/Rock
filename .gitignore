@@ -31,6 +31,7 @@ RockWeb/.well-known/*
 /scaffolding.config
 *.sln.GhostDoc.xml
 .vs/
+.localhistory/
 
 Packages/*
 

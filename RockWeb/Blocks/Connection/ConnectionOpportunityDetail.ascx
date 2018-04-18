@@ -187,8 +187,7 @@
                         </Rock:RockDropDownList>
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlWorkflowType" runat="server" Label="Workflow Type" DataTextField="Name" DataValueField="Id" 
-                            Required="true" ValidationGroup="WorkflowDetails" EnhanceForLongLists="true" />
+                        <Rock:WorkflowTypePicker ID="wpWorkflowType" runat="server" Label="Workflow Type" Required="true" ValidationGroup="WorkflowDetails"/>
                     </div>
                 </div>
 
@@ -218,7 +217,7 @@
                 <asp:HiddenField ID="hfGroupConfigGuid" runat="server" />
                 <div class="row">
                     <div class="col-md-4">
-                        <Rock:RockDropDownList ID="ddlGroupType" runat="server" Label="Group Type" OnSelectedIndexChanged="ddlGroupType_SelectedIndexChanged" AutoPostBack="true" Help="The group type that the user will be placed in" Required="true" ValidationGroup="GroupConfig" />
+                        <Rock:RockDropDownList ID="ddlGroupType" runat="server" Label="Group Type" OnSelectedIndexChanged="ddlGroupType_SelectedIndexChanged" AutoPostBack="true" Help="The group type that the user will be placed in" Required="true" ValidationGroup="GroupConfig" EnhanceForLongLists="true" />
                     </div>
                     <div class="col-md-4">
                         <Rock:RockDropDownList ID="ddlGroupRole" runat="server" Label="Group Member Role" Help="The role that the person will hold after being connected" Required="true" ValidationGroup="GroupConfig" />

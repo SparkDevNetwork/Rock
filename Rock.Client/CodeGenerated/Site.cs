@@ -94,9 +94,6 @@ namespace Rock.Client
         public string GoogleAnalyticsCode { get; set; }
 
         /// <summary />
-        public Rock.Client.Enums.IconCssWeight IconCssWeight { get; set; }
-
-        /// <summary />
         public string IndexStartingLocation { get; set; }
 
         /// <summary />
@@ -197,7 +194,6 @@ namespace Rock.Client
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.GoogleAnalyticsCode = source.GoogleAnalyticsCode;
-            this.IconCssWeight = source.IconCssWeight;
             this.IndexStartingLocation = source.IndexStartingLocation;
             this.IsIndexEnabled = source.IsIndexEnabled;
             this.IsSystem = source.IsSystem;

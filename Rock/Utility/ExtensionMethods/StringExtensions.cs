@@ -50,6 +50,16 @@ namespace Rock
         }
 
         /// <summary>
+        /// Removes all non alpha numeric characters from a string
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static string RemoveAllNonAlphaNumericCharacters( this string str )
+        {
+            return string.Concat( str.Where( c => char.IsLetterOrDigit( c ) ) );
+        }
+
+        /// <summary>
         /// Determines whether the string is not null or whitespace.
         /// </summary>
         /// <param name="str">The string.</param>
@@ -70,6 +80,22 @@ namespace Rock
         }
 
         /// <summary>
+        /// Returns the right most part of a string of the given length.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="length">The length.</param>
+        /// <returns></returns>
+        public static string Right( this string str, int length )
+        {
+            if ( str == null )
+            {
+                return string.Empty;
+            }
+
+            return str.Substring( str.Length - length );
+        }
+
+        /// <summary>
         /// Determines whether the string is made up of only digits
         /// </summary>
         /// <param name="str">The string.</param>
@@ -83,6 +109,20 @@ namespace Rock
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Determines whether the string is valid mac address.
+        /// Works with colons, dashes, or no seperators
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns>
+        ///   <c>true</c> if valid mac address otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsValidMacAddress( this string str )
+        {
+            Regex regex = new Regex( "^([0-9a-fA-F]{2}(?:[:-]?[0-9a-fA-F]{2}){5})$" );
+            return regex.IsMatch( str );
         }
 
         /// <summary>
@@ -280,6 +320,26 @@ namespace Rock
                 truncatedString = truncatedString.Substring( 0, lastSpace );
 
             return truncatedString + "...";
+        }
+
+        /// <summary>
+        /// Trims a string using an entities MaxLength attribute value
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="entity">The entity.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <returns></returns>
+        public static string TrimForMaxLength( this string str, Data.IEntity entity, string propertyName )
+        {
+            if ( str.IsNotNullOrWhitespace() )
+            {
+                var maxLengthAttr = entity.GetAttributeFrom<System.ComponentModel.DataAnnotations.MaxLengthAttribute>( propertyName );
+                if ( maxLengthAttr != null )
+                {
+                    return str.Left( maxLengthAttr.Length );
+                }
+            }
+            return str;
         }
 
         /// <summary>
@@ -727,6 +787,17 @@ namespace Rock
         {
             for ( int i = 0; i < str.Length; i += maxChunkSize )
                 yield return str.Substring( i, Math.Min( maxChunkSize, str.Length - i ) );
+        }
+
+
+        /// <summary>
+        /// Removes any carriage return and/or line feed characters.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static string RemoveCrLf( this string str )
+        {
+            return str.Replace( Environment.NewLine, " " ).Replace( "\x0A", " " );
         }
 
         #endregion String Extensions

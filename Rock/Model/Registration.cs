@@ -755,7 +755,7 @@ Registration By: {0} Total Cost/Fees:{1}
 
                 if ( registration.PersonAlias != null && registration.PersonAlias.Person != null )
                 {
-                    var family = registration.PersonAlias.Person.GetFamilies( rockContext ).FirstOrDefault();
+                    var family = registration.PersonAlias.Person.GetFamily( rockContext );
                     if ( family != null )
                     {
                         FamilyGuid = family.Guid;
@@ -1076,7 +1076,7 @@ Registration By: {0} Total Cost/Fees:{1}
                 using ( var rockContext = new RockContext() )
                 {
                     PersonName = person.FullName;
-                    var family = person.GetFamilies( rockContext ).FirstOrDefault();
+                    var family = person.GetFamily( rockContext );
 
                     if ( registrationInstance != null &&
                         registrationInstance.RegistrationTemplate != null )
@@ -1130,7 +1130,7 @@ Registration By: {0} Total Cost/Fees:{1}
                     if ( person != null )
                     {
                         PersonName = person.FullName;
-                        family = person.GetFamilies( rockContext ).FirstOrDefault();
+                        family = person.GetFamily( rockContext );
                         if ( family != null )
                         {
                             FamilyGuid = family.Guid;
@@ -1221,6 +1221,7 @@ Registration By: {0} Total Cost/Fees:{1}
                                 dvPhone = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK );
                                 break;
                             }
+                        case RegistrationPersonFieldType.ConnectionStatus: return person.ConnectionStatusValueId;
                     }
 
                     if ( dvPhone != null )
@@ -1393,6 +1394,7 @@ Registration By: {0} Total Cost/Fees:{1}
                         case RegistrationPersonFieldType.Campus:
                         case RegistrationPersonFieldType.MaritalStatus:
                         case RegistrationPersonFieldType.Grade:
+                        case RegistrationPersonFieldType.ConnectionStatus:
                                 return typeof( int? );
 
                         case RegistrationPersonFieldType.Address:

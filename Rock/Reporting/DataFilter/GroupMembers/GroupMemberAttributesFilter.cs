@@ -344,34 +344,33 @@ namespace Rock.Reporting.DataFilter.GroupMember
                     // note: since this datafilter creates additional controls outside of CreateChildControls(), we'll use our _controlsToRender instead of the controls parameter
                     GroupTypePicker groupTypePicker = containerControl.Controls[0] as GroupTypePicker;
                     Guid groupTypeGuid = Guid.Empty;
-                    var groupType = GroupTypeCache.Read( groupTypePicker.SelectedGroupTypeId ?? 0 );
-                    if ( groupType != null )
+                    var groupTypeId = groupTypePicker.SelectedGroupTypeId;
+                    
+                    if ( containerControl.Controls.Count == 1 || filterMode == FilterMode.SimpleFilter )
                     {
-                        if ( containerControl.Controls.Count == 1 || filterMode == FilterMode.SimpleFilter )
-                        {
-                            groupTypePicker_SelectedIndexChanged( groupTypePicker, new EventArgs() );
-                        }
+                        groupTypePicker_SelectedIndexChanged( groupTypePicker, new EventArgs() );
+                    }
 
-                        if ( containerControl.Controls.Count > 1 )
+                    if ( containerControl.Controls.Count > 1 )
+                    {
+                        DropDownList ddlProperty = containerControl.Controls[1] as DropDownList;
+                        settings.AttributeKey = ddlProperty.SelectedValue;
+                        var entityFields = GetGroupMemberAttributes( groupTypeId );
+                        var entityField = entityFields.FirstOrDefault( f => f.UniqueName == ddlProperty.SelectedValue );
+                        if ( entityField != null )
                         {
-                            DropDownList ddlProperty = containerControl.Controls[1] as DropDownList;
-                            settings.AttributeKey = ddlProperty.SelectedValue;
-                            var entityFields = GetGroupMemberAttributes( groupType.Id );
-                            var entityField = entityFields.FirstOrDefault( f => f.UniqueName == ddlProperty.SelectedValue );
-                            if ( entityField != null )
+                            var panelControls = new List<Control>();
+                            panelControls.AddRange( containerControl.Controls.OfType<Control>() );
+
+                            var control = panelControls.FirstOrDefault( c => c.ID.EndsWith( entityField.UniqueName ) );
+                            if ( control != null )
                             {
-                                var panelControls = new List<Control>();
-                                panelControls.AddRange( containerControl.Controls.OfType<Control>() );
-
-                                var control = panelControls.FirstOrDefault( c => c.ID.EndsWith( entityField.UniqueName ) );
-                                if ( control != null )
-                                {
                                     
-                                    entityField.FieldType.Field.GetFilterValues( control, entityField.FieldConfig, filterMode ).ForEach( v => settings.AttributeFilterSettings.Add( v ) );
-                                }
+                                entityField.FieldType.Field.GetFilterValues( control, entityField.FieldConfig, filterMode ).ForEach( v => settings.AttributeFilterSettings.Add( v ) );
                             }
                         }
                     }
+                    
                 }
             }
 
@@ -395,31 +394,29 @@ namespace Rock.Reporting.DataFilter.GroupMember
 
             if ( controls.Length > 0 )
             {
-                var groupType = GroupTypeCache.Read( settings.GroupTypeId ?? 0 );
-                if ( groupType != null )
+                int? groupTypeId = settings.GroupTypeId;
+                
+                var containerControl = controls[0] as DynamicControlsPanel;
+                if ( containerControl.Controls.Count > 0 )
                 {
-                    var containerControl = controls[0] as DynamicControlsPanel;
-                    if ( containerControl.Controls.Count > 0 )
-                    {
-                        GroupTypePicker groupTypePicker = containerControl.Controls[0] as GroupTypePicker;
-                        groupTypePicker.SelectedGroupTypeId = groupType.Id;
-                        groupTypePicker_SelectedIndexChanged( groupTypePicker, new EventArgs() );
-                    }
+                    GroupTypePicker groupTypePicker = containerControl.Controls[0] as GroupTypePicker;
+                    groupTypePicker.SelectedGroupTypeId = groupTypeId;
+                    groupTypePicker_SelectedIndexChanged( groupTypePicker, new EventArgs() );
+                }
 
-                    if ( containerControl.Controls.Count > 1 )
-                    {
-                        DropDownList ddlProperty = containerControl.Controls[1] as DropDownList;
-                        var entityFields = GetGroupMemberAttributes( groupType.Id );
+                if ( containerControl.Controls.Count > 1 )
+                {
+                    DropDownList ddlProperty = containerControl.Controls[1] as DropDownList;
+                    var entityFields = GetGroupMemberAttributes( groupTypeId );
 
-                        var panelControls = new List<Control>();
-                        panelControls.AddRange( containerControl.Controls.OfType<Control>() );
+                    var panelControls = new List<Control>();
+                    panelControls.AddRange( containerControl.Controls.OfType<Control>() );
 
-                        var parameters = new List<string> { settings.AttributeKey };
+                    var parameters = new List<string> { settings.AttributeKey };
 
-                        parameters.AddRange( settings.AttributeFilterSettings );
+                    parameters.AddRange( settings.AttributeFilterSettings );
 
-                        SetEntityFieldSelection( entityFields, ddlProperty, parameters, panelControls );
-                    }
+                    SetEntityFieldSelection( entityFields, ddlProperty, parameters, panelControls );
                 }
             }
         }
@@ -461,16 +458,24 @@ namespace Rock.Reporting.DataFilter.GroupMember
         private List<EntityField> GetGroupMemberAttributes( int? groupTypeId )
         {
             List<EntityField> entityAttributeFields = new List<EntityField>();
-
+            
+            var fakeGroupMember = new Rock.Model.GroupMember();
+            fakeGroupMember.Group = new Rock.Model.Group();
             if ( groupTypeId.HasValue )
             {
-                var fakeGroupMember = new Rock.Model.GroupMember();
-                fakeGroupMember.Group = new Rock.Model.Group { GroupTypeId = groupTypeId ?? 0 };
-                Rock.Attribute.Helper.LoadAttributes( fakeGroupMember );
-                foreach ( var attribute in fakeGroupMember.Attributes.Select( a => a.Value ) )
-                {
-                    EntityHelper.AddEntityFieldForAttribute( entityAttributeFields, attribute );
-                }
+                fakeGroupMember.Group.GroupTypeId = groupTypeId.Value;
+            }
+            else
+            {
+                //// if no GroupTypeId was specified, just set the GroupTypeId to 0
+                //// NOTE: There could be GroupMember Attributes that are not specific to a GroupType
+                fakeGroupMember.Group.GroupTypeId = 0;
+            }
+
+            Rock.Attribute.Helper.LoadAttributes( fakeGroupMember );
+            foreach ( var attribute in fakeGroupMember.Attributes.Select( a => a.Value ) )
+            {
+                EntityHelper.AddEntityFieldForAttribute( entityAttributeFields, attribute );
             }
 
             int index = 0;

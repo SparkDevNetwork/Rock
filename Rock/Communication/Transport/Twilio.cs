@@ -153,7 +153,7 @@ namespace Rock.Communication.Transport
 
                 if ( hasPendingRecipients )
                 {
-                    var currentPerson = communication.CreatedByPersonAlias.Person;
+                    var currentPerson = communication.CreatedByPersonAlias?.Person;
                     var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
                     string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, currentPerson );
@@ -223,6 +223,7 @@ namespace Rock.Communication.Transport
                                             MessageResource response = SendToTwilio( fromPhone, callbackUrl, attachmentMediaUrls, message, twilioNumber );
 
                                             recipient.Status = CommunicationRecipientStatus.Delivered;
+                                            recipient.SendDateTime = RockDateTime.Now;
                                             recipient.TransportEntityTypeName = this.GetType().FullName;
                                             recipient.UniqueMessageId = response.Sid;
 

@@ -19,34 +19,34 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Attribute;
+using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-using Rock.Attribute;
-using System.Web;
-using System.Text.RegularExpressions;
-using System.Net.Mail;
-using Rock.Communication;
-using Rock.Security;
 
 namespace RockWeb.Blocks.Cms
 {
     /// <summary>
-    /// Template block for developers to use to start a new block.
+    /// 
     /// </summary>
     [DisplayName( "Email Form" )]
     [Category( "CMS" )]
     [Description( "Block that takes and HTML form and emails the contents to an address of your choosing." )]
 
-    [TextField( "Receipient Email(s)", "Email addresses (comma delimited) to send the contents to.", true, "", "", 0, "RecipientEmail" )]
-    [TextField( "Subject", "The subject line for the email. <span class='tip tip-lava'></span>", true, "", "", 1 )]
-    [TextField( "From Email", "The email address to use for the from. <span class='tip tip-lava'></span>", true, "", "", 2 )]
-    [TextField( "From Name", "The name to use for the from address. <span class='tip tip-lava'></span>", true, "", "", 3 )]
+    [TextField( "Recipient Email(s)", "Email addresses (comma delimited) to send the contents to.", true, "", "", 0, "RecipientEmail" )]
+    [TextField( "CC Email(s)", "CC Email addresses (comma delimited) to send the contents to. <span class='tip tip-lava'></span>", false, "", "", 1, "CCEmail" )]
+    [TextField( "BCC Email(s)", "BCC Email addresses (comma delimited) to send the contents to. <span class='tip tip-lava'></span>", false, "", "", 2, "BCCEmail" )]
+    [TextField( "Subject", "The subject line for the email. <span class='tip tip-lava'></span>", true, "", "", 3 )]
+    [TextField( "From Email", "The email address to use for the from. <span class='tip tip-lava'></span>", true, "", "", 4 )]
+    [TextField( "From Name", "The name to use for the from address. <span class='tip tip-lava'></span>", true, "", "", 5 )]
     [CodeEditorField( "HTML Form", "The HTML for the form the user will complete. <span class='tip tip-lava'></span>", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, false, @"{% if CurentUser %}
     {{ CurrentPerson.NickName }}, could you please complete the form below.
 {% else %}
@@ -93,7 +93,7 @@ namespace RockWeb.Blocks.Cms
     <input type=""file"" id=""attachment"" name=""attachment"" /> <br />
     <input type=""file"" id=""attachment2"" name=""attachment2"" />
 </div>
-", "", 4 )]
+", "", 6 )]
     [CodeEditorField( "Message Body", "The email message body. <span class='tip tip-lava'></span>", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, false, @"{{ 'Global' | Attribute:'EmailHeader' }}
 
 <p>
@@ -108,35 +108,20 @@ namespace RockWeb.Blocks.Cms
 
 <p>&nbsp;</p>
 
-{{ 'Global' | Attribute:'EmailFooter' }}", "", 5 )]
+{{ 'Global' | Attribute:'EmailFooter' }}", "", 7 )]
     [CodeEditorField( "Response Message", "The message the user will see when they submit the form if no response page if provided. Lava merege fields are available for you to use in your message.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, @"<div class=""alert alert-info"">
     Thank you for your response. We appreciate your feedback!
-</div>", "", 6 )]
-    [LinkedPage( "Response Page", "The page the use will be taken to after submitting the form. Use the 'Response Message' field if you just need a simple message.", false, "", "", 7 )]
-    [TextField( "Submit Button Text", "The text to display for the submit button.", true, "Submit", "", 8 )]
-    [TextField( "Submit Button Wrap CSS Class", "CSS class to add to the div wrapping the button.", false, "", "", 9, key: "SubmitButtonWrapCssClass" )]
-    [TextField( "Submit Button CSS Class", "The CSS class add to the submit button.", false, "btn btn-primary", "", 10, key: "SubmitButtonCssClass" )]
-    [BooleanField( "Enable Debug", "Shows the fields available to merge in lava.", false, "", 11 )]
-    [BooleanField( "Save Communication History", "Should a record of this communication be saved to the recipient's profile", false, "", 12 )]
-    [LavaCommandsField( "Enabled Lava Commands", "The Lava commands that should be enabled for this HTML block.", false, order: 13 )]
-
+</div>", "", 8 )]
+    [LinkedPage( "Response Page", "The page the use will be taken to after submitting the form. Use the 'Response Message' field if you just need a simple message.", false, "", "", 9 )]
+    [TextField( "Submit Button Text", "The text to display for the submit button.", true, "Submit", "", 10 )]
+    [TextField( "Submit Button Wrap CSS Class", "CSS class to add to the div wrapping the button.", false, "", "", 11, key: "SubmitButtonWrapCssClass" )]
+    [TextField( "Submit Button CSS Class", "The CSS class add to the submit button.", false, "btn btn-primary", "", 12, key: "SubmitButtonCssClass" )]
+    [BooleanField( "Enable Debug", "Shows the fields available to merge in lava.", false, "", 13 )]
+    [BooleanField( "Save Communication History", "Should a record of this communication be saved to the recipient's profile", false, "", 14 )]
+    [LavaCommandsField( "Enabled Lava Commands", "The Lava commands that should be enabled for this HTML block.", false, order: 15 )]
     public partial class EmailForm : Rock.Web.UI.RockBlock
     {
-        #region Fields
-
-        // used for private variables
-
-        #endregion
-
-        #region Properties
-
-        // used for public / protected properties
-
-        #endregion
-
         #region Base Control Methods
-
-        //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -166,7 +151,6 @@ namespace RockWeb.Blocks.Cms
             }
 
             Page.Form.Enctype = "multipart/form-data";
-
         }
 
         /// <summary>
@@ -215,8 +199,6 @@ namespace RockWeb.Blocks.Cms
 
         #region Events
 
-        // handlers called by the controls on your block
-
         /// <summary>
         /// Handles the BlockUpdated event of the control.
         /// </summary>
@@ -227,6 +209,11 @@ namespace RockWeb.Blocks.Cms
             ShowForm();
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnSubmit control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSubmit_Click( object sender, EventArgs e )
         {
             SendEmail();
@@ -244,6 +231,9 @@ namespace RockWeb.Blocks.Cms
 
         #region Methods
 
+        /// <summary>
+        /// Shows the form.
+        /// </summary>
         private void ShowForm()
         {
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
@@ -251,6 +241,9 @@ namespace RockWeb.Blocks.Cms
             lEmailForm.Text = GetAttributeValue( "HTMLForm" ).ResolveMergeFields( mergeFields, GetAttributeValue( "EnabledLavaCommands" ) );
         }
 
+        /// <summary>
+        /// Sends the email.
+        /// </summary>
         private void SendEmail()
         {
             // ensure this is not from a bot
@@ -295,6 +288,7 @@ namespace RockWeb.Blocks.Cms
                         formFields.Add( formFieldKey, Request.Form[formFieldKey] );
                     }
                 }
+
                 mergeFields.Add( "FormFields", formFields );
 
                 // get attachments
@@ -327,6 +321,9 @@ namespace RockWeb.Blocks.Cms
                 {
                     message.AddRecipient( new RecipientData( recipient, mergeFields ) );
                 }
+                
+                message.CCEmails = GetAttributeValue( "CCEmail" ).ResolveMergeFields( mergeFields, GetAttributeValue( "EnabledLavaCommands" ) ).Split( ',' ).ToList();
+                message.BCCEmails = GetAttributeValue( "BCCEmail" ).ResolveMergeFields( mergeFields, GetAttributeValue( "EnabledLavaCommands" ) ).Split( ',' ).ToList();
                 message.Message = GetAttributeValue( "MessageBody" );
                 message.FromEmail = GetAttributeValue( "FromEmail" );
                 message.FromName = GetAttributeValue( "FromName" );
@@ -363,6 +360,5 @@ namespace RockWeb.Blocks.Cms
         }
 
         #endregion
-
     }
 }

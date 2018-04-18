@@ -117,10 +117,10 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            var picker = control as DropDownList;
-            if ( picker != null )
+            var editControl = control as ListControl;
+            if ( editControl != null )
             {
-                picker.SelectedValue = value.ToUpper();
+                editControl.SetValue( value );
             }
         }
 

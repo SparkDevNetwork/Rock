@@ -115,5 +115,60 @@ namespace Rock.Security
         /// <param name="password">The password.</param>
         public abstract void SetPassword( UserLogin user, string password );
 
+        /// <summary>
+        /// Gets the login button text.
+        /// </summary>
+        /// <value>
+        /// The login button text.
+        /// </value>
+        public virtual string LoginButtonText
+        {
+            get
+            {
+                return string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Gets the login button CSS class.
+        /// </summary>
+        /// <value>
+        /// The login button CSS class.
+        /// </value>
+        public virtual string LoginButtonCssClass
+        {
+            get
+            {
+                return this.GetType().Name.ToLower();
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the Rock UI should prompt for the username
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [prompt for user name]; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool PromptForUserName
+        {
+            get
+            {
+                return ServiceType == AuthenticationServiceType.Internal;
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the Rock UI should prompt for a password
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [prompt for password]; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool PromptForPassword
+        {
+            get
+            {
+                return ServiceType == AuthenticationServiceType.Internal;
+            }
+        }
     }
 }

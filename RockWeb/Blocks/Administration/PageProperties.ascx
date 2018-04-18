@@ -16,6 +16,7 @@
                     <Rock:HighlightLabel ID="hlblSiteName" runat="server" />
                 </div>
             </div>
+            <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <asp:Panel ID="pnlBody" runat="server" CssClass="panel-body">
 
                 <asp:HiddenField ID="hfPageId" runat="server" />
@@ -139,7 +140,7 @@
                                                     <p><i class="fa fa-bolt"></i><strong>Sweet!</strong> Your package was imported successfully.</p>
                                                     <asp:Repeater ID="rptImportWarnings" runat="server" Visible="False">
                                                         <HeaderTemplate>
-                                                            <p><i class="fa fa-exclamation-triangle"></i>Just a quick head's up...</p>
+                                                            <p><i class="fa fa-exclamation-triangle"></i>Just a quick heads up...</p>
                                                             <ul>
                                                         </HeaderTemplate>
                                                         <ItemTemplate>
@@ -224,8 +225,8 @@
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" />
                         <div class="pull-right">
-                            <a title="Child Pages" class="btn btn-default btn-sm page-child-pages fa fa-sitemap" runat="server" id="aChildPages"></a>
-                            <asp:LinkButton ID="btnCopy" runat="server" Tooltip="Copy Page" CssClass="btn btn-default btn-sm fa fa-clone" OnClick="btnCopy_Click" />
+                            <a title="Child Pages" class="btn btn-default btn-sm page-child-pages" runat="server" id="aChildPages"><i class="fa fa-sitemap"></i></a>
+                            <asp:LinkButton ID="btnCopy" runat="server" Tooltip="Copy Page" CssClass="btn btn-default btn-sm" OnClick="btnCopy_Click"><i class="fa fa-clone"></i></asp:LinkButton>
                             <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" />
                         </div>
                     </asp:Panel>
@@ -239,5 +240,26 @@
                 
             </asp:Panel>
         </asp:Panel>
+        <script>
+            Sys.Application.add_load(function () {
+                $('#<%=tbPageName.ClientID%>').on('blur', function () {
+                    var isNewPage = $('#<%=hfPageId.ClientID%>').val() == '0';
+                    if (isNewPage) {
+                        // Default the Page Title and Browser Title to the Internal Name if this is a new page and they aren't filled in with anything yet
+                        var $tbPageName = $('#<%=tbPageName.ClientID%>');
+                        var $tbPageTitle = $('#<%=tbPageTitle.ClientID%>');
+                        var $tbBrowserTitle = $('#<%=tbBrowserTitle.ClientID%>');
+                        if ($tbPageTitle.val() == '') {
+                            $tbPageTitle.val($tbPageName.val());
+                        }
+
+                        if ($tbBrowserTitle.val() == '') {
+                            $tbBrowserTitle.val($tbPageName.val());
+                        }
+                    }
+                });
+                
+            });
+        </script>
     </ContentTemplate>
 </asp:UpdatePanel>

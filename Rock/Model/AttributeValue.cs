@@ -15,9 +15,11 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 using Rock.Data;
@@ -46,7 +48,7 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         [LavaIgnore]
         public bool IsSystem { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the AttributeId of the <see cref="Rock.Model.Attribute"/> that this AttributeValue provides a value for.
         /// </summary>
@@ -56,7 +58,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public int AttributeId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Id of the entity instance that uses this AttributeValue. An <see cref="Rock.Model.Attribute"/> is a configuration setting, so each 
         /// instance of the Entity that uses the same Attribute can have a different value.  For instance a <see cref="Rock.Model.BlockType"/> has a declared attribute, and that attribute can be configured 
@@ -68,7 +70,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? EntityId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the value
         /// </summary>
@@ -76,7 +78,18 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the value.
         /// </value>
         [DataMember]
-        public string Value {get; set;}
+        public string Value
+        {
+            get
+            {
+                return _value ?? string.Empty;
+            }
+            set
+            {
+                _value = value;
+            }
+        }
+        string _value = string.Empty;
 
         #endregion
 
@@ -153,12 +166,12 @@ namespace Rock.Model
 
                 Rock.Field.IFieldType result = null;
                 Rock.Web.Cache.AttributeCache attribute = Rock.Web.Cache.AttributeCache.Read( this.AttributeId );
-                if (attribute != null)
+                if ( attribute != null )
                 {
-                  if (attribute.FieldType != null)
-                  {
-                    result = attribute.FieldType.Field;
-                  }
+                    if ( attribute.FieldType != null )
+                    {
+                        result = attribute.FieldType.Field;
+                    }
                 }
 
                 return result;
@@ -189,7 +202,7 @@ namespace Rock.Model
                 var attribute = AttributeCache.Read( this.AttributeId );
                 if ( attribute != null )
                 {
-                    return attribute.FieldType.Field.FormatValue( null, attribute.EntityTypeId, this.EntityId, Value, attribute.QualifierValues, false);
+                    return attribute.FieldType.Field.FormatValue( null, attribute.EntityTypeId, this.EntityId, Value, attribute.QualifierValues, false );
                 }
                 return Value;
             }
@@ -266,7 +279,37 @@ namespace Rock.Model
                 return false;
             }
         }
+
+
+        /// <summary>
+        /// Gets or sets the history changes.
+        /// </summary>
+        /// <value>
+        /// The history changes.
+        /// </value>
+        [NotMapped]
+        private List<string> HistoryChanges { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the history entity.
+        /// </summary>
+        /// <value>
+        /// The type of the history entity.
+        /// </value>
+        [NotMapped]
+        private int? HistoryEntityTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the history entity identifier.
+        /// </summary>
+        /// <value>
+        /// The history entity identifier.
+        /// </value>
+        [NotMapped]
+        private int? HistoryEntityId { get; set; }
+
         #endregion
+
 
         #region Public Methods
 
@@ -278,7 +321,7 @@ namespace Rock.Model
         public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
         {
             var attributeCache = AttributeCache.Read( this.AttributeId );
-            if (attributeCache != null)
+            if ( attributeCache != null )
             {
                 // Check to see if this attribute value if for a Field or Image field type 
                 // ( we don't want BinaryFileFieldType as that type of attribute's file can be used by more than one attribute )
@@ -324,9 +367,77 @@ namespace Rock.Model
                         }
                     }
                 }
+
+                // Check to see if this attribute is for a person or group, and if so, save history
+                if ( attributeCache.EntityTypeId.HasValue &&
+                    ( attributeCache.EntityTypeId.Value == EntityTypeCache.Read( typeof( Person ) ).Id ||
+                    attributeCache.EntityTypeId.Value == EntityTypeCache.Read( typeof( Group ) ).Id ) )
+                {
+                    string oldValue = string.Empty;
+                    string newValue = string.Empty;
+
+                    HistoryEntityTypeId = attributeCache.EntityTypeId.Value;
+                    HistoryEntityId = EntityId;
+
+                    switch ( entry.State )
+                    {
+                        case System.Data.Entity.EntityState.Added:
+                            {
+                                newValue = Value;
+                                break;
+                            }
+
+                        case System.Data.Entity.EntityState.Modified:
+                            {
+                                oldValue = entry.OriginalValues["Value"].ToStringSafe();
+                                newValue = Value;
+                                break;
+                            }
+
+                        case System.Data.Entity.EntityState.Deleted:
+                            {
+                                HistoryEntityId = entry.OriginalValues["EntityId"].ToStringSafe().AsIntegerOrNull();
+                                oldValue = entry.OriginalValues["Value"].ToStringSafe();
+                                return;
+                            }
+                    }
+
+                    if ( oldValue != newValue )
+                    {
+                        oldValue = oldValue.IsNotNullOrWhitespace() ? attributeCache.FieldType.Field.FormatValue( null, oldValue, attributeCache.QualifierValues, true ) : string.Empty;
+                        newValue = newValue.IsNotNullOrWhitespace() ? attributeCache.FieldType.Field.FormatValue( null, newValue, attributeCache.QualifierValues, true ) : string.Empty;
+
+                        HistoryChanges = new List<string>();
+                        History.EvaluateChange( HistoryChanges, attributeCache.Name, oldValue, newValue );
+                    }
+                }
             }
 
             base.PreSaveChanges( dbContext, entry );
+        }
+
+    
+
+        /// <summary>
+        /// Posts the save changes.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        public override void PostSaveChanges( Data.DbContext dbContext )
+        {
+            int? historyEntityId = ( HistoryEntityId.HasValue && HistoryEntityId.Value > 0 ) ? HistoryEntityId.Value : this.EntityId;
+            if ( HistoryChanges != null && HistoryChanges.Any() && HistoryEntityTypeId.HasValue && historyEntityId.HasValue )
+            {
+                if ( HistoryEntityTypeId.Value == EntityTypeCache.Read( typeof( Person ) ).Id )
+                {
+                    HistoryService.SaveChanges( (RockContext)dbContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), historyEntityId.Value, HistoryChanges, string.Empty, typeof( Attribute ), AttributeId, true, this.ModifiedByPersonAliasId );
+                }
+                else
+                {
+                    HistoryService.SaveChanges( (RockContext)dbContext, typeof( Group ), Rock.SystemGuid.Category.HISTORY_GROUP_CHANGES.AsGuid(), historyEntityId.Value, HistoryChanges, string.Empty, typeof( Attribute ), AttributeId, true, this.ModifiedByPersonAliasId );
+                }
+            }
+
+            base.PostSaveChanges( dbContext );
         }
 
         /// <summary>

@@ -37,7 +37,7 @@
                                 <Rock:DateField DataField="ResponseDate" HeaderText="Completed" SortExpression="ResponseDate" />
                                 <Rock:RockBoundField ItemStyle-HorizontalAlign="Center" DataField="RecordFoundLabel" HeaderText="Record Found" SortExpression="RecordFound" HtmlEncode="false" />
                                 <asp:HyperLinkField HeaderText="Report" DataNavigateUrlFields="ResponseDocumentId" DataNavigateUrlFormatString="~/GetFile.ashx?id={0}" DataTextField="ResponseDocumentText" ItemStyle-HorizontalAlign="Center"  />
-                                <Rock:LinkButtonField HeaderText="Log" Text="<i class='fa fa-file-code-o fa-lg'></i>" OnClick="gRequest_XML" HeaderStyle-CssClass="" ItemStyle-CssClass="" ColumnPriority="DesktopLarge" />
+                                <Rock:LinkButtonField HeaderText="Log" Text="<i class='fa fa-file-code-o fa-lg'></i>" OnClick="gRequest_Data" HeaderStyle-CssClass="" ItemStyle-CssClass="" ColumnPriority="DesktopLarge" />
                                 <Rock:EditField OnClick="gRequest_ViewWorkflow" IconCssClass="fa fa-cogs" ToolTip="View Workflow" />
 
                             </Columns>
@@ -51,7 +51,7 @@
 
         <Rock:ModalDialog ID="dlgResponse" runat="server" Title="Request/Response Log">
             <Content>
-                <Rock:RockTextBox ID="tbResponseXml" runat="server" TextMode="MultiLine" Rows="20" ReadOnly="true" ValidateRequestMode="Disabled" />
+                <Rock:RockTextBox ID="tbResponseData" runat="server" TextMode="MultiLine" Rows="20" ReadOnly="true" ValidateRequestMode="Disabled" />
             </Content>
         </Rock:ModalDialog>
 
