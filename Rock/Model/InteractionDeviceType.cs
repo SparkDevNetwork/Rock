@@ -143,6 +143,17 @@ namespace Rock.Model
                     }
                 }
 
+                // check to see if this is outlook calling for a calendar feed
+                if ( !clientDetected )
+                {
+                    Regex t = new Regex( @"microsoft office" );
+                    if ( t.IsMatch( u ) )
+                    {
+                        clientType = "Outlook";
+                        clientDetected = true;
+                    }
+                }
+
                 // finally set it to desktop
                 if ( !clientDetected )
                 {
