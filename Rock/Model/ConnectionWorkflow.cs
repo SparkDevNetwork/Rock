@@ -134,6 +134,12 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Gets the type of the cache workflow.
+        /// </summary>
+        /// <value>
+        /// The type of the cache workflow.
+        /// </value>
         [LavaInclude]
         public virtual CacheWorkflowType CacheWorkflowType
         {

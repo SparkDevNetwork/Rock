@@ -16,9 +16,10 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
-
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Text;
 using Rock.Data;
 using Rock.Model;
 

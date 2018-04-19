@@ -14,7 +14,7 @@ Sys.Application.add_load(function () {
         } catch (e) {}
         bodyScroll = null;
     }
-
+    
     resizeBody();
 
     if ($('.checkin-scroll-panel').length) {

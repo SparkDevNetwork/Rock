@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
 
@@ -129,6 +130,70 @@ namespace Rock.Cache
         public override string ToString()
         {
             return Name;
+        }
+
+        #endregion
+
+        #region Static Methods
+
+        /// <summary>
+        /// Gets the specified API identifier.
+        /// </summary>
+        /// <param name="className">Name of the class.</param>
+        /// <returns></returns>
+        public new static CacheRestController Get( string className )
+        {
+            return Get( className, null );
+        }
+
+        /// <summary>
+        /// Gets the specified API identifier.
+        /// </summary>
+        /// <param name="className">Name of the class.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static CacheRestController Get( string className, RockContext rockContext )
+        {
+            return className.IsNotNullOrWhitespace()
+                ? GetOrAddExisting( className, () => QueryDbByClassName( className, rockContext ) ) : null;
+        }
+
+        /// <summary>
+        /// Queries the database by API identifier.
+        /// </summary>
+        /// <param name="className">Name of the class.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private static CacheRestController QueryDbByClassName( string className, RockContext rockContext )
+        {
+            if ( rockContext != null )
+            {
+                return QueryDbByClassNameWithContext( className, rockContext );
+            }
+
+            using ( var newRockContext = new RockContext() )
+            {
+                return QueryDbByClassNameWithContext( className, newRockContext );
+            }
+        }
+
+        /// <summary>
+        /// Queries the database by id with context.
+        /// </summary>
+        /// <param name="className">Name of the class.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private static CacheRestController QueryDbByClassNameWithContext( string className, RockContext rockContext )
+        {
+            var service = new RestControllerService( rockContext );
+            var entity = service.Queryable().AsNoTracking()
+                .FirstOrDefault( a => a.ClassName == className );
+
+            if ( entity == null ) return null;
+
+            var value = new CacheRestController();
+            value.SetFromEntity( entity );
+            return value;
         }
 
         #endregion

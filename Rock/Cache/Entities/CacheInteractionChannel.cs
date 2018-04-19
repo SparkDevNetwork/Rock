@@ -172,9 +172,9 @@ namespace Rock.Cache
 
                 InitComponentIds();
 
-                if ( _componentIds == null ) return components;
+                if ( InteractionComponentIds == null ) return components;
 
-                foreach ( var id in _componentIds )
+                foreach ( var id in InteractionComponentIds )
                 {
                     var component = CacheInteractionComponent.Get( id );
                     if ( component != null )
@@ -189,7 +189,7 @@ namespace Rock.Cache
         /// <summary>
         /// The component ids
         /// </summary>
-        private List<int> _componentIds;
+        internal List<int> InteractionComponentIds { get; set; }
 
         #endregion
 
@@ -200,15 +200,15 @@ namespace Rock.Cache
         /// </summary>
         private void InitComponentIds()
         {
-            if ( _componentIds != null ) return;
+            if ( InteractionComponentIds != null ) return;
 
             lock ( _obj )
             {
-                if ( _componentIds != null ) return;
+                if ( InteractionComponentIds != null ) return;
 
                 using ( var rockContext = new RockContext() )
                 {
-                    _componentIds = new InteractionComponentService( rockContext )
+                    InteractionComponentIds = new InteractionComponentService( rockContext )
                         .GetByChannelId( Id )
                         .Select( v => v.Id )
                         .ToList();
@@ -224,13 +224,13 @@ namespace Rock.Cache
         {
             InitComponentIds();
 
-            if ( _componentIds == null ) return;
+            if ( InteractionComponentIds == null ) return;
 
             lock ( _obj )
             {
-                if ( !_componentIds.Contains( id ) )
+                if ( !InteractionComponentIds.Contains( id ) )
                 {
-                    _componentIds.Add( id );
+                    InteractionComponentIds.Add( id );
                 }
             }
         }
@@ -243,13 +243,13 @@ namespace Rock.Cache
         {
             InitComponentIds();
 
-            if ( _componentIds == null ) return;
+            if ( InteractionComponentIds == null ) return;
 
             lock ( _obj )
             {
-                if ( _componentIds.Contains( id ) )
+                if ( InteractionComponentIds.Contains( id ) )
                 {
-                    _componentIds.Remove( id );
+                    InteractionComponentIds.Remove( id );
                 }
             }
         }
@@ -276,7 +276,7 @@ namespace Rock.Cache
             ComponentCacheDuration = interactionChannel.ComponentCacheDuration;
 
             // set componentIds to null so it load them all at once on demand
-            _componentIds = null;
+            InteractionComponentIds = null;
         }
 
         /// <summary>

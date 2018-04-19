@@ -15,6 +15,8 @@
 // </copyright>
 //
 using System;
+using System.Data.Entity;
+using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -121,6 +123,66 @@ namespace Rock.Cache
         #endregion
 
         #region Static Methods
+
+        /// <summary>
+        /// Gets the specified API identifier.
+        /// </summary>
+        /// <param name="apiId">The API identifier.</param>
+        /// <returns></returns>
+        public new static CacheRestAction Get( string apiId )
+        {
+            return Get( apiId, null );
+        }
+
+        /// <summary>
+        /// Gets the specified API identifier.
+        /// </summary>
+        /// <param name="apiId">The API identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static CacheRestAction Get( string apiId, RockContext rockContext )
+        {
+            return apiId.IsNotNullOrWhitespace()
+                ? GetOrAddExisting( apiId, () => QueryDbByApiId( apiId, rockContext ) ) : null;
+        }
+
+        /// <summary>
+        /// Queries the database by API identifier.
+        /// </summary>
+        /// <param name="apiId">The API identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private static CacheRestAction QueryDbByApiId( string apiId, RockContext rockContext )
+        {
+            if ( rockContext != null )
+            {
+                return QueryDbByApiIdWithContext( apiId, rockContext );
+            }
+
+            using ( var newRockContext = new RockContext() )
+            {
+                return QueryDbByApiIdWithContext( apiId, newRockContext );
+            }
+        }
+
+        /// <summary>
+        /// Queries the database by id with context.
+        /// </summary>
+        /// <param name="apiId">The API identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private static CacheRestAction QueryDbByApiIdWithContext( string apiId, RockContext rockContext )
+        {
+            var service = new RestActionService( rockContext );
+            var entity = service.Queryable().AsNoTracking()
+                .FirstOrDefault( a => a.ApiId == apiId );
+
+            if ( entity == null ) return null;
+
+            var value = new CacheRestAction();
+            value.SetFromEntity( entity );
+            return value;
+        }
 
         /// <summary>
         /// Gets the name of the defined value given an id

@@ -53,7 +53,7 @@ namespace Rock.Web.Cache
                 this.SupportedActions = secureModel.SupportedActions;
             }
 
-            var attributeModel = model as Rock.Data.IHasAttributes;
+            var attributeModel = model as IHasAttributes;
             if ( attributeModel != null )
             {
                 if ( attributeModel.Attributes == null )
@@ -64,6 +64,34 @@ namespace Rock.Web.Cache
                 this.Attributes = attributeModel.Attributes;
                 this.AttributeValues = attributeModel.AttributeValues;
             }
+        }
+
+        /// <summary>
+        /// Copies properties from a new cached entity
+        /// </summary>
+        /// <param name="cacheEntity">The cache entity.</param>
+        protected override void CopyFromNewCache(Rock.Cache.IEntityCache cacheEntity)
+        {
+            base.CopyFromNewCache( cacheEntity );
+
+            var secureItem = cacheEntity as ISecured;
+            if ( secureItem != null )
+            {
+                this.TypeId = secureItem.TypeId;
+                this.TypeName = secureItem.TypeName;
+                this.SupportedActions = secureItem.SupportedActions;
+            }
+
+            var attributeEntity = cacheEntity as IHasAttributes;
+            if (attributeEntity == null) return;
+
+            if ( attributeEntity.Attributes == null )
+            {
+                attributeEntity.LoadAttributes();
+            }
+
+            this.Attributes = attributeEntity.Attributes;
+            this.AttributeValues = attributeEntity.AttributeValues;
         }
 
         #region ISecured Implementation
