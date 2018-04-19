@@ -183,6 +183,19 @@
                                     </Rock:RockControlWrapper>
                                 </div>
                             </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <Rock:RockControlWrapper ID="rcwSearchKeys" runat="server" Label="Search keys">
+                                        <Rock:Grid ID="gSearchKeys" runat="server" DisplayType="Light" DataKeyNames="Guid" ShowConfirmDeleteDialog="false">
+                                            <Columns>
+                                                <Rock:DefinedValueField DataField="SearchTypeValueId" HeaderText="Search Type" />
+                                                <Rock:RockBoundField DataField="SearchValue" HeaderText="Search Value" />
+                                                <Rock:DeleteField OnClick="gSearchKeys_Delete" />
+                                            </Columns>
+                                        </Rock:Grid>
+                                    </Rock:RockControlWrapper>
+                                    </div>
+                            </div>
                         </Rock:PanelWidget>
 
                         <Rock:ModalDialog runat="server" ID="mdPreviousName" Title="Add Previous Last Name" ValidationGroup="vgPreviousName" OnSaveClick="mdPreviousName_SaveClick">
