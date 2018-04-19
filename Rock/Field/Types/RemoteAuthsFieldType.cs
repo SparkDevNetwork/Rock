@@ -114,14 +114,11 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value != null )
+            var picker = control as RemoteAuthsPicker;
+            if ( picker != null )
             {
-                if ( control != null && control is RemoteAuthsPicker )
-                {
-                    var selectedGuids = new List<Guid>();
-                    value.SplitDelimitedValues().ToList().ForEach( v => selectedGuids.Add( Guid.Parse( v ) ) );
-                    ( (RemoteAuthsPicker)control ).SelectedValues = selectedGuids;
-                }
+                var selectedGuids = value?.SplitDelimitedValues().AsGuidList() ?? new List<Guid>();
+                picker.SelectedValues = selectedGuids;
             }
         }
 

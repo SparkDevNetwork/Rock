@@ -215,20 +215,23 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value != null )
+            PersonPicker ppPerson = control as PersonPicker;
+            if ( ppPerson != null )
             {
-                PersonPicker ppPerson = control as PersonPicker;
-                if ( ppPerson != null )
+                Person person = null;
+                Guid? personAliasGuid = value.AsGuidOrNull();
+                if ( personAliasGuid.HasValue )
                 {
-                    Guid guid = Guid.Empty;
-                    Guid.TryParse( value, out guid );
-
-                    var person = new PersonAliasService( new RockContext() ).Queryable()
-                        .Where( a => a.Guid.Equals(guid))
-                        .Select( a => a.Person)
-                        .FirstOrDefault();
-                    ppPerson.SetValue( person );
+                    using ( var rockContext = new RockContext() )
+                    {
+                        person = new PersonAliasService( rockContext ).Queryable()
+                            .Where( a => a.Guid == personAliasGuid.Value )
+                            .Select( a => a.Person )
+                            .FirstOrDefault();
+                    }
                 }
+
+                ppPerson.SetValue( person );
             }
         }
 

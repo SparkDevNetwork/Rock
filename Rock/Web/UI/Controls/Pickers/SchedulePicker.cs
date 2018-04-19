@@ -80,7 +80,7 @@ namespace Rock.Web.UI.Controls
                 ItemId = schedule.Id.ToString();
 
                 string parentCategoryIds = string.Empty;
-                var parentCategory = schedule.Category;
+                var parentCategory = schedule.CategoryId.HasValue ? CacheCategory.Get( schedule.CategoryId.Value ) : null;
                 while ( parentCategory != null )
                 {
                     parentCategoryIds = parentCategory.Id + "," + parentCategoryIds;

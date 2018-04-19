@@ -87,13 +87,13 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                Guid? gatewayGuid = this.SelectedValueAsGuid();
-                if ( gatewayGuid.HasValue )
+                Guid? componentEntityTypeGuid = this.SelectedValueAsGuid();
+                if ( componentEntityTypeGuid.HasValue )
                 {
-                    var gatewayEntity = CacheEntityType.Get( gatewayGuid.Value );
-                    if ( gatewayEntity != null )
+                    var componentEntityType = CacheEntityType.Get( componentEntityTypeGuid.Value );
+                    if ( componentEntityType != null )
                     {
-                        return gatewayEntity.Id;
+                        return componentEntityType.Id;
                     }
                 }
 

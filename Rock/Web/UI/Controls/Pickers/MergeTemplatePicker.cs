@@ -93,7 +93,7 @@ namespace Rock.Web.UI.Controls
                 ItemId = mergeTemplate.Id.ToString();
 
                 var parentCategoryIds = new List<string>();
-                var parentCategory = mergeTemplate.Category;
+                var parentCategory = CacheCategory.Get( mergeTemplate.CategoryId );
                 while ( parentCategory != null )
                 {
                     if ( !parentCategoryIds.Contains( parentCategory.Id.ToString() ) )

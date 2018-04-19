@@ -99,21 +99,13 @@ namespace Rock.Field.Types
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var picker = control as LocationPicker;
-            string result = null;
 
             if ( picker != null )
             {
-                var guid = Guid.Empty;
-
-                if ( picker.Location != null )
-                {
-                    guid = picker.Location.Guid;
-                }
-
-                result = guid.ToString();
+                return picker.Location?.Guid.ToString();
             }
 
-            return result;
+            return null;
         }
 
         /// <summary>
@@ -124,17 +116,23 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value != null )
+            var picker = control as LocationPicker;
+            if ( picker != null )
             {
-                var picker = control as LocationPicker;
-
-                if ( picker != null )
+                Guid? locationGuid = value.AsGuidOrNull();
+                if ( locationGuid.HasValue )
                 {
-                    Guid guid;
-                    Guid.TryParse( value, out guid );
-                    var location = new LocationService( new RockContext() ).Get( guid );
-                    picker.SetBestPickerModeForLocation( location );
-                    picker.Location = location;
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var location = new LocationService( rockContext ).Get( locationGuid.Value );
+                        picker.SetBestPickerModeForLocation( location );
+                        picker.Location = location;
+                    }
+                }
+                else
+                {
+                    picker.SetBestPickerModeForLocation( null );
+                    picker.Location = null;
                 }
             }
         }

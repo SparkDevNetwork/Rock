@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Web.UI;
 
@@ -182,23 +183,37 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            string[] values = ( value ?? string.Empty ).Split( '|' );
-            if ( values.Length == 2 )
+            EntityPicker entityPicker = control as EntityPicker;
+            if ( entityPicker != null )
             {
-                EntityPicker entityPicker = control as EntityPicker;
-                if ( entityPicker != null )
+                CacheEntityType entityType = null;
+                int? entityId = null;
+                string[] values = ( value ?? string.Empty ).Split( '|' );
+                if ( values.Length == 2 )
                 {
-                    var entityType = CacheEntityType.Get( values[0].AsGuid() );
-                    if ( entityType != null )
+
+                    Guid? entityTypeGuid = values[0].AsGuidOrNull();
+                    entityId = values[1].AsIntegerOrNull();
+                    if ( entityTypeGuid.HasValue )
                     {
-                        entityPicker.EntityTypeId = entityType.Id;
-                        entityPicker.EntityId = values[1].AsIntegerOrNull();
+                        entityType = CacheEntityType.Get( entityTypeGuid.Value );
                     }
                 }
+
+                if ( entityType != null )
+                {
+                    entityPicker.EntityTypeId = entityType.Id;
+                }
+                else
+                {
+                    entityPicker.EntityTypeId = null;
+
+                }
+
+                entityPicker.EntityId = entityId;
             }
         }
 
         #endregion
-
     }
 }
