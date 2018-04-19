@@ -50,38 +50,37 @@ namespace Rock.Migrations
                 .ForeignKey("dbo.PersonAlias", t => t.CreatedByPersonAliasId)
                 .ForeignKey("dbo.PersonAlias", t => t.ModifiedByPersonAliasId)
                 .ForeignKey("dbo.PersonAlias", t => t.PersonAliasId)
+                .ForeignKey("dbo.DefinedValue", t => t.SearchTypeValueId)
                 .Index(t => t.PersonAliasId)
+                .Index(t => t.SearchTypeValueId)
                 .Index(t => t.CreatedByPersonAliasId)
                 .Index(t => t.ModifiedByPersonAliasId)
                 .Index(t => t.Guid, unique: true);
 
             RockMigrationHelper.AddDefinedType( "Person", "Person Search Keys", "List of Person Keys to search.", Rock.SystemGuid.DefinedType.PERSON_SEARCH_KEYS );
-            RockMigrationHelper.AddDefinedValue( Rock.SystemGuid.DefinedType.PERSON_SEARCH_KEYS, "Email","", Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_EMAIL );
-
-            CreateIndex( "dbo.PersonSearchKey", "SearchTypeValueId" );
-            AddForeignKey( "dbo.PersonSearchKey", "SearchTypeValueId", "dbo.DefinedValue", "Id" );
+            RockMigrationHelper.AddDefinedValue( Rock.SystemGuid.DefinedType.PERSON_SEARCH_KEYS, "Email", "", Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_EMAIL );
 
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
         public override void Down()
         {
-            DropForeignKey( "dbo.PersonSearchKey", "SearchTypeValueId", "dbo.DefinedValue" );
-            DropIndex( "dbo.PersonSearchKey", new[] { "SearchTypeValueId" } );
-
+            DropForeignKey("dbo.PersonSearchKey", "SearchTypeValueId", "dbo.DefinedValue");
             DropForeignKey("dbo.PersonSearchKey", "PersonAliasId", "dbo.PersonAlias");
             DropForeignKey("dbo.PersonSearchKey", "ModifiedByPersonAliasId", "dbo.PersonAlias");
             DropForeignKey("dbo.PersonSearchKey", "CreatedByPersonAliasId", "dbo.PersonAlias");
             DropIndex("dbo.PersonSearchKey", new[] { "Guid" });
             DropIndex("dbo.PersonSearchKey", new[] { "ModifiedByPersonAliasId" });
             DropIndex("dbo.PersonSearchKey", new[] { "CreatedByPersonAliasId" });
+            DropIndex("dbo.PersonSearchKey", new[] { "SearchTypeValueId" });
             DropIndex("dbo.PersonSearchKey", new[] { "PersonAliasId" });
             DropTable("dbo.PersonSearchKey");
 
             RockMigrationHelper.DeleteDefinedValue( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_EMAIL );
             RockMigrationHelper.DeleteDefinedType( Rock.SystemGuid.DefinedType.PERSON_SEARCH_KEYS );
+
         }
     }
 }
