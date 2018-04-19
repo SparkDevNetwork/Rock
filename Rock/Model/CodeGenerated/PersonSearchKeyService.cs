@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// ContentChannelItemSlug Service class
+    /// PersonSearchKey Service class
     /// </summary>
-    public partial class ContentChannelItemSlugService : Service<Rock.Model.ContentChannelItemSlug>
+    public partial class PersonSearchKeyService : Service<PersonSearchKey>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ContentChannelItemSlugService"/> class
+        /// Initializes a new instance of the <see cref="PersonSearchKeyService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public ContentChannelItemSlugService(RockContext context) : base(context)
+        public PersonSearchKeyService(RockContext context) : base(context)
         {
         }
 
@@ -48,7 +48,7 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( ContentChannelItemSlug item, out string errorMessage )
+        public bool CanDelete( PersonSearchKey item, out string errorMessage )
         {
             errorMessage = string.Empty;
             return true;
@@ -58,41 +58,41 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class ContentChannelItemSlugExtensionMethods
+    public static partial class PersonSearchKeyExtensionMethods
     {
         /// <summary>
-        /// Clones this ContentChannelItemSlug object to a new ContentChannelItemSlug object
+        /// Clones this PersonSearchKey object to a new PersonSearchKey object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static ContentChannelItemSlug Clone( this ContentChannelItemSlug source, bool deepCopy )
+        public static PersonSearchKey Clone( this PersonSearchKey source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as ContentChannelItemSlug;
+                return source.Clone() as PersonSearchKey;
             }
             else
             {
-                var target = new ContentChannelItemSlug();
+                var target = new PersonSearchKey();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another ContentChannelItemSlug object to this ContentChannelItemSlug object
+        /// Copies the properties from another PersonSearchKey object to this PersonSearchKey object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this ContentChannelItemSlug target, ContentChannelItemSlug source )
+        public static void CopyPropertiesFrom( this PersonSearchKey target, PersonSearchKey source )
         {
             target.Id = source.Id;
-            target.ContentChannelItemId = source.ContentChannelItemId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.IsPrimary = source.IsPrimary;
-            target.Slug = source.Slug;
+            target.PersonAliasId = source.PersonAliasId;
+            target.SearchTypeValueId = source.SearchTypeValueId;
+            target.SearchValue = source.SearchValue;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

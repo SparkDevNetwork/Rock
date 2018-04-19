@@ -155,9 +155,11 @@ namespace Rock.Model
 			lastName = lastName ?? string.Empty;
 			email = email ?? string.Empty;
 
-			return Queryable( includeDeceased, includeBusinesses )
+            var previousEmailQry = new PersonSearchKeyService( this.Context as RockContext ).Queryable();
+
+            return Queryable( includeDeceased, includeBusinesses )
 				.Where( p =>
-					email != "" && p.Email == email &&
+					((email != "" && p.Email == email) || previousEmailQry.Any( a => a.PersonAlias.PersonId == p.Id && a.SearchValue == email )) &&
 					firstName != "" && ( p.FirstName == firstName || p.NickName == firstName ) &&
 					lastName != "" && p.LastName == lastName )
 				.ToList();

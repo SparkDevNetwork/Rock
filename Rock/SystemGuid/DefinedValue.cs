@@ -547,5 +547,14 @@ namespace Rock.SystemGuid
 
         #endregion
 
+        #region Person Search Keys
+
+        /// <summary>
+        /// Interaction Channel Type: Website
+        /// </summary>
+        public const string PERSON_SEARCH_KEYS_EMAIL = "D6CFD200-B33B-4D01-B49F-24325E47D8B8";
+
+        #endregion
+
     }
 }
