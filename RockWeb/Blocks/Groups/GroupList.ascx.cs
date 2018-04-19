@@ -339,6 +339,12 @@ namespace RockWeb.Blocks.Groups
                     RegistrationRegistrantService registrantService = new RegistrationRegistrantService( rockContext );
                     GroupMember groupMember = group.Members.SingleOrDefault( a => a.PersonId == personContext.Id );
 
+                    if ( !( group.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) || group.IsAuthorized( Authorization.MANAGE_MEMBERS, this.CurrentPerson ) ) )
+                    {
+                        mdGridWarning.Show( "You are not authorized to delete members from this group", ModalAlertType.Information );
+                        return;
+                    }
+
                     if ( !groupMemberService.CanDelete( groupMember, out errorMessage ) )
                     {
                         mdGridWarning.Show( errorMessage, ModalAlertType.Information );
@@ -421,7 +427,8 @@ namespace RockWeb.Blocks.Groups
             var group = groupService.Get( ddlGroup.SelectedValue.AsInteger() );
             if ( group == null )
             {
-                nbMessage.Title = "Please select a Group";
+                nbModalDetailsMessage.Title = "Please select a Group";
+                nbModalDetailsMessage.Visible = true;
                 return;
             }
 
@@ -430,7 +437,8 @@ namespace RockWeb.Blocks.Groups
 
             if ( groupMemberService.Queryable().Any( a => a.PersonId == personContext.Id && a.GroupId == group.Id ) )
             {
-                nbMessage.Title = "Member already added to selected Group";
+                nbModalDetailsMessage.Title = "Member already added to selected Group";
+                nbModalDetailsMessage.Visible = true;
                 return;
             }
 
@@ -438,7 +446,16 @@ namespace RockWeb.Blocks.Groups
 
             if ( roleId == null )
             {
-                nbMessage.Title = "No default role for particular group is assigned";
+                nbModalDetailsMessage.Title = "No default role for particular group is assigned";
+                nbModalDetailsMessage.Visible = true;
+                return;
+            }
+
+            if ( !( group.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) || group.IsAuthorized( Authorization.MANAGE_MEMBERS, this.CurrentPerson ) ) )
+            {
+                // shouldn't happen because GroupList is limited to EDIT and MANAGE_MEMBERs, but just in case
+                nbModalDetailsMessage.Title = "You are not authorized to add members to this group";
+                nbModalDetailsMessage.Visible = true;
                 return;
             }
 
@@ -802,12 +819,11 @@ namespace RockWeb.Blocks.Groups
 
             #endregion
 
-            ddlGroup.DataSource = qryGroups
-                .Select( g => new
-                {
-                    Id = g.Id,
-                    Name = g.Name
-                } ).OrderBy( a => a.Name ).ToList();
+            // only show groups that the current person is authorized to add members to
+            var groupList = qryGroups.OrderBy( a => a.Name ).ToList()
+                .Where( a => a.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) || a.IsAuthorized( Rock.Security.Authorization.MANAGE_MEMBERS, this.CurrentPerson ) ).ToList();
+
+            ddlGroup.DataSource = groupList;
             ddlGroup.DataBind();
         }
 
