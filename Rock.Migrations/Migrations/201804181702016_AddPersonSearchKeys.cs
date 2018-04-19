@@ -58,6 +58,9 @@ namespace Rock.Migrations
             RockMigrationHelper.AddDefinedType( "Person", "Person Search Keys", "List of Person Keys to search.", Rock.SystemGuid.DefinedType.PERSON_SEARCH_KEYS );
             RockMigrationHelper.AddDefinedValue( Rock.SystemGuid.DefinedType.PERSON_SEARCH_KEYS, "Email","", Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_EMAIL );
 
+            CreateIndex( "dbo.PersonSearchKey", "SearchTypeValueId" );
+            AddForeignKey( "dbo.PersonSearchKey", "SearchTypeValueId", "dbo.DefinedValue", "Id" );
+
         }
         
         /// <summary>
@@ -65,6 +68,9 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
+            DropForeignKey( "dbo.PersonSearchKey", "SearchTypeValueId", "dbo.DefinedValue" );
+            DropIndex( "dbo.PersonSearchKey", new[] { "SearchTypeValueId" } );
+
             DropForeignKey("dbo.PersonSearchKey", "PersonAliasId", "dbo.PersonAlias");
             DropForeignKey("dbo.PersonSearchKey", "ModifiedByPersonAliasId", "dbo.PersonAlias");
             DropForeignKey("dbo.PersonSearchKey", "CreatedByPersonAliasId", "dbo.PersonAlias");
