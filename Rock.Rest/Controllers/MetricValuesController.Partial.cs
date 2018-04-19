@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
+using System.Web.Http;
 using System.Web.Http.OData;
 using Rock.Data;
 using Rock.Model;
@@ -174,12 +175,26 @@ namespace Rock.Rest.Controllers
         /// Gets the name of the series partition.
         /// </summary>
         /// <param name="metricId">The metric identifier.</param>
-        /// <param name="metricValuePartitionEntityIds">The metric value partition as a comma-delimited list of EntityTypeId|EntityId.</param>
+        /// <param name="metricValuePartitionEntityIds">The metric value partition entity ids.</param>
         /// <returns></returns>
         [System.Web.Http.Route( "api/MetricValues/GetSeriesPartitionName/{metricId}/{metricValuePartitionEntityIds}" )]
+        [Obsolete( "Use POST ~api/MetricValues/GetSeriesPartitionName/{metricId} with List<string> of EntityTypeId|EntityId as the body")]
         public string GetSeriesPartitionName( int metricId, string metricValuePartitionEntityIds )
         {
-            var entityTypeEntityIdList = metricValuePartitionEntityIds.Split( ',' ).Select( a => a.Split( '|' ) ).Select( a =>
+            return GetSeriesPartitionName( metricId, metricValuePartitionEntityIds.Split( ',' ).ToList() );
+        }
+
+        /// <summary>
+        /// Gets the name of the series partition using POST
+        /// </summary>
+        /// <param name="metricId">The metric identifier.</param>
+        /// <param name="metricValuePartitionEntityIdList">The metric value partition entity identifier list.</param>
+        /// <returns></returns>
+        [System.Web.Http.Route( "api/MetricValues/GetSeriesPartitionName/{metricId}" )]
+        [HttpPost]
+        public string GetSeriesPartitionName( int metricId, [FromBody] List<string> metricValuePartitionEntityIdList )
+        {
+            var entityTypeEntityIdList = metricValuePartitionEntityIdList.Select( a => a.Split( '|' ) ).Select( a =>
                 new
                 {
                     EntityTypeId = a[0].AsIntegerOrNull(),
