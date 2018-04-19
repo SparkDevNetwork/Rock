@@ -185,7 +185,7 @@
                             </div>
                             <div class="row">
                                 <div class="col-md-12">
-                                    <Rock:RockControlWrapper ID="rcwSearchKeys" runat="server" Label="Search keys">
+                                    <Rock:RockControlWrapper ID="rcwSearchKeys" runat="server" Label="Search Keys" Help="Search keys provide alternate ways to search for an individuals.">
                                         <Rock:Grid ID="gSearchKeys" runat="server" DisplayType="Light" DataKeyNames="Guid" ShowConfirmDeleteDialog="false">
                                             <Columns>
                                                 <Rock:DefinedValueField DataField="SearchTypeValueId" HeaderText="Search Type" />
