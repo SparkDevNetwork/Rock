@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
 
@@ -166,6 +167,49 @@ namespace Rock.Cache
         #endregion
 
         #region Static Methods
+
+        public new static CacheLavaShortcode Get(string tagName)
+        {
+            return Get(tagName, null);
+        }
+
+        public static CacheLavaShortcode Get(string tagName, RockContext rockContext)
+        {
+            return tagName.IsNotNullOrWhitespace()
+                ? GetOrAddExisting(tagName, () => QueryDbByTagName(tagName, rockContext)) : null;
+        }
+
+        private static CacheLavaShortcode QueryDbByTagName( string tagName, RockContext rockContext )
+        {
+            if ( rockContext != null )
+            {
+                return QueryDbByTagNamebWithContext( tagName, rockContext );
+            }
+
+            using ( var newRockContext = new RockContext() )
+            {
+                return QueryDbByTagNamebWithContext( tagName, newRockContext );
+            }
+        }
+
+        /// <summary>
+        /// Queries the database by id with context.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private static CacheLavaShortcode QueryDbByTagNamebWithContext( string tagName, RockContext rockContext )
+        {
+            var service = new LavaShortcodeService( rockContext );
+            var entity = service.Queryable().AsNoTracking(  )
+                .FirstOrDefault(c => c.TagName == tagName);
+
+            if ( entity == null ) return null;
+
+            var value = new CacheLavaShortcode();
+            value.SetFromEntity( entity );
+            return value;
+        }
 
         /// <summary>
         /// Returns all Lava shortcodes
