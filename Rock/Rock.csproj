@@ -866,6 +866,7 @@
     <Compile Include="Model\AttributeMatrixTemplateService.partial.cs" />
     <Compile Include="Model\CodeGenerated\CommunicationAttachmentService.cs" />
     <Compile Include="Model\CodeGenerated\CommunicationTemplateAttachmentService.cs" />
+    <Compile Include="Model\CodeGenerated\ContentChannelItemSlugService.cs" />
     <Compile Include="Model\CodeGenerated\GroupSyncService.cs" />
     <Compile Include="Model\CodeGenerated\LavaShortcodeService.cs" />
     <Compile Include="Model\CodeGenerated\MetaFirstNameGenderLookupService.cs" />
@@ -878,6 +879,7 @@
     <Compile Include="Model\CodeGenerated\AttributeMatrixItemService.cs" />
     <Compile Include="Model\CodeGenerated\AttributeMatrixService.cs" />
     <Compile Include="Model\CodeGenerated\AttributeMatrixTemplateService.cs" />
+    <Compile Include="Model\CodeGenerated\PersonSearchKeyService.cs" />
     <Compile Include="Model\CodeGenerated\PersonSignalService.cs" />
     <Compile Include="Model\CodeGenerated\SignalTypeService.cs" />
     <Compile Include="Model\CommunicationTemplateAttachment.cs" />
@@ -1222,6 +1224,7 @@
     <Compile Include="Model\PersonBadgeService.partial.cs" />
     <Compile Include="Model\PersonDuplicate.cs" />
     <Compile Include="Model\PersonPreviousName.cs" />
+    <Compile Include="Model\PersonSearchKey.cs" />
     <Compile Include="Model\PersonService.Partial.cs" />
     <Compile Include="Model\PersonSignal.cs" />
     <Compile Include="Model\PersonToken.cs" />

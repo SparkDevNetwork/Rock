@@ -235,6 +235,11 @@ namespace Rock.SystemGuid
         public const string PERSONAL_DEVICE_PLATFORM = "A55849D7-5C7B-4B36-9024-A672169E4C9C";
 
         /// <summary>
+        /// Guid representating the person key types to search.
+        /// </summary>
+        public const string PERSON_SEARCH_KEYS = "61BDD0E3-173D-45AB-9E8C-1FBB9FA8FDF3";
+
+        /// <summary>
         /// The PowerBI Accounts Defined Type guid
         /// </summary>
         public const string POWERBI_ACCOUNTS = "497DE3E6-66BD-D4A1-4A41-78A2FED2D0DF";

@@ -511,7 +511,8 @@ namespace Rock.Model
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if the Person is locked as child; otherwise <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsLockedAsChild {
+        public bool IsLockedAsChild
+        {
             get
             {
                 return _isLockedAsChild;
@@ -537,7 +538,7 @@ namespace Rock.Model
             _users = new Collection<UserLogin>();
             _phoneNumbers = new Collection<PhoneNumber>();
             _members = new Collection<GroupMember>();
-            _aliases = new Collection<PersonAlias>();          
+            _aliases = new Collection<PersonAlias>();
             CommunicationPreference = CommunicationType.Email;
         }
 
@@ -611,7 +612,7 @@ namespace Rock.Model
                 // intentionally blank
             }
         }
-        
+
         /// <summary>
         /// Gets a value indicating whether this instance is business.
         /// </summary>
@@ -1158,18 +1159,18 @@ namespace Rock.Model
         /// </summary>
         /// <param name="condensed">if set to <c>true</c> age in years is returned without a unit suffix.</param>
         /// <returns></returns>
-        public string FormatAge(bool condensed = false)
+        public string FormatAge( bool condensed = false )
         {
             var age = Age;
-            if (age != null)
+            if ( age != null )
             {
-                if (condensed)
+                if ( condensed )
                 {
                     return age.ToString();
                 }
-                if (age > 0)
+                if ( age > 0 )
                 {
-                    return age + (age == 1 ? " yr" : " yrs");
+                    return age + ( age == 1 ? " yr" : " yrs" );
                 }
                 else if ( age < -1 )
                 {
@@ -1690,9 +1691,9 @@ namespace Rock.Model
                     string emailLink = string.Empty;
 
                     // create link
-                    if ( string.IsNullOrWhiteSpace(emailLinkPreference) || emailLinkPreference == "1" )
+                    if ( string.IsNullOrWhiteSpace( emailLinkPreference ) || emailLinkPreference == "1" )
                     {
-                        if ( communicationPageReference != null)
+                        if ( communicationPageReference != null )
                         {
                             communicationPageReference.QueryString = new System.Collections.Specialized.NameValueCollection( communicationPageReference.QueryString ?? new System.Collections.Specialized.NameValueCollection() );
                             communicationPageReference.QueryString["person"] = this.Id.ToString();
@@ -1702,11 +1703,12 @@ namespace Rock.Model
                         {
                             emailLink = string.Format( "{0}Communication?person={1}", rockUrlRoot, Id );
                         }
-                    } else
+                    }
+                    else
                     {
                         emailLink = string.Format( "mailto:{0}", Email );
                     }
-                    
+
                     switch ( EmailPreference )
                     {
                         case EmailPreference.EmailAllowed:
@@ -1942,6 +1944,19 @@ namespace Rock.Model
                         else if (PhotoId.HasValue )
                         {
                             HistoryChanges.Add( "Added a photo." );
+                        }
+
+                        if ( entry.OriginalValues["Email"].ToStringSafe() != Email )
+                        {
+                            var personSearchKeyService = new PersonSearchKeyService( rockContext );
+                            var searchTypeValue = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_EMAIL.AsGuid() );
+                            PersonSearchKey personSearchKey = new PersonSearchKey()
+                            {
+                                PersonAliasId = PrimaryAliasId.Value,
+                                SearchTypeValueId = searchTypeValue.Id,
+                                SearchValue = entry.OriginalValues["Email"].ToStringSafe()
+                            };
+                            personSearchKeyService.Add( personSearchKey );
                         }
 
                         break;
@@ -2190,7 +2205,7 @@ namespace Rock.Model
                 }
 
                 return familySalutation;
-      
+
             }
 
             return $"{(useFormalNames ? person.FirstName : person.NickName)} {person.LastName}";
@@ -2348,7 +2363,8 @@ namespace Rock.Model
                             virtualPath = "~/Assets/Images/person-no-photo-child-male.svg?";
                         }
                     }
-                    else {
+                    else
+                    {
                         // it's an adult
                         if ( gender == Model.Gender.Female )
                         {
@@ -2488,7 +2504,8 @@ namespace Rock.Model
                             virtualPath = "~/Assets/Images/person-no-photo-child-male.svg?";
                         }
                     }
-                    else {
+                    else
+                    {
                         // it's an adult
                         if ( gender == Model.Gender.Female )
                         {
@@ -2697,7 +2714,8 @@ namespace Rock.Model
                             photoUrl.Append( "Assets/Images/person-no-photo-child-male.svg?" );
                         }
                     }
-                    else {
+                    else
+                    {
                         // it's an adult
                         if ( gender == Model.Gender.Female )
                         {
@@ -2737,12 +2755,13 @@ namespace Rock.Model
         {
             if (person != null )
             {
-                return GetPersonPhotoImageTag( person.Id, person.PhotoId, person.Age, person.Gender, person.RecordTypeValue != null ? (Guid?)person.RecordTypeValue.Guid : null, maxWidth, maxHeight, altText, className );
-            } else
+                return GetPersonPhotoImageTag( person.Id, person.PhotoId, person.Age, person.Gender, person.RecordTypeValue != null ? ( Guid? ) person.RecordTypeValue.Guid : null, maxWidth, maxHeight, altText, className );
+            }
+            else
             {
                 return GetPersonPhotoImageTag( null, null, null, Gender.Unknown, null, maxWidth, maxHeight, altText, className );
             }
-            
+
         }
 
         /// <summary>
@@ -2848,7 +2867,8 @@ namespace Rock.Model
                             photoUrl.Append( "Assets/Images/person-no-photo-child-male.svg?" );
                         }
                     }
-                    else {
+                    else
+                    {
                         // it's an adult
                         if ( gender == Model.Gender.Female )
                         {
@@ -3487,7 +3507,7 @@ namespace Rock.Model
                     currPhoneNumber.IsMessagingEnabled = false;
                 }
             }
-            
+
             // do they currently have this type of number?
             if ( phoneObject != null )
             {
@@ -3560,7 +3580,7 @@ namespace Rock.Model
         {
             return new PersonService( rockContext ?? new RockContext() ).GetGroupMembers( groupTypeId, person != null ? person.Id : 0, includeSelf );
         }
-        
+
         /// <summary>
         /// Gets any previous last names for this person sorted alphabetically by LastName
         /// </summary>
