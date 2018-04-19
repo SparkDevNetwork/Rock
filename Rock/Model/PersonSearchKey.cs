@@ -77,6 +77,15 @@ namespace Rock.Model
         [DataMember]
         public virtual PersonAlias PersonAlias { get; set; }
 
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> representing the person search key type.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Rock.Model.DefinedValue"/> object representing the person search key type.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue SearchTypeValue { get; set; }
+
         #endregion
 
     }
@@ -94,6 +103,7 @@ namespace Rock.Model
         public PersonSearchKeyConfiguration()
         {
             this.HasRequired( r => r.PersonAlias ).WithMany().HasForeignKey( r => r.PersonAliasId ).WillCascadeOnDelete( false );
+            this.HasRequired( p => p.SearchTypeValue ).WithMany().HasForeignKey( p => p.SearchTypeValueId ).WillCascadeOnDelete( false );
         }
     }
 
