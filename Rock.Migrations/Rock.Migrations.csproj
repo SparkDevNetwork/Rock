@@ -185,9 +185,9 @@
     <Compile Include="Migrations\201804161720510_AddContentChannelItemSlug.Designer.cs">
       <DependentUpon>201804161720510_AddContentChannelItemSlug.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201804181702016_AddPersonSearchKeys.cs" />
-    <Compile Include="Migrations\201804181702016_AddPersonSearchKeys.Designer.cs">
-      <DependentUpon>201804181702016_AddPersonSearchKeys.cs</DependentUpon>
+    <Compile Include="Migrations\201804192145436_AddPersonSearchKeys.cs" />
+    <Compile Include="Migrations\201804192145436_AddPersonSearchKeys.Designer.cs">
+      <DependentUpon>201804192145436_AddPersonSearchKeys.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.cs" />
     <Compile Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.Designer.cs">
@@ -2857,8 +2857,8 @@
     <EmbeddedResource Include="Migrations\201804161720510_AddContentChannelItemSlug.resx">
       <DependentUpon>201804161720510_AddContentChannelItemSlug.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201804181702016_AddPersonSearchKeys.resx">
-      <DependentUpon>201804181702016_AddPersonSearchKeys.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201804192145436_AddPersonSearchKeys.resx">
+      <DependentUpon>201804192145436_AddPersonSearchKeys.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.resx">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
