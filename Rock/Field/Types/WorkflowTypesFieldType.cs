@@ -104,12 +104,15 @@ namespace Rock.Field.Types
 
             if ( picker != null )
             {
-                var ids = picker.SelectedValuesAsInt();
-                var workflowTypes = new WorkflowTypeService( new RockContext() ).Queryable().Where( a => ids.Contains( a.Id ) );
-
-                if ( workflowTypes.Any() )
+                var ids = picker.SelectedValuesAsInt().ToList();
+                using ( var rockContext = new RockContext() )
                 {
-                    result = workflowTypes.Select( s => s.Guid.ToString() ).ToList().AsDelimited( "," );
+                    var items = new WorkflowTypeService( rockContext ).GetByIds( ids ).ToList();
+
+                    if ( items.Any() )
+                    {
+                        result = items.Select( s => s.Guid.ToString() ).ToList().AsDelimited( "," );
+                    }
                 }
             }
 
@@ -124,29 +127,22 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value != null )
+            var picker = control as WorkflowTypePicker;
+
+            if ( picker != null )
             {
-                var picker = control as WorkflowTypePicker;
+                var guids = value?.SplitDelimitedValues().AsGuidList() ?? new List<Guid>();
+                var workflowTypes = new List<WorkflowType>();
 
-                if ( picker != null )
+                if ( guids.Any() )
                 {
-                    var guids = new List<Guid>();
-
-                    foreach ( string guidValue in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                    using ( var rockContext = new RockContext() )
                     {
-                        Guid? guid = guidValue.AsGuidOrNull();
-                        if ( guid.HasValue )
-                        {
-                            guids.Add( guid.Value );
-                        }
-                    }
-
-                    if ( guids.Any() )
-                    {
-                        var workflowTypes = new WorkflowTypeService( new RockContext() ).Queryable().Where( a => guids.Contains( a.Guid ) ).ToList();
-                        picker.SetValues( workflowTypes );
+                        workflowTypes = new WorkflowTypeService( rockContext ).GetByGuids( guids ).ToList();
                     }
                 }
+
+                picker.SetValues( workflowTypes );
             }
         }
 

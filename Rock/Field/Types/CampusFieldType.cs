@@ -168,10 +168,10 @@ namespace Rock.Field.Types
             if ( campusPicker != null )
             {
                 int? campusId = campusPicker.SelectedCampusId;
-                if (campusId.HasValue)
+                if ( campusId.HasValue )
                 {
                     var campus = CacheCampus.Get( campusId.Value );
-                    if (campus != null )
+                    if ( campus != null )
                     {
                         return campus.Guid.ToString();
                     }
@@ -194,11 +194,16 @@ namespace Rock.Field.Types
 
             if ( campusPicker != null )
             {
-                Guid guid = value.AsGuid();
+                Guid? guid = value.AsGuidOrNull();
+                int? campusId = null;
 
                 // get the item (or null) and set it
-                var campus = CacheCampus.Get( guid );
-                campusPicker.SelectedCampusId = campus == null ? 0 : campus.Id;
+                if ( guid.HasValue )
+                {
+                    campusId = CacheCampus.Get( guid.Value )?.Id;
+                }
+
+                campusPicker.SelectedCampusId = campusId;
             }
         }
 

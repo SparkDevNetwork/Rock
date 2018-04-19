@@ -207,20 +207,17 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            Guid guid = Guid.Empty;
-            if (Guid.TryParse(value, out guid))
+            EntityTypePicker entityTypePicker = control as EntityTypePicker;
+            if ( entityTypePicker != null )
             {
-                EntityTypePicker entityTypePicker = control as EntityTypePicker;
-                if ( entityTypePicker != null )
+                CacheEntityType entityType = null;
+                Guid? guid = value.AsGuidOrNull();
+                if ( guid.HasValue )
                 {
-                    int selectedValue = 0;
-                    var entityType = CacheEntityType.Get(guid);
-                    if (entityType != null)
-                    {
-                        selectedValue = entityType.Id;
-                    }
-                    entityTypePicker.SelectedEntityTypeId = selectedValue;
+                    entityType = CacheEntityType.Get( guid.Value );
                 }
+
+                entityTypePicker.SelectedEntityTypeId = entityType?.Id;
             }
         }
 

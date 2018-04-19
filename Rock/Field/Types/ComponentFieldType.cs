@@ -190,8 +190,8 @@ namespace Rock.Field.Types
             var picker = control as ComponentPicker;
             if ( picker != null )
             {
-                Guid guid = value.AsGuid();
-                picker.SelectedValue = guid.ToString().ToUpper();
+                Guid? guid = value.AsGuidOrNull();
+                picker.SetValue( guid );
             }
         }
 

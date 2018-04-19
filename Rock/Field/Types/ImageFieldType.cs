@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
 
 using Rock.Data;
@@ -288,14 +289,20 @@ namespace Rock.Field.Types
 
             if ( picker != null )
             {
-                Guid guid = value.AsGuid();
+                Guid? guid = value.AsGuidOrNull();
+                int? binaryFileId = null;
 
-                // get the item (or null) and set it
-                var item = new BinaryFileService( new RockContext() ).Get( guid );
-                if ( item != null )
+                // if there is a Value as Guid, get the Id of the BinaryFile
+                if ( guid.HasValue )
                 {
-                    picker.BinaryFileId = item.Id;
+                    using ( var rockContext = new RockContext() )
+                    {
+                        binaryFileId = new BinaryFileService( rockContext ).Queryable().Where( a => a.Guid == guid.Value ).Select( a => ( int? ) a.Id ).FirstOrDefault();
+                    }
                 }
+
+                // set the picker's selected BinaryFileId (or set it to null if setting the value to null or emptystring)
+                picker.BinaryFileId = binaryFileId;
             }
         }
 
