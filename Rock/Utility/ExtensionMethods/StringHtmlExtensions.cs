@@ -95,7 +95,7 @@ namespace Rock
 
         /// <summary>
         /// Sanitizes the HTML by removing tags.  If strict is true, all html tags will be removed, if false, only a blacklist of specific XSS dangerous tags and attribute values are removed.
-        /// NOTE: This method will do things like strip the less-than symbol from strings like 'in math 6 < 7.'
+        /// NOTE: This method will do things like strip the less-than symbol from strings like <![CDATA['in math 6 < 7.']]>
         /// </summary>
         /// <param name="html">The HTML.</param>
         /// <param name="strict">if set to <c>true</c> [strict].</param>

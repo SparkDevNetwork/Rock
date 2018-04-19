@@ -82,10 +82,11 @@ namespace Rock.Cache
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is instance properties verified.
+        /// Gets a value indicating whether the  attributes have been
+        /// verified for the block type.  If not, Rock will create and/or update the attributes associated with the block.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if this instance is instance properties verified; otherwise, <c>false</c>.
+        /// <c>true</c> if attributes have already been verified; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
         public bool IsInstancePropertiesVerified { get; set; }

@@ -190,5 +190,26 @@ namespace Rock.Cache
 
         #endregion
 
+        #region Static Methods
+
+        /// <summary>
+        /// Removes a WorkflowActionForm from cache.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        public new static void Remove( int id )
+        {
+            var activityType = Get( id );
+            if ( activityType != null )
+            {
+                foreach ( var actionType in activityType.ActionTypes )
+                {
+                    CacheWorkflowActionType.Remove( actionType.Id );
+                }
+            }
+
+            Remove( id.ToString() );
+        }
+
+        #endregion
     }
 }

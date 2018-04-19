@@ -91,7 +91,7 @@ namespace Rock.Cache
         /// The single value field type identifier.
         /// </value>
         [DataMember]
-        private int? SingleValueFieldTypeId { get; set; }
+        internal int? SingleValueFieldTypeId { get; set; }
 
         /// <summary>
         /// Gets the type of the single value field.
@@ -119,7 +119,7 @@ namespace Rock.Cache
         /// The multi value field type identifier.
         /// </value>
         [DataMember]
-        private int? MultiValueFieldTypeId { get; set; }
+        internal int? MultiValueFieldTypeId { get; set; }
 
         /// <summary>
         /// Gets the type of the multi value field.

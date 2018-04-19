@@ -31,6 +31,12 @@ namespace Rock.Cache
     {
         private const string KEY = "AllWorkflowTriggers";
 
+        /// <summary>
+        /// Gets or sets the entity triggers.
+        /// </summary>
+        /// <value>
+        /// The entity triggers.
+        /// </value>
         [DataMember]
         public Dictionary<string, List<WorkflowTrigger>> EntityTriggers { get; set; }
 
