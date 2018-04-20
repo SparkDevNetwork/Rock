@@ -25,7 +25,7 @@
 
                 <div class="row">
                     <div class="col-sm-6">
-                        <Rock:RockTextBox ID="tbMobilePhone" runat="server" Required="false" Label="Mobile Number" ValidationGroup="CaptivePortal" />
+                        <Rock:PhoneNumberBox ID="tbMobilePhone" runat="server" Required="false" Label="Mobile Number" ValidationGroup="CaptivePortal" />
                     </div>
                 
                     <div class="col-sm-6">
