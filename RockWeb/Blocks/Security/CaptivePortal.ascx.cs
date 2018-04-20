@@ -102,10 +102,31 @@ namespace RockWeb.Blocks.Security
 </html>";
         #endregion
 
+        /// <summary>
+        /// The user agents to ignore. UA strings that begin with one of these will be ignored.
+        /// This is to fix Apple devices loading the page with its CaptiveNetwork WISPr UA and messing
+        /// up the device info, which is parsed from the UA. Ignoring "CaptiveNetworkSupport*"
+        /// will fix 100% of current known issues, if more than a few come up we should put this
+        /// into the DB as DefinedType/DefinedValues.
+        /// </summary>
+        private List<string> _userAgentsToIgnore = new List<string>()
+        {
+            "CaptiveNetworkSupport"
+        };
+
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
             nbAlert.Visible = false;
+
+            // Go through the UA ignore list and don't load anything we don't care about or want.
+            foreach ( string userAgentToIgnore in _userAgentsToIgnore )
+            {
+                if ( Request.UserAgent.StartsWith( userAgentToIgnore ) )
+                {
+                    return;
+                }
+            }
 
             if ( !IsPostBack )
             {
