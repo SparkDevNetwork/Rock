@@ -38,9 +38,9 @@ namespace RockWeb.Blocks.Security
     [BooleanField("Show Name", "Show or hide the Name fields. If it is visible then it will be required.", true, "", 2, "ShowName", IsRequired = true )]
     [BooleanField( "Show Mobile Phone", "Show or hide the Mobile Phone Number field. If it is visible then it will be required.", true, "", 3, "ShowMobilePhone", IsRequired = true )]
     [BooleanField( "Show Email", "Show or hide the Email field. If it is visible then it will be required.", true, "", 4, "ShowEmail", IsRequired = true )]
-    [BooleanField( "Show Acceptance Checkbox", "Show or hide the \"I Accept\" checkbox. If it is visible then it will be required. This should be visible if the \"Terms And Conditions\" are also visible.", true, "", 5, "ShowAccept", IsRequired = true )]
+    [BooleanField( "Show Acceptance Checkbox", "Show or hide the \"I Accept\" checkbox. If it is visible then it will be required. This should be visible if the \"Terms And Conditions\" are also visible.", false, "", 5, "ShowAccept", IsRequired = true )]
     [TextField( "Acceptance Checkbox Label", "Text used to signify user agreement with the Terms and Conditions", true, "I Accept", "", 6, "AcceptanceLabel" )]
-    [TextField( "Button Text", "Text to display on the button", true, "Connect To Wi-Fi", "", 7, "ButtonText" )]
+    [TextField( "Button Text", "Text to display on the button", true, "Accept and Connect", "", 7, "ButtonText" )]
     [BooleanField( "Show Legal Note", "Show or hide the Terms and Conditions. This should be always be visible unless users are being automatically connected without any agreement needed.", true, "", 8, "ShowLegalNote", IsRequired = true )]
     [CodeEditorField ( "Legal Note", "A legal note outlining the Terms and Conditions for using Wi-Fi.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, false, DEFAULT_LEGAL_NOTE, "", 9, "LegalNote" )]
     public partial class CaptivePortal : RockBlock
