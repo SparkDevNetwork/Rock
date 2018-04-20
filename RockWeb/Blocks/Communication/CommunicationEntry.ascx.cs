@@ -1151,11 +1151,16 @@ namespace RockWeb.Blocks.Communication
             var template = new CommunicationTemplateService( new RockContext() ).Get( templateId );
             if ( template != null )
             {
+                // copy all communication details from the Template to CommunicationData
                 CommunicationDetails.Copy( template, CommunicationData );
+
                 CommunicationData.EmailAttachmentBinaryFileIds = template.EmailAttachmentBinaryFileIds;
                 if ( loadControl )
                 {
-                    LoadMediumControl( true );
+                    var mediumControl = LoadMediumControl( true );
+
+                    // InitializeFromSender will set the FromName, FromEmail etc if the template cleared out the values for those fields (similar logic is used in the CommunicationEntryWizard)
+                    mediumControl.InitializeFromSender( CurrentPerson );
                 }
             }
         }
