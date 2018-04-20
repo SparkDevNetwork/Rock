@@ -73,7 +73,7 @@
                                             Help="The maximum number of registrants that user is allowed to register" Visible="false" />
                                     </div>
                                 </div>
-                                <Rock:RockRadioButtonList ID="rblRegistrantsInSameFamily" runat="server" Label="Registrants in same Family" RepeatDirection="Horizontal" CssClass="js-same-family"
+                                <Rock:RockRadioButtonList ID="rblRegistrantsInSameFamily" runat="server" Label="Registrants In Same Family" RepeatDirection="Horizontal" CssClass="js-same-family"
                                     Help="Typical relationship of registrants that user would register." />
                                 <div id="divCurrentFamilyMembers" runat="server" class="js-current-family-members" >
                                     <Rock:RockCheckBox ID="cbShowCurrentFamilyMembers" runat="server" Label="Show Family Members" Text="Yes"
