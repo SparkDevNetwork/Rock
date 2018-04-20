@@ -562,7 +562,7 @@ namespace Rock.Migrations
 
             #region Personal Device Type UI
 
-            RockMigrationHelper.AddDefinedTypeAttribute( "C1848F4C-D6F8-4514-8DB6-CD3C19621025", "9C204CD0-1233-41C5-818A-C5DA439445AA", "IconCssClass", "IconCssClass", "", 1001, "", "DC0E00D2-7694-410E-82C0-E99A097D0A30" );
+            RockMigrationHelper.AddDefinedTypeAttribute( "C1848F4C-D6F8-4514-8DB6-CD3C19621025", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Icon CSS Class", "IconCssClass", "", 1001, "", "DC0E00D2-7694-410E-82C0-E99A097D0A30" );
 
             RockMigrationHelper.AddPage( "BF04BB7E-BE3A-4A38-A37C-386B55496303", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Personal Device", "", "B2786294-99DC-477E-871D-2E28FCE00A98", "fa fa-mobile" ); // Site:Rock RMS
             RockMigrationHelper.AddPage( "B2786294-99DC-477E-871D-2E28FCE00A98", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Personal Device Interactions", "", "5A31D3D3-91A7-409F-8AFF-C3802AC055EC", "fa fa-mobile" ); // Site:Rock RMS
