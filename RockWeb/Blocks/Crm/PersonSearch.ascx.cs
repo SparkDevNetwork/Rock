@@ -342,7 +342,11 @@ namespace RockWeb.Blocks.Crm
                         }
                     case ( "email" ):
                         {
-                            people = personService.Queryable().Where( p => p.Email.Contains( term ) );
+
+                            var searchKeyQry = new PersonSearchKeyService( rockContext ).Queryable();
+                            people = personService.Queryable()
+                                .Where( p => ( term != "" && p.Email == term ) 
+                                        || searchKeyQry.Any( a => a.PersonAlias.PersonId == p.Id && a.SearchValue == term ) );
                             break;
                         }
                     case ( "birthdate" ):
