@@ -282,6 +282,13 @@ namespace RockWeb.Blocks.Communication
                     bool isAuthorizedEditor = communication.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson );
                     bool isCreator = ( communication.CreatedByPersonAlias != null && CurrentPersonId.HasValue && communication.CreatedByPersonAlias.PersonId == CurrentPersonId.Value );
                     bool isApprovalEditor = communication.Status == CommunicationStatus.PendingApproval && _editingApproved;
+
+                    // If communicatoin was just created only for authorization, set it to null so that Showing of details works correctly.
+                    if ( communication.Id == 0 )
+                    {
+                        communication = null;
+                    }
+
                     if ( isAuthorizedEditor || isCreator || isApprovalEditor )
                     {
                         // communication is either new or ok to edit
@@ -760,7 +767,7 @@ namespace RockWeb.Blocks.Communication
         {
             Recipients.Clear();
 
-            if ( communication != null )
+            if ( communication != null && communication.Id > 0 )
             {
                 this.AdditionalMergeFields = communication.AdditionalMergeFields.ToList();
                 lTitle.Text = ( communication.Name ?? communication.Subject ?? "New Communication" ).FormatAsHtmlTitle();
