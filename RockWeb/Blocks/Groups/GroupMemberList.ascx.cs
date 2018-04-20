@@ -664,10 +664,11 @@ namespace RockWeb.Blocks.Groups
                     AvailableAttributes.Add( CacheAttribute.Get( attributeModel ) );
                 }
 
-                var inheritedAttribute = ( new GroupMember() { GroupId = _group.Id } ).GetInheritedAttributes( rockContext );
-                if ( inheritedAttribute.Count > 0 )
+
+                var inheritedAttributes = ( new GroupMember() { GroupId = _group.Id } ).GetInheritedAttributes( rockContext ).Where( a => a.IsGridColumn == true ).ToList();
+                if ( inheritedAttributes.Any() )
                 {
-                    AvailableAttributes.AddRange( inheritedAttribute );
+                    AvailableAttributes.AddRange( inheritedAttributes );
                 }
             }
         }
