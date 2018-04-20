@@ -50,6 +50,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [SecurityAction( "EditRecordStatus", "The roles and/or users that can edit the record status for the selected person." )]
     [BooleanField("Hide Grade", "Should the Grade (and Graduation Year) fields be hidden?", false, "", 0)]
     [BooleanField("Hide Anniversary Date", "Should the Anniversary Date field be hidden?", false, "", 1)]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_SEARCH_KEYS, "Search Types", "Optional list of search types to limit the display in Search Keys grid. No selection will show all.", false, true, "", "", 2 )]
     public partial class EditPerson : Rock.Web.UI.PersonBlock
     {
         /// <summary>
@@ -104,6 +105,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             grdPreviousNames.Actions.ShowAdd = true;
             grdPreviousNames.Actions.AddClick += grdPreviousNames_AddClick;
+            gSearchKeys.Actions.ShowAdd = true;
+            gSearchKeys.Actions.AddClick += gSearchKeys_AddClick;
 
             pnlGradeGraduation.Visible = !GetAttributeValue( "HideGrade" ).AsBoolean();
             dpAnniversaryDate.Visible = !GetAttributeValue( "HideAnniversaryDate" ).AsBoolean();
@@ -477,6 +480,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         personSearchKeyService.Delete( deletedSearchKey );
                     }
 
+                    foreach ( var personSearchKey in PersonSearchKeysState.Where( a => !databaseSearchKeys.Any( d => d.Guid == a.Guid ) ) )
+                    {
+                        personSearchKey.PersonAliasId = person.PrimaryAliasId.Value;
+                        personSearchKeyService.Add( personSearchKey );
+                    }
+
                     if ( person.IsValid )
                     {
                         var saveChangeResult = rockContext.SaveChanges();
@@ -668,7 +677,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
 
             this.PersonPreviousNamesState = Person.GetPreviousNames().ToList();
-            this.PersonSearchKeysState = Person.GetPersonSearchKeys().ToList();
+             var searchTypeQry = Person.GetPersonSearchKeys();
+
+            var searchTypesList = this.GetAttributeValue( "SearchTypes" ).SplitDelimitedValues().AsGuidList();
+            if ( searchTypesList.Any() )
+            {
+                searchTypeQry = searchTypeQry.Where( a => searchTypesList.Contains( a.SearchTypeValue.Guid ) );
+            }
+            this.PersonSearchKeysState = searchTypeQry.ToList();
 
             BindPersonPreviousNamesGrid();
             BindPersonSearchKeysGrid();
@@ -706,6 +722,55 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         }
 
         /// <summary>
+        /// Handles the AddClick event of the gSearchKeys control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gSearchKeys_AddClick(object sender, EventArgs e)
+        {
+            tbSearchValue.Text = string.Empty;
+            var searchValueTypes = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_SEARCH_KEYS ).DefinedValues;
+
+            var searchTypesList = this.GetAttributeValue( "SearchTypes" ).SplitDelimitedValues().AsGuidList();
+            if ( searchTypesList.Any() )
+            {
+                searchValueTypes = searchValueTypes.Where( a => searchTypesList.Contains( a.Guid ) ).ToList();
+            }
+
+            ddlSearchValueType.DataSource = searchValueTypes;
+            ddlSearchValueType.DataTextField = "Value";
+            ddlSearchValueType.DataValueField = "Id";
+            ddlSearchValueType.DataBind();
+            ddlSearchValueType.Items.Insert( 0, new ListItem() );
+            mdSearchKey.Show();
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the mdSearchKey control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdSearchKey_SaveClick( object sender, EventArgs e )
+        {
+            this.PersonSearchKeysState.Add( new PersonSearchKey { SearchValue = tbSearchValue.Text, SearchTypeValueId = ddlSearchValueType.SelectedValue.AsInteger(), Guid = Guid.NewGuid() } );
+            BindPersonSearchKeysGrid();
+            mdSearchKey.Hide();
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the mdPreviousName control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdPreviousName_SaveClick( object sender, EventArgs e )
+        {
+            this.PersonPreviousNamesState.Add( new PersonPreviousName { LastName = tbPreviousLastName.Text, Guid = Guid.NewGuid() } );
+            BindPersonPreviousNamesGrid();
+
+            mdPreviousName.Hide();
+        }
+
+        /// <summary>
         /// Handles the Delete event of the grdPreviousNames control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -725,19 +790,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             this.PersonSearchKeysState.RemoveEntity( ( Guid ) e.RowKeyValue );
             BindPersonSearchKeysGrid();
-        }
-
-        /// <summary>
-        /// Handles the SaveClick event of the mdPreviousName control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void mdPreviousName_SaveClick( object sender, EventArgs e )
-        {
-            this.PersonPreviousNamesState.Add( new PersonPreviousName { LastName = tbPreviousLastName.Text, Guid = Guid.NewGuid() } );
-            BindPersonPreviousNamesGrid();
-
-            mdPreviousName.Hide();
         }
 
         /// <summary>

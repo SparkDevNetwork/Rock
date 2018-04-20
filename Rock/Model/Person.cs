@@ -1948,15 +1948,19 @@ namespace Rock.Model
 
                         if ( entry.OriginalValues["Email"].ToStringSafe() != Email )
                         {
-                            var personSearchKeyService = new PersonSearchKeyService( rockContext );
-                            var searchTypeValue = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_EMAIL.AsGuid() );
-                            PersonSearchKey personSearchKey = new PersonSearchKey()
+                            var currentEmail = entry.OriginalValues["Email"].ToStringSafe();
+                            if ( !string.IsNullOrEmpty( currentEmail ) )
                             {
-                                PersonAliasId = PrimaryAliasId.Value,
-                                SearchTypeValueId = searchTypeValue.Id,
-                                SearchValue = entry.OriginalValues["Email"].ToStringSafe()
-                            };
-                            personSearchKeyService.Add( personSearchKey );
+                                var personSearchKeyService = new PersonSearchKeyService( rockContext );
+                                var searchTypeValue = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_EMAIL.AsGuid() );
+                                PersonSearchKey personSearchKey = new PersonSearchKey()
+                                {
+                                    PersonAliasId = PrimaryAliasId.Value,
+                                    SearchTypeValueId = searchTypeValue.Id,
+                                    SearchValue = currentEmail
+                                };
+                                personSearchKeyService.Add( personSearchKey );
+                            }
                         }
 
                         break;
