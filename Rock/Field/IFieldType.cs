@@ -271,6 +271,16 @@ namespace Rock.Field
         Expression AttributeFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression );
 
         /// <summary>
+        /// Determines whether the filter is an 'Equal To' comparison and the filtered value is equal to the specified value.
+        /// </summary>
+        /// <param name="filterValues">The filter values.</param>
+        /// <param name="value">The value.</param>
+        /// <returns>
+        ///   <c>true</c> if [is equal to value] [the specified filter values]; otherwise, <c>false</c>.
+        /// </returns>
+        bool IsEqualToValue(List<string> filterValues, string value);
+
+        /// <summary>
         /// Gets the name of the attribute value field.
         /// </summary>
         /// <value>
