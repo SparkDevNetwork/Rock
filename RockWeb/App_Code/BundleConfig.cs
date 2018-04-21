@@ -46,7 +46,7 @@ public class BundleConfig
             "~/Scripts/WebForms/WebParts.js" ) );
 
         bundles.Add( new ScriptBundle( "~/Scripts/Bundles/RockLibs" ).Include(
-            "~/Scripts/jquery-ui-1.10.0.custom.min.js",
+            "~/Scripts/jquery-ui-1.10.4.custom.min.js",
             "~/Scripts/bootstrap.min.js",
             "~/Scripts/bootstrap-timepicker.js",
             "~/Scripts/bootstrap-datepicker.js",
