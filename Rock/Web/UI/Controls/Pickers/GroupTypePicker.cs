@@ -111,6 +111,14 @@ namespace Rock.Web.UI.Controls
                     li.Selected = true;
                     this.SelectedValue = id.ToString();
                 }
+                else
+                {
+                    // if setting GroupTypeId to NULL or 0, just default to the first item in the list (which should be nothing)
+                    if ( this.Items.Count > 0 )
+                    {
+                        this.SelectedIndex = 0;
+                    }
+                }
             }
         }
     }

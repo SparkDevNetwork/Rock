@@ -334,6 +334,9 @@ namespace Rock.Web.UI.Controls
                     this.AllowSorting = false;
                     this.Actions.ShowExcelExport = false;
                     this.Actions.ShowMergeTemplate = false;
+
+                    // disable showing buttons in the header of light grids
+                    this.ShowActionsInHeader = false;
                 }
             }
         }
@@ -742,13 +745,7 @@ namespace Rock.Web.UI.Controls
                     }
                 }
             }
-
-            // disable showing buttons in the header of light grids
-            if ( DisplayType == GridDisplayType.Light )
-            {
-                ShowActionsInHeader = false;
-            }
-
+            
             base.OnLoad( e );
         }
 

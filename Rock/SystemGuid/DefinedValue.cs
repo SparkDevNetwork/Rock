@@ -492,6 +492,7 @@ namespace Rock.SystemGuid
         /// Default RSS Channel Template
         /// </summary>
         public const string DEFAULT_RSS_CHANNEL = "D6149581-9EFC-40D8-BD38-E92C0717BEDA";
+        public const string DEFAULT_ICAL_DESCRIPTION = "DCBA4862-73E9-49B5-8AD5-08E17BE68025";
 
         #endregion
 
@@ -543,6 +544,15 @@ namespace Rock.SystemGuid
         /// The PBX CDR medium value
         /// </summary>
         public const string PBX_CDR_MEDIUM_VALUE = "B3904B57-62A2-57AC-43EA-94D4DEBA3D51";
+
+        #endregion
+
+        #region Person Search Keys
+
+        /// <summary>
+        /// Interaction Channel Type: Website
+        /// </summary>
+        public const string PERSON_SEARCH_KEYS_EMAIL = "D6CFD200-B33B-4D01-B49F-24325E47D8B8";
 
         #endregion
 

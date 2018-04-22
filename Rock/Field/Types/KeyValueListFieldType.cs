@@ -248,10 +248,12 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( control != null && control is KeyValueList )
+            var picker = control as KeyValueList;
+            if ( picker != null )
             {
-                return ( (KeyValueList)control ).Value;
+                return picker.Value;
             }
+
             return null;
         }
 
@@ -263,9 +265,10 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value!= null && control != null && control is KeyValueList )
+            var picker = control as KeyValueList;
+            if ( picker != null )
             {
-                ( (KeyValueList)control ).Value = value;
+                picker.Value = value;
             }
         }
 

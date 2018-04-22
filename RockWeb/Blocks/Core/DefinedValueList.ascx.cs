@@ -135,7 +135,7 @@ namespace RockWeb.Blocks.Core
             {
                 if ( !string.IsNullOrWhiteSpace( hfDefinedValueId.Value ) )
                 {
-                    ShowAttributeValueEdit( hfDefinedValueId.ValueAsInt(), false );
+                    ShowDefinedValueEdit( hfDefinedValueId.ValueAsInt(), false );
                 }
             }
         }
@@ -401,10 +401,10 @@ namespace RockWeb.Blocks.Core
         /// <param name="valueId">The value id.</param>
         protected void gDefinedValues_ShowEdit( int valueId )
         {
-            ShowAttributeValueEdit( valueId, true );
+            ShowDefinedValueEdit( valueId, true );
         }
 
-        private void ShowAttributeValueEdit( int valueId, bool setValues )
+        private void ShowDefinedValueEdit( int valueId, bool setValues )
         {
             var definedType = CacheDefinedType.Get( hfDefinedTypeId.ValueAsInt() );
             DefinedValue definedValue;
@@ -438,9 +438,7 @@ namespace RockWeb.Blocks.Core
 
             definedValue.LoadAttributes();
             phDefinedValueAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( definedValue, phDefinedValueAttributes, setValues, BlockValidationGroup );
-
-            SetValidationGroup( phDefinedValueAttributes.Controls, modalValue.ValidationGroup );
+            Rock.Attribute.Helper.AddEditControls( definedValue, phDefinedValueAttributes, setValues, modalValue.ValidationGroup );
 
             modalValue.Show();
         }

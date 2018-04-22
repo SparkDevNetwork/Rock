@@ -91,19 +91,22 @@ namespace Rock.Field.Types
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var picker = control as WorkflowTypePicker;
-            string result = null;
-
             if ( picker != null )
             {
-                var id = picker.SelectedValueAsInt();
-                var workflowType = new WorkflowTypeService( new RockContext() ).Queryable().FirstOrDefault( a => a.Id == id );
-                if ( workflowType != null )
+                int? itemId = picker.SelectedValue.AsIntegerOrNull();
+                Guid? itemGuid = null;
+                if ( itemId.HasValue )
                 {
-                    result = workflowType.Guid.ToString();
+                    using ( var rockContext = new RockContext() )
+                    {
+                        itemGuid = new WorkflowTypeService( rockContext ).Queryable().Where( a => a.Id == itemId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
+                    }
                 }
+
+                return itemGuid?.ToString();
             }
 
-            return result;
+            return null;
         }
 
         /// <summary>
@@ -114,18 +117,23 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value != null )
+            var picker = control as WorkflowTypePicker;
+
+            if ( picker != null )
             {
-                var picker = control as WorkflowTypePicker;
-                if ( picker != null )
+                WorkflowType item = null;
+                Guid? guid = value.AsGuidOrNull();
+
+                // get the item (or null) and set it
+                if ( guid.HasValue )
                 {
-                    Guid? guid = value.AsGuidOrNull();
-                    if ( guid.HasValue )
+                    using ( var rockContext = new RockContext() )
                     {
-                        var workflowType = new WorkflowTypeService( new RockContext() ).Queryable().FirstOrDefault( a => a.Guid.Equals( guid.Value ) );
-                        picker.SetValue( workflowType );
+                        item = new WorkflowTypeService( rockContext ).Get( guid.Value );
                     }
                 }
+
+                picker.SetValue( item );
             }
         }
 

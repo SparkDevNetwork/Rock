@@ -183,11 +183,31 @@
                                     </Rock:RockControlWrapper>
                                 </div>
                             </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <Rock:RockControlWrapper ID="rcwSearchKeys" runat="server" Label="Search Keys" Help="Search keys provide alternate ways to search for an individuals.">
+                                        <Rock:Grid ID="gSearchKeys" runat="server" DisplayType="Light" DataKeyNames="Guid" ShowConfirmDeleteDialog="false">
+                                            <Columns>
+                                                <Rock:DefinedValueField DataField="SearchTypeValueId" HeaderText="Search Type" />
+                                                <Rock:RockBoundField DataField="SearchValue" HeaderText="Search Value" />
+                                                <Rock:DeleteField OnClick="gSearchKeys_Delete" />
+                                            </Columns>
+                                        </Rock:Grid>
+                                    </Rock:RockControlWrapper>
+                                    </div>
+                            </div>
                         </Rock:PanelWidget>
 
                         <Rock:ModalDialog runat="server" ID="mdPreviousName" Title="Add Previous Last Name" ValidationGroup="vgPreviousName" OnSaveClick="mdPreviousName_SaveClick">
                             <Content>
                                 <Rock:RockTextBox ID="tbPreviousLastName" runat="server" Required="true" ValidationGroup="vgPreviousName" autocomplete="off" />
+                            </Content>
+                        </Rock:ModalDialog>
+
+                        <Rock:ModalDialog runat="server" ID="mdSearchKey" Title="Add Search Key" ValidationGroup="vgSearchKey" OnSaveClick="mdSearchKey_SaveClick">
+                            <Content>
+                                <Rock:RockDropDownList ID="ddlSearchValueType" runat="server" Label="Search Type" Required="true" ValidationGroup="vgSearchKey" />
+                                <Rock:RockTextBox ID="tbSearchValue" runat="server" Label="Search Value" Required="true" ValidationGroup="vgSearchKey" autocomplete="off" />
                             </Content>
                         </Rock:ModalDialog>
 
