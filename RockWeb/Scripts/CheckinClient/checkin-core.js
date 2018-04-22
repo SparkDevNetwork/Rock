@@ -14,20 +14,25 @@ Sys.Application.add_load(function () {
         } catch (e) {}
         bodyScroll = null;
     }
-    
-    resizeBody();
 
-    if ($('.checkin-scroll-panel').length) {
-      bodyScroll = new IScroll('.checkin-scroll-panel', {
-        scrollbars: true,
-        mouseWheel: true,
-        interactiveScrollbars: true,
-        shrinkScrollbars: 'scale',
-        fadeScrollbars: false,
-        scrollbars: 'custom',
-        click: false,
-        preventDefaultException: { tagName: /.*/ }      });
-    }
+    setTimeout(function () {
+
+        resizeBody();
+
+        if ($('.checkin-scroll-panel').length) {
+            bodyScroll = new IScroll('.checkin-scroll-panel',
+                {
+                    scrollbars: true,
+                    mouseWheel: true,
+                    interactiveScrollbars: true,
+                    shrinkScrollbars: 'scale',
+                    fadeScrollbars: false,
+                    scrollbars: 'custom',
+                    click: false,
+                    preventDefaultException: { tagName: /.*/ }
+                });
+        }
+    }, 1 );
 
 });
 
