@@ -734,6 +734,21 @@ namespace Rock.Field
         }
 
         /// <summary>
+        /// Determines whether the filter is an 'Equal To' comparison and the filtered value is equal to the specified value.
+        /// </summary>
+        /// <param name="filterValues">The filter values.</param>
+        /// <param name="value">The value.</param>
+        /// <returns>
+        ///   <c>true</c> if [is equal to value] [the specified filter values]; otherwise, <c>false</c>.
+        /// </returns>
+        public virtual bool IsEqualToValue( List<string> filterValues, string value )
+        {
+            if ( filterValues == null || filterValues.Count != 2 ) return false;
+            if ( filterValues[0] != GetEqualToCompareValue() ) return false;
+            return filterValues[1] == value;
+        }
+
+        /// <summary>
         /// Gets the name of the attribute value field that should be bound to (Value, ValueAsDateTime, ValueAsBoolean, or ValueAsNumeric)
         /// </summary>
         /// <value>
