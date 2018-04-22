@@ -18,6 +18,7 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
+
             // Fix for https://github.com/SparkDevNetwork/Rock/issues/2788
             Sql( @"UPDATE [CommunicationTemplate]
 SET [Message] = REPLACE([Message], 
@@ -59,6 +60,9 @@ WHERE [Message] LIKE '%<!-- prevent Gmail on iOS font size manipulation -->
 
             // Fix for https://github.com/SparkDevNetwork/Rock/issues/2809
             Sql( HotFixMigrationResource._050_MigrationRollupsForV7_4_spCrm_PersonMerge );
+
+            // Update check-in to support check-in by Gender
+            AddCheckinByGender();
         }
 
 
@@ -68,6 +72,41 @@ WHERE [Message] LIKE '%<!-- prevent Gmail on iOS font size manipulation -->
         public override void Down()
         {
             //
+        }
+
+        private void AddCheckinByGender()
+        {
+            RockMigrationHelper.UpdateFieldType( "Gender", "Used to select a gender", "Rock", "Rock.Field.Types.GenderFieldType", "2E28779B-4C76-4142-AE8D-49EA31DDB503" );
+
+            RockMigrationHelper.AddGroupTypeGroupAttribute( "0572A5FE-20A4-4BF1-95CD-C71DB5281392", "2E28779B-4C76-4142-AE8D-49EA31DDB503", "Gender", "The gender allowed to check in to these group types.", 2, "", "DE6F800F-0177-4DAE-BA9B-AD75F20F255B" );
+            Sql( @"
+    -- Make sure the attribute belongs to the 'Check-in' cateogry
+    DECLARE @GroupTypeEntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.GroupType' )
+    DECLARE @AttributeEntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.Attribute' )
+    DECLARE @AttributeId int = ( SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = 'DE6F800F-0177-4DAE-BA9B-AD75F20F255B' )
+    DECLARE @CategoryId int = ( SELECT TOP 1 [Id] FROM [Category] WHERE [Name] = 'Check-in' AND [EntityTypeId] = @AttributeEntityTypeId AND [EntityTypeQualifierColumn] = 'EntityTypeId' AND [EntityTypeQualifierValue] = CAST( @GroupTypeEntityTypeId AS varchar) )
+    DELETE [AttributeCategory] WHERE [AttributeId] = @AttributeId AND [CategoryId] = @CategoryId
+    INSERT INTO [AttributeCategory] ( [AttributeId], [CategoryId] ) VALUES ( @AttributeId, @CategoryId )
+" );
+
+            RockMigrationHelper.UpdateEntityType( "Rock.Workflow.Action.CheckIn.FilterGroupsByGender", "B16E3329-49F4-4DA0-9802-E7BA75F5FD42", false, true );
+            RockMigrationHelper.UpdateWorkflowActionEntityAttribute( "B16E3329-49F4-4DA0-9802-E7BA75F5FD42", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Active", "Active", "Should Service be used?", 0, @"False", "6EC3B2A5-E962-476F-8052-B795AE2ECEF3" );
+            RockMigrationHelper.UpdateWorkflowActionEntityAttribute( "B16E3329-49F4-4DA0-9802-E7BA75F5FD42", "A75DFC58-7A1B-4799-BF31-451B2BBE38FF", "Order", "Order", "The order that this service should be used (priority)", 0, @"", "81957147-9C2D-424E-A9B7-386A72937892" );
+            RockMigrationHelper.UpdateWorkflowActionEntityAttribute( "B16E3329-49F4-4DA0-9802-E7BA75F5FD42", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Remove", "Remove", "Select 'Yes' if groups should be be removed.  Select 'No' if they should just be marked as excluded.", 0, @"True", "1E1F7819-D6EA-4F0B-B30B-90429BDA9808" );
+
+            RockMigrationHelper.UpdateWorkflowActionType( "EB744DF1-E454-482C-B111-80A54EF8A674", "Filter Groups by Gender", 0, "B16E3329-49F4-4DA0-9802-E7BA75F5FD42", true, false, "", "66EF6CB1-1A96-2F81-4534-3BCA5C33D4CD", 1, "False", "EDDD1612-DFE4-4538-84E2-BCC8E869A2F3" );
+
+            Sql( @"
+    -- Fix the ordering of the Person Search workflow activity so that the 'Filter By Gender' activity is immediately after 'Filter By Grade'
+    DECLARE @ActivityTypeId int = ( SELECT TOP 1 [Id] FROM [WorkflowActivityType] WHERE [Guid] = 'EB744DF1-E454-482C-B111-80A54EF8A674' )
+    DECLARE @EntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = 'Rock.Workflow.Action.CheckIn.FilterGroupsByGrade' )
+    DECLARE @Order int = ISNULL( ( SELECT TOP 1 [Order] FROM [WorkflowActionType] WHERE [ActivityTypeId] = @ActivityTypeId AND [EntityTypeId] = @EntityTypeId ), 0)
+    IF @Order IS NOT NULL AND @Order > 0
+    BEGIN
+        UPDATE [WorkflowActionType] SET [Order] = [Order] + 1 WHERE [ActivityTypeId] = @ActivityTypeId AND [Order] > @Order
+        UPDATE [WorkflowActionType] SET [Order] = @Order + 1 WHERE [Guid] = 'EDDD1612-DFE4-4538-84E2-BCC8E869A2F3'
+    END
+" );
         }
     }
 }
