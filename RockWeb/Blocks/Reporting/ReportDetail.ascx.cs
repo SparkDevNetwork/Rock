@@ -41,6 +41,7 @@ namespace RockWeb.Blocks.Reporting
 
     [IntegerField( "Database Timeout", "The number of seconds to wait before reporting a database timeout.", false, 180, "", 0 )]
     [LinkedPage("Data View Page", "The page to edit data views", true, "", "", 1)]
+    [ReportField( "Report", "Select the report to present to the user.", false, "", "", order: 2 )]
     public partial class ReportDetail : RockBlock, IDetailBlock
     {
         #region Properties
@@ -159,10 +160,10 @@ namespace RockWeb.Blocks.Reporting
             {
                 this.ShowResults = GetUserPreference( _SettingKeyShowResults ).AsBoolean(true);
 
-                string itemId = PageParameter( "reportId" );
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
+                var reportId = GetReportId();
+                if ( reportId.HasValue )
                 {
-                    ShowDetail( PageParameter( "reportId" ).AsInteger(), PageParameter( "ParentCategoryId" ).AsIntegerOrNull() );
+                    ShowDetail( reportId.Value, PageParameter( "ParentCategoryId" ).AsIntegerOrNull() );
                 }
                 else
                 {
@@ -706,6 +707,26 @@ namespace RockWeb.Blocks.Reporting
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Get the report through query list or block setting.
+        /// </summary>
+        public int? GetReportId()
+        {
+            int? reportId = PageParameter( "reportId" ).AsIntegerOrNull();
+            var reportGuid = GetAttributeValue( "Report" ).AsGuidOrNull();
+
+            if ( reportGuid.HasValue )
+            {
+                var report = new ReportService( new RockContext() ).Get( reportGuid.Value );
+                if ( report != null )
+                {
+                    reportId = report.Id;
+                }
+            }
+
+            return reportId;
+        }
 
         /// <summary>
         /// Sorts the panel widgets.

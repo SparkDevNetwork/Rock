@@ -218,6 +218,12 @@ namespace RockWeb.Blocks.Finance
                         txn.FinancialPaymentDetail = new FinancialPaymentDetail();
                     }
 
+                    // it is possible that an existing transaction doesn't have a FinancialPaymentDetail (usually because it was imported), so create it if is doesn't exist
+                    if ( txn.FinancialPaymentDetail == null )
+                    {
+                        txn.FinancialPaymentDetail = new FinancialPaymentDetail();
+                    }
+
                     // Update the transaction's properties to match what is currently selected on the screen
                     // This allows the shown attributes to change during AutoPostBack events, based on any Qualifiers specified in the attributes
                     txn.FinancialPaymentDetail.CurrencyTypeValueId = ddlCurrencyType.SelectedValueAsInt();
@@ -290,7 +296,11 @@ namespace RockWeb.Blocks.Finance
             if ( txn != null )
             {
                 txn.LoadAttributes( rockContext );
-                txn.FinancialPaymentDetail.LoadAttributes(rockContext);
+                if ( txn.FinancialPaymentDetail != null )
+                {
+                    txn.FinancialPaymentDetail.LoadAttributes( rockContext );
+                }
+
                 ShowEditDetails( txn, rockContext );
             }
         }
@@ -313,7 +323,11 @@ namespace RockWeb.Blocks.Finance
                 if ( savedTxn != null )
                 {
                     savedTxn.LoadAttributes();
-                    savedTxn.FinancialPaymentDetail.LoadAttributes();
+                    if ( savedTxn.FinancialPaymentDetail != null )
+                    {
+                        savedTxn.FinancialPaymentDetail.LoadAttributes();
+                    }
+
                     ShowReadOnlyDetails( savedTxn );
                 }
             }

@@ -814,6 +814,36 @@ namespace Rock
             return str.Replace( Environment.NewLine, " " ).Replace( "\x0A", " " );
         }
 
+        /// <summary>
+        /// Writes a string to a new memorystream
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static System.IO.MemoryStream ToMemoryStream( this string str )
+        {
+            var stream = new System.IO.MemoryStream();
+            var writer = new System.IO.StreamWriter( stream );
+            writer.Write( str );
+            writer.Flush();
+            stream.Position = 0;
+            return stream;
+        }
+
+        /// <summary>
+        /// Creates a StreamReader with the string data
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static System.IO.StreamReader ToStreamReader( this string str )
+        {
+            var stream = new System.IO.MemoryStream();
+            var writer = new System.IO.StreamWriter( stream );
+            writer.Write( str );
+            writer.Flush();
+            stream.Position = 0;
+            return new System.IO.StreamReader( stream );
+        }
+
         #endregion String Extensions
     }
 }

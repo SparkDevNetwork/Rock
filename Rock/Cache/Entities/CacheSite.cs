@@ -462,6 +462,14 @@ namespace Rock.Cache
         [DataMember]
         public int? FavIconBinaryFileId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the default domain URI.
+        /// </summary>
+        /// <value>
+        /// The default domain URI.
+        /// </value>
+        [DataMember]
+        public Uri DefaultDomainUri { get; set; }
         #endregion
 
         #region Public Methods
@@ -508,6 +516,7 @@ namespace Rock.Cache
             RequiresEncryption = site.RequiresEncryption;
             EnabledForShortening = site.EnabledForShortening;
             FavIconBinaryFileId = site.FavIconBinaryFileId;
+            DefaultDomainUri = site.DefaultDomainUri;
 
             foreach ( var domain in site.SiteDomains.Select( d => d.Domain ).ToList() )
             {

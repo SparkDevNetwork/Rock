@@ -195,7 +195,7 @@ namespace Rock.Field.Types
                 if ( groupTypePicker.SelectedGroupTypeId.HasValue )
                 {
                     var groupType = CacheGroupType.Get( groupTypePicker.SelectedGroupTypeId.Value );
-                    if (groupType != null)
+                    if ( groupType != null )
                     {
                         return groupType.Guid.ToString();
                     }
@@ -216,16 +216,16 @@ namespace Rock.Field.Types
         public override void SetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
             GroupTypePicker groupTypePicker = control as GroupTypePicker;
-            if (groupTypePicker != null && !string.IsNullOrWhiteSpace(value))
+            if ( groupTypePicker != null )
             {
-                Guid groupTypeGuid = Guid.Empty;
-                if (Guid.TryParse(value, out groupTypeGuid))
+                Guid? groupTypeGuid = value.AsGuidOrNull();
+                CacheGroupType groupType = null;
+                if ( groupTypeGuid.HasValue )
                 {
-                    groupTypePicker.SelectedGroupTypeId = new GroupTypeService( new RockContext() ).Queryable()
-                        .Where( g => g.Guid.Equals(groupTypeGuid))
-                        .Select( g => g.Id )
-                        .FirstOrDefault();
+                    groupType = CacheGroupType.Get( groupTypeGuid.Value );
                 }
+
+                groupTypePicker.SelectedGroupTypeId = groupType?.Id;
             }
         }
 

@@ -47,6 +47,7 @@
             <Content>
                 <div class="row">
                     <div class="col-md-4">
+                        <Rock:NotificationBox ID="nbModalDetailsMessage" runat="server" NotificationBoxType="Danger" Title="Error" Visible="false" />
                         <Rock:RockDropDownList ID="ddlGroup" runat="server" Label="Group" DataTextField="Name" DataValueField="Id" ValidationGroup="GroupName" EnhanceForLongLists="true" />
                     </div>
                 </div>
