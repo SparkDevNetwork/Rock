@@ -1,14 +1,5 @@
-IF EXISTS (
-        SELECT *
-        FROM [sysobjects]
-        WHERE [id] = OBJECT_ID(N'[dbo].[spAnalytics_ETL_Campus]')
-            AND OBJECTPROPERTY([id], N'IsProcedure') = 1
-        )
-    DROP PROCEDURE [dbo].spAnalytics_ETL_Campus
-GO
-
 -- EXECUTE [dbo].[spAnalytics_ETL_Campus] 
-CREATE PROCEDURE [dbo].spAnalytics_ETL_Campus
+ALTER PROCEDURE [dbo].spAnalytics_ETL_Campus
 AS
 BEGIN
 	DECLARE @RowsUpdated INT = 0
