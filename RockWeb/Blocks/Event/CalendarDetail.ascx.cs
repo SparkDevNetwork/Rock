@@ -124,7 +124,7 @@ namespace RockWeb.Blocks.Event
                 var calendarEventId = PageParameter( "EventCalendarId" ).AsInteger();
 
                 // Set URL in feed button
-                var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+                var globalAttributes = CacheGlobalAttributes.Get();
                 btnCopyToClipboard.Attributes["data-clipboard-text"] = string.Format( "{0}GetEventCalendarFeed.ashx?CalendarId={1}", globalAttributes.GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash(), calendarEventId );
                 btnCopyToClipboard.Disabled = false;
 
