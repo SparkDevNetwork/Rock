@@ -199,7 +199,13 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void lbCancel_Click( object sender, EventArgs e )
         {
-            NavigateToParentPage();
+            var queryParms = new Dictionary<string, string>();
+            if ( !string.IsNullOrWhiteSpace( PageParameter( "PersonId" ) ) )
+            {
+                queryParms.Add( "PersonId", PageParameter( "PersonId" ) );
+            }
+
+            NavigateToParentPage( queryParms );
         }
 
         /// <summary>
@@ -234,7 +240,13 @@ namespace RockWeb.Blocks.Prayer
 
                 prayerRequestService.Delete( prayerRequest );
                 rockContext.SaveChanges();
-                NavigateToParentPage();
+
+                var queryParms = new Dictionary<string, string>();
+                if ( !string.IsNullOrWhiteSpace( PageParameter( "PersonId" ) ) )
+                {
+                    queryParms.Add( "PersonId", PageParameter( "PersonId" ) );
+                }
+                NavigateToParentPage( queryParms );
             }
         }
 

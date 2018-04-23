@@ -647,16 +647,7 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gPrayerRequests_Add( object sender, EventArgs e )
         {
-            Dictionary<string, string> queryParms = new Dictionary<string, string>();
-            queryParms.Add( _PrayerRequestKeyParameter, "0" );
-
-            var personContext = this.ContextEntity<Person>();
-            if ( personContext != null )
-            {
-                queryParms.Add( "PersonId", personContext.Id.ToString() );
-            }
-
-            NavigateToLinkedPage( "DetailPage", queryParms );
+            NavigateToDetailPage( 0 );
         }
 
         /// <summary>
@@ -666,7 +657,20 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gPrayerRequests_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", _PrayerRequestKeyParameter, e.RowKeyId );
+            NavigateToDetailPage( e.RowKeyId );
+        }
+
+        private void NavigateToDetailPage(int requestId)
+        {
+            var queryParms = new Dictionary<string, string> {{ _PrayerRequestKeyParameter, requestId.ToString() }};
+
+            var personContext = ContextEntity<Person>();
+            if ( personContext != null )
+            {
+                queryParms.Add( "PersonId", personContext.Id.ToString() );
+            }
+
+            NavigateToLinkedPage( "DetailPage", queryParms );
         }
 
         /// <summary>
