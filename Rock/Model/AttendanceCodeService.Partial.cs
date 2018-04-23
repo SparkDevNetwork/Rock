@@ -43,7 +43,7 @@ namespace Rock.Model
         private static char[] alphaCharacters = new char[] { 'B', 'C', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'R', 'S', 'T', 'X', 'Z' };
 
         /// <summary>
-        /// An array of alpha characters that can be used as a part of  <see cref="Rock.Model.AttendanceCode">AttendanceCodes</see>
+        /// An array of numeric characters that can be used as a part of  <see cref="Rock.Model.AttendanceCode">AttendanceCodes</see>
         /// </summary>
         private static char[] numericCharacters = new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
 
@@ -97,9 +97,6 @@ namespace Rock.Model
             {
                 using ( var rockContext = new Rock.Data.RockContext() )
                 {
-                    string alphaNumericCode = string.Empty;
-                    string numericCode = string.Empty;
-
                     var service = new AttendanceCodeService( rockContext );
 
                     DateTime today = RockDateTime.Today;
@@ -114,6 +111,7 @@ namespace Rock.Model
                     }
 
                     // Find a good alphanumeric code prefix
+                    string alphaNumericCode = string.Empty;
                     if ( alphaNumericLength > 0 || alphaLength > 0 )
                     {
                         alphaNumericCode =
@@ -127,31 +125,12 @@ namespace Rock.Model
                         }
                     }
 
-                    // Find a good unique numeric code for today
+                    string numericCode = string.Empty;
                     if ( numericLength > 0 )
                     {
-                        if ( isRandomized )
-                        {
-                            numericCode = GenerateRandomNumericCode( numericLength );
-                            while ( noGood.Any( s => s == numericCode ) || _todaysCodes.Any( c => c.EndsWith( numericCode ) ) )
-                            {
-                                numericCode = GenerateRandomNumericCode( numericLength );
-                            }
-                        }
-                        else
-                        {
-                            int codeLen = alphaNumericLength + alphaLength + numericLength;
-                            var lastCode = _todaysCodes.Where( c => c.Length == codeLen ).OrderBy( c => c.Substring( alphaNumericLength + alphaLength ) ).LastOrDefault();
-                            if ( lastCode != null )
-                            {
-                                var maxCode = lastCode.Substring( alphaNumericLength + alphaLength );
-                                numericCode = ( maxCode.AsInteger() + 1 ).ToString( "D" + numericLength );
-                            }
-                            else
-                            {
-                                numericCode = 1.ToString( "D" + numericLength );
-                            }
-                        }
+                        int codeLen = alphaNumericLength + alphaLength + numericLength;
+                        var lastCode = _todaysCodes.Where( c => c.Length == codeLen ).OrderBy( c => c.Substring( alphaNumericLength + alphaLength ) ).LastOrDefault();
+                        numericCode = GetNextNumericCodeAsString( alphaNumericLength, alphaLength, numericLength, isRandomized, lastCode );
                     }
 
                     string code = alphaNumericCode + numericCode;
@@ -166,6 +145,52 @@ namespace Rock.Model
                     return attendanceCode;
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets the next numeric code as string.
+        /// </summary>
+        /// <param name="alphaNumericLength">Length of the alpha numeric.</param>
+        /// <param name="alphaLength">Length of the alpha.</param>
+        /// <param name="numericLength">Length of the numeric.</param>
+        /// <param name="isRandomized">if set to <c>true</c> [is randomized].</param>
+        /// <returns></returns>
+        public static string GetNextNumericCodeAsString( int alphaNumericLength, int alphaLength, int numericLength, bool isRandomized, string lastCode )
+        {
+            // Find a good unique numeric code for today
+            string numericCode = string.Empty;
+
+            if ( isRandomized )
+            {
+                numericCode = GenerateRandomNumericCode( numericLength );
+                // #2877, use contains to prevent leading zeros bypassing a match for 666
+                while ( noGood.Any( s => numericCode.Contains( s ) ) || _todaysCodes.Any( c => c.EndsWith( numericCode ) ) )
+                {
+                    numericCode = GenerateRandomNumericCode( numericLength );
+                }
+            }
+            else
+            {
+                if ( !string.IsNullOrEmpty( lastCode ) )
+                {
+                    var maxCode = lastCode.Substring( alphaNumericLength + alphaLength );
+                    int nextCode = maxCode.AsInteger() + 1;
+
+                    // Let's just skip over this one...
+                    if ( nextCode.ToString().Contains( "666" ) )
+                    {
+                        nextCode += 1;
+                    }
+
+                    numericCode = nextCode.ToString( "D" + numericLength );
+                }
+                else
+                {
+                    numericCode = 1.ToString( "D" + numericLength );
+                }
+            }
+
+            return numericCode;
         }
 
         /// <summary>
