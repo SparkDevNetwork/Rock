@@ -34,7 +34,7 @@ using Rock.Security;
 namespace RockWeb.Blocks.Event
 {
     /// <summary>
-    /// Template block for developers to use to start a new block.
+    /// 
     /// </summary>
     [DisplayName( "Event Item Occurrence List Lava" )]
     [Category( "Event" )]
@@ -133,15 +133,19 @@ namespace RockWeb.Blocks.Event
 
                     if ( contextCampus != null )
                     {
-                        qry = qry.Where( e => e.CampusId == contextCampus.Id );
+                        // If an EventItemOccurrence's CampusId is null, then the occurrence is an 'All Campuses' event occurrence, so include those
+                        qry = qry.Where( e => e.CampusId == null || e.CampusId == contextCampus.Id );
                     }
                 }
                 else
                 {
                     if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "Campuses" ) ) )
                     {
-                        var selectedCampuses = Array.ConvertAll( GetAttributeValue( "Campuses" ).Split( ',' ), s => new Guid( s ) ).ToList();
-                        qry = qry.Where( e => selectedCampuses.Contains( e.Campus.Guid ) );
+                        var selectedCampusGuids = GetAttributeValue( "Campuses" ).Split( ',' ).AsGuidList();
+                        var selectedCampusIds = selectedCampusGuids.Select( a => CampusCache.Read( a ) ).Where( a => a != null ).Select( a => a.Id );
+
+                        // If an EventItemOccurrence's CampusId is null, then the occurrence is an 'All Campuses' event occurrence, so include those
+                        qry = qry.Where( e => e.CampusId == null || selectedCampusIds.Contains( e.CampusId.Value) );
                     }
                 }
 
