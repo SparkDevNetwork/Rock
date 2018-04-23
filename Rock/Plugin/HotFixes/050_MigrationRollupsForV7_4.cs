@@ -63,6 +63,9 @@ WHERE [Message] LIKE '%<!-- prevent Gmail on iOS font size manipulation -->
 
             // Update check-in to support check-in by Gender
             AddCheckinByGender();
+
+            // Fix for personal communication templates
+            FixPersonalCommunicationTemplates();
         }
 
 
@@ -107,6 +110,17 @@ WHERE [Message] LIKE '%<!-- prevent Gmail on iOS font size manipulation -->
         UPDATE [WorkflowActionType] SET [Order] = @Order + 1 WHERE [Guid] = 'EDDD1612-DFE4-4538-84E2-BCC8E869A2F3'
     END
 " );
+        }
+
+        private void FixPersonalCommunicationTemplates()
+        {
+            RockMigrationHelper.AddSecurityAuthForEntityType( "Rock.Model.CommunicationTemplate", 0, "Edit", true, SystemGuid.Group.GROUP_COMMUNICATION_ADMINISTRATORS, 0, "38869B4A-DB5E-42D6-BA25-E5AA12FE713E" );
+
+            RockMigrationHelper.UpdateBlockTypeAttribute( "EACDBBD4-C355-4D38-B604-779BC55D3876", SystemGuid.FieldType.BOOLEAN, "Personal Templates View", "PersonalTemplatesView", "", "Is this block being used to display personal templates (only templates that current user is allowed to edit)?", 1, @"False", "BB7AF79E-79D1-48B0-8FA6-EEE358B0ACB2" );
+            RockMigrationHelper.AddBlockAttributeValue( true, "8B080D88-D088-4D09-9D74-576B485549A2", "BB7AF79E-79D1-48B0-8FA6-EEE358B0ACB2", @"True" );
+
+            RockMigrationHelper.UpdateBlockTypeAttribute( "BFDCA2E2-DAA1-4FA6-B33C-C53C7CF23C5D6", SystemGuid.FieldType.BOOLEAN, "Personal Templates View", "PersonalTemplatesView", "", "Is this block being used to display personal templates (only templates that current user is allowed to edit)?", 0, @"False", "60581383-BE1E-40A4-9F60-786B761BDA98" );
+            RockMigrationHelper.AddBlockAttributeValue( true, "425C325E-1054-4A52-A162-DECEB377E178", "60581383-BE1E-40A4-9F60-786B761BDA98", @"True" );
         }
     }
 }
