@@ -56,6 +56,7 @@ namespace RockWeb.Blocks.Groups
     [CustomRadioListField( "Auto Fill Form", "If set to FALSE then the form will not load the context of the logged in user (default: 'True'.)", "true^True,false^False", true, "true", "", 10 )]
     [TextField( "Register Button Alt Text", "Alternate text to use for the Register button (default is 'Register').", false, "", "", 11 )]
     [BooleanField( "Prevent Overcapacity Registrations", "When set to true, user cannot register for groups that are at capacity or whose default GroupTypeRole are at capacity. If only one spot is available, no spouses can be registered.", true, "", 12 )]
+
     public partial class GroupRegistration : RockBlock
     {
         #region Fields
@@ -604,8 +605,6 @@ namespace RockWeb.Blocks.Groups
             _mode = GetAttributeValue( "Mode" );
 
             _autoFill = GetAttributeValue( "AutoFillForm" ).AsBoolean();
-
-            tbEmail.Required = _autoFill;
 
             string registerButtonText = GetAttributeValue( "RegisterButtonAltText" );
             if ( string.IsNullOrWhiteSpace( registerButtonText ) )
