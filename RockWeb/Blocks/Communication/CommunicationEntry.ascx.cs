@@ -922,9 +922,7 @@ namespace RockWeb.Blocks.Communication
                 {
                     foreach ( var template in new CommunicationTemplateService( new RockContext() )
                         .Queryable().AsNoTracking()
-                        .Where(a => 
-                            a.IsActive &&
-                            ( !a.SenderPersonAliasId.HasValue || a.SenderPersonAliasId.Value == CurrentPersonAliasId ) )
+                        .Where(a => a.IsActive )
                         .OrderBy( t => t.Name ) )
                     {
                         if ( template.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
