@@ -1301,6 +1301,8 @@ namespace RockWeb.Blocks.Finance
 
             // Filter query by any configured attribute filters
             IQueryable<AttributeValue> attributeValues = null;
+            IQueryable<AttributeValue> filteredAttributeValues = null;
+            bool filterIsDefault = false;
             if ( _availableAttributes != null && _availableAttributes.Any() )
             {
                 var attributeValueService = new AttributeValueService( rockContext );
@@ -1309,19 +1311,20 @@ namespace RockWeb.Blocks.Finance
                 foreach ( var attribute in _availableAttributes )
                 {
                     var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
-                    if ( filterControl != null )
-                    {
-                        var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
-                        var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
-                        if ( expression != null )
-                        {
-                            attributeValues = attributeValueService
-                                .Queryable()
-                                .Where( v => v.Attribute.Id == attribute.Id );
+                    if ( filterControl == null ) continue;
 
-                            attributeValues = attributeValues.Where( parameterExpression, expression, null );
-                        }
-                    }
+                    var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
+                    filterIsDefault = attribute.FieldType.Field.IsEqualToValue( filterValues, attribute.DefaultValue );
+                    var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
+                    if ( expression == null ) continue;
+
+                    attributeValues = attributeValueService
+                        .Queryable()
+                        .Where( v => v.Attribute.Id == attribute.Id );
+
+                    filteredAttributeValues = attributeValues.Where( parameterExpression, expression, null );
+
+                    
                 }
             }
 
@@ -1335,7 +1338,17 @@ namespace RockWeb.Blocks.Finance
 
                 if ( attributeValues != null )
                 {
-                    financialTransactionDetailQry = financialTransactionDetailQry.Where( t => attributeValues.Select( v => v.EntityId ).Contains( t.Transaction.Id ) );
+                    if ( filterIsDefault )
+                    {
+                        financialTransactionDetailQry = financialTransactionDetailQry.Where( w =>
+                             !attributeValues.Any( v => v.EntityId == w.Transaction.Id ) ||
+                             filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Transaction.Id ) );
+                    }
+                    else
+                    {
+                        financialTransactionDetailQry = financialTransactionDetailQry.Where( w =>
+                            filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Transaction.Id ) );
+                    }
                 }
 
                 // Filter to configured accounts.
@@ -1398,7 +1411,17 @@ namespace RockWeb.Blocks.Finance
 
                 if ( attributeValues != null )
                 {
-                    financialTransactionQry = financialTransactionQry.Where( t => attributeValues.Select( v => v.EntityId ).Contains( t.Id ) );
+                    if ( filterIsDefault )
+                    {
+                        financialTransactionQry = financialTransactionQry.Where( w =>
+                             !attributeValues.Any( v => v.EntityId == w.Id ) ||
+                             filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Id ) );
+                    }
+                    else
+                    {
+                        financialTransactionQry = financialTransactionQry.Where( w =>
+                            filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Id ) );
+                    }
                 }
 
                 if ( sortProperty != null && sortProperty.Property == "_PERSONNAME_" )
