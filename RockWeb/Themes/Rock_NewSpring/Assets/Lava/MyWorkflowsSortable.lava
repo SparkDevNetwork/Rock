@@ -1,0 +1,44 @@
+<link rel="stylesheet" href="/Styles/bootstrap-sortable.css">
+
+  <div class='panel panel-block'>
+    <div class='panel-heading'>
+      <h4 class='panel-title'>
+        {% if PanelIcon != empty %}<i class='{{ PanelIcon }}'></i>{% endif %} {% if PanelTitle != empty %}{{PanelTitle}}{% else %} My {% if Role == '0' %}Tasks{% else %}Requests{% endif %}{% endif %}
+      </h4>
+    </div>
+    {% if Actions.size > 0 %}
+    <table class="table sortable">
+      <thead>
+        <tr>
+          <th>Created</th>
+          <th>Title</th>
+          <th>Type</th>
+          <th>Due</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for action in Actions %}
+        <tr>
+          <td data-dateformat="M/D/YY">{{ action.Activity.Workflow.CreatedDateTime | Date:'M/d/yy' }}</td>
+          <td>
+            <a href='/MyDashboard{% if Role == '0' %}WorkflowEntry/{{ action.Activity.Workflow.WorkflowTypeId }}{% else %}Workflow{% endif %}/{{ action.Activity.Workflow.Id }}'>{{ action.Activity.Workflow.Name }}{% if role == '0' %} ({{ action.Activity.ActivityType.Name }}){% endif %}</a>
+            {% if action.Activity.Workflow.Status != 'Active' %}
+            <span class='label label-info'>{{ action.Activity.Workflow.Status }}</span>
+            {% endif %}
+          </td>
+          <td><i class='fa-fw {{ action.Activity.Workflow.WorkflowType.IconCssClass }}'></i> {{ action.Activity.Workflow.WorkflowType.Name }}</td>
+          <td data-dateformat="M/D/YY">{{ action.Activity.Workflow | Attribute:'DueDate' | Date:'M/d/yy' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="panel-body">
+      <div class='alert alert-info'>There are no open tasks assigned to you.</div>
+    </div>
+    {% endif %}
+  </div>
+
+
+  <script src="/Scripts/moment.min.js"></script>
+  <script src="/Scripts/bootstrap-sortable.js"></script>
