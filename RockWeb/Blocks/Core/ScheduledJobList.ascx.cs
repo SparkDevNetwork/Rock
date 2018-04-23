@@ -92,7 +92,7 @@ namespace RockWeb.Blocks.Administration
                 if ( jobGuid.HasValue && jobGuid.Value.Equals( Rock.SystemGuid.ServiceJob.JOB_PULSE.AsGuid() ))
                 {
                     var runNowColumn = gScheduledJobs.ColumnsOfType<EditField>().Where( a => a.HeaderText == "Run Now" ).FirstOrDefault();
-                    e.Row.Cells[gScheduledJobs.Columns.IndexOf(runNowColumn)].Text = string.Empty;
+                    e.Row.Cells[gScheduledJobs.GetColumnIndex( runNowColumn)].Text = string.Empty;
                 }
                 
                 // format duration

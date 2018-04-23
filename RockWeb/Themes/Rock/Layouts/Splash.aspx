@@ -50,14 +50,6 @@
                 <Rock:Zone Name="Main" runat="server" />
             </div>
         </div>
-        
-        <script>
-
-            // add quick fade-in effect to the page
-            $(document).ready(function () {
-                $("#content").rockFadeIn();
-            });
-        </script>
 
     </form>
 </body>

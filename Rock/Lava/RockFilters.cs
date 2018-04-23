@@ -68,7 +68,7 @@ namespace Rock.Lava
         /// </returns>
         public static string ToString( object input )
         {
-            return input.ToString();
+            return input?.ToString();
         }
 
         /// <summary>
@@ -1981,6 +1981,33 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Loads a person by their alias guid
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static Person PersonByAliasGuid( DotLiquid.Context context, object input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            Guid? personAliasGuid = input.ToString().AsGuidOrNull();
+
+            if ( personAliasGuid.HasValue )
+            {
+                var rockContext = new RockContext();
+
+                return new PersonAliasService( rockContext ).Get( personAliasGuid.Value ).Person;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Persons the by alias identifier.
         /// </summary>
         /// <param name="context">The context.</param>
@@ -3051,10 +3078,12 @@ namespace Rock.Lava
 
             var mergeFields = context.Environments.SelectMany( a => a ).ToDictionary( k => k.Key, v => v.Value );
 
+            var allFields = mergeFields.Union( context.Scopes.SelectMany( a => a ).DistinctBy(x => x.Key).ToDictionary( k => k.Key, v => v.Value ) );
+
             // if a specific MergeField was specified as the Input, limit the help to just that MergeField
-            if ( input != null && mergeFields.Any( a => a.Value == input ) )
+            if ( input != null && allFields.Any( a => a.Value == input ) )
             {
-                mergeFields = mergeFields.Where( a => a.Value == input ).ToDictionary( k => k.Key, v => v.Value );
+                mergeFields = allFields.Where( a => a.Value == input ).ToDictionary( k => k.Key, v => v.Value );
             }
 
             // TODO: implement the outputFormat option to support ASCII

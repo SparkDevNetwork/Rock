@@ -108,6 +108,7 @@ namespace Rock.Model
             target.InteractionDetailTemplate = source.InteractionDetailTemplate;
             target.InteractionEntityTypeId = source.InteractionEntityTypeId;
             target.InteractionListTemplate = source.InteractionListTemplate;
+            target.IsActive = source.IsActive;
             target.Name = source.Name;
             target.RetentionDuration = source.RetentionDuration;
             target.SessionDetailTemplate = source.SessionDetailTemplate;

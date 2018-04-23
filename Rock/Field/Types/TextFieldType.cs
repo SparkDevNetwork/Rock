@@ -35,7 +35,7 @@ namespace Rock.Field.Types
 
         private const string IS_PASSWORD_KEY = "ispassword";
         private const string MAX_CHARACTERS = "maxcharacters";
-        private const string SHOW_COUNt_DOWN = "showcountdown";
+        private const string SHOW_COUNT_DOWN = "showcountdown";
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -46,7 +46,7 @@ namespace Rock.Field.Types
             var configKeys = base.ConfigurationKeys();
             configKeys.Add( IS_PASSWORD_KEY );
             configKeys.Add( MAX_CHARACTERS );
-            configKeys.Add( SHOW_COUNt_DOWN );
+            configKeys.Add( SHOW_COUNT_DOWN );
             return configKeys;
         }
 
@@ -81,9 +81,9 @@ namespace Rock.Field.Types
             controls.Add( cbCountDown );
             cbCountDown.AutoPostBack = true;
             cbCountDown.CheckedChanged += OnQualifierUpdated;
-            cbCountDown.Label = "Show Count Down";
+            cbCountDown.Label = "Show Character Limit Countdown";
             cbCountDown.Text = "Yes";
-            cbCountDown.Help = "When set, displays the count down.";
+            cbCountDown.Help = "When set, displays a countdown showing how many characters remain (for the Max Characters setting).";
 
             return controls;
         }
@@ -98,7 +98,7 @@ namespace Rock.Field.Types
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
             configurationValues.Add( IS_PASSWORD_KEY, new ConfigurationValue( "Password Field", "When set, edit field will be masked.", "" ) );
             configurationValues.Add( MAX_CHARACTERS, new ConfigurationValue( "Max Characters", "The maximum number of characters to allow. Leave this field empty to allow for an unlimited amount of text.", "" ) );
-            configurationValues.Add( SHOW_COUNt_DOWN, new ConfigurationValue( "Show Count Down", "When set, displays the count down.", "" ) );
+            configurationValues.Add( SHOW_COUNT_DOWN, new ConfigurationValue( "Show Character Limit Countdown", "When set, displays a countdown showing how many characters remain (for the Max Characters setting).", "" ) );
 
             if ( controls != null )
             {
@@ -114,7 +114,7 @@ namespace Rock.Field.Types
 
                 if ( controls.Count > 2 && controls[2] != null && controls[2] is CheckBox )
                 {
-                    configurationValues[SHOW_COUNt_DOWN].Value = ( ( CheckBox ) controls[2] ).Checked.ToString();
+                    configurationValues[SHOW_COUNT_DOWN].Value = ( ( CheckBox ) controls[2] ).Checked.ToString();
                 }
             }
 
@@ -155,9 +155,9 @@ namespace Rock.Field.Types
                     ( ( NumberBox ) controls[1] ).Text = configurationValues[MAX_CHARACTERS].Value;
                 }
 
-                if ( controls[2] != null && controls[2] is CheckBox && configurationValues.ContainsKey( SHOW_COUNt_DOWN ) )
+                if ( controls[2] != null && controls[2] is CheckBox && configurationValues.ContainsKey( SHOW_COUNT_DOWN ) )
                 {
-                    ( ( CheckBox ) controls[2] ).Checked = configurationValues[SHOW_COUNt_DOWN].Value.AsBoolean();
+                    ( ( CheckBox ) controls[2] ).Checked = configurationValues[SHOW_COUNT_DOWN].Value.AsBoolean();
                 }
             }
         }
@@ -270,9 +270,9 @@ namespace Rock.Field.Types
                     }
                 }
 
-                if ( configurationValues.ContainsKey( SHOW_COUNt_DOWN ) )
+                if ( configurationValues.ContainsKey( SHOW_COUNT_DOWN ) )
                 {
-                    tb.ShowCountDown = configurationValues[SHOW_COUNt_DOWN].Value.AsBoolean();
+                    tb.ShowCountDown = configurationValues[SHOW_COUNT_DOWN].Value.AsBoolean();
                 }
             }
             return tb;

@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.Reporting
 
 	        {% for interaction in Interactions %}
 		        {% if InteractionDetailPage != null and InteractionDetailPage != ''  %}
-                    <a href = '{{ InteractionDetailPage }}?interactionId={{ interaction.Id }}'>
+                    <a href = '{{ InteractionDetailPage }}?InteractionId={{ interaction.Id }}'>
                 {% endif %}
 		        
 		         <div class='panel panel-widget'>
@@ -93,8 +93,8 @@ namespace RockWeb.Blocks.Reporting
 
         private DateTime startDate = DateTime.MinValue;
         private DateTime endDate = DateTime.MaxValue;
-        private int? selectedPersonAlias = null;
         private int pageNumber = 0;
+        private int? _personId = null;
 
         #endregion
 
@@ -107,6 +107,9 @@ namespace RockWeb.Blocks.Reporting
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            _personId = GetPersonId();
+            ppPerson.Visible = !_personId.HasValue;
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -141,16 +144,6 @@ namespace RockWeb.Blocks.Reporting
                     }
                 }
 
-                if ( !string.IsNullOrWhiteSpace( PageParameter( "PersonAlias" ) ) )
-                {
-                    selectedPersonAlias = PageParameter( "PersonAlias" ).AsIntegerOrNull();
-                    if ( selectedPersonAlias.HasValue )
-                    {
-                        var person = new PersonAliasService( new RockContext() ).GetPerson( selectedPersonAlias.Value );
-                        ppPerson.SetValue( person );
-                    }
-                }
-
                 if ( !string.IsNullOrEmpty( PageParameter( "Page" ) ) )
                 {
                     pageNumber = PageParameter( "Page" ).AsInteger();
@@ -173,6 +166,8 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
+            _personId = GetPersonId();
+            ppPerson.Visible = !_personId.HasValue;
             ShowList( PageParameter( "componentId" ).AsInteger() );
         }
 
@@ -193,9 +188,9 @@ namespace RockWeb.Blocks.Reporting
                 endDate = drpDateFilter.UpperValue.Value;
             }
 
-            if ( ppPerson.PersonId.HasValue )
+            if ( ppPerson.PersonId.HasValue && ppPerson.Visible )
             {
-                selectedPersonAlias = ppPerson.PersonAliasId;
+                _personId = ppPerson.PersonId;
             }
 
             pageNumber = 0;
@@ -236,9 +231,9 @@ namespace RockWeb.Blocks.Reporting
                         interactions = interactions.Where( s => s.InteractionDateTime < drpDateFilter.UpperValue );
                     }
 
-                    if ( selectedPersonAlias.HasValue )
+                    if ( _personId.HasValue )
                     {
-                        interactions = interactions.Where( s => s.PersonAliasId == selectedPersonAlias );
+                        interactions = interactions.Where( s => s.PersonAlias.PersonId == _personId );
                     }
 
                     interactions = interactions
@@ -264,9 +259,9 @@ namespace RockWeb.Blocks.Reporting
                         queryStringNext.Add( "ComponentId", componentId.ToString() );
                         queryStringNext.Add( "Page", ( pageNumber + 1 ).ToString() );
 
-                        if ( selectedPersonAlias.HasValue )
+                        if ( _personId.HasValue )
                         {
-                            queryStringNext.Add( "PersonAlias", selectedPersonAlias.Value.ToString() );
+                            queryStringNext.Add( "PersonId", _personId.Value.ToString() );
                         }
 
                         if ( startDate != DateTime.MinValue )
@@ -298,9 +293,9 @@ namespace RockWeb.Blocks.Reporting
                         queryStringPrev.Add( "ComponentId", componentId.ToString() );
                         queryStringPrev.Add( "Page", ( pageNumber - 1 ).ToString() );
 
-                        if ( selectedPersonAlias.HasValue )
+                        if ( _personId.HasValue )
                         {
-                            queryStringPrev.Add( "PersonAlias", selectedPersonAlias.Value.ToString() );
+                            queryStringPrev.Add( "PersonId", _personId.Value.ToString() );
                         }
 
                         if ( startDate != DateTime.MinValue )
@@ -318,6 +313,31 @@ namespace RockWeb.Blocks.Reporting
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Get the person through query list or context.
+        /// </summary>
+        public int? GetPersonId()
+        {
+            int? personId = PageParameter( "PersonId" ).AsIntegerOrNull();
+            int? personAliasId = PageParameter( "PersonAliasId" ).AsIntegerOrNull();
+
+            if ( personAliasId.HasValue )
+            {
+                personId = new PersonAliasService( new RockContext() ).GetPersonId( personAliasId.Value );
+            }
+
+            if ( !personId.HasValue )
+            {
+                var person = ContextEntity<Person>();
+                if ( person != null )
+                {
+                    personId = person.Id;
+                }
+            }
+
+            return personId;
         }
 
         #endregion

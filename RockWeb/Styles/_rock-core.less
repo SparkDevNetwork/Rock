@@ -153,6 +153,12 @@ a.warning {
 // 4. Bootstrap Overrides
 //--------------------------------
 
+// make icons inside of a button fixed with
+.btn i.fa {
+  text-align: center;
+  width: (20em / 16);
+}
+
 // add new alert style
 .alert-default {
   .alert-variant(@alert-default-bg; @alert-default-border; @alert-default-text);
@@ -581,11 +587,6 @@ th[align=center] {
     float: right;
   }
 }
-
-.drawer-pull:hover {
-  background-color: darken(@drawer-bg, 3%);
-}
-
 
 // paneleditor is used to provide a small edit surface in a panel header. 
 // example: threshold editor on checkin manager for locations

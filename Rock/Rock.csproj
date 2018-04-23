@@ -111,10 +111,6 @@
       <HintPath>..\packages\ImageResizer.4.0.5\lib\net45\ImageResizer.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="InteractivePreGeneratedViews, Version=1.0.0.0, Culture=neutral, PublicKeyToken=46c4868af4307d2c, processorArchitecture=MSIL">
-      <HintPath>..\packages\EFInteractiveViews.1.0.1\lib\net45\InteractivePreGeneratedViews.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="JavaScriptEngineSwitcher.Core, Version=2.2.0.0, Culture=neutral, PublicKeyToken=c608b2a8cc9e4472, processorArchitecture=MSIL">
       <HintPath>..\packages\JavaScriptEngineSwitcher.Core.2.2.0\lib\net45\JavaScriptEngineSwitcher.Core.dll</HintPath>
       <Private>True</Private>
@@ -360,6 +356,8 @@
     <Compile Include="Attribute\CheckListFieldAttribute.cs" />
     <Compile Include="Attribute\ComparisonFieldAttribute.cs" />
     <Compile Include="Attribute\ContentChannelItemFieldAttribute.cs" />
+    <Compile Include="Attribute\InteractionChannelFieldAttribute.cs" />
+    <Compile Include="Attribute\InteractionChannelsFieldAttribute.cs" />
     <Compile Include="Attribute\LabelFieldAttribute.cs" />
     <Compile Include="Attribute\LavaFieldAttribute.cs" />
     <Compile Include="Attribute\TimeZoneFieldAttribute.cs" />
@@ -578,6 +576,7 @@
     <Compile Include="Field\Types\CheckListFieldType.cs" />
     <Compile Include="Field\Types\ContentChannelItemFieldType.cs" />
     <Compile Include="Field\Types\MonthDayFieldType.cs" />
+    <Compile Include="Field\Types\InteractionChannelsFieldType.cs" />
     <Compile Include="Field\Types\LabelFieldType.cs" />
     <Compile Include="Field\Types\TimeZoneFieldType.cs" />
     <Compile Include="Field\Types\GroupMemberFieldType.cs" />
@@ -1214,6 +1213,7 @@
     <Compile Include="PersonProfile\Badge\InDataView.cs" />
     <Compile Include="PersonProfile\Badge\TopPersonSignal.cs" />
     <Compile Include="PersonProfile\Badge\PersonalDevice.cs" />
+    <Compile Include="PersonProfile\Badge\InteractionsInRange.cs" />
     <Compile Include="Plugin\HotFixes\038_LabelFieldType.cs" />
     <Compile Include="Plugin\HotFixes\046_EnableSmartyStreetsIfNoActiveLocationSrv.cs" />
     <Compile Include="Plugin\HotFixes\045_FamilyRegistration.cs" />
@@ -1231,6 +1231,7 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
+    <Compile Include="Plugin\HotFixes\050_MigrationRollupsForV7_4.cs" />
     <Compile Include="Reporting\DataFilter\FinancialScheduledTransactionDetail\AccountFilter.cs" />
     <Compile Include="Reporting\DataFilter\BenevolenceRequest\CampusActiveFilter.cs" />
     <Compile Include="Reporting\DataFilter\BenevolenceRequest\CampusesActiveFilter.cs" />
@@ -1545,6 +1546,8 @@
     <Compile Include="Web\HttpModules\ResponseHeaders.cs" />
     <Compile Include="Web\HttpModules\HttpModuleComponent.cs" />
     <Compile Include="Web\HttpModules\HttpModuleContainer.cs" />
+    <Compile Include="Web\UI\Adapters\ListControlAdaptor.cs" />
+    <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />
     <Compile Include="Web\UI\Controls\Captcha.cs" />
     <Compile Include="Web\UI\Controls\Communication\PushNotification.cs" />
     <Compile Include="Web\Cache\WorkflowActionFormAttributeCache.cs" />
@@ -1560,6 +1563,7 @@
     <Compile Include="Web\UI\Controls\ControlMirror.cs" />
     <Compile Include="Web\UI\Controls\ListItems.cs" />
     <Compile Include="Web\UI\Controls\NumberBoxBase.cs" />
+    <Compile Include="Web\UI\Controls\NumberUpDownGroup.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ContentChannelItemPicker.cs" />
     <Compile Include="Web\UI\Controls\PreRegistration\Children.cs" />
     <Compile Include="Web\UI\Controls\PreRegistration\ChildRow.cs" />
@@ -1571,6 +1575,7 @@
     <Compile Include="Web\UI\Controls\Pickers\LavaCommandsPicker.cs" />
     <Compile Include="Web\UI\Controls\SSNBox.cs" />
     <Compile Include="Web\UI\ICustomGridColumns.cs" />
+    <Compile Include="Web\UI\ICustomGridOptions.cs" />
     <Compile Include="Web\UI\RockHiddenFieldPageStatePersister.cs" />
     <Compile Include="Web\UI\Controls\Grid\LavaBoundField.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DefinedValuesPickerEnhanced.cs" />
@@ -1765,7 +1770,6 @@
     <Compile Include="Web\RockRouteHandler.cs" />
     <Compile Include="Web\SystemSettings.cs" />
     <Compile Include="Web\UI\Adapters\CheckBoxAdapter.cs" />
-    <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />
     <Compile Include="Web\UI\Adapters\DropDownListAdapter.cs" />
     <Compile Include="Web\UI\Adapters\RadioButtonAdapter.cs" />
     <Compile Include="Web\UI\Adapters\RadioButtonListAdapter.cs" />
