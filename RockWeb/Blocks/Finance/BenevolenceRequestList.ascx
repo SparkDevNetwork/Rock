@@ -23,7 +23,7 @@
                             <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
                             <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
                         </Rock:GridFilter>
-                        <Rock:Grid ID="gList" runat="server" DisplayType="Full" AllowSorting="true" OnRowDataBound="gList_RowDataBound" OnRowSelected="gList_Edit">
+                        <Rock:Grid ID="gList" runat="server" DisplayType="Full" AllowSorting="true" OnRowDataBound="gList_RowDataBound" OnRowSelected="gList_Edit" ExportSource="DataSource">
                             <Columns>
                                 <Rock:RockBoundField DataField="RequestDateTime" HeaderText="Date" DataFormatString="{0:d}" SortExpression="RequestDateTime" />
                                 <Rock:RockBoundField DataField="Campus.Name" HeaderText="Campus" SortExpression="Campus.Name" />

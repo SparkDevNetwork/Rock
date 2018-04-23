@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Web.UI;
@@ -551,7 +552,7 @@ namespace RockWeb.Blocks.Finance
             gList.Visible = true;
             RockContext rockContext = new RockContext();
             BenevolenceRequestService benevolenceRequestService = new BenevolenceRequestService( rockContext );
-            var qry = benevolenceRequestService.Queryable( "BenevolenceResults,RequestedByPersonAlias,RequestedByPersonAlias.Person,CaseWorkerPersonAlias,CaseWorkerPersonAlias.Person" );
+            var qry = benevolenceRequestService.Queryable( "BenevolenceResults,RequestedByPersonAlias,RequestedByPersonAlias.Person,CaseWorkerPersonAlias,CaseWorkerPersonAlias.Person" ).AsNoTracking();
 
             // Filter by Start Date
             DateTime? startDate = drpDate.LowerValue;
