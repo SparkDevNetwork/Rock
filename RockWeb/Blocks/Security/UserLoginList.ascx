@@ -37,8 +37,8 @@
 
                     <Rock:Grid ID="gUserLogins" runat="server" AllowSorting="true" RowItemText="Login" OnRowDataBound="gUserLogins_RowDataBound">
                         <Columns>
-                            <Rock:RockLiteralField ID="lUserNameOrRemoteProvider" HeaderText="Username" SortExpression="Name" />
-                            <asp:HyperLinkField DataNavigateUrlFields="PersonId" DataTextField="Person.FullName" DataNavigateUrlFormatString="~/Person/{0}" HeaderText="Person" SortExpression="Person.LastName, Person.NickName" />
+                            <Rock:RockLiteralField ID="lUserNameOrRemoteProvider" HeaderText="Username" SortExpression="UserName" />
+                            <Rock:PersonField DataField="Person" HeaderText="Person" SortExpression="Person.LastName, Person.NickName" />
                             <Rock:RockLiteralField ID="lProviderName" HeaderText="Provider" SortExpression="EntityType.FriendlyName" />
                             <Rock:DateField DataField="CreatedDateTime" HeaderText="Created" SortExpression="CreatedDateTime" />
                             <Rock:DateField DataField="LastLoginDateTime" HeaderText="Last Login" SortExpression="LastLoginDateTime" />

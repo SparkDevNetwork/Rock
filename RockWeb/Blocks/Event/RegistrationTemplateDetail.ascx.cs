@@ -1110,6 +1110,7 @@ namespace RockWeb.Blocks.Event
                     discount.MinRegistrants = discountUI.MinRegistrants;
                     discount.StartDate = discountUI.StartDate;
                     discount.EndDate = discountUI.EndDate;
+                    discount.AutoApplyDiscount = discountUI.AutoApplyDiscount;
                 }
 
                 // add/updated fees
@@ -1130,6 +1131,7 @@ namespace RockWeb.Blocks.Event
                     fee.AllowMultiple = feeUI.AllowMultiple;
                     fee.Order = feeUI.Order;
                     fee.IsActive = feeUI.IsActive;
+                    fee.IsRequired = feeUI.IsRequired;
                 }
 
                 rockContext.SaveChanges();
@@ -1717,6 +1719,7 @@ namespace RockWeb.Blocks.Event
             discount.MinRegistrants = nbDiscountMinRegistrants.Text.AsIntegerOrNull();
             discount.StartDate = drpDiscountDateRange.LowerValue;
             discount.EndDate = drpDiscountDateRange.UpperValue;
+            discount.AutoApplyDiscount = cbcAutoApplyDiscount.Checked;
 
             HideDialog();
 
@@ -2776,6 +2779,7 @@ namespace RockWeb.Blocks.Event
             nbDiscountMinRegistrants.Text = discount.MinRegistrants.HasValue ? discount.MinRegistrants.ToString() : string.Empty;
             drpDiscountDateRange.LowerValue = discount.StartDate;
             drpDiscountDateRange.UpperValue = discount.EndDate;
+            cbcAutoApplyDiscount.Checked = discount.AutoApplyDiscount;
 
             ShowDialog( "Discounts" );
         }

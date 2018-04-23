@@ -14,30 +14,31 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using System.Web.UI;
-using System.Web.UI.WebControls;
 
-using Rock;
-using Rock.Attribute;
-using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
-using Rock.Web.UI;
-using Rock.Web.UI.Controls;
 
-namespace RockWeb.Blocks.Examples
+namespace Rock.Field.Types
 {
-    public partial class CaptivePortalSuccess : RockBlock
-    { 
-
-        protected void Page_Load( object sender, EventArgs e )
+    /// <summary>
+    /// Select multiple Interaction Channels from a checkbox list. Stored as a comma-delimited list of InteractionChannel Guids
+    /// </summary>
+    public class InteractionChannelsFieldType : SelectFromListFieldType
+    {
+        /// <summary>
+        /// Gets the list source.
+        /// </summary>
+        /// <value>
+        /// The list source.
+        /// </value>
+        internal override Dictionary<string, string> ListSource
         {
-
+            get
+            {
+                return new InteractionChannelService( new RockContext() ).Queryable().OrderBy( a => a.Name ).ToDictionary( c => c.Guid.ToString(), c => c.Name );
+            }
         }
     }
 }

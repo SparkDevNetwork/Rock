@@ -53,6 +53,7 @@ public class BundleConfig
             "~/Scripts/chosen.jquery.min.js",
             "~/Scripts/typeahead.min.js",
             "~/Scripts/jquery.fileupload.js",
+            "~/Scripts/jquery.stickytableheaders.js",
             "~/Scripts/iscroll.js",
             "~/Scripts/jcrop.min.js",
             "~/Scripts/ResizeSensor.js",       
@@ -60,6 +61,7 @@ public class BundleConfig
             "~/Scripts/Rock/Extensions/*.js" ) );
 
         bundles.Add( new ScriptBundle( "~/Scripts/Bundles/RockUi" ).Include(
+            "~/Scripts/Rock/coreListeners.js",
             "~/Scripts/Rock/dialogs.js",
             "~/Scripts/Rock/settings.js",
             "~/Scripts/Rock/utility.js",

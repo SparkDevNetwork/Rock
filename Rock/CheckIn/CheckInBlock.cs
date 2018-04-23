@@ -132,6 +132,11 @@ namespace Rock.CheckIn
             /// The name of the cookie that holds whether or not the device was a mobile device.
             /// </summary>
             public static readonly string ISMOBILE = "Checkin.IsMobile";
+
+            /// <summary>
+            /// The phone number used to check in could be in this cookie.
+            /// </summary>
+            public static readonly string PHONENUMBER = "Checkin.PhoneNumber";
         }
 
         /// <summary>

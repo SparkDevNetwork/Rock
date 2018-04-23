@@ -497,6 +497,7 @@ namespace Rock.Web.UI.Controls
 
             cbIncludeFilter = new RockCheckBox();
             cbIncludeFilter.ContainerCssClass = "filterfield-checkbox";
+            cbIncludeFilter.TextCssClass = "control-label";
             Controls.Add( cbIncludeFilter );
             cbIncludeFilter.ID = this.ID + "_cbIncludeFilter";
         }

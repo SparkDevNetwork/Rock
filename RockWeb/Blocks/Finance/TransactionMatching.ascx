@@ -33,7 +33,7 @@
             </div>
 
             <div class="panel-body">
-                <Rock:NotificationBox ID="nbNoUnmatchedTransactionsRemaining" runat="server" NotificationBoxType="Success" Text="<i class='fa fa-2x fa-check-circle'></i> There are no more unmatched transactions in this batch. Click 'Done' to indicate that the batch is no longer pending and return to batch details." />
+                <Rock:NotificationBox ID="nbNoUnmatchedTransactionsRemaining" runat="server" NotificationBoxType="Success" Text="<i class='fa fa-check-circle'></i> There are no more unmatched transactions in this batch. Click 'Done' to indicate that the batch is no longer pending and return to batch details." />
                 <asp:LinkButton ID="lbFinish" runat="server" CssClass="btn btn-default" OnClick="lbFinish_Click">Done</asp:LinkButton>
                 <asp:Panel ID="pnlEdit" runat="server">
                     <div class="row">
@@ -138,7 +138,11 @@
                     <div class="row">
                         <div class="col-md-12">
                             <asp:LinkButton ID="btnPrevious" runat="server" CssClass="btn" OnClick="btnPrevious_Click">Previous</asp:LinkButton>
-                            <asp:LinkButton ID="btnNext" runat="server" AccessKey="n" ToolTip="Alt+n" CssClass="btn btn-primary pull-right" OnClick="btnNext_Click">Next <i class="fa fa-chevron-right"></i></asp:LinkButton>
+                            <div class="pull-right">
+                                <asp:LinkButton ID="btnCancel" runat="server" CssClass="btn btn-default" Visible="false" OnClick="btnCancel_Click">Cancel</asp:LinkButton>
+                                <asp:LinkButton ID="btnNext" runat="server" AccessKey="n" ToolTip="Alt+n" CssClass="btn btn-primary" OnClick="btnNext_Click">Next <i class="fa fa-chevron-right"></i></asp:LinkButton>
+                            </div>
+                            <div class="clearfix"></div>
                         </div>
                     </div>
 

@@ -361,7 +361,7 @@
                             <Rock:RockControlWrapper ID="rcwFees" runat="server" Label="Fees">
                                 <asp:Repeater ID="rFees" runat="server" >
                                     <ItemTemplate>
-                                        <div <%# FormatInactiveRow(DataBinder.Eval(Container.DataItem, "IsActive").ToString() ) %> >
+                                        <div class="row">
                                             <div class="col-xs-4"><%# Eval("Name") %></div>
                                             <div class="col-xs-8"><%# FormatFeeCost( Eval("CostValue").ToString() ) %></div>
                                         </div>
@@ -443,6 +443,8 @@
                         </Rock:RockRadioButtonList>
                         <Rock:NumberBox ID="nbDiscountPercentage" runat="server" AppendText="%" CssClass="input-width-md" Label="Discount Percentage" NumberType="Integer" ValidationGroup="Discount"  />
                         <Rock:CurrencyBox ID="cbDiscountAmount" runat="server" CssClass="input-width-md" Label="Discount Amount" ValidationGroup="Discount" />
+                        <Rock:RockCheckBox ID="cbcAutoApplyDiscount" runat="server" Label="Auto Apply Discount" 
+                            Help="Will automatically apply the discount if the registration meet the criteria.  If multiple automatic discounts exist, only the first one that meets the criteria will be applied." />
                     </div>
                     <div class="col-md-6">
                         <Rock:NumberBox ID="nbDiscountMaxUsage" runat="server" NumberType="Integer" MinimumValue="0" Label="Maximum Usage" 
@@ -462,8 +464,10 @@
             <Content>
                 <asp:HiddenField ID="hfFeeGuid" runat="server" />
                 <asp:ValidationSummary ID="ValidationSummaryFee" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="Fee" />
-                <div class="col-md-12">
-                    <Rock:RockTextBox ID="tbFeeName" runat="server" Label="Name" ValidationGroup="Fee" Required="true" />
+                <div class="row">
+                    <div class="col-md-12">
+                        <Rock:RockTextBox ID="tbFeeName" runat="server" Label="Name" ValidationGroup="Fee" Required="true" />
+                    </div>
                 </div>
                 <div class="row">
                     <div class="col-md-6">

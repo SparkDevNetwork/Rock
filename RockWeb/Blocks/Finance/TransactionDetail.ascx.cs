@@ -1121,7 +1121,7 @@ namespace RockWeb.Blocks.Finance
             nbEditModeMessage.Text = string.Empty;
 
             lbEdit.Visible = editAllowed && batchEditAllowed;
-            lbRefund.Visible = refundAllowed && batchEditAllowed && txn.RefundDetails == null;
+            lbRefund.Visible = refundAllowed && txn.RefundDetails == null;
             lbAddTransaction.Visible = editAllowed && batch != null && batch.Status != BatchStatus.Closed;
 
             if ( !editAllowed )

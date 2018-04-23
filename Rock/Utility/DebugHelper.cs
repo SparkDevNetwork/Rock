@@ -222,7 +222,7 @@ namespace Rock
         /// <param name="rockContext">The rock context.</param>
         public static void SQLLoggingStart( RockContext rockContext )
         {
-            SQLLoggingStart( (DbContext)rockContext );
+            SQLLoggingStart( ( DbContext ) rockContext );
         }
 
         /// <summary>
@@ -246,11 +246,21 @@ namespace Rock
         }
 
         /// <summary>
-        /// Stops logging all EF SQL Calls to the Debug Output Window
+        /// Enables or Disables SqlLogging
         /// </summary>
-        public static void SQLLoggingStop( this System.Data.Entity.DbContext dbContext )
+        /// <param name="dbContext">The database context to filter logs to.</param>
+        /// <param name="enable">if set to <c>true</c> [enable].</param>
+        public static void SqlLogging( this System.Data.Entity.DbContext dbContext, bool enable )
         {
-            DebugHelper.SQLLoggingStop();
+            if ( enable )
+            {
+                DebugHelper.SQLLoggingStart( dbContext );
+            }
+            else
+            {
+                DebugHelper.SQLLoggingStop();
+            }
+
         }
     }
 }

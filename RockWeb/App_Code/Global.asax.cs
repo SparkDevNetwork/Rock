@@ -138,25 +138,22 @@ namespace RockWeb
                     System.Diagnostics.Debug.WriteLine( string.Format( "Application_Start: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
                 }
 
+                // Indicate to always log to file during initialization.
+                ExceptionLogService.AlwaysLogToFile = true;
+
                 // Clear all cache
                 RockMemoryCache.Clear();
 
-                // If not migrating, set up view cache to speed up startup (Not supported when running migrations).
-                var fileInfo = new FileInfo( Server.MapPath( "~/App_Data/Run.Migration" ) );
-                if ( !fileInfo.Exists )
-                {
-                    RockInteractiveViews.SetViewFactory( Server.MapPath( "~/App_Data/RockModelViews.xml" ) );
-                }
+                var runMigrationFile = new FileInfo( Server.MapPath( "~/App_Data/Run.Migration" ) );
 
                 // Get a db context
                 using ( var rockContext = new RockContext() )
                 {
-                    if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment && !fileInfo.Exists )
+                    if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                     {
                         try
                         {
-                            new AttributeService( rockContext ).Get( 0 );
-                            System.Diagnostics.Debug.WriteLine( string.Format( "ConnectToDatabase {2}/{1} - {0} ms", stopwatch.Elapsed.TotalMilliseconds, rockContext.Database.Connection.Database, rockContext.Database.Connection.DataSource ) );
+                            System.Diagnostics.Debug.WriteLine( string.Format( "Database: {0}/{1}", rockContext.Database.Connection.DataSource, rockContext.Database.Connection.Database ) );
                         }
                         catch
                         {
@@ -315,6 +312,8 @@ namespace RockWeb
                 {
                     System.Diagnostics.Debug.WriteLine( string.Format( "Application_Started_Successfully: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
                 }
+
+                ExceptionLogService.AlwaysLogToFile = false;
             }
             catch (Exception ex)
             {
@@ -499,20 +498,12 @@ namespace RockWeb
             try
             {
                 // Log the reason that the application end was fired
-                HttpRuntime runtime = (HttpRuntime)typeof( System.Web.HttpRuntime ).InvokeMember( "_theRuntime", BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.GetField, null, null, null );
-                if ( runtime != null )
-                {
-                    string shutDownMessage = (string)runtime.GetType().InvokeMember( "_shutDownMessage", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetField, null, runtime, null );
+                var shutdownReason = System.Web.Hosting.HostingEnvironment.ShutdownReason;
+                
+                // Send debug info to debug window
+                System.Diagnostics.Debug.WriteLine( String.Format( "shutdownReason:{0}", shutdownReason ) );
 
-                    // Send debug info to debug window
-                    System.Diagnostics.Debug.WriteLine( String.Format( "shutDownMessage:{0}", shutDownMessage ) );
-
-                    LogMessage( APP_LOG_FILENAME, "Application Ended: " + shutDownMessage );
-                }
-                else
-                {
-                    LogMessage( APP_LOG_FILENAME, "Application Ended" );
-                }
+                LogMessage( APP_LOG_FILENAME, "Application Ended: " + shutdownReason );
 
                 // Close out jobs infrastructure if running under IIS
                 bool runJobsInContext = Convert.ToBoolean( ConfigurationManager.AppSettings["RunJobsInIISContext"] );

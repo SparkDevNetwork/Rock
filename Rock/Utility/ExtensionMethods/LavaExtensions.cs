@@ -165,13 +165,11 @@ namespace Rock
             if ( myObject is Drop )
             {
                 var result = new Dictionary<string, object>();
+                Type baseDrop = typeof( DropBase );
 
-                foreach ( var propInfo in entityType.GetProperties(
-                          BindingFlags.Public |
-                          BindingFlags.Instance |
-                          BindingFlags.DeclaredOnly ) )
+                foreach ( var propInfo in entityType.GetProperties( BindingFlags.Public | BindingFlags.Instance ) )
                 {
-                    if ( propInfo != null )
+                    if ( propInfo != null && propInfo.DeclaringType != baseDrop )
                     {
                         try
                         {
@@ -242,28 +240,35 @@ namespace Rock
                                 if ( entityDbContext != null )
                                 {
                                     var entryCollection = entityDbContext.Entry( myObject )?.Collection( key );
-                                    if ( entryCollection.IsLoaded )
+                                    if ( entryCollection.EntityEntry.State == System.Data.Entity.EntityState.Detached )
                                     {
-                                        propValue = liquidObject[key];
+                                        propValue = "...";
                                     }
                                     else
                                     {
-                                        try
+                                        if ( entryCollection.IsLoaded )
                                         {
-                                            var propQry = entryCollection.Query().Provider.CreateQuery<Rock.Data.IEntity>( entryCollection.Query().Expression );
-                                            int propCollectionCount = propQry.Count();
-                                            List<object> listSample = propQry.Take( 1 ).ToList().Cast<object>().ToList();
-                                            if ( propCollectionCount > 1 )
-                                            {
-                                                listSample.Add( $"({propCollectionCount - 1} more...)" );
-                                            }
-
-                                            propValue = listSample;
-                                        }
-                                        catch
-                                        {
-                                            // The Collection might be a database model that isn't an IEntity, so just do it the regular way
                                             propValue = liquidObject[key];
+                                        }
+                                        else
+                                        {
+                                            try
+                                            {
+                                                var propQry = entryCollection.Query().Provider.CreateQuery<Rock.Data.IEntity>( entryCollection.Query().Expression );
+                                                int propCollectionCount = propQry.Count();
+                                                List<object> listSample = propQry.Take( 1 ).ToList().Cast<object>().ToList();
+                                                if ( propCollectionCount > 1 )
+                                                {
+                                                    listSample.Add( $"({propCollectionCount - 1} more...)" );
+                                                }
+
+                                                propValue = listSample;
+                                            }
+                                            catch
+                                            {
+                                                // The Collection might be a database model that isn't an IEntity, so just do it the regular way
+                                                propValue = liquidObject[key];
+                                            }
                                         }
                                     }
                                 }
@@ -549,6 +554,12 @@ namespace Rock
                 if ( !content.HasMergeFields() )
                 {
                     return content ?? string.Empty;
+                }
+
+                // If there have not been any EnabledLavaCommands explicitely set, then use the global defaults.
+                if ( enabledLavaCommands == null )
+                {
+                    enabledLavaCommands = GlobalAttributesCache.Read().GetValue( "DefaultEnabledLavaCommands" );
                 }
 
                 Template template = GetTemplate( content );

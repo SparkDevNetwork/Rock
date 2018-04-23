@@ -35,7 +35,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         ///   <c>true</c> if [show in active]; otherwise, <c>false</c>.
         /// </value>
-        public bool ShowInactive { get; set; }
+        public bool ShowInactive { get; set; } = true;
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.

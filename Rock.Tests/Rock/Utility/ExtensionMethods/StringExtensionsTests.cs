@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿using System;
+using Xunit;
 
 namespace Rock.Tests.Utility.ExtensionMethods
 {
@@ -74,6 +75,66 @@ namespace Rock.Tests.Utility.ExtensionMethods
         {
             var output = @"T3.V3".AsDoubleOrNull();
             Assert.Null( output );
+        }
+
+        #endregion
+
+        #region IsValidUrl
+        [Fact]
+        public void IsValidUrl_EmptyString()
+        {
+            string url = string.Empty;
+            bool isValidUrl = url.IsValidUrl();
+            Assert.False( isValidUrl );
+        }
+
+        [Fact]
+        public void IsValidUrl_ValidUnsec()
+        {
+            string url = @"http://www.rocksolidchurch.org";
+            bool isValidUrl = url.IsValidUrl();
+            Assert.True( isValidUrl );
+        }
+
+        [Fact]
+        public void IsValidUrl_ValidSec()
+        {
+            string url = @"http://www.rocksolidchurch.org";
+            bool isValidUrl = url.IsValidUrl();
+            Assert.True( isValidUrl );
+        }
+
+        [Fact]
+        public void IsValidUrl_MissingTop()
+        {
+            string url = @"http://www.rocksolidchurch";
+            bool isValidUrl = url.IsValidUrl();
+            Assert.True( isValidUrl );
+        }
+
+        [Fact]
+        public void IsValidUrl_NoProtocol()
+        {
+            string url = @"www.rocksolidchurch.org";
+            bool isValidUrl = url.IsValidUrl();
+            Assert.False( isValidUrl );
+        }
+        
+        [Fact]
+        public void IsValidUrl_DotChurch()
+        {
+            string url = @"https://www.rocksolidchurch.church";
+            bool isValidUrl = url.IsValidUrl();
+            Assert.True( isValidUrl );
+        }
+
+        [Fact]
+        public void IsValidUrl_Test()
+        {
+            string url = @"http://localhost:6229/page/1";
+            //bool isValidUrl = Uri.IsWellFormedUriString( url, UriKind.Absolute );
+            bool isValidUrl = url.IsValidUrl();
+            Assert.True( isValidUrl );
         }
 
         #endregion

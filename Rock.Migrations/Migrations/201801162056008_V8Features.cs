@@ -255,7 +255,7 @@ namespace Rock.Migrations
 			<strong> Registrations</strong>
 			<ul class=""list-unstyled"">
 			{% endif %}
-			<li><a href = '{{ RegistrationInstancePage }}? RegistrationInstanceId = {{ linkage.RegistrationInstanceId }}'>{% if linkage.EventItemOccurrence != null %} {{ linkage.EventItemOccurrence.EventItem.Name }} ({% if linkage.EventItemOccurrence.Campus != null %} {{ linkage.EventItemOccurrence.Campus.Name }}  {% else %}  All Campuses {% endif %}) {% endif %} - {{ linkage.RegistrationInstance.Name }}</a></li>
+			<li><a href = '{{ RegistrationInstancePage }}?RegistrationInstanceId={{ linkage.RegistrationInstanceId }}'>{% if linkage.EventItemOccurrence != null %} {{ linkage.EventItemOccurrence.EventItem.Name }} ({% if linkage.EventItemOccurrence.Campus != null %} {{ linkage.EventItemOccurrence.Campus.Name }}  {% else %}  All Campuses {% endif %}) {% endif %} - {{ linkage.RegistrationInstance.Name }}</a></li>
 			{% assign countRegistration = countRegistration | Plus: 1 %}
 		{% endif %}
 		{% assign countLoop = countLoop | Plus: 1 %}
@@ -270,7 +270,7 @@ namespace Rock.Migrations
 			<strong> Event Item Occurrences</strong>
 			<ul class=""list-unstyled"">
 			{% endif %}
-			<li><a href = '{{ EventItemOccurrencePage }}? EventItemOccurrenceId = {{ linkage.EventItemOccurrence.Id }}'>{% if linkage.EventItemOccurrence != null %} {{ linkage.EventItemOccurrence.EventItem.Name }} -{% if linkage.EventItemOccurrence.Campus != null %} {{ linkage.EventItemOccurrence.Campus.Name }}  {% else %}  All Campuses {% endif %} {% endif %}</a></li>
+			<li><a href = '{{ EventItemOccurrencePage }}?EventItemOccurrenceId={{ linkage.EventItemOccurrence.Id }}'>{% if linkage.EventItemOccurrence != null %} {{ linkage.EventItemOccurrence.EventItem.Name }} -{% if linkage.EventItemOccurrence.Campus != null %} {{ linkage.EventItemOccurrence.Campus.Name }}  {% else %}  All Campuses {% endif %} {% endif %}</a></li>
 			{% assign countEventItemOccurances = countEventItemOccurances | Plus: 1 %}
 		{% endif %}
 		{% assign countLoop = countLoop | Plus: 1 %}
@@ -290,7 +290,7 @@ namespace Rock.Migrations
 					<strong> Content Items</strong>
 					<ul class=""list-unstyled"">
 					{% endif %}
-					<li><a href = '{{ ContentItemPage }}? ContentItemId = {{ contentChannelItem.ContentChannelItemId }}'>{{ contentChannelItem.ContentChannelItem.Title }} <small>({{ contentChannelItem.ContentChannelItem.ContentChannelType.Name }})</small></a></li>
+					<li><a href = '{{ ContentItemPage }}?ContentItemId={{ contentChannelItem.ContentChannelItemId }}'>{{ contentChannelItem.ContentChannelItem.Title }} <small>({{ contentChannelItem.ContentChannelItem.ContentChannelType.Name }})</small></a></li>
 					{% assign countContentItems = countContentItems | Plus: 1 %}
 				{% endif %}
 				{% endfor %}

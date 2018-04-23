@@ -192,6 +192,7 @@ namespace RockWeb.Blocks.Reporting
                 _channel.ComponentDetailTemplate = ceComponentDetail.Text;
                 _channel.InteractionListTemplate = ceInteractionList.Text;
                 _channel.InteractionDetailTemplate = ceInteractionDetail.Text;
+                _channel.IsActive = cbIsActive.Checked;
 
                 _channel.ModifiedDateTime = RockDateTime.Now;
                 _channel.ModifiedByPersonAliasId = CurrentPersonAliasId;
@@ -232,6 +233,7 @@ namespace RockWeb.Blocks.Reporting
                 SetEditMode( true );
 
                 tbName.Text = _channel.Name;
+                cbIsActive.Checked = _channel.IsActive;
                 nbRetentionDuration.Text = _channel.RetentionDuration.ToString();
                 ceChannelList.Text = _channel.ChannelListTemplate;
                 ceChannelDetail.Text = _channel.ChannelDetailTemplate;

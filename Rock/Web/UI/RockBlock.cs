@@ -468,6 +468,15 @@ namespace Rock.Web.UI
             {
                 AddCustomGridColumns();
             }
+
+            if ( this is ICustomGridOptions )
+            {
+                List<Rock.Web.UI.Controls.Grid> gridsOnBlock = this.ControlsOfTypeRecursive<Rock.Web.UI.Controls.Grid>().ToList();
+                foreach ( var grid in gridsOnBlock )
+                {
+                    grid.EnableStickyHeaders = this.GetAttributeValue( CustomGridOptionsConfig.EnableStickerHeadersAttributeKey ).AsBoolean();
+                }
+            }
         }
 
         /// <summary>
