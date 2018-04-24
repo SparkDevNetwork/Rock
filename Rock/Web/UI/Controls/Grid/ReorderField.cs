@@ -82,9 +82,9 @@ namespace Rock.Web.UI.Controls
 ";
                 ScriptManager.RegisterStartupScript( grid, grid.GetType(), "grid-sortable-helper-script", script, true );
 
-                script = string.Format( @"
+                script = $@"
     Sys.Application.add_load(function () {{
-        $('#{0} tbody').sortable({{
+        $('#{grid.ClientID} tbody').sortable({{
             helper: fixHelper,
             handle: '.fa-bars',
             start: function(event, ui) {{
@@ -92,11 +92,12 @@ namespace Rock.Web.UI.Controls
                 ui.item.data('start_pos', start_pos);
             }},
             update: function(event, ui) {{
-                __doPostBack('{1}', 're-order:' + ui.item.attr('datakey') + ';' + ui.item.data('start_pos') + ';' + ui.item.index());
+                var postbackArg = 're-order:' + ui.item.attr('datakey') + ';' + ui.item.data('start_pos') + ';' + ui.item.index();
+                window.location = ""javascript:__doPostBack('{grid.UniqueID}', '"" +  postbackArg + ""')"";
             }}
         }}).disableSelection();
     }});
-", grid.ClientID, grid.UniqueID );
+";
 
                 ScriptManager.RegisterStartupScript( grid, grid.GetType(), string.Format( "grid-sort-{0}-script", grid.ClientID ), script, true );
 
