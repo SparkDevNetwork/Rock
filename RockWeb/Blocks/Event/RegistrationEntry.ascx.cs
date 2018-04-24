@@ -3620,7 +3620,7 @@ namespace RockWeb.Blocks.Event
         var qryString = this.contentWindow.location.search;
         if ( qryString && qryString != '' && qryString.startsWith('?token-id') ) {{ 
             $('#{8}').val(qryString);
-            {9};
+            window.location = ""javascript:{9}"";
         }} else {{
             if ( $('#{14}').val() == 'true' ) {{
                 $('#updateProgress').show();
@@ -3640,7 +3640,7 @@ namespace RockWeb.Blocks.Event
             var qryString = this.contentWindow.location.search;
             if ( qryString && qryString != '' && qryString.startsWith('?document_id') ) {{ 
                 $('#{19}').val(qryString);
-                {20};
+                window.location = ""javascript:{20}"";
             }}
         }}
         catch (e) {{

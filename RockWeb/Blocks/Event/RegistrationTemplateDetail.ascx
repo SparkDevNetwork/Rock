@@ -502,7 +502,8 @@
                     },
                     update: function (event, ui) {
                         {
-                            __doPostBack('<%=upDetail.ClientID %>', 're-order-form:' + ui.item.attr('data-key') + ';' + ui.item.index());
+                            var postbackArg = 're-order-form:' + ui.item.attr('data-key') + ';' + ui.item.index();
+                            window.location = "javascript:__doPostBack('<%=upDetail.ClientID %>', '" +  postbackArg + "')";
                         }
                     }
                 });

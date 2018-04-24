@@ -121,7 +121,8 @@ namespace RockWeb.Blocks.CheckIn
                                     if (localStorage.checkInGroupTypes) {{
                                         $('[id$=""hfGroupTypes""]').val(localStorage.checkInGroupTypes);
                                     }}
-                                    {0};
+
+                                    window.location = ""javascript:{0}"";
                                 }}
                             }}
                         }});
@@ -251,7 +252,7 @@ namespace RockWeb.Blocks.CheckIn
                 $(""div.checkin-header h1"").html( 'Checking Your Location...' );
                 $(""div.checkin-header"").append( ""<p class='text-muted'>"" + latitude + "" "" + longitude + ""</p>"" );
                 // now perform a postback to fire the check geo location
-                {0};
+                window.location = ""javascript:{0}"";
             }}
 
             function error_callback( p ) {{

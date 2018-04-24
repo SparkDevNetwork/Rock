@@ -3249,7 +3249,7 @@ TransactionAccountDetails: [
         var qryString = this.contentWindow.location.search;
         if ( qryString && qryString != '' && qryString.startsWith('?token-id') ) {{
             $('#{5}').val(qryString);
-            {6};
+            window.location = ""javascript:{6}"";
         }} else {{
             if ( $('#{15}').val() == 'true' ) {{
                 $('#updateProgress').show();

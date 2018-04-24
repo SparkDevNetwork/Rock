@@ -176,7 +176,7 @@ namespace RockWeb.Blocks.CheckIn
             script.AppendFormat( @"
 
         function PostRefresh() {{
-            {0};
+            window.location = ""javascript:{0}"";
         }}
 
 ", this.Page.ClientScript.GetPostBackEventReference( lbRefresh, "" ) );

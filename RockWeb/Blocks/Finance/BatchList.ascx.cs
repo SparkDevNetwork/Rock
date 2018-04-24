@@ -171,7 +171,7 @@ namespace RockWeb.Blocks.Finance
     $('#{0}').change(function( e ){{
         var count = $(""#{1} input[id$='_cbSelect_0']:checked"").length;
         if (count == 0) {{
-            eval({2});
+            window.location = ""javascript:{2}"";
         }}
         else
         {{
@@ -179,14 +179,19 @@ namespace RockWeb.Blocks.Finance
             if ($ddl.val() != '') {{
                 Rock.dialogs.confirm('Are you sure you want to ' + ($ddl.val() == 'OPEN' ? 'open' : 'close') + ' the selected batches?', function (result) {{
                     if (result) {{
-                        eval({2});
+                        window.location = ""javascript:{2}"";
                     }}
                     $ddl.val('');
                 }});
             }}
         }}
     }});";
-            string script = string.Format( scriptFormat, ddlAction.ClientID, gBatchList.ClientID, Page.ClientScript.GetPostBackEventReference( this, "StatusUpdate" ) );
+            string script = string.Format( 
+                scriptFormat, 
+                ddlAction.ClientID, // {0}
+                gBatchList.ClientID,  // {1}
+                Page.ClientScript.GetPostBackEventReference( this, "StatusUpdate" )  // {2}
+                );
             ScriptManager.RegisterStartupScript( ddlAction, ddlAction.GetType(), "ConfirmStatusChange", script, true );
         }
 

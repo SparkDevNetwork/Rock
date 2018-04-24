@@ -132,12 +132,16 @@
 
                 $('section.checkin-item').click(function () {
                     if (!isDirty()) {
-                        var $li = $(this).closest('li');
-                        if ($(this).hasClass('checkin-area')) {
-                            __doPostBack('<%=upDetail.ClientID %>', 'select-area:' + $li.attr('data-key'));
+                        var dataKeyValue = $(this).closest('li').attr('data-key');
+                        var isCheckinArea = $(this).hasClass('checkin-area');
+                        var postbackArg;
+                        if (isCheckinArea) {
+                            var postbackArg = 'select-area:' + dataKeyValue;
                         } else {
-                            __doPostBack('<%=upDetail.ClientID %>', 'select-group:' + $li.attr('data-key'));
+                            var postbackArg = 'select-group:' + dataKeyValue;
                         }
+
+                        window.location = "javascript:__doPostBack('<%=upDetail.ClientID %>', '" + postbackArg + "')";
                     }
                 });
 
@@ -157,7 +161,9 @@
                         {
                             if (!isDirty()) {
                                 var newGroupTypeIndex = $(ui.item).prevAll('li').length;
-                                __doPostBack('<%=upDetail.ClientID %>', 're-order-area:' + ui.item.attr('data-key') + ';' + newGroupTypeIndex);
+                                var dataKeyValue = ui.item.attr('data-key');
+                                var postbackArg = 're-order-area:' + dataKeyValue + ';' + newGroupTypeIndex;
+                                window.location = "javascript:__doPostBack('<%=upDetail.ClientID %>', '" + postbackArg + "')";
                             }
                         }
                     }
@@ -179,7 +185,9 @@
                         {
                             if (!isDirty()) {
                                 var newGroupIndex = $(ui.item).prevAll('li').length;
-                                __doPostBack('<%=upDetail.ClientID %>', 're-order-group:' + ui.item.attr('data-key') + ';' + newGroupIndex);
+                                var dataKeyValue = ui.item.attr('data-key');
+                                var postbackArg = 're-order-group:' + dataKeyValue + ';' + newGroupIndex;
+                                window.location = "javascript:__doPostBack('<%=upDetail.ClientID %>', '" + postbackArg + "')";
                             }
                         }
                     }
