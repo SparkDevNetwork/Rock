@@ -499,7 +499,21 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return ViewState["StartInCodeEditorMode"] as bool? ?? false;
+                bool startInCodeEditorMode = ViewState["StartInCodeEditorMode"] as bool? ?? false;
+
+                if ( !startInCodeEditorMode )
+                {
+                    EnsureChildControls();
+                    if ( _ceEditor.Text.HasLavaCommandFields() )
+                    {
+                        // if there are lava commands {% %} in the text, force code editor mode
+                        startInCodeEditorMode = true;
+                    }
+                }
+
+                ViewState["StartInCodeEditorMode"] = startInCodeEditorMode;
+
+                return startInCodeEditorMode;
             }
 
             set
