@@ -546,13 +546,13 @@ namespace Rock
         }
 
         /// <summary>
-        /// Resolves the merge fields.
+        /// Checks for merge fields and then resolves them.
         /// </summary>
         /// <param name="content">The content.</param>
         /// <param name="mergeObjects">The merge objects.</param>
         /// <param name="currentPersonOverride">The current person override.</param>
         /// <param name="enabledLavaCommands">The enabled lava commands.</param>
-        /// <returns></returns>
+        /// <returns>If lava present returns merged string, if no lava returns original string, if null returns empty string</returns>
         public static string ResolveMergeFields( this string content, IDictionary<string, object> mergeObjects, Person currentPersonOverride, string enabledLavaCommands )
         {
             try
