@@ -375,6 +375,7 @@ namespace Rock.Web.Cache
         /// <param name="createIfNotFound">if set to <c>true</c> [create if not found].</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
+        [Obsolete( "Use Rock.Cache.CacheEntityType.Get instead" )]
         public static EntityTypeCache Read( Type type, bool createIfNotFound = true, RockContext rockContext = null )
         {
             return new EntityTypeCache( CacheEntityType.Get( type, createIfNotFound, rockContext ) );
@@ -398,6 +399,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns></returns>
+        [Obsolete( "Use Rock.Cache.CacheEntityType.Get instead" )]
         public static EntityTypeCache Read( string name )
         {
             return new EntityTypeCache( CacheEntityType.Get( name ) );

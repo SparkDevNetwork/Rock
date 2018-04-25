@@ -24,6 +24,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Communication;
+using Rock.Cache;
 
 namespace Rock.Workflow.Action
 {
@@ -98,6 +99,7 @@ namespace Rock.Workflow.Action
                             var emailMessage = new RockEmailMessage( systemEmail );
                             emailMessage.SetRecipients( recipients );
                             emailMessage.CreateCommunicationRecord = false;
+                            emailMessage.AppRoot = CacheGlobalAttributes.Value( "InternalApplicationRoot" ) ?? string.Empty;
                             emailMessage.Send();
                         }
                         else

@@ -1343,6 +1343,9 @@ namespace RockWeb.Blocks.Groups
 
             BindGroupSyncGrid();
 
+            // only Rock admins can alter if the group is a security role
+            cbIsSecurityRole.Visible = groupService.GroupHasMember( new Guid( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS ), CurrentUser.PersonId );           
+
             // GroupType depends on Selected ParentGroup
             ddlParentGroup_SelectedIndexChanged( null, null );
             gpParentGroup.Label = "Parent Group";

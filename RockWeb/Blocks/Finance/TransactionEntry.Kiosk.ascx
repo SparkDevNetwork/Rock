@@ -35,7 +35,7 @@
                             $('#hfSwipe').val(keyboardBuffer);
                             keyboardBuffer = '';
                             swipeProcessing = true;
-                            __doPostBack('hfSwipe', 'Swipe_Complete');
+                            window.location = "javascript:__doPostBack('hfSwipe', 'Swipe_Complete')";
                         }
                     }
 

@@ -317,6 +317,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Decimal"/> containing the total amount of benevolence given.
         /// </value>
+        [Previewable]
         public virtual decimal TotalAmount
         {
             get

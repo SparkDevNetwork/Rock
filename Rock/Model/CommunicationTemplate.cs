@@ -27,6 +27,7 @@ using Newtonsoft.Json;
 
 using Rock.Data;
 using Rock.Communication;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -594,36 +595,9 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Return <c>true</c> if the user is authorized to perform the selected action on this object.
+        /// When checking for security, if a template does not have specific rules, first check the category it belongs to, but then check the default entity securit for templates.
         /// </summary>
-        /// <param name="action">The action.</param>
-        /// <param name="person">The person.</param>
-        /// <returns>
-        /// <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
-        /// </returns>
-        public override bool IsAuthorized(string action, Person person)
-        {
-            // The sender person should be authorized for any action.
-            return SenderPersonAlias?.PersonId == person?.Id || base.IsAuthorized(action, person);
-        }
-
-        /// <summary>
-        /// A parent authority.  If a user is not specifically allowed or denied access to
-        /// this object, Rock will check the default authorization on the current type, and
-        /// then the authorization on the Rock.Security.GlobalDefault entity
-        /// </summary>
-        public override Security.ISecured ParentAuthority
-        {
-            get
-            {
-                if ( this.Category != null )
-                {
-                    return this.Category;
-                }
-
-                return base.ParentAuthority;
-            }
-        }
+        public override ISecured ParentAuthorityPre => this.Category ?? base.ParentAuthority;
 
         #endregion
 

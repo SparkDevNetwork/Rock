@@ -1664,7 +1664,7 @@ namespace RockWeb.Blocks.Event
         var qryString = this.contentWindow.location.search;
         if ( qryString && qryString != '' && qryString.startsWith('?token-id') ) {{
             $('#{1}').val(qryString);
-            {2};
+            window.location = ""javascript:{2}"";
         }} else {{
             if ( $('#{7}').val() == 'true' ) {{
                 $('#updateProgress').show();

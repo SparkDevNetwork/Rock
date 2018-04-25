@@ -75,7 +75,7 @@
                                 $('#hfSearchEntry').val(keyboardBuffer);
                                 keyboardBuffer = '';
                                 swipeProcessing = true;
-                                __doPostBack('hfSearchEntry', 'Wedge_Entry');
+                                window.location = "javascript:__doPostBack('hfSearchEntry', 'Wedge_Entry')";
                             }
                         }
                         else {
@@ -93,7 +93,7 @@
                                 keyboardBuffer = '';
                                 swipeProcessing = true;
                                 console.log('processing');
-                                __doPostBack('hfSearchEntry', 'Wedge_Entry');
+                                window.location = "javascript:__doPostBack('hfSearchEntry', 'Wedge_Entry')";
                             }
                         }
 
@@ -108,7 +108,7 @@
 
                 function submitFamilyIdSearch( familyIds ) {
                     $('#hfSearchEntry').val(familyIds);
-                    __doPostBack('hfWedgeEntry', 'Family_Id_Search');
+                    window.location = "javascript:__doPostBack('hfWedgeEntry', 'Family_Id_Search')";
                 }
 
                 if ($('.js-manager-login').is(':visible')) {

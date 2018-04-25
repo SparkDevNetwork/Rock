@@ -122,7 +122,7 @@ namespace RockWeb.Blocks.Finance
         console.log(evt.type);
         console.log(params);
         $('#{0}').attr('disabled', 'disabled');
-        __doPostBack('{1}', '');
+        window.location = ""javascript: __doPostBack('{1}', '')"";
     }});
 ", btnNext.ClientID, ddlAddAccount.ClientID );
 

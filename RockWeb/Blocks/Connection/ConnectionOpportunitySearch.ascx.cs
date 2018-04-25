@@ -198,22 +198,32 @@ namespace RockWeb.Blocks.Connection
                         {
                             string filterControlId = "filter_" + attribute.Id.ToString();
                             var filterControl = phAttributeFilters.FindControl( filterControlId );
-                            if ( filterControl != null )
+                            if ( filterControl == null ) continue;
+
+                            var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
+                            var filterIsDefault = attribute.FieldType.Field.IsEqualToValue( filterValues, attribute.DefaultValue );
+                            var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
+                            if ( expression == null ) continue;
+
+                            searchSelections.Add( filterControlId, filterValues.ToJson() );
+                            var attributeValues = attributeValueService
+                                .Queryable()
+                                .Where( v => v.Attribute.Id == attribute.Id );
+
+                            var filteredAttributeValues = attributeValues.Where( parameterExpression, expression, null );
+
+                            if ( filterIsDefault )
                             {
-                                var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
-                                var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
-                                if ( expression != null )
-                                {
-                                    searchSelections.Add( filterControlId, filterValues.ToJson() );
-                                    var attributeValues = attributeValueService
-                                        .Queryable()
-                                        .Where( v => v.Attribute.Id == attribute.Id );
-
-                                    attributeValues = attributeValues.Where( parameterExpression, expression, null );
-
-                                    qrySearch = qrySearch.Where( o => attributeValues.Select( v => v.EntityId ).Contains( o.Id ) ).ToList();
-                                }
+                                qrySearch = qrySearch.Where( w =>
+                                     !attributeValues.Any( v => v.EntityId == w.Id ) ||
+                                     filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Id ) ).ToList();
                             }
+                            else
+                            {
+                                qrySearch = qrySearch.Where( w =>
+                                    filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Id ) ).ToList();
+                            }
+                            
                         }
                     }
                 }
