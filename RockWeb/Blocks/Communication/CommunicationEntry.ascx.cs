@@ -683,7 +683,6 @@ namespace RockWeb.Blocks.Communication
                         {
                             var approvalTransaction = new Rock.Transactions.SendCommunicationApprovalEmail();
                             approvalTransaction.CommunicationId = communication.Id;
-                            approvalTransaction.ApprovalPageUrl = HttpContext.Current.Request.Url.AbsoluteUri;
                             Rock.Transactions.RockQueue.TransactionQueue.Enqueue( approvalTransaction );
                         }
 
