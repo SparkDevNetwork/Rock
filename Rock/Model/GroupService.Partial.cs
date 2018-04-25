@@ -463,6 +463,29 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Check if the group has the person as a member.
+        /// Returns false if the group is not found or if the person id is null.
+        /// </summary>
+        /// <param name="groupGuid">The group unique identifier.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns></returns>
+        public bool GroupHasMember(Guid groupGuid, int? personId )
+        {
+            if (personId == null)
+            {
+                return false;
+            }
+
+            Group group = this.GetByGuid( groupGuid );
+            if (group ==  null)
+            {
+                return false;
+            }
+
+            return group.Members.Where( m => m.PersonId == personId ).Any();
+        }
+
+        /// <summary>
         /// Groups the members not meeting requirements.
         /// </summary>
         /// <param name="groupId">The group identifier.</param>

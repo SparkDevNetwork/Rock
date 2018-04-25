@@ -322,6 +322,7 @@ namespace Rock.Web.Cache
         /// <param name="guid">The GUID.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
+        [Obsolete( "Use Rock.Cache.CacheCategory.Get instead" )]
         public static CategoryCache Read( Guid guid, RockContext rockContext = null )
         {
             return new CategoryCache( CacheCategory.Get( guid, rockContext ) );

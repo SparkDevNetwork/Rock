@@ -756,24 +756,22 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.ShowConfirmDeleteDialog && this.Enabled && this.IsDeleteEnabled )
             {
-                string deleteButtonScriptFormat = @"
-   $('#{0} .grid-delete-button').not('.disabled').on( 'click', function (event) {{
-  return Rock.dialogs.confirmDelete(event, '{1}');
+                string deleteButtonScript = $@"
+$('#{this.ClientID} .grid-delete-button').not('.disabled').on( 'click', function (event) {{
+    return Rock.dialogs.confirmDelete(event, '{this.RowItemText}');
 }});";
-                string deleteButtonScript = string.Format( deleteButtonScriptFormat, this.ClientID, this.RowItemText );
                 ScriptManager.RegisterStartupScript( this, this.GetType(), "grid-delete-confirm-script-" + this.ClientID, deleteButtonScript, true );
             }
 
-            string clickScript = string.Format( "__doPostBack('{0}', 'RowSelected$' + dataRowIndexValue);", this.UniqueID );
-
-            string gridSelectCellScriptFormat = @"
-   $('#{0} .grid-select-cell').on( 'click', function (event) {{
-  if (!($(event.target).is('a') || $(event.target).parent().is('a'))) {{
-    var dataRowIndexValue = $(this).closest('tr').attr('data-row-index');
-    {1}
-  }}
+            string gridSelectCellScript = $@"
+$('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
+    if (!($(event.target).is('a') || $(event.target).parent().is('a'))) {{
+        var dataRowIndexValue = $(this).closest('tr').attr('data-row-index');
+        var postbackArg = 'RowSelected$' + dataRowIndexValue;
+        window.location = ""javascript:__doPostBack('{this.UniqueID}', '"" +  postbackArg + ""')"";
+    }}
 }});";
-            string gridSelectCellScript = string.Format( gridSelectCellScriptFormat, this.ClientID, clickScript );
+
             ScriptManager.RegisterStartupScript( this, this.GetType(), "grid-select-cell-script-" + this.ClientID, gridSelectCellScript, true );
 
             // render script for popovers
@@ -1388,10 +1386,10 @@ namespace Rock.Web.UI.Controls
 
             if ( e.CommandName == "RowSelected" )
             {
-                int rowIndex = int.MinValue;
-                if ( int.TryParse( e.CommandArgument.ToString(), out rowIndex ) )
+                int? rowIndex = e.CommandArgument?.ToString().AsIntegerOrNull();
+                if ( rowIndex.HasValue )
                 {
-                    RowEventArgs a = new RowEventArgs( this.Rows[rowIndex] );
+                    RowEventArgs a = new RowEventArgs( this.Rows[rowIndex.Value] );
                     OnRowSelected( a );
                 }
             }
@@ -3221,17 +3219,9 @@ namespace Rock.Web.UI.Controls
 
                 string dataKey = parms[0];
 
-                int oldIndex = 0;
-                if ( !int.TryParse( parms[1], out oldIndex ) )
-                {
-                    oldIndex = 0;
-                }
+                int oldIndex = parms[1].AsIntegerOrNull() ?? 0;
 
-                int newIndex = 0;
-                if ( !int.TryParse( parms[2], out newIndex ) )
-                {
-                    newIndex = 0;
-                }
+                int newIndex = parms[2].AsIntegerOrNull() ?? 0;
 
                 int pageFactor = this.PageIndex * this.PageSize;
                 oldIndex += pageFactor;

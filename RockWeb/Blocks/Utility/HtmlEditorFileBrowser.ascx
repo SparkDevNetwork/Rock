@@ -99,7 +99,8 @@
                                 if (confirmResult) {
                                     // use setTimeout so that the doPostBack happens later (to avoid javascript exception that occurs due to timing)
                                     setTimeout(function () {
-                                        __doPostBack('<%=upnlFiles.ClientID %>', 'file-delete:' + selectedFileId + '');
+                                        var postbackArg = 'file-delete:' + selectedFileId.replace(/\\/g, "/");
+                                        window.location = "javascript:__doPostBack('<%=upnlFiles.ClientID %>', '" + postbackArg + "')";
                                     });
                                 }
                             });
@@ -118,7 +119,8 @@
                             $('#<%=hfSelectedFolder.ClientID%>').val(data);
                             // use setTimeout so that the doPostBack happens later (to avoid javascript exception that occurs due to timing)
                             setTimeout(function () {
-                                __doPostBack('<%=upnlFiles.ClientID %>', 'folder-selected:' + relativeFolderPath + '');
+                                var postbackArg = 'folder-selected:' + relativeFolderPath.replace(/\\/g, "/");
+                                window.location = "javascript:__doPostBack('<%=upnlFiles.ClientID %>', '" + postbackArg + "')";
                             });
                         });
 

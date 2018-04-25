@@ -593,20 +593,29 @@ namespace RockWeb.Blocks.Prayer
                 foreach ( var attribute in AvailableAttributes )
                 {
                     var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
-                    if ( filterControl != null )
-                    {
-                        var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
-                        var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
-                        if ( expression != null )
-                        {
-                            var attributeValues = attributeValueService
+                    if ( filterControl == null ) continue;
+
+                    var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
+                    var filterIsDefault = attribute.FieldType.Field.IsEqualToValue( filterValues, attribute.DefaultValue );
+                    var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
+                    if ( expression == null ) continue;
+
+                    var attributeValues = attributeValueService
                                 .Queryable()
                                 .Where( v => v.Attribute.Id == attribute.Id );
 
-                            attributeValues = attributeValues.Where( parameterExpression, expression, null );
+                    var filteredAttributeValues = attributeValues.Where( parameterExpression, expression, null );
 
-                            prayerRequests = prayerRequests.Where( w => attributeValues.Select( v => v.EntityId ).Contains( w.Id ) );
-                        }
+                    if ( filterIsDefault )
+                    {
+                        prayerRequests = prayerRequests.Where( w =>
+                             !attributeValues.Any( v => v.EntityId == w.Id ) ||
+                             filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Id ) );
+                    }
+                    else
+                    {
+                        prayerRequests = prayerRequests.Where( w =>
+                            filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Id ) );
                     }
                 }
             }
@@ -638,16 +647,7 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gPrayerRequests_Add( object sender, EventArgs e )
         {
-            Dictionary<string, string> queryParms = new Dictionary<string, string>();
-            queryParms.Add( _PrayerRequestKeyParameter, "0" );
-
-            var personContext = this.ContextEntity<Person>();
-            if ( personContext != null )
-            {
-                queryParms.Add( "PersonId", personContext.Id.ToString() );
-            }
-
-            NavigateToLinkedPage( "DetailPage", queryParms );
+            NavigateToDetailPage( 0 );
         }
 
         /// <summary>
@@ -657,7 +657,20 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gPrayerRequests_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", _PrayerRequestKeyParameter, e.RowKeyId );
+            NavigateToDetailPage( e.RowKeyId );
+        }
+
+        private void NavigateToDetailPage(int requestId)
+        {
+            var queryParms = new Dictionary<string, string> {{ _PrayerRequestKeyParameter, requestId.ToString() }};
+
+            var personContext = ContextEntity<Person>();
+            if ( personContext != null )
+            {
+                queryParms.Add( "PersonId", personContext.Id.ToString() );
+            }
+
+            NavigateToLinkedPage( "DetailPage", queryParms );
         }
 
         /// <summary>

@@ -46,7 +46,7 @@ namespace RockWeb.Blocks.Cms
     [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve HTML content." )]
 
     [LavaCommandsField("Enabled Lava Commands", "The Lava commands that should be enabled for this HTML block.", false, order: 0)]
-    [BooleanField( "Use Code Editor", "Use the code editor instead of the WYSIWYG editor", true, "", 1 )]
+    [BooleanField( "Start in Code Editor mode", "Start the editor in code editor mode instead of WYSIWYG editor mode.", defaultValue: true, key:"UseCodeEditor", order:1 )]
     [TextField("Document Root Folder", "The folder to use as the root when browsing or uploading documents.", false, "~/Content", "", 2 )]
     [TextField( "Image Root Folder", "The folder to use as the root when browsing or uploading images.", false, "~/Content", "", 3 )]
     [BooleanField( "User Specific Folders", "Should the root folders be specific to current user?", false, "", 4 )]
