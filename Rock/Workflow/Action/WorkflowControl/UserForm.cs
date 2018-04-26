@@ -93,6 +93,13 @@ namespace Rock.Workflow.Action
 
                     if ( recipients.Count > 0 )
                     {
+                        // The email may need to reference activity Id, so we need to save here.
+                        if ( action.Activity.Workflow.WorkflowTypeCache.IsPersisted )
+                        {
+                            WorkflowService workflowService = new WorkflowService( rockContext );
+                            workflowService.PersistImmediately( action );
+                        }
+
                         var systemEmail = new SystemEmailService( rockContext ).Get( action.ActionTypeCache.WorkflowForm.NotificationSystemEmailId.Value );
                         if ( systemEmail != null )
                         {
