@@ -94,7 +94,7 @@ namespace Rock.Workflow.Action
                     if ( recipients.Count > 0 )
                     {
                         // The email may need to reference activity Id, so we need to save here.
-                        if ( action.Activity.Workflow.WorkflowTypeCache.IsPersisted )
+                        if ( action.Activity.Workflow.CacheWorkflowType.IsPersisted )
                         {
                             WorkflowService workflowService = new WorkflowService( rockContext );
                             workflowService.PersistImmediately( action );
