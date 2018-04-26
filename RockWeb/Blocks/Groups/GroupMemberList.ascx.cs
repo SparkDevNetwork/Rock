@@ -171,6 +171,7 @@ namespace RockWeb.Blocks.Groups
                 {
                     _canView = true;
 
+                    rFilter.UserPreferenceKeyPrefix = string.Format( "{0}-", groupId );
                     rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
                     gGroupMembers.DataKeyNames = new string[] { "Id" };
                     gGroupMembers.PersonIdField = "PersonId";
@@ -344,14 +345,14 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "First Name" ), "First Name", tbFirstName.Text );
-            rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Last Name" ), "Last Name", tbLastName.Text );
-            rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Role" ), "Role", cblRole.SelectedValues.AsDelimited( ";" ) );
-            rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Status" ), "Status", cblGroupMemberStatus.SelectedValues.AsDelimited( ";" ) );
-            rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Campus" ), "Campus", cpCampusFilter.SelectedCampusId.ToString() );
-            rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Gender" ), "Gender", cblGenderFilter.SelectedValues.AsDelimited( ";" ) );
-            rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Registration" ), "Registration", ddlRegistration.SelectedValue );
-            rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Signed Document" ), "Signed Document", ddlSignedDocument.SelectedValue );
+            rFilter.SaveUserPreference( "First Name", "First Name", tbFirstName.Text );
+            rFilter.SaveUserPreference( "Last Name", "Last Name", tbLastName.Text );
+            rFilter.SaveUserPreference( "Role", "Role", cblRole.SelectedValues.AsDelimited( ";" ) );
+            rFilter.SaveUserPreference( "Status", "Status", cblGroupMemberStatus.SelectedValues.AsDelimited( ";" ) );
+            rFilter.SaveUserPreference( "Campus", "Campus", cpCampusFilter.SelectedCampusId.ToString() );
+            rFilter.SaveUserPreference( "Gender", "Gender", cblGenderFilter.SelectedValues.AsDelimited( ";" ) );
+            rFilter.SaveUserPreference( "Registration", "Registration", ddlRegistration.SelectedValue );
+            rFilter.SaveUserPreference( "Signed Document", "Signed Document", ddlSignedDocument.SelectedValue );
 
             if ( AvailableAttributes != null )
             {
@@ -363,7 +364,7 @@ namespace RockWeb.Blocks.Groups
                         try
                         {
                             var values = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
-                            rFilter.SaveUserPreference( MakeKeyUniqueToGroup( attribute.Key ), attribute.Name, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter ).ToJson() );
+                            rFilter.SaveUserPreference( attribute.Key, attribute.Name, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter ).ToJson() );
                         }
                         catch
                         {
@@ -385,7 +386,7 @@ namespace RockWeb.Blocks.Groups
         {
             if ( AvailableAttributes != null )
             {
-                var attribute = AvailableAttributes.FirstOrDefault( a => MakeKeyUniqueToGroup( a.Key ) == e.Key );
+                var attribute = AvailableAttributes.FirstOrDefault( a => a.Key == e.Key );
                 if ( attribute != null )
                 {
                     try
@@ -401,28 +402,28 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
-            if ( e.Key == MakeKeyUniqueToGroup( "First Name" ) )
+            if ( e.Key == "First Name" )
             {
                 return;
             }
-            else if ( e.Key == MakeKeyUniqueToGroup( "Last Name" ) )
+            else if ( e.Key == "Last Name" )
             {
                 return;
             }
-            else if ( e.Key == MakeKeyUniqueToGroup( "Role" ) )
+            else if ( e.Key == "Role" )
             {
                 e.Value = ResolveValues( e.Value, cblRole );
             }
-            else if ( e.Key == MakeKeyUniqueToGroup( "Status" ) )
+            else if ( e.Key == "Status" )
             {
                 e.Value = ResolveValues( e.Value, cblGroupMemberStatus );
             }
-            else if ( e.Key == MakeKeyUniqueToGroup( "Gender" ) )
+            else if ( e.Key == "Gender" )
             {
                 e.Value = ResolveValues( e.Value, cblGenderFilter );
             }
 
-            else if ( e.Key == MakeKeyUniqueToGroup( "Campus" ) )
+            else if ( e.Key == "Campus" )
             {
                 var campusId = e.Value.AsIntegerOrNull();
                 if ( campusId.HasValue )
@@ -443,7 +444,7 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
-            else if ( e.Key == MakeKeyUniqueToGroup( "Registration" ) )
+            else if ( e.Key == "Registration" )
             {
                 var instanceId = e.Value.AsIntegerOrNull();
                 if ( instanceId.HasValue )
@@ -467,7 +468,7 @@ namespace RockWeb.Blocks.Groups
                 }
             }
             
-            else if ( e.Key == MakeKeyUniqueToGroup( "Signed Document") )
+            else if ( e.Key == "Signed Document" )
             {
                 return;
             }
@@ -594,33 +595,33 @@ namespace RockWeb.Blocks.Groups
 
             BindAttributes();
             AddDynamicControls();
-
-            tbFirstName.Text = rFilter.GetUserPreference( MakeKeyUniqueToGroup( "First Name" ) );
-            tbLastName.Text = rFilter.GetUserPreference( MakeKeyUniqueToGroup( "Last Name" ) );
-            cpCampusFilter.SelectedCampusId = rFilter.GetUserPreference( MakeKeyUniqueToGroup( "Campus" ) ).AsIntegerOrNull();
             
-            string genderValue = rFilter.GetUserPreference( MakeKeyUniqueToGroup( "Gender" ) );
+            tbFirstName.Text = rFilter.GetUserPreference( "First Name" );
+            tbLastName.Text = rFilter.GetUserPreference( "Last Name" );
+            cpCampusFilter.SelectedCampusId = rFilter.GetUserPreference( "Campus" ).AsIntegerOrNull();
+            
+            string genderValue = rFilter.GetUserPreference( "Gender" );
             if ( !string.IsNullOrWhiteSpace( genderValue ) )
             {
                 cblGenderFilter.SetValues( genderValue.Split( ';' ).ToList() );
             }
 
-            string roleValue = rFilter.GetUserPreference( MakeKeyUniqueToGroup( "Role" ) );
+            string roleValue = rFilter.GetUserPreference( "Role" );
             if ( !string.IsNullOrWhiteSpace( roleValue ) )
             {
                 cblRole.SetValues( roleValue.Split( ';' ).ToList() );
             }
 
-            string statusValue = rFilter.GetUserPreference( MakeKeyUniqueToGroup( "Status" ) );
+            string statusValue = rFilter.GetUserPreference( "Status" );
             if ( !string.IsNullOrWhiteSpace( statusValue ) )
             {
                 cblGroupMemberStatus.SetValues( statusValue.Split( ';' ).ToList() );
             }
 
-            ddlRegistration.SetValue( rFilter.GetUserPreference( MakeKeyUniqueToGroup( "Registration" ) ) );
+            ddlRegistration.SetValue( rFilter.GetUserPreference( "Registration" ) );
             ddlRegistration.Visible = ddlRegistration.Items.Count > 1;
 
-            ddlSignedDocument.SetValue( rFilter.GetUserPreference( MakeKeyUniqueToGroup( "Signed Document" ) ) );
+            ddlSignedDocument.SetValue( rFilter.GetUserPreference( "Signed Document" ) );
             ddlSignedDocument.Visible = _group.RequiredSignatureDocumentTemplateId.HasValue;
 
         }
@@ -696,7 +697,7 @@ namespace RockWeb.Blocks.Groups
                             phAttributeFilters.Controls.Add( wrapper );
                         }
 
-                        string savedValue = rFilter.GetUserPreference( MakeKeyUniqueToGroup( attribute.Key ) );
+                        string savedValue = rFilter.GetUserPreference( attribute.Key );
                         if ( !string.IsNullOrWhiteSpace( savedValue ) )
                         {
                             try
@@ -1350,21 +1351,6 @@ namespace RockWeb.Blocks.Groups
             }
 
             return resolvedValues.AsDelimited( ", " );
-        }
-
-        /// <summary>
-        /// Makes the key unique to group.
-        /// </summary>
-        /// <param name="key">The key.</param>
-        /// <returns></returns>
-        private string MakeKeyUniqueToGroup( string key )
-        {
-            if ( _group != null )
-            {
-                return string.Format( "{0}-{1}", _group.Id, key );
-            }
-
-            return key;
         }
 
         #endregion

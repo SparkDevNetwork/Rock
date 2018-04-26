@@ -57,13 +57,13 @@ namespace Rock.Web.UI.Controls
             RockBlock rockBlock = this.RockBlock();
             if ( rockBlock != null )
             {
-                string keyPrefix = string.Format( "grid-filter-{0}-", rockBlock.BlockId );
+                string blockKeyPrefix = string.Format( "grid-filter-{0}-", rockBlock.BlockId );
 
-                foreach ( var userPreference in rockBlock.GetUserPreferences( keyPrefix ) )
+                foreach ( var userPreference in rockBlock.GetUserPreferences( blockKeyPrefix ) )
                 {
-                    var blockKey = userPreference.Key.Replace( keyPrefix, string.Empty );
-                    var keyName = blockKey.Split( new char[] {'|'}, StringSplitOptions.RemoveEmptyEntries );
-                    if ( blockKey.Contains("|") && keyName.Length == 2 )
+                    var blockKey = userPreference.Key.Replace( blockKeyPrefix, string.Empty );
+                    var keyName = blockKey.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+                    if ( blockKey.Contains( "|" ) && keyName.Length == 2 )
                     {
                         // only load userPreferences that are stored in the {key}|{name} format
                         // and make sure there isn't more than one with the same key
@@ -91,6 +91,28 @@ namespace Rock.Web.UI.Controls
             set
             {
                 ViewState["AdditionalFilterDisplay"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the user preference key prefix.
+        /// Set this to add an additional prefix ( other than just block.Id ) on each UserPreference key for this filter. 
+        /// For example, if this is a filter for a GroupMemberList, you might want the UserPreferenceKeyPrefix be `{{ GroupId }}-`
+        /// so that user preferences for this grid filter are per group instead of just per block. 
+        /// </summary>
+        /// <value>
+        /// The user preference key prefix.
+        /// </value>
+        public string UserPreferenceKeyPrefix
+        {
+            get
+            {
+                return ViewState["UserPreferenceKeyPrefix"] as string ?? string.Empty;
+            }
+
+            set
+            {
+                ViewState["UserPreferenceKeyPrefix"] = value;
             }
         }
 
@@ -221,12 +243,22 @@ namespace Rock.Web.UI.Controls
                 var filterDisplay = new Dictionary<string, string>();
                 AdditionalFilterDisplay.ToList().ForEach( d => filterDisplay.Add( d.Key, d.Value ) );
 
-                var nonEmptyValues = _userPreferences.Where( v => !string.IsNullOrEmpty( v.Value ) ).ToList();
+                List<UserPreference> userPreferencesForFilter;
+                if ( this.UserPreferenceKeyPrefix.IsNotNullOrWhitespace() )
+                {
+                    userPreferencesForFilter = _userPreferences.Where( a => a.Key.StartsWith( this.UserPreferenceKeyPrefix ) ).ToList();
+                }
+                else
+                {
+                    userPreferencesForFilter = _userPreferences;
+                }
+
+                var nonEmptyValues = userPreferencesForFilter.Where( v => !string.IsNullOrEmpty( v.Value ) ).ToList();
                 if ( nonEmptyValues.Count > 0 )
                 {
                     foreach ( var userPreference in nonEmptyValues )
                     {
-                        DisplayFilterValueArgs args = new DisplayFilterValueArgs( userPreference );
+                        DisplayFilterValueArgs args = new DisplayFilterValueArgs( userPreference, this.UserPreferenceKeyPrefix );
                         if ( DisplayFilterValue != null )
                         {
                             DisplayFilterValue( this, args );
@@ -359,25 +391,39 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets the user preference for a given key if it exists
+        /// Gets the Key after the <see cref="UserPreferenceKeyPrefix"></see> has been applied
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        private string GetPrefixedKey( string key )
+        {
+            return $"{UserPreferenceKeyPrefix}{key}";
+        }
+
+        /// <summary>
+        /// Gets the user preference for a given key if it exists.
+        /// Note: Key is internally stored with the Block.Id plus any <see cref="UserPreferenceKeyPrefix"/> to make it unique per block and <see cref="UserPreferenceKeyPrefix"/>
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
         public string GetUserPreference( string key )
         {
-            return _userPreferences.Where( p => p.Key == key ).Select( p => p.Value ).FirstOrDefault() ?? string.Empty;
+            var prefixedKey = this.GetPrefixedKey( key );
+            return _userPreferences.Where( p => p.Key == prefixedKey ).Select( p => p.Value ).FirstOrDefault() ?? string.Empty;
         }
 
         /// <summary>
-        /// Adds or updates an item in the User Preferences dictionary
+        /// Adds or updates an item in the User Preferences dictionary.
+        /// Note: Key is internally stored with the Block.Id plus any <see cref="UserPreferenceKeyPrefix"/> to make it unique per block and <see cref="UserPreferenceKeyPrefix"/>
         /// </summary>
         /// <param name="key">The key.</param>
         /// <param name="name">The name.</param>
         /// <param name="value">The value.</param>
         public void SaveUserPreference( string key, string name, string value )
         {
-            var userPreference = _userPreferences.FirstOrDefault( p => p.Key == key );
-            if ( userPreference != null  )
+            var prefixedKey = this.GetPrefixedKey( key );
+            var userPreference = _userPreferences.FirstOrDefault( p => p.Key == prefixedKey );
+            if ( userPreference != null )
             {
                 if ( userPreference.Name != name || userPreference.Value != value )
                 {
@@ -389,12 +435,13 @@ namespace Rock.Web.UI.Controls
             else
             {
                 _isDirty = true;
-                _userPreferences.Add( new UserPreference( key, name, value ) );
+                _userPreferences.Add( new UserPreference( prefixedKey, name, value ) );
             }
         }
 
         /// <summary>
-        /// Adds or updates an item in the User Preferences dictionary
+        /// Adds or updates an item in the User Preferences dictionary.
+        /// Note: Key is internally stored with the Block.Id plus any <see cref="UserPreferenceKeyPrefix"/> to make it unique per block and <see cref="UserPreferenceKeyPrefix"/>
         /// </summary>
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
@@ -421,14 +468,14 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Deletes all the grid user preferences for all grid filters on the block
+        /// Deletes all the grid user preferences for all grid filters on the block. If <see cref="UserPreferenceKeyPrefix"/> is set, it will only delete user preferences for the grid filter(s) on the block that has the UserPreferenceKeyPrefix.
         /// </summary>
         public void DeleteUserPreferences()
         {
             RockBlock rockBlock = this.RockBlock();
             if ( rockBlock != null && _userPreferences != null )
             {
-                string keyPrefix = string.Format( "grid-filter-{0}-", rockBlock.BlockId );
+                string keyPrefix = string.Format( "grid-filter-{0}-", rockBlock.BlockId ) + this.UserPreferenceKeyPrefix;
 
                 foreach ( var userPreference in _userPreferences )
                 {
@@ -463,6 +510,7 @@ namespace Rock.Web.UI.Controls
         {
             /// <summary>
             /// Gets or sets the key.
+            /// Note: This is the Key without the internally stored Block.Id plus any <see cref="UserPreferenceKeyPrefix"/> prefix
             /// </summary>
             /// <value>
             /// The key.
@@ -491,6 +539,7 @@ namespace Rock.Web.UI.Controls
             /// <param name="key">The key.</param>
             /// <param name="name">The name.</param>
             /// <param name="value">The value.</param>
+            [Obsolete( "DisplayFilterValueArgs(userPreference, prefix) instead" )]
             public DisplayFilterValueArgs( string key, string name, string value )
             {
                 Key = key;
@@ -502,9 +551,29 @@ namespace Rock.Web.UI.Controls
             /// Initializes a new instance of the <see cref="DisplayFilterValueArgs"/> class.
             /// </summary>
             /// <param name="userPreference">The user preference.</param>
-            public DisplayFilterValueArgs( UserPreference userPreference )
+            [Obsolete( "DisplayFilterValueArgs(userPreference, prefix) instead" )]
+            public DisplayFilterValueArgs( UserPreference userPreference ) :
+                this( userPreference, null )
             {
-                Key = userPreference.Key;
+                //
+            }
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="DisplayFilterValueArgs"/> class.
+            /// </summary>
+            /// <param name="userPreference">The user preference.</param>
+            /// <param name="prefix">The prefix.</param>
+            public DisplayFilterValueArgs( UserPreference userPreference, string prefix )
+            {
+                if ( !string.IsNullOrEmpty( prefix ) && userPreference.Key.StartsWith( prefix ) )
+                {
+                    Key = userPreference.Key.Substring( prefix.Length );
+                }
+                else
+                {
+                    Key = userPreference.Key;
+                }
+
                 Name = userPreference.Name;
                 Value = userPreference.Value;
             }

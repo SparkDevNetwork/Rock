@@ -2347,6 +2347,7 @@ namespace RockWeb.Blocks.Event
 
                 pnlDetails.Visible = true;
                 hfRegistrationInstanceId.Value = registrationInstance.Id.ToString();
+                hfRegistrationTemplateId.Value = registrationInstance.RegistrationTemplateId.ToString();
                 SetHasPayments( registrationInstance.Id, rockContext );
 
                 FollowingsHelper.SetFollowing( registrationInstance, pnlFollowing, this.CurrentPerson );
@@ -2651,6 +2652,8 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void BindRegistrationsFilter()
         {
+            fRegistrations.UserPreferenceKeyPrefix = string.Format( "{0}-", hfRegistrationTemplateId.Value );
+
             sdrpRegistrationDateRange.DelimitedValues = fRegistrations.GetUserPreference( "Registrations Date Range" );
             ddlRegistrationPaymentStatus.SetValue( fRegistrations.GetUserPreference( "Payment Status" ) );
             tbRegistrationRegisteredByFirstName.Text = fRegistrations.GetUserPreference( "Registered By First Name" );
@@ -2883,6 +2886,7 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void BindRegistrantsFilter( RegistrationInstance instance )
         {
+            fRegistrants.UserPreferenceKeyPrefix = string.Format( "{0}-", hfRegistrationTemplateId.Value );
             sdrpRegistrantsRegistrantDateRange.DelimitedValues = fRegistrants.GetUserPreference( "Registrants Date Range" );
             tbRegistrantsRegistrantFirstName.Text = fRegistrants.GetUserPreference( "First Name" );
             tbRegistrantsRegistrantLastName.Text = fRegistrants.GetUserPreference( "Last Name" );
@@ -4119,6 +4123,7 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void BindPaymentsFilter()
         {
+            fPayments.UserPreferenceKeyPrefix = string.Format( "{0}-", hfRegistrationTemplateId.Value );
             sdrpPaymentDateRange.DelimitedValues = fPayments.GetUserPreference( "Payments Date Range" );
         }
 
@@ -4216,6 +4221,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="instance">The instance.</param>
         private void BindWaitListFilter( RegistrationInstance instance )
         {
+            fWaitList.UserPreferenceKeyPrefix = string.Format( "{0}-", hfRegistrationTemplateId.Value );
             drpWaitListDateRange.DelimitedValues = fWaitList.GetUserPreference( "WL-Date Range" );
             tbWaitListFirstName.Text = fWaitList.GetUserPreference( "WL-First Name" );
             tbWaitListLastName.Text = fWaitList.GetUserPreference( "WL-Last Name" );
@@ -4740,6 +4746,7 @@ namespace RockWeb.Blocks.Event
             /// </summary>
         private void BindLinkagesFilter()
         {
+            fLinkages.UserPreferenceKeyPrefix = string.Format( "{0}-", hfRegistrationTemplateId.Value );
             cblCampus.DataSource = CampusCache.All();
             cblCampus.DataBind();
             string campusValue = fLinkages.GetUserPreference( "Campus" );
@@ -5667,6 +5674,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="instance">The instance.</param>
         private void BindGroupPlacementsFilter( RegistrationInstance instance )
         {
+            fGroupPlacements.UserPreferenceKeyPrefix = string.Format( "{0}-", hfRegistrationTemplateId.Value );
             sdrpGroupPlacementsDateRange.DelimitedValues = fGroupPlacements.GetUserPreference( "GroupPlacements-Date Range" );
             tbGroupPlacementsFirstName.Text = fGroupPlacements.GetUserPreference( "GroupPlacements-First Name" );
             tbGroupPlacementsLastName.Text = fGroupPlacements.GetUserPreference( "GroupPlacements-Last Name" );
