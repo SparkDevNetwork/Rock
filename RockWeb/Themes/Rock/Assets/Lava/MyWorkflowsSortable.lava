@@ -27,6 +27,7 @@
             <th>Type</th>
             {% if showPriority %}<th>Priority</th>{% endif %}
             {% if showDue %}<th>Due</th>{% endif %}
+            <th>ID</th>
           </tr>
         </thead>
         <tbody>
@@ -48,6 +49,7 @@
               {% if showDue %}
                 <td data-dateformat="M/D/YY">{{ workflowDueDate | Date:'M/d/yy' }}</td>
               {% endif %}
+              <td>{{ action.Activity.Workflow.Id }}</td>
             </tr>
           {% endfor %}
         </tbody>
