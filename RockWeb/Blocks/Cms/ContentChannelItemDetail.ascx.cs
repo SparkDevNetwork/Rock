@@ -831,6 +831,9 @@ namespace RockWeb.Blocks.Cms
 
                 tbTitle.Text = contentItem.Title;
 
+                rSlugs.DataSource =  contentItem.ContentChannelItemSlugs;
+                rSlugs.DataBind();
+
                 htmlContent.Visible = !contentItem.ContentChannelType.DisableContentField;
                 htmlContent.Text = contentItem.Content;
                 htmlContent.MergeFields.Clear();
