@@ -403,6 +403,12 @@ namespace Rock.StatementGenerator.Rest
 
                 foreach ( var financialTransaction in financialTransactionsList )
                 {
+                    if ( options.TransactionAccountIds != null)
+                    {
+                        // remove any Accounts that were not included (in case there was a mix of included and not included accounts in the transaction)
+                        financialTransaction.TransactionDetails = financialTransaction.TransactionDetails.Where( a => options.TransactionAccountIds.Contains( a.AccountId ) ).ToList();
+                    }
+
                     financialTransaction.TransactionDetails = financialTransaction.TransactionDetails.OrderBy( a => a.Account.Order ).ThenBy( a => a.Account.Name ).ToList();
                 }
 
