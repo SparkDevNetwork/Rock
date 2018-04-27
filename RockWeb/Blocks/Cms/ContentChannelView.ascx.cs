@@ -39,7 +39,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Cms
 {
     /// <summary>
-    /// Block to display content items, html, xml, or transformed xml based on a SQL query or stored procedure.
+    /// Block to display dynamic content channel items
     /// </summary>
     [DisplayName( "Content Channel View" )]
     [Category( "CMS" )]
