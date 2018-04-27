@@ -34,9 +34,9 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            Sql( HotFixMigrationResource._049_GivingAnalyticsAccounts_AccountTotals );
-            Sql( HotFixMigrationResource._049_GivingAnalyticsAccounts_PersonSummary );
-            Sql( HotFixMigrationResource._049_GivingAnalyticsAccounts_TransactionData );
+            //Sql( HotFixMigrationResource._049_GivingAnalyticsAccounts_AccountTotals );
+            //Sql( HotFixMigrationResource._049_GivingAnalyticsAccounts_PersonSummary );
+            //Sql( HotFixMigrationResource._049_GivingAnalyticsAccounts_TransactionData );
         }
 
 
