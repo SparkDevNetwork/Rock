@@ -189,6 +189,10 @@
     <Compile Include="Migrations\201804192145436_AddPersonSearchKeys.Designer.cs">
       <DependentUpon>201804192145436_AddPersonSearchKeys.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201804271736429_Rollup_0427.cs" />
+    <Compile Include="Migrations\201804271736429_Rollup_0427.Designer.cs">
+      <DependentUpon>201804271736429_Rollup_0427.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.cs" />
     <Compile Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.Designer.cs">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
@@ -2859,6 +2863,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201804192145436_AddPersonSearchKeys.resx">
       <DependentUpon>201804192145436_AddPersonSearchKeys.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201804271736429_Rollup_0427.resx">
+      <DependentUpon>201804271736429_Rollup_0427.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.resx">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
