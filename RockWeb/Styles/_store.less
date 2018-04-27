@@ -50,7 +50,7 @@
 // -------------------------
 .packagesummary {
   max-width: 282px;
-  height: 250px;
+  height: 257px;
   margin-right: auto;
   margin-bottom: 24px;
   margin-left: auto;
@@ -58,28 +58,11 @@
   background-color: #fff;
   border: 1px solid #ccc;
 
-  .packagesummary-image-hover {
-    width: 100%;
-    height: 140px;
-    content: "";
-    background-color: #000;
-    opacity: 0;
-    -webkit-transition: opacity .25s ease-in;
-    -moz-transition: opacity .25s ease-in;
-    -ms-transition: opacity .25s ease-in;
-    -o-transition: opacity .25s ease-in;
-    transition: opacity .25s ease-in;
-  }
-
-  &:hover .packagesummary-image-hover {
-    opacity: .5;
-  }
-
   .packagesummary-body {
-    padding: 8px;
+    padding: @padding-base-horizontal;
 
     h2 {
-      margin: 15px 0 0;
+      margin: 0;
       overflow: hidden;
       font-size: 18px;
       font-weight: @font-weight-semibold;
@@ -95,6 +78,13 @@
     }
   }
 }
+
+.packagesummary-footer {
+  padding: @padding-base-vertical @padding-base-horizontal;
+  background-color: rgba(0,0,0,.03);
+  border-top: 1px solid rgba(0,0,0,.125);
+}
+
 
 
 // 3.
@@ -120,11 +110,6 @@
 // @fa-var-star-half: "\f089";
 // @fa-var-star-o: "\f006";
 
-.rating {
-  font-family: @fa-font-face;
-  font-weight: @fa-theme-weight;
-}
-
 .pricelabel {
   padding: 10px;
   margin-top: 10px;
@@ -149,6 +134,15 @@
     font-weight: @font-weight-bold;
     color: inherit;
   }
+}
+
+.store-categories h4 {
+  margin-top: 0;
+  font-weight: 700;
+}
+
+.store-categories li {
+  margin-right: 6px;
 }
 
 // 5. Purchased Package

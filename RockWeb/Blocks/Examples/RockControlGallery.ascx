@@ -229,6 +229,11 @@
                         <Rock:NumberBox ID="numbExample" runat="server" Label="Rock:NumberBox" />
                     </div>
 
+                    <a id="AddressControl"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:AddressControl ID="addrExample" runat="server" Label="Rock:AddressControl" />
+                    </div>
+
                     <a id="NumberUpDown"></a>
                     <div runat="server" class="r-example">
                         <Rock:NumberUpDown ID="nudExample" runat="server" Label="Rock:NumberUpDown" Minimum="0" Maximum="5" />

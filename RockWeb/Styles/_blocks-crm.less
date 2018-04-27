@@ -116,7 +116,7 @@
     position: relative;
     display: table;
     max-width: 200px;
-    padding: 5px 5px 5px 5px;
+    padding: 5px;
     margin: 0 auto;
     background-color: @persondetails-bio-photo-border;
 
@@ -141,6 +141,10 @@
         color: #fff;
         opacity: 0;
         transition: 1s;
+      }
+
+      &:hover i {
+        opacity: .5;
       }
 
       &.following {
