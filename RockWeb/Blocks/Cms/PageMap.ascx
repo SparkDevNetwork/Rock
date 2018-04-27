@@ -59,7 +59,7 @@
             var scrollContainer = scrollbPage.find('.viewport');
             var scrollIndicator = scrollbPage.find('.track');
                 <%=pnlTreeviewContent.ClientID%>IScroll = new IScroll(scrollContainer[0], {
-                    mouseWheel: false,
+                    mouseWheel: true,
                     eventPassthrough: true,
                     preventDefault: false,
                     scrollX: true,
