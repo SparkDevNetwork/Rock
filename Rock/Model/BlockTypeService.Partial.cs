@@ -147,8 +147,6 @@ namespace Rock.Model
 
                                 // Update the attributes used by the block
                                 Rock.Attribute.Helper.UpdateAttributes( controlType, blockEntityTypeId, "BlockTypeId", blockType.Id.ToString(), rockContext );
-
-                                rockBlock.CreateAttributes( rockContext );
                             }
                         }
                     }
