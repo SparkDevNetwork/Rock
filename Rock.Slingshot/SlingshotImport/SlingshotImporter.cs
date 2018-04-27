@@ -100,7 +100,7 @@ namespace Rock.Slingshot
                      }
                      catch ( Exception ex )
                      {
-                         System.Diagnostics.Debug.WriteLine( $"Unable to extract {a.FullName} from imageZipFile: {ex.Message}");
+                         System.Diagnostics.Debug.WriteLine( $"Unable to extract {a.FullName} from imageZipFile: {ex.Message}" );
                      }
                  } );
 
@@ -175,7 +175,7 @@ namespace Rock.Slingshot
             }
         }
 
-        List<string> _samplePhotoLocalUrls = null;
+        private List<string> _samplePhotoLocalUrls = null;
 
         /* Person Related */
         private Dictionary<Guid, DefinedValueCache> PersonRecordTypeValues { get; set; }
@@ -398,9 +398,9 @@ namespace Rock.Slingshot
         /// </summary>
         public void DoImportPhotos()
         {
-            // NOTE: Images can either be a URL or FileName specified in Person or Family import, 
+            // NOTE: Images can either be a URL or FileName specified in Person or Family import,
             // or in *.images.slingshot folders in the following format:
-            /*  
+            /*
                 exportfilename.slingshot
                 exportfilename_1.images.slingshot( max size 100MB )
                   - FinancialTransaction_{ Id}[_{ImageNum}].jpg/dif
@@ -499,7 +499,6 @@ namespace Rock.Slingshot
                 if ( photoImport.FileName.StartsWith( "FinancialTransaction_" ) )
                 {
                     photoImport.PhotoType = Slingshot.Model.PhotoImport.PhotoImportType.FinancialTransaction;
-
                 }
                 else if ( photoImport.FileName.StartsWith( "Person_" ) )
                 {
@@ -648,8 +647,8 @@ namespace Rock.Slingshot
             {
                 try
                 {
-                    HttpWebRequest imageRequest = ( HttpWebRequest ) HttpWebRequest.Create( photoUri );
-                    HttpWebResponse imageResponse = ( HttpWebResponse ) imageRequest.GetResponse();
+                    HttpWebRequest imageRequest = (HttpWebRequest)HttpWebRequest.Create( photoUri );
+                    HttpWebResponse imageResponse = (HttpWebResponse)imageRequest.GetResponse();
                     var imageStream = imageResponse.GetResponseStream();
                     using ( MemoryStream ms = new MemoryStream() )
                     {
@@ -688,7 +687,6 @@ namespace Rock.Slingshot
 
             return true;
         }
-
 
         #region Person and Family Notes
 
@@ -801,24 +799,31 @@ namespace Rock.Slingshot
                     case SlingshotCore.Model.PledgeFrequency.OneTime:
                         financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME )?.Id;
                         break;
+
                     case SlingshotCore.Model.PledgeFrequency.Weekly:
                         financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_WEEKLY )?.Id;
                         break;
+
                     case SlingshotCore.Model.PledgeFrequency.BiWeekly:
                         financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_BIWEEKLY )?.Id;
                         break;
+
                     case SlingshotCore.Model.PledgeFrequency.TwiceAMonth:
                         financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEMONTHLY )?.Id;
                         break;
+
                     case SlingshotCore.Model.PledgeFrequency.Monthly:
                         financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_MONTHLY )?.Id;
                         break;
+
                     case SlingshotCore.Model.PledgeFrequency.Quarterly:
                         financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_QUARTERLY )?.Id;
                         break;
+
                     case SlingshotCore.Model.PledgeFrequency.TwiceAYear:
                         financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEYEARLY )?.Id;
                         break;
+
                     case SlingshotCore.Model.PledgeFrequency.Yearly:
                         financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_YEARLY )?.Id;
                         break;
@@ -865,7 +870,7 @@ namespace Rock.Slingshot
                     financialAccountImport.CampusId = this.CampusLookupByForeignId[slingshotFinancialAccount.CampusId.Value]?.Id;
                 }
 
-                financialAccountImport.ParentFinancialAccountForeignId = slingshotFinancialAccount.ParentAccountId == 0 ? ( int? ) null : slingshotFinancialAccount.ParentAccountId;
+                financialAccountImport.ParentFinancialAccountForeignId = slingshotFinancialAccount.ParentAccountId == 0 ? (int?)null : slingshotFinancialAccount.ParentAccountId;
 
                 financialAccountImportList.Add( financialAccountImport );
             }
@@ -906,15 +911,17 @@ namespace Rock.Slingshot
                     case SlingshotCore.Model.BatchStatus.Closed:
                         financialBatchImport.Status = Rock.Slingshot.Model.FinancialBatchImport.BatchStatus.Closed;
                         break;
+
                     case SlingshotCore.Model.BatchStatus.Open:
                         financialBatchImport.Status = Rock.Slingshot.Model.FinancialBatchImport.BatchStatus.Open;
                         break;
+
                     case SlingshotCore.Model.BatchStatus.Pending:
                         financialBatchImport.Status = Rock.Slingshot.Model.FinancialBatchImport.BatchStatus.Pending;
                         break;
                 }
 
-                financialBatchImport.CampusId = slingshotFinancialBatch.CampusId.HasValue ? this.CampusLookupByForeignId[slingshotFinancialBatch.CampusId.Value]?.Id : ( int? ) null;
+                financialBatchImport.CampusId = slingshotFinancialBatch.CampusId.HasValue ? this.CampusLookupByForeignId[slingshotFinancialBatch.CampusId.Value]?.Id : (int?)null;
 
                 financialBatchImportList.Add( financialBatchImport );
             }
@@ -944,21 +951,27 @@ namespace Rock.Slingshot
                     case SlingshotCore.Model.CurrencyType.ACH:
                         financialTransactionImport.CurrencyTypeValueId = this.CurrencyTypeValues[Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH.AsGuid()].Id;
                         break;
+
                     case SlingshotCore.Model.CurrencyType.Cash:
                         financialTransactionImport.CurrencyTypeValueId = this.CurrencyTypeValues[Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CASH.AsGuid()].Id;
                         break;
+
                     case SlingshotCore.Model.CurrencyType.Check:
                         financialTransactionImport.CurrencyTypeValueId = this.CurrencyTypeValues[Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid()].Id;
                         break;
+
                     case SlingshotCore.Model.CurrencyType.CreditCard:
                         financialTransactionImport.CurrencyTypeValueId = this.CurrencyTypeValues[Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid()].Id;
                         break;
+
                     case SlingshotCore.Model.CurrencyType.NonCash:
                         financialTransactionImport.CurrencyTypeValueId = this.CurrencyTypeValues[Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_NONCASH.AsGuid()].Id;
                         break;
+
                     case SlingshotCore.Model.CurrencyType.Unknown:
                         financialTransactionImport.CurrencyTypeValueId = this.CurrencyTypeValues[Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_UNKNOWN.AsGuid()].Id;
                         break;
+
                     case SlingshotCore.Model.CurrencyType.Other:
                         // TODO: Do we need to support this?
                         break;
@@ -969,15 +982,19 @@ namespace Rock.Slingshot
                     case SlingshotCore.Model.TransactionSource.BankChecks:
                         financialTransactionImport.TransactionSourceValueId = this.TransactionSourceTypeValues[Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_BANK_CHECK.AsGuid()].Id;
                         break;
+
                     case SlingshotCore.Model.TransactionSource.Kiosk:
                         financialTransactionImport.TransactionSourceValueId = this.TransactionSourceTypeValues[Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_KIOSK.AsGuid()].Id;
                         break;
+
                     case SlingshotCore.Model.TransactionSource.MobileApplication:
                         financialTransactionImport.TransactionSourceValueId = this.TransactionSourceTypeValues[Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_MOBILE_APPLICATION.AsGuid()].Id;
                         break;
+
                     case SlingshotCore.Model.TransactionSource.OnsiteCollection:
                         financialTransactionImport.TransactionSourceValueId = this.TransactionSourceTypeValues[Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_ONSITE_COLLECTION.AsGuid()].Id;
                         break;
+
                     case SlingshotCore.Model.TransactionSource.Website:
                         financialTransactionImport.TransactionSourceValueId = this.TransactionSourceTypeValues[Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_WEBSITE.AsGuid()].Id;
                         break;
@@ -988,6 +1005,7 @@ namespace Rock.Slingshot
                     case SlingshotCore.Model.TransactionType.Contribution:
                         financialTransactionImport.TransactionTypeValueId = this.TransactionTypeValues[Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid()].Id;
                         break;
+
                     case SlingshotCore.Model.TransactionType.EventRegistration:
                         financialTransactionImport.TransactionTypeValueId = this.TransactionTypeValues[Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_EVENT_REGISTRATION.AsGuid()].Id;
                         break;
@@ -1192,7 +1210,7 @@ namespace Rock.Slingshot
                     groupImport.CampusId = this.CampusLookupByForeignId[slingshotGroup.CampusId.Value]?.Id;
                 }
 
-                groupImport.ParentGroupForeignId = slingshotGroup.ParentGroupId == 0 ? ( int? ) null : slingshotGroup.ParentGroupId;
+                groupImport.ParentGroupForeignId = slingshotGroup.ParentGroupId == 0 ? (int?)null : slingshotGroup.ParentGroupId;
                 groupImport.GroupMemberImports = new List<Rock.Slingshot.Model.GroupMemberImport>();
 
                 foreach ( var groupMember in slingshotGroup.GroupMembers )
@@ -1282,6 +1300,7 @@ namespace Rock.Slingshot
                     case SlingshotCore.Model.FamilyRole.Adult:
                         personImport.GroupRoleId = familyRolesLookup[Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid()].Id;
                         break;
+
                     case SlingshotCore.Model.FamilyRole.Child:
                         personImport.GroupRoleId = familyRolesLookup[Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid()].Id;
                         break;
@@ -1297,9 +1316,11 @@ namespace Rock.Slingshot
                     case SlingshotCore.Model.RecordStatus.Active:
                         personImport.RecordStatusValueId = this.PersonRecordStatusValues[Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid()]?.Id;
                         break;
+
                     case SlingshotCore.Model.RecordStatus.Inactive:
                         personImport.RecordStatusValueId = this.PersonRecordStatusValues[Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid()]?.Id;
                         break;
+
                     case SlingshotCore.Model.RecordStatus.Pending:
                         personImport.RecordStatusValueId = this.PersonRecordStatusValues[Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid()]?.Id;
                         break;
@@ -1333,19 +1354,21 @@ namespace Rock.Slingshot
                 {
                     personImport.BirthMonth = slingshotPerson.Birthdate.Value.Month;
                     personImport.BirthDay = slingshotPerson.Birthdate.Value.Day;
-                    personImport.BirthYear = slingshotPerson.Birthdate.Value.Year == slingshotPerson.BirthdateNoYearMagicYear ? ( int? ) null : slingshotPerson.Birthdate.Value.Year;
+                    personImport.BirthYear = slingshotPerson.Birthdate.Value.Year == slingshotPerson.BirthdateNoYearMagicYear ? (int?)null : slingshotPerson.Birthdate.Value.Year;
                 }
 
                 switch ( slingshotPerson.Gender )
                 {
                     case SlingshotCore.Model.Gender.Male:
-                        personImport.Gender = ( int ) Rock.Model.Gender.Male;
+                        personImport.Gender = (int)Rock.Model.Gender.Male;
                         break;
+
                     case SlingshotCore.Model.Gender.Female:
-                        personImport.Gender = ( int ) Rock.Model.Gender.Female;
+                        personImport.Gender = (int)Rock.Model.Gender.Female;
                         break;
+
                     case SlingshotCore.Model.Gender.Unknown:
-                        personImport.Gender = ( int ) Rock.Model.Gender.Unknown;
+                        personImport.Gender = (int)Rock.Model.Gender.Unknown;
                         break;
                 }
 
@@ -1354,12 +1377,15 @@ namespace Rock.Slingshot
                     case SlingshotCore.Model.MaritalStatus.Married:
                         personImport.MaritalStatusValueId = this.PersonMaritalStatusValues[Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid()].Id;
                         break;
+
                     case SlingshotCore.Model.MaritalStatus.Single:
                         personImport.MaritalStatusValueId = this.PersonMaritalStatusValues[Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_SINGLE.AsGuid()].Id;
                         break;
+
                     case SlingshotCore.Model.MaritalStatus.Divorced:
                         personImport.MaritalStatusValueId = this.PersonMaritalStatusValues[Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_DIVORCED.AsGuid()].Id;
                         break;
+
                     case SlingshotCore.Model.MaritalStatus.Unknown:
                         personImport.MaritalStatusValueId = null;
                         break;
@@ -1376,13 +1402,15 @@ namespace Rock.Slingshot
                 switch ( slingshotPerson.EmailPreference )
                 {
                     case SlingshotCore.Model.EmailPreference.EmailAllowed:
-                        personImport.EmailPreference = ( int ) Rock.Model.EmailPreference.EmailAllowed;
+                        personImport.EmailPreference = (int)Rock.Model.EmailPreference.EmailAllowed;
                         break;
+
                     case SlingshotCore.Model.EmailPreference.DoNotEmail:
-                        personImport.EmailPreference = ( int ) Rock.Model.EmailPreference.DoNotEmail;
+                        personImport.EmailPreference = (int)Rock.Model.EmailPreference.DoNotEmail;
                         break;
+
                     case SlingshotCore.Model.EmailPreference.NoMassEmails:
-                        personImport.EmailPreference = ( int ) Rock.Model.EmailPreference.NoMassEmails;
+                        personImport.EmailPreference = (int)Rock.Model.EmailPreference.NoMassEmails;
                         break;
                 }
 
@@ -1416,9 +1444,11 @@ namespace Rock.Slingshot
                             case SlingshotCore.Model.AddressType.Home:
                                 groupLocationTypeValueId = this.GroupLocationTypeValues[Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid()].Id;
                                 break;
+
                             case SlingshotCore.Model.AddressType.Previous:
                                 groupLocationTypeValueId = this.GroupLocationTypeValues[Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid()].Id;
                                 break;
+
                             case SlingshotCore.Model.AddressType.Work:
                                 groupLocationTypeValueId = this.GroupLocationTypeValues[Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid()].Id;
                                 break;
@@ -1740,7 +1770,6 @@ namespace Rock.Slingshot
 
             // Family Attributes
             this.SlingshotFamilyAttributes = LoadSlingshotListFromFile<SlingshotCore.Model.FamilyAttribute>();
-
 
             /* Attendance */
             this.SlingshotAttendanceList = LoadSlingshotListFromFile<SlingshotCore.Model.Attendance>( false );

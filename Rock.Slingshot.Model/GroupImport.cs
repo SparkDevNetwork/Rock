@@ -19,7 +19,7 @@ using System.Collections.Generic;
 namespace Rock.Slingshot.Model
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [System.Diagnostics.DebuggerDisplay( "{Name}" )]
     public class GroupImport
