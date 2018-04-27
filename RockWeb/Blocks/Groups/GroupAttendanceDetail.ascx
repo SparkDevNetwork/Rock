@@ -19,7 +19,7 @@
             <div class="panel-body">
 
                 <Rock:NotificationBox ID="nbNotice" runat="server" />
-                <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
                 <asp:CustomValidator ID="cvAttendance" runat="server" Display="None" />
 
                 <asp:Panel id="pnlDetails" runat="server">

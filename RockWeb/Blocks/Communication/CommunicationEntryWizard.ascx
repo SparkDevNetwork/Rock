@@ -24,7 +24,7 @@
                     
                     <asp:ValidationSummary ID="vsRecipientSelection" runat="server" HeaderText="Please Correct the Following" ValidationGroup="vgRecipientSelection" CssClass="alert alert-warning" />
 
-                    <Rock:NotificationBox ID="nbRecipientsAlert" runat="server" NotificationBoxType="Danger" />
+                    <Rock:NotificationBox ID="nbRecipientsAlert" runat="server" NotificationBoxType="Validation" />
 
                     <Rock:Toggle ID="tglRecipientSelection" runat="server" CssClass="margin-b-lg" OnText="Select From List" OffText="Select Specific Individuals" Checked="true" OnCssClass="btn-info" OffCssClass="btn-info" ValidationGroup="vgRecipientSelection" OnCheckedChanged="tglRecipientSelection_CheckedChanged" ButtonSizeCssClass="btn-sm" />
                     
@@ -99,7 +99,7 @@
 
                     <Rock:NotificationBox ID="nbNoCommunicationTransport" runat="server" CssClass="margin-t-md" NotificationBoxType="Warning" Title="Warning" />
 
-                    <asp:ValidationSummary ID="vsCommunicationDelivery" runat="server" HeaderText="Please Correct the Following" ValidationGroup="vgCommunicationDelivery" CssClass="alert alert-danger" />
+                    <asp:ValidationSummary ID="vsCommunicationDelivery" runat="server" HeaderText="Please Correct the Following" ValidationGroup="vgCommunicationDelivery" CssClass="alert alert-validation" />
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:RockTextBox ID="tbCommunicationName" runat="server" Label="Communication Name" Help="This name is used internally to describe the communication. It is not sent as a part of the communication." Required="true" ValidationGroup="vgCommunicationDelivery" MaxLength="100"/>
@@ -829,7 +829,7 @@
                 <asp:Panel ID="pnlEmailSummary" CssClass="js-navigation-panel" runat="server" Visible="false">
                     <h1 class="step-title">Email Summary</h1>
 
-                    <asp:ValidationSummary ID="vsEmailSummary" runat="server" HeaderText="Please Correct the Following" ValidationGroup="vgEmailSummary" CssClass="alert alert-danger" />
+                    <asp:ValidationSummary ID="vsEmailSummary" runat="server" HeaderText="Please Correct the Following" ValidationGroup="vgEmailSummary" CssClass="alert alert-validation" />
 
                     <div class="row">
                         <div class="col-md-6">
@@ -890,7 +890,7 @@
                     <h1 class="step-title">Mobile Text Editor</h1>
                     <asp:HiddenField ID="hfSMSSampleRecipientPersonId" runat="server" />
 
-                    <asp:ValidationSummary ID="vsMobileTextEditor" runat="server" HeaderText="Please Correct the Following" ValidationGroup="vgMobileTextEditor" CssClass="alert alert-danger" />
+                    <asp:ValidationSummary ID="vsMobileTextEditor" runat="server" HeaderText="Please Correct the Following" ValidationGroup="vgMobileTextEditor" CssClass="alert alert-validation" />
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:RockDropDownList ID="ddlSMSFrom" runat="server" Label="From" Help="The number to originate message from (configured under Admin Tools > General Settings > Defined Types > SMS From Values)." Required="true" ValidationGroup="vgMobileTextEditor"/>

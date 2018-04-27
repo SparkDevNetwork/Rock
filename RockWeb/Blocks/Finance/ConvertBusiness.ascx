@@ -15,7 +15,7 @@
                 <Rock:PersonPicker ID="ppSource" runat="server" IncludeBusinesses="true" Label="Person or Business" Help="Select the person or business that you want to convert." OnSelectPerson="ppSource_SelectPerson" />
 
                 <asp:Panel ID="pnlToPerson" runat="server" Visible="false">
-                    <asp:ValidationSummary ID="vsToPerson" runat="server" CssClass="alert alert-danger" ValidationGroup="ConvertToPerson" />
+                    <asp:ValidationSummary ID="vsToPerson" runat="server" CssClass="alert alert-validation" ValidationGroup="ConvertToPerson" />
 
                     <Rock:NotificationBox ID="nbToPerson" runat="server" NotificationBoxType="Warning">The selected record will be converted to a Person with the values entered below.</Rock:NotificationBox>
 
@@ -38,7 +38,7 @@
                 </asp:Panel>
 
                 <asp:Panel ID="pnlToBusiness" runat="server" Visible="false">
-                    <asp:ValidationSummary ID="vsToBusiness" runat="server" CssClass="alert alert-danger" ValidationGroup="ConvertToBusiness" />
+                    <asp:ValidationSummary ID="vsToBusiness" runat="server" CssClass="alert alert-validation" ValidationGroup="ConvertToBusiness" />
 
                     <Rock:NotificationBox ID="nbToBusiness" runat="server" NotificationBoxType="Warning">The selected record will be converted to a Business with the values entered below.</Rock:NotificationBox>
 
