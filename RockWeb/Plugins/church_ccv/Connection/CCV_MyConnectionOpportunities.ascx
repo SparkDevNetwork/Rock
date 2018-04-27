@@ -80,19 +80,19 @@
                     <Rock:Grid ID="gRequests" runat="server" OnRowSelected="gRequests_Edit" CssClass="js-grid-requests" AllowSorting="true" >
                         <Columns>
                             <Rock:SelectField />
-                            <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="PersonAlias.Person.LastName,PersonAlias.Person.NickName" />
-                            <Rock:RockBoundField DataField="Campus" HeaderText="Campus" SortExpression="Campus.Name" />
-                            <Rock:RockBoundField DataField="Group" HeaderText="Group" SortExpression="AssignedGroup.Name" />
-                            <Rock:RockBoundField DataField="Connector" HeaderText="Connector" SortExpression="Connector.PersonAlias.Person.LastName,Connector.PersonAlias.Person.NickName" />
-                            <Rock:RockBoundField DataField="CreatedDate" HeaderText="Created" SortExpression="CreatedDateTime" />
-                            <Rock:RockBoundField DataField="LastActivity" HeaderText="Last Activity" HtmlEncode="false" />
+                            <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
+                            <Rock:RockBoundField DataField="Campus" HeaderText="Campus" SortExpression="Campus" />
+                            <Rock:RockBoundField DataField="Group" HeaderText="Group" SortExpression="Group" />
+                            <Rock:RockBoundField DataField="Connector" HeaderText="Connector" SortExpression="ConnectorNameSortable" />
+                            <Rock:RockBoundField DataField="CreatedDate" HeaderText="Created" SortExpression="CreatedDateSortable" />
+                            <Rock:RockBoundField DataField="LastActivity" HeaderText="Last Activity" HtmlEncode="false" SortExpression="LastActivitySortable" />
                             <Rock:RockBoundField DataField="LastActivityNote" HeaderText="Last Activity Note" HtmlEncode="false" />
                             <asp:TemplateField HeaderText="State" SortExpression="ConnectionState" >
                                 <ItemTemplate>
                                     <%# Eval("StateLabel") %>
                                 </ItemTemplate>
                             </asp:TemplateField>
-                            <asp:TemplateField HeaderText="Status" SortExpression="ConnectionStatus.Name">
+                            <asp:TemplateField HeaderText="Status" SortExpression="Status">
                                 <ItemTemplate>
                                     <%# this.GetConnectionStatusHtml( Eval("ConnectionRequest") as Rock.Model.ConnectionRequest) %>
                                 </ItemTemplate>

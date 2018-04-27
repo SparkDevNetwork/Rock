@@ -845,41 +845,45 @@ namespace RockWeb.Plugins.church_ccv.Connection
                             .Where( r => lastActivityIds.Contains(
                                 r.ConnectionRequestActivities.OrderByDescending( a => a.CreatedDateTime ).Select( a => a.ConnectionActivityTypeId ).FirstOrDefault() ) );
                     }
+                    
+                    // select the data we need into new anonymous objects, and then turn it back into a query
+                    var requestData = requests.ToList()
+                                        .Select( r => new
+                                        {
+                                            r.Id,
+                                            r.Guid,
+                                            PersonId = r.PersonAlias.PersonId,
+                                            Name = r.PersonAlias.Person.FullNameReversed,
+                                            Campus = r.Campus.Name,
+                                            Group = r.AssignedGroup != null ? r.AssignedGroup.Name : "",
+                                            Connector = r.ConnectorPersonAlias != null ? r.ConnectorPersonAlias.Person.FullName : "",
+                                            ConnectorNameSortable = r.ConnectorPersonAlias != null ? r.ConnectorPersonAlias.Person.FullName : "",
+                                            CreatedDate = r.CreatedDateTime.ToRelativeDateString(),
+                                            CreatedDateSortable = r.CreatedDateTime,
+                                            LastActivity = FormatActivity( r.ConnectionRequestActivities.OrderByDescending( a => a.CreatedDateTime ).FirstOrDefault() ),
+                                            LastActivitySortable = GetLastActivityTime( r.ConnectionRequestActivities.OrderByDescending( a => a.CreatedDateTime ).FirstOrDefault() ),
+                                            LastActivityNote = gRequests.Columns[6].Visible ? r.ConnectionRequestActivities.OrderByDescending(
+                                                a => a.CreatedDateTime ).Select( a => a.Note ).FirstOrDefault() : "",
+                                            Status = r.ConnectionStatus.Name,
+                                            StatusLabel = r.ConnectionStatus.IsCritical ? "warning" : "info",
+                                            ConnectionState = r.ConnectionState,
+                                            StateLabel = FormatStateLabel( r.ConnectionState, r.FollowupDate ),
+                                            ConnectionRequest = r
+                                        } ).AsQueryable( );
 
-
+                    // now sort it, which will work because we've flattened our data into logical values that will display in the grid
                     SortProperty sortProperty = gRequests.SortProperty;
                     if ( sortProperty != null )
                     {
-                        requests = requests.Sort( sortProperty );
+                        requestData = requestData.Sort( sortProperty );
                     }
                     else
                     {
-                        requests = requests
-                            .OrderBy( r => r.PersonAlias.Person.LastName )
-                            .ThenBy( r => r.PersonAlias.Person.NickName );
+                        requestData = requestData.OrderBy( r => r.Name );
                     }
 
-                    gRequests.DataSource = requests.ToList()
-                    .Select( r => new
-                    {
-                        r.Id,
-                        r.Guid,
-                        PersonId = r.PersonAlias.PersonId,
-                        Name = r.PersonAlias.Person.FullNameReversed,
-                        Campus = r.Campus,
-                        Group = r.AssignedGroup != null ? r.AssignedGroup.Name : "",
-                        Connector = r.ConnectorPersonAlias != null ? r.ConnectorPersonAlias.Person.FullName : "",
-                        CreatedDate = r.CreatedDateTime.ToRelativeDateString(),
-                        LastActivity = FormatActivity( r.ConnectionRequestActivities.OrderByDescending( a => a.CreatedDateTime ).FirstOrDefault() ),
-                        LastActivityNote = gRequests.Columns[6].Visible ? r.ConnectionRequestActivities.OrderByDescending(
-                            a => a.CreatedDateTime ).Select( a => a.Note ).FirstOrDefault() : "",
-                        Status = r.ConnectionStatus.Name,
-                        StatusLabel = r.ConnectionStatus.IsCritical ? "warning" : "info",
-                        ConnectionState = r.ConnectionState,
-                        StateLabel = FormatStateLabel( r.ConnectionState, r.FollowupDate ),
-                        ConnectionRequest = r
-                    } )
-                   .ToList();
+                    // bind!
+                    gRequests.DataSource = requestData.ToList( );
                     gRequests.DataBind();
 
                     lOpportunityIcon.Text = string.Format( "<i class='{0}'></i>", opportunitySummary.IconCssClass );
@@ -900,6 +904,17 @@ namespace RockWeb.Plugins.church_ccv.Connection
         private string MakeKeyUniqueToOpportunity( string key )
         {
             return string.Format( "{0}-{1}", SelectedOpportunityId ?? 0, key );
+        }
+
+        private DateTime? GetLastActivityTime( object item )
+        {
+            var connectionRequestActivity = item as ConnectionRequestActivity;
+            if ( connectionRequestActivity != null )
+            {
+                return connectionRequestActivity.CreatedDateTime;
+            }
+
+            return null;
         }
 
         private string FormatActivity( object item )
