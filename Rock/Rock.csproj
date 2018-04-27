@@ -889,6 +889,7 @@
     <Compile Include="Model\CodeGenerated\PageShortLinkService.cs" />
     <Compile Include="Model\CodeGenerated\PersonTokenService.cs" />
     <Compile Include="Model\ContentChannelItemSlug.cs" />
+    <Compile Include="Model\ContentChannelItemSlugService.Partial.cs" />
     <Compile Include="Model\DataViewPersistedValue.cs" />
     <Compile Include="Model\ContentChannelItemService.Partial.cs" />
     <Compile Include="Model\FinancialAccountService.Partial.cs" />

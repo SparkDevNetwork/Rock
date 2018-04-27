@@ -7,6 +7,19 @@
     $(document).ready(function () {
         contentSlug.init({
             contentChannelItem: '#<%=hfId.ClientID %>',
+            contentSlug: '#<%=hfSlug.ClientID %>',
+            SaveSlug: {
+                restUrl: '<%=ResolveUrl( "~/api/ContentChannelItemSlugs/SaveContentSlug" ) %>',
+                restParams: '/' + ($('#<%=hfId.ClientID%>').val() || 0) + "/{slug}/{contentChannelItemSlugId?}",
+            },
+            UniqueSlug: {
+                restUrl: '<%=ResolveUrl( "~/api/ContentChannelItemSlugs/GetUniqueContentSlug" ) %>',
+                restParams: '/{slug}'
+            },
+            RemoveSlug: {
+               restUrl: '<%=ResolveUrl( "~/api/ContentChannelItemSlugs" ) %>',
+                restParams: '/{id}'
+            }
 
         });
     });
@@ -20,6 +33,7 @@
 
             <asp:HiddenField ID="hfIsDirty" runat="server" Value="false" />
             <asp:HiddenField ID="hfId" runat="server" />
+            <asp:HiddenField ID="hfSlug" runat="server" />
             <asp:HiddenField ID="hfChannelId" runat="server" />
             <asp:HiddenField ID="hfApprovalStatusPersonAliasId" runat="server" />
             <asp:HiddenField ID="hfApprovalStatus" runat="server" />
@@ -80,11 +94,11 @@
                                     <asp:Repeater ID="rSlugs" runat="server">
                                         <ItemTemplate>
                                             <div class="row margin-l-sm margin-b-sm rollover-container js-slug-row clearfix">
-                                                <input id="slugId" type="hidden" value="<%# Eval("Id") %>" />
-                                                <literal> <%# Eval("Slug") %> </literal>
+                                                <input id="slugId" class="js-slug-id" type="hidden" value="<%# Eval("Id") %>" />
+                                                <literal class="js-slug-literal"> <%# Eval("Slug") %> </literal>
                                                 <div class="rollover-item actions pull-right">
-                                                    <a><i class="fa fa-pencil"></i></a>
-                                                    <a><i class="fa fa-close"></i></a>
+                                                    <a class="js-slug-edit" href="#"><i class="fa fa-pencil"></i></a>
+                                                    <a class="js-slug-remove" href="#"><i class="fa fa-close"></i></a>
                                                 </div>
                                             </div>
                                         </ItemTemplate>
