@@ -55,17 +55,17 @@
                             <asp:Panel CssClass="col-sm-3" runat="server" ID="pnlGender1">
                                 <Rock:RockDropDownList ID="ddlGender1" runat="server" Label="Gender" />
                             </asp:Panel>
-                            <asp:Panel CssClass="col-sm-3" runat="server" ID="pnlBirthDate1">
-                                <Rock:DatePicker ID="dpBirthDate1" runat="server" Label="Birthdate" AllowFutureDateSelection="False" ForceParse="false" />
+                            <asp:Panel CssClass="col-sm-6" runat="server" ID="pnlBirthDate1">
+                                <Rock:DatePartsPicker ID="dppBirthDate1" runat="server" Label="Birthdate" AllowFutureDates="False" RequireYear="True"/>
                             </asp:Panel>
                             <asp:Panel CssClass="col-sm-3" runat="server" ID="pnlMaritalStatus1">
                                 <Rock:DefinedValuePicker ID="dvpMaritalStatus1" runat="server" Label="Marital Status" />
                             </asp:Panel>
-                            <asp:Panel CssClass="col-sm-3" runat="server" ID="pnlEmail1">
-                                <Rock:EmailBox ID="tbEmail1" runat="server" Label="Email" />
-                            </asp:Panel>
                             <asp:Panel CssClass="col-sm-3" runat="server" ID="pnlMobilePhone1">
                                 <Rock:PhoneNumberBox ID="pnMobilePhone1" runat="server" Label="Mobile Phone" />
+                            </asp:Panel>
+                            <asp:Panel CssClass="col-sm-6" runat="server" ID="pnlEmail1">
+                                <Rock:EmailBox ID="tbEmail1" runat="server" Label="Email" />
                             </asp:Panel>
                             <Rock:DynamicPlaceholder ID="phAttributes1" runat="server" />
                         </div>
@@ -89,17 +89,17 @@
                                 <asp:Panel CssClass="col-sm-3" runat="server" ID="pnlGender2">
                                     <Rock:RockDropDownList ID="ddlGender2" runat="server" Label="Gender" />
                                 </asp:Panel>
-                                <asp:Panel CssClass="col-sm-3" runat="server" ID="pnlBirthDate2">
-                                    <Rock:DatePicker ID="dpBirthDate2" runat="server" Label="Birthdate" AllowFutureDateSelection="False" ForceParse="false" />
+                                <asp:Panel CssClass="col-sm-6" runat="server" ID="pnlBirthDate2">
+                                    <Rock:DatePartsPicker ID="dppBirthDate2" runat="server" Label="Birthdate" AllowFutureDates="False"/>
                                 </asp:Panel>
                                 <asp:Panel CssClass="col-sm-3" runat="server" ID="pnlMaritalStatus2">
                                     <Rock:DefinedValuePicker ID="dvpMaritalStatus2" runat="server" Label="Marital Status" />
                                 </asp:Panel>
-                                <asp:Panel CssClass="col-sm-3" runat="server" ID="pnlEmail2">
-                                    <Rock:EmailBox ID="tbEmail2" runat="server" Label="Email" />
-                                </asp:Panel>
                                 <asp:Panel CssClass="col-sm-3" runat="server" ID="pnlMobilePhone2">
                                     <Rock:PhoneNumberBox ID="pnMobilePhone2" runat="server" Label="Mobile Phone" />
+                                </asp:Panel>
+                                <asp:Panel CssClass="col-sm-6" runat="server" ID="pnlEmail2">
+                                    <Rock:EmailBox ID="tbEmail2" runat="server" Label="Email" />
                                 </asp:Panel>
                                 <Rock:DynamicPlaceholder ID="phAttributes2" runat="server" />
                             </div>
