@@ -25,7 +25,7 @@
             <div class="panel-body">
                 <asp:Panel ID="pnlDetails" runat="server">
 
-                    <asp:ValidationSummary ID="valExample" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                    <asp:ValidationSummary ID="valExample" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
 
                     <h1 runat="server">General Information</h1>
 

@@ -11,7 +11,7 @@
             <asp:Literal ID="lLavaOverview" runat="server" />
             <asp:Literal ID="lLavaOutputDebug" runat="server" />
 
-            <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+            <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
 
             <div class="row">
                 <asp:Panel id="pnlCol1" runat="server">

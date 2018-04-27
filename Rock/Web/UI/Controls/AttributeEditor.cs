@@ -991,7 +991,7 @@ namespace Rock.Web.UI.Controls
 
                 _validationSummary = new ValidationSummary();
                 _validationSummary.ID = "valiationSummary";
-                _validationSummary.CssClass = "alert alert-danger";
+                _validationSummary.CssClass = "alert alert-validation";
                 _validationSummary.HeaderText = "Please correct the following:";
                 Controls.Add( _validationSummary );
 
