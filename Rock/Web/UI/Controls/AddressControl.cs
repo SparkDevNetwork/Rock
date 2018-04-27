@@ -643,7 +643,7 @@ namespace Rock.Web.UI.Controls
 
                 if ( _ddlCountry.Visible )
                 {
-                    writer.AddAttribute( "class", "row" );
+                    writer.AddAttribute( "class", "form-row" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                     writer.AddAttribute( "class", "form-group col-sm-6" );
@@ -677,7 +677,7 @@ namespace Rock.Web.UI.Controls
                     writer.RenderEndTag();  // div.form-group
                 }
 
-                writer.AddAttribute( "class", "row" );
+                writer.AddAttribute( "class", "form-row" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 writer.AddAttribute( "class", ( ShowCounty ? "form-group col-sm-3" : "form-group col-sm-6" ) );
@@ -712,7 +712,7 @@ namespace Rock.Web.UI.Controls
                 _tbPostalCode.RenderControl( writer );
                 writer.RenderEndTag();  // div.form-group
 
-                writer.RenderEndTag();  // row
+                writer.RenderEndTag();  // div.form-row
 
                 writer.RenderEndTag();      // div
             }
