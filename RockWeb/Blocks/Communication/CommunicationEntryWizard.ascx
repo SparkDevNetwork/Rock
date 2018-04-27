@@ -853,12 +853,15 @@
                                 
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <Rock:EmailBox ID="ebCCList" runat="server" Label="CC List" AllowMultiple="true" Help="Comma-delimited list of email addresses that will be copied on the email sent to every recipient. Lava can be used to access recipent data. <span class='tip tip-lava'></span>" />
-                            </div>
-                            <div class="col-md-6">
-                                <Rock:EmailBox ID="ebBCCList" runat="server" Label="BCC List" AllowMultiple="true" Help="Comma-delimited list of email addresses that will be blind copied on the email sent to every recipient. Lava can be used to access recipent data. <span class='tip tip-lava'></span>" />
+                        <div class="well">
+                            <p><strong>Note:</strong> Because Rock personalizes emails, CC and BCC recipients will receive on email per recipient.</p>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:EmailBox ID="ebCCList" runat="server" Label="CC List" AllowMultiple="true" Help="Comma-delimited list of email addresses that will be copied on the email sent to every recipient. Lava can be used to access recipent data. <span class='tip tip-lava'></span>" />
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:EmailBox ID="ebBCCList" runat="server" Label="BCC List" AllowMultiple="true" Help="Comma-delimited list of email addresses that will be blind copied on the email sent to every recipient. Lava can be used to access recipent data. <span class='tip tip-lava'></span>" />
+                                </div>
                             </div>
                         </div>
                     </asp:Panel>
