@@ -78,7 +78,7 @@ namespace RockWeb.Blocks.Cms
             get { return _approvedCss; }
             set { _approvedCss = value; }
         }
-        
+
         /// <summary>
         /// Gets or sets the denied CSS.
         /// </summary>
@@ -196,6 +196,8 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnLoad( e );
 
+            RockPage.AddScriptLink( "~/Scripts/Rock/slug.js" );
+
             if ( !Page.IsPostBack )
             {
                 if (string.IsNullOrWhiteSpace(GetAttributeValue("ContentChannel")))
@@ -238,7 +240,7 @@ namespace RockWeb.Blocks.Cms
             }
 
             foreach ( var contentItemId in itemIds )
-            { 
+            {
                 ContentChannelItem contentItem = new ContentChannelItemService( new RockContext() ).Get( contentItemId );
                 if ( contentItem != null )
                 {
@@ -340,6 +342,12 @@ namespace RockWeb.Blocks.Cms
                     rockContext.SaveChanges();
                     contentItem.SaveAttributeValues( rockContext );
 
+                    if ( !string.IsNullOrEmpty( hfSlug.Value ) )
+                    {
+                        var contentChannelItemSlugService = new ContentChannelItemSlugService( rockContext );
+                        contentChannelItemSlugService.SaveSlug( contentItem.Id, hfSlug.Value, null );
+                    }
+
                     if ( contentItem.ContentChannel.IsTaggingEnabled )
                     {
                         taglTags.EntityGuid = contentItem.Guid;
@@ -354,7 +362,7 @@ namespace RockWeb.Blocks.Cms
                             .Queryable()
                             .Where( c =>
                                 c.ContentChannelItemId == contentItem.Id &&
-                                c.EventItemOccurrenceId == eventItemOccurrenceId.Value) 
+                                c.EventItemOccurrenceId == eventItemOccurrenceId.Value)
                             .FirstOrDefault();
 
                         if ( occurrenceChannelItem == null )
@@ -685,7 +693,7 @@ namespace RockWeb.Blocks.Cms
                     if ( hierarchy.Any() )
                     {
                         var parentItem = contentItemService.Get( hierarchy.Last().AsInteger() );
-                        if ( parentItem != null && 
+                        if ( parentItem != null &&
                             parentItem.IsAuthorized( Authorization.EDIT, CurrentPerson ) &&
                             parentItem.ContentChannel.ChildContentChannels.Any( c => c.Id == contentChannel.Id ) )
                         {
@@ -763,7 +771,7 @@ namespace RockWeb.Blocks.Cms
             if ( contentItem != null &&
                 contentItem.ContentChannelType != null &&
                 contentItem.ContentChannel != null &&
-                ( canEdit || contentItem.IsAuthorized( Authorization.EDIT, CurrentPerson ) ) ) 
+                ( canEdit || contentItem.IsAuthorized( Authorization.EDIT, CurrentPerson ) ) )
             {
                 hfIsDirty.Value = "false";
 

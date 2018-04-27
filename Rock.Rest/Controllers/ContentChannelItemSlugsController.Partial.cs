@@ -36,13 +36,48 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Posts the content slug.
         /// </summary>
-        /// <param name="contentChannelItemSlug">The content channel item slug.</param>
+        /// <param name="contentChannelItemId">The content channel item identifier.</param>
+        /// <param name="slug">The slug.</param>
+        /// <param name="contentChannelItemSlugId">The content channel item slug identifier.</param>
         [Authenticate, Secured]
         [HttpPost]
-        [System.Web.Http.Route( "api/ContentChannelItemSlugs/SaveContentSlug" )]
-        public SaveSlugResponse SaveContentSlug( ContentChannelItemSlug contentChannelItemSlug )
+        [System.Web.Http.Route( "api/ContentChannelItemSlugs/SaveContentSlug/{contentChannelItemId}/{slug}/{contentChannelItemSlugId?}" )]
+        public SaveSlugResponse SaveContentSlug( int contentChannelItemId, string slug, int? contentChannelItemSlugId = null )
         {
-            return new SaveSlugResponse();
+            SaveSlugResponse response = new SaveSlugResponse();
+            using ( var rockContext = new RockContext() )
+            {
+                var contentChannelItemSlugService = new ContentChannelItemSlugService( rockContext );
+
+                var contentChannelItemSlug = contentChannelItemSlugService.SaveSlug( contentChannelItemId, slug, contentChannelItemSlugId );
+                if ( contentChannelItemSlug != null )
+                {
+                    response.Slug = contentChannelItemSlug.Slug;
+                    response.Id = contentChannelItemSlug.Id;
+                }
+            }
+            return response;
+        }
+
+        /// <summary>
+        /// Gets the unique slug.
+        /// </summary>
+        /// <param name="slug">The slug.</param>
+        /// <param name="contentChannelItemSlugId">The content channel item slug identifier.</param>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/ContentChannelItemSlugs/GetUniqueContentSlug/{slug}/{contentChannelItemSlugId?}" )]
+        public string GetUniqueContentSlug( string slug, int? contentChannelItemSlugId = null )
+        {
+            string uniquieSlug = string.Empty;
+
+            using ( var rockContext = new RockContext() )
+            {
+                var contentChannelItemSlugService = new ContentChannelItemSlugService( rockContext );
+
+                uniquieSlug = contentChannelItemSlugService.GetUniqueContentSlug( slug, contentChannelItemSlugId );
+            }
+            return uniquieSlug;
         }
 
         /// <summary>
@@ -50,14 +85,6 @@ namespace Rock.Rest.Controllers
         /// </summary>
         public class SaveSlugResponse
         {
-            /// <summary>
-            /// Gets or sets a value indicating whether this <see cref="SaveSlugResponse"/> is success.
-            /// </summary>
-            /// <value>
-            ///   <c>true</c> if success; otherwise, <c>false</c>.
-            /// </value>
-            public bool Success { get; set; }
-
             /// <summary>
             /// Gets or sets the slug.
             /// </summary>
@@ -72,7 +99,7 @@ namespace Rock.Rest.Controllers
             /// <value>
             /// The Id.
             /// </value>
-            public Guid? Id { get; set; }
+            public int Id { get; set; }
         }
 
     }
