@@ -552,6 +552,14 @@ namespace RockWeb.Blocks.Communication
                 templateService.Add( template );
                 rockContext.SaveChanges();
 
+                template = templateService.Get(template.Id);
+                if (template != null)
+                {
+                    template.MakePrivate( Authorization.VIEW, CurrentPerson );
+                    template.MakePrivate( Authorization.EDIT, CurrentPerson );
+                    template.MakePrivate( Authorization.ADMINISTRATE, CurrentPerson );
+                }
+
                 nbTemplateCreated.Visible = true;
             }
 

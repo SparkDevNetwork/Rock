@@ -2217,7 +2217,19 @@
     <Content Include="Plugin\HotFixes\049_GivingAnalyticsAccounts_TransactionData.sql">
       <DependentUpon>049_UpdateGivingAnalyticsAccounts.cs</DependentUpon>
     </Content>
+    <Content Include="Plugin\HotFixes\050_MigrationRollupsForV7_4_AddVimeoShortCode.sql">
+      <DependentUpon>050_MigrationRollupsForV7_4.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\050_MigrationRollupsForV7_4_FixAccordionShortCode.sql">
+      <DependentUpon>050_MigrationRollupsForV7_4.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\050_MigrationRollupsForV7_4_FixThankyouAndOngoingHyphenations.sql">
+      <DependentUpon>050_MigrationRollupsForV7_4.cs</DependentUpon>
+    </Content>
     <Content Include="Plugin\HotFixes\050_MigrationRollupsForV7_4_spAnalytics_ETL_Campus.sql">
+      <DependentUpon>050_MigrationRollupsForV7_4.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\050_MigrationRollupsForV7_4_spCrm_PersonDuplicateFinder.sql">
       <DependentUpon>050_MigrationRollupsForV7_4.cs</DependentUpon>
     </Content>
     <Content Include="Plugin\HotFixes\050_MigrationRollupsForV7_4_spCrm_PersonMerge.sql">

@@ -66,6 +66,26 @@ WHERE [Message] LIKE '%<!-- prevent Gmail on iOS font size manipulation -->
 
             // Fix for personal communication templates
             FixPersonalCommunicationTemplates();
+
+            UpdateEntityTypeonCDRInteractions();
+
+            FixTypoInWordCloudLavaShortcode();
+
+            AddStickyHeaderToScheduleGrid();
+
+            // Add Vimeo Short Code
+            Sql( HotFixMigrationResource._050_MigrationRollupsForV7_4_AddVimeoShortCode );
+
+            // Fix Accordion Short Code
+            Sql( HotFixMigrationResource._050_MigrationRollupsForV7_4_FixAccordionShortCode );
+
+            // PersonDuplicateFinder have the GUIDs for Mobile and home phone reversed
+            Sql( @"IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[spCrm_PersonDuplicateFinder]') AND type in (N'P', N'PC'))
+                DROP PROCEDURE[dbo].[spCrm_PersonDuplicateFinder];" );
+            Sql( HotFixMigrationResource._050_MigrationRollupsForV7_4_spCrm_PersonDuplicateFinder );
+
+            // Thank-you and on-going Are Hyphenated Unnecessarily #1711
+            Sql( HotFixMigrationResource._050_MigrationRollupsForV7_4_FixThankyouAndOngoingHyphenations );
         }
 
 
@@ -121,6 +141,60 @@ WHERE [Message] LIKE '%<!-- prevent Gmail on iOS font size manipulation -->
 
             RockMigrationHelper.UpdateBlockTypeAttribute( "BFDCA2E2-DAA1-4FA6-B33C-C53C7CF23C5D6", SystemGuid.FieldType.BOOLEAN, "Personal Templates View", "PersonalTemplatesView", "", "Is this block being used to display personal templates (only templates that current user is allowed to edit)?", 0, @"False", "60581383-BE1E-40A4-9F60-786B761BDA98" );
             RockMigrationHelper.AddBlockAttributeValue( true, "425C325E-1054-4A52-A162-DECEB377E178", "60581383-BE1E-40A4-9F60-786B761BDA98", @"True" );
+        }
+
+        private void UpdateEntityTypeonCDRInteractions()
+        {
+            Sql( @"DECLARE @PersonAliasEntityTypeId int = ( SELECT TOP 1[Id] FROM[EntityType] WHERE[Name] LIKE 'Rock.Model.PersonAlias')
+                UPDATE[InteractionChannel]
+                SET[InteractionEntityTypeId] = @PersonAliasEntityTypeId
+                 WHERE[Guid] = 'B3904B57-62A2-57AC-43EA-94D4DEBA3D51'" );
+        }
+
+        private void FixTypoInWordCloudLavaShortcode()
+        {
+            Sql( @"UPDATE[LavaShortcode]
+                SET[Documentation] = REPLACE([Documentation], 'you would like to pay', 'you would like to play')
+                WHERE[Guid] = 'CA9B54BF-EF0A-4B08-884F-7042A6B3EAF4'" );
+        }
+
+        private void AddStickyHeaderToScheduleGrid()
+        {
+            // Attrib for BlockType: Schedule Builder:core.CustomGridEnableStickyHeaders   
+            RockMigrationHelper.UpdateBlockTypeAttribute( "8CDB6E8D-A8DF-4144-99F8-7F78CC1AF7E4", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "core.CustomGridEnableStickyHeaders", "core.CustomGridEnableStickyHeaders", "", @"", 0, @"False", "CDE41D50-F1C0-467D-820C-023E332AFB5B" );
+        }
+
+        private void FixTyposIssue2928()
+        {
+            Sql( @"UPDATE [LavaShortCode]
+                SET [Documentation] = '<p>
+    Adding parallax effects (when the background image of a section scrolls at a different speed than the rest of the page) can greatly enhance the 
+    aesthetics of the page. Until now, this effect has taken quite a bit of CSS know how to achieve. Now it’s as simple as:
+</p>
+<pre>{[ parallax image:''http://cdn.wonderfulengineering.com/wp-content/uploads/2014/09/star-wars-wallpaper-4.jpg'' contentpadding:''20px'' ]}
+    &lt;h1&gt;Hello World&lt;/h1&gt;
+{[ endparallax ]}</pre>
+
+<p>  
+    This shotcode takes the content you provide it and places it into a div with a parallax background using the image you provide in the ''image'' 
+    parameter. As always there are several parameters.
+</p>
+    
+<ul>
+    <li><strong>image</strong> (required) – A valid URL to the image that should be used as the background.</li><li><b>height</b> (200px) – The minimum height of the content. This is useful if you want your section to not have any 
+    content, but instead be just the parallax image.</li>
+    <li><strong>videourl</strong> - This is the URL to use if you''d like a video background.</li>
+    <li><strong>speed</strong> (50) – the speed that the background should scroll. The value of 0 means the image will be fixed in place, the value of 100 would make the background scroll quick up as the page scrolls down, while the value of -100 would scroll quickly in the opposite direction.</li>
+    <li><strong>zindex</strong> (1) – The z-index of the background image. Depending on your design you may need to adjust the z-index of the parallax image. </li>
+    <li><strong>position</strong> (center center) - This is analogous to the background-position css property. Specify coordinates as top, bottom, right, left, center, or pixel values (e.g. -10px 0px). The parallax image will be positioned as close to these values as possible while still covering the target element.</li>
+    <li><strong>contentpadding</strong> (0) – The amount of padding you’d like to have around your content. You can provide any valid CSS padding value. For example, the value ‘200px 20px’ would give you 200px top and bottom and 20px left and right.</li>
+    <li><strong>contentcolor</strong> (#fff = white) – The font color you’d like to use for your content. This simplifies the styling of your content.</li>
+    <li><strong>contentalign</strong> (center) – The alignment of your content inside of the section. </li>
+    <li><strong>noios</strong> (false) – Disables the effect on iOS devices. </li>
+    <li><strong>noandriod</strong> (center) – Disables the effect on driods. </li>
+</ul>
+<p>Note: Due to the javascript requirements of this shortcode, you will need to do a full page reload before changes to the shortcode appear on your page.</p>'
+                WHERE [Guid] = '4B6452EF-6FEA-4A66-9FB9-1A7CCE82E7A4'" );
         }
     }
 }
