@@ -359,6 +359,7 @@
     <Compile Include="Attribute\AttributeFieldAttribute.cs" />
     <Compile Include="Attribute\CheckListFieldAttribute.cs" />
     <Compile Include="Attribute\ComparisonFieldAttribute.cs" />
+    <Compile Include="Attribute\ContentChannelTypeFieldAttribute.cs" />
     <Compile Include="Attribute\ContentChannelItemFieldAttribute.cs" />
     <Compile Include="Attribute\GenderFieldAttribute.cs" />
     <Compile Include="Attribute\InteractionChannelFieldAttribute.cs" />
@@ -625,6 +626,7 @@
     <Compile Include="Field\ILinkableFieldType.cs" />
     <Compile Include="Field\SelectFromListFieldType.cs" />
     <Compile Include="Field\Types\CheckListFieldType.cs" />
+    <Compile Include="Field\Types\ContentChannelTypeFieldType.cs" />
     <Compile Include="Field\Types\ContentChannelItemFieldType.cs" />
     <Compile Include="Field\Types\MonthDayFieldType.cs" />
     <Compile Include="Field\Types\GenderFieldType.cs" />
