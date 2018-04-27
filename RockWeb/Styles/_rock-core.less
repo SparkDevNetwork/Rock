@@ -71,6 +71,16 @@ iframe {
 // 3. Utility Classes
 //--------------------------------
 
+.form-row {
+  .make-row(10px);
+
+  &>.col,
+  &>[class*=col-] {
+    padding-right: 5px;
+    padding-left: 5px;
+  }
+}
+
 .clickable {
   cursor: pointer;
 }
