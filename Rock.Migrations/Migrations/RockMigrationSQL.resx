@@ -670,4 +670,31 @@
   <data name="_201803301619284_Rollup_0330" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201803301619284_rollup_0330.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
+  <data name="_201804272301456_MergeFromV7_4_AddVimeoShortCode" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201804272301456_mergefromv7_4_addvimeoshortcode.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201804272301456_MergeFromV7_4_FixAccordionShortCode" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201804272301456_mergefromv7_4_fixaccordionshortcode.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201804272301456_MergeFromV7_4_FixThankyouAndOngoingHyphenations" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201804272301456_mergefromv7_4_fixthankyouandongoinghyphenations.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201804272301456_MergeFromV7_4_spAnalytics_ETL_Campus" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201804272301456_mergefromv7_4_spanalytics_etl_campus.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201804272301456_MergeFromV7_4_spCrm_PersonDuplicateFinder" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201804272301456_mergefromv7_4_spcrm_personduplicatefinder.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201804272301456_MergeFromV7_4_spCrm_PersonMerge" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201804272301456_mergefromv7_4_spcrm_personmerge.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201804272301456_MergeFromV7_4_GivingAnalyticsAccounts_AccountTotals" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201804272301456_mergefromv7_4_givinganalyticsaccounts_accounttotals.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+  </data>
+  <data name="_201804272301456_MergeFromV7_4_GivingAnalyticsAccounts_PersonSummary" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201804272301456_mergefromv7_4_givinganalyticsaccounts_personsummary.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+  </data>
+  <data name="_201804272301456_MergeFromV7_4_GivingAnalyticsAccounts_TransactionData" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201804272301456_mergefromv7_4_givinganalyticsaccounts_transactiondata.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+  </data>
 </root>

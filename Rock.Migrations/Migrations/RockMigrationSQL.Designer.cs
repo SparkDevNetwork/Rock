@@ -4395,5 +4395,212 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201803301619284_Rollup_0330", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to INSERT INTO [LavaShortCode]
+        ///	([Name], [Description], [Documentation], [IsSystem], [IsActive], [TagName], [Markup], [TagType], [EnabledLavaCommands], [Parameters], [Guid])
+        ///	VALUES
+        ///	(&apos;Vimeo&apos;,&apos;Creates a responsive Vimeo embed from just a simple video id.&apos;,&apos;&lt;p&gt;Embedding a Vimeo video is easy, right? Well what if you want it to be responsive (adjust with the size of the window)? Or what about 
+        ///control of what is shown in the player? The Vimeo shortcode helps to shorten (see what we did there) the time it tak [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201804272301456_MergeFromV7_4_AddVimeoShortCode {
+            get {
+                return ResourceManager.GetString("_201804272301456_MergeFromV7_4_AddVimeoShortCode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortCode] 
+        ///SET [Markup] = &apos;{%- assign wrapperId = uniqueid -%}
+        ///{%- assign firstopen = firstopen | AsBoolean -%}
+        ///&lt;div class=&quot;panel-group&quot; id=&quot;accordion-{{ wrapperId }}&quot; role=&quot;tablist&quot; aria-multiselectable=&quot;true&quot;&gt;
+        ///  {%- for item in items -%}
+        ///      {%- assign isopen = &apos;&apos;&apos;&apos; -%}
+        ///      {%- if item.isopen and item.isopen !=&apos;&apos;&apos;&apos; -%}
+        ///        {%- assign isopen = item.isopen | AsBoolean -%}
+        ///      {%- else -%}
+        ///        {%- if forloop.index == 1 and firstopen -%}
+        ///            {%- assign isopen = tru [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201804272301456_MergeFromV7_4_FixAccordionShortCode {
+            get {
+                return ResourceManager.GetString("_201804272301456_MergeFromV7_4_FixAccordionShortCode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to -----------------------------------------------------------------------------------------------------------------------------
+        ///-----------------------------------------------------------------------------------------------------------------------------
+        ///-- Correct Thank you string for Confirm Account email
+        ///UPDATE [SystemEmail]
+        ///SET [Body] = 
+        ///&apos;{{ &apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;EmailHeader&apos;&apos; }}
+        ///
+        ///{{ Person.FirstName }},&lt;br/&gt;&lt;br/&gt;
+        ///
+        ///Thank you for creating an account at {{ &apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;OrganizationNam [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201804272301456_MergeFromV7_4_FixThankyouAndOngoingHyphenations {
+            get {
+                return ResourceManager.GetString("_201804272301456_MergeFromV7_4_FixThankyouAndOngoingHyphenations", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ALTER PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery_AccountTotals]
+        ///	  @StartDate datetime = NULL
+        ///	, @EndDate datetime = NULL
+        ///	, @AccountIds varchar(max) = NULL
+        ///	, @CurrencyTypeIds varchar(max) = NULL
+        ///	, @SourceTypeIds varchar(max) = NULL
+        ///	, @TransactionTypeIds varchar(max) = NULL
+        ///	WITH RECOMPILE
+        ///AS
+        ///
+        ///BEGIN
+        ///
+        ///	SET @StartDate = COALESCE( CONVERT( date, @StartDate ), &apos;1900-01-01&apos; )
+        ///	SET @EndDate = COALESCE( @EndDate, &apos;2100-01-01&apos; )
+        ///
+        ///	DECLARE @AccountTbl TABLE ( [Id] int )
+        ///	INSERT INTO @AccountT [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201804272301456_MergeFromV7_4_GivingAnalyticsAccounts_AccountTotals {
+            get {
+                return ResourceManager.GetString("_201804272301456_MergeFromV7_4_GivingAnalyticsAccounts_AccountTotals", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ALTER PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery_PersonSummary]
+        ///	  @StartDate datetime = NULL
+        ///	, @EndDate datetime = NULL
+        ///	, @MinAmount decimal(18,2) = NULL
+        ///	, @MaxAmount decimal(18,2) = NULL
+        ///	, @AccountIds varchar(max) = NULL
+        ///	, @CurrencyTypeIds varchar(max) = NULL
+        ///	, @SourceTypeIds varchar(max) = NULL
+        ///	, @TransactionTypeIds varchar(max) = NULL
+        ///	WITH RECOMPILE
+        ///AS
+        ///
+        ///BEGIN
+        ///
+        ///	SET @StartDate = COALESCE( CONVERT( date, @StartDate ), &apos;1900-01-01&apos; )
+        ///	SET @EndDate = COALESCE( @EndDate, &apos;2100-01- [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201804272301456_MergeFromV7_4_GivingAnalyticsAccounts_PersonSummary {
+            get {
+                return ResourceManager.GetString("_201804272301456_MergeFromV7_4_GivingAnalyticsAccounts_PersonSummary", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ALTER PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery_TransactionData]
+        ///	  @StartDate datetime = NULL
+        ///	, @EndDate datetime = NULL
+        ///	, @AccountIds varchar(max) = NULL
+        ///	, @CurrencyTypeIds varchar(max) = NULL
+        ///	, @SourceTypeIds varchar(max) = NULL
+        ///	, @TransactionTypeIds varchar(max) = NULL
+        ///	WITH RECOMPILE
+        ///AS
+        ///
+        ///BEGIN
+        ///
+        ///	SET @StartDate = COALESCE( CONVERT( date, @StartDate ), &apos;1900-01-01&apos; )
+        ///	SET @EndDate = COALESCE( @EndDate, &apos;2100-01-01&apos; )
+        ///
+        ///	DECLARE @AccountTbl TABLE ( [Id] int )
+        ///	INSERT INTO @Accoun [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201804272301456_MergeFromV7_4_GivingAnalyticsAccounts_TransactionData {
+            get {
+                return ResourceManager.GetString("_201804272301456_MergeFromV7_4_GivingAnalyticsAccounts_TransactionData", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to -- EXECUTE [dbo].[spAnalytics_ETL_Campus] 
+        ///ALTER PROCEDURE [dbo].spAnalytics_ETL_Campus
+        ///AS
+        ///BEGIN
+        ///	DECLARE @RowsUpdated INT = 0
+        ///		,@RowsInserted INT = 0
+        ///
+        ///	INSERT INTO AnalyticsSourceCampus (
+        ///		[CampusId]
+        ///		,[Name]
+        ///		,[Description]
+        ///		,[IsActive]
+        ///		,[ShortCode]
+        ///		,[Url]
+        ///		,[LocationId]
+        ///		,[PhoneNumber]
+        ///		,[LeaderPersonAliasId]
+        ///		,[ServiceTimes]
+        ///		,[Order]
+        ///		,[Count]
+        ///		,[Guid]
+        ///		)
+        ///	SELECT [Id]
+        ///		,[Name]
+        ///		,[Description]
+        ///		,ISNULL([IsActive], 0)
+        ///		,[ShortCode]
+        ///		,[Url]
+        ///		,[LocationId] [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201804272301456_MergeFromV7_4_spAnalytics_ETL_Campus {
+            get {
+                return ResourceManager.GetString("_201804272301456_MergeFromV7_4_spAnalytics_ETL_Campus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 
+        ////*
+        ///&lt;doc&gt;
+        /// &lt;summary&gt;
+        ///   This stored procedure detects potential duplicate person records and stores the results in [PersonDuplicate]
+        /// &lt;/summary&gt;
+        /// 
+        /// &lt;remarks&gt; 
+        ///  Uses the following constants:
+        ///   * Group Type - Family: &apos;790E3215-3B10-442B-AF69-616C0DCB998E&apos;
+        ///            * Location Type - Home: &apos;8C52E53C-2A66-435A-AE6E-5EE307D9A0DC&apos;
+        ///            * Phone Type - Home: &apos;AA8732FB-2CEA-4C76-8D6D-6AAA2C6A4303&apos;
+        ///            * Phone Type - Cell: &apos;407E7E45-7B2E-4FCD-9605-ECB1339F2453&apos;
+        /// &lt;/remarks&gt;
+        /// &lt;code&gt;
+        ///   [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201804272301456_MergeFromV7_4_spCrm_PersonDuplicateFinder {
+            get {
+                return ResourceManager.GetString("_201804272301456_MergeFromV7_4_spCrm_PersonDuplicateFinder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This procedure merges the data from the non-primary person to the primary person.  It
+        ///		is used when merging people in Rock and should never be used outside of that process. 
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&quot;Old Id&quot; datatype=&quot;int&quot;&gt;The person id of the non-primary Person being merged&lt;/param&gt;
+        ///	&lt;param name=&quot;New Id&quot; datatype=&quot;int&quot;&gt;The person id of the primary Person being merged&lt;/param&gt;
+        ///	&lt;remarks&gt;	
+        ///		Uses the following constants:
+        ///			* Group Type - Family: 790E [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201804272301456_MergeFromV7_4_spCrm_PersonMerge {
+            get {
+                return ResourceManager.GetString("_201804272301456_MergeFromV7_4_spCrm_PersonMerge", resourceCulture);
+            }
+        }
     }
 }
