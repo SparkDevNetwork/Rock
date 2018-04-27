@@ -265,12 +265,9 @@ namespace Rock.Field.Types
                 int? id = picker.BinaryFileId;
                 if ( id.HasValue )
                 {
-                    var binaryFile = new BinaryFileService( new RockContext() ).Get( id.Value );
-
-                    if ( binaryFile != null )
-                    {
-                        return binaryFile.Guid.ToString();
-                    }
+                    var binaryFileGuid = new BinaryFileService( new RockContext() ).GetGuid( id.Value );
+                                        
+                    return binaryFileGuid?.ToString();
                 }
             }
 
@@ -297,7 +294,7 @@ namespace Rock.Field.Types
                 {
                     using ( var rockContext = new RockContext() )
                     {
-                        binaryFileId = new BinaryFileService( rockContext ).Queryable().Where( a => a.Guid == guid.Value ).Select( a => ( int? ) a.Id ).FirstOrDefault();
+                        binaryFileId = new BinaryFileService( rockContext ).GetId( guid.Value );
                     }
                 }
 

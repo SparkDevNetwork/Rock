@@ -150,8 +150,8 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = new LocationService( new RockContext() ).Get( guid );
-            return item != null ? item.Id : (int?)null;
+            var itemId = new LocationService( new RockContext() ).GetId( guid );
+            return itemId;
         }
 
         /// <summary>
@@ -162,9 +162,8 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var item = new LocationService( new RockContext() ).Get( id ?? 0 );
-            string guidValue = item != null ? item.Guid.ToString() : string.Empty;
-            SetEditValue( control, configurationValues, guidValue );
+            var itemGuid = new LocationService( new RockContext() ).GetGuid( id ?? 0 );
+            SetEditValue( control, configurationValues, itemGuid?.ToString() );
         }
 
         /// <summary>
