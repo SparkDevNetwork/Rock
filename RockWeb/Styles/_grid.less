@@ -33,9 +33,16 @@
   color: @grid-row-even-color;
 }
 
-.table-striped > tbody > tr:nth-child(odd) > td, .table-striped > tbody > tr:nth-child(odd) > th {
-  color: @grid-row-odd-color;
-  background-color: @grid-row-odd-bg;
+.table-striped {
+  > tbody > tr:nth-of-type(odd) {
+    color: @grid-row-odd-color;
+    background-color: @grid-row-odd-bg;
+  }
+
+  > tbody > tr:nth-of-type(even) {
+    color: @grid-row-even-color;
+    background-color: @grid-row-even-bg;
+  }
 }
 
 .table.table-hover > tbody > tr:hover > td {
@@ -217,9 +224,7 @@ td.wrap-contents {
 
 // pagination
 .grid-paging {
-  color: @grid-pager-color;
-  background-color: @grid-pager-bg;
-
+  
   .pagination {
     margin-top: 0;
     margin-bottom: 0;

@@ -11,15 +11,13 @@
 	            [
                     // [groupName, [list of button]]
                     ['source_group',['rockcodeeditor']],
-                    ['style_group1', ['bold', 'italic', 'underline', 'strikethrough', 'ol', 'ul', 'link']],
-                    ['style_group2', ['undo', 'redo']],
+                    ['style_group1', ['bold', 'italic', 'strikethrough', 'link', 'color', 'style',  'ol', 'ul' ]],
                     ['style_group3', ['clear']],
-                    ['style_group4', ['style','color']],
                     ['para', ['paragraph']],
                     ['plugins1', ['rockmergefield']],
                     ['plugins2', ['rockimagebrowser', 'rockfilebrowser']],
                     ['plugins3', ['rockpastetext', 'rockpastefromword']],
-                    ['help_group1', ['help']]
+                    ['style_group2', ['undo', 'redo']]
 	            ],
 
             // the toolbar items to include in the HtmlEditor when Toolbar is set to Full 
@@ -31,7 +29,7 @@
                     ['style_group2', ['undo', 'redo']],
                     ['style_group3', ['clear']],
                     ['style_group4', ['style', 'color']],
-                    ['full_toolbar_only', ['fontname', 'fontsize', 'color', 'superscript', 'subscript', 'table', 'hr']],
+                    ['full_toolbar_only', ['fontname', 'fontsize', 'superscript', 'subscript', 'table', 'hr']],
                     ['para', ['paragraph']],
                     ['plugins1', ['rockmergefield']],
                     ['plugins2', ['rockimagebrowser', 'rockfilebrowser']],

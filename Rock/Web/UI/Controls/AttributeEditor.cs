@@ -991,7 +991,7 @@ namespace Rock.Web.UI.Controls
 
                 _validationSummary = new ValidationSummary();
                 _validationSummary.ID = "valiationSummary";
-                _validationSummary.CssClass = "alert alert-danger";
+                _validationSummary.CssClass = "alert alert-validation";
                 _validationSummary.HeaderText = "Please correct the following:";
                 Controls.Add( _validationSummary );
 
@@ -1122,7 +1122,7 @@ namespace Rock.Web.UI.Controls
                 _btnCancel = new LinkButton();
                 _btnCancel.ID = "btnCancel";
                 _btnCancel.Text = "Cancel";
-                _btnCancel.CssClass = "btn btn-link";
+                _btnCancel.CssClass = "btn btn-default";
                 _btnCancel.CausesValidation = false;
                 _btnCancel.Click += btnCancel_Click;
                 Controls.Add( _btnCancel );

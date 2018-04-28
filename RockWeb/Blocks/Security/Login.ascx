@@ -16,7 +16,7 @@
                     </asp:Panel>
                     <asp:Panel ID="pnlInternalAuthLogin" runat="server" CssClass="col-md-6">
 
-                        <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                        <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
 
                         <asp:Literal ID="lPromptMessage" runat="server" />
                         <asp:Literal ID="lInvalidPersonTokenText" runat="server" />
