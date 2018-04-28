@@ -84,7 +84,7 @@ namespace RockWeb.Blocks.Groups
                 .Queryable( "GroupType,Schedule" ).AsNoTracking()
                 .FirstOrDefault( g => g.Id == groupId );
 
-            if ( _group != null && _group.IsAuthorized( Authorization.MANAGE_MEMBERS, CurrentPerson ) )
+            if ( _group != null && ( _group.IsAuthorized( Authorization.MANAGE_MEMBERS, CurrentPerson ) || _group.IsAuthorized( Authorization.EDIT, CurrentPerson ) ) )
             {
                 lHeading.Text = _group.Name + " Attendance";
                 _canManageMembers = true;
