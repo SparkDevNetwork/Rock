@@ -66,7 +66,7 @@
             </div>
             <asp:HyperLink ID="hlHomeCorner" runat="server" NavigateUrl="~" ToolTip="Rock RMS" CssClass="navbar-brand-corner" />
 
-            <div class="header-content" role="navigation">
+            <div id="fixed-header" class="header-content" role="navigation">
                 <div class="clearfix">
                     <!-- bookmark markup goes here -->
 

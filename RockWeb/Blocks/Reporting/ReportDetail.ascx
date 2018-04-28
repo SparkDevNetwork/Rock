@@ -12,7 +12,7 @@
                         </div>
                         <div class="panel-body">
 
-                            <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                            <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
 
                             <div class="row">
                                 <div class="col-md-6">

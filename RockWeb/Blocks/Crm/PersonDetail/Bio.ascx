@@ -56,14 +56,14 @@
                     <Rock:TagList ID="taglPersonTags" runat="server" CssClass="clearfix" />
 
                     <div class="summary clearfix">
-                        <div class="demographics">
+                        <dl class="demographics">
                             <asp:Literal ID="lAge" runat="server" />
-                            <asp:Literal ID="lGender" runat="server" /><br />
+                            <asp:Literal ID="lGender" runat="server" />
                             <asp:Literal ID="lMaritalStatus" runat="server" />
-                            <asp:Literal ID="lAnniversary" runat="server" /><br />
+                            <asp:Literal ID="lAnniversary" runat="server" />
                             <asp:Literal ID="lGrade" runat="server" />
                             <asp:Literal ID="lGraduation" runat="server" />
-                        </div>
+                        </dl>
 
                          <div class="personcontact">
                             <ul class="list-unstyled phonenumbers">

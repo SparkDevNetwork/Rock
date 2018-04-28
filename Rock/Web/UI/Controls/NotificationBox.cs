@@ -189,6 +189,11 @@ namespace Rock.Web.UI.Controls
         Info,
 
         /// <summary>
+        /// Display an information box
+        /// </summary>
+        Validation,
+
+        /// <summary>
         /// Display a warning box
         /// </summary>
         Warning,

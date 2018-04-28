@@ -16,7 +16,7 @@
 
     // create button
     var button = ui.button({
-        contents: '<i class="fa fa-file-code-o"/>',
+        contents: '<i class="fa fa-code"/>',
         tooltip: 'Code Editor',
         className: 'btn-codeview', // swap out the default btn-codeview with the RockCodeEditor
         click: function () {

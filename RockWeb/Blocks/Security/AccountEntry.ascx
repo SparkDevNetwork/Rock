@@ -59,8 +59,8 @@
 <asp:UpdatePanel ID="upnlNewAccount" runat="server">
 <ContentTemplate>
 
-    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert alert-danger"/>
-    <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger"/>
+    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert alert-validation"/>
+    <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation"/>
 
     <asp:PlaceHolder ID="phUserInfo" runat="server" Visible="true">
 

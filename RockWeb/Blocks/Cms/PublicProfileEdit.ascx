@@ -148,7 +148,7 @@
                 </asp:Panel>
 
                 <asp:Panel ID="pnlEdit" runat="server">
-                    <asp:ValidationSummary ID="valValidation" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                    <asp:ValidationSummary ID="valValidation" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
                     <div class="row">
 
                         <div class="col-md-3">

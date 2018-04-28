@@ -7,7 +7,8 @@
 // Load Master Styles
 // -------------------------
 @import "../../../Styles/Bootstrap/variables.less";
-
+@import "../../../Styles/FontAwesome/font-awesome.less";
+@import "../../../Styles/Bootstrap/bootstrap.less";
 @import "../../../Styles/_rock-core.less";
 @import "../../../Styles/_store.less";
 @import "../../../Styles/_rock-variables.less";
@@ -91,13 +92,15 @@ textarea,
 // 2. Bootstrap Overrides    */
 // -------------------------
 
+.alert {
+  border-width: 0;
+  border-top-width: 3px;
+  box-shadow: 0 0 0 1px rgba(63,63,68,.05), 0 1px 3px 0 rgba(63,63,68,.15);
+}
+
 .btn-group.open .dropdown-toggle {
   box-shadow: none;
 }
-
-/*.btn-xs, .btn-group-xs>.btn {
-  line-height: 1;
-} */ // made buttons way to swishy
 
 .input-group-addon,
 .form-control {
@@ -105,16 +108,17 @@ textarea,
 }
 .has-error .form-control,
 .has-error .input-group-addon {
-  border-color: @alert-danger-bg;
+  box-shadow: 0;
+}
+
+.has-error .form-control:focus {
+  border-color: @brand-danger;
+  box-shadow: 0 0 0 3px rgba(red(@brand-danger), green(@brand-danger), blue(@brand-danger), .2);
 }
 
 .has-error .control-label {
-  color: @alert-danger-bg;
+  color: @brand-danger;
 }
-
-/*.form-group label {
-  font-weight: @font-weight-semibold;
-}*/ // commented out as it made radio list labels bold
 
 .nav .open > a,
 .nav .open > a:focus,
@@ -125,18 +129,11 @@ textarea,
 
 .label {
   font-weight: 400; // make the font light
-
   border-radius: 0; // labels always have curves
-}
-
-.table-bordered > tbody > tr > td {
-  border-width: @table-column-border-width;
 }
 
 .grid .table > tbody > tr > td,
 .grid .table > tbody > tr > th,
-.grid .table > tfoot > tr > td,
-.grid .table > tfoot > tr > th,
 .grid .table > thead > tr > td,
 .grid .table > thead > tr > th {
   padding: 18px 12px;
@@ -144,20 +141,34 @@ textarea,
   border-top-width: 1px;
 }
 
+.grid .table > tbody > tr > td {
+  &.grid-columnreorder {
+    padding-top: 18px;
+  }
+}
+
+.grid .table > tfoot {
+  border-top: 1px solid @table-border-color;
+    > tr > td,
+    > tr > th {
+    background: @panel-bg;
+    color: @text-color;
+  }
+}
+
 .grid .table > tbody > tr > td.grid-columncommand {
   padding-top: 14px;
   padding-bottom: 0;
 }
 
-.table-bordered > thead > tr > td,
-.table-bordered > thead > tr > th,
-.table.table-light > thead > tr > th {
-  border-color: @grid-border-color;
+.grid-columncommand .btn {
+  width: 33px;
+  padding: 5px 10px 5px 7px;
 }
 
-.breadcrumb > .active { // make the active item in the breadcrumbs not look like a link
-  color: @text-color;
-  color: var(--text-color);
+.grid-columncommand .btn.fa-clone {
+  width: 33px;
+  padding: 8px 8px 8px 7px;
 }
 
 .btn.active,
@@ -170,16 +181,15 @@ textarea,
   font-weight: @font-weight-semibold;
 }
 
-
 /*#endregion */
 
 /*#region
 // 3. Rock Overrides         */
 // -------------------------
 
-.note a {
-  color: inherit;
-  text-decoration: underline;
+.modal {
+  .box-shadow(0 12px 24px 0 rgba(0, 0, 0, 0.1));
+  border-radius: 0;
 }
 
 .modal-header small {
@@ -227,6 +237,10 @@ textarea,
   box-shadow: none;
 }
 
+.panel {
+  .box-shadow(none);
+}
+
 .panel-block {
 
   > .panel-heading {
@@ -243,10 +257,6 @@ textarea,
 
 .panel .panel-heading.panel-follow {
   padding-right: 60px;
-}
-
-.panel-widget > .panel-heading {
-  background-color: @gray-lighter;
 }
 
 .panel .panel-heading .panel-options {
@@ -292,10 +302,6 @@ td.grid-actions {
     font-size: 1.125em;
     background-color: transparent;
     border: 0;
-
-    &:hover {
-      background-color: @btn-default-bg;
-    }
   }
 }
 
@@ -385,36 +391,38 @@ td.grid-actions {
     }
   }
 
-  .bookmarks {
-    margin: 0;
+  // Bookmarks
+  // 
+  // .bookmarks {
+  //   margin: 0;
 
-    & > li {
-      padding-bottom: 12px;
-    }
+  //   & > li {
+  //     padding-bottom: 12px;
+  //   }
 
-    a {
-      padding: 0 16px;
-      font-size: 1em;
-      line-height: 14px;
-      color: @navbartop-color;
+  //   a {
+  //     padding: 0 16px;
+  //     font-size: 1em;
+  //     line-height: 14px;
+  //     color: @navbartop-color;
 
-      &:hover,
-      &:focus {
-        background-color: transparent;
-        opacity: .8;
-      }
+  //     &:hover,
+  //     &:focus {
+  //       background-color: transparent;
+  //       opacity: .8;
+  //     }
 
-      @media (min-width: @screen-sm-min) {
-        margin-left: 24px;
-        line-height: @navbar-top-height;
+  //     @media (min-width: @screen-sm-min) {
+  //       margin-left: 24px;
+  //       line-height: @navbar-top-height;
 
-        & > li {
-          float: left;
-          padding-bottom: 24px;
-        }
-      }
-    }
-  }
+  //       & > li {
+  //         float: left;
+  //         padding-bottom: 24px;
+  //       }
+  //     }
+  //   }
+  // }
 
   .smartsearch {
     position: relative;
@@ -448,7 +456,7 @@ td.grid-actions {
     }
 
     input.searchinput {
-      padding: 14px 0 14px 32px;
+      padding: 15px 0 15px 30px;
       color: @navbartop-color;
     }
 
@@ -465,6 +473,10 @@ td.grid-actions {
       }
     }
 
+    .tt-suggestion p {
+      padding: 13px 15px 13px 10px;
+    }
+
     .tt-hint {
       padding: 14.5px 4px 4px 30px;
       color: @navbartop-color;
@@ -472,7 +484,8 @@ td.grid-actions {
     }
 
     .tt-dropdown-menu {
-      margin-top: 10px;
+      min-width: 340px;
+      padding: 0;
     }
   }
 
@@ -495,7 +508,6 @@ td.grid-actions {
             display: none;
           }
         }
-
 
         .profile-photo {
           float: left;
@@ -735,17 +747,16 @@ td.grid-actions {
         li.header:first-child {
           margin-top: 0;
         }
-      }
-
-      .nav-childpages::-webkit-scrollbar {
-        width: 10px;
-        background-color: transparent;
-      }
-
-      .nav-childpages::-webkit-scrollbar-thumb {
-        width: 10px;
-        background-color: rgba(0,0,0, .2);
-        border-radius: 10px;
+        &::-webkit-scrollbar {
+          width: 10px;
+          background-color: transparent;
+        }
+  
+        &::-webkit-scrollbar-thumb {
+          width: 10px;
+          background-color: rgba(0,0,0, .2);
+          border-radius: 10px;
+        }
       }
     }
 
@@ -807,7 +818,7 @@ body.navbar-side-close {
   }
 
   .page-title {
-    padding: 20px 35px;
+    padding: 20px 15px;
     background-color: @pagetitle-background;
     background-color: var(--pagetitle-background);
 
@@ -825,19 +836,29 @@ body.navbar-side-close {
       padding: 4px 0 0;
       margin: 0;
       font-size: .875em;
-      background-color: transparent;
+
+      a:hover {
+        text-decoration: underline;
+      }
 
       i {
         display: none;
       }
+
+      > li+li:before {
+        padding: 0 6px 0 7px;
+      }
     }
   }
+
+
 
   @media (min-width: @screen-md-min) {
     margin: 35px 35px 0 35px;
 
     .page-title {
       margin: -35px -35px 15px -35px;
+      padding: 20px 35px;
     }
   }
 }
@@ -907,14 +928,18 @@ body.navbar-side-close {
   }
 }
 
+.tableFloatingHeaderOriginal {
+  box-shadow: @shadow-sticky-nav;
+  border-bottom: 1px solid @grid-column-header-border-color;
+}
+
 /*#endregion */
 
 /*#region
 // 5. Specific Page Styling        */
 // -------------------------
 .personprofilebar-bio {
-  .name .nickname,
-  .name .lastname {
+  .name {
     font-weight: 700;
   }
 
@@ -942,16 +967,26 @@ body.navbar-side-close {
 /*#region
 // 6. Components          */
 // -------------------------
+
+// Date Picker
+.picker-daterange {
+  .input-group-lower{
+    .input-group-addon {
+      display: none;
+    }
+  }
+}
+
 // radio buttons & checkboxes - fancy styling
 .radio,
 .checkbox {
   position: relative;
   display: block;
   min-height: 19px;
-  padding-left: 24px;  // Not sure if needed
+  padding-left: 28px;  // Not sure if needed
 
   label { // Override forms.less
-    padding-left: 5px;
+    padding-left: 0;
   }
 }
 
@@ -973,11 +1008,11 @@ body.navbar-side-close {
     // Background-color and (when enabled) gradient
     &::before {
       position: absolute;
-      top: 0;
+      top: @custom-control-indicator-offset;
       left: 0;
       display: block;
-      width: 22px;
-      height: 22px;
+      width: @custom-control-indicator-size;
+      height: @custom-control-indicator-size;
       pointer-events: none;
       content: "";
       user-select: none;
@@ -989,11 +1024,11 @@ body.navbar-side-close {
     // Foreground (icon)
     &::after {
       position: absolute;
-      top: 0;
+      top: @custom-control-indicator-offset;
       left: 0;
       display: block;
-      width: 22px;
-      height: 22px;
+      width: @custom-control-indicator-size;
+      height: @custom-control-indicator-size;
       content: "";
       background-repeat: no-repeat;
       background-position: center center;
@@ -1058,34 +1093,75 @@ body.navbar-side-close {
 }
 
 
-// slider styling
-.irs-bar-edge {
-  background: @brand-color !important;
-  background: var(--brand-color) !important;
-  border: 1px solid @brand-color !important;
-  border-color: var(--brand-color) !important;
+
+.note-editor.note-frame {
+  border: 0;
+  margin-bottom: 0;
 }
 
-.irs-bar {
-  background: @brand-color !important;
-  background: var(--brand-color) !important;
-  border: 1px solid @brand-color !important;
-  border-color: var(--brand-color) !important;
+.note-editor .note-toolbar {
+  border-top: 1px solid #eaeaea !important;
+  margin: 0;
+  border: 0;
+  padding: 0;
 }
 
-.irs-from,
-.irs-to,
-.irs-single {
-  background: @brand-color !important;
-  background: var(--brand-color) !important;
+.note-btn {
+  background:#fff;
+  border: 0;
+  padding: 5px 10px 7px;
+
+  &:hover,
+  &:focus {
+    background:#fff;
+  }
+
+  &:active,
+  &:active:focus,
+  &.active,
+  &.active:focus,
+  &.active:hover {
+    background: #cbeefa;
+  }
 }
 
-.irs-slider {
-  background: #fff !important;
-  border: 1px solid #aaa !important;
-  box-shadow: none !important;
+.btn-mergefield {
+  font-weight: @fa-theme-weight;
 }
+
+// .note-editor .note-toolbar .btn .fa {
+//   font-size: 14px
+// }
+
+.note-editor .note-toolbar>.btn-group {
+  margin-top: 0;
+}
+
+// .note-editor .note-toolbar .note-color .dropdown-toggle {
+//   padding-left: 5px;
+//   width: 20px
+// }
+
+// .note-editor .note-statusbar {
+//   background-color: #f6f6f6
+// }
+
+// .note-editor .note-statusbar .note-resizebar {
+//   height: auto;
+//   padding-top: 3px;
+//   padding-bottom: 4px
+// }
+
+.note-editor .note-editable {
+  border: 1px solid #eaeaea;
+}
+
+// .note-editor .note-editing-area .note-editable {
+//   color: #555
+// }
+
+
 
 /*#endregion */
-@import "_print.less";
+// @import "_print.less";
 @import "_css-overrides.less";
