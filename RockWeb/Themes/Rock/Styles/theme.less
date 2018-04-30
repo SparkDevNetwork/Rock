@@ -7,15 +7,13 @@
 // Load Master Styles
 // -------------------------
 @import "../../../Styles/Bootstrap/variables.less";
-@import "../../../Styles/FontAwesome/font-awesome.less";
-@import "../../../Styles/Bootstrap/bootstrap.less";
+
 @import "../../../Styles/_rock-core.less";
 @import "../../../Styles/_store.less";
 @import "../../../Styles/_rock-variables.less";
 @import "_variables.less";
 @import "_variable-overrides.less";
 @import "_root.less";
-
 /*
   Rock Theme Styles
   1. HTML Overrides
@@ -149,10 +147,10 @@ textarea,
 
 .grid .table > tfoot {
   border-top: 1px solid @table-border-color;
-    > tr > td,
-    > tr > th {
-    background: @panel-bg;
+  > tr > td,
+  > tr > th {
     color: @text-color;
+    background: @panel-bg;
   }
 }
 
@@ -857,8 +855,8 @@ body.navbar-side-close {
     margin: 35px 35px 0 35px;
 
     .page-title {
-      margin: -35px -35px 15px -35px;
       padding: 20px 35px;
+      margin: -35px -35px 15px -35px;
     }
   }
 }
@@ -929,8 +927,8 @@ body.navbar-side-close {
 }
 
 .tableFloatingHeaderOriginal {
-  box-shadow: @shadow-sticky-nav;
   border-bottom: 1px solid @grid-column-header-border-color;
+  box-shadow: @shadow-sticky-nav;
 }
 
 /*#endregion */
@@ -1095,21 +1093,21 @@ body.navbar-side-close {
 
 
 .note-editor.note-frame {
-  border: 0;
   margin-bottom: 0;
+  border: 0;
 }
 
 .note-editor .note-toolbar {
-  border-top: 1px solid #eaeaea !important;
+  padding: 0;
   margin: 0;
   border: 0;
-  padding: 0;
+  border-top: 1px solid #eaeaea !important;
 }
 
 .note-btn {
+  padding: 5px 10px 7px;
   background:#fff;
   border: 0;
-  padding: 5px 10px 7px;
 
   &:hover,
   &:focus {
