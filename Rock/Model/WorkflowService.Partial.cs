@@ -130,10 +130,9 @@ namespace Rock.Model
             workflow.IsPersisted = true;
             workflow.IsProcessing = true;
 
-            var service = new WorkflowService( rockContext );
             if ( workflow.Id == 0 )
             {
-                service.Add( workflow );
+                Add( workflow );
             }
 
             rockContext.WrapTransaction( () =>

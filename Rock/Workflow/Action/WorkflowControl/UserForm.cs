@@ -94,11 +94,8 @@ namespace Rock.Workflow.Action
                     if ( recipients.Count > 0 )
                     {
                         // The email may need to reference activity Id, so we need to save here.
-                        if ( action.Activity.Workflow.CacheWorkflowType.IsPersisted )
-                        {
-                            WorkflowService workflowService = new WorkflowService( rockContext );
-                            workflowService.PersistImmediately( action );
-                        }
+                        WorkflowService workflowService = new WorkflowService( rockContext );
+                        workflowService.PersistImmediately( action );
 
                         var systemEmail = new SystemEmailService( rockContext ).Get( action.ActionTypeCache.WorkflowForm.NotificationSystemEmailId.Value );
                         if ( systemEmail != null )
@@ -106,7 +103,7 @@ namespace Rock.Workflow.Action
                             var emailMessage = new RockEmailMessage( systemEmail );
                             emailMessage.SetRecipients( recipients );
                             emailMessage.CreateCommunicationRecord = false;
-                            emailMessage.AppRoot = CacheGlobalAttributes.Value( "InternalApplicationRoot" ) ?? string.Empty;
+                            emailMessage.AppRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "InternalApplicationRoot" ) ?? string.Empty;
                             emailMessage.Send();
                         }
                         else
