@@ -89,8 +89,10 @@ WHERE [Message] LIKE '%<!-- prevent Gmail on iOS font size manipulation -->
 
             // ZPL printer changes for parent label to correctly print from iPad
             ZplLabelChanges();
-        }
 
+            // Fix for #2722
+            UpdateGradeTransitionDateFieldType();
+        }
 
         /// <summary>
         /// The commands to undo a migration from a specific version
@@ -98,6 +100,25 @@ WHERE [Message] LIKE '%<!-- prevent Gmail on iOS font size manipulation -->
         public override void Down()
         {
             //
+        }
+
+        private void UpdateGradeTransitionDateFieldType()
+        {
+            RockMigrationHelper.UpdateFieldType( "Month Day", "", "Rock", "Rock.Field.Types.MonthDayFieldType", Rock.SystemGuid.FieldType.MONTH_DAY );
+
+            Sql( $@"
+DECLARE @FieldTypeIdMonthDay INT = (
+		SELECT TOP 1 Id
+		FROM FieldType
+		WHERE [Guid] = '{Rock.SystemGuid.FieldType.MONTH_DAY}'
+		)
+
+UPDATE Attribute
+SET FieldTypeId = @FieldTypeIdMonthDay
+WHERE [Key] = 'GradeTransitionDate'
+	AND [EntityTypeId] IS NULL
+	AND FieldTypeId != @FieldTypeIdMonthDay
+" );
         }
 
         private void AddCheckinByGender()
