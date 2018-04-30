@@ -633,7 +633,6 @@
     <Compile Include="Field\Types\MonthDayFieldType.cs" />
     <Compile Include="Field\Types\GenderFieldType.cs" />
     <Compile Include="Field\Types\InteractionChannelsFieldType.cs" />
-    <Compile Include="Field\Types\MonthDayFieldType.cs" />
     <Compile Include="Field\Types\LabelFieldType.cs" />
     <Compile Include="Field\Types\RegistrationInstanceFieldType.cs" />
     <Compile Include="Field\Types\RegistrationTemplateFieldType.cs" />
