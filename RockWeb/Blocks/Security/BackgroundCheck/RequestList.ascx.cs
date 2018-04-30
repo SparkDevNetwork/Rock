@@ -301,7 +301,21 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                 SortProperty sortProperty = gRequest.SortProperty;
                 if ( sortProperty != null )
                 {
-                    items = qry.Sort( sortProperty ).ToList();
+                    if ( sortProperty.Property == "Name" )
+                    {
+                        if ( sortProperty.Direction == SortDirection.Descending )
+                        {
+                            items = qry.OrderByDescending( q => q.PersonAlias.Person.LastName ).ThenBy( q => q.PersonAlias.Person.FirstName ).ToList();
+                        }
+                        else
+                        {
+                            items = qry.OrderBy( q => q.PersonAlias.Person.LastName ).ThenBy( q => q.PersonAlias.Person.FirstName ).ToList();
+                        }
+                    }
+                    else
+                    {
+                        items = qry.Sort( sortProperty ).ToList();
+                    }
                 }
                 else
                 {
