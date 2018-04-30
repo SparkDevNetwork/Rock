@@ -115,9 +115,13 @@ DECLARE @FieldTypeIdMonthDay INT = (
 
 UPDATE Attribute
 SET FieldTypeId = @FieldTypeIdMonthDay
+	,[Description] = 'The date when kids are moved to the next grade level.'
 WHERE [Key] = 'GradeTransitionDate'
 	AND [EntityTypeId] IS NULL
-	AND FieldTypeId != @FieldTypeIdMonthDay
+	AND (
+		FieldTypeId != @FieldTypeIdMonthDay
+		OR [Description] != 'The date when kids are moved to the next grade level.'
+		)
 " );
         }
 
