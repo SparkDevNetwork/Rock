@@ -2986,21 +2986,15 @@ namespace Rock.Model
         /// </summary>
         /// <param name="gradeOffset"></param>
         /// <returns></returns>
-        public static int? GraduationYearFromGradeOffset(int? gradeOffset)
+        public static int? GraduationYearFromGradeOffset( int? gradeOffset )
         {
-            if (gradeOffset.HasValue && gradeOffset.Value >= 0)
+            if ( gradeOffset.HasValue && gradeOffset.Value >= 0 )
             {
-                var globalAttributes = CacheGlobalAttributes.Get();
-                var transitionDate = globalAttributes.GetValue("GradeTransitionDate").AsDateTime() ?? new DateTime( RockDateTime.Today.Year, 6, 1 );
-                transitionDate = new DateTime( RockDateTime.Today.Year, transitionDate.Month, transitionDate.Day );
-
-                int gradeOffsetAdjustment = (RockDateTime.Now.Date < transitionDate) ? gradeOffset.Value : gradeOffset.Value + 1;
-                return transitionDate.Year + gradeOffsetAdjustment;
+                return RockDateTime.CurrentGraduationYear + gradeOffset.Value;
             }
 
             return null;
         }
-
 
         /// <summary>
         /// Given a graduation year returns the grade offset
@@ -3015,8 +3009,7 @@ namespace Rock.Model
             }
             else
             {
-                var globalAttributes = CacheGlobalAttributes.Get();
-                return graduationYear.Value - globalAttributes.CurrentGraduationYear;
+                return graduationYear.Value - RockDateTime.CurrentGraduationYear;
             }
         }
 
@@ -3733,7 +3726,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static IQueryable<Person> WhereGradeOffsetRange( this IQueryable<Person> personQry, int? minGradeOffset, int? maxGradeOffset, bool includePeopleWithNoGrade = true )
         {
-            var currentGradYear = CacheGlobalAttributes.Get().CurrentGraduationYear;
+            var currentGradYear = RockDateTime.CurrentGraduationYear;
 
             var qryWithGradeOffset = personQry.Select(
                       p => new
