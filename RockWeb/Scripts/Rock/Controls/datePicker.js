@@ -28,6 +28,7 @@
                     startDate: options.startDate,
                     endDate: options.endDate || new Date(8640000000000000),
                     startView: options.startView,
+                    showOnFocus: options.showOnFocus,
                     todayHighlight: options.todayHighlight
                 });
 

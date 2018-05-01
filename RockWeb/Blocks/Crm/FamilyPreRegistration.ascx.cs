@@ -329,8 +329,8 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
 
                 // Save the adults
                 var adultIds = new List<int>();
-                SaveAdult( ref primaryFamily, adultIds, 1, hfAdultGuid1, tbFirstName1, tbLastName1, dvpSuffix1, ddlGender1, dppBirthDate1, dvpMaritalStatus1, tbEmail1, pnMobilePhone1, phAttributes1 );
-                SaveAdult( ref primaryFamily, adultIds, 2, hfAdultGuid2, tbFirstName2, tbLastName2, dvpSuffix2, ddlGender2, dppBirthDate2, dvpMaritalStatus2, tbEmail2, pnMobilePhone2, phAttributes2 );
+                SaveAdult( ref primaryFamily, adultIds, 1, hfAdultGuid1, tbFirstName1, tbLastName1, dvpSuffix1, ddlGender1, dpBirthDate1, dvpMaritalStatus1, tbEmail1, pnMobilePhone1, phAttributes1 );
+                SaveAdult( ref primaryFamily, adultIds, 2, hfAdultGuid2, tbFirstName2, tbLastName2, dvpSuffix2, ddlGender2, dpBirthDate2, dvpMaritalStatus2, tbEmail2, pnMobilePhone2, phAttributes2 );
 
                 // If two adults were entered, let's check to see if we should assume they're married
                 if ( adultIds.Count == 2 )
@@ -696,8 +696,8 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
 
             // Adult Birthdate
             isRequired = SetControl( "AdultBirthDate", pnlBirthDate1, pnlBirthDate2 );
-            dppBirthDate1.Required = isRequired;
-            dppBirthDate2.Required = isRequired;
+            dpBirthDate1.Required = isRequired;
+            dpBirthDate2.Required = isRequired;
 
             // Adult Marital Status
             isRequired = SetControl( "AdultMaritalStatus", pnlMaritalStatus1, pnlMaritalStatus2 );
@@ -798,7 +798,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
 
             dvpSuffix1.SetValue( adult1 != null ? adult1.SuffixValueId : (int?)null );
             ddlGender1.SetValue( adult1 != null ? adult1.Gender.ConvertToInt() : 0 );
-            dppBirthDate1.SelectedDate = ( adult1 != null ? adult1.BirthDate : (DateTime?)null );
+            dpBirthDate1.SelectedDate = ( adult1 != null ? adult1.BirthDate : (DateTime?)null );
             dvpMaritalStatus1.SetValue( adult1 != null ? adult1.MaritalStatusValueId : (int?)null );
             tbEmail1.Text = ( adult1 != null ? adult1.Email : string.Empty );
             SetPhoneNumber( adult1, pnMobilePhone1 );
@@ -818,7 +818,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
 
             dvpSuffix2.SetValue( adult2 != null ? adult2.SuffixValueId : (int?)null );
             ddlGender2.SetValue( adult2 != null ? adult2.Gender.ConvertToInt() : 0 );
-            dppBirthDate2.SelectedDate = ( adult2 != null ? adult2.BirthDate : (DateTime?)null );
+            dpBirthDate2.SelectedDate = ( adult2 != null ? adult2.BirthDate : (DateTime?)null );
             dvpMaritalStatus2.SetValue( adult2 != null ? adult2.MaritalStatusValueId : (int?)null );
             tbEmail2.Text = ( adult2 != null ? adult2.Email : string.Empty );
             SetPhoneNumber( adult2, pnMobilePhone2 );
@@ -1108,7 +1108,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             RockTextBox tbLastName,
             DefinedValuePicker dvpSuffix,
             RockDropDownList ddlGender,
-            DatePartsPicker dppBirthDate,
+            DatePicker dpBirthDate,
             DefinedValuePicker dvpMaritalStatus,
             EmailBox tbEmail,
             PhoneNumberBox pnMobilePhone,
@@ -1192,7 +1192,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
 
                 if ( showBirthDate )
                 {
-                    var birthDate = dppBirthDate.SelectedDate;
+                    var birthDate = dpBirthDate.SelectedDate;
                     if ( birthDate.HasValue || saveEmptyValues )
                     {
                         adult.SetBirthDate( birthDate );
@@ -1370,7 +1370,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             }
 
             ValidateRequiredField( "AdultGender", "Gender is required for each adult.", ddlGender1.SelectedValueAsEnumOrNull<Gender>() != null, ddlGender2.SelectedValueAsEnumOrNull<Gender>() != null, errorMessages );
-            ValidateRequiredField( "AdultBirthdate", "Birthdate is required for each adult.", dppBirthDate1.SelectedDate != null, dppBirthDate2.SelectedDate != null, errorMessages );
+            ValidateRequiredField( "AdultBirthdate", "Birthdate is required for each adult.", dpBirthDate1.SelectedDate != null, dpBirthDate2.SelectedDate != null, errorMessages );
             ValidateRequiredField( "AdultEmail", "Email is required for each adult.", tbEmail1.Text.IsNotNullOrWhitespace(), tbEmail2.Text.IsNotNullOrWhitespace(), errorMessages );
             ValidateRequiredField( "AdultMobilePhone", "Mobile Phone is required for each adult.", PhoneNumber.CleanNumber( pnMobilePhone1.Number ).IsNotNullOrWhitespace(), PhoneNumber.CleanNumber( pnMobilePhone2.Number ).IsNotNullOrWhitespace(), errorMessages );
 
