@@ -191,33 +191,25 @@ namespace Rock.Model
         /// <param name="includeBusinesses">if set to <c>true</c> include businesses records.</param>
         /// <returns></returns>
         public Person FindPerson( string firstName, string lastName, string email, bool updatePrimaryEmail, bool includeDeceased = false, bool includeBusinesses = false )
-        {
-            firstName = firstName ?? string.Empty;
-            lastName = lastName ?? string.Empty;
-            email = email ?? string.Empty;
+        { 
+            var matches = this.FindPersons( firstName, lastName, email, includeDeceased, includeBusinesses ).ToList();
 
-            var previousEmailQry = new PersonSearchKeyService( this.Context as RockContext ).Queryable();
-
-            var matches = Queryable( includeDeceased, includeBusinesses )
-                .Where( p =>
-                    ( ( email != "" && p.Email == email ) || previousEmailQry.Any( a => a.PersonAlias.PersonId == p.Id && a.SearchValue == email ) ) &&
-                    firstName != "" && ( p.FirstName == firstName || p.NickName == firstName ) &&
-                    lastName != "" && p.LastName == lastName )
-                .ToList();
-
-            if ( matches.Count != 1 ) // We're looking for a single exact match
+            // We're looking for a single exact match
+            if ( matches.Count != 1 ) 
             {
                 return null;
             }
 
             var exactMatch = matches.First();
 
-            if ( !updatePrimaryEmail ) // Check if we care about updating the person's primary email
+            // Check if we care about updating the person's primary email
+            if ( !updatePrimaryEmail ) 
             {
                 return exactMatch;
             }
 
-            if ( exactMatch.Email == email ) // OK we care, but are the emails the same already
+            // OK we care, but are the emails the same already
+            if ( exactMatch.Email == email ) 
             {
                 return exactMatch;
             }
