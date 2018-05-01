@@ -67,7 +67,7 @@ namespace Rock.Jobs
             {
                 var targetGatewayGuid = dataMap.GetString( "TargetGateway" ).AsGuidOrNull();
                 var targetGateways = new FinancialGatewayService( rockContext ).Queryable()
-                    .Where( g => ( !targetGatewayGuid.HasValue && g.IsActive ) || g.Guid == targetGatewayGuid );
+                    .Where( g => g.IsActive && ( !targetGatewayGuid.HasValue || g.Guid == targetGatewayGuid.Value );
 
                 foreach ( var financialGateway in targetGateways )
                 {
