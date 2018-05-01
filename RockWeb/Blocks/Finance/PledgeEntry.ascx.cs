@@ -351,15 +351,7 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 // Same logic as AddTransaction.ascx.cs
-                var personMatches = personService.GetByMatch( firstName, tbLastName.Text, tbEmail.Text );
-                if ( personMatches.Count() == 1 )
-                {
-                    person = personMatches.FirstOrDefault();
-                }
-                else
-                {
-                    person = null;
-                }
+                person = personService.FindPerson( firstName, tbLastName.Text, tbEmail.Text, true );
             }
 
             if ( person == null )
