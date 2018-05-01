@@ -16,8 +16,9 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
+
+using Rock.Cache;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -29,6 +30,7 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
+    [Obsolete( "Use Rock.Cache.CacheContentChannel instead" )]
     public class ContentChannelCache : CachedModel<ContentChannel>
     {
         #region Constructors
@@ -37,16 +39,16 @@ namespace Rock.Web.Cache
         {
         }
 
-        private ContentChannelCache( ContentChannel contentChannel )
+        private ContentChannelCache( CacheContentChannel cacheContentChannel )
         {
-            CopyFromModel( contentChannel );
+            CopyFromNewCache( cacheContentChannel );
         }
 
         #endregion
 
         #region Properties
 
-        private object _obj = new object();
+        private readonly object _obj = new object();
 
         /// <summary>
         /// Gets or sets the content channel type identifier.
@@ -171,8 +173,8 @@ namespace Rock.Web.Cache
             get
             {
                 var supportedActions = base.SupportedActions;
-                supportedActions.AddOrReplace( Rock.Security.Authorization.APPROVE, "The roles and/or users that have access to approve channel items." );
-                supportedActions.AddOrReplace( Rock.Security.Authorization.INTERACT, "The roles and/or users that have access to intertact with the channel item." );
+                supportedActions.AddOrReplace( Authorization.APPROVE, "The roles and/or users that have access to approve channel items." );
+                supportedActions.AddOrReplace( Authorization.INTERACT, "The roles and/or users that have access to intertact with the channel item." );
                 return supportedActions;
             }
         }
@@ -191,33 +193,33 @@ namespace Rock.Web.Cache
 
                 lock ( _obj )
                 {
-                    if ( childContentChannels == null )
+                    if ( childContentChannelIds == null )
                     {
                         using ( var rockContext = new RockContext() )
                         {
                             childContentChannelIds = new ContentChannelService( rockContext )
-                                .GetChildContentChannels( this.Id )
+                                .GetChildContentChannels( Id )
                                 .Select( g => g.Id )
                                 .ToList();
                         }
                     }
                 }
-                if ( childContentChannelIds != null )
+
+                if ( childContentChannelIds == null ) return childContentChannels;
+
+                foreach ( var id in childContentChannelIds )
                 {
-                    foreach ( int id in childContentChannelIds )
+                    var contentChannel = Read( id );
+                    if ( contentChannel != null )
                     {
-                        var contentChannel = ContentChannelCache.Read( id );
-                        if ( contentChannel != null )
-                        {
-                            childContentChannels.Add( contentChannel );
-                        }
+                        childContentChannels.Add( contentChannel );
                     }
                 }
 
                 return childContentChannels;
             }
         }
-        private List<int> childContentChannelIds = null;
+        private List<int> childContentChannelIds;
 
         /// <summary>
         /// Gets the parent content channels.
@@ -236,21 +238,20 @@ namespace Rock.Web.Cache
                     using ( var rockContext = new RockContext() )
                     {
                         parentContentChannelIds = new ContentChannelService( rockContext )
-                            .GetParentContentChannels( this.Id )
+                            .GetParentContentChannels( Id )
                             .Select( g => g.Id )
                             .ToList();
                     }
                 }
 
-                if ( parentContentChannelIds != null )
+                if ( parentContentChannelIds == null ) return parentContentChannels;
+
+                foreach ( int id in parentContentChannelIds )
                 {
-                    foreach ( int id in parentContentChannelIds )
+                    var contentChannel = Read( id );
+                    if ( contentChannel != null )
                     {
-                        var contentChannel = ContentChannelCache.Read( id );
-                        if ( contentChannel != null )
-                        {
-                            parentContentChannels.Add( contentChannel );
-                        }
+                        parentContentChannels.Add( contentChannel );
                     }
                 }
 
@@ -258,7 +259,7 @@ namespace Rock.Web.Cache
             }
 
         }
-        private List<int> parentContentChannelIds = null;
+        private List<int> parentContentChannelIds;
 
         /// <summary>
         /// Gets the parent authority.
@@ -272,10 +273,10 @@ namespace Rock.Web.Cache
             {
                 using ( var rockContext = new RockContext() )
                 {
-                    var contentChannelType = new Model.ContentChannelTypeService( rockContext ).Get( ContentChannelTypeId );
-                    return contentChannelType != null ? contentChannelType : base.ParentAuthority;
+                    var contentChannelType = new ContentChannelTypeService( rockContext ).Get( ContentChannelTypeId );
+                    return contentChannelType ?? base.ParentAuthority;
                 }
-                
+
             }
         }
 
@@ -287,28 +288,54 @@ namespace Rock.Web.Cache
         /// Copies from model.
         /// </summary>
         /// <param name="model">The model.</param>
-        public override void CopyFromModel( Data.IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
             base.CopyFromModel( model );
 
-            if ( model is ContentChannel )
-            {
-                var contentChannel = ( ContentChannel ) model;
-                this.ContentChannelTypeId = contentChannel.ContentChannelTypeId;
-                this.Name = contentChannel.Name;
-                this.Description = contentChannel.Description;
-                this.IconCssClass = contentChannel.IconCssClass;
-                this.RequiresApproval = contentChannel.RequiresApproval;
-                this.ItemsManuallyOrdered = contentChannel.ItemsManuallyOrdered;
-                this.ChildItemsManuallyOrdered = contentChannel.ChildItemsManuallyOrdered;
-                this.EnableRss = contentChannel.EnableRss;
-                this.ChannelUrl = contentChannel.ChannelUrl;
-                this.ItemUrl = contentChannel.ItemUrl;
-                this.TimeToLive = contentChannel.TimeToLive;
-                this.ContentControlType = contentChannel.ContentControlType;
-                this.RootImageDirectory = contentChannel.RootImageDirectory;
-                this.IsIndexEnabled = contentChannel.IsIndexEnabled;
-            }
+            if ( !( model is ContentChannel ) ) return;
+
+            var contentChannel = (ContentChannel)model;
+            ContentChannelTypeId = contentChannel.ContentChannelTypeId;
+            Name = contentChannel.Name;
+            Description = contentChannel.Description;
+            IconCssClass = contentChannel.IconCssClass;
+            RequiresApproval = contentChannel.RequiresApproval;
+            ItemsManuallyOrdered = contentChannel.ItemsManuallyOrdered;
+            ChildItemsManuallyOrdered = contentChannel.ChildItemsManuallyOrdered;
+            EnableRss = contentChannel.EnableRss;
+            ChannelUrl = contentChannel.ChannelUrl;
+            ItemUrl = contentChannel.ItemUrl;
+            TimeToLive = contentChannel.TimeToLive;
+            ContentControlType = contentChannel.ContentControlType;
+            RootImageDirectory = contentChannel.RootImageDirectory;
+            IsIndexEnabled = contentChannel.IsIndexEnabled;
+        }
+
+        /// <summary>
+        /// Copies properties from a new cached entity
+        /// </summary>
+        /// <param name="cacheEntity">The cache entity.</param>
+        protected sealed override void CopyFromNewCache( IEntityCache cacheEntity )
+        {
+            base.CopyFromNewCache( cacheEntity );
+
+            if ( !( cacheEntity is CacheContentChannel ) ) return;
+
+            var contentChannel = (CacheContentChannel)cacheEntity;
+            ContentChannelTypeId = contentChannel.ContentChannelTypeId;
+            Name = contentChannel.Name;
+            Description = contentChannel.Description;
+            IconCssClass = contentChannel.IconCssClass;
+            RequiresApproval = contentChannel.RequiresApproval;
+            ItemsManuallyOrdered = contentChannel.ItemsManuallyOrdered;
+            ChildItemsManuallyOrdered = contentChannel.ChildItemsManuallyOrdered;
+            EnableRss = contentChannel.EnableRss;
+            ChannelUrl = contentChannel.ChannelUrl;
+            ItemUrl = contentChannel.ItemUrl;
+            TimeToLive = contentChannel.TimeToLive;
+            ContentControlType = contentChannel.ContentControlType;
+            RootImageDirectory = contentChannel.RootImageDirectory;
+            IsIndexEnabled = contentChannel.IsIndexEnabled;
         }
 
         /// <summary>
@@ -319,22 +346,12 @@ namespace Rock.Web.Cache
         /// </returns>
         public override string ToString()
         {
-            return this.Name;
+            return Name;
         }
 
         #endregion
 
         #region Static Methods
-
-        /// <summary>
-        /// Gets the cache key for the selected content channel id.
-        /// </summary>
-        /// <param name="id">The content channel id.</param>
-        /// <returns></returns>
-        private static string CacheKey( int id )
-        {
-            return string.Format( "Rock:ContentChannel:{0}", id );
-        }
 
         /// <summary>
         /// Returns content channel object from cache.  If content channel does not already exist in cache, it
@@ -345,35 +362,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static ContentChannelCache Read( int id, RockContext rockContext = null )
         {
-            return GetOrAddExisting( ContentChannelCache.CacheKey( id ),
-                () => LoadById( id, rockContext ) );
-        }
-
-        private static ContentChannelCache LoadById( int id, RockContext rockContext )
-        {
-            if ( rockContext != null )
-            {
-                return LoadById2( id, rockContext );
-            }
-
-            using ( var rockContext2 = new RockContext() )
-            {
-                return LoadById2( id, rockContext2 );
-            }
-        }
-
-        private static ContentChannelCache LoadById2( int id, RockContext rockContext )
-        {
-            var contentChannelService = new ContentChannelService( rockContext );
-            var contentChannelModel = contentChannelService
-                .Queryable().AsNoTracking()
-                .FirstOrDefault( c => c.Id == id );
-            if ( contentChannelModel != null )
-            {
-                return new ContentChannelCache( contentChannelModel );
-            }
-
-            return null;
+            return new ContentChannelCache( CacheContentChannel.Get( id, rockContext ) );
         }
 
         /// <summary>
@@ -384,33 +373,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static ContentChannelCache Read( Guid guid, RockContext rockContext = null )
         {
-            int id = GetOrAddExisting( guid.ToString(),
-                () => LoadByGuid( guid, rockContext ) );
-
-            return Read( id, rockContext );
-        }
-
-        private static int LoadByGuid( Guid guid, RockContext rockContext )
-        {
-            if ( rockContext != null )
-            {
-                return LoadByGuid2( guid, rockContext );
-            }
-
-            using ( var rockContext2 = new RockContext() )
-            {
-                return LoadByGuid2( guid, rockContext2 );
-            }
-        }
-
-        private static int LoadByGuid2( Guid guid, RockContext rockContext )
-        {
-            var contentChannelService = new ContentChannelService( rockContext );
-            return contentChannelService
-                .Queryable().AsNoTracking()
-                .Where( c => c.Guid.Equals( guid ) )
-                .Select( c => c.Id )
-                .FirstOrDefault();
+            return new ContentChannelCache( CacheContentChannel.Get( guid, rockContext ) );
         }
 
         /// <summary>
@@ -420,17 +383,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static ContentChannelCache Read( ContentChannel contentChannel )
         {
-            return GetOrAddExisting( ContentChannelCache.CacheKey( contentChannel.Id ),
-                () => LoadByModel( contentChannel ) );
-        }
-
-        private static ContentChannelCache LoadByModel( ContentChannel contentChannel )
-        {
-            if ( contentChannel != null )
-            {
-                return new ContentChannelCache( contentChannel );
-            }
-            return null;
+            return new ContentChannelCache( CacheContentChannel.Get( contentChannel ) );
         }
 
         /// <summary>
@@ -439,32 +392,17 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static List<ContentChannelCache> All()
         {
-            List<ContentChannelCache> contentChannels = new List<ContentChannelCache>();
-            var contentChannelIds = GetOrAddExisting( "Rock:ContentChannel:All", () => LoadAll() );
-            if ( contentChannelIds != null )
-            {
-                foreach ( int contentChannelId in contentChannelIds )
-                {
-                    var contentChannelCache = ContentChannelCache.Read( contentChannelId );
-                    if ( contentChannelCache != null )
-                    {
-                        contentChannels.Add( contentChannelCache );
-                    }
-                }
-            }
-            return contentChannels;
-        }
+            var contentChannels = new List<ContentChannelCache>();
 
-        private static List<int> LoadAll()
-        {
-            using ( var rockContext = new RockContext() )
+            var cacheContentChannels = CacheContentChannel.All();
+            if ( cacheContentChannels == null ) return contentChannels;
+
+            foreach ( var cacheContentChannel in cacheContentChannels )
             {
-                return new ContentChannelService( rockContext )
-                    .Queryable().AsNoTracking()
-                    .OrderBy( c => c.Name )
-                    .Select( c => c.Id )
-                    .ToList();
+                contentChannels.Add( new ContentChannelCache( cacheContentChannel ) );
             }
+
+            return contentChannels;
         }
 
         /// <summary>
@@ -473,8 +411,7 @@ namespace Rock.Web.Cache
         /// <param name="id"></param>
         public static void Flush( int id )
         {
-            FlushCache( ContentChannelCache.CacheKey( id ) );
-            FlushCache( "Rock:ContentChannel:All" );
+            CacheContentChannel.Remove( id );
         }
 
         #endregion

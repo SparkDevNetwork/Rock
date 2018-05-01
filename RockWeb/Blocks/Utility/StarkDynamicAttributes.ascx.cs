@@ -25,7 +25,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 
@@ -128,7 +128,7 @@ namespace RockWeb.Blocks.Utility
         {
             string lavaTemplateHtml = this.GetAttributeValue( "LavaTemplate" );
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage );
-            mergeFields.Add( "Block", this.BlockCache );
+            mergeFields.Add( "Block", this.CacheBlock );
 
             lLavaTemplateHtml.Text = lavaTemplateHtml.ResolveMergeFields( mergeFields );
         }

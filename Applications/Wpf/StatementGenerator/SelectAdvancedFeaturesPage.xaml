@@ -47,13 +47,27 @@
                           Height="40"
                           IsChecked="True" 
                           >
-                    <TextBlock Text="Hide transactions that are corrected on the same date. Transactions that have a matching negative dollar amount on the same date will not be shown." TextWrapping="Wrap" />
+                    <TextBlock Text="Hide transactions that are corrected on the same date. Transactions that have a matching negative dollar amount on the same date and same account will not be shown." TextWrapping="Wrap" />
                 </CheckBox>
                 <StackPanel Name="pnlOrderByOptions"  >
                     <Label Content="Order Statements By" Margin="-4,0,0,0" />
                     <ComboBox Name="ddlOrderBy" Style="{StaticResource comboBoxStyleXL}" Margin="0,0,0,8" />
                 </StackPanel>
+                <Label Content="Transaction Types"  Margin="-4,0,0,0" />
+                <ListBox x:Name="lstTransactionTypes"
+                         Width="360"
+                             Height="120"
+                         HorizontalAlignment="Left"
+                ScrollViewer.VerticalScrollBarVisibility="Visible"
+                SelectionMode="Multiple" />
             </StackPanel>
+
+            <Label Name="lblTransactionTypesWarning" Grid.Row="2" VerticalAlignment="Bottom"
+                   HorizontalAlignment="Center"
+                       Style="{StaticResource labelStyleAlert}"
+                       Content="Please select at least one transaction type."
+                       Visibility="Visible">
+            </Label>
 
             <Button x:Name="btnPrev"
                     Grid.Row="2"

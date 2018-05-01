@@ -26,7 +26,7 @@ using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -109,7 +109,7 @@ namespace Rock.Jobs
 
                     if ( alertEmail.IsNotNullOrWhitespace() )
                     {
-                        var globalAttributes = GlobalAttributesCache.Read();
+                        var globalAttributes = CacheGlobalAttributes.Get();
                         string emailHeader = globalAttributes.GetValue( "EmailHeader" );
                         string emailFooter = globalAttributes.GetValue( "EmailFooter" );
                         string messageBody = $"{emailHeader} {errorMessage} <p><small>This message was generated from the Rock Database Maintenance Job</small></p>{emailFooter}";

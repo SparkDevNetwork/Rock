@@ -11,7 +11,7 @@
 
         <asp:HiddenField ID="hfTriggerScroll" runat="server" Value="" />
 
-        <asp:ValidationSummary ID="vsSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+        <asp:ValidationSummary ID="vsSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
         <Rock:NotificationBox ID="nbMain" runat="server" Visible="false"></Rock:NotificationBox>
 
         <%-- View Panel --%>
@@ -96,7 +96,7 @@
             <Content>
                 <asp:HiddenField ID="hfFormGuid" runat="server" />
                 <asp:HiddenField ID="hfAttributeGuid" runat="server" />
-                <asp:ValidationSummary ID="ValidationSummaryAttribute" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="Field" />
+                <asp:ValidationSummary ID="ValidationSummaryAttribute" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" ValidationGroup="Field" />
                 <div class="row">
                     <div class="col-md-4">
                         <Rock:RockDropDownList ID="ddlPersonAttributes" runat="server" Label="Person Attribute" ValidationGroup="Field" />
@@ -110,9 +110,9 @@
                             Help="Should a value for this attribute be required?" />
                     </div>
                 </div>
-                <Rock:CodeEditor ID="ceAttributePreText" runat="server" Label="Pre-Text" EditorMode="Html" EditorTheme="Rock" EditorHeight="100" ValidationGroup="Field"
+                <Rock:CodeEditor ID="ceAttributePreText" runat="server" Label="Pre-Text" EditorMode="Lava" EditorTheme="Rock" EditorHeight="100" ValidationGroup="Field"
                     Help="Any HTML to display directly above this field <span class='tip tip-lava'></span>." />
-                <Rock:CodeEditor ID="ceAttributePostText" runat="server" Label="Post-Text" EditorMode="Html" EditorTheme="Rock" EditorHeight="100" ValidationGroup="Field"
+                <Rock:CodeEditor ID="ceAttributePostText" runat="server" Label="Post-Text" EditorMode="Lava" EditorTheme="Rock" EditorHeight="100" ValidationGroup="Field"
                     Help="Any HTML to display directly below this field <span class='tip tip-lava'></span>." />
             </Content>
         </Rock:ModalDialog>

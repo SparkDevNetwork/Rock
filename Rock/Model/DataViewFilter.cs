@@ -26,8 +26,8 @@ using System.Text;
 
 using Rock.Data;
 using Rock.Reporting;
+using Rock.Cache;
 using Rock.Security;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -245,7 +245,7 @@ namespace Rock.Model
 
                     if ( this.EntityTypeId.HasValue )
                     {
-                        var entityType = Rock.Web.Cache.EntityTypeCache.Read( this.EntityTypeId.Value );
+                        var entityType = Rock.Cache.CacheEntityType.Get( this.EntityTypeId.Value );
                         if ( entityType != null )
                         {
                             var component = Rock.Reporting.DataFilterContainer.GetComponent( entityType.Name );
@@ -365,7 +365,7 @@ namespace Rock.Model
             {
                 if ( EntityTypeId.HasValue )
                 {
-                    var entityType = EntityTypeCache.Read( EntityTypeId.Value );
+                    var entityType = CacheEntityType.Get( EntityTypeId.Value );
                     var component = Rock.Reporting.DataFilterContainer.GetComponent( entityType.Name );
                     if ( component != null )
                     {
@@ -428,7 +428,7 @@ namespace Rock.Model
         {
             if ( this.ExpressionType == FilterExpressionType.Filter && this.EntityTypeId.HasValue )
             {
-                return this.ToString( EntityTypeCache.Read( this.EntityTypeId.Value ).GetEntityType() );
+                return this.ToString( CacheEntityType.Get( this.EntityTypeId.Value ).GetEntityType() );
             }
             else 
             {
@@ -462,7 +462,7 @@ namespace Rock.Model
     #region Classes
 
     /// <summary>
-    /// A Dictionary of DataViewFilterOverride where the Key is the DataViewFilter.Guid
+    /// DataViewFilterOverrides with a Dictionary of Filter Overrides where the Key is the DataViewFilter.Guid
     /// </summary>
     public class DataViewFilterOverrides : Dictionary<Guid, DataViewFilterOverride>
     {
@@ -478,6 +478,15 @@ namespace Rock.Model
         public DataViewFilterOverrides( List<DataViewFilterOverride> list ) :
             base( list.ToDictionary( k => k.DataFilterGuid, v => v ) )
         { }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [use persisted values if available] (default true)
+        /// Set this to false to prevent the Query from using the PersistedValues instead of the normal filter
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [use persisted values if available]; otherwise, <c>false</c>.
+        /// </value>
+        public bool UsePersistedValuesIfAvailable { get; set; } = true;
 
         /// <summary>
         /// Gets the override.

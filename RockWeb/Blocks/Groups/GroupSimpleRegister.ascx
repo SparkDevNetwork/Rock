@@ -22,7 +22,7 @@
 
         <asp:Panel ID="pnlSuccess" runat="server"  Visible="false">
 
-                <Rock:NotificationBox ID="nbSuccess" runat="server" Title="Thank-you" NotificationBoxType="Success"></Rock:NotificationBox>
+                <Rock:NotificationBox ID="nbSuccess" runat="server" Title="Thank You" NotificationBoxType="Success"></Rock:NotificationBox>
 
         </asp:Panel>
 

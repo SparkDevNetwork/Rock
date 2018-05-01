@@ -27,7 +27,8 @@ using Newtonsoft.Json;
 
 using Rock.Data;
 using Rock.Communication;
-using Rock.Web.Cache;
+using Rock.Cache;
+using System.Data.Entity;
 
 namespace Rock.Model
 {
@@ -128,6 +129,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool IsBulkCommunication { get; set; }
+
+        /// <summary>
+        /// Gets or sets the datetime that communication was sent.
+        /// </summary>
+        /// <value>
+        /// The send date time.
+        /// </value>
+        [DataMember]
+        public DateTime? SendDateTime { get; set; }
 
         /// <summary>
         /// Gets or sets the future send date for the communication. This allows a user to schedule when a communication is sent 
@@ -237,39 +247,39 @@ namespace Rock.Model
         public string FromName { get; set; }
 
         /// <summary>
-        /// Gets or sets from email.
+        /// Gets or sets from email address.
         /// </summary>
         /// <value>
-        /// From email.
+        /// From email address.
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
         public string FromEmail { get; set; }
 
         /// <summary>
-        /// Gets or sets the reply to email.
+        /// Gets or sets the reply to email address.
         /// </summary>
         /// <value>
-        /// The reply to email.
+        /// The reply to email address.
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
         public string ReplyToEmail { get; set; }
 
         /// <summary>
-        /// Gets or sets the cc emails.
+        /// Gets or sets a comma separated list of CC'ed email addresses.
         /// </summary>
         /// <value>
-        /// The cc emails.
+        /// A comma separated list of CC'ed email addresses.
         /// </value>
         [DataMember]
         public string CCEmails { get; set; }
 
         /// <summary>
-        /// Gets or sets the BCC emails.
+        /// Gets or sets a comma separated list of BCC'ed email addresses.
         /// </summary>
         /// <value>
-        /// The BCC emails.
+        /// A comma separated list of BCC'ed email addresses.
         /// </value>
         [DataMember]
         public string BCCEmails { get; set; }
@@ -648,6 +658,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
+        [Obsolete( "This can return incorrect results if Recipients has been modified and not saved to the database. So don't use this." )]
         public int GetRecipientCount( RockContext rockContext )
         {
             var count = new CommunicationRecipientService( rockContext ).Queryable().Where( a => a.CommunicationId == this.Id ).Count();
@@ -666,7 +677,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns a queryable of the Recipients for this communication
+        /// Returns a queryable of the Recipients for this communication. Note that this will return the recipients that have been saved to the database. Any pending changes in the Recipients property are not included.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
@@ -675,6 +686,90 @@ namespace Rock.Model
             return new CommunicationRecipientService( rockContext ).Queryable().Where( a => a.CommunicationId == this.Id );
         }
 
+        /// <summary>
+        /// Refresh the recipients list.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public void RefreshCommunicationRecipientList( RockContext rockContext )
+        {
+            if ( !this.ListGroupId.HasValue )
+            {
+                return;
+            }
+
+            var emailMediumEntityType = CacheEntityType.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );
+            var smsMediumEntityType = CacheEntityType.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() );
+
+            var personInCommunicationList = new GroupMemberService( rockContext )
+                .Queryable()
+                .Where( a => a.GroupId == this.ListGroupId )
+                .ToList();
+
+            var communicationRecipientService = new CommunicationRecipientService( rockContext );
+
+            var existingRecipients = GetRecipientsQry( rockContext )
+                                .ToList();
+
+            //Get all the List member which is not part of communiation recipents 
+            var newMemberInList = personInCommunicationList.Where( a => !existingRecipients.Any( b => b.PersonAliasId == a.Person.PrimaryAliasId ) );
+
+            foreach ( var newMember in newMemberInList )
+            {
+                var communicationRecipient = new CommunicationRecipient();
+                communicationRecipient.PersonAliasId = newMember.Person.PrimaryAliasId.Value;
+                communicationRecipient.Status = CommunicationRecipientStatus.Pending;
+                communicationRecipient.CommunicationId = this.Id;
+
+                if ( this.CommunicationType == CommunicationType.Email )
+                {
+                    communicationRecipient.MediumEntityTypeId = emailMediumEntityType.Id;
+                }
+                else if ( this.CommunicationType == CommunicationType.SMS )
+                {
+                    communicationRecipient.MediumEntityTypeId = smsMediumEntityType.Id;
+                }
+                else if ( this.CommunicationType == CommunicationType.RecipientPreference )
+                {
+                    newMember.LoadAttributes();
+
+                    var preferredCommunicationTypeAttribute = CacheAttribute.Get( Rock.SystemGuid.Attribute.GROUPMEMBER_COMMUNICATION_LIST_PREFERRED_COMMUNICATION_MEDIUM.AsGuid() );
+
+                    CommunicationType? recipientPreference = ( CommunicationType? ) preferredCommunicationTypeAttribute.DefaultValue.AsIntegerOrNull();
+
+                    recipientPreference = ( CommunicationType? ) newMember.GetAttributeValue( preferredCommunicationTypeAttribute.Key ).AsIntegerOrNull();
+
+                    if ( recipientPreference == CommunicationType.SMS )
+                    {
+                        communicationRecipient.MediumEntityTypeId = smsMediumEntityType.Id;
+                    }
+                    else if ( recipientPreference == CommunicationType.Email )
+                    {
+                        communicationRecipient.MediumEntityTypeId = emailMediumEntityType.Id;
+                    }
+                    else
+                    {
+                        communicationRecipient.MediumEntityTypeId = emailMediumEntityType.Id;
+                    }
+                }
+                else
+                {
+                    throw new Exception( "Unexpected CommunicationType: " + this.CommunicationType.ConvertToString() );
+                }
+
+                communicationRecipientService.Add( communicationRecipient );
+            }
+
+            //Get all pending communiation recipents that is no longer part of the group list member
+            var missingMemberInList = existingRecipients.Where( a => !personInCommunicationList.Any( b => b.Person.PrimaryAliasId == a.PersonAliasId ) );
+
+            foreach ( var missingMember in missingMemberInList )
+            {
+                communicationRecipientService.Delete( missingMember );
+            }
+
+            rockContext.SaveChanges();
+        }
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
@@ -690,7 +785,7 @@ namespace Rock.Model
         /// Method that will be called on an entity immediately after the item is saved by context
         /// </summary>
         /// <param name="dbContext">The database context.</param>
-        public override void PostSaveChanges( DbContext dbContext )
+        public override void PostSaveChanges( Rock.Data.DbContext dbContext )
         {
             // ensure any attachments have the binaryFile.IsTemporary set to False
             var attachmentBinaryFilesIds = this.Attachments.Select( a => a.BinaryFileId ).ToList();
@@ -731,9 +826,30 @@ namespace Rock.Model
         {
             if ( communication != null && communication.Status == CommunicationStatus.Approved )
             {
+                using ( RockContext rockContext = new RockContext() )
+                {
+                    communication.RefreshCommunicationRecipientList( rockContext );
+                }
+
                 foreach ( var medium in communication.GetMediums() )
                 {
                     medium.Send( communication );
+                }
+
+                using ( RockContext rockContext = new RockContext() )
+                {
+                    var dbCommunication = new CommunicationService( rockContext ).Get( communication.Id );
+
+                    var maxSendDateTime = dbCommunication.Recipients
+                                        .Where( a => a.CommunicationId == communication.Id && a.SendDateTime.HasValue )
+                                        .OrderByDescending( a => a.SendDateTime )
+                                        .Select( a => a.SendDateTime )
+                                        .FirstOrDefault();
+                    if ( maxSendDateTime.HasValue )
+                    {
+                        dbCommunication.SendDateTime = maxSendDateTime;
+                        rockContext.SaveChanges();
+                    }
                 }
             }
         }
@@ -899,7 +1015,7 @@ namespace Rock.Model
         /// <summary>
         /// Some other communication type
         /// </summary>
-        [Obsolete("Not Supported")]
+        [Obsolete( "Not Supported" )]
         Other = 4
     }
 

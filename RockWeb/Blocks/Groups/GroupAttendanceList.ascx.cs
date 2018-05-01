@@ -25,7 +25,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -86,7 +86,7 @@ namespace RockWeb.Blocks.Groups
             bddlCampus.Visible = _allowCampusFilter;
             if ( _allowCampusFilter )
             {
-                bddlCampus.DataSource = CampusCache.All();
+                bddlCampus.DataSource = CacheCampus.All();
                 bddlCampus.DataBind();
                 bddlCampus.Items.Insert( 0, new ListItem( "All Campuses", "0" ) );
             }
@@ -106,7 +106,7 @@ namespace RockWeb.Blocks.Groups
             {
                 if ( _allowCampusFilter )
                 {
-                    var campus = CampusCache.Read( GetBlockUserPreference( "Campus" ).AsInteger() );
+                    var campus = CacheCampus.Get( GetBlockUserPreference( "Campus" ).AsInteger() );
                     if ( campus != null )
                     {
                         bddlCampus.Title = campus.Name;
@@ -130,7 +130,7 @@ namespace RockWeb.Blocks.Groups
         protected void bddlCampus_SelectionChanged( object sender, EventArgs e )
         {
             SetBlockUserPreference( "Campus", bddlCampus.SelectedValue );
-            var campus = CampusCache.Read( bddlCampus.SelectedValueAsInt() ?? 0 );
+            var campus = CacheCampus.Get( bddlCampus.SelectedValueAsInt() ?? 0 );
             bddlCampus.Title = campus != null ? campus.Name : "All Campuses";
             BindGrid();
         }
@@ -215,7 +215,7 @@ namespace RockWeb.Blocks.Groups
                 if ( occurrence == null )
                 {
                     var deleteField = gOccurrences.Columns.OfType<DeleteField>().First();
-                    var cell = e.Row.Cells[gOccurrences.Columns.IndexOf( deleteField )];
+                    var cell = e.Row.Cells[gOccurrences.GetColumnIndex( deleteField )];
                     var lb = cell.ControlsOfTypeRecursive<LinkButton>().FirstOrDefault();
                     if ( lb != null )
                     {
@@ -350,7 +350,7 @@ namespace RockWeb.Blocks.Groups
 
                     if ( locationId.HasValue )
                     {
-                        Rock.CheckIn.KioskLocationAttendance.Flush( locationId.Value );
+                        Rock.CheckIn.KioskLocationAttendance.Remove( locationId.Value );
                     }
                 }
             }

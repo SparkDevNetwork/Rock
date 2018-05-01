@@ -25,7 +25,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -42,7 +42,8 @@ namespace RockWeb.Blocks.Finance
     [BooleanField( "Show Settings Panel", defaultValue: true, key: "ShowFilterOption", order: 2 )]
     [CustomDropdownListField( "Initial Active Setting", "Select whether to initially show all or just active accounts in the treeview", "0^All,1^Active", false, "1", "", 3 )]
     [LinkedPage( "Detail Page", order: 4 )]
-    [LinkedPage( "Order Top-Level Page", key:"OrderTopLevelPage", order: 5 )]
+    [LinkedPage( "Order Top-Level Page", key: "OrderTopLevelPage", order: 5 )]
+    [BooleanField( "Use Public Name", "Determines if the public name to be displayed for accounts.", defaultValue: false, order: 6 )]
     public partial class AccountTreeView : RockBlock
     {
         #region Fields
@@ -74,7 +75,7 @@ namespace RockWeb.Blocks.Finance
             else
             {
                 hfPageRouteTemplate.Value = string.Empty;
-                var pageCache = PageCache.Read( detailPageReference.PageId );
+                var pageCache = CachePage.Get( detailPageReference.PageId );
                 if ( pageCache != null )
                 {
                     var route = pageCache.PageRoutes.FirstOrDefault( a => a.Id == detailPageReference.RouteId );
@@ -93,6 +94,7 @@ namespace RockWeb.Blocks.Finance
 
             pnlConfigPanel.Visible = this.GetAttributeValue( "ShowFilterOption" ).AsBooleanOrNull() ?? false;
             pnlRolloverConfig.Visible = this.GetAttributeValue( "ShowFilterOption" ).AsBooleanOrNull() ?? false;
+            hfUsePublicName.Value = this.GetAttributeValue( "UsePublicName" ).AsBoolean( false ).ToTrueFalse();
 
             if ( pnlConfigPanel.Visible )
             {

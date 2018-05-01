@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
 
+using Rock.Cache;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -30,20 +31,21 @@ namespace Rock.Web.Cache
     /// Information about a category that is cached by Rock. 
     /// </summary>
     [Serializable]
+    [Obsolete( "Use Rock.Cache.CacheCategory instead" )]
     public class CategoryCache : CachedModel<Category>
     {
         #region constructors
 
-        private CategoryCache( Rock.Model.Category model )
+        private CategoryCache( CacheCategory cacheCategory )
         {
-            CopyFromModel( model );
+            CopyFromNewCache( cacheCategory );
         }
 
         #endregion
 
         #region Properties
 
-        private object _obj = new object();
+        private readonly object _obj = new object();
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is system.
@@ -147,7 +149,7 @@ namespace Rock.Web.Cache
             {
                 if ( ParentCategoryId != null && ParentCategoryId.Value != 0 )
                 {
-                    return CategoryCache.Read( ParentCategoryId.Value );
+                    return Read( ParentCategoryId.Value );
                 }
 
                 return null;
@@ -173,17 +175,17 @@ namespace Rock.Web.Cache
                     {
                         using ( var rockContext = new RockContext() )
                         {
-                            categoryIds = new Model.CategoryService( rockContext )
-                                .Get( this.Id, this.EntityTypeId )
+                            categoryIds = new CategoryService( rockContext )
+                                .Get( Id, EntityTypeId )
                                 .Select( c => c.Id )
                                 .ToList();
                         }
                     }
                 }
 
-                foreach ( int id in categoryIds )
+                foreach ( var id in categoryIds )
                 {
-                    var category = CategoryCache.Read( id );
+                    var category = Read( id );
                     if ( category != null )
                     {
                         categories.Add( category );
@@ -193,7 +195,7 @@ namespace Rock.Web.Cache
                 return categories;
             }
         }
-        private List<int> categoryIds = null;
+        private List<int> categoryIds;
 
         /// <summary>
         /// Gets the schedule exclusions.
@@ -208,19 +210,17 @@ namespace Rock.Web.Cache
             {
                 lock ( _obj )
                 {
-                    if ( scheduleExclusions == null )
-                    {
-                        scheduleExclusions = new List<DateRange>();
+                    if ( scheduleExclusions != null ) return scheduleExclusions;
+                    scheduleExclusions = new List<DateRange>();
 
-                        using ( var rockContext = new RockContext() )
+                    using ( var rockContext = new RockContext() )
+                    {
+                        foreach ( var exclusion in new ScheduleCategoryExclusionService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( e => e.CategoryId == Id )
+                            .ToList() )
                         {
-                            foreach( var exclusion in new Model.ScheduleCategoryExclusionService( rockContext )
-                                .Queryable().AsNoTracking()
-                                .Where( e => e.CategoryId == this.Id )
-                                .ToList() )
-                            {
-                                scheduleExclusions.Add( new DateRange( exclusion.StartDate, exclusion.EndDate ) );
-                            }
+                            scheduleExclusions.Add( new DateRange( exclusion.StartDate, exclusion.EndDate ) );
                         }
                     }
                 }
@@ -228,7 +228,7 @@ namespace Rock.Web.Cache
                 return scheduleExclusions;
             }
         }
-        private List<DateRange> scheduleExclusions = null;
+        private List<DateRange> scheduleExclusions;
 
         /// <summary>
         /// Gets the parent authority.
@@ -236,13 +236,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The parent authority.
         /// </value>
-        public override ISecured ParentAuthority
-        {
-            get
-            {
-                return this.ParentCategory != null ? this.ParentCategory : base.ParentAuthority;
-            }
-        }
+        public override ISecured ParentAuthority => ParentCategory ?? base.ParentAuthority;
 
         #endregion
 
@@ -252,25 +246,48 @@ namespace Rock.Web.Cache
         /// Copies from model.
         /// </summary>
         /// <param name="model">The model.</param>
-        public override void CopyFromModel( Data.IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
             base.CopyFromModel( model );
 
-            if ( model is Category )
-            {
-                var category = (Category)model;
-                this.IsSystem = category.IsSystem;
-                this.ParentCategoryId = category.ParentCategoryId;
-                this.EntityTypeId = category.EntityTypeId;
-                this.EntityTypeQualifierColumn = category.EntityTypeQualifierColumn;
-                this.EntityTypeQualifierValue = category.EntityTypeQualifierValue;
-                this.Name = category.Name;
-                this.Description = category.Description;
-                this.Order = category.Order;
-                this.IconCssClass = category.IconCssClass;
-                this.HighlightColor = category.HighlightColor;
-            }
+            if ( !( model is Category ) ) return;
+
+            var category = (Category)model;
+            IsSystem = category.IsSystem;
+            ParentCategoryId = category.ParentCategoryId;
+            EntityTypeId = category.EntityTypeId;
+            EntityTypeQualifierColumn = category.EntityTypeQualifierColumn;
+            EntityTypeQualifierValue = category.EntityTypeQualifierValue;
+            Name = category.Name;
+            Description = category.Description;
+            Order = category.Order;
+            IconCssClass = category.IconCssClass;
+            HighlightColor = category.HighlightColor;
         }
+
+        /// <summary>
+        /// Copies properties from a new cached entity
+        /// </summary>
+        /// <param name="cacheEntity">The cache entity.</param>
+        protected sealed override void CopyFromNewCache( IEntityCache cacheEntity )
+        {
+            base.CopyFromNewCache( cacheEntity );
+
+            if ( !( cacheEntity is CacheCategory ) ) return;
+
+            var category = (CacheCategory)cacheEntity;
+            IsSystem = category.IsSystem;
+            ParentCategoryId = category.ParentCategoryId;
+            EntityTypeId = category.EntityTypeId;
+            EntityTypeQualifierColumn = category.EntityTypeQualifierColumn;
+            EntityTypeQualifierValue = category.EntityTypeQualifierValue;
+            Name = category.Name;
+            Description = category.Description;
+            Order = category.Order;
+            IconCssClass = category.IconCssClass;
+            HighlightColor = category.HighlightColor;
+        }
+
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
@@ -280,17 +297,12 @@ namespace Rock.Web.Cache
         /// </returns>
         public override string ToString()
         {
-            return this.Name;
+            return Name;
         }
 
         #endregion
 
         #region Static Methods
-
-        private static string CacheKey( int id )
-        {
-            return string.Format( "Rock:Category:{0}", id );
-        }
 
         /// <summary>
         /// Returns Category object from cache.  If category does not already exist in cache, it
@@ -301,33 +313,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static CategoryCache Read( int id, RockContext rockContext = null )
         {
-            return GetOrAddExisting( CategoryCache.CacheKey( id ),
-                () => LoadById( id, rockContext ) );
-        }
-
-        private static CategoryCache LoadById( int id, RockContext rockContext )
-        {
-            if ( rockContext != null )
-            {
-                return LoadById2( id, rockContext );
-            }
-
-            using ( var rockContext2 = new RockContext() )
-            {
-                return LoadById2( id, rockContext2 );
-            }
-        }
-
-        private static CategoryCache LoadById2( int id, RockContext rockContext )
-        {
-            var categoryService = new Rock.Model.CategoryService( rockContext );
-            var categoryModel = categoryService.Get( id );
-            if ( categoryModel != null )
-            {
-                return new CategoryCache( categoryModel );
-            }
-
-            return null;
+            return new CategoryCache( CacheCategory.Get( id, rockContext ) );
         }
 
         /// <summary>
@@ -336,35 +322,10 @@ namespace Rock.Web.Cache
         /// <param name="guid">The GUID.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
+        [Obsolete( "Use Rock.Cache.CacheCategory.Get instead" )]
         public static CategoryCache Read( Guid guid, RockContext rockContext = null )
         {
-            int id = GetOrAddExisting( guid.ToString(),
-                () => LoadByGuid( guid, rockContext ) );
-
-            return Read( id, rockContext );
-        }
-
-        private static int LoadByGuid( Guid guid, RockContext rockContext )
-        {
-            if ( rockContext != null )
-            {
-                return LoadByGuid2( guid, rockContext );
-            }
-
-            using ( var rockContext2 = new RockContext() )
-            {
-                return LoadByGuid2( guid, rockContext2 );
-            }
-        }
-
-        private static int LoadByGuid2( Guid guid, RockContext rockContext )
-        {
-            var categoryService = new CategoryService( rockContext );
-            return categoryService
-                .Queryable().AsNoTracking()
-                .Where( c => c.Guid.Equals( guid ) )
-                .Select( c => c.Id )
-                .FirstOrDefault();
+            return new CategoryCache( CacheCategory.Get( guid, rockContext ) );
         }
 
         /// <summary>
@@ -372,19 +333,9 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="categoryModel">The categoryModel to cache</param>
         /// <returns></returns>
-        public static CategoryCache Read( Rock.Model.Category categoryModel )
+        public static CategoryCache Read( Category categoryModel )
         {
-            return GetOrAddExisting( CategoryCache.CacheKey( categoryModel.Id ),
-                () => LoadByModel( categoryModel ) );
-        }
-
-        private static CategoryCache LoadByModel( Rock.Model.Category categoryModel )
-        {
-            if ( categoryModel != null )
-            {
-                return new CategoryCache( categoryModel );
-            }
-            return null;
+            return new CategoryCache( CacheCategory.Get( categoryModel ) );
         }
 
         /// <summary>
@@ -393,7 +344,7 @@ namespace Rock.Web.Cache
         /// <param name="id">The id of the category to remove from cache</param>
         public static void Flush( int id )
         {
-            FlushCache( CategoryCache.CacheKey( id ) );
+            CacheCategory.Remove( id );
         }
 
         #endregion

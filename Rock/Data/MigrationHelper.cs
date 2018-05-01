@@ -396,6 +396,89 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Updates the System Setting or adds it if it doesn't exist
+        /// </summary>
+        /// <param name="attributeKey">The attribute key.</param>
+        /// <param name="value">The value.</param>
+        public void UpdateSystemSetting( string attributeKey, string value )
+        {
+            var attributeName = attributeKey.SplitCase();
+            string updateSql = $@"
+                DECLARE 
+                    @FieldTypeId int
+                    ,@AttributeId int
+                
+                SET @FieldTypeId = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{Rock.SystemGuid.FieldType.TEXT}')
+                SET @AttributeId = (SELECT [Id]
+                    FROM [Attribute]
+                    WHERE [EntityTypeId] IS NULL
+                    AND [EntityTypeQualifierColumn] = '{Rock.Model.Attribute.SYSTEM_SETTING_QUALIFIER}'
+                    AND [Key] = '{attributeKey}')
+
+                IF @AttributeId IS NOT NULL
+                BEGIN
+                    UPDATE [Attribute]
+                    SET [DefaultValue] = '{value.Replace( "'", "''" )}'
+                    WHERE [Id] = @AttributeId
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO [Attribute] (
+                        [IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
+                        [Order],[IsGridColumn],[IsMultiValue],[IsRequired],                        
+                        [Key],[Name],[DefaultValue], [Guid])
+                    VALUES(
+                        1,@FieldTypeId,NULL,'{Rock.Model.Attribute.SYSTEM_SETTING_QUALIFIER}','',
+                        0,0,0,0,
+                        '{attributeKey}','{attributeName}', '{value.Replace("'", "''")}', NEWID())
+                END";
+
+            Migration.Sql( updateSql );
+        }
+
+        /// <summary>
+        /// Updates the system setting if [Attribute].[DefaultValue] is null or blank or adds it if it doesn't exist
+        /// </summary>
+        /// <param name="attributeKey">The attribute key.</param>
+        /// <param name="value">The value.</param>
+        public void UpdateSystemSettingIfNullOrBlank( string attributeKey, string value )
+        {
+            var attributeName = attributeKey.SplitCase();
+            string updateSql = $@"
+                DECLARE @FieldTypeId int = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{Rock.SystemGuid.FieldType.TEXT}')
+                DECLARE @AttributeId int = (
+	                SELECT [Id]
+                    FROM [Attribute]
+                    WHERE [EntityTypeId] IS NULL
+                    AND [EntityTypeQualifierColumn] = '{Rock.Model.Attribute.SYSTEM_SETTING_QUALIFIER}'
+                    AND [Key] = '{attributeKey}')
+
+                IF @AttributeId IS NOT NULL
+                BEGIN
+                -- We have an attribute, see if it should be updated
+	                IF (SELECT COUNT([Id]) FROM [Attribute] WHERE [Id] = @AttributeId AND ([DefaultValue] = '' OR [DefaultValue] IS NULL)) > 0
+	                BEGIN
+		                UPDATE [Attribute]
+		                SET [DefaultValue] = '{value.Replace( "'", "''" )}'
+		                WHERE [Id] = @AttributeId
+	                END
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO [Attribute] (
+                        [IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
+                        [Order],[IsGridColumn],[IsMultiValue],[IsRequired],                        
+                        [Key],[Name],[DefaultValue], [Guid])
+                    VALUES(
+                        1,@FieldTypeId,NULL,'{Rock.Model.Attribute.SYSTEM_SETTING_QUALIFIER}','',
+                        0,0,0,0,
+                        '{attributeKey}','{attributeName}', '{value.Replace( "'", "''" )}', NEWID())
+                END";
+
+            Migration.Sql( updateSql );
+        }
+
+        /// <summary>
         /// Deletes the Layout.
         /// </summary>
         /// <param name="guid">The GUID.</param>
@@ -1551,7 +1634,7 @@ namespace Rock.Data
         /// <param name="key">The key.  Defaults to Name without Spaces. If this is a core global attribute, specify the key with a 'core.' prefix</param>
         public void AddGlobalAttribute( string fieldTypeGuid, string entityTypeQualifierColumn, string entityTypeQualifierValue, string name, string description, int order, string defaultValue, string guid, string key = null )
         {
-            this.AddGlobalAttribute( fieldTypeGuid, entityTypeQualifierColumn, entityTypeQualifierColumn, name, description, order, defaultValue, guid, key, true );
+            this.AddGlobalAttribute( fieldTypeGuid, entityTypeQualifierColumn, entityTypeQualifierValue, name, description, order, defaultValue, guid, key, true );
 
         }
         /// <summary>

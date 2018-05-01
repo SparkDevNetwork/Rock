@@ -18,7 +18,7 @@
 
                 <asp:Panel ID="pnlSearch" runat="server">
 
-                    <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                    <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
 
                     <Rock:AddressControl ID="acAddress" runat="server" Required="true" RequiredErrorMessage="Your Address is Required" />
                     <Rock:RockCheckBoxList ID="cblCampus" runat="server" Label="Campuses" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" />
@@ -77,7 +77,7 @@
                     <asp:UpdatePanel ID="upnlEdit" runat="server">
                         <ContentTemplate>
 
-                            <asp:ValidationSummary ID="valSettings" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="GroupFinderSettings" />
+                            <asp:ValidationSummary ID="valSettings" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" ValidationGroup="GroupFinderSettings" />
 
                             <Rock:PanelWidget ID="wpFilter" runat="server" Title="Filter Settings" Expanded="true">
                                 <div class="row">
@@ -100,7 +100,7 @@
                                         <Rock:RockCheckBox ID="cbFilterCampus" runat="server" Label="Display Campus Filter" Text="Yes"
                                             Help="Display the campus filter" ValidationGroup="GroupFinderSettings" />
                                         <Rock:RockCheckBox ID="cbCampusContext" runat="server" Label="Enable Campus Context" Text="Yes"
-                                            Help="If the page has a campus context it's value will be used as a filter" ValidationGroup="GroupFinderSettings" />
+                                            Help="If the page has a campus context its value will be used as a filter" ValidationGroup="GroupFinderSettings" />
                                         <Rock:RockCheckBoxList ID="cblAttributes" runat="server" Label="Display Attribute Filters" RepeatDirection="Horizontal"
                                             Help="The group attributes that should be available for user to filter results by." ValidationGroup="GroupFinderSettings" />
                                     </div>

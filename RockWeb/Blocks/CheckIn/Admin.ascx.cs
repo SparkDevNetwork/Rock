@@ -29,7 +29,7 @@ using Rock.CheckIn;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.CheckIn
@@ -121,7 +121,8 @@ namespace RockWeb.Blocks.CheckIn
                                     if (localStorage.checkInGroupTypes) {{
                                         $('[id$=""hfGroupTypes""]').val(localStorage.checkInGroupTypes);
                                     }}
-                                    {0};
+
+                                    window.location = ""javascript:{0}"";
                                 }}
                             }}
                         }});
@@ -188,7 +189,7 @@ namespace RockWeb.Blocks.CheckIn
         private void AttemptKioskMatchByIpOrName()
         {
             // try to find matching kiosk by REMOTE_ADDR (ip/name).
-            var checkInDeviceTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK ).Id;
+            var checkInDeviceTypeId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK ).Id;
             using ( var rockContext = new RockContext() )
             {
                 bool enableReverseLookup = GetAttributeValue( "EnableReverseLookup" ).AsBoolean( false );
@@ -251,7 +252,7 @@ namespace RockWeb.Blocks.CheckIn
                 $(""div.checkin-header h1"").html( 'Checking Your Location...' );
                 $(""div.checkin-header"").append( ""<p class='text-muted'>"" + latitude + "" "" + longitude + ""</p>"" );
                 // now perform a postback to fire the check geo location
-                {0};
+                window.location = ""javascript:{0}"";
             }}
 
             function error_callback( p ) {{
@@ -550,7 +551,7 @@ namespace RockWeb.Blocks.CheckIn
                     }
                     else
                     {
-                        var groupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_WEEKLY_SERVICE_CHECKIN_AREA.AsGuid() );
+                        var groupType = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_WEEKLY_SERVICE_CHECKIN_AREA.AsGuid() );
                         if ( groupType != null  )
                         {
                             ddlCheckinType.SetValue( groupType.Id );
@@ -560,19 +561,19 @@ namespace RockWeb.Blocks.CheckIn
             }
         }
 
-        private GroupTypeCache GetCheckinType( int? groupTypeId )
+        private CacheGroupType GetCheckinType( int? groupTypeId )
         {
             Guid templateTypeGuid = Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid();
-            var templateType = DefinedValueCache.Read( templateTypeGuid );
+            var templateType = CacheDefinedValue.Get( templateTypeGuid );
             if ( templateType != null )
             {
-                return GetCheckinType( GroupTypeCache.Read( groupTypeId.Value ), templateType.Id );
+                return GetCheckinType( CacheGroupType.Get( groupTypeId.Value ), templateType.Id );
             }
 
             return null;
         }
 
-        private GroupTypeCache GetCheckinType( GroupTypeCache groupType, int templateTypeId, List<int> recursionControl = null )
+        private CacheGroupType GetCheckinType( CacheGroupType groupType, int templateTypeId, List<int> recursionControl = null )
         {
             if ( groupType != null )
             {
@@ -600,9 +601,9 @@ namespace RockWeb.Blocks.CheckIn
         }
 
 
-        private List<GroupTypeCache> GetDescendentGroupTypes( GroupTypeCache groupType, List<int> recursionControl = null )
+        private List<CacheGroupType> GetDescendentGroupTypes( CacheGroupType groupType, List<int> recursionControl = null )
         {
-            var results = new List<GroupTypeCache>();
+            var results = new List<CacheGroupType>();
 
             if ( groupType != null )
             {
@@ -657,7 +658,7 @@ namespace RockWeb.Blocks.CheckIn
                 {
                     var deviceGroupTypes = GetDeviceGroupTypes( ddlKiosk.SelectedValueAsInt() ?? 0, rockContext );
 
-                    var primaryGroupTypeIds = GetDescendentGroupTypes( GroupTypeCache.Read( ddlCheckinType.SelectedValueAsInt() ?? 0 ) ).Select( t => t.Id ).ToList();
+                    var primaryGroupTypeIds = GetDescendentGroupTypes( CacheGroupType.Get( ddlCheckinType.SelectedValueAsInt() ?? 0 ) ).Select( t => t.Id ).ToList();
 
                     cblPrimaryGroupTypes.DataSource = deviceGroupTypes.Where( t => primaryGroupTypeIds.Contains( t.Id ) ).ToList();
                     cblPrimaryGroupTypes.DataBind();
@@ -724,7 +725,7 @@ namespace RockWeb.Blocks.CheckIn
         {
             double latitude = double.Parse( sLatitude );
             double longitude = double.Parse( sLongitude );
-            var checkInDeviceTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK ).Id;
+            var checkInDeviceTypeId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK ).Id;
 
             // We need to use the DeviceService until we can get the GeoFence to JSON Serialize/Deserialize.
             using ( var rockContext = new RockContext() )

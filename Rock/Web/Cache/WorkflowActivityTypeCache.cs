@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 
+using Rock.Cache;
 using Rock.Data;
 using Rock.Model;
 
@@ -28,20 +29,21 @@ namespace Rock.Web.Cache
     /// Cached WorkflowActivityType
     /// </summary>
     [Serializable]
+    [Obsolete( "Use Rock.Cache.CacheWorkflowActivityTyp instead" )]
     public class WorkflowActivityTypeCache : CachedModel<WorkflowActivityType>
     {
         #region Constructors
 
-        private WorkflowActivityTypeCache( WorkflowActivityType model )
+        private WorkflowActivityTypeCache( CacheWorkflowActivityType cacheItem )
         {
-            CopyFromModel( model );
+            CopyFromNewCache( cacheItem );
         }
 
         #endregion
 
         #region Properties
 
-        private object _obj = new object();
+        private readonly object _obj = new object();
 
         /// <summary>
         /// Gets or sets a flag indicating if this WorkflowActivityType is active.
@@ -97,25 +99,13 @@ namespace Rock.Web.Cache
         /// <value>
         /// The type of the workflow.
         /// </value>
-        public WorkflowTypeCache WorkflowType
-        {
-            get
-            {
-                return WorkflowTypeCache.Read( WorkflowTypeId );
-            }
-        }
+        public WorkflowTypeCache WorkflowType => WorkflowTypeCache.Read( WorkflowTypeId );
 
         /// <summary>
         /// A parent authority.  If a user is not specifically allowed or denied access to
         /// this object, Rock will check access to the parent authority specified by this property.
         /// </summary>
-        public override Security.ISecured ParentAuthority
-        {
-            get
-            {
-                return this.WorkflowType != null ? this.WorkflowType : base.ParentAuthority;
-            }
-        }
+        public override Security.ISecured ParentAuthority => WorkflowType ?? base.ParentAuthority;
 
         /// <summary>
         /// Gets the defined values.
@@ -130,21 +120,21 @@ namespace Rock.Web.Cache
                 var actionTypes = new List<WorkflowActionTypeCache>();
 
                 lock ( _obj )
-                { 
+                {
                     if ( actionTypeIds == null )
                     {
                         using ( var rockContext = new RockContext() )
                         {
-                            actionTypeIds = new Model.WorkflowActionTypeService( rockContext )
+                            actionTypeIds = new WorkflowActionTypeService( rockContext )
                                 .Queryable().AsNoTracking()
-                                .Where( a => a.ActivityTypeId == this.Id )
+                                .Where( a => a.ActivityTypeId == Id )
                                 .Select( a => a.Id )
                                 .ToList();
                         }
                     }
                 }
 
-                foreach ( int id in actionTypeIds )
+                foreach ( var id in actionTypeIds )
                 {
                     var actionType = WorkflowActionTypeCache.Read( id );
                     if ( actionType != null )
@@ -156,7 +146,7 @@ namespace Rock.Web.Cache
                 return actionTypes;
             }
         }
-        private List<int> actionTypeIds = null;
+        private List<int> actionTypeIds;
 
         #endregion
 
@@ -166,23 +156,44 @@ namespace Rock.Web.Cache
         /// Copies from model.
         /// </summary>
         /// <param name="model">The model.</param>
-        public override void CopyFromModel( Data.IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
             base.CopyFromModel( model );
 
-            if ( model is WorkflowActivityType )
-            {
-                var workflowActivityType = (WorkflowActivityType)model;
-                this.IsActive = workflowActivityType.IsActive;
-                this.WorkflowTypeId = workflowActivityType.WorkflowTypeId;
-                this.Name = workflowActivityType.Name;
-                this.Description = workflowActivityType.Description;
-                this.IsActivatedWithWorkflow = workflowActivityType.IsActivatedWithWorkflow;
-                this.Order = workflowActivityType.Order;
+            if ( !( model is WorkflowActivityType ) ) return;
 
-                // set actionTypeIds to null so it load them all at once on demand
-                this.actionTypeIds = null;
-            }
+            var workflowActivityType = (WorkflowActivityType)model;
+            IsActive = workflowActivityType.IsActive;
+            WorkflowTypeId = workflowActivityType.WorkflowTypeId;
+            Name = workflowActivityType.Name;
+            Description = workflowActivityType.Description;
+            IsActivatedWithWorkflow = workflowActivityType.IsActivatedWithWorkflow;
+            Order = workflowActivityType.Order;
+
+            // set actionTypeIds to null so it load them all at once on demand
+            actionTypeIds = null;
+        }
+
+        /// <summary>
+        /// Copies properties from a new cached entity
+        /// </summary>
+        /// <param name="cacheEntity">The cache entity.</param>
+        protected sealed override void CopyFromNewCache( IEntityCache cacheEntity )
+        {
+            base.CopyFromNewCache( cacheEntity );
+
+            if ( !( cacheEntity is CacheWorkflowActivityType ) ) return;
+
+            var workflowActivityType = (CacheWorkflowActivityType)cacheEntity;
+            IsActive = workflowActivityType.IsActive;
+            WorkflowTypeId = workflowActivityType.WorkflowTypeId;
+            Name = workflowActivityType.Name;
+            Description = workflowActivityType.Description;
+            IsActivatedWithWorkflow = workflowActivityType.IsActivatedWithWorkflow;
+            Order = workflowActivityType.Order;
+
+            // set actionTypeIds to null so it load them all at once on demand
+            actionTypeIds = null;
         }
 
         /// <summary>
@@ -193,17 +204,12 @@ namespace Rock.Web.Cache
         /// </returns>
         public override string ToString()
         {
-            return this.Name;
+            return Name;
         }
 
         #endregion
 
         #region Static Methods
-
-        private static string CacheKey( int id )
-        {
-            return string.Format( "Rock:WorkflowActivityType:{0}", id );
-        }
 
         /// <summary>
         /// Returns WorkflowActivityType object from cache.  If workflowActivityType does not already exist in cache, it
@@ -214,37 +220,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static WorkflowActivityTypeCache Read( int id, RockContext rockContext = null )
         {
-            return GetOrAddExisting( WorkflowActivityTypeCache.CacheKey( id ),
-                () => LoadById( id, rockContext ) );
-        }
-
-        private static WorkflowActivityTypeCache LoadById( int id, RockContext rockContext )
-        {
-            if ( rockContext != null )
-            {
-                return LoadById2( id, rockContext );
-            }
-
-            using ( var rockContext2 = new RockContext() )
-            {
-                return LoadById2( id, rockContext2 );
-            }
-        }
-
-        private static WorkflowActivityTypeCache LoadById2( int id, RockContext rockContext )
-        {
-            var workflowActivityTypeService = new WorkflowActivityTypeService( rockContext );
-            var workflowActivityTypeModel = workflowActivityTypeService
-                .Queryable()
-                .Where( t => t.Id == id )
-                .FirstOrDefault();
-
-            if ( workflowActivityTypeModel != null )
-            {
-                return new WorkflowActivityTypeCache( workflowActivityTypeModel );
-            }
-
-            return null;
+            return new WorkflowActivityTypeCache( CacheWorkflowActivityType.Get( id, rockContext ) );
         }
 
         /// <summary>
@@ -255,33 +231,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static WorkflowActivityTypeCache Read( Guid guid, RockContext rockContext = null )
         {
-            int id = GetOrAddExisting( guid.ToString(),
-                () => LoadByGuid( guid, rockContext ) );
-
-            return Read( id, rockContext );
-        }
-
-        private static int LoadByGuid( Guid guid, RockContext rockContext )
-        {
-            if ( rockContext != null )
-            {
-                return LoadByGuid2( guid, rockContext );
-            }
-
-            using ( var rockContext2 = new RockContext() )
-            {
-                return LoadByGuid2( guid, rockContext2 );
-            }
-        }
-
-        private static int LoadByGuid2( Guid guid, RockContext rockContext )
-        {
-            var workflowActivityTypeService = new WorkflowActivityTypeService( rockContext );
-            return workflowActivityTypeService
-                .Queryable().AsNoTracking()
-                .Where( c => c.Guid.Equals( guid ) )
-                .Select( c => c.Id )
-                .FirstOrDefault();
+            return new WorkflowActivityTypeCache( CacheWorkflowActivityType.Get( guid, rockContext ) );
         }
 
         /// <summary>
@@ -292,17 +242,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static WorkflowActivityTypeCache Read( WorkflowActivityType workflowActivityTypeModel, RockContext rockContext = null )
         {
-            return GetOrAddExisting( WorkflowActivityTypeCache.CacheKey( workflowActivityTypeModel.Id ),
-                () => LoadByModel( workflowActivityTypeModel ) );
-        }
-
-        private static WorkflowActivityTypeCache LoadByModel( WorkflowActivityType workflowActivityTypeModel )
-        {
-            if ( workflowActivityTypeModel != null )
-            {
-                return new WorkflowActivityTypeCache( workflowActivityTypeModel );
-            }
-            return null;
+            return new WorkflowActivityTypeCache( CacheWorkflowActivityType.Get( workflowActivityTypeModel ) );
         }
 
         /// <summary>
@@ -311,15 +251,7 @@ namespace Rock.Web.Cache
         /// <param name="id"></param>
         public static void Flush( int id )
         {
-            var activityType = WorkflowActivityTypeCache.Read( id );
-            if ( activityType != null )
-            {
-                foreach ( var actionType in activityType.ActionTypes )
-                {
-                    WorkflowActionTypeCache.Flush( actionType.Id );
-                }
-            }
-            FlushCache( WorkflowActivityTypeCache.CacheKey( id ) );
+            CacheWorkflowActivityType.Remove( id );
         }
 
         #endregion

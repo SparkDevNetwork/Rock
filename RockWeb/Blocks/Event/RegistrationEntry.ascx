@@ -14,14 +14,15 @@
     <asp:HiddenField ID="hfTriggerScroll" runat="server" Value="" />
     <asp:HiddenField ID="hfAllowNavigate" runat="server" Value="" />
 
-    <asp:ValidationSummary ID="vsSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+    <asp:ValidationSummary ID="vsSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
     <Rock:NotificationBox ID="nbPaymentValidation" runat="server" NotificationBoxType="Danger" Visible="false" />
 
     <Rock:NotificationBox ID="nbMain" runat="server" Visible="false"></Rock:NotificationBox>
     <Rock:NotificationBox ID="nbWaitingList" runat="server" Visible="false" NotificationBoxType="Warning" />
 
     <asp:Panel ID="pnlHowMany" runat="server" Visible="false" CssClass="registrationentry-intro">
-
+        
+        <asp:Literal ID="lInstructions" runat="server" />
         <h1>How many <asp:Literal ID="lRegistrantTerm" runat="server" /> will you be registering?</h1>
         <Rock:NumberUpDown ID="numHowMany"  runat="server" CssClass="input-lg" OnNumberUpdated="numHowMany_NumberUpdated"  />
 
@@ -188,11 +189,11 @@
                             </div>
                                 
                             <div runat="server" class="col-sm-3 fee-value" visible='<%# (RegistrationState.DiscountPercentage > 0.0m) %>'>
-                                <span class="visible-xs-inline">Discounted Amount:</span> <%# Rock.Web.Cache.GlobalAttributesCache.Value( "CurrencySymbol" )%> <%# string.Format("{0:N}", Eval("DiscountedCost")) %> 
+                                <span class="visible-xs-inline">Discounted Amount:</span> <%# Rock.Cache.CacheGlobalAttributes.Value( "CurrencySymbol" )%> <%# string.Format("{0:N}", Eval("DiscountedCost")) %> 
                             </div>
 
                             <div class="col-sm-3 fee-value">
-                                <span class="visible-xs-inline">Amount:</span> <%# Rock.Web.Cache.GlobalAttributesCache.Value( "CurrencySymbol" )%> <%# string.Format("{0:N}", Eval("Cost")) %> 
+                                <span class="visible-xs-inline">Amount:</span> <%# Rock.Cache.CacheGlobalAttributes.Value( "CurrencySymbol" )%> <%# string.Format("{0:N}", Eval("Cost")) %> 
                             </div>
                                     
                         </div>

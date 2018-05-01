@@ -30,7 +30,7 @@ using RestSharp;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Security.ExternalAuthentication
 {
@@ -366,15 +366,11 @@ namespace Rock.Security.ExternalAuthentication
                     if ( !string.IsNullOrWhiteSpace( email ) )
                     {
                         var personService = new PersonService( rockContext );
-                        var people = personService.GetByMatch( firstName, lastName, email );
-                        if ( people.Count() == 1)
-                        {
-                            person = people.First();
-                        }
+                        person = personService.FindPerson( firstName, lastName, email, true );
                     }
 
-                    var personRecordTypeId = DefinedValueCache.Read( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
-                    var personStatusPending = DefinedValueCache.Read( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() ).Id;
+                    var personRecordTypeId = CacheDefinedValue.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                    var personStatusPending = CacheDefinedValue.Get( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() ).Id;
 
                     rockContext.WrapTransaction( () =>
                     {
@@ -414,7 +410,7 @@ namespace Rock.Security.ExternalAuthentication
 
                         if ( person != null )
                         {
-                            int typeId = EntityTypeCache.Read( typeof( Facebook ) ).Id;
+                            int typeId = CacheEntityType.Get( typeof( Facebook ) ).Id;
                             user = UserLoginService.Create( rockContext, person, AuthenticationServiceType.External, typeId, userName, "fb", true );
                         }
 
@@ -483,7 +479,7 @@ namespace Rock.Security.ExternalAuthentication
                             }
 
                             // Save the facebook social media link
-                            var facebookAttribute = AttributeCache.Read( Rock.SystemGuid.Attribute.PERSON_FACEBOOK.AsGuid() );
+                            var facebookAttribute = CacheAttribute.Get( Rock.SystemGuid.Attribute.PERSON_FACEBOOK.AsGuid() );
                             if ( facebookAttribute != null )
                             {
                                 person.LoadAttributes( rockContext );

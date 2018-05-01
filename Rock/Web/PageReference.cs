@@ -22,7 +22,7 @@ using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Routing;
 
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Model;
 
@@ -119,7 +119,7 @@ namespace Rock.Web
                 {
                     if ( Guid.TryParse( items[0], out pageGuid ) )
                     {
-                        var pageCache = PageCache.Read( pageGuid );
+                        var pageCache = CachePage.Get( pageGuid );
                         if ( pageCache != null )
                         {
                             // Set the page
@@ -232,12 +232,12 @@ namespace Rock.Web
                         }
                         else
                         {
-                            SiteCache site = SiteCache.GetSiteByDomain( uri.Host );
+                            CacheSite site = CacheSite.GetSiteByDomain( uri.Host );
                             if ( site != null )
                             {
                                 foreach( var pageAndRouteId in pages )
                                 {
-                                    var pageCache = PageCache.Read( pageAndRouteId.PageId );
+                                    var pageCache = CachePage.Get( pageAndRouteId.PageId );
                                     if ( pageCache != null && pageCache.Layout != null && pageCache.Layout.SiteId == site.Id )
                                     {
                                         PageId = pageAndRouteId.PageId;
@@ -356,7 +356,7 @@ namespace Rock.Web
         /// <returns></returns>
         private int? GetRouteIdFromPageAndParms()
         {
-            var pageCache = PageCache.Read( PageId );
+            var pageCache = CachePage.Get( PageId );
             if ( pageCache != null && pageCache.PageRoutes.Any() )
             {
                 var r = new Regex( @"(?<={)[A-Za-z0-9\-]+(?=})" );
@@ -470,21 +470,13 @@ namespace Rock.Web
         /// </returns>
         public override string ToString()
         {
-            var pageCache = PageCache.Read( this.PageId );
-            if (pageCache != null)
-            {
-                var pageRoute = pageCache.PageRoutes.FirstOrDefault( a=> a.Id == this.RouteId);
-                if (pageRoute != null)
-                {
-                    return pageRoute.Route;
-                }
-                else
-                {
-                    return pageCache.InternalName;
-                }
-            }
+            if ( PageId <= 0 ) return base.ToString();
 
-            return base.ToString();
+            var pageCache = CachePage.Get( this.PageId );
+            if (pageCache == null) return base.ToString();
+
+            var pageRoute = pageCache.PageRoutes.FirstOrDefault( a=> a.Id == this.RouteId);
+            return pageRoute != null ? pageRoute.Route : pageCache.InternalName;
         }
 
         /// <summary>
@@ -497,21 +489,13 @@ namespace Rock.Web
         {
             get 
             {
-                var pageCache = PageCache.Read( this.PageId );
-                if ( pageCache != null )
-                {
-                    var pageRoute = pageCache.PageRoutes.FirstOrDefault( a=> a.Id == this.RouteId);
-                    if (pageRoute != null)
-                    {
-                        return pageRoute.Route;
-                    }
-                    else
-                    {
-                        return this.BuildUrl();
-                    }
-                }
+                if (PageId <= 0) return null;
 
-                return null;
+                var pageCache = CachePage.Get( PageId);
+                if (pageCache == null) return null;
+
+                var pageRoute = pageCache.PageRoutes.FirstOrDefault(a => a.Id == RouteId);
+                return pageRoute != null ? pageRoute.Route : BuildUrl();
             }
         }
 
@@ -523,7 +507,22 @@ namespace Rock.Web
         /// Gets the parent page references.
         /// </summary>
         /// <returns></returns>
-        public static List<PageReference> GetParentPageReferences(RockPage rockPage, PageCache currentPage, PageReference currentPageReference)
+        [Obsolete]
+        public static List<PageReference> GetParentPageReferences( RockPage rockPage, Web.Cache.PageCache currentPage, PageReference currentPageReference )
+        {
+            if ( currentPage != null )
+            {
+                return GetParentPageReferences( rockPage, CachePage.Get( currentPage.Id ), currentPageReference );
+            }
+
+            return new List<PageReference>();
+        }
+
+        /// <summary>
+        /// Gets the parent page references.
+        /// </summary>
+        /// <returns></returns>
+        public static List<PageReference> GetParentPageReferences(RockPage rockPage, CachePage currentPage, PageReference currentPageReference)
         {
             // Get previous page references in nav history
             var pageReferenceHistory = HttpContext.Current.Session["RockPageReferenceHistory"] as List<PageReference>;
@@ -540,7 +539,7 @@ namespace Rock.Web
                     if ( currentParentPages != null && currentParentPages.Count > 0 )
                     {
                         currentParentPages.Reverse();
-                        foreach ( PageCache page in currentParentPages )
+                        foreach ( CachePage page in currentParentPages )
                         {
                             PageReference parentPageReference = null;
                             if ( pageReferenceHistory != null )

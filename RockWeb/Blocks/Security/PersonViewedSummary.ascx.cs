@@ -23,7 +23,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -34,7 +34,7 @@ namespace RockWeb.Blocks.Security
     /// </summary>
     [DisplayName( "Person Viewed" )]
     [Category( "Security" )]
-    [Description( "Block for displaying people who have viewed this person's profile and whose profile's this person has viewed. A block level attribute determines which view is displayed." )]
+    [Description( "Block for displaying people who have viewed this person's profile and whose profiles this person has viewed. A block level attribute determines which view is displayed." )]
 
     [BooleanField( "See Profiles Viewed", "Flag indicating whether this block will show you a list of people this person has viewed or a list of people who have viewed this person (this is the default).", false )]
     [ContextAware( typeof( Person ) )]
@@ -190,7 +190,7 @@ namespace RockWeb.Blocks.Security
                         qry = qry.OrderByDescending( q => q.LastViewedDate );
                     }
 
-                    gViewed.EntityTypeId = EntityTypeCache.Read<PersonViewed>().Id;
+                    gViewed.EntityTypeId = CacheEntityType.Get<PersonViewed>().Id;
                     gViewed.DataSource = qry.ToList();
                     gViewed.DataBind();
                 }
@@ -238,7 +238,7 @@ namespace RockWeb.Blocks.Security
                         qry = qry.OrderByDescending( q => q.LastViewedDate );
                     }
 
-                    gViewedBy.EntityTypeId = EntityTypeCache.Read<Person>().Id;
+                    gViewedBy.EntityTypeId = CacheEntityType.Get<Person>().Id;
                     gViewedBy.DataSource = qry.ToList();
                     gViewedBy.DataBind();
                 }

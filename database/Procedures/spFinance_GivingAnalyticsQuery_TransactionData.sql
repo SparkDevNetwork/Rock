@@ -1,16 +1,10 @@
-/*
-<doc>
-	<summary>
-		This stored procedure returns account totals for each giving leader based on filter values
-	</summary>
-</doc>
-*/
 ALTER PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery_TransactionData]
 	  @StartDate datetime = NULL
 	, @EndDate datetime = NULL
 	, @AccountIds varchar(max) = NULL
 	, @CurrencyTypeIds varchar(max) = NULL
 	, @SourceTypeIds varchar(max) = NULL
+	, @TransactionTypeIds varchar(max) = NULL
 	WITH RECOMPILE
 AS
 
@@ -27,6 +21,9 @@ BEGIN
 
 	DECLARE @SourceTypeTbl TABLE ( [Id] int )
 	INSERT INTO @SourceTypeTbl SELECT [Item] FROM ufnUtility_CsvToTable( ISNULL(@SourceTypeIds,'') )
+
+	DECLARE @TransactionTypeTbl TABLE ( [Id] int )
+	INSERT INTO @TransactionTypeTbl SELECT [Item] FROM ufnUtility_CsvToTable( ISNULL(@TransactionTypeIds,'') )
 
  	SELECT
 		[GivingId],
@@ -63,10 +60,12 @@ BEGIN
 		LEFT OUTER JOIN @AccountTbl [tt1] ON [tt1].[id] = [ftd].[AccountId]
 		LEFT OUTER JOIN @CurrencyTypeTbl [tt2] ON [tt2].[id] = [fpd].[CurrencyTypeValueId]
 		LEFT OUTER JOIN @SourceTypeTbl [tt3] ON [tt3].[id] = [ft].[SourceTypeValueId]
+		LEFT OUTER JOIN @TransactionTypeTbl [tt4] ON [tt4].[id] = [ft].TransactionTypeValueId
 		WHERE [ft].[TransactionDateTime] BETWEEN @StartDate AND @EndDate
 		AND ( @AccountIds IS NULL OR [tt1].[Id] IS NOT NULL )
 		AND ( @CurrencyTypeIds IS NULL OR [tt2].[Id] IS NOT NULL )
 		AND ( @SourceTypeIds IS NULL OR [tt3].[Id] IS NOT NULL )
+		AND ( @TransactionTypeIds IS NULL OR [tt4].[Id] IS NOT NULL )
 	) AS [details]
 
 END

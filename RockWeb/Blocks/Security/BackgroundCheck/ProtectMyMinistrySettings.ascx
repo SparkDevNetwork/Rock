@@ -14,7 +14,6 @@
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-shield"></i> Protect My Ministry</h1>
                 <div class="panel-labels">
-                    <Rock:HighlightLabel ID="hlMode" runat="server" LabelType="Type" />
                     <Rock:HighlightLabel ID="hlActive" runat="server" />
                 </div>
 
@@ -22,7 +21,7 @@
 
             <div class="panel-body">
 
-                <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
                 <Rock:NotificationBox ID="nbNotification" runat="server" Title="Please Correct the Following" NotificationBoxType="Danger" Visible="false" />
 
                 <div id="pnlNew" runat="server" class="row">
@@ -76,12 +75,11 @@
                             <Rock:UrlLinkBox ID="urlWebHook" runat="server" Label="Result Webhook" Required="true"
                                 Help="The URL that Protect My Ministry should use when sending background check results back to your server." />
                             <Rock:RockCheckBox id="cbActive" runat="server" Label="Active" />
-                            <Rock:RockCheckBox ID="cbTestMode" runat="server" Label="Test Mode" />
                         </div>
                     </div>
                     <div class="actions">
-                        <asp:LinkButton ID="lbSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="lbSave_Click" />
-                        <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" />
+                        <asp:LinkButton ID="lbSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="lbSave_Click" />
+                        <asp:LinkButton ID="lbCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" />
                     </div>
                 </div>
 
@@ -129,7 +127,7 @@
             <Content>
 
                 <asp:HiddenField ID="hfDefinedValueId" runat="server" />
-                <asp:ValidationSummary ID="valSummaryPackage" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="Package" />
+                <asp:ValidationSummary ID="valSummaryPackage" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" ValidationGroup="Package" />
 
                 <div class="row">
                     <div class="col-md-6">

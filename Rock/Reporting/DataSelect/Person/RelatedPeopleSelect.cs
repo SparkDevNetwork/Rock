@@ -28,7 +28,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.SystemGuid;
 using Rock.Utility;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
 
@@ -242,8 +242,8 @@ namespace Rock.Reporting.DataSelect.Person
             var adultGuid = GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
             var childGuid = GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
 
-            int familyGroupTypeId = GroupTypeCache.Read( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() ).Id;
-            int knownRelationshipGroupTypeId = GroupTypeCache.Read( SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() ).Id;
+            int familyGroupTypeId = CacheGroupType.Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() ).Id;
+            int knownRelationshipGroupTypeId = CacheGroupType.Get( SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() ).Id;
 
             //
             // Construct a Query to return the list of Related People matching the filter conditions.
@@ -282,7 +282,7 @@ namespace Rock.Reporting.DataSelect.Person
             if ( settings.FamilyRelationshipTypeGuids.Contains( FamilyRelationshipSpouseGuid.AsGuid() ) )
             {
                 var marriedStatusGuid = SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid();
-                int marriedStatusId = DefinedValueCache.Read( marriedStatusGuid ).Id;
+                int marriedStatusId = CacheDefinedValue.Get( marriedStatusGuid ).Id;
 
                 var familyGroupMembers = new GroupMemberService( context ).Queryable()
                                                                           .Where( m => m.Group.GroupTypeId == familyGroupTypeId );
@@ -446,7 +446,7 @@ namespace Rock.Reporting.DataSelect.Person
 
             checkboxList.Items.Clear();
 
-            var groupType = GroupTypeCache.Read( groupTypeGuid.GetValueOrDefault() );
+            var groupType = CacheGroupType.Get( groupTypeGuid.GetValueOrDefault() );
 
             if ( groupType != null )
             {

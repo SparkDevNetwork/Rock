@@ -344,12 +344,24 @@ namespace Rock
                 int? intValue = value.AsIntegerOrNull();
                 if ( listControl is Rock.Web.UI.Controls.CampusPicker && intValue.HasValue )
                 {
-                    // Campus Picker will add the item if neccessary, so needs to be handled differently
+                    // A Campus Picker can be configured to only load Active Campuses, but if trying to set the value to an Inactive Campus, it'll add that campus to the list
+                    // so this is a special case
                     ( (Rock.Web.UI.Controls.CampusPicker)listControl ).SelectedCampusId = intValue.Value;
                 }
                 else
                 {
                     var valueItem = listControl.Items.FindByValue( value );
+
+                    // if this is a Guid (string) but wasn't found, look and see if can find a match by converting the listitem.value and value to Guids first
+                    if ( valueItem == null )
+                    {
+                        Guid? valueAsGuid = value.AsGuidOrNull();
+                        if ( valueAsGuid.HasValue )
+                        {
+                            valueItem = listControl.Items.OfType<ListItem>()?.FirstOrDefault( a => a.Value.AsGuidOrNull() == valueAsGuid );
+                        }
+                    }
+
                     if ( valueItem == null && defaultValue != null )
                     {
                         valueItem = listControl.Items.FindByValue( defaultValue );
@@ -458,7 +470,20 @@ namespace Rock
         /// <param name="definedType">Type of the defined.</param>
         /// <param name="insertBlankOption">if set to <c>true</c> [insert blank option].</param>
         /// <param name="useDescriptionAsText">if set to <c>true</c> [use description as text].</param>
-        public static void BindToDefinedType( this ListControl listControl, Rock.Web.Cache.DefinedTypeCache definedType, bool insertBlankOption = false, bool useDescriptionAsText = false )
+        [Obsolete]
+        public static void BindToDefinedType( this ListControl listControl, Web.Cache.DefinedTypeCache definedType, bool insertBlankOption = false, bool useDescriptionAsText = false )
+        {
+            BindToDefinedType( listControl, Cache.CacheDefinedType.Get( definedType.Id ), insertBlankOption, useDescriptionAsText );
+        }
+
+        /// <summary>
+        /// Binds to the values of a definedType using the definedValue's Id as the listitem value
+        /// </summary>
+        /// <param name="listControl">The list control.</param>
+        /// <param name="definedType">Type of the defined.</param>
+        /// <param name="insertBlankOption">if set to <c>true</c> [insert blank option].</param>
+        /// <param name="useDescriptionAsText">if set to <c>true</c> [use description as text].</param>
+        public static void BindToDefinedType( this ListControl listControl, Cache.CacheDefinedType definedType, bool insertBlankOption = false, bool useDescriptionAsText = false )
         {
             var ds = definedType.DefinedValues
                 .Select( v => new

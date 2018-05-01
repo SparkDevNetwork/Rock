@@ -24,7 +24,7 @@ using System.Reflection;
 using System.Text;
 using Rock.Data;
 using Rock.Reporting;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Model
 {
@@ -84,13 +84,13 @@ WHERE o.type = 'V'
                 List<string> partitionEntityLookupJOINs = new List<string>();
                 foreach ( var metricPartition in metricEntityPartitions )
                 {
-                    var metricPartitionEntityType = EntityTypeCache.Read( metricPartition.EntityTypeId.Value );
+                    var metricPartitionEntityType = CacheEntityType.Get( metricPartition.EntityTypeId.Value );
                     if ( metricPartitionEntityType != null )
                     {
                         var tableAttribute = metricPartitionEntityType.GetEntityType().GetCustomAttribute<TableAttribute>();
                         if ( tableAttribute != null )
                         {
-                            if ( metricPartitionEntityType.Id == EntityTypeCache.GetId<DefinedValue>() )
+                            if ( metricPartitionEntityType.Id == CacheEntityType.GetId<DefinedValue>() )
                             {
                                 partitionEntityLookupSELECTs.Add( $"j{metricPartition.EntityTypeId}.Value [{metricPartition.Label.RemoveSpecialCharacters()}Name]" );
                             }

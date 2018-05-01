@@ -140,7 +140,7 @@ namespace Rock.Web.UI.Controls
             {
                 if ( ViewState["LabelTextFromPropertyName"] != null )
                 {
-                    return (bool)ViewState["LabelTextFromPropertyName"];
+                    return ( bool ) ViewState["LabelTextFromPropertyName"];
                 }
                 else
                 {
@@ -150,6 +150,53 @@ namespace Rock.Web.UI.Controls
             set
             {
                 ViewState["LabelTextFromPropertyName"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [get max length from property name].
+        /// Default = True
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [get max length from property name]; otherwise, <c>false</c>.
+        /// </value>
+        [
+        Bindable( false ),
+        Category( "Behavior" ),
+        DefaultValue( true ),
+        Description( "If the Max Length is not set, get the Max Length from PropertyName" )
+        ]
+        public bool MaxLengthFromPropertyName
+        {
+            get
+            {
+                if ( ViewState["MaxLengthFromPropertyName"] != null )
+                {
+                    return ( bool ) ViewState["MaxLengthFromPropertyName"];
+                }
+                else
+                {
+                    return true;
+                }
+            }
+            set
+            {
+                ViewState["MaxLengthFromPropertyName"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the maximum number of characters allowed in the text box.
+        /// </summary>
+        public override int MaxLength
+        {
+            get
+            {
+                return ViewState["MaxLength"] as int? ?? 0;
+            }
+            set
+            {
+                ViewState["MaxLength"] = value;
             }
         }
 
@@ -179,6 +226,23 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Renders the base control.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        public override void RenderBaseControl( HtmlTextWriter writer )
+        {
+            if ( !this.MaxLengthFromPropertyName && this.MaxLength != 0 )
+            {
+                base.MaxLength = this.MaxLength;
+            }
+            else
+            {
+                base.MaxLength = dataValidator.ValueMaxLength;
+            }
+            base.RenderBaseControl( writer );
+        }
+
+        /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
@@ -199,6 +263,8 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         protected override void RenderDataValidator( HtmlTextWriter writer )
         {
+            base.RenderDataValidator( writer );
+
             dataValidator.ValidationGroup = this.ValidationGroup;
             dataValidator.RenderControl( writer );
         }

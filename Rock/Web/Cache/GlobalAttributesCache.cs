@@ -15,17 +15,13 @@
 // </copyright>
 //
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.Entity;
-using System.Globalization;
 using System.Linq;
-using System.Runtime.Caching;
-using System.Web;
 
+using Rock.Cache;
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
 
 namespace Rock.Web.Cache
 {
@@ -34,32 +30,9 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
+    [Obsolete( "Use Rock.Cache.CacheGlobalAttributes instead" )]
     public class GlobalAttributesCache
     {
-        #region Contants
-
-        /// <summary>
-        /// This setting is the guid for the organization's location record.
-        /// </summary>
-        private static readonly string ORG_LOC_GUID = "com.rockrms.orgLocationGuid";
-
-        /// <summary>
-        /// This setting is the state for the organization's location record.
-        /// </summary>
-        private static readonly string ORG_LOC_STATE = "com.rockrms.orgLocationState";
-
-        /// <summary>
-        /// This setting is the country for the organization's location record.
-        /// </summary>
-        private static readonly string ORG_LOC_COUNTRY = "com.rockrms.orgLocationCountry";
-
-        /// <summary>
-        /// This setting is the formatted organization's location (used by legacy lava support).
-        /// </summary>
-        private static readonly string ORG_LOC_FORMATTED = "com.rockrms.orgLoctionFormatted";
-
-        #endregion
-
         #region Constructors
 
         /// <summary>
@@ -69,11 +42,16 @@ namespace Rock.Web.Cache
         {
         }
 
+        private GlobalAttributesCache( CacheGlobalAttributes cacheGlobalAttributes )
+        {
+            CopyFromNewCache( cacheGlobalAttributes );
+        }
+
         #endregion
 
         #region Properties
 
-        private object _obj = new object();
+        private readonly object _obj = new object();
 
         /// <summary>
         /// Gets or sets the attributes.  Used to iterate all values when merging possible merge fields
@@ -81,7 +59,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The attributes.
         /// </value>
-        public List<AttributeCache> Attributes 
+        public List<AttributeCache> Attributes
         {
             get
             {
@@ -93,10 +71,10 @@ namespace Rock.Web.Cache
                     {
                         using ( var rockContext = new RockContext() )
                         {
-                            attributeIds = new Model.AttributeService( rockContext )
+                            attributeIds = new AttributeService( rockContext )
                                 .Queryable().AsNoTracking()
-                                .Where( t => 
-                                    !t.EntityTypeId.HasValue && 
+                                .Where( t =>
+                                    !t.EntityTypeId.HasValue &&
                                     ( t.EntityTypeQualifierColumn == null || t.EntityTypeQualifierColumn == string.Empty ) &&
                                     ( t.EntityTypeQualifierValue == null || t.EntityTypeQualifierValue == string.Empty ) )
                                 .Select( t => t.Id )
@@ -105,7 +83,7 @@ namespace Rock.Web.Cache
                     }
                 }
 
-                foreach ( int id in attributeIds )
+                foreach ( var id in attributeIds )
                 {
                     var attribute = AttributeCache.Read( id );
                     if ( attribute != null )
@@ -121,38 +99,24 @@ namespace Rock.Web.Cache
             {
                 lock ( _obj )
                 {
-                    if ( value != null )
-                    {
-                        attributeIds = value.Select( a => a.Id ).ToList();
-                    }
-                    else
-                    {
-                        attributeIds = null;
-                    }
+                    attributeIds = value?.Select( a => a.Id ).ToList();
                 }
             }
         }
-        private List<int> attributeIds = null;
-
-        /// <summary>
-        /// Gets or sets the attribute values.
-        /// </summary>
-        /// <value>
-        /// The attribute values.
-        /// </value>
-        private ConcurrentDictionary<string, string> AttributeValues { get; set; }
-
-        /// <summary>
-        /// Gets or sets the attribute values formatted.
-        /// </summary>
-        /// <value>
-        /// The attribute values formatted.
-        /// </value>
-        private ConcurrentDictionary<string, string> AttributeValuesFormatted { get; set; }
+        private List<int> attributeIds;
 
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Copies properties from a new cached entity
+        /// </summary>
+        /// <param name="cacheGlobalAttributes">The cache global attributes.</param>
+        private void CopyFromNewCache( CacheGlobalAttributes cacheGlobalAttributes )
+        {
+            attributeIds = cacheGlobalAttributes.Attributes.Select( a => a.Id ).ToList();
+        }
 
         /// <summary>
         /// Gets the Global Attribute values for the specified key.
@@ -162,37 +126,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public string GetValue( string key, RockContext rockContext = null )
         {
-            string value = string.Empty;
-            if ( AttributeValues.TryGetValue( key, out value ) )
-            {
-                return value;
-            }
-
-            var attributeCache = Attributes.FirstOrDefault( a => a.Key.Equals( key, StringComparison.OrdinalIgnoreCase ) );
-            if ( attributeCache != null )
-            {
-                if ( rockContext != null )
-                {
-                    return GetValue( key, attributeCache, rockContext );
-                }
-                else
-                {
-                    using ( var myRockContext = new RockContext() )
-                    {
-                        return GetValue( key, attributeCache, myRockContext );
-                    }
-                }
-            }
-
-            return string.Empty;
-         }
-
-        private string GetValue( string key, AttributeCache attributeCache, RockContext rockContext )
-        {
-            var attributeValue = new AttributeValueService( rockContext ).GetByAttributeIdAndEntityId( attributeCache.Id, null );
-            string value = ( attributeValue != null && !string.IsNullOrEmpty( attributeValue.Value ) ) ? attributeValue.Value : attributeCache.DefaultValue;
-            AttributeValues.AddOrUpdate( key, value, ( k, v ) => value );
-            return value;
+            return CacheGlobalAttributes.Value( key );
         }
 
         /// <summary>
@@ -203,25 +137,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public string GetValueFormatted( string key, RockContext rockContext = null )
         {
-            string formattedValue = string.Empty;
-            if ( AttributeValuesFormatted.TryGetValue( key, out formattedValue ) )
-            {
-                return formattedValue;
-            }
-
-            string value = GetValue( key, rockContext );
-            if ( !string.IsNullOrWhiteSpace( value ) )
-            {
-                var attributeCache = Attributes.FirstOrDefault( a => a.Key.Equals( key, StringComparison.OrdinalIgnoreCase ) );
-                if ( attributeCache != null )
-                {
-                    value = attributeCache.FieldType.Field.FormatValue( null, value, attributeCache.QualifierValues, false );
-                }
-            }
-
-            AttributeValuesFormatted.AddOrUpdate( key, value, (k, v) => value );
-
-            return value;
+            return CacheGlobalAttributes.Get().GetValueFormatted( key, rockContext );
         }
 
         /// <summary>
@@ -232,10 +148,7 @@ namespace Rock.Web.Cache
         /// <param name="saveValue">if set to <c>true</c> [save value].</param>
         public void SetValue( string key, string value, bool saveValue )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                SetValue( key, value, saveValue, rockContext );
-            }
+            CacheGlobalAttributes.Get().SetValue( key, value, saveValue );
         }
 
         /// <summary>
@@ -247,65 +160,12 @@ namespace Rock.Web.Cache
         /// <param name="rockContext">The rock context.</param>
         public void SetValue( string key, string value, bool saveValue, RockContext rockContext )
         {
-            AttributeCache attributeCache = null;
-
-            if ( saveValue )
-            {
-                // Save new value
-                rockContext = rockContext ?? new RockContext();
-                var attributeValueService = new AttributeValueService( rockContext );
-                var attributeValue = attributeValueService.GetGlobalAttributeValue( key );
-
-                if ( attributeValue == null )
-                {
-                    var attributeService = new AttributeService( rockContext );
-                    var attribute = attributeService.GetGlobalAttribute( key );
-                    if ( attribute == null )
-                    {
-                        attribute = new Rock.Model.Attribute();
-                        attribute.FieldTypeId = FieldTypeCache.Read( new Guid( SystemGuid.FieldType.TEXT ) ).Id;
-                        attribute.EntityTypeQualifierColumn = string.Empty;
-                        attribute.EntityTypeQualifierValue = string.Empty;
-                        attribute.Key = key;
-                        attribute.Name = key.SplitCase();
-                        attributeService.Add( attribute );
-                        rockContext.SaveChanges();
-                    }
-
-                    attributeValue = new AttributeValue();
-                    attributeValue.IsSystem = false;
-                    attributeValue.AttributeId = attribute.Id;
-                    attributeValueService.Add( attributeValue );
-                }
-
-                attributeValue.Value = value;
-                rockContext.SaveChanges();
-            }
-
-            lock(_obj)
-            {
-                attributeIds = null;
-            }
-
-            AttributeValues.AddOrUpdate( key, value, ( k, v ) => value );
-
-            attributeCache = Attributes.FirstOrDefault( a => a.Key.Equals( key, StringComparison.OrdinalIgnoreCase ) );
-            if ( attributeCache != null )
-            {
-                value = attributeCache.FieldType.Field.FormatValue( null, value, attributeCache.QualifierValues, false );
-            }
-            AttributeValuesFormatted.AddOrUpdate( key, value, (k, v) => value);
-
+            CacheGlobalAttributes.Get().SetValue( key, value, saveValue, rockContext );
         }
 
         #endregion
 
         #region Static Methods
-
-        private static string CacheKey()
-        {
-            return "Rock:GlobalAttributes";
-        }
 
         /// <summary>
         /// Gets the existing or a new item from cache
@@ -315,19 +175,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static GlobalAttributesCache GetOrAddExisting( string key, Func<GlobalAttributesCache> valueFactory )
         {
-            var cache = RockMemoryCache.Default;
-            var value = cache.Get( key ) as GlobalAttributesCache;
-            if ( value != null )
-            {
-                return value;
-            }
-
-            value = valueFactory();
-            if ( value != null )
-            {
-                cache.Set( key, value, new CacheItemPolicy() );
-            }
-            return value;
+            return new GlobalAttributesCache( CacheGlobalAttributes.Get() );
         }
 
         /// <summary>
@@ -347,29 +195,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static GlobalAttributesCache Read( RockContext rockContext )
         {
-            return GetOrAddExisting( GlobalAttributesCache.CacheKey(),
-                () => Load( rockContext ) );
-        }
-
-        private static GlobalAttributesCache Load( RockContext rockContext )
-        {
-            if ( rockContext != null )
-            {
-                return Load2( rockContext );
-            }
-
-            using ( var rockContext2 = new RockContext() )
-            {
-                return Load2( rockContext2 );
-            }
-        }
-
-        private static GlobalAttributesCache Load2( RockContext rockContext )
-        {
-            var globalAttributes = new GlobalAttributesCache();
-            globalAttributes.AttributeValues = new ConcurrentDictionary<string, string>();
-            globalAttributes.AttributeValuesFormatted = new ConcurrentDictionary<string, string>();
-            return globalAttributes;
+            return new GlobalAttributesCache( CacheGlobalAttributes.Get() );
         }
 
         /// <summary>
@@ -378,8 +204,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static string Value( string key )
         {
-            // pass null to the Read(RockContext rockContext) overload so that it doesn't create the RockContext unless it needs to fetch it from the database. This speeds this up from 0.250ms/call to about .001ms/call
-            return Read( null ).GetValue( key );
+            return CacheGlobalAttributes.Value( key );
         }
 
         /// <summary>
@@ -387,16 +212,7 @@ namespace Rock.Web.Cache
         /// </summary>
         public static void Flush()
         {
-            RockMemoryCache cache = RockMemoryCache.Default;
-            cache.Remove( GlobalAttributesCache.CacheKey() );
-
-            if ( HttpContext.Current != null )
-            {
-                var appSettings = HttpContext.Current.Application;
-                appSettings[ORG_LOC_GUID] = null;
-                appSettings[ORG_LOC_STATE] = null;
-                appSettings[ORG_LOC_COUNTRY] = null;
-            }
+            CacheGlobalAttributes.Clear();
         }
 
         /// <summary>
@@ -407,7 +223,7 @@ namespace Rock.Web.Cache
         [Obsolete( "Use Rock.Lava.LavaHelper.GetCommonMergeFields instead" )]
         public static Dictionary<string, object> GetMergeFields( Person currentPerson )
         {
-            return GetLegacyMergeFields( currentPerson );
+            return CacheGlobalAttributes.GetLegacyMergeFields( currentPerson );
         }
 
         /// <summary>
@@ -418,53 +234,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         internal static Dictionary<string, object> GetLegacyMergeFields( Person currentPerson )
         {
-            var configValues = new Dictionary<string, object>();
-
-            // Add any global attribute values that user has authorization to view
-            var globalAttributeValues = new Dictionary<string, object>();
-            var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
-            foreach ( var attributeCache in globalAttributes.Attributes.OrderBy( a => a.Key ) )
-            {
-                if ( attributeCache.IsAuthorized( Authorization.VIEW, currentPerson ) )
-                {
-                    globalAttributeValues.Add( attributeCache.Key, globalAttributes.GetValueFormatted( attributeCache.Key ) );
-                }
-            }
-
-            configValues.Add( "GlobalAttribute", globalAttributeValues );
-
-            // Recursively resolve any of the config values that may have other merge codes as part of their value
-            foreach ( var collection in configValues.ToList() )
-            {
-                var collectionDictionary = collection.Value as Dictionary<string, object>;
-                foreach ( var item in collectionDictionary.ToList() )
-                {
-                    collectionDictionary[item.Key] = ResolveConfigValue( item.Value as string, configValues, currentPerson );
-                }
-            }
-
-            return configValues;
-        }
-
-        /// <summary>
-        /// Resolves the config value.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <param name="configValues">The config values.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <returns></returns>
-        private static string ResolveConfigValue( string value, Dictionary<string, object> configValues, Person currentPerson )
-        {
-            string result = value.ResolveMergeFields( configValues, currentPerson );
-
-            // If anything was resolved, keep resolving until nothing changed.
-            while ( result != value )
-            {
-                value = result;
-                result = ResolveConfigValue( result, configValues, currentPerson );
-            }
-
-            return result;
+            return CacheGlobalAttributes.GetLegacyMergeFields( currentPerson );
         }
 
         /// <summary>
@@ -473,20 +243,12 @@ namespace Rock.Web.Cache
         /// <value>
         /// Returns current year if transition month/day has not passed, otherwise will return next year
         /// </value>
+        [Obsolete("Moved to RockDateTime.CurrentGraduationYear")]
         public int CurrentGraduationYear
         {
             get
             {
-                var formattedTransitionDate = GetValue( "GradeTransitionDate" ) + "/" + RockDateTime.Today.Year;
-                DateTime transitionDate;
-
-                // Check Date Validity
-                if ( !DateTime.TryParseExact( formattedTransitionDate, new[] { "MM/dd/yyyy", "M/dd/yyyy", "M/d/yyyy", "MM/d/yyyy" }, CultureInfo.InvariantCulture,
-                    DateTimeStyles.AllowWhiteSpaces, out transitionDate ) )
-                {
-                    transitionDate = new DateTime( RockDateTime.Today.Year, 6, 1 );
-                }
-                return RockDateTime.Now.Date < transitionDate ? transitionDate.Year : transitionDate.Year + 1;
+                return RockDateTime.CurrentGraduationYear;
             }
         }
         /// <summary>
@@ -495,22 +257,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The organization location.
         /// </value>
-        public Location OrganizationLocation
-        {
-            get
-            {
-                Guid? locGuid = GetValue( "OrganizationAddress" ).AsGuidOrNull();
-                if ( locGuid.HasValue )
-                {
-                    using ( var rockContext = new RockContext() )
-                    {
-                        return new Rock.Model.LocationService( rockContext ).Get( locGuid.Value );
-                    }
-                }
-
-                return null;
-            }
-        }
+        public Location OrganizationLocation => CacheGlobalAttributes.Get().OrganizationLocation;
 
         /// <summary>
         /// Gets the state of the organization.
@@ -518,57 +265,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The state of the organization.
         /// </value>
-        public string OrganizationState
-        {
-            get
-            {
-                // Check to see if there is an global attribute for organization address
-                Guid? locGuid = GetValue( "OrganizationAddress" ).AsGuidOrNull();
-                if ( locGuid.HasValue )
-                {
-                    if ( HttpContext.Current != null )
-                    {
-                        var appSettings = HttpContext.Current.Application;
-
-                        // If the organization location is still same as last check, use saved values
-                        if ( appSettings[ORG_LOC_GUID] != null &&
-                            locGuid.Equals( (Guid)appSettings[ORG_LOC_GUID] ) &&
-                            appSettings[ORG_LOC_STATE] != null )
-                        {
-                            return appSettings[ORG_LOC_STATE].ToString();
-                        }
-                        else
-                        {
-                            // otherwise read the new location and save
-                            appSettings[ORG_LOC_GUID] = locGuid.Value;
-                            using ( var rockContext = new RockContext() )
-                            {
-                                var location = new Rock.Model.LocationService( rockContext ).Get( locGuid.Value );
-                                if ( location != null )
-                                {
-                                    appSettings[ORG_LOC_STATE] = location.State;
-                                    appSettings[ORG_LOC_COUNTRY] = location.Country;
-                                    return location.State;
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        using ( var rockContext = new RockContext() )
-                        {
-                            var location = new Rock.Model.LocationService( rockContext ).Get( locGuid.Value );
-                            if ( location != null )
-                            {
-                                return location.State;
-                            }
-                        }
-                    }
-                }
-
-                return string.Empty;
-            }
-        }
+        public string OrganizationState => CacheGlobalAttributes.Get().OrganizationState;
 
         /// <summary>
         /// Gets the organization country.
@@ -576,57 +273,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The organization country.
         /// </value>
-        public string OrganizationCountry
-        {
-            get
-            {
-                // Check to see if there is an global attribute for organization address
-                Guid? locGuid = GetValue( "OrganizationAddress" ).AsGuidOrNull();
-                if ( locGuid.HasValue )
-                {
-                    if ( HttpContext.Current != null )
-                    {
-                        var appSettings = HttpContext.Current.Application;
-
-                        // If the organization location is still same as last check, use saved values
-                        if ( appSettings[ORG_LOC_GUID] != null &&
-                            locGuid.Equals( (Guid)appSettings[ORG_LOC_GUID] ) &&
-                            appSettings[ORG_LOC_COUNTRY] != null )
-                        {
-                            return appSettings[ORG_LOC_COUNTRY].ToString();
-                        }
-                        else
-                        {
-                            // otherwise read the new location and save 
-                            appSettings[ORG_LOC_GUID] = locGuid.Value;
-                            using ( var rockContext = new RockContext() )
-                            {
-                                var location = new Rock.Model.LocationService( rockContext ).Get( locGuid.Value );
-                                if ( location != null )
-                                {
-                                    appSettings[ORG_LOC_STATE] = location.State;
-                                    appSettings[ORG_LOC_COUNTRY] = location.Country;
-                                    return location.Country;
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        using ( var rockContext = new RockContext() )
-                        {
-                            var location = new Rock.Model.LocationService( rockContext ).Get( locGuid.Value );
-                            if ( location != null )
-                            {
-                                return location.Country;
-                            }
-                        }
-                    }
-                }
-
-                return string.Empty;
-            }
-        }
+        public string OrganizationCountry => CacheGlobalAttributes.Get().OrganizationCountry;
 
         /// <summary>
         /// Gets the organization location formatted.
@@ -634,56 +281,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The organization location formatted.
         /// </value>
-        public string OrganizationLocationFormatted
-        {
-            get
-            {
-                // Check to see if there is an global attribute for organization address
-                Guid? locGuid = GetValue( "OrganizationAddress" ).AsGuidOrNull();
-                if ( locGuid.HasValue )
-                {
-                    if ( HttpContext.Current != null )
-                    {
-                        var appSettings = HttpContext.Current.Application;
-
-                        // If the organization location is still same as last check, use saved values
-                        if ( appSettings[ORG_LOC_GUID] != null &&
-                            locGuid.Equals( (Guid)appSettings[ORG_LOC_GUID] ) &&
-                            appSettings[ORG_LOC_FORMATTED] != null )
-                        {
-                            return appSettings[ORG_LOC_FORMATTED].ToString();
-                        }
-                        else
-                        {
-                            // otherwise read the new location and save 
-                            appSettings[ORG_LOC_GUID] = locGuid.Value;
-                            using ( var rockContext = new RockContext() )
-                            {
-                                var location = new Rock.Model.LocationService( rockContext ).Get( locGuid.Value );
-                                if ( location != null )
-                                {
-                                    appSettings[ORG_LOC_FORMATTED] = location.ToString();
-                                    return location.Country;
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        using ( var rockContext = new RockContext() )
-                        {
-                            var location = new Rock.Model.LocationService( rockContext ).Get( locGuid.Value );
-                            if ( location != null )
-                            {
-                                return location.ToString();
-                            }
-                        }
-                    }
-                }
-
-                return string.Empty;
-            }
-        }
+        public string OrganizationLocationFormatted => CacheGlobalAttributes.Get().OrganizationLocationFormatted;
 
         /// <summary>
         /// Gets the lava support level.
@@ -691,13 +289,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The lava support level.
         /// </value>
-        public Rock.Lava.LavaSupportLevel LavaSupportLevel
-        {
-            get
-            {
-                return GetValue( "core.LavaSupportLevel" ).ConvertToEnumOrNull<Rock.Lava.LavaSupportLevel>() ?? Rock.Lava.LavaSupportLevel.Legacy;
-            }
-        }
+        public Lava.LavaSupportLevel LavaSupportLevel => CacheGlobalAttributes.Get().LavaSupportLevel;
 
         /// <summary>
         /// Gets a value indicating whether Envelope Number feature is enabled
@@ -705,13 +297,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// <c>true</c> if [enable giving envelope number]; otherwise, <c>false</c>.
         /// </value>
-        public bool EnableGivingEnvelopeNumber
-        {
-            get
-            {
-                return GetValue( "core.EnableGivingEnvelopeNumber" ).AsBoolean();
-            }
-        }
+        public bool EnableGivingEnvelopeNumber => CacheGlobalAttributes.Get().EnableGivingEnvelopeNumber;
 
         #endregion
     }

@@ -111,7 +111,7 @@ namespace RockWeb.Blocks.CheckIn
                                         {
                                             var li = new HtmlGenericControl( "li" );
                                             li.InnerText = string.Format( GetAttributeValue( "DetailMessage" ),
-                                                person.ToString(), attendance.Group.ToString(), attendance.Location.ToString(), attendance.Schedule.ToString() );
+                                                person.ToString(), attendance.Group.ToString(), attendance.Location.ToString(), attendance.Schedule.Name );
 
                                             phResults.Controls.Add( li );
                                         }
@@ -149,7 +149,7 @@ namespace RockWeb.Blocks.CheckIn
                                 .OrderBy( l => l.PersonId )
                                 .ThenBy( l => l.Order ) )
                             {
-                                var labelCache = KioskLabel.Read( label.FileGuid );
+                                var labelCache = KioskLabel.Get( label.FileGuid );
                                 if ( labelCache != null )
                                 {
                                     if ( !string.IsNullOrWhiteSpace( label.PrinterAddress ) )

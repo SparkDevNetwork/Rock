@@ -27,7 +27,7 @@ using Rock.Lava.Shortcodes;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Core
@@ -135,7 +135,7 @@ namespace RockWeb.Blocks.Core
                 Template.RegisterShortcode<DynamicShortcodeInline>( lavaShortcode.TagName );
             }
                         
-            LavaShortcodeCache.Flush( lavaShortcode.Id );
+            CacheLavaShortcode.Remove( lavaShortcode.Id );
 
             NavigateToParentPage();
         }

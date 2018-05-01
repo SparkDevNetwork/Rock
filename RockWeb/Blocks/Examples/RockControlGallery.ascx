@@ -25,7 +25,7 @@
             <div class="panel-body">
                 <asp:Panel ID="pnlDetails" runat="server">
 
-                    <asp:ValidationSummary ID="valExample" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                    <asp:ValidationSummary ID="valExample" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
 
                     <h1 runat="server">General Information</h1>
 
@@ -227,6 +227,11 @@
                     <a id="NumberBox"></a>
                     <div runat="server" class="r-example">
                         <Rock:NumberBox ID="numbExample" runat="server" Label="Rock:NumberBox" />
+                    </div>
+
+                    <a id="AddressControl"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:AddressControl ID="addrExample" runat="server" Label="Rock:AddressControl" />
                     </div>
 
                     <a id="NumberUpDown"></a>

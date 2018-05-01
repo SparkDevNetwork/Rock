@@ -19,7 +19,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using Rock;
+
+using Rock.Net;
 
 namespace Rock.Apps.StatementGenerator
 {
@@ -30,6 +31,17 @@ namespace Rock.Apps.StatementGenerator
     /// <seealso cref="System.Windows.Markup.IComponentConnector" />
     public partial class SelectAdvancedFeaturesPage : Page
     {
+
+        /// <summary>
+        /// The rock rest client
+        /// </summary>
+        private RockRestClient _rockRestClient;
+
+        /// <summary>
+        /// The transaction types
+        /// </summary>
+        private List<Rock.Client.DefinedValue> _transactionTypes = null;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SelectAdvancedFeaturesPage"/> class.
         /// </summary>
@@ -42,6 +54,37 @@ namespace Rock.Apps.StatementGenerator
             var orderByItems = Enum.GetValues( typeof( Rock.StatementGenerator.OrderBy ) ).OfType<Rock.StatementGenerator.OrderBy>().Select( a => a.ConvertToString( true ) ).ToList();
             ddlOrderBy.ItemsSource = orderByItems;
             ddlOrderBy.SelectedValue = ReportOptions.Current.OrderBy.ConvertToString( true );
+
+            RockConfig rockConfig = RockConfig.Load();
+
+            _rockRestClient = new RockRestClient( rockConfig.RockBaseUrl );
+            _rockRestClient.Login( rockConfig.Username, rockConfig.Password );
+
+            var transactionTypeDefinedType = _rockRestClient.GetDataByGuid<Rock.Client.DefinedType>( "api/DefinedTypes", Rock.Client.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE.AsGuid() );
+            _transactionTypes = _rockRestClient.GetData<List<Rock.Client.DefinedValue>>( $"api/DefinedValues?$filter=DefinedTypeId eq {transactionTypeDefinedType.Id}" );
+
+            lstTransactionTypes.Items.Clear();
+
+            var defaultTransactionTypeGuids = new Guid[] {
+                Rock.Client.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid()
+            };
+
+            foreach ( var transactionType in _transactionTypes )
+            {
+                var transactionTypeCheckbox = new CheckBox { Tag = transactionType.Id, Content = transactionType.Value };
+                if ( ReportOptions.Current.TransactionTypeIds != null )
+                {
+                    transactionTypeCheckbox.IsChecked = ReportOptions.Current.TransactionTypeIds.Contains( transactionType.Id );
+                }
+                else
+                {
+                    transactionTypeCheckbox.IsChecked = defaultTransactionTypeGuids.Contains( transactionType.Guid );
+                }
+
+                lstTransactionTypes.Items.Add( transactionTypeCheckbox );
+            }
+
+            lblTransactionTypesWarning.Visibility = Visibility.Hidden;
         }
 
         /// <summary>
@@ -68,6 +111,14 @@ namespace Rock.Apps.StatementGenerator
             ReportOptions.Current.HideRefundedTransactions = cbHideRefundedTransactions.IsChecked == true;
             ReportOptions.Current.HideCorrectedTransactions = cbHideCorrectedTransactions.IsChecked == true;
             ReportOptions.Current.OrderBy = ( ddlOrderBy.SelectedValue as string ).ConvertToEnumOrNull<Rock.StatementGenerator.OrderBy>() ?? Rock.StatementGenerator.OrderBy.PostalCode;
+            ReportOptions.Current.TransactionTypeIds = lstTransactionTypes.Items.OfType<CheckBox>().Where( a => a.IsChecked == true ).Select( s => ( int ) s.Tag ).ToList();
+
+            if (!ReportOptions.Current.TransactionTypeIds.Any() )
+            {
+                lblTransactionTypesWarning.Content = "Please select at least one transaction type.";
+                lblTransactionTypesWarning.Visibility = Visibility.Visible;
+                return false;
+            }
 
             return true;
         }

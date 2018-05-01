@@ -25,7 +25,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using System.Web.UI.HtmlControls;
@@ -151,7 +151,7 @@ namespace RockWeb.Blocks.Crm
                             lImage.Text = imgTag;
 
                             var deleteField = gList.Columns.OfType<DeleteField>().First();
-                            var cell = ( e.Row.Cells[gList.Columns.IndexOf( deleteField )] as DataControlFieldCell ).Controls[0];
+                            var cell = ( e.Row.Cells[gList.GetColumnIndex( deleteField )] as DataControlFieldCell ).Controls[0];
                             if ( cell != null )
                             {
                                 var lb = cell.ControlsOfTypeRecursive<LinkButton>().FirstOrDefault();

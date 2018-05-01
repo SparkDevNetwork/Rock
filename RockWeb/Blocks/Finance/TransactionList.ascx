@@ -11,8 +11,9 @@
 
         <asp:Panel ID="pnlContent" runat="server">
             <asp:HiddenField ID="hfTransactionViewMode" runat="server" />
+            <asp:HiddenField ID="hfMoveToBatchId" runat="server" />
 
-            <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+            <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
 
             <div class="panel panel-block">
                 <div class="panel-heading">
@@ -49,7 +50,7 @@
                             <Rock:RockDropDownList ID="ddlSourceType" runat="server" Label="Source Type" />
                             <Rock:CampusPicker ID="campCampusBatch" runat="server" Label="Campus (of Batch)" />
                             <Rock:CampusPicker ID="campCampusAccount" runat="server" Label="Campus (of Account)" />
-                            <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" />
+                            <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" IncludeBusinesses="true" />
                             <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
                         </Rock:GridFilter>
 
@@ -59,6 +60,7 @@
                             RowItemText="Transaction" AllowSorting="true" ExportSource="ColumnOutput" >
                             <Columns>
                                 <Rock:SelectField></Rock:SelectField>
+                                <Rock:RockLiteralField ID="lPersonId" HeaderText="Person Id" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                 <Rock:RockLiteralField ID="lPersonFullNameReversed" HeaderText="Person" 
                                     SortExpression="_PERSONNAME_" /> 
                                 <Rock:RockBoundField DataField="TransactionDateTime" HeaderText="Date / Time" SortExpression="TransactionDateTime" />                
@@ -66,7 +68,7 @@
                                 <Rock:RockLiteralField ID="lCurrencyType" HeaderText="Currency Type" />
                                 <Rock:RockBoundField DataField="TransactionCode" HeaderText="Transaction Code" SortExpression="TransactionCode" ColumnPriority="DesktopSmall" />                
                                 <Rock:RockBoundField DataField="ForeignKey" HeaderText="Foreign Key" SortExpression="ForeignKey" ColumnPriority="DesktopSmall" />                
-                                <Rock:RockLiteralField ID="lBatchId" HeaderText="Batch Id" SortExpression="BatchId" ColumnPriority="DesktopSmall" ItemStyle-HorizontalAlign="Right" ExcelExportBehavior="NeverInclude"  />                
+                                <Rock:RockLiteralField ID="lBatchId" HeaderText="Batch Id" SortExpression="BatchId" ColumnPriority="DesktopSmall" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" ExcelExportBehavior="NeverInclude"  />                
                                 <Rock:RockLiteralField ID="lAccounts" HeaderText="Accounts" />
                                 <Rock:RockBoundField DataField="Status" HeaderText="Status" ExcelExportBehavior="AlwaysInclude" Visible="false" />
                                 <Rock:DateTimeField DataField="SettledDate" HeaderText="Settled Date/Time" ExcelExportBehavior="AlwaysInclude" Visible="false" />

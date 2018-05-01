@@ -18,16 +18,30 @@ using System;
 
 namespace Rock.StatementGenerator.SystemGuid
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public static class Attribute
     {
+        /// <summary>
+        /// The person do not send giving statement
+        /// </summary>
         public const string PERSON_DO_NOT_SEND_GIVING_STATEMENT = "B767F2CF-A4F0-45AA-A2E9-8270F31B307B";
 
+        /// <summary>
+        /// The definedvalue statement generator lava template lava template
+        /// </summary>
         public const string DEFINEDVALUE_STATEMENT_GENERATOR_LAVA_TEMPLATE_LAVA_TEMPLATE = "BA34F8F8-D828-47E0-8401-5940E0A9BFBA";
 
+        /// <summary>
+        /// The definedvalue statement generator lava template logo
+        /// </summary>
         public const string DEFINEDVALUE_STATEMENT_GENERATOR_LAVA_TEMPLATE_LOGO = "8E097DC9-386C-4ED5-B4F3-E0E88B40621E";
 
+        /// <summary>
+        /// The definedvalue statement generator lava template footerhtml
+        /// </summary>
         public const string DEFINEDVALUE_STATEMENT_GENERATOR_LAVA_TEMPLATE_FOOTERHTML = "B20A936B-6F73-4371-A2A1-83513E58A630";
-
 
     }
 }

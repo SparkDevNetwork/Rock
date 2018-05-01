@@ -27,8 +27,8 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Cache;
 using Rock.Security;
-using Rock.Web.Cache;
 
 namespace Rock.Web.UI
 {
@@ -41,12 +41,17 @@ namespace Rock.Web.UI
         #region Public Properties
 
         /// <summary>
-        /// Gets or sets the page cache.
+        /// Gets the page cache.
         /// </summary>
         /// <value>
         /// The page cache.
         /// </value>
-        internal protected PageCache PageCache { get; private set; }
+        [Obsolete("Use CachePage instead")]
+        internal protected CachePage PageCache
+        {
+            get { return CachePage;}
+            private set { CachePage = value; }
+        }
 
         /// <summary>
         /// Gets the block cache.
@@ -54,7 +59,28 @@ namespace Rock.Web.UI
         /// <value>
         /// The block cache.
         /// </value>
-        internal protected BlockCache BlockCache { get; private set; }
+        [Obsolete("Use CacheBlock instead")]
+        internal protected CacheBlock BlockCache
+        {
+            get { return CacheBlock; }
+            private set { CacheBlock = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the page cache.
+        /// </summary>
+        /// <value>
+        /// The page cache.
+        /// </value>
+        internal protected CachePage CachePage { get; private set; }
+
+        /// <summary>
+        /// Gets the block cache.
+        /// </summary>
+        /// <value>
+        /// The block cache.
+        /// </value>
+        internal protected CacheBlock CacheBlock { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether [user can edit].
@@ -94,7 +120,7 @@ namespace Rock.Web.UI
         /// </value>
         public int BlockId
         {
-            get { return BlockCache.Id; }
+            get { return CacheBlock.Id; }
         }
 
         /// <summary>
@@ -105,7 +131,7 @@ namespace Rock.Web.UI
         /// </value>
         public string BlockName
         {
-            get { return BlockCache.Name; }
+            get { return CacheBlock.Name; }
         }
 
         /// <summary>
@@ -199,13 +225,13 @@ namespace Rock.Web.UI
         /// <summary>
         /// Gets a list of any context entities that the block requires.
         /// </summary>
-        public virtual List<EntityTypeCache> ContextTypesRequired
+        public virtual List<CacheEntityType> ContextTypesRequired
         {
             get
             {
                 if ( _contextTypesRequired == null )
                 {
-                    _contextTypesRequired = new List<EntityTypeCache>();
+                    _contextTypesRequired = new List<CacheEntityType>();
 
                     int properties = 0;
                     foreach ( var attribute in this.GetType().GetCustomAttributes( typeof( ContextAwareAttribute ), true ) )
@@ -222,7 +248,7 @@ namespace Rock.Web.UI
                             Guid guid = Guid.Empty;
                             if ( Guid.TryParse( GetAttributeValue( propertyKeyName ), out guid ) )
                             {
-                                entityType = EntityTypeCache.Read( guid );
+                                entityType = CacheEntityType.Get( guid );
                             }
                         }
 
@@ -244,7 +270,7 @@ namespace Rock.Web.UI
                 return _contextTypesRequired;
             }
         }
-        private List<EntityTypeCache> _contextTypesRequired;
+        private List<CacheEntityType> _contextTypesRequired;
 
         /// <summary>
         /// Gets a dictionary of the current context entities.  The key is the type of context, and the value is the entity object
@@ -326,8 +352,7 @@ namespace Rock.Web.UI
         /// <param name="value">The <see cref="System.Object"/> to cache</param>
         protected virtual void AddCacheItem( object value )
         {
-            CacheItemPolicy cacheItemPolicy = null;
-            AddCacheItem( string.Empty, value, cacheItemPolicy );
+            AddCacheItem( string.Empty, value );
         }
 
         /// <summary>
@@ -337,8 +362,7 @@ namespace Rock.Web.UI
         /// <param name="value">The <see cref="System.Object"/> to cache.</param>
         protected virtual void AddCacheItem( string key, object value )
         {
-            CacheItemPolicy cacheItemPolicy = null;
-            AddCacheItem( key, value, cacheItemPolicy );
+            AddCacheItem( key, value, TimeSpan.MaxValue );
         }
 
         /// <summary>
@@ -349,21 +373,32 @@ namespace Rock.Web.UI
         /// <param name="seconds">A <see cref="System.Int32"/> representing the the amount of time in seconds that the object is cached. This is an absolute expiration</param>
         protected virtual void AddCacheItem( string key, object value, int seconds )
         {
-            CacheItemPolicy cacheItemPolicy = new CacheItemPolicy();
-            cacheItemPolicy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( seconds );
-            AddCacheItem( key, value, cacheItemPolicy );
+            var now = RockDateTime.Now;
+            var expiration = now.AddSeconds( seconds ).Subtract( now );
+            AddCacheItem( key, value, expiration );
         }
 
+        /// <summary>
+        /// Adds an object with a <see cref="System.Runtime.Caching.CacheItemPolicy" /> to the default <see cref="System.Runtime.Caching.MemoryCache" />
+        /// </summary>
+        /// <param name="key">A <see cref="System.String" /> representing the name of the key to differentiate items from same block instance</param>
+        /// <param name="value">The <see cref="System.Object" /> to cache.</param>
+        /// <param name="expiration">The expiration.</param>
+        protected virtual void AddCacheItem( string key, object value, TimeSpan expiration )
+        {
+            RockCache.AddOrUpdate( ItemCacheKey( key ), null, value, expiration );
+        }
+        
         /// <summary>
         /// Adds an object with a <see cref="System.Runtime.Caching.CacheItemPolicy"/> to the default <see cref="System.Runtime.Caching.MemoryCache"/> 
         /// </summary>
         /// <param name="key">A <see cref="System.String"/> representing the name of the key to differentiate items from same block instance</param>
         /// <param name="value">The <see cref="System.Object"/> to cache.</param>
         /// <param name="cacheItemPolicy">Optional <see cref="System.Runtime.Caching.CacheItemPolicy"/>, defaults to null</param>
+        [Obsolete( "AddCacheItem no longer supports a CacheItemPolicy, specifiy a number of seconds or absolute datetime instead.")]
         protected virtual void AddCacheItem( string key, object value, CacheItemPolicy cacheItemPolicy )
         {
-            RockMemoryCache cache = RockMemoryCache.Default;
-            cache.Set( ItemCacheKey( key ), value, cacheItemPolicy );
+            AddCacheItem( key, value, TimeSpan.MaxValue );
         }
 
         /// <summary>
@@ -373,8 +408,18 @@ namespace Rock.Web.UI
         /// <returns>The cached <see cref="System.Object"/> if a key match is not found, a null object will be returned.</returns>
         protected virtual object GetCacheItem( string key = "" )
         {
-            RockMemoryCache cache = RockMemoryCache.Default;
-            return cache[ItemCacheKey( key )];
+            return RockCache.Get( ItemCacheKey( key ) );
+        }
+
+
+        /// <summary>
+        /// Removes an object from the cache.
+        /// </summary>
+        /// <param name="key">A <see cref="System.String"/> representing the key name for the item that will be flushed. This value 
+        /// defaults to an empty string.</param>
+        protected virtual void RemoveCacheItem( string key )
+        {
+            RockCache.Remove( ItemCacheKey( key ) );
         }
 
         /// <summary>
@@ -382,10 +427,10 @@ namespace Rock.Web.UI
         /// </summary>
         /// <param name="key">A <see cref="System.String"/> representing the key name for the item that will be flushed. This value 
         /// defaults to an empty string.</param>
+        [Obsolete("Use RemoveCacheItem( string key ) instead.")]
         protected virtual void FlushCacheItem( string key = "" )
         {
-            RockMemoryCache cache = RockMemoryCache.Default;
-            cache.Remove( ItemCacheKey( key ) );
+            RemoveCacheItem( key );
         }
 
         /// <summary>
@@ -394,14 +439,9 @@ namespace Rock.Web.UI
         /// Therefore, it should not be used in production applications (if possible).
         /// </summary>
         /// <param name="blockId">An <see cref="System.Int32"/> representing the block item that will be flushed.</param>
+        [Obsolete( "Method is no longer supported.")]
         protected virtual void FlushSharedBlock( int blockId )
         {
-            MemoryCache cache = RockMemoryCache.Default;
-            string blockKey = string.Format( ":RockBlock:{0}:", blockId );
-            foreach ( var keyValuePair in cache.Where( k => k.Key.Contains( blockKey ) ) )
-            {
-                cache.Remove( keyValuePair.Key );
-            }
         }
 
         /// <summary>
@@ -411,15 +451,15 @@ namespace Rock.Web.UI
         /// <returns>A <see cref="System.String" /> representing the fully qualified key name.</returns>
         private string ItemCacheKey( string key )
         {
-            string cacheKeyTemplate = "Rock:{0}:{1}:RockBlock:{2}:ItemCache:{3}";
+            string cacheKeyTemplate = "Rock:{0}:{1}:Block:{2}:ItemCache:{3}";
 
-            if ( BlockCache.PageId.HasValue )
+            if ( CacheBlock.PageId.HasValue )
             {
-                return string.Format( cacheKeyTemplate, "Page", BlockCache.PageId.Value, BlockCache.Id, key );
+                return string.Format( cacheKeyTemplate, "Page", CacheBlock.PageId.Value, CacheBlock.Id, key );
             }
             else
             {
-                return string.Format( cacheKeyTemplate, "Layout", ( BlockCache.LayoutId ?? 0 ), BlockCache.Id, key );
+                return string.Format( cacheKeyTemplate, "Layout", ( CacheBlock.LayoutId ?? 0 ), CacheBlock.Id, key );
             }
         }
 
@@ -440,7 +480,7 @@ namespace Rock.Web.UI
             string param = PageParameter( "ContextEntityType" );
             if ( !String.IsNullOrWhiteSpace( param ) )
             {
-                var entityType = EntityTypeCache.Read( param, false );
+                var entityType = CacheEntityType.Get( param, false );
                 if ( entityType != null )
                 {
                     requiredContext.Add( entityType );
@@ -460,13 +500,22 @@ namespace Rock.Web.UI
 
             base.OnInit( e );
 
-            this.BlockValidationGroup = string.Format( "{0}_{1}", this.GetType().BaseType.Name, BlockCache.Id );
+            this.BlockValidationGroup = string.Format( "{0}_{1}", this.GetType().BaseType.Name, CacheBlock.Id );
 
             RockPage.BlockUpdated += Page_BlockUpdated;
             
             if ( this is ICustomGridColumns )
             {
                 AddCustomGridColumns();
+            }
+
+            if ( this is ICustomGridOptions )
+            {
+                List<Rock.Web.UI.Controls.Grid> gridsOnBlock = this.ControlsOfTypeRecursive<Rock.Web.UI.Controls.Grid>().ToList();
+                foreach ( var grid in gridsOnBlock )
+                {
+                    grid.EnableStickyHeaders = this.GetAttributeValue( CustomGridOptionsConfig.EnableStickyHeadersAttributeKey ).AsBoolean();
+                }
             }
         }
 
@@ -505,17 +554,16 @@ namespace Rock.Web.UI
 
             base.OnLoad( e );
 
-            if ( this.BlockCache == null ||
-                this.BlockCache.Page == null ||
-                this.BlockCache.Page.Layout == null ||
-                this.BlockCache.Page.Layout.FileName != "Dialog" )
+            if ( this.CacheBlock == null ||
+                this.CacheBlock.Page == null ||
+                this.CacheBlock.Page.Layout == null ||
+                this.CacheBlock.Page.Layout.FileName != "Dialog" )
             {
                 SetValidationGroup( this.Controls, BlockValidationGroup );
             }
         }
 
         #endregion
-
 
         #region ICustomGridColumns
 
@@ -541,10 +589,24 @@ namespace Rock.Web.UI
         /// </summary>
         /// <param name="pageCache">The page cache.</param>
         /// <param name="blockCache">The block cache.</param>
-        public void SetBlock( PageCache pageCache, BlockCache blockCache )
+        [Obsolete]
+        public void SetBlock( Web.Cache.PageCache pageCache, Web.Cache.BlockCache blockCache )
         {
-            PageCache = pageCache;
-            BlockCache = blockCache;
+            CachePage = pageCache != null ? CachePage.Get( pageCache.Id ) : null;
+            CacheBlock = blockCache != null ? CacheBlock.Get( blockCache.Id ) : null;
+            UserCanEdit = IsUserAuthorized( Authorization.EDIT );
+            UserCanAdministrate = IsUserAuthorized( Authorization.ADMINISTRATE );
+        }
+
+        /// <summary>
+        /// Sets the block.
+        /// </summary>
+        /// <param name="pageCache">The page cache.</param>
+        /// <param name="blockCache">The block cache.</param>
+        public void SetBlock( CachePage pageCache, CacheBlock blockCache )
+        {
+            CachePage = pageCache;
+            CacheBlock = blockCache;
             UserCanEdit = IsUserAuthorized( Authorization.EDIT );
             UserCanAdministrate = IsUserAuthorized( Authorization.ADMINISTRATE );
         }
@@ -553,13 +615,29 @@ namespace Rock.Web.UI
         /// Sets the block instance.
         /// </summary>
         /// <param name="pageCache">The page cache.</param>
-        /// <param name="blockCache">The block instance from <see cref="Rock.Web.Cache.BlockCache" /> .</param>
+        /// <param name="blockCache">The block instance from <see cref="Rock.Cache.CacheBlock" /> .</param>
         /// <param name="canEdit">if set to <c>true</c> [can edit].</param>
         /// <param name="canAdministrate">if set to <c>true</c> [can administrate].</param>
-        public void SetBlock( PageCache pageCache, BlockCache blockCache, bool canEdit, bool canAdministrate )
+        [Obsolete]
+        public void SetBlock( Web.Cache.PageCache pageCache, Web.Cache.BlockCache blockCache, bool canEdit, bool canAdministrate )
         {
-            PageCache = pageCache;
-            BlockCache = blockCache;
+            CachePage = pageCache != null ? CachePage.Get( pageCache.Id ) : null;
+            CacheBlock = blockCache != null ? CacheBlock.Get( blockCache.Id ) : null; 
+            UserCanEdit = canEdit;
+            UserCanAdministrate = canAdministrate;
+        }
+
+        /// <summary>
+        /// Sets the block instance.
+        /// </summary>
+        /// <param name="pageCache">The page cache.</param>
+        /// <param name="blockCache">The block instance from <see cref="Rock.Cache.CacheBlock" /> .</param>
+        /// <param name="canEdit">if set to <c>true</c> [can edit].</param>
+        /// <param name="canAdministrate">if set to <c>true</c> [can administrate].</param>
+        public void SetBlock( CachePage pageCache, CacheBlock blockCache, bool canEdit, bool canAdministrate )
+        {
+            CachePage = pageCache;
+            CacheBlock = blockCache;
             UserCanEdit = canEdit;
             UserCanAdministrate = canAdministrate;
         }
@@ -569,9 +647,9 @@ namespace Rock.Web.UI
         /// </summary>
         public void SaveAttributeValues()
         {
-            if ( BlockCache != null )
+            if ( CacheBlock != null )
             {
-                BlockCache.SaveAttributeValues();
+                CacheBlock.SaveAttributeValues();
             }
         }
 
@@ -582,9 +660,9 @@ namespace Rock.Web.UI
         /// <returns>A <see cref="System.String"/> representing the stored attribute value. If the attribute is not found, this value will be null.</returns>
         public string GetAttributeValue( string key )
         {
-            if ( BlockCache != null )
+            if ( CacheBlock != null )
             {
-                return BlockCache.GetAttributeValue( key );
+                return CacheBlock.GetAttributeValue( key );
             }
             return null;
         }
@@ -598,9 +676,9 @@ namespace Rock.Web.UI
         /// found, an empty list will be returned.</returns>
         public List<string> GetAttributeValues( string key )
         {
-            if ( BlockCache != null )
+            if ( CacheBlock != null )
             {
-                return BlockCache.GetAttributeValues( key );
+                return CacheBlock.GetAttributeValues( key );
             }
 
             return new List<string>();
@@ -613,9 +691,9 @@ namespace Rock.Web.UI
         /// <param name="value">A <see cref="System.String" /> representing the value of the attribute.</param>
         public void SetAttributeValue( string key, string value )
         {
-            if ( BlockCache != null )
+            if ( CacheBlock != null )
             {
-                BlockCache.SetAttributeValue( key, value );
+                CacheBlock.SetAttributeValue( key, value );
             }
         }
 
@@ -636,7 +714,7 @@ namespace Rock.Web.UI
         /// <returns>A <see cref="System.Boolean"/> that is <c>true</c> if the CurrentPerson is authorized to perform the requested action; otherwise <c>false</c>.</returns>
         public bool IsUserAuthorized( string action )
         {
-            return BlockCache.IsAuthorized( action, CurrentPerson );
+            return CacheBlock.IsAuthorized( action, CurrentPerson );
         }
 
         /// <summary>
@@ -757,7 +835,7 @@ namespace Rock.Web.UI
         /// <returns></returns>
         public bool NavigateToCurrentPage( Dictionary<string, string> queryString = null )
         {
-            var pageCache = PageCache.Read( RockPage.PageId );
+            var pageCache = CachePage.Get( RockPage.PageId );
             if ( pageCache != null )
             {
                 return NavigateToPage( pageCache.Guid, queryString );
@@ -794,7 +872,7 @@ namespace Rock.Web.UI
         /// parameter, and the value is a <see cref="System.String"/> that represents the query string value. This dictionary defaults to a null value.</param>
         public bool NavigateToParentPage( Dictionary<string, string> queryString = null )
         {
-            var pageCache = PageCache.Read( RockPage.PageId );
+            var pageCache = CachePage.Get( RockPage.PageId );
             if ( pageCache != null )
             {
                 var parentPage = pageCache.ParentPage;
@@ -830,7 +908,7 @@ namespace Rock.Web.UI
         /// parameter, and the value is a <see cref="System.String"/> that represents the query string value. This dictionary defaults to a null value.</param>
         public bool NavigateToPage( Guid pageGuid, Guid pageRouteGuid, Dictionary<string, string> queryString )
         {
-            var pageCache = PageCache.Read( pageGuid );
+            var pageCache = CachePage.Get( pageGuid );
             if ( pageCache != null )
             {
                 int routeId = 0;
@@ -1170,7 +1248,7 @@ namespace Rock.Web.UI
                 aAttributes.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                 aAttributes.Attributes.Add( "class", "properties" );
                 aAttributes.Attributes.Add( "height", "500px" );
-                aAttributes.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/BlockProperties/{0}?t=Block Properties", BlockCache.Id ) ) + "')" );
+                aAttributes.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/BlockProperties/{0}?t=Block Properties", CacheBlock.Id ) ) + "')" );
                 aAttributes.Attributes.Add( "title", "Block Properties" );
                 //aAttributes.Attributes.Add( "instance-id", BlockInstance.Id.ToString() );
                 configControls.Add( aAttributes );
@@ -1185,23 +1263,23 @@ namespace Rock.Web.UI
                 aSecureBlock.Attributes.Add( "class", "security" );
                 aSecureBlock.Attributes.Add( "height", "500px" );
                 aSecureBlock.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/Secure/{0}/{1}?t=Block Security&pb=&sb=Done",
-                    EntityTypeCache.Read( typeof( Block ) ).Id, BlockCache.Id ) ) + "')" );
+                    CacheEntityType.Get( typeof( Block ) ).Id, CacheBlock.Id ) ) + "')" );
                 aSecureBlock.Attributes.Add( "title", "Block Security" );
                 configControls.Add( aSecureBlock );
                 HtmlGenericControl iSecureBlock = new HtmlGenericControl( "i" );
                 aSecureBlock.Controls.Add( iSecureBlock );
                 iSecureBlock.Attributes.Add( "class", "fa fa-lock" );
 
-                var pageCache = PageCache.Read( RockPage.PageId );
+                var pageCache = CachePage.Get( RockPage.PageId );
                 if ( pageCache.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
                 {
                     // Move
                     HtmlGenericControl aMoveBlock = new HtmlGenericControl( "a" );
                     aMoveBlock.Attributes.Add( "class", "block-move" );
-                    aMoveBlock.Attributes.Add( "href", BlockCache.Id.ToString() );
-                    aMoveBlock.Attributes.Add( "data-blockname", BlockCache.Name );
-                    aMoveBlock.Attributes.Add( "data-zone", BlockCache.Zone );
-                    aMoveBlock.Attributes.Add( "data-zone-location", BlockCache.BlockLocation.ToString() );
+                    aMoveBlock.Attributes.Add( "href", CacheBlock.Id.ToString() );
+                    aMoveBlock.Attributes.Add( "data-blockname", CacheBlock.Name );
+                    aMoveBlock.Attributes.Add( "data-zone", CacheBlock.Zone );
+                    aMoveBlock.Attributes.Add( "data-zone-location", CacheBlock.BlockLocation.ToString() );
                     aMoveBlock.Attributes.Add( "title", "Move Block" );
                     configControls.Add( aMoveBlock );
                     HtmlGenericControl iMoveBlock = new HtmlGenericControl( "i" );
@@ -1211,11 +1289,11 @@ namespace Rock.Web.UI
 
                 // Delete
                 HtmlGenericControl aDeleteBlock;
-                if ( !this.BlockCache.IsSystem )
+                if ( !this.CacheBlock.IsSystem )
                 {
                     aDeleteBlock = new HtmlGenericControl( "a" );
                     aDeleteBlock.Attributes.Add( "class", "delete block-delete" );
-                    aDeleteBlock.Attributes.Add( "href", BlockCache.Id.ToString() );
+                    aDeleteBlock.Attributes.Add( "href", CacheBlock.Id.ToString() );
                     aDeleteBlock.Attributes.Add( "title", "Delete Block" );
                     configControls.Add( aDeleteBlock );
                 }
@@ -1265,15 +1343,16 @@ namespace Rock.Web.UI
         /// </summary>
         internal bool CreateAttributes( RockContext rockContext )
         {
-            int? blockEntityTypeId = EntityTypeCache.Read( typeof( Block ) ).Id;
-            return Rock.Attribute.Helper.UpdateAttributes( this.GetType(), blockEntityTypeId, "BlockTypeId", this.BlockCache.BlockTypeId.ToString(), rockContext );
+            int? blockEntityTypeId = CacheEntityType.Get( typeof( Block ) ).Id;
+            return Rock.Attribute.Helper.UpdateAttributes( this.GetType(), blockEntityTypeId, "BlockTypeId", this.CacheBlock.BlockTypeId.ToString(), rockContext );
         }
 
         /// <summary>
-        /// Reads the <see cref="Rock.Security.SecurityActionAttribute">security action attributes</see> for this <see cref="Rock.Model.Block"/>
+        /// Reads the security action attributes for this <see cref="Rock.Model.Block" />
         /// </summary>
-        /// <returns>A dictionary containing the actions for the <see cref="Rock.Model.Block">Block's</see>
-        /// <see cref="Rock.Security.SecurityActionAttribute">SecurityActionAttributes</see>.</returns>
+        /// <returns>
+        /// A dictionary containing the actions for the <see cref="Rock.Model.Block">Block's</see> SecurityActionAttributes.
+        /// </returns>
         internal Dictionary<string, string> GetSecurityActionAttributes()
         {
             var securityActions = new Dictionary<string, string>();
@@ -1329,7 +1408,7 @@ namespace Rock.Web.UI
         /// <param name="e">The <see cref="BlockUpdatedEventArgs"/> instance containing the event data.</param>
         internal void Page_BlockUpdated( object sender, BlockUpdatedEventArgs e )
         {
-            if ( e.BlockID == BlockCache.Id && BlockUpdated != null )
+            if ( e.BlockID == CacheBlock.Id && BlockUpdated != null )
             {
                 BlockUpdated( sender, e );
             }

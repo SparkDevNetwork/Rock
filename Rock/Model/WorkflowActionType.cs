@@ -211,7 +211,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static ActionComponent GetWorkflowAction( int entityTypeId )
         {
-            var entityType = Web.Cache.EntityTypeCache.Read( entityTypeId );
+            var entityType = Cache.CacheEntityType.Get( entityTypeId );
             if ( entityType != null )
             {
                 foreach ( var serviceEntry in ActionContainer.Instance.Components )

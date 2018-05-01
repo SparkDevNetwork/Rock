@@ -26,7 +26,7 @@
             <div class="panel-body">
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
                 <Rock:NotificationBox ID="nbRequired" runat="server" NotificationBoxType="Danger" Text="A default connection status and at least one activity are required." Visible="false" />
-                <asp:ValidationSummary ID="valConnectionTypeDetail" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                <asp:ValidationSummary ID="valConnectionTypeDetail" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
 
                 <div id="pnlViewDetails" runat="server">
                     <p class="description">
@@ -174,7 +174,7 @@
 
                 <asp:HiddenField ID="hfAddConnectionWorkflowGuid" runat="server" />
 
-                <asp:ValidationSummary ID="valConnectionWorkflowSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="ConnectionWorkflow" />
+                <asp:ValidationSummary ID="valConnectionWorkflowSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" ValidationGroup="ConnectionWorkflow" />
 
                 <div class="row">
                     <div class="col-md-6">
@@ -192,8 +192,7 @@
                         </Rock:RockDropDownList>
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlWorkflowType" runat="server" Label="Workflow Type" DataTextField="Name" DataValueField="Id" 
-                            Required="true" ValidationGroup="ConnectionWorkflow" EnhanceForLongLists="true" />
+                        <Rock:WorkflowTypePicker ID="wpWorkflowType" runat="server" Label="Workflow Type" Required="true" ValidationGroup="ConnectionWorkflow"/>
                     </div>
                 </div>
 

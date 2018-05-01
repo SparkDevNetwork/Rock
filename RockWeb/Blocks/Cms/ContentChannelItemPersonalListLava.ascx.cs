@@ -26,14 +26,14 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Security;
 
 namespace RockWeb.Blocks.Cms
 {
     /// <summary>
-    /// Displays a list of active users of a website.
+    /// Displays a list of content items for the person using a Lava template
     /// </summary>
     [DisplayName( "Content Channel Item Personal List Lava" )]
     [Category( "CMS" )]

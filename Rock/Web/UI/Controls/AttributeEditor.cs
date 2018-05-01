@@ -26,7 +26,7 @@ using Rock;
 using Rock.Data;
 using Rock.Field;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -619,12 +619,12 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The excluded field types.
         /// </value>
-        public FieldTypeCache[] ExcludedFieldTypes
+        public CacheFieldType[] ExcludedFieldTypes
         {
             get
             {
                 int[] excludedFieldTypeIds = this.ViewState["ExcludedFieldTypeIds"] as int[];
-                return excludedFieldTypeIds?.Select( a => FieldTypeCache.Read( a ) ).ToArray() ?? new FieldTypeCache[0];
+                return excludedFieldTypeIds?.Select( a => CacheFieldType.Get( a ) ).ToArray() ?? new CacheFieldType[0];
             }
             set
             {
@@ -641,12 +641,12 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The included field types.
         /// </value>
-        public FieldTypeCache[] IncludedFieldTypes
+        public CacheFieldType[] IncludedFieldTypes
         {
             get
             {
                 int[] includedFieldTypeIds = this.ViewState["IncludedFieldTypeIds"] as int[];
-                return includedFieldTypeIds?.Select( a => FieldTypeCache.Read( a ) ).ToArray() ?? new FieldTypeCache[0];
+                return includedFieldTypeIds?.Select( a => CacheFieldType.Get( a ) ).ToArray() ?? new CacheFieldType[0];
             }
             set
             {
@@ -821,7 +821,7 @@ namespace Rock.Web.UI.Controls
 
                 if ( value.HasValue )
                 {
-                    _lFieldType.Text = FieldTypeCache.Read( value.Value )?.Name;
+                    _lFieldType.Text = CacheFieldType.Get( value.Value )?.Name;
                 }
                 else
                 {
@@ -952,11 +952,11 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.IncludedFieldTypes.Any() )
             {
-                _ddlFieldType.DataSource = FieldTypeCache.All().Where( a => this.IncludedFieldTypes.Any( x => x.Id == a.Id ) ).ToList();
+                _ddlFieldType.DataSource = CacheFieldType.All().Where( a => this.IncludedFieldTypes.Any( x => x.Id == a.Id ) ).ToList();
             }
             else
             {
-                _ddlFieldType.DataSource = FieldTypeCache.All().Where( a => !this.ExcludedFieldTypes.Any( x => x.Id == a.Id ) ).ToList();
+                _ddlFieldType.DataSource = CacheFieldType.All().Where( a => !this.ExcludedFieldTypes.Any( x => x.Id == a.Id ) ).ToList();
             }
             _ddlFieldType.DataBind();
         }
@@ -991,7 +991,7 @@ namespace Rock.Web.UI.Controls
 
                 _validationSummary = new ValidationSummary();
                 _validationSummary.ID = "valiationSummary";
-                _validationSummary.CssClass = "alert alert-danger";
+                _validationSummary.CssClass = "alert alert-validation";
                 _validationSummary.HeaderText = "Please correct the following:";
                 Controls.Add( _validationSummary );
 
@@ -1012,14 +1012,14 @@ namespace Rock.Web.UI.Controls
                 _cpCategories.ID = "cpCategories_" + this.ID.ToString();
                 _cpCategories.Label = "Categories";
                 _cpCategories.AllowMultiSelect = true;
-                _cpCategories.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Attribute ) ).Id;
+                _cpCategories.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.Attribute ) ).Id;
                 _cpCategories.EntityTypeQualifierColumn = "EntityTypeId";
                 Controls.Add( _cpCategories );
 
                 _lKey = new RockLiteral();
                 _lKey.Label = "Key";
                 _lKey.ID = "lKey";
-                _lKey.Visible = false;  
+                _lKey.Visible = false;
                 Controls.Add( _lKey );
 
                 _tbKey = new RockTextBox();
@@ -1091,7 +1091,7 @@ namespace Rock.Web.UI.Controls
                 _lFieldType = new RockLiteral();
                 _lFieldType.Label = "Field Type";
                 _lFieldType.ID = "_lFieldType";
-                _lFieldType.Visible = false;  
+                _lFieldType.Visible = false;
                 Controls.Add( _lFieldType );
 
                 _ddlFieldType = new RockDropDownList();
@@ -1104,7 +1104,7 @@ namespace Rock.Web.UI.Controls
                 _ddlFieldType.EnhanceForLongLists = true;
                 Controls.Add( _ddlFieldType );
 
-                _phQualifiers = new DynamicPlaceholder(); 
+                _phQualifiers = new DynamicPlaceholder();
                 _phQualifiers.ID = "phQualifiers";
                 Controls.Add( _phQualifiers );
 
@@ -1122,7 +1122,7 @@ namespace Rock.Web.UI.Controls
                 _btnCancel = new LinkButton();
                 _btnCancel.ID = "btnCancel";
                 _btnCancel.Text = "Cancel";
-                _btnCancel.CssClass = "btn btn-link";
+                _btnCancel.CssClass = "btn btn-default";
                 _btnCancel.CausesValidation = false;
                 _btnCancel.Click += btnCancel_Click;
                 Controls.Add( _btnCancel );
@@ -1142,7 +1142,8 @@ namespace Rock.Web.UI.Controls
             // Load qualifier data now so the save event handler has access to it.
             if ( Page.IsPostBack && FieldTypeId.HasValue )
             {
-                UpdateQualifiers();
+                var fieldTypeId = ViewState["FieldTypeId"] as int? ?? FieldTypeId.Value;
+                UpdateQualifiers( fieldTypeId );
             }
 
             ReloadQualifiers = Page.IsPostBack && FieldTypeId.HasValue;
@@ -1157,9 +1158,9 @@ namespace Rock.Web.UI.Controls
             base.OnPreRender( e );
 
             // Reload qualifiers in case any postback events caused them to change.
-            if ( ReloadQualifiers )
+            if ( ReloadQualifiers && FieldTypeId.HasValue )
             {
-                UpdateQualifiers();
+                UpdateQualifiers( FieldTypeId.Value );
             }
 
             // Recreate the qualifiers and default control in case they changed due to new field type or
@@ -1172,11 +1173,11 @@ namespace Rock.Web.UI.Controls
             // Only show the Analytic checkbox if the Entity is IAnalytic
             if ( this.AttributeEntityTypeId.HasValue )
             {
-                var entityType = EntityTypeCache.Read( this.AttributeEntityTypeId.Value );
+                var entityType = CacheEntityType.Get( this.AttributeEntityTypeId.Value );
                 if ( entityType != null )
                 {
                     _cbIsAnalytic.Visible = entityType.IsAnalyticAttributesSupported( this.AttributeEntityTypeQualifierColumn, this.AttributeEntityTypeQualifierValue );
-                    _cbIsAnalyticHistory.Visible = entityType.IsAnalyticsHistoricalSupported( this.AttributeEntityTypeQualifierColumn, this.AttributeEntityTypeQualifierValue ) ;
+                    _cbIsAnalyticHistory.Visible = entityType.IsAnalyticsHistoricalSupported( this.AttributeEntityTypeQualifierColumn, this.AttributeEntityTypeQualifierValue );
                 }
             }
 
@@ -1247,7 +1248,7 @@ namespace Rock.Web.UI.Controls
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            
+
             writer.RenderEndTag();
 
             writer.RenderEndTag();  // row
@@ -1295,7 +1296,7 @@ namespace Rock.Web.UI.Controls
             writer.RenderEndTag();
 
             writer.RenderEndTag();
-            
+
             writer.RenderEndTag();
 
             // row 3 col 2
@@ -1349,7 +1350,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="args">The <see cref="ServerValidateEventArgs"/> instance containing the event data.</param>
         protected void cvKey_ServerValidate( object source, ServerValidateEventArgs args )
         {
-            args.IsValid = 
+            args.IsValid =
                 !ReservedKeyNames.Contains( _tbKey.Text.Trim(), StringComparer.CurrentCultureIgnoreCase ) &&
                 !ObjectPropertyNames.Contains( _tbKey.Text.Trim(), StringComparer.CurrentCultureIgnoreCase );
         }
@@ -1390,7 +1391,7 @@ namespace Rock.Web.UI.Controls
                 CancelClick( sender, e );
             }
         }
-        
+
         #endregion
 
         #region Public Methods
@@ -1434,13 +1435,14 @@ namespace Rock.Web.UI.Controls
                 this.Qualifiers = qualifiers;
                 this.DefaultValue = attribute.DefaultValue;
 
-
                 this.ReloadQualifiers = false;
+
+                SetSubTitleOnModal( attribute );
             }
 
             if ( objectType != null )
             {
-                this.AttributeEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( objectType ).Id;
+                this.AttributeEntityTypeId = Rock.Cache.CacheEntityType.Get( objectType ).Id;
 
                 ObjectPropertyNames = new List<string>();
                 foreach ( var propInfo in objectType.GetProperties() )
@@ -1513,13 +1515,15 @@ namespace Rock.Web.UI.Controls
 
             if ( fieldTypeId.HasValue )
             {
-                var field = Rock.Web.Cache.FieldTypeCache.Read( fieldTypeId.Value ).Field;
+                var field = Rock.Cache.CacheFieldType.Get( fieldTypeId.Value ).Field;
 
                 var configControls = field.ConfigurationControls();
                 int i = 0;
                 foreach ( var control in configControls )
                 {
-                    control.ID = string.Format( "qualifier_{0}", i++ );
+                    // make sure each qualifier control has a unique/predictable ID to help avoid viewstate issues
+                    var controlTypeName = control.GetType().Name;
+                    control.ID = $"qualifier_{fieldTypeId.Value}_{controlTypeName}_{i++}";
                     _phQualifiers.Controls.Add( control );
                 }
 
@@ -1557,9 +1561,9 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Reads the qualifiers and default value from the page contents.
         /// </summary>
-        protected void UpdateQualifiers()
+        protected void UpdateQualifiers( int fieldTypeId )
         {
-            var field = Rock.Web.Cache.FieldTypeCache.Read( FieldTypeId.Value ).Field;
+            var field = Rock.Cache.CacheFieldType.Get( fieldTypeId ).Field;
             var qualifierControls = new List<Control>();
             foreach ( Control control in _phQualifiers.Controls )
             {
@@ -1570,6 +1574,19 @@ namespace Rock.Web.UI.Controls
                 field.GetEditValue( _phDefaultValue.Controls[0], Qualifiers ) : string.Empty;
 
             Qualifiers = field.ConfigurationValues( qualifierControls );
+        }
+
+        /// <summary>
+        /// Set the Subtitle of modal dialog
+        /// </summary>
+        /// <param name="attribute">The attribute.</param>
+        protected void SetSubTitleOnModal( Model.Attribute attribute )
+        {
+            ModalDialog modalDialog = this.FirstParentControlOfType<ModalDialog>();
+            if ( modalDialog != null && ( string.IsNullOrEmpty( modalDialog.SubTitle ) || modalDialog.SubTitle.StartsWith( "Id: " ) ) )
+            {
+                modalDialog.SubTitle = string.Format( "Id: {0}", attribute.Id );
+            }
         }
 
         /// <summary>

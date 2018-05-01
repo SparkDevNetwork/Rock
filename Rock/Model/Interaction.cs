@@ -143,6 +143,15 @@ namespace Rock.Model
         [DataMember]
         public int? PersonalDeviceId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the interaction end date time.
+        /// </summary>
+        /// <value>
+        /// The interaction end date time.
+        /// </value>
+        [DataMember]
+        public DateTime? InteractionEndDateTime { get; set; }
+
         #endregion
 
         #region Campaign Meta fields
@@ -186,6 +195,16 @@ namespace Rock.Model
         [DataMember]
         [MaxLength( 50 )]
         public string Content { get; set; }
+
+        /// <summary>
+        /// Gets or sets the term(s).
+        /// </summary>
+        /// <value>
+        /// The term.
+        /// </value>
+        [DataMember]
+        [MaxLength( 50 )]
+        public string Term { get; set; }
 
         #endregion
 

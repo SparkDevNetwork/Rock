@@ -47,7 +47,7 @@ namespace Rock.Attribute
                 Guid guid = Guid.Empty;
                 if ( Guid.TryParse( groupTypeGuid, out guid ) )
                 {
-                    var groupType = Rock.Web.Cache.GroupTypeCache.Read( guid );
+                    var groupType = Rock.Cache.CacheGroupType.Get( guid );
                     if ( groupType != null )
                     {
                         var configValue = new Field.ConfigurationValue( groupType.Id.ToString() );

@@ -16,11 +16,8 @@
 //
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Data.Entity;
-using System.Linq;
-using System.Runtime.Caching;
 
+using Rock.Cache;
 using Rock.Data;
 using Rock.Model;
 
@@ -31,6 +28,7 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
+    [Obsolete( "Use Rock.Cache.CacheBlockType instead" )]
     public class BlockTypeCache : CachedModel<BlockType>
     {
 
@@ -40,16 +38,16 @@ namespace Rock.Web.Cache
         {
         }
 
-        private BlockTypeCache( BlockType blockType )
+        private BlockTypeCache( CacheBlockType cacheBlockType )
         {
-            CopyFromModel( blockType );
+            CopyFromNewCache( cacheBlockType );
         }
 
         #endregion
 
         #region Properties
 
-        private object _obj = new object();
+        private readonly object _obj = new object();
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is system.
@@ -115,7 +113,7 @@ namespace Rock.Web.Cache
         /// The security actions.
         /// </value>
         public ConcurrentDictionary<string, string> SecurityActions { get; set; }
-        
+
 
         #endregion
 
@@ -125,45 +123,56 @@ namespace Rock.Web.Cache
         /// Sets the security actions.
         /// </summary>
         /// <param name="blockControl">The block control.</param>
-        public void SetSecurityActions( Rock.Web.UI.RockBlock blockControl )
+        public void SetSecurityActions( UI.RockBlock blockControl )
         {
             lock ( _obj )
             {
-                if ( !CheckedSecurityActions )
+                if ( CheckedSecurityActions ) return;
+
+                SecurityActions = new ConcurrentDictionary<string, string>();
+                foreach ( var action in blockControl.GetSecurityActionAttributes() )
                 {
-                    SecurityActions = new ConcurrentDictionary<string, string>();
-                    foreach ( var action in blockControl.GetSecurityActionAttributes() )
-                    {
-                        SecurityActions.TryAdd( action.Key, action.Value );
-                    }
-                    CheckedSecurityActions = true;
+                    SecurityActions.TryAdd( action.Key, action.Value );
                 }
+                CheckedSecurityActions = true;
             }
         }
+
         /// <summary>
         /// Copies from model.
         /// </summary>
         /// <param name="model">The model.</param>
-        public override void CopyFromModel( Data.IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
             base.CopyFromModel( model );
 
-            if ( model is BlockType )
-            {
-                var blockType = (BlockType)model;
+            if ( !( model is BlockType ) ) return;
 
-                var guidCachePolicy = new CacheItemPolicy();
-                AddChangeMonitor( guidCachePolicy, blockType.Path );
-                SetCache( blockType.Guid.ToString(), blockType.Id, guidCachePolicy );
+            var blockType = (BlockType)model;
+            IsSystem = blockType.IsSystem;
+            IsCommon = blockType.IsCommon;
+            Path = blockType.Path;
+            Name = blockType.Name;
+            Description = blockType.Description;
+            IsInstancePropertiesVerified = false;
+        }
 
-                this.IsSystem = blockType.IsSystem;
-                this.IsCommon = blockType.IsCommon;
-                this.Path = blockType.Path;
-                this.Name = blockType.Name;
-                this.Description = blockType.Description;
+        /// <summary>
+        /// Copies properties from a new cached entity
+        /// </summary>
+        /// <param name="cacheEntity">The cache entity.</param>
+        protected sealed override void CopyFromNewCache( IEntityCache cacheEntity )
+        {
+            base.CopyFromNewCache( cacheEntity );
 
-                this.IsInstancePropertiesVerified = false;
-            }
+            var blockType = (CacheBlockType)cacheEntity;
+
+            IsSystem = blockType.IsSystem;
+            IsCommon = blockType.IsCommon;
+            Path = blockType.Path;
+            Name = blockType.Name;
+            Description = blockType.Description;
+            IsInstancePropertiesVerified = blockType.IsInstancePropertiesVerified;
         }
 
         /// <summary>
@@ -174,17 +183,12 @@ namespace Rock.Web.Cache
         /// </returns>
         public override string ToString()
         {
-            return this.Name;
+            return Name;
         }
 
         #endregion
 
         #region Static Methods
-
-        private static string CacheKey( int id )
-        {
-            return string.Format( "Rock:BlockType:{0}", id );
-        }
 
         /// <summary>
         /// Returns Block Type object from cache.  If block does not already exist in cache, it
@@ -195,45 +199,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static BlockTypeCache Read( int id, RockContext rockContext = null )
         {
-            string cacheKey = BlockTypeCache.CacheKey( id );
-
-            bool existing = CacheContainsKey( cacheKey );
-            var blockType = GetOrAddExisting( cacheKey, () => LoadById( id, rockContext ) );
-            
-            if ( blockType != null && !existing )
-            {
-                var cachePolicy = new CacheItemPolicy();
-                AddChangeMonitor( cachePolicy, blockType.Path );
-
-                SetCache( cacheKey, blockType, cachePolicy );
-            }
-                
-            return blockType;
-        }
-
-        private static BlockTypeCache LoadById( int id, RockContext rockContext )
-        {
-            if ( rockContext != null )
-            {
-                return LoadById2( id, rockContext );
-            }
-
-            using ( var rockContext2 = new RockContext() )
-            {
-                return LoadById2( id, rockContext2 );
-            }
-        }
-
-        private static BlockTypeCache LoadById2( int id, RockContext rockContext )
-        {        
-            var blockTypeService = new BlockTypeService( rockContext );
-            var blockTypeModel = blockTypeService.Get( id );
-            if ( blockTypeModel != null )
-            {
-                return new BlockTypeCache( blockTypeModel );
-            }
-
-            return null;
+            return new BlockTypeCache( CacheBlockType.Get( id, rockContext ) );
         }
 
         /// <summary>
@@ -244,33 +210,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static BlockTypeCache Read( Guid guid, RockContext rockContext = null )
         {
-            int id = GetOrAddExisting( guid.ToString(),
-                () => LoadByGuid( guid, rockContext ) );
-
-            return Read( id, rockContext );
-        }
-
-        private static int LoadByGuid( Guid guid, RockContext rockContext )
-        {
-            if ( rockContext != null )
-            {
-                return LoadByGuid2( guid, rockContext );
-            }
-
-            using ( var rockContext2 = new RockContext() )
-            {
-                return LoadByGuid2( guid, rockContext2 );
-            }
-        }
-
-        private static int LoadByGuid2( Guid guid, RockContext rockContext )
-        {
-            var blockTypeService = new BlockTypeService( rockContext );
-            return blockTypeService
-                .Queryable().AsNoTracking()
-                .Where( b => b.Guid.Equals( guid ))
-                .Select( b => b.Id )
-                .FirstOrDefault();
+            return new BlockTypeCache( CacheBlockType.Get( guid, rockContext ) );
         }
 
         /// <summary>
@@ -280,44 +220,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static BlockTypeCache Read( BlockType blockTypeModel )
         {
-            return GetOrAddExisting( BlockTypeCache.CacheKey( blockTypeModel.Id ),
-                () => LoadByModel( blockTypeModel ) );
-        }
-
-        private static BlockTypeCache LoadByModel( BlockType blockTypeModel )
-        {
-            if ( blockTypeModel != null )
-            {
-                return new BlockTypeCache( blockTypeModel );
-            }
-            return null;
-        }
-
-        private static void AddChangeMonitor( CacheItemPolicy cacheItemPolicy, string filePath )
-        {
-            // Block Type cache expiration monitors the actual block on the file system so that it is flushed from 
-            // memory anytime the file contents change.  This is to force the cmsPage object to revalidate any
-            // BlockPropery attributes that may have been added or modified
-            string physicalPath = System.Web.HttpContext.Current.Request.MapPath( filePath );
-            List<string> filePaths = new List<string>();
-            filePaths.Add( physicalPath );
-            filePaths.Add( physicalPath + ".cs" );
-
-            var fileinfo = new System.IO.FileInfo( physicalPath );
-
-            // TODO:  There is a bug in the the .NET 4.5 System.Runtime.Caching framework that causes an 
-            // ArgumentOutOfRange exception when running in a positive UTC timezone.  The bug is caused by 
-            // initializing a DateTimeOffset variable to DateTime.MinValue that when ajdusted for timzone 
-            // ends up being lower then the minimum allowed range.  For now, HostFileChangeMonitoring will
-            // only be done in negative timezone offsets.  After we upgrade to .NET 4.5.1 we will need to 
-            // see if bug has been fixed.
-            //if (TimeZoneInfo.Local.GetUtcOffset(DateTime.UtcNow).Ticks <= 0)
-            //{
-            if ( fileinfo.Exists )
-            {
-                cacheItemPolicy.ChangeMonitors.Add( new HostFileChangeMonitor( filePaths ) );
-            }
-            //}
+            return new BlockTypeCache( CacheBlockType.Get( blockTypeModel ) );
         }
 
         /// <summary>
@@ -326,7 +229,7 @@ namespace Rock.Web.Cache
         /// <param name="id"></param>
         public static void Flush( int id )
         {
-            FlushCache( BlockTypeCache.CacheKey( id ) );
+            CacheBlockType.Remove( id );
         }
 
         #endregion

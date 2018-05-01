@@ -15,12 +15,10 @@
 // </copyright>
 //
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Data.Entity;
-using System.Linq;
 using System.Web;
 
+using Rock.Cache;
 using Rock.Data;
 using Rock.Model;
 
@@ -31,23 +29,18 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
+    [Obsolete( "Use Rock.Cache.CacheSite instead" )]
     public class SiteCache : CachedModel<Site>
     {
-        #region Static Fields
-
-        private static ConcurrentDictionary<string, int?> _siteDomains = new ConcurrentDictionary<string, int?>();
-
-        #endregion
-
         #region Constructors
 
         private SiteCache()
         {
         }
 
-        private SiteCache( Site site )
+        private SiteCache( CacheSite cacheSite )
         {
-            CopyFromModel( site );
+            CopyFromNewCache( cacheSite );
         }
 
         #endregion
@@ -84,83 +77,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The theme.
         /// </value>
-        public string Theme
-        {
-            get
-            {
-                var httpContext = HttpContext.Current;
-                if ( httpContext != null )
-                {
-                    var request = httpContext.Request;
-                    if ( request != null )
-                    {
-                        string cookieName = SiteCache.CacheKey( this.Id ) + ":theme";
-                        HttpCookie cookie = request.Cookies[cookieName];
-
-                        string theme = request["theme"];
-                        if ( theme != null )
-                        {
-                            if ( theme.Trim() != string.Empty )
-                            {
-                                // Don't allow switching to an invalid theme
-                                if ( System.IO.Directory.Exists( httpContext.Server.MapPath( "~/Themes/" + theme ) ) )
-                                {
-                                    if ( cookie == null )
-                                    {
-                                        cookie = new HttpCookie( cookieName, theme );
-                                    }
-                                    else
-                                    {
-                                        cookie.Value = theme;
-                                    }
-
-                                    httpContext.Response.SetCookie( cookie );
-
-                                    return theme;
-                                }
-                            }
-                            else
-                            {
-                                // if a blank theme was specified, remove any cookie (use default)
-                                if ( cookie != null )
-                                {
-                                    cookie.Expires = RockDateTime.Now.AddDays( -10 );
-                                    cookie.Value = null;
-                                    httpContext.Response.SetCookie( cookie );
-                                    return _theme;
-                                }
-                            }
-                        }
-
-                        if ( cookie != null )
-                        {
-                            theme = cookie.Value;
-
-                            // Don't allow switching to an invalid theme
-                            if ( System.IO.Directory.Exists( httpContext.Server.MapPath( "~/Themes/" + theme ) ) )
-                            {
-                                return cookie.Value;
-                            }
-                            else
-                            {
-                                // Delete the invalid cookie
-                                cookie.Expires = RockDateTime.Now.AddDays( -10 );
-                                cookie.Value = null;
-                                httpContext.Response.SetCookie( cookie );
-                            }
-                        }
-                    }
-                }
-
-                return _theme;
-            }
-
-            set
-            {
-                _theme = value;
-            }
-        }
-        private string _theme = string.Empty;
+        public string Theme { get; set; }
 
         /// <summary>
         /// Gets or sets the default page id.
@@ -184,13 +101,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The default page reference.
         /// </value>
-        public PageReference DefaultPageReference
-        {
-            get
-            {
-                return new Rock.Web.PageReference( DefaultPageId ?? 0, DefaultPageRouteId ?? 0 );
-            }
-        }
+        public PageReference DefaultPageReference => new PageReference( DefaultPageId ?? 0, DefaultPageRouteId ?? 0 );
 
         /// <summary>
         /// Gets or sets the 404 page id.
@@ -222,13 +133,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The change password page reference.
         /// </value>
-        public PageReference ChangePasswordPageReference
-        {
-            get
-            {
-                return new Rock.Web.PageReference( ChangePasswordPageId ?? 0, ChangePasswordPageRouteId ?? 0 );
-            }
-        }
+        public PageReference ChangePasswordPageReference => new PageReference( ChangePasswordPageId ?? 0, ChangePasswordPageRouteId ?? 0 );
 
         /// <summary>
         /// Gets or sets the 404 page route unique identifier.
@@ -244,13 +149,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The page not found page reference.
         /// </value>
-        public PageReference PageNotFoundPageReference
-        {
-            get
-            {
-                return new Rock.Web.PageReference( PageNotFoundPageId ?? 0, PageNotFoundPageRouteId ?? 0 );
-            }
-        }
+        public PageReference PageNotFoundPageReference => new PageReference( PageNotFoundPageId ?? 0, PageNotFoundPageRouteId ?? 0 );
 
         /// <summary>
         /// Gets or sets the login page id.
@@ -274,13 +173,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The login page reference.
         /// </value>
-        public PageReference LoginPageReference
-        {
-            get
-            {
-                return new Rock.Web.PageReference( LoginPageId ?? 0, LoginPageRouteId ?? 0 );
-            }
-        }
+        public PageReference LoginPageReference => new PageReference( LoginPageId ?? 0, LoginPageRouteId ?? 0 );
 
         /// <summary>
         /// Gets or sets the communication page identifier.
@@ -304,13 +197,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The communication page reference.
         /// </value>
-        public PageReference CommunicationPageReference
-        {
-            get
-            {
-                return new Rock.Web.PageReference( CommunicationPageId ?? 0, CommunicationPageRouteId ?? 0 );
-            }
-        }
+        public PageReference CommunicationPageReference => new PageReference( CommunicationPageId ?? 0, CommunicationPageRouteId ?? 0 );
 
         /// <summary>
         /// Gets or sets the registration page id.
@@ -334,13 +221,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The registration page reference.
         /// </value>
-        public PageReference RegistrationPageReference
-        {
-            get
-            {
-                return new Rock.Web.PageReference( RegistrationPageId ?? 0, RegistrationPageRouteId ?? 0 );
-            }
-        }
+        public PageReference RegistrationPageReference => new PageReference( RegistrationPageId ?? 0, RegistrationPageRouteId ?? 0 );
 
         /// <summary>
         /// Gets or sets the error page.
@@ -389,7 +270,7 @@ namespace Rock.Web.Cache
         /// The allowed frame domains.
         /// </value>
         public string AllowedFrameDomains { get; set; }
-        
+
         /// <summary>
         /// Gets or sets a value indicating whether [redirect tablets].
         /// </summary>
@@ -486,50 +367,89 @@ namespace Rock.Web.Cache
         /// Copies from model.
         /// </summary>
         /// <param name="model">The model.</param>
-        public override void CopyFromModel( Data.IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
             base.CopyFromModel( model );
 
-            if ( model is Site )
-            {
-                var site = (Site)model;
-                this.IsSystem = site.IsSystem;
-                this.Name = site.Name;
-                this.Description = site.Description;
-                this.Theme = site.Theme;
-                this.DefaultPageId = site.DefaultPageId;
-                this.DefaultPageRouteId = site.DefaultPageRouteId;
-                this.LoginPageId = site.LoginPageId;
-                this.LoginPageRouteId = site.LoginPageRouteId;
-                this.ChangePasswordPageId = site.ChangePasswordPageId;
-                this.ChangePasswordPageRouteId = site.ChangePasswordPageRouteId;
-                this.RegistrationPageId = site.RegistrationPageId;
-                this.RegistrationPageRouteId = site.RegistrationPageRouteId;
-                this.PageNotFoundPageId = site.PageNotFoundPageId;
-                this.PageNotFoundPageRouteId = site.PageNotFoundPageRouteId;
-                this.CommunicationPageId = site.CommunicationPageId;
-                this.CommunicationPageRouteId = site.CommunicationPageRouteId;
-                this.ErrorPage = site.ErrorPage;
-                this.GoogleAnalyticsCode = site.GoogleAnalyticsCode;
-                this.EnableMobileRedirect = site.EnableMobileRedirect;
-                this.MobilePageId = site.MobilePageId;
-                this.ExternalUrl = site.ExternalUrl;
-                this.AllowedFrameDomains = site.AllowedFrameDomains;
-                this.RedirectTablets = site.RedirectTablets;
-                this.EnablePageViews = site.EnablePageViews;
-                this.PageHeaderContent = site.PageHeaderContent;
-                this.AllowIndexing = site.AllowIndexing;
-                this.IsIndexEnabled = site.IsIndexEnabled;
-                this.IndexStartingLocation = site.IndexStartingLocation;
-                this.RequiresEncryption = site.RequiresEncryption;
-                this.EnabledForShortening = site.EnabledForShortening;
-                this.FavIconBinaryFileId = site.FavIconBinaryFileId;
+            if ( !( model is Site ) ) return;
 
-                foreach ( var domain in site.SiteDomains.Select( d => d.Domain ).ToList() )
-                {
-                    _siteDomains.AddOrUpdate( domain, site.Id, ( k, v) => site.Id );
-                }
-            }
+            var site = (Site)model;
+            IsSystem = site.IsSystem;
+            Name = site.Name;
+            Description = site.Description;
+            Theme = site.Theme;
+            DefaultPageId = site.DefaultPageId;
+            DefaultPageRouteId = site.DefaultPageRouteId;
+            LoginPageId = site.LoginPageId;
+            LoginPageRouteId = site.LoginPageRouteId;
+            ChangePasswordPageId = site.ChangePasswordPageId;
+            ChangePasswordPageRouteId = site.ChangePasswordPageRouteId;
+            RegistrationPageId = site.RegistrationPageId;
+            RegistrationPageRouteId = site.RegistrationPageRouteId;
+            PageNotFoundPageId = site.PageNotFoundPageId;
+            PageNotFoundPageRouteId = site.PageNotFoundPageRouteId;
+            CommunicationPageId = site.CommunicationPageId;
+            CommunicationPageRouteId = site.CommunicationPageRouteId;
+            ErrorPage = site.ErrorPage;
+            GoogleAnalyticsCode = site.GoogleAnalyticsCode;
+            EnableMobileRedirect = site.EnableMobileRedirect;
+            MobilePageId = site.MobilePageId;
+            ExternalUrl = site.ExternalUrl;
+            AllowedFrameDomains = site.AllowedFrameDomains;
+            RedirectTablets = site.RedirectTablets;
+            EnablePageViews = site.EnablePageViews;
+            PageHeaderContent = site.PageHeaderContent;
+            AllowIndexing = site.AllowIndexing;
+            IsIndexEnabled = site.IsIndexEnabled;
+            IndexStartingLocation = site.IndexStartingLocation;
+            RequiresEncryption = site.RequiresEncryption;
+            EnabledForShortening = site.EnabledForShortening;
+            FavIconBinaryFileId = site.FavIconBinaryFileId;
+        }
+
+        /// <summary>
+        /// Copies properties from a new cached entity
+        /// </summary>
+        /// <param name="cacheEntity">The cache entity.</param>
+        protected sealed override void CopyFromNewCache( IEntityCache cacheEntity )
+        {
+            base.CopyFromNewCache( cacheEntity );
+
+            if ( !( cacheEntity is CacheSite ) ) return;
+
+            var site = (CacheSite)cacheEntity;
+            IsSystem = site.IsSystem;
+            Name = site.Name;
+            Description = site.Description;
+            Theme = site.Theme;
+            DefaultPageId = site.DefaultPageId;
+            DefaultPageRouteId = site.DefaultPageRouteId;
+            LoginPageId = site.LoginPageId;
+            LoginPageRouteId = site.LoginPageRouteId;
+            ChangePasswordPageId = site.ChangePasswordPageId;
+            ChangePasswordPageRouteId = site.ChangePasswordPageRouteId;
+            RegistrationPageId = site.RegistrationPageId;
+            RegistrationPageRouteId = site.RegistrationPageRouteId;
+            PageNotFoundPageId = site.PageNotFoundPageId;
+            PageNotFoundPageRouteId = site.PageNotFoundPageRouteId;
+            CommunicationPageId = site.CommunicationPageId;
+            CommunicationPageRouteId = site.CommunicationPageRouteId;
+            ErrorPage = site.ErrorPage;
+            GoogleAnalyticsCode = site.GoogleAnalyticsCode;
+            EnableMobileRedirect = site.EnableMobileRedirect;
+            MobilePageId = site.MobilePageId;
+            ExternalUrl = site.ExternalUrl;
+            AllowedFrameDomains = site.AllowedFrameDomains;
+            RedirectTablets = site.RedirectTablets;
+            EnablePageViews = site.EnablePageViews;
+            PageHeaderContent = site.PageHeaderContent;
+            AllowIndexing = site.AllowIndexing;
+            IsIndexEnabled = site.IsIndexEnabled;
+            IndexStartingLocation = site.IndexStartingLocation;
+            RequiresEncryption = site.RequiresEncryption;
+            EnabledForShortening = site.EnabledForShortening;
+            FavIconBinaryFileId = site.FavIconBinaryFileId;
+            Theme = site.Theme;
         }
 
         /// <summary>
@@ -540,7 +460,7 @@ namespace Rock.Web.Cache
         /// </returns>
         public override string ToString()
         {
-            return this.Name;
+            return Name;
         }
 
         /// <summary>
@@ -566,13 +486,10 @@ namespace Rock.Web.Cache
             {
                 var parms = new Dictionary<string, string>();
 
-                var returnUrl = context.Request.QueryString["returnUrl"];
-                if ( returnUrl == null )
-                {
-                    // if there is a rckipid token, we don't want to include it when they go to login page since they are going there to login as a real user
-                    // this also prevents an issue where they would log in as a real user, but then get logged in with the token instead after they are redirected
-                    returnUrl = context.Server.UrlEncode( PersonToken.RemoveRockMagicToken( context.Request.RawUrl ) );
-                }
+                // if there is a rckipid token, we don't want to include it when they go to login page since they are going there to login as a real user
+                // this also prevents an issue where they would log in as a real user, but then get logged in with the token instead after they are redirected
+                var returnUrl = context.Request.QueryString["returnUrl"] ??
+                    context.Server.UrlEncode( PersonToken.RemoveRockMagicToken( context.Request.RawUrl ) );
 
                 parms.Add( "returnurl", returnUrl );
                 pageReference.Parameters = parms;
@@ -597,7 +514,7 @@ namespace Rock.Web.Cache
 
             if ( isChangePasswordRequired )
             {
-                parms.Add( "ChangeRequired", "True" ); 
+                parms.Add( "ChangeRequired", "True" );
             }
 
             if ( includeReturnUrl )
@@ -645,11 +562,6 @@ namespace Rock.Web.Cache
 
         #region Static Methods
 
-        private static string CacheKey( int id )
-        {
-            return string.Format( "Rock:Site:{0}", id );
-        }
-
         /// <summary>
         /// Returns Site object from cache.  If site does not already exist in cache, it
         /// will be read and added to cache
@@ -659,33 +571,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static SiteCache Read( int id, RockContext rockContext = null )
         {
-            return GetOrAddExisting( SiteCache.CacheKey( id ),
-                () => LoadById( id, rockContext ) );
-        }
-
-        private static SiteCache LoadById( int id, RockContext rockContext )
-        {
-            if ( rockContext != null )
-            {
-                return LoadById2( id, rockContext );
-            }
-
-            using ( var rockContext2 = new RockContext() )
-            {
-                return LoadById2( id, rockContext2 );
-            }
-        }
-
-        private static SiteCache LoadById2( int id, RockContext rockContext )
-        {
-            var siteService = new SiteService( rockContext );
-            var siteModel = siteService.Get( id );
-            if ( siteModel != null )
-            {
-                return new SiteCache( siteModel );
-            }
-
-            return null;
+            return new SiteCache( CacheSite.Get( id, rockContext ) );
         }
 
         /// <summary>
@@ -696,33 +582,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static SiteCache Read( Guid guid, RockContext rockContext = null )
         {
-            int id = GetOrAddExisting( guid.ToString(),
-                () => LoadByGuid( guid, rockContext ) );
-
-            return Read( id, rockContext );
-        }
-
-        private static int LoadByGuid( Guid guid, RockContext rockContext )
-        {
-            if ( rockContext != null )
-            {
-                return LoadByGuid2( guid, rockContext );
-            }
-
-            using ( var rockContext2 = new RockContext() )
-            {
-                return LoadByGuid2( guid, rockContext2 );
-            }
-        }
-
-        private static int LoadByGuid2( Guid guid, RockContext rockContext = null )
-        {
-            var siteService = new SiteService( rockContext );
-            return siteService
-                .Queryable().AsNoTracking()
-                .Where( c => c.Guid.Equals( guid ) )
-                .Select( c => c.Id )
-                .FirstOrDefault();
+            return new SiteCache( CacheSite.Get( guid, rockContext ) );
         }
 
         /// <summary>
@@ -732,17 +592,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static SiteCache Read( Site siteModel )
         {
-            return GetOrAddExisting( SiteCache.CacheKey( siteModel.Id ),
-                () => LoadByModel( siteModel ) );
-        }
-
-        private static SiteCache LoadByModel( Site siteModel )
-        {
-            if ( siteModel != null )
-            {
-                return new SiteCache( siteModel );
-            }
-            return null;
+            return new SiteCache( CacheSite.Get( siteModel ) );
         }
 
         /// <summary>
@@ -751,8 +601,8 @@ namespace Rock.Web.Cache
         /// <param name="id"></param>
         public static void Flush( int id )
         {
-            FlushCache( SiteCache.CacheKey( id ) );
-            _siteDomains = new ConcurrentDictionary<string, int?>();
+            CacheSite.Remove( id );
+            CacheSite.RemoveSiteDomains();
         }
 
         /// <summary>
@@ -760,7 +610,7 @@ namespace Rock.Web.Cache
         /// </summary>
         public static void Flush()
         {
-            _siteDomains = new ConcurrentDictionary<string, int?>();
+            CacheSite.RemoveSiteDomains();
         }
 
         /// <summary>
@@ -770,40 +620,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static SiteCache GetSiteByDomain( string host )
         {
-            int? siteId;
-            if ( _siteDomains.TryGetValue( host, out siteId ) )
-            {
-                if ( siteId.HasValue )
-                {
-                    return Read( siteId.Value );
-                }
-                else
-                {
-                    return null;
-                }
-            }
-
-            using ( var rockContext = new RockContext() )
-            { 
-                Rock.Model.SiteDomainService siteDomainService = new Rock.Model.SiteDomainService( rockContext );
-                Rock.Model.SiteDomain siteDomain = siteDomainService.GetByDomain( host );
-                if ( siteDomain == null )
-                {
-                    siteDomain = siteDomainService.GetByDomainContained( host );
-                }
-
-                if ( siteDomain != null )
-                {
-                    _siteDomains.AddOrUpdate( host, siteDomain.SiteId, ( k, v ) => siteDomain.SiteId );
-                    return Read( siteDomain.SiteId );
-                }
-                else
-                {
-                    _siteDomains.AddOrUpdate( host, (int?)null, ( k, v ) => (int?)null );
-                }
-            }
-
-            return null;
+            return new SiteCache( CacheSite.GetSiteByDomain( host ) );
         }
 
         #endregion

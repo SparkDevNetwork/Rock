@@ -31,6 +31,7 @@ namespace Rock.Web.Cache
     /// https://github.com/ironyx/sharpmemorycache
     /// 
     /// </summary>
+    [Obsolete( "Use Rock.Cache.RockCache instead" )]
     public class RockMemoryCache : MemoryCache
     {
         const string REDIS_CHANNEL_NAME = "rock-cache-instructions";
@@ -263,12 +264,12 @@ namespace Rock.Web.Cache
                         }
                     case "FLUSH_AUTH":
                         {
-                            Rock.Security.Authorization.FlushAuth();
+                            Rock.Security.Authorization.Flush();
                             break;
                         }
                     case "REMOVE_ENTITY_ATTRIBUTES":
                         {
-                            Rock.Web.Cache.AttributeCache.RemoveEntityAttributes();
+                            Rock.Web.Cache.AttributeCache.FlushEntityAttributes();
                             break;
                         }
                     case "PING":

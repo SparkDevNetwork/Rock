@@ -35,7 +35,7 @@ namespace Rock.Model
     [NotAudited]
     [Table( "InteractionChannel" )]
     [DataContract]
-    public partial class InteractionChannel : Model<InteractionChannel>
+    public partial class InteractionChannel : Model<InteractionChannel>, IHasActiveFlag
     {
 
         #region Entity Properties
@@ -202,6 +202,22 @@ namespace Rock.Model
         [DataMember]
         public bool UsesSession { get; set; }
 
+        /// <summary>
+        /// Gets or sets a flag indicating if this is an active group. This value is required.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this group is active, otherwise <c>false</c>.
+        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        [Previewable]
+        public bool IsActive
+        {
+            get { return _isActive; }
+            set { _isActive = value; }
+        }
+
+        private bool _isActive = true;
 
         #endregion
 
@@ -244,7 +260,7 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public override void PostSaveChanges( Data.DbContext dbContext )
         {
-            Web.Cache.InteractionChannelCache.Flush( this.Id );
+            Cache.CacheInteractionChannel.Remove( this.Id );
 
             base.PostSaveChanges( dbContext );
         }

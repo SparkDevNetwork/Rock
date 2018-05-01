@@ -15,11 +15,10 @@
 // </copyright>
 //
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 
+using Rock.Cache;
 using Rock.Data;
 using Rock.Model;
 
@@ -30,23 +29,18 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
+    [Obsolete( "Use Rock.Cache.CacheEntityType instead" )]
     public class EntityTypeCache : CachedEntity<EntityType>
     {
-        #region Static Fields
-
-        private static ConcurrentDictionary<string, int> _entityTypes = new ConcurrentDictionary<string, int>();
-
-        #endregion
-
         #region Constructors
 
         private EntityTypeCache()
         {
         }
 
-        private EntityTypeCache( EntityType model )
+        private EntityTypeCache( CacheEntityType cacheEntityType )
         {
-            CopyFromModel( model );
+            CopyFromNewCache( cacheEntityType );
         }
 
         #endregion
@@ -191,18 +185,14 @@ namespace Rock.Web.Cache
         /// </returns>
         public bool IsAnalyticsSupported( string entityTypeQualifierColumn, string entityTypeQualifierValue )
         {
-            Type type = this.GetEntityType();
+            var type = GetEntityType();
+            if ( type == null ) return false;
 
-            if ( type != null )
-            {
-                return type.GetCustomAttributes( true ).OfType<AnalyticsAttribute>()
-                        .Any( x =>
-                            ( string.IsNullOrEmpty( x.EntityTypeQualifierColumn ) && string.IsNullOrEmpty( entityTypeQualifierColumn ) )
-                                || ( x.EntityTypeQualifierColumn == entityTypeQualifierColumn && x.EntityTypeQualifierValue == entityTypeQualifierValue )
-                            );
-            }
-
-            return false;
+            return type.GetCustomAttributes( true ).OfType<AnalyticsAttribute>()
+                .Any( x =>
+                    ( string.IsNullOrEmpty( x.EntityTypeQualifierColumn ) && string.IsNullOrEmpty( entityTypeQualifierColumn ) ) ||
+                    ( x.EntityTypeQualifierColumn == entityTypeQualifierColumn && x.EntityTypeQualifierValue == entityTypeQualifierValue )
+                );
         }
 
         /// <summary>
@@ -215,19 +205,15 @@ namespace Rock.Web.Cache
         /// </returns>
         public bool IsAnalyticsHistoricalSupported( string entityTypeQualifierColumn, string entityTypeQualifierValue )
         {
-            Type type = this.GetEntityType();
+            var type = GetEntityType();
+            if ( type == null ) return false;
 
-            if ( type != null )
-            {
-                return type.GetCustomAttributes( true ).OfType<AnalyticsAttribute>()
-                        .Where( a => a.SupportsHistory )
-                        .Any( x =>
-                            ( string.IsNullOrEmpty( x.EntityTypeQualifierColumn ) && string.IsNullOrEmpty( entityTypeQualifierColumn ) )
-                                || ( x.EntityTypeQualifierColumn == entityTypeQualifierColumn && x.EntityTypeQualifierValue == entityTypeQualifierValue )
-                            );
-            }
-
-            return false;
+            return type.GetCustomAttributes( true ).OfType<AnalyticsAttribute>()
+                    .Where( a => a.SupportsHistory )
+                    .Any( x =>
+                        ( string.IsNullOrEmpty( x.EntityTypeQualifierColumn ) && string.IsNullOrEmpty( entityTypeQualifierColumn ) ) ||
+                        ( x.EntityTypeQualifierColumn == entityTypeQualifierColumn && x.EntityTypeQualifierValue == entityTypeQualifierValue )
+                    );
         }
 
         /// <summary>
@@ -241,19 +227,15 @@ namespace Rock.Web.Cache
         /// <value></value>
         public bool IsAnalyticAttributesSupported( string entityTypeQualifierColumn, string entityTypeQualifierValue )
         {
-            Type type = this.GetEntityType();
+            var type = GetEntityType();
+            if ( type == null ) return false;
 
-            if ( type != null )
-            {
-                return type.GetCustomAttributes( true ).OfType<AnalyticsAttribute>()
-                        .Where( a => a.SupportsAttributes )
-                        .Any( x =>
-                            ( string.IsNullOrEmpty( x.EntityTypeQualifierColumn ) && string.IsNullOrEmpty( entityTypeQualifierColumn ) )
-                                || ( x.EntityTypeQualifierColumn == entityTypeQualifierColumn && x.EntityTypeQualifierValue == entityTypeQualifierValue )
-                            );
-            }
-
-            return false;
+            return type.GetCustomAttributes( true ).OfType<AnalyticsAttribute>()
+                    .Where( a => a.SupportsAttributes )
+                    .Any( x =>
+                        ( string.IsNullOrEmpty( x.EntityTypeQualifierColumn ) && string.IsNullOrEmpty( entityTypeQualifierColumn ) ) ||
+                        ( x.EntityTypeQualifierColumn == entityTypeQualifierColumn && x.EntityTypeQualifierValue == entityTypeQualifierValue )
+                    );
         }
 
         /// <summary>
@@ -263,7 +245,7 @@ namespace Rock.Web.Cache
         /// The index result template.
         /// </value>
         public string IndexResultTemplate { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the index document URL.
         /// </summary>
@@ -290,40 +272,55 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public Type GetEntityType()
         {
-            if ( !string.IsNullOrWhiteSpace( this.AssemblyName ) )
-            {
-                return Type.GetType( this.AssemblyName );
-            }
-
-            return null;
+            return !string.IsNullOrWhiteSpace( AssemblyName ) ? Type.GetType( AssemblyName ) : null;
         }
 
         /// <summary>
         /// Copies from model.
         /// </summary>
         /// <param name="model">The model.</param>
-        public override void CopyFromModel( Data.IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
             base.CopyFromModel( model );
+            if ( !( model is EntityType ) ) return;
 
-            if ( model is EntityType )
-            {
-                var entityType = (EntityType)model;
-                this.Name = entityType.Name;
-                this.AssemblyName = entityType.AssemblyName;
-                this.FriendlyName = entityType.FriendlyName;
-                this.IsEntity = entityType.IsEntity;
-                this.IsSecured = entityType.IsSecured;
-                this.SingleValueFieldTypeId = entityType.SingleValueFieldTypeId;
-                this.MultiValueFieldTypeId = entityType.MultiValueFieldTypeId;
-                this.IsIndexingEnabled = entityType.IsIndexingEnabled;
-                this.IsIndexingSupported = entityType.IsIndexingSupported;
-                this.IndexResultTemplate = entityType.IndexResultTemplate;
-                this.IndexDocumentUrl = entityType.IndexDocumentUrl;
-                this.LinkUrlLavaTemplate = entityType.LinkUrlLavaTemplate;
+            var entityType = (EntityType)model;
+            Name = entityType.Name;
+            AssemblyName = entityType.AssemblyName;
+            FriendlyName = entityType.FriendlyName;
+            IsEntity = entityType.IsEntity;
+            IsSecured = entityType.IsSecured;
+            SingleValueFieldTypeId = entityType.SingleValueFieldTypeId;
+            MultiValueFieldTypeId = entityType.MultiValueFieldTypeId;
+            IsIndexingEnabled = entityType.IsIndexingEnabled;
+            IsIndexingSupported = entityType.IsIndexingSupported;
+            IndexResultTemplate = entityType.IndexResultTemplate;
+            IndexDocumentUrl = entityType.IndexDocumentUrl;
+            LinkUrlLavaTemplate = entityType.LinkUrlLavaTemplate;
+        }
 
-                _entityTypes.AddOrUpdate( entityType.Name, entityType.Id, ( k, v ) => entityType.Id );
-            }
+        /// <summary>
+        /// Copies properties from a new cached entity
+        /// </summary>
+        /// <param name="cacheEntity">The cache entity.</param>
+        protected sealed override void CopyFromNewCache( IEntityCache cacheEntity )
+        {
+            base.CopyFromNewCache( cacheEntity );
+            if ( !( cacheEntity is CacheEntityType ) ) return;
+
+            var entityType = (CacheEntityType)cacheEntity;
+            Name = entityType.Name;
+            AssemblyName = entityType.AssemblyName;
+            FriendlyName = entityType.FriendlyName;
+            IsEntity = entityType.IsEntity;
+            IsSecured = entityType.IsSecured;
+            SingleValueFieldTypeId = entityType.SingleValueFieldTypeId;
+            MultiValueFieldTypeId = entityType.MultiValueFieldTypeId;
+            IsIndexingEnabled = entityType.IsIndexingEnabled;
+            IsIndexingSupported = entityType.IsIndexingSupported;
+            IndexResultTemplate = entityType.IndexResultTemplate;
+            IndexDocumentUrl = entityType.IndexDocumentUrl;
+            LinkUrlLavaTemplate = entityType.LinkUrlLavaTemplate;
         }
 
         /// <summary>
@@ -334,17 +331,12 @@ namespace Rock.Web.Cache
         /// </returns>
         public override string ToString()
         {
-            return this.Name;
+            return Name;
         }
 
         #endregion
 
         #region Static Methods
-
-        private static string CacheKey( int id )
-        {
-            return string.Format( "Rock:EntityType:{0}", id );
-        }
 
         /// <summary>
         /// Gets the id.
@@ -353,7 +345,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static int? GetId( Type type )
         {
-            return Read( type ).Id;
+            return CacheEntityType.GetId( type );
         }
 
         /// <summary>
@@ -363,7 +355,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static int? GetId<T>()
         {
-            return GetId( typeof( T ) );
+            return CacheEntityType.GetId<T>();
         }
 
         /// <summary>
@@ -373,12 +365,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static int? GetId( string name )
         {
-            if ( string.IsNullOrEmpty( name ) )
-            {
-                return null;
-            }
-
-            return Read( name ).Id;
+            return CacheEntityType.GetId( name );
         }
 
         /// <summary>
@@ -388,47 +375,10 @@ namespace Rock.Web.Cache
         /// <param name="createIfNotFound">if set to <c>true</c> [create if not found].</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
+        [Obsolete( "Use Rock.Cache.CacheEntityType.Get instead" )]
         public static EntityTypeCache Read( Type type, bool createIfNotFound = true, RockContext rockContext = null )
         {
-            if ( type.IsDynamicProxyType() )
-            {
-                type = type.BaseType;
-            }
-
-            int entityTypeId = 0;
-            if ( _entityTypes.TryGetValue( type.FullName, out entityTypeId ) )
-            {
-                return Read( entityTypeId );
-            }
-
-            EntityTypeCache entityType = null;
-
-            if ( rockContext != null )
-            {
-                var entityTypeModel = new EntityTypeService( rockContext ).Get( type, createIfNotFound, null );
-                if ( entityTypeModel != null )
-                {
-                    entityType = Read( entityTypeModel );
-                }
-            }
-            else
-            {
-                using ( var myRockContext = new RockContext() )
-                {
-                    var entityTypeModel = new EntityTypeService( myRockContext ).Get( type, createIfNotFound, null );
-                    if ( entityTypeModel != null )
-                    {
-                        entityType = Read( entityTypeModel );
-                    }
-                }
-            }
-
-            if ( entityType != null )
-            {
-                _entityTypes.AddOrUpdate( entityType.Name, entityType.Id, ( k, v ) => entityType.Id );
-            }
-
-            return entityType;
+            return new EntityTypeCache( CacheEntityType.Get( type, createIfNotFound, rockContext ) );
         }
 
         /// <summary>
@@ -440,7 +390,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static EntityTypeCache Read<T>( bool createIfNotFound = true, RockContext rockContext = null )
         {
-            return EntityTypeCache.Read( typeof( T ), createIfNotFound, rockContext );
+            return new EntityTypeCache( CacheEntityType.Get<T>( createIfNotFound, rockContext ) );
         }
 
         /// <summary>
@@ -449,9 +399,10 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns></returns>
+        [Obsolete( "Use Rock.Cache.CacheEntityType.Get instead" )]
         public static EntityTypeCache Read( string name )
         {
-            return Read( name, true );
+            return new EntityTypeCache( CacheEntityType.Get( name ) );
         }
 
         /// <summary>
@@ -463,40 +414,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static EntityTypeCache Read( string name, bool createNew, RockContext rockContext = null )
         {
-            int entityTypeId = 0;
-            if ( _entityTypes.TryGetValue( name, out entityTypeId ) )
-            {
-                return Read( entityTypeId );
-            }
-
-            EntityTypeCache entityType = null;
-
-            if ( rockContext != null )
-            {
-                var entityTypeModel = new EntityTypeService( rockContext ).Get( name, createNew );
-                if ( entityTypeModel != null )
-                {
-                    entityType = Read( entityTypeModel );
-                }
-            }
-            else
-            {
-                using ( var myRockContext = new RockContext() )
-                {
-                    var entityTypeModel = new EntityTypeService( myRockContext ).Get( name, createNew );
-                    if ( entityTypeModel != null )
-                    {
-                        entityType =  Read( entityTypeModel );
-                    }
-                }
-            }
-
-            if ( entityType != null )
-            {
-                _entityTypes.AddOrUpdate( entityType.Name, entityType.Id, ( k, v ) => entityType.Id );
-            }
-
-            return entityType;
+            return new EntityTypeCache( CacheEntityType.Get( name, createNew, rockContext ) );
         }
 
         /// <summary>
@@ -508,33 +426,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static EntityTypeCache Read( int id, RockContext rockContext = null )
         {
-            return GetOrAddExisting( EntityTypeCache.CacheKey( id ),
-                () => LoadById( id, rockContext ) );
-        }
-
-        private static EntityTypeCache LoadById( int id, RockContext rockContext )
-        {
-            if ( rockContext != null )
-            {
-                return LoadById2( id, rockContext );
-            }
-
-            using ( var rockContext2 = new RockContext() )
-            {
-                return LoadById2( id, rockContext2 );
-            }
-        }
-
-        private static EntityTypeCache LoadById2( int id, RockContext rockContext )
-        {
-            var entityTypeService = new EntityTypeService( rockContext );
-            var entityTypeModel = entityTypeService.Get( id );
-            if ( entityTypeModel != null )
-            {
-                return new EntityTypeCache( entityTypeModel );
-            }
-
-            return null;
+            return new EntityTypeCache( CacheEntityType.Get( id, rockContext ) );
         }
 
         /// <summary>
@@ -545,33 +437,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static EntityTypeCache Read( Guid guid, RockContext rockContext = null )
         {
-            int id = GetOrAddExisting( guid.ToString(),
-                () => LoadByGuid( guid, rockContext ) );
-
-            return Read( id, rockContext );
-        }
-
-        private static int LoadByGuid( Guid guid, RockContext rockContext )
-        {
-            if ( rockContext != null )
-            {
-                return LoadByGuid2( guid, rockContext );
-            }
-
-            using ( var rockContext2 = new RockContext() )
-            {
-                return LoadByGuid2( guid, rockContext2 );
-            }
-        }
-
-        private static int LoadByGuid2( Guid guid, RockContext rockContext )
-        {
-            var entityTypeService = new EntityTypeService( rockContext );
-            return entityTypeService
-                .Queryable().AsNoTracking()
-                .Where( c => c.Guid.Equals( guid ) )
-                .Select( c => c.Id )
-                .FirstOrDefault();
+            return new EntityTypeCache( CacheEntityType.Get( guid ) );
         }
 
         /// <summary>
@@ -581,17 +447,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static EntityTypeCache Read( EntityType entityTypeModel )
         {
-            return GetOrAddExisting( EntityTypeCache.CacheKey( entityTypeModel.Id ),
-                () => LoadByModel( entityTypeModel ) );
-        }
-
-        private static EntityTypeCache LoadByModel( EntityType entityTypeModel )
-        {
-            if ( entityTypeModel != null )
-            {
-                return new EntityTypeCache( entityTypeModel );
-            }
-            return null;
+            return new EntityTypeCache( CacheEntityType.Get( entityTypeModel ) );
         }
 
         /// <summary>
@@ -600,29 +456,17 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static List<EntityTypeCache> All()
         {
-            List<EntityTypeCache> entityTypes = new List<EntityTypeCache>();
-            var entityTypeIds = GetOrAddExisting( "Rock:EntityType:All", () => LoadAll() );
-            if ( entityTypeIds != null )
-            {
-                foreach ( int entityTypeId in entityTypeIds )
-                {
-                    var entityTypeCache = EntityTypeCache.Read( entityTypeId );
-                    entityTypes.Add( entityTypeCache );
-                }
-            }
-            return entityTypes;
-        }
+            var entityTypes = new List<EntityTypeCache>();
 
-        private static List<int> LoadAll()
-        {
-            using ( var rockContext = new RockContext() )
+            var cacheEntityTypes = CacheEntityType.All();
+            if ( cacheEntityTypes == null ) return entityTypes;
+
+            foreach ( var cacheEntityType in cacheEntityTypes )
             {
-                return new EntityTypeService( rockContext )
-                    .Queryable().AsNoTracking()
-                    .OrderBy( c => c.Name )
-                    .Select( c => c.Id )
-                    .ToList();
+                entityTypes.Add( new EntityTypeCache( cacheEntityType ) );
             }
+
+            return entityTypes;
         }
 
         /// <summary>
@@ -631,18 +475,7 @@ namespace Rock.Web.Cache
         /// <param name="id"></param>
         public static void Flush( int id )
         {
-            FlushCache( EntityTypeCache.CacheKey( id ) );
-            if ( _entityTypes == null )
-            {
-                // shouldn't happen, but just in case
-                _entityTypes = new ConcurrentDictionary<string, int>();
-            }
-
-            // rebuild the _entityTypes dictionary 
-            var _keepEntityTypes = _entityTypes.Where( a => a.Value != id );
-            _entityTypes = new ConcurrentDictionary<string, int>( _keepEntityTypes );
-
-            FlushCache( "Rock:EntityType:All" );
+            CacheEntityType.Remove( id );
         }
 
         #endregion

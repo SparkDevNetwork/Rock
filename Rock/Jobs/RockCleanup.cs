@@ -16,17 +16,18 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+
 using Quartz;
 using Rock.Attribute;
-using Rock.Model;
+using Rock.Cache;
 using Rock.Data;
-using System.Data.Entity;
-using Rock.Web.Cache;
 using Rock.Field.Types;
-using System.Reflection;
+using Rock.Model;
 
 namespace Rock.Jobs
 {
@@ -171,6 +172,15 @@ namespace Rock.Jobs
 
             try
             {
+                databaseRowsDeleted.Add( "Transient Communication", CleanupTransientCommunications( dataMap ) );
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in CleanupTransientCommunications", ex ) );
+            }
+
+            try
+            {
                 databaseRowsDeleted.Add( "Person Token", CleanupPersonTokens( dataMap ) );
             }
             catch ( Exception ex )
@@ -200,60 +210,96 @@ namespace Rock.Jobs
         private void PersonCleanup( JobDataMap dataMap )
         {
             // Add any missing person aliases
-            var personRockContext = new Rock.Data.RockContext();
-            PersonService personService = new PersonService( personRockContext );
-            PersonAliasService personAliasService = new PersonAliasService( personRockContext );
-            var personAliasServiceQry = personAliasService.Queryable();
-            foreach ( var person in personService.Queryable( "Aliases" )
-                .Where( p => !p.Aliases.Any() && !personAliasServiceQry.Any( pa => pa.AliasPersonId == p.Id ) )
-                .Take( 300 ) )
+            using ( var personRockContext = new Rock.Data.RockContext() )
             {
-                person.Aliases.Add( new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid } );
-            }
-
-            personRockContext.SaveChanges();
-
-            // Add any missing metaphones
-            int namesToProcess = dataMap.GetString( "MaxMetaphoneNames" ).AsIntegerOrNull() ?? 500;
-            if ( namesToProcess > 0 )
-            {
-                var firstNameQry = personService.Queryable().Select( p => p.FirstName ).Where( p => p != null );
-                var nickNameQry = personService.Queryable().Select( p => p.NickName ).Where( p => p != null );
-                var lastNameQry = personService.Queryable().Select( p => p.LastName ).Where( p => p != null );
-                var nameQry = firstNameQry.Union( nickNameQry.Union( lastNameQry ) );
-
-                var metaphones = personRockContext.Metaphones;
-                var existingNames = metaphones.Select( m => m.Name ).Distinct();
-
-                // Get the names that have not yet been processed
-                var namesToUpdate = nameQry
-                    .Where( n => !existingNames.Contains( n ) )
-                    .Take( namesToProcess )
-                    .ToList();
-
-                foreach ( string name in namesToUpdate )
+                PersonService personService = new PersonService( personRockContext );
+                PersonAliasService personAliasService = new PersonAliasService( personRockContext );
+                var personAliasServiceQry = personAliasService.Queryable();
+                foreach ( var person in personService.Queryable( "Aliases" )
+                    .Where( p => !p.Aliases.Any() && !personAliasServiceQry.Any( pa => pa.AliasPersonId == p.Id ) )
+                    .Take( 300 ) )
                 {
-                    string mp1 = string.Empty;
-                    string mp2 = string.Empty;
-                    Rock.Utility.DoubleMetaphone.doubleMetaphone( name, ref mp1, ref mp2 );
-
-                    var metaphone = new Metaphone();
-                    metaphone.Name = name;
-                    metaphone.Metaphone1 = mp1;
-                    metaphone.Metaphone2 = mp2;
-
-                    metaphones.Add( metaphone );
+                    person.Aliases.Add( new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid } );
                 }
 
                 personRockContext.SaveChanges();
             }
 
+            using ( var personRockContext = new Rock.Data.RockContext() )
+            {
+                PersonService personService = new PersonService( personRockContext );
+                // Add any missing metaphones
+                int namesToProcess = dataMap.GetString( "MaxMetaphoneNames" ).AsIntegerOrNull() ?? 500;
+                if ( namesToProcess > 0 )
+                {
+                    var firstNameQry = personService.Queryable().Select( p => p.FirstName ).Where( p => p != null );
+                    var nickNameQry = personService.Queryable().Select( p => p.NickName ).Where( p => p != null );
+                    var lastNameQry = personService.Queryable().Select( p => p.LastName ).Where( p => p != null );
+                    var nameQry = firstNameQry.Union( nickNameQry.Union( lastNameQry ) );
+
+                    var metaphones = personRockContext.Metaphones;
+                    var existingNames = metaphones.Select( m => m.Name ).Distinct();
+
+                    // Get the names that have not yet been processed
+                    var namesToUpdate = nameQry
+                        .Where( n => !existingNames.Contains( n ) )
+                        .Take( namesToProcess )
+                        .ToList();
+
+                    foreach ( string name in namesToUpdate )
+                    {
+                        string mp1 = string.Empty;
+                        string mp2 = string.Empty;
+                        Rock.Utility.DoubleMetaphone.doubleMetaphone( name, ref mp1, ref mp2 );
+
+                        var metaphone = new Metaphone();
+                        metaphone.Name = name;
+                        metaphone.Metaphone1 = mp1;
+                        metaphone.Metaphone2 = mp2;
+
+                        metaphones.Add( metaphone );
+                    }
+
+                    personRockContext.SaveChanges( disablePrePostProcessing: true );
+                }
+            }
+
+            // Ensures the PrimaryFamily is correct for all person records in the database
+            using ( var personRockContext = new Rock.Data.RockContext() )
+            {
+                int primaryFamilyUpdates = PersonService.UpdatePrimaryFamilyAll( personRockContext );
+            }
+
+            // update any updated or incorrect age classifications on persons
+            using ( var personRockContext = new Rock.Data.RockContext() )
+            {
+                int ageClassificationUpdates = PersonService.UpdatePersonAgeClassificationAll( personRockContext );
+            }
+
             //// Add any missing Implied/Known relationship groups
             // Known Relationship Group
-            AddMissingRelationshipGroups( GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS ), Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() );
+            AddMissingRelationshipGroups( CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS ), Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() );
 
             // Implied Relationship Group
-            AddMissingRelationshipGroups( GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_IMPLIED_RELATIONSHIPS ), Rock.SystemGuid.GroupRole.GROUPROLE_IMPLIED_RELATIONSHIPS_OWNER.AsGuid() );
+            AddMissingRelationshipGroups( CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_IMPLIED_RELATIONSHIPS ), Rock.SystemGuid.GroupRole.GROUPROLE_IMPLIED_RELATIONSHIPS_OWNER.AsGuid() );
+
+            // Find family groups that have no members or that have only 'inactive' people (record status) and mark the groups inactive.
+            using ( var familyRockContext = new Rock.Data.RockContext() )
+            {
+                int familyGroupTypeId = CacheGroupType.GetFamilyGroupType().Id;
+                int recordStatusInactiveValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() ).Id;
+
+                var activeFamilyWithNoActiveMembers = new GroupService( familyRockContext ).Queryable()
+                    .Where( a => a.GroupTypeId == familyGroupTypeId && a.IsActive == true )
+                    .Where( a => !a.Members.Where( m => m.Person.RecordStatusValueId != recordStatusInactiveValueId ).Any() );
+
+                var currentDateTime = RockDateTime.Now;
+
+                familyRockContext.BulkUpdate( activeFamilyWithNoActiveMembers, x => new Rock.Model.Group
+                {
+                    IsActive = false
+                } );
+            }
         }
 
         /// <summary>
@@ -261,12 +307,12 @@ namespace Rock.Jobs
         /// </summary>
         /// <param name="relationshipGroupType">Type of the relationship group.</param>
         /// <param name="ownerRoleGuid">The owner role unique identifier.</param>
-        private static void AddMissingRelationshipGroups( GroupTypeCache relationshipGroupType, Guid ownerRoleGuid )
+        private static void AddMissingRelationshipGroups( CacheGroupType relationshipGroupType, Guid ownerRoleGuid )
         {
             if ( relationshipGroupType != null )
             {
                 var ownerRoleId = relationshipGroupType.Roles
-                    .Where( r => r.Guid.Equals( ownerRoleGuid ) ).Select( a => (int?)a.Id ).FirstOrDefault();
+                    .Where( r => r.Guid.Equals( ownerRoleGuid ) ).Select( a => ( int? ) a.Id ).FirstOrDefault();
                 if ( ownerRoleId.HasValue )
                 {
                     var rockContext = new RockContext();
@@ -380,7 +426,7 @@ namespace Rock.Jobs
             foreach ( var workflow in completedWorkflows )
             {
                 var retentionPeriod = workflow.WorkflowType.CompletedWorkflowRetentionPeriod;
-                if ( retentionPeriod.HasValue && workflow.ModifiedDateTime < RockDateTime.Now.AddDays( -1 * (int)retentionPeriod ) )
+                if ( retentionPeriod.HasValue && workflow.ModifiedDateTime < RockDateTime.Now.AddDays( -1 * ( int ) retentionPeriod ) )
                 {
                     string errorMessage;
                     if ( workflowService.CanDelete( workflow, out errorMessage ) )
@@ -412,7 +458,7 @@ namespace Rock.Jobs
 
             foreach ( var workflow in workflowsWithExpirationPeriod )
             {
-                if ( workflow.ModifiedDateTime < RockDateTime.Now.AddDays( -1 * (int)workflow.WorkflowType.LogRetentionPeriod ) )
+                if ( workflow.ModifiedDateTime < RockDateTime.Now.AddDays( -1 * ( int ) workflow.WorkflowType.LogRetentionPeriod ) )
                 {
                     // WorkflowLogService.CanDelete( log ) always returns true, so no need to check
                     bool keepDeleting = true;
@@ -523,29 +569,11 @@ namespace Rock.Jobs
             if ( exceptionExpireDays.HasValue )
             {
                 var exceptionLogRockContext = new Rock.Data.RockContext();
+                exceptionLogRockContext.Database.CommandTimeout = ( int ) TimeSpan.FromMinutes( 10 ).TotalSeconds;
                 DateTime exceptionExpireDate = RockDateTime.Now.Add( new TimeSpan( exceptionExpireDays.Value * -1, 0, 0, 0 ) );
+                var exceptionLogsToDelete = new ExceptionLogService( exceptionLogRockContext ).Queryable().Where( a => a.CreatedDateTime < exceptionExpireDate );
 
-                // delete in chunks (see http://dba.stackexchange.com/questions/1750/methods-of-speeding-up-a-huge-delete-from-table-with-no-clauses)
-                bool keepDeleting = true;
-                while ( keepDeleting )
-                {
-                    var dbTransaction = exceptionLogRockContext.Database.BeginTransaction();
-                    try
-                    {
-                        string sqlCommand = @"DELETE TOP (@batchAmount) FROM [ExceptionLog] WHERE [CreatedDateTime] < @createdDateTime";
-
-                        int rowsDeleted = exceptionLogRockContext.Database.ExecuteSqlCommand( sqlCommand,
-                            new SqlParameter( "batchAmount", batchAmount ),
-                            new SqlParameter( "createdDateTime", exceptionExpireDate )
-                        );
-                        keepDeleting = rowsDeleted > 0;
-                        totalRowsDeleted += rowsDeleted;
-                    }
-                    finally
-                    {
-                        dbTransaction.Commit();
-                    }
-                }
+                totalRowsDeleted = exceptionLogRockContext.BulkDelete( exceptionLogsToDelete, batchAmount );
             }
 
             return totalRowsDeleted;
@@ -664,7 +692,7 @@ WHERE ic.ChannelId = @channelId
                 AttributeMatrixService attributeMatrixService = new AttributeMatrixService( rockContext );
                 AttributeMatrixItemService attributeMatrixItemService = new AttributeMatrixItemService( rockContext );
 
-                var matrixFieldTypeId = FieldTypeCache.Read<MatrixFieldType>().Id;
+                var matrixFieldTypeId = CacheFieldType.Get<MatrixFieldType>().Id;
                 // get a list of attribute Matrix Guids that are actually in use
                 var usedAttributeMatrices = new AttributeValueService( rockContext ).Queryable().Where( a => a.Attribute.FieldTypeId == matrixFieldTypeId ).Select( a => a.Value ).ToList().AsGuidList();
 
@@ -682,12 +710,12 @@ WHERE ic.ChannelId = @channelId
 
             // clean up other orphaned entity attributes
             Type rockContextType = typeof( Rock.Data.RockContext );
-            foreach ( var cachedType in EntityTypeCache.All().Where( e => e.IsEntity ) )
+            foreach ( var cachedType in CacheEntityType.All().Where( e => e.IsEntity ) )
             {
                 Type entityType = cachedType.GetEntityType();
                 if ( entityType != null &&
                     typeof( IEntity ).IsAssignableFrom( entityType ) &&
-                    typeof( IHasAttributes ).IsAssignableFrom( entityType ) &&
+                    typeof( Data.IHasAttributes ).IsAssignableFrom( entityType ) &&
                     !entityType.Namespace.Equals( "Rock.Rest.Controllers" ) )
                 {
                     try
@@ -709,7 +737,7 @@ WHERE ic.ChannelId = @channelId
                             var result = genericMethod.Invoke( this, null ) as int?;
                             if ( result.HasValue )
                             {
-                                recordsDeleted += (int)result;
+                                recordsDeleted += ( int ) result;
                             }
                         }
                     }
@@ -725,14 +753,14 @@ WHERE ic.ChannelId = @channelId
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        private int CleanupOrphanedAttributeValuesForEntityType<T>() where T : Rock.Data.Entity<T>, IHasAttributes, new()
+        private int CleanupOrphanedAttributeValuesForEntityType<T>() where T : Rock.Data.Entity<T>,  Data.IHasAttributes, new()
         {
             int recordsDeleted = 0;
 
             using ( RockContext rockContext = new RockContext() )
             {
                 var attributeValueService = new AttributeValueService( rockContext );
-                int? entityTypeId = EntityTypeCache.GetId<T>();
+                int? entityTypeId = CacheEntityType.GetId<T>();
                 var entityIdsQuery = new Service<T>( rockContext ).Queryable().Select( a => a.Id );
                 var orphanedAttributeValues = attributeValueService.Queryable().Where( a => a.EntityId.HasValue && a.Attribute.EntityTypeId == entityTypeId.Value && !entityIdsQuery.Contains( a.EntityId.Value ) ).ToList();
                 if ( orphanedAttributeValues.Any() )
@@ -744,6 +772,24 @@ WHERE ic.ChannelId = @channelId
             }
 
             return recordsDeleted;
+        }
+
+        /// <summary>
+        /// Cleanups the transient communications.
+        /// </summary>
+        /// <param name="dataMap">The data map.</param>
+        private int CleanupTransientCommunications( JobDataMap dataMap )
+        {
+            int totalRowsDeleted = 0;
+            int? batchAmount = dataMap.GetString( "BatchCleanupAmount" ).AsIntegerOrNull() ?? 1000;
+            var rockContext = new Rock.Data.RockContext();
+            rockContext.Database.CommandTimeout = ( int ) TimeSpan.FromMinutes( 10 ).TotalSeconds;
+            DateTime transientCommunicationExpireDate = RockDateTime.Now.Add( new TimeSpan( 7 * -1, 0, 0, 0 ) );
+            var communicationsToDelete = new CommunicationService( rockContext ).Queryable().Where( a => a.CreatedDateTime < transientCommunicationExpireDate && a.Status == CommunicationStatus.Transient );
+
+            totalRowsDeleted = rockContext.BulkDelete( communicationsToDelete, batchAmount );
+
+            return totalRowsDeleted;
         }
 
         /// <summary>

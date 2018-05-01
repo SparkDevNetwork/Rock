@@ -24,7 +24,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -79,9 +79,12 @@ namespace RockWeb.Blocks.Prayer
 {% endif %}
 
 " )]
+    [BooleanField( "Display Campus", "Display the campus filter", true,category: "Filtering", order: 6 )]
     public partial class PrayerSession : RockBlock
     {
         #region Fields
+
+        private const string CAMPUS_PREFERENCE = "prayer-session-{0}-campus";
         private bool _enableCommunityFlagging = false;
         private string _categoryGuidString = string.Empty;
         private int? _flagLimit = 1;
@@ -144,6 +147,7 @@ namespace RockWeb.Blocks.Prayer
             _categoryGuidString = GetAttributeValue( "CategoryGuid" );
             _enableCommunityFlagging = GetAttributeValue( "EnableCommunityFlagging" ).AsBoolean();
             lWelcomeInstructions.Text = GetAttributeValue( "WelcomeIntroductionText" );
+            cpCampus.Visible = GetAttributeValue( "DisplayCampus" ).AsBoolean();
         }
 
         /// <summary>
@@ -159,15 +163,16 @@ namespace RockWeb.Blocks.Prayer
                 DisplayCategories();
                 SetNoteType();
                 lbStart.Focus();
+                cpCampus.SetValue(this.GetUserPreference( string.Format( CAMPUS_PREFERENCE, this.BlockId ) ).AsIntegerOrNull());
                 lbFlag.Visible = _enableCommunityFlagging;
             }
 
             if ( NoteTypeId.HasValue )
             {
-                var noteType = NoteTypeCache.Read( NoteTypeId.Value );
+                var noteType = CacheNoteType.Get( NoteTypeId.Value );
                 if ( noteType != null )
                 {
-                    notesComments.NoteTypes = new List<NoteTypeCache> { noteType };
+                    notesComments.NoteTypes = new List<CacheNoteType> { noteType };
                 }
             }
 
@@ -202,15 +207,26 @@ namespace RockWeb.Blocks.Prayer
                 nbSelectCategories.Visible = false;
             }
 
+            string categoriesPrefix = string.Format( "prayer-categories-{0}-", this.BlockId );
+            SavePreferences( categoriesPrefix );
+            this.SetUserPreference( string.Format( CAMPUS_PREFERENCE, this.BlockId ), cpCampus.SelectedValue );
+
+            SetAndDisplayPrayerRequests( cblCategories );
+
+            if ( PrayerRequestIds.Count <= 0 )
+            {
+                nbPrayerRequests.Visible = true;
+                return;
+            }
+            else
+            {
+                nbPrayerRequests.Visible = false;
+            }
+
             lbNext.Focus();
             lbBack.Visible = false;
 
             pnlChooseCategories.Visible = false;
-
-            string settingPrefix = string.Format( "prayer-categories-{0}-", this.BlockId );
-            SavePreferences( settingPrefix );
-
-            SetAndDisplayPrayerRequests( cblCategories );
         }
 
         /// <summary>
@@ -400,7 +416,7 @@ namespace RockWeb.Blocks.Prayer
             if ( !string.IsNullOrEmpty( categoryGuid ) )
             {
                 Guid guid = new Guid( categoryGuid );
-                var filterCategory = CategoryCache.Read( guid );
+                var filterCategory = CacheCategory.Get( guid );
                 if ( filterCategory != null )
                 {
                     prayerRequestQuery = prayerRequestQuery.Where( p => p.Category.ParentCategoryId == filterCategory.Id );
@@ -469,7 +485,15 @@ namespace RockWeb.Blocks.Prayer
         {
             RockContext rockContext = new RockContext();
             PrayerRequestService service = new PrayerRequestService( rockContext );
-            var prayerRequests = service.GetByCategoryIds( categoriesList.SelectedValuesAsInt ).OrderByDescending( p => p.IsUrgent ).ThenBy( p => p.PrayerCount ).ToList();
+            var prayerRequestQuery = service.GetByCategoryIds( categoriesList.SelectedValuesAsInt );
+
+            var campusId = cpCampus.SelectedValueAsInt();
+            if ( campusId.HasValue )
+            {
+                prayerRequestQuery = prayerRequestQuery.Where( a => a.CampusId == campusId );
+            }
+
+            var prayerRequests = prayerRequestQuery.OrderByDescending( p => p.IsUrgent ).ThenBy( p => p.PrayerCount ).ToList();
             List<int> list = prayerRequests.Select( p => p.Id ).ToList<int>();
 
             PrayerRequestIds = list;

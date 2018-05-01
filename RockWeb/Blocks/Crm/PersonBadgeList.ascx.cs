@@ -24,7 +24,7 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 using Rock.PersonProfile;
 using Rock.Security;
@@ -63,7 +63,7 @@ namespace RockWeb.Blocks.Crm
             var securityField = gPersonBadge.ColumnsOfType<SecurityField>().FirstOrDefault();
             if ( securityField != null )
             {
-                securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.PersonBadge ) ).Id;
+                securityField.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.PersonBadge ) ).Id;
             }
         }
 
@@ -126,7 +126,7 @@ namespace RockWeb.Blocks.Crm
                     return;
                 }
 
-                PersonBadgeCache.Flush( personBadge.Id );
+                CachePersonBadge.Remove( personBadge.Id );
 
                 personBadgeService.Delete( personBadge );
                 rockContext.SaveChanges();
@@ -145,7 +145,7 @@ namespace RockWeb.Blocks.Crm
 
             foreach ( var personBadge in personBadges )
             {
-                PersonBadgeCache.Flush( personBadge.Id );
+                CachePersonBadge.Remove( personBadge.Id );
             }
 
             BindGrid();
@@ -187,7 +187,7 @@ namespace RockWeb.Blocks.Crm
         public bool IsActive { get; set; }
         public int Order { get; set; }
 
-        public PersonBadgeInfo(PersonBadgeCache badge)
+        public PersonBadgeInfo(CachePersonBadge badge)
         {
             Id = badge.Id;
             Name = badge.Name;

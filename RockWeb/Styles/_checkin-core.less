@@ -1,4 +1,4 @@
-﻿@import "_rock-variables";
+@import "_rock-variables";
 
 /*
   Used to style the check-in screens
@@ -27,7 +27,9 @@
 @fa-theme-weight-name: 'solid';
 .fa-font-face( @fa-theme-weight-name );
 
-h1, h2, h3 {
+h1,
+h2,
+h3 {
   letter-spacing: -.03em;
 }
 
@@ -73,12 +75,12 @@ h1 {
 // set page background
 body {
   .checkinBackground;
-    
-    overflow-x: hidden;
+
+  overflow-x: hidden;
   -webkit-background-size: cover;
-     -moz-background-size: cover;
-       -o-background-size: cover;
-          background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
 
   @media all and (-webkit-min-device-pixel-ratio: 1.5) {
     .checkinBackgroundRetina();
@@ -192,7 +194,7 @@ body {
     line-height: 92px;
   }
 
-  &.active i:before {
+  &.active i::before {
     // checked icon
     content: @fa-var-check-square;
   }
@@ -253,8 +255,8 @@ body {
 // round photos
 .photo-round {
   background-repeat: no-repeat;
-  background-size: cover;
   background-position-x: center;
+  background-size: cover;
 
   &.photo-round-md {
     width: 70px;
@@ -377,38 +379,38 @@ input.namesearch {
   width: 100%;
   padding-right: 40px;
   -webkit-text-size-adjust: none;
-      -ms-text-size-adjust: none;
+  -ms-text-size-adjust: none;
   -webkit-user-select: none;
-     -moz-user-select: none;
-      -ms-user-select: none;
-          user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
   -webkit-transform: translateZ(0);
-     -moz-transform: translateZ(0);
-      -ms-transform: translateZ(0);
-       -o-transform: translateZ(0);
-          transform: translateZ(0);
+  -moz-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  -o-transform: translateZ(0);
+  transform: translateZ(0);
 
   -webkit-tap-highlight-color: rgba(0,0,0,0);
   -webkit-touch-callout: none;
-     -moz-text-size-adjust: none;
-       -o-text-size-adjust: none;
-          text-size-adjust: none;
+  -moz-text-size-adjust: none;
+  -o-text-size-adjust: none;
+  text-size-adjust: none;
 }
 
 .iScrollIndicator {
   position: absolute;
+  box-sizing: border-box;
   display: block;
   width: 100%;
   min-height: 100px;
-  box-sizing: border-box;
   background-color: @checkin-scrollbar-bg;
   border-top-left-radius: 3px;
   border-top-right-radius: 3px;
   border-bottom-right-radius: 3px;
   border-bottom-left-radius: 3px;
   -webkit-transition: 0ms cubic-bezier(.1, .57, .1, 1);
-          transition: 0ms cubic-bezier(.1, .57, .1, 1);
-  transform: translate(0px, 0px) translateZ(0px);
+  transition: 0ms cubic-bezier(.1, .57, .1, 1);
+  transform: translate(0, 0) translateZ(0);
 }
 
 .iScrollVerticalScrollbar,

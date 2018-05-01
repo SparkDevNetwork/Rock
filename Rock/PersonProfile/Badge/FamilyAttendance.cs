@@ -26,7 +26,7 @@ using System.Collections.Generic;
 using System.Data;
 using System;
 using System.Diagnostics;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.PersonProfile.Badge
 {
@@ -49,7 +49,7 @@ namespace Rock.PersonProfile.Badge
         /// </summary>
         /// <param name="badge">The badge.</param>
         /// <param name="writer">The writer.</param>
-        public override void Render( PersonBadgeCache badge, System.Web.UI.HtmlTextWriter writer )
+        public override void Render( CachePersonBadge badge, System.Web.UI.HtmlTextWriter writer )
         {
             int minBarHeight = GetAttributeValue(badge, "MinimumBarHeight").AsIntegerOrNull() ?? 2;
             int monthsToDisplay = GetAttributeValue(badge, "MonthsToDisplay").AsIntegerOrNull() ?? 24;
@@ -62,8 +62,7 @@ namespace Rock.PersonProfile.Badge
             }
 
             string tooltip = string.Empty;
-            var groupTypeRole = Person.GetFamilyRole();
-            if ( groupTypeRole != null && groupTypeRole.Guid == SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() )
+            if ( Person.AgeClassification == AgeClassification.Child )
             {
                 tooltip = $"{Person.NickName.ToPossessive().EncodeHtml()} attendance for the last 24 months. Each bar is a month.";
             }

@@ -46,6 +46,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 50 )]
         [DataMember( IsRequired = true )]
+        [Previewable]
         public string FirstName { get; set; }
 
         /// <summary>
@@ -57,6 +58,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 50 )]
         [DataMember( IsRequired = true )]
+        [Previewable]
         public string LastName { get; set; }
 
         /// <summary>
@@ -67,6 +69,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 254 )]
+        [Previewable]
         [RegularExpression( @"[\w\.\'_%-]+(\+[\w-]*)?@([\w-]+\.)+[\w-]+", ErrorMessage = "The Email address is invalid" )]
         public string Email { get; set; }
 
@@ -184,6 +187,7 @@ namespace Rock.Model
         /// <value>
         /// An <see cref="System.Int32"/> referencing the Id of the <see cref="Rock.Model.Location"/> that is associated with this BenevolenceRequest. 
         /// </value>
+        [HideFromReporting]
         [DataMember]
         public int? LocationId { get; set; }
 
@@ -313,6 +317,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Decimal"/> containing the total amount of benevolence given.
         /// </value>
+        [Previewable]
         public virtual decimal TotalAmount
         {
             get

@@ -27,7 +27,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -193,7 +193,7 @@ namespace RockWeb.Blocks.Fundraising
 
                 groupMember.LoadAttributes( rockContext );
                 groupMember.Group.LoadAttributes( rockContext );
-                var opportunityType = DefinedValueCache.Read( groupMember.Group.GetAttributeValue( "OpportunityType" ).AsGuid() );
+                var opportunityType = CacheDefinedValue.Get( groupMember.Group.GetAttributeValue( "OpportunityType" ).AsGuid() );
 
                 lProfileTitle.Text = string.Format(
                     "{0} Profile for {1}",
@@ -233,7 +233,7 @@ namespace RockWeb.Blocks.Fundraising
             // Person Attributes (the ones they picked in the Block Settings)
             phPersonAttributes.Controls.Clear();
 
-            var personAttributes = this.GetAttributeValue( "PersonAttributes" ).SplitDelimitedValues().AsGuidList().Select( a => AttributeCache.Read( a ) );
+            var personAttributes = this.GetAttributeValue( "PersonAttributes" ).SplitDelimitedValues().AsGuidList().Select( a => CacheAttribute.Get( a ) );
             if ( personAttributes.Any() )
             {
                 var person = groupMember.Person;
@@ -257,29 +257,11 @@ namespace RockWeb.Blocks.Fundraising
             var personService = new PersonService( rockContext );
             var person = personService.Get( groupMember.PersonId );
 
-            var changes = new List<string>();
-
             int? orphanedPhotoId = null;
             if ( person.PhotoId != imgProfilePhoto.BinaryFileId )
             {
                 orphanedPhotoId = person.PhotoId;
                 person.PhotoId = imgProfilePhoto.BinaryFileId;
-
-                if ( orphanedPhotoId.HasValue )
-                {
-                    if ( person.PhotoId.HasValue )
-                    {
-                        changes.Add( "Modified the photo." );
-                    }
-                    else
-                    {
-                        changes.Add( "Deleted the photo." );
-                    }
-                }
-                else if ( person.PhotoId.HasValue )
-                {
-                    changes.Add( "Added a photo." );
-                }
 
                 // add or update the Photo Verify group to have this person as Pending since the photo was changed or deleted
                 using ( var photoRequestRockContext = new RockContext() )
@@ -308,7 +290,7 @@ namespace RockWeb.Blocks.Fundraising
             Rock.Attribute.Helper.GetEditValues( phGroupMemberAttributes, groupMember );
 
             // Save selected Person Attributes (The ones picked in Block Settings)
-            var personAttributes = this.GetAttributeValue( "PersonAttributes" ).SplitDelimitedValues().AsGuidList().Select( a => AttributeCache.Read( a ) );
+            var personAttributes = this.GetAttributeValue( "PersonAttributes" ).SplitDelimitedValues().AsGuidList().Select( a => CacheAttribute.Get( a ) );
             if ( personAttributes.Any() )
             {
                 person.LoadAttributes( rockContext );
@@ -317,29 +299,9 @@ namespace RockWeb.Blocks.Fundraising
                     Control attributeControl = phPersonAttributes.FindControl( string.Format( "attribute_field_{0}", personAttribute.Id ) );
                     if ( attributeControl != null )
                     {
-                        string originalValue = person.GetAttributeValue( personAttribute.Key );
-                        string newValue = personAttribute.FieldType.Field.GetEditValue( attributeControl, personAttribute.QualifierValues );
-
                         // Save Attribute value to the database
+                        string newValue = personAttribute.FieldType.Field.GetEditValue( attributeControl, personAttribute.QualifierValues );
                         Rock.Attribute.Helper.SaveAttributeValue( person, personAttribute, newValue, rockContext );
-
-                        // Check for changes to write to history
-                        if ( ( originalValue ?? string.Empty ).Trim() != ( newValue ?? string.Empty ).Trim() )
-                        {
-                            string formattedOriginalValue = string.Empty;
-                            if ( !string.IsNullOrWhiteSpace( originalValue ) )
-                            {
-                                formattedOriginalValue = personAttribute.FieldType.Field.FormatValue( null, originalValue, personAttribute.QualifierValues, false );
-                            }
-
-                            string formattedNewValue = string.Empty;
-                            if ( !string.IsNullOrWhiteSpace( newValue ) )
-                            {
-                                formattedNewValue = personAttribute.FieldType.Field.FormatValue( null, newValue, personAttribute.QualifierValues, false );
-                            }
-
-                            History.EvaluateChange( changes, personAttribute.Name, formattedOriginalValue, formattedNewValue, personAttribute.FieldType.Field.IsSensitive() );
-                        }
                     }
                 }
             }
@@ -349,16 +311,6 @@ namespace RockWeb.Blocks.Fundraising
             {
                 rockContext.SaveChanges();
                 groupMember.SaveAttributeValues( rockContext );
-
-                if ( changes.Any() )
-                {
-                    HistoryService.SaveChanges(
-                        rockContext,
-                        typeof( Person ),
-                        Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                        person.Id,
-                        changes );
-                }
 
                 if ( orphanedPhotoId.HasValue )
                 {
@@ -488,7 +440,7 @@ namespace RockWeb.Blocks.Fundraising
             btnContributionsTab.Visible = showContributions;
 
             // Progress
-            var entityTypeIdGroupMember = EntityTypeCache.GetId<Rock.Model.GroupMember>();
+            var entityTypeIdGroupMember = CacheEntityType.GetId<Rock.Model.GroupMember>();
 
             var contributionTotal = new FinancialTransactionDetailService( rockContext ).Queryable()
                         .Where( d => d.EntityTypeId == entityTypeIdGroupMember
@@ -512,7 +464,7 @@ namespace RockWeb.Blocks.Fundraising
             queryParams.Add( "GroupMemberId", hfGroupMemberId.Value );
             mergeFields.Add( "MakeDonationUrl", LinkedPageUrl( "DonationPage", queryParams ));
 
-            var opportunityType = DefinedValueCache.Read( group.GetAttributeValue( "OpportunityType" ).AsGuid() );
+            var opportunityType = CacheDefinedValue.Get( group.GetAttributeValue( "OpportunityType" ).AsGuid() );
 
             string makeDonationButtonText = null;
             if ( groupMember.PersonId == this.CurrentPersonId )
@@ -572,10 +524,10 @@ namespace RockWeb.Blocks.Fundraising
             BindContributionsGrid();
 
             // Tab:Comments
-            var noteType = NoteTypeCache.Read( this.GetAttributeValue( "NoteType" ).AsGuid() );
+            var noteType = CacheNoteType.Get( this.GetAttributeValue( "NoteType" ).AsGuid() );
             if ( noteType != null )
             {
-                notesCommentsTimeline.NoteTypes = new List<NoteTypeCache> { noteType };
+                notesCommentsTimeline.NoteTypes = new List<CacheNoteType> { noteType };
             }
 
             notesCommentsTimeline.EntityId = groupMember.Id;
@@ -616,7 +568,7 @@ namespace RockWeb.Blocks.Fundraising
         protected void BindContributionsGrid()
         {
             var rockContext = new RockContext();
-            var entityTypeIdGroupMember = EntityTypeCache.GetId<Rock.Model.GroupMember>();
+            var entityTypeIdGroupMember = CacheEntityType.GetId<Rock.Model.GroupMember>();
             int groupMemberId = hfGroupMemberId.Value.AsInteger();
 
             var financialTransactionQry = new FinancialTransactionService( rockContext ).Queryable();

@@ -207,7 +207,7 @@ namespace Rock.Reporting.DataSelect.Person
             // t.Transaction.TransactionTypeValueId
             MemberExpression transactionTypeValueIdProperty = Expression.Property( transactionProperty, "TransactionTypeValueId" );
 
-            int transactionTypeContributionId = Rock.Web.Cache.DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
+            int transactionTypeContributionId = Rock.Cache.CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
 
             // t.Transaction.TransactionTypeValueId == transactionTypeContributionId
             whereClause = Expression.And( whereClause, Expression.Equal( transactionTypeValueIdProperty, Expression.Constant( transactionTypeContributionId ) ) );

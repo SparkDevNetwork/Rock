@@ -1,32 +1,59 @@
 ﻿var RockCodeEditor = function (context, keepEditorContent) {
     var ui = $.summernote.ui;
-    var $codeEditor = $('#codeeditor-div-' + context.options.codeEditorOptions.controlId);
-    var $codeEditorContainer = $codeEditor.closest('.code-editor-container');
-    $codeEditorContainer.hide();
-    $codeEditorContainer.height(context.layoutInfo.editingArea.height());
-    $inCodeEditorModeHiddenField = $('#' + context.options.codeEditorOptions.inCodeEditorModeHiddenFieldId);
-    $inCodeEditorModeHiddenField.val("0");
+    initializeCodeEditor(context);
 
-    // move code editor into summernote div
-    var element = $codeEditorContainer.detach();
-    context.layoutInfo.editingArea.closest('.note-editor').append(element);
+    function initializeCodeEditor(context) {
+        var $codeEditor = $('#codeeditor-div-' + context.options.codeEditorOptions.controlId);
+        var $codeEditorContainer = $codeEditor.closest('.code-editor-container');
+        $codeEditorContainer.hide();
+        $codeEditorContainer.height(context.layoutInfo.editingArea.height());
+        var $inCodeEditorModeHiddenField = $('#' + context.options.codeEditorOptions.inCodeEditorModeHiddenFieldId);
+        $inCodeEditorModeHiddenField.val("0");
+        // move code editor into summernote div
+        var element = $codeEditorContainer.detach();
+        context.layoutInfo.editingArea.closest('.note-editor').append(element);
+    }
 
     // create button
     var button = ui.button({
-        contents: '<i class="fa fa-file-code-o"/>',
+        contents: '<i class="fa fa-code"/>',
         tooltip: 'Code Editor',
         className: 'btn-codeview', // swap out the default btn-codeview with the RockCodeEditor
         click: function () {
+
+            var $codeEditor = $('#codeeditor-div-' + context.options.codeEditorOptions.controlId);
+            var $codeEditorContainer = $codeEditor.closest('.code-editor-container');
+            var $inCodeEditorModeHiddenField = $('#' + context.options.codeEditorOptions.inCodeEditorModeHiddenFieldId);
+
             if ($codeEditorContainer.is(':visible')) {
+                // toggle to WYSIWYG mode (unless there are lava commands)
+
                 context.invoke('toolbar.updateCodeview', true);
                 var content = ace.edit($codeEditor.attr('id')).getValue();
-                context.code(content);
-                context.layoutInfo.editingArea.show();
-                context.layoutInfo.statusbar.show();
-                $codeEditorContainer.hide();
-                $inCodeEditorModeHiddenField.val("0");
-                context.invoke('toolbar.updateCodeview', false);
+
+                // check if there are lava commands
+                var hasLavaCommandsRegEx = /{%.*%\}/;
+            
+                var hasLavaCommands = hasLavaCommandsRegEx.test(content);
+
+                if (!hasLavaCommands) {
+                    $('.js-wysiwyg-warning').hide();
+                    context.code(content);
+                    context.layoutInfo.editingArea.show();
+                    context.layoutInfo.statusbar.show();
+                    $codeEditorContainer.hide();
+                    $inCodeEditorModeHiddenField.val("0");
+                    context.invoke('toolbar.updateCodeview', false);
+                } else {
+                    if ($('.js-wysiwyg-warning').length == 0) {
+                        var $warning = $('<div class="alert alert-warning js-wysiwyg-warning"><button class="close" aria-hidden="true" type="button" data-dismiss="alert"><i class="fa fa-times"></i></button>The markup contains content that may not be compatible with the visual editor.</div>');
+                        $warning.insertBefore(context.layoutInfo.editor);
+                    }
+
+                    $('.js-wysiwyg-warning').show();
+                }
             } else {
+                // toggle to CodeEditor mode
                 $codeEditorContainer.height(context.layoutInfo.editingArea.height());
 
                 // make sure it has at least some usable height

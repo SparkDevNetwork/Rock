@@ -22,7 +22,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Workflow.Action.CheckIn
 {
@@ -69,7 +69,7 @@ namespace Rock.Workflow.Action.CheckIn
                 var ageRangeAttributeGuid = GetAttributeValue( action, "GroupAgeRangeAttribute" ).AsGuidOrNull();
                 if ( ageRangeAttributeGuid.HasValue )
                 {
-                    var attribute = AttributeCache.Read( ageRangeAttributeGuid.Value, rockContext );
+                    var attribute = CacheAttribute.Get( ageRangeAttributeGuid.Value, rockContext );
                     if ( attribute != null )
                     {
                         ageRangeAttributeKey = attribute.Key;
@@ -81,7 +81,7 @@ namespace Rock.Workflow.Action.CheckIn
                 var birthdateRangeAttributeGuid = GetAttributeValue( action, "GroupBirthdateRangeAttribute" ).AsGuidOrNull();
                 if ( birthdateRangeAttributeGuid.HasValue )
                 {
-                    var attribute = AttributeCache.Read( birthdateRangeAttributeGuid.Value, rockContext );
+                    var attribute = CacheAttribute.Get( birthdateRangeAttributeGuid.Value, rockContext );
                     if ( attribute != null )
                     {
                         birthdateRangeAttributeKey = attribute.Key;

@@ -23,7 +23,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Workflow;
 
 namespace Rock.Web.UI.Controls
@@ -245,7 +245,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             result.IsActionCompletedOnSuccess = _cbIsActionCompletedOnSuccess.Checked;
             result.IsActivityCompletedOnSuccess = _cbIsActivityCompletedOnSuccess.Checked;
 
-            var entityType = EntityTypeCache.Read( result.EntityTypeId );
+            var entityType = CacheEntityType.Get( result.EntityTypeId );
             if ( entityType != null && entityType.Name == typeof( Rock.Workflow.Action.UserEntryForm ).FullName )
             {
                 result.WorkflowForm = _formEditor.GetForm();
@@ -304,10 +304,10 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             _tbddlCriteriaValue.SelectedValue = value.CriteriaValue;
 
             _tbActionTypeName.Text = value.Name;
-            _wfatpEntityType.SetValue( EntityTypeCache.Read( value.EntityTypeId ) );
+            _wfatpEntityType.SetValue( CacheEntityType.Get( value.EntityTypeId ) );
             _cbIsActivityCompletedOnSuccess.Checked = value.IsActivityCompletedOnSuccess;
 
-            var entityType = EntityTypeCache.Read( value.EntityTypeId );
+            var entityType = CacheEntityType.Get( value.EntityTypeId );
             if ( entityType != null && entityType.Name == typeof( Rock.Workflow.Action.UserEntryForm ).FullName )
             {
                 if (value.WorkflowForm == null)
@@ -508,7 +508,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-lg-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-7" );
@@ -535,7 +535,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             writer.RenderEndTag();
 
             // action edit fields
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
@@ -567,11 +567,11 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-lg-8" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            EntityTypeCache entityType = null;
+            CacheEntityType entityType = null;
             int? entityTypeId = _wfatpEntityType.SelectedValueAsInt();
             if ( entityTypeId.HasValue )
             {
-                entityType = EntityTypeCache.Read( entityTypeId.Value );
+                entityType = CacheEntityType.Get( entityTypeId.Value );
                 if ( entityType != null )
                 {
                     var component = ActionContainer.GetComponent( entityType.Name );

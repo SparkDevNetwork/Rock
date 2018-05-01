@@ -22,7 +22,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Workflow.Action.CheckIn
 {
@@ -74,12 +74,12 @@ namespace Rock.Workflow.Action.CheckIn
                         {
                             string gradeOffsetRange = group.Group.GetAttributeValue( "GradeRange" ) ?? string.Empty;
                             var gradeOffsetRangePair = gradeOffsetRange.Split( new char[] { ',' }, StringSplitOptions.None ).AsGuidOrNullList().ToArray();
-                            DefinedValueCache minGradeDefinedValue = null;
-                            DefinedValueCache maxGradeDefinedValue = null;
+                            CacheDefinedValue minGradeDefinedValue = null;
+                            CacheDefinedValue maxGradeDefinedValue = null;
                             if ( gradeOffsetRangePair.Length == 2 )
                             {
-                                minGradeDefinedValue = gradeOffsetRangePair[0].HasValue ? DefinedValueCache.Read( gradeOffsetRangePair[0].Value ) : null;
-                                maxGradeDefinedValue = gradeOffsetRangePair[1].HasValue ? DefinedValueCache.Read( gradeOffsetRangePair[1].Value ) : null;
+                                minGradeDefinedValue = gradeOffsetRangePair[0].HasValue ? CacheDefinedValue.Get( gradeOffsetRangePair[0].Value ) : null;
+                                maxGradeDefinedValue = gradeOffsetRangePair[1].HasValue ? CacheDefinedValue.Get( gradeOffsetRangePair[1].Value ) : null;
                             }
 
                             /*

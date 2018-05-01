@@ -25,7 +25,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 
@@ -77,6 +77,12 @@ namespace RockWeb.Blocks.Utility
         {
             base.OnLoad( e );
 
+            var txtName = new TextBox();
+            txtName.ID = this.ClientID + "tb";
+            txtName.Text = "hello";
+            ph1.Controls.Add( txtName );
+
+            
             if ( !Page.IsPostBack )
             {
                 // added for your convenience

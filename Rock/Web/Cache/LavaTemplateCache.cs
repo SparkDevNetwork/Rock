@@ -15,14 +15,10 @@
 // </copyright>
 //
 using System;
-using System.Data.Entity;
-using System.Linq;
-using System.Runtime.Caching;
 using System.Runtime.Serialization;
 using DotLiquid;
-using Rock.Data;
-using Rock.Model;
-using Rock.Security;
+
+using Rock.Cache;
 
 namespace Rock.Web.Cache
 {
@@ -32,12 +28,18 @@ namespace Rock.Web.Cache
     /// </summary>
     [Serializable]
     [DataContract]
-    public class LavaTemplateCache 
+    [Obsolete( "Use Rock.Cache.LaveTemplateCache instead" )]
+    public class LavaTemplateCache
     {
         #region Constructors
 
         private LavaTemplateCache()
         {
+        }
+
+        private LavaTemplateCache( CacheLavaTemplate cacheLavaTemplate )
+        {
+            Template = cacheLavaTemplate.Template;
         }
 
         #endregion
@@ -57,11 +59,6 @@ namespace Rock.Web.Cache
 
         #region Static Methods
 
-        private static string CacheKey( string content )
-        {
-            return string.Format( "Rock:LavaTemplate:{0}", content );
-        }
-
         /// <summary>
         /// Returns LavaTemplate object from cache.  If definedValue does not already exist in cache, it
         /// will be read and added to cache
@@ -70,8 +67,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static LavaTemplateCache Read( string content )
         {
-            return GetOrAddExisting( LavaTemplateCache.CacheKey( content ),
-                () => Load( content ) );
+            return new LavaTemplateCache( CacheLavaTemplate.Get( content ) );
         }
 
         /// <summary>
@@ -82,28 +78,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static LavaTemplateCache GetOrAddExisting( string key, Func<LavaTemplateCache> valueFactory )
         {
-            RockMemoryCache cache = RockMemoryCache.Default;
-
-            object cacheValue = cache.Get( key );
-            if ( cacheValue != null )
-            {
-                return (LavaTemplateCache)cacheValue;
-            }
-
-            LavaTemplateCache value = valueFactory();
-
-            var cacheItemPolicy = new CacheItemPolicy();
-            cacheItemPolicy.SlidingExpiration = new TimeSpan( 0, 10, 0 );
-            cache.Set( key, value, cacheItemPolicy );
-
-            return value;
-        }
-
-        private static LavaTemplateCache Load( string content )
-        {
-            var lavaTemplate = new LavaTemplateCache();
-            lavaTemplate.Template = Template.Parse( content );
-            return lavaTemplate;
+            return null;
         }
 
         /// <summary>
@@ -111,12 +86,7 @@ namespace Rock.Web.Cache
         /// </summary>
         public static void Flush()
         {
-            RockMemoryCache cache = RockMemoryCache.Default;
-            var lavaTemplateCaches = cache.Where( a => a.Key.StartsWith( "Rock:LavaTemplate:" ) );
-            foreach ( var lavaTemplateCache in lavaTemplateCaches )
-            {
-                cache.Remove( lavaTemplateCache.Key );
-            }
+            CacheLavaTemplate.Clear();
         }
 
         #endregion

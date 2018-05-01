@@ -19,7 +19,7 @@ using System.Web.Http;
 
 using Rock.Model;
 using Rock.Rest.Filters;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Rest.Controllers
 {
@@ -62,15 +62,15 @@ namespace Rock.Rest.Controllers
             // Platform
             if ( devicePlatform.IsNotNullOrWhitespace() )
             {
-                var dt = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSONAL_DEVICE_PLATFORM.AsGuid() );
-                DefinedValueCache dv = null;
+                var dt = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSONAL_DEVICE_PLATFORM.AsGuid() );
+                CacheDefinedValue dv = null;
                 if ( dt != null )
                 {
                     dv = dt.DefinedValues.FirstOrDefault( v => v.Value == devicePlatform );
                 }
                 if ( dv == null )
                 {
-                    dv = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSONAL_DEVICE_PLATFORM_OTHER.AsGuid() );
+                    dv = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSONAL_DEVICE_PLATFORM_OTHER.AsGuid() );
                 }
                 personalDevice.PlatformValueId = dv != null ? dv.Id : (int?)null;
             }

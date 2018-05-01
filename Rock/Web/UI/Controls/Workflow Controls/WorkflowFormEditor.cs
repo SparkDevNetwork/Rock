@@ -23,7 +23,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Workflow;
 
 namespace Rock.Web.UI.Controls
@@ -147,7 +147,7 @@ namespace Rock.Web.UI.Controls
                 _ddlActionAttribute.Items.Add( new ListItem() );
                 foreach ( var attributeItem in workflowTypeAttributes )
                 {
-                    var fieldType = FieldTypeCache.Read( attributeItem.Value.FieldTypeId );
+                    var fieldType = CacheFieldType.Get( attributeItem.Value.FieldTypeId );
                     if ( fieldType != null && fieldType.Field is Rock.Field.Types.TextFieldType )
                     {
                         var li = new ListItem( attributeItem.Value.Name, attributeItem.Key.ToString() );
@@ -253,7 +253,7 @@ namespace Rock.Web.UI.Controls
             _cbIncludeActions = new RockCheckBox();
             _cbIncludeActions.Label = "Include Actions in Email";
             _cbIncludeActions.Text = "Yes";
-            _cbIncludeActions.Help = "Should the email include the option for recipient to select an action directly from within the email? Note: This only applies if none of the the form fields are required.";
+            _cbIncludeActions.Help = "Should the email include the option for recipient to select an action directly from within the email? Note: This only applies if none of the the form fields are required. The workflow will be persisted immediately prior to sending the email.";
             _cbIncludeActions.ID = this.ID + "_cbIncludeActions";
             Controls.Add( _cbIncludeActions );
 

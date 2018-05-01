@@ -16,6 +16,7 @@
                     <Rock:HighlightLabel ID="hlblSiteName" runat="server" />
                 </div>
             </div>
+            <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <asp:Panel ID="pnlBody" runat="server" CssClass="panel-body">
 
                 <asp:HiddenField ID="hfPageId" runat="server" />
@@ -37,7 +38,7 @@
 
                         <div class="tabContent">
 
-                            <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                            <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
 
                             <asp:Panel ID="pnlBasicProperty" runat="server" Visible="true">
                                 <div class="row">
@@ -101,7 +102,7 @@
                                     </div>
                                     <div class="col-md-6">
                                         <Rock:DataTextBox ID="tbBodyCssClass" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="BodyCssClass" Label="Body CSS Class"
-                                            Help="The CSS class to add to the body tag (if theme support it)." />
+                                            Help="The CSS class to add to the body tag (if theme supports it)." />
                                         <fieldset>
                                             <Rock:NotificationBox ID="nbPageRouteWarning" runat="server" />
                                             <Rock:RockTextBox ID="tbPageRoute" runat="server" TextMode="MultiLine" Rows="3" Label="Page Routes" Help="A unique, friendly route name for the page (e.g. 'Login' or 'Community/GetInvolved')" />
@@ -122,7 +123,7 @@
                                 </div>
                                 <div class="row">
                                     <div class="col-md-12">
-                                        <Rock:CodeEditor ID="ceHeaderContent" runat="server" Label="Header Content" EditorMode="Html" EditorTheme="Rock" EditorHeight="400"
+                                        <Rock:CodeEditor ID="ceHeaderContent" runat="server" Label="Header Content" EditorMode="Lava" EditorTheme="Rock" EditorHeight="400"
                                             Help="Additional HTML content to include in the &amp;lt;head&amp;gt; section of the rendered page." />
                                     </div>
                                 </div>
@@ -139,7 +140,7 @@
                                                     <p><i class="fa fa-bolt"></i><strong>Sweet!</strong> Your package was imported successfully.</p>
                                                     <asp:Repeater ID="rptImportWarnings" runat="server" Visible="False">
                                                         <HeaderTemplate>
-                                                            <p><i class="fa fa-exclamation-triangle"></i>Just a quick head's up...</p>
+                                                            <p><i class="fa fa-exclamation-triangle"></i>Just a quick heads up...</p>
                                                             <ul>
                                                         </HeaderTemplate>
                                                         <ItemTemplate>

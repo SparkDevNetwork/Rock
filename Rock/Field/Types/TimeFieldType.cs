@@ -105,13 +105,13 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( control != null && control is TimePicker )
+            var picker = control as TimePicker;
+            if ( picker != null )
             {
-                var tp = control as TimePicker;
-                if ( tp != null && tp.SelectedTime.HasValue )
+                if ( picker.SelectedTime.HasValue )
                 {
                     // serialize the time using culture-insensitive "constant" fromat
-                    return tp.SelectedTime.Value.ToString("c");
+                    return picker.SelectedTime.Value.ToString( "c" );
                 }
             }
 
@@ -126,17 +126,10 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            var timeValue = TimeSpan.MinValue;
-            if ( TimeSpan.TryParse( value, out timeValue ) )
+            var picker = control as TimePicker;
+            if ( picker != null )
             {
-                if ( control != null && control is TimePicker )
-                {
-                    var tp = control as TimePicker;
-                    if ( tp != null )
-                    {
-                        tp.SelectedTime = timeValue;
-                    }
-                }
+                picker.SelectedTime = value.AsTimeSpan();
             }
         }
 

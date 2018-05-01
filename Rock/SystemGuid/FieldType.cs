@@ -304,6 +304,11 @@ namespace Rock.SystemGuid
         public const string METRICS = "3AF9AD35-9F3E-4497-BFDE-60C6C1827653";
 
         /// <summary>
+        /// Month/Day field type
+        /// </summary>
+        public const string MONTH_DAY = "8BED8DD8-8167-4052-B807-A1E72C133611";
+
+        /// <summary>
         /// Multi-Select field type
         /// </summary>
         public const string MULTI_SELECT = "BD0D9B57-2A41-4490-89FF-F01DAB7D4904";
@@ -357,6 +362,11 @@ namespace Rock.SystemGuid
         /// Sliding Date Range field type
         /// </summary>
         public const string SLIDING_DATE_RANGE = "55810BC5-45EA-4044-B783-0CCE0A445C6F";
+
+        /// <summary>
+        /// Social Media Account field type
+        /// </summary>
+        public const string SOCIAL_MEDIA_ACCOUNT = "92C0E3A1-9F63-49D4-B23B-73624AC42546";
 
         /// <summary>
         /// Social Security Number

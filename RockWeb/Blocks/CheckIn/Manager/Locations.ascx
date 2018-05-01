@@ -33,7 +33,7 @@
 
             <div class="panel panel-default">
 
-                <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
 
                 <asp:Panel ID="pnlNavHeading" runat="server" CssClass="panel-heading clickable clearfix" >
                     <asp:PlaceHolder runat="server">

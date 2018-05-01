@@ -21,7 +21,7 @@
             <div class="panel-body">
 
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" CssClass="margin-t-md" />
-                <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
 
                 <div id="pnlEditDetails" runat="server">
 
@@ -106,7 +106,7 @@
                                 <Rock:RockBoundField DataField="Label" HeaderText="Label" SortExpression="Label" />
                                 <Rock:RockBoundField DataField="EntityTypeName" HeaderText="Type" SortExpression="EntityTypeName" />
                                 <Rock:RockBoundField DataField="EntityTypeQualifier" HeaderText="" SortExpression="EntityTypeQualifier" />
-                                <Rock:BoolField DataField="IsRequired" HeaderText="Is Required" SortExpression="IsRequired" />
+                                <Rock:BoolField DataField="IsRequired" HeaderText="Is Required" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center" SortExpression="IsRequired" />
                                 <Rock:DeleteField OnClick="gMetricPartitions_Delete" />
                             </Columns>
                         </Rock:Grid>

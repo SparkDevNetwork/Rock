@@ -1,4 +1,4 @@
-﻿/*
+/*
   Used to manage styles for specific blocks.
 
   1. Notes - block to display, add, edit, delete notes
@@ -210,6 +210,9 @@
   .panel-body {
     .noteentry-control {
       overflow: hidden;
+      textarea {
+        .resizable(vertical)
+      }
     }
 
     .noteentry-notetype {
@@ -338,7 +341,7 @@
     }
   }
 
-  .panel-title:before {
+  .panel-title::before {
     margin-right: 4px;
     font-family: @fa-font-face;
     font-weight: @fa-theme-weight;
@@ -347,7 +350,7 @@
 }
 
 .workflow-action {
-  .workflow-action-name:before {
+  .workflow-action-name::before {
     font-family: @fa-font-face;
     font-weight: @fa-theme-weight;
     content: @fa-var-cube;
@@ -360,15 +363,14 @@
   }
 
   .conditional-run-criteria {
-    padding-top: 15px;
-    margin-top: -15px;
-    margin-bottom: 15px;
     border-style: solid;
     border-width: 1px;
+    margin: -15px -16px 15px;
+    padding: 15px 0 10px;
   }
 
-  .form-action-rows .row {
-    margin-bottom: 12px;
+  .form-action-rows .form-row {
+    margin-bottom: 15px;
   }
 }
 
@@ -408,14 +410,14 @@
           &:before {
             margin-top: 6px;
             font-family: @fa-font-face;
-            font-weight: @fa-theme-weight;
             font-size: 20px;
+            font-weight: @fa-theme-weight;
             content: @fa-var-chevron-up;
           }
         }
 
         &.collapsed {
-          i.panel-navigation:before {
+          i.panel-navigation::before {
             content: @fa-var-chevron-down;
           }
         }

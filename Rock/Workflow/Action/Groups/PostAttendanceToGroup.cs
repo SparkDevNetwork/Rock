@@ -25,7 +25,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Workflow.Action
 {
@@ -92,7 +92,7 @@ namespace Rock.Workflow.Action
             Guid guid = personAttribute.AsGuid();
             if (!guid.IsEmpty())
             {
-                var attribute = AttributeCache.Read( guid, rockContext );
+                var attribute = CacheAttribute.Get( guid, rockContext );
                 if ( attribute != null )
                 {
                     string value = action.GetWorklowAttributeValue(guid);
@@ -134,7 +134,7 @@ namespace Rock.Workflow.Action
             Guid locationAttributeGuid = GetAttributeValue(action, "Location").AsGuid();
             if ( !locationAttributeGuid.IsEmpty() )
             {
-                var locationAttribute = AttributeCache.Read(locationAttributeGuid, rockContext);
+                var locationAttribute = CacheAttribute.Get(locationAttributeGuid, rockContext);
 
                 if ( locationAttribute != null )
                 {
@@ -147,7 +147,7 @@ namespace Rock.Workflow.Action
             Guid scheduleAttributeGuid = GetAttributeValue( action, "Schedule" ).AsGuid();
             if ( !scheduleAttributeGuid.IsEmpty() )
             {
-                var scheduleAttribute = AttributeCache.Read( scheduleAttributeGuid, rockContext );
+                var scheduleAttribute = CacheAttribute.Get( scheduleAttributeGuid, rockContext );
                 if ( scheduleAttribute != null )
                 {
                     scheduleGuid = action.GetWorklowAttributeValue( scheduleAttributeGuid ).AsGuid();
@@ -230,7 +230,7 @@ namespace Rock.Workflow.Action
 
                     if ( attendance.LocationId.HasValue )
                     {
-                        Rock.CheckIn.KioskLocationAttendance.Flush( attendance.LocationId.Value );
+                        Rock.CheckIn.KioskLocationAttendance.Remove( attendance.LocationId.Value );
                     }
                 }
                 else

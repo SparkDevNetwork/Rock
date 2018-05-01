@@ -27,8 +27,8 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using Rock.Data;
+using Rock.Cache;
 using Rock.Security;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -362,7 +362,7 @@ Registration By: {0} Total Cost/Fees:{1}
         {
             // Setup Note settings
             Registration registration = this;
-            NoteTypeCache noteType = null;
+            CacheNoteType noteType = null;
             using ( RockContext rockContext = new RockContext() )
             {
                 RegistrationInstance registrationInstance = registration.RegistrationInstance ?? new RegistrationInstanceService( rockContext ).Get( registration.RegistrationInstanceId );
@@ -370,7 +370,7 @@ Registration By: {0} Total Cost/Fees:{1}
 
                 if ( registrationTemplate != null && registrationTemplate.AddPersonNote )
                 {
-                    noteType = NoteTypeCache.Read( Rock.SystemGuid.NoteType.PERSON_EVENT_REGISTRATION.AsGuid() );
+                    noteType = CacheNoteType.Get( Rock.SystemGuid.NoteType.PERSON_EVENT_REGISTRATION.AsGuid() );
                     if ( noteType != null )
                     {
                         var noteService = new NoteService( rockContext );
@@ -755,7 +755,7 @@ Registration By: {0} Total Cost/Fees:{1}
 
                 if ( registration.PersonAlias != null && registration.PersonAlias.Person != null )
                 {
-                    var family = registration.PersonAlias.Person.GetFamilies( rockContext ).FirstOrDefault();
+                    var family = registration.PersonAlias.Person.GetFamily( rockContext );
                     if ( family != null )
                     {
                         FamilyGuid = family.Guid;
@@ -1076,7 +1076,7 @@ Registration By: {0} Total Cost/Fees:{1}
                 using ( var rockContext = new RockContext() )
                 {
                     PersonName = person.FullName;
-                    var family = person.GetFamilies( rockContext ).FirstOrDefault();
+                    var family = person.GetFamily( rockContext );
 
                     if ( registrationInstance != null &&
                         registrationInstance.RegistrationTemplate != null )
@@ -1130,7 +1130,7 @@ Registration By: {0} Total Cost/Fees:{1}
                     if ( person != null )
                     {
                         PersonName = person.FullName;
-                        family = person.GetFamilies( rockContext ).FirstOrDefault();
+                        family = person.GetFamily( rockContext );
                         if ( family != null )
                         {
                             FamilyGuid = family.Guid;
@@ -1178,7 +1178,7 @@ Registration By: {0} Total Cost/Fees:{1}
             {
                 if ( person != null )
                 {
-                    DefinedValueCache dvPhone = null;
+                    CacheDefinedValue dvPhone = null;
 
                     switch ( Field.PersonFieldType )
                     {
@@ -1208,19 +1208,20 @@ Registration By: {0} Total Cost/Fees:{1}
                         case RegistrationPersonFieldType.MaritalStatus: return person.MaritalStatusValueId;
                         case RegistrationPersonFieldType.MobilePhone:
                             {
-                                dvPhone = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
+                                dvPhone = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
                                 break;
                             }
                         case RegistrationPersonFieldType.HomePhone:
                             {
-                                dvPhone = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
+                                dvPhone = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
                                 break;
                             }
                         case RegistrationPersonFieldType.WorkPhone:
                             {
-                                dvPhone = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK );
+                                dvPhone = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK );
                                 break;
                             }
+                        case RegistrationPersonFieldType.ConnectionStatus: return person.ConnectionStatusValueId;
                     }
 
                     if ( dvPhone != null )
@@ -1235,7 +1236,7 @@ Registration By: {0} Total Cost/Fees:{1}
             }
             else
             {
-                var attribute = AttributeCache.Read( Field.AttributeId ?? 0 );
+                var attribute = CacheAttribute.Get( Field.AttributeId ?? 0 );
                 if ( attribute != null )
                 {
                     switch ( Field.FieldSource )
@@ -1393,6 +1394,7 @@ Registration By: {0} Total Cost/Fees:{1}
                         case RegistrationPersonFieldType.Campus:
                         case RegistrationPersonFieldType.MaritalStatus:
                         case RegistrationPersonFieldType.Grade:
+                        case RegistrationPersonFieldType.ConnectionStatus:
                                 return typeof( int? );
 
                         case RegistrationPersonFieldType.Address:

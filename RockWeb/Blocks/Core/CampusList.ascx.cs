@@ -23,7 +23,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -44,7 +44,7 @@ namespace RockWeb.Blocks.Core
         /// <value>
         /// The available attributes.
         /// </value>
-        public List<AttributeCache> AvailableAttributes { get; set; }
+        public List<CacheAttribute> AvailableAttributes { get; set; }
 
         #endregion
 
@@ -93,7 +93,7 @@ namespace RockWeb.Blocks.Core
         {
             base.LoadViewState( savedState );
 
-            AvailableAttributes = ViewState["AvailableAttributes"] as List<AttributeCache>;
+            AvailableAttributes = ViewState["AvailableAttributes"] as List<CacheAttribute>;
         }
 
         /// <summary>
@@ -159,7 +159,7 @@ namespace RockWeb.Blocks.Core
                     return;
                 }
 
-                CampusCache.Flush( campus.Id );
+                CacheCampus.Remove( campus.Id );
 
                 campusService.Delete( campus );
                 rockContext.SaveChanges();
@@ -193,7 +193,7 @@ namespace RockWeb.Blocks.Core
                 new CampusService( rockContext ).Reorder( campuses, e.OldIndex, e.NewIndex );
                 rockContext.SaveChanges();
 
-                campuses.ForEach( t => CampusCache.Flush( t.Id ) );
+                campuses.ForEach( t => CacheCampus.Remove( t.Id ) );
             }
 
             BindGrid();
@@ -209,7 +209,7 @@ namespace RockWeb.Blocks.Core
         private void BindAttributes()
         {
             // Parse the attribute filters 
-            AvailableAttributes = new List<AttributeCache>();
+            AvailableAttributes = new List<CacheAttribute>();
 
             int entityTypeId = new Campus().TypeId;
             foreach ( var attributeModel in new AttributeService( new RockContext() ).Queryable()
@@ -219,7 +219,7 @@ namespace RockWeb.Blocks.Core
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name ) )
             {
-                AvailableAttributes.Add( AttributeCache.Read( attributeModel ) );
+                AvailableAttributes.Add( CacheAttribute.Get( attributeModel ) );
             }
         }
 
@@ -246,7 +246,7 @@ namespace RockWeb.Blocks.Core
                         boundField.AttributeId = attribute.Id;
                         boundField.HeaderText = attribute.Name;
 
-                        var attributeCache = Rock.Web.Cache.AttributeCache.Read( attribute.Id );
+                        var attributeCache = Rock.Cache.CacheAttribute.Get( attribute.Id );
                         if ( attributeCache != null )
                         {
                             boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;

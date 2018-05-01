@@ -21,7 +21,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock.Data;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -180,7 +180,7 @@ namespace Rock.Field.Types
             {
                 for( int i = 0; i < values.Length; i++)
                 {
-                    var definedValue = DefinedValueCache.Read( values[i].AsInteger() );
+                    var definedValue = CacheDefinedValue.Get( values[i].AsInteger() );
                     if ( definedValue != null)
                     {
                         values[i] = definedValue.Value;
@@ -254,10 +254,12 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( control != null && control is ValueList )
+            var picker = control as ValueList;
+            if ( picker != null )
             {
-                return ( (ValueList)control ).Value;
+                return picker.Value;
             }
+
             return null;
         }
 
@@ -269,9 +271,10 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value!= null && control != null && control is ValueList )
+            var picker = control as ValueList;
+            if ( picker != null )
             {
-                ( (ValueList)control ).Value = value;
+                picker.Value = value;
             }
         }
 

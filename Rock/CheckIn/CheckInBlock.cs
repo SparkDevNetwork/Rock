@@ -22,7 +22,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 
 namespace Rock.CheckIn
@@ -132,6 +132,11 @@ namespace Rock.CheckIn
             /// The name of the cookie that holds whether or not the device was a mobile device.
             /// </summary>
             public static readonly string ISMOBILE = "Checkin.IsMobile";
+
+            /// <summary>
+            /// The phone number used to check in could be in this cookie.
+            /// </summary>
+            public static readonly string PHONENUMBER = "Checkin.PhoneNumber";
         }
 
         /// <summary>
@@ -268,7 +273,7 @@ namespace Rock.CheckIn
                 {
                     var workflowService = new WorkflowService( rockContext );
 
-                    var workflowType = WorkflowTypeCache.Read( guid.Value );
+                    var workflowType = CacheWorkflowType.Get( guid.Value );
                     if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                     {
                         if ( CurrentWorkflow == null )
@@ -602,7 +607,7 @@ namespace Rock.CheckIn
             var pageReference = new PageReference( GetAttributeValue( attributeKey ), queryParams );
             if ( pageReference.PageId > 0 )
             {
-                var page = PageCache.Read( pageReference.PageId );
+                var page = CachePage.Get( pageReference.PageId );
                 if ( page != null && page.PageTitle == "Welcome" )
                 {
                     if ( pageReference.Parameters == null )
@@ -661,7 +666,7 @@ namespace Rock.CheckIn
             var pageReference = new PageReference( GetAttributeValue( attributeKey ) );
             if ( pageReference.PageId > 0 )
             {
-                var page = Rock.Web.Cache.PageCache.Read( pageReference.PageId );
+                var page = Rock.Cache.CachePage.Get( pageReference.PageId );
                 if ( page != null )
                 {
                     foreach ( var block in page.Blocks.OrderBy( b => b.Order ) )

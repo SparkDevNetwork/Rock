@@ -22,7 +22,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Reporting.DataTransform.Person
 {
@@ -91,7 +91,7 @@ namespace Rock.Reporting.DataTransform.Person
         /// <returns></returns> 
         private Expression BuildExpression( IService serviceInstance, IQueryable<int> idQuery, ParameterExpression parameterExpression )
         {
-            var groupeType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
+            var groupeType = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
             int ownerRoleId = groupeType.Roles.Where( a => a.Guid == SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() )
                 .Select( a => a.Id )
                 .FirstOrDefault();

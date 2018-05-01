@@ -33,7 +33,7 @@ namespace Rock.Model
     [RockDomain( "Finance" )]
     [Table( "FinancialTransaction" )]
     [DataContract]
-    [Analytics(false, false)]
+    [Analytics( false, false )]
     public partial class FinancialTransaction : Model<FinancialTransaction>
     {
         #region Entity Properties
@@ -321,7 +321,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual FinancialPaymentDetail FinancialPaymentDetail { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the transaction type <see cref="Rock.Model.DefinedValue"/> indicating the type of transaction that occurred.
         /// </summary>
@@ -469,6 +469,16 @@ namespace Rock.Model
         public override string ToString()
         {
             return this.TotalAmount.ToStringSafe();
+        }
+
+        /// <summary>
+        /// Processes the refund.
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public FinancialTransaction ProcessRefund( out string errorMessage )
+        {
+            return this.ProcessRefund( null, null, string.Empty, true, string.Empty, out errorMessage );
         }
 
         /// <summary>
@@ -726,4 +736,42 @@ namespace Rock.Model
     }
 
     #endregion
+
+    #region Extension Methods
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static partial class FinancialTransactionExtensionMethods
+    {
+        /// <summary>
+        /// Process a refund for a transaction.
+        /// </summary>
+        /// <param name="transaction">The refund transaction.</param>
+        /// <param name="amount">The amount.</param>
+        /// <param name="reasonValueId">The reason value identifier.</param>
+        /// <param name="summary">The summary.</param>
+        /// <param name="process">if set to <c>true</c> [process].</param>
+        /// <param name="batchNameSuffix">The batch name suffix.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public static FinancialTransaction ProcessRefund( this FinancialTransaction transaction, decimal? amount, int? reasonValueId, string summary, bool process, string batchNameSuffix, out string errorMessage )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var service = new FinancialTransactionService( rockContext );
+                var refundTransaction = service.ProcessRefund( transaction, null, null, string.Empty, true, string.Empty, out errorMessage );
+
+                if ( refundTransaction != null )
+                {
+                    rockContext.SaveChanges();
+                }
+
+                return refundTransaction;
+            }
+        }
+    }
+
+    #endregion
+
 }

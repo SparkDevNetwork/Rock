@@ -24,7 +24,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Reporting
@@ -69,7 +69,7 @@ order by YValue desc
 </pre>
 </code>",
               CodeEditorMode.Sql )]
-    [TextField( "Query Params", "The parameters that the stored procedure expects in the format of 'param1=value;param2=value'. Any parameter with the same name as a page parameter (i.e. querystring, form, or page route) will have it's value replaced with the page's current value. A parameter with the name of 'CurrentPersonId' will have it's value replaced with the currently logged in person's id.", false, "" )]
+    [TextField( "Query Params", "The parameters that the stored procedure expects in the format of 'param1=value;param2=value'. Any parameter with the same name as a page parameter (i.e. querystring, form, or page route) will have its value replaced with the page's current value. A parameter with the name of 'CurrentPersonId' will have its value replaced with the currently logged in person's id.", false, "" )]
     [IntegerField( "Chart Height", "", false, 200 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", order: 3 )]
 
@@ -92,7 +92,7 @@ order by YValue desc
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
-            var pageReference = new Rock.Web.PageReference( this.PageCache.Id );
+            var pageReference = new Rock.Web.PageReference( this.CachePage.Id );
             pageReference.QueryString = new System.Collections.Specialized.NameValueCollection();
             pageReference.QueryString.Add( this.Request.QueryString );
             pageReference.QueryString.Add( "GetChartData", "true" );
@@ -405,7 +405,7 @@ function labelFormatter(label, series) {
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
 
             mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
-            mergeFields.AddOrReplace( "CurrentPage", this.PageCache );
+            mergeFields.AddOrReplace( "CurrentPage", this.CachePage );
 
             return mergeFields;
         }

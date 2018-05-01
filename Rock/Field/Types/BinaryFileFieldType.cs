@@ -191,18 +191,19 @@ namespace Rock.Field.Types
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var picker = control as BinaryFilePicker;
-
             if ( picker != null )
             {
-                int? id = picker.SelectedValue.AsIntegerOrNull();
-                if ( id.HasValue )
+                int? itemId = picker.SelectedValue.AsIntegerOrNull();
+                Guid? itemGuid = null;
+                if ( itemId.HasValue )
                 {
-                    var binaryFile = new BinaryFileService( new RockContext() ).Get( id.Value );
-                    if ( binaryFile != null )
+                    using ( var rockContext = new RockContext() )
                     {
-                        return binaryFile.Guid.ToString();
+                        itemGuid = new BinaryFileService( rockContext ).Queryable().Where( a => a.Id == itemId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
                     }
                 }
+
+                return itemGuid?.ToString();
             }
 
             return null;
@@ -220,10 +221,18 @@ namespace Rock.Field.Types
 
             if ( picker != null )
             {
-                Guid guid = value.AsGuid();
+                BinaryFile binaryFile = null;
+                Guid? guid = value.AsGuidOrNull();
 
                 // get the item (or null) and set it
-                var binaryFile = new BinaryFileService( new RockContext() ).Get( guid );
+                if ( guid.HasValue )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        binaryFile = new BinaryFileService( rockContext ).Get( guid.Value );
+                    }
+                }
+
                 picker.SetValue( binaryFile );
             }
         }

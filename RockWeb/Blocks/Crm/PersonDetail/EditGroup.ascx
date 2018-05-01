@@ -10,7 +10,7 @@
             </div>
             <div class="panel-body">
 
-                <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
                 <asp:CustomValidator ID="cvGroupMember" runat="server" Display="None" />
                 <Rock:NotificationBox ID="nbRoleLimitWarning" runat="server" NotificationBoxType="Warning" Heading="Role Limit Warning" />
 
@@ -112,7 +112,7 @@
                                             <asp:CheckBox ID="cbLocation" runat="server" Checked='<%# Eval("IsLocation") %>' Visible='<%# !(bool)Eval("IsLocation") %>' />
                                         </EditItemTemplate>
                                     </Rock:RockTemplateField>
-                                    <Rock:RockTemplateField ItemStyle-HorizontalAlign="Center" HeaderStyle-CssClass="span1" ItemStyle-CssClass="grid-columncommand" ItemStyle-Wrap="false">
+                                    <Rock:RockTemplateField ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center" HeaderStyle-CssClass="span1" ItemStyle-CssClass="grid-columncommand" ItemStyle-Wrap="false">
                                         <ItemTemplate>
                                             <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CommandName="Edit" CssClass="btn btn-default btn-sm" CausesValidation="false"><i class="fa fa-pencil"></i></asp:LinkButton>
                                         </ItemTemplate>
@@ -162,7 +162,7 @@
                 </ul>
 
                 <Rock:NotificationBox ID="nbAddPerson" runat="server" Heading="Please Correct the Following" NotificationBoxType="Danger" Visible="false" />
-                <asp:ValidationSummary ID="valSummaryAddPerson" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="AddPerson"/>
+                <asp:ValidationSummary ID="valSummaryAddPerson" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" ValidationGroup="AddPerson"/>
 
                 <div class="tab-content">
 

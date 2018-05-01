@@ -29,7 +29,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 
 /*******************************************************************************************************************************
@@ -50,6 +50,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [SecurityAction( "EditRecordStatus", "The roles and/or users that can edit the record status for the selected person." )]
     [BooleanField("Hide Grade", "Should the Grade (and Graduation Year) fields be hidden?", false, "", 0)]
     [BooleanField("Hide Anniversary Date", "Should the Anniversary Date field be hidden?", false, "", 1)]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_SEARCH_KEYS, "Search Key Types", "Optional list of search key types to limit the display in search keys grid. No selection will show all.", false, true, "", "", 2 )]
     public partial class EditPerson : Rock.Web.UI.PersonBlock
     {
         /// <summary>
@@ -60,12 +61,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             base.OnInit( e );
 
-            ddlTitle.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_TITLE ) ), true );
-            ddlSuffix.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_SUFFIX ) ), true );
-            ddlMaritalStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS ) ), true );
-            ddlConnectionStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ), true );
-            ddlRecordStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ) );
-            ddlReason.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ), true );
+            ddlTitle.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_TITLE ) ), true );
+            ddlSuffix.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_SUFFIX ) ), true );
+            ddlMaritalStatus.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS ) ), true );
+            ddlConnectionStatus.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ), true );
+            ddlRecordStatus.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ) );
+            ddlReason.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ), true );
 
             pnlGivingGroup.Visible = UserCanAdministrate || IsUserAuthorized( "EditFinancials" );
 
@@ -104,6 +105,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             grdPreviousNames.Actions.ShowAdd = true;
             grdPreviousNames.Actions.AddClick += grdPreviousNames_AddClick;
+            gSearchKeys.Actions.ShowAdd = true;
+            gSearchKeys.Actions.AddClick += gSearchKeys_AddClick;
 
             pnlGradeGraduation.Visible = !GetAttributeValue( "HideGrade" ).AsBoolean();
             dpAnniversaryDate.Visible = !GetAttributeValue( "HideAnniversaryDate" ).AsBoolean();
@@ -159,6 +162,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         private List<PersonPreviousName> PersonPreviousNamesState { get; set; }
 
         /// <summary>
+        /// Gets or sets the state of the person search keys.
+        /// </summary>
+        /// <value>
+        /// The state of the person search keys.
+        /// </value>
+        private List<PersonSearchKey> PersonSearchKeysState { get; set; }
+
+        /// <summary>
         /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
         /// </summary>
         /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
@@ -175,6 +186,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             else
             {
                 PersonPreviousNamesState = PersonPreviousName.FromJsonAsList( json ) ?? new List<PersonPreviousName>();
+            }
+
+            json = ViewState["PersonSearchKeysState"] as string;
+
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                PersonSearchKeysState = new List<PersonSearchKey>();
+            }
+            else
+            {
+                PersonSearchKeysState = PersonSearchKey.FromJsonAsList( json ) ?? new List<PersonSearchKey>();
             }
         }
 
@@ -193,6 +215,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             };
 
             ViewState["PersonPreviousNamesState"] = JsonConvert.SerializeObject( PersonPreviousNamesState, Formatting.None, jsonSetting );
+            ViewState["PersonSearchKeysState"] = JsonConvert.SerializeObject( PersonSearchKeysState, Formatting.None, jsonSetting );
 
             return base.SaveViewState();
         }
@@ -206,7 +229,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void ddlRecordStatus_SelectedIndexChanged( object sender, EventArgs e )
         {
-            bool showInactiveReason = ( ddlRecordStatus.SelectedValueAsInt() == DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id );
+            bool showInactiveReason = ( ddlRecordStatus.SelectedValueAsInt() == CacheDefinedValue.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id );
 
             bool canEditRecordStatus = UserCanAdministrate || IsUserAuthorized( "EditRecordStatus" );
             ddlReason.Visible = showInactiveReason && canEditRecordStatus;
@@ -230,8 +253,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 {
                     var personService = new PersonService( rockContext );
 
-                    var changes = new List<string>();
-
                     var person = personService.Get( Person.Id );
 
                     int? orphanedPhotoId = null;
@@ -239,44 +260,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     {
                         orphanedPhotoId = person.PhotoId;
                         person.PhotoId = imgPhoto.BinaryFileId;
-
-                        if ( orphanedPhotoId.HasValue )
-                        {
-                            if ( person.PhotoId.HasValue )
-                            {
-                                changes.Add( "Modified the photo." );
-                            }
-                            else
-                            {
-                                changes.Add( "Deleted the photo." );
-                            }
-                        }
-                        else if ( person.PhotoId.HasValue )
-                        {
-                            changes.Add( "Added a photo." );
-                        }
                     }
 
-                    int? newTitleId = ddlTitle.SelectedValueAsInt();
-                    History.EvaluateChange( changes, "Title", DefinedValueCache.GetName( person.TitleValueId ), DefinedValueCache.GetName( newTitleId ) );
-                    person.TitleValueId = newTitleId;
-
-                    History.EvaluateChange( changes, "First Name", person.FirstName, tbFirstName.Text );
+                    person.TitleValueId = ddlTitle.SelectedValueAsInt();
                     person.FirstName = tbFirstName.Text;
-
-                    string nickName = string.IsNullOrWhiteSpace( tbNickName.Text ) ? tbFirstName.Text : tbNickName.Text;
-                    History.EvaluateChange( changes, "Nick Name", person.NickName, nickName );
                     person.NickName = tbNickName.Text;
-
-                    History.EvaluateChange( changes, "Middle Name", person.MiddleName, tbMiddleName.Text );
                     person.MiddleName = tbMiddleName.Text;
-
-                    History.EvaluateChange( changes, "Last Name", person.LastName, tbLastName.Text );
                     person.LastName = tbLastName.Text;
-
-                    int? newSuffixId = ddlSuffix.SelectedValueAsInt();
-                    History.EvaluateChange( changes, "Suffix", DefinedValueCache.GetName( person.SuffixValueId ), DefinedValueCache.GetName( newSuffixId ) );
-                    person.SuffixValueId = newSuffixId;
+                    person.SuffixValueId = ddlSuffix.SelectedValueAsInt();
 
                     var birthMonth = person.BirthMonth;
                     var birthDay = person.BirthDay;
@@ -301,33 +292,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         person.SetBirthDate( null );
                     }
 
-                    History.EvaluateChange( changes, "Birth Month", birthMonth, person.BirthMonth );
-                    History.EvaluateChange( changes, "Birth Day", birthDay, person.BirthDay );
-                    History.EvaluateChange( changes, "Birth Year", birthYear, person.BirthYear );
-
                     int? graduationYear = null;
                     if ( ypGraduation.SelectedYear.HasValue )
                     {
                         graduationYear = ypGraduation.SelectedYear.Value;
                     }
-
-                    History.EvaluateChange( changes, "Graduation Year", person.GraduationYear, graduationYear );
                     person.GraduationYear = graduationYear;
 
-                    History.EvaluateChange( changes, "Anniversary Date", person.AnniversaryDate, dpAnniversaryDate.SelectedDate );
                     person.AnniversaryDate = dpAnniversaryDate.SelectedDate;
-
-                    var newGender = rblGender.SelectedValue.ConvertToEnum<Gender>();
-                    History.EvaluateChange( changes, "Gender", person.Gender, newGender );
-                    person.Gender = newGender;
-
-                    int? newMaritalStatusId = ddlMaritalStatus.SelectedValueAsInt();
-                    History.EvaluateChange( changes, "Marital Status", DefinedValueCache.GetName( person.MaritalStatusValueId ), DefinedValueCache.GetName( newMaritalStatusId ) );
-                    person.MaritalStatusValueId = newMaritalStatusId;
-
-                    int? newConnectionStatusId = ddlConnectionStatus.SelectedValueAsInt();
-                    History.EvaluateChange( changes, "Connection Status", DefinedValueCache.GetName( person.ConnectionStatusValueId ), DefinedValueCache.GetName( newConnectionStatusId ) );
-                    person.ConnectionStatusValueId = newConnectionStatusId;
+                    person.Gender = rblGender.SelectedValue.ConvertToEnum<Gender>();
+                    person.MaritalStatusValueId = ddlMaritalStatus.SelectedValueAsInt();
+                    person.ConnectionStatusValueId = ddlConnectionStatus.SelectedValueAsInt();
 
                     var phoneNumberTypeIds = new List<int>();
 
@@ -378,12 +353,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                                     phoneNumber.IsUnlisted = cbUnlisted.Checked;
                                     phoneNumberTypeIds.Add( phoneNumberTypeId );
-
-                                    History.EvaluateChange(
-                                        changes,
-                                        string.Format( "{0} Phone", DefinedValueCache.GetName( phoneNumberTypeId ) ),
-                                        oldPhoneNumber,
-                                        phoneNumber.NumberFormattedWithCountryCode );
                                 }
                             }
                         }
@@ -395,46 +364,20 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         .Where( n => n.NumberTypeValueId.HasValue && !phoneNumberTypeIds.Contains( n.NumberTypeValueId.Value ) )
                         .ToList() )
                     {
-                        History.EvaluateChange(
-                            changes,
-                            string.Format( "{0} Phone", DefinedValueCache.GetName( phoneNumber.NumberTypeValueId ) ),
-                            phoneNumber.ToString(),
-                            string.Empty );
-
                         person.PhoneNumbers.Remove( phoneNumber );
                         phoneNumberService.Delete( phoneNumber );
                     }
 
-                    History.EvaluateChange( changes, "Email", person.Email, tbEmail.Text );
                     person.Email = tbEmail.Text.Trim();
-
-                    History.EvaluateChange( changes, "Email Active", person.IsEmailActive, cbIsEmailActive.Checked );
                     person.IsEmailActive = cbIsEmailActive.Checked;
-
-                    var newEmailPreference = rblEmailPreference.SelectedValue.ConvertToEnum<EmailPreference>();
-                    History.EvaluateChange( changes, "Email Preference", person.EmailPreference, newEmailPreference );
-                    person.EmailPreference = newEmailPreference;
-
-                    var newCommunicationPreference = rblCommunicationPreference.SelectedValueAsEnum<CommunicationType>();
-                    History.EvaluateChange( changes, "Communication Preference", person.CommunicationPreference, newCommunicationPreference );
-                    person.CommunicationPreference = newCommunicationPreference;
-
-                    int? newGivingGroupId = ddlGivingGroup.SelectedValueAsId();
-                    if ( person.GivingGroupId != newGivingGroupId )
-                    {
-                        string oldGivingGroupName = string.Empty;
-                        if ( Person.GivingGroup != null )
-                        {
-                            oldGivingGroupName = GetFamilyNameWithFirstNames( Person.GivingGroup.Name, Person.GivingGroup.Members );
-                        }
-                        
-                        string newGivingGroupName = newGivingGroupId.HasValue ? ddlGivingGroup.Items.FindByValue( newGivingGroupId.Value.ToString() ).Text : string.Empty;
-                        History.EvaluateChange( changes, "Giving Group", oldGivingGroupName, newGivingGroupName );
-                    }
+                    person.EmailPreference = rblEmailPreference.SelectedValue.ConvertToEnum<EmailPreference>();
+                    person.CommunicationPreference = rblCommunicationPreference.SelectedValueAsEnum<CommunicationType>(); ;
+                    person.GivingGroupId = ddlGivingGroup.SelectedValueAsId();
+                    person.IsLockedAsChild = cbLockAsChild.Checked;
 
                     // Save the Envelope Number attribute if it exists and has changed
-                    var personGivingEnvelopeAttribute = AttributeCache.Read( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
-                    if ( GlobalAttributesCache.Read().EnableGivingEnvelopeNumber && personGivingEnvelopeAttribute != null )
+                    var personGivingEnvelopeAttribute = CacheAttribute.Get( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
+                    if ( CacheGlobalAttributes.Get().EnableGivingEnvelopeNumber && personGivingEnvelopeAttribute != null )
                     {
                         if ( person.Attributes == null )
                         {
@@ -487,15 +430,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 }
                             }
 
-                            History.EvaluateChange( changes, "Giving Envelope Number", oldEnvelopeNumber, newEnvelopeNumber );
                             person.SetAttributeValue( personGivingEnvelopeAttribute.Key, newEnvelopeNumber );
                         }
                     }
 
-                    person.GivingGroupId = newGivingGroupId;
-
                     bool recordStatusChangedToOrFromInactive = false;
-                    var recordStatusInactiveId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
+                    var recordStatusInactiveId = CacheDefinedValue.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
 
                     int? newRecordStatusId = ddlRecordStatus.SelectedValueAsInt();
                     // Is the person's record status changing?
@@ -508,18 +448,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         }
                     }
 
-                    History.EvaluateChange( changes, "Record Status", DefinedValueCache.GetName( person.RecordStatusValueId ), DefinedValueCache.GetName( newRecordStatusId ) );
-                    person.RecordStatusValueId = newRecordStatusId;
+                    person.RecordStatusValueId = ddlRecordStatus.SelectedValueAsInt();
 
                     int? newRecordStatusReasonId = null;
                     if ( person.RecordStatusValueId.HasValue && person.RecordStatusValueId.Value == recordStatusInactiveId )
                     {
                         newRecordStatusReasonId = ddlReason.SelectedValueAsInt();
                     }
-
-                    History.EvaluateChange( changes, "Inactive Reason", DefinedValueCache.GetName( person.RecordStatusReasonValueId ), DefinedValueCache.GetName( newRecordStatusReasonId ) );
                     person.RecordStatusReasonValueId = newRecordStatusReasonId;
-                    History.EvaluateChange( changes, "Inactive Reason Note", person.InactiveReasonNote, tbInactiveReasonNote.Text );
+
                     person.InactiveReasonNote = tbInactiveReasonNote.Text.Trim();
 
                     // Save any Removed/Added Previous Names
@@ -528,24 +465,25 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     foreach ( var deletedPreviousName in databasePreviousNames.Where( a => !PersonPreviousNamesState.Any( p => p.Guid == a.Guid ) ) )
                     {
                         personPreviousNameService.Delete( deletedPreviousName );
-
-                        History.EvaluateChange(
-                            changes,
-                            "Previous Name",
-                            deletedPreviousName.ToString(),
-                            string.Empty );
                     }
 
                     foreach ( var addedPreviousName in PersonPreviousNamesState.Where( a => !databasePreviousNames.Any( d => d.Guid == a.Guid ) ) )
                     {
                         addedPreviousName.PersonAliasId = person.PrimaryAliasId.Value;
                         personPreviousNameService.Add( addedPreviousName );
+                    }
 
-                        History.EvaluateChange(
-                            changes,
-                            "Previous Name",
-                            string.Empty,
-                            addedPreviousName.ToString() );
+                    var personSearchKeyService = new PersonSearchKeyService( rockContext );
+                    var databaseSearchKeys = personSearchKeyService.Queryable().Where( a => a.PersonAlias.PersonId == person.Id ).ToList();
+                    foreach ( var deletedSearchKey in databaseSearchKeys.Where( a => !PersonSearchKeysState.Any( p => p.Guid == a.Guid ) ) )
+                    {
+                        personSearchKeyService.Delete( deletedSearchKey );
+                    }
+
+                    foreach ( var personSearchKey in PersonSearchKeysState.Where( a => !databaseSearchKeys.Any( d => d.Guid == a.Guid ) ) )
+                    {
+                        personSearchKey.PersonAliasId = person.PrimaryAliasId.Value;
+                        personSearchKeyService.Add( personSearchKey );
                     }
 
                     if ( person.IsValid )
@@ -560,16 +498,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                         if ( saveChangeResult > 0 )
                         {
-                            if ( changes.Any() )
-                            {
-                                HistoryService.SaveChanges(
-                                    rockContext,
-                                    typeof( Person ),
-                                    Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                                    Person.Id,
-                                    changes );
-                            }
-
                             if ( orphanedPhotoId.HasValue )
                             {
                                 BinaryFileService binaryFileService = new BinaryFileService( rockContext );
@@ -708,10 +636,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             ddlRecordStatus_SelectedIndexChanged( null, null );
 
-            var mobilePhoneType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) );
+            var mobilePhoneType = CacheDefinedValue.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) );
 
             var phoneNumbers = new List<PhoneNumber>();
-            var phoneNumberTypes = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE ) );
+            var phoneNumberTypes = CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE ) );
             if ( phoneNumberTypes.DefinedValues.Any() )
             {
                 foreach ( var phoneNumberType in phoneNumberTypes.DefinedValues )
@@ -740,16 +668,26 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
 
             ddlGivingGroup.SetValue( Person.GivingGroupId );
-            var personGivingEnvelopeAttribute = AttributeCache.Read( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
-            rcwEnvelope.Visible = GlobalAttributesCache.Read().EnableGivingEnvelopeNumber && personGivingEnvelopeAttribute != null;
+            cbLockAsChild.Checked = Person.IsLockedAsChild;
+            var personGivingEnvelopeAttribute = CacheAttribute.Get( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
+            rcwEnvelope.Visible = CacheGlobalAttributes.Get().EnableGivingEnvelopeNumber && personGivingEnvelopeAttribute != null;
             if ( personGivingEnvelopeAttribute != null )
             {
                 tbGivingEnvelopeNumber.Text = Person.GetAttributeValue( personGivingEnvelopeAttribute.Key );
             }
 
             this.PersonPreviousNamesState = Person.GetPreviousNames().ToList();
+             var searchTypeQry = Person.GetPersonSearchKeys();
+
+            var searchTypesList = this.GetAttributeValue( "SearchKeyTypes" ).SplitDelimitedValues().AsGuidList();
+            if ( searchTypesList.Any() )
+            {
+                searchTypeQry = searchTypeQry.Where( a => searchTypesList.Contains( a.SearchTypeValue.Guid ) );
+            }
+            this.PersonSearchKeysState = searchTypeQry.ToList();
 
             BindPersonPreviousNamesGrid();
+            BindPersonSearchKeysGrid();
         }
 
         /// <summary>
@@ -760,6 +698,16 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             grdPreviousNames.DataKeyNames = new string[] { "Guid" };
             grdPreviousNames.DataSource = this.PersonPreviousNamesState;
             grdPreviousNames.DataBind();
+        }
+
+        /// <summary>
+        /// Binds the person previous names grid.
+        /// </summary>
+        private void BindPersonSearchKeysGrid()
+        {
+            gSearchKeys.DataKeyNames = new string[] { "Guid" };
+            gSearchKeys.DataSource = this.PersonSearchKeysState;
+            gSearchKeys.DataBind();
         }
 
         /// <summary>
@@ -774,14 +722,39 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         }
 
         /// <summary>
-        /// Handles the Delete event of the grdPreviousNames control.
+        /// Handles the AddClick event of the gSearchKeys control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
-        protected void grdPreviousNames_Delete( object sender, RowEventArgs e )
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gSearchKeys_AddClick(object sender, EventArgs e)
         {
-            this.PersonPreviousNamesState.RemoveEntity( (Guid)e.RowKeyValue );
-            BindPersonPreviousNamesGrid();
+            tbSearchValue.Text = string.Empty;
+            var searchValueTypes = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_SEARCH_KEYS ).DefinedValues;
+
+            var searchTypesList = this.GetAttributeValue( "SearchKeyTypes" ).SplitDelimitedValues().AsGuidList();
+            if ( searchTypesList.Any() )
+            {
+                searchValueTypes = searchValueTypes.Where( a => searchTypesList.Contains( a.Guid ) ).ToList();
+            }
+
+            ddlSearchValueType.DataSource = searchValueTypes;
+            ddlSearchValueType.DataTextField = "Value";
+            ddlSearchValueType.DataValueField = "Id";
+            ddlSearchValueType.DataBind();
+            ddlSearchValueType.Items.Insert( 0, new ListItem() );
+            mdSearchKey.Show();
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the mdSearchKey control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdSearchKey_SaveClick( object sender, EventArgs e )
+        {
+            this.PersonSearchKeysState.Add( new PersonSearchKey { SearchValue = tbSearchValue.Text, SearchTypeValueId = ddlSearchValueType.SelectedValue.AsInteger(), Guid = Guid.NewGuid() } );
+            BindPersonSearchKeysGrid();
+            mdSearchKey.Hide();
         }
 
         /// <summary>
@@ -798,13 +771,35 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         }
 
         /// <summary>
+        /// Handles the Delete event of the grdPreviousNames control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void grdPreviousNames_Delete( object sender, RowEventArgs e )
+        {
+            this.PersonPreviousNamesState.RemoveEntity( (Guid)e.RowKeyValue );
+            BindPersonPreviousNamesGrid();
+        }
+
+        /// <summary>
+        /// Handles the Delete event of the gSearchKeys control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gSearchKeys_Delete( object sender, RowEventArgs e )
+        {
+            this.PersonSearchKeysState.RemoveEntity( ( Guid ) e.RowKeyValue );
+            BindPersonSearchKeysGrid();
+        }
+
+        /// <summary>
         /// Handles the Click event of the btnGenerateEnvelopeNumber control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnGenerateEnvelopeNumber_Click( object sender, EventArgs e )
         {
-            var personGivingEnvelopeAttribute = AttributeCache.Read( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
+            var personGivingEnvelopeAttribute = CacheAttribute.Get( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
             var maxEnvelopeNumber = new AttributeValueService( new RockContext() ).Queryable()
                                     .Where( a => a.AttributeId == personGivingEnvelopeAttribute.Id && a.ValueAsNumeric.HasValue )
                                     .Max( a => (int?)a.ValueAsNumeric );

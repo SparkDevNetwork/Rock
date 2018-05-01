@@ -15,10 +15,9 @@
 // </copyright>
 //
 using System;
-using System.Data.Entity;
-using System.Linq;
 using System.Runtime.Serialization;
 
+using Rock.Cache;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -31,6 +30,7 @@ namespace Rock.Web.Cache
     /// </summary>
     [Serializable]
     [DataContract]
+    [Obsolete( "Use Rock.Cache.CacheDefinedValue instead" )]
     public class DefinedValueCache : CachedModel<DefinedValue>
     {
         #region Constructors
@@ -39,9 +39,9 @@ namespace Rock.Web.Cache
         {
         }
 
-        private DefinedValueCache( DefinedValue model )
+        private DefinedValueCache( CacheDefinedValue cacheDefinedValue )
         {
-            CopyFromModel( model );
+            CopyFromNewCache( cacheDefinedValue );
         }
 
         #endregion
@@ -99,10 +99,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The type of the field.
         /// </value>
-        public DefinedTypeCache DefinedType
-        {
-            get { return DefinedTypeCache.Read( DefinedTypeId ); }
-        }
+        public DefinedTypeCache DefinedType => DefinedTypeCache.Read( DefinedTypeId );
 
         /// <summary>
         /// Gets the parent authority.
@@ -110,13 +107,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The parent authority.
         /// </value>
-        public override ISecured ParentAuthority
-        {
-            get
-            {
-                return DefinedType;
-            }
-        }
+        public override ISecured ParentAuthority => DefinedType;
 
         #endregion
 
@@ -126,19 +117,36 @@ namespace Rock.Web.Cache
         /// Copies the model property values to the DTO properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public override void CopyFromModel( Data.IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
             base.CopyFromModel( model );
 
-            if ( model is DefinedValue )
-            {
-                var definedValue = (DefinedValue)model;
-                this.IsSystem = definedValue.IsSystem;
-                this.DefinedTypeId = definedValue.DefinedTypeId;
-                this.Order = definedValue.Order;
-                this.Value = definedValue.Value;
-                this.Description = definedValue.Description;
-            }
+            if ( !( model is DefinedValue ) ) return;
+
+            var definedValue = (DefinedValue)model;
+            IsSystem = definedValue.IsSystem;
+            DefinedTypeId = definedValue.DefinedTypeId;
+            Order = definedValue.Order;
+            Value = definedValue.Value;
+            Description = definedValue.Description;
+        }
+
+        /// <summary>
+        /// Copies properties from a new cached entity
+        /// </summary>
+        /// <param name="cacheEntity">The cache entity.</param>
+        protected sealed override void CopyFromNewCache( IEntityCache cacheEntity )
+        {
+            base.CopyFromNewCache( cacheEntity );
+
+            if ( !( cacheEntity is CacheDefinedValue ) ) return;
+
+            var definedValue = (CacheDefinedValue)cacheEntity;
+            IsSystem = definedValue.IsSystem;
+            DefinedTypeId = definedValue.DefinedTypeId;
+            Order = definedValue.Order;
+            Value = definedValue.Value;
+            Description = definedValue.Description;
         }
 
         /// <summary>
@@ -149,17 +157,12 @@ namespace Rock.Web.Cache
         /// </returns>
         public override string ToString()
         {
-            return this.Value;
+            return Value;
         }
 
         #endregion
 
         #region Static Methods
-
-        private static string CacheKey( int id )
-        {
-            return string.Format( "Rock:DefinedValue:{0}", id );
-        }
 
         /// <summary>
         /// Returns DefinedValue object from cache.  If definedValue does not already exist in cache, it
@@ -170,33 +173,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static DefinedValueCache Read( int id, RockContext rockContext = null )
         {
-            return GetOrAddExisting( DefinedValueCache.CacheKey( id ),
-                () => LoadById( id, rockContext ) );
-        }
-
-        private static DefinedValueCache LoadById( int id, RockContext rockContext )
-        {
-            if ( rockContext != null )
-            {
-                return LoadById2( id, rockContext );
-            }
-
-            using ( var rockContext2 = new RockContext() )
-            {
-                return LoadById2( id, rockContext2 );
-            }
-        }
-
-        private static DefinedValueCache LoadById2( int id, RockContext rockContext )
-        {
-            var definedValueService = new DefinedValueService( rockContext );
-            var definedValueModel = definedValueService.Get( id );
-            if ( definedValueModel != null )
-            {
-                return new DefinedValueCache( definedValueModel );
-            }
-
-            return null;
+            return new DefinedValueCache( CacheDefinedValue.Get( id, rockContext ) );
         }
 
         /// <summary>
@@ -206,13 +183,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static DefinedValueCache Read( string guid )
         {
-            Guid realGuid = guid.AsGuid();
-            if ( realGuid.Equals( Guid.Empty ) )
-            {
-                return null;
-            }
-
-            return Read( realGuid );
+            return new DefinedValueCache( CacheDefinedValue.Get( guid ) );
         }
 
         /// <summary>
@@ -223,34 +194,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static DefinedValueCache Read( Guid guid, RockContext rockContext = null )
         {
-            int id = GetOrAddExisting( guid.ToString(),
-                () => LoadByGuid( guid, rockContext ) );
-
-            return Read( id, rockContext );
-        }
-
-        private static int LoadByGuid( Guid guid, RockContext rockContext )
-        {
-            if ( rockContext != null )
-            {
-                return LoadByGuid2( guid, rockContext );
-            }
-
-            using ( var rockContext2 = new RockContext() )
-            {
-                return LoadByGuid2( guid, rockContext2 );
-            }
-        }
-
-
-        private static int LoadByGuid2( Guid guid, RockContext rockContext )
-        {
-            var definedValueService = new DefinedValueService( rockContext );
-            return definedValueService
-                .Queryable().AsNoTracking()
-                .Where( c => c.Guid.Equals( guid ) )
-                .Select( c => c.Id )
-                .FirstOrDefault();
+            return new DefinedValueCache( CacheDefinedValue.Get( guid, rockContext ) );
         }
 
         /// <summary>
@@ -261,17 +205,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static DefinedValueCache Read( DefinedValue definedValueModel, RockContext rockContext = null )
         {
-            return GetOrAddExisting( DefinedValueCache.CacheKey( definedValueModel.Id ),
-                () => LoadByModel( definedValueModel ) );
-        }
-
-        private static DefinedValueCache LoadByModel( DefinedValue definedValueModel )
-        {
-            if ( definedValueModel != null )
-            {
-                return new DefinedValueCache( definedValueModel );
-            }
-            return null;
+            return new DefinedValueCache( CacheDefinedValue.Get( definedValueModel ) );
         }
 
         /// <summary>
@@ -280,7 +214,7 @@ namespace Rock.Web.Cache
         /// <param name="id"></param>
         public static void Flush( int id )
         {
-            FlushCache( DefinedValueCache.CacheKey( id ) );
+            CacheDefinedValue.Remove( id );
         }
 
         /// <summary>
@@ -290,16 +224,10 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static string GetName( int? id )
         {
-            if ( id.HasValue )
-            {
-                var definedValue = Read( id.Value );
-                if ( definedValue != null )
-                {
-                    return definedValue.Value;
-                }
-            }
+            if ( !id.HasValue ) return null;
 
-            return null;
+            var definedValue = CacheDefinedValue.Get( id.Value );
+            return definedValue?.Value;
         }
 
         #endregion

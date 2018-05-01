@@ -28,7 +28,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -89,18 +89,18 @@ namespace Rock.Jobs
             var resultContext = new RockContext();
 
             
-            var eraAttribute = AttributeCache.Read( SystemGuid.Attribute.PERSON_ERA_CURRENTLY_AN_ERA.AsGuid() );
-            var eraStartAttribute = AttributeCache.Read( SystemGuid.Attribute.PERSON_ERA_START_DATE.AsGuid() );
-            var eraEndAttribute = AttributeCache.Read( SystemGuid.Attribute.PERSON_ERA_END_DATE.AsGuid() );
+            var eraAttribute = CacheAttribute.Get( SystemGuid.Attribute.PERSON_ERA_CURRENTLY_AN_ERA.AsGuid() );
+            var eraStartAttribute = CacheAttribute.Get( SystemGuid.Attribute.PERSON_ERA_START_DATE.AsGuid() );
+            var eraEndAttribute = CacheAttribute.Get( SystemGuid.Attribute.PERSON_ERA_END_DATE.AsGuid() );
 
             resultContext.Database.CommandTimeout = commandTimeout;
 
             var results = resultContext.Database.SqlQuery<EraResult>( "spCrm_FamilyAnalyticsEraDataset" ).ToList();
 
-            int personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
-            int attributeEntityTypeId = EntityTypeCache.Read( "Rock.Model.Attribute" ).Id;
-            int eraAttributeId = AttributeCache.Read( SystemGuid.Attribute.PERSON_ERA_CURRENTLY_AN_ERA.AsGuid() ).Id;
-            int personAnalyticsCategoryId = CategoryCache.Read( SystemGuid.Category.HISTORY_PERSON_ANALYTICS.AsGuid() ).Id;
+            int personEntityTypeId = CacheEntityType.Get( "Rock.Model.Person" ).Id;
+            int attributeEntityTypeId = CacheEntityType.Get( "Rock.Model.Attribute" ).Id;
+            int eraAttributeId = CacheAttribute.Get( SystemGuid.Attribute.PERSON_ERA_CURRENTLY_AN_ERA.AsGuid() ).Id;
+            int personAnalyticsCategoryId = CacheCategory.Get( SystemGuid.Category.HISTORY_PERSON_ANALYTICS.AsGuid() ).Id;
 
             foreach (var result in results )
             {
@@ -247,13 +247,13 @@ namespace Rock.Jobs
             {
                 string[] groupTypeGuids = groupTypeList.Split( ',' );
 
-                var inactiveRecordValue = DefinedValueCache.Read( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE );
+                var inactiveRecordValue = CacheDefinedValue.Get( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE );
 
-                var groupTypeEntityTypeId = EntityTypeCache.Read( "Rock.Model.GroupType" ).Id;
+                var groupTypeEntityTypeId = CacheEntityType.Get( "Rock.Model.GroupType" ).Id;
 
                 foreach ( var groupTypeGuid in groupTypeGuids )
                 {
-                    var groupType = GroupTypeCache.Read( groupTypeGuid.AsGuid() );
+                    var groupType = CacheGroupType.Get( groupTypeGuid.AsGuid() );
 
                     if ( groupType != null )
                     {
@@ -355,7 +355,7 @@ namespace Rock.Jobs
         /// <param name="family">The family.</param>
         private void LaunchWorkflow( Guid workflowTypeGuid, Group family )
         {
-            int adultRoleId = GroupTypeCache.Read( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() ).Roles.Where(r => r.Guid == SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid()).FirstOrDefault().Id;
+            int adultRoleId = CacheGroupType.Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() ).Roles.Where(r => r.Guid == SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid()).FirstOrDefault().Id;
 
             var headOfHouse = family.Members.Where( m => m.GroupRoleId == adultRoleId ).OrderBy( m => m.Person.Gender ).FirstOrDefault();
 
@@ -365,7 +365,7 @@ namespace Rock.Jobs
 
                 using ( var rockContext = new RockContext() )
                 {
-                    var workflowType = WorkflowTypeCache.Read( workflowTypeGuid );
+                    var workflowType = CacheWorkflowType.Get( workflowTypeGuid );
                     if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                     {
                         var workflowService = new WorkflowService( rockContext );

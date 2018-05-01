@@ -26,7 +26,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using System.Text;
@@ -158,7 +158,7 @@ namespace RockWeb.Blocks.Groups
                 var showChildGroups = this.GetBlockUserPreference( "ShowChildGroups" ).AsBoolean();
                 cbShowAllGroups.Checked = showChildGroups;
                 
-                var statuses = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ).DefinedValues
+                var statuses = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ).DefinedValues
                     .OrderBy( v => v.Order )
                     .ThenBy( v => v.Value )
                     .Select( v => new
@@ -172,7 +172,7 @@ namespace RockWeb.Blocks.Groups
                 rptStatus.DataSource = statuses.Where( s => s.Color != "" ).ToList();
                 rptStatus.DataBind();
                 
-                cpCampuses.Campuses = CampusCache.All();
+                cpCampuses.Campuses = CacheCampus.All();
                 cpCampuses.Visible = this.GetAttributeValue( "ShowCampusesFilter" ).AsBoolean();
 
                 Map();
@@ -230,7 +230,7 @@ namespace RockWeb.Blocks.Groups
             string styleCode = "null";
             var markerColors = new List<string>();
 
-            DefinedValueCache dvcMapStyle = DefinedValueCache.Read( GetAttributeValue( "MapStyle" ).AsGuid() );
+            CacheDefinedValue dvcMapStyle = CacheDefinedValue.Get( GetAttributeValue( "MapStyle" ).AsGuid() );
             if ( dvcMapStyle != null )
             {
                 styleCode = dvcMapStyle.GetAttributeValue( "DynamicMapStyle" );
@@ -261,7 +261,7 @@ namespace RockWeb.Blocks.Groups
             string latitude = "39.8282";
             string longitude = "-98.5795";
             string zoom = "4";
-            var orgLocation = GlobalAttributesCache.Read().OrganizationLocation;
+            var orgLocation = CacheGlobalAttributes.Get().OrganizationLocation;
             if (orgLocation != null && orgLocation.GeoPoint != null)
             {
                 latitude = orgLocation.GeoPoint.Latitude.ToString();

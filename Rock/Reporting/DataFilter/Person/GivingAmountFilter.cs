@@ -181,7 +181,7 @@ function() {
             comparisonControl.ID = filterControl.ID + "_comparisonControl";
             filterControl.Controls.Add( comparisonControl );
 
-            var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+            var globalAttributes = Rock.Cache.CacheGlobalAttributes.Get();
 
             NumberBox numberBoxAmount = new NumberBox();
             numberBoxAmount.PrependText = globalAttributes.GetValue( "CurrencySymbol" ) ?? "$";
@@ -376,7 +376,7 @@ function() {
                 combineGiving = selectionValues[5].AsBooleanOrNull() ?? false;
             }
 
-            int transactionTypeContributionId = Rock.Web.Cache.DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
+            int transactionTypeContributionId = Rock.Cache.CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
 
             var financialTransactionQry = new FinancialTransactionService( rockContext ).Queryable()
                 .Where( xx => xx.AuthorizedPersonAliasId.HasValue )
@@ -414,9 +414,15 @@ function() {
                         TotalAmount = xx.Sum( ss => ss.TransactionDetails.Where( td => !limitToAccounts || accountIdList.Contains( td.AccountId ) ).Sum( td => td.Amount ) )
                     } );
 
+            bool excludePersonsWithTransactions = false;
+
             if ( comparisonType == ComparisonType.LessThan )
             {
-                financialTransactionDetailsIndividualQry = financialTransactionDetailsIndividualQry.Where( xx => xx.TotalAmount < amount );
+                // NOTE: Since we want people that have less than the specified, but also want to include people to didn't give anything at all (no transactions)
+                // make this query the same as the GreaterThan, but use it to EXCLUDE people that gave MORE than the specified amount. That
+                // way the filter will include people that had no transactions for the specified date/range and account 
+                financialTransactionDetailsIndividualQry = financialTransactionDetailsIndividualQry.Where( xx => xx.TotalAmount >= amount );
+                excludePersonsWithTransactions = true;
             }
             else if ( comparisonType == ComparisonType.EqualTo )
             {
@@ -455,7 +461,11 @@ function() {
 
                 if ( comparisonType == ComparisonType.LessThan )
                 {
-                    financialTransactionDetailsGivingGroupQry = financialTransactionDetailsGivingGroupQry.Where( xx => xx.TotalAmount < amount );
+                    // NOTE: Since we want people that have less than the specified amount, but also want to include people to didn't give anything at all (no transactions)
+                    // make this query the same as the GreaterThan, but use it to EXCLUDE people that gave MORE than the specified amount. That
+                    // way the filter will include people that had no transactions for the specified date/range and account
+                    financialTransactionDetailsGivingGroupQry = financialTransactionDetailsGivingGroupQry.Where( xx => xx.TotalAmount >= amount );
+                    excludePersonsWithTransactions = true;
                 }
                 else if ( comparisonType == ComparisonType.EqualTo )
                 {
@@ -489,8 +499,17 @@ function() {
                 qryTransactionPersonIds = innerQryIndividual;
             }
 
-            var qry = new PersonService( rockContext ).Queryable()
-                       .Where( p => qryTransactionPersonIds.Any( xx => xx == p.Id ) );
+            IQueryable<Rock.Model.Person> qry;
+
+            if ( excludePersonsWithTransactions )
+            {
+                // the filter is for people that gave LESS than the specified amount, so return people that didn't give MORE than the specified amount
+                qry = new PersonService( rockContext ).Queryable().Where( p => !qryTransactionPersonIds.Any( xx => xx == p.Id ) );
+            }
+            else
+            {
+                qry = new PersonService( rockContext ).Queryable().Where( p => qryTransactionPersonIds.Any( xx => xx == p.Id ) );
+            }
 
             Expression extractedFilterExpression = FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" );
 

@@ -16,26 +16,25 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Web.UI
 {
     /// <summary>
-    /// Interface for Blocks that have a grid that supports adding custom columns from Block Configuration. See GroupList.ascs.cs for example usage.
+    /// Interface for Blocks that have a grid that supports adding custom columns and sticky headers from Block Configuration.
     /// </summary>
-    public interface ICustomGridColumns
+    public interface ICustomGridColumns : ICustomGridOptions
     {
     }
 
     /// <summary>
-    /// 
+    /// Config Class for blocks that support adding custom columns
     /// </summary>
     [Serializable]
     public class CustomGridColumnsConfig
     {
         /// <summary>
-        /// The attribute key
+        /// The custom grid columns attribute key
         /// </summary>
         public const string AttributeKey = "core.CustomGridColumnsConfig";
 

@@ -7,8 +7,6 @@
 
         var exports = {
             clientValidate: function (validator, args) {
-                debugger
-
                 var $checkBoxList = $(validator).closest('.js-rockcheckboxlist');
 
                 var checkboxes = $checkBoxList.find('input');

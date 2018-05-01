@@ -16,9 +16,9 @@
     cursor: pointer;
     opacity: 0;
     -webkit-transition: opacity .2s ease-out;
-       -moz-transition: opacity .2s ease-out;
-         -o-transition: opacity .2s ease-out;
-            transition: opacity .2s ease-out;
+    -moz-transition: opacity .2s ease-out;
+    -o-transition: opacity .2s ease-out;
+    transition: opacity .2s ease-out;
   }
 
   &:hover i.fa-times {
@@ -39,12 +39,12 @@
         right: 0;
         left: auto;
 
-        &:before {
+        &::before {
           right: 12px;
           left: auto;
         }
 
-        &:after {
+        &::after {
           right: 13px;
           left: auto;
         }
@@ -71,7 +71,7 @@
       display: inline-block;
     }
 
-    &:before {
+    &::before {
       position: absolute;
       top: -7px;
       left: 9px;
@@ -81,7 +81,7 @@
       border-bottom-color: rgba(0, 0, 0, .2);
     }
 
-    &:after {
+    &::after {
       position: absolute;
       top: -6px;
       left: 10px;
@@ -128,10 +128,10 @@
           text-decoration: none;
           background-color: #eee;
           border-color: #ddd;
-                  border-radius: 4px;
 
           -webkit-border-radius: 4px;
-             -moz-border-radius: 4px;
+          -moz-border-radius: 4px;
+          border-radius: 4px;
         }
 
         i {

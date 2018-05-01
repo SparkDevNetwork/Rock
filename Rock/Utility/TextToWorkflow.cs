@@ -18,10 +18,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-
+using System.Web;
 using Rock;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Utility
 {
@@ -43,17 +43,31 @@ namespace Rock.Utility
             bool foundWorkflow = false;
 
             // get TextToWorkflow defined types for this number
-            var definedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.TEXT_TO_WORKFLOW.AsGuid() );
+            var definedType = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.TEXT_TO_WORKFLOW.AsGuid() );
             if ( definedType != null && definedType.DefinedValues != null && definedType.DefinedValues.Any() )
             {
                 var smsWorkflows = definedType.DefinedValues.Where( v => v.Value.AsNumeric() == toPhone.AsNumeric() ).OrderBy( v => v.Order ).ToList();
 
                 // iterate through workflows looking for a keyword match
-                foreach ( DefinedValueCache dvWorkflow in smsWorkflows )
+                foreach ( CacheDefinedValue dvWorkflow in smsWorkflows )
                 {
                     string keywordExpression = dvWorkflow.GetAttributeValue( "KeywordExpression" );
-                    string workflowAttributes = dvWorkflow.GetAttributeValue( "WorkflowAttributes" );
+                    //string workflowAttributes = dvWorkflow.GetAttributeValue( "WorkflowAttributes" );
                     string nameTemplate = dvWorkflow.GetAttributeValue( "WorkflowNameTemplate" );
+                    List<KeyValuePair<string, object>> workflowAttributesSettings = new List<KeyValuePair<string, object>>();
+
+                    var workflowAttributes = dvWorkflow.Attributes["WorkflowAttributes"];
+                    if ( workflowAttributes != null )
+                    {
+                        var field = workflowAttributes.FieldType.Field;
+                        if ( field is Rock.Field.Types.KeyValueListFieldType )
+                        {
+                            var keyValueField = ( Rock.Field.Types.KeyValueListFieldType ) field;
+
+                            workflowAttributesSettings = keyValueField.GetValuesFromString( null, dvWorkflow.GetAttributeValue( "WorkflowAttributes" ), workflowAttributes.QualifierValues, false );
+                        }
+                    }
+
 
                     // if not keyword expression add wildcard expression
                     if ( string.IsNullOrWhiteSpace( keywordExpression ) )
@@ -89,7 +103,7 @@ namespace Rock.Utility
                                     var personService = new PersonService( rockContext );
                                     var groupMemberService = new GroupMemberService( rockContext );
 
-                                    var workflowType = WorkflowTypeCache.Read( workflowTypeGuid.Value );
+                                    var workflowType = CacheWorkflowType.Get( workflowTypeGuid.Value );
                                     if ( workflowType != null )
                                     {
                                         // Activate a new workflow
@@ -97,8 +111,8 @@ namespace Rock.Utility
 
                                         // give preference to people with the phone in the mobile phone type
                                         // first look for a person with the phone number as a mobile phone order by family role then age
-                                        var mobilePhoneType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
-                                        var familyGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+                                        var mobilePhoneType = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
+                                        var familyGroupType = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
 
                                         // Get all people phone number
                                         var peopleWithMobileNumber = personService.Queryable()
@@ -168,16 +182,11 @@ namespace Rock.Utility
                                         workflow.SetAttributeValue( "FromPhone", fromPhone );
 
                                         // set workflow attributes
-                                        string[] attributes = workflowAttributes.Split( '|' );
-                                        foreach ( string attribute in attributes )
+                                        foreach( var attribute in workflowAttributesSettings )
                                         {
-                                            if ( attribute.Contains( '^' ) )
-                                            {
-                                                string[] settings = attribute.Split( '^' );
-                                                workflow.SetAttributeValue( settings[0], settings[1].ResolveMergeFields( mergeValues ) );
-                                            }
+                                            workflow.SetAttributeValue( attribute.Key, attribute.Value.ToString().ResolveMergeFields( mergeValues ) );
                                         }
-
+                                        
                                         // set workflow name
                                         string name = nameTemplate.ResolveMergeFields( mergeValues );
                                         if ( name.IsNotNullOrWhitespace() )

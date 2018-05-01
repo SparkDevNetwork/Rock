@@ -25,7 +25,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web;
-using Rock.Web.Cache;
+using Rock.Cache;
 using System.IO;
 using System.ComponentModel;
 using Rock.Security;
@@ -159,7 +159,7 @@ namespace RockWeb.Blocks.Crm
 
                 rockContext.SaveChanges();
 
-                LayoutCache.Flush( layout.Id );
+                CacheLayout.Remove( layout.Id );
 
                 Dictionary<string, string> qryParams = new Dictionary<string, string>();
                 qryParams["layoutId"] = layout.Id.ToString();
@@ -219,7 +219,7 @@ namespace RockWeb.Blocks.Crm
 
             if (layout == null && siteId.HasValue)
             {
-                var site = SiteCache.Read( siteId.Value );
+                var site = CacheSite.Get( siteId.Value );
                 if ( site != null )
                 {
                     layout = new Layout { Id = 0 };
@@ -335,7 +335,7 @@ namespace RockWeb.Blocks.Crm
             ddlLayout.Items.Clear();
             ddlLayout.Items.Add( new ListItem( string.Empty, None.IdValue ) );
 
-            var site = SiteCache.Read( hfSiteId.ValueAsInt() );
+            var site = CacheSite.Get( hfSiteId.ValueAsInt() );
             if ( site != null )
             {
                 string virtualFolder = string.Format( "~/Themes/{0}/Layouts", site.Theme );

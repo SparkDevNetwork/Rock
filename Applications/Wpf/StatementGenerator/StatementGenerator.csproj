@@ -84,15 +84,6 @@
     <Compile Include="..\..\..\Rock.StatementGenerator\StatementGeneratorRecipient.cs">
       <Link>StatementGeneratorRecipient.cs</Link>
     </Compile>
-    <Compile Include="..\..\..\Rock\Utility\ExtensionMethods\EnumExtensions.cs">
-      <Link>RockExtensions\EnumExtensions.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\Rock\Utility\ExtensionMethods\ObjectExtensions.cs">
-      <Link>RockExtensions\ObjectExtensions.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\Rock\Utility\ExtensionMethods\StringExtensions.cs">
-      <Link>RockExtensions\StringExtensions.cs</Link>
-    </Compile>
     <Compile Include="LoginPage.xaml.cs">
       <DependentUpon>LoginPage.xaml</DependentUpon>
     </Compile>
@@ -107,6 +98,8 @@
     </Compile>
     <Compile Include="ReportOptions.cs" />
     <Compile Include="RockConfig.cs" />
+    <Compile Include="RockExtensions\EnumExtensions.cs" />
+    <Compile Include="RockExtensions\StringExtensions.cs" />
     <Compile Include="SelectPledgeAccountsPage.xaml.cs">
       <DependentUpon>SelectPledgeAccountsPage.xaml</DependentUpon>
     </Compile>
@@ -249,6 +242,7 @@
   <ItemGroup>
     <Resource Include="resources\statement-printer.ico" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

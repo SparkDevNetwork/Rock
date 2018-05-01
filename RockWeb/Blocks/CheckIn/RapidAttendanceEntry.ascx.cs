@@ -26,7 +26,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.CheckIn
@@ -36,7 +36,7 @@ namespace RockWeb.Blocks.CheckIn
     [Description( "Provides a way to manually enter attendance for a large group of people in an efficient manner." )]
 
     [GroupField( "Parent Group", "Select the parent group whose immediate childeren will be displayed as options to take attendance for.", required: true, order: 0 )]
-    [BooleanField( "Include Parent Group", "If true then the parent group will be included as an option in addition to it's children.", false, order: 1 )]
+    [BooleanField( "Include Parent Group", "If true then the parent group will be included as an option in addition to its children.", false, order: 1 )]
     [BooleanField( "Default Show Current Attendees", "Should the Current Attendees grid be visible by default. When the grid is enabled performance will be reduced.", false, order: 1 )]
     public partial class RapidAttendanceEntry : RockBlock
     {
@@ -340,7 +340,7 @@ namespace RockWeb.Blocks.CheckIn
             //
             if ( attendance.LocationId.HasValue )
             {
-                Rock.CheckIn.KioskLocationAttendance.Flush( attendance.LocationId.Value );
+                Rock.CheckIn.KioskLocationAttendance.Remove( attendance.LocationId.Value );
             }
 
             nbAttended.Text = string.Format( "{0} has been marked attended.", person.FullName );
@@ -414,7 +414,7 @@ namespace RockWeb.Blocks.CheckIn
 
             if ( attendance.LocationId != null )
             {
-                Rock.CheckIn.KioskLocationAttendance.Flush( attendance.LocationId.Value );
+                Rock.CheckIn.KioskLocationAttendance.Remove( attendance.LocationId.Value );
             }
 
             nbAttended.Text = string.Format( "{0} has been removed from attendance.", attendance.PersonAlias.Person.FullName );

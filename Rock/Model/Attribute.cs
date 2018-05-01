@@ -22,8 +22,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Cache;
 using Rock.Security;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -295,7 +295,7 @@ namespace Rock.Model
 
                 if ( entityTypeId.HasValue )
                 {
-                    var entityType = EntityTypeCache.Read( entityTypeId.Value );
+                    var entityType = CacheEntityType.Get( entityTypeId.Value );
                     var type = entityType.GetEntityType();
                     if ( type != null && 
                         ( typeof( ISecured ).IsAssignableFrom( type ) )  &&
@@ -324,7 +324,7 @@ namespace Rock.Model
             if ( state != System.Data.Entity.EntityState.Deleted )
             {
                 // ensure that the BinaryFile.IsTemporary flag is set to false for any BinaryFiles that are associated with this record
-                var fieldTypeCache = FieldTypeCache.Read( this.FieldTypeId );
+                var fieldTypeCache = CacheFieldType.Get( this.FieldTypeId );
                 if ( fieldTypeCache.Field is Rock.Field.Types.BinaryFileFieldType )
                 {
                     Guid? binaryFileGuid = DefaultValue.AsGuidOrNull();

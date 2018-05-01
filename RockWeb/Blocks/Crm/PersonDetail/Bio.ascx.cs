@@ -26,7 +26,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -60,12 +60,24 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
     [BooleanField( "Display Tags", "Should tags be displayed?", true, "", 10 )]
     [BooleanField( "Display Graduation", "Should the Grade/Graduation be displayed", true, "", 11 )]
     [BooleanField( "Display Anniversary Date", "Should the Anniversary Date be displayed?", true, "", 12 )]
-    [CategoryField( "Tag Category", "Optional category to limit the tags to. If specified all new personal tags will be added with this category.", false, 
+    [CategoryField( "Tag Category", "Optional category to limit the tags to. If specified all new personal tags will be added with this category.", false,
         "Rock.Model.Tag", "", "", false, "", "", 13 )]
+    [AttributeCategoryField( "Social Media Category", "The Attribute Category to display attributes from", false, "Rock.Model.Person", false, "DD8F467D-B83C-444F-B04C-C681167046A1", "", 14 )]
     [BooleanField( "Enable Call Origination", "Should click-to-call links be added to phone numbers.", true, "", 14 )]
     [LinkedPage( "Communication Page", "The communication page to use for when the person's email address is clicked. Leave this blank to use the default.", false, "", "", 15 )]
     public partial class Bio : PersonBlock
     {
+
+        #region Fields
+
+        private const string NAME_KEY = "name";
+        private const string ICONCSSCLASS_KEY = "iconcssclass";
+        private const string COLOR_KEY = "color";
+        private const string TEXT_TEMPLATE = "texttemplate";
+        private const string BASEURL = "baseurl";
+
+        #endregion
+
         #region Base Control Methods
 
         /// <summary>
@@ -89,7 +101,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 pnlFollow.Visible = GetAttributeValue( "AllowFollowing" ).AsBoolean();
 
                 // Record Type - this is always "business". it will never change.
-                if ( Person.RecordTypeValueId == DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id )
+                if ( Person.RecordTypeValueId == CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id )
                 {
                     var parms = new Dictionary<string, string>();
                     parms.Add( "businessId", Person.Id.ToString() );
@@ -112,7 +124,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                         Guid guid = badgeGuid.AsGuid();
                         if ( guid != Guid.Empty )
                         {
-                            var personBadge = PersonBadgeCache.Read( guid );
+                            var personBadge = CachePersonBadge.Get( guid );
                             if ( personBadge != null )
                             {
                                 blStatus.PersonBadges.Add( personBadge );
@@ -168,22 +180,29 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
                     hlVCard.NavigateUrl = ResolveRockUrl( string.Format( "~/GetVCard.ashx?Person={0}", Person.Id ) );
 
-                    var socialCategoryGuid = Rock.SystemGuid.Category.PERSON_ATTRIBUTES_SOCIAL.AsGuid();
-                    if ( !socialCategoryGuid.IsEmpty() )
+                    var socialCategoryGuid = GetAttributeValue( "SocialMediaCategory" ).AsGuidOrNull();
+                    if ( socialCategoryGuid.HasValue )
                     {
-                        var attributes = Person.Attributes.Where( p => p.Value.Categories.Select( c => c.Guid ).Contains( socialCategoryGuid ) );
-                        var result = attributes.Join( Person.AttributeValues, a => a.Key, v => v.Key, ( a, v ) => new { Attribute = a.Value, Value = v.Value } );
+                        var attributes = Person.Attributes.Where( p => p.Value.Categories.Select( c => c.Guid ).Contains( socialCategoryGuid.Value ) );
+                        var result = attributes.Join( Person.AttributeValues, a => a.Key, v => v.Key, ( a, v ) => new { Attribute = a.Value, Value = v.Value, QualifierValues = a.Value.QualifierValues } );
 
                         rptSocial.DataSource = result
                             .Where( r =>
                                 r.Value != null &&
-                                r.Value.Value != string.Empty )
+                                r.Value.Value != string.Empty &&
+                                r.QualifierValues != null &&
+                                r.QualifierValues.ContainsKey( NAME_KEY ) &&
+                                r.QualifierValues.ContainsKey( ICONCSSCLASS_KEY ) &&
+                                r.QualifierValues.ContainsKey( COLOR_KEY ) )
                             .OrderBy( r => r.Attribute.Order )
                             .Select( r => new
                             {
                                 url = r.Value.Value,
-                                name = r.Attribute.Name,
-                                icon = r.Attribute.IconCssClass
+                                name = r.QualifierValues[NAME_KEY].Value,
+                                icon = r.Attribute.QualifierValues[ICONCSSCLASS_KEY].Value.Contains( "fa-fw" ) ?
+                                        r.Attribute.QualifierValues[ICONCSSCLASS_KEY].Value :
+                                        r.Attribute.QualifierValues[ICONCSSCLASS_KEY].Value + " fa-fw",
+                                color = r.Attribute.QualifierValues[COLOR_KEY].Value,
                             } )
                             .ToList();
                         rptSocial.DataBind();
@@ -197,28 +216,36 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                             formattedAge += " old";
                         }
 
-                        lAge.Text = string.Format( "{0} <small>({1})</small><br/>", formattedAge, ( Person.BirthYear.HasValue && Person.BirthYear != DateTime.MinValue.Year ) ? Person.BirthDate.Value.ToShortDateString() : Person.BirthDate.Value.ToMonthDayString() );
+                        lAge.Text = string.Format( "<dd>{0} <small>({1})</small></dd>", formattedAge, ( Person.BirthYear.HasValue && Person.BirthYear != DateTime.MinValue.Year ) ? Person.BirthDate.Value.ToShortDateString() : Person.BirthDate.Value.ToMonthDayString() );
                     }
 
-                    lGender.Text = Person.Gender.ToString();
+                    lGender.Text = string.Format( "<dd>{0}</dd>", Person.Gender.ToString() );
 
                     if ( GetAttributeValue( "DisplayGraduation" ).AsBoolean() )
                     {
                         if ( Person.GraduationYear.HasValue && Person.HasGraduated.HasValue )
                         {
                             lGraduation.Text = string.Format(
-                                "<small>({0} {1})</small>",
+                                "<dd><small>{0} {1}</small></dd>",
                                 Person.HasGraduated.Value ? "Graduated " : "Graduates ",
                                 Person.GraduationYear.Value );
                         }
                         lGrade.Text = Person.GradeFormatted;
                     }
 
-                    lMaritalStatus.Text = Person.MaritalStatusValueId.DefinedValue();
                     if ( Person.AnniversaryDate.HasValue && GetAttributeValue("DisplayAnniversaryDate").AsBoolean() )
                     {
-                        lAnniversary.Text = string.Format( "{0} yrs <small>({1})</small>", Person.AnniversaryDate.Value.Age(), Person.AnniversaryDate.Value.ToMonthDayString() );
+                        lMaritalStatus.Text = string.Format( "<dd>{0}",  Person.MaritalStatusValueId.DefinedValue() );
+                        lAnniversary.Text = string.Format( "{0} yrs <small>({1})</small></dd>", Person.AnniversaryDate.Value.Age(), Person.AnniversaryDate.Value.ToMonthDayString() );
                     }
+                    else
+                    {
+                        if ( Person.MaritalStatusValueId.HasValue )
+                        {
+                        lMaritalStatus.Text = string.Format( "<dd>{0}</dd>",  Person.MaritalStatusValueId.DefinedValue() );
+                        }
+                    }
+
 
                     if ( Person.PhoneNumbers != null )
                     {
@@ -265,7 +292,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                                 if ( guid.HasValue )
                                 {
                                     var workflowType = workflowTypeService.Get( guid.Value );
-                                    if ( workflowType != null && workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                                    if ( workflowType != null && workflowType.IsActive && workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                                     {
                                         string url = string.Format( "~/WorkflowEntry/{0}?PersonId={1}", workflowType.Id, Person.Id );
                                         sbActions.AppendFormat(
@@ -337,7 +364,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
             if ( Person.RecordTypeValueId.HasValue )
             {
-                int recordTypeValueIdBusiness = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
+                int recordTypeValueIdBusiness = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
 
                 isBusiness = ( Person.RecordTypeValueId.Value == recordTypeValueIdBusiness );
             }
@@ -353,17 +380,17 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             {
                 if (GetAttributeValue( "DisplayMiddleName" ).AsBoolean() && !String.IsNullOrWhiteSpace(Person.MiddleName))
                 {
-                    nameText = string.Format( "<span class='first-word'>{0}</span> <span class='middlename'>{1}</span> <span class='lastname'>{2}</span>", Person.NickName, Person.MiddleName, Person.LastName );
+                    nameText = string.Format( "<span class='first-word nickname'>{0}</span> <span class='middlename'>{1}</span> <span class='lastname'>{2}</span>", Person.NickName, Person.MiddleName, Person.LastName );
                 }
                 else
                 {
-                    nameText = string.Format( "<span class='first-word'>{0}</span> <span class='lastname'>{1}</span>", Person.NickName, Person.LastName );
+                    nameText = string.Format( "<span class='first-word nickname'>{0}</span> <span class='lastname'>{1}</span>", Person.NickName, Person.LastName );
                 }
 
                 // Prefix with Title if they have a Title with IsFormal=True
                 if ( Person.TitleValueId.HasValue )
                 {
-                    var personTitleValue = DefinedValueCache.Read( Person.TitleValueId.Value );
+                    var personTitleValue = CacheDefinedValue.Get( Person.TitleValueId.Value );
                     if ( personTitleValue != null && personTitleValue.GetAttributeValue( "IsFormal" ).AsBoolean() )
                     {
                         nameText = string.Format( "<span class='title'>{0}</span> ", personTitleValue.Value ) + nameText;
@@ -382,7 +409,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 // Add Suffix.
                 if ( Person.SuffixValueId.HasValue )
                 {
-                    var suffix = DefinedValueCache.Read( Person.SuffixValueId.Value );
+                    var suffix = CacheDefinedValue.Get( Person.SuffixValueId.Value );
                     if ( suffix != null )
                     {
                         nameText += " " + suffix.Value;
@@ -493,7 +520,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 }
             }
 
-            var phoneType = DefinedValueCache.Read( phoneNumberTypeId );
+            var phoneType = CacheDefinedValue.Get( phoneNumberTypeId );
             if ( phoneType != null )
             {
                 string phoneMarkup = formattedNumber;

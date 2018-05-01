@@ -396,7 +396,7 @@ namespace Rock.Model
         {
             get
             {
-                var layout = Web.Cache.LayoutCache.Read( this.LayoutId );
+                var layout = Cache.CacheLayout.Get( this.LayoutId );
                 return layout != null ? layout.SiteId : 0;
             }
         }

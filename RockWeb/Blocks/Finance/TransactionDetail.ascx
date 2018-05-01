@@ -29,7 +29,7 @@
                 <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
 
                 <div id="pnlEditDetails" runat="server">
-                    <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                    <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
                     <Rock:NotificationBox ID="nbErrorMessage" runat="server" NotificationBoxType="Danger" Visible="false" />
 
                     <div class="row">
@@ -61,7 +61,7 @@
                                                 <ItemTemplate><%# AccountName( (int)Eval("AccountId") ) %></ItemTemplate>
                                             </Rock:RockTemplateField>
                                             <Rock:RockBoundField DataField="Summary" SortExpression="Summary" />
-                                            <Rock:CurrencyField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" />
+                                            <Rock:CurrencyField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                                         </Columns>
                                     </Rock:Grid>
                                 </div>
@@ -123,7 +123,7 @@
                                         <ItemTemplate><%# AccountName( (int)Eval("AccountId") ) %></ItemTemplate>
                                     </Rock:RockTemplateField>
                                     <Rock:RockBoundField DataField="Summary" SortExpression="Summary" />
-                                    <Rock:CurrencyField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" />
+                                    <Rock:CurrencyField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                                 </Columns>
                             </Rock:Grid>
 
@@ -149,7 +149,7 @@
                                         <Rock:RockBoundField DataField="TransactionCode" />
                                         <Rock:RockBoundField DataField="RefundReasonValue" />
                                         <Rock:RockBoundField DataField="RefundReasonSummary" />
-                                        <Rock:CurrencyField DataField="TotalAmount" ItemStyle-HorizontalAlign="Right" />
+                                        <Rock:CurrencyField DataField="TotalAmount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                                     </Columns>
                                 </Rock:Grid>
                             </asp:Panel>
@@ -160,7 +160,7 @@
                                     <Columns>
                                         <asp:HyperLinkField DataTextField="TransactionDateTime" DataNavigateUrlFields="Id" />
                                         <Rock:RockBoundField DataField="TransactionCode" />
-                                        <Rock:CurrencyField DataField="TotalAmount" ItemStyle-HorizontalAlign="Right" />
+                                        <Rock:CurrencyField DataField="TotalAmount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right"/>
                                     </Columns>
                                 </Rock:Grid>
                             </asp:Panel>
@@ -173,6 +173,7 @@
                         <div class="pull-right">
                             <asp:LinkButton ID="lbRefund" runat="server" Text="Refund" AccessKey="r" ToolTip="Alt+r" CssClass="btn btn-default margin-r-sm" CausesValidation="false" OnClick="lbRefundTransaction_Click" />
                             <asp:LinkButton ID="lbAddTransaction" runat="server" Text="Add New Transaction" AccessKey="a" ToolTip="Alt+a" CssClass="btn btn-default margin-r-sm" CausesValidation="false" OnClick="lbAddTransaction_Click" />
+                            <asp:HyperLink ID="lbBack" runat="server" AccessKey="b" ToolTip="Alt+b" CssClass="btn btn-default margin-r-sm" OnClick="lbBack_Click" ><i class="fa fa-chevron-left"></i> Back</asp:HyperLink>
                             <asp:HyperLink ID="lbNext" runat="server" AccessKey="n" ToolTip="Alt+n" CssClass="btn btn-default margin-r-sm">Next <i class="fa fa-chevron-right"></i></asp:HyperLink>
                         </div>
                     </div>
@@ -189,7 +190,7 @@
 
         <Rock:ModalDialog ID="mdAccount" runat="server" Title="Account" OnSaveClick="mdAccount_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Account">
             <Content>
-                <asp:ValidationSummary ID="valSummaryAccount" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="Account" />
+                <asp:ValidationSummary ID="valSummaryAccount" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" ValidationGroup="Account" />
                 <asp:HiddenField ID="hfAccountGuid" runat="server" />
                 <div class="row">
                     <div class="col-md-6">
@@ -208,7 +209,7 @@
 
         <Rock:ModalDialog ID="mdRefund" runat="server" Title="Refund" OnSaveClick="mdRefund_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Refund">
             <Content>
-                <asp:ValidationSummary ID="valSummaryRefund" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="Refund" />
+                <asp:ValidationSummary ID="valSummaryRefund" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" ValidationGroup="Refund" />
                 <Rock:NotificationBox ID="nbRefundError" runat="server" NotificationBoxType="Danger" Visible="false" />
                 <div class="row">
                     <div class="col-md-6">

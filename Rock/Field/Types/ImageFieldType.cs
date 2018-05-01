@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
 
 using Rock.Data;
@@ -264,12 +265,9 @@ namespace Rock.Field.Types
                 int? id = picker.BinaryFileId;
                 if ( id.HasValue )
                 {
-                    var binaryFile = new BinaryFileService( new RockContext() ).Get( id.Value );
-
-                    if ( binaryFile != null )
-                    {
-                        return binaryFile.Guid.ToString();
-                    }
+                    var binaryFileGuid = new BinaryFileService( new RockContext() ).GetGuid( id.Value );
+                                        
+                    return binaryFileGuid?.ToString();
                 }
             }
 
@@ -288,14 +286,20 @@ namespace Rock.Field.Types
 
             if ( picker != null )
             {
-                Guid guid = value.AsGuid();
+                Guid? guid = value.AsGuidOrNull();
+                int? binaryFileId = null;
 
-                // get the item (or null) and set it
-                var item = new BinaryFileService( new RockContext() ).Get( guid );
-                if ( item != null )
+                // if there is a Value as Guid, get the Id of the BinaryFile
+                if ( guid.HasValue )
                 {
-                    picker.BinaryFileId = item.Id;
+                    using ( var rockContext = new RockContext() )
+                    {
+                        binaryFileId = new BinaryFileService( rockContext ).GetId( guid.Value );
+                    }
                 }
+
+                // set the picker's selected BinaryFileId (or set it to null if setting the value to null or emptystring)
+                picker.BinaryFileId = binaryFileId;
             }
         }
 

@@ -189,8 +189,8 @@ namespace RockWeb.Blocks.Examples
                 rblExample.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
                 rblExampleHorizontal.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
 
-                campExample.Campuses = Rock.Web.Cache.CampusCache.All();
-                campsExample.Campuses = Rock.Web.Cache.CampusCache.All();
+                campExample.Campuses = Rock.Cache.CacheCampus.All();
+                campsExample.Campuses = Rock.Cache.CacheCampus.All();
                 
                 var rockContext = new RockContext();
                 var allGroupTypes = new GroupTypeService( rockContext ).Queryable().OrderBy( a => a.Name ).ToList();
@@ -212,7 +212,7 @@ namespace RockWeb.Blocks.Examples
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnShowAttributeEditor_Click( object sender, EventArgs e )
         {
-            edtExample.FieldTypeId = Rock.Web.Cache.FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
+            edtExample.FieldTypeId = Rock.Cache.CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
             pnlAttributeEditor.Visible = !pnlAttributeEditor.Visible;
         }
 

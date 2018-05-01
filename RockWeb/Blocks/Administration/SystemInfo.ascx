@@ -95,42 +95,32 @@
 
         <div class="row">
             <div class="col-md-6">
-
                 <h4>Transaction Queue</h4>
                 <asp:Literal ID="lTransactionQueue" runat="server"></asp:Literal>
-                
-                
-                <h4>Cache</h4>
-                <div id="cache-details">
-                    <asp:Literal ID="lCacheOverview" runat="server"></asp:Literal>
-                </div>
-
-                <asp:Literal ID="lFalseCacheHits" runat="server"></asp:Literal>
-
-                <p><a id="show-cache-objects" href="#">Show Cache Objects</a></p>
-                <div id="cache-objects" style="display:none">
-                    <p><strong>Cached Object Counts:</strong><br />
-                    <asp:Literal ID="lCacheObjects" runat="server"></asp:Literal>
-                    </p>
-                </div>
-        
             </div>
             <div class="col-md-6">
-
                 <h4>Routes</h4>
-
                 <p><a id="show-routes" href="#">Show Routes</a></p>
                 <div id="routes" style="display:none">
                     <p>
                     <asp:Literal ID="lRoutes" runat="server"></asp:Literal>
                     </p>
                 </div>
-
-                
-
             </div>
         </div>
 
+        <h4>Cache</h4>
+        <div id="cache-details">
+            <asp:Literal ID="lCacheOverview" runat="server"></asp:Literal>
+        </div>
+
+        <asp:Literal ID="lFalseCacheHits" runat="server"></asp:Literal>
+
+        <p><a id="show-cache-objects" href="#">Show Cache Statistics</a></p>
+        <div id="cache-objects" style="display:none">
+            <p><asp:Literal ID="lCacheObjects" runat="server"></asp:Literal></p>
+        </div>
+               
         <asp:LinkButton runat="server" ID="btnDumpDiagnostics" CssClass="btn btn-action margin-t-lg" OnClick="btnDumpDiagnostics_Click" ToolTip="Generates a diagnostics file for sharing with others.">
             <i class="fa fa-download"></i> Download Diagnostics File
         </asp:LinkButton>

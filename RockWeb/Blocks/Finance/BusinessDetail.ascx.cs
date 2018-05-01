@@ -28,7 +28,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -51,8 +51,8 @@ namespace RockWeb.Blocks.Finance
         {
             base.OnInit( e );
 
-            ddlRecordStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ) );
-            ddlReason.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ), true );
+            ddlRecordStatus.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ) );
+            ddlReason.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ), true );
 
             bool canEdit = IsUserAuthorized( Authorization.EDIT );
 
@@ -111,7 +111,6 @@ namespace RockWeb.Blocks.Finance
             var rockContext = new RockContext();
 
             var personService = new PersonService( rockContext );
-            var changes = new List<string>();
             Person business = null;
 
             if ( int.Parse( hfBusinessId.Value ) != 0 )
@@ -127,20 +126,12 @@ namespace RockWeb.Blocks.Finance
             }
 
             // Business Name
-            History.EvaluateChange( changes, "Last Name", business.LastName, tbBusinessName.Text );
             business.LastName = tbBusinessName.Text;
 
             // Phone Number
             var businessPhoneTypeId = new DefinedValueService( rockContext ).GetByGuid( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK ) ).Id;
 
-            string oldPhoneNumber = string.Empty;
-            string newPhoneNumber = string.Empty;
-
             var phoneNumber = business.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == businessPhoneTypeId );
-            if ( phoneNumber != null )
-            {
-                oldPhoneNumber = phoneNumber.NumberFormattedWithCountryCode;
-            }
 
             if ( !string.IsNullOrWhiteSpace( PhoneNumber.CleanNumber( pnbPhone.Number ) ) )
             {
@@ -153,8 +144,6 @@ namespace RockWeb.Blocks.Finance
                 phoneNumber.Number = PhoneNumber.CleanNumber( pnbPhone.Number );
                 phoneNumber.IsMessagingEnabled = cbSms.Checked;
                 phoneNumber.IsUnlisted = cbUnlisted.Checked;
-
-                newPhoneNumber = phoneNumber.NumberFormattedWithCountryCode;
             }
             else
             {
@@ -165,38 +154,24 @@ namespace RockWeb.Blocks.Finance
                 }
             }
 
-            History.EvaluateChange(
-                changes,
-                string.Format( "{0} Phone", DefinedValueCache.GetName( businessPhoneTypeId ) ),
-                oldPhoneNumber,
-                newPhoneNumber );
-
             // Record Type - this is always "business". it will never change.
-            business.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
+            business.RecordTypeValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
 
             // Record Status
-            int? newRecordStatusId = ddlRecordStatus.SelectedValueAsInt();
-            History.EvaluateChange( changes, "Record Status", DefinedValueCache.GetName( business.RecordStatusValueId ), DefinedValueCache.GetName( newRecordStatusId ) );
-            business.RecordStatusValueId = newRecordStatusId;
+            business.RecordStatusValueId = ddlRecordStatus.SelectedValueAsInt(); ;
 
             // Record Status Reason
             int? newRecordStatusReasonId = null;
-            if ( business.RecordStatusValueId.HasValue && business.RecordStatusValueId.Value == DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id )
+            if ( business.RecordStatusValueId.HasValue && business.RecordStatusValueId.Value == CacheDefinedValue.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id )
             {
                 newRecordStatusReasonId = ddlReason.SelectedValueAsInt();
             }
-
-            History.EvaluateChange( changes, "Record Status Reason", DefinedValueCache.GetName( business.RecordStatusReasonValueId ), DefinedValueCache.GetName( newRecordStatusReasonId ) );
             business.RecordStatusReasonValueId = newRecordStatusReasonId;
 
             // Email
             business.IsEmailActive = true;
-            History.EvaluateChange( changes, "Email", business.Email, tbEmail.Text );
             business.Email = tbEmail.Text.Trim();
-
-            var newEmailPreference = rblEmailPreference.SelectedValue.ConvertToEnum<EmailPreference>();
-            History.EvaluateChange( changes, "EmailPreference", business.EmailPreference, newEmailPreference );
-            business.EmailPreference = newEmailPreference;
+            business.EmailPreference = rblEmailPreference.SelectedValue.ConvertToEnum<EmailPreference>();
 
             if ( !business.IsValid )
             {
@@ -206,21 +181,10 @@ namespace RockWeb.Blocks.Finance
 
             rockContext.WrapTransaction( () =>
             {
-                if ( rockContext.SaveChanges() > 0 )
-                {
-                    if ( changes.Any() )
-                    {
-                        HistoryService.SaveChanges(
-                            rockContext,
-                            typeof( Person ),
-                            Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                            business.Id,
-                            changes );
-                    }
-                }
+                rockContext.SaveChanges();
 
                 // Add/Update Family Group
-                var familyGroupType = GroupTypeCache.GetFamilyGroupType();
+                var familyGroupType = CacheGroupType.GetFamilyGroupType();
                 int adultRoleId = familyGroupType.Roles
                     .Where( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ) )
                     .Select( r => r.Id )
@@ -229,7 +193,7 @@ namespace RockWeb.Blocks.Finance
                 business.GivingGroup = adultFamilyMember.Group;
 
                 // Add/Update Known Relationship Group Type
-                var knownRelationshipGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
+                var knownRelationshipGroupType = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
                 int knownRelationshipOwnerRoleId = knownRelationshipGroupType.Roles
                     .Where( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() ) )
                     .Select( r => r.Id )
@@ -237,7 +201,7 @@ namespace RockWeb.Blocks.Finance
                 var knownRelationshipOwner = UpdateGroupMember( business.Id, knownRelationshipGroupType, "Known Relationship", null, knownRelationshipOwnerRoleId, rockContext );
 
                 // Add/Update Implied Relationship Group Type
-                var impliedRelationshipGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_IMPLIED_RELATIONSHIPS.AsGuid() );
+                var impliedRelationshipGroupType = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_IMPLIED_RELATIONSHIPS.AsGuid() );
                 int impliedRelationshipOwnerRoleId = impliedRelationshipGroupType.Roles
                     .Where( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_IMPLIED_RELATIONSHIPS_OWNER.AsGuid() ) )
                     .Select( r => r.Id )
@@ -247,7 +211,7 @@ namespace RockWeb.Blocks.Finance
                 rockContext.SaveChanges();
 
                 // Location
-                int workLocationTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK ).Id;
+                int workLocationTypeId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK ).Id;
 
                 var groupLocationService = new GroupLocationService( rockContext );
                 var workLocation = groupLocationService.Queryable( "Location" )
@@ -261,21 +225,13 @@ namespace RockWeb.Blocks.Finance
                     if ( workLocation != null )
                     {
                         groupLocationService.Delete( workLocation );
-                        History.EvaluateChange( changes, "Address", workLocation.Location.ToString(), string.Empty );
                     }
                 }
                 else
                 {
-                    var oldValue = string.Empty;
-
                     var newLocation = new LocationService( rockContext ).Get(
                         acAddress.Street1, acAddress.Street2, acAddress.City, acAddress.State, acAddress.PostalCode, acAddress.Country );
-
-                    if ( workLocation != null )
-                    {
-                        oldValue = workLocation.Location.ToString();
-                    }
-                    else
+                    if ( workLocation == null )
                     {
                         workLocation = new GroupLocation();
                         groupLocationService.Add( workLocation );
@@ -284,8 +240,6 @@ namespace RockWeb.Blocks.Finance
                     }
                     workLocation.Location = newLocation;
                     workLocation.IsMailingLocation = true;
-
-                    History.EvaluateChange( changes, "Address", oldValue, newLocation.ToString() );
                 }
 
                 rockContext.SaveChanges();
@@ -335,7 +289,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlRecordStatus_SelectedIndexChanged( object sender, EventArgs e )
         {
-            ddlReason.Visible = ddlRecordStatus.SelectedValueAsInt() == DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
+            ddlReason.Visible = ddlRecordStatus.SelectedValueAsInt() == CacheDefinedValue.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
         }
 
         /// <summary>
@@ -414,7 +368,7 @@ namespace RockWeb.Blocks.Finance
             if ( contactId.HasValue && contactId.Value > 0 )
             {
                 // Get the relationship roles to use
-                var knownRelationshipGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
+                var knownRelationshipGroupType = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
                 int businessContactRoleId = knownRelationshipGroupType.Roles
                     .Where( r =>
                         r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS_CONTACT.AsGuid() ) )
@@ -521,7 +475,7 @@ namespace RockWeb.Blocks.Finance
             // Load the Campus drop down
             ddlCampus.Items.Clear();
             ddlCampus.Items.Add( new ListItem( string.Empty, string.Empty ) );
-            foreach ( var campus in CampusCache.All() )
+            foreach ( var campus in CacheCampus.All() )
             {
                 ListItem li = new ListItem( campus.Name, campus.Id.ToString() );
                 ddlCampus.Items.Add( li );
@@ -606,7 +560,7 @@ namespace RockWeb.Blocks.Finance
                 var detailsRight = new DescriptionList();
 
                 // Get address
-                var workLocationType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid() );
+                var workLocationType = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid() );
                 if ( workLocationType != null )
                 {
                     if ( business.GivingGroup != null ) // Giving Group is a shortcut to Family Group for business
@@ -622,7 +576,7 @@ namespace RockWeb.Blocks.Finance
                     }
                 }
 
-                var workPhoneType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid() );
+                var workPhoneType = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid() );
                 if ( workPhoneType != null )
                 {
                     var phoneNumber = business.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == workPhoneType.Id );
@@ -677,7 +631,7 @@ namespace RockWeb.Blocks.Finance
 
                 // address
                 Location location = null;
-                var workLocationType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid() );
+                var workLocationType = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid() );
                 if ( business.GivingGroup != null )     // Giving group is a shortcut to the family group for business
                 {
                     ddlCampus.SelectedValue = business.GivingGroup.CampusId.ToString();
@@ -690,7 +644,7 @@ namespace RockWeb.Blocks.Finance
                 acAddress.SetValues( location );
 
                 // Phone Number
-                var workPhoneType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid() );
+                var workPhoneType = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid() );
                 PhoneNumber phoneNumber = null;
                 if ( workPhoneType != null )
                 {
@@ -715,7 +669,7 @@ namespace RockWeb.Blocks.Finance
                 ddlRecordStatus.SelectedValue = business.RecordStatusValueId.HasValue ? business.RecordStatusValueId.Value.ToString() : string.Empty;
                 ddlReason.SelectedValue = business.RecordStatusReasonValueId.HasValue ? business.RecordStatusReasonValueId.Value.ToString() : string.Empty;
                 ddlReason.Visible = business.RecordStatusReasonValueId.HasValue &&
-                    business.RecordStatusValueId.Value == DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
+                    business.RecordStatusValueId.Value == CacheDefinedValue.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
             }
             else
             {
@@ -767,7 +721,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="groupRoleId">The group role identifier.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        private GroupMember UpdateGroupMember( int businessId, GroupTypeCache groupType, string groupName, int? campusId, int groupRoleId, RockContext rockContext )
+        private GroupMember UpdateGroupMember( int businessId, CacheGroupType groupType, string groupName, int? campusId, int groupRoleId, RockContext rockContext )
         {
             var groupMemberService = new GroupMemberService( rockContext );
 

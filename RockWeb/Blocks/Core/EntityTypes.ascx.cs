@@ -27,7 +27,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Security;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -222,7 +222,7 @@ namespace RockWeb.Blocks.Core
 
             rockContext.SaveChanges();
 
-            EntityTypeCache.Flush( entityType.Id );
+            CacheEntityType.Remove( entityType.Id );
 
             hfEntityTypeId.Value = string.Empty;
 
@@ -243,7 +243,7 @@ namespace RockWeb.Blocks.Core
             EntityTypeService entityTypeService = new EntityTypeService( new RockContext() );
             SortProperty sortProperty = gEntityTypes.SortProperty;
 
-            var qry = entityTypeService.Queryable().Where( e => e.IsSecured || e.IsEntity );
+            var qry = entityTypeService.Queryable().Where( e => e.IsEntity );
 
             string search = gfSettings.GetUserPreference( "Search" );
             if ( !string.IsNullOrWhiteSpace( search ) )

@@ -23,7 +23,7 @@ using System.Web.UI.WebControls;
 using Rock.Communication;
 using Rock.Field;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Web.UI.Controls.Communication
 {
@@ -74,12 +74,26 @@ namespace Rock.Web.UI.Controls.Communication
         public int CharacterLimit { get; set; }
 
         /// <summary>
+        /// Gets or sets the selected numbers to display.
+        /// </summary>
+        /// <value>
+        /// A guid list of numbers from the defined type to filter the dropdown list down.
+        /// </value>
+        public List<Guid> SelectedNumbers { get; set; }
+
+        /// <summary>
         /// Sets control values from a communication record.
         /// </summary>
         /// <param name="communication">The communication.</param>
         public override void SetFromCommunication( CommunicationDetails communication )
         {
             EnsureChildControls();
+            var valueItem = ddlFrom.Items.FindByValue( communication.SMSFromDefinedValueId.ToString() );
+            if ( valueItem == null && communication.SMSFromDefinedValueId != null )
+            {
+                var lookupDefinedValue = CacheDefinedValue.Get( communication.SMSFromDefinedValueId.GetValueOrDefault() );
+                ddlFrom.Items.Add( new ListItem( lookupDefinedValue.Description, lookupDefinedValue.Id.ToString() ) );
+            }
             ddlFrom.SetValue( communication.SMSFromDefinedValueId );
             tbMessage.Text = communication.SMSMessage;
         }
@@ -107,11 +121,30 @@ namespace Rock.Web.UI.Controls.Communication
             base.CreateChildControls();
             Controls.Clear();
 
+            var selectedNumberGuids = SelectedNumbers; //GetAttributeValue( "FilterCategories" ).SplitDelimitedValues( true ).AsGuidList();
+            var definedType = CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM ) );
+
+
             ddlFrom = new RockDropDownList();
             ddlFrom.ID = string.Format( "ddlFrom_{0}", this.ID );
             ddlFrom.Label = "From";
             ddlFrom.Help = "The number to originate message from (configured under Admin Tools > General Settings > Defined Types > SMS From Values).";
-            ddlFrom.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM ) ), false, true );
+            if ( selectedNumberGuids.Any() )
+            {
+                ddlFrom.SelectedIndex = -1;
+                ddlFrom.DataSource = definedType.DefinedValues.Where( v => selectedNumberGuids.Contains( v.Guid ) ).Select( v => new
+                {
+                    v.Description,
+                    v.Id
+                } );
+                ddlFrom.DataTextField = "Description";
+                ddlFrom.DataValueField = "Id";
+                ddlFrom.DataBind();
+            }
+            else
+            {
+                ddlFrom.BindToDefinedType( definedType, false, true );
+            }
             ddlFrom.Required = true;
             Controls.Add( ddlFrom );
 
@@ -173,7 +206,7 @@ namespace Rock.Web.UI.Controls.Communication
         /// <exception cref="System.NotImplementedException"></exception>
         public override void InitializeFromSender( Person sender )
         {
-            var numbers = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM.AsGuid() );
+            var numbers = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM.AsGuid() );
             if( numbers != null )
             {
                 foreach ( var number in numbers.DefinedValues )
