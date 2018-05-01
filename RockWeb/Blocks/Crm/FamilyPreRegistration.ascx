@@ -9,7 +9,7 @@
         <div class="panel panel-block">
 
             <div class="panel-heading">
-                <h1>Family Pre-Registration</h1>
+                <h1 class="panel-title">Family Pre-Registration</h1>
             </div>
             <div class="panel-body">
 
@@ -55,8 +55,8 @@
                             <asp:Panel CssClass="col-sm-3" runat="server" ID="pnlGender1">
                                 <Rock:RockDropDownList ID="ddlGender1" runat="server" Label="Gender" />
                             </asp:Panel>
-                            <asp:Panel CssClass="col-sm-6" runat="server" ID="pnlBirthDate1">
-                                <Rock:DatePartsPicker ID="dppBirthDate1" runat="server" Label="Birthdate" AllowFutureDates="False" RequireYear="True"/>
+                            <asp:Panel CssClass="col-sm-3" runat="server" ID="pnlBirthDate1">
+                                <Rock:DatePicker ID="dpBirthDate1" runat="server" Label="Birthdate" AllowFutureDates="False" RequireYear="True" ShowOnFocus="false" StartView="decade" />
                             </asp:Panel>
                             <asp:Panel CssClass="col-sm-3" runat="server" ID="pnlMaritalStatus1">
                                 <Rock:DefinedValuePicker ID="dvpMaritalStatus1" runat="server" Label="Marital Status" />
@@ -89,8 +89,8 @@
                                 <asp:Panel CssClass="col-sm-3" runat="server" ID="pnlGender2">
                                     <Rock:RockDropDownList ID="ddlGender2" runat="server" Label="Gender" />
                                 </asp:Panel>
-                                <asp:Panel CssClass="col-sm-6" runat="server" ID="pnlBirthDate2">
-                                    <Rock:DatePartsPicker ID="dppBirthDate2" runat="server" Label="Birthdate" AllowFutureDates="False"/>
+                                <asp:Panel CssClass="col-sm-3" runat="server" ID="pnlBirthDate2">
+                                    <Rock:DatePicker ID="dpBirthDate2" runat="server" Label="Birthdate" AllowFutureDates="False" ShowOnFocus="false" StartView="decade"/>
                                 </asp:Panel>
                                 <asp:Panel CssClass="col-sm-3" runat="server" ID="pnlMaritalStatus2">
                                     <Rock:DefinedValuePicker ID="dvpMaritalStatus2" runat="server" Label="Marital Status" />
