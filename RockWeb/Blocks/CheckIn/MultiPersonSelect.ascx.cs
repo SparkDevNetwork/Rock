@@ -173,7 +173,7 @@ namespace RockWeb.Blocks.CheckIn
                     if ( _autoCheckin )
                     {
                         // Because auto-checkin bypasses any other workflow processing, the check for previous check-ins needs to be done manually
-                        bool preventDuplicate = CurrentCheckInState.CheckInType.PreventDuplicateCheckin;
+                        bool preventDuplicate = !IsOverride && CurrentCheckInState.CheckInType.PreventDuplicateCheckin;
                         using ( var rockContext = new Rock.Data.RockContext() )
                         {
                             Rock.Workflow.Action.CheckIn.SetAvailableSchedules.ProcessForFamily( rockContext, family );
