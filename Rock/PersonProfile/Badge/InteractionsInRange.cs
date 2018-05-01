@@ -95,7 +95,7 @@ namespace Rock.PersonProfile.Badge
                                  if (linkUrl != '') {{
                                                 badgeContent = '<a href=\'' + linkUrl + '\'><span class=\'badge-content fa-layers fa-fw\' style=\'opacity:'+ opacity +'\'><i class=\'fas {badgeIcon} badge-icon\' style=\'color: {badgeColor}\'></i><span class=\'fa-layers-counter\'>'+ interactionCount +'</span></span></a>';
                                             }} else {{
-                                                badgeContent = '<div class=\'badge-content \' style=\'opacity:'+ opacity +'\'><i class=\'fas {badgeIcon} badge-icon\' style=\'color: {badgeColor}\'></i><span class=\'fa-layers-counter\'>'+ interactionCount +'</span></div>';
+                                                badgeContent = '<div class=\'badge-content fa-layers \' style=\'opacity:'+ opacity +'\'><i class=\'fas {badgeIcon} badge-icon\' style=\'color: {badgeColor}\'></i><span class=\'fa-layers-counter\'>'+ interactionCount +'</span></div>';
                                             }}
 
                                             $('.badge-interactioninrange.badge-id-{badge.Id}').html(badgeContent);
