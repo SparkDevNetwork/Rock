@@ -17,14 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Quartz;
-
-using Rock.Model;
-using Rock.Cache;
 using Rock.Attribute;
-using Rock.Financial;
 using Rock.Data;
+using Rock.Model;
 
 namespace Rock.Jobs
 {
@@ -36,11 +32,11 @@ namespace Rock.Jobs
     [SystemEmailField( "Receipt Email", "The system email to use to send the receipts.", false, "", "", 3 )]
     [SystemEmailField( "Failed Payment Email", "The system email to use to send a notice about a scheduled payment that failed.", false, "", "", 4 )]
     [WorkflowTypeField( "Failed Payment Workflow", "An optional workflow to start whenever a scheduled payment has failed.", false, false, "", "", 5)]
+    [FinancialGatewayField( "Target Gateway", "By default payments will download from all active financial gateways.  Optionally select a single gateway to download scheduled payments from.  You will need to set up additional jobs targeting other active gateways.", false, "", "", 6 )]
     [DisallowConcurrentExecution]
     public class GetScheduledPayments : IJob
     {
-
-        /// <summary> 
+        /// <summary>
         /// Empty constructor for job initilization
         /// <para>
         /// Jobs require a public empty constructor so that the
@@ -51,10 +47,10 @@ namespace Rock.Jobs
         {
         }
 
-        /// <summary> 
+        /// <summary>
         /// Job that updates the JobPulse setting with the current date/time.
         /// This will allow us to notify an admin if the jobs stop running.
-        /// 
+        ///
         /// Called by the <see cref="IScheduler" /> when a
         /// <see cref="ITrigger" /> fires that is associated with
         /// the <see cref="IJob" />.
@@ -69,9 +65,11 @@ namespace Rock.Jobs
 
             using ( var rockContext = new RockContext() )
             {
-                foreach ( var financialGateway in new FinancialGatewayService( rockContext )
-                    .Queryable()
-                    .Where( g => g.IsActive ) )
+                var targetGatewayGuid = dataMap.GetString( "TargetGateway" ).AsGuidOrNull();
+                var targetGateways = new FinancialGatewayService( rockContext ).Queryable()
+                    .Where( g => g.IsActive && ( !targetGatewayGuid.HasValue || g.Guid == targetGatewayGuid.Value );
+
+                foreach ( var financialGateway in targetGateways )
                 {
                     try
                     {
@@ -115,7 +113,6 @@ namespace Rock.Jobs
                         ExceptionLogService.LogException( ex, null );
                         exceptionMsgs.Add( ex.Message );
                     }
-
                 }
             }
 
@@ -126,6 +123,5 @@ namespace Rock.Jobs
 
             context.Result = string.Format( "{0} payments processed", scheduledPaymentsProcessed );
         }
-
     }
 }
