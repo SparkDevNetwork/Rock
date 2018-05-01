@@ -78,10 +78,10 @@ namespace DotLiquid
 			if (input.IsNullOrWhiteSpace())
 				return input;
 
-			if (input.IsNullOrEmpty(input))
+			if (string.IsNullOrEmpty(input))
 				return input;
 	
-			char[] a = s.ToCharArray();
+			char[] a = input.ToCharArray();
 			a[0] = char.ToUpper(a[0]);
 			return new string(a);
 		}
