@@ -854,7 +854,7 @@ namespace RockWeb.Plugins.church_ccv.Connection
                                             r.Guid,
                                             PersonId = r.PersonAlias.PersonId,
                                             Name = r.PersonAlias.Person.FullNameReversed,
-                                            Campus = r.Campus.Name,
+                                            Campus = r.Campus != null ? r.Campus.Name : "",
                                             Group = r.AssignedGroup != null ? r.AssignedGroup.Name : "",
                                             Connector = r.ConnectorPersonAlias != null ? r.ConnectorPersonAlias.Person.FullName : "",
                                             ConnectorNameSortable = r.ConnectorPersonAlias != null ? r.ConnectorPersonAlias.Person.FullName : "",
@@ -883,8 +883,16 @@ namespace RockWeb.Plugins.church_ccv.Connection
                     }
 
                     // bind!
-                    gRequests.DataSource = requestData.ToList( );
-                    gRequests.DataBind();
+                    try
+                    {
+                        gRequests.DataSource = requestData.ToList( );
+                        gRequests.DataBind( );
+                    }
+                    catch( Exception ex )
+                    {
+                        int j = 3;
+                        j++;
+                    }
 
                     lOpportunityIcon.Text = string.Format( "<i class='{0}'></i>", opportunitySummary.IconCssClass );
                     lConnectionRequest.Text = String.Format( "{0} Connection Requests", opportunitySummary.Name );
