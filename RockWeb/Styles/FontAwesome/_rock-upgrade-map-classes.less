@@ -1,4 +1,4 @@
-﻿// These classes are used to map v4 FontAwesome classes to v5
+// These classes are used to map v4 FontAwesome classes to v5
 // and make v5 a bit more flexible allowing .fa to be dynamically
 // mapped.
 
@@ -33,9 +33,10 @@
 }
 
 .fab {
-  font-family: '@{fa-font-face} Brands';
+  font-family: "@{fa-font-face} Brands";
   font-weight: normal;
 }
+
 /* prefix end */
 
 // overrides for key icons
@@ -47,8 +48,8 @@
 
 .fa.fa-rating-unselected:before,
 .fa.fa-rating-off:before {
-  content: @fa-var-star;
   font-weight: @fa-theme-weight-outline;
+  content: @fa-var-star;
 }
 
 // map all the missing v4 icons to fontawesome
@@ -185,6 +186,56 @@
 .fa.fa-times-rectangle {
   font-family: @fa-font-face;
   font-weight: @fa-theme-weight;
+}
+
+.fa-fw {
+  width: 1.25em;
+  text-align: center;
+}
+
+.fa-layers {
+  position: relative;
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  text-align: center;
+  vertical-align: -.125em;
+
+  i {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    margin: auto;
+  }
+}
+
+.fa-layers-counter {
+  top: 0;
+  right: 0;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  min-width: 1.5em;
+  max-width: 5em;
+  height: 1.5em;
+  padding: .25em;
+  overflow: hidden;
+  line-height: 1;
+  color: #fff;
+  text-overflow: ellipsis;
+  background-color: @brand-danger;
+  border-radius: 1em;
+  -webkit-transform: scale(.25);
+  transform: scale(.25);
+  -webkit-transform-origin: top right;
+  transform-origin: top right;
+}
+
+.fa-layers-counter, .fa-layers-text {
+  position: absolute;
+  display: inline-block;
+  text-align: center;
 }
 
 // mapping for brand icons
@@ -529,7 +580,7 @@
 .fa.fa-fa,
 .fa.fa-eercast
 {
-  font-family: '@{fa-font-face} Brands';
+  font-family: "@{fa-font-face} Brands";
   font-weight: normal !important;
 }
 
