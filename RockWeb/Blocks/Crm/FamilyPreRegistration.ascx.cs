@@ -1147,10 +1147,9 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                 // If not editing an existing person, attempt to match them to existing (if configured to do so)
                 if ( adult == null && showEmail && autoMatch )
                 {
-                    var people = personService.GetByMatch( tbFirstName.Text, tbLastName.Text, tbEmail.Text );
-                    if ( people.Count() == 1 )
+                    adult = personService.FindPerson( tbFirstName.Text, tbLastName.Text, tbEmail.Text, true );
+                    if ( adult != null )
                     {
-                        adult = people.First();
                         saveEmptyValues = false;
                         if ( primaryFamily == null )
                         {

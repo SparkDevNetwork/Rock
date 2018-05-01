@@ -211,10 +211,9 @@ namespace RockWeb.Blocks.Groups
                 // Try to find person by name/email 
                 if ( person == null )
                 {
-                    var matches = personService.GetByMatch( tbFirstName.Text.Trim(), tbLastName.Text.Trim(), tbEmail.Text.Trim() );
-                    if ( matches.Count() == 1 )
+                    person = personService.FindPerson( tbFirstName.Text.Trim(), tbLastName.Text.Trim(), tbEmail.Text.Trim(), true );
+                    if ( person != null )
                     {
-                        person = matches.First();
                         isMatch = true;
                     }
                 }

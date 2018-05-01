@@ -1699,15 +1699,7 @@ TransactionAccountDetails: [
                         !string.IsNullOrWhiteSpace( txtLastName.Text ) )
                     {
                         // Same logic as CreatePledge.ascx.cs
-                        var personMatches = personService.GetByMatch( txtFirstName.Text, txtLastName.Text, txtEmail.Text );
-                        if ( personMatches.Count() == 1 )
-                        {
-                            person = personMatches.FirstOrDefault();
-                        }
-                        else
-                        {
-                            person = null;
-                        }
+                        person = personService.FindPerson( txtFirstName.Text, txtLastName.Text, txtEmail.Text, true );
                     }
 
                     if ( person == null )
@@ -1805,16 +1797,9 @@ TransactionAccountDetails: [
                 !string.IsNullOrWhiteSpace( txtBusinessContactFirstName.Text ) &&
                 !string.IsNullOrWhiteSpace( txtBusinessContactLastName.Text ) )
             {
-                // Same logic as CreatePledge.ascx.cs
-                var personMatches = personService.GetByMatch( txtBusinessContactFirstName.Text, txtBusinessContactLastName.Text, txtBusinessContactEmail.Text );
-                if ( personMatches.Count() == 1 )
-                {
-                    person = personMatches.FirstOrDefault();
-                }
-                else
-                {
-                    person = null;
-                }
+                // Find matching person. Intentionally not updating their primary email address as in this rare case it is likely to be their 
+                // business email which is more likely that they don't want updated
+                person = personService.FindPerson( txtBusinessContactFirstName.Text, txtBusinessContactLastName.Text, txtBusinessContactEmail.Text, false ); 
             }
 
             if ( person == null )

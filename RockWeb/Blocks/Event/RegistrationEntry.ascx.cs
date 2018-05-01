@@ -2041,10 +2041,9 @@ namespace RockWeb.Blocks.Event
                 else
                 {
                     // otherwise look for one and one-only match by name/email
-                    var personMatches = personService.GetByMatch( registration.FirstName, registration.LastName, registration.ConfirmationEmail );
-                    if ( personMatches.Count() == 1 )
+                    registrar = personService.FindPerson( registration.FirstName, registration.LastName, registration.ConfirmationEmail, true );
+                    if ( registrar != null )
                     {
-                        registrar = personMatches.First();
                         registration.PersonAliasId = registrar.PrimaryAliasId;
                     }
                     else
@@ -2170,11 +2169,7 @@ namespace RockWeb.Blocks.Event
                     if ( person == null )
                     {
                         // Try to find a matching person based on name and email address
-                        var personMatches = personService.GetByMatch( firstName, lastName, email );
-                        if ( personMatches.Count() == 1 )
-                        {
-                            person = personMatches.First();
-                        }
+                        person = personService.FindPerson( firstName, lastName, email, true );
 
                         // Try to find a matching person based on name within same family as registrar
                         if ( person == null && registrar != null && registrantInfo.FamilyGuid == RegistrationState.FamilyGuid )
