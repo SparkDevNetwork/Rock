@@ -74,7 +74,7 @@ namespace Rock.Plugin.HotFixes
 
 //            AddStickyHeaderToScheduleGrid();
 
-              FixTyposIssue2928();
+//            FixTyposIssue2928();
               
 //            // Add Vimeo Short Code
 //            Sql( HotFixMigrationResource._050_MigrationRollupsForV7_4_AddVimeoShortCode );
@@ -96,7 +96,7 @@ namespace Rock.Plugin.HotFixes
 //            // Fix for #2722
 //            UpdateGradeTransitionDateFieldType();
 
-              FixFamilyPreregistrationTitle();
+//            FixFamilyPreregistrationTitle();
         }
 
         /// <summary>

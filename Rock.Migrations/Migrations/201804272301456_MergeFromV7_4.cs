@@ -87,6 +87,8 @@ WHERE [Message] LIKE '%<!-- prevent Gmail on iOS font size manipulation -->
 
             AddStickyHeaderToScheduleGrid();
 
+            FixTyposIssue2928();
+
             // Add Vimeo Short Code
             Sql( MigrationSQL._201804272301456_MergeFromV7_4_AddVimeoShortCode );
 
@@ -100,8 +102,10 @@ WHERE [Message] LIKE '%<!-- prevent Gmail on iOS font size manipulation -->
 
             // Thank-you and on-going Are Hyphenated Unnecessarily #1711
             Sql( MigrationSQL._201804272301456_MergeFromV7_4_FixThankyouAndOngoingHyphenations );
+
+            FixFamilyPreregistrationTitle();
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
@@ -207,6 +211,25 @@ WHERE [Message] LIKE '%<!-- prevent Gmail on iOS font size manipulation -->
 </ul>
 <p>Note: Due to the javascript requirements of this shortcode, you will need to do a full page reload before changes to the shortcode appear on your page.</p>'
                 WHERE [Guid] = '4B6452EF-6FEA-4A66-9FB9-1A7CCE82E7A4'" );
+        }
+
+        public void FixFamilyPreregistrationTitle()
+        {
+            Sql( @"
+    UPDATE [Page] SET 
+        [InternalName] = 'Family Pre-Registration'
+        ,[PageTitle] = 'Family Pre-Registration'
+        ,[BrowserTitle] = 'Family Pre-Registration'
+    WHERE [Guid] IN ( '3B31B9A2-DE35-4407-8E7D-3633F93906CD', 'B37D22BE-D2A8-4EFA-8B2B-2E0EFF6EDB44' )
+
+    UPDATE [BlockType] SET 
+        [Name] = 'Family Pre-Registration'
+    WHERE [Path] = '~/Blocks/Crm/FamilyPreRegistration.ascx'
+" );
+
+            RockMigrationHelper.AddPageRoute( "3B31B9A2-DE35-4407-8E7D-3633F93906CD", "FamilyPreRegistration", "F4EC3FCD-6410-44A9-B66B-A4BC207CA7DA" );// for Page:Family Pre-Registration
+            RockMigrationHelper.AddPageRoute( "B37D22BE-D2A8-4EFA-8B2B-2E0EFF6EDB44", "FamilyPreRegistrationSuccess", "3C39DF30-00B0-4096-B623-200A93D85CA9" );// for Page:Family Pre-Registration Success
+
         }
     }
 }
