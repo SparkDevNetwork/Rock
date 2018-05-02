@@ -25,22 +25,15 @@
     {% capture pageTitle %}{{ item.Title }} | CCV{% endcapture %}
 
     {{ pageTitle | SetPageTitle }}
-	{% assign itemSummaryText = item | Attribute:'SummaryText' %}
-
+	
     {% if item.DetailImage_unformatted != '' %}
       <img src="/GetImage.ashx?Guid={{ item.DetailImage_unformatted }}&width=2280" class="title-image img-responsive">
       <div class="container-md">
         <h1>{{ item.Title }}</h1>
-        {% if itemSummaryText != empty %}
-          <p class="lead">{{ itemSummaryText }}</p>
-        {% endif %}
         {{ item.Content }}
       </div>
     {% else %}
       <h1>{{ item.Title }}</h1>
-      {% if itemSummaryText != empty %}
-        <p class="lead">{{ itemSummaryText }}</p>
-      {% endif %}
       {{ item.Content }}
     {% endif %}
 
