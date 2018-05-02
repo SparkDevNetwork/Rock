@@ -60,14 +60,20 @@ namespace Rock.Jobs
             var exceptionMsgs = new List<string>();
 
             // get the job map
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-            int scheduledPaymentsProcessed = 0;
+            var dataMap = context.JobDetail.JobDataMap;
+            var scheduledPaymentsProcessed = 0;
 
             using ( var rockContext = new RockContext() )
             {
+                var targetGateways = new FinancialGatewayService( rockContext )
+                    .Queryable()
+                    .Where( g => g.IsActive );
+
                 var targetGatewayGuid = dataMap.GetString( "TargetGateway" ).AsGuidOrNull();
-                var targetGateways = new FinancialGatewayService( rockContext ).Queryable()
-                    .Where( g => g.IsActive && ( !targetGatewayGuid.HasValue || g.Guid == targetGatewayGuid.Value );
+                if (targetGatewayGuid.HasValue)
+                {
+                    targetGateways = targetGateways.Where(g => g.Guid == targetGatewayGuid.Value);
+                }
 
                 foreach ( var financialGateway in targetGateways )
                 {
@@ -76,36 +82,35 @@ namespace Rock.Jobs
                         financialGateway.LoadAttributes( rockContext );
 
                         var gateway = financialGateway.GetGatewayComponent();
-                        if ( gateway != null )
+                        if (gateway == null) continue;
+
+                        int daysBack = dataMap.GetString( "DaysBack" ).AsIntegerOrNull() ?? 1;
+
+                        DateTime today = RockDateTime.Today;
+                        TimeSpan days = new TimeSpan( daysBack, 0, 0, 0 );
+                        DateTime endDateTime = today.Add( financialGateway.GetBatchTimeOffset() );
+
+                        // If the calculated end time has not yet occurred, use the previous day.
+                        endDateTime = RockDateTime.Now.CompareTo( endDateTime ) >= 0 ? endDateTime : endDateTime.AddDays( -1 );
+
+                        DateTime startDateTime = endDateTime.Subtract( days );
+
+                        string errorMessage = string.Empty;
+                        var payments = gateway.GetPayments( financialGateway, startDateTime, endDateTime, out errorMessage );
+
+                        if ( string.IsNullOrWhiteSpace( errorMessage ) )
                         {
-                            int daysBack = dataMap.GetString( "DaysBack" ).AsIntegerOrNull() ?? 1;
+                            Guid? receiptEmail = dataMap.GetString( "ReceiptEmail" ).AsGuidOrNull();
+                            Guid? failedPaymentEmail = dataMap.GetString( "FailedPaymentEmail" ).AsGuidOrNull();
+                            Guid? failedPaymentWorkflowType = dataMap.GetString( "FailedPaymentWorkflow" ).AsGuidOrNull();
 
-                            DateTime today = RockDateTime.Today;
-                            TimeSpan days = new TimeSpan( daysBack, 0, 0, 0 );
-                            DateTime endDateTime = today.Add( financialGateway.GetBatchTimeOffset() );
-
-                            // If the calculated end time has not yet occurred, use the previous day.
-                            endDateTime = RockDateTime.Now.CompareTo( endDateTime ) >= 0 ? endDateTime : endDateTime.AddDays( -1 );
-
-                            DateTime startDateTime = endDateTime.Subtract( days );
-
-                            string errorMessage = string.Empty;
-                            var payments = gateway.GetPayments( financialGateway, startDateTime, endDateTime, out errorMessage );
-
-                            if ( string.IsNullOrWhiteSpace( errorMessage ) )
-                            {
-                                Guid? receiptEmail = dataMap.GetString( "ReceiptEmail" ).AsGuidOrNull();
-                                Guid? failedPaymentEmail = dataMap.GetString( "FailedPaymentEmail" ).AsGuidOrNull();
-                                Guid? failedPaymentWorkflowType = dataMap.GetString( "FailedPaymentWorkflow" ).AsGuidOrNull();
-
-                                string batchNamePrefix = dataMap.GetString( "BatchNamePrefix" );
-                                FinancialScheduledTransactionService.ProcessPayments( financialGateway, batchNamePrefix, payments, string.Empty, receiptEmail, failedPaymentEmail, failedPaymentWorkflowType );
-                                scheduledPaymentsProcessed += payments.Count();
-                            }
-                            else
-                            {
-                                throw new Exception( errorMessage );
-                            }
+                            string batchNamePrefix = dataMap.GetString( "BatchNamePrefix" );
+                            FinancialScheduledTransactionService.ProcessPayments( financialGateway, batchNamePrefix, payments, string.Empty, receiptEmail, failedPaymentEmail, failedPaymentWorkflowType );
+                            scheduledPaymentsProcessed += payments.Count();
+                        }
+                        else
+                        {
+                            throw new Exception( errorMessage );
                         }
                     }
                     catch ( Exception ex )
