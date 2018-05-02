@@ -141,6 +141,9 @@
                     <li id="liFees" runat="server">
                         <asp:LinkButton ID="lbFees" runat="server" Text="Fees" OnClick="lbTab_Click" />
                     </li>
+                    <li id="liDiscounts" runat="server">
+                        <asp:LinkButton ID="lbDiscounts" runat="server" Text="Discounts" OnClick="lbTab_Click" />
+                    </li>
                     <li id="liLinkage" runat="server">
                         <asp:LinkButton ID="lbLinkage" runat="server" Text="Linkages" OnClick="lbTab_Click" />
                     </li>
@@ -351,6 +354,66 @@
                                 </Columns>
                             </Rock:Grid>
                         </div>
+                    </div>
+                </asp:Panel>
+
+                <asp:Panel ID="pnlDiscounts" runat="server" Visible="false" CssClass="panel panel-block">
+                    <div class="panel-heading">
+                        <h1 class="panel-title">
+                            <i class="fa fa-gift"></i>
+                            Discounts
+                        </h1>
+                    </div>
+                    <div class="panel-body">
+                        <Rock:ModalAlert ID="mdDiscountsGridWarning" runat="server" />
+                        <div class="grid grid-panel">
+                            <Rock:GridFilter ID="fDiscounts" runat="server" OnDisplayFilterValue="fDiscounts_DisplayFilterValue" OnClearFilterClick="fDiscounts_ClearFilterClick">
+                                <Rock:SlidingDateRangePicker ID="sdrpDiscountDateRange" runat="server" Label="Discount Date Range" />
+                                <Rock:RockDropDownList ID="ddlDiscountCode" runat="server" Label="Discount Code" AutoPostBack="true" OnSelectedIndexChanged="ddlDiscountCode_SelectedIndexChanged"></Rock:RockDropDownList>
+                                <Rock:RockTextBox ID="tbDiscountCodeSearch" runat="server" Label="Code Search" Help="Enter a search parameter. Cannot be used with the 'Discount Code' list." />
+                            </Rock:GridFilter>
+                            <Rock:Grid ID="gDiscounts" runat="server" DisplayType="Full" AllowSorting="true" RowItemText="Discount" ExportSource="DataSource">
+                                <Columns>
+                                    <%-- RegistrationId, RegisteredByName, RegistrationDate, RegistrantCount, DiscountCode, DiscountAmount, DiscountPercentage, DiscountType, TotalCost, DiscountQualifiedCost, TotalDiscount, RegistrationCost --%>
+                                    <Rock:RockBoundField HeaderText="Registration ID" DataField="RegistrationId" ExcelExportBehavior="AlwaysInclude" Visible="false" />
+                                    <Rock:RockBoundField HeaderText="Registered By" DataField="RegisteredByName" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left"/>
+                                    <Rock:DateField HeaderText="Registration Date" DataField="RegistrationDate" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center"/>
+                                    <Rock:RockBoundField HeaderText="Registration Count" DataField="RegistrantCount" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center"/>
+                                    <Rock:RockBoundField HeaderText="Discount Code" DataField="DiscountCode" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center"/>
+                                    <%--<Rock:RockBoundField HeaderText="Discount Type" DataField="DiscountType" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center"/>--%>
+                                    <Rock:RockBoundField HeaderText="Discount" DataField="Discount" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right"/>
+                                    <Rock:CurrencyField HeaderText="Total Cost" DataField="TotalCost" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right"/>
+                                    <Rock:CurrencyField HeaderText="Discount Qualified Cost" DataField="DiscountQualifiedCost" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right"/>
+                                    <Rock:CurrencyField HeaderText="Total Discount" DataField="TotalDiscount" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right"/>
+                                    <Rock:CurrencyField HeaderText="Registration Cost" DataField="RegistrationCost" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right"/>
+                                </Columns>
+                            </Rock:Grid>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 col-md-offset-8 margin-t-md">
+                                <asp:Panel ID="pnlDiscountSummary" runat="server" CssClass="panel panel-block">
+                                    <div class="panel-heading">
+                                        <h1 class="panel-title">Discount Totals For Results</h1>
+                                    </div>
+                                    <div class="panel-body">
+                                        <div class="row">
+                                            <div class="col-xs-8">Total Of Discounts</div>
+                                            <div class='col-xs-4 text-right'><asp:Literal ID="lTotalDiscounts" runat="server" /></div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-xs-8">Total Registrations</div>
+                                            <div class='col-xs-4 text-right'><asp:Literal ID="lTotalRegistrations" runat="server" /></div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-xs-8">Total Registrants</div>
+                                            <div class='col-xs-4 text-right'><asp:Literal ID="lTotalRegistrants" runat="server" /></div>
+                                        </div>
+                                    </div>
+                                </asp:Panel>
+                            </div>
+                        </div>
+
                     </div>
                 </asp:Panel>
 
