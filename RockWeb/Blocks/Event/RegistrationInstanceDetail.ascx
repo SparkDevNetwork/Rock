@@ -387,17 +387,31 @@
                                 </Columns>
                             </Rock:Grid>
                         </div>
+                        <br />
                         <div class="row">
                             <div class="col-md-4 col-md-offset-8 margin-t-md">
                                 <asp:Panel ID="pnlDiscountSummary" runat="server" CssClass="panel panel-block">
                                     <div class="panel-heading">
-                                        <h1 class="panel-title">Discount Totals For Results</h1>
+                                        <h1 class="panel-title">Totals For Results</h1>
                                     </div>
                                     <div class="panel-body">
                                         <div class="row">
-                                            <div class="col-xs-8">Total Of Discounts</div>
+                                            <div class="col-xs-8">Total Cost</div>
+                                            <div class='col-xs-4 text-right'><asp:Literal ID="lTotalTotalCost" runat="server" /></div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-xs-8">Dicscount Qualified Cost</div>
+                                            <div class='col-xs-4 text-right'><asp:Literal ID="lTotalDiscountQualifiedCost" runat="server" /></div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-xs-8">Total Discount</div>
                                             <div class='col-xs-4 text-right'><asp:Literal ID="lTotalDiscounts" runat="server" /></div>
                                         </div>
+                                        <div class="row">
+                                            <div class="col-xs-8">Registration Cost</div>
+                                            <div class='col-xs-4 text-right'><asp:Literal ID="lTotalRegistrationCost" runat="server" /></div>
+                                        </div>
+                                        <br />
                                         <div class="row">
                                             <div class="col-xs-8">Total Registrations</div>
                                             <div class='col-xs-4 text-right'><asp:Literal ID="lTotalRegistrations" runat="server" /></div>
