@@ -883,16 +883,8 @@ namespace RockWeb.Plugins.church_ccv.Connection
                     }
 
                     // bind!
-                    try
-                    {
-                        gRequests.DataSource = requestData.ToList( );
-                        gRequests.DataBind( );
-                    }
-                    catch( Exception ex )
-                    {
-                        int j = 3;
-                        j++;
-                    }
+                    gRequests.DataSource = requestData.ToList( );
+                    gRequests.DataBind( );
 
                     lOpportunityIcon.Text = string.Format( "<i class='{0}'></i>", opportunitySummary.IconCssClass );
                     lConnectionRequest.Text = String.Format( "{0} Connection Requests", opportunitySummary.Name );
