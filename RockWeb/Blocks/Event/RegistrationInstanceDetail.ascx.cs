@@ -3242,12 +3242,18 @@ namespace RockWeb.Blocks.Event
                             foreach ( var attribute in registrantAttributes )
                             {
                                 var filterControl = phRegistrantsRegistrantFormFieldFilters.FindControl( "filterRegistrants_" + attribute.Id.ToString() );
-                                if ( filterControl == null ) continue;
+                                if ( filterControl == null )
+                                {
+                                    continue;
+                                }
 
                                 var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
                                 var filterIsDefault = attribute.FieldType.Field.IsEqualToValue( filterValues, attribute.DefaultValue );
                                 var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
-                                if ( expression == null ) continue;
+                                if ( expression == null )
+                                {
+                                    continue;
+                                }
 
                                 var attributeValues = attributeValueService
                                                       .Queryable()
@@ -3286,12 +3292,18 @@ namespace RockWeb.Blocks.Event
                             foreach ( var attribute in personAttributes )
                             {
                                 var filterControl = phRegistrantsRegistrantFormFieldFilters.FindControl( "filterRegistrants_" + attribute.Id.ToString() );
-                                if ( filterControl == null ) continue;
+                                if ( filterControl == null )
+                                {
+                                    continue;
+                                }
 
                                 var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
                                 var filterIsDefault = attribute.FieldType.Field.IsEqualToValue( filterValues, attribute.DefaultValue );
                                 var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
-                                if ( expression == null ) continue;
+                                if ( expression == null )
+                                {
+                                    continue;
+                                }
 
                                 var attributeValues = attributeValueService
                                     .Queryable()
@@ -3308,7 +3320,7 @@ namespace RockWeb.Blocks.Event
                                 else
                                 {
                                     qry = qry.Where( w =>
-                                        filteredAttributeValues.Select( v => v.EntityId ).Contains(  w.PersonAlias.PersonId ) );
+                                        filteredAttributeValues.Select( v => v.EntityId ).Contains( w.PersonAlias.PersonId ) );
                                 }
                             }
                         }
@@ -3330,12 +3342,18 @@ namespace RockWeb.Blocks.Event
                             foreach ( var attribute in groupMemberAttributes )
                             {
                                 var filterControl = phRegistrantsRegistrantFormFieldFilters.FindControl( "filterRegistrants_" + attribute.Id.ToString() );
-                                if ( filterControl == null ) continue;
+                                if ( filterControl == null )
+                                {
+                                    continue;
+                                }
 
                                 var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
                                 var filterIsDefault = attribute.FieldType.Field.IsEqualToValue( filterValues, attribute.DefaultValue );
                                 var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
-                                if ( expression == null ) continue;
+                                if ( expression == null )
+                                {
+                                    continue;
+                                }
 
                                 var attributeValues = attributeValueService
                                     .Queryable()
@@ -3346,17 +3364,19 @@ namespace RockWeb.Blocks.Event
                                 if ( filterIsDefault )
                                 {
                                     qry = qry.Where( r => r.GroupMemberId.HasValue &&
-                                         !attributeValues.Any( v => v.EntityId == r.GroupMemberId.Value ) ||
-                                         filteredAttributeValues.Select( v => v.EntityId ).Contains( r.GroupMemberId.Value ) );
+                                         (!attributeValues.Any( v => v.EntityId == r.GroupMemberId.Value ) ||
+                                            filteredAttributeValues.Select( v => v.EntityId ).Contains( r.GroupMemberId.Value ) ) );
                                 }
                                 else
                                 {
-                                    qry = qry.Where( r => r.GroupMemberId.HasValue &&
-                                        filteredAttributeValues.Select( v => v.EntityId ).Contains( r.GroupMemberId.Value ) );
+                                    qry = qry.Where( r =>
+                                        r.GroupMemberId.HasValue &&
+                                        filteredAttributeValues
+                                            .Select( v => v.EntityId )
+                                            .Contains( r.GroupMemberId.Value ) );
                                 }
-                                qry = qry
-                                            .Where( r => r.GroupMemberId.HasValue &&
-                                            attributeValues.Select( v => v.EntityId ).Contains( r.GroupMemberId.Value ) );
+
+                                qry = qry.Where( r => r.GroupMemberId.HasValue && attributeValues.Select( v => v.EntityId ).Contains( r.GroupMemberId.Value ) );
                             }
                         }
                     }
@@ -4736,12 +4756,18 @@ namespace RockWeb.Blocks.Event
                             foreach ( var attribute in registrantAttributes )
                             {
                                 var filterControl = phWaitListFormFieldFilters.FindControl( "filterWaitlist_" + attribute.Id.ToString() );
-                                if ( filterControl == null ) continue;
+                                if ( filterControl == null )
+                                {
+                                    continue;
+                                }
 
                                 var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
                                 var filterIsDefault = attribute.FieldType.Field.IsEqualToValue( filterValues, attribute.DefaultValue );
                                 var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
-                                if ( expression == null ) continue;
+                                if ( expression == null )
+                                {
+                                    continue;
+                                }
 
                                 var attributeValues = attributeValueService
                                     .Queryable()
@@ -4780,12 +4806,18 @@ namespace RockWeb.Blocks.Event
                             foreach ( var attribute in personAttributes )
                             {
                                 var filterControl = phWaitListFormFieldFilters.FindControl( "filterWaitlist_" + attribute.Id.ToString() );
-                                if ( filterControl == null ) continue;
+                                if ( filterControl == null )
+                                {
+                                    continue;
+                                }
 
                                 var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
                                 var filterIsDefault = attribute.FieldType.Field.IsEqualToValue( filterValues, attribute.DefaultValue );
                                 var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
-                                if ( expression == null ) continue;
+                                if ( expression == null )
+                                {
+                                    continue;
+                                }
 
                                 var attributeValues = attributeValueService
                                     .Queryable()
@@ -4824,12 +4856,18 @@ namespace RockWeb.Blocks.Event
                             foreach ( var attribute in groupMemberAttributes )
                             {
                                 var filterControl = phWaitListFormFieldFilters.FindControl( "filterWaitlist_" + attribute.Id.ToString() );
-                                if ( filterControl == null ) continue;
+                                if ( filterControl == null )
+                                {
+                                    continue;
+                                }
 
                                 var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
                                 var filterIsDefault = attribute.FieldType.Field.IsEqualToValue( filterValues, attribute.DefaultValue );
                                 var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
-                                if ( expression == null ) continue;
+                                if ( expression == null )
+                                {
+                                    continue;
+                                }
 
                                 var attributeValues = attributeValueService
                                     .Queryable()
@@ -4840,8 +4878,7 @@ namespace RockWeb.Blocks.Event
                                 if ( filterIsDefault )
                                 {
                                     qry = qry.Where( w => w.GroupMemberId.HasValue &&
-                                         !attributeValues.Any( v => v.EntityId == w.GroupMemberId.Value ) ||
-                                         filteredAttributeValues.Select( v => v.EntityId ).Contains( w.GroupMemberId.Value ) );
+                                         ( !attributeValues.Any( v => v.EntityId == w.GroupMemberId.Value ) || filteredAttributeValues.Select( v => v.EntityId ).Contains( w.GroupMemberId.Value ) ) );
                                 }
                                 else
                                 {
@@ -5028,7 +5065,7 @@ namespace RockWeb.Blocks.Event
             /// </summary>
         private void BindLinkagesFilter()
         {
-			fLinkages.UserPreferenceKeyPrefix = string.Format( "{0}-", hfRegistrationTemplateId.Value );
+            fLinkages.UserPreferenceKeyPrefix = string.Format( "{0}-", hfRegistrationTemplateId.Value );
             cblCampus.DataSource = CacheCampus.All();
             cblCampus.DataBind();
             string campusValue = fLinkages.GetUserPreference( "Campus" );
@@ -5312,12 +5349,18 @@ namespace RockWeb.Blocks.Event
                             foreach ( var attribute in registrantAttributes )
                             {
                                 var filterControl = phGroupPlacementsFormFieldFilters.FindControl( "filterGroupPlacements_" + attribute.Id.ToString() );
-                                if ( filterControl == null ) continue;
+                                if ( filterControl == null )
+                                {
+                                    continue;
+                                }
                                 
                                 var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
                                 var filterIsDefault = attribute.FieldType.Field.IsEqualToValue( filterValues, attribute.DefaultValue );
                                 var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
-                                if ( expression == null ) continue;
+                                if ( expression == null )
+                                {
+                                    continue;
+                                }
 
                                 var attributeValues = attributeValueService
                                     .Queryable()
@@ -5356,13 +5399,18 @@ namespace RockWeb.Blocks.Event
                             foreach ( var attribute in personAttributes )
                             {
                                 var filterControl = phGroupPlacementsFormFieldFilters.FindControl( "filterGroupPlacements_" + attribute.Id.ToString() );
-                                if ( filterControl == null ) continue;
-
+                                if ( filterControl == null )
+                                {
+                                    continue;
+                                }
 
                                 var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
                                 var filterIsDefault = attribute.FieldType.Field.IsEqualToValue( filterValues, attribute.DefaultValue );
                                 var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
-                                if ( expression == null ) continue;
+                                if ( expression == null )
+                                {
+                                    continue;
+                                }
 
                                 var attributeValues = attributeValueService
                                     .Queryable()
@@ -5401,25 +5449,31 @@ namespace RockWeb.Blocks.Event
                             foreach ( var attribute in groupMemberAttributes )
                             {
                                 var filterControl = phGroupPlacementsFormFieldFilters.FindControl( "filterGroupPlacements_" + attribute.Id.ToString() );
-                                if ( filterControl == null ) continue;
+                                if ( filterControl == null )
+                                {
+                                    continue;
+                                }
 
                                 var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
                                 var filterIsDefault = attribute.FieldType.Field.IsEqualToValue( filterValues, attribute.DefaultValue );
                                 var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
-                                if ( expression == null ) continue;
+
+                                if ( expression == null )
+                                {
+                                    continue;
+                                }
 
                                 var attributeValues = attributeValueService
                                     .Queryable()
                                     .Where( v => v.Attribute.Id == attribute.Id );
-
 
                                 var filteredAttributeValues = attributeValues.Where( parameterExpression, expression, null );
 
                                 if ( filterIsDefault )
                                 {
                                     qry = qry.Where( w => w.GroupMemberId.HasValue &&
-                                         !attributeValues.Any( v => v.EntityId == w.GroupMemberId.Value ) ||
-                                         filteredAttributeValues.Select( v => v.EntityId ).Contains( w.GroupMemberId.Value ) );
+                                        (!attributeValues.Any( v => v.EntityId == w.GroupMemberId.Value ) ||
+                                            filteredAttributeValues.Select( v => v.EntityId ).Contains( w.GroupMemberId.Value ) ) );
                                 }
                                 else
                                 {

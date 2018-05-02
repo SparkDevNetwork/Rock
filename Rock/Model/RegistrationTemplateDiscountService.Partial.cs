@@ -27,6 +27,11 @@ namespace Rock.Model
     /// </summary>
     public partial class RegistrationTemplateDiscountService
     {
+        /// <summary>
+        /// Gets the discounts available for registration template used by the provided registration instance.
+        /// </summary>
+        /// <param name="registrationInstanceId">The registration instance identifier.</param>
+        /// <returns></returns>
         public IQueryable<RegistrationTemplateDiscount> GetDiscountsForRegistrationInstance( int? registrationInstanceId )
         {
             if ( registrationInstanceId == null || registrationInstanceId == 0 )
@@ -150,11 +155,13 @@ namespace Rock.Model
             {
                 return _registrationDate.Date;
             }
+
             set
             {
                 _registrationDate = value;
             }
         }
+
         /// <summary>
         /// Gets or sets the number of RegistrationRegistrant for the Registration
         /// </summary>
