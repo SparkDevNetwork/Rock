@@ -374,13 +374,11 @@
                             </Rock:GridFilter>
                             <Rock:Grid ID="gDiscounts" runat="server" DisplayType="Full" AllowSorting="true" RowItemText="Discount" ExportSource="DataSource">
                                 <Columns>
-                                    <%-- RegistrationId, RegisteredByName, RegistrationDate, RegistrantCount, DiscountCode, DiscountAmount, DiscountPercentage, DiscountType, TotalCost, DiscountQualifiedCost, TotalDiscount, RegistrationCost --%>
                                     <Rock:RockBoundField HeaderText="Registration ID" DataField="RegistrationId" ExcelExportBehavior="AlwaysInclude" Visible="false" />
                                     <Rock:RockBoundField HeaderText="Registered By" DataField="RegisteredByName" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left"/>
                                     <Rock:DateField HeaderText="Registration Date" DataField="RegistrationDate" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center"/>
                                     <Rock:RockBoundField HeaderText="Registration Count" DataField="RegistrantCount" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center"/>
                                     <Rock:RockBoundField HeaderText="Discount Code" DataField="DiscountCode" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center"/>
-                                    <%--<Rock:RockBoundField HeaderText="Discount Type" DataField="DiscountType" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center"/>--%>
                                     <Rock:RockBoundField HeaderText="Discount" DataField="Discount" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right"/>
                                     <Rock:CurrencyField HeaderText="Total Cost" DataField="TotalCost" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right"/>
                                     <Rock:CurrencyField HeaderText="Discount Qualified Cost" DataField="DiscountQualifiedCost" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right"/>
@@ -389,7 +387,6 @@
                                 </Columns>
                             </Rock:Grid>
                         </div>
-
                         <div class="row">
                             <div class="col-md-4 col-md-offset-8 margin-t-md">
                                 <asp:Panel ID="pnlDiscountSummary" runat="server" CssClass="panel panel-block">
@@ -413,7 +410,6 @@
                                 </asp:Panel>
                             </div>
                         </div>
-
                     </div>
                 </asp:Panel>
 
