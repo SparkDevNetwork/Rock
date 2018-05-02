@@ -42,7 +42,7 @@ namespace Rock.PersonProfile.Badge
 
     [DataViewField( "Data View", "The dataview to use as the source for the query. Only those people in the DataView will be given the badge.", true, entityTypeName: "Rock.Model.Person", order: 0 )]
     [CodeEditorField( "Badge Content", "The text or HTML of the badge to display. <span class='tip tip-lava'></span>", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, true, "<div class='badge badge-icon'><i class='fa fa-smile-o'></i></div>", order: 1 )]
-    public class InDataView : BadgeComponent
+    public class InDataView : BadgeComponentModern
     {
 
         /// <summary>

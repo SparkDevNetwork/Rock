@@ -40,7 +40,7 @@ namespace Rock.PersonProfile.Badge
     [LinkedPage( "Detail Page", "Select the page to navigate when the badge is clicked.", false, order: 2 )]
     [TextField( "Badge Icon CSS", "The CSS icon to use for the badge.", true, "fa-random", key: "BadgeIconCss", order:3 )]
     [TextField( "Badge Color", "The color of the badge (#ffffff).", true, "#0ab4dd", order: 4 )]
-    public class InteractionsInRange : BadgeComponent
+    public class InteractionsInRange : BadgeComponentModern
     {
         /// <summary>
         /// Renders the specified writer.

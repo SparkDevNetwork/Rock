@@ -34,7 +34,7 @@ namespace Rock.PersonProfile.Badge
 
     [CodeEditorField( "Display Text", "The text (or html) to display as a badge", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200 )]
     [BooleanField( "Enable Debug", "Outputs the object graph to help create your Lava syntax.", false )]
-    public class Liquid : BadgeComponent
+    public class Liquid : BadgeComponentModern
     {
         /// <summary>
         /// Renders the specified writer.

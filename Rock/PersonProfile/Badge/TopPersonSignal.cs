@@ -37,7 +37,7 @@ namespace Rock.PersonProfile.Badge
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "Top Person Signal" )]
 
-    public class TopPersonSignal : BadgeComponent
+    public class TopPersonSignal : BadgeComponentModern
     {
         /// <summary>
         /// Renders the specified writer.
