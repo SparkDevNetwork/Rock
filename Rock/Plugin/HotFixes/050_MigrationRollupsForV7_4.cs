@@ -89,9 +89,6 @@ WHERE [Message] LIKE '%<!-- prevent Gmail on iOS font size manipulation -->
             // Thank-you and on-going Are Hyphenated Unnecessarily #1711
             Sql( HotFixMigrationResource._050_MigrationRollupsForV7_4_FixThankyouAndOngoingHyphenations );
 
-            // ZPL printer changes for parent label to correctly print from iPad
-            ZplLabelChanges();
-
             // Fix for #2722
             UpdateGradeTransitionDateFieldType();
 
@@ -227,18 +224,6 @@ WHERE [Key] = 'GradeTransitionDate'
 </ul>
 <p>Note: Due to the javascript requirements of this shortcode, you will need to do a full page reload before changes to the shortcode appear on your page.</p>'
                 WHERE [Guid] = '4B6452EF-6FEA-4A66-9FB9-1A7CCE82E7A4'" );
-        }
-
-        public void ZplLabelChanges()
-        {
-            RockMigrationHelper.AddDefinedValueAttributeValue( "5B11A934-0398-429F-9A91-F727153392E7", "51EB8583-55EA-4431-8B66-B5BD0F83D81E", @"{% for person in People %}{% assign remainder = forloop.index | Modulo:2 %}{% if remainder == 0 %}{{ person.SecurityCode }}-{{ person.Age }}yr_5C_26{% endif %}{% endfor %}" );
-            RockMigrationHelper.AddDefinedValueAttributeValue( "170207B6-9218-4E6E-8ADA-661521E80E5E", "51EB8583-55EA-4431-8B66-B5BD0F83D81E", @"{% for person in People %}{% assign remainder = forloop.index | Modulo:2 %}{% if remainder > 0 %}{{ person.SecurityCode }}-{{ person.Age }}yr_5C_26{% endif %}{% endfor %}" );
-            RockMigrationHelper.AddDefinedValueAttributeValue( "3DCF76E8-866C-4EC9-B1FB-552691A8B440", "51EB8583-55EA-4431-8B66-B5BD0F83D81E", @"{% for person in People %}{% assign remainder = forloop.index | Modulo:2 %}{% if remainder == 0 %}{{ person.NickName }}-{{ person.SecurityCode }}_5C_26{% endif %}{% endfor %}" );
-            RockMigrationHelper.AddDefinedValueAttributeValue( "1FAA4DAC-5240-486E-A23F-2A47D7F36F31", "51EB8583-55EA-4431-8B66-B5BD0F83D81E", @"{% for person in People %}{% assign remainder = forloop.index | Modulo:2 %}{% if remainder != 0 %}{{ person.NickName }}-{{ person.SecurityCode }}_5C_26{% endif %}{% endfor %}" );
-
-            Sql( @"UPDATE [BinaryFileData]
-                SET [Content] = 0x1043547E7E43442C7E43435E7E43547E0A5E58417E54413030307E4A534E5E4C54305E4D4E575E4D54445E504F4E5E504D4E5E4C48302C305E4A4D415E5052362C367E534431355E4C524E5E4349305E585A0A5E58410A5E4D4D540A5E50573831320A5E4C4C303430360A5E4C53300A5E465432302C38305E41304E2C37332C37325E46423830302C302C302C4C5E46444368696C64205069636B757020526563656970745E46530A5E46423332352C362C302C4C5E465433302C3339305E41304E2C33392C33385E46485F5E4644315E46530A5E46423332352C362C302C4C5E46543431352C3339305E41304E2C33392C33385E46485F5E4644325E46530A5E465431342C3336395E41304E2C32332C32345E4644466F722074686520736166657479206F6620796F7572206368696C642C20796F75206D7573742070726573656E7420746869732072656365697074207768656E207069636B696E675E46530A5E465431352C3339335E41304E2C32332C32345E4644757020796F7572206368696C642E20496620796F75206C6F7365207468697320706C6561736520736565207468652061726561206469726563746F722E5E46530A5E4C52595E464F302C305E47423831322C302C3130305E46535E4C524E0A5E5051312C302C312C595E585A
-                WHERE [Guid] = 'FFFCE2E5-CBA0-48A1-91BD-4705C472DD95'" );
         }
 
         public void FixFamilyPreregistrationTitle()
