@@ -53,9 +53,9 @@ namespace Rock.Web.Cache
         {
         }
 
-        private AttributeCache( CacheAttribute attrbiute )
+        private AttributeCache( CacheAttribute attribute )
         {
-            CopyFromNewCache( attrbiute );
+            CopyFromNewCache( attribute );
         }
 
 
