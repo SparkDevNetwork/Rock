@@ -22,10 +22,10 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Rock;
+
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.Person
@@ -126,7 +126,7 @@ function() {
                 List<string> campusNames = new List<string>();
                 foreach ( var campusGuid in campusGuidList )
                 {
-                    var campus = CampusCache.Read( campusGuid );
+                    var campus = CacheCampus.Get( campusGuid );
                     if ( campus != null )
                     {
                         campusNames.Add( campus.Name );
@@ -172,7 +172,7 @@ function() {
             campusesPicker.ID = filterControl.ID + "_0";
             campusesPicker.Label = string.Empty;
             campusesPicker.CssClass = "js-campuses-picker campuses-picker";
-            campusesPicker.Campuses = CampusCache.All();
+            campusesPicker.Campuses = CacheCampus.All();
             filterControl.Controls.Add( campusesPicker );
 
             var ddlIntegerCompare = ComparisonHelper.ComparisonControl( ComparisonHelper.NumericFilterComparisonTypes );
@@ -273,7 +273,7 @@ function() {
                 List<Guid> campusGuids = new List<Guid>();
                 foreach ( var campusId in campusIds )
                 {
-                    var campus = CampusCache.Read( campusId );
+                    var campus = CacheCampus.Get( campusId );
                     if ( campus != null )
                     {
                         campusGuids.Add( campus.Guid );
@@ -309,7 +309,7 @@ function() {
                 List<int> campusIds = new List<int>();
                 foreach ( var campusGuid in campusGuidList )
                 {
-                    var campus = CampusCache.Read( campusGuid );
+                    var campus = CacheCampus.Get( campusGuid );
                     if ( campus != null )
                     {
                         campusIds.Add( campus.Id );
@@ -360,7 +360,7 @@ function() {
             List<int> campusIds = new List<int>();
             foreach ( var campusGuid in campusGuidList )
             {
-                var campus = CampusCache.Read( campusGuid );
+                var campus = CacheCampus.Get( campusGuid );
                 if ( campus != null )
                 {
                     campusIds.Add( campus.Id );
