@@ -1254,6 +1254,7 @@
     <Compile Include="Model\RegistrationTemplate.cs" />
     <Compile Include="Model\RegistrationTemplateDiscount.cs" />
     <Compile Include="Model\RegistrationTemplateFee.cs" />
+    <Compile Include="Model\RegistrationTemplateDiscountService.Partial.cs" />
     <Compile Include="Model\RegistrationTemplateForm.cs" />
     <Compile Include="Model\RegistrationTemplateFormField.cs" />
     <Compile Include="Model\Report.cs" />

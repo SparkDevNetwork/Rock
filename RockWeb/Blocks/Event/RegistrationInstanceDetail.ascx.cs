@@ -211,7 +211,10 @@ namespace RockWeb.Blocks.Event
 
             fFees.ApplyFilterClick += fFees_ApplyFilterClick;
             gFees.GridRebind += gFees_GridRebind;
-                
+
+            fDiscounts.ApplyFilterClick += fDiscounts_ApplyFilterClick;
+            gDiscounts.GridRebind += gDiscounts_GridRebind;
+
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
@@ -290,6 +293,14 @@ namespace RockWeb.Blocks.Event
 
                         case 5:
                             ActiveTab = "lbGroupPlacement";
+                            break;
+
+                        case 6:
+                            ActiveTab = "lbFees";
+                            break;
+
+                        case 7:
+                            ActiveTab = "lbDiscounts";
                             break;
                     }
                 }
@@ -1487,6 +1498,51 @@ namespace RockWeb.Blocks.Event
 
         #endregion
 
+        #region Discount Tab Events
+
+        protected void fDiscounts_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e)
+        {
+            switch ( e.Key )
+            {
+                case "DiscountDateRange":
+                    e.Value = SlidingDateRangePicker.FormatDelimitedValues( e.Value );
+                    break;
+
+                case "DiscountCode":
+                    break;
+
+                case "DiscountCodeSearch":
+                    break;
+
+                default:
+                    e.Value = string.Empty;
+                    break;
+            }
+        }
+
+        protected void fDiscounts_ClearFilterClick( object sender, EventArgs e )
+        {
+            fDiscounts.DeleteUserPreferences();
+            tbDiscountCodeSearch.Enabled = true;
+            BindDiscountsFilter();
+        }
+
+        protected void fDiscounts_ApplyFilterClick( object sender, EventArgs e )
+        {
+            fDiscounts.SaveUserPreference( "DiscountDateRange", "Discount Date Range", sdrpDiscountDateRange.DelimitedValues );
+            fDiscounts.SaveUserPreference( "DiscountCode", "Discount Code", ddlDiscountCode.SelectedItem.Text );
+            fDiscounts.SaveUserPreference( "DiscountCodeSearch", "Discount Code Search", tbDiscountCodeSearch.Text );
+
+            BindDiscountsGrid();
+        }
+
+        protected void ddlDiscountCode_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            tbDiscountCodeSearch.Enabled = ddlDiscountCode.SelectedIndex == 0 ? true : false;
+        }
+
+        #endregion
+
         #region Linkage Tab Events
 
         /// <summary>
@@ -2436,6 +2492,7 @@ namespace RockWeb.Blocks.Event
                 BindGroupPlacementsFilter( registrationInstance );
                 BindLinkagesFilter();
                 BindFeesFilter();
+                BindDiscountsFilter();
                 AddDynamicControls( true );
 
                 // do the ShowTab now since it may depend on DynamicControls and Filter Bindings
@@ -2587,6 +2644,9 @@ namespace RockWeb.Blocks.Event
             liFees.RemoveCssClass( "active" );
             pnlFees.Visible = false;
 
+            liDiscounts.RemoveCssClass( "active" );
+            pnlDiscounts.Visible = false;
+
             liLinkage.RemoveCssClass( "active" );
             pnlLinkages.Visible = false;
 
@@ -2599,61 +2659,53 @@ namespace RockWeb.Blocks.Event
             switch ( ActiveTab ?? string.Empty )
             {
                 case "lbRegistrants":
-                    {
-                        liRegistrants.AddCssClass( "active" );
-                        pnlRegistrants.Visible = true;
-                        BindRegistrantsGrid();
-                        break;
-                    }
+                    liRegistrants.AddCssClass( "active" );
+                    pnlRegistrants.Visible = true;
+                    BindRegistrantsGrid();
+                    break;
 
                 case "lbPayments":
-                    {
-                        liPayments.AddCssClass( "active" );
-                        pnlPayments.Visible = true;
-                        BindPaymentsGrid();
-                        break;
-                    }
+                    liPayments.AddCssClass( "active" );
+                    pnlPayments.Visible = true;
+                    BindPaymentsGrid();
+                    break;
 
                 case "lbFees":
-                    {
-                        liFees.AddCssClass( "active" );
-                        pnlFees.Visible = true;
-                        BindFeesGrid();
-                        break;
-                    }
+                    liFees.AddCssClass( "active" );
+                    pnlFees.Visible = true;
+                    BindFeesGrid();
+                    break;
+
+                case "lbDiscounts":
+                    liDiscounts.AddCssClass( "active" );
+                    pnlDiscounts.Visible = true;
+                    BindDiscountsGrid();
+                    break;
 
                 case "lbLinkage":
-                    {
-                        liLinkage.AddCssClass( "active" );
-                        pnlLinkages.Visible = true;
-                        BindLinkagesGrid();
-                        break;
-                    }
+                    liLinkage.AddCssClass( "active" );
+                    pnlLinkages.Visible = true;
+                    BindLinkagesGrid();
+                    break;
 
                 case "lbGroupPlacement":
-                    {
-                        liGroupPlacement.AddCssClass( "active" );
-                        pnlGroupPlacement.Visible = true;
-                        cbSetGroupAttributes.Checked = true;
-                        BindGroupPlacementGrid();
-                        break;
-                    }
+                    liGroupPlacement.AddCssClass( "active" );
+                    pnlGroupPlacement.Visible = true;
+                    cbSetGroupAttributes.Checked = true;
+                    BindGroupPlacementGrid();
+                    break;
 
                 case "lbWaitList":
-                    {
-                        liWaitList.AddCssClass( "active" );
-                        pnlWaitList.Visible = true;
-                        BindWaitListGrid();
-                        break;
-                    }
+                    liWaitList.AddCssClass( "active" );
+                    pnlWaitList.Visible = true;
+                    BindWaitListGrid();
+                    break;
 
                 default:
-                    {
-                        liRegistrations.AddCssClass( "active" );
-                        pnlRegistrations.Visible = true;
-                        BindRegistrationsGrid();
-                        break;
-                    }
+                    liRegistrations.AddCssClass( "active" );
+                    pnlRegistrations.Visible = true;
+                    BindRegistrationsGrid();
+                    break;
             }
         }
 
@@ -4368,6 +4420,88 @@ namespace RockWeb.Blocks.Event
                 }
                 
                 cblFeeOptions.Visible = true;
+            }
+        }
+
+        #endregion
+
+        #region Discounts Tab
+        
+        private void BindDiscountsFilter()
+        {
+            sdrpDiscountDateRange.DelimitedValues = fDiscounts.GetUserPreference( "DiscountDateRange" );
+            Populate_ddlDiscountCode();
+            ddlDiscountCode.SelectedIndex = ddlDiscountCode.Items.IndexOf( ddlDiscountCode.Items.FindByText( fDiscounts.GetUserPreference( "DiscountCode" ) ) );
+            tbDiscountCodeSearch.Text = fDiscounts.GetUserPreference( "DiscountCodeSearch" );
+        }
+
+        private void BindDiscountsGrid()
+        {
+            int? instanceId = hfRegistrationInstanceId.Value.AsIntegerOrNull();
+            if ( instanceId == null || instanceId == 0 )
+            {
+                return;
+            }
+
+            RegistrationTemplateDiscountService registrationTemplateDiscountService = new RegistrationTemplateDiscountService( new RockContext() );
+            var data = registrationTemplateDiscountService.GetRegistrationInstanceDiscountCodeReport( ( int ) instanceId );
+
+            // Add Date Range
+            var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( sdrpDiscountDateRange.DelimitedValues );
+            if ( dateRange.Start.HasValue )
+            {
+                data = data.Where( r => r.RegistrationDate >= dateRange.Start.Value );
+            }
+
+            if ( dateRange.End.HasValue )
+            {
+                data = data.Where( r => r.RegistrationDate < dateRange.End.Value );
+            }
+
+            // Discount code, use ddl if one is selected, otherwise try the search box.
+            if ( ddlDiscountCode.SelectedIndex > 0 )
+            {
+                data = data.Where( r => r.DiscountCode == ddlDiscountCode.SelectedItem.Text );
+            }
+            else if ( tbDiscountCodeSearch.Text.IsNotNullOrWhitespace() )
+            {
+                System.Text.RegularExpressions.Regex regex = new System.Text.RegularExpressions.Regex( tbDiscountCodeSearch.Text.ToLower() );
+                data = data.Where( r => regex.IsMatch( r.DiscountCode.ToLower()) );
+            }
+
+            var results = data.ToList();
+
+            lTotalDiscounts.Text = string.Format( CacheGlobalAttributes.Value( "CurrencySymbol" ) + "{0:0,0.00}", results.Sum( r => r.TotalDiscount ));
+            lTotalRegistrations.Text = results.Count().ToString();
+            lTotalRegistrants.Text = results.Sum( r => r.RegistrantCount ).ToString();
+
+            gDiscounts.DataSource = results;
+            gDiscounts.DataBind();
+        }
+
+        protected void gDiscounts_GridRebind( object sender, GridRebindEventArgs e)
+        {
+            gDiscounts.ExportTitleName = lReadOnlyTitle.Text + " - Discount Codes";
+            gDiscounts.ExportFilename = gDiscounts.ExportFilename ?? lReadOnlyTitle.Text + "DiscountCodes";
+            BindDiscountsGrid();
+        }
+
+        protected void Populate_ddlDiscountCode()
+        {
+            int? instanceId = hfRegistrationInstanceId.Value.AsIntegerOrNull();
+            if ( instanceId == null || instanceId == 0 )
+            {
+                return;
+            }
+            
+            var discountService = new RegistrationTemplateDiscountService( new RockContext() );
+            var discountCodes = discountService.GetDiscountsForRegistrationInstance( instanceId ).ToList();
+
+            ddlDiscountCode.Items.Clear();
+            ddlDiscountCode.Items.Add( new ListItem() );
+            foreach ( var discountCode in discountCodes )
+            {
+                ddlDiscountCode.Items.Add( new ListItem( discountCode.Code, discountCode.Id.ToString() ) );
             }
         }
 
