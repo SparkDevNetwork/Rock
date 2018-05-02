@@ -169,6 +169,27 @@ namespace Rock.Model
         /// The workflow type cache.
         /// </value>
         [LavaInclude]
+        [Obsolete( "Use CacheWorkflowType property instead")]
+        public virtual Rock.Web.Cache.WorkflowTypeCache WorkflowTypeCache
+        {
+            get
+            {
+                if ( WorkflowTypeId > 0 )
+                {
+                    return Web.Cache.WorkflowTypeCache.Read( WorkflowTypeId );
+                }
+
+                return WorkflowType == null ? null : Web.Cache.WorkflowTypeCache.Read( WorkflowType.Id );
+            }
+        }
+
+        /// <summary>
+        /// Gets the workflow type cache.
+        /// </summary>
+        /// <value>
+        /// The workflow type cache.
+        /// </value>
+        [LavaInclude]
         public virtual CacheWorkflowType CacheWorkflowType
         {
             get
