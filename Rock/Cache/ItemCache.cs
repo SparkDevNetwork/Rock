@@ -32,6 +32,10 @@ namespace Rock.Cache
     {
         private const string _AllRegion = "AllItems";
 
+        // This static field will be different for each generic type. See (https://www.jetbrains.com/help/resharper/2018.1/StaticMemberInGenericType.html)
+        // This is intentional behaviour in this case.
+        private static readonly object _obj = new object();
+
         private static string AllKey => $"{typeof( T ).Name}";
 
         #region Protected Methods
@@ -110,8 +114,14 @@ namespace Rock.Cache
             RockCacheManager<T>.Instance.AddOrUpdate( key, item, expiration );
 
             var allKeys = RockCacheManager<List<string>>.Instance.Cache.Get( AllKey, _AllRegion ) ?? new List<string>();
-            allKeys.Add( key, true );
-            RockCacheManager<List<string>>.Instance.AddOrUpdate( AllKey, _AllRegion, allKeys );
+            if (allKeys.Contains (key) ) return;
+
+            lock (_obj)
+            {
+                allKeys.Add( key, true );
+                RockCacheManager<List<string>>.Instance.AddOrUpdate( AllKey, _AllRegion, allKeys );
+            }
+
         }
 
         /// <summary>
@@ -137,7 +147,6 @@ namespace Rock.Cache
         protected static List<string> AddKeys( Func<List<string>> keyFactory )
         {
             var allKeys = keyFactory?.Invoke();
-
             if ( allKeys != null )
             {
                 RockCacheManager<List<string>>.Instance.AddOrUpdate( AllKey, _AllRegion, allKeys );
@@ -191,8 +200,13 @@ namespace Rock.Cache
             RockCacheManager<T>.Instance.Cache.Remove( key );
 
             var allIds = RockCacheManager<List<string>>.Instance.Cache.Get( AllKey, _AllRegion ) ?? new List<string>();
-            allIds.Remove( key );
-            RockCacheManager<List<string>>.Instance.AddOrUpdate( AllKey, _AllRegion, allIds );
+            if ( !allIds.Contains( key ) ) return;
+
+            lock (_obj)
+            {
+                allIds.Remove(key);
+                RockCacheManager<List<string>>.Instance.AddOrUpdate(AllKey, _AllRegion, allIds);
+            }
         }
 
         /// <summary>
