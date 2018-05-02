@@ -52,11 +52,11 @@ namespace Rock
         /// Loads the attributes for all entities.
         /// </summary>
         /// <param name="entities">The entities.</param>
-        public static void LoadAttributes( this IEnumerable<Attribute.IHasAttributes> entities )
+        public static void LoadAttributes( this IEnumerable<IHasAttributes> entities )
         {
             foreach ( var entity in entities )
             {
-                Rock.Attribute.Helper.LoadAttributes( entity );
+                Attribute.Helper.LoadAttributes( entity );
             }
         }
 
@@ -65,11 +65,11 @@ namespace Rock
         /// </summary>
         /// <param name="entities">The entities.</param>
         /// <param name="rockContext">The rock context.</param>
-        public static void LoadAttributes( this IEnumerable<Attribute.IHasAttributes> entities, RockContext rockContext )
+        public static void LoadAttributes( this IEnumerable<IHasAttributes> entities, RockContext rockContext )
         {
             foreach ( var entity in entities )
             {
-                Rock.Attribute.Helper.LoadAttributes( entity, rockContext );
+                Attribute.Helper.LoadAttributes( entity, rockContext );
             }
         }
 
