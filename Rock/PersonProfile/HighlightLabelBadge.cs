@@ -28,7 +28,7 @@ namespace Rock.PersonProfile
     /// <summary>
     /// Base class for person profile icon badges
     /// </summary>
-    public abstract class HighlightLabelBadge : BadgeComponent
+    public abstract class HighlightLabelBadge : BadgeComponentModern
     {
         /// <summary>
         /// Gets the badge label

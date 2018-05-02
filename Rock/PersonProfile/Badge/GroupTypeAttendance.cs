@@ -63,7 +63,7 @@ namespace Rock.PersonProfile.Badge
   <i class='badge-icon {{ groupIcon }}' style='color: {{ iconColor }}'></i>
 </div>
 " )]
-    public class GroupTypeAttendance : BadgeComponent
+    public class GroupTypeAttendance : BadgeComponentModern
     {
         /// <summary>
         /// Renders the specified writer.
