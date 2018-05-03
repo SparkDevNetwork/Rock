@@ -26,7 +26,7 @@ namespace Rock.Web.Cache
     /// </summary>
     [Serializable]
     [DataContract]
-    [DotLiquid.LiquidType( "AttributeId", "Value", "ValueFormatted", "AttributeName", "AttributeKey", "AttributeIsGridColumn" )]
+    [DotLiquid.LiquidType( "AttributeId", "EntityId", "Value", "ValueFormatted", "AttributeName", "AttributeKey", "AttributeIsGridColumn" )]
     [Obsolete( "Use Rock.Cache.CacheAttributeValue instead" )]
     public class AttributeValueCache
     {
