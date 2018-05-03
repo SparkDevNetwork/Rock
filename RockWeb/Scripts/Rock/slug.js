@@ -17,6 +17,7 @@
     var _saveSlug;
     var _uniqueSlug;
     var _removeSlug;
+    var _txtTitle;
 
     function init(settings) {
         contentChannelItemSelector = $(settings.contentChannelItem);
@@ -24,7 +25,32 @@
         _uniqueSlug = settings.UniqueSlug;
         _contentSlugSelector = settings.contentSlug;
         _removeSlug = settings.RemoveSlug;
+        _txtTitle = settings.txtTitle;
         subscribeToEvents();
+        setDelete();
+        subscribeToTitle();
+    }
+    function subscribeToTitle() {
+        $(_txtTitle).unbind('focusout');
+        $(_txtTitle).focusout(function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var inputSlug = $(this).val();
+            var rowLength = $(_selectors.slugRow).length;
+            if (rowLength === 0 && inputSlug !== '') {
+                var html = '<div class="row margin-l-sm margin-b-sm rollover-container js-slug-row clearfix">' +
+                    '<input id="slugId" class="js-slug-id" type="hidden" value="" />' +
+                    '</div >';
+                $(_selectors.btnAdd).before(html);
+                var row = $(_selectors.slugSection).find(_selectors.slugRow);
+                if ($(contentChannelItemSelector).val() === "0") {
+                    uniqueSlug(inputSlug, row);
+                    $(_selectors.btnAdd).hide();
+                } else {
+                    saveSlug(inputSlug, '', row);
+                }
+            }
+        });
     }
     function subscribeToEvents() {
         $(_selectors.btnAdd).unbind('click');
@@ -69,7 +95,7 @@
             e.stopPropagation();
             var row = $(this).closest(_selectors.slugRow);
             var slug = row.find(_selectors.slugLiteral).html();
-            setSlugEdit(slug,row);
+            setSlugEdit(slug, row);
         });
 
         $(_selectors.btnDelete).unbind('click');
@@ -87,6 +113,14 @@
             }
         });
     }
+    function setDelete() {
+        var count = $(_selectors.slugRow).length;
+        if (count <= 1) {
+            $(_selectors.btnDelete).hide();
+        } else {
+            $(_selectors.btnDelete).show();
+        }
+    }
 
     function removeSlug(slugId, row) {
         $.ajax({
@@ -97,17 +131,17 @@
         })
             .done(function (data) {
                 $(row).remove();
+                setDelete();
             })
             .fail(function (jqXHR, textStatus, errorThrown) {
             });
-        
     }
     function setSlugEdit(slug, row) {
 
         $(row).children().not(_selectors.slugId).remove();
         var html =
             '<div class="input-group input-slug-group">' +
-            '<input class="form-control js-slug-input" Value="'+slug+'" />' +
+            '<input class="form-control js-slug-input" Value="' + slug + '" />' +
             '<span class="input-group-addon">' +
             '<a class="js-slug-save" href="#"><i class="fa fa-check"></i></a>' +
             '</span>' +
@@ -139,6 +173,7 @@
         })
             .done(function (data) {
                 setSlugDetail(data.Slug, data.Id, row);
+                setDelete();
             })
             .fail(function (jqXHR, textStatus, errorThrown) {
             });
