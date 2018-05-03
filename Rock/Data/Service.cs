@@ -141,7 +141,7 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual T Get( int id )
         {
-            return Queryable().FirstOrDefault( t => t.Id == id );
+            return AsNoFilter().FirstOrDefault( t => t.Id == id );
         }
 
         /// <summary>
@@ -151,7 +151,7 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual T Get( Guid guid )
         {
-            return Queryable().FirstOrDefault( t => t.Guid == guid );
+            return AsNoFilter().FirstOrDefault( t => t.Guid == guid );
         }
 
         /// <summary>
