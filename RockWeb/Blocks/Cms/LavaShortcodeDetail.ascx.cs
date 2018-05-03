@@ -10,7 +10,7 @@
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
+// See the License for the specific /language governing permissions and
 // limitations under the License.
 // </copyright>
 //
@@ -29,6 +29,8 @@ using Rock.Security;
 using Rock.Web;
 using Rock.Cache;
 using Rock.Web.UI;
+using System.Collections.Generic;
+using System.Web;
 
 namespace RockWeb.Blocks.Core
 {
@@ -175,13 +177,13 @@ namespace RockWeb.Blocks.Core
             if ( !IsUserAuthorized( Authorization.EDIT ) )
             {
                 readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Campus.FriendlyTypeName );
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( LavaShortcode.FriendlyTypeName );
             }
 
             if ( lavaShortcode.IsSystem )
             {
                 readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( Campus.FriendlyTypeName );
+                nbEditModeMessage.Text = string.Format( "<strong>Note</strong> This is a system {0} and is not able to be edited.", LavaShortcode.FriendlyTypeName.ToLower() );
             }
 
             if ( readOnly )
@@ -206,11 +208,40 @@ namespace RockWeb.Blocks.Core
             hlInactive.Visible = !lavaShortcode.IsActive;
 
             lLayoutDescription.Text = lavaShortcode.Description;
-
+            var list = lavaShortcode.Markup.ToKeyValuePairList();
             DescriptionList descriptionList = new DescriptionList();
             descriptionList.Add( "System", lavaShortcode.IsSystem.ToYesNo() );
             descriptionList.Add( "Tag Name", lavaShortcode.TagName );
             descriptionList.Add( "Tag Type", lavaShortcode.TagType );
+
+            descriptionList.Add( "Shortcode Markup",  string.Format("<pre>{0}</pre>" , lavaShortcode.Markup ));
+
+            if ( !string.IsNullOrEmpty( lavaShortcode.Parameters ) )
+            {
+                var values = new List<string>();
+                string[] nameValues = lavaShortcode.Parameters.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+
+                foreach ( string nameValue in nameValues )
+                {
+                    string[] nameAndValue = nameValue.Split( new char[] { '^' } );
+
+                    // url decode array items just in case they were UrlEncoded (in the KeyValueList controls)
+                    nameAndValue = nameAndValue.Select( s => HttpUtility.UrlDecode( s ) ).ToArray();
+
+                    if ( nameAndValue.Length == 2 )
+                    {
+                        values.Add( string.Format( "{0}: {1}", nameAndValue[0], nameAndValue[1] ) );
+                    }
+                    else
+                    {
+                        values.Add( nameValue );
+                    }
+                }
+
+                descriptionList.Add( "Parameters", string.Join( "<br/>" ,values ) );
+            }
+            descriptionList.Add( "Enable Lava Commands", lavaShortcode.EnabledLavaCommands );
+
             lblMainDetails.Text = descriptionList.Html;
         }
 
