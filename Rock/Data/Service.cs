@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Linq.Expressions;
+using Z.EntityFramework.Plus;
 
 namespace Rock.Data
 {
@@ -103,6 +104,15 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Gets an <see cref="IQueryable{T}"/> list of all models ensuring that any EntityFramework.Plus Filter or service specific filter is not applied
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<T> AsNoFilter()
+        {
+            return _objectSet.AsNoFilter();
+        }
+
+        /// <summary>
         /// Gets an <see cref="IQueryable{T}"/> list of all models
         /// with eager loading of properties specified in includes
         /// </summary>
@@ -152,7 +162,7 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual T GetNoTracking( int id )
         {
-            return Queryable().AsNoTracking().FirstOrDefault( t => t.Id == id );
+            return AsNoFilter().AsNoTracking().FirstOrDefault( t => t.Id == id );
         }
 
         /// <summary>
@@ -163,7 +173,7 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual T GetNoTracking( Guid guid )
         {
-            return Queryable().AsNoTracking().FirstOrDefault( t => t.Guid == guid );
+            return AsNoFilter().AsNoTracking().FirstOrDefault( t => t.Guid == guid );
         }
 
         /// <summary>
@@ -175,7 +185,7 @@ namespace Rock.Data
         /// <returns></returns>
         public TResult GetSelect<TResult>( int Id, System.Linq.Expressions.Expression<Func<T, TResult>> selector )
         {
-            return Queryable().Where( a => a.Id == Id ).Select( selector ).FirstOrDefault();
+            return AsNoFilter().Where( a => a.Id == Id ).Select( selector ).FirstOrDefault();
         }
 
         /// <summary>
@@ -187,7 +197,7 @@ namespace Rock.Data
         /// <returns></returns>
         public TResult GetSelect<TResult>( Guid guid, System.Linq.Expressions.Expression<Func<T, TResult>> selector )
         {
-            return Queryable().Where( a => a.Guid == guid ).Select( selector ).FirstOrDefault();
+            return AsNoFilter().Where( a => a.Guid == guid ).Select( selector ).FirstOrDefault();
         }
 
         /// <summary>
