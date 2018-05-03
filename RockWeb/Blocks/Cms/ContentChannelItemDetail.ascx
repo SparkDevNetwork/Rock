@@ -19,8 +19,8 @@
             RemoveSlug: {
                restUrl: '<%=ResolveUrl( "~/api/ContentChannelItemSlugs" ) %>',
                 restParams: '/{id}'
-            }
-
+            },
+            txtTitle: '#<%=tbTitle.ClientID %>'
         });
     });
 
