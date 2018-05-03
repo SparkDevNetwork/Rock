@@ -427,6 +427,23 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Posts the save changes.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        public override void PostSaveChanges( Data.DbContext dbContext )
+        {
+            base.PostSaveChanges( dbContext );
+
+            var rockContext = ( RockContext ) dbContext;
+            var contentChannelSlugSerivce = new ContentChannelItemSlugService( rockContext );
+
+            if ( !contentChannelSlugSerivce.Queryable().Any( a => a.ContentChannelItemId == this.Id ) )
+            {
+                contentChannelSlugSerivce.SaveSlug( Id, Title, null );
+            }
+        }
+
+        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>
