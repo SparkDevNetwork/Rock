@@ -18,85 +18,83 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
+            /*
+            // Fix for https://github.com/SparkDevNetwork/Rock/issues/2788
+            Sql( @"UPDATE [CommunicationTemplate]
+SET [Message] = REPLACE([Message], 
+  '<!-- prevent Gmail on iOS font size manipulation -->
+  <div style=""display:none; white-space:nowrap; font:15px courier; line-height:0;""> &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; </div>', 
+  '<!-- prevent Gmail on iOS font size manipulation -->
+  <div style=""display:none; white-space:nowrap; font:15px courier; line-height:0;""> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </div>')
+WHERE [Message] LIKE '%<!-- prevent Gmail on iOS font size manipulation -->
+  <div style=""display:none; white-space:nowrap; font:15px courier; line-height:0;""> &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; </div>%'"
+ );
 
+            // add ServiceJob: Data Migrations for v7.4
+            // Code Generated using Rock\Dev Tools\Sql\CodeGen_ServiceJobWithAttributes_ForAJob.sql
+            Sql( @"IF NOT EXISTS( SELECT [Id] FROM [ServiceJob] WHERE [Class] = 'Rock.Jobs.PostV74DataMigrations' AND [Guid] = 'FF760EF9-66BD-4A4D-AF95-749AA789ACAF' )
+            BEGIN
+               INSERT INTO [ServiceJob] (
+                  [IsSystem]
+                  ,[IsActive]
+                  ,[Name]
+                  ,[Description]
+                  ,[Class]
+                  ,[CronExpression]
+                  ,[NotificationStatus]
+                  ,[Guid] )
+               VALUES ( 
+                  0
+                  ,1
+                  ,'Data Migrations for v7.4'
+                  ,'This job will take care of any data migrations that need to occur after updating to v74. After all the operations are done, this job will delete itself.'
+                  ,'Rock.Jobs.PostV74DataMigrations'
+                  ,'0 0 3 1/1 * ? *'
+                  ,1
+                  ,'FF760EF9-66BD-4A4D-AF95-749AA789ACAF'
+                  );
+            END" );
 
-//            // Fix for https://github.com/SparkDevNetwork/Rock/issues/2788
-//            Sql( @"UPDATE [CommunicationTemplate]
-//SET [Message] = REPLACE([Message], 
-//  '<!-- prevent Gmail on iOS font size manipulation -->
-//  <div style=""display:none; white-space:nowrap; font:15px courier; line-height:0;""> &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; </div>', 
-//  '<!-- prevent Gmail on iOS font size manipulation -->
-//  <div style=""display:none; white-space:nowrap; font:15px courier; line-height:0;""> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </div>')
-//WHERE [Message] LIKE '%<!-- prevent Gmail on iOS font size manipulation -->
-//  <div style=""display:none; white-space:nowrap; font:15px courier; line-height:0;""> &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; </div>%'"
-// );
+            // Fix for https://github.com/SparkDevNetwork/Rock/issues/2813
+            Sql( HotFixMigrationResource._050_MigrationRollupsForV7_4_spAnalytics_ETL_Campus );
 
-//            // add ServiceJob: Data Migrations for v7.4
-//            // Code Generated using Rock\Dev Tools\Sql\CodeGen_ServiceJobWithAttributes_ForAJob.sql
-//            Sql( @"IF NOT EXISTS( SELECT [Id] FROM [ServiceJob] WHERE [Class] = 'Rock.Jobs.PostV74DataMigrations' AND [Guid] = 'FF760EF9-66BD-4A4D-AF95-749AA789ACAF' )
-//            BEGIN
-//               INSERT INTO [ServiceJob] (
-//                  [IsSystem]
-//                  ,[IsActive]
-//                  ,[Name]
-//                  ,[Description]
-//                  ,[Class]
-//                  ,[CronExpression]
-//                  ,[NotificationStatus]
-//                  ,[Guid] )
-//               VALUES ( 
-//                  0
-//                  ,1
-//                  ,'Data Migrations for v7.4'
-//                  ,'This job will take care of any data migrations that need to occur after updating to v74. After all the operations are done, this job will delete itself.'
-//                  ,'Rock.Jobs.PostV74DataMigrations'
-//                  ,'0 0 3 1/1 * ? *'
-//                  ,1
-//                  ,'FF760EF9-66BD-4A4D-AF95-749AA789ACAF'
-//                  );
-//            END" );
+            // Fix for https://github.com/SparkDevNetwork/Rock/issues/2809
+            Sql( HotFixMigrationResource._050_MigrationRollupsForV7_4_spCrm_PersonMerge );
 
-//            // Fix for https://github.com/SparkDevNetwork/Rock/issues/2813
-//            Sql( HotFixMigrationResource._050_MigrationRollupsForV7_4_spAnalytics_ETL_Campus );
+            // Update check-in to support check-in by Gender
+            AddCheckinByGender();
 
-//            // Fix for https://github.com/SparkDevNetwork/Rock/issues/2809
-//            Sql( HotFixMigrationResource._050_MigrationRollupsForV7_4_spCrm_PersonMerge );
+            // Fix for personal communication templates
+            FixPersonalCommunicationTemplates();
 
-//            // Update check-in to support check-in by Gender
-//            AddCheckinByGender();
+            UpdateEntityTypeonCDRInteractions();
 
-//            // Fix for personal communication templates
-//            FixPersonalCommunicationTemplates();
+            FixTypoInWordCloudLavaShortcode();
 
-//            UpdateEntityTypeonCDRInteractions();
+            AddStickyHeaderToScheduleGrid();
 
-//            FixTypoInWordCloudLavaShortcode();
+            FixTyposIssue2928();
 
-//            AddStickyHeaderToScheduleGrid();
+            // Add Vimeo Short Code
+            Sql( HotFixMigrationResource._050_MigrationRollupsForV7_4_AddVimeoShortCode );
 
-//            FixTyposIssue2928();
-              
-//            // Add Vimeo Short Code
-//            Sql( HotFixMigrationResource._050_MigrationRollupsForV7_4_AddVimeoShortCode );
+            // Fix Accordion Short Code
+            Sql( HotFixMigrationResource._050_MigrationRollupsForV7_4_FixAccordionShortCode );
 
-//            // Fix Accordion Short Code
-//            Sql( HotFixMigrationResource._050_MigrationRollupsForV7_4_FixAccordionShortCode );
+            // PersonDuplicateFinder have the GUIDs for Mobile and home phone reversed
+            Sql( @"IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[spCrm_PersonDuplicateFinder]') AND type in (N'P', N'PC'))
+                DROP PROCEDURE[dbo].[spCrm_PersonDuplicateFinder];" );
+            Sql( HotFixMigrationResource._050_MigrationRollupsForV7_4_spCrm_PersonDuplicateFinder );
 
-//            // PersonDuplicateFinder have the GUIDs for Mobile and home phone reversed
-//            Sql( @"IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[spCrm_PersonDuplicateFinder]') AND type in (N'P', N'PC'))
-//                DROP PROCEDURE[dbo].[spCrm_PersonDuplicateFinder];" );
-//            Sql( HotFixMigrationResource._050_MigrationRollupsForV7_4_spCrm_PersonDuplicateFinder );
+            // Thank-you and on-going Are Hyphenated Unnecessarily #1711
+            Sql( HotFixMigrationResource._050_MigrationRollupsForV7_4_FixThankyouAndOngoingHyphenations );
 
-//            // Thank-you and on-going Are Hyphenated Unnecessarily #1711
-//            Sql( HotFixMigrationResource._050_MigrationRollupsForV7_4_FixThankyouAndOngoingHyphenations );
+            // Fix for #2722
+            UpdateGradeTransitionDateFieldType();
 
-//            // ZPL printer changes for parent label to correctly print from iPad
-//            ZplLabelChanges();
-
-//            // Fix for #2722
-//            UpdateGradeTransitionDateFieldType();
-
-//            FixFamilyPreregistrationTitle();
+            FixFamilyPreregistrationTitle();
+            
+            */
         }
 
         /// <summary>
@@ -228,18 +226,6 @@ WHERE [Key] = 'GradeTransitionDate'
 </ul>
 <p>Note: Due to the javascript requirements of this shortcode, you will need to do a full page reload before changes to the shortcode appear on your page.</p>'
                 WHERE [Guid] = '4B6452EF-6FEA-4A66-9FB9-1A7CCE82E7A4'" );
-        }
-
-        public void ZplLabelChanges()
-        {
-            RockMigrationHelper.AddDefinedValueAttributeValue( "5B11A934-0398-429F-9A91-F727153392E7", "51EB8583-55EA-4431-8B66-B5BD0F83D81E", @"{% for person in People %}{% assign remainder = forloop.index | Modulo:2 %}{% if remainder == 0 %}{{ person.SecurityCode }}-{{ person.Age }}yr_5C_26{% endif %}{% endfor %}" );
-            RockMigrationHelper.AddDefinedValueAttributeValue( "170207B6-9218-4E6E-8ADA-661521E80E5E", "51EB8583-55EA-4431-8B66-B5BD0F83D81E", @"{% for person in People %}{% assign remainder = forloop.index | Modulo:2 %}{% if remainder > 0 %}{{ person.SecurityCode }}-{{ person.Age }}yr_5C_26{% endif %}{% endfor %}" );
-            RockMigrationHelper.AddDefinedValueAttributeValue( "3DCF76E8-866C-4EC9-B1FB-552691A8B440", "51EB8583-55EA-4431-8B66-B5BD0F83D81E", @"{% for person in People %}{% assign remainder = forloop.index | Modulo:2 %}{% if remainder == 0 %}{{ person.NickName }}-{{ person.SecurityCode }}_5C_26{% endif %}{% endfor %}" );
-            RockMigrationHelper.AddDefinedValueAttributeValue( "1FAA4DAC-5240-486E-A23F-2A47D7F36F31", "51EB8583-55EA-4431-8B66-B5BD0F83D81E", @"{% for person in People %}{% assign remainder = forloop.index | Modulo:2 %}{% if remainder != 0 %}{{ person.NickName }}-{{ person.SecurityCode }}_5C_26{% endif %}{% endfor %}" );
-
-            Sql( @"UPDATE [BinaryFileData]
-                SET [Content] = 0x1043547E7E43442C7E43435E7E43547E0A5E58417E54413030307E4A534E5E4C54305E4D4E575E4D54445E504F4E5E504D4E5E4C48302C305E4A4D415E5052362C367E534431355E4C524E5E4349305E585A0A5E58410A5E4D4D540A5E50573831320A5E4C4C303430360A5E4C53300A5E465432302C38305E41304E2C37332C37325E46423830302C302C302C4C5E46444368696C64205069636B757020526563656970745E46530A5E46423332352C362C302C4C5E465433302C3339305E41304E2C33392C33385E46485F5E4644315E46530A5E46423332352C362C302C4C5E46543431352C3339305E41304E2C33392C33385E46485F5E4644325E46530A5E465431342C3336395E41304E2C32332C32345E4644466F722074686520736166657479206F6620796F7572206368696C642C20796F75206D7573742070726573656E7420746869732072656365697074207768656E207069636B696E675E46530A5E465431352C3339335E41304E2C32332C32345E4644757020796F7572206368696C642E20496620796F75206C6F7365207468697320706C6561736520736565207468652061726561206469726563746F722E5E46530A5E4C52595E464F302C305E47423831322C302C3130305E46535E4C524E0A5E5051312C302C312C595E585A
-                WHERE [Guid] = 'FFFCE2E5-CBA0-48A1-91BD-4705C472DD95'" );
         }
 
         public void FixFamilyPreregistrationTitle()
