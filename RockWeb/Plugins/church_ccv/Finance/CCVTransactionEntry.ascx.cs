@@ -403,7 +403,7 @@ TransactionAcountDetails: [
                 pnlSuccessCheckmark.Visible = true;
                 lblSuccessMessage.Visible = true;
                 // Success: Update confirmation panel success message
-                lblSuccessMessage.Text = "Schedule Transaction Save Success";
+                lblSuccessMessage.Text = "Save Successful";
             }
         }
 
@@ -751,8 +751,9 @@ TransactionAcountDetails: [
 
                 SaveTransaction( financialGateway, gateway, _person, paymentInfo, fundAccountId, fundAccountName, transaction, rockContext );
 
-                // check if reference transaction and hide save new payment account if so
-                if ( paymentInfo is ReferencePaymentInfo )
+                // check if reference transaction or ACH and hide save new payment account if so
+                // **PayFlow Pro does not support saving ACH accounts
+                if ( paymentInfo is ReferencePaymentInfo || paymentInfo is ACHPaymentInfo )
                 {
                     pnlSavePaymentAccount.Visible = false;
                 }
@@ -1479,7 +1480,7 @@ TransactionAcountDetails: [
                 paymentInfo.Country = ddlCountry.SelectedValue;
             }
 
-            paymentInfo.Amount = nbAmount.Text.Replace( "$", "" ).Replace(",", "").AsInteger();
+            paymentInfo.Amount = nbAmount.Text.Replace( "$", "" ).Replace(",", "").AsDecimal();
 
             paymentInfo.Email = tbEmail.Text;
 
@@ -1511,7 +1512,7 @@ TransactionAcountDetails: [
                 return null;
             }
 
-            paymentInfo.Amount = persistedPaymentInfo.Amount.AsInteger();
+            paymentInfo.Amount = persistedPaymentInfo.Amount.Replace( "$", "" ).Replace( ",", "" ).AsDecimal();
             paymentInfo.Email = persistedPaymentInfo.Email;
 
             return paymentInfo;
