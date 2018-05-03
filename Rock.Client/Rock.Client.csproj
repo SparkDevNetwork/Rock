@@ -96,6 +96,7 @@
     <Compile Include="CodeGenerated\ContentChannel.cs" />
     <Compile Include="CodeGenerated\ContentChannelItem.cs" />
     <Compile Include="CodeGenerated\ContentChannelItemAssociation.cs" />
+    <Compile Include="CodeGenerated\ContentChannelItemSlug.cs" />
     <Compile Include="CodeGenerated\ContentChannelType.cs" />
     <Compile Include="CodeGenerated\DataView.cs" />
     <Compile Include="CodeGenerated\DataViewFilter.cs" />
@@ -187,6 +188,7 @@
     <Compile Include="CodeGenerated\PersonBadge.cs" />
     <Compile Include="CodeGenerated\PersonDuplicate.cs" />
     <Compile Include="CodeGenerated\PersonPreviousName.cs" />
+    <Compile Include="CodeGenerated\PersonSearchKey.cs" />
     <Compile Include="CodeGenerated\PersonSignal.cs" />
     <Compile Include="CodeGenerated\PersonToken.cs" />
     <Compile Include="CodeGenerated\PersonViewed.cs" />

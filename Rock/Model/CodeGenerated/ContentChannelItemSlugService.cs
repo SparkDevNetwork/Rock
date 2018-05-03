@@ -30,7 +30,7 @@ namespace Rock.Model
     /// <summary>
     /// ContentChannelItemSlug Service class
     /// </summary>
-    public partial class ContentChannelItemSlugService : Service<Rock.Model.ContentChannelItemSlug>
+    public partial class ContentChannelItemSlugService : Service<ContentChannelItemSlug>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ContentChannelItemSlugService"/> class
