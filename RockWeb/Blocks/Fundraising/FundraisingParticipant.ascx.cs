@@ -598,8 +598,9 @@ namespace RockWeb.Blocks.Fundraising
 	            if ( lAddress != null )
 	            {
 	                var location = financialTransaction.AuthorizedPersonAlias.Person.GetMailingLocation();
-	                lAddress.Text = location != null ? location.GetFullStreetAddress() : string.Empty;
-	            }
+                    string streetAddress = location != null ? location.GetFullStreetAddress() : string.Empty;
+                    lAddress.Text = financialTransaction.ShowAsAnonymous ? string.Empty : streetAddress;
+                }
 
 	            Literal lPersonName = e.Row.FindControl( "lPersonName" ) as Literal;
 	            if ( lPersonName != null )
