@@ -33,8 +33,8 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Sends Web request
     /// </summary>
-    [ActionCategory( "Workflow Control" )]
-    [Description( "Sends Web Request" )]
+    [ActionCategory( "Utility" )]
+    [Description( "Makes web requests to the enpoint of your choice." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Web Request" )]
 
