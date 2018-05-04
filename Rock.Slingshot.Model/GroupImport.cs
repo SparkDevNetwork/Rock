@@ -73,11 +73,60 @@ namespace Rock.Slingshot.Model
         public int? CampusId { get; set; }
 
         /// <summary>
+        /// Gets or sets the group capacity.
+        /// </summary>
+        /// <value>
+        /// The group capacity.
+        /// </value>
+        public int? Capacity { get; set; }
+
+        /// <summary>
+        /// Gets or sets the meeting day.
+        /// </summary>
+        /// <value>
+        /// The meeting day.
+        /// </value>
+        public string MeetingDay { get; set; }
+
+        /// <summary>
+        /// Gets or sets the meeting time.
+        /// </summary>
+        /// <value>
+        /// The meeting time.
+        /// </value>
+        ///
+        public string MeetingTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this group is active.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this group is active; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsActive { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this group is public.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this group is public; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsPublic { get; set; }
+
+        /// <summary>
         /// Gets or sets the group members.
         /// </summary>
         /// <value>
         /// The group members.
         /// </value>
         public List<GroupMemberImport> GroupMemberImports { get; set; }
+
+        /// <summary>
+        /// Gets or sets the attribute values.
+        /// </summary>
+        /// <value>
+        /// The attribute values.
+        /// </value>
+        public ICollection<AttributeValueImport> AttributeValues { get; set; }
     }
 }
