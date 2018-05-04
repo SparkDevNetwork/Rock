@@ -883,8 +883,17 @@ namespace Rock.Web.UI
                         // If not authorized, and the user has logged in, redirect to error page
                         Page.Trace.Warn( "Redirecting to error page" );
 
-                        Response.Redirect( "~/Error.aspx?type=security", false );
-                        Context.ApplicationInstance.CompleteRequest();
+                        if ( Site != null && !string.IsNullOrWhiteSpace( Site.ErrorPage ) )
+                        {
+                            Context.Response.Redirect( string.Format( "{0}?type=security", Site.ErrorPage.TrimEnd( new char[] { '/' } ) ), false );
+                            Context.ApplicationInstance.CompleteRequest();
+                            return;
+                        }
+                        else
+                        {
+                            Response.Redirect( "~/Error.aspx?type=security", false );
+                            Context.ApplicationInstance.CompleteRequest();
+                        }
                     }
                 }
                 else
