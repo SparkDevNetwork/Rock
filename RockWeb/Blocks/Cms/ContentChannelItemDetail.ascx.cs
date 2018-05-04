@@ -339,14 +339,14 @@ namespace RockWeb.Blocks.Cms
 
                 rockContext.WrapTransaction( () =>
                 {
-                    rockContext.SaveChanges();
-                    contentItem.SaveAttributeValues( rockContext );
-
                     if ( !string.IsNullOrEmpty( hfSlug.Value ) )
                     {
                         var contentChannelItemSlugService = new ContentChannelItemSlugService( rockContext );
                         contentChannelItemSlugService.SaveSlug( contentItem.Id, hfSlug.Value, null );
                     }
+
+                    rockContext.SaveChanges();
+                    contentItem.SaveAttributeValues( rockContext );
 
                     if ( contentItem.ContentChannel.IsTaggingEnabled )
                     {
