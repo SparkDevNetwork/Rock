@@ -1,11 +1,6 @@
 ﻿///
 ///  Giving Page
 /// --------------------------------------------------
-$(document).ready(function ()
-{
-
-
-});
 
 // Bind payment success components after postback
 function pageLoad()
@@ -14,6 +9,12 @@ function pageLoad()
   //
   // Transaction Panel
   //
+
+  // Set style of whichever radio button is checked
+  $('#rblAccountType').on('change', function () {
+    $('input[type="radio"]:checked').parents('label').addClass('btn-primary');
+    $('input[type="radio"]:not(:checked)').parents('label').removeClass('btn-primary');
+  });
 
   // Disable processing submit button after its clicked to prevent duplicate submits
   $('#btnConfirmNext').on('click', function ()

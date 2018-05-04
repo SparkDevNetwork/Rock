@@ -82,7 +82,7 @@
                     </asp:Panel>
 
                     <%-- Person Information Form --%>
-                    <asp:Panel ID="pnlPerson" runat="server" ClientIDMode="Static" CssClass="hidden">
+                    <asp:Panel ID="pnlPerson" runat="server" ClientIDMode="Static" CssClass="panel-person hidden">
 
                         <div class="person-info">
 
@@ -109,7 +109,7 @@
                     </asp:Panel>
 
                     <%-- Payment Information Form --%>
-                    <asp:Panel ID="pnlPayment" runat="server" ClientIDMode="Static" CssClass="hidden" >
+                    <asp:Panel ID="pnlPayment" runat="server" ClientIDMode="Static" CssClass="panel-payment hidden" >
                 
                         <div class="payment-type">
                        
@@ -122,13 +122,9 @@
                         </div>
 
                         <%-- Saved Payment Form --%>
-                        <asp:Panel ID="pnlSavedPayment" runat="server" ClientIDMode="Static" CssClass="hidden">
+                        <asp:Panel ID="pnlSavedPayment" runat="server" ClientIDMode="Static" CssClass="panel-savedpayment hidden">
                             
-                            <div class="savedpayment-card">
-
-                                <Rock:RockDropDownList ID="ddlSavedPaymentAccounts" runat="server" ClientIDMode="Static" DataValueField="Id" DataTextField="Name" />
-
-                            </div>
+                            <Rock:RockDropDownList ID="ddlSavedPaymentAccounts" runat="server" ClientIDMode="Static" DataValueField="Id" DataTextField="Name" />
 
                         </asp:Panel>
                 
@@ -176,21 +172,17 @@
                         </asp:Panel>
 
                         <%-- ACH Form --%>
-                        <asp:Panel ID="pnlBankAccount" runat="server" ClientIDMode="Static" CssClass="hidden">
+                        <asp:Panel ID="pnlBankAccount" runat="server" ClientIDMode="Static" CssClass="panel-bankaccount hidden">
 
-                            <div class="bankaccount-card">
+                            <Rock:NumberBox ID="nbRoutingNumber" runat="server" Label="Routing #" ClientIDMode="Static" CssClass="numbers-only" />
 
-                                <Rock:NumberBox ID="nbRoutingNumber" runat="server" Label="Routing #" ClientIDMode="Static" CssClass="numbers-only" />
+                            <Rock:NumberBox ID="nbAccountNumber" runat="server" Label="Account #" ClientIDMode="Static" CssClass="numbers-only" />
 
-                                <Rock:NumberBox ID="nbAccountNumber" runat="server" Label="Account #" ClientIDMode="Static" CssClass="numbers-only" />
+                            <Rock:RockRadioButtonList ID="rblAccountType" runat="server" Label="Account Type" RepeatDirection="Horizontal" ClientIDMode="Static">
+                                <asp:ListItem Text="Savings" Value="Savings" />
+                                <asp:ListItem Text="Checking" Value="Checking" />
+                            </Rock:RockRadioButtonList>
 
-                                <Rock:RockRadioButtonList ID="rblAccountType" runat="server" Label="Account Type" RepeatDirection="Horizontal" ClientIDMode="Static">
-                                    <asp:ListItem Text="Savings" Value="Savings" />
-                                    <asp:ListItem Text="Checking" Value="Checking" />
-                                </Rock:RockRadioButtonList>
-
-                            </div>
-                    
                         </asp:Panel>
                 
                         <div class="navigation">
@@ -209,7 +201,7 @@
                     </asp:Panel>
 
                     <%-- Transaction Confirmation Card --%>
-                    <asp:Panel ID="pnlConfirm" runat="server" ClientIDMode="Static" CssClass="hidden panel-confirm">
+                    <asp:Panel ID="pnlConfirm" runat="server" ClientIDMode="Static" CssClass="panel-confirm hidden">
             
                         <div class="confirm-card">
                             <p id="confirmGiftMessage">You are giving a one-time gift today of</p>

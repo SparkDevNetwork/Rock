@@ -517,35 +517,22 @@ TransactionAcountDetails: [
                         .ToList();
                 }
 
-                // Find the saved payment accounts that are valid for the selected ACH gateway
-                var achSavedAccountIds = new List<int>();
-                var achCurrencyType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH ) );
-                if ( _achGateway != null &&
-                    _achGatewayComponent != null &&
-                    _achGatewayComponent.SupportsSavedAccount( !oneTime ) &&
-                    _achGatewayComponent.SupportsSavedAccount( achCurrencyType ) )
-                {
-                    achSavedAccountIds = savedAccounts
-                        .Where( a =>
-                            a.FinancialGatewayId == _achGateway.Id &&
-                            a.FinancialPaymentDetail != null &&
-                            a.FinancialPaymentDetail.CurrencyTypeValueId == achCurrencyType.Id )
-                        .Select( a => a.Id )
-                        .ToList();
-                }
+                // Add select place holder
+                ddlSavedPaymentAccounts.Items.Add( new ListItem( "--Select Saved Account--", "-1" ) );
 
-                // Bind the saved payment accounts
-                ddlSavedPaymentAccounts.DataSource = savedAccounts
-                    .Where( a =>
-                        ccSavedAccountIds.Contains( a.Id ) ||
-                        achSavedAccountIds.Contains( a.Id ) )
-                    .OrderBy( a => a.Name )
-                    .Select( a => new
+                // Loop through the saved accounts and add them to the dropdown
+                // if they have a matching id in ccSavedAccountId's
+                foreach ( var savedAccount in savedAccounts )
+                {
+                    if ( ccSavedAccountIds.Contains( savedAccount.Id))
                     {
-                        Id = a.Id,
-                        Name = "Use " + a.Name + " (" + a.FinancialPaymentDetail.AccountNumberMasked + ")"
-                    } ).ToList();
-                ddlSavedPaymentAccounts.DataBind();
+                        // Format account name
+                        string accountName = String.Format( "{0} ({1})", savedAccount.Name, savedAccount.FinancialPaymentDetail.AccountNumberMasked.Substring( savedAccount.FinancialPaymentDetail.AccountNumberMasked.Length - 8 ) );
+                        
+                        // add to dropdown
+                        ddlSavedPaymentAccounts.Items.Add( new ListItem( accountName, savedAccount.Id.ToString() ) );
+                    }
+                }
 
                 // Enabled saved payment accounts panel if they exist
                 if ( ddlSavedPaymentAccounts.Items.Count > 0 )

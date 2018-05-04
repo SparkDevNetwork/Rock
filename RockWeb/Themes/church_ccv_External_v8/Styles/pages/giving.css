@@ -24,6 +24,11 @@
     font-weight: normal;
 }
 
+.giving-icon {
+    color: #7A1315;
+    font-size: 24px;
+}
+
 #desktopspacer {
     padding-top: 125px;
 }
@@ -31,15 +36,15 @@
 /* Mobile Styling */
 @media screen and (max-width: 500px) {
     .give-title h1 {
-        font-size: 40px;
+        font-size: 30px;
         padding: 0;
         margin: 0;
-        margin-top: -10px;
+        margin-top: -20px;
+        margin-bottom: 5px;
     }
 
     .give-title p {
-        padding: 0;
-        margin: 0;
+        display: none;
     }
 
     #desktopspacer {
@@ -77,6 +82,10 @@
 
     .transaction-card {
         padding-top: 0;
+        padding-bottom: 0;
+        margin: 10px auto;
+        width: 90%;
+        min-height: 350px;
     }
 }
 
@@ -112,7 +121,6 @@
 .step input {
     font-family: Akrobat;
     font-size: 24px;
-    font-weight: 900;
     line-height: 29px;
     color: #FFFFFF;
     margin: 0;
@@ -148,20 +156,46 @@
 
 /* Mobile Styling */
 @media screen and (max-width: 500px) {
+    .transaction-alerts {
+        width: unset;
+        margin-top: 10px;
+    }
+
+    .transaction-card .alert {
+        margin-bottom: unset;
+    }
+
     .transaction-progress {
         padding-top: 10px;
+    }
+
+    .step {
+        width: unset;
+        justify-content: flex-start;
+    }
+
+    .step h5 {
+        display: none;
     }
 }
 
 /* End Progress Bar */
 
-/* Amount And Frequency */
+/* Amount And Accounts/Fund */
 .panel-amount {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
     margin-top: 40px;
+    min-height: 275px;
+}
+
+.accounts-wrapper {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: center;
 }
 
 .accounts {
@@ -205,24 +239,38 @@
 /* Mobile Styling */
 @media screen and (max-width: 500px) {
     .panel-amount {
-        margin-top: 15px;
+        justify-content: space-between;
+        margin: 15px 0;        
+        width: 100%;
+        padding: 0 20px;
     }
 
+    .accounts {
+        font-size: 18px;
+    }
 
-
-    .amount form-control {
-        font-size: 80px;
+    .amount {
+        width: 95%;
+        font-size: 45px;
+        line-height: 45px;
+        margin-top: unset;
+        margin-bottom: unset;
     }
 }
 
 /* End Amount */
 
 /* Person Info */
-.person-info {
+.panel-person {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
+    margin-top: 40px;
+    min-height: 275px;
+}
+
+.person-info {
     margin-top: 40px;
     margin-bottom: 40px;
     min-width: 300px;
@@ -232,18 +280,58 @@
     width: 100%;
 }
 
+/* Mobile Styling */
+@media screen and (max-width: 500px) {
+    .panel-person {
+        justify-content: space-between;
+        margin: 15px 0;        
+        width: 100%;
+        padding: 0 20px;
+    }
+
+    .person-info {
+        margin-top: 10px;
+        min-width: unset;
+        width: 100%;
+        margin-bottom: unset;
+    }
+
+    .person-info input {
+        padding: unset;
+        height: unset;
+
+    }
+}
+
 
 /* End Person info */
 
 /* Payment Details Panel */
+.panel-payment {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    margin-top: 40px;
+    min-height: 275px;
+}
+
 .payment-type {
     display: flex;
     justify-content: center;
-    margin-top: 20px;
 }
 
 .payment-type .btn {
     border-radius: 25px;
+}
+
+.savedpayment-card select {
+    padding: 0;
+    border: 0px;
+    outline: 0px;
+    border-bottom: 2px solid lightgrey;
+    font-size: 20px;
+    color: #000000;
 }
 
 .panel-creditcard {
@@ -269,14 +357,61 @@
     display: flex;
 }
 
-.savedpayment-card {
-    margin-top: 40px;
-    margin-bottom: 40px;
+.panel-bankaccount {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-self: center;
 }
 
+#rblAccountType {
+    display: flex;
+    justify-content: space-around;
+}
+
+#rblAccountType input[type="radio"] {
+    width: 0px;
+    height: 0px;
+    display: none;
+}
+
+#rblAccountType label {
+    font-size: 14px;
+    font-family: heebo;
+    border-radius: 25px;
+    min-width: 100px;
+    text-align: center;
+    padding: 5px;
+}
 
 /* Mobile Styling */
 @media screen and (max-width: 500px) {
+    .panel-payment {
+        justify-content: space-between;
+        margin: 15px 0;        
+        width: 100%;
+        padding: 0 20px;
+    }
+
+    .payment-type {
+        margin-top: 10px;
+    }
+
+    .payment-type .btn {
+        font-size: 12px;
+        padding: 6px 6px;
+    }
+
+    .panel-savedpayment {
+        margin-bottom: auto;
+        margin-top: 25px;
+        width: 100%;
+    }
+
+    .savedpayment-card select {
+        font-size: 18px;
+    }
+
     .panel-creditcard {
         flex-direction: column;
     }
@@ -288,6 +423,19 @@
     .creditcard-secondary-line {
         flex-direction: column;
     }
+
+    .panel-bankaccount {
+        width: 100%;
+    }
+
+    .panel-bankaccount .form-control {
+        padding: unset;
+        height: unset;
+    }
+
+    /* .panel-bankaccount .rock-radio-button-list {
+        align-self: center;
+    } */
 }
 
 
@@ -299,6 +447,7 @@
     flex-direction: column;
     justify-content: space-between;
     align-items: center;
+    min-height: 260px;
 }
 
 #confirmGiftMessage {
@@ -408,11 +557,18 @@
 .navigation {
     display: flex;
     justify-content: space-around;
-    width: 100%
+    width: 100%;
 }
 
 .navigation .btn {
     border-radius: 25px;
+}
+
+/* Mobile Styling */
+@media screen and (max-width: 500px) {
+    .navigation {
+        justify-content: space-between;
+    }
 }
 
 /* End Navigation Buttons */
@@ -652,27 +808,5 @@ input:checked + .slider:before {
 }
 
 /* End Payment Success */
-
-
-
-
-/* Mobile Styling */
-@media screen and (max-width: 500px) {
-    .transaction-card {
-        width: 90%;
-    }
-
-    .step {
-        justify-content: flex-start;
-    }
-
-    .accounts {
-        width: unset;
-    }
-
-    .amount {
-        width: 80%;
-    }
-}
 
 /* End Transaction Entry Block */
