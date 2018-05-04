@@ -200,9 +200,13 @@ namespace Rock.Slingshot
 
         private Dictionary<string, AttributeCache> FamilyAttributeKeyLookup { get; set; }
 
+        private Dictionary<string, AttributeCache> GroupAttributeKeyLookup { get; set; }
+
         private List<SlingshotCore.Model.PersonAttribute> SlingshotPersonAttributes { get; set; }
 
         private List<SlingshotCore.Model.FamilyAttribute> SlingshotFamilyAttributes { get; set; }
+
+        private List<SlingshotCore.Model.GroupAttribute> SlingshotGroupAttributes { get; set; }
 
         private List<SlingshotCore.Model.Person> SlingshotPersonList { get; set; }
 
@@ -1224,6 +1228,15 @@ namespace Rock.Slingshot
                     }
                 }
 
+                // Attribute Values
+                groupImport.AttributeValues = new List<Rock.Slingshot.Model.AttributeValueImport>();
+                foreach ( var slingshotGroupAttributeValue in slingshotGroup.Attributes )
+                {
+                    int attributeId = this.PersonAttributeKeyLookup[slingshotGroupAttributeValue.AttributeKey].Id;
+                    var attributeValueImport = new Rock.Slingshot.Model.AttributeValueImport { AttributeId = attributeId, Value = slingshotGroupAttributeValue.AttributeValue };
+                    groupImport.AttributeValues.Add( attributeValueImport );
+                }
+
                 groupImportList.Add( groupImport );
             }
 
@@ -1584,6 +1597,7 @@ namespace Rock.Slingshot
             int entityTypeIdAttribute = EntityTypeCache.GetId<Rock.Model.Attribute>().Value;
             var attributeCategoryNames = this.SlingshotPersonAttributes.Where( a => !string.IsNullOrWhiteSpace( a.Category ) ).Select( a => a.Category ).Distinct().ToList();
             attributeCategoryNames.AddRange( this.SlingshotFamilyAttributes.Where( a => !string.IsNullOrWhiteSpace( a.Category ) ).Select( a => a.Category ).Distinct().ToList() );
+            attributeCategoryNames.AddRange( this.SlingshotGroupAttributes.Where( a => !string.IsNullOrWhiteSpace( a.Category ) ).Select( a => a.Category ).Distinct().ToList() );
 
             var rockContext = new RockContext();
             var categoryService = new CategoryService( rockContext );
@@ -1705,6 +1719,52 @@ namespace Rock.Slingshot
         }
 
         /// <summary>
+        /// Adds the group attributes.
+        /// </summary>
+        private void AddGroupAttributes()
+        {
+            int entityTypeIdGroup = EntityTypeCache.GetId<Rock.Model.Group>().Value;
+
+            var rockContext = new RockContext();
+            var attributeService = new AttributeService( rockContext );
+            var entityTypeIdAttribute = EntityTypeCache.GetId<Rock.Model.Attribute>().Value;
+            var attributeCategoryList = new CategoryService( rockContext ).Queryable().Where( a => a.EntityTypeId == entityTypeIdAttribute ).ToList();
+
+            // Add any Group Attributes to Rock that aren't in Rock yet
+            // NOTE: For now, just match by Attribute.Key. Don't try to do a customizable match
+            foreach ( var slingshotGroupAttribute in this.SlingshotGroupAttributes )
+            {
+                slingshotGroupAttribute.Key = slingshotGroupAttribute.Key;
+
+                if ( !this.GroupAttributeKeyLookup.Keys.Any( a => a.Equals( slingshotGroupAttribute.Key, StringComparison.OrdinalIgnoreCase ) ) )
+                {
+                    var rockGroupAttribute = new Rock.Model.Attribute();
+                    rockGroupAttribute.Key = slingshotGroupAttribute.Key;
+                    rockGroupAttribute.Name = slingshotGroupAttribute.Name;
+                    rockGroupAttribute.Guid = Guid.NewGuid();
+                    rockGroupAttribute.EntityTypeId = entityTypeIdGroup;
+                    //rockGroupAttribute.EntityTypeQualifierColumn = "GroupType";
+                    //rockGroupAttribute.EntityTypeQualifierValue = slingshotGroupAttribute.Category;
+                    rockGroupAttribute.FieldTypeId = this.FieldTypeLookup[slingshotGroupAttribute.FieldType].Id;
+
+                    if ( !string.IsNullOrWhiteSpace( slingshotGroupAttribute.Category ) )
+                    {
+                        var attributeCategory = attributeCategoryList.FirstOrDefault( a => a.Name.Equals( slingshotGroupAttribute.Category, StringComparison.OrdinalIgnoreCase ) );
+                        if ( attributeCategory != null )
+                        {
+                            rockGroupAttribute.Categories = new List<Rock.Model.Category>();
+                            rockGroupAttribute.Categories.Add( attributeCategory );
+                        }
+                    }
+
+                    attributeService.Add( rockGroupAttribute );
+                }
+            }
+
+            rockContext.SaveChanges();
+        }
+
+        /// <summary>
         /// Adds the connection statuses.
         /// </summary>
         private void AddConnectionStatuses()
@@ -1770,6 +1830,9 @@ namespace Rock.Slingshot
 
             // Family Attributes
             this.SlingshotFamilyAttributes = LoadSlingshotListFromFile<SlingshotCore.Model.FamilyAttribute>();
+
+            // Group Attributes
+            this.SlingshotGroupAttributes = LoadSlingshotListFromFile<SlingshotCore.Model.GroupAttribute>();
 
             /* Attendance */
             this.SlingshotAttendanceList = LoadSlingshotListFromFile<SlingshotCore.Model.Attendance>( false );
