@@ -209,12 +209,15 @@ namespace RockWeb.Blocks.Core
 
             lLayoutDescription.Text = lavaShortcode.Description;
             var list = lavaShortcode.Markup.ToKeyValuePairList();
-            DescriptionList descriptionList = new DescriptionList();
-            descriptionList.Add( "System", lavaShortcode.IsSystem.ToYesNo() );
-            descriptionList.Add( "Tag Name", lavaShortcode.TagName );
-            descriptionList.Add( "Tag Type", lavaShortcode.TagType );
 
-            descriptionList.Add( "Shortcode Markup",  string.Format("<pre>{0}</pre>" , lavaShortcode.Markup ));
+            DescriptionList headerMarkup = new DescriptionList();
+            headerMarkup.Add( "System", lavaShortcode.IsSystem.ToYesNo() );
+            headerMarkup.Add( "Tag Name", lavaShortcode.TagName );
+            headerMarkup.Add( "Tag Type", lavaShortcode.TagType );
+
+            lblHeaderFields.Text = headerMarkup.Html;
+
+            ceView.Text = lavaShortcode.Markup;
 
             if ( !string.IsNullOrEmpty( lavaShortcode.Parameters ) )
             {
@@ -230,7 +233,7 @@ namespace RockWeb.Blocks.Core
 
                     if ( nameAndValue.Length == 2 )
                     {
-                        values.Add( string.Format( "{0}: {1}", nameAndValue[0], nameAndValue[1] ) );
+                        values.Add( string.Format( "<strong>{0}:</strong> {1}", nameAndValue[0], nameAndValue[1] ) );
                     }
                     else
                     {
@@ -238,11 +241,10 @@ namespace RockWeb.Blocks.Core
                     }
                 }
 
-                descriptionList.Add( "Parameters", string.Join( "<br/>" ,values ) );
+                lblParameters.Text = string.Join( "<br/>", values );
             }
-            descriptionList.Add( "Enable Lava Commands", lavaShortcode.EnabledLavaCommands );
 
-            lblMainDetails.Text = descriptionList.Html;
+            lblEnabledCommands.Text = lavaShortcode.EnabledLavaCommands;
         }
 
         /// <summary>
