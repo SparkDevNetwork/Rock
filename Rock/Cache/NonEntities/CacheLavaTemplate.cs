@@ -26,6 +26,16 @@ namespace Rock.Cache
     /// </summary>
     public class CacheLavaTemplate : ItemCache<CacheLavaTemplate>
     {
+        #region Constructors
+
+        /// <summary>
+        /// Use Static Get() method to instantiate a new Global Attributes object
+        /// </summary>
+        private CacheLavaTemplate()
+        {
+        }
+
+        #endregion
 
         #region Properties
 

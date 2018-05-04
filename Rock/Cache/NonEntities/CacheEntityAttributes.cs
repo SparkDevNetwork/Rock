@@ -35,6 +35,13 @@ namespace Rock.Cache
         private const string KEY = "AllEntityAttributes";
 
         /// <summary>
+        /// Use Static Get() method to instantiate a new Global Attributes object
+        /// </summary>
+        private CacheEntityAttributes()
+        {
+        }
+
+        /// <summary>
         /// Gets or sets the entity attributes.
         /// </summary>
         /// <value>

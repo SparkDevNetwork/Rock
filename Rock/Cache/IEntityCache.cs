@@ -23,7 +23,7 @@ namespace Rock.Cache
     /// <summary>
     /// Interface for EntityCache items
     /// </summary>
-    public interface IEntityCache
+    public interface IEntityCache : IItemCache
     {
         /// <summary>
         /// Gets or sets the identifier.
