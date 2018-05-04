@@ -614,6 +614,18 @@ namespace Rock.Slingshot
             StringBuilder sbStats = new StringBuilder();
 
             int groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
+            var entityTypeIdGroup = EntityTypeCache.Read<Group>().Id;
+            Dictionary<int, List<AttributeValueCache>> attributeValuesLookup = new AttributeValueService( rockContext ).Queryable().Where( a => a.Attribute.EntityTypeId == entityTypeIdGroup && a.EntityId.HasValue )
+                .Select( a => new
+                {
+                    GroupId = a.EntityId.Value,
+                    a.AttributeId,
+                    a.Value
+                } )
+                .GroupBy( a => a.GroupId )
+                .ToDictionary(
+                    k => k.Key,
+                    v => v.Select( x => new AttributeValueCache { AttributeId = x.AttributeId, EntityId = x.GroupId, Value = x.Value } ).ToList() );
 
             var groupsAlreadyExistLookupQry = new GroupService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey && a.GroupTypeId != groupTypeIdFamily ).Select( a => a.ForeignId.Value );
 
@@ -675,8 +687,52 @@ namespace Rock.Slingshot
 
                 group.Order = groupImport.Order;
                 group.CampusId = groupImport.CampusId;
+                group.IsActive = groupImport.IsActive;
+                group.IsPublic = groupImport.IsPublic;
+                group.GroupCapacity = groupImport.Capacity;
                 group.CreatedDateTime = importedDateTime;
                 group.ModifiedDateTime = importedDateTime;
+
+                // set weekly schedule
+                TimeSpan meetingTime;
+                if ( !string.IsNullOrWhiteSpace( groupImport.MeetingDay ) && !string.IsNullOrWhiteSpace( groupImport.MeetingTime ) )
+                {
+                    TimeSpan.TryParse( groupImport.MeetingTime, out meetingTime );
+                    group.Schedule = new Schedule()
+                    {
+                        WeeklyDayOfWeek = groupImport.MeetingDay.AsType<DayOfWeek>(),
+                        WeeklyTimeOfDay = meetingTime,
+                        ForeignKey = foreignSystemKey,
+                        ForeignId = groupImport.GroupForeignId,
+                        CreatedDateTime = importedDateTime,
+                        ModifiedDateTime = importedDateTime
+                    };
+                }
+
+                if ( groupImport.AttributeValues.Any() )
+                {
+                    var attributeValues = attributeValuesLookup.GetValueOrNull( group.Id );
+
+                    foreach ( AttributeValueImport attributeValueImport in groupImport.AttributeValues )
+                    {
+                        var currentValue = attributeValues?.FirstOrDefault( a => a.AttributeId == attributeValueImport.AttributeId );
+
+                        if ( ( currentValue == null ) || ( currentValue.Value != attributeValueImport.Value ) )
+                        {
+                            if ( group.Attributes == null )
+                            {
+                                group.LoadAttributes();
+                            }
+
+                            var attributeCache = AttributeCache.Read( attributeValueImport.AttributeId );
+                            if ( group.AttributeValues[attributeCache.Key].Value != attributeValueImport.Value )
+                            {
+                                group.SetAttributeValue( attributeCache.Key, attributeValueImport.Value );
+                            }
+                        }
+                    }
+                }
+
                 groupsToInsert.Add( group );
             }
 
