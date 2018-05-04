@@ -515,12 +515,12 @@ namespace Rock.Model
                         .FirstOrDefault();
                     if ( campusId != 0 )
                     {
-                        break;
+                        return campusId;
                     }
                 }
             }
 
-            return campusId;
+            return null;
         }
 
         /// <summary>
