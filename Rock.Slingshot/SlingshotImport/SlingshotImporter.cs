@@ -360,6 +360,7 @@ namespace Rock.Slingshot
             AddPersonTitles();
             AddPersonSuffixes();
             AddPhoneTypes();
+            AddLocationTypes();
             AddAttributeCategories();
             AddPersonAttributes();
             AddFamilyAttributes();
@@ -1469,6 +1470,12 @@ namespace Rock.Slingshot
                             case SlingshotCore.Model.AddressType.Work:
                                 groupLocationTypeValueId = this.GroupLocationTypeValues[Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid()].Id;
                                 break;
+
+                            case SlingshotCore.Model.AddressType.Other:
+                                var locationTypeOther = this.GroupLocationTypeValues.Values.FirstOrDefault( t => t.Value.Equals( "Other" ) );
+                                groupLocationTypeValueId = locationTypeOther != null ? this.GroupLocationTypeValues[locationTypeOther.Guid].Id :
+                                    this.GroupLocationTypeValues[Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid()].Id;
+                                break;
                         }
 
                         if ( groupLocationTypeValueId.HasValue )
@@ -1476,7 +1483,7 @@ namespace Rock.Slingshot
                             var addressImport = new Rock.Slingshot.Model.PersonAddressImport()
                             {
                                 GroupLocationTypeValueId = groupLocationTypeValueId.Value,
-                                IsMailingLocation = slingshotPersonAddress.AddressType == SlingshotCore.Model.AddressType.Home,
+                                IsMailingLocation = slingshotPersonAddress.IsMailing,
                                 IsMappedLocation = slingshotPersonAddress.AddressType == SlingshotCore.Model.AddressType.Home,
                                 Street1 = slingshotPersonAddress.Street1,
                                 Street2 = slingshotPersonAddress.Street2,
@@ -1798,6 +1805,16 @@ namespace Rock.Slingshot
         private void AddPhoneTypes()
         {
             AddDefinedValues( this.SlingshotPersonList.SelectMany( a => a.PhoneNumbers ).Select( a => a.PhoneType ).Distinct().ToList(), this.PhoneNumberTypeValues );
+        }
+
+        /// <summary>
+        /// Adds the location types.
+        /// </summary>
+        private void AddLocationTypes()
+        {
+            // temporarily convert to Dictionary<ValueName, ValueCache> for the Add method
+            var groupLocationTypeValues = this.GroupLocationTypeValues.Values.ToDictionary( k => k.Value, p => p );
+            AddDefinedValues( this.SlingshotPersonList.SelectMany( a => a.Addresses ).Select( a => Enum.GetName( typeof( SlingshotCore.Model.AddressType ), a.AddressType ) ).Distinct().ToList(), groupLocationTypeValues );
         }
 
         /// <summary>
