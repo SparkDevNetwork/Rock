@@ -16,6 +16,8 @@
 //
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.IO;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -152,6 +154,37 @@ namespace Rock.Cache
         }
 
         /// <summary>
+        /// Method that is called by the framework immediately after being added to cache
+        /// </summary>
+        public override void PostCached()
+        {
+            base.PostCached();
+
+            // This will add a file system watcher so that when the block on the file system changes, this 
+            // object will be removed from cache. This is to force the cmsPage object to revalidate any
+            // BlockPropery attributes that may have been added or modified.
+            var physicalPath = System.Web.HttpContext.Current.Request.MapPath( Path );
+            var fileinfo = new FileInfo( physicalPath );
+            if (!fileinfo.Exists) return;
+
+            // Create a new FileSystemWatcher and set its properties.
+            var watcher = new FileSystemWatcher
+            {
+                Path = fileinfo.DirectoryName,
+                NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.DirectoryName,
+                Filter = fileinfo.Name + ".*"
+            };
+
+            // Add event handlers.
+            watcher.Changed += FileSystemWatcher_OnChanged;
+            watcher.Deleted += FileSystemWatcher_OnChanged;
+            watcher.Renamed += FileSystemWatcher_OnRenamed;
+
+            // Begin watching.
+            watcher.EnableRaisingEvents = true;
+        }
+
+        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>
@@ -163,6 +196,17 @@ namespace Rock.Cache
         }
 
         #endregion
+
+        private void FileSystemWatcher_OnRenamed(object sender, RenamedEventArgs renamedEventArgs)
+        {
+            Remove( Id );
+        }
+
+        private void FileSystemWatcher_OnChanged( object sender, FileSystemEventArgs fileSystemEventArgs )
+        {
+            Remove( Id );
+        }
+
 
     }
 }

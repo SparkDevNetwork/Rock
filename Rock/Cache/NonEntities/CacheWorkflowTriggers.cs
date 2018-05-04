@@ -31,6 +31,17 @@ namespace Rock.Cache
     {
         private const string KEY = "AllWorkflowTriggers";
 
+        #region Constructors
+
+        /// <summary>
+        /// Use Static Get() method to instantiate a new Global Attributes object
+        /// </summary>
+        private CacheWorkflowTriggers()
+        {
+        }
+
+        #endregion
+        
         /// <summary>
         /// Gets or sets the entity triggers.
         /// </summary>

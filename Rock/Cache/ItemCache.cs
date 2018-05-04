@@ -28,7 +28,8 @@ namespace Rock.Cache
     /// <typeparam name="T"></typeparam>
     [Serializable]
     [DataContract]
-    public abstract class ItemCache<T>
+    public abstract class ItemCache<T> : IItemCache
+        where T : IItemCache
     {
         private const string _AllRegion = "AllItems";
 
@@ -111,13 +112,20 @@ namespace Rock.Cache
         /// <param name="expiration">The expiration.</param>
         protected static void UpdateCacheItem( string key, T item, TimeSpan expiration )
         {
+            // Add the item to cache
             RockCacheManager<T>.Instance.AddOrUpdate( key, item, expiration );
 
+            // Do any postcache processing that this item cache type may need to do
+            item.PostCached();
+
+            // Get the dictionary of all item ids
             var allKeys = RockCacheManager<List<string>>.Instance.Cache.Get( AllKey, _AllRegion ) ?? new List<string>();
             if (allKeys.Contains (key) ) return;
 
+            // If the key is not part of the dictionary all ready
             lock (_obj)
             {
+                // Add it.
                 allKeys.Add( key, true );
                 RockCacheManager<List<string>>.Instance.AddOrUpdate( AllKey, _AllRegion, allKeys );
             }
@@ -216,6 +224,14 @@ namespace Rock.Cache
         {
             RockCacheManager<T>.Instance.Cache.Clear();
             RockCacheManager<List<string>>.Instance.Cache.Remove( AllKey, _AllRegion );
+        }
+
+
+        /// <summary>
+        /// Method that is called by the framework immediately after being added to cache
+        /// </summary>
+        public virtual void PostCached()
+        {
         }
 
         #endregion
