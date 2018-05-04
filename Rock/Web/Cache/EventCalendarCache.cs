@@ -91,6 +91,17 @@ namespace Rock.Web.Cache
         #region Public Methods
 
         /// <summary>
+        /// Gets the cache key for the selected event calendar id.
+        /// </summary>
+        /// <param name="id">The event calendar id.</param>
+        /// <returns></returns>
+        [Obsolete ("No longer used", false)]
+        public static string CacheKey( int id )
+        {
+            return $"Rock:EventCalendar:{id}";
+        }
+
+        /// <summary>
         /// Copies from model.
         /// </summary>
         /// <param name="model">The model.</param>
