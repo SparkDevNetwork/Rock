@@ -1208,6 +1208,10 @@ namespace Rock.Slingshot
                     groupImport.Name = "Unnamed Group";
                 }
 
+                groupImport.IsActive = slingshotGroup.IsActive;
+                groupImport.IsPublic = slingshotGroup.IsPublic;
+                groupImport.Capacity = slingshotGroup.Capacity;
+
                 groupImport.Order = slingshotGroup.Order;
                 if ( slingshotGroup.CampusId.HasValue )
                 {
