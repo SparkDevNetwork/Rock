@@ -98,7 +98,11 @@ namespace Rock.Web.UI.Controls
                     {
                         ids.Add( workflowType.Id.ToString() );
                         names.Add( workflowType.Name );
-                        var parentCategory = workflowType.Category;
+                        CacheCategory parentCategory = null;
+                        if ( workflowType.CategoryId.HasValue )
+                        {
+                            parentCategory = CacheCategory.Get( workflowType.CategoryId.Value );
+                        }
 
                         while ( parentCategory != null )
                         {
