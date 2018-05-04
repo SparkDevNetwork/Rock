@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using Rock.Data;
@@ -136,10 +137,8 @@ namespace Rock.Field.Types
 
                 if ( guids.Any() )
                 {
-                    using ( var rockContext = new RockContext() )
-                    {
-                        workflowTypes = new WorkflowTypeService( rockContext ).GetByGuids( guids ).ToList();
-                    }
+                    var rockContext = new RockContext();
+                    workflowTypes = new WorkflowTypeService( rockContext ).GetByGuids( guids ).AsNoTracking().ToList();
                 }
 
                 picker.SetValues( workflowTypes );
