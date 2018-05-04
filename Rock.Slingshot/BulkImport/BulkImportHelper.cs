@@ -908,15 +908,15 @@ WHERE gta.GroupTypeId IS NULL" );
                 location.ForeignKey = foreignSystemKey;
                 location.LocationTypeValueId = locationImport.LocationTypeValueId;
 
-                location.Street1 = locationImport.Street1.Truncate( 50 );
-                location.Street2 = locationImport.Street2.Truncate( 50 );
-                location.City = locationImport.City;
-                location.County = locationImport.County;
-                location.State = locationImport.State;
-                location.Country = locationImport.Country;
-                location.PostalCode = locationImport.PostalCode;
+                location.Street1 = locationImport.Street1.Left( 100 );
+                location.Street2 = locationImport.Street2.Left( 100 );
+                location.City = locationImport.City.Left( 50 );
+                location.County = locationImport.County.Left( 50 );
+                location.State = locationImport.State.Left( 50 );
+                location.Country = locationImport.Country.Left( 50 );
+                location.PostalCode = locationImport.PostalCode.Left( 50 );
 
-                location.Name = locationImport.Name.Truncate( 100 );
+                location.Name = locationImport.Name.Left( 100 );
                 location.IsActive = locationImport.IsActive;
                 location.CreatedDateTime = importDateTime;
                 location.ModifiedDateTime = importDateTime;
@@ -1218,13 +1218,13 @@ WHERE gta.GroupTypeId IS NULL" );
 
                     Location location = new Location();
 
-                    location.Street1 = address.Street1;
-                    location.Street2 = address.Street2;
-                    location.City = address.City;
-                    location.County = address.County;
-                    location.State = address.State;
-                    location.Country = address.Country;
-                    location.PostalCode = address.PostalCode;
+                    location.Street1 = address.Street1.Left( 100 );
+                    location.Street2 = address.Street2.Left( 100 );
+                    location.City = address.City.Left( 50 );
+                    location.County = address.County.Left( 50 );
+                    location.State = address.State.Left( 50 );
+                    location.Country = address.Country.Left( 50 );
+                    location.PostalCode = address.PostalCode.Left( 50 );
                     location.CreatedDateTime = locationCreatedDateTimeStart;
                     location.ModifiedDateTime = locationCreatedDateTimeStart;
                     if ( address.Latitude.HasValue && address.Longitude.HasValue )
@@ -1349,21 +1349,21 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
             person.ReviewReasonValueId = personImport.ReviewReasonValueId;
             person.IsDeceased = personImport.IsDeceased;
             person.TitleValueId = personImport.TitleValueId;
-            person.FirstName = personImport.FirstName.FixCase();
-            person.NickName = personImport.NickName.FixCase();
+            person.FirstName = personImport.FirstName.FixCase().Left( 50 );
+            person.NickName = personImport.NickName.FixCase().Left( 50 );
 
             if ( string.IsNullOrWhiteSpace( person.NickName ) )
             {
-                person.NickName = person.FirstName;
+                person.NickName = person.FirstName.Left( 50 );
             }
 
             if ( string.IsNullOrWhiteSpace( person.FirstName ) )
             {
-                person.FirstName = person.NickName;
+                person.FirstName = person.NickName.Left( 50 );
             }
 
-            person.MiddleName = personImport.MiddleName.FixCase();
-            person.LastName = personImport.LastName.FixCase();
+            person.MiddleName = personImport.MiddleName.FixCase().Left( 50 );
+            person.LastName = personImport.LastName.FixCase().Left( 50 );
             person.SuffixValueId = personImport.SuffixValueId;
             person.BirthDay = personImport.BirthDay;
             person.BirthMonth = personImport.BirthMonth;
@@ -1372,7 +1372,7 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
             person.MaritalStatusValueId = personImport.MaritalStatusValueId;
             person.AnniversaryDate = personImport.AnniversaryDate;
             person.GraduationYear = personImport.GraduationYear;
-            person.Email = personImport.Email;
+            person.Email = personImport.Email.Left( 75 );
 
             if ( !person.Email.IsValidEmail() )
             {
@@ -1380,9 +1380,9 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
             }
 
             person.IsEmailActive = personImport.IsEmailActive;
-            person.EmailNote = personImport.EmailNote;
+            person.EmailNote = personImport.EmailNote.Left( 250 );
             person.EmailPreference = (EmailPreference)personImport.EmailPreference;
-            person.InactiveReasonNote = personImport.InactiveReasonNote;
+            person.InactiveReasonNote = personImport.InactiveReasonNote.Left( 1000 );
             person.CreatedDateTime = personImport.CreatedDateTime;
             person.ModifiedDateTime = personImport.ModifiedDateTime;
             person.ForeignId = personImport.PersonForeignId;
