@@ -115,16 +115,20 @@
                        
                                 <asp:Button runat="server" ID="btnSavedPayment" ClientIDMode="Static" OnClientClick="btnSavedPayment_OnClick(); return false;" Text="Saved Account" CssClass="btn" Visible="false" />
 
-                                <asp:Button runat="server" ID="btnCreditCard" ClientIDMode="Static" OnClientClick="btnCreditCard_OnClick(); return false;" Text="Credit Card" CssClass="btn btn-primary" />
-    
                                 <asp:Button runat="server" ID="btnBankAccount" ClientIDMode="Static" OnClientClick="btnBankAccount_OnClick(); return false;" Text="Bank Account" CssClass="btn" />
-                            
+                                
+                                <asp:Button runat="server" ID="btnCreditCard" ClientIDMode="Static" OnClientClick="btnCreditCard_OnClick(); return false;" Text="Credit Card" CssClass="btn btn-primary" />
+                                
                         </div>
 
                         <%-- Saved Payment Form --%>
                         <asp:Panel ID="pnlSavedPayment" runat="server" ClientIDMode="Static" CssClass="panel-savedpayment hidden">
                             
-                            <Rock:RockDropDownList ID="ddlSavedPaymentAccounts" runat="server" ClientIDMode="Static" DataValueField="Id" DataTextField="Name" />
+                            <div class="savedpayment-wrapper">
+    
+                                <Rock:RockDropDownList ID="ddlSavedPaymentAccounts" runat="server" ClientIDMode="Static" DataValueField="Id" DataTextField="Name" />
+
+                            </div>
 
                         </asp:Panel>
                 
@@ -141,7 +145,7 @@
                                     <asp:TextBox ID="nbCreditCard" runat="server" ClientIDMode="Static" CssClass="form-control" />
 
                                 </div>
-                                <div class="creditcard-secondary-line">
+                                <div class="creditcard-expdate-cvv">
 
                                     <Rock:MonthYearPicker ID="mypExpirationDate" runat="server" Label="Exp Date" ClientIDMode="Static" MinimumYear="2018" />
 
@@ -153,14 +157,14 @@
 
                                 <Rock:RockTextBox ID="tbStreet" runat="server" Label="Billing Address" ClientIDMode="Static" CssClass="required" />
 
-                                <div class="creditcard-secondary-line">
+                                <div class="creditcard-city-state">
 
                                     <Rock:RockTextBox ID="tbCity" runat="server" Label="City" ClientIDMode="Static" CssClass="required" />
 
-                                    <Rock:StateDropDownList ID="ddlState" runat="server" Label="State" ClientIDMode="Static" UseAbbreviation="true" />
-
                                 </div>
-                                <div class="creditcard-secondary-line">
+                                <div class="creditcard-state-country-zip">
+
+                                    <Rock:StateDropDownList ID="ddlState" runat="server" Label="State" ClientIDMode="Static" UseAbbreviation="true" />
 
                                     <Rock:RockDropDownList ID="ddlCountry" runat="server" Label="Country" ClientIDMode="Static" />
 
@@ -256,6 +260,10 @@
                         We are so grateful for your commitment.
                     </asp:Label>
 
+                    <asp:Label ID="lblSaveScheduleTransactionResult" runat="server" Visible="false" />
+
+                    <asp:Label ID="lblSavePaymentResult" runat="server" Visible="false" />
+
                     <%-- Schedule Transaction Toggle --%>
                     <asp:Panel ID="pnlScheduleTransaction" runat="server" Visible="false">
 
@@ -267,8 +275,6 @@
                         </div>
 
                     </asp:Panel>
-
-                    <asp:Label ID="lblSaveScheduleTransactionResult" runat="server" Visible="false" />
                     
                     <%-- Save Payment Account Toggle --%>
                     <asp:Panel ID="pnlSavePaymentAccount" runat="server" Visible="false">
@@ -281,8 +287,6 @@
                         </div>
 
                     </asp:Panel>
-
-                    <asp:Label ID="lblSavePaymentResult" runat="server" Visible="false" />
                     
                     <%-- Schedule Transaction and Save Payment Form --%>
                     <asp:Panel ID="pnlSuccessInputForm" runat="server">

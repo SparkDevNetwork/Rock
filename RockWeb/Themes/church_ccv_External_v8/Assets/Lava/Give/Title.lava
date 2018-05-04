@@ -5,7 +5,6 @@
 <div class="container-fluid give-title" style="background-color: transparent;">
     <h1>Give</h1>
     <p>Giving text will go here</p>
-    <br />
 </div>
 <div id="desktopspacer">
 
