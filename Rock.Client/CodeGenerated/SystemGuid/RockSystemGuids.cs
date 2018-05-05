@@ -102,6 +102,7 @@ namespace Rock.Client.SystemGuid
         public const string HISTORY_EVENT_REGISTRATION = "813DF1A5-ADBD-481C-AC1D-884F0FA7AE77";
         public const string HISTORY_FINANCIAL_BATCH = "AF6A8CFF-F24F-4AA8-B126-94B6903961C0";
         public const string HISTORY_FINANCIAL_TRANSACTION = "477EE3BE-C68F-48BD-B218-FAFC99AF56B3";
+        public const string HISTORY_GROUP_CHANGES = "089EB47D-D0EF-493E-B867-DC51BCDEF319";
         public const string HISTORY_PERSON = "6F09163D-7DDD-4E1E-8D18-D7CAA04451A7";
         public const string HISTORY_PERSON_ACTIVITY = "0836845E-5ED8-4ABE-8787-3B61EF2F0FA5";
         public const string HISTORY_PERSON_ANALYTICS = "C1524D2E-3E8F-3D83-45F8-526B749D79F0";
@@ -393,6 +394,7 @@ namespace Rock.Client.SystemGuid
         public const string METRIC_CATEGORIES = "F5334A8E-B7E2-415C-A6EC-A6D8FA5341C4";
         public const string METRIC_ENTITY = "3A7FB32E-1CCD-4F79-B085-BDBADEB56CCF";
         public const string METRICS = "3AF9AD35-9F3E-4497-BFDE-60C6C1827653";
+        public const string MONTH_DAY = "8BED8DD8-8167-4052-B807-A1E72C133611";
         public const string MULTI_SELECT = "BD0D9B57-2A41-4490-89FF-F01DAB7D4904";
         public const string PAGE_REFERENCE = "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108";
         public const string PERSON = "E4EAB7B2-0B76-429B-AFE4-AD86D7428C70";
@@ -499,6 +501,7 @@ namespace Rock.Client.SystemGuid
     public class InteractionChannel
     {
         public const string COMMUNICATION = "C88A187F-0343-4E7C-AF3F-79A8989DFA65";
+        public const string SHORT_LINKS = "AEFF9B52-AE61-8EBB-4F43-37C152342076";
         public const string WIFI_PRESENCE = "23888303-4847-4C80-93E2-4C5EB8029D18";
     }
 

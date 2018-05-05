@@ -21,7 +21,6 @@ namespace Rock.Model
     /// <summary>
     /// Manually created Service methods for ContentChannelItem
     /// </summary>
-    /// <seealso cref="Rock.Data.Service{Rock.Model.ContentChannelItem}" />
     public partial class ContentChannelItemService
     {
 

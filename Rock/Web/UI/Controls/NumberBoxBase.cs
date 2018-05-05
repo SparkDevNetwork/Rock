@@ -20,6 +20,10 @@ using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI.Controls
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.Web.UI.Controls.RockTextBox" />
     public class NumberBoxBase : RockTextBox
     {
         private RangeValidator _rangeValidator;

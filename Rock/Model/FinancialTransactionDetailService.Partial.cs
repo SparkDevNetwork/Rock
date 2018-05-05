@@ -64,6 +64,7 @@ namespace Rock.Model
         /// <param name="accountIds">The account ids.</param>
         /// <param name="currencyTypeIds">The currency type ids.</param>
         /// <param name="sourceTypeIds">The source type ids.</param>
+        /// <param name="transactionTypeIds">The transaction type ids.</param>
         /// <returns></returns>
         public static DataSet GetGivingAnalyticsAccountTotals( DateTime? start, DateTime? end, List<int> accountIds, List<int> currencyTypeIds, List<int> sourceTypeIds, List<int> transactionTypeIds )
         {
@@ -79,6 +80,7 @@ namespace Rock.Model
         /// <param name="accountIds">The account ids.</param>
         /// <param name="currencyTypeIds">The currency type ids.</param>
         /// <param name="sourceTypeIds">The source type ids.</param>
+        /// <param name="transactionTypeIds">The transaction type ids.</param>
         /// <returns></returns>
         public static DataSet GetGivingAnalyticsTransactionData( DateTime? start, DateTime? end, List<int> accountIds, List<int> currencyTypeIds, List<int> sourceTypeIds, List<int> transactionTypeIds )
         {
@@ -106,6 +108,7 @@ namespace Rock.Model
         /// <param name="accountIds">The account ids.</param>
         /// <param name="currencyTypeIds">The currency type ids.</param>
         /// <param name="sourceTypeIds">The source type ids.</param>
+        /// <param name="transactionTypeIds">The transaction type ids.</param>
         /// <returns></returns>
         public static DataSet GetGivingAnalyticsPersonSummary( DateTime? start, DateTime? end, decimal? minAmount, decimal? maxAmount,
             List<int> accountIds, List<int> currencyTypeIds, List<int> sourceTypeIds, List<int> transactionTypeIds )
