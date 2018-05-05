@@ -127,7 +127,8 @@ namespace RockWeb.Blocks.Finance
                     var families = person.GetFamilies();
                     if ( families.Count() != 1 )
                     {
-                        nbError.Text = "Cannot convert person record to a business. Please adjust the family membership of the selected person so they are only a member of a single family and then try again.";
+                        nbError.Heading = "Cannot convert person record to a business";
+                        nbError.Text = "To avoid data loss move this person to one family before proceeding.";
                         return;
                     }
 
@@ -137,7 +138,8 @@ namespace RockWeb.Blocks.Finance
                     var family = families.First();
                     if ( family.Members.Count != 1 )
                     {
-                        nbError.Text = "Cannot convert person record to a business. Please remove extra family members before trying to convert this person to a business.";
+                        nbError.Heading = "Cannot convert person record to a business";
+                        nbError.Text = "To avoid data loss move this person to their own family before proceeding.";
                         return;
                     }
 
@@ -146,7 +148,8 @@ namespace RockWeb.Blocks.Finance
                     //
                     if ( person.GivingGroup == null || person.GivingGroup.Members.Count != 1 || person.GivingLeaderId != person.Id )
                     {
-                        nbError.Text = "Cannot convert person record to a business. Please fix the giving group and then try again.";
+                        nbError.Heading = "Cannot convert person record to a business";
+                        nbError.Text = "Please fix the giving group and then try again.";
                         return;
                     }
 
@@ -182,7 +185,7 @@ namespace RockWeb.Blocks.Finance
                 { "PersonId", person.Id.ToString() }
             };
             var pageRef = new Rock.Web.PageReference( Rock.SystemGuid.Page.PERSON_PROFILE_PERSON_PAGES, parameters );
-            nbSuccess.Text = string.Format( "<a href='{1}'>{0}</a> has been converted to a person.", person.FullName, pageRef.BuildUrl() );
+            nbSuccess.Text = string.Format( "The business formerly known as <a href='{1}'>{0}</a> has been converted to a person.", person.FullName, pageRef.BuildUrl() );
             
             pnlToPerson.Visible = false;
         }
@@ -267,7 +270,7 @@ namespace RockWeb.Blocks.Finance
                 { "BusinessId", person.Id.ToString() }
             };
             var pageRef = new Rock.Web.PageReference( Rock.SystemGuid.Page.BUSINESS_DETAIL, parameters );
-            nbSuccess.Text = string.Format( "<a href='{1}'>{0}</a> has been converted to a business.", person.LastName, pageRef.BuildUrl() );
+            nbSuccess.Text = string.Format( "The person formerly known as <a href='{1}'>{0}</a> has been converted to a business.", person.LastName, pageRef.BuildUrl() );
 
             pnlToBusiness.Visible = false;
         }
