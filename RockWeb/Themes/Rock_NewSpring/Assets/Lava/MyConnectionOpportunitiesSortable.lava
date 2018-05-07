@@ -1,0 +1,83 @@
+<link rel="stylesheet" href="/Styles/bootstrap-sortable.css">
+
+<div class='panel panel-block'>
+  <div class='panel-heading'>
+    <h4 class='panel-title'>My Connection Requests</h4>
+  </div>
+  {% assign midnightToday = 'Now' | Date:'M/d/yyyy' | DateAdd:1,'d' %}
+  {% if ConnectionRequests.size > 0 %}
+    <table class="table sortable">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Name</th>
+          <th>Opportunity</th>
+          <th>Last Activity</th>
+          <th>Last Activity Note</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for connectionRequest in ConnectionRequests %}
+          {% assign lastActivity = LastActivityLookup[connectionRequest.Id] %}
+          {% assign isCritical = false %}
+          {% if connectionRequest.ConnectionStatus.IsCritical and connectionRequest.ConnectionState == 0 %} 
+            {% assign isCritical = true %}
+          {% assign daysTillDue = null %}
+          {% elseif connectionRequest.ConnectionStatus.IsCritical and connectionRequest.ConnectionState == 2 %} 
+            {% assign daysTillDue = midnightToday | DateDiff:connectionRequest.FollowupDate, 'd' %}
+            {% if daysTillDue < 0 %}
+              {% assign isCritical = true %} 
+            {% endif %} 
+          {% endif %}
+
+          
+          {% if lastActivity.CreatedDateTime %}
+            {% assign idleDays = lastActivity.CreatedDateTime | DateDiff:'Now', 'd' %}
+          {% else %}
+            {% assign idleDays = connectionRequest.CreatedDateTime | DateDiff:'Now', 'd' %}
+          {% endif %}
+
+          {% assign statusIcons = '' %}
+          {% if isCritical %}
+          {% assign statusIcons = statusIcons | Append:'<span class="badge badge-critical" title="Critical">&nbsp;</span> ' %}
+          {% endif %}
+          {% assign daysUntilRequestIdle = 14 %}
+          {% if connectionRequest.ConnectionOpportunity.ConnectionType.DaysUntilRequestIdle %}
+            {% assign daysUntilRequestIdle = connectionRequest.ConnectionOpportunity.ConnectionType.DaysUntilRequestIdle %}
+          {% endif %}
+          {% if idleDays > daysUntilRequestIdle %}
+          {% assign daysAsString = daysUntilRequestIdle | Format:'#' %}
+          {% assign statusHtml = ' <span class="badge badge-danger" title="Idle (no activity in ' | Append:daysAsString | Append:' days)">&nbsp;</span>' %}
+          {% assign statusIcons = statusIcons | Append:statusHtml %}
+          {% endif %}
+          
+
+          <tr>
+            <td align="left"><div class="status-list">{{ statusIcons }}</div></td>
+            {% if LinkedPages.DetailPage %}
+              <td><a href="{{ LinkedPages.DetailPage }}?ConnectionRequestId={{ connectionRequest.Id }}&ConnectionOpportunityId={{ connectionRequest.ConnectionOpportunityId }}">{{ connectionRequest.PersonAlias.Person.LastName }}, {{ connectionRequest.PersonAlias.Person.NickName }} </a></td>
+            {% else %}
+              <td>{{ connectionRequest.PersonAlias.Person.LastName }}, {{ connectionRequest.PersonAlias.Person.NickName }} </td>
+            {% endif %}
+            <td><i class="{{ connectionRequest.ConnectionOpportunity.IconCssClass }}"></i> {{ connectionRequest.ConnectionOpportunity.Name }}</td>
+            <td>{{ lastActivity.ConnectionActivityType.Name }} (<span class='small'>{{ lastActivity.CreatedDateTime | HumanizeDateTime  }}</span>)</td>
+            <td>{{ lastActivity.Note }}</td>
+            {% if isCritical %}
+              <td><span class='label label-warning'>{{ connectionRequest.ConnectionStatus.Name }}</span></td>
+            {% else %}
+              <td><span class='label label-info'>{{ connectionRequest.ConnectionStatus.Name }}</span></td>
+            {% endif %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="panel-body">
+      <div class='alert alert-info'>There are no connection requests assigned to you.</div>
+    </div>
+  {% endif %}
+</div>
+
+<script src="/Scripts/moment.min.js"></script>
+<script src="/Scripts/bootstrap-sortable.js"></script>

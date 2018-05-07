@@ -1,0 +1,190 @@
+<%@ Master Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.RockMasterPage" %>
+
+<%@ Import Namespace="System.Web.Optimization" %>
+
+<!DOCTYPE html>
+
+<!--
+  _______       _____           _   ____         _______ _             _____ _
+ |__   __|     / ____|         | | |  _ \       |__   __| |           / ____| |
+    | | ___   | |  __  ___   __| | | |_) | ___     | |  | |__   ___  | |  __| | ___  _ __ _   _
+    | |/ _ \  | | |_ |/ _ \ / _` | |  _ < / _ \    | |  | '_ \ / _ \ | | |_ | |/ _ \| '__| | | |
+    | | (_) | | |__| | (_) | (_| | | |_) |  __/    | |  | | | |  __/ | |__| | | (_) | |  | |_| |
+    |_|\___/   \_____|\___/ \__,_| |____/ \___|    |_|  |_| |_|\___|  \_____|_|\___/|_|   \__, |
+                                                                                           __/ |
+                                                                                          |___/
+-->
+
+<script runat="server">
+
+    /// <summary>
+    /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+    /// </summary>
+    /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+    protected override void OnLoad( EventArgs e )
+    {
+        // keep code below to call base class init method
+        base.OnLoad( e );
+
+        // set the site URL
+        siteUrl.Text = String.Format( Request.Url.Authority );
+
+    }
+</script>
+
+<html class="no-js">
+<head runat="server">
+
+    <!-- Included CSS Files -->
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>"/>
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>"/>
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~/Styles/developer.css", true) %>"/>
+
+    <!-- Set the viewport width to device width for mobile -->
+    <meta name="viewport" content="width=device-width">
+    <meta name="viewport" content="user-scalable=1, width=device-width, initial-scale=1.0, maximum-scale=2.0">
+
+    <meta http-equiv="X-UA-Compatible" content="IE=10" />
+    <meta charset="utf-8">
+    <title></title>
+
+    <!-- Moved non-criticial JS code to end of document -->
+
+    <!-- jQuery -->
+    <script src="<%# ResolveRockUrl("~/Scripts/jquery-1.10.2.min.js" ) %>"></script>
+
+    <asp:ContentPlaceHolder ID="css" runat="server" />
+    <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
+
+    <!-- Icons -->
+    <link rel="shortcut icon" href="<%# ResolveRockUrl("~/Themes/NewSpring/Assets/Icons/favicon.ico", true) %>">
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="<%# ResolveRockUrl("~/Themes/NewSpring/Assets/Icons/apple.touch.large.png", true) %>">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="<%# ResolveRockUrl("~/Themes/NewSpring/Assets/Icons/apple.touch.medium.png", true) %>">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="<%# ResolveRockUrl("~/Themes/NewSpring/Assets/Icons/apple.touch.small.png", true) %>">
+    <link rel="apple-touch-icon-precomposed" href="<%# ResolveRockUrl("~/Themes/NewSpring/Assets/Icons/apple.touch.small.png", true) %>">
+</head>
+<body class="navless">
+
+    <!-- Google Tag Manager -->
+    <noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-P6XMG5" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-P6XMG5');</script>
+    <!-- End Google Tag Manager -->
+
+    <form id="form1" runat="server">
+
+        <div id="page-wrapper">
+
+            <div id="content-wrapper">
+            
+              <div class="content-panel">
+
+                <header>
+                    <!-- Brand Bar -->
+                    <nav class="navbar navbar-default navbar-static-top">
+
+                            <div class="navbar-mobile-logo">
+                                <asp:Literal ID="lLogoSvg" runat="server" EnableViewState="false" />
+                            </div>
+
+                            <div class="navbar-content">
+                                <div class="navbar-zone-login pull-right">
+                                    <Rock:Zone Name="Login" runat="server" />
+                                </div>
+                                <div class="navbar-zone-header divided">
+                                    <Rock:Zone Name="Header" runat="server" />
+                                </div>
+                            </div>
+                    </nav>
+
+                </header>
+
+                <main>
+                    <asp:ContentPlaceHolder ID="feature" runat="server"></asp:ContentPlaceHolder>
+
+                    <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
+                </main>
+
+                <footer>
+                  <div class="container-fluid">
+                    
+                    <hr />
+
+                    <div class="row">
+                        <div class="col-md-8">
+                            <Rock:Zone Name="Footer" runat="server" />
+                        </div>
+                        <div class="col-md-4">
+                        </div>
+                    </div>
+                    
+                  </div>
+                </footer>
+              </div>
+            </div>
+        </div>
+
+        <%-- controls for scriptmanager and update panel --%>
+        <asp:ScriptManager ID="sManager" runat="server" />
+        <asp:UpdateProgress ID="updateProgress" runat="server" DisplayAfter="800">
+            <ProgressTemplate>
+                <div class="updateprogress-status">
+                    <div class="spinner">
+                        <div class="rect1"></div>
+                        <div class="rect2"></div>
+                        <div class="rect3"></div>
+                        <div class="rect4"></div>
+                        <div class="rect5"></div>
+                    </div>
+                </div>
+                <div class="updateprogress-bg modal-backdrop"></div>
+            </ProgressTemplate>
+        </asp:UpdateProgress>
+    </form>
+</body>
+</html>
+
+<script type="text/javascript">
+    (function (kitID) {
+        var config = {
+            kitId: kitID
+        };
+        var d = false;
+        var tk = document.createElement('script');
+        tk.src = '//use.typekit.net/' + config.kitId + '.js';
+        tk.type = 'text/javascript';
+        tk.async = 'true';
+        tk.onload = tk.onreadystatechange = function () {
+            var rs = this.readyState;
+            if (d || rs && rs != 'complete' && rs != 'loaded') return;
+            d = true;
+            try { Typekit.load(config); } catch (e) { }
+        };
+        var s = document.getElementsByTagName('script')[0];
+        s.parentNode.insertBefore(tk, s);
+    })('oby6bqi');
+</script>
+
+<script>
+
+    // Chartbeat Analytics
+    var _sf_async_config = { uid: 36438, domain: '<asp:Literal ID="siteUrl" runat="server" />', useCanonical: true };
+    (function () {
+        function loadChartbeat() {
+            window._sf_endpt = (new Date()).getTime();
+            var e = document.createElement('script');
+            e.setAttribute('language', 'javascript');
+            e.setAttribute('type', 'text/javascript');
+            e.setAttribute('src', '//static.chartbeat.com/js/chartbeat.js');
+            document.body.appendChild(e);
+        };
+        var oldonload = window.onload;
+        window.onload = (typeof window.onload != 'function') ?
+            loadChartbeat : function () { oldonload(); loadChartbeat(); };
+    })();
+</script>
+
+<script type="text/javascript">var _sf_startpt = (new Date()).getTime()</script>
+
+<script src="<%# ResolveRockUrl("~/Scripts/jquery.jquery-dotimeout.js" ) %>"></script>
+
+<script src="<%# ResolveRockUrl("~/Scripts/modernizr.js" ) %>"></script>
