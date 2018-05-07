@@ -201,6 +201,15 @@
     <Compile Include="Migrations\201805042225214_Rollup_0504.Designer.cs">
       <DependentUpon>201805042225214_Rollup_0504.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201805072022522_GroupHistory.cs" />
+    <Compile Include="Migrations\201805072022522_GroupHistory.Designer.cs">
+      <DependentUpon>201805072022522_GroupHistory.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>RockMigrationSQL.resx</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.cs" />
     <Compile Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.Designer.cs">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
@@ -581,11 +590,6 @@
     <Compile Include="Migrations\Version 7.0\Version 1.7.0\201711271827181_V7Rollup.cs" />
     <Compile Include="Migrations\Version 7.0\Version 1.7.0\201711271827181_V7Rollup.Designer.cs">
       <DependentUpon>201711271827181_V7Rollup.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>RockMigrationSQL.resx</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.cs" />
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.Designer.cs">
@@ -2881,6 +2885,9 @@
     <EmbeddedResource Include="Migrations\201805042225214_Rollup_0504.resx">
       <DependentUpon>201805042225214_Rollup_0504.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201805072022522_GroupHistory.resx">
+      <DependentUpon>201805072022522_GroupHistory.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.resx">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
     </EmbeddedResource>
@@ -4873,6 +4880,12 @@
     </Content>
     <Content Include="Migrations\201804272301456_MergeFromV7_4_spCrm_PersonMerge.sql">
       <DependentUpon>201804272301456_MergeFromV7_4.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201805072022522_GroupHistory_spCrm_PersonMerge.sql">
+      <DependentUpon>201805072022522_GroupHistory.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201805072022522_GroupHistory_spCrm_PersonMergeRelationships.sql">
+      <DependentUpon>201805072022522_GroupHistory.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 7.0\Version 1.7.0\201707182207536_AttendanceAnalyticsQuery_NonAttendees.sql">
       <DependentUpon>201707182207536_PageShortLinks.cs</DependentUpon>

@@ -29,7 +29,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field Type used to display a dropdown list of Defined Values for a specific Defined Type
+    /// Field Type used to display a dropdown list of attributes
     /// </summary>
     public class AttributeFieldType : FieldType
     {
@@ -264,17 +264,25 @@ namespace Rock.Field.Types
                     if ( entityType != null )
                     {
                         Rock.Model.AttributeService attributeService = new Model.AttributeService( new RockContext() );
-                        var attributes = attributeService.GetByEntityTypeId( entityType.Id );
+                        IQueryable<Rock.Model.Attribute> attributeQuery;
                         if ( configurationValues.ContainsKey( QUALIFIER_COLUMN_KEY ) && configurationValues.ContainsKey( QUALIFIER_VALUE_KEY ) )
                         {
-                            attributes = attributeService.Get( entityType.Id, configurationValues[QUALIFIER_COLUMN_KEY].Value, configurationValues[QUALIFIER_VALUE_KEY].Value );
+                            attributeQuery = attributeService
+                                .GetByEntityTypeQualifier( entityType.Id, configurationValues[QUALIFIER_COLUMN_KEY].Value, configurationValues[QUALIFIER_VALUE_KEY].Value, true );
+                                
+                        }
+                        else
+                        {
+                            attributeQuery = attributeService.GetByEntityTypeId( entityType.Id, true );
                         }
 
-                        if ( attributes.Any() )
+                        List<CacheAttribute> attributeList = attributeQuery.ToCacheAttributeList();
+
+                        if ( attributeList.Any() )
                         {
-                            foreach ( var attribute in attributes.OrderBy( a => a.Name ) )
+                            foreach ( var attribute in attributeList.OrderBy( a => a.Name ) )
                             {
-                                editControl.Items.Add( new ListItem( attribute.Name, attribute.Id.ToString() ) );
+                                editControl.Items.Add( new ListItem( attribute.Name, attribute.Id.ToString(), attribute.IsActive ) );
                             }
                         }
                         return editControl;

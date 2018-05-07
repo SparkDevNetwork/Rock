@@ -178,7 +178,7 @@ namespace Rock.Model
         /// The history changes.
         /// </value>
         [NotMapped]
-        private List<string> GroupHistoryChanges { get; set; }
+        private History.HistoryChangeList GroupHistoryChanges { get; set; }
 
         #endregion
 
@@ -193,7 +193,7 @@ namespace Rock.Model
         {
             var rockContext = (RockContext)dbContext;
 
-            GroupHistoryChanges = new List<string>();
+            GroupHistoryChanges = new History.HistoryChangeList();
 
             switch ( entry.State )
             {

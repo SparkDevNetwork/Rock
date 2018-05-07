@@ -351,6 +351,33 @@ namespace Rock.Cache
         public string GroupViewLavaTemplate { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether group history should be enabled for groups of this type
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable group history]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool EnableGroupHistory { get; set; }
+
+        /// <summary>
+        /// The color used to visually distinguish groups on lists.
+        /// </summary>
+        /// <value>
+        /// The group type color.
+        /// </value>
+        [DataMember]
+        public string GroupTypeColor { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show marital status].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show marital status]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool ShowMaritalStatus { get; set; }
+
+        /// <summary>
         /// Gets or sets the roles.
         /// </summary>
         /// <value>
@@ -549,6 +576,10 @@ namespace Rock.Cache
                 .OrderBy( s => s.StartDate )
                 .ToList()
                 .ForEach( s => GroupScheduleExclusions.Add( new DateRange( s.StartDate, s.EndDate ) ) );
+
+            EnableGroupHistory = groupType.EnableGroupHistory;
+            GroupTypeColor = groupType.GroupTypeColor;
+            ShowMaritalStatus = groupType.ShowMaritalStatus;
         }
 
         /// <summary>

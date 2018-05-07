@@ -579,6 +579,7 @@
     <Compile Include="Data\IFeed.cs" />
     <Compile Include="Data\IgnoreCanDelete.cs" />
     <Compile Include="Data\IgnoreModelErrorsAttribute.cs" />
+    <Compile Include="Data\IHistoricalTracking.cs" />
     <Compile Include="Data\IHasAttributes.cs" />
     <Compile Include="Data\IHasAttributesWrapper.cs" />
     <Compile Include="Data\IHasInheritedAttributes.cs" />
@@ -775,6 +776,7 @@
     <Compile Include="Jobs\CommunicationQueueAlert.cs" />
     <Compile Include="Jobs\DatabaseMaintenance.cs" />
     <Compile Include="Jobs\IndexRockSite.cs" />
+    <Compile Include="Jobs\MigrateHistorySummaryData.cs" />
     <Compile Include="Jobs\PostV80DataMigrations.cs" />
     <Compile Include="Jobs\ProcessNcoaResults.cs">
       <SubType>ASPXCodeBehind</SubType>
@@ -785,6 +787,7 @@
     <Compile Include="Jobs\ProcessBIAnalytics.cs" />
     <Compile Include="Jobs\PbxCdrDownload.cs" />
     <Compile Include="Jobs\DataAutomation.cs" />
+    <Compile Include="Jobs\ProcessGroupHistory.cs" />
     <Compile Include="Jobs\SendCreditCardExpirationNotices.cs" />
     <Compile Include="Jobs\IndexEntities.cs" />
     <Compile Include="Jobs\SendDataViewEmail.cs" />
@@ -864,6 +867,7 @@
     <Compile Include="Model\AttributeMatrix.cs" />
     <Compile Include="Model\AttributeMatrixItem.cs" />
     <Compile Include="Model\AttributeMatrixTemplate.cs" />
+    <Compile Include="Model\AttributeValueHistorical.cs" />
     <Compile Include="Model\CodeGenerated\AnalyticsDimCampusService.cs" />
     <Compile Include="Model\CodeGenerated\AnalyticsDimFamilyCurrentService.cs" />
     <Compile Include="Model\CodeGenerated\AnalyticsDimFamilyHeadOfHouseholdService.cs" />
@@ -873,8 +877,13 @@
     <Compile Include="Model\CodeGenerated\AnalyticsSourceCampusService.cs" />
     <Compile Include="Model\CodeGenerated\AnalyticsSourceFamilyHistoricalService.cs" />
     <Compile Include="Model\AttributeMatrixTemplateService.partial.cs" />
+    <Compile Include="Model\CodeGenerated\AttributeValueHistoricalService.cs" />
     <Compile Include="Model\CodeGenerated\CommunicationAttachmentService.cs" />
     <Compile Include="Model\CodeGenerated\CommunicationTemplateAttachmentService.cs" />
+    <Compile Include="Model\CodeGenerated\GroupHistoricalService.cs" />
+    <Compile Include="Model\CodeGenerated\GroupLocationHistoricalScheduleService.cs" />
+    <Compile Include="Model\CodeGenerated\GroupLocationHistoricalService.cs" />
+    <Compile Include="Model\CodeGenerated\GroupMemberHistoricalService.cs" />
     <Compile Include="Model\CodeGenerated\ContentChannelItemSlugService.cs" />
     <Compile Include="Model\CodeGenerated\GroupSyncService.cs" />
     <Compile Include="Model\CodeGenerated\LavaShortcodeService.cs" />
@@ -901,7 +910,12 @@
     <Compile Include="Model\ContentChannelItemService.Partial.cs" />
     <Compile Include="Model\FinancialAccountService.Partial.cs" />
     <Compile Include="Data\IAnalyticsAddresses.cs" />
+    <Compile Include="Model\GroupLocationHistoricalSchedule.cs" />
+    <Compile Include="Model\GroupLocationHistorical.cs" />
+    <Compile Include="Model\GroupMemberHistorical.cs" />
+    <Compile Include="Model\GroupHistorical.cs" />
     <Compile Include="Model\GroupSync.cs" />
+    <Compile Include="Model\GroupMemberHistoricalService.Partial.cs" />
     <Compile Include="Model\InteractionComponent.Partial.cs" />
     <Compile Include="Model\InteractionService.Partial.cs" />
     <Compile Include="Model\MetaFirstNameGenderLookup.cs" />

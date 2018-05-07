@@ -221,7 +221,7 @@ namespace RockWeb.Blocks.Administration
             rlbNoAttendanceInGroupType.DataBind();
 
             var personAttributes = new AttributeService( _rockContext )
-                .GetByEntityTypeId( new Person().TypeId )
+                .GetByEntityTypeId( new Person().TypeId, false )
                 .OrderBy( t => t.Order )
                 .ThenBy( t => t.Name )
                 .Select( t => new { value = t.Id, text = t.Name } )

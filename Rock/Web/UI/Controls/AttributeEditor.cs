@@ -124,6 +124,16 @@ namespace Rock.Web.UI.Controls
         protected RockCheckBox _cbIsAnalyticHistory;
 
         /// <summary>
+        /// The IsActive checkbox
+        /// </summary>
+        protected RockCheckBox _cbIsActive;
+
+        /// <summary>
+        /// The Enable History checkbox
+        /// </summary>
+        protected RockCheckBox _cbEnableHistory;
+
+        /// <summary>
         /// Field type control (readonly)
         /// </summary>
         protected RockLiteral _lFieldType;
@@ -284,7 +294,6 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 ViewState["IsSystem"] = value;
                 IsKeyEditable = !value;
-                IsFieldTypeEditable = !value;
             }
         }
 
@@ -798,6 +807,46 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [enable history].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable history]; otherwise, <c>false</c>.
+        /// </value>
+        public bool EnableHistory
+        {
+            get
+            {
+                EnsureChildControls();
+                return _cbEnableHistory.Checked;
+            }
+            set
+            {
+                EnsureChildControls();
+                _cbEnableHistory.Checked = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is active.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsActive
+        {
+            get
+            {
+                EnsureChildControls();
+                return _cbIsActive.Checked;
+            }
+            set
+            {
+                EnsureChildControls();
+                _cbIsActive.Checked = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the field type id.
         /// </summary>
         /// <value>
@@ -1001,6 +1050,13 @@ namespace Rock.Web.UI.Controls
                 _tbName.Required = true;
                 Controls.Add( _tbName );
 
+                _cbIsActive = new RockCheckBox();
+                _cbIsActive.ID = "_cbIsActive";
+                _cbIsActive.Label = "Active";
+                _cbIsActive.Text = "Yes";
+                _cbIsActive.Help = "Set to Inactive to exclude this attribute from Edit and Display UIs";
+                Controls.Add( _cbIsActive );
+
                 _tbDescription = new RockTextBox();
                 _tbDescription.Label = "Description";
                 _tbDescription.ID = "tbDescription";
@@ -1087,6 +1143,13 @@ namespace Rock.Web.UI.Controls
                 _cbIsAnalyticHistory.Help = "If selected, changes to the value of this attribute will cause Analytics to create a history record. Note that this requires that 'Analytics Enabled' is also enabled.";
                 _cbIsAnalyticHistory.Visible = false;  // Default is to not show this option
                 Controls.Add( _cbIsAnalyticHistory );
+
+                _cbEnableHistory = new RockCheckBox();
+                _cbEnableHistory.ID = "_cbEnableHistory";
+                _cbEnableHistory.Label = "Enable History";
+                _cbEnableHistory.Text = "Yes";
+                _cbEnableHistory.Help = "If selected, changes to the value of this attribute will be stored in attribute value history";
+                Controls.Add( _cbEnableHistory );
 
                 _lFieldType = new RockLiteral();
                 _lFieldType.Label = "Field Type";
@@ -1248,7 +1311,7 @@ namespace Rock.Web.UI.Controls
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
+            _cbIsActive.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.RenderEndTag();  // row
@@ -1287,6 +1350,7 @@ namespace Rock.Web.UI.Controls
             _cbIsIndexingEnabled.RenderControl( writer );
             _cbIsAnalytic.RenderControl( writer );
             _cbIsAnalyticHistory.RenderControl( writer );
+            _cbEnableHistory.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-6" );
@@ -1422,6 +1486,11 @@ namespace Rock.Web.UI.Controls
                 this.IsIndexingEnabled = attribute.IsIndexEnabled;
                 this.IsAnalytic = attribute.IsAnalytic;
                 this.IsAnalyticHistory = attribute.IsAnalyticHistory;
+                this.IsActive = attribute.IsActive;
+                this.EnableHistory = attribute.EnableHistory;
+
+                // only allow the fieldtype to be set if this a new attribute
+                this.IsFieldTypeEditable = attribute.Id == 0 || attribute.FieldTypeId == 0;
 
                 var qualifiers = new Dictionary<string, ConfigurationValue>();
                 if ( attribute.AttributeQualifiers != null )
@@ -1475,6 +1544,8 @@ namespace Rock.Web.UI.Controls
                 attribute.IsIndexEnabled = this.IsIndexingEnabled;
                 attribute.IsAnalytic = this.IsAnalytic;
                 attribute.IsAnalyticHistory = this.IsAnalyticHistory;
+                attribute.IsActive = this.IsActive;
+                attribute.EnableHistory = this.EnableHistory;
 
                 attribute.Categories.Clear();
                 new CategoryService( new RockContext() ).Queryable().Where( c => this.CategoryIds.Contains( c.Id ) ).ToList().ForEach( c =>
