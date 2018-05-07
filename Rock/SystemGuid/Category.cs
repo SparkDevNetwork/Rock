@@ -97,6 +97,11 @@ namespace Rock.SystemGuid
         public const string HISTORY_PERSON_ANALYTICS = "C1524D2E-3E8F-3D83-45F8-526B749D79F0";
 
         /// <summary>
+        /// Parent group for Group History
+        /// </summary>
+        public const string HISTORY_GROUP = "180C5767-8769-4C51-865F-FEE29AEF80A0";
+
+        /// <summary>
         /// History of group changes
         /// </summary>
         public const string HISTORY_GROUP_CHANGES = "089EB47D-D0EF-493E-B867-DC51BCDEF319";

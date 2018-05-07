@@ -113,8 +113,13 @@
     <Compile Include="ApiControllerBase.cs" />
     <Compile Include="Controllers\CodeGenerated\AnalyticsDimCampusController.cs" />
     <Compile Include="Controllers\CodeGenerated\AnalyticsSourceCampusController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AttributeValueHistoricalsController.cs" />
     <Compile Include="Controllers\CodeGenerated\CommunicationTemplateAttachmentsController.cs" />
     <Compile Include="Controllers\CodeGenerated\ContentChannelItemSlugsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\GroupHistoricalsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\GroupLocationHistoricalSchedulesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\GroupLocationHistoricalsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\GroupMemberHistoricalsController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupSyncsController.cs" />
     <Compile Include="Controllers\CodeGenerated\LavaShortcodesController.cs" />
     <Compile Include="Controllers\CodeGenerated\MetaFirstNameGenderLookupsController.cs" />
@@ -129,6 +134,7 @@
     <Compile Include="Controllers\CodeGenerated\PageShortLinksController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonTokensController.cs" />
     <Compile Include="Controllers\ContentChannelItemSlugsController.Partial.cs" />
+    <Compile Include="Controllers\GroupMemberHistoricalsController.Partial.cs" />
     <Compile Include="Controllers\PbxController.cs" />
     <Compile Include="Controllers\PresenceController.cs" />
     <Compile Include="Controllers\PersonalDevicesController.Partial.cs" />

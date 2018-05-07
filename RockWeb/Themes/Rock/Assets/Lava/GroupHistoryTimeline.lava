@@ -1,0 +1,300 @@
+﻿<style>
+.cd-timeline {
+  background-color:var(--panel-bg);
+  overflow: hidden;
+  margin: 2em auto;
+}
+
+.timeline-container {
+  position: relative;
+  width: 90%;
+  max-width: 1170px;
+  margin: 0 auto;
+  padding: 2em 0;
+}
+
+.timeline-container::before {
+  /* this is the vertical line */
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 17px;
+  height: 100%;
+  width: 1px;
+  background: var(--panel-heading-bg);
+}
+
+@media only screen and (min-width: 1170px) {
+  .cd-timeline {
+    margin-top: 3em;
+    margin-bottom: 3em;
+  }
+  .timeline-container::before {
+    left: 50%;
+    margin-left: -1px;
+  }
+}
+
+.timeline-block {
+  position: relative;
+  margin: 2em 0;
+}
+
+.timeline-block:after {
+  /* clearfix */
+  content: "";
+  display: table;
+  clear: both;
+}
+
+.timeline-block:first-child {
+  margin-top: 0;
+}
+
+.timeline-block:last-child {
+  margin-bottom: 0;
+}
+
+@media only screen and (min-width: 1170px) {
+  .timeline-block {
+    margin: 4em 0;
+  }
+}
+
+.timeline-icon {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  color: var(--panel-heading-bg);
+  border: 1px solid var(--panel-heading-bg);
+  box-shadow: 0 -4px 0 1px var(--panel-bg);
+  background: var(--panel-bg);
+  overflow:hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media only screen and (min-width: 1170px) {
+  .timeline-icon {
+    left: 50%;
+    margin-left: -17.5px;
+    /* Force Hardware Acceleration */
+    -webkit-transform: translateZ(0);
+            transform: translateZ(0);
+  }
+}
+
+.timeline-content {
+  position: relative;
+  margin-left: 47px;
+  color:rgb(103, 126, 140);
+  background: white;
+}
+
+.timeline-content:after {
+  /* clearfix */
+  content: "";
+  display: table;
+  clear: both;
+}
+
+.timeline-title {
+  color: rgb(44, 64, 76);
+  font-size:20px;
+  display:block;
+  line-height:1;
+}
+
+.timeline-date {
+  color: rgb(103, 126, 140);
+  font-size: 12px;
+  margin: 1px 0 0;
+  display: block;
+}
+
+.timeline-details {
+  margin: 10px 0 0;
+}
+
+/*.timeline-content::before {*/
+  /* triangle next to content block */
+/*  content: '';*/
+/*  position: absolute;*/
+/*  top: 10px;*/
+/*  right: 100%;*/
+/*  height: 0;*/
+/*  width: 0;*/
+/*  border: 7px solid transparent;*/
+/*  border-right: 7px solid white;*/
+/*}*/
+
+@media only screen and (min-width: 1170px) {
+  .timeline-content {
+    margin-left: 0;
+    padding: 0;
+    width: 47%;
+    /* Force Hardware Acceleration */
+    -webkit-transform: translateZ(0);
+            transform: translateZ(0);
+  }
+  /*.timeline-content::before {*/
+  /*  top: 10px;*/
+  /*  left: 100%;*/
+  /*  border-color: transparent;*/
+  /*  border-left-color: white;*/
+  /*}*/
+
+  .timeline-block:nth-child(even) .timeline-content {
+    float: right;
+  }
+
+  .timeline-block:nth-child(odd) .timeline-title,
+  .timeline-block:nth-child(odd) .timeline-date {
+    text-align: right;
+  }
+  .timeline-block:nth-child(even) .timeline-content::before {
+    top: 10px;
+    left: auto;
+    right: 100%;
+    border-color: transparent;
+    border-right-color: white;
+  }
+}
+
+</style>
+
+{% if PrimaryEntity %}
+<h1>History for {{ PrimaryEntity | ToString }}</h1>
+{% endif %}
+
+<section class="cd-timeline">
+    <div class="timeline-container">
+    {% for historySummaryByDateByVerb in HistorySummaryByDateByVerbList %}
+        <!-- Summary Date: {{ historySummaryByDateByVerb.DateTime | Date:'M/d/yyyy' }} -->
+        {% for historySummaryListByEntityTypeAndVerb in historySummaryByDateByVerb.HistorySummaryListByEntityTypeAndVerbList %}
+        {% assign byVerbPluralizeCount = historySummaryListByEntityTypeAndVerb.HistorySummaryList | Size %}
+        {% assign showSummaryEntity = false %}
+        {% assign showHistoryDetails = false %}
+        {% assign historySkipOffset = 0 %}
+        {% assign showSummaryValueName = false %}
+        <div class="timeline-block">
+            <div class="timeline-icon">
+                <i class="fa fa-calendar"></i>
+            </div> <!-- timeline-icon -->
+
+            <div class="timeline-content">
+                <span class="timeline-title">
+                {% case historySummaryListByEntityTypeAndVerb.Verb %}
+                        {% when 'MODIFY' %}
+                            {% if PrimaryEntityTypeName == historySummaryListByEntityTypeAndVerb.EntityTypeName %}
+                                 Updated
+                            {% else %}
+                                {{ historySummaryListByEntityTypeAndVerb.EntityTypeName | PluralizeForQuantity:byVerbPluralizeCount }} Updated
+                            {% endif %}
+                            {% assign showHistoryDetails = true %}
+                        {% when 'ADDEDTOGROUP' %}
+                            {% if PrimaryEntityTypeName == 'Group Member' %}
+                                Added to Group
+                                {% assign showHistoryDetails = true %}
+                                {% assign historySkipOffset = 1 %}
+                            {% else %}
+                                Added {% if byVerbPluralizeCount > 1 %}{{ byVerbPluralizeCount }}{% endif %} {{ historySummaryListByEntityTypeAndVerb.EntityTypeName | PluralizeForQuantity:byVerbPluralizeCount }} 
+                                {% assign showSummaryEntity = true %}
+                            {% endif %}
+                        {% when 'REMOVEDFROMGROUP' %}
+                            {% if PrimaryEntityTypeName == 'Group Member' %}
+                                Removed from Group
+                                {% assign showHistoryDetails = true %}
+                                {% assign historySkipOffset = 1 %}
+                            {% else %}
+                                Removed {% if byVerbPluralizeCount > 1 %}{{ byVerbPluralizeCount }}{% endif %} {{ historySummaryListByEntityTypeAndVerb.EntityTypeName | PluralizeForQuantity:byVerbPluralizeCount }} 
+                                {% assign showSummaryEntity = true %}
+                            {% endif %}
+                        {% when 'ADD' %}
+                            {{  historySummaryListByEntityTypeAndVerb.EntityTypeName }} Created
+                            {% assign showHistoryDetails = true %}
+                            {% comment %} When doing an 'ADD' summary, first history record is the same as the summary, so we can skip it {% endcomment %}
+                            {% assign historySkipOffset = 1 %}
+                        {% when 'DELETE' %}
+                            {{  historySummaryListByEntityTypeAndVerb.EntityTypeName }} Deleted
+                        {% else %}
+                            {% comment %} Some Verb that hasn't been implemented in this template yet, or some unexpected Verb {% endcomment %}
+                            {{ historySummaryListByEntityTypeAndVerb.Verb }}
+                    {% endcase %}
+                </span>
+                <span class="timeline-date">{{ historySummaryListByEntityTypeAndVerb.FirstHistoryDateTime | Date:'MMM d, yyyy h:mmtt' }}</span>
+        <p class="timeline-details">
+        
+        {% for historySummary in historySummaryListByEntityTypeAndVerb.HistorySummaryList %}
+       
+            <div class='historysummary'>
+                {% if showSummaryEntity %}
+                    <span class='historysummary-entity'>{{ historySummary.Entity | Default:historySummary.ValueName | ToString }}</span>
+                {% endif %}
+                {% if showSummaryValueName %}
+                    <span class='historysummary-valuename'>{{ historySummary.ValueName | ToString }}</span>
+                {% endif %}
+            </div>
+            {% if showHistoryDetails %}
+            <div class='historydetails'>
+                <ul>
+                {% assign historyVerb = "" %}
+                {% assign CreatedByPersonId = "" %}
+                {%- if historySummary.Entity.Guid != PrimaryEntity.Guid -%}
+                    {% assign timelineOtherEntity = historySummary.Entity | ToString %}
+                    <p><span class='history-otherentity'>{{ timelineOtherEntity }}...</span></p>
+                {%- endif -%} 
+                
+                {% for history in historySummary.HistoryList offset:historySkipOffset  %}
+                    {%- capture timelineEvent -%}
+                        {% comment %} Build summary text for each history detail {% endcomment %}
+                        {% if forloop.first or previousCreatedByPersonId != history.CreatedByPersonId %}
+                        <a href="/person/{{ history.CreatedByPersonId }}">{{ history.CreatedByPersonName }}</a>
+                        {% endif %}
+
+                        {% if forloop.first or historyVerb != history.Verb %}
+                            {% case history.Verb %}
+                                {% when 'MODIFY' %}
+                                    {% if history.OldValue %}
+                                        <span class='history-verb'> changed the {{ history.EntityType.FriendlyName | Downcase }}</span>
+                                    {% else %}
+                                        <span class='history-verb'> set the</span>
+                                    {% endif %}
+                                {% when 'ADD' %}
+                                    <span class='history-verb'> added</span>
+                                {% when 'DELETE' %}
+                                    <span class='history-verb'> deleted</span>
+                                {% else %}
+                                {% comment %} Some unexpected Verb {% endcomment %}
+                            {% endcase %}
+                        {% endif %}
+                        {%- assign historyVerb = history.Verb -%}
+
+                            <span class='history-valuename'>{{ history.ValueName | Downcase }}</span>
+                            {%- if history.NewValue -%}
+                                <span class='history-oldvalue'> to <i>{{ history.NewValue }}</i></span>{%- endif -%}{%- unless forloop.last -%}{%- if forloop.rindex != 2 -%},{%- else %} and{%- endif -%}{%- else -%}.{%- endunless -%}
+
+                    {% assign previousCreatedByPersonId = history.CreatedByPersonId %}
+                    {%- endcapture -%}
+                    {{ timelineEvent }}
+                {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        {% endfor %}
+        
+        </p>
+                
+            </div> <!-- timeline-content -->
+        </div> <!-- timeline-block -->
+        {% endfor %}
+    {% endfor %}
+
+    </div>
+</section> <!-- cd-timeline -->
+
+

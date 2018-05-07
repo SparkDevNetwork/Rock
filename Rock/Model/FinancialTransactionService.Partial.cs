@@ -218,8 +218,8 @@ namespace Rock.Model
                         d.EntityTypeId.Value == registrationEntityType.Id &&
                         d.EntityId.HasValue ) )
                 {
-                    var registrationChanges = new List<string>();
-                    registrationChanges.Add( string.Format( "Processed refund for {0}.", transactionDetail.Amount.FormatAsCurrency() ) );
+                    var registrationChanges = new History.HistoryChangeList();
+                    registrationChanges.AddChange( History.HistoryVerb.Process, History.HistoryChangeType.Record, $"{transactionDetail.Amount.FormatAsCurrency()} Refund" );
                     HistoryService.SaveChanges(
                         rockContext,
                         typeof( Registration ),

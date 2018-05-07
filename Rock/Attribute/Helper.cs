@@ -139,7 +139,7 @@ namespace Rock.Attribute
                     // if the entity is a block that implements IDynamicAttributesBlock, don't delete the attribute
                     if ( !dynamicAttributesBlock )
                     {
-                        foreach ( var a in attributeService.Get( entityTypeId, entityQualifierColumn, entityQualifierValue ).ToList() )
+                        foreach ( var a in attributeService.GetByEntityTypeQualifier( entityTypeId, entityQualifierColumn, entityQualifierValue, true ).ToList() )
                         {
                             if ( !existingKeys.Contains( a.Key ) )
                             {
@@ -712,7 +712,7 @@ namespace Rock.Attribute
         {
             if ( entity != null )
             {
-                var attributes = entity.Attributes.Select( a => a.Value );
+                var attributes = entity.Attributes.Select( a => a.Value ).Where( a => a.IsActive );
                 if ( !supressOrdering )
                 {
                     attributes = attributes.OrderBy(t => t.EntityTypeQualifierValue).ThenBy( t => t.Order ).ThenBy( t => t.Name );
@@ -1452,11 +1452,12 @@ namespace Rock.Attribute
             {
                 foreach ( var attributeCategory in GetAttributeCategories( item, false, false, supressOrdering ) )
                 {
-                    if ( attributeCategory.Attributes.Where( a => !exclude.Contains( a.Name ) && !exclude.Contains( a.Key ) ).Select( a => a.Key ).Count() > 0 )
+                    var attributeCategoryCacheAttributes = attributeCategory.Attributes.Select( a => CacheAttribute.Get( a.Id ) ).ToList();
+                    if ( attributeCategoryCacheAttributes.Where( a => a.IsActive ).Where( a => !exclude.Contains( a.Name ) && !exclude.Contains( a.Key ) ).Select( a => a.Key ).Count() > 0 )
                     {
                         AddEditControls(
                             attributeCategory.Category != null ? attributeCategory.Category.Name : string.Empty,
-                            attributeCategory.Attributes.Select( a => a.Key ).ToList(),
+                            attributeCategoryCacheAttributes.Where( a => a.IsActive ).Select( a => a.Key ).ToList(),
                             item, parentControl, validationGroup, setValue, exclude, numberOfColumns );
                     }
                 }
@@ -1479,11 +1480,11 @@ namespace Rock.Attribute
             {
                 foreach ( var attributeCategory in GetAttributeCategories( item, false, false, supressOrdering ) )
                 {
-                    if ( attributeCategory.Attributes.Where( a => !exclude.Contains( a.Name ) && !exclude.Contains( a.Key ) ).Select( a => a.Key ).Count() > 0 )
+                    if ( attributeCategory.Attributes.Where( a => a.IsActive ).Where( a => !exclude.Contains( a.Name ) && !exclude.Contains( a.Key ) ).Select( a => a.Key ).Count() > 0 )
                     {
                         AddEditControls(
                             attributeCategory.Category != null ? attributeCategory.Category.Name : string.Empty,
-                            attributeCategory.Attributes.Select( a => a.Key ).ToList(),
+                            attributeCategory.Attributes.Where( a => a.IsActive ).Select( a => a.Key ).ToList(),
                             item, parentControl, validationGroup, setValue, exclude, numberOfColumns );
                     }
                 }
@@ -1665,7 +1666,7 @@ namespace Rock.Attribute
             {
                 var attribute = item.Attributes[key];
 
-                if ( !exclude.Contains( attribute.Name ) && !exclude.Contains( attribute.Key ) )
+                if ( attribute.IsActive && !exclude.Contains( attribute.Name ) && !exclude.Contains( attribute.Key ) )
                 {
                     // Add the control for editing the attribute value
 
@@ -1756,7 +1757,7 @@ namespace Rock.Attribute
                 HtmlGenericControl dl = new HtmlGenericControl( "dl" );
                 parentControl.Controls.Add( dl );
 
-                foreach ( var attribute in attributeCategory.Attributes )
+                foreach ( var attribute in attributeCategory.Attributes.Where( a => CacheAttribute.Get( a.Id ).IsActive ) )
                 {
                     if ( exclude == null || ( !exclude.Contains( attribute.Name ) && !exclude.Contains( attribute.Key ) ) )
                     {
@@ -1816,7 +1817,7 @@ namespace Rock.Attribute
                 HtmlGenericControl dl = new HtmlGenericControl( "dl" );
                 parentControl.Controls.Add( dl );
 
-                foreach ( var attribute in attributeCategory.Attributes )
+                foreach ( var attribute in attributeCategory.Attributes.Where( a => CacheAttribute.Get( a.Id ).IsActive ) )
                 {
                     if ( exclude == null || ( !exclude.Contains( attribute.Name ) && !exclude.Contains( attribute.Key ) ) )
                     {

@@ -468,11 +468,11 @@ namespace RockWeb.Blocks.Finance
                                 transaction.TransactionDateTime.Value,
                                 financialGateway.GetBatchTimeOffset() );
 
-                            var batchChanges = new List<string>();
+                            var batchChanges = new History.HistoryChangeList();
 
                             if ( batch.Id == 0 )
                             {
-                                batchChanges.Add( "Generated the batch" );
+                                batchChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Batch" );
                                 History.EvaluateChange( batchChanges, "Batch Name", string.Empty, batch.Name );
                                 History.EvaluateChange( batchChanges, "Status", null, batch.Status );
                                 History.EvaluateChange( batchChanges, "Start Date/Time", null, batch.BatchStartDateTime );

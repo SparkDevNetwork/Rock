@@ -686,7 +686,7 @@ Response XML ({0}):
                 // Read the attribute
                 var attributeService = new AttributeService( rockContext );
                 var attribute = attributeService
-                    .Get( workflow.TypeId, "WorkflowTypeId", workflow.WorkflowTypeId.ToString() )
+                    .GetByEntityTypeQualifier( workflow.TypeId, "WorkflowTypeId", workflow.WorkflowTypeId.ToString(), true )
                     .Where( a => a.Key == key )
                     .FirstOrDefault();
 

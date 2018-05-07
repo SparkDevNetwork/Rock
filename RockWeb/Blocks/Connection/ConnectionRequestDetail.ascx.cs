@@ -2254,12 +2254,8 @@ namespace RockWeb.Blocks.Connection
                     SearchAttributes = new List<CacheAttribute>();
 
                     int entityTypeId = new ConnectionOpportunity().TypeId;
-                    foreach ( var attributeModel in new AttributeService( rockContext ).Queryable()
-                        .Where( a =>
-                            a.EntityTypeId == entityTypeId &&
-                            a.EntityTypeQualifierColumn.Equals( "ConnectionTypeId", StringComparison.OrdinalIgnoreCase ) &&
-                            a.EntityTypeQualifierValue.Equals( connectionRequest.ConnectionOpportunity.ConnectionTypeId.ToString() ) &&
-                            a.AllowSearch )
+                    foreach ( var attributeModel in new AttributeService( rockContext ).GetByEntityTypeQualifier( entityTypeId, "ConnectionTypeId", connectionRequest.ConnectionOpportunity.ConnectionTypeId.ToString(), false )
+                        .Where( a => a.AllowSearch )
                         .OrderBy( a => a.Order )
                         .ThenBy( a => a.Name ) )
                     {

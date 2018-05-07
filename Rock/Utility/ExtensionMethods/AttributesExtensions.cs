@@ -16,6 +16,8 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
+using System.Linq;
 using Rock.Data;
 using Rock.Model;
 using Rock.Cache;
@@ -190,6 +192,16 @@ namespace Rock
             }
 
             return authorizedAttributes;
+        }
+
+        /// <summary>
+        /// Selects just the Id from the Attribute Query and reads the Ids into a list of CacheAttribute
+        /// </summary>
+        /// <param name="attributeQuery">The attribute query.</param>
+        /// <returns></returns>
+        public static List<CacheAttribute> ToCacheAttributeList( this IQueryable<Rock.Model.Attribute> attributeQuery )
+        {
+            return attributeQuery.AsNoTracking().Select( a => a.Id ).ToList().Select( a => CacheAttribute.Get( a ) ).ToList().Where( a => a != null ).ToList();
         }
 
         #endregion IHasAttributes extensions

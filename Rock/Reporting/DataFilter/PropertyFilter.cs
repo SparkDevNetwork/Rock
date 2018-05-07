@@ -216,8 +216,15 @@ namespace Rock.Reporting.DataFilter
                         // Workflows can contain tons of Qualified Attributes, so let the WorkflowAttributeFilter take care of those
                         includeField = false;
                     }
-                    
+
                     var attribute = CacheAttribute.Get( entityField.AttributeGuid.Value );
+
+                    // Don't include the attribute if it isn't active
+                    if ( attribute.IsActive == false )
+                    {
+                        includeField = false;
+                    }
+                    
                     if ( includeField && attribute != null && rockBlock != null )
                     {
                         // only show the Attribute field in the drop down if they have VIEW Auth to it

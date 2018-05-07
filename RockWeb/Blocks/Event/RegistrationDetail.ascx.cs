@@ -239,8 +239,8 @@ namespace RockWeb.Blocks.Event
                         return;
                     }
 
-                    var changes = new List<string>();
-                    changes.Add( "Deleted registration" );
+                    var changes = new History.HistoryChangeList();
+                    changes.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Registration" );
 
                     rockContext.WrapTransaction( () =>
                     {
@@ -290,7 +290,7 @@ namespace RockWeb.Blocks.Event
                 var registrationService = new RegistrationService( rockContext );
 
                 bool newRegistration = false;
-                var changes = new List<string>();
+                var changes = new History.HistoryChangeList();
 
                 if ( RegistrationId.Value != 0 )
                 {
@@ -302,7 +302,7 @@ namespace RockWeb.Blocks.Event
                     registration = new Registration { RegistrationInstanceId = RegistrationInstanceId ?? 0 };
                     registrationService.Add( registration );
                     newRegistration = true;
-                    changes.Add( "Created Registration" );
+                    changes.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Registration" );
                 }
 
                 if ( registration != null && RegistrationInstanceId > 0 )
@@ -723,8 +723,8 @@ namespace RockWeb.Blocks.Event
                 confirmation.ThemeRoot = themeRoot;
                 Rock.Transactions.RockQueue.TransactionQueue.Enqueue( confirmation );
 
-                var changes = new List<string>();
-                changes.Add( "Resent Confirmation" );
+                var changes = new History.HistoryChangeList();
+                changes.AddChange( History.HistoryVerb.Sent, History.HistoryChangeType.Record, "Confirmation").SetRelatedData( "Resent", null, null );
                 using ( var rockContext = new RockContext() )
                 {
                     HistoryService.SaveChanges(
@@ -1018,7 +1018,7 @@ namespace RockWeb.Blocks.Event
                                 group.GroupType.DefaultGroupRoleId;
                             if ( groupRoleId.HasValue )
                             {
-                                var registrantChanges = new List<string>();
+                                var registrantChanges = new History.HistoryChangeList();
 
                                 var groupMemberService = new GroupMemberService( rockContext );
                                 var groupMember = groupMemberService
@@ -1039,11 +1039,11 @@ namespace RockWeb.Blocks.Event
 
                                     rockContext.SaveChanges();
 
-                                    registrantChanges.Add( string.Format( "Registrant added to {0} group", group.Name ) );
+                                    registrantChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, string.Format( "Registrant to {0} group", group.Name ) );
                                 }
                                 else
                                 {
-                                    registrantChanges.Add( string.Format( "Registrant group member reference updated to existing person in {0} group", group.Name ) );
+                                    registrantChanges.AddChange( History.HistoryVerb.Modify, History.HistoryChangeType.Record, string.Format( "Registrant to existing person in {0} group", group.Name ) );
                                 }
 
                                 registrant.GroupMemberId = groupMember.Id;
@@ -1180,8 +1180,8 @@ namespace RockWeb.Blocks.Event
                             return;
                         }
 
-                        var changes = new List<string>();
-                        changes.Add( string.Format( "Deleted Registrant: {0}", registrant.PersonAlias.Person.FullName ) );
+                        var changes = new History.HistoryChangeList();
+                        changes.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Registrant" ).SetOldValue( registrant.PersonAlias.Person.FullName );
 
                         rockContext.WrapTransaction( () =>
                         {
@@ -1730,7 +1730,7 @@ namespace RockWeb.Blocks.Event
         {
             FinancialTransaction transaction = null;
 
-            var registrationChanges = new List<string>();
+            var registrationChanges = new History.HistoryChangeList();
 
             if ( submitToGateway )
             {
@@ -1814,7 +1814,7 @@ namespace RockWeb.Blocks.Event
             return true;
         }
 
-        private FinancialTransaction ProcessTransaction( GatewayComponent gateway, RockContext rockContext, PaymentInfo paymentInfo, decimal amount, List<string> registrationChanges, out string errorMessage )
+        private FinancialTransaction ProcessTransaction( GatewayComponent gateway, RockContext rockContext, PaymentInfo paymentInfo, decimal amount, History.HistoryChangeList registrationChanges, out string errorMessage )
         {
             var transaction = gateway.Charge( RegistrationTemplateState.FinancialGateway, paymentInfo, out errorMessage );
             if ( transaction != null )
@@ -1826,13 +1826,13 @@ namespace RockWeb.Blocks.Event
                 }
                 transaction.FinancialPaymentDetail.SetFromPaymentInfo( paymentInfo, gateway, rockContext );
 
-                registrationChanges.Add( string.Format( "Processed payment of {0}.", amount.FormatAsCurrency() ) );
+                registrationChanges.AddChange(History.HistoryVerb.Process, History.HistoryChangeType.Record, string.Format( "Payment of {0}.", amount.FormatAsCurrency() ) );
             }
 
             return transaction;
         }
 
-        private bool ProcessStep1( ThreeStepGatewayComponent gateway, RockContext rockContext, PaymentInfo paymentInfo, decimal amount, List<string> registrationChanges, out string errorMessage )
+        private bool ProcessStep1( ThreeStepGatewayComponent gateway, RockContext rockContext, PaymentInfo paymentInfo, decimal amount, History.HistoryChangeList registrationChanges, out string errorMessage )
         {
             paymentInfo.IPAddress = GetClientIpAddress();
             paymentInfo.AdditionalParameters = gateway.GetStep1Parameters( ResolveRockUrlIncludeRoot( "~/GatewayStep2Return.aspx" ) );
@@ -1906,8 +1906,8 @@ namespace RockWeb.Blocks.Event
 
             SaveTransaction( rockContext, registration, transaction, personAliasId, amount );
 
-            var registrationChanges = new List<string>();
-            registrationChanges.Add( string.Format( "Processed payment of {0}.", amount.FormatAsCurrency() ) );
+            var registrationChanges = new History.HistoryChangeList();
+            registrationChanges.AddChange( History.HistoryVerb.Process, History.HistoryChangeType.Record, string.Format( "payment of {0}.", amount.FormatAsCurrency() ) );
             HistoryService.SaveChanges(
                 rockContext,
                 typeof( Registration ),
@@ -1920,7 +1920,7 @@ namespace RockWeb.Blocks.Event
             return true;
         }
 
-        private FinancialTransaction ProcessManualTransaction( decimal amount, List<string> registrationChanges )
+        private FinancialTransaction ProcessManualTransaction( decimal amount, History.HistoryChangeList registrationChanges )
         {
             var transaction = new FinancialTransaction();
             transaction.FinancialPaymentDetail = new FinancialPaymentDetail();
@@ -1928,7 +1928,7 @@ namespace RockWeb.Blocks.Event
             transaction.FinancialPaymentDetail.CreditCardTypeValueId = ddlCreditCardType.SelectedValueAsInt();
             transaction.TransactionCode = tbTransactionCode.Text;
 
-            registrationChanges.Add( string.Format( "Manually added payment of {0}.", amount.FormatAsCurrency() ) );
+            registrationChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, string.Format( "Manual payment of {0}.", amount.FormatAsCurrency() ) );
 
             return transaction;
         }
@@ -1987,11 +1987,11 @@ namespace RockWeb.Blocks.Event
                     transaction.TransactionDateTime.Value,
                     RegistrationTemplateState.FinancialGateway.GetBatchTimeOffset() );
 
-                var batchChanges = new List<string>();
+                var batchChanges = new History.HistoryChangeList();
 
                 if ( batch.Id == 0 )
                 {
-                    batchChanges.Add( "Generated the batch" );
+                    batchChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Batch" );
                     History.EvaluateChange( batchChanges, "Batch Name", string.Empty, batch.Name );
                     History.EvaluateChange( batchChanges, "Status", null, batch.Status );
                     History.EvaluateChange( batchChanges, "Start Date/Time", null, batch.BatchStartDateTime );

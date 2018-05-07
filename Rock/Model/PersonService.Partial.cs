@@ -21,8 +21,8 @@ using System.Data.Entity.Spatial;
 using System.Linq;
 using System.Text;
 using Rock;
-using Rock.Data;
 using Rock.Cache;
+using Rock.Data;
 
 namespace Rock.Model
 {
@@ -1774,14 +1774,18 @@ namespace Rock.Model
         [Obsolete]
         public List<string> InactivatePerson( Person person, Web.Cache.DefinedValueCache reason, string reasonNote )
         {
-            var changes = new List<string>();
+            History.HistoryChangeList historyChangeList;
 
+            // since this is an obsolete method now, convert the definedValueCache to a CacheDefinedValue
+            CacheDefinedValue cacheReason = null;
             if ( reason != null )
             {
-                changes = InactivatePerson( person, CacheDefinedValue.Get( reason.Id ), reasonNote );
+                cacheReason = CacheDefinedValue.Get( reason.Id );
             }
 
-            return changes;
+            InactivatePerson( person, cacheReason, reasonNote, out historyChangeList );
+
+            return historyChangeList.Select( a => a.Summary ).ToList();
         }
 
         /// <summary>
@@ -1790,24 +1794,22 @@ namespace Rock.Model
         /// <param name="person">The person.</param>
         /// <param name="reason">The reason.</param>
         /// <param name="reasonNote">The reason note.</param>
-        /// <returns></returns>
-        public List<string> InactivatePerson( Person person, CacheDefinedValue reason, string reasonNote )
+        /// <param name="historyChangeList">The history change list.</param>
+        public void InactivatePerson( Person person, CacheDefinedValue reason, string reasonNote, out History.HistoryChangeList historyChangeList )
         {
-            var changes = new List<string>();
+            historyChangeList = new History.HistoryChangeList();
 
             var inactiveStatus = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
             if ( inactiveStatus != null && reason != null )
             {
-                History.EvaluateChange( changes, "Record Status", person.RecordStatusValue?.Value, inactiveStatus.Value );
-                History.EvaluateChange( changes, "Record Status Reason", person.RecordStatusReasonValue?.Value, reason.Value );
-                History.EvaluateChange( changes, "Inactive Reason Note", person.InactiveReasonNote, reasonNote );
+                History.EvaluateChange( historyChangeList, "Record Status", person.RecordStatusValue?.Value, inactiveStatus.Value );
+                History.EvaluateChange( historyChangeList, "Record Status Reason", person.RecordStatusReasonValue?.Value, reason.Value );
+                History.EvaluateChange( historyChangeList, "Inactive Reason Note", person.InactiveReasonNote, reasonNote );
 
                 person.RecordStatusValueId = inactiveStatus.Id;
                 person.RecordStatusReasonValueId = reason.Id;
                 person.InactiveReasonNote = reasonNote;
             }
-
-            return changes;
         }
 
         #endregion
@@ -1966,8 +1968,8 @@ namespace Rock.Model
         {
             var familyGroupType = CacheGroupType.GetFamilyGroupType();
 
-            var demographicChanges = new List<string>();
-            var memberChanges = new List<string>();
+            var demographicChanges = new History.HistoryChangeList();
+            var memberChanges = new History.HistoryChangeList();
             var groupService = new GroupService( rockContext );
 
             var group = groupService.Get( groupId );
@@ -2000,7 +2002,7 @@ namespace Rock.Model
                 person.LastName = person.LastName.FixCase();
 
                 // new person that hasn't be saved to database yet
-                demographicChanges.Add( "Created" );
+                demographicChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, person.FullName );
                 History.EvaluateChange( demographicChanges, "Title", string.Empty, CacheDefinedValue.GetName( person.TitleValueId ) );
                 History.EvaluateChange( demographicChanges, "First Name", string.Empty, person.FirstName );
                 History.EvaluateChange( demographicChanges, "Last Name", string.Empty, person.LastName );
@@ -2118,7 +2120,7 @@ namespace Rock.Model
                 {
                     var person = fm.Person;
 
-                    var demographicChanges = new List<string>();
+                    var demographicChanges = new History.HistoryChangeList();
                     History.EvaluateChange( demographicChanges, "Giving Group", person.GivingGroup.Name, group.Name );
                     HistoryService.SaveChanges(
                         rockContext,
@@ -2133,7 +2135,7 @@ namespace Rock.Model
 
                 if ( group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() ) )
                 {
-                    var oldMemberChanges = new List<string>();
+                    var oldMemberChanges = new History.HistoryChangeList();
                     History.EvaluateChange( oldMemberChanges, "Role", fm.GroupRole.Name, string.Empty );
                     History.EvaluateChange( oldMemberChanges, "Family", fm.Group.Name, string.Empty );
                     HistoryService.SaveChanges(
@@ -2261,7 +2263,7 @@ namespace Rock.Model
                 {
                     var attributeService = new Model.AttributeService( rockContext );
                     var attributes = attributeService
-                        .Get( personEntityTypeId, string.Empty, string.Empty )
+                        .GetByEntityTypeQualifier( personEntityTypeId, string.Empty, string.Empty, true )
                         .Where( a => preferences.Keys.Contains( a.Key ) )
                         .ToList();
 
@@ -2303,7 +2305,7 @@ namespace Rock.Model
 
                         // Requery attributes ( so they all have ids )
                         attributes = attributeService
-                            .Get( personEntityTypeId, string.Empty, string.Empty )
+                            .GetByEntityTypeQualifier( personEntityTypeId, string.Empty, string.Empty, true )
                             .Where( a => preferences.Keys.Contains( a.Key ) )
                             .ToList();
                     }

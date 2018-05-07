@@ -306,6 +306,14 @@ namespace Rock.Data
         public DbSet<AttributeValue> AttributeValues { get; set; }
 
         /// <summary>
+        /// Gets or sets the attribute value historicals.
+        /// </summary>
+        /// <value>
+        /// The attribute value historicals.
+        /// </value>
+        public DbSet<AttributeValueHistorical> AttributeValueHistoricals { get; set; }
+
+        /// <summary>
         /// Gets or sets the Attribute Values.
         /// </summary>
         /// <value>
@@ -898,6 +906,14 @@ namespace Rock.Data
         public DbSet<Group> Groups { get; set; }
 
         /// <summary>
+        /// Gets or sets the group historicals.
+        /// </summary>
+        /// <value>
+        /// The group historicals.
+        /// </value>
+        public DbSet<GroupHistorical> GroupHistoricals { get; set; }
+
+        /// <summary>
         /// Gets or sets the Group Locations.
         /// </summary>
         /// <value>
@@ -906,12 +922,36 @@ namespace Rock.Data
         public DbSet<GroupLocation> GroupLocations { get; set; }
 
         /// <summary>
+        /// Gets or sets the group location historicals.
+        /// </summary>
+        /// <value>
+        /// The group location historicals.
+        /// </value>
+        public DbSet<GroupLocationHistorical> GroupLocationHistoricals { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group location historical schedules.
+        /// </summary>
+        /// <value>
+        /// The group location historical schedules.
+        /// </value>
+        public DbSet<GroupLocationHistoricalSchedule> GroupLocationHistoricalSchedules { get; set; }
+
+        /// <summary>
         /// Gets or sets the Members.
         /// </summary>
         /// <value>
         /// the Members.
         /// </value>
         public DbSet<GroupMember> GroupMembers { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group member historicals.
+        /// </summary>
+        /// <value>
+        /// The group member historicals.
+        /// </value>
+        public DbSet<GroupMemberHistorical> GroupMemberHistoricals { get; set; }
 
         /// <summary>
         /// Gets or sets the group member requirements.
@@ -952,6 +992,14 @@ namespace Rock.Data
         /// The group schedule exclusions.
         /// </value>
         public DbSet<GroupScheduleExclusion> GroupScheduleExclusions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group syncs.
+        /// </summary>
+        /// <value>
+        /// The group syncs.
+        /// </value>
+        public DbSet<GroupSync> GroupSyncs { get; set; }
 
         /// <summary>
         /// Gets or sets the group type location types.

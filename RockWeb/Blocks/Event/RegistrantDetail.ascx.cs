@@ -185,7 +185,7 @@ namespace RockWeb.Blocks.Event
                                 .ToList();
 
                 bool newRegistrant = false;
-                var registrantChanges = new List<string>();
+                var registrantChanges = new History.HistoryChangeList();
 
                 if ( registrant == null )
                 {
@@ -193,7 +193,7 @@ namespace RockWeb.Blocks.Event
                     registrant = new RegistrationRegistrant();
                     registrant.RegistrationId = RegistrantState.RegistrationId;
                     registrantService.Add( registrant );
-                    registrantChanges.Add( "Created Registrant" );
+                    registrantChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Registrant" );
                 }
 
                 if ( !registrant.PersonAliasId.Equals( ppPerson.PersonAliasId ) )
@@ -243,9 +243,10 @@ namespace RockWeb.Blocks.Event
                                 f.Option == dbFee.Option &&
                                 f.Quantity > 0 ) )
                     {
-                        registrantChanges.Add( string.Format(
-                            "Removed '{0}' Fee (Quantity:{1:N0}, Cost:{2:C2}, Option:{3}", dbFee.RegistrationTemplateFee.Name, dbFee.Quantity, dbFee.Cost, dbFee.Option ) );
+                        var feeOldValue = string.Format( "'{0}' Fee (Quantity:{1:N0}, Cost:{2:C2}, Option:{3}",
+                          dbFee.RegistrationTemplateFee.Name, dbFee.Quantity, dbFee.Cost, dbFee.Option );
 
+                        registrantChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Fee").SetOldValue( feeOldValue );
                         registrant.Fees.Remove( dbFee );
                         registrantFeeService.Delete( dbFee );
                     }
@@ -284,7 +285,7 @@ namespace RockWeb.Blocks.Event
 
                         if ( dbFee.Id <= 0 )
                         {
-                            registrantChanges.Add( feeName + " Fee Added" );
+                            registrantChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Fee").SetNewValue( feeName );
                         }
 
                         History.EvaluateChange( registrantChanges, feeName + " Quantity", dbFee.Quantity, uiFeeOption.Quantity );
@@ -443,11 +444,11 @@ namespace RockWeb.Blocks.Event
 
                                     newRockContext.SaveChanges();
 
-                                    registrantChanges.Add( string.Format( "Registrant added to {0} group", reloadedRegistrant.Registration.Group.Name ) );
+                                    registrantChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, string.Format( "Registrant to {0} group", reloadedRegistrant.Registration.Group.Name ) );
                                 }
                                 else
                                 {
-                                    registrantChanges.Add( string.Format( "Registrant group member reference updated to existing person in {0} group", reloadedRegistrant.Registration.Group.Name ) );
+                                    registrantChanges.AddChange( History.HistoryVerb.Modify, History.HistoryChangeType.Record, string.Format( "Registrant to existing person in {0} group", reloadedRegistrant.Registration.Group.Name ) );
                                 }
 
                                 // Record this to the Person's and Registrants Notes and History...

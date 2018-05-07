@@ -63,6 +63,12 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupType.FriendlyTypeName, Group.FriendlyTypeName );
                 return false;
             }  
+ 
+            if ( new Service<GroupHistorical>( Context ).Queryable().Any( a => a.GroupTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupType.FriendlyTypeName, GroupHistorical.FriendlyTypeName );
+                return false;
+            }  
             
             // ignoring GroupRequirement,GroupTypeId 
  
@@ -128,6 +134,7 @@ namespace Rock.Model
             target.AttendanceRule = source.AttendanceRule;
             target.DefaultGroupRoleId = source.DefaultGroupRoleId;
             target.Description = source.Description;
+            target.EnableGroupHistory = source.EnableGroupHistory;
             target.EnableLocationSchedules = source.EnableLocationSchedules;
             target.EnableSpecificGroupRequirements = source.EnableSpecificGroupRequirements;
             target.ForeignGuid = source.ForeignGuid;
@@ -138,6 +145,7 @@ namespace Rock.Model
             target.GroupMemberTerm = source.GroupMemberTerm;
             target.GroupsRequireCampus = source.GroupsRequireCampus;
             target.GroupTerm = source.GroupTerm;
+            target.GroupTypeColor = source.GroupTypeColor;
             target.GroupTypePurposeValueId = source.GroupTypePurposeValueId;
             target.GroupViewLavaTemplate = source.GroupViewLavaTemplate;
             target.IconCssClass = source.IconCssClass;

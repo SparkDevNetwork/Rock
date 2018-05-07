@@ -786,8 +786,8 @@ namespace RockWeb.Blocks.Event
                         return;
                     }
 
-                    var changes = new List<string>();
-                    changes.Add( "Deleted registration" );
+                    var changes = new History.HistoryChangeList();
+                    changes.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Registration" );
 
                     rockContext.WrapTransaction( () =>
                     {

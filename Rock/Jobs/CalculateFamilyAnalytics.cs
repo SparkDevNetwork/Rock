@@ -149,8 +149,12 @@ namespace Rock.Jobs
                                     historyRecord.CreatedDateTime = RockDateTime.Now;
                                     historyRecord.CreatedByPersonAliasId = person.PrimaryAliasId;
                                     historyRecord.Caption = "eRA";
-                                    historyRecord.Summary = "Exited eRA Status";
+
                                     historyRecord.Verb = "EXITED";
+                                    historyRecord.ChangeType = History.HistoryChangeType.Attribute.ConvertToString();
+                                    historyRecord.ValueName = "eRA";
+                                    historyRecord.NewValue = "Exited";
+                                    
                                     historyRecord.RelatedEntityTypeId = attributeEntityTypeId;
                                     historyRecord.RelatedEntityId = eraAttributeId;
                                     historyRecord.CategoryId = personAnalyticsCategoryId;
@@ -215,7 +219,6 @@ namespace Rock.Jobs
                                 historyRecord.CreatedDateTime = RockDateTime.Now;
                                 historyRecord.CreatedByPersonAliasId = person.PrimaryAliasId;
                                 historyRecord.Caption = "eRA";
-                                historyRecord.Summary = "Entered eRA Status";
                                 historyRecord.Verb = "ENTERED";
                                 historyRecord.RelatedEntityTypeId = attributeEntityTypeId;
                                 historyRecord.RelatedEntityId = eraAttributeId;

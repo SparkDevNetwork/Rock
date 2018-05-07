@@ -204,6 +204,24 @@ namespace Rock.Cache
         public bool IsAnalyticHistory { get; set; }
 
         /// <summary>
+        /// Gets a value indicating whether this attribute is active.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable history]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool EnableHistory { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether changes to this attribute's attribute values should be logged in AttributeValueHistorical
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsActive { get; private set; }
+
+        /// <summary>
         /// Gets or sets the category ids.
         /// </summary>
         /// <value>
@@ -322,6 +340,8 @@ namespace Rock.Cache
             IsIndexEnabled = attribute.IsIndexEnabled;
             IsAnalytic = attribute.IsAnalytic;
             IsAnalyticHistory = attribute.IsAnalyticHistory;
+            IsActive = attribute.IsActive;
+            EnableHistory = attribute.EnableHistory;
 
             QualifierValues = new Dictionary<string, ConfigurationValue>();
             foreach ( var qualifier in qualifiers )

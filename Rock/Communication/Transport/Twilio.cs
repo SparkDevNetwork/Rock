@@ -236,7 +236,9 @@ namespace Rock.Communication.Transport
                                                     EntityTypeId = personEntityTypeId,
                                                     CategoryId = communicationCategoryId,
                                                     EntityId = recipient.PersonAlias.PersonId,
-                                                    Summary = "Sent SMS message.",
+                                                    Verb = History.HistoryVerb.Sent.ConvertToString().ToUpper(),
+                                                    ChangeType = History.HistoryChangeType.Record.ToString(),
+                                                    ValueName = "SMS message",
                                                     Caption = message.Truncate( 200 ),
                                                     RelatedEntityTypeId = communicationEntityTypeId,
                                                     RelatedEntityId = communication.Id
