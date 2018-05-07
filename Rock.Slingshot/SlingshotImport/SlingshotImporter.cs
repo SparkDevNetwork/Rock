@@ -1212,6 +1212,8 @@ namespace Rock.Slingshot
                 groupImport.IsActive = slingshotGroup.IsActive;
                 groupImport.IsPublic = slingshotGroup.IsPublic;
                 groupImport.Capacity = slingshotGroup.Capacity;
+                groupImport.MeetingDay = slingshotGroup.MeetingDay;
+                groupImport.MeetingTime = slingshotGroup.MeetingTime;
 
                 groupImport.Order = slingshotGroup.Order;
                 if ( slingshotGroup.CampusId.HasValue )
@@ -1237,7 +1239,7 @@ namespace Rock.Slingshot
                 groupImport.AttributeValues = new List<Rock.Slingshot.Model.AttributeValueImport>();
                 foreach ( var slingshotGroupAttributeValue in slingshotGroup.Attributes )
                 {
-                    int attributeId = this.PersonAttributeKeyLookup[slingshotGroupAttributeValue.AttributeKey].Id;
+                    int attributeId = this.GroupAttributeKeyLookup[slingshotGroupAttributeValue.AttributeKey].Id;
                     var attributeValueImport = new Rock.Slingshot.Model.AttributeValueImport { AttributeId = attributeId, Value = slingshotGroupAttributeValue.AttributeValue };
                     groupImport.AttributeValues.Add( attributeValueImport );
                 }
