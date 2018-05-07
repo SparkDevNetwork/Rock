@@ -633,7 +633,7 @@ namespace Rock
         /// <summary>
         /// Attempts to convert a "MM/dd", "M/dd", "M/d" or "MM/d" string to a datetime, with the year as the current year. Returns null if unsuccessful.
         /// </summary>
-        /// <param name="mmdd">The MM/dd string</param>
+        /// <param name="monthDayString">The month day string.</param>
         /// <returns></returns>
         public static DateTime? MonthDayStringAsDateTime( this string monthDayString )
         {
