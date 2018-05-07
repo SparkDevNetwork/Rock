@@ -1487,12 +1487,12 @@ namespace Rock.Slingshot
                                 GroupLocationTypeValueId = groupLocationTypeValueId.Value,
                                 IsMailingLocation = slingshotPersonAddress.IsMailing,
                                 IsMappedLocation = slingshotPersonAddress.AddressType == SlingshotCore.Model.AddressType.Home,
-                                Street1 = slingshotPersonAddress.Street1,
-                                Street2 = slingshotPersonAddress.Street2,
-                                City = slingshotPersonAddress.City,
-                                State = slingshotPersonAddress.State,
-                                Country = slingshotPersonAddress.Country,
-                                PostalCode = slingshotPersonAddress.PostalCode,
+                                Street1 = slingshotPersonAddress.Street1.Left( 100 ),
+                                Street2 = slingshotPersonAddress.Street2.Left( 100 ),
+                                City = slingshotPersonAddress.City.Left( 50 ),
+                                State = slingshotPersonAddress.State.Left( 50 ),
+                                Country = slingshotPersonAddress.Country.Left( 50 ),
+                                PostalCode = slingshotPersonAddress.PostalCode.Left( 50 ),
                                 Latitude = slingshotPersonAddress.Latitude.AsDoubleOrNull(),
                                 Longitude = slingshotPersonAddress.Longitude.AsDoubleOrNull()
                             };
