@@ -208,7 +208,7 @@
                     <asp:Panel ID="pnlConfirm" runat="server" ClientIDMode="Static" CssClass="panel-confirm hidden">
             
                         <div class="confirm-card">
-                            <p id="confirmGiftMessage">You are giving a one-time gift today of</p>
+                            <p id="confirmGiftMessage">You are giving a gift today of</p>
                             <h3 id="confirmGiftAmount">$0</h3>
                             <div class="confirm-paymenttype-card">
                                 <span id="accountType"></span>
@@ -249,7 +249,7 @@
             <%-- Transaction Success Card --%>
             <asp:Panel ID="pnlPaymentSuccess" runat="server" Visible="false">
 
-                <div class="transaction-card-panel">
+                <div class="transaction-card-panel panel-success">
 
                     <%-- Success Message --%>
                     <asp:Panel runat="server" ID="pnlSuccessCheckmark" CssClass="success-checkmark"><i class="mdi mdi-check"></i></asp:Panel>
@@ -260,9 +260,9 @@
                         We are so grateful for your commitment.
                     </asp:Label>
 
-                    <asp:Label ID="lblSaveScheduleTransactionResult" runat="server" Visible="false" />
+                    <asp:Label ID="lblSaveScheduleTransactionResult" runat="server" Visible="false" CssClass="save-success" />
 
-                    <asp:Label ID="lblSavePaymentResult" runat="server" Visible="false" />
+                    <asp:Label ID="lblSavePaymentResult" runat="server" Visible="false" CssClass="save-success" />
 
                     <%-- Schedule Transaction Toggle --%>
                     <asp:Panel ID="pnlScheduleTransaction" runat="server" Visible="false">
@@ -289,7 +289,7 @@
                     </asp:Panel>
                     
                     <%-- Schedule Transaction and Save Payment Form --%>
-                    <asp:Panel ID="pnlSuccessInputForm" runat="server">
+                    <asp:Panel ID="pnlSuccessInputForm" runat="server" CssClass="success-form">
 
                         <asp:Panel ID="pnlSavePaymentAccountInput" runat="server" CssClass="collapse save-payment-account" ClientIDMode="Static">
 
@@ -314,7 +314,7 @@
                     </asp:Panel>
 
                     <%-- Manage Transaction Link --%>
-                    <asp:HyperLink ID="hlSuccessLink" runat="server" Text="To fully manage your account, please login / register" NavigateUrl="/loginv2" />
+                    <asp:HyperLink ID="hlSuccessLink" runat="server" Text="To fully manage your account, please login / register" NavigateUrl="/loginv2" CssClass="success-link" />
 
                     <%-- Success Details --%>
                     <div class="success-details">

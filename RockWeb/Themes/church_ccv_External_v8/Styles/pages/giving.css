@@ -321,9 +321,49 @@
     justify-content: center;
 }
 
-.payment-type .btn {
+.payment-type .btn, #rblAccountType label {
+    font-family: heebo;
+    font-size: 12px;
+    line-height: 12px;
+    font-weight: normal;
+    white-space: normal;
     border-radius: 25px;
+    min-width: 80px;
+    border-radius: 25px;
+    background-color: #999999;
+    border-color: #999999;
+    padding: 6px 6px;
+    margin-right: 5px;
+    margin-left: 5px;
 }
+
+#rblAccountType input[type="radio"] {
+    width: 0px;
+    height: 0px;
+    display: none;
+}
+
+#rblAccountType label {
+    font-size: 12px;
+    text-align: center;
+    text-transform: uppercase;
+    line-height: 12px;
+    padding: 12px 12px;
+    min-width: 100px;
+    color: #000;
+}
+
+.payment-type .btn-primary, .btn-primary:hover, .btn-primary:focus, .btn-primary:active, #rblAccountType .btn-primary {
+    background-color: #7A1315;
+    border-color: #7A1315;
+    font-weight: normal;
+    color: #FFFFFF;
+}
+
+.payment-type .btn-primary {
+    font-weight: 700;
+}
+
 
 .savedpayment-card select {
     padding: 0;
@@ -380,30 +420,10 @@
 #rblAccountType {
     display: flex;
     justify-content: space-around;
+    padding-top: 5px;
 }
 
-#rblAccountType input[type="radio"] {
-    width: 0px;
-    height: 0px;
-    display: none;
-}
 
-#rblAccountType label {
-    font-family: akrobat;
-    font-size: 14px;
-    text-transform: uppercase;
-    font-weight: 700;
-    border-radius: 25px;
-    min-width: 100px;
-    text-align: center;
-    padding: 5px;
-}
-
-.btn-primary:hover, .btn-primary:focus, .btn-primar:active {
-    background-color: #7A1315;
-    border-color: #7A1315;
-    font-weight: normal;
-} 
 
 /* Mobile Styling */
 @media screen and (max-width: 500px) {
@@ -416,15 +436,6 @@
 
     .payment-type {
         margin-top: 0px;
-    }
-
-    .payment-type .btn {
-        font-family: heebo;
-        font-size: 12px;
-        line-height: 12px;
-        padding: 6px 6px;
-        min-width: 75px;
-        white-space: normal;
     }
 
     .panel-savedpayment {
@@ -454,7 +465,6 @@
 
     .panel-bankaccount {
         width: 100%;
-        margin-bottom: auto;
     }
 
     .panel-bankaccount .form-control, .panel-creditcard .form-control {
@@ -468,8 +478,11 @@
 
 /* Confirm Gift Panel */
 .panel-confirm {
-
+    margin: 15px 0;
+    width: 100%;
+    padding: 0 20px;
 }
+
 .confirm-card {
     display: flex;
     flex-direction: column;
@@ -578,17 +591,47 @@
 /* Mobile Styling */
 @media screen and (max-width: 500px) {
     .panel-confirm {
-        margin: 15px 0;
-        width: 100%;
-        padding: 0 20px;
+        margin: 10px 0;
+        padding: 0 10px;
     }
+
     #confirmGiftMessage {
         margin-top: unset;
+        margin-bottom: 5px;
+    }
+
+    #confirmGiftAmount {
+        margin-bottom: 5px;
     }
 
     .confirm-paymenttype-card {
-        width: unset;
-        padding: 20px 10px;
+        width: 100%;
+        height: unset;
+        margin-top: unset;
+        margin-bottom: 10px;
+        padding: 5px 10px;
+    }
+
+    #accountType {
+        font-size: 24px;
+    }
+
+    .confirm-agreement {
+        margin-top: 5px;
+        margin-bottom: 10px;
+    }
+
+    .card-footer {
+        margin-top: 10px;
+    }
+
+    .card-footer i {
+        font-size: 14px;
+        margin-right: 10px;
+    }
+
+    .card-footer p {
+        font-size: 10px;
     }
 }
 
@@ -618,6 +661,11 @@
 /* End Navigation Buttons */
 
 /* Payment Success */
+.panel-success {
+    padding: 20px;
+    border-color: unset;
+}
+
 .success-checkmark {
     display: flex;
     justify-content: center;
@@ -640,6 +688,11 @@
     line-height: 27px;
     color: #7A1315;
     margin-top: 30px;
+}
+
+.success-link {
+    margin-top: 15px;
+    text-decoration: underline;
 }
 
 .success-details {
@@ -673,6 +726,41 @@
     flex-direction: column;
 }
 
+/* Mobile Styling */
+@media screen and (max-width: 500px) {
+    .panel-success {
+        padding: 0 20px;
+    }
+
+    .success-checkmark {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .success-checkmark i {
+        font-size: 26px;
+    }
+
+    .success-message {
+        font-size: 13px;
+        line-height: 16px;
+        margin-top: 15px;
+        margin-bottom: 10px;
+    }
+
+    .success-details {
+        min-width: unset;
+        width: 100%;
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+
+    .details-item {
+        font-size: 12px;
+        line-height: 16px;
+    }
+}
+
 /* Schedule Transaction */
 .schedule-transaction .collapse {
     transition: all 1s;
@@ -680,6 +768,7 @@
 
 .schedule-toggle {
     display: flex;
+    align-items: center;
     margin-top: 20px;
     font-family: Heebo;
     font-size: 16px;
@@ -803,16 +892,14 @@ input:checked + .slider:before {
 
 
 .schedule-date {
-    margin: 20px 0;
     
 }
 
 .schedule-date label {
-    color: #7A1315;
+    color: #7c7c7c;
     font-family: Heebo;
     font-size: 14px;
     line-height: 16px;
-    margin-bottom: 10px;
 }
 
 .schedule-date > div.form-group.date-picker > div > div {
@@ -842,16 +929,76 @@ input:checked + .slider:before {
     float: right;
 }
 
+/* Mobile Styling */
+@media screen and (max-width: 500px) {
+    .schedule-toggle {
+        font-size: 13px;
+        font-weight: bold;
+        margin-top: 5px;
+    }
+
+    .checkbox {
+        margin-bottom: -5px;
+    }
+    
+    .success-form {
+        padding-top: 10px;
+        width: 100%;
+    }
+
+    .success-form input, .success-form select {
+        height: unset;
+        padding: unset;
+        font-size: 12px;
+        line-height: 14px;
+    }
+
+    .schedule-date label {
+        font-size: 12px;
+    }
+    
+    #tbSavePaymentAccountName {
+        padding-left: 10px;
+    }
+
+    #ddlScheduleFrequency {
+        padding-Left: 5px;
+    }
+
+    #dpScheduleStartDate {
+        height: 18px;
+        margin-left: 10px;
+    }
+
+    #btnSaveSuccessInputForm {
+        height: 30px;
+        font-size: 14px;
+        min-width: 75px;
+    }
+
+    .save-success {
+        font-size: 13px;
+        line-height: 16px;
+    }
+
+    .alert {
+        font-size: 12px;
+    }
+
+    .alert p {
+        font-size: 14px;
+    }
+
+}
+
 /* End Schedule transaction */
 
-
+/* End Payment Success */
 
 .error {
     color: #a94442;
     font-weight: bold;
 }
-
-/* End Payment Success */
 
 /* Hide focus outline on buttons */
 .btn:focus, .btn:active:focus {
