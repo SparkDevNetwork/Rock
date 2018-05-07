@@ -175,6 +175,12 @@ namespace Rock.Model
             private DateTime? _dateTimeAdded;
             internal List<GroupNameHistory> _groupNameHistory;
 
+            /// <summary>
+            /// Initializes a new instance of the <see cref="GroupMemberHistoricalSummary"/> class.
+            /// </summary>
+            /// <param name="group">The group.</param>
+            /// <param name="groupMemberHistorical">The group member historical.</param>
+            /// <param name="dateTimeAdded">The date time added.</param>
             public GroupMemberHistoricalSummary( Group group, GroupMemberHistorical groupMemberHistorical, DateTime? dateTimeAdded )
             {
                 _group = group;
@@ -292,11 +298,41 @@ namespace Rock.Model
             public GroupMemberStatus GroupMemberStatus => _groupMemberHistorical.GroupMemberStatus;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public class GroupNameHistory
         {
+            /// <summary>
+            /// Gets or sets the group identifier.
+            /// </summary>
+            /// <value>
+            /// The group identifier.
+            /// </value>
             public int GroupId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the effective date time.
+            /// </summary>
+            /// <value>
+            /// The effective date time.
+            /// </value>
             public DateTime EffectiveDateTime { get; set; }
+
+            /// <summary>
+            /// Gets or sets the expire date time.
+            /// </summary>
+            /// <value>
+            /// The expire date time.
+            /// </value>
             public DateTime ExpireDateTime { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name of the group.
+            /// </summary>
+            /// <value>
+            /// The name of the group.
+            /// </value>
             public string GroupName { get; set; }
         }
     }

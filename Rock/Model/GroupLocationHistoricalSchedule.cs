@@ -32,10 +32,11 @@ namespace Rock.Model
     {
         #region Entity Properties
 
-        /// Gets or sets the Id of the GroupLocationHistory record that has this GroupLocationHistorySchedule
+        /// <summary>
+        /// Gets or sets the group location historical identifier.
         /// </summary>
         /// <value>
-        /// The group identifier.
+        /// The group location historical identifier.
         /// </value>
         [DataMember]
         public int GroupLocationHistoricalId { get; set; }

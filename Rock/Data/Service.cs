@@ -192,7 +192,7 @@ namespace Rock.Data
         /// Gets the model with the Guid value into the selected form
         /// </summary>
         /// <typeparam name="TResult">The type of the result.</typeparam>
-        /// <param name="Id">The identifier.</param>
+        /// <param name="guid">The unique identifier.</param>
         /// <param name="selector">The selector.</param>
         /// <returns></returns>
         public TResult GetSelect<TResult>( Guid guid, System.Linq.Expressions.Expression<Func<T, TResult>> selector )

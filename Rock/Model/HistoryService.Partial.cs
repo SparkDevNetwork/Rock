@@ -161,7 +161,7 @@ namespace Rock.Model
         /// <summary>
         /// Gets the history summary by date time and verb.
         /// </summary>
-        /// <param name="historySummaryByDateTime">The history summary by date time.</param>
+        /// <param name="historySummaryByDateTimeList">The history summary by date time list.</param>
         /// <returns></returns>
         public List<HistorySummaryByDateTimeAndVerb> GetHistorySummaryByDateTimeAndVerb( List<HistorySummaryByDateTime> historySummaryByDateTimeList )
         {
@@ -227,6 +227,7 @@ namespace Rock.Model
         /// <summary>
         /// Populates the history summary entities.
         /// </summary>
+        /// <param name="historyQry">The history qry.</param>
         /// <param name="historySummaryList">The history summary list.</param>
         private void PopulateHistorySummaryEntities( IQueryable<History> historyQry, List<HistorySummary> historySummaryList )
         {

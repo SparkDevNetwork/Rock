@@ -18,6 +18,10 @@ using System;
 
 namespace Rock.Attribute
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.Attribute.FieldAttribute" />
     public class RegistrationTemplateFieldAttribute : FieldAttribute
     {
         /// <summary>

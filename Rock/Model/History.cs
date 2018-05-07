@@ -523,13 +523,19 @@ namespace Rock.Model
         /// </summary>
         public enum HistoryChangeType
         {
-            // The Change affected an entire record (for example, it was DELETED or ADDED), or is a child record of the item we are logging history for
+            /// <summary>
+            /// The Change affected an entire record (for example, it was DELETED or ADDED), or is a child record of the item we are logging history for
+            /// </summary>
             Record,
 
-            // The Change affected a property on the record
+            /// <summary>
+            /// The Change affected a property on the record
+            /// </summary>
             Property,
 
-            // The Change affected an attribute value on the record
+            /// <summary>
+            /// The Change affected an attribute value on the record
+            /// </summary>
             Attribute
         }
 
