@@ -232,7 +232,7 @@ namespace RockWeb.Blocks.Core
 
                 if ( this.ShowCustomGridOptions )
                 {
-                    tglEnableStickyHeader.Checked = _block.GetAttributeValue( CustomGridOptionsConfig.EnableStickerHeadersAttributeKey ).AsBoolean();
+                    tglEnableStickyHeader.Checked = _block.GetAttributeValue( CustomGridOptionsConfig.EnableStickyHeadersAttributeKey ).AsBoolean();
                 }
             }
 
@@ -323,15 +323,15 @@ namespace RockWeb.Blocks.Core
 
                 if ( tglEnableStickyHeader.Checked )
                 {
-                    if ( !block.Attributes.Any( a => a.Key == CustomGridOptionsConfig.EnableStickerHeadersAttributeKey ) )
+                    if ( !block.Attributes.Any( a => a.Key == CustomGridOptionsConfig.EnableStickyHeadersAttributeKey ) )
                     {
-                        block.Attributes.Add( CustomGridOptionsConfig.EnableStickerHeadersAttributeKey, null );
+                        block.Attributes.Add( CustomGridOptionsConfig.EnableStickyHeadersAttributeKey, null );
                     }
                 }
 
-                if ( block.GetAttributeValue( CustomGridOptionsConfig.EnableStickerHeadersAttributeKey ).AsBoolean() != tglEnableStickyHeader.Checked )
+                if ( block.GetAttributeValue( CustomGridOptionsConfig.EnableStickyHeadersAttributeKey ).AsBoolean() != tglEnableStickyHeader.Checked )
                 {
-                    block.SetAttributeValue( CustomGridOptionsConfig.EnableStickerHeadersAttributeKey, tglEnableStickyHeader.Checked.ToTrueFalse() );
+                    block.SetAttributeValue( CustomGridOptionsConfig.EnableStickyHeadersAttributeKey, tglEnableStickyHeader.Checked.ToTrueFalse() );
 
                     // if EnableStickyHeaders changed, reload the page
                     reloadPage = true;

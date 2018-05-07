@@ -1026,12 +1026,14 @@ namespace RockWeb.Blocks.Event
                     if ( discount == null )
                     {
                         validDiscount = false;
+                        nbDiscountCode.NotificationBoxType = NotificationBoxType.Warning;
                         nbDiscountCode.Text = string.Format( "'{0}' is not a valid {1}.", discountCode, DiscountCodeTerm );
                         nbDiscountCode.Visible = true;
                     }
 
                     if ( validDiscount && discount.MinRegistrants.HasValue && RegistrationState.RegistrantCount < discount.MinRegistrants.Value )
                     {
+                        nbDiscountCode.NotificationBoxType = NotificationBoxType.Warning;
                         nbDiscountCode.Text = string.Format( "The '{0}' {1} requires at least {2} registrants.", discountCode, DiscountCodeTerm, discount.MinRegistrants.Value );
                         nbDiscountCode.Visible = true;
                         validDiscount = false;
@@ -1039,6 +1041,7 @@ namespace RockWeb.Blocks.Event
 
                     if ( validDiscount && discount.StartDate.HasValue && RockDateTime.Today < discount.StartDate.Value )
                     {
+                        nbDiscountCode.NotificationBoxType = NotificationBoxType.Warning;
                         nbDiscountCode.Text = string.Format( "The '{0}' {1} is not available yet.", discountCode, DiscountCodeTerm );
                         nbDiscountCode.Visible = true;
                         validDiscount = false;
@@ -1046,6 +1049,7 @@ namespace RockWeb.Blocks.Event
 
                     if ( validDiscount && discount.EndDate.HasValue && RockDateTime.Today > discount.EndDate.Value )
                     {
+                        nbDiscountCode.NotificationBoxType = NotificationBoxType.Warning;
                         nbDiscountCode.Text = string.Format( "The '{0}' {1} has expired.", discountCode, DiscountCodeTerm );
                         nbDiscountCode.Visible = true;
                         validDiscount = false;
@@ -1064,6 +1068,7 @@ namespace RockWeb.Blocks.Event
                                 .Count();
                             if ( instances >= discount.MaxUsage.Value )
                             {
+                                nbDiscountCode.NotificationBoxType = NotificationBoxType.Warning;
                                 nbDiscountCode.Text = string.Format( "The '{0}' {1} is no longer available.", discountCode, DiscountCodeTerm );
                                 nbDiscountCode.Visible = true;
                                 validDiscount = false;
@@ -1620,7 +1625,8 @@ namespace RockWeb.Blocks.Event
         {
             var validationErrors = new List<string>();
 
-            if ( ( RegistrationState.DiscountCode ?? string.Empty ) != tbDiscountCode.Text )
+            var autoDiscounts = RegistrationTemplate.Discounts.Where( d => d.AutoApplyDiscount ).Select( d => d.Code ).ToList();
+            if ( ( RegistrationState.DiscountCode ?? string.Empty ) != tbDiscountCode.Text && !autoDiscounts.Contains( RegistrationState.DiscountCode ) )
             {
                 validationErrors.Add( "A discount code has not been applied! Please click the 'Apply' button to apply (or clear) a discount code." );
             }
@@ -5443,7 +5449,8 @@ namespace RockWeb.Blocks.Event
                     if ( validDiscount )
                     {
                         nbDiscountCode.Visible = true;
-                        nbDiscountCode.Text = string.Format( "The {0} '{1}' was applied automatically.", DiscountCodeTerm, discount.Code );
+                        nbDiscountCode.NotificationBoxType = NotificationBoxType.Success;
+                        nbDiscountCode.Text = string.Format( "The {0} '{1}' was automatically applied.", DiscountCodeTerm.ToLower(), discount.Code );
                         break;
                     }
                 }

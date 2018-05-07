@@ -3330,17 +3330,19 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// To the json.
+        /// Returns a JSON representation of the object.
+        /// See https://www.rockrms.com/page/565#tojson
         /// </summary>
         /// <param name="input">The input.</param>
         /// <returns></returns>
         public static string ToJSON( object input )
         {
-            return input.ToJson();
+            return input.ToJson( Formatting.Indented );
         }
 
         /// <summary>
-        /// Returns a dynamic object from a JSON string
+        /// Returns a dynamic object from a JSON string.
+        /// See https://www.rockrms.com/page/565#fromjson
         /// </summary>
         /// <param name="input">The input.</param>
         /// <returns></returns>

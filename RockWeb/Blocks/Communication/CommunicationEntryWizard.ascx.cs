@@ -508,7 +508,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnUseSimpleEditor_Click( object sender, EventArgs e )
         {
-            var simpleCommunicationPageRef = new Rock.Web.PageReference( this.GetAttributeValue( "SimpleCommunicationPage"), this.CurrentPageReference.Parameters, this.CurrentPageReference.QueryString );
+            var simpleCommunicationPageRef = new Rock.Web.PageReference( this.GetAttributeValue( "SimpleCommunicationPage" ), this.CurrentPageReference.Parameters, this.CurrentPageReference.QueryString );
             NavigateToPage( simpleCommunicationPageRef );
         }
 
@@ -1056,7 +1056,7 @@ namespace RockWeb.Blocks.Communication
             var templateQuery = new CommunicationTemplateService( rockContext ).Queryable().Where( a => a.IsActive );
 
             int? categoryId = cpCommunicationTemplate.SelectedValue.AsIntegerOrNull();
-            if (categoryId.HasValue && categoryId > 0)
+            if ( categoryId.HasValue && categoryId > 0 )
             {
                 templateQuery = templateQuery.Where( a => a.CategoryId == categoryId );
             }
@@ -1199,7 +1199,7 @@ namespace RockWeb.Blocks.Communication
 
             // if this communication already has an Email Content specified, since they picked (or re-picked) a template, 
             // we'll have to start over on the EmailEditorHtml since the content is dependent on the template
-            hfEmailEditorHtml.Value = communicationTemplate.Message.ResolveMergeFields( Rock.Lava.LavaHelper.GetCommonMergeFields( null) );
+            hfEmailEditorHtml.Value = communicationTemplate.Message.ResolveMergeFields( Rock.Lava.LavaHelper.GetCommonMergeFields( null ) );
 
             hfEmailAttachedBinaryFileIds.Value = communicationTemplate.GetAttachments( CommunicationType.Email ).Select( a => a.BinaryFileId ).ToList().AsDelimited( "," );
             UpdateEmailAttachedFiles( false );
@@ -1238,7 +1238,7 @@ namespace RockWeb.Blocks.Communication
         {
             CommunicationTemplate selectedTemplate = null;
             int? selectedTemplateId = hfSelectedCommunicationTemplateId.Value.AsIntegerOrNull();
-            if (selectedTemplateId.HasValue)
+            if ( selectedTemplateId.HasValue )
             {
                 selectedTemplate = new CommunicationTemplateService( new RockContext() ).Get( selectedTemplateId.Value );
             }
@@ -1359,12 +1359,13 @@ namespace RockWeb.Blocks.Communication
             {
                 CleanupOrphanedTestCommunications();
             }
-            catch( Exception ex)
+            catch ( Exception ex )
             {
                 this.LogException( ex );
             }
 
             Rock.Model.Communication communication = UpdateCommunication( new RockContext() );
+            var personToClone = CurrentPerson;
 
             if ( communication != null )
             {
@@ -1405,16 +1406,15 @@ namespace RockWeb.Blocks.Communication
 
                         // for the test email, just use the current person as the recipient, but copy/paste the AdditionalMergeValuesJson to our test recipient so it has the same as the real recipients
                         var testRecipient = new CommunicationRecipient();
-                        if ( communication.GetRecipientCount( rockContext ) > 0 )
+                        if ( communication.Recipients.Any() )
                         {
-                            var recipient = communication.GetRecipientsQry( rockContext ).FirstOrDefault();
+                            var recipient = communication.Recipients.First();
                             testRecipient.AdditionalMergeValuesJson = recipient.AdditionalMergeValuesJson;
                         }
 
                         testRecipient.Status = CommunicationRecipientStatus.Pending;
-                        testRecipient.PersonAliasId = CurrentPersonAliasId.Value;
 
-                        var testPerson = CurrentPerson.Clone( false );
+                        var testPerson = personToClone.Clone( false );
                         testPerson.Id = 0;
                         testPerson.Guid = Guid.NewGuid();
                         if ( mediumEntityTypeId == EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() ).Id )
@@ -1481,27 +1481,49 @@ namespace RockWeb.Blocks.Communication
                     }
                     finally
                     {
-                        // make sure we delete the test communication record we created to send the test 
-                        if ( communicationService != null && testCommunication != null )
+                        try
                         {
-                            communicationService.Delete( testCommunication );
-                            rockContext.SaveChanges( disablePrePostProcessing: true );
-                        }
-
-                        // make sure we delete the Person record we created to send the test 
-                        using ( var deleteRockContext = new RockContext() )
-                        {
-                            var personToDeleteService = new PersonService( deleteRockContext );
-                            var personAliasToDeleteService = new PersonAliasService( deleteRockContext );
-
-                            if ( testPersonId.HasValue )
+                            // make sure we delete the test communication record we created to send the test 
+                            if ( communicationService != null && testCommunication != null )
                             {
-                                var personToDelete = personToDeleteService.Get( testPersonId.Value );
-                                personAliasToDeleteService.DeleteRange( personToDelete.Aliases );
-                                personToDelete.Aliases = null;
-                                personToDeleteService.Delete( personToDelete );
-                                deleteRockContext.SaveChanges( disablePrePostProcessing: true );
+                                communicationService.Delete( testCommunication );
+                                rockContext.SaveChanges( disablePrePostProcessing: true );
                             }
+
+                            // make sure we delete the Person record we created to send the test 
+                            using ( var deleteRockContext = new RockContext() )
+                            {
+                                var personToDeleteService = new PersonService( deleteRockContext );
+                                var personAliasToDeleteService = new PersonAliasService( deleteRockContext );
+
+                                if ( testPersonId.HasValue )
+                                {
+                                    var personToDelete = personToDeleteService.Get( testPersonId.Value );
+
+                                    foreach ( var alias in personToDelete.Aliases.ToList() )
+                                    {
+                                        string errorMessage;
+                                        if ( personAliasToDeleteService.CanDelete( alias, out errorMessage ) )
+                                        {
+                                            personAliasToDeleteService.Delete( alias );
+                                        }
+                                        else
+                                        {
+                                            // if we are unable to delete the personalias (maybe something referenced it in the brief window), just point it back to the person that was cloned
+                                            alias.PersonId = personToClone.Id;
+                                        }
+                                    }
+
+                                    personToDelete.Aliases = null;
+                                    personToDeleteService.Delete( personToDelete );
+                                    deleteRockContext.SaveChanges( disablePrePostProcessing: true );
+                                }
+                            }
+                        }
+                        catch ( Exception ex )
+                        {
+                            // just log the exception, don't show it
+                            ExceptionLogService.LogException( ex );
                         }
                     }
                 }
@@ -1518,6 +1540,7 @@ namespace RockWeb.Blocks.Communication
             {
                 PersonService personToDeleteService = new PersonService( deleteRockContext );
                 PersonAliasService personAliasToDeleteService = new PersonAliasService( deleteRockContext );
+                PersonDuplicateService personDuplicateService = new PersonDuplicateService( deleteRockContext );
 
                 // check for any test communication artifacts that didn't clean up correctly
                 var forTestCommunicationPersonQry = personToDeleteService.Queryable().Where( a => a.ForeignKey == "_ForTestCommunication_" );
@@ -1527,17 +1550,36 @@ namespace RockWeb.Blocks.Communication
                     var communicationToDeleteQry = communicationToDeleteService.Queryable().Where( a => a.Recipients.Any( r => forTestCommunicationPersonQry.Any( p => p.Id == r.PersonAlias.PersonId ) ) );
                     foreach ( var testCommunicationToDelete in communicationToDeleteQry.ToList() )
                     {
-                        communicationToDeleteService.Delete( testCommunicationToDelete );
+                        try
+                        {
+                            communicationToDeleteService.Delete( testCommunicationToDelete );
+                        }
+                        catch ( Exception ex )
+                        {
+                            ExceptionLogService.LogException( ex );
+                        }
                     }
 
                     foreach ( var personToDelete in forTestCommunicationPersonQry )
                     {
-                        foreach ( var personToDeleteAlias in personToDelete.Aliases.ToList() )
+                        try
                         {
-                            personAliasToDeleteService.Delete( personToDeleteAlias );
-                        }
+                            foreach ( var personToDeleteAlias in personToDelete.Aliases.ToList() )
+                            {
+                                foreach ( var duplicatePerson in personDuplicateService.Queryable().Where( a => a.DuplicatePersonAliasId == personToDeleteAlias.Id || a.PersonAliasId == personToDeleteAlias.Id ) )
+                                {
+                                    personDuplicateService.Delete( duplicatePerson );
+                                }
 
-                        personToDeleteService.Delete( personToDelete );
+                                personAliasToDeleteService.Delete( personToDeleteAlias );
+                            }
+
+                            personToDeleteService.Delete( personToDelete );
+                        }
+                        catch ( Exception ex )
+                        {
+                            ExceptionLogService.LogException( ex );
+                        }
                     }
 
                     deleteRockContext.SaveChanges( disablePrePostProcessing: true );
@@ -1999,7 +2041,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSMSSendTest_Click( object sender, EventArgs e )
         {
-            if (ddlSMSFrom.SelectedValue.IsNullOrWhiteSpace())
+            if ( ddlSMSFrom.SelectedValue.IsNullOrWhiteSpace() )
             {
                 nbSMSTestResult.NotificationBoxType = NotificationBoxType.Danger;
                 nbSMSTestResult.Text = "A 'From' number must be specified.";
@@ -2103,7 +2145,7 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
 
             int maxRecipients = GetAttributeValue( "MaximumRecipients" ).AsIntegerOrNull() ?? int.MaxValue;
             bool userCanApprove = IsUserAuthorized( "Approve" );
-            var recipientCount = communication.GetRecipientCount( rockContext );
+            var recipientCount = communication.Recipients.Count();
             string message = string.Empty;
             if ( recipientCount > maxRecipients && !userCanApprove )
             {
@@ -2339,10 +2381,10 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
                 {
                     var communicationListGroupMemberCommunicationTypeList = new GroupMemberService( rockContext ).Queryable()
                         .Where( a => a.GroupId == communication.ListGroupId.Value && a.GroupMemberStatus == GroupMemberStatus.Active )
-                        .Join( attributeValueQry, gm => gm.Id, av => av.EntityId, (gm, av) => new { gm.PersonId, av.ValueAsNumeric } )
+                        .Join( attributeValueQry, gm => gm.Id, av => av.EntityId, ( gm, av ) => new { gm.PersonId, av.ValueAsNumeric } )
                         .ToList();
                     rockContext.Database.Connection.Open();
-                    foreach( var communicationListGroupMemberCommunicationType in communicationListGroupMemberCommunicationTypeList )
+                    foreach ( var communicationListGroupMemberCommunicationType in communicationListGroupMemberCommunicationTypeList )
                     {
                         var recipientPreference = ( CommunicationType? ) communicationListGroupMemberCommunicationType.ValueAsNumeric;
                         communicationListGroupMemberCommunicationTypeLookup.AddOrIgnore( communicationListGroupMemberCommunicationType.PersonId, recipientPreference );

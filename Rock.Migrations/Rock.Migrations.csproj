@@ -165,6 +165,22 @@
     <Compile Include="Migrations\201804051503546_AutoDiscounts.Designer.cs">
       <DependentUpon>201804051503546_AutoDiscounts.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201804092319307_BusinessConversion.cs" />
+    <Compile Include="Migrations\201804092319307_BusinessConversion.Designer.cs">
+      <DependentUpon>201804092319307_BusinessConversion.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201804101732134_FrontPorchTweaks.cs" />
+    <Compile Include="Migrations\201804101732134_FrontPorchTweaks.Designer.cs">
+      <DependentUpon>201804101732134_FrontPorchTweaks.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201804102204352_UtmTermFieldInteractions.cs" />
+    <Compile Include="Migrations\201804102204352_UtmTermFieldInteractions.Designer.cs">
+      <DependentUpon>201804102204352_UtmTermFieldInteractions.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201804121040419_AddDimensionToBinaryFile.cs" />
+    <Compile Include="Migrations\201804121040419_AddDimensionToBinaryFile.Designer.cs">
+      <DependentUpon>201804121040419_AddDimensionToBinaryFile.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.cs" />
     <Compile Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.Designer.cs">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
@@ -2817,6 +2833,18 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201804051503546_AutoDiscounts.resx">
       <DependentUpon>201804051503546_AutoDiscounts.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201804092319307_BusinessConversion.resx">
+      <DependentUpon>201804092319307_BusinessConversion.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201804101732134_FrontPorchTweaks.resx">
+      <DependentUpon>201804101732134_FrontPorchTweaks.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201804102204352_UtmTermFieldInteractions.resx">
+      <DependentUpon>201804102204352_UtmTermFieldInteractions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201804121040419_AddDimensionToBinaryFile.resx">
+      <DependentUpon>201804121040419_AddDimensionToBinaryFile.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.resx">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>

@@ -61,7 +61,7 @@
                                                 <ItemTemplate><%# AccountName( (int)Eval("AccountId") ) %></ItemTemplate>
                                             </Rock:RockTemplateField>
                                             <Rock:RockBoundField DataField="Summary" SortExpression="Summary" />
-                                            <Rock:CurrencyField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" />
+                                            <Rock:CurrencyField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                                         </Columns>
                                     </Rock:Grid>
                                 </div>
@@ -123,7 +123,7 @@
                                         <ItemTemplate><%# AccountName( (int)Eval("AccountId") ) %></ItemTemplate>
                                     </Rock:RockTemplateField>
                                     <Rock:RockBoundField DataField="Summary" SortExpression="Summary" />
-                                    <Rock:CurrencyField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" />
+                                    <Rock:CurrencyField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                                 </Columns>
                             </Rock:Grid>
 
@@ -149,7 +149,7 @@
                                         <Rock:RockBoundField DataField="TransactionCode" />
                                         <Rock:RockBoundField DataField="RefundReasonValue" />
                                         <Rock:RockBoundField DataField="RefundReasonSummary" />
-                                        <Rock:CurrencyField DataField="TotalAmount" ItemStyle-HorizontalAlign="Right" />
+                                        <Rock:CurrencyField DataField="TotalAmount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                                     </Columns>
                                 </Rock:Grid>
                             </asp:Panel>
@@ -160,7 +160,7 @@
                                     <Columns>
                                         <asp:HyperLinkField DataTextField="TransactionDateTime" DataNavigateUrlFields="Id" />
                                         <Rock:RockBoundField DataField="TransactionCode" />
-                                        <Rock:CurrencyField DataField="TotalAmount" ItemStyle-HorizontalAlign="Right" />
+                                        <Rock:CurrencyField DataField="TotalAmount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right"/>
                                     </Columns>
                                 </Rock:Grid>
                             </asp:Panel>

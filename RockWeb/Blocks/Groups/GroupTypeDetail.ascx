@@ -357,7 +357,7 @@
                                 <Rock:DataTextBox ID="tbGroupMemberTerm" runat="server" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="GroupMemberTerm" Required="true"
                                     Help="The term to use for members in groups of this group type." />
                                 <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="IconCssClass"
-                                    Help="The Font Awesome icon class to use when displaying groups of thie group type." />
+                                    Help="The Font Awesome icon class to use when displaying groups of this group type." />
                             </div>
                             <div class="col-md-6">
                                 <Rock:RockCheckBox ID="cbShowInGroupList" runat="server" Label="Show in Group Lists" Text="Yes"
