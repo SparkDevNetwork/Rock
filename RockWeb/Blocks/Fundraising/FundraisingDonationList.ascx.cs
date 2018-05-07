@@ -24,10 +24,10 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Cache;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
-using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -102,7 +102,7 @@ namespace RockWeb.Blocks.Fundraising
             //
             var rockContext = new RockContext();
             var groupService = new GroupService( rockContext );
-            var groupTypeIdFundraising = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FUNDRAISINGOPPORTUNITY.AsGuid() ).Id;
+            var groupTypeIdFundraising = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FUNDRAISINGOPPORTUNITY.AsGuid() ).Id;
             var fundraisingGroupTypeIdList = new GroupTypeService( rockContext ).Queryable().Where( a => a.Id == groupTypeIdFundraising || a.InheritedGroupTypeId == groupTypeIdFundraising ).Select( a => a.Id ).ToList();
 
             if ( group != null && fundraisingGroupTypeIdList.Contains( group.GroupTypeId ) )
@@ -120,7 +120,7 @@ namespace RockWeb.Blocks.Fundraising
             var rockContext = new RockContext();
             var groupMemberService = new GroupMemberService( rockContext );
             var financialTransactionDetailService = new FinancialTransactionDetailService( rockContext );
-            var entityTypeIdGroupMember = EntityTypeCache.GetId<GroupMember>();
+            var entityTypeIdGroupMember = CacheEntityType.GetId<GroupMember>();
             var hideGridColumns = GetAttributeValue( "HideGridColumns" ).Split( ',' );
             var hideGridActions = GetAttributeValue( "HideGridActions" ).Split( ',' );
             var mergeFields = LavaHelper.GetCommonMergeFields( RockPage, CurrentPerson );

@@ -2843,7 +2843,7 @@ namespace Rock.Model
                 }
                 else
                 {
-                    /// check age classification
+                    // check age classification
                     AgeClassification? ageClassification = null;
                     if ( personId.HasValue )
                     {

@@ -208,7 +208,7 @@ namespace Rock.Model
         /// <summary>
         /// Creates a GroupMemberHistorical with CurrentRowIndicator = true for the specified groupmember
         /// </summary>
-        /// <param name="group">The group.</param>
+        /// <param name="groupMember">The group member.</param>
         /// <param name="effectiveDateTime">The effective date time.</param>
         /// <returns></returns>
         public static GroupMemberHistorical CreateCurrentRowFromGroupMember( GroupMember groupMember, DateTime effectiveDateTime )

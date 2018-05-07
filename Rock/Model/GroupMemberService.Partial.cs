@@ -431,10 +431,7 @@ namespace Rock.Model
         /// Restores the archived GroupMember record
         /// HINT: Use <see cref="GroupService.ExistsAsArchived"></see> to get the matching archived groupmember
         /// </summary>
-        /// <param name="groupId">The group identifier.</param>
-        /// <param name="personId">The person identifier.</param>
-        /// <param name="groupRoleId">The group role identifier.</param>
-        /// <returns></returns>
+        /// <param name="archivedGroupMember">The archived group member.</param>
         public void Restore( GroupMember archivedGroupMember )
         {
             archivedGroupMember.IsArchived = false;
