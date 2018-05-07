@@ -695,7 +695,7 @@ namespace Rock.Slingshot
 
                 // set weekly schedule
                 TimeSpan meetingTime;
-                if ( !string.IsNullOrWhiteSpace( groupImport.MeetingDay ) && !string.IsNullOrWhiteSpace( groupImport.MeetingTime ) )
+                if ( !string.IsNullOrWhiteSpace( groupImport.MeetingDay ) )
                 {
                     TimeSpan.TryParse( groupImport.MeetingTime, out meetingTime );
                     group.Schedule = new Schedule()
@@ -1154,9 +1154,9 @@ WHERE gta.GroupTypeId IS NULL" );
             PersonAliasService personAliasService = new PersonAliasService( rockContext );
             var personAliasServiceQry = personAliasService.Queryable();
             List<PersonAlias> personAliasesToInsert = qryAllPersons.Where( p => p.ForeignId.HasValue && p.ForeignKey == foreignSystemKey && !p.Aliases.Any() && !personAliasServiceQry.Any( pa => pa.AliasPersonId == p.Id ) )
-                .Select( x => new { x.Id, x.Guid } )
+                .Select( x => new { x.Id, x.Guid, x.ForeignId } )
                 .ToList()
-                .Select( person => new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid, PersonId = person.Id, ForeignKey = foreignSystemKey } ).ToList();
+                .Select( person => new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid, PersonId = person.Id, ForeignId = person.ForeignId, ForeignKey = foreignSystemKey } ).ToList();
 
             rockContext.BulkInsert( personAliasesToInsert );
 

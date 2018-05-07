@@ -182,6 +182,8 @@ namespace Rock.Slingshot
 
         private Dictionary<Guid, DefinedValueCache> PersonRecordStatusValues { get; set; }
 
+        private Dictionary<Guid, DefinedValueCache> RecordStatusReasonValues { get; set; }
+
         private Dictionary<string, DefinedValueCache> PersonConnectionStatusValues { get; set; }
 
         private Dictionary<string, DefinedValueCache> PersonTitleValues { get; set; }
@@ -1347,6 +1349,8 @@ namespace Rock.Slingshot
                 }
 
                 personImport.InactiveReasonNote = slingshotPerson.InactiveReason;
+                personImport.IsDeceased = slingshotPerson.InactiveReason.Equals( "Deceased" );
+                personImport.RecordStatusReasonValueId = this.RecordStatusReasonValues.Values.FirstOrDefault( v => v.Value.Equals( slingshotPerson.InactiveReason ) )?.Id;
 
                 if ( !string.IsNullOrEmpty( slingshotPerson.ConnectionStatus ) )
                 {
@@ -2057,6 +2061,7 @@ namespace Rock.Slingshot
         {
             this.PersonRecordTypeValues = LoadDefinedValues( Rock.SystemGuid.DefinedType.PERSON_RECORD_TYPE.AsGuid() );
             this.PersonRecordStatusValues = LoadDefinedValues( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS.AsGuid() );
+            this.RecordStatusReasonValues = LoadDefinedValues( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON.AsGuid() );
             this.PersonConnectionStatusValues = LoadDefinedValues( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ).Select( a => a.Value ).ToDictionary( k => k.Value, v => v );
             this.PersonTitleValues = LoadDefinedValues( Rock.SystemGuid.DefinedType.PERSON_TITLE.AsGuid() ).Select( a => a.Value ).ToDictionary( k => k.Value, v => v );
             this.PersonSuffixValues = LoadDefinedValues( Rock.SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid() ).Select( a => a.Value ).ToDictionary( k => k.Value, v => v );
