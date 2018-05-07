@@ -1124,6 +1124,24 @@ namespace Rock.Attribute
         /// <remarks>
         /// If a rockContext value is included, this method will save any previous changes made to the context
         /// </remarks>
+        [Obsolete]
+        public static void SaveAttributeValue(Rock.Data.IHasAttributes model, Web.Cache.AttributeCache attribute, string newValue, RockContext rockContext = null)
+        {
+            if (attribute == null) return;
+            var newAttribute = CacheAttribute.Get( attribute.Id );
+            SaveAttributeValue( model, newAttribute, newValue, rockContext );
+        }
+
+        /// <summary>
+        /// Saves an attribute value.
+        /// </summary>
+        /// <param name="model">The model.</param>
+        /// <param name="attribute">The attribute.</param>
+        /// <param name="newValue">The new value.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <remarks>
+        /// If a rockContext value is included, this method will save any previous changes made to the context
+        /// </remarks>
         public static void SaveAttributeValue( Rock.Data.IHasAttributes model, Rock.Cache.CacheAttribute attribute, string newValue, RockContext rockContext = null )
         {
             if ( model != null && attribute != null )
