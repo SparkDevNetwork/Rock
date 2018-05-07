@@ -24,6 +24,10 @@ using Rock.Extension;
 
 namespace Rock.Web.UI.Controls
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.Web.UI.Controls.RockBoundField" />
     [ToolboxData( "<{0}:HtmlField runat=server></{0}:HtmlField>" )]
     public class HtmlField : RockBoundField
     {
@@ -87,6 +91,11 @@ namespace Rock.Web.UI.Controls
             return base.FormatDataValue( cleanHtmlString, encode );
         }
 
+        /// <summary>
+        /// Gets the value that should be exported to Excel
+        /// </summary>
+        /// <param name="row">The row.</param>
+        /// <returns></returns>
         public override object GetExportValue( GridViewRow row )
         {
             if ( row.DataItem is System.Data.DataRowView )
