@@ -62,14 +62,6 @@ namespace Rock.Communication
                 if ( person.IsEmailActive == true )
                 {
                     person.IsEmailActive = false;
-
-                    HistoryService.SaveChanges(
-                        rockContext,
-                        typeof( Email ),
-                        Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                        person.Id,
-                        new List<string>() { $"Email inactivated by system because it experienced a {bounceType.Humanize()} on {bouncedDateTime.ToShortDateString()}{bounceMessage}." },
-                        false );
                 }
 
                 person.EmailNote = $"Email experienced a {bounceType.Humanize()} on {bouncedDateTime.ToShortDateString()}{bounceMessage}.";
