@@ -106,6 +106,7 @@ namespace Rock.Model
             target.RelatedEntityId = source.RelatedEntityId;
             target.RelatedEntityTypeId = source.RelatedEntityTypeId;
             target.Source = source.Source;
+            target.Term = source.Term;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

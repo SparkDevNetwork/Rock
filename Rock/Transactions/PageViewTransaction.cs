@@ -103,6 +103,14 @@ namespace Rock.Transactions
         public string PageTitle { get; set; }
 
         /// <summary>
+        /// Gets or sets the browser title. This can be different than the page title as Lava and/or blocks can change this.
+        /// </summary>
+        /// <value>
+        /// The browser title.
+        /// </value>
+        public string BrowserTitle { get; set; }
+
+        /// <summary>
         /// The ua parser
         /// </summary>
         private static Parser uaParser = Parser.GetDefault();
@@ -158,7 +166,13 @@ namespace Rock.Transactions
                             var clientOs = client.OS.ToString();
                             var clientBrowser = client.UserAgent.ToString();
 
-                            var interaction = new InteractionService( rockContext ).AddInteraction( interactionComponent.Id, null, "View", Url, PersonAliasId, DateViewed,
+                            // remove site name from browser title
+                            if ( BrowserTitle.Contains( "|" ) )
+                            {
+                                BrowserTitle = BrowserTitle.Substring( 0, BrowserTitle.LastIndexOf( '|' ) ).Trim();
+                            }
+
+                            var interaction = new InteractionService( rockContext ).AddInteraction( interactionComponent.Id, null, "View", BrowserTitle, Url, PersonAliasId, DateViewed,
                                 clientBrowser, clientOs, clientType, userAgent, IPAddress, this.SessionId?.AsGuidOrNull() );
 
                             if ( Url.IsNotNullOrWhitespace() && Url.IndexOf( "utm_", StringComparison.OrdinalIgnoreCase ) >= 0 )
@@ -168,6 +182,7 @@ namespace Rock.Transactions
                                 interaction.Medium = urlParams.Get( "utm_medium" ).Truncate( 25 );
                                 interaction.Campaign = urlParams.Get( "utm_campaign" ).Truncate( 50 );
                                 interaction.Content = urlParams.Get( "utm_content" ).Truncate( 50 );
+                                interaction.Term = urlParams.Get( "utm_term" ).Truncate( 50 );
                             }
 
                             rockContext.SaveChanges();

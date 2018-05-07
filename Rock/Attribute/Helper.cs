@@ -112,7 +112,7 @@ namespace Rock.Attribute
                 bool customGridOptionsBlock = typeof( Rock.Web.UI.ICustomGridOptions ).IsAssignableFrom( type );
                 if ( customGridOptionsBlock )
                 {
-                    entityProperties.Add( new BooleanFieldAttribute( CustomGridOptionsConfig.EnableStickerHeadersAttributeKey, category: "CustomSetting" ) );
+                    entityProperties.Add( new BooleanFieldAttribute( CustomGridOptionsConfig.EnableStickyHeadersAttributeKey, category: "CustomSetting" ) );
                 }
 
                 bool dynamicAttributesBlock = typeof( Rock.Web.UI.IDynamicAttributesBlock ).IsAssignableFrom( type );
