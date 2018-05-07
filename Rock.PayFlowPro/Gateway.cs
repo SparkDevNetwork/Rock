@@ -92,6 +92,11 @@ namespace Rock.PayFlowPro
             Response ppResponse = null;
 
             var invoice = GetInvoice( paymentInfo );
+
+            BrowserInfo browser = new BrowserInfo();
+            browser.ButtonSource = "SparkDevelopmentNetwork_SP";
+            invoice.BrowserInfo = browser;
+
             var tender = GetTender( paymentInfo );
 
             if ( tender != null )
@@ -155,6 +160,12 @@ namespace Rock.PayFlowPro
             Response ppResponse = null;
 
             var invoice = GetInvoice( paymentInfo );
+
+            // add in spark reference code
+            BrowserInfo browser = new BrowserInfo();
+            browser.ButtonSource = "SparkDevelopmentNetwork_SP";
+            invoice.BrowserInfo = browser;
+            
             var tender = GetTender( paymentInfo );
 
             if ( tender != null )
