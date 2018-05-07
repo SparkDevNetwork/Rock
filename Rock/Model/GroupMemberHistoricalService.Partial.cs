@@ -34,8 +34,9 @@ namespace Rock.Model
         /// <param name="personId">The person identifier.</param>
         /// <param name="startDateTime">The start date time.</param>
         /// <param name="stopDateTime">The stop date time.</param>
+        /// <param name="groupTypeIds">The group type ids.</param>
         /// <returns></returns>
-        public List<GroupHistoricalSummary> GetGroupHistoricalSummary( int personId, DateTime? startDateTime, DateTime? stopDateTime )
+        public List<GroupHistoricalSummary> GetGroupHistoricalSummary( int personId, DateTime? startDateTime, DateTime? stopDateTime, List<int> groupTypeIds )
         {
             var rockContext = this.Context as RockContext;
 
@@ -54,6 +55,11 @@ namespace Rock.Model
                 groupMemberHistoricalQuery = groupMemberHistoricalQuery.Where( a => a.EffectiveDateTime < stopDateTime.Value );
             }
 
+            if ( groupTypeIds?.Any() == true)
+            {
+                groupMemberHistoricalQuery = groupMemberHistoricalQuery.Where( a => groupTypeIds.Contains( a.Group.GroupTypeId ) );
+            }
+             
             return this.GetGroupHistoricalSummary( groupMemberHistoricalQuery );
         }
 
