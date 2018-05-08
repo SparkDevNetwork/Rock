@@ -1,4 +1,17 @@
 
+.page-background { 
+   background-image: url("/Themes/church_ccv_External_v8/Assets/Images/our-story-hero.jpg");
+   background-color: white;
+}
+
+
+#section-b-bg {
+   background: url("/Themes/church_ccv_External_v8/Assets/Images/our-story-history-bg.jpg") no-repeat;
+   
+   background-size: cover;
+   background-color: #ffffff;
+}
+
 .storyCard {
    background-color: rgb(255, 255, 255);
    box-sizing: border-box;

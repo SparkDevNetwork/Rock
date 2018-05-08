@@ -4,6 +4,13 @@
     padding-top: 75px;
 }
 
+.page-background {   
+   margin: auto;
+   background-repeat: no-repeat;
+   background-attachment: fixed;
+   background-position: center top;
+}
+
 #zone-feature {
    max-width: 1280px;
    margin: 0 auto;
@@ -356,6 +363,11 @@
     margin-bottom: 20px;
  }
 
+.infoSection ul 
+{
+   color: #707270;
+}
+
 .graphicSection {
    padding-top: 150px;
    padding-bottom: 150px;
@@ -369,6 +381,7 @@
    color: white;
 }
 
+/*Start "Wistia Style" video thumbnail */
 /*Render the "play video" overlay*/
 .videoThumbnail {
    position:relative;
@@ -409,6 +422,19 @@
    font-size: 1.2em;
    color: white;
 }
+/*End "Wistia Style" video thumbnail */
+
+/*Start 'Right Hand Side Video' fix. Used to create margin when a text | video layout collapses for responsiveness */
+.rhs-video {
+   margin-top: 25px;
+}
+
+@media screen and (min-width: 992px) {
+   .rhs-video {
+      margin-top: 0px;
+   }
+}
+/*End 'Right Hand Side Video' fix */
 
 /*  Start Event Card Styling */
 .event-cards-header {

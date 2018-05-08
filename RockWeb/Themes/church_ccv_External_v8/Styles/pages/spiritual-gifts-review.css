@@ -1,0 +1,67 @@
+.page-background {
+    background-color: #000;
+}
+
+.masthead {
+    background-color: black;
+}
+
+.main-feature {
+    padding-top: 75px;
+}
+
+#zone-sectiona {
+    max-width: 1024px;
+    margin: 0 auto;
+    padding-left: 30px;
+}
+
+@media screen and (min-width: 1000px) {
+    #zone-sectiona {
+        padding-left: 30px;        
+    }
+
+}
+
+#subnavbar-bg {
+	background-color: #F6F6F6;
+}
+
+#section-a-bg {
+	background-color: #F6F6F6;
+}
+
+#section-b-bg {
+	background-color: #FFFFFF;
+}
+
+#zone-sectionb {
+    background-color: #FFFFFF;
+    max-width: 1024px;
+    margin: 0 auto;
+    padding-left: 30px;
+}
+
+/* Override Theme.css */
+@media screen and (max-width: 800px) {
+    #subnavbar-bg {
+        display: block;
+        padding-top: 40px;
+    }
+    
+    #subnavbar-bg h1, .disc-heading h1 {
+        font-size: 35px;
+    }
+    
+    #section-a-bg {
+        padding: 0px 15px;
+    }
+    
+    #zone-sectiona {
+        padding: 10px;
+    }
+    #zone-sectionb {
+        padding: 10px;
+        margin-bottom: 15px;
+    }
+}

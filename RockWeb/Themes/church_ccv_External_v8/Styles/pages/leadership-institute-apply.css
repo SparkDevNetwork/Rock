@@ -1,0 +1,50 @@
+.page-background {
+    background-size: cover;
+    background-position: center top;
+    background-color: #000;
+    margin: auto;
+}
+
+/* Override Theme.css */
+@media screen and (max-width: 800px) {
+    #subnavbar-bg {
+        display: block;
+    }
+    
+    #desktopspacer {
+        display: none;
+    }
+    
+    #section-a-bg {
+        padding: 0px 15px;
+    }
+}
+
+.masthead {
+    background-color: black;
+}
+
+.main-feature {
+    padding-top: 75px;
+}
+
+#subnavbar-bg {
+	background-color: #F6F6F6;
+}
+
+#section-a-bg {
+	background-color: #F6F6F6;
+}
+
+#zone-sectiona {
+    background-color: #FFFFFF;
+    box-shadow: 0px 0px 10px #E5E5E5;
+    border-radius: 5px;
+    padding: 30px;
+    max-width: 1024px;
+    margin: 0 auto;
+}
+
+#section-b-bg {
+	background-color: #F6F6F6;
+}

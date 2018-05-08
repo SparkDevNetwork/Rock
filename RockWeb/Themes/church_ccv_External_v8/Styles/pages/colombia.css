@@ -140,7 +140,7 @@
       display:flex;
     }
     .colombia #physical-needs .mockup .info {
-      padding: 5% 0 0; }
+      padding: 5% 15px 0; }
     .colombia #physical-needs .app-store-icons {
       padding: 5%;
       display: -webkit-box;
@@ -231,8 +231,8 @@
         background: #8b9164; }
       .colombia #physical-needs a {
         display: inline-block; }
-      .colombia #physical-needs .info {
-        width: 50%; }
+      .colombia #physical-needs .mockup .info {
+        width: 50%; padding-left:0; padding-right: 0;}
         .colombia #physical-needs .info h5 {
           font-weight:bold;
         }

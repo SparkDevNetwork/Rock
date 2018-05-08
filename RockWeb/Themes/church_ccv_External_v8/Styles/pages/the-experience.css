@@ -1,0 +1,19 @@
+.page-background {
+   background-image: url("/Themes/church_ccv_External_v8/Assets/Images/the-experience-hero.jpg");
+   background-color: white;
+}
+
+#section-b-bg {
+   background: url("/Themes/church_ccv_External_v8/Assets/Images/the-experience-music.jpg") no-repeat;
+   background-size: cover;
+}
+
+#section-d-bg {
+	background-color: #f9f9f9;
+   background: url("/Themes/church_ccv_External_v8/Assets/Images/the-experience-campus.jpg") no-repeat;
+   background-size: cover;
+}
+
+.thumbnail {
+   min-height: 200px;
+}

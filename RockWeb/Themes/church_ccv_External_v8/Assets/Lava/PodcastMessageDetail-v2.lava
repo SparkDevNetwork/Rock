@@ -28,9 +28,6 @@ REQUIRED VARIABLES
 {{ Message.Description | AddMetaTagToHead: 'property', 'og:description' }}
 {{ ogImage | AddMetaTagToHead: 'property', 'og:image' }}
 
-
-{{ "/Themes/church_ccv_External_v7/Styles/pages/watch.css" | AddLinkTagToHead:'rel','stylesheet' }}
-
 <h1>{{ Message.Name }}</h1>
 
 <div class="embed-responsive embed-responsive-16by9 margin-b-md">

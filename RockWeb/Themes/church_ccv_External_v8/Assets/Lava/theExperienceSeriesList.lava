@@ -66,7 +66,6 @@
 
       {% for message in series.Messages offset:firstMessageIndex %}
        
-         {{ message.3rdPartyFullVideoUrl }}
          <div class="col-sm-6 col-md-4">
             <div class="thumbnail padding-b-none js-series">
                <a href="{{ Message.Attributes.3rdPartyFullVideoUrl }}" data-lity>

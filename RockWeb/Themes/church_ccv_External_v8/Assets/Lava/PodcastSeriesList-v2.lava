@@ -3,8 +3,6 @@
   {% assign isFirstPage = true %}
 {% endif %}
 
-{{ "/Themes/church_ccv_External_v8/Styles/pages/watch.css" | AddLinkTagToHead:'rel','stylesheet' }}
-
 <div id="previous-series" class="watch container-fluid">
   <div class="row">
 

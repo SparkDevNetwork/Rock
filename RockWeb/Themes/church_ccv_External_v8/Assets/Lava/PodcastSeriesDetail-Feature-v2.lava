@@ -10,8 +10,6 @@
 {{ Series.Description | AddMetaTagToHead: 'property', 'og:description' }}
 {{ ogImage | AddMetaTagToHead: 'property', 'og:image' }}
 
-{{ "/Themes/church_ccv_External_v8/Styles/pages/watch.css" | AddLinkTagToHead:'rel','stylesheet' }}
-
 {% if Series.Attributes.HeaderImage != empty %}
   <header class="bigblock bigblock-flexbg bigblock-flexbg-md" style="background-image: url('/GetImage.ashx?guid={{ Series.Attributes.HeaderImage }}');"></header>
 {% endif %}

@@ -11,18 +11,18 @@
     <div class="dropdown">
       <button class="dropdown-toggle masthead-fullmenu-navitem" type="button" data-toggle="dropdown" style="border: 0px;">About Us<b class="fa fa-caret-down"></b></button>
       <ul class="dropdown-menu">
-        <li><a href="/storyv2">About Us</a></li>
+        <li><a href="/our-storyv2">About Us</a></li>
         <li><a href="/leadershipv2">Leadership</a></li>
         <li><a href="/kidsv2">Kids</a></li>
         <li><a href="/studentsv2">Students</a></li>
         <li><a href="/specialneedsv2">Special Needs</a></li>
         <li><a href="/missionsv2">Missions</a></li>
         <li><a href="/starsv2">STARS Youth Sports</a></li>
-        <li><a href="/leadershipinstituteV2">Leadership Institute</a></li>
+        <li><a href="/leadership-instituteV2">Leadership Institute</a></li>
       </ul>
     </div>
 
-    <a class="masthead-fullmenu-navitem" href="/experiencev2">The Experience</a>
+    <a class="masthead-fullmenu-navitem" href="/the-experiencev2">The Experience</a>
     
     <div class="dropdown">
       <button class="dropdown-toggle masthead-fullmenu-navitem" type="button" data-toggle="dropdown" style="border: 0px;">Get Involved<b class="fa fa-caret-down"></b></button>
