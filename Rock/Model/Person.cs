@@ -1953,7 +1953,7 @@ namespace Rock.Model
                             {
                                 var personSearchKeyService = new PersonSearchKeyService( rockContext );
                                 var searchTypeValue = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_EMAIL.AsGuid() );
-                                if ( !personSearchKeyService.Queryable().Any( a => a.PersonAlias.PersonId == Id && a.SearchTypeValueId == searchTypeValue.Id ) )
+                                if ( !personSearchKeyService.Queryable().Any( a => a.PersonAlias.PersonId == Id && a.SearchTypeValueId == searchTypeValue.Id && a.SearchValue == currentEmail ) )
                                 {
                                     PersonSearchKey personSearchKey = new PersonSearchKey()
                                     {
