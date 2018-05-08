@@ -1814,6 +1814,59 @@ namespace Rock.Model
 
         #endregion
 
+        #region Person Group Methods
+
+        /// <summary>
+        /// Gets the peer network group.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns></returns>
+        public Group GetPeerNetworkGroup( int personId )
+        {
+            var peerNetworkGroupType = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_PEER_NETWORK.AsGuid() );
+            var impliedOwnerRole = peerNetworkGroupType.Roles.Where( r => r.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_PEER_NETWORK_OWNER.AsGuid() ).FirstOrDefault();
+
+            var rockContext = this.Context as RockContext;
+
+            var peerNetworkGroup = new GroupMemberService( rockContext ).Queryable()
+                                    .Where(
+                                        m => m.PersonId == personId
+                                        && m.GroupRoleId == impliedOwnerRole.Id
+                                        && m.Group.GroupTypeId == peerNetworkGroupType.Id
+                                    )
+                                    .Select( m => m.Group )
+                                    .FirstOrDefault();
+
+            // It's possible that a implied group does not exist for this person due to poor migration from a different system or a manual insert of the data
+            if ( peerNetworkGroup == null )
+            {
+                // Create the new peer network group using a new context so as not to save changes in the current one
+                using ( var rockContextClean = new RockContext() )
+                {
+                    var groupServiceClean = new GroupService( rockContextClean );
+
+                    var groupMember = new GroupMember();
+                    groupMember.PersonId = personId;
+                    groupMember.GroupRoleId = impliedOwnerRole.Id;
+
+                    var peerNetworkGroupClean = new Group();
+                    peerNetworkGroupClean.Name = peerNetworkGroupType.Name;
+                    peerNetworkGroupClean.GroupTypeId = peerNetworkGroupType.Id;
+                    peerNetworkGroupClean.Members.Add( groupMember );
+
+                    groupServiceClean.Add( peerNetworkGroupClean );
+                    rockContextClean.SaveChanges();
+
+                    // Get the new peer network group using the original context
+                    peerNetworkGroup = new GroupService( rockContext ).Get( peerNetworkGroupClean.Id );
+                }
+            }
+
+            return peerNetworkGroup;
+        }
+
+        #endregion
+
         /// <summary>
         /// Gets all of the IsMappedLocation points for a given user. Although each family can only have one 
         /// IsMapped point, the person may belong to more than one family
