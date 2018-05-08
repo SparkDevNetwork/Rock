@@ -72,6 +72,7 @@
                 <Rock:ModalAlert ID="mdGridWarning" runat="server" />
                 <div class="grid grid-panel">
                     <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue">
+                        <Rock:SlidingDateRangePicker ID="sdrpLastActivityDateRange" runat="server" Label="Last Activity Date Range" />
                         <Rock:PersonPicker ID="ppRequester" runat="server" Label="Requester" />
                         <Rock:PersonPicker ID="ppConnector" runat="server" Label="Connector" />
                         <Rock:RockCheckBoxList ID="cblStatus" runat="server" Label="Status" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" />
