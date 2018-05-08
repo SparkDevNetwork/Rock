@@ -52,11 +52,10 @@ namespace Rock.Field.Types
                 Guid? guid = value.AsGuidOrNull();
                 if ( guid.HasValue )
                 {
-                    var workflowType = new WorkflowTypeService( new RockContext() )
-                        .Queryable().FirstOrDefault( a => a.Guid.Equals( guid.Value ) );
-                    if ( workflowType != null )
+                    var workflowTypeName = new WorkflowTypeService( new RockContext() ).GetSelect( guid.Value, a => a.Name );
+                    if ( workflowTypeName != null )
                     {
-                        formattedValue = workflowType.Name;
+                        formattedValue = workflowTypeName;
                     }
                 }
             }
@@ -99,7 +98,7 @@ namespace Rock.Field.Types
                 {
                     using ( var rockContext = new RockContext() )
                     {
-                        itemGuid = new WorkflowTypeService( rockContext ).Queryable().Where( a => a.Id == itemId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
+                        itemGuid = new WorkflowTypeService( rockContext ).GetGuid( itemId.Value );
                     }
                 }
 
@@ -127,10 +126,8 @@ namespace Rock.Field.Types
                 // get the item (or null) and set it
                 if ( guid.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
-                    {
-                        item = new WorkflowTypeService( rockContext ).Get( guid.Value );
-                    }
+                    var rockContext = new RockContext();
+                    item = new WorkflowTypeService( rockContext ).GetNoTracking( guid.Value );
                 }
 
                 picker.SetValue( item );
@@ -150,8 +147,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = new WorkflowTypeService( new RockContext() ).Get( guid );
-            return item != null ? item.Id : (int?)null;
+            return new WorkflowTypeService( new RockContext() ).GetId( guid );
         }
 
         /// <summary>

@@ -61,7 +61,7 @@ namespace Rock.Web.UI.Controls
                 ItemId = workflowType.Id.ToString();
 
                 string parentCategoryIds = string.Empty;
-                var parentCategory = workflowType.Category;
+                var parentCategory = workflowType.CategoryId.HasValue ? CacheCategory.Get( workflowType.CategoryId.Value ) : null;
                 while ( parentCategory != null )
                 {
                     parentCategoryIds = parentCategory.Id + "," + parentCategoryIds;
