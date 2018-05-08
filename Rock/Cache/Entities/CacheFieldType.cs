@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 
@@ -125,6 +126,27 @@ namespace Rock.Cache
         #endregion
 
         #region Static Methods
+
+        /// <summary>
+        /// Gets all the instances of this type of model/entity that are currently in cache.
+        /// </summary>
+        /// <returns></returns>
+        public new static List<CacheFieldType> All()
+        {
+            // use 'new' to override the base All since we want to sort field types
+            return ModelCache<CacheFieldType, FieldType>.All().OrderBy( a => a.Name ).ToList();
+        }
+
+        /// <summary>
+        /// Gets all the instances of this type of model/entity that are currently in cache.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public new static List<CacheFieldType> All( RockContext rockContext )
+        {
+            // use 'new' to override the base All since we want to sort field types
+            return ModelCache<CacheFieldType, FieldType>.All( rockContext ).OrderBy( a => a.Name ).ToList();
+        }
 
         /// <summary>
         /// Gets this instance.
