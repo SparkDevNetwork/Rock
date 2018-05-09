@@ -21,14 +21,18 @@ namespace Rock.Jobs
     class PostV80DataMigrations : IJob
     {
         /// <summary>
-        /// Executes the specified context.
+        /// Executes the specified context. When updating large data sets SQL will burn a lot of time updating the indexes. If performing multiple inserts/updates
+        /// consider dropping the related indexes first and re-creating them once the opoeration is complete.
+        /// Put all index creation method calls at the end of this method.
         /// </summary>
         /// <param name="context">The context.</param>
         /// <exception cref="NotImplementedException"></exception>
         public void Execute( IJobExecutionContext context )
         {
-            CreateIndexInteractionsForeignKey();
             UpdateInteractionSummaryForPageViews();
+
+            // Keep these two last.
+            CreateIndexInteractionsForeignKey();
             DeleteJob( context.GetJobId() );
         }
 
@@ -60,6 +64,7 @@ namespace Rock.Jobs
         {
             using ( RockContext rockContext = new RockContext() )
             {
+                rockContext.Database.CommandTimeout = 7200;
                 rockContext.Database.ExecuteSqlCommand( @"IF NOT EXISTS( SELECT * FROM sys.indexes WHERE name = 'IX_ForeignKey' AND object_id = OBJECT_ID( N'[dbo].[Interaction]' ) ) 
                     BEGIN
                     CREATE NONCLUSTERED INDEX [IX_ForeignKey]
@@ -99,30 +104,16 @@ namespace Rock.Jobs
         {
             using ( RockContext rockContext = new RockContext() )
             {
-                string sqlQuery = @"DECLARE @ChannelMediumValueId INT;
-                                    SELECT 
-	                                    @ChannelMediumValueId = [Id]
-                                    FROM 
-	                                    [DefinedValue]
-                                    WHERE [Guid]='{0}'
-                                    UPDATE 
-	                                    A
-                                    SET
-	                                    A.[InteractionSummary] = B.[Name]
-                                    FROM
-	                                    [Interaction] A INNER JOIN 
-	                                    [InteractionComponent] B 
-                                    ON
-	                                    A.[InteractionComponentId] = B.[Id]
-                                    WHERE
-	                                    B.[ChannelId]  IN (SELECT
-							                                    [Id]
-						                                    FROM
-							                                    [InteractionChannel]
-						                                    WHERE 
-							                                    [ChannelTypeMediumValueId]=@ChannelMediumValueId)";
+                rockContext.Database.CommandTimeout = 7200;
+                string sqlQuery = $@"DECLARE @ChannelMediumValueId INT = (SELECT [Id] FROM [DefinedValue] WHERE [Guid]='{SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE}')
 
-                rockContext.Database.ExecuteSqlCommand( string.Format(sqlQuery, SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE ) );
+                    UPDATE [Interaction]
+                    SET [Interaction].[InteractionSummary] = [InteractionComponent].[Name]
+                    FROM [Interaction]
+                    INNER JOIN [InteractionComponent] ON [Interaction].[InteractionComponentId] = [InteractionComponent].[Id]
+                    WHERE [InteractionComponent].[ChannelId] IN (SELECT [Id] FROM [InteractionChannel] WHERE [ChannelTypeMediumValueId] = @ChannelMediumValueId)";
+
+                rockContext.Database.ExecuteSqlCommand( sqlQuery );
             }
         }
     }
