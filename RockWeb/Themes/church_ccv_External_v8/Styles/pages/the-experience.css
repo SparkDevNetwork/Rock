@@ -14,6 +14,10 @@
    background-size: cover;
 }
 
+#section-e-bg {
+   display: none;
+}
+
 .thumbnail {
    min-height: 200px;
 }

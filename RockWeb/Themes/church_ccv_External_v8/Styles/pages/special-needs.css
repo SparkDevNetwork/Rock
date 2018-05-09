@@ -1,7 +1,7 @@
 /* Kids Page */
 .page-background {   
     background-color: #EBEBEB;
-    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-special-needs.jpg");
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/special-needs-hero.jpg");
 }
 
 #subnavbar-bg {
@@ -10,4 +10,31 @@
 
 #section-a-bg {
 	background-color: #EBEBEB;
+}
+
+#section-b-bg {
+   display: none;
+}
+
+.sn-times-wrapper {
+   display: flex;
+   flex-wrap: wrap;
+   max-width: 400px;
+}
+
+.sn-times-header-wrapper {
+   margin-top: 15px;
+   display: flex;
+   justify-content: space-evenly;
+   align-items: center;
+}
+
+.sn-service-times {
+   color: #777;
+}
+
+@media screen and (min-width: 992px) {
+   .sn-times-header-wrapper {
+      margin-top: 0px;
+   }
 }

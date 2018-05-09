@@ -30,9 +30,10 @@
 }
 
 #section-d-bg {
-	display: none;
+   background-color: #f9f9f9;
 }
 
 #section-e-bg {
-    display: none;
+   background: url("/Themes/church_ccv_External_v8/Assets/Images/students-stars.jpg") no-repeat;
+   background-size: cover;
 }
