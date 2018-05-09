@@ -122,6 +122,17 @@ namespace RockWeb.Blocks.Cms
                 tglStatus.Checked = GetUserPreference( STATUS_FILTER_SETTING ).AsBoolean();
 
                 SelectedChannelId = PageParameter( "contentChannelId" ).AsIntegerOrNull();
+
+                if ( !SelectedChannelId.HasValue )
+                {
+                    var selectedChannelGuid = PageParameter( "contentChannelGuid" ).AsGuidOrNull();
+
+                    if ( selectedChannelGuid.HasValue )
+                    {
+                        SelectedChannelId = CacheContentChannel.Get( selectedChannelGuid.Value ).Id;
+                    }
+                }
+
                 if ( !SelectedChannelId.HasValue )
                 {
                     SelectedChannelId = GetUserPreference( SELECTED_CHANNEL_SETTING ).AsIntegerOrNull();
