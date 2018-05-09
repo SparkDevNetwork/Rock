@@ -1611,11 +1611,20 @@ namespace Rock.Web.UI.Controls
                 this.IsFieldTypeEditable = attribute.Id == 0 || attribute.FieldTypeId == 0;
 
                 var qualifiers = new Dictionary<string, ConfigurationValue>();
+                
+                var field = CacheFieldType.Get( attribute.FieldTypeId )?.Field;
+                if ( field != null )
+                {
+                    // initialize qualifiers from field's Configuration Keys in case the Attribute doesn't have AttributeQualifiers for all the config keys yet
+                    qualifiers = field.ConfigurationKeys().ToDictionary( k => k, v => new ConfigurationValue() );
+                }
+
                 if ( attribute.AttributeQualifiers != null )
                 {
+                    // Update the Qualifiers with the values from AttributeQualifiers
                     foreach ( Rock.Model.AttributeQualifier qualifier in attribute.AttributeQualifiers )
                     {
-                        qualifiers.Add( qualifier.Key, new ConfigurationValue( qualifier.Value ) );
+                        qualifiers.AddOrReplace( qualifier.Key, new ConfigurationValue( qualifier.Value ) );
                     }
                 }
 

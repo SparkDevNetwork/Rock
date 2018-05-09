@@ -59,31 +59,31 @@ namespace Rock.Field.Types
             var controls = base.ConfigurationControls();
 
             // Add checkbox for deciding if the textbox is used for storing a password
-            var cb = new RockCheckBox();
-            controls.Add( cb );
-            cb.AutoPostBack = true;
-            cb.CheckedChanged += OnQualifierUpdated;
-            cb.Label = "Password Field";
-            cb.Text = "Yes";
-            cb.Help = "When set, edit field will be masked.";
+            var cbIsPasswordField = new RockCheckBox();
+            controls.Add( cbIsPasswordField );
+            cbIsPasswordField.AutoPostBack = true;
+            cbIsPasswordField.CheckedChanged += OnQualifierUpdated;
+            cbIsPasswordField.Label = "Password Field";
+            cbIsPasswordField.Text = "Yes";
+            cbIsPasswordField.Help = "When set, edit field will be masked.";
 
             // Add number box for selecting the maximum number of characters
-            var nbCharacter = new NumberBox();
-            controls.Add( nbCharacter );
-            nbCharacter.AutoPostBack = true;
-            nbCharacter.TextChanged += OnQualifierUpdated;
-            nbCharacter.NumberType = ValidationDataType.Integer;
-            nbCharacter.Label = "Max Characters";
-            nbCharacter.Help = "The maximum number of characters to allow. Leave this field empty to allow for an unlimited amount of text.";
+            var nbMaxCharacters = new NumberBox();
+            controls.Add( nbMaxCharacters );
+            nbMaxCharacters.AutoPostBack = true;
+            nbMaxCharacters.TextChanged += OnQualifierUpdated;
+            nbMaxCharacters.NumberType = ValidationDataType.Integer;
+            nbMaxCharacters.Label = "Max Characters";
+            nbMaxCharacters.Help = "The maximum number of characters to allow. Leave this field empty to allow for an unlimited amount of text.";
 
             // Add checkbox indicating whether to show the count down.
-            var cbCountDown = new RockCheckBox();
-            controls.Add( cbCountDown );
-            cbCountDown.AutoPostBack = true;
-            cbCountDown.CheckedChanged += OnQualifierUpdated;
-            cbCountDown.Label = "Show Character Limit Countdown";
-            cbCountDown.Text = "Yes";
-            cbCountDown.Help = "When set, displays a countdown showing how many characters remain (for the Max Characters setting).";
+            var cbShowCountDown = new RockCheckBox();
+            controls.Add( cbShowCountDown );
+            cbShowCountDown.AutoPostBack = true;
+            cbShowCountDown.CheckedChanged += OnQualifierUpdated;
+            cbShowCountDown.Label = "Show Character Limit Countdown";
+            cbShowCountDown.Text = "Yes";
+            cbShowCountDown.Help = "When set, displays a countdown showing how many characters remain (for the Max Characters setting).";
 
             return controls;
         }
@@ -102,19 +102,31 @@ namespace Rock.Field.Types
 
             if ( controls != null )
             {
-                if ( controls.Count > 0 && controls[0] != null && controls[0] is CheckBox )
+                if ( controls.Count > 0 )
                 {
-                    configurationValues[IS_PASSWORD_KEY].Value = ( ( CheckBox ) controls[0] ).Checked.ToString();
+                    CheckBox cbIsPasswordField = controls[0] as CheckBox;
+                    if ( cbIsPasswordField != null )
+                    {
+                        configurationValues[IS_PASSWORD_KEY].Value = cbIsPasswordField.Checked.ToString();
+                    }
                 }
 
-                if ( controls.Count > 1 && controls[1] != null && controls[1] is NumberBox )
+                if ( controls.Count > 1 )
                 {
-                    configurationValues[MAX_CHARACTERS].Value = ( ( NumberBox ) controls[1] ).Text;
+                    NumberBox nbMaxCharacters = controls[1] as NumberBox;
+                    if ( nbMaxCharacters != null )
+                    {
+                        configurationValues[MAX_CHARACTERS].Value = nbMaxCharacters.Text;
+                    }
                 }
 
-                if ( controls.Count > 2 && controls[2] != null && controls[2] is CheckBox )
+                if ( controls.Count > 2 )
                 {
-                    configurationValues[SHOW_COUNT_DOWN].Value = ( ( CheckBox ) controls[2] ).Checked.ToString();
+                    CheckBox cbShowCountDown = controls[2] as CheckBox;
+                    if ( cbShowCountDown != null )
+                    {
+                        configurationValues[SHOW_COUNT_DOWN].Value = cbShowCountDown.Checked.ToString();
+                    }
                 }
             }
 
@@ -145,19 +157,31 @@ namespace Rock.Field.Types
         {
             if ( controls != null && controls.Count > 0 && configurationValues != null )
             {
-                if ( controls[0] != null && controls[0] is CheckBox && configurationValues.ContainsKey( IS_PASSWORD_KEY ) )
+                if ( controls.Count > 0 && configurationValues.ContainsKey( IS_PASSWORD_KEY ) )
                 {
-                    ( ( CheckBox ) controls[0] ).Checked = configurationValues[IS_PASSWORD_KEY].Value.AsBoolean();
+                    CheckBox cbIsPasswordField = controls[0] as CheckBox;
+                    if ( cbIsPasswordField != null )
+                    {
+                        cbIsPasswordField.Checked = configurationValues[IS_PASSWORD_KEY].Value.AsBoolean();
+                    }
                 }
 
-                if ( controls.Count > 1 && controls[1] != null && controls[1] is NumberBox && configurationValues.ContainsKey( MAX_CHARACTERS ) )
+                if ( controls.Count > 1 && configurationValues.ContainsKey( MAX_CHARACTERS ) )
                 {
-                    ( ( NumberBox ) controls[1] ).Text = configurationValues[MAX_CHARACTERS].Value;
+                    NumberBox nbMaxCharacters = controls[1] as NumberBox;
+                    if ( nbMaxCharacters != null )
+                    {
+                        nbMaxCharacters.Text = configurationValues[MAX_CHARACTERS].Value;
+                    }
                 }
 
-                if ( controls[2] != null && controls[2] is CheckBox && configurationValues.ContainsKey( SHOW_COUNT_DOWN ) )
+                if ( controls.Count > 2 && configurationValues.ContainsKey( SHOW_COUNT_DOWN ))
                 {
-                    ( ( CheckBox ) controls[2] ).Checked = configurationValues[SHOW_COUNT_DOWN].Value.AsBoolean();
+                    CheckBox cbShowCountDown = controls[2] as CheckBox;
+                    if ( cbShowCountDown != null )
+                    {
+                        cbShowCountDown.Checked = configurationValues[SHOW_COUNT_DOWN].Value.AsBoolean();
+                    }
                 }
             }
         }
@@ -370,13 +394,15 @@ namespace Rock.Field.Types
         /// <value>
         /// The type of the filter comparison.
         /// </value>
-        public override Model.ComparisonType FilterComparisonType {
-            get {
+        public override Model.ComparisonType FilterComparisonType
+        {
+            get
+            {
                 return ComparisonHelper.StringFilterComparisonTypes;
             }
         }
 
         #endregion
-        
+
     }
 }
