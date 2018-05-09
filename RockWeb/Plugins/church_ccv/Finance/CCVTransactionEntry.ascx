@@ -157,7 +157,7 @@
 
                                 <Rock:RockTextBox ID="tbStreet" runat="server" Label="Billing Address" ClientIDMode="Static" CssClass="required" />
 
-                                <div class="creditcard-city-state">
+                                <div class="creditcard-city">
 
                                     <Rock:RockTextBox ID="tbCity" runat="server" Label="City" ClientIDMode="Static" CssClass="required" />
 
@@ -168,7 +168,7 @@
 
                                     <Rock:RockDropDownList ID="ddlCountry" runat="server" Label="Country" ClientIDMode="Static" />
 
-                                    <Rock:NumberBox ID="nbPostalCode" runat="server" Label="Zip / Postal Code" ClientIDMode="Static" CssClass="numbers-only" />
+                                    <Rock:NumberBox ID="nbPostalCode" runat="server" Label="Postal Code" ClientIDMode="Static" CssClass="numbers-only" />
 
                                 </div>
                             </div>
@@ -208,8 +208,10 @@
                     <asp:Panel ID="pnlConfirm" runat="server" ClientIDMode="Static" CssClass="panel-confirm hidden">
             
                         <div class="confirm-card">
-                            <p id="confirmGiftMessage">You are giving a gift today of</p>
-                            <h3 id="confirmGiftAmount">$0</h3>
+                            <div class="confirm-card-gift">
+                                <p id="confirmGiftMessage">You are giving a gift today of</p>
+                                <h3 id="confirmGiftAmount">$0</h3>
+                            </div>
                             <div class="confirm-paymenttype-card">
                                 <span id="accountType"></span>
                                 <span id="personName"></span>
@@ -220,8 +222,7 @@
                                 </div>
                             </div>
                             <p class="confirm-agreement">
-                                By clicking "Confirm" below, I agree to allow to transer the amount above from my account.<br />
-                                I can update the payment information at any time by returning to this website.
+                                By clicking "Confirm" below, I agree to allow to transer the amount above from my account. I can update the payment information at any time by returning to this website.
                             </p>
                         </div>
                         <div class="navigation">

@@ -30,7 +30,7 @@
 }
 
 #desktopspacer {
-    padding-top: 125px;
+    padding-top: 100px;
 }
 
 /* Mobile Styling */
@@ -72,6 +72,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    min-height: 400px;
 }
 
 /* Mobile Styling */
@@ -107,7 +108,7 @@
 }
 
 .transaction-card .alert {
-    width: 90%;
+    width: 100%;
 }
 
 .step {
@@ -124,6 +125,11 @@
     line-height: 29px;
     color: #FFFFFF;
     margin: 0;
+}
+
+/* IOS override */
+.step input:disabled {
+    -webkit-opacity: 1;
 }
 
 .step h5 {
@@ -144,6 +150,8 @@
     background-color: #999999;
     border-radius: 50%;
     color: #FFFFFF;
+    box-sizing: border-box;
+    padding: 0;
 }
 
 .active {
@@ -157,8 +165,7 @@
 /* Mobile Styling */
 @media screen and (max-width: 500px) {
     .transaction-alerts {
-        width: unset;
-        margin-top: 10px;
+        margin-top: 5px;
     }
 
     .transaction-card .alert {
@@ -185,10 +192,11 @@
 .panel-amount {
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
+    justify-content: space-between;
     align-items: center;
-    margin-top: 40px;
-    min-height: 275px;
+    margin-top: 15px;
+    min-height: 325px;
+    width: 60%;
 }
 
 .accounts-wrapper {
@@ -196,6 +204,8 @@
     flex-direction: row;
     flex-wrap: nowrap;
     justify-content: center;
+    width: 100%;
+    margin-top: 25px;
 }
 
 .accounts {
@@ -205,6 +215,7 @@
     font-size: 20px;
     color: #7A1315;
     padding: unset;
+    padding-left: 10px;
 }
 
 .amount-wrapper {
@@ -215,7 +226,7 @@
 .amount {
     margin-top: 40px;
     margin-bottom: 80px;
-    width: 60%;
+    width: 100%;
     font-size: 65px;
     font-family: Akrobat;
     font-weight: bold;
@@ -239,8 +250,6 @@
 /* Mobile Styling */
 @media screen and (max-width: 500px) {
     .panel-amount {
-        justify-content: space-between;
-        margin: 15px 0;        
         width: 100%;
         padding: 0 20px;
     }
@@ -250,7 +259,7 @@
     }
 
     .amount {
-        width: 95%;
+        width: 100%;
         font-size: 45px;
         line-height: 45px;
         margin-top: unset;
@@ -264,16 +273,17 @@
 .panel-person {
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
+    justify-content: space-between;
     align-items: center;
-    margin-top: 40px;
-    min-height: 275px;
+    margin-top: 15px;
+    min-height: 325px;
+    width: 60%;
 }
 
 .person-info {
-    margin-top: 40px;
     margin-bottom: 40px;
     min-width: 300px;
+    width: 100%;
 }
 
 .person-info .form-group {
@@ -283,8 +293,6 @@
 /* Mobile Styling */
 @media screen and (max-width: 500px) {
     .panel-person {
-        justify-content: space-between;
-        margin: 15px 0;        
         width: 100%;
         padding: 0 20px;
     }
@@ -310,31 +318,52 @@
 .panel-payment {
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
+    justify-content: space-between;
     align-items: center;
-    margin-top: 40px;
-    min-height: 275px;
+    margin-top: 15px;
+    min-height: 325px;
+    width: 60%;
 }
 
 .payment-type {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    width: 100%
 }
 
-.payment-type .btn, #rblAccountType label {
+.payment-type .btn {
     font-family: heebo;
     font-size: 12px;
     line-height: 12px;
     font-weight: normal;
     white-space: normal;
     border-radius: 25px;
-    min-width: 80px;
-    border-radius: 25px;
+    height: 40px;
     background-color: #999999;
     border-color: #999999;
-    padding: 6px 6px;
     margin-right: 5px;
     margin-left: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#rblAccountType label {
+    font-family: heebo;
+    font-size: 12px;
+    line-height: 12px;
+    font-weight: normal;
+    white-space: normal;
+    border-radius: 25px;
+    height: 30px;
+    background-color: #999999;
+    border-color: #999999;
+    margin-right: 5px;
+    margin-left: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 #rblAccountType input[type="radio"] {
@@ -364,6 +393,10 @@
     font-weight: 700;
 }
 
+.panel-savedpayment {
+    margin-bottom: auto;
+    width: 100%;
+}
 
 .savedpayment-card select {
     padding: 0;
@@ -376,11 +409,16 @@
 
 .panel-creditcard {
     display: flex;
+    width: 120%;
+    margin-top: -10px
 }
 
 .creditcard-card {
     width: 50%;
-    padding: 20px 30px;
+}
+
+.creditcard-card:first-child {
+    padding-right: 20px;
 }
 
 .creditcard-wrapper {
@@ -398,8 +436,16 @@
 }
 
 #nbCVV {
-    width: 50px;
+    width: 60px;
     text-align: center;
+}
+
+.creditcard-city {
+    margin-top: -4px;
+}
+
+.creditcard-state-country-zip {
+    margin-top: -3px;
 }
 
 #ddlCountry {
@@ -415,11 +461,12 @@
     flex-direction: column;
     justify-content: space-between;
     align-self: center;
+    width: 100%;
 }
 
 #rblAccountType {
     display: flex;
-    justify-content: space-around;
+    justify-content: flex-start;
     padding-top: 5px;
 }
 
@@ -428,10 +475,8 @@
 /* Mobile Styling */
 @media screen and (max-width: 500px) {
     .panel-payment {
-        justify-content: space-between;
-        margin: 15px 0;        
-        width: 100%;
         padding: 0 20px;
+        width: 100%;
     }
 
     .payment-type {
@@ -439,9 +484,7 @@
     }
 
     .panel-savedpayment {
-        margin-bottom: auto;
         margin-top: 25px;
-        width: 100%;
     }
 
     .savedpayment-card select {
@@ -463,8 +506,8 @@
         padding: unset;
     }
 
-    .panel-bankaccount {
-        width: 100%;
+    .creditcard-card:first-child {
+        padding-right: 0;
     }
 
     .panel-bankaccount .form-control, .panel-creditcard .form-control {
@@ -473,14 +516,17 @@
     }
 }
 
-
 /* End Payment Details Panel */
 
 /* Confirm Gift Panel */
 .panel-confirm {
-    margin: 15px 0;
-    width: 100%;
-    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    min-height: 325px;
+    width: 60%;
 }
 
 .confirm-card {
@@ -491,6 +537,17 @@
     min-height: 275px;
 }
 
+.confirm-card-gift {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 5px 0;
+}
+
+.confirm-card-gift p {
+    margin-right: 10px;
+}
+
 #confirmGiftMessage {
     font-family: Akrobat;
     font-size: 20px;
@@ -498,7 +555,6 @@
     line-height: 24px;
     color: #000000;
     text-align: center;
-    margin-top: 35px;
 }
 
 #confirmGiftAmount {
@@ -516,12 +572,11 @@
     flex-direction: column;
     justify-content: space-between;
     height: 200px;
-    width: 313px;
+    width: 320px;
     border-radius: 15px;
     box-shadow: 0 0 28px 0 rgba(0,0,0,0.3);
-    padding: 26px 30px 22px 30px;
-    margin-bottom: 50px;
-    margin-top: 30px;
+    padding: 16px 30px 12px 30px;
+    margin-bottom: 20px;
 }
 
 .confirm-agreement {
@@ -529,7 +584,7 @@
     font-size: 12px;
     line-height: 18px;
     text-align: center;
-    margin-bottom: 36px;
+    margin-bottom: 10px;
 }
 
 #accountType {
@@ -576,7 +631,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-top: 30px;
+    margin-top: 10px;
 }
 
 .card-footer i {
@@ -593,6 +648,7 @@
     .panel-confirm {
         margin: 10px 0;
         padding: 0 10px;
+        width: 100%;
     }
 
     #confirmGiftMessage {
@@ -605,8 +661,8 @@
     }
 
     .confirm-paymenttype-card {
-        width: 100%;
         height: unset;
+        width: 250px;
         margin-top: unset;
         margin-bottom: 10px;
         padding: 5px 10px;
@@ -643,18 +699,23 @@
 
 .navigation {
     display: flex;
-    justify-content: space-around;
+    justify-content: space-between;
     width: 100%;
 }
 
 .navigation .btn {
     border-radius: 25px;
+    margin-left: 5px;
+    height: 50px;
+    font-size: 20px;
+    padding: 0 20px;
 }
 
 /* Mobile Styling */
 @media screen and (max-width: 500px) {
     .navigation {
         justify-content: space-between;
+        padding-bottom: 5px;
     }
 }
 
@@ -688,6 +749,11 @@
     line-height: 27px;
     color: #7A1315;
     margin-top: 30px;
+    margin-bottom: 10px;
+}
+
+.success-form {
+    width: 60%;
 }
 
 .success-link {
@@ -745,7 +811,6 @@
         font-size: 13px;
         line-height: 16px;
         margin-top: 15px;
-        margin-bottom: 10px;
     }
 
     .success-details {
@@ -769,7 +834,7 @@
 .schedule-toggle {
     display: flex;
     align-items: center;
-    margin-top: 20px;
+    margin-top: 5px;
     font-family: Heebo;
     font-size: 16px;
     color: #010001;
@@ -890,11 +955,6 @@ input:checked + .slider:before {
     color: #FFFFFF;
 }
 
-
-.schedule-date {
-    
-}
-
 .schedule-date label {
     color: #7c7c7c;
     font-family: Heebo;
@@ -934,7 +994,6 @@ input:checked + .slider:before {
     .schedule-toggle {
         font-size: 13px;
         font-weight: bold;
-        margin-top: 5px;
     }
 
     .checkbox {
@@ -994,6 +1053,87 @@ input:checked + .slider:before {
 /* End Schedule transaction */
 
 /* End Payment Success */
+
+/* iPhone 5/SE style fixes */
+@media screen and (device-aspect-ratio: 40/71) {
+    .transaction-progress {
+        padding-top: 0;
+    }
+
+    .panel-amount, .panel-person, .panel-payment, .panel-confirm {
+        min-height: 335px;
+    }
+
+    .panel-creditcard {
+        margin: 0;
+    }
+
+    .payment-type {
+        margin-bottom: 10px;
+    }
+
+    #rblAccountType {
+        justify-content: flex-start;
+    }
+
+    #rblAccountType label, .payment-type .btn .btn-primary, .payment-type .btn {
+        width: 75px;
+        min-width: unset;
+    }
+
+    .payment-type .btn, .navigation .btn {
+        margin-right: 0;
+        margin-left: 0;
+    }
+
+    #rblAccountType label {
+        margin-right: 10px;
+        margin-left: unset;
+    }
+
+    .panel-confirm {
+        margin: 5px 0;
+    }
+
+    .card-footer {
+        margin-top: 0;
+    }
+
+    .navigation {
+        padding-bottom: 10px;
+        padding-top: 2px;
+    }
+
+    .navigation .btn {
+        height: 55px;
+        width: 100px;
+        line-height: 20px;
+        white-space: normal;
+        padding: unset;
+    }
+
+    .transaction-card .alert {
+        margin-bottom: 5px;
+    }
+}
+
+/* End iPhone 5/Se */
+
+/* iPhone 6/7/8 Style Fixes */
+@media screen and (device-aspect-ratio: 375/667) {
+    .panel-payment {
+        margin: 5px;
+    }
+
+    .payment-type {
+        margin-bottom: 0;
+    }
+}
+
+
+/* End iPhone 6/7/8 */
+
+
 
 .error {
     color: #a94442;
