@@ -66,7 +66,12 @@
                         <div class="amount-wrapper">
                             
                             <asp:TextBox ID="nbAmount" runat="server" Placeholder="0.00" ClientIDMode="Static" CssClass="amount form-control" />
-                        
+
+                        </div>
+                        <div class="comment-wrapper">
+
+                            <Rock:RockTextBox ID="tbCommentEntry" runat="server" Label="Comment" Visible="false" ClientIDMode="Static" />
+
                         </div>            
                         <div class="navigation">
                             <%-- Empty div is used to put Next button into correct position --%>

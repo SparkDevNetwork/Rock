@@ -83,6 +83,8 @@ TransactionAcountDetails: [
     'AmountFormatted': '$10.00'
   }
 ]</pre>", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false, "Online Contribution", "", 28 )]
+    [BooleanField( "Enable Comment Entry", "Allows the guest to enter the the value that's put into the comment field (will be appended to the 'Payment Comment' setting)", false, "", 29 )]
+    [TextField( "Comment Entry Label", "The label to use on the comment edit field (e.g. Trip Name to give to a specific trip).", false, "Comment", "", 30 )]
 
     #endregion
 
@@ -206,6 +208,10 @@ TransactionAcountDetails: [
                 // Bind dropdown lists
                 BindFundAccounts();
                 BindCountries();
+
+                // Evaluate if comment entry box should be displayed
+                tbCommentEntry.Label = GetAttributeValue( "CommentEntryLabel" );
+                tbCommentEntry.Visible = GetAttributeValue( "EnableCommentEntry" ).AsBoolean();
 
                 // if person logged in, prepopulate form fields
                 if ( _person != null )
@@ -1388,6 +1394,15 @@ TransactionAcountDetails: [
             string paymentComment = GetAttributeValue( "PaymentComment" ).ResolveMergeFields( mergeFields );
 
             paymentInfo.Comment1 = paymentComment;
+
+            if ( GetAttributeValue( "EnableCommentEntry" ).AsBoolean() )
+            {
+                paymentInfo.Comment1 = !string.IsNullOrWhiteSpace( paymentComment ) ? string.Format( "{0}: {1}", paymentComment, tbCommentEntry.Text ) : tbCommentEntry.Text;
+            }
+            else
+            {
+                paymentInfo.Comment1 = paymentComment;
+            }
 
             errorMessage = string.Empty;
             return paymentInfo;
