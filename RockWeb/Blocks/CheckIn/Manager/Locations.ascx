@@ -16,6 +16,11 @@
 
         <asp:Panel ID="pnlContent" runat="server" CssClass="checkin-manager">
 
+            <div class="panel-heading">
+                    <h1 class="panel-title"> <i class="fa fa-sitemap"></i>&nbsp;<asp:Literal ID="lGroupTypeName" runat="server" /></h1>
+            </div>
+            <br />
+
             <asp:HiddenField ID="hfChartData" runat="server" />
             <asp:HiddenField ID="hfChartOptions" runat="server" />
             <asp:Panel ID="pnlChart" runat="server" style="width:100%;height:170px" CssClass="clickable" />

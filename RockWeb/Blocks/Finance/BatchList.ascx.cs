@@ -84,25 +84,26 @@ namespace RockWeb.Blocks.Finance
             ddlAction.Items.Add( new ListItem( "-- Select Action --", string.Empty ) );
             ddlAction.Items.Add( new ListItem( "Open Selected Batches", "OPEN" ) );
             ddlAction.Items.Add( new ListItem( "Close Selected Batches", "CLOSE" ) );
+
             string deleteScript = @"
-    $('table.js-grid-batch-list a.grid-delete-button').click(function( e ){
-        var $btn = $(this);
-        e.preventDefault();
-        Rock.dialogs.confirm('Are you sure you want to delete this batch?', function (result) {
-            if (result) {
-                if ( $btn.closest('tr').hasClass('js-has-transactions') ) {
-                    Rock.dialogs.confirm('This batch has transactions. Are you sure that you want to delete this batch and all of its transactions?', function (result) {
+                $('table.js-grid-batch-list a.grid-delete-button').click(function( e ){
+                    var $btn = $(this);
+                    e.preventDefault();
+                    Rock.dialogs.confirm('Are you sure you want to delete this batch?', function (result) {
                         if (result) {
-                            window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+                            if ( $btn.closest('tr').hasClass('js-has-transactions') ) {
+                                Rock.dialogs.confirm('This batch has transactions. Are you sure that you want to delete this batch and all of its transactions?', function (result) {
+                                    if (result) {
+                                        window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+                                    }
+                                });
+                            } else {
+                                window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+                            }
                         }
                     });
-                } else {
-                    window.location = e.target.href ? e.target.href : e.target.parentElement.href;
-                }
-            }
-        });
-    });
-";
+                });";
+
             ScriptManager.RegisterStartupScript( gBatchList, gBatchList.GetType(), "deleteBatchScript", deleteScript, true );
 
             gBatchList.Actions.AddCustomActionControl( ddlAction );
@@ -168,30 +169,35 @@ namespace RockWeb.Blocks.Finance
         private void RegisterJavaScriptForGridActions()
         {
             string scriptFormat = @"
-    $('#{0}').change(function( e ){{
-        var count = $(""#{1} input[id$='_cbSelect_0']:checked"").length;
-        if (count == 0) {{
-            window.location = ""javascript:{2}"";
-        }}
-        else
-        {{
-            var $ddl = $(this);
-            if ($ddl.val() != '') {{
-                Rock.dialogs.confirm('Are you sure you want to ' + ($ddl.val() == 'OPEN' ? 'open' : 'close') + ' the selected batches?', function (result) {{
-                    if (result) {{
+                $('#{0}').change(function( e ){{
+                    var count = $(""#{1} input[id$='_cbSelect_0']:checked"").length;
+                    if (count == 0) {{
+                        $('#{3}').val($ddl.val());
                         window.location = ""javascript:{2}"";
                     }}
-                    $ddl.val('');
-                }});
-            }}
-        }}
-    }});";
+                    else
+                    {{
+                        var $ddl = $(this);
+                        if ($ddl.val() != '') {{
+                            Rock.dialogs.confirm('Are you sure you want to ' + ($ddl.val() == 'OPEN' ? 'open' : 'close') + ' the selected batches?', function (result) {{
+                                if (result) {{
+                                    $('#{3}').val($ddl.val());
+                                    window.location = ""javascript:{2}"";
+                                }}
+                                $ddl.val('');
+                            }});
+                        }}
+                    }}
+                }});";
+
             string script = string.Format( 
                 scriptFormat, 
                 ddlAction.ClientID, // {0}
                 gBatchList.ClientID,  // {1}
-                Page.ClientScript.GetPostBackEventReference( this, "StatusUpdate" )  // {2}
+                Page.ClientScript.GetPostBackEventReference( this, "StatusUpdate" ),  // {2}
+                hfAction.ClientID // {3}
                 );
+
             ScriptManager.RegisterStartupScript( ddlAction, ddlAction.GetType(), "ConfirmStatusChange", script, true );
         }
 
@@ -498,10 +504,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="eventArgument">A <see cref="T:System.String" /> that represents an optional event argument to be passed to the event handler.</param>
         public void RaisePostBackEvent( string eventArgument )
         {
-            if ( eventArgument == "StatusUpdate" &&
-                ddlAction != null &&
-                ddlAction.SelectedValue != null &&
-                !string.IsNullOrWhiteSpace( ddlAction.SelectedValue ) )
+            if ( eventArgument == "StatusUpdate" && hfAction.Value.IsNotNullOrWhitespace() )
             {
                 var batchesSelected = new List<int>();
 
@@ -574,6 +577,7 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 ddlAction.SelectedIndex = 0;
+                hfAction.Value = string.Empty;
                 BindGrid();
             }
         }

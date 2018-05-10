@@ -900,6 +900,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         }
                     }
 
+                    lGroupTypeName.Text = parentGroupType.Name ?? "";
+
                     // Get the groups
                     var groupTypeIds = NavData.GroupTypes.Select( t => t.Id ).ToList();
 
@@ -1111,8 +1113,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
         private List<DateTime> GetChartTimes()
         {
             // Get the current minute
-            var now = DateTime.Now;
-            now = new DateTime( now.Year, now.Month, now.Day, now.Hour, now.Minute, 0 );
+            var rockNow = RockDateTime.Now;
+            var now = new DateTime( rockNow.Year, rockNow.Month, rockNow.Day, rockNow.Hour, rockNow.Minute, 0 );
 
             // Find the end mark
             var endTime = now.AddMinutes( 1 );
