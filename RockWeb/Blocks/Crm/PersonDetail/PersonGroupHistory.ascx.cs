@@ -18,7 +18,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
-
+using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Cache;
@@ -37,8 +37,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [Category( "CRM > Person Detail" )]
     [Description( "Displays a timeline of a person's history in groups" )]
 
+    [GroupTypesField( "Group Types", "List of Group Types that this block defaults to, and the user is able to choose from in the options filter. Leave blank to include all group types that have history enabled.", required: false, order: 1 )]
     public partial class PersonGroupHistory : PersonBlock
     {
+        private List<int> _blockSettingsGroupTypeIds = null;
+
         #region Base Control Methods
 
         /// <summary>
@@ -52,6 +55,29 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
+
+            ApplyBlockSettings();
+        }
+
+        /// <summary>
+        /// Applies the block settings.
+        /// </summary>
+        private void ApplyBlockSettings()
+        {
+            _blockSettingsGroupTypeIds = this.GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().AsGuidList().Select( a => CacheGroupType.Get( a ) ).Where( a => a != null ).Select( a => a.Id ).ToList();
+
+            IEnumerable<CacheGroupType> groupTypes = CacheGroupType.All();
+
+            if ( _blockSettingsGroupTypeIds.Any() )
+            {
+                groupTypes = groupTypes.Where( a => _blockSettingsGroupTypeIds.Contains( a.Id ) );
+            }
+            else
+            {
+                groupTypes = groupTypes.Where( a => a.EnableGroupHistory == true );
+            }
+
+            gtGroupTypesFilter.SetGroupTypes( groupTypes );
         }
 
         /// <summary>
@@ -64,6 +90,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             if ( !Page.IsPostBack )
             {
+                // first page load, so set the selected group types from user preferences
+                var userGroupTypes = this.GetBlockUserPreference( "GroupTypes" ).SplitDelimitedValues().AsIntegerList();
+                gtGroupTypesFilter.SetValues( userGroupTypes );
+
                 int? personId = this.Person != null ? this.Person.Id : ( int? ) null;
                 if ( personId.HasValue )
                 {
@@ -88,6 +118,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
+            ApplyBlockSettings();
             ShowDetail( hfPersonId.Value.AsInteger() );
         }
 
@@ -101,12 +132,72 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="groupId">The group identifier.</param>
         public void ShowDetail( int personId )
         {
-            var startDateTime = DateTime.SpecifyKind( RockDateTime.Now.AddYears( -10 ), DateTimeKind.Unspecified );
+            var startDateTime = DateTime.SpecifyKind( RockDateTime.Now.AddYears( -10 ),
+                DateTimeKind.Unspecified );
             hfStartDateTime.Value = startDateTime.ToString( "o" );
             hfStopDateTime.Value = HistoricalTracking.MaxExpireDateTime.ToString( "o" );
             hfPersonId.Value = personId.ToString();
+            List<int> groupTypeIds;
+            if ( gtGroupTypesFilter.SelectedGroupTypeIds.Any() )
+            {
+                // if group types are filtered on the user filter, use that
+                groupTypeIds = gtGroupTypesFilter.SelectedGroupTypeIds;
+
+                // show the group type names from the UserFilter
+                lSelectedGroupTypes.Visible = gtGroupTypesFilter.SelectedGroupTypeIds.Any();
+                lSelectedGroupTypes.Text = gtGroupTypesFilter.SelectedGroupTypeIds.Select( a => CacheGroupType.Get( a ).Name ).ToList().AsDelimited( "," );
+            }
+            else
+            {
+                // if no group types are selected in the user filter, restrict grouptypes to the ones in the block settings (if any)
+                groupTypeIds = _blockSettingsGroupTypeIds;
+                lSelectedGroupTypes.Visible = false;
+            }
+
+            hfGroupTypeIds.Value = groupTypeIds.AsDelimited( "," );
+
+            var legendGroupTypes = CacheGroupType.All().Where( a => a.EnableGroupHistory );
+            if ( groupTypeIds.Any() )
+            {
+                legendGroupTypes = legendGroupTypes.Where( a => groupTypeIds.Contains( a.Id ) );
+            }
+
+            rptGroupTypeLegend.DataSource = legendGroupTypes.OrderBy( a => a.Name );
+            rptGroupTypeLegend.DataBind();
         }
 
         #endregion
+
+        /// <summary>
+        /// Handles the Click event of the btnApplyOptions control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnApplyOptions_Click( object sender, EventArgs e )
+        {
+            this.SetBlockUserPreference( "GroupTypes", gtGroupTypesFilter.SelectedGroupTypeIds.AsDelimited( "," ) );
+            ShowDetail( hfPersonId.Value.AsInteger() );
+        }
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptGroupTypeLegend control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.Web.UI.WebControls.RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rptGroupTypeLegend_ItemDataBound( object sender, System.Web.UI.WebControls.RepeaterItemEventArgs e )
+        {
+            CacheGroupType cacheGroupType = e.Item.DataItem as CacheGroupType;
+            Literal lGroupTypeBadgeHtml = e.Item.FindControl( "lGroupTypeBadgeHtml" ) as Literal;
+            if ( cacheGroupType != null )
+            {
+                var style = string.Empty;
+                if (!string.IsNullOrEmpty(cacheGroupType.GroupTypeColor))
+                {
+                    style = "background-color:" + cacheGroupType.GroupTypeColor;
+                }
+
+                lGroupTypeBadgeHtml.Text = string.Format( "<span class='label label-default' style='{0}'>{1}</span>", style, cacheGroupType.Name );
+            }
+        }
     }
 }
