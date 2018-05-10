@@ -109,30 +109,47 @@
 
                 <fieldset id="fieldsetViewSummary" runat="server">
                     <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+                    
+                    <div class="well">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h4 class="margin-t-none">Authorized Person Information</h4>
+                            </div>
+                            <div class="col-md-6">
+                                <h4 class="margin-t-none">Addresses</h4>
+                            </div>
+
+                            <div class="col-md-3">
+                                <asp:Literal ID="lAuthorizedPerson" runat="server" />
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <asp:Literal ID="lCampus" runat="server" />
+                            </div>
+                            <div class="col-md-6">
+                                <div class="row">
+                                    <asp:Repeater ID="rptAddresses" runat="server">
+                                        <ItemTemplate>
+                                            <div class="col-md-4">
+                                                <strong>
+                                                    <%# FormatAddressType(Eval("GroupLocationTypeValue.Value")) %>
+                                                </strong>
+                                                <br>
+                                                <%# Eval("Location.FormattedHtmlAddress") %>
+                                            </div>
+                                        </ItemTemplate>
+                                    </asp:Repeater>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div class="row">
-                        <div class="col-md-3">
+                        <div class="col-md-6">
                             <asp:Literal ID="lDetailsLeft" runat="server" />
                             <asp:PlaceHolder ID="phAttributes" runat="server"></asp:PlaceHolder>
                         </div>
-                        <div class="col-md-3">
-                            <asp:Literal ID="lCampus" runat="server" />
-                        </div>
-                        <div class="col-md-3">
-                            <dl>
-                                <asp:Repeater ID="rptAddresses" runat="server">
-                                    <ItemTemplate>
-                                        <dt>
-                                            <%# FormatAddressType(Eval("GroupLocationTypeValue.Value")) %>
-                                        </dt>
-                                        <dd>
-                                            <%# Eval("Location.FormattedHtmlAddress") %>
-                                        </dd>
-                                    </ItemTemplate>
-                                </asp:Repeater>
-                            </dl>
-                        </div>
-                        <div class="col-md-3">
-
+                        <div class="col-md-6">
                             <label>Accounts</label>
                             <Rock:Grid ID="gAccountsView" runat="server" EmptyDataText="No Account Details" RowItemText="Account" DisplayType="Light" ShowHeader="false">
                                 <Columns>
