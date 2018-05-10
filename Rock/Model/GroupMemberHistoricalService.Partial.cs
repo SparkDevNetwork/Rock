@@ -157,6 +157,14 @@ namespace Rock.Model
             public string GroupTypeColor => CacheGroupType.Get( GroupTypeId )?.GroupTypeColor;
 
             /// <summary>
+            /// Gets the name of the group type.
+            /// </summary>
+            /// <value>
+            /// The name of the group type.
+            /// </value>
+            public string GroupTypeName => CacheGroupType.Get( GroupTypeId )?.Name;
+
+            /// <summary>
             /// Gets or sets the start stop history.
             /// </summary>
             /// <value>
