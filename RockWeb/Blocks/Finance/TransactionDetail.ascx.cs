@@ -1132,7 +1132,7 @@ namespace RockWeb.Blocks.Finance
                 .ToList();
 
             var nextFinancialTransaction = transactionsToMatch.Where( a => a > transactionId ).Take( 1 ).FirstOrDefault();
-            var backFinancialTransaction = transactionsToMatch.Where( a => a < transactionId ).Take( 1 ).FirstOrDefault();
+            var backFinancialTransaction = transactionsToMatch.Where( a => a < transactionId ).LastOrDefault();
 
             if ( nextFinancialTransaction != default( int ) )
             {
