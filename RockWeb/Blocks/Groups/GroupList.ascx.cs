@@ -51,6 +51,7 @@ namespace RockWeb.Blocks.Groups
     [CustomDropdownListField( "Limit to Active Status", "Select which groups to show, based on active status. Select [All] to let the user filter by active status.", "all^[All], active^Active, inactive^Inactive", false, "all", Order = 12 )]
     [TextField( "Set Panel Title", "The title to display in the panel header. Leave empty to have the title be set automatically based on the group type or block name.", required: false, order: 13 )]
     [TextField( "Set Panel Icon", "The icon to display in the panel header. Leave empty to have the icon be set automatically based on the group type or default icon.", required: false, order: 14 )]
+    [BooleanField( "Allow Add", "Should block support adding new group?", true, "",  15)]
     [ContextAware]
     public partial class GroupList : RockBlock, ICustomGridColumns
     {
@@ -105,7 +106,6 @@ namespace RockWeb.Blocks.Groups
             ddlActiveFilter.Visible = GetAttributeValue( "LimittoActiveStatus" ) == "all";
 
             gGroups.DataKeyNames = new string[] { "Id" };
-            gGroups.Actions.ShowAdd = true;
             gGroups.Actions.AddClick += gGroups_Add;
             gGroups.GridRebind += gGroups_GridRebind;
             gGroups.RowDataBound += gGroups_RowDataBound;
@@ -145,6 +145,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             int personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
+            bool allowAdd = GetAttributeValue( "AllowAdd" ).AsBooleanOrNull() ?? true;
             if ( ContextTypesRequired.Any( a => a.Id == personEntityTypeId ) )
             {
                 var personContext = ContextEntity<Person>();
@@ -154,13 +155,14 @@ namespace RockWeb.Blocks.Groups
                     boundFields["DateAdded"].Visible = true;
                     boundFields["MemberCount"].Visible = false;
                     gGroups.IsDeleteEnabled = true;
+                    gGroups.Actions.ShowAdd = allowAdd;
                     gGroups.HideDeleteButtonForIsSystem = false;
                 }
             }
             else
             {
                 bool canEdit = IsUserAuthorized( Authorization.EDIT );
-                gGroups.Actions.ShowAdd = canEdit;
+                gGroups.Actions.ShowAdd = canEdit && allowAdd;
                 gGroups.IsDeleteEnabled = canEdit;
 
                 boundFields["GroupRole"].Visible = false;
