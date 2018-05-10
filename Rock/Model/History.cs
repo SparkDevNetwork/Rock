@@ -305,18 +305,18 @@ namespace Rock.Model
                                         {
                                             // pre-V8 when a property was modified from null, it would get summarized as 'Added ..."
                                             summaryVerb = "Added";
-                                            summaryValue = $" value of <span class='field-value'>{this.NewValue}</span>";
+                                            summaryValue = $"value of <span class='field-value'>{this.NewValue}</span>";
                                         }
                                         else if ( this.OldValue != null && this.NewValue == null )
                                         {
                                             // pre-V8 when a property was modified to null, it would get summarized as 'Deleted ..."
                                             summaryVerb = "Deleted";
-                                            summaryValue = $" value of <span class='field-value'>{this.OldValue}</span>";
+                                            summaryValue = $"value of <span class='field-value'>{this.OldValue}</span>";
                                         }
                                         else
                                         {
                                             summaryVerb = "Modified";
-                                            summaryValue = $" value from <span class='field-value'>{this.OldValue}</span> to <span class='field-value'>{this.NewValue}</span>";
+                                            summaryValue = $"value from <span class='field-value'>{this.OldValue}</span> to <span class='field-value'>{this.NewValue}</span>";
                                         }
 
                                         string modifySummary = $"{summaryVerb} <span class='field-name'>{this.ValueName}</span> {summaryValue}";
