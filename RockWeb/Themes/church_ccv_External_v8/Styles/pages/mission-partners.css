@@ -70,4 +70,5 @@
 
 .event-card.missions-partners-card-override .read-more a {
    font-weight: 900;
+   display: flex;
 }

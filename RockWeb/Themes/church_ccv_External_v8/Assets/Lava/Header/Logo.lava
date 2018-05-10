@@ -3,6 +3,3 @@
 {% endcomment %}
 
 <a class="logo" href="~/homev2"><span class="sr-only">{{ 'Global' | Attribute:'OrganizationName' }}</span></a>
-
-{% comment %} Required lava file for select a campus modal to function properly  {% endcomment %}
-{% include '~~/Assets/Lava/MapCampusModal.lava' %}

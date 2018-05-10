@@ -13,7 +13,7 @@
             <p>{{ item | Attribute:'Summary' | Truncate: 250 }}</p>
          </div>
          <div class="read-more link pull-right">
-            <a href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}">Read &rarr;</a>
+            <a href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}">Read <i class="mdi mdi-chevron-right"></i></a>
          </div>
     </div>
    {% endfor %}

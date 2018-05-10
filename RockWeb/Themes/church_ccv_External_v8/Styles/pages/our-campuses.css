@@ -4,6 +4,15 @@
    background-color: white;
 }
 
+/*force section A (where the map is) to take the full width of the screen*/
+#section-a-bg {
+   padding: 0;
+}
+
+#zone-sectiona {
+   max-width: 100%;
+}
+/**/
 
 #section-b-bg {
    background: url("/Themes/church_ccv_External_v8/Assets/Images/our-story-history-bg.jpg") no-repeat;
@@ -12,88 +21,12 @@
    background-color: #ffffff;
 }
 
-.storyCard {
-   background-color: rgb(255, 255, 255);
-   box-sizing: border-box;
-   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-   box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px;
-   z-index: 1;
-   margin-bottom: 2em;
-   transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
-   border-radius: 5px;
-   padding: 20px;
+.our-campuses-map-window {
+   
+   background: #777;
+   
 }
 
-@media only screen and (min-width: 1200px) {
-   .storyCard {
-      padding-left: 15px;
-      padding-right: 15px;
-   }
-}
-
-.beliefs {
-   min-height: 0px;
-}
-
-@media only screen and (min-width: 1200px) {
-   .beliefs {
-      min-height: 375px;
-      width: 30%;
-      
-      padding-left: 15px;
-      padding-right: 15px;
-      margin: 15px;
-   }
-}
-
-@media only screen and (min-width: 768px) {
-   .impactCard {
-      min-height: 345px;
-   }
-}
-
-@media only screen and (min-width: 990px) {
-   .impactCard {
-      min-height: 435px;
-   }
-}
-@media only screen and (min-width: 1200px) {
-   .impactCard {
-      min-height: 300px;
-   }
-}
-
-.sectionHeading {
-   font-family: akrobat;
-   padding: 1em 0 1em 0;
-}
-
-.darkColor {
-   background-color: rgba( 0, 0, 0, .5 );
-}
-
-.storyCard.impactCard h2 {
-   font-size: 5.6rem;
-   margin: 0;
-}
-
-.impactCard h5 {
-   font-size: 2.25rem;
-}
-
-.impactCard h6 {
-   font-size: 1.5rem;
-   color: grey;
-}
-
-.impactSmallHeader {
-   color: #fff !important;
-}
-
-.impactLargeHeader {
-   font-size: 3.0rem;
-}
-
-#leadership-btn {
-   padding: 10px 25px 10px 25px;
+.our-campuses-map {
+   min-height: 550px;
 }

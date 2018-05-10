@@ -74,6 +74,7 @@
 
 .event-card.missions-story-card-override .read-more a {
    font-weight: 900;
+   display: flex;
 }
 
 .missions-stories-header {

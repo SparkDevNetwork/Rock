@@ -18,9 +18,9 @@
          
          <div class="read-more link pull-right">
             {% if webUrl != '' %}
-               <a href="{{webUrl}}">Visit Site &rarr;</a>
+               <a href="{{webUrl}}">Visit Site <i class="mdi mdi-chevron-right"></i></a>
             {% else %}
-               <a style="visibility: hidden;" href="{{webUrl}}">Visit Site &rarr;</a>
+               <a style="visibility: hidden;" href="{{webUrl}}">Visit Site <i class="mdi mdi-chevron-right"></i></a>
             {% endif %}
          </div>
          

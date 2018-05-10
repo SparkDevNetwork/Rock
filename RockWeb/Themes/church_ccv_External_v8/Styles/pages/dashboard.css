@@ -1265,18 +1265,25 @@
 /* Dashboard Giving History, Managed Automated Giving, Manage Payment Accounts */
 .print-button {
     display: flex;
+    justify-content: space-around;
+    width: 80%;
+    margin: 30px auto;
 }
 
-.giving-history-card {
+.giving-history-card, .manage-payment-account-card {
     box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px;
     transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
     border-radius: 5px;
     background-color: #FFFFFF;
-    margin: 40px auto 70px auto;
+    margin: 0 auto 70px auto;
     padding: 20px;
     width: 80%;
 }
 
+.manage-payment-account-card {
+    margin-top: 30px;
+    margin-bottom: 30px
+}
 
 /* End Dashboard Giving */
   
