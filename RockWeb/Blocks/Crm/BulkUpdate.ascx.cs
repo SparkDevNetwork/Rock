@@ -1316,7 +1316,7 @@ namespace RockWeb.Blocks.Crm
                 int tagId = ddlTagList.SelectedValue.AsInteger();
 
                 var tag = new TagService( rockContext ).Get( tagId );
-                if ( tag != null && tag.IsAuthorized( "TAG", CurrentPerson ) )
+                if ( tag != null && tag.IsAuthorized( "Tag", CurrentPerson ) )
                 {
                     var taggedItemService = new TaggedItemService( rockContext );
 

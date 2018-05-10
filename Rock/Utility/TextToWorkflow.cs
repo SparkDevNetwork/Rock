@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web;
@@ -101,11 +102,14 @@ namespace Rock.Utility
                                 using ( var rockContext = new Data.RockContext() )
                                 {
                                     var personService = new PersonService( rockContext );
+                                    var phoneNumberService = new PhoneNumberService(rockContext);
                                     var groupMemberService = new GroupMemberService( rockContext );
 
                                     var workflowType = CacheWorkflowType.Get( workflowTypeGuid.Value );
                                     if ( workflowType != null )
                                     {
+                                        Person fromPerson = null;
+
                                         // Activate a new workflow
                                         var workflow = Rock.Model.Workflow.Activate( workflowType, "Request from " + ( fromPhone ?? "??" ), rockContext );
 
@@ -114,43 +118,53 @@ namespace Rock.Utility
                                         var mobilePhoneType = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
                                         var familyGroupType = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
 
-                                        // Get all people phone number
-                                        var peopleWithMobileNumber = personService.Queryable()
-                                            .Where( p =>
-                                                p.PhoneNumbers.Any( n =>
-                                                    ( n.CountryCode + n.Number ) == fromPhone.Replace( "+", "" ) &&
-                                                    n.NumberTypeValueId == mobilePhoneType.Id )
-                                                )
-                                            .Select( p => p.Id );
+                                        string phoneNumber = fromPhone.Replace("+", "");
 
-                                        // Find first person ordered by role (adult first), then by birthdate (oldest first)
-                                        var fromPerson = groupMemberService.Queryable()
-                                            .Where( m =>
-                                                m.Group.GroupTypeId == familyGroupType.Id &&
-                                                peopleWithMobileNumber.Contains( m.PersonId ) )
-                                            .OrderBy( m => m.GroupRole.Order )
-                                            .ThenBy( m => m.Person.BirthDate ?? DateTime.MinValue )
-                                            .Select( m => m.Person )
-                                            .FirstOrDefault();
+                                        // Get people with matching mobile number query the database only by number to increase chance of using index.
+                                        var peopleWithMobileNumber = phoneNumberService
+                                            .Queryable().AsNoTracking()
+                                            .Where(n => ( n.CountryCode ?? "" ) + (n.Number ?? "" ) == phoneNumber )
+                                            .Select(n => new
+                                            {
+                                                n.PersonId,
+                                                n.NumberTypeValueId
+                                            })
+                                            .ToList()   // Query database only on number, then filter by type in memory
+                                            .Where(v => v.NumberTypeValueId == mobilePhoneType.Id)
+                                            .Select(v => v.PersonId)
+                                            .ToList();
+
+                                        if (peopleWithMobileNumber.Any())
+                                        {
+                                            fromPerson = groupMemberService.Queryable()
+                                                .Where(m =>
+                                                    m.Group.GroupTypeId == familyGroupType.Id &&
+                                                    peopleWithMobileNumber.Contains(m.PersonId))
+                                                .OrderBy(m => m.GroupRole.Order)
+                                                .ThenBy(m => m.Person.BirthDate ?? DateTime.MinValue)
+                                                .Select(m => m.Person)
+                                                .FirstOrDefault();
+                                        }
 
                                         // if no match then look for the phone in any phone type ordered by family role then age
                                         if ( fromPerson == null )
                                         {
-                                            var peopleWithAnyNumber = personService.Queryable()
-                                                .Where( p =>
-                                                    p.PhoneNumbers.Any( n =>
-                                                        ( n.CountryCode + n.Number ) == fromPhone.Replace( "+", "" ) &&
-                                                        n.NumberTypeValueId == mobilePhoneType.Id )
-                                                    )
-                                                .Select( p => p.Id );
+                                            var peopleWithAnyNumber = phoneNumberService
+                                                .Queryable().AsNoTracking()
+                                                .Where(n => (n.CountryCode ?? "") + (n.Number ?? "") == phoneNumber)
+                                                .Select(n => n.PersonId)
+                                                .ToList();
 
-                                            fromPerson = groupMemberService.Queryable()
-                                                .Where( m =>
-                                                    m.Group.GroupTypeId == familyGroupType.Id &&
-                                                    peopleWithMobileNumber.Contains( m.PersonId ) )
-                                                .OrderBy( m => m.GroupRole.Order )
-                                                .ThenBy( m => m.Person.BirthDate ?? DateTime.MinValue )
-                                                .Select( m => m.Person ).FirstOrDefault();
+                                            if ( peopleWithAnyNumber.Any())
+                                            {
+                                                fromPerson = groupMemberService.Queryable()
+                                                    .Where(m =>
+                                                        m.Group.GroupTypeId == familyGroupType.Id &&
+                                                        peopleWithAnyNumber.Contains(m.PersonId))
+                                                    .OrderBy(m => m.GroupRole.Order)
+                                                    .ThenBy(m => m.Person.BirthDate ?? DateTime.MinValue)
+                                                    .Select(m => m.Person).FirstOrDefault();
+                                            }
                                         }
 
                                         // Set initiator
