@@ -1936,12 +1936,12 @@ namespace Rock.Model
             }
 
             // Create/Save Implied Relationship Group
-            var impliedRelationshipGroupType = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_IMPLIED_RELATIONSHIPS );
+            var impliedRelationshipGroupType = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_PEER_NETWORK );
             if ( impliedRelationshipGroupType != null )
             {
                 var ownerRole = impliedRelationshipGroupType.Roles
                     .FirstOrDefault( r =>
-                        r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_IMPLIED_RELATIONSHIPS_OWNER.AsGuid() ) );
+                        r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_PEER_NETWORK_OWNER.AsGuid() ) );
                 if ( ownerRole != null )
                 {
                     var groupMember = new GroupMember();
