@@ -38,7 +38,8 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Displays the details of the given business." )]
 
-    [LinkedPage( "Person Profile Page", "The page used to view the details of a business contact" )]
+    [LinkedPage( "Person Profile Page", "The page used to view the details of a business contact", order: 0 )]
+    [LinkedPage( "Communication Page", "The communication page to use for when the business email address is clicked. Leave this blank to use the default.", false, "", "", 1 )]
     public partial class BusinessDetail : Rock.Web.UI.RockBlock, IDetailBlock
     {
         #region Base Control Methods
@@ -586,9 +587,20 @@ namespace RockWeb.Blocks.Finance
                     }
                 }
 
-                lDetailsRight.Text = detailsRight
-                    .Add( "Email Address", business.Email )
-                    .Html;
+                var communicationLinkedPageValue = this.GetAttributeValue( "CommunicationPage" );
+                Rock.Web.PageReference communicationPageReference;
+                if ( communicationLinkedPageValue.IsNotNullOrWhitespace() )
+                {
+                    communicationPageReference = new Rock.Web.PageReference( communicationLinkedPageValue );
+                }
+                else
+                {
+                    communicationPageReference = null;
+                }
+
+                detailsRight.Add( "Email Address", business.GetEmailTag( ResolveRockUrl( "/" ), communicationPageReference ) );
+
+                lDetailsRight.Text = detailsRight.Html;
             }
         }
 
