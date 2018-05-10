@@ -35,6 +35,7 @@
     <div class="dropdown">
       <button class="dropdown-toggle masthead-fullmenu-navitem" type="button" data-toggle="dropdown" style="border: 0px;">Our Campuses<b class="fa fa-caret-down"></b></button>
       <ul class="dropdown-menu">
+        <li><a href="/our-campusesv2">Our Campuses</a></li>
         <li><a href="/anthemv2">Anthem</a></li>
         <li><a href="/avondalev2">Avondale</a></li>
         <li><a href="/chandlerv2">Chandler</a></li>

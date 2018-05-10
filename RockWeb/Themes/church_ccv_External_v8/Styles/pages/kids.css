@@ -1,7 +1,7 @@
 /* Kids Page */
 .page-background {   
     background-color: #EBEBEB;
-    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/kids-hero.jpg");
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-image-missing.jpg");
 }
 
 #subnavbar-bg {
@@ -34,6 +34,6 @@
 }
 
 #section-e-bg {
-   background: url("/Themes/church_ccv_External_v8/Assets/Images/students-stars.jpg") no-repeat;
+   background: url("/Themes/church_ccv_External_v8/Assets/Images/kids-stars.jpg") no-repeat;
    background-size: cover;
 }

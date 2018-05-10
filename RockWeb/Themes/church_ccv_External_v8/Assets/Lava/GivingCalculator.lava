@@ -1,0 +1,63 @@
+{% comment %}
+    {% include '~~/Assets/Lava/GivingCalculator.lava' %}
+{% endcomment %}
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/rangeslider.js/2.1.1/rangeslider.min.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/rangeslider.js/2.1.1/rangeslider.min.js"></script>
+
+<div class="giving-calculator">
+    <h3 class="panel-title">Giving Calculator</h3>
+  
+    <div class="giving-calculator-input">
+        <div class="giving-calculator-gross">
+            <label for="base">Gross Paycheck</label>
+            <div class="calculator-input-amount">
+                <span>$</span>
+                <input type="text" inputmode="numeric" pattern="[0-9]*" id="base" placeholder="Amount">
+            </div>
+        </div>
+        <div class="giving-calculator-percentage">
+            <label for="percentage">Percentage</label>
+            <div class="calculator-input-percentage">
+                <span>%</span>
+                <input type="number" id="percentage" value="10" min="0" max="100" inputmode="numeric" pattern="[0-9]*">
+            </div>
+        </div>
+    </div>
+
+    <div class="giving-calculator-slider">
+        <input id="slider" type="range" min="0" max="100" step="1" value="10">
+    </div>
+
+    <h2 class="giving-calculator-result">$<span id="result">0</span></h2>
+</div>
+
+<script>
+  var $slider = $('#slider');
+  var $percent = $('#percentage');
+  var $base = $('#base');
+  var $result = $('#result');
+
+  function updateValue(base, percent) {
+    $result[0].innerHTML = Math.round(base * (percent * 0.01));
+  }
+
+  $slider
+    .rangeslider({polyfill: false})
+    .on('input', function() {
+      $percent[0].value = this.value;
+      if($base[0].value) {
+        updateValue($base[0].value, this.value)
+      }
+    });
+
+  $percent.on('input', function() {
+    if (this.value != "") {
+     $slider.val(this.value).change();
+    }
+  });
+
+  $base.on('input', function() {
+    updateValue(this.value, $slider.val());
+  });
+</script>

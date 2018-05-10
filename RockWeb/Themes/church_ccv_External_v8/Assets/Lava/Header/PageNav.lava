@@ -23,7 +23,7 @@
     </div>
     
     <div class="dropdown">
-      <a class="masthead-navitem" style="border: 0px;" href="/campusesv2">Our Campuses</a>
+      <a class="masthead-navitem" style="border: 0px;" href="/our-campusesv2">Our Campuses</a>
       <ul class="dropdown-menu">
         <li><a href="/anthemv2">Anthem</a></li>
         <li><a href="/avondalev2">Avondale</a></li>
@@ -51,7 +51,7 @@
     <div class="dropdown">
       <a class="masthead-navitem" style="border: 0px;" href="/givev2">Give</a>
       <ul class="dropdown-menu">
-        <li><a href="/givenowv2">Give Now</a></li>
+        <li><a href="/givev2/now">Give Now</a></li>
       </ul>
     </div>
     

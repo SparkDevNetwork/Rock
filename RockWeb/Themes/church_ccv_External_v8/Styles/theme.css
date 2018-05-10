@@ -10363,17 +10363,19 @@ html,body{
 
 /* sytle for login block*/
 .loginstatus {
-    float: left;
-    padding: 7px 2px 0px 2px;
     color: #FFFFFF;
     font-family: akrobat;
     font-weight: bold;
     font-size: 14px;
-	text-transform: uppercase;
+    text-transform: uppercase;
 }
 
-.loginstatus a {
-	text-decoration: none;
+.loginstatus li a {
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    padding-top: unset;
+    padding-bottom: unset;
 }
 
 .loginstatus .masthead-navitem {

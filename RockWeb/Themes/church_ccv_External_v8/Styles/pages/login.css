@@ -1,0 +1,52 @@
+/* Login Page Styling */
+
+.page-background {   
+    background-color: #FF00FF;
+    background-position: center top;
+    margin: auto;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+.title {
+    margin-top: 30px;
+}
+
+.title h3 {
+    font-size: 60px;
+    font-weight: 900;
+    font-family: akrobat;
+    color: #FFFFFF;
+    text-align: center;
+    padding-top: 80px;
+}
+
+.title p {
+    text-align: center;
+    color: #FFFFFF;
+    font-size: 18px;
+    font-family: heebo;
+    font-weight: normal;
+}
+
+#desktopspacer {
+    padding-top: 100px;
+}
+
+
+.login-card {
+    box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px;
+    transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
+    border-radius: 5px;
+    background-color: #FFFFFF;
+    margin: 40px auto 70px auto;
+    padding: 20px;
+    width: 80%;
+}
+
+.facebook {
+    color: #FFFFFF;
+    background-color: #3B5998;
+}
+
+/* End Login page */

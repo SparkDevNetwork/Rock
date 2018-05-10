@@ -52,6 +52,226 @@
     }
 }
 
+/* Give */
+#section-b-bg {
+    background-color: #333;
+}
+
+.giving-content {
+    display: Flex;
+    flex-direction: column;
+}
+
+.giving-video {
+    width: 55%;
+}
+
+.giving-info {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.giving-message {
+    display: flex;
+    flex-direction: column;
+    width: 35%;
+}
+
+.giving-message p {
+    font-family: heebo;
+    line-height: 30px;
+    color: #999999;
+}
+
+.giving-calculator-card {
+    background-color: #FFFFFF;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding: 30px 20px 0 20px;
+    margin-top: 5px;
+    border-radius: 6px;
+    box-shadow: 0 3px 9px rgba(0, 0, 0, 0.1);
+}
+
+.giving-calculator h3 {
+    font-family: akrobat;
+    font-weight: 700;
+    font-size: 18px;
+    line-height: 20px;
+    color: #7A1315;
+}
+
+.giving-calculator-input {
+    display: flex;
+    margin-top: 20px;
+
+}
+
+.giving-calculator-input label {
+    font-family: akrobat;
+    font-size: 14px;
+    font-weight: 300;
+    line-height: 16px;
+    color: #999999
+}
+
+.giving-calculator-gross, .giving-calculator-percentage {
+    display: flex;
+    flex-direction: column;
+    border-bottom: 2px solid lightgrey;
+    border-radius: 0px;
+    padding-bottom: 10px;
+}
+
+.giving-calculator-gross input, .giving-calculator-percentage input {
+    border-bottom: none;
+}
+
+.giving-calculator-gross input::placeholder, .giving-calculator-percentage input::placeholder {
+    color: #ccc;
+}
+
+.giving-calculator-gross {
+    margin-right: 20px;
+    width: 125px;
+}
+
+.giving-calculator-percentage {
+    width: 125px;
+}
+
+.calculator-input-amount, .calculator-input-percentage {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.calculator-input-amount span, .calculator-input-percentage span {
+    color: #999999;
+    margin-right: 5px;
+}
+
+.giving-calculator-slider {
+    margin-top: 30px;
+}
+
+.giving-calculator-slider .rangeslider--horizontal {
+    height: 10px;
+}
+
+.giving-calculator-slider .rangeslider__fill {
+    background: #7A1315;
+}
+
+.giving-calculator-slider .rangeslider .rangeslider__handle {
+    width: 30px;
+    height: 30px;
+    background-image: unset;
+}
+
+.giving-calculator-slider .rangeslider .rangeslider__handle:after {
+    background-image: unset;
+}
+
+.giving-calculator-result {
+    font-family: heebo;
+    font-weight: 100;
+    margin-top: 40px;
+}
+
+.giving-actions {
+    display: flex;
+    flex-direction: column;
+    margin-top: 30px;
+}
+
+.giving-actions-items {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin: 30px 0;
+}
+
+.giving-actions-item {
+    width: 22%;
+    height: 250px;
+    background-color: #FFFFFF;
+    border-radius: 6px;
+    box-shadow: 0 3px 9px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.giving-actions-icon {
+    width: 100px;
+    height: 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.giving-actions-icon i {
+    font-size: 45px;
+    color: #7A1315;
+}
+
+.giving-actions-item h4 {
+    color: #000;
+    font-size: 16px;
+    font-family: akrobat;
+    font-weight: 900;
+}
+
+.giving-actions-item a {
+    text-transform: uppercase;
+    font-family: heebo;
+    font-weight: 900;
+}
+
+.giving-actions-item a i {
+    font-size: 20px;
+    vertical-align: middle;
+}
+
+.giving-actions-item p {
+    margin: unset;
+}
+
+.giving-annual-report {
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.annual-report-title p {
+    font-family: akrobat;
+    font-size: 48px;
+    line-height: 50px;
+    text-align: center;
+}
+
+.giving-annual-report img {
+    width: 600px;
+    margin: 20px 0;
+    border-radius: 6px;
+    box-shadow: 0 3px 9px rgba(0, 0, 0, 0.2);
+}
+
+
+
+
+/* End Give */
+
+/* Give Now */
+
 /* Styling for Transaction Entry Block*/
 .transaction-card {
     display: flex;
@@ -1130,10 +1350,7 @@ input:checked + .slider:before {
     }
 }
 
-
 /* End iPhone 6/7/8 */
-
-
 
 .error {
     color: #a94442;
@@ -1146,3 +1363,5 @@ input:checked + .slider:before {
 }
 
 /* End Transaction Entry Block */
+
+/* End Give Now */

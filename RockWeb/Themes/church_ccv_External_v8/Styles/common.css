@@ -184,7 +184,6 @@
    display: flex;
    line-height: 40px;
    padding-left: 13px;
-   margin-top: 8px;
 }
 
 .masthead-navitems a{
@@ -220,6 +219,7 @@
 .masthead-navbar-flex {
    display: flex;
    justify-content: space-between;
+   align-items: center;
    padding-left: 10px;
 }
 
@@ -253,6 +253,23 @@
 .masthead-navbar-login {
     display: flex;
     flex-direction: row-reverse;
+    align-items: center;
+}
+
+.masthead-navbar-login .loginstatus .dropdown-menu {
+    background: rgba(0, 0, 0, 0.9);
+    border-radius: 5px 5px;
+    padding: 0px;
+    font-size: 14px;
+}
+
+.masthead-navbar-login .loginstatus .dropdown-menu li a {
+    padding: 5px 0px 5px 5px;
+    margin: 5px 0px 5px 0px;
+}
+
+.masthead-navbar-login .loginstatus .dropdown-menu li a:hover {
+    color: #FFFFFF;
 }
 
 /* Mobile styling for header */
@@ -343,6 +360,15 @@
 }
 /* End Hamburger Menu aka Full Menu*/
 
+.heroText {
+   font-family: 'heebo';
+   font-size: 18px;
+   line-height: 36px;
+   text-align: center;
+   max-width: 650px;
+   color: #ffffff;
+   margin: 0 auto;
+}
 
 .ccvRed {
    color: rgb(122,19,21)
@@ -602,7 +628,6 @@
 }
 
 /* End Event Card Styling */
-
 
 /* Start Mobile View Styling  *** DO WE NEED, or left over from pmg2 days? *** */
 @media screen and (max-width: 800px) {

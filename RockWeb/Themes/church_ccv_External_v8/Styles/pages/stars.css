@@ -1,4 +1,4 @@
-
+/* Kids Page */
 .page-background {   
     background-color: #EBEBEB;
     background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-image-missing.jpg");
@@ -9,7 +9,8 @@
 }
 
 #section-a-bg {
-	background-color: #EBEBEB;
+   background: url("/Themes/church_ccv_External_v8/Assets/Images/kids-stars.jpg") no-repeat;
+   background-size: cover;
 }
 
 #section-b-bg {
