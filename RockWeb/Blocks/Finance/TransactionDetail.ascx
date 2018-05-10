@@ -131,11 +131,13 @@
                                     <asp:Repeater ID="rptAddresses" runat="server">
                                         <ItemTemplate>
                                             <div class="col-md-4">
-                                                <strong>
-                                                    <%# FormatAddressType(Eval("GroupLocationTypeValue.Value")) %>
-                                                </strong>
-                                                <br>
-                                                <%# Eval("Location.FormattedHtmlAddress") %>
+                                                <p>
+                                                    <strong>
+                                                        <%# FormatAddressType(Eval("GroupLocationTypeValue.Value")) %>
+                                                    </strong>
+                                                    <br>
+                                                    <%# Eval("Location.FormattedHtmlAddress") %>
+                                                </p>
                                             </div>
                                         </ItemTemplate>
                                     </asp:Repeater>
