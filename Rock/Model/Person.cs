@@ -2897,11 +2897,20 @@ namespace Rock.Model
         /// <returns>A string that represents the Icon to display or an empty string if no signal is active.</returns>
         public string GetSignalMarkup()
         {
-            if ( !string.IsNullOrWhiteSpace( TopSignalColor ) )
+            return Person.GetSignalMarkup( TopSignalColor, TopSignalIconCssClass );
+        }
+
+        /// <summary>
+        /// Gets the HTML markup to use for displaying the given signal color and icon.
+        /// </summary>
+        /// <returns>A string that represents the Icon to display or an empty string if no signal color was provided.</returns>
+        public static string GetSignalMarkup( string signalColor, string signalIconCssClass )
+        {
+            if ( !string.IsNullOrWhiteSpace( signalColor ) )
             {
                 return string.Format( "<i class='{1}' style='color: {0};'></i>",
-                    TopSignalColor,
-                    !string.IsNullOrWhiteSpace( TopSignalIconCssClass ) ? TopSignalIconCssClass : "fa fa-flag" );
+                    signalColor,
+                    !string.IsNullOrWhiteSpace( signalIconCssClass ) ? signalIconCssClass : "fa fa-flag" );
             }
 
             return string.Empty;
