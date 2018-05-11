@@ -106,15 +106,7 @@ namespace Rock.Apps.StatementGenerator
             rockConfig.Save();
 
             ReportOptions.Current.LayoutDefinedValueGuid = lavaDefinedValue?.Guid;
-            if ( lavaDefinedValue?.Attributes?.ContainsKey( "FooterHeight" ) == true )
-            {
-                ReportOptions.Current.LayoutFooterHeightMM = ( int? ) lavaDefinedValue.AttributeValues["FooterHeight"].Value.AsIntegerOrNull();
-            }
-            else
-            {
-                ReportOptions.Current.LayoutFooterHeightMM = null;
-            }
-
+            
             return true;
         }
 
