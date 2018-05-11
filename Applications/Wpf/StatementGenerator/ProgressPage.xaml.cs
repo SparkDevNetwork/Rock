@@ -184,5 +184,25 @@ namespace Rock.Apps.StatementGenerator
         {
             this.NavigationService.GoBack();
         }
+
+        /// <summary>
+        /// Handles the MouseDoubleClick event of the lblReportProgress control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.Windows.Input.MouseButtonEventArgs"/> instance containing the event data.</param>
+        private void lblReportProgress_MouseDoubleClick( object sender, System.Windows.Input.MouseButtonEventArgs e )
+        {
+            if ( ReportOptions.Current.StatementsPerChapter > 1 )
+            {
+                // open the folder that the pdfs are in
+                System.Diagnostics.Process.Start( ReportOptions.Current.SaveDirectory );
+            }
+            else
+            {
+                // open the pdf
+                string filePath = string.Format( @"{0}\{1}.pdf", ReportOptions.Current.SaveDirectory, ReportOptions.Current.BaseFileName );
+                System.Diagnostics.Process.Start( filePath );
+            }
+        }
     }
 }
