@@ -61,7 +61,7 @@ namespace Rock.Apps.StatementGenerator
             foreach ( var lavaTemplateDefineValue in lavaTemplateDefineValues.OrderBy( a => a.Order ).ThenBy( a => a.Value ) )
             {
                 RadioButton radLavaTemplate = new RadioButton();
-                radLavaTemplate.Tag = lavaTemplateDefineValue.Guid;
+                radLavaTemplate.Tag = lavaTemplateDefineValue;
                 radLavaTemplate.Content = lavaTemplateDefineValue.Value;
                 radLavaTemplate.ToolTip = lavaTemplateDefineValue.Description;
 
@@ -101,10 +101,19 @@ namespace Rock.Apps.StatementGenerator
             }
 
             var rockConfig = RockConfig.Load();
-            rockConfig.LayoutDefinedValueGuid = selected?.Tag as Guid?;
+            var lavaDefinedValue = selected?.Tag as Rock.Client.DefinedValue;
+            rockConfig.LayoutDefinedValueGuid = lavaDefinedValue?.Guid;
             rockConfig.Save();
 
-            ReportOptions.Current.LayoutDefinedValueGuid = selected?.Tag as Guid?;
+            ReportOptions.Current.LayoutDefinedValueGuid = lavaDefinedValue?.Guid;
+            if ( lavaDefinedValue?.Attributes?.ContainsKey( "FooterHeight" ) == true )
+            {
+                ReportOptions.Current.LayoutFooterHeightMM = ( int? ) lavaDefinedValue.AttributeValues["FooterHeight"].Value.AsIntegerOrNull();
+            }
+            else
+            {
+                ReportOptions.Current.LayoutFooterHeightMM = null;
+            }
 
             return true;
         }
