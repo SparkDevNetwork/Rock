@@ -1265,12 +1265,12 @@
 /* Dashboard Giving History, Managed Automated Giving, Manage Payment Accounts */
 .print-button {
     display: flex;
-    justify-content: space-around;
+    justify-content: flex-end;
     width: 80%;
     margin: 30px auto;
 }
 
-.giving-history-card, .manage-payment-account-card {
+.giving-history-card, .manage-payment-account-card, .manage-automated-giving-card {
     box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px;
     transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
     border-radius: 5px;
@@ -1280,7 +1280,7 @@
     width: 80%;
 }
 
-.manage-payment-account-card {
+.manage-payment-account-card, .manage-automated-giving-card {
     margin-top: 30px;
     margin-bottom: 30px
 }

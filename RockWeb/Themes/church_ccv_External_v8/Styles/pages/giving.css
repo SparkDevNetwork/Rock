@@ -467,6 +467,13 @@
     border-bottom: 2px solid lightgrey !important;
 }
 
+.comment-wrapper {
+    width: 100%;
+    margin-bottom: 40px;
+    margin-top: -40px;
+}
+
+
 /* Mobile Styling */
 @media screen and (max-width: 500px) {
     .panel-amount {

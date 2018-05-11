@@ -1,5 +1,6 @@
 .page-background {
-    background-color: #000;
+    background-color: #EBEBEB !important;
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-image-missing.jpg") !important;
 }
 
 /* Override Theme.css */
@@ -21,19 +22,15 @@
     }
 }
 
-.masthead {
-    background-color: black;
-}
-
 .main-feature {
     padding-top: 75px;
 }
 
-#subnavbar-bg {
+/* #subnavbar-bg {
 	background-color: #F6F6F6;
-}
+} */
 
-#section-a-bg {
+/* #section-a-bg {
 	background-color: #F6F6F6;
 }
 
@@ -44,8 +41,10 @@
     padding: 30px;
     max-width: 1024px;
     margin: 0 auto;
-}
+} */
 
 #section-b-bg {
 	background-color: #F6F6F6;
 }
+
+
