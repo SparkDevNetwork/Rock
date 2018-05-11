@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 
 using Quartz;
@@ -30,7 +31,7 @@ namespace Rock.Jobs
         public void Execute( IJobExecutionContext context )
         {
             UpdateInteractionSummaryForPageViews();
-
+            UpdateSlugForContentChannelItems();
             // Keep these two last.
             CreateIndexInteractionsForeignKey();
             DeleteJob( context.GetJobId() );
@@ -115,6 +116,46 @@ namespace Rock.Jobs
 
                 rockContext.Database.ExecuteSqlCommand( sqlQuery );
             }
+        }
+
+        /// <summary>
+        /// Inserts the slug for Content Channel Items.
+        /// </summary>
+        public static void UpdateSlugForContentChannelItems()
+        {
+            int recordsToProcess = 1000;
+            bool isProcess = true;
+
+            do
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var contentChannelItems = new ContentChannelItemService( rockContext )
+                                        .Queryable()
+                                        .AsNoTracking()
+                                        .Where( a => !a.ContentChannelItemSlugs.Any() )
+                                        .Take( recordsToProcess )
+                                        .Select( a => new
+                                        {
+                                            a.Id,
+                                            a.Title
+                                        } ).ToList();
+
+                    var slugService = new ContentChannelItemSlugService( rockContext );
+                    if ( contentChannelItems.Any() )
+                    {
+                        foreach ( var item in contentChannelItems )
+                        {
+                            slugService.SaveSlug( item.Id, item.Title, null );
+                        }
+                    }
+                    else
+                    {
+                        isProcess = false;
+                    }
+                }
+            }
+            while ( isProcess );
         }
     }
 }
