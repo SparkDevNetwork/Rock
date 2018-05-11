@@ -16,17 +16,10 @@
 //
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.IO;
+using System.Linq;
 
-using Rock.Attribute;
-using Rock.Model;
-using Rock.Web.UI.Controls;
-using Rock.Data;
-using System.Collections.Generic;
-using System.Data;
-using System;
-using System.Diagnostics;
 using Rock.Cache;
+using Rock.Model;
 
 namespace Rock.PersonProfile.Badge
 {
@@ -49,13 +42,18 @@ namespace Rock.PersonProfile.Badge
             if ( !string.IsNullOrWhiteSpace( Person.TopSignalColor ) && Person.Signals.Count > 0 )
             {
                 writer.Write( string.Format( @"
-<div class='badge badge-signal badge-id-{0}'>
+<div class='badge badge-signal badge-id-{0}' data-toggle='tooltip' title='{3} has the following {4}: {5}'>
     <div class='badge-content' style='color: {1};'>
         <i class='fa fa-flag badge-icon'></i>
         <span class='signal'>{2}</span>
     </div>
 </div>",
-                    badge.Id, Person.TopSignalColor, Person.Signals.Count ) );
+                    badge.Id,
+                    Person.TopSignalColor,
+                    Person.Signals.Count,
+                    Person.NickName,
+                    "signal".PluralizeIf( Person.Signals.Count != 1 ),
+                    string.Join( ", ", Person.Signals.Select( s => s.SignalType.Name.EncodeHtml() ) ) ) );
             }
         }
     }
