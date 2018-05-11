@@ -4,6 +4,9 @@
 <div class="masthead-fullmenu-navitems">
     {% if CurrentPerson %}
       <a class="masthead-fullmenu-navitem" href="/dashboardv2">My Dashboard</a>
+      <a class="masthead-fullmenu-navitem" href="/ManageAutomatedGiving">Manage Automated Giving</a>
+      <a class="masthead-fullmenu-navitem" href="/ManagePaymentAccounts">Manage Payment Accounts</a>
+      <a class="masthead-fullmenu-navitem" href="/GivingHistory">Giving History</a>
     {% endif %}
 
     <a class="masthead-fullmenu-navitem" href="/nextstepsv2">Next Steps</a>
@@ -51,9 +54,8 @@
     <div class="dropdown">
       <button class="dropdown-toggle masthead-fullmenu-navitem" type="button" data-toggle="dropdown" style="border: 0px;">Watch<b class="fa fa-caret-down"></b></button>
       <ul class="dropdown-menu">
-        <li><a href="/watchv2">Message</a></li>
-        <li><a href="/archivev2">Archive</a></li>
-        <li><a href="/ccvlivev2">CCV Live</a></li>
+        <li><a href="/watchv2">Watch</a></li>
+        <li><a href="http://live.ccv.church">CCV Live</a></li>
         <li><a href="/storiesv2">Stories</a></li>
       </ul>
     </div>
@@ -62,7 +64,7 @@
       <button class="dropdown-toggle masthead-fullmenu-navitem" type="button" data-toggle="dropdown" style="border: 0px;">Give<b class="fa fa-caret-down"></b></button>
       <ul class="dropdown-menu">
         <li><a href="/givev2">Give</a></li>
-        <li><a href="/givenowv2">Give Now</a></li>
+        <li><a href="/givev2/now">Give Now</a></li>
       </ul>
     </div>
 

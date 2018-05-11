@@ -41,9 +41,7 @@
     <div class="dropdown">
       <a class="masthead-navitem" style="border: 0px;" href="/watchv2">Watch</a>
       <ul class="dropdown-menu">
-        <li><a href="/watchv2">Message</a></li>
-        <li><a href="/archivev2">Archive</a></li>
-        <li><a href="/ccvlivev2">CCV Live</a></li>
+        <li><a href="http://live.ccv.church">CCV Live</a></li>
         <li><a href="/storiesv2">Stories</a></li>
       </ul>
     </div>
