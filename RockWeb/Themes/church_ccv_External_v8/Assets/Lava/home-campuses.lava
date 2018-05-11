@@ -1,0 +1,82 @@
+{% comment %}
+    {% include '~~/Assets/Lava/home-campuses.lava' %}
+{% endcomment %}
+
+{% comment %} Render Header {% endcomment %}
+<div class="campuses-cards">
+    <div class="campuses-cards-header">
+        <h3>Our Campuses</h3>
+        <div class="nav-buttons">
+            <button type="button" class="nav-button nav-prev"><i class="mdi mdi-chevron-left event-card-navigation-icon"></i></button>
+            <button type="button" class="nav-button nav-next"><i class="mdi mdi-chevron-right event-card-navigation-icon"></i></button>
+        </div>
+    </div>
+
+    {% comment %} Render Content {% endcomment %}
+    <div class="campuses-cards-row">
+        {% for campus in Campuses %}
+            {% if campus.IsActive == true %}
+                {% capture campusLink %}/{{ campus.Name | Downcase }}v2{% endcapture %}
+
+                <div class="campus-card">
+                    <h4>{{ campus.Name}}</h3>
+                    <p>{{ campus.Location.Street1 }}</p>
+                    <p>{{ campus.Location.City }}, {{ campus.Location.State }} {{ campus.Location.PostalCode }}</p>
+                    <br />
+                    <a class="directions" href="">Get Directions <i class="mdi mdi-chevron-right"></i></a>
+                    <br />
+                    <h5>Service Times - only stubbed</h5>
+                    <p><span class="serivce-day">Day</span>time, time, time</p>
+                    <p><span class="service-day">Saturday</span>4:30 pm, 6:00 pm</p>
+                    <a class="btn btn-primary" href="{{ campuslink }}">Learn More <i class="mdi mdi-chevron-right"></i></a>
+                </div>
+            {% endif %}
+
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+$(document).ready(function(){
+  $('.campuses-cards-row').slick({
+      slidesToShow: 3,
+      slidesToScroll: 3,
+      arrows: false,
+      responsive: [
+        {
+          breakpoint: 1024,
+          settings: {
+            slidesToShow: 2,
+            slidesToScroll: 2
+          }
+        },
+        {
+          breakpoint: 730,
+          settings: {
+            slidesToShow: 1,
+            slidesToScroll: 1
+          }
+        }
+      ]
+  });
+});
+$('.nav-prev').click(function(){
+  $('.campuses-cards-row').slick('slickPrev');
+})
+
+$('.nav-next').click(function(){
+  $('.campuses-cards-row').slick('slickNext');
+})
+</script>
+
+
+
+
+
+
+
+
+
+
+{% comment %} 
+{{ 'Lava' | Debug }} {% endcomment %}
