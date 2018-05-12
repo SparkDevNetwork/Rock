@@ -1003,7 +1003,7 @@ namespace RockWeb.Blocks.Finance
                 .ToList();
 
             var nextFinancialTransaction = transactionsToMatch.Where( a => a > transactionId ).Take( 1 ).FirstOrDefault();
-            var backFinancialTransaction = transactionsToMatch.Where( a => a < transactionId ).Take( 1 ).FirstOrDefault();
+            var backFinancialTransaction = transactionsToMatch.Where( a => a < transactionId ).LastOrDefault();
 
             if ( nextFinancialTransaction != default( int ) )
             {
@@ -1192,8 +1192,9 @@ namespace RockWeb.Blocks.Finance
 
                 string rockUrlRoot = ResolveRockUrl( "/" );
 
+                lAuthorizedPerson.Text = new DescriptionList().Add( "Person", ( txn.AuthorizedPersonAlias != null && txn.AuthorizedPersonAlias.Person != null ) ? txn.AuthorizedPersonAlias.Person.GetAnchorTag( rockUrlRoot ) : string.Empty ).Html;
+
                 var detailsLeft = new DescriptionList()
-                    .Add( "Person", ( txn.AuthorizedPersonAlias != null && txn.AuthorizedPersonAlias.Person != null ) ? txn.AuthorizedPersonAlias.Person.GetAnchorTag( rockUrlRoot ) : string.Empty )
                     .Add( "Date/Time", txn.TransactionDateTime.HasValue ? txn.TransactionDateTime.Value.ToString( "g" ) : string.Empty );
 
                 if ( txn.Batch != null )
@@ -1360,7 +1361,7 @@ namespace RockWeb.Blocks.Finance
                         }
                         if ( campusNames.Any() )
                         {
-                            campusDescription.Add( "Campuses", campusNames.AsDelimited( "<br/>" ) );
+                            campusDescription.Add( "Campus".PluralizeIf(campusNames.Count > 1), campusNames.AsDelimited( "<br/>" ) );
                         }
                         lCampus.Text = campusDescription.Html;
                     }
@@ -1380,7 +1381,7 @@ namespace RockWeb.Blocks.Finance
 
                     if ( groupLocations.Any() )
                     {
-                        rptAddresses.DataSource = groupLocations.ToList();
+                        rptAddresses.DataSource = groupLocations.OrderByDescending( l => l.CreatedDateTime ).ToList();
                         rptAddresses.DataBind();
                     }
                 }

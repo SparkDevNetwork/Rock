@@ -20,6 +20,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -278,6 +279,24 @@ namespace Rock.Model
             set { _childAccounts = value; }
         }
         private ICollection<FinancialAccount> _childAccounts;
+
+        /// <summary>
+        /// Returns an enumerable collection of the <see cref="Rock.Model.FinancialAccount" /> Ids that are ancestors of a specified accountId sorted starting with the most immediate parent
+        /// </summary>
+        /// <value>
+        /// The parent account ids.
+        /// </value>
+        [LavaInclude]
+        public List<int> ParentAccountIds
+        {
+            get
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    return new FinancialAccountService( rockContext ).GetAllAncestorIds( this.Id ).ToList();
+                }
+            }
+        }
 
         #endregion
 
