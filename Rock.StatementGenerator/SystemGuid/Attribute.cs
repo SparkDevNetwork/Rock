@@ -44,9 +44,9 @@ namespace Rock.StatementGenerator.SystemGuid
         public const string DEFINEDVALUE_STATEMENT_GENERATOR_LAVA_TEMPLATE_FOOTERHTML = "B20A936B-6F73-4371-A2A1-83513E58A630";
 
         /// <summary>
-        /// The definedvalue statement generator lava template footerheight
+        /// The definedvalue statement generator lava template PDF Object Settings
         /// </summary>
-        public const string DEFINEDVALUE_STATEMENT_GENERATOR_LAVA_TEMPLATE_FOOTERHEIGHT = "0E3B44E7-6218-426E-80E2-CB9ABF77F97A";
+        public const string DEFINEDVALUE_STATEMENT_GENERATOR_LAVA_TEMPLATE_PDFOBJECTSETTINGS = "20CB85A1-09D8-4D5B-A1A5-7FB63C7355C2";
 
     }
 }
