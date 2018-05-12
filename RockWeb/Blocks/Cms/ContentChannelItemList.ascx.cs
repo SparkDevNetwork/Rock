@@ -299,6 +299,7 @@ namespace RockWeb.Blocks.Cms
             var rockContext = new RockContext();
             var contentItemService = new ContentChannelItemService( rockContext );
             var contentItemAssociationService = new ContentChannelItemAssociationService( rockContext );
+            var contentItemSlugService = new ContentChannelItemSlugService( rockContext );
 
             ContentChannelItem contentItem = contentItemService.Get( e.RowKeyId );
 
@@ -316,6 +317,7 @@ namespace RockWeb.Blocks.Cms
                     contentItemAssociationService.DeleteRange( contentItem.ChildItems );
                     contentItemAssociationService.DeleteRange( contentItem.ParentItems );
                     contentItemService.Delete( contentItem );
+                    contentItemSlugService.DeleteRange( contentItem.ContentChannelItemSlugs );
                     rockContext.SaveChanges();
                 } );
             }

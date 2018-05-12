@@ -435,9 +435,10 @@ namespace Rock.Model
             base.PostSaveChanges( dbContext );
 
             var rockContext = ( RockContext ) dbContext;
+            var contentChannelItemSerivce = new ContentChannelItemService( rockContext );
             var contentChannelSlugSerivce = new ContentChannelItemSlugService( rockContext );
 
-            if ( !contentChannelSlugSerivce.Queryable().Any( a => a.ContentChannelItemId == this.Id ) )
+            if ( !contentChannelSlugSerivce.Queryable().Any( a => a.ContentChannelItemId == this.Id ) && contentChannelItemSerivce.Queryable().Any(a=>a.Id == Id) )
             {
                 contentChannelSlugSerivce.SaveSlug( Id, Title, null );
             }
