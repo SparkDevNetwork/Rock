@@ -29,8 +29,14 @@ namespace Rock.StatementGenerator.Migrations
         /// </summary>
         public override void Up()
         {
-            RockMigrationHelper.AddDefinedTypeAttribute( Rock.StatementGenerator.SystemGuid.DefinedType.STATEMENT_GENERATOR_LAVA_TEMPLATE, Rock.SystemGuid.FieldType.INTEGER,
-                "Footer Height", "FooterHeight", "The height of the footer in the generated pdf in millimeters. Adjust this if you have a custom footer that needs a custom height.", 103, "10", Rock.StatementGenerator.SystemGuid.Attribute.DEFINEDVALUE_STATEMENT_GENERATOR_LAVA_TEMPLATE_FOOTERHEIGHT );
+            // Update Help Text of FooterHtml
+            RockMigrationHelper.AddDefinedTypeAttribute( Rock.StatementGenerator.SystemGuid.DefinedType.STATEMENT_GENERATOR_LAVA_TEMPLATE, Rock.SystemGuid.FieldType.CODE_EDITOR,
+                "Footer HTML", "FooterHtml", @"Advanced: If you want custom Html for your footer, you can create an HTML doc that will generate the footer. See https://wkhtmltopdf.org/usage/wkhtmltopdf.txt
+Note: The Footer will be placed in the bottom margin of the page. To adjust the footer height, set margin.bottom in PDF Object Settings.", 102, string.Empty, Rock.StatementGenerator.SystemGuid.Attribute.DEFINEDVALUE_STATEMENT_GENERATOR_LAVA_TEMPLATE_FOOTERHTML );
+
+            // Add new PDFObjectSettings option
+            RockMigrationHelper.AddDefinedTypeAttribute( Rock.StatementGenerator.SystemGuid.DefinedType.STATEMENT_GENERATOR_LAVA_TEMPLATE, Rock.SystemGuid.FieldType.KEY_VALUE_LIST,
+                "PDF Object Settings (Advanced)", "PDFObjectSettings", "See https://wkhtmltopdf.org/libwkhtmltox/pagesettings.html#pagePdfObject", 103, "margin.top^10|margin.bottom^10|margin.left^10|margin.right^10|size.pageSize^letter", Rock.StatementGenerator.SystemGuid.Attribute.DEFINEDVALUE_STATEMENT_GENERATOR_LAVA_TEMPLATE_PDFOBJECTSETTINGS );
         }
 
         /// <summary>

@@ -86,12 +86,14 @@ namespace Rock.Apps.StatementGenerator
             var lavaTemplateDefineValues = _rockRestClient.GetData<List<Rock.Client.DefinedValue>>( "api/FinancialTransactions/GetStatementGeneratorTemplates" );
             var lavaTemplateDefineValue = lavaTemplateDefineValues?.FirstOrDefault( a => a.Guid == this.Options.LayoutDefinedValueGuid );
 
-            int? footerHeight = null;
+            Dictionary<string, string> pdfObjectSettings = null;
 
-            if ( lavaTemplateDefineValue?.Attributes?.ContainsKey( "FooterHeight" ) == true )
+            if ( lavaTemplateDefineValue?.Attributes?.ContainsKey( "PDFObjectSettings" ) == true )
             {
-                footerHeight = ( int? ) lavaTemplateDefineValue.AttributeValues["FooterHeight"].Value.AsIntegerOrNull();
+                pdfObjectSettings = lavaTemplateDefineValue.AttributeValues["PDFObjectSettings"].Value.AsDictionaryOrNull();
             }
+
+            pdfObjectSettings = pdfObjectSettings ?? new Dictionary<string, string>();
 
             UpdateProgress( "Getting Recipients..." );
             var recipientList = _rockRestClient.PostDataWithResult<Rock.StatementGenerator.StatementGeneratorOptions, List<Rock.StatementGenerator.StatementGeneratorRecipient>>( "api/FinancialTransactions/GetStatementGeneratorRecipients", this.Options );
@@ -147,21 +149,36 @@ namespace Rock.Apps.StatementGenerator
                             footerUrl = "file:///" + footerHtmlPath.Replace( '\\', '/' );
                         }
                         
-                        var margin = PaperMargins.All( Length.Millimeters( 10 ) ).Botton( Length.Millimeters( footerHeight ?? 10 ) );
+                        foreach ( var pdfObjectSetting in pdfObjectSettings )
+                        {
+                            if ( pdfObjectSetting.Key.StartsWith( "margin." ) || pdfObjectSetting.Key.StartsWith( "size." ) )
+                            {
+                                pdfGenerator = pdfGenerator.WithGlobalSetting( pdfObjectSetting.Key, pdfObjectSetting.Value );
+                            }
+                            else
+                            {
+                                pdfGenerator = pdfGenerator.WithObjectSetting( pdfObjectSetting.Key, pdfObjectSetting.Value );
+                            }
+                        }
+
+                        if ( !pdfObjectSettings.ContainsKey( "footer.fontSize" ) )
+                        {
+                            pdfGenerator = pdfGenerator.WithObjectSetting( "footer.fontSize", "10" );
+                        }
 
                         if ( footerUrl != null )
                         {
-                            pdfGenerator = pdfGenerator.WithObjectSetting( "footer.fontSize", "10" );
                             pdfGenerator = pdfGenerator.WithObjectSetting( "footer.htmlUrl", footerUrl );
                         }
                         else
                         {
-                            pdfGenerator = pdfGenerator.WithObjectSetting( "footer.fontSize", "10" );
-                            pdfGenerator = pdfGenerator.WithObjectSetting( "footer.right", "Page [page] of [topage]" );
+                            if ( !pdfObjectSettings.ContainsKey( "footer.right" ) )
+                            {
+                                pdfGenerator = pdfGenerator.WithObjectSetting( "footer.right", "Page [page] of [topage]" );
+                            }
                         }
                         
                         var pdfBytes = pdfGenerator
-                            .WithMargins( margin )
                             .WithoutOutline()
                             .Portrait()
                             .Content();
