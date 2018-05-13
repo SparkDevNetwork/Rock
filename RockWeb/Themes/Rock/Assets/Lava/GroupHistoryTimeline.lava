@@ -1,8 +1,6 @@
 ﻿<style>
-.cd-timeline {
-  background-color:var(--panel-bg);
-  overflow: hidden;
-  margin: 2em auto;
+.rock-timeline {
+  background-color: var(--panel-bg);
 }
 
 .timeline-container {
@@ -10,22 +8,22 @@
   width: 90%;
   max-width: 1170px;
   margin: 0 auto;
-  padding: 2em 0;
 }
 
 .timeline-container::before {
-  /* this is the vertical line */
-  content: '';
   position: absolute;
   top: 0;
   left: 17px;
-  height: 100%;
   width: 1px;
-  background: var(--panel-heading-bg);
+  height: 100%;
+
+  /* this is the vertical line */
+  content: "";
+  background: var(--wizard-item-bar-color);
 }
 
 @media only screen and (min-width: 1170px) {
-  .cd-timeline {
+  .rock-timeline {
     margin-top: 3em;
     margin-bottom: 3em;
   }
@@ -35,16 +33,33 @@
   }
 }
 
+.date-divider {
+  width: 100%;
+}
+
+.timeline-container .break {
+  position: relative;
+  z-index: 0;
+  text-align: center;
+}
+
+.break > span {
+  display: inline-block;
+  padding: 5px 0 10px;
+  background: #fff;
+}
+
 .timeline-block {
   position: relative;
   margin: 2em 0;
 }
 
-.timeline-block:after {
-  /* clearfix */
-  content: "";
+.timeline-block::after {
   display: table;
   clear: both;
+
+  /* clearfix */
+  content: "";
 }
 
 .timeline-block:first-child {
@@ -55,246 +70,343 @@
   margin-bottom: 0;
 }
 
-@media only screen and (min-width: 1170px) {
-  .timeline-block {
-    margin: 4em 0;
-  }
-}
-
 .timeline-icon {
   position: absolute;
   top: 0;
   left: 0;
-  width: 35px;
-  height: 35px;
-  border-radius: 50%;
-  color: var(--panel-heading-bg);
-  border: 1px solid var(--panel-heading-bg);
-  box-shadow: 0 -4px 0 1px var(--panel-bg);
-  background: var(--panel-bg);
-  overflow:hidden;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 35px;
+  height: 35px;
+  overflow: hidden;
+  color: var(--wizard-item-icon-color);
+  background: var(--wizard-item-icon-bg);
+  border: 1px solid var(--wizard-item-bar-color);
+  border-radius: 50%;
+  box-shadow: 0 -4px 0 1px var(--panel-bg);
 }
 
 @media only screen and (min-width: 1170px) {
   .timeline-icon {
     left: 50%;
     margin-left: -17.5px;
-    /* Force Hardware Acceleration */
-    -webkit-transform: translateZ(0);
-            transform: translateZ(0);
   }
 }
 
 .timeline-content {
   position: relative;
   margin-left: 47px;
-  color:rgb(103, 126, 140);
-  background: white;
+  color: rgb(103, 126, 140);
+  background: #fff;
 }
 
-.timeline-content:after {
-  /* clearfix */
-  content: "";
+.timeline-content::after {
   display: table;
   clear: both;
+
+  /* clearfix */
+  content: "";
 }
 
 .timeline-title {
+  display: block;
+  font-size: 20px;
+  line-height: 1;
   color: rgb(44, 64, 76);
-  font-size:20px;
-  display:block;
-  line-height:1;
 }
 
 .timeline-date {
-  color: rgb(103, 126, 140);
-  font-size: 12px;
-  margin: 1px 0 0;
   display: block;
+  margin: 1px 0 0;
+  font-size: 12px;
+  color: rgb(103, 126, 140);
 }
 
 .timeline-details {
   margin: 10px 0 0;
 }
 
-/*.timeline-content::before {*/
-  /* triangle next to content block */
-/*  content: '';*/
-/*  position: absolute;*/
-/*  top: 10px;*/
-/*  right: 100%;*/
-/*  height: 0;*/
-/*  width: 0;*/
-/*  border: 7px solid transparent;*/
-/*  border-right: 7px solid white;*/
-/*}*/
-
 @media only screen and (min-width: 1170px) {
   .timeline-content {
-    margin-left: 0;
-    padding: 0;
     width: 47%;
-    /* Force Hardware Acceleration */
-    -webkit-transform: translateZ(0);
-            transform: translateZ(0);
+    padding: 0;
+    margin-left: 0;
   }
-  /*.timeline-content::before {*/
-  /*  top: 10px;*/
-  /*  left: 100%;*/
-  /*  border-color: transparent;*/
-  /*  border-left-color: white;*/
-  /*}*/
 
   .timeline-block:nth-child(even) .timeline-content {
     float: right;
   }
 
   .timeline-block:nth-child(odd) .timeline-title,
-  .timeline-block:nth-child(odd) .timeline-date {
+  .timeline-block:nth-child(odd) .timeline-date,
+  .timeline-block:nth-child(odd) .timeline-details,
+  .timeline-block:nth-child(odd) .historysummary {
     text-align: right;
   }
   .timeline-block:nth-child(even) .timeline-content::before {
     top: 10px;
-    left: auto;
     right: 100%;
+    left: auto;
     border-color: transparent;
-    border-right-color: white;
+    border-right-color: #fff;
   }
 }
 
+.popover {
+  max-width: 100%;
+}
+
+.read-more-content {
+  height: auto;
+  opacity: 1 !important;
+  -webkit-transition: -webkit-transform 304ms ease-out, transform 304ms ease-out, opacity 304ms ease-out !important;
+  -moz-transition: transform 304ms ease-out, opacity 304ms ease-out !important;
+  transition: -ms-transform 304ms ease-out, -webkit-transform 304ms ease-out, transform 304ms ease-out, opacity 304ms ease-out !important;
+  -webkit-transform: translateY(0) !important;
+  -ms-transform: translateY(0) !important;
+  transform: translateY(0) !important;
+}
+
+.read-more-content.standby {
+  height: 0;
+  opacity: 0 !important;
+  -webkit-transform: translateY(24px) !important;
+  -ms-transform: translateY(24px) !important;
+  transform: translateY(24px) !important;
+}
 </style>
 
-{% if PrimaryEntity %}
-<h1>History for {{ PrimaryEntity | ToString }}</h1>
-{% endif %}
 
-<section class="cd-timeline">
+{%- assign currentDateTime = 'Now' | Date:'yyyy-MM-dd' | AsDateTime %}
+{%- assign currentYear = currentDateTime | Date:'yyyy' -%}
+{%- assign startYear = HistorySummaryByDateByVerbList | Last | Property:'FirstHistoryDateTime' | Date:'yyyy' -%}
+{%- assign endYear = HistorySummaryByDateByVerbList | First | Property:'LastHistoryDateTime' | Date:'yyyy' -%}
+
+{%- if startYear != endYear and currentYear != endYear -%}
+    <ul id="date-menu" class="nav nav-pills">
+    {%- for i in (startYear..endYear) reversed -%}
+        <li role="presentation" {%- if currentYear == i -%}class="active"{%- endif -%}><a href="#{{ i }}-1">{{ i }}</a></li>
+    {%- endfor -%}
+    </ul>
+{%- endif -%}
+
+<a href="{{ GroupHistoryGridPage }}?GroupId={{ PageParameter.GroupId }}" class="btn btn-xs btn-default pull-right">View Grid</a>
+
+<section class="rock-timeline">
     <div class="timeline-container">
-    {% for historySummaryByDateByVerb in HistorySummaryByDateByVerbList %}
-        <!-- Summary Date: {{ historySummaryByDateByVerb.DateTime | Date:'M/d/yyyy' }} -->
-        {% for historySummaryListByEntityTypeAndVerb in historySummaryByDateByVerb.HistorySummaryListByEntityTypeAndVerbList %}
-        {% assign byVerbPluralizeCount = historySummaryListByEntityTypeAndVerb.HistorySummaryList | Size %}
-        {% assign showSummaryEntity = false %}
-        {% assign showHistoryDetails = false %}
-        {% assign historySkipOffset = 0 %}
-        {% assign showSummaryValueName = false %}
-        <div class="timeline-block">
-            <div class="timeline-icon">
-                <i class="fa fa-calendar"></i>
-            </div> <!-- timeline-icon -->
+        {%- for historySummaryByDateByVerb in HistorySummaryByDateByVerbList -%}
+            {%- assign dateDiff = historySummaryByDateByVerb.FirstHistoryDateTime | Date:'yyyy-MM-dd' | AsDateTime | DateDiff:currentDateTime,'d' -%}
+            {%- comment -%}Reset the event increment if it's a new year{%- endcomment -%}
+            {%- assign firstHistoryYear = historySummaryByDateByVerb.FirstHistoryDateTime | Date:'yyyy' | AsInteger -%}
+            {%- if firstHistoryYear != prevFirstHistoryYear or forloop.first == true -%}
+            {%- assign yearEventCount = 1 -%}
+            {%- endif -%}
+            {%- assign prevFirstHistoryYear = firstHistoryYear -%}
+            {%- comment -%}Generate the date divider label{%- endcomment -%}
+            {%- capture dateDivider -%}
+                {%- if dateDiff > 1 -%}
+                {%- assign dateLabel = historySummaryByDateByVerb.FirstHistoryDateTime  | Date:'dddd, MMMM d' -%}
+                <span>{{ dateLabel }}{%- if currentYear != firstHistoryYear -%}
+                {{ firstHistoryYear }}
+                {%- endif -%}</span>
+                {%- elseif dateDiff == 1 -%}
+                    Yesterday
+                {%- elseif dateDiff == 0 -%}
+                    Today
+                {%- endif -%}
+            {%- endcapture -%}
+            {%- comment -%} Set the icon for the timeline-block {%- endcomment -%}
+            <header id="{{ firstHistoryYear }}-{{ yearEventCount }}" class="date-divider">
+                <h3 class="break centered"><span>{{ dateDivider | Trim }}</span></h3>
+            </header>
+            {%- comment -%}Increment the number of events in a year{%- endcomment -%}
+            {%- assign yearEventCount = yearEventCount | Plus:1 -%}
 
-            <div class="timeline-content">
-                <span class="timeline-title">
-                {% case historySummaryListByEntityTypeAndVerb.Verb %}
-                        {% when 'MODIFY' %}
-                            {% if PrimaryEntityTypeName == historySummaryListByEntityTypeAndVerb.EntityTypeName %}
-                                 Updated
-                            {% else %}
-                                {{ historySummaryListByEntityTypeAndVerb.EntityTypeName | PluralizeForQuantity:byVerbPluralizeCount }} Updated
-                            {% endif %}
-                            {% assign showHistoryDetails = true %}
-                        {% when 'ADDEDTOGROUP' %}
-                            {% if PrimaryEntityTypeName == 'Group Member' %}
-                                Added to Group
-                                {% assign showHistoryDetails = true %}
-                                {% assign historySkipOffset = 1 %}
-                            {% else %}
-                                Added {% if byVerbPluralizeCount > 1 %}{{ byVerbPluralizeCount }}{% endif %} {{ historySummaryListByEntityTypeAndVerb.EntityTypeName | PluralizeForQuantity:byVerbPluralizeCount }} 
-                                {% assign showSummaryEntity = true %}
-                            {% endif %}
-                        {% when 'REMOVEDFROMGROUP' %}
-                            {% if PrimaryEntityTypeName == 'Group Member' %}
-                                Removed from Group
-                                {% assign showHistoryDetails = true %}
-                                {% assign historySkipOffset = 1 %}
-                            {% else %}
-                                Removed {% if byVerbPluralizeCount > 1 %}{{ byVerbPluralizeCount }}{% endif %} {{ historySummaryListByEntityTypeAndVerb.EntityTypeName | PluralizeForQuantity:byVerbPluralizeCount }} 
-                                {% assign showSummaryEntity = true %}
-                            {% endif %}
-                        {% when 'ADD' %}
-                            {{  historySummaryListByEntityTypeAndVerb.EntityTypeName }} Created
-                            {% assign showHistoryDetails = true %}
-                            {% comment %} When doing an 'ADD' summary, first history record is the same as the summary, so we can skip it {% endcomment %}
-                            {% assign historySkipOffset = 1 %}
-                        {% when 'DELETE' %}
-                            {{  historySummaryListByEntityTypeAndVerb.EntityTypeName }} Deleted
-                        {% else %}
-                            {% comment %} Some Verb that hasn't been implemented in this template yet, or some unexpected Verb {% endcomment %}
-                            {{ historySummaryListByEntityTypeAndVerb.Verb }}
-                    {% endcase %}
-                </span>
-                <span class="timeline-date">{{ historySummaryListByEntityTypeAndVerb.FirstHistoryDateTime | Date:'MMM d, yyyy h:mmtt' }}</span>
-        <p class="timeline-details">
-        
-        {% for historySummary in historySummaryListByEntityTypeAndVerb.HistorySummaryList %}
-       
-            <div class='historysummary'>
-                {% if showSummaryEntity %}
-                    <span class='historysummary-entity'>{{ historySummary.Entity | Default:historySummary.ValueName | ToString }}</span>
-                {% endif %}
-                {% if showSummaryValueName %}
-                    <span class='historysummary-valuename'>{{ historySummary.ValueName | ToString }}</span>
-                {% endif %}
-            </div>
-            {% if showHistoryDetails %}
-            <div class='historydetails'>
-                <ul>
-                {% assign historyVerb = "" %}
-                {% assign CreatedByPersonId = "" %}
-                {%- if historySummary.Entity.Guid != PrimaryEntity.Guid -%}
-                    {% assign timelineOtherEntity = historySummary.Entity | ToString %}
-                    <p><span class='history-otherentity'>{{ timelineOtherEntity }}...</span></p>
-                {%- endif -%} 
-                
-                {% for history in historySummary.HistoryList offset:historySkipOffset  %}
-                    {%- capture timelineEvent -%}
-                        {% comment %} Build summary text for each history detail {% endcomment %}
-                        {% if forloop.first or previousCreatedByPersonId != history.CreatedByPersonId %}
-                        <a href="/person/{{ history.CreatedByPersonId }}">{{ history.CreatedByPersonName }}</a>
-                        {% endif %}
+            {%- for historySummaryListByEntityTypeAndVerb in historySummaryByDateByVerb.HistorySummaryListByEntityTypeAndVerbList -%}
+                {%- assign byVerbPluralizeCount = historySummaryListByEntityTypeAndVerb.HistorySummaryList | Size %}
+                {%- assign primaryActor = false -%}
+                {%- assign showSummaryEntity = false -%}
+                {%- assign showHistoryDetails = false -%}
+                {%- assign historySkipOffset = 0 -%}
+                {%- assign first = historySummaryListByEntityTypeAndVerb.HistorySummaryList | First -%}
+                {%- assign last = historySummaryListByEntityTypeAndVerb.HistorySummaryList | Last -%}
+                <div class="timeline-block">
+                    {%- comment -%} Set the icon for the timeline-block {%- endcomment -%}
+                    <div class="timeline-icon">
+                    {%- case historySummaryListByEntityTypeAndVerb.Verb -%}
+                        {%- when 'ADD' -%}
+                        <i class="fa fa-users"></i>
+                        {%- when 'ADDEDTOGROUP' -%}
+                        <i class="fa fa-user-plus"></i>
+                        {%- when 'REMOVEDFROMGROUP' -%}
+                        <i class="fa fa-user-times"></i>
+                        {%- when 'MODIFY' -%}
+                        <i class="fa fa-pencil-alt"></i>
+                        {%- else -%}
+                        <i class="fa fa-calendar"></i>
+                    {%- endcase -%}
+                    </div>
 
-                        {% if forloop.first or historyVerb != history.Verb %}
-                            {% case history.Verb %}
-                                {% when 'MODIFY' %}
-                                    {% if history.OldValue %}
-                                        <span class='history-verb'> changed the {{ history.EntityType.FriendlyName | Downcase }}</span>
-                                    {% else %}
-                                        <span class='history-verb'> set the</span>
-                                    {% endif %}
-                                {% when 'ADD' %}
-                                    <span class='history-verb'> added</span>
-                                {% when 'DELETE' %}
-                                    <span class='history-verb'> deleted</span>
-                                {% else %}
-                                {% comment %} Some unexpected Verb {% endcomment %}
-                            {% endcase %}
-                        {% endif %}
-                        {%- assign historyVerb = history.Verb -%}
+                    <div class="timeline-content">
+                        <span class="timeline-title">
+                        {%- if byVerbPluralizeCount == 1 or first.CreatedByPersonId == last.CreatedByPersonId -%}
+                            {%- assign primaryActor = true -%}
+                            {%- if CurrentPerson.Id == historySummaryListByEntityTypeAndVerb.HistorySummaryList[0].CreatedByPersonId -%}
+                                <a href="/person/{{ historySummaryListByEntityTypeAndVerb.HistorySummaryList[0].CreatedByPersonId }}">You</a>
+                            {%- else -%}
+                                <a href="/person/{{ historySummaryListByEntityTypeAndVerb.HistorySummaryList[0].CreatedByPersonId }}">{{ historySummaryListByEntityTypeAndVerb.HistorySummaryList[0].CreatedByPersonName }}</a>
+                            {%- endif -%}
+                        {%- endif -%}
+                            {%- case historySummaryListByEntityTypeAndVerb.Verb -%}
+                                {%- when 'MODIFY' -%}
+                                    {%- if PrimaryEntityTypeName == historySummaryListByEntityTypeAndVerb.EntityTypeName -%}
+                                        updated the {{ historySummaryListByEntityTypeAndVerb.EntityTypeName | Downcase }}
+                                    {%- else -%}
+                                        updated {% if byVerbPluralizeCount > 1 %}{{ byVerbPluralizeCount }}{% else %}a{% endif %} {{ historySummaryListByEntityTypeAndVerb.EntityTypeName | PluralizeForQuantity:byVerbPluralizeCount | Downcase }}
+                                    {%- endif -%}
+                                    {%- assign showHistoryDetails = true -%}
+                                {%- when 'ADDEDTOGROUP' -%}
+                                    {%- if PrimaryEntityTypeName == 'Group Member' -%}
+                                        Added to Group
+                                        {%- assign showHistoryDetails = true -%}
+                                        {%- assign historySkipOffset = 1 -%}
+                                    {%- else -%}
+                                        added {% if byVerbPluralizeCount > 1 %}{{ byVerbPluralizeCount }}{% endif %} {{ historySummaryListByEntityTypeAndVerb.EntityTypeName | PluralizeForQuantity:byVerbPluralizeCount | Downcase }}
+                                        {%- assign showSummaryEntity = true -%}
+                                    {%- endif -%}
+                                {%- when 'REMOVEDFROMGROUP' -%}
+                                    {%- if PrimaryEntityTypeName == 'Group Member' -%}
+                                        Removed from Group
+                                        {%- assign showHistoryDetails = true -%}
+                                        {%- assign historySkipOffset = 1 -%}
+                                    {%- else -%}
+                                        removed {% if byVerbPluralizeCount > 1 %}{{ byVerbPluralizeCount }}{% else %}a{% endif %} {{ historySummaryListByEntityTypeAndVerb.EntityTypeName | PluralizeForQuantity:byVerbPluralizeCount | Downcase }}
+                                        {%- assign showSummaryEntity = true -%}
+                                    {%- endif -%}
+                                {%- when 'ADD' -%}
+                                    created a {{  historySummaryListByEntityTypeAndVerb.EntityTypeName | Downcase }} called <a href="#">{{ historySummaryListByEntityTypeAndVerb.HistorySummaryList[0].HistoryList[0].NewValue }}</a>
+                                    {%- assign showHistoryDetails = true %}
+                                    {%- comment -%} When doing an 'ADD' summary, first history record is the same as the summary, so we can skip it {%- endcomment -%}
+                                    {%- assign historySkipOffset = 2 %}
+                                {%- when 'DELETE' -%}
+                                    {{  historySummaryListByEntityTypeAndVerb.EntityTypeName }} Deleted
+                                {%- else -%}
+                                    {%- comment -%} Some Verb that hasn't been implemented in this template yet, or some unexpected Verb {%- endcomment -%}
+                                    {{ historySummaryListByEntityTypeAndVerb.Verb }}
+                            {%- endcase -%}
+                        </span>
+                        <span class="timeline-date">{{ historySummaryListByEntityTypeAndVerb.FirstHistoryDateTime | Date:'MMM d, yyyy h:mmtt' }}</span>
+                <div class="timeline-details">
 
-                            <span class='history-valuename'>{{ history.ValueName | Downcase }}</span>
-                            {%- if history.NewValue -%}
-                                <span class='history-oldvalue'> to <i>{{ history.NewValue }}</i></span>{%- endif -%}{%- unless forloop.last -%}{%- if forloop.rindex != 2 -%},{%- else %} and{%- endif -%}{%- else -%}.{%- endunless -%}
+                {%- assign previousHistoryVerb = "" -%}
+                {%- assign CreatedByPersonId = "" | AsInteger -%}
+                    <div class='historydetails'>
+                        <ul class="list-unstyled">
+                            {%- for historySummary in historySummaryListByEntityTypeAndVerb.HistorySummaryList -%}
+                                {%- comment -%} Shows a list of added/removed group members {%- endcomment -%}
+                                {%- if showSummaryEntity -%}
+                                    {%- if historySummary.EntityTypeName == 'Group Member' -%}
+                                        <span class='historysummary-entity' title='{{ historySummary.CreatedDateTime }}'><a href="{{ GroupMemberHistoryPage }}?GroupId={{ PageParameter.GroupId }}&GroupMemberId={{ historySummary.EntityId }}">{{ historySummary.Entity | Default:historySummary.ValueName | ToString }}</a></span>
+                                    {%- endif -%}
+                                {%- endif -%}
+                                {%- comment -%} showHistoryDetails for complex sets of changes {%- endcomment -%}
+                                {%- if showHistoryDetails -%}
+                                    {%- if forloop.index == 10 -%}</ul>
+                                    <a href="#" class="btn-read-more">And {{ forloop.length | Minus:forloop.index }} other changes...</a>
+                                    <ul class="list-unstyled read-more-content standby">{%- endif -%}
+                                    <li>
+                                        {%- for history in historySummary.HistoryList offset:historySkipOffset -%}
+                                            {%- capture timelineEvent -%}
+                                                {%- comment -%} Build summary text for each history detail {%- endcomment -%}
+                                                {%- if history.CreatedByPersonId != previousCreatedByPersonId or historyEntity != historySummary.EntityId -%}
+                                                    {%- if primaryActor == false -%}
+                                                        {%- if CurrentPerson.Id == history.CreatedByPersonId -%}
+                                                            <a href="/person/{{ history.CreatedByPersonId }}">You</a>
+                                                        {%- else -%}
+                                                            <a href="/person/{{ history.CreatedByPersonId }}">{{ history.CreatedByPersonName }}</a>
+                                                        {%- endif -%}
+                                                    {%- endif -%}
+                                                {%- endif -%}
+                                                {%- comment -%} If the person, entity or verb changes; restate the verb {%- endcomment -%}
+                                                {%- if history.CreatedByPersonId != previousCreatedByPersonId or historyEntity != historySummary.EntityId or history.Verb != previousHistoryVerb -%}
+                                                    {%- assign sameValues = false -%}
+                                                    {%- capture historyVerb -%}
+                                                        {%- case history.Verb -%}
+                                                            {%- when 'MODIFY' -%}
+                                                                {%- if history.OldValue -%}
+                                                                    changed
+                                                                    {%- if historySummary.Entity.Guid != PrimaryEntity.Guid -%}
+                                                                        {%- assign timelineOtherEntity = historySummary.Entity | ToString -%}
+                                                                        <a href='{{ GroupMemberHistoryPage }}?GroupId={{ PageParameter.GroupId }}&GroupMemberId={{ historySummary.EntityId }}' class='history-otherentity'>{{ timelineOtherEntity | Possessive }}</a>
+                                                                    {%- else -%}
+                                                                        the
+                                                                    {%- endif -%}
+                                                                    {{ history.EntityType.FriendlyName | Downcase }}
+                                                                {%- else -%}
+                                                                    set the
+                                                                {%- endif -%}
+                                                            {%- when 'ADD' -%}
+                                                                added
+                                                            {%- when 'DELETE' -%}
+                                                               deleted
+                                                            {%- else -%}
+                                                            {%- comment -%} Some unexpected Verb {%- endcomment -%}
+                                                        {%- endcase -%}
+                                                    {%- endcapture -%}
+                                                    <span class='history-verb' title='{{ historySummary.CreatedDateTime }}'>{{ historyVerb | Trim | CapitalizeFirstWord }}</span>
+                                                {%- else -%}
+                                                {%- assign sameValues = true -%}
+                                                {%- endif -%}
 
-                    {% assign previousCreatedByPersonId = history.CreatedByPersonId %}
-                    {%- endcapture -%}
-                    {{ timelineEvent }}
-                {% endfor %}
-                </ul>
-            </div>
-            {% endif %}
-        {% endfor %}
-        
-        </p>
-                
-            </div> <!-- timeline-content -->
-        </div> <!-- timeline-block -->
-        {% endfor %}
-    {% endfor %}
+                                                {%- assign previousCreatedByPersonId = history.CreatedByPersonId -%}
+                                                {%- assign previousHistoryVerb = history.Verb -%}
+                                                {%- assign historyEntity = historySummary.EntityId -%}
 
+                                                {%- capture timelineAction -%}
+                                                    {%- assign historyValueName = history.ValueName | Downcase | Replace:'location location','location' -%}
+                                                    {%- if sameValues and historyValueName == prevHistoryValueName -%}
+                                                        <span class='history-verb' title='{{ historySummary.CreatedDateTime }}'>and</span>
+                                                    {%- else -%}
+                                                        <span class='history-valuename'>{{ historyValueName }}</span> to
+                                                    {%- endif -%}
+                                                    {%- if history.NewValue -%}
+                                                            {%- assign historyNewValueSize = history.NewValue | Size -%}
+                                                        <span class='history-oldvalue'><a {% if historyNewValueSize > 80 -%}tabindex="0" role="button" data-toggle="popover" data-trigger="focus" data-placement="top" title="Full {{ historyValueName }}" data-content="{{ history.NewValue | StripNewlines  }}"{%- endif -%}>{{ history.NewValue | Trim | Truncate:80,'...' }}</a></span>{%- endif -%}{%- unless forloop.last -%}{%- if forloop.rindex != 2 -%},{%- else -%},&nbsp;and{%- endif -%}{%- else -%}{%- endunless -%}
+                                                    {%- assign prevHistoryValueName = historyValueName -%}
+                                                {%- endcapture -%}
+                                                {%- assign prevTimelineAction = timelineAction -%}
+                                            {%- endcapture -%}
+
+                                            {{ timelineEvent | Trim }}
+                                            {{ timelineAction | Trim }}
+                                        {%- endfor -%}
+                                    </li>
+                                {%- endif -%}
+                            {%- endfor -%}
+                        </ul>
+                    </div>
+                </div>
+
+                    </div> <!-- timeline-content -->
+                </div> <!-- timeline-block -->
+            {%- endfor -%}
+        {%- endfor -%}
     </div>
-</section> <!-- cd-timeline -->
+</section>
 
+<script>
+Sys.Application.add_load(function () {
 
+$('.btn-read-more').on('click', function(e) {
+  $(this).next('.read-more-content').removeClass('standby');
+  $(this).addClass('hide');
+  console.log("test");
+  e.preventDefault();
+});
+
+$(function () {
+  $('[data-toggle="popover"]').popover()
+})
+})
+</script>
