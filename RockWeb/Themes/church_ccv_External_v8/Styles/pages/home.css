@@ -1,6 +1,6 @@
 .page-background {
-    background-color: #EBEBEB !important;
-    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-image-missing.jpg") !important;
+    background-color: fuchsia !important;
+    /* background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-image-missing.jpg") !important; */
 }
 
 .title h1 {
@@ -9,9 +9,96 @@
     padding-top: 80px;
 }
 
-#desktopspacer {
-    padding-top: 100px;
+#loggedinspacer {
+    padding-top: 250px;
 }
+
+
+#desktopspacer {
+    padding-top: 200px;
+}
+
+#subnavbar-bg, #section-a-bg {
+    background-color: #000;
+}
+
+/* Mobile Styling */
+@media screen and (max-width: 500px) {
+    .title h1 {
+        padding-top: 0;
+        font-size: 32px;
+    }
+
+    #loggedinspacer {
+        display: none;
+    }
+
+    #desktopspacer {
+        display: none;
+    }
+}
+
+/* Call To Action Section */
+.cta-cards {
+    display: flex;
+    justify-content: space-around;
+    margin: 0 -30px;
+}
+
+.cta-card {
+    display: flex;
+    flex-direction: column;
+    width: 33%;
+    min-height: 210px;
+    background-color: #212121;
+    margin: 0 15px;
+    padding: 30px;
+}
+
+.cta-link {
+    color: #FFFFFF;
+    font-family: akrobat;
+    font-weight: 700;
+    font-size: 20px;
+    line-height: 22px;
+    text-transform: uppercase;
+    display: flex;
+}
+
+.cta-link i {
+    font-size: 30px;
+    margin-right: 10px;
+}
+
+.cta-link i:first-child {
+    color: #7a1315;
+}
+
+.cta-content {
+    margin-top: 15px;
+    color: #eee;
+    font-family: Heebo;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 27px;
+}
+
+/* Mobile Styling */
+@media screen and (max-width: 500px) { 
+    .cta-cards {
+        flex-direction: column;
+    }
+
+    .cta-card {
+        width: 85%;
+        align-self: center;
+        margin-bottom: 10px;
+        min-height: 250px;
+    }
+}
+
+/* End Call To Action */
+
 
 /* Campus Cards Section */
 #section-b-bg {
@@ -30,6 +117,7 @@
 
 .campuses-cards-header h3 {
     color: #707270;
+    font-size: 32px;
 }
 
 /* Nav buttons */
@@ -39,7 +127,7 @@
 }
 
 .campuses-cards-header .nav-button {
-    color: #7A1315; 
+    color: #FFFFFF; 
     font-size: 24px; 
     transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms; 
     background-color: unset;
@@ -93,15 +181,30 @@
     line-height: 27px;
 }
 
-.campus-card .service-day {
+.service-times {
     color: #FFFFFF;
-    margin-right: 10px;
 }
 
-.campus-card .btn {
-
+.service-times li {
+    color: #7c7c7c;
 }
 
+.service-times ul li img {
+    display: inline-block;
+}
+
+
+.campus-card:focus, .directions:focus {
+    outline: none;
+}
+
+/* Mobile Styling */
+@media screen and (max-width: 500px) {
+    .campuses-cards {
+        padding: 0;
+        margin-top: -70px;
+    }
+}
 
 /* End Campus Cards Section */
 
@@ -139,6 +242,28 @@
 .about-church .image {
     width: 100%;
     height: auto;
+}
+
+/* Mobile Styling */
+@media screen and (max-width: 500px) { 
+    .about-church {
+        flex-direction: column-reverse;
+        padding: 20px 0;
+        margin: 0;
+    }
+
+    .about-church .content h1 {
+        font-size: 24px;
+        line-height: 28px;
+    }
+
+    .about-church .content p {
+        width: 100%;
+        font-size: 14px;
+        line-height: 28px;
+        padding: 10px;
+        border-left: none;
+    }
 }
 
 /* End About Church Section */
@@ -181,11 +306,22 @@
 }
 
 .students img {
-    max-width: 350px;
+    max-width: 450px;
 }
 
 .kids-students .btn {
     margin-top: 30px;
+}
+
+/* Mobile Styling */
+@media screen and (max-width: 500px) { 
+    .kids-students {
+        flex-direction: column;
+    }
+
+    .kids, .students {
+        width: 100%;
+    }
 }
 
 /* End Kids / Studetns Section */
@@ -195,5 +331,23 @@
 .dashboard-events-row {
     margin-top: 30px;
 }
+
+/* Mobile Styling */
+@media screen and (max-width: 500px) { 
+    .dashboard-events-row {
+        margin-top: 0;
+    }
+
+    .event-cards-header {
+        flex-direction: column;
+        align-items: flex-start;
+        margin-left: 0;
+    }
+
+    .event-card {
+        margin: 5px 0;
+    }
+}
+
 
 /* End Events Section */

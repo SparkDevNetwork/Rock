@@ -16,19 +16,28 @@
     <div class="campuses-cards-row">
         {% for campus in Campuses %}
             {% if campus.IsActive == true %}
-                {% capture campusLink %}/{{ campus.Name | Downcase }}v2{% endcapture %}
 
                 <div class="campus-card">
                     <h4>{{ campus.Name}}</h3>
                     <p>{{ campus.Location.Street1 }}</p>
                     <p>{{ campus.Location.City }}, {{ campus.Location.State }} {{ campus.Location.PostalCode }}</p>
                     <br />
-                    <a class="directions" href="">Get Directions <i class="mdi mdi-chevron-right"></i></a>
+                    <a class="directions" href="http://maps.google.com/?q={{ campus.Location.Street1 }},{{ campus.Location.City }},{{ campus.Location.State }},{{ campus.Location.PostalCode }}">Get Directions <i class="mdi mdi-chevron-right"></i></a>
                     <br />
-                    <h5>Service Times - only stubbed</h5>
-                    <p><span class="serivce-day">Day</span>time, time, time</p>
-                    <p><span class="service-day">Saturday</span>4:30 pm, 6:00 pm</p>
-                    <a class="btn btn-primary" href="{{ campuslink }}">Learn More <i class="mdi mdi-chevron-right"></i></a>
+                    <h5>Service Times</h5>
+                    {% assign comingSoonUntil = campus | Attribute: 'ComingSoonUntil' | Date: 'yyyyMMdd' %}
+                    {% assign today = 'Now' | Date: 'yyyyMMdd' %}
+                    
+                    {% if today < comingSoonUntil %}
+                        {% assign isComingSoon = true %}
+                    {% endif %}
+
+                    <div class="service-times">
+                        {% assign times = campus.ServiceTimes %}
+                        {% assign useLightIcon = true %}
+                        {% include '~~/Assets/Lava/ServiceTimes/Grid.lava' %}
+                    </div>
+                    <a class="btn btn-primary" href="/{{ campus.Name | Downcase }}v2">Learn More <i class="mdi mdi-chevron-right"></i></a>
                 </div>
             {% endif %}
 
@@ -38,34 +47,34 @@
 
 <script>
 $(document).ready(function(){
-  $('.campuses-cards-row').slick({
-      slidesToShow: 3,
-      slidesToScroll: 3,
-      arrows: false,
-      responsive: [
-        {
-          breakpoint: 1024,
-          settings: {
-            slidesToShow: 2,
-            slidesToScroll: 2
-          }
-        },
-        {
-          breakpoint: 730,
-          settings: {
-            slidesToShow: 1,
-            slidesToScroll: 1
-          }
-        }
-      ]
-  });
+    $('.campuses-cards-row').slick({
+        slidesToShow: 3,
+        slidesToScroll: 3,
+        arrows: false,
+        responsive: [
+            {
+                breakpoint: 1024,
+                settings: {
+                slidesToShow: 2,
+                slidesToScroll: 2
+                }
+            },
+            {
+                breakpoint: 730,
+                settings: {
+                slidesToShow: 1,
+                slidesToScroll: 1
+                }
+            }
+        ]
+    });
 });
 $('.nav-prev').click(function(){
-  $('.campuses-cards-row').slick('slickPrev');
+    $('.campuses-cards-row').slick('slickPrev');
 })
 
 $('.nav-next').click(function(){
-  $('.campuses-cards-row').slick('slickNext');
+    $('.campuses-cards-row').slick('slickNext');
 })
 </script>
 
@@ -78,5 +87,4 @@ $('.nav-next').click(function(){
 
 
 
-{% comment %} 
-{{ 'Lava' | Debug }} {% endcomment %}
+{% comment %} {{ 'Lava' | Debug }} {% endcomment %}
