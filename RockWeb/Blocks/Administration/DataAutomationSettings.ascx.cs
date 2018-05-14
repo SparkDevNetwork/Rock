@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -23,13 +22,13 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Cache;
 using Rock.Data;
 using Rock.Model;
 using Rock.SystemKey;
-using Rock.Cache;
-using Rock.Web.UI.Controls;
-
 using Rock.Utility.Settings.DataAutomation;
+using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
@@ -39,19 +38,28 @@ namespace RockWeb.Blocks.Administration
     [DisplayName( "Data Automation Settings" )]
     [Category( "Administration" )]
     [Description( "Block used to set values specific to data automation (NCOA, Updating Person Status, Family Campus, Etc)." )]
-    public partial class DataAutomationSettings : Rock.Web.UI.RockBlock
+    public partial class DataAutomationSettings : RockBlock
     {
         #region private variables
 
         private List<IgnoreCampusChangeRow> _ignoreCampusChangeRows { get; set; }
+
         private RockContext _rockContext = new RockContext();
+
         private Dictionary<string, string> _generalSettings = new Dictionary<string, string>();
+
         private Dictionary<string, string> _ncoaSettings = new Dictionary<string, string>();
+
         private ReactivatePeople _reactivateSettings = new ReactivatePeople();
+
         private InactivatePeople _inactivateSettings = new InactivatePeople();
+
         private UpdateFamilyCampus _campusSettings = new UpdateFamilyCampus();
+
         private MoveAdultChildren _adultChildrenSettings = new MoveAdultChildren();
+
         private List<InteractionItem> _interactionChannelTypes = new List<InteractionItem>();
+
         private List<CacheCampus> _campuses = new List<CacheCampus>();
 
         #endregion
@@ -140,7 +148,7 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
-        protected void rIgnoreCampusChanges_ItemCommand( object Sender, RepeaterCommandEventArgs e )
+        protected void rIgnoreCampusChanges_ItemCommand( object sender, RepeaterCommandEventArgs e )
         {
             if ( e.CommandName == "delete" )
             {
@@ -208,7 +216,7 @@ namespace RockWeb.Blocks.Administration
         {
             var groupTypes = new GroupTypeService( _rockContext )
                 .Queryable().AsNoTracking()
-                .Where( t => t.TakesAttendance == true)
+                .Where( t => t.TakesAttendance == true )
                 .OrderBy( t => t.Order )
                 .ThenBy( t => t.Name )
                 .Select( t => new { value = t.Id, text = t.Name } )
@@ -273,6 +281,7 @@ namespace RockWeb.Blocks.Administration
             {
                 enabledLabel = "<span class='label label-warning'>Disabled</span>";
             }
+
             panelWidget.Title = string.Format( "<h3 class='panel-title pull-left margin-r-sm'>{0}</h3> <div class='pull-right'>{1}</div>", title, enabledLabel );
         }
 
@@ -339,6 +348,7 @@ namespace RockWeb.Blocks.Administration
                     }
                 }
             }
+
             rInteractions.DataSource = reactivateChannelTypes;
             rInteractions.DataBind();
 
@@ -374,6 +384,7 @@ namespace RockWeb.Blocks.Administration
                     }
                 }
             }
+
             rNoInteractions.DataSource = inactivateChannelTypes;
             rNoInteractions.DataBind();
 
@@ -405,6 +416,7 @@ namespace RockWeb.Blocks.Administration
             {
                 _ignoreCampusChangeRows = new List<IgnoreCampusChangeRow>() { new IgnoreCampusChangeRow() { Id = 1 } };
             }
+
             rIgnoreCampusChanges.DataSource = _ignoreCampusChangeRows;
             rIgnoreCampusChanges.DataBind();
 
@@ -420,9 +432,12 @@ namespace RockWeb.Blocks.Administration
             nbMaxRecords.Text = _adultChildrenSettings.MaximumRecords.ToString();
         }
 
+        /// <summary>
+        /// Saves the settings.
+        /// </summary>
         private void SaveSettings()
         {
-            //Save General
+            // Save General
             Rock.Web.SystemSettings.SetValue( SystemSetting.GENDER_AUTO_FILL_CONFIDENCE, nbGenderAutoFill.Text );
 
             // Ncoa Configuration
@@ -435,7 +450,7 @@ namespace RockWeb.Blocks.Administration
             _inactivateSettings = new InactivatePeople();
             _campusSettings = new UpdateFamilyCampus();
 
-            //Reactivate 
+            // Reactivate 
             _reactivateSettings.IsEnabled = cbReactivatePeople.Checked;
 
             _reactivateSettings.IsLastContributionEnabled = cbLastContribution.Checked;
@@ -462,6 +477,7 @@ namespace RockWeb.Blocks.Administration
             _reactivateSettings.ExcludeDataView = dvExcludeDataView.SelectedValueAsInt();
 
             _reactivateSettings.IsInteractionsEnabled = cbInteractions.Checked;
+
             foreach ( RepeaterItem rItem in rInteractions.Items )
             {
                 RockCheckBox isInterationTypeEnabled = rItem.FindControl( "cbInterationType" ) as RockCheckBox;
@@ -477,10 +493,9 @@ namespace RockWeb.Blocks.Administration
                     };
                     _reactivateSettings.Interactions.Add( item );
                 }
-
             }
 
-            //Inactivate
+            // Inactivate
             _inactivateSettings.IsEnabled = cbInactivatePeople.Checked;
 
             _inactivateSettings.IsNoLastContributionEnabled = cbNoLastContribution.Checked;
@@ -501,6 +516,7 @@ namespace RockWeb.Blocks.Administration
             _inactivateSettings.NotInDataview = dvNotInDataView.SelectedValueAsInt();
 
             _inactivateSettings.IsNoInteractionsEnabled = cbNoInteractions.Checked;
+
             foreach ( RepeaterItem rItem in rNoInteractions.Items )
             {
                 RockCheckBox isInterationTypeEnabled = rItem.FindControl( "cbInterationType" ) as RockCheckBox;
@@ -514,11 +530,12 @@ namespace RockWeb.Blocks.Administration
                         IsInteractionTypeEnabled = true,
                         LastInteractionDays = lastInteractionDays.Text.AsInteger()
                     };
+
                     _inactivateSettings.NoInteractions.Add( item );
                 }
             }
 
-            //Campus Update
+            // Campus Update
             _campusSettings.IsEnabled = cbCampusUpdate.Checked;
 
             _campusSettings.IsMostFamilyAttendanceEnabled = cbMostFamilyAttendance.Checked;
@@ -560,6 +577,9 @@ namespace RockWeb.Blocks.Administration
             Rock.Web.SystemSettings.SetValue( SystemSetting.DATA_AUTOMATION_ADULT_CHILDREN, _adultChildrenSettings.ToJson() );
         }
 
+        /// <summary>
+        /// Gets the repeater data.
+        /// </summary>
         private void GetRepeaterData()
         {
             _ignoreCampusChangeRows = new List<IgnoreCampusChangeRow>();
@@ -581,18 +601,44 @@ namespace RockWeb.Blocks.Administration
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public class IgnoreCampusChangeRow
         {
+            /// <summary>
+            /// Gets or sets the identifier.
+            /// </summary>
+            /// <value>
+            /// The identifier.
+            /// </value>
             public int Id { get; set; }
 
+            /// <summary>
+            /// Gets or sets from campus identifier.
+            /// </summary>
+            /// <value>
+            /// From campus identifier.
+            /// </value>
             public int? FromCampusId { get; set; }
 
+            /// <summary>
+            /// Gets or sets to campus identifier.
+            /// </summary>
+            /// <value>
+            /// To campus identifier.
+            /// </value>
             public int? ToCampusId { get; set; }
 
+            /// <summary>
+            /// Gets or sets the campus criteria.
+            /// </summary>
+            /// <value>
+            /// The campus criteria.
+            /// </value>
             public CampusCriteria? CampusCriteria { get; set; }
         }
 
         #endregion
-
     }
 }
