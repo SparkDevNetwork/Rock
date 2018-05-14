@@ -17,7 +17,7 @@
 }
 
 #section-c-bg {
-	background: url("/Themes/church_ccv_External_v8/Assets/Images/students-stars.jpg") no-repeat;
+	background: url("/Themes/church_ccv_External_v8/Assets/Images/kids-stars.jpg") no-repeat;
    background-size: cover;
 }
 
@@ -63,6 +63,10 @@
    line-height: 2.0;
 }
 
-.hs-campus-selector a {
+.contextsetter-campus a {
    color: white;
+   border: 2px solid white;
+   border-radius: 25px;
+   padding-top: 5px !important;
+   padding-bottom: 5px !important;
 }

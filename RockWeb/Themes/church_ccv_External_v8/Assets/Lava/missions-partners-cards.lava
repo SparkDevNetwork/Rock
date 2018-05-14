@@ -1,4 +1,4 @@
-<div class="event-cards-row">
+<div class="event-cards-row missions-partners-cards-row-override">
   {% for item in Items %}
     {% assign webUrl = item | Attribute: 'Website', 'RawValue' %}
      {% if webUrl != '' %}

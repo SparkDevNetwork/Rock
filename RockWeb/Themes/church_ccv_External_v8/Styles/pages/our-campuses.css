@@ -15,18 +15,44 @@
 /**/
 
 #section-b-bg {
-   background: url("/Themes/church_ccv_External_v8/Assets/Images/our-story-history-bg.jpg") no-repeat;
-   
-   background-size: cover;
    background-color: #ffffff;
 }
 
 .our-campuses-map-window {
-   
    background: #777;
-   
 }
 
 .our-campuses-map {
    min-height: 550px;
+}
+
+.event-cards-row {
+   flex-wrap: wrap;
+   justify-content: center;
+}
+
+@media screen and (min-width: 992px) {
+   .event-cards-row {
+      justify-content: left;
+   }
+}
+
+.event-card {
+   width: 370px;
+   height: 550px;
+   margin-bottom: 50px;
+   justify-content: flex-start;
+}
+
+.event-card.our-campuses-card-override .image img {
+   object-fit: cover;
+}
+
+.event-card .content {
+   padding-bottom: 20px;
+   height: auto;
+}
+
+.event-card .link {
+   margin-top: auto;
 }

@@ -7,11 +7,11 @@
       <div class="image">
          <img src="{{ occurrence.EventItem.Photo.Url }}&width=370&mode=crop"/>
       </div>
-      <div class="header">
-          <h4>{{ occurrence.EventItem.Name | Truncate: 30 }}</h4>
+      <div class="header missions-event-header-override">
+          <h4>{{ occurrence.EventItem.Name }}</h4>
         </div>
         <div class="content">
-          <p>{{ occurrence.EventItem.Summary | Truncate: 250 }}</p>
+          <p>{{ occurrence.EventItem.Summary | Truncate: 125 }}</p>
         </div>
         <div class="link pull-right">
             <a href="{{ itemLink }}">

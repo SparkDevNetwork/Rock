@@ -5,7 +5,7 @@
 }
 
 #subnavbar-bg {
-	display:none;
+	background-color: #ffffff;
 }
 
 #section-a-bg {
@@ -13,7 +13,7 @@
 }
 
 #section-b-bg {
-   background-color: #ff00ff;
+   background-color: #f9f9f9;
 }
 
 #section-c-bg {
@@ -40,9 +40,26 @@
    }
 }
 
+.missions-partners-cards-row-override {
+   justify-content: center;
+}
+
+@media screen and (min-width: 605px) {
+   .missions-partners-cards-row-override {
+      justify-content: flex-start;
+   }
+}
+
+@media screen and (min-width: 1150px) {
+   .missions-partners-cards-row-override {
+      justify-content: space-between;
+   }
+}
+
 .event-card {
    width: 370px;
-   height: 450px;
+   height: 400px;
+   margin-bottom: 25px;
 }
 
 .event-card .image img {
@@ -59,13 +76,8 @@
    flex-direction: row; 
    justify-content: center; 
    align-items: center; 
-   height: 300px;
-   width: 300px;
-}
-
-.missions-story-card-override {
-   padding-bottom: 25px;
-   height: 500px;
+   height: 250px;
+   width: 250px;
 }
 
 .event-card.missions-story-card-override .image img {
@@ -75,6 +87,32 @@
 .event-card.missions-story-card-override .read-more a {
    font-weight: 900;
    display: flex;
+}
+
+.mission-trips-header {
+   padding-left: 20px;
+}
+
+.missions-event-header-override h4 {
+   width: 95%;
+   white-space: nowrap;
+   overflow: hidden;
+   text-overflow: ellipsis;
+   margin: 0;
+}
+
+@media screen and (min-width: 768px) {
+   .mission-trips-header {
+      display: flex;
+      flex-wrap: nowrap;
+      justify-content: space-between;
+      align-items: center;
+   }
+}
+
+.mission-trips-header a {
+   margin-top: 7px;
+   margin-right: 100px;
 }
 
 .missions-stories-header {
@@ -98,4 +136,139 @@
    border-style: unset;
    border-color: unset;
    border-image: unset;
+}
+
+.stay-in-the-know {
+   display: flex;
+   flex-direction: column;
+   background-color: #333333;
+   justify-content: center;
+}
+
+@media screen and (min-width: 992px) {
+   .stay-in-the-know {
+      flex-direction: row;
+      justify-content: flex-start;
+      align-items: center;
+      min-height: 200px;
+      margin-bottom: 25px;
+   }
+}
+
+.stay-in-the-know-info {
+   padding-left: 10px;
+   height: 100%;
+   display: flex;
+   flex-direction: row;
+   margin-right: 50px;
+   align-items: center;
+   width: 50%;
+}
+
+@media screen and (min-width: 992px) {
+   .stay-in-the-know-info {
+      padding-left: 20px;
+      width: 100%;
+   }
+}
+
+.stay-in-the-know-info i {
+   display: hidden;
+}
+
+@media screen and (min-width: 992px) {
+   .stay-in-the-know-info i {
+      display: inline-block;
+      font-size: 160px;
+      color: #777777;
+   }
+}
+
+.stay-in-the-know-words {   
+   display: flex;
+   flex-direction: column;
+   min-width: 300px;
+}
+
+@media screen and (min-width: 992px) {
+   .stay-in-the-know-words {   
+      margin-left: -100px;
+      margin-top: -50px;
+   }
+}
+
+.stay-in-the-know-info h2 {
+   color: #ffffff;
+}
+
+.stay-in-the-know-info p {
+   color: #ffffff;
+}
+
+@media screen and (min-width: 992px) {
+   .first-name-field {
+      margin-right: 25px;
+   }
+}
+
+.first-name-field label, .last-name-field label, .email-field label {
+   color: #777777 !important;
+}
+
+.first-name-field input, .last-name-field input, .email-field input {
+   border-bottom: 2px solid #999999 !important;
+   color: #999999 !important;
+}
+
+.workflow-entry-panel {
+   background-color: #333333;
+   padding-top: 20px;
+   padding-left: 20px;
+   padding-right: 20px;
+}
+
+@media screen and (min-width: 992px) {
+   .workflow-entry-panel {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+   }
+}
+
+.workflow-entry-panel label {
+   color: #ffffff;
+}
+
+/* Hide the 'required' dot'*/
+.workflow-entry-panel label:after {
+   display: none;
+}
+
+.alert {
+   margin-right: 100px;
+}
+
+.alert-danger {
+   display: none !important;
+}
+
+.alert-success {
+   background-color: #777777;
+   color: #ffffff;
+   border-color: #777777;
+}
+
+@media screen and (min-width: 992px) {
+   .name-fields {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+   }
+}
+
+@media screen and (min-width: 992px) {
+   .actions {
+      margin-left: 25px;
+      margin-top: auto;
+   }
 }

@@ -44,7 +44,9 @@
    border-radius: 5px;
    padding: 30px;
    max-width: 1024px;
-   margin: 0 auto;
+   margin-left: auto;
+   margin-top: 20px;
+   margin-bottom: 20px;
 }
 
 #section-b-bg {

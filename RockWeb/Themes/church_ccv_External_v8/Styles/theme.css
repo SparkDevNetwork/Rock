@@ -8990,27 +8990,6 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
     z-index: 1;
 }
 
-.campusmodal {
-    position: relative;
-    background: #FFF;
-    width: auto;
-    margin: 20px 10%;
-}
-
-.campusmodal-map {
-    min-height: 70vh;
-}
-
-.campusmodal-instructions {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 1em;
-    background: rgba(0,0,0,0.75);
-    color: #fff;
-}
-
 .card {
     position: relative;
     display: block;
