@@ -85,6 +85,7 @@ TransactionAcountDetails: [
 ]</pre>", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false, "Online Contribution", "", 28 )]
     [BooleanField( "Enable Comment Entry", "Allows the guest to enter the the value that's put into the comment field (will be appended to the 'Payment Comment' setting)", false, "", 29 )]
     [TextField( "Comment Entry Label", "The label to use on the comment edit field (e.g. Trip Name to give to a specific trip).", false, "Comment", "", 30 )]
+    [TextField( "Fund / Account Dropdown Placeholder", "The placeholder text to use in the account/fund dropdown (e.g. --Select a Fund-- or --Select a Trip--).", false, "--Select A Fund--", "", 31, "FundDropdownPlaceholder" )]
 
     #endregion
 
@@ -602,8 +603,19 @@ TransactionAcountDetails: [
 
             ddlAccounts.Items.Clear();
 
-            // add select option
-            ddlAccounts.Items.Add( new ListItem( "--Select A Fund--", "-1") );
+            // add placeholder
+            string placeholder = GetAttributeValue( "FundDropdownPlaceholder" );
+            
+            if (placeholder.IsNotNullOrWhitespace())
+            {
+                ddlAccounts.Items.Add( new ListItem( placeholder, "-1" ) );
+            }
+            else
+            {
+                ddlAccounts.Items.Add( new ListItem( "--Select A Fund--", "-1" ) );
+            }
+
+            // add accounts to dropdown
             foreach ( var account in accounts )
             {
                 ddlAccounts.Items.Add( new ListItem( account.Name, account.AccountId.ToString() ) );
