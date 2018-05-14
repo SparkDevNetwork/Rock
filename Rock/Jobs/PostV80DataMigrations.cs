@@ -19,7 +19,7 @@ namespace Rock.Jobs
     [DisallowConcurrentExecution]
     [DisplayName( "Data Migrations for v8.0" )]
     [Description( "This job will take care of any data migrations that need to occur after updating to v80. After all the operations are done, this job will delete itself." )]
-    class PostV80DataMigrations : IJob
+    public class PostV80DataMigrations : IJob
     {
         /// <summary>
         /// Executes the specified context. When updating large data sets SQL will burn a lot of time updating the indexes. If performing multiple inserts/updates
