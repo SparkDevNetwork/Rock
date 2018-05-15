@@ -1179,7 +1179,7 @@ namespace Rock.Web.UI
                                                 .ToList()
                                                 .ForEach( b => b.ReloadAttributeValues() );
                                         }
-                                        block.BlockType.IsInstancePropertiesVerified = true;
+                                        block.BlockType.MarkInstancePropertiesVerified( true );
                                     }
 
                                 }

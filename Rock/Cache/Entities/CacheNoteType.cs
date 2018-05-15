@@ -41,7 +41,7 @@ namespace Rock.Cache
         ///   <c>true</c> if this instance is system; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsSystem { get; set; }
+        public bool IsSystem { get; private set; }
 
         /// <summary>
         /// Gets or sets the entity type id.
@@ -50,7 +50,7 @@ namespace Rock.Cache
         /// The entity type id.
         /// </value>
         [DataMember]
-        public int? EntityTypeId { get; set; }
+        public int? EntityTypeId { get; private set; }
 
         /// <summary>
         /// Gets or sets the entity type qualifier column.
@@ -59,7 +59,7 @@ namespace Rock.Cache
         /// The entity type qualifier column.
         /// </value>
         [DataMember]
-        public string EntityTypeQualifierColumn { get; set; }
+        public string EntityTypeQualifierColumn { get; private set; }
 
         /// <summary>
         /// Gets or sets the entity type qualifier value.
@@ -68,7 +68,7 @@ namespace Rock.Cache
         /// The entity type qualifier value.
         /// </value>
         [DataMember]
-        public string EntityTypeQualifierValue { get; set; }
+        public string EntityTypeQualifierValue { get; private set; }
 
         /// <summary>
         /// Gets or sets the name.
@@ -77,7 +77,7 @@ namespace Rock.Cache
         /// The name.
         /// </value>
         [DataMember]
-        public string Name { get; set; }
+        public string Name { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [user selectable].
@@ -86,7 +86,7 @@ namespace Rock.Cache
         ///   <c>true</c> if [user selectable]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool UserSelectable { get; set; }
+        public bool UserSelectable { get; private set; }
 
         /// <summary>
         /// Gets or sets the description.
@@ -95,7 +95,7 @@ namespace Rock.Cache
         /// The description.
         /// </value>
         [DataMember]
-        public string CssClass { get; set; }
+        public string CssClass { get; private set; }
 
         /// <summary>
         /// Gets or sets the icon CSS class.
@@ -104,7 +104,7 @@ namespace Rock.Cache
         /// The icon CSS class.
         /// </value>
         [DataMember]
-        public string IconCssClass { get; set; }
+        public string IconCssClass { get; private set; }
 
         /// <summary>
         /// Gets or sets the order.
@@ -113,7 +113,7 @@ namespace Rock.Cache
         /// The order.
         /// </value>
         [DataMember]
-        public int Order { get; set; }
+        public int Order { get; private set; }
 
         #endregion
 

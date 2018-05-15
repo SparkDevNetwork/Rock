@@ -48,7 +48,7 @@ namespace Rock.Cache
         /// The identifier.
         /// </value>
         [DataMember]
-        public virtual int Id { get; set; }
+        public virtual int Id { get; protected set; }
 
         /// <summary>
         /// Gets or sets the unique identifier.
@@ -57,7 +57,7 @@ namespace Rock.Cache
         /// The unique identifier.
         /// </value>
         [DataMember]
-        public virtual Guid Guid { get; set; }
+        public virtual Guid Guid { get; protected set; }
 
         /// <summary>
         /// Gets or sets the foreign identifier.
@@ -66,7 +66,7 @@ namespace Rock.Cache
         /// The foreign identifier.
         /// </value>
         [DataMember]
-        public int? ForeignId { get; set; }
+        public int? ForeignId { get; protected set; }
 
         /// <summary>
         /// Gets or sets the foreign unique identifier.
@@ -75,7 +75,7 @@ namespace Rock.Cache
         /// The foreign unique identifier.
         /// </value>
         [DataMember]
-        public Guid? ForeignGuid { get; set; }
+        public Guid? ForeignGuid { get; protected set; }
 
         /// <summary>
         /// Gets or sets the foreign key.
@@ -84,7 +84,7 @@ namespace Rock.Cache
         /// The foreign key.
         /// </value>
         [DataMember]
-        public string ForeignKey { get; set; }
+        public string ForeignKey { get; protected set; }
 
         #endregion
 

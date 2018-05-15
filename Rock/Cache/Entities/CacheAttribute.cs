@@ -49,7 +49,7 @@ namespace Rock.Cache
         ///   <c>true</c> if this instance is system; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsSystem { get; set; }
+        public bool IsSystem { get; private set; }
 
         /// <summary>
         /// Gets or sets the field type identifier.
@@ -58,7 +58,7 @@ namespace Rock.Cache
         /// The field type identifier.
         /// </value>
         [DataMember]
-        public int FieldTypeId { get; set; }
+        public int FieldTypeId { get; private set; }
 
         /// <summary>
         /// Gets or sets the entity type identifier.
@@ -67,7 +67,7 @@ namespace Rock.Cache
         /// The entity type identifier.
         /// </value>
         [DataMember]
-        public int? EntityTypeId { get; set; }
+        public int? EntityTypeId { get; private set; }
 
         /// <summary>
         /// Gets or sets the entity type qualifier column.
@@ -76,7 +76,7 @@ namespace Rock.Cache
         /// The entity type qualifier column.
         /// </value>
         [DataMember]
-        public string EntityTypeQualifierColumn { get; set; }
+        public string EntityTypeQualifierColumn { get; private set; }
 
         /// <summary>
         /// Gets or sets the entity type qualifier value.
@@ -85,7 +85,7 @@ namespace Rock.Cache
         /// The entity type qualifier value.
         /// </value>
         [DataMember]
-        public string EntityTypeQualifierValue { get; set; }
+        public string EntityTypeQualifierValue { get; private set; }
 
         /// <summary>
         /// Gets or sets the key.
@@ -94,7 +94,7 @@ namespace Rock.Cache
         /// The key.
         /// </value>
         [DataMember]
-        public string Key { get; set; }
+        public string Key { get; private set; }
 
         /// <summary>
         /// Gets or sets the name.
@@ -103,7 +103,7 @@ namespace Rock.Cache
         /// The name.
         /// </value>
         [DataMember]
-        public string Name { get; set; }
+        public string Name { get; private set; }
 
         /// <summary>
         /// Gets or sets the description.
@@ -112,7 +112,7 @@ namespace Rock.Cache
         /// The description.
         /// </value>
         [DataMember]
-        public string Description { get; set; }
+        public string Description { get; private set; }
 
         /// <summary>
         /// Gets or sets the order.
@@ -121,7 +121,7 @@ namespace Rock.Cache
         /// The order.
         /// </value>
         [DataMember]
-        public int Order { get; set; }
+        public int Order { get; private set; }
 
         /// <summary>
         /// Gets or sets the icon CSS class.
@@ -130,7 +130,7 @@ namespace Rock.Cache
         /// The icon CSS class.
         /// </value>
         [DataMember]
-        public string IconCssClass { get; set; }
+        public string IconCssClass { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is grid column.
@@ -139,7 +139,7 @@ namespace Rock.Cache
         ///   <c>true</c> if this instance is grid column; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsGridColumn { get; set; }
+        public bool IsGridColumn { get; private set; }
 
         /// <summary>
         /// Gets or sets the default value.
@@ -148,7 +148,7 @@ namespace Rock.Cache
         /// The default value.
         /// </value>
         [DataMember]
-        public string DefaultValue { get; set; }
+        public string DefaultValue { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is multi value.
@@ -157,7 +157,7 @@ namespace Rock.Cache
         ///   <c>true</c> if this instance is multi value; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsMultiValue { get; set; }
+        public bool IsMultiValue { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is required.
@@ -166,7 +166,7 @@ namespace Rock.Cache
         ///   <c>true</c> if this instance is required; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsRequired { get; set; }
+        public bool IsRequired { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [allow search].
@@ -175,7 +175,7 @@ namespace Rock.Cache
         ///   <c>true</c> if [allow search]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool AllowSearch { get; set; }
+        public bool AllowSearch { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is index enabled.
@@ -184,7 +184,7 @@ namespace Rock.Cache
         ///   <c>true</c> if this instance is index enabled; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsIndexEnabled { get; set; }
+        public bool IsIndexEnabled { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is analytic.
@@ -192,7 +192,7 @@ namespace Rock.Cache
         /// <value>
         ///   <c>true</c> if this instance is analytic; otherwise, <c>false</c>.
         /// </value>
-        public bool IsAnalytic { get; set; }
+        public bool IsAnalytic { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is analytic history.
@@ -201,7 +201,7 @@ namespace Rock.Cache
         ///   <c>true</c> if this instance is analytic history; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsAnalyticHistory { get; set; }
+        public bool IsAnalyticHistory { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether this attribute is active.
@@ -228,7 +228,7 @@ namespace Rock.Cache
         /// The category ids.
         /// </value>
         [DataMember]
-        public List<int> CategoryIds { get; set; }
+        public List<int> CategoryIds { get; private set; }
 
         /// <summary>
         /// Gets the type of the field.

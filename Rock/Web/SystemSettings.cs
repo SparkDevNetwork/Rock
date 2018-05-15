@@ -132,7 +132,7 @@ namespace Rock.Web
             var attributeCache = settings.Attributes.FirstOrDefault( a => a.Key.Equals( key, StringComparison.OrdinalIgnoreCase ) );
             if ( attributeCache != null )
             {
-                attributeCache.DefaultValue = value;
+                attributeCache = CacheAttribute.Get(attribute.Id);
             }
             else
             {
