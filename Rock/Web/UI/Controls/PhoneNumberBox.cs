@@ -340,6 +340,7 @@ namespace Rock.Web.UI.Controls
         var countryCode = tb.closest('div.input-group').find('input:hidden').val();
         var origValue = tb.val();
         var number = tb.val().replace(/\D/g,'');
+        var number = number.substring( 0, 20 );
         var formats = phoneNumberFormats[countryCode];
         for ( var i = 0; i < formats.length; i++) {
             var matchRegex = new RegExp(formats[i].match);
