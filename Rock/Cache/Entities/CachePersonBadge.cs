@@ -40,7 +40,7 @@ namespace Rock.Cache
         /// The name.
         /// </value>
         [DataMember]
-        public string Name { get; set; }
+        public string Name { get; private set; }
 
         /// <summary>
         /// Gets or sets the description
@@ -49,7 +49,7 @@ namespace Rock.Cache
         /// The description.
         /// </value>
         [DataMember]
-        public string Description { get; set; }
+        public string Description { get; private set; }
 
         /// <summary>
         /// Gets or sets the entity type id.
@@ -58,7 +58,7 @@ namespace Rock.Cache
         /// The entity type id.
         /// </value>
         [DataMember]
-        public int? EntityTypeId { get; set; }
+        public int? EntityTypeId { get; private set; }
 
         /// <summary>
         /// Gets or sets the order.
@@ -67,7 +67,7 @@ namespace Rock.Cache
         /// The order.
         /// </value>
         [DataMember]
-        public int Order { get; set; }
+        public int Order { get; private set; }
 
         /// <summary>
         /// Gets the Entity Type.

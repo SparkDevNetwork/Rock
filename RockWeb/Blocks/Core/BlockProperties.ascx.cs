@@ -129,7 +129,7 @@ namespace RockWeb.Blocks.Core
                                 Rock.Attribute.Helper.UpdateAttributes( rockBlock.GetType(), blockEntityTypeId, "BlockTypeId", blockType.Id.ToString(), rockContext );
                             }
 
-                            blockType.IsInstancePropertiesVerified = true;
+                            blockType.MarkInstancePropertiesVerified( true );
                         }
                     }
 

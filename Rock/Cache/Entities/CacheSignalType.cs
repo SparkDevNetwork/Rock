@@ -40,7 +40,7 @@ namespace Rock.Cache
         /// A <see cref="System.String"/> that represents the SignalType name.
         /// </value>
         [DataMember]
-        public string Name { get; set; }
+        public string Name { get; private set; }
 
         /// <summary>
         /// Gets or sets the description.
@@ -49,7 +49,7 @@ namespace Rock.Cache
         /// The description.
         /// </value>
         [DataMember]
-        public string Description { get; set; }
+        public string Description { get; private set; }
 
         /// <summary>
         /// Gets or sets the HTML color of the SignalType. This property is required.
@@ -58,7 +58,7 @@ namespace Rock.Cache
         /// A <see cref="System.String"/> that represents the SignalType color.
         /// </value>
         [DataMember]
-        public string SignalColor { get; set; }
+        public string SignalColor { get; private set; }
 
         /// <summary>
         /// Gets or sets the icon CSS class of the SignalType.
@@ -67,7 +67,7 @@ namespace Rock.Cache
         /// A <see cref="System.String"/> that represents the SignalType icon class.
         /// </value>
         [DataMember]
-        public string SignalIconCssClass { get; set; }
+        public string SignalIconCssClass { get; private set; }
 
         /// <summary>
         /// Gets or sets the order.
@@ -76,7 +76,7 @@ namespace Rock.Cache
         /// The order.
         /// </value>
         [DataMember]
-        public int Order { get; set; }
+        public int Order { get; private set; }
 
         #endregion
 
