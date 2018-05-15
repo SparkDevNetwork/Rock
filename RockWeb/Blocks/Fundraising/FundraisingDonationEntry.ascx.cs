@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -39,6 +40,8 @@ namespace RockWeb.Blocks.Fundraising
     [LinkedPage( "Transaction Entry Page", "The Transaction Entry page to navigate to after prompting for the Fundraising Specific inputs", required: true, order: 1 )]
     [BooleanField( "Show First Name Only", "Only show the First Name of each participant instead of Full Name", defaultValue: false, order: 2 )]
     [BooleanField( "Allow Automatic Selection", "If enabled and there is only one participant and registrations are not enabled then that participant will automatically be selected and this page will get bypassed.", defaultValue: false, order: 3 )]
+    [GroupField( "Root Group", "Select the group that will be used as the bease of the list.", required: false, order: 4 )]
+   
     public partial class FundraisingDonationEntry : RockBlock
     {
         #region Base Control Methods
@@ -138,6 +141,49 @@ namespace RockWeb.Blocks.Fundraising
             }
         }
 
+        private IEnumerable<int> GetChildGroupIds( Guid? rootGroupGuid, RockContext context )
+        {
+            var sql =
+                @"; with groupCTE AS
+                 (
+                     SELECT
+                         [Id]
+             
+                     FROM
+                         [Group]
+             
+                     WHERE
+                         [Guid] = @RootGroupGuid
+             
+                         AND[IsActive] = 1
+             
+                     UNION ALL
+             
+                     SELECT
+             
+                         g.[Id]
+             
+                     FROM
+                         [Group] g
+             
+                         INNER JOIN[groupCTE] c on g.ParentGroupId = c.Id
+             
+                     WHERE
+             
+                         g.[IsActive] = 1
+
+                 )
+                SELECT
+                    [Id]
+                FROM
+                    groupCTE";
+
+            var results = context.Database.SqlQuery<int>( sql, new SqlParameter( "@RootGroupGuid", rootGroupGuid ?? Guid.Empty ) );
+
+            return results;
+
+        }
+
         /// <summary>
         /// Populates the group drop down.
         /// </summary>
@@ -145,7 +191,18 @@ namespace RockWeb.Blocks.Fundraising
         {
             var rockContext = new RockContext();
             Guid groupTypeFundraisingOpportunity = "4BE7FC44-332D-40A8-978E-47B7035D7A0C".AsGuid();
-            var fundraisingOpportunityList = new GroupService( rockContext ).Queryable().Where( a => a.GroupType.Guid == groupTypeFundraisingOpportunity && a.IsActive && a.Members.Any() ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+            Guid? rootGroup = GetAttributeValue( "RootGroup" ).AsGuidOrNull();
+
+            var groupQuery = new GroupService( rockContext ).Queryable().Where( a => a.GroupType.Guid == groupTypeFundraisingOpportunity && a.IsActive && a.Members.Any() );
+
+            if ( rootGroup.HasValue )
+            {
+                var groupIds = GetChildGroupIds( rootGroup, rockContext );
+
+                groupQuery = groupQuery.Where( g => groupIds.Contains( g.Id ) );
+            }
+
+            var fundraisingOpportunityList = groupQuery.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
             ddlFundraisingOpportunity.Items.Clear();
             ddlFundraisingOpportunity.Items.Add( new ListItem() );
 
