@@ -39,11 +39,11 @@
                             <Columns>
                                 <Rock:RockLiteralField ID="lPersonNameHtml" HeaderText="Name" SortExpression="Person.LastName,Person.NickName" />
                                 <Rock:PersonField DataField="Person" HeaderText="Name" ExcelExportBehavior="AlwaysInclude" Visible="false" />
-                                <Rock:DateField DataField="DateTimeAdded" HeaderText="Date Added" SortExpression="DateTimeAdded" ItemStyle-HorizontalAlign="Left" />
-                                <Rock:DateField DataField="ArchivedDateTime" HeaderText="Date Removed" SortExpression="ArchivedDateTime" ItemStyle-HorizontalAlign="Left" />
+                                <Rock:DateField DataField="DateTimeAdded" HeaderText="Date Added" SortExpression="DateTimeAdded" ItemStyle-HorizontalAlign="Left" HeaderStyle-HorizontalAlign="Left"/>
+                                <Rock:DateField DataField="ArchivedDateTime" HeaderText="Date Removed" SortExpression="ArchivedDateTime" ItemStyle-HorizontalAlign="Left" HeaderStyle-HorizontalAlign="Left" />
                                 <Rock:RockBoundField DataField="GroupRole.Name" HeaderText="Last Role" SortExpression="GroupRole.Name" />
                                 <Rock:EnumField DataField="GroupMemberStatus" HeaderText="Last Status" SortExpression="GroupMemberStatus" />
-                                <Rock:RockLiteralField ID="lPersonProfileLink" ItemStyle-HorizontalAlign="Center" HeaderStyle-CssClass="grid-columncommand" ItemStyle-CssClass="grid-columncommand" />
+                                <Rock:RockLiteralField ID="lPersonProfileLink" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center" HeaderStyle-CssClass="grid-columncommand" ItemStyle-CssClass="grid-columncommand" />
                             </Columns>
                         </Rock:Grid>
                     </div>
