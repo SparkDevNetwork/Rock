@@ -71,6 +71,7 @@
                                     <div class="col-xs-6">
                                         <Rock:NumberBox ID="nbMaxRegistrants" runat="server" Label="Maximum Registrants"
                                             Help="The maximum number of registrants that user is allowed to register" Visible="false" />
+                                        <Rock:RockDropDownList ID="ddlRegistrarOption" runat="server" Label="Registrar Options" />
                                     </div>
                                 </div>
                                 <Rock:RockRadioButtonList ID="rblRegistrantsInSameFamily" runat="server" Label="Registrants In Same Family" RepeatDirection="Horizontal" CssClass="js-same-family"
