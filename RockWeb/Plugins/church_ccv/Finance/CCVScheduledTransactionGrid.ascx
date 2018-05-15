@@ -12,7 +12,7 @@
         </div>
         
         <div class="grid grid-panel">
-            <Rock:Grid ID="gScheduledTransactions" DisplayType="Light" runat="server" AutoGenerateColumns="False" AllowSorting="false" AllowPaging="false" RowItemText="Scheduled Transaction" >
+            <Rock:Grid ID="gScheduledTransactions" DisplayType="Light" runat="server" AutoGenerateColumns="False" AllowSorting="false" AllowPaging="false" RowItemText="Scheduled Transaction" ClientIDMode="Static" >
                 <Columns>
                     <Rock:RockBoundField DataField="GatewayScheduleId" HeaderText="Gateway Schedule Id" />
                     <Rock:RockBoundField DataField="TotalAmount" HeaderText="Amount" DataFormatString="{0:C}"/>

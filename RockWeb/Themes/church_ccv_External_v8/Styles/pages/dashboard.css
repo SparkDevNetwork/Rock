@@ -1270,7 +1270,7 @@
     margin: 30px auto;
 }
 
-.giving-history-card, .manage-payment-account-card, .manage-automated-giving-card {
+.giving-history-card, .manage-payment-account-card, .manage-automated-giving-card, .manage-scheduled-transactions {
     box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px;
     transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
     border-radius: 5px;
@@ -1280,10 +1280,39 @@
     width: 80%;
 }
 
-.manage-payment-account-card, .manage-automated-giving-card {
+.manage-payment-account-card, .manage-automated-giving-card, .manage-scheduled-transactions {
     margin-top: 30px;
     margin-bottom: 30px
 }
+
+/* Mobile Device Styling */
+@media screen and (max-width: 768px) {
+    .manage-scheduled-transactions {
+        padding: 0;
+        margin: 0 auto;
+        width: 95%;
+        margin-top: 0;
+        margin-bottom: 0;
+    }
+}
+
+@media screen and (max-width: 500px) {
+    .manage-scheduled-transactions {
+        padding: 0;
+        margin: 0 auto;
+        width: 90%;
+    }
+
+    /* hide columns we dont want in mobile */
+    #gScheduledTransactions th:nth-child(2), #gScheduledTransactions th:nth-child(4), #gScheduledTransactions th:nth-child(5), #gScheduledTransactions th:nth-child(6) {
+        display: none;
+    }
+
+    #gScheduledTransactions td:nth-child(2), #gScheduledTransactions td:nth-child(4), #gScheduledTransactions td:nth-child(5), #gScheduledTransactions td:nth-child(6) {
+        display: none;
+    }
+}
+
 
 /* End Dashboard Giving */
 
