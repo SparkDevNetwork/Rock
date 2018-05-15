@@ -39,7 +39,7 @@
 
 .event-card {
    width: 370px;
-   height: 550px;
+   height: 525px;
    margin-bottom: 50px;
    justify-content: flex-start;
 }
@@ -49,10 +49,26 @@
 }
 
 .event-card .content {
-   padding-bottom: 20px;
    height: auto;
 }
 
 .event-card .link {
    margin-top: auto;
+}
+
+.event-card .location-contact {
+    display: flex;
+    flex-direction: column;
+    
+}
+
+@media screen and (min-width: 362px) {
+    .event-card .location-contact {
+        flex-direction: row;
+        justify-content: space-between;
+    }
+}
+
+.event-card .content.service-times {
+    color: #777777;
 }

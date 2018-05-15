@@ -1,0 +1,24 @@
+{% include '~~/Assets/Lava/campus-landing-page-util.lava' %} 
+
+<div class="container graphicSection">
+    <div class="row">
+        <div class="col-md-5">
+            <h1>{{ campus.Name }} Campus</h1>
+
+            {% assign campusLeader = campus.LeaderPersonAliasId | PersonByAliasId %}
+            <div class="campus-leader">
+                <img src="{{ 'Global' | Attribute: 'PublicApplicationRoot' }}{{ campusLeader.PhotoUrl }}&width=128" style="border-radius: 64px;"/>
+                <div class="campus-leader-details">
+                    <h4>{{ campusLeader.NickName }} {{ campusLeader.LastName }}</h4>
+                    <p>Campus Pastor</p>
+                    <p>{{ campusLeader.Email }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-offset-1 col-md-6 rhs-video">
+            <div>
+                <script src="https://fast.wistia.com/embed/medias/mtq6w2wtd6.jsonp" async></script><script src="https://fast.wistia.com/assets/external/E-v1.js" async></script><div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;"><div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;"><span class="wistia_embed wistia_async_mtq6w2wtd6 popover=true popoverAnimateThumbnail=true videoFoam=true" style="display:inline-block;height:100%;position:relative;width:100%">&nbsp;</span></div></div>
+            </div>
+        </div>
+    </div>
+</div>

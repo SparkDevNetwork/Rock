@@ -1,43 +1,43 @@
 {% assign appRoot = 'Global' | Attribute:'PublicApplicationRoot' %}
 
 <div class="event-cards-row">
-  {% for campus in Campuses %}
-    {% if campus.IsActive == 'True' %}
-    <div class="event-card our-campuses-card-override">
-      <div class="image">
-         {% assign imageGuid = campus | Attribute:'CoverPhoto', 'RawValue' %}
-         <img src="{{appRoot}}GetImage.ashx?Guid={{imageGuid}}&width=350&mode=crop"/>
-      </div>
-      <div class="header">
-          <h4>{{ campus.Name }}</h4>
-      </div>
-      <div class="content">
-          <p>{{ campus.Location.Street1 }}</p>
-          <p>{{ campus.Location.City }}, {{ campus.Location.State }} {{ campus.Location.PostalCode }}</p>
-          
-          <p>{{ campus.PhoneNumber }}</p>
-          
-          <h5>SERVICE TIMES</h5>
-            {% assign comingSoonUntil = campus | Attribute: 'ComingSoonUntil' | Date: 'yyyyMMdd' %}
-            {% assign today = 'Now' | Date: 'yyyyMMdd' %}
-            {% if today < comingSoonUntil %}
-               {% assign isComingSoon = true %}
-            {% endif %}
-            
-            {% assign times = campus.ServiceTimes %}
-            {% include '~~/Assets/Lava/ServiceTimes/Grid.lava' %}
-        </div>
-        <div class="link pull-right">
-            <a href="{{ itemLink }}">
-              <div>
-                  <span>Learn More</span>
-                  <i class="mdi mdi-chevron-right event-card-navigation-icon"></i>
-              </div>
-            </a>
-        </div>
-    </div>
-   {% endif %}
-
+    {% for campus in Campuses %}
+        {% if campus.IsActive == 'True' %}
+            <div class="event-card our-campuses-card-override">
+                <div class="image">
+                    {% assign imageGuid = campus | Attribute:'CoverPhoto', 'RawValue' %}
+                    <img src="{{appRoot}}GetImage.ashx?Guid={{imageGuid}}&width=350&mode=crop"/>
+                </div>
+                <div class="header">
+                    <h4>{{ campus.Name }}</h4>
+                </div>
+                <div class="content location-contact">
+                    <div class="address">
+                        <p>{{ campus.Location.Street1 }}</p>
+                        <p>{{ campus.Location.City }}, {{ campus.Location.State }} {{ campus.Location.PostalCode }}</p>
+                    </div>
+                    <a href="tel:{{ campus.PhoneNumber }}">{{ campus.PhoneNumber }}</a>
+                </div>
+                <div class="content service-times mt-25">
+                    <h5>SERVICE TIMES</h5>
+                    {% assign comingSoonUntil = campus | Attribute: 'ComingSoonUntil' | Date: 'yyyyMMdd' %}
+                    {% assign today = 'Now' | Date: 'yyyyMMdd' %}
+                    {% if today < comingSoonUntil %}
+                        {% assign isComingSoon = true %}
+                    {% endif %}
+                    
+                    {% assign times = campus.ServiceTimes %}
+                    {% include '~~/Assets/Lava/ServiceTimes/Grid.lava' %}
+                </div>
+                <div class="link pull-right">
+                    <a href="{{ itemLink }}">
+                        <div>
+                            <span>Learn More</span>
+                            <i class="mdi mdi-chevron-right event-card-navigation-icon"></i>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        {% endif %}
   {% endfor %}
-
 </div>

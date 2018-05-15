@@ -1,0 +1,6 @@
+{% comment %}
+{% include '~~/Assets/Lava/campus-landing-page-util.lava' %} 
+{% endcomment %}
+
+{% assign campusIndex = PageParameter.campusIndex %}
+{% assign campus = Campuses | Where:'Id', campusIndex | First %}
