@@ -1,3 +1,8 @@
+/* NOTE: This script requires the following:
+- At least one GroupType has GroupHistory enabled (for example Small Group)
+- The 'Process Group History' Rock Job has run at least once (to create a GroupHistorical record)
+*/
+
 declare 
 	@personId int = (select top 1 Id from Person where NickName = 'Ted' and LastName = 'Decker') /*Get PersonId for Ted Decker*/
 
