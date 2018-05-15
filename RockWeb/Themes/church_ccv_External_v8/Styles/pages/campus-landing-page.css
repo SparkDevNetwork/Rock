@@ -1,21 +1,13 @@
 .page-background {   
     background-color: #EBEBEB;
-    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-image-missing.jpg");
 }
 
 #subnavbar-bg {
-    background-color: #EBEBEB;
-}
-
-#subnavbar-bg {
-	background-color: #ffffff;
+    display: none;
 }
 
 #section-a-bg {
-   background: url("/Themes/church_ccv_External_v8/Assets/Images/kids-experience.jpg") no-repeat;
-    
-   background-size: cover;
-	background-color: #ffffff;
+   background-color: #f9f9f9;
 }
 
 #section-b-bg {
@@ -23,18 +15,7 @@
 }
 
 #section-c-bg {
-	background-color: #f9f9f9;
-	background: url("/Themes/church_ccv_External_v8/Assets/Images/kids-special-needs.jpg") no-repeat;
-	background-size: cover;
-}
-
-#section-d-bg {
-   background-color: #f9f9f9;
-}
-
-#section-e-bg {
-   background: url("/Themes/church_ccv_External_v8/Assets/Images/kids-stars.jpg") no-repeat;
-   background-size: cover;
+	display: none;
 }
 
 .campus-leader {
@@ -47,4 +28,117 @@
     display: flex;
     flex-direction: column;
     margin-left: 25px;
+}
+
+.h1-size-override {
+    font-size: 64px;
+}
+
+.campus-history {
+    font-size: 20px;
+}
+
+.campus-info-card {
+    padding: 20px;
+    background-color: #ffffff;
+    box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px; 
+    border-radius: 5px;
+    width: 100%;
+}
+
+.address {
+    display: flex;
+    padding-bottom: 20px;
+}
+
+.campus-info-icon {
+    font-size: 16pt;
+    padding-right: 15px;
+    margin-top: 5px;
+}
+
+.address p {
+    line-height: unset;
+    margin: unset;
+    font-size: 14pt;
+}
+
+.phone a {
+    font-size: 14pt;
+}
+
+.service-times {
+    margin-top: 25px;
+    color: #777777;
+}
+
+.time-entry strong,
+.service-times strong {
+    font-weight: 900;
+}
+
+.kids-students-times {
+    margin-top: 25px;
+}
+
+.time-entry {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #777777;
+    border-bottom-width: 1px;
+    border-bottom-style: solid;
+    border-bottom-color: #dddddd;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.info-tile {
+    background-color: #ffffff;
+    box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px; 
+    border-radius: 5px;
+    padding: 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.directions-info {
+    max-width: 60%;
+}
+
+.clothing-info {
+    display: flex;
+    flex-direction: column;
+    max-width: 40%;
+}
+
+.clothing-icons {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.clothing-icons img {
+    margin-left: 25px;
+}
+
+.info-tile-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 50px;
+}
+
+.parking-info {
+    flex-direction: column;
+    align-items: flex-start;
+    width: 49%;
+}
+
+.attendance-info {
+    flex-direction: column;
+    align-items: flex-start;
+    width: 49%;
 }

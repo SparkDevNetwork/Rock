@@ -1,0 +1,68 @@
+{% include '~~/Assets/Lava/campus-landing-page-util.lava' %} 
+
+<div class="container-fluid infoSection">
+    <div class="row">
+        <div class="col-md-6">
+            <h5 style="color: black;">EVERYTHING YOU NEED TO KNOW</h5>
+            <h2>ABOUT CCV {{ campus.Name }}</h2>
+            <p class="campus-history">{{ campus.History }}</p>
+            <h3>ARRIVING FOR THE FIRST TIME</h3>
+            <p>On your first visit, look for the designated New to CCV Guest Tables, where one of our team members will provide you with a Welcome Packet and answer any questions you may have.
+               If you are checking in children, they will cover the first-time visit check-in process and lead you to your child's classroom. You'll want to arrive about 15-20 minutes early.
+            </p>
+            <h3>CHECKING IN KIDS & STUDENTS</h3>
+            <p>Parents must check in their kids before service. Once your child is registered for the first time, simply enter your phone number into one of the self-service or assisted kiosks to receive your child's name tag. 
+               You will receive a matching pick-up receipt which will be required to pick your child up after service. Jr High and High School Students are able to check themselves into class using the self-service kiosks.
+            </p>
+        </div>
+        <div class="col-md-offset-2 col-md-4">
+            <div class="campus-info-card">
+                <div class="content">
+                    <div class="address">
+                        <i class="fa fa-map-marker campus-info-icon"></i>
+                        <div>
+                            <p>{{ campus.Location.Street1 }}</p>
+                            <p>{{ campus.Location.City }}, {{ campus.Location.State }} {{ campus.Location.PostalCode }}</p>
+                        </div>
+                    </div>
+                    <div class="phone">
+                        <i class="fa fa-phone campus-info-icon"></i>
+                        <a href="tel:{{ campus.PhoneNumber }}">{{ campus.PhoneNumber }}</a>
+                    </div>
+                    
+                    <div class="service-times">
+                        <h5>SERVICE TIMES</h5>
+                        {% assign comingSoonUntil = campus | Attribute: 'ComingSoonUntil' | Date: 'yyyyMMdd' %}
+                        {% assign today = 'Now' | Date: 'yyyyMMdd' %}
+                        {% if today < comingSoonUntil %}
+                            {% assign isComingSoon = true %}
+                        {% endif %}
+                        
+                        {% assign times = campus.ServiceTimes %}
+                        {% include '~~/Assets/Lava/ServiceTimes/Grid.lava' %}
+                    </div>
+
+                    <div class="kids-students-times">
+                        <h5>KIDS & STUDENTS TIMES</h5>
+                        <div class="time-entry">
+                            <strong>Infant to 6th Grade</strong>
+                            <p>Available during all services</p>
+                        </div>
+                        <div class="time-entry">
+                            <strong>7th Grade</strong>
+                            <p>{{campus.JrHighTime}}</p>
+                        </div>
+                        <div class="time-entry">
+                            <strong>8th Grade</strong>
+                            <p>{{campus.JrHighTime}}</p>
+                        </div>
+                        <div class="time-entry">
+                            <strong>High School</strong>
+                            <p>{{campus.HighSchoolTime}}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

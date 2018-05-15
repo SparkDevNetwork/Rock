@@ -1,0 +1,42 @@
+{% include '~~/Assets/Lava/campus-landing-page-util.lava' %} 
+
+<h3>NOT SURE WHERE TO GO?</h3>
+<p>Use this map to find thigns like the kids building or where to get an iced latte before service.</p>
+<img class="info-tile" src="~~/Assets/Images/campus-landing/campus-maps/{{campus.ShortCode | Downcase}}-map.jpg" width="100%"/>
+
+<div class="info-tile mt-25"> 
+    <div class="directions-info">
+        <h3>NEED DIRECTIONS?</h3>
+        <p>{{campus.Directions}}</p>
+    </div>
+    <a href="https://maps.apple.com/maps?daddr={{campus.Location.Street1 | Replace: ' ', '+'}}+{{campus.Location.City | Replace: ' ', '+'}}+{{campus.Location.State | Replace: ' ', '+'}}+{{campus.Location.PostalCode | Replace: ' ', '+'}}" class="btn btn-primary" style="padding: 10px;">GET DETAILED DIRECTIONS</a>
+</div>
+
+<div class="info-tile mt-25"> 
+    <div class="clothing-info">
+        <h3>WHAT DO I WEAR?</h3>
+        <p>Our attendees come in everything from shorts and flip flops to dresses and slacks - so come in whatever you're comfortable wearing!</p>
+    </div>
+    <div class="clothing-icons">
+        <img src="~~/Assets/Images/campus-landing/casual-wear/tshirt.svg"/>
+        <img src="~~/Assets/Images/campus-landing/casual-wear/shorts.svg"/>
+        <img src="~~/Assets/Images/campus-landing/casual-wear/sandals.svg"/>
+        <img src="~~/Assets/Images/campus-landing/casual-wear/dress.svg"/>
+        <img src="~~/Assets/Images/campus-landing/casual-wear/button-down-shirt.svg"/>
+        <img src="~~/Assets/Images/campus-landing/casual-wear/pants.svg"/>
+    </div>
+</div>
+
+<div class="info-tile-group mt-25">
+    <div class="info-tile parking-info">
+        <h3>WHERE DO I PARK?</h3>
+        <p>1. Go Left</p>
+        <p>2. Go Right</p>
+        <p>3. Go Straight</p>
+    </div>
+    <div class="info-tile attendance-info">
+        <h1>{{campus.AverageWeeklyAttendance}}</h1>
+        <h5>AVG ATTENDANCE</h5>
+        <p>per service</p>
+    </div>
+</div>
