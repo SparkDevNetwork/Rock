@@ -132,12 +132,11 @@ namespace Rock.Web
             var attributeCache = settings.Attributes.FirstOrDefault( a => a.Key.Equals( key, StringComparison.OrdinalIgnoreCase ) );
             if ( attributeCache != null )
             {
-                attributeCache = CacheAttribute.Get(attribute.Id);
+                settings.Attributes.Remove( attributeCache );
             }
-            else
-            {
-                settings.Attributes.Add( CacheAttribute.Get( attribute.Id ) );
-            }
+
+            settings.Attributes.Add( CacheAttribute.Get( attribute.Id ) );
+
             RockCache.AddOrUpdate( CacheKey, settings );
         }
 
