@@ -345,7 +345,7 @@ $(document).ready(function() {
 
             var qryParams = new Dictionary<string, string>();
             qryParams["DataViewId"] = dataView.Id.ToString();
-            NavigateToPage( RockPage.Guid, qryParams );
+            NavigateToCurrentPageReference( qryParams );
         }
 
         /// <summary>
@@ -372,7 +372,7 @@ $(document).ready(function() {
                     // Cancelling on Add, and we know the parentCategoryId, so we are probably in treeview mode, so navigate to the current page
                     var qryParams = new Dictionary<string, string>();
                     qryParams["CategoryId"] = parentCategoryId.ToString();
-                    NavigateToPage( RockPage.Guid, qryParams );
+                    NavigateToCurrentPageReference( qryParams );
                 }
                 else
                 {
@@ -435,7 +435,7 @@ $(document).ready(function() {
                         qryParams["CategoryId"] = categoryId.ToString();
                     }
 
-                    NavigateToPage( RockPage.Guid, qryParams );
+                    NavigateToCurrentPageReference( qryParams );
                 }
             }
         }
@@ -864,8 +864,9 @@ $(document).ready(function() {
                         try
                         {
                             grid.CreatePreviewColumns( entityType );
+                            var dbContext = dataView.GetDbContext();
 
-                            var qry = dataView.GetQuery( grid.SortProperty, GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180, out errorMessages );
+                            var qry = dataView.GetQuery( grid.SortProperty, dbContext, GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180, out errorMessages );
 
                             if ( fetchRowCount.HasValue )
                             {
