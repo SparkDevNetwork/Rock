@@ -1,6 +1,6 @@
--- set @definedTypeNameFilter if you need DefinedValue migrations for a specific DefinedType
+-- set @definedTypeNameFilter to the specific DefinedType that you want to codegen for
 declare
- @definedTypeNameFilter nvarchar(max) = '%%' --'Transaction Source%'
+ @definedTypeNameFilter nvarchar(max) = '%Family Status%' 
 
 
 select 
@@ -11,11 +11,11 @@ select
     [dt].[Guid], '",@"',
     REPLACE(REPLACE([dt].[HelpText], '"', '""'), '''', ''''''), '");'
     ) [Up],
-    0 [SortOrder]
+    0 [CodeGenSortOrder]
 FROM 
     [DefinedType] [dt]
 	INNER JOIN [Category] [c] ON [c].Id = [dt].CategoryId
-where (dt.IsSystem=0 or dt.Name like @definedTypeNameFilter)
+where (dt.Name like @definedTypeNameFilter)
 union
 select 
     CONCAT('RockMigrationHelper.AddDefinedTypeAttribute("', 
@@ -28,7 +28,7 @@ select
     [a].[DefaultValue], '","',
     [a].[Guid], '");'
     ) [Up],
-    1 [SortOrder]
+    1 [CodeGenSortOrder]
 FROM [Attribute] [a]
     left join [EntityType] [e] on [e].[Id] = [a].[EntityTypeId]
     join [FieldType] [ft] on [ft].[Id] = [a].[FieldTypeId]
@@ -37,7 +37,7 @@ where
     e.Name = 'Rock.Model.DefinedValue' 
 and 
     a.EntityTypeQualifierColumn = 'DefinedTypeId'
-and (dt.IsSystem=0 or dt.Name like @definedTypeNameFilter)
+and (dt.Name like @definedTypeNameFilter)
 union
 select 
     CONCAT('RockMigrationHelper.AddAttributeQualifier("', 
@@ -46,7 +46,7 @@ select
     [aq].[Value], '","',
     [aq].[Guid], '");'
     ) [Up],
-    2 [SortOrder]
+    2 [CodeGenSortOrder]
 FROM [Attribute] [a]
     left join [EntityType] [e] on [e].[Id] = [a].[EntityTypeId]
     join [FieldType] [ft] on [ft].[Id] = [a].[FieldTypeId]
@@ -56,20 +56,20 @@ where
     e.Name = 'Rock.Model.DefinedValue' 
 and 
     a.EntityTypeQualifierColumn = 'DefinedTypeId'
-and (dt.IsSystem=0 or dt.Name like @definedTypeNameFilter)
+and (dt.Name like @definedTypeNameFilter)
 union
 SELECT 
-    CONCAT('RockMigrationHelper.AddDefinedValue("', 
+    CONCAT('RockMigrationHelper.UpdateDefinedValue("', 
     [dt].[Guid], '","',
     [dv].[Value], '","',
     [dv].[Description], '","',
     [dv].[Guid], '",',
     case [dv].[IsSystem] when 0 then 'false' else 'true' end, ');'
     ) [Up],
-    3 [SortOrder]
+    3 [CodeGenSortOrder]
   FROM [DefinedValue] [dv]
     join [DefinedType] [dt] on [dv].[DefinedTypeId] = [dt].[Id]
-   where (dt.IsSystem=0 or dt.Name like @definedTypeNameFilter)
+   where (dt.Name like @definedTypeNameFilter)
 union
 select 
     CONCAT('RockMigrationHelper.AddDefinedValueAttributeValue("', 
@@ -77,7 +77,7 @@ select
     [a].[Guid], '",@"',
     REPLACE(REPLACE([av].[Value], '"', '""'), '''', ''''''), '");'
     ) [Up],
-    4 [SortOrder]
+    4 [CodeGenSortOrder]
 FROM [AttributeValue] [av]
     join [Attribute] [a] on av.AttributeId = a.Id
     join [DefinedValue] [dv] on av.EntityId = [dv].Id
@@ -85,15 +85,15 @@ FROM [AttributeValue] [av]
 where 
     a.EntityTypeQualifierColumn = 'DefinedTypeId'
 and
-    (dt.IsSystem=0 or dt.Name like @definedTypeNameFilter)
-order by [SortOrder]
+    (dt.Name like @definedTypeNameFilter)
+order by [CodeGenSortOrder]
 
 select 
     CONCAT('RockMigrationHelper.DeleteAttribute("', 
     [a].[Guid], '"); // ',
 	a.[Key]
     ) [Down],
-    0 [SortOrder]
+    0 [CodeGenSortOrder]
 FROM [Attribute] [a]
     left join [EntityType] [e] on [e].[Id] = [a].[EntityTypeId]
     join [FieldType] [ft] on [ft].[Id] = [a].[FieldTypeId]
@@ -102,25 +102,25 @@ where
     e.Name = 'Rock.Model.DefinedValue' 
 and 
     a.EntityTypeQualifierColumn = 'DefinedTypeId'
-and (dt.IsSystem=0 or dt.Name like @definedTypeNameFilter)
+and (dt.Name like @definedTypeNameFilter)
 union
 SELECT 
     CONCAT('RockMigrationHelper.DeleteDefinedValue("', 
     [dv].[Guid], '"); // ',
 	dv.Value
     ) [Down],
-    1 [SortOrder]
+    1 [CodeGenSortOrder]
   FROM [DefinedValue] [dv]
     join [DefinedType] [dt] on [dv].[DefinedTypeId] = [dt].[Id]
-   where (dt.IsSystem=0 or dt.Name like @definedTypeNameFilter)
+   where (dt.Name like @definedTypeNameFilter)
 union
 select 
     CONCAT('RockMigrationHelper.DeleteDefinedType("', 
     [dt].[Guid], '"); // ',
 	dt.Name
     ) [Down],
-    2 [SortOrder]
+    2 [CodeGenSortOrder]
 FROM 
     [DefinedType] [dt]
-where (dt.IsSystem=0 or dt.Name like @definedTypeNameFilter)
-order by [SortOrder]
+where (dt.Name like @definedTypeNameFilter)
+order by [CodeGenSortOrder]
