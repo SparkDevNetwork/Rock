@@ -1535,7 +1535,7 @@ namespace Rock.Web.UI.Controls
         {
             // When someone changes the field type, we clear the default value since it's no longer relevant.
             DefaultValue = string.Empty;
-            SetAttributeFieldType( _ddlFieldType.SelectedValueAsId() ?? 1, null );
+            SetAttributeFieldType( _ddlFieldType.SelectedValueAsId() ?? 1, new Dictionary<string, ConfigurationValue>() );
         }
 
         /// <summary>
