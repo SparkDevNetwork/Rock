@@ -345,6 +345,7 @@ $(document).ready(function() {
 
             var qryParams = new Dictionary<string, string>();
             qryParams["DataViewId"] = dataView.Id.ToString();
+            qryParams["ParentCategoryId"] = null;
             NavigateToCurrentPageReference( qryParams );
         }
 
@@ -358,7 +359,7 @@ $(document).ready(function() {
             // Check if we are editing an existing Data View.
             int dataViewId = hfDataViewId.Value.AsInteger();
 
-            if (dataViewId == 0)
+            if ( dataViewId == 0 )
             {
                 // If not, check if we are editing a new copy of an existing Data View.
                 dataViewId = PageParameter( "DataViewId" ).AsInteger();
@@ -372,6 +373,8 @@ $(document).ready(function() {
                     // Cancelling on Add, and we know the parentCategoryId, so we are probably in treeview mode, so navigate to the current page
                     var qryParams = new Dictionary<string, string>();
                     qryParams["CategoryId"] = parentCategoryId.ToString();
+                    qryParams["DataViewId"] = null;
+                    qryParams["ParentCategoryId"] = null;
                     NavigateToCurrentPageReference( qryParams );
                 }
                 else
@@ -435,6 +438,8 @@ $(document).ready(function() {
                         qryParams["CategoryId"] = categoryId.ToString();
                     }
 
+                    qryParams["DataViewId"] = null;
+                    qryParams["ParentCategoryId"] = null;
                     NavigateToCurrentPageReference( qryParams );
                 }
             }
