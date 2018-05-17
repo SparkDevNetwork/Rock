@@ -32,7 +32,6 @@ namespace Rock.Security.BackgroundCheck
 {
     /// <summary>
     /// Protect My Ministry Background Check 
-    /// Note: This component requires 
     /// </summary>
     [Description( "Protect My Ministry Background Check" )]
     [Export( typeof( BackgroundCheckComponent ) )]
@@ -45,6 +44,8 @@ namespace Rock.Security.BackgroundCheck
     public class ProtectMyMinistry : BackgroundCheckComponent
     {
         private HttpStatusCode _HTTPStatusCode;
+
+        #region BackgroundCheckComponent Implementation
 
         /// <summary>
         /// Sends a background request to Protect My Ministry
@@ -183,7 +184,7 @@ namespace Rock.Security.BackgroundCheck
                 }
 
                 var homelocation = person.GetHomeLocation();
-                if ( homelocation != null)
+                if ( homelocation != null )
                 {
                     subjectElement.Add( new XElement( "CurrentAddress",
                         new XElement( "StreetAddress", homelocation.Street1 ),
@@ -199,7 +200,7 @@ namespace Rock.Security.BackgroundCheck
                     aliasesElement.Add( new XElement( "Alias", new XElement( "FirstName", person.NickName ) ) );
                 }
 
-                foreach ( var previousName in person.GetPreviousNames() ) 
+                foreach ( var previousName in person.GetPreviousNames() )
                 {
                     aliasesElement.Add( new XElement( "Alias", new XElement( "LastName", previousName.LastName ) ) );
                 }
@@ -226,7 +227,7 @@ namespace Rock.Security.BackgroundCheck
                             pkgTypeDefinedValue.LoadAttributes( rockContext );
                         }
 
-                        packageName = pkgTypeDefinedValue.GetAttributeValue("PMMPackageName");
+                        packageName = pkgTypeDefinedValue.GetAttributeValue( "PMMPackageName" );
                         county = pkgTypeDefinedValue.GetAttributeValue( "DefaultCounty" );
                         state = pkgTypeDefinedValue.GetAttributeValue( "DefaultState" );
                         Guid? mvrJurisdictionGuid = pkgTypeDefinedValue.GetAttributeValue( "MVRJurisdiction" ).AsGuidOrNull();
@@ -246,7 +247,7 @@ namespace Rock.Security.BackgroundCheck
                         if ( homelocation != null )
                         {
                             if ( !string.IsNullOrWhiteSpace( homelocation.County ) &&
-                                pkgTypeDefinedValue.GetAttributeValue("SendHomeCounty").AsBoolean() )
+                                pkgTypeDefinedValue.GetAttributeValue( "SendHomeCounty" ).AsBoolean() )
                             {
                                 county = homelocation.County;
                             }
@@ -285,7 +286,7 @@ namespace Rock.Security.BackgroundCheck
                 {
                     orderElement.Add( new XElement( "OrderDetail",
                         new XAttribute( "OrderId", workflow.Id.ToString() ),
-                        new XAttribute( "ServiceCode", string.IsNullOrWhiteSpace(county) ? "StateCriminal" : "CountyCrim" ),
+                        new XAttribute( "ServiceCode", string.IsNullOrWhiteSpace( county ) ? "StateCriminal" : "CountyCrim" ),
                         new XElement( "County", county ),
                         new XElement( "State", state ),
                         new XElement( "YearsToSearch", 7 ),
@@ -308,7 +309,7 @@ namespace Rock.Security.BackgroundCheck
                 XDocument xdoc = new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ), rootElement );
                 var requestDateTime = RockDateTime.Now;
 
-                XDocument xResult = PostToWebService( xdoc, GetAttributeValue("RequestURL") );
+                XDocument xResult = PostToWebService( xdoc, GetAttributeValue( "RequestURL" ) );
                 var responseDateTime = RockDateTime.Now;
 
                 int? personAliasId = person.PrimaryAliasId;
@@ -329,6 +330,7 @@ namespace Rock.Security.BackgroundCheck
                             backgroundCheck = new Rock.Model.BackgroundCheck();
                             backgroundCheck.PersonAliasId = personAliasId.Value;
                             backgroundCheck.WorkflowId = workflow.Id;
+                            backgroundCheck.ForeignId = 1;
                             backgroundCheckService.Add( backgroundCheck );
                         }
 
@@ -424,6 +426,37 @@ Response XML ({2}):
             }
         }
 
+        private Person GetCurrentPerson()
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var currentUser = new UserLoginService( rockContext ).GetByUserName( UserLogin.GetCurrentUserName() );
+                return currentUser != null ? currentUser.Person : null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the URL to the background check report. 
+        /// Note: Also used by GetBackgroundCheck.ashx.cs, ProcessRequest( HttpContext context )
+        /// </summary>
+        /// <param name="reportKey">The report key.</param>
+        /// <returns></returns>
+        public override string GetReportUrl( string reportKey )
+        {
+            var isAuthorized = this.IsAuthorized( Authorization.VIEW, this.GetCurrentPerson() );
+
+            if ( isAuthorized )
+            {
+                var filePath = System.Web.VirtualPathUtility.ToAbsolute( "~/GetFile.ashx" );
+                return string.Format( "{0}?guid={1}", filePath, reportKey );
+            }
+            else
+            {
+                return "Unauthorized";
+            }
+        }
+        #endregion
+
         /// <summary>
         /// Posts to web service.
         /// </summary>
@@ -446,13 +479,13 @@ Response XML ({2}):
 
             try
             {
-                HttpWebResponse response = ( HttpWebResponse )request.GetResponse();
+                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
                 return GetResponse( response.GetResponseStream(), response.ContentType, response.StatusCode );
             }
-            catch (WebException webException)
+            catch ( WebException webException )
             {
-                string message = GetResponseMessage(webException.Response.GetResponseStream());
-                throw new Exception(webException.Message + " - " + message);
+                string message = GetResponseMessage( webException.Response.GetResponseStream() );
+                throw new Exception( webException.Message + " - " + message );
             }
         }
 
@@ -463,29 +496,29 @@ Response XML ({2}):
         /// <param name="contentType">Type of the content.</param>
         /// <param name="statusCode">The status code.</param>
         /// <returns></returns>
-        private XDocument GetResponse(Stream responseStream, string contentType, HttpStatusCode statusCode)
+        private XDocument GetResponse( Stream responseStream, string contentType, HttpStatusCode statusCode )
         {
             _HTTPStatusCode = statusCode;
 
             Stream receiveStream = responseStream;
-            Encoding encode = System.Text.Encoding.GetEncoding("utf-8");
-            StreamReader readStream = new StreamReader(receiveStream, encode);
+            Encoding encode = System.Text.Encoding.GetEncoding( "utf-8" );
+            StreamReader readStream = new StreamReader( receiveStream, encode );
 
             StringBuilder sb = new StringBuilder();
             Char[] read = new Char[8192];
             int count = 0;
             do
             {
-                count = readStream.Read(read, 0, 8192);
-                String str = new String(read, 0, count);
-                sb.Append(str);
+                count = readStream.Read( read, 0, 8192 );
+                String str = new String( read, 0, count );
+                sb.Append( str );
             }
-            while (count > 0);
+            while ( count > 0 );
 
             string HTMLResponse = sb.ToString();
 
-            if (HTMLResponse.Trim().Length > 0 && HTMLResponse.Contains("<?xml"))
-                return XDocument.Parse(HTMLResponse);
+            if ( HTMLResponse.Trim().Length > 0 && HTMLResponse.Contains( "<?xml" ) )
+                return XDocument.Parse( HTMLResponse );
             else
                 return null;
         }
@@ -612,7 +645,7 @@ Response XML ({0}):
                             {
                                 createdNewAttribute = true;
                             }
-                            
+
                             // Save the report
                             binaryFileGuid = SaveFile( workflow.Attributes["Report"], reportLink, workflow.Id.ToString() + ".pdf" );
                             if ( binaryFileGuid.HasValue )
@@ -672,12 +705,12 @@ Response XML ({0}):
         /// <param name="rockContext">The rock context.</param>
         /// <param name="qualifiers">The qualifiers.</param>
         /// <returns></returns>
-        private static bool SaveAttributeValue( Rock.Model.Workflow workflow, string key, string value, 
+        private static bool SaveAttributeValue( Rock.Model.Workflow workflow, string key, string value,
             CacheFieldType fieldType, RockContext rockContext, Dictionary<string, string> qualifiers = null )
         {
             bool createdNewAttribute = false;
 
-            if (workflow.Attributes.ContainsKey(key))
+            if ( workflow.Attributes.ContainsKey( key ) )
             {
                 workflow.SetAttributeValue( key, value );
             }

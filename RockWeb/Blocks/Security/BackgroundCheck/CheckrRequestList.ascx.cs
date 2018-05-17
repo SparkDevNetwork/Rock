@@ -19,11 +19,12 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Threading;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
+using Rock.Checkr;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
@@ -31,12 +32,12 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Security.BackgroundCheck
 {
-    [DisplayName( "Request List" )]
+    [DisplayName( "Checkr Request List" )]
     [Category( "Security > Background Check" )]
-    [Description( "Lists all the background check requests." )]
+    [Description( "Lists all the Checkr background check requests." )]
 
     [LinkedPage( "Workflow Detail Page", "The page to view details about the background check workflow" )]
-    public partial class RequestList : RockBlock, ISecondaryBlock, ICustomGridColumns
+    public partial class CheckrRequestList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
         #region Control Methods
 
@@ -89,6 +90,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
             fRequest.SaveUserPreference( "Last Name", tbLastName.Text );
             fRequest.SaveUserPreference( "Request Date Range", drpRequestDates.DelimitedValues );
             fRequest.SaveUserPreference( "Response Date Range", drpResponseDates.DelimitedValues );
+            fRequest.SaveUserPreference( "Report Status", tbReportStatus.Text );
             fRequest.SaveUserPreference( "Record Found", ddlRecordFound.SelectedValue );
 
             BindGrid();
@@ -115,7 +117,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        private void gRequest_GridRebind( object sender, EventArgs e )
+        protected void gRequest_GridRebind( object sender, EventArgs e )
         {
             BindGrid();
         }
@@ -130,20 +132,19 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
                 BackgroundCheckRow request = e.Row.DataItem as BackgroundCheckRow;
-
                 if ( !request.HasWorkflow )
                 {
-                    foreach ( var lb in e.Row.Cells[6].ControlsOfTypeRecursive<LinkButton>() )
+                    foreach ( var lbWorkflow in e.Row.Cells[6].ControlsOfTypeRecursive<LinkButton>() )
                     {
-                        lb.Visible = false;
+                        lbWorkflow.Visible = false;
                     }
                 }
 
-                if ( !request.HasResponseData )
+                if ( !request.RecordFound.HasValue || request.RecordFound.Value == false )
                 {
-                    foreach ( var lb in e.Row.Cells[5].ControlsOfTypeRecursive<LinkButton>() )
+                    foreach ( var lbReport in e.Row.Cells[5].ControlsOfTypeRecursive<LinkButton>() )
                     {
-                        lb.Visible = false;
+                        lbReport.Visible = false;
                     }
                 }
             }
@@ -162,9 +163,16 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                 if ( bc != null && bc.PersonAlias != null )
                 {
                     int personId = e.RowKeyId;
-                    Response.Redirect( string.Format( "~/Person/{0}", bc.PersonAlias.PersonId ), false );
-                    Context.ApplicationInstance.CompleteRequest();
-                    return;
+                    try
+                    {
+                        Response.Redirect( string.Format( "~/Person/{0}", bc.PersonAlias.PersonId ), false );
+                        Context.ApplicationInstance.CompleteRequest();
+                        return;
+                    }
+                    catch ( ThreadAbortException ex )
+                    {
+                        // Can safely ignore this exception
+                    }
                 }
             }
         }
@@ -181,8 +189,20 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                 var bc = new BackgroundCheckService( rockContext ).Get( e.RowKeyId );
                 if ( bc != null )
                 {
-                    tbResponseData.Text = bc.ResponseData;
-                    dlgResponse.Show();
+                    string url = new Checkr().GetReportUrl( bc.ResponseId );
+                    if ( url.IsNotNullOrWhitespace() && url != "Unauthorized" )
+                    {
+                        try
+                        {
+                            Response.Redirect( url, false );
+                            Context.ApplicationInstance.CompleteRequest(); // https://blogs.msdn.microsoft.com/tmarq/2009/06/25/correct-use-of-system-web-httpresponse-redirect/
+                        }
+                        catch ( ThreadAbortException ex )
+                        {
+                            // Can safely ignore this exception
+                        }
+
+                    }
                 }
             }
         }
@@ -206,7 +226,6 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         }
 
         #endregion
-
         #region Internal Methods
 
         /// <summary>
@@ -218,6 +237,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
             tbLastName.Text = fRequest.GetUserPreference( "Last Name" );
             drpRequestDates.DelimitedValues = fRequest.GetUserPreference( "Request Date Range" );
             drpResponseDates.DelimitedValues = fRequest.GetUserPreference( "Response Date Range" );
+            tbReportStatus.Text = fRequest.GetUserPreference( "Report Status" );
             ddlRecordFound.SetValue( fRequest.GetUserPreference( "ddlRecordFound" ) );
         }
 
@@ -234,7 +254,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                         g.PersonAlias != null &&
                         g.PersonAlias.Person != null )
                     .Where( g =>
-                        g.ForeignId == 1);
+                        g.ForeignId == 2);
 
                 // FirstName
                 string firstName = fRequest.GetUserPreference( "First Name" );
@@ -281,6 +301,13 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                     qry = qry.Where( t => t.ResponseDate < upperDate );
                 }
 
+                // Report Status
+                string reportStatus = fRequest.GetUserPreference( "Report Status" );
+                if ( !string.IsNullOrWhiteSpace( reportStatus ) )
+                {
+                    qry = qry.Where( t => t.Status == reportStatus );
+                }
+
                 // Record Found
                 string recordFound = fRequest.GetUserPreference( "Record Found" );
                 if ( !string.IsNullOrWhiteSpace( recordFound ) )
@@ -303,21 +330,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                 SortProperty sortProperty = gRequest.SortProperty;
                 if ( sortProperty != null )
                 {
-                    if ( sortProperty.Property == "Name" )
-                    {
-                        if ( sortProperty.Direction == SortDirection.Descending )
-                        {
-                            items = qry.OrderByDescending( q => q.PersonAlias.Person.LastName ).ThenBy( q => q.PersonAlias.Person.FirstName ).ToList();
-                        }
-                        else
-                        {
-                            items = qry.OrderBy( q => q.PersonAlias.Person.LastName ).ThenBy( q => q.PersonAlias.Person.FirstName ).ToList();
-                        }
-                    }
-                    else
-                    {
-                        items = qry.Sort( sortProperty ).ToList();
-                    }
+                    items = qry.Sort( sortProperty ).ToList();
                 }
                 else
                 {
@@ -340,7 +353,8 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                             string.Empty,
                         HasResponseData = !string.IsNullOrWhiteSpace( b.ResponseData ),
                         ResponseDocumentText = b.ResponseDocumentId.HasValue ? "<i class='fa fa-file-pdf-o fa-lg'></i>" : "",
-                        ResponseDocumentId = b.ResponseDocumentId ?? 0
+                    ResponseId = b.ResponseId,
+                    ReportStatus = b.Status.SplitCase()
                     } ).ToList();
 
                 gRequest.DataBind();
@@ -356,12 +370,10 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
             pnlContent.Visible = visible;
         }
 
-        #endregion
-
         /// <summary>
         /// 
         /// </summary>
-        public class BackgroundCheckRow
+        private class BackgroundCheckRow
         {
             public string Name { get; set; }
 
@@ -383,7 +395,10 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
 
             public string ResponseDocumentText { get; set; }
 
-            public int ResponseDocumentId { get; set; }
+            public string ResponseId { get; set; }
+
+            public string ReportStatus { get; set; }
         }
+        #endregion
     }
 }

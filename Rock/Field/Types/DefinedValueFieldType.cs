@@ -29,8 +29,8 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field Type used to display a dropdown list of Defined Values for a specific Defined Type
-    /// Stored as either a single DefinedValue.Guid or a comma-delimited list of DefinedValue.Guids (if AllowMultiple)
+    /// Field Type used to display a dropdown list of Defined Values for a specific Defined Type.
+    /// Stored as either a single DefinedValue.Guid or a comma-delimited list of DefinedValue.Guids (if AllowMultiple).
     /// </summary>
     [Serializable]
     public class DefinedValueFieldType : FieldType, IEntityFieldType, IEntityQualifierFieldType
@@ -43,7 +43,7 @@ namespace Rock.Field.Types
         private const string ENHANCED_SELECTION_KEY = "enhancedselection";
 
         /// <summary>
-        /// Returns a list of the configuration keys
+        /// Returns a list of the configuration keys.
         /// </summary>
         /// <returns></returns>
         public override List<string> ConfigurationKeys()

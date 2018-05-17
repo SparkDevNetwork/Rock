@@ -361,6 +361,7 @@
     <Compile Include="Attribute\ComparisonFieldAttribute.cs" />
     <Compile Include="Attribute\ContentChannelTypeFieldAttribute.cs" />
     <Compile Include="Attribute\ContentChannelItemFieldAttribute.cs" />
+    <Compile Include="Attribute\BackgroundCheckFieldAttribute.cs" />
     <Compile Include="Attribute\GenderFieldAttribute.cs" />
     <Compile Include="Attribute\InteractionChannelFieldAttribute.cs" />
     <Compile Include="Attribute\InteractionChannelsFieldAttribute.cs" />
@@ -632,6 +633,7 @@
     <Compile Include="Field\Types\CheckListFieldType.cs" />
     <Compile Include="Field\Types\ContentChannelTypeFieldType.cs" />
     <Compile Include="Field\Types\ContentChannelItemFieldType.cs" />
+    <Compile Include="Field\Types\BackgroundCheckFieldType.cs" />
     <Compile Include="Field\Types\MonthDayFieldType.cs" />
     <Compile Include="Field\Types\GenderFieldType.cs" />
     <Compile Include="Field\Types\InteractionChannelsFieldType.cs" />
@@ -1366,8 +1368,10 @@
     <Compile Include="Reporting\DataFilter\Person\InRegistrationInstanceFilter.cs" />
     <Compile Include="Security\Role.cs" />
     <Compile Include="SqlServerTypes\Loader.cs" />
+    <Compile Include="SystemGuid\Block.cs" />
     <Compile Include="SystemGuid\Communication.cs" />
     <Compile Include="SystemGuid\InteractionChannel.cs" />
+    <Compile Include="SystemGuid\WorkflowType.cs" />
     <Compile Include="SystemKey\SystemSetting.cs" />
     <Compile Include="SystemKey\UserPreference.cs" />
     <Compile Include="Transactions\DeleteIndexEntityTransaction.cs" />
@@ -1687,6 +1691,7 @@
     <Compile Include="Web\UI\Controls\Pickers\GroupMemberPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\GroupMembersPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\LavaCommandsPicker.cs" />
+    <Compile Include="Web\UI\Controls\BackgroundCheckDocument.cs" />
     <Compile Include="Web\UI\Controls\SSNBox.cs" />
     <Compile Include="Web\UI\ICustomGridColumns.cs" />
     <Compile Include="Web\UI\ICustomGridOptions.cs" />
