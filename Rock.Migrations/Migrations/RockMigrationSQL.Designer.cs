@@ -4901,8 +4901,8 @@ namespace Rock.Migrations.Migrations {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to IF  EXISTS ( SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[vCheckin_GroupTypeAttendance]&apos;) AND type = N&apos;V&apos; )
-        ///DROP VIEW [dbo].[vCheckin_GroupTypeAttendance]
+        ///   Looks up a localized string similar to IF  EXISTS ( SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[vCheckin_Attendance]&apos;) AND type = N&apos;V&apos; )
+        ///DROP VIEW [dbo].[vCheckin_Attendance]
         ///GO
         ///
         ////*
@@ -4919,11 +4919,11 @@ namespace Rock.Migrations.Migrations {
         ///	&lt;remarks&gt;	
         ///	&lt;/remarks&gt;
         ///	&lt;code&gt;
-        ///		SELECT * FROM [vCheckin_GroupTypeAttendance] WHERE [GroupTypeId] = 14
+        ///		SELECT * FROM [vCheckin_Attendance] WHERE [PersonAliasId] = 4
         ///	&lt;/code&gt;
         ///&lt;/doc&gt;
         ///*/
-        ///CREATE VI [rest of string was truncated]&quot;;.
+        ///CREATE VIEW [dbo].[vCheckin_Attenda [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201805152055059_AttendanceOccurrence_vCheckin_Attendance {
             get {
@@ -4939,26 +4939,56 @@ namespace Rock.Migrations.Migrations {
         ////*
         ///&lt;doc&gt;
         ///	&lt;summary&gt;
-        /// 		This view returns distinct attendance dates for a person and group type
+        /// 		This view returns attendance records in a pre-version 8 format 
+        ///		(It is provided as a way for backward compatability so that scripts that were referencing the Attendance table
+        ///		prior to adding AttendanceOccurrence, can be easily modified to use this view instead.
         ///	&lt;/summary&gt;
         ///
-        ///	&lt;returns&gt;
-        ///		* GroupTypeId
-        ///        * PersonId
-        ///		* SundayDate
-        ///	&lt;/returns&gt;
         ///	&lt;remarks&gt;	
-        ///	&lt;/remarks&gt;
-        ///	&lt;code&gt;
-        ///		SELECT * FROM [vCheckin_GroupTypeAttendance] WHERE [GroupTypeId] = 14
-        ///	&lt;/code&gt;
-        ///&lt;/doc&gt;
-        ///*/
-        ///CREATE VI [rest of string was truncated]&quot;;.
+        ///	&lt;/remar [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201805152055059_AttendanceOccurrence_vCheckin_GroupTypeAttendance {
             get {
                 return ResourceManager.GetString("_201805152055059_AttendanceOccurrence_vCheckin_GroupTypeAttendance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to -- Create the Presence user and grant access to the PresenceController.
+        ///DECLARE @personGuid UNIQUEIDENTIFIER = &apos;86CF11D9-66BC-4CE0-9037-F8AFCBCD608A&apos;
+        ///-- Will not run if Presence user already exists
+        ///IF NOT EXISTS (SELECT [Id] FROM [Person] WHERE [Guid] = @personGuid)
+        ///BEGIN
+        ///	DECLARE @personAliasGuid UNIQUEIDENTIFIER = &apos;86CF11D9-66BC-4CE0-9037-F8AFCBCD608A&apos;
+        ///	DECLARE @groupMemberGuid UNIQUEIDENTIFIER = &apos;C213A210-1792-4869-AB9E-5549CA801629&apos;
+        ///	DECLARE @userLoginGuid UNIQUEIDENTIFIER = &apos;0CEB5F7F-AD1D-493E-8 [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201805171836577_Rollup_0517_CreatePresenceUser {
+            get {
+                return ResourceManager.GetString("_201805171836577_Rollup_0517_CreatePresenceUser", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ALTER PROCEDURE [dbo].[spAnalytics_ETL_Attendance]
+        ///AS
+        ///BEGIN
+        ///    DECLARE @MinDateTime DATETIME = DATEFROMPARTS(1900, 1, 1)
+        ///        ,@EtlDateTime DATETIME = SysDateTime();
+        ///
+        ///    -- insert records into [[AnalyticsSourceAttendance]] from the source [Attendance] table that haven&apos;t been added yet
+        ///    INSERT INTO [dbo].[AnalyticsSourceAttendance] (
+        ///        [AttendanceId]
+        ///        ,[AttendanceDateKey]
+        ///        ,[AttendanceTypeId]
+        ///        ,[Count]
+        ///        ,[LocationId]
+        ///        ,[CampusId]
+        ///        ,[Schedu [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201805171836577_Rollup_0517_spAnalytics_ETL_Attendance {
+            get {
+                return ResourceManager.GetString("_201805171836577_Rollup_0517_spAnalytics_ETL_Attendance", resourceCulture);
             }
         }
     }
