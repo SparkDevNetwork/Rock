@@ -64,6 +64,18 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<AttendanceOccurrence>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, AttendanceOccurrence.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<AttendanceOccurrence>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, AttendanceOccurrence.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<Attribute>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, Attribute.FriendlyTypeName );

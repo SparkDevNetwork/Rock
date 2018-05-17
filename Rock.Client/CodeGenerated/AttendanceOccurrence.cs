@@ -27,27 +27,15 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for Attendance that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for AttendanceOccurrence that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class AttendanceEntity
+    public partial class AttendanceOccurrenceEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public int? AttendanceCodeId { get; set; }
-
-        /// <summary />
-        public int? CampusId { get; set; }
-
-        /// <summary />
-        public int? DeviceId { get; set; }
-
-        /// <summary />
-        public bool? DidAttend { get; set; }
-
-        /// <summary />
-        public DateTime? EndDateTime { get; set; }
+        public bool? DidNotOccur { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -55,40 +43,22 @@ namespace Rock.Client
         /// <summary />
         public string ForeignKey { get; set; }
 
+        /// <summary />
+        public int? GroupId { get; set; }
+
+        /// <summary />
+        public int? LocationId { get; set; }
+
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
-        public string Note { get; set; }
+        public DateTime OccurrenceDate { get; set; }
 
         /// <summary />
-        public int OccurrenceId { get; set; }
-
-        /// <summary />
-        public int? PersonAliasId { get; set; }
-
-        /// <summary />
-        public bool? Processed { get; set; }
-
-        /// <summary />
-        public int? QualifierValueId { get; set; }
-
-        /// <summary />
-        public Rock.Client.Enums.RSVP RSVP { get; set; }
-
-        /// <summary />
-        public int? SearchResultGroupId { get; set; }
-
-        /// <summary />
-        public int? SearchTypeValueId { get; set; }
-
-        /// <summary />
-        public string SearchValue { get; set; }
-
-        /// <summary />
-        public DateTime StartDateTime { get; set; }
+        public int? ScheduleId { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -117,30 +87,20 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source Attendance object
+        /// Copies the base properties from a source AttendanceOccurrence object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( Attendance source )
+        public void CopyPropertiesFrom( AttendanceOccurrence source )
         {
             this.Id = source.Id;
-            this.AttendanceCodeId = source.AttendanceCodeId;
-            this.CampusId = source.CampusId;
-            this.DeviceId = source.DeviceId;
-            this.DidAttend = source.DidAttend;
-            this.EndDateTime = source.EndDateTime;
+            this.DidNotOccur = source.DidNotOccur;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.GroupId = source.GroupId;
+            this.LocationId = source.LocationId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
-            this.Note = source.Note;
-            this.OccurrenceId = source.OccurrenceId;
-            this.PersonAliasId = source.PersonAliasId;
-            this.Processed = source.Processed;
-            this.QualifierValueId = source.QualifierValueId;
-            this.RSVP = source.RSVP;
-            this.SearchResultGroupId = source.SearchResultGroupId;
-            this.SearchTypeValueId = source.SearchTypeValueId;
-            this.SearchValue = source.SearchValue;
-            this.StartDateTime = source.StartDateTime;
+            this.OccurrenceDate = source.OccurrenceDate;
+            this.ScheduleId = source.ScheduleId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -152,21 +112,15 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for Attendance that includes all the fields that are available for GETs. Use this for GETs (use AttendanceEntity for POST/PUTs)
+    /// Client model for AttendanceOccurrence that includes all the fields that are available for GETs. Use this for GETs (use AttendanceOccurrenceEntity for POST/PUTs)
     /// </summary>
-    public partial class Attendance : AttendanceEntity
+    public partial class AttendanceOccurrence : AttendanceOccurrenceEntity
     {
         /// <summary />
-        public AttendanceCode AttendanceCode { get; set; }
+        public ICollection<Attendance> Attendees { get; set; }
 
         /// <summary />
-        public Device Device { get; set; }
-
-        /// <summary />
-        public DefinedValue Qualifier { get; set; }
-
-        /// <summary />
-        public DefinedValue SearchTypeValue { get; set; }
+        public DateTime SundayDate { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

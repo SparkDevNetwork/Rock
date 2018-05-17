@@ -98,6 +98,9 @@ namespace Rock.Client
         public string GroupTerm { get; set; }
 
         /// <summary />
+        public string GroupTypeColor { get; set; }
+
+        /// <summary />
         public int? GroupTypePurposeValueId { get; set; }
 
         /// <summary />
@@ -204,6 +207,7 @@ namespace Rock.Client
             this.GroupMemberTerm = source.GroupMemberTerm;
             this.GroupsRequireCampus = source.GroupsRequireCampus;
             this.GroupTerm = source.GroupTerm;
+            this.GroupTypeColor = source.GroupTypeColor;
             this.GroupTypePurposeValueId = source.GroupTypePurposeValueId;
             this.GroupViewLavaTemplate = source.GroupViewLavaTemplate;
             this.IconCssClass = source.IconCssClass;
