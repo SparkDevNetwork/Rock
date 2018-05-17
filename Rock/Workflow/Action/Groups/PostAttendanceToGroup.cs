@@ -192,27 +192,20 @@ namespace Rock.Workflow.Action
                         }
                     }
 
-                    AttendanceService attendanceService = new AttendanceService(rockContext);
-
-                    Attendance attendance = new Attendance();
-                    attendance.GroupId = group.Id;
-                    attendance.PersonAliasId = person.PrimaryAliasId;
-                    attendance.StartDateTime = attendanceDateTime;
-                    attendance.CampusId = group.CampusId;
-                    attendance.DidAttend = true;
-
+                    int? locationId = null;
                     if ( locationGuid != Guid.Empty )
                     {
-                        var location = new LocationService(rockContext).Queryable().AsNoTracking()
-                                            .Where(l => l.Guid == locationGuid)
+                        var location = new LocationService( rockContext ).Queryable().AsNoTracking()
+                                            .Where( l => l.Guid == locationGuid )
                                             .FirstOrDefault();
 
                         if ( location != null )
                         {
-                            attendance.LocationId = location.Id;
+                            locationId = location.Id;
                         }
                     }
 
+                    int? scheduleId = null;
                     if ( scheduleGuid != Guid.Empty )
                     {
                         var schedule = new ScheduleService( rockContext ).Queryable().AsNoTracking()
@@ -221,16 +214,20 @@ namespace Rock.Workflow.Action
 
                         if ( schedule != null )
                         {
-                            attendance.ScheduleId = schedule.Id;
+                            scheduleId = schedule.Id;
                         }
                     }
 
-                    attendanceService.Add(attendance);
-                    rockContext.SaveChanges();
-
-                    if ( attendance.LocationId.HasValue )
+                    int? personAliasId = person.PrimaryAliasId;
+                    if ( personAliasId.HasValue )
                     {
-                        Rock.CheckIn.KioskLocationAttendance.Remove( attendance.LocationId.Value );
+                        new AttendanceService( rockContext ).AddOrUpdate( personAliasId.Value, attendanceDateTime.Date, group.Id, locationId, scheduleId, group.CampusId );
+                        rockContext.SaveChanges();
+
+                        if ( locationId.HasValue )
+                        {
+                            Rock.CheckIn.KioskLocationAttendance.Remove( locationId.Value );
+                        }
                     }
                 }
                 else

@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Attendance Service class
+    /// AttendanceOccurrence Service class
     /// </summary>
-    public partial class AttendanceService : Service<Attendance>
+    public partial class AttendanceOccurrenceService : Service<AttendanceOccurrence>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="AttendanceService"/> class
+        /// Initializes a new instance of the <see cref="AttendanceOccurrenceService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public AttendanceService(RockContext context) : base(context)
+        public AttendanceOccurrenceService(RockContext context) : base(context)
         {
         }
 
@@ -48,7 +48,7 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( Attendance item, out string errorMessage )
+        public bool CanDelete( AttendanceOccurrence item, out string errorMessage )
         {
             errorMessage = string.Empty;
             return true;
@@ -58,53 +58,43 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class AttendanceExtensionMethods
+    public static partial class AttendanceOccurrenceExtensionMethods
     {
         /// <summary>
-        /// Clones this Attendance object to a new Attendance object
+        /// Clones this AttendanceOccurrence object to a new AttendanceOccurrence object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static Attendance Clone( this Attendance source, bool deepCopy )
+        public static AttendanceOccurrence Clone( this AttendanceOccurrence source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as Attendance;
+                return source.Clone() as AttendanceOccurrence;
             }
             else
             {
-                var target = new Attendance();
+                var target = new AttendanceOccurrence();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another Attendance object to this Attendance object
+        /// Copies the properties from another AttendanceOccurrence object to this AttendanceOccurrence object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this Attendance target, Attendance source )
+        public static void CopyPropertiesFrom( this AttendanceOccurrence target, AttendanceOccurrence source )
         {
             target.Id = source.Id;
-            target.OccurrenceId = source.OccurrenceId;
-            target.AttendanceCodeId = source.AttendanceCodeId;
-            target.CampusId = source.CampusId;
-            target.DeviceId = source.DeviceId;
-            target.DidAttend = source.DidAttend;
-            target.EndDateTime = source.EndDateTime;
+            target.DidNotOccur = source.DidNotOccur;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.Note = source.Note;
-            target.PersonAliasId = source.PersonAliasId;
-            target.Processed = source.Processed;
-            target.QualifierValueId = source.QualifierValueId;
-            target.RSVP = source.RSVP;
-            target.SearchResultGroupId = source.SearchResultGroupId;
-            target.SearchTypeValueId = source.SearchTypeValueId;
-            target.SearchValue = source.SearchValue;
-            target.StartDateTime = source.StartDateTime;
+            target.GroupId = source.GroupId;
+            target.LocationId = source.LocationId;
+            target.ScheduleId = source.ScheduleId;
+            target.OccurrenceDate = source.OccurrenceDate;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

@@ -208,7 +208,7 @@ namespace RockWeb.Blocks.BulkImport
 
                 if ( !tableList.Any() )
                 {
-                    nbCheckForeignSystemKey.Text = "OK. Foreign System Key <strong>" + tbForeignSystemKey.Text + "</strong> has not be used to import data.";
+                    nbCheckForeignSystemKey.Text = "OK. Foreign System Key <strong>" + tbForeignSystemKey.Text + "</strong> has not been used to import data.";
                     nbCheckForeignSystemKey.NotificationBoxType = NotificationBoxType.Success;
                 }
                 else

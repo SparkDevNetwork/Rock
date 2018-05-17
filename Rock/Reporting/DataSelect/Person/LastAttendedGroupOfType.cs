@@ -135,7 +135,7 @@ namespace Rock.Reporting.DataSelect.Person
             if ( groupTypeGuid != Guid.Empty )
             {
                 AttendanceService attendanceService = new AttendanceService( context );
-                var groupAttendanceQry = attendanceService.Queryable().Where( a => a.Group.GroupType.Guid == groupTypeGuid);
+                var groupAttendanceQry = attendanceService.Queryable().Where( a => a.Occurrence.Group.GroupType.Guid == groupTypeGuid);
 
                 var qry = new PersonService( context ).Queryable()
                     .Select( p => groupAttendanceQry.Where( xx => xx.PersonAlias.PersonId == p.Id && xx.DidAttend == true ).Max( xx => xx.StartDateTime ));
