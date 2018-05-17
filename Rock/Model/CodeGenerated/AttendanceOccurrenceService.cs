@@ -51,6 +51,12 @@ namespace Rock.Model
         public bool CanDelete( AttendanceOccurrence item, out string errorMessage )
         {
             errorMessage = string.Empty;
+ 
+            if ( new Service<Attendance>( Context ).Queryable().Any( a => a.OccurrenceId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", AttendanceOccurrence.FriendlyTypeName, Attendance.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }
@@ -93,8 +99,8 @@ namespace Rock.Model
             target.ForeignKey = source.ForeignKey;
             target.GroupId = source.GroupId;
             target.LocationId = source.LocationId;
-            target.ScheduleId = source.ScheduleId;
             target.OccurrenceDate = source.OccurrenceDate;
+            target.ScheduleId = source.ScheduleId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
