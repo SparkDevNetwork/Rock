@@ -127,15 +127,14 @@ td.wrap-contents {
   border-radius: @border-radius-base;
 
   header {
-    height: 24px;
-    padding: 4px;
-    text-align: right;
+    position: absolute;
+    display: inline;
     cursor: pointer;
     border-radius: @border-radius-base @border-radius-base 0 0;
 
     h3 {
       display: inline;
-      margin: 0 2px 0 2px;
+      margin: 0 2px 0 6px;
       font-size: 12px;
       font-weight: @font-weight-light;
       line-height: 16px;
@@ -157,7 +156,8 @@ td.wrap-contents {
   }
 
   .grid-filter-entry {
-    margin-bottom: 12px;
+    padding: @panel-body-padding;
+    border-bottom: 1px solid darken(@grid-filter-bg, 10%);
   }
 
   // adjust the background color of pickers in the filters
@@ -196,20 +196,38 @@ td.wrap-contents {
   > a:not(.btn) {
     display: block;
     color: @grid-column-header-text-color;
+    &::after{
+      display: inline-block;
+      width: 15px;
+      padding-left: 5px;
+      font-family: @fa-font-face;
+      font-weight: @fa-theme-weight;
+      color: #8c9ba5;
+      content: @fa-var-caret-down;
+      opacity: 0;
+    }
+
+    &:active,
+    &:active::after {
+      color: @link-color;
+    }
   }
-  // sorting
-  &.ascending a::before {
-    padding-right: 5px;
-    font-family: @fa-font-face;
-    font-weight: @fa-theme-weight;
-    content: @fa-var-caret-up;
+  &:hover a:not(.btn)::after{
+    content: @fa-var-caret-down;
+    opacity: 1;
   }
 
-  &.descending a::before {
-    padding-right: 5px;
-    font-family: @fa-font-face;
-    font-weight: @fa-theme-weight;
+  // sorting
+  &.descending a:not(.btn)::after {
+    color: @grid-column-header-text-color;
     content: @fa-var-caret-down;
+    opacity: 1;
+  }
+
+  &.ascending a:not(.btn)::after {
+    color: @grid-column-header-text-color;
+    content: @fa-var-caret-up;
+    opacity: 1;
   }
 }
 
@@ -224,20 +242,31 @@ td.wrap-contents {
 
 // pagination
 .grid-paging {
-  
-  .pagination {
+  padding: 5px 0;
+
+  .grid-pager {
     margin-top: 0;
     margin-bottom: 0;
 
     li {
       > a {
+        min-width: 23px;
+        padding: 5px 12px;
+        margin: 0 8px 0 0;
         color: @grid-pager-button-color;
+        text-align: center;
         background-color: @grid-pager-button-bg;
         border-color: @grid-pager-button-border;
       }
 
+      &.disabled > a {
+        cursor: default;
+      }
+
       &.active > a {
+        color: @grid-pager-button-active-color;
         background-color: @grid-pager-button-active-bg;
+        border-color: @grid-pager-button-active-border;
       }
     }
   }
@@ -248,13 +277,19 @@ td.wrap-contents {
 
   .grid-pagesize {
     float: left;
+    margin: 0 (@padding-base-horizontal / 2) 0 0;
+  }
+
+  .pagination-text {
+    float: left;
+    font-size: 12px;
   }
 
   .grid-itemcount {
     float: left;
     margin-top: 7px;
     margin-left: 10px;
-    font-size: 11px;
+    font-size: 12px;
   }
 }
 
@@ -312,7 +347,8 @@ td.grid-col-actions {
 // -------------------------
 
 .table-padded {
-  td, th {
+  td,
+  th {
     padding: 12px !important;
   }
 }
@@ -328,7 +364,8 @@ td.grid-col-actions {
   // checkbox field
   text-align: center;
 
-  .checkbox, .radio {
+  .checkbox,
+  .radio {
     padding-left: 0;
     margin: 4px 0 0 0;
 
@@ -394,6 +431,15 @@ td.grid-col-actions {
 .table .grid-icon img {
   width: 100%;
   max-width: 120px;
+}
+
+.grid-select-cell {
+  .photo-icon {
+    display: inline-block;
+    vertical-align: top;
+    width: @line-height-computed;
+    height: @line-height-computed;
+  }
 }
 
 
