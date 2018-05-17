@@ -157,8 +157,24 @@ namespace RockWeb.Plugins.church_ccv.CommandCenter
                     // creating the service time buttons
                     foreach ( var campusServiceTimeList in campusVenueWeekendTimeList )
                     {
+                        // assume there will be no valid label for the button
                         HtmlAnchor button = new HtmlAnchor();
-                        button.InnerText = campusServiceTimeList.RecordingDayAndTime.Split( ' ' )[1];
+                        button.InnerText = "No Label";
+
+                        // parse the label name, which may or may not be the actual day and time
+                        string[] labelSplit = campusServiceTimeList.RecordingDayAndTime.Split( ' ' );
+
+                        // ideally, if there's a secondary word, we want that, as it should be more specific
+                        if ( labelSplit.Length > 1 && string.IsNullOrWhiteSpace( labelSplit[1] ) == false )
+                        {
+                            button.InnerText = labelSplit[ 1 ];
+                        }
+                        // otherwise, try to fall back to the first word
+                        else if( labelSplit.Length > 0 && string.IsNullOrWhiteSpace( labelSplit[0] ) == false )
+                        {
+                            button.InnerText = labelSplit [ 0 ];
+                        }
+
                         button.ID = string.Format( "btnRecording_{0}", Guid.NewGuid().ToString( "n" ) );
                         button.Attributes["onclick"] = "javascript: ChangeRecording( " + campusServiceTimeList.RecordingName.Quoted( "'" ) + " );";
                         button.Attributes["recordingName"] = campusServiceTimeList.RecordingName;
