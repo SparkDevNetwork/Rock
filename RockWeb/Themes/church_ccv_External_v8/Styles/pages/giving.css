@@ -655,6 +655,7 @@
 
 .form-control.input-width-sm {
     width: 55px;
+    padding: 0;
 }
 
 .creditcard-expdate-cvv, .creditcard-state-country-zip {
@@ -663,7 +664,7 @@
 }
 
 #nbCVV {
-    width: 60px;
+    width: 55px;
     text-align: center;
 }
 
@@ -675,12 +676,14 @@
     margin-top: -3px;
 }
 
-#ddlCountry {
+#ddlCountry, #ddlState {
     width: 55px;
+    padding: 0;
 }
 
 #nbPostalCode {
     width: 100px;
+    
 }
 
 .panel-bankaccount {

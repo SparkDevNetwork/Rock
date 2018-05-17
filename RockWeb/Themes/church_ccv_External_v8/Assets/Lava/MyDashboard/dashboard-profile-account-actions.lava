@@ -1,0 +1,49 @@
+{% comment %} 
+    {% include '~~/Assets/Lava/MyDashboard/dashboard-profile-account-actions.lava' %}  
+{% endcomment %}
+
+{% comment %} SQL to check if camp coach {% endcomment %}
+{% sql %}
+DECLARE @PersonId int = {{ CurrentPerson.Id }}
+SELECT *
+FROM [dbo].[Group] g
+INNER JOIN [dbo].GroupMember gm ON gm.GroupId = g.Id
+WHERE (g.GroupTypeId = 93 OR g.GroupTypeId = 55) AND LOWER(g.Name) LIKE '%camp%coach%' AND YEAR(g.CreatedDateTime) = YEAR(GETDATE())
+AND gm.PersonId = @PersonId
+{% endsql %}
+
+<div class="dashboard-card account-actions">
+    <div class="title">
+        <h3>Account Actions</h3>
+    </div>
+    <div class="header">
+    </div>
+    <div class="links">
+        <a href="/ChangePasswordv2">Change Password</a>
+        
+        {% assign baptismPhoto = CurrentPerson | Attribute:'BaptismPhoto' %}
+        {% if baptismPhoto != null and baptismPhoto != '' %}
+            <a href="/BaptismDashboardV2?display=photo&paguid={{CurrentPerson.PrimaryAlias.Guid}}">Baptism Photo</a>
+        {% endif %}
+
+        {% assign ccvBaptized = CurrentPerson | Attribute:'BaptizedHere' %}
+        {% if ccvBaptized == 'Yes' and CurrentPerson | Attribute:'BaptismDate' %}
+            <a href="/BaptismDashboardV2?display=certificate&paguid={{CurrentPerson.PrimaryAlias.Guid}}">Baptism Certificate</a>
+        {% endif %}
+        <a href="/DISCV2/{{ CurrentPerson.UrlEncodedKey }}">Take Personality Assessment</a>
+        
+        {% assign sgAttrib = CurrentPerson | Attribute:'SpiritualGifts' %}
+        {% assign sgSize = sgAttrib | Size %}
+    
+        {% if sgSize > 0 %}
+            <a href="/SpiritualGiftsReviewV2">View Spiritual Gifts</a>
+        {% else %}
+            <a href="/SpiritualGiftsTestV2">Take Spiritual Gifts Test</a>
+        {% endif %}
+    
+        {% if size > 0 %}
+            <a href="/page/1804?ZoneLayout=Mobile">Camp Decision Tracker</a>
+        {% endif %}
+    </div>
+</div>
+

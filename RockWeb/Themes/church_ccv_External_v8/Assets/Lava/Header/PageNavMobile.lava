@@ -3,13 +3,14 @@
 </div>
 <div class="masthead-fullmenu-navitems">
     {% if CurrentPerson %}
-      <a class="masthead-fullmenu-navitem" href="/dashboardv2">My Dashboard</a>
+      <a class="masthead-fullmenu-navitem" href="/Dashboardv2">My Dashboard</a>
+      <a class="masthead-fullmenu-navitem" href="/Profilev2">My Profile</a>
       <a class="masthead-fullmenu-navitem" href="/ManageAutomatedGiving">Manage Automated Giving</a>
       <a class="masthead-fullmenu-navitem" href="/ManagePaymentAccounts">Manage Payment Accounts</a>
       <a class="masthead-fullmenu-navitem" href="/GivingHistory">Giving History</a>
     {% endif %}
 
-    <a class="masthead-fullmenu-navitem" href="/nextstepsv2">Next Steps</a>
+    <a class="masthead-fullmenu-navitem" href="/NextStepsv2">Next Steps</a>
         
     <div class="dropdown">
       <button class="dropdown-toggle masthead-fullmenu-navitem" type="button" data-toggle="dropdown" style="border: 0px;">About Us<b class="fa fa-caret-down"></b></button>
@@ -39,15 +40,15 @@
       <button class="dropdown-toggle masthead-fullmenu-navitem" type="button" data-toggle="dropdown" style="border: 0px;">Our Campuses<b class="fa fa-caret-down"></b></button>
       <ul class="dropdown-menu">
         <li><a href="/our-campusesv2">Our Campuses</a></li>
-        <li><a href="/anthemv2">Anthem</a></li>
-        <li><a href="/avondalev2">Avondale</a></li>
-        <li><a href="/chandlerv2">Chandler</a></li>
-        <li><a href="/eastvalleyv2">East Valley</a></li>
-        <li><a href="/midtownv2">Midtown Phoenix</a></li>
-        <li><a href="/northphxv2">North Phoenix</a></li>
-        <li><a href="/peoriav2">Peoria</a></li>
-        <li><a href="/scottsdalev2">Scottsdale</a></li>
-        <li><a href="/surprisev2">Surprise</a></li>
+        <li><a href="/our-campuses/anthem">Anthem</a></li>
+        <li><a href="/our-campuses/avondale">Avondale</a></li>
+        <li><a href="/our-campuses/chandler">Chandler</a></li>
+        <li><a href="/our-campuses/east-valley">East Valley</a></li>
+        <li><a href="/our-campuses/midtown-phoenix">Midtown Phoenix</a></li>
+        <li><a href="/our-campuses/north-phoenix">North Phoenix</a></li>
+        <li><a href="/our-campuses/peoria">Peoria</a></li>
+        <li><a href="/our-campuses/scottsdale">Scottsdale</a></li>
+        <li><a href="/our-campuses/surprise">Surprise</a></li>
       </ul>
     </div>
 

@@ -1,4 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="SavedAccountList.ascx.cs" Inherits="RockWeb.Blocks.Finance.SavedAccountList" %>
+<!-- 05-16-2018 CFU - Updated grid to have static ID for styling overrides -->
 
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
@@ -12,7 +13,7 @@
             <div class="panel-body">
 
                 <div class="grid grid-panel">
-                    <Rock:Grid ID="gSavedAccounts" DisplayType="Light" runat="server" AutoGenerateColumns="False" AllowSorting="false" AllowPaging="false" RowItemText="Payment Account" >
+                    <Rock:Grid ID="gSavedAccounts" DisplayType="Light" runat="server" AutoGenerateColumns="False" AllowSorting="false" AllowPaging="false" RowItemText="Payment Account" ClientIdMode="Static" >
                         <Columns>
                             <Rock:RockBoundField DataField="Name" HeaderText="Name"/>
                             <Rock:RockBoundField DataField="AccountNumber" HeaderText="Account Number" />

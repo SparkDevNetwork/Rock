@@ -40,12 +40,18 @@
     margin-top: 76px;
 }
 
+.title {
+    width: 80%;
+    margin: 0 auto;
+}
+
 .title-greeting {
     text-align: center; 
     color: #FFFFFF; 
     font-family: akrobat; 
     font-weight: 900; 
-    font-size: 60px
+    font-size: 60px;
+
 }
 
 .title-message {
@@ -56,20 +62,54 @@
     font-weight: normal;
 }
 
+.print-button {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 80%;
+    margin: 0 auto;
+}
+
+#btnPrint {
+    height: 50px;
+}
+
+
 /* Mobile Styling Dashboard Title */
 @media screen and (max-width: 500px){
     .title-container {
-        margin-top: unset;
+        margin-top: -10px;
     }
 
     .title-greeting {
-        font-size: 24px;
+        font-size: 20px;
         font-weight: bold;
+        margin: 0;
     }
 
-    .title-message {
-        font-size: 16px;
-        line-height: unset;
+
+    #titleMessage {
+        display: none;
+    }
+
+    .title, .print-button {
+        width: 100%;
+        padding: 0 15px;
+        margin: 0 auto 15px auto;
+    }
+
+    .print-button {
+        flex-direction: column;
+    }
+
+    #btnPrint {
+        width: 100px;
+        margin: 10px auto 0 auto;
+    }
+
+    .title h2, .print-button h2  {
+        font-size: 24px;
+        text-align: center;
     }
 }
 
@@ -161,7 +201,6 @@
         height: 150px;
         margin-left: -25px;
         margin-right: -25px;
-        margin-top: 20px;
     }
     .outer-circle {
         padding: 31px; /* 31px = 22px*1.4 (22px = half the width of a link with img, 1.4 = sqrt(2)) */
@@ -175,7 +214,7 @@
     }
     
     .outer-circle-link-open {
-        bottom: 5%;
+        bottom: 8%;
         opacity: 1;
     }
     
@@ -413,7 +452,8 @@
 
 /* Card Title Section */
 .dashboard-card .title {
-    padding: 0px 15px; 
+    width: 100%;
+    padding: 0px 15px;
     border-bottom: 1px solid #ddd; 
     display: flex; 
     justify-content: space-between; 
@@ -1263,11 +1303,8 @@
 /* End Dashboard Communication Page */
 
 /* Dashboard Giving History, Managed Automated Giving, Manage Payment Accounts */
-.print-button {
-    display: flex;
-    justify-content: flex-end;
-    width: 80%;
-    margin: 30px auto;
+.panel {
+    margin-bottom: 0;
 }
 
 .giving-history-card, .manage-payment-account-card, .manage-automated-giving-card, .manage-scheduled-transactions {
@@ -1285,6 +1322,10 @@
     margin-bottom: 30px
 }
 
+.manage-payment-account-card span {
+    font-family: heebo;
+}
+
 /* Mobile Device Styling */
 @media screen and (max-width: 768px) {
     .manage-scheduled-transactions {
@@ -1297,10 +1338,29 @@
 }
 
 @media screen and (max-width: 500px) {
-    .manage-scheduled-transactions {
+    #section-a-bg {
+        padding: 5px 0;
+    }
+
+    .giving-history-card, .manage-payment-account-card, .manage-automated-giving-card, .manage-scheduled-transactions {
+        margin: 0 auto;
+    }
+
+    .manage-payment-account-card, .manage-automated-giving-card, .manage-scheduled-transactions {
         padding: 0;
         margin: 0 auto;
         width: 90%;
+    }
+
+    .manage-payment-account-card span {
+        display: inline-block;
+        padding: 10px 20px;
+
+    }
+
+    .table-responsive {
+        margin-bottom: 0;
+        border: unset;
     }
 
     /* hide columns we dont want in mobile */
@@ -1311,6 +1371,25 @@
     #gScheduledTransactions td:nth-child(2), #gScheduledTransactions td:nth-child(4), #gScheduledTransactions td:nth-child(5), #gScheduledTransactions td:nth-child(6) {
         display: none;
     }
+
+    #gSavedAccounts th:nth-child(2), #gSavedAccounts th:nth-child(3) {
+        display: none;
+    }
+
+    #gSavedAccounts td:nth-child(2), #gSavedAccounts td:nth-child(3) {
+        display: none;
+    }
+
+    #gSavedAccounts td:nth-child(1) {
+        width: 230px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .giving-history-card {
+        width: 90%;
+    }
 }
 
 
@@ -1319,6 +1398,7 @@
 /* My Profile */
 .profile {
     display: flex;
+    padding: 20px 0;
 }
 
 .profile-card {
@@ -1326,15 +1406,89 @@
     transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
     border-radius: 5px;
     background-color: #FFFFFF;
-    margin: 0 auto 70px auto;
     padding: 20px;
+    margin-right: 15px;
     width: 80%;
+}
+
+.profile-card hr {
+    display: none;
+}
+
+.profile-card .pull-right a {
+    margin-right: 15px;
 }
 
 .profile-sidebar {
     display: flex;
     flex-direction: column;
 }
+
+.account-actions, .recent-registrations {
+    margin: 0 5px;
+    min-width: 300px;
+    height: unset;
+    max-height: unset;
+}
+
+.recent-registrations {
+    margin-top: 20px;
+}
+
+.profile-sidebar .title h3 {
+    font-size: 26px;
+    margin: 14px 0 14px 15px;
+}
+
+.profile-sidebar .header {
+    min-height: 40px;
+    background-color: #EEEEEE;
+    border-bottom: 1px solid #ddd;
+}
+
+.links {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
+
+.recent-registration {
+    text-align: center;
+}
+
+.balance-due {
+    color: red;
+}
+
+
+.recent-registrations {
+    margin-top: 20px;
+}
+
+
+
+@media screen and (max-width: 500px) {
+    .profile {
+        flex-direction: column;
+    }
+
+    .profile-card, .account-actions, .recent-registrations {
+        width: 90%;
+        margin: 0 auto;
+        min-width: unset;
+        margin-bottom: 15px;
+    }
+
+    .form-control.input-width-sm {
+        width: 60px;
+        padding: 0
+    }
+
+    .form-group.rock-radio-button-list {
+        margin-left: 0;
+    }
+}
+
 
 /* End My Profile */
   
