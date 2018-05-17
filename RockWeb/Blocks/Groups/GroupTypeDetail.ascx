@@ -88,6 +88,7 @@
 
                                 <Rock:RockCheckBox ID="cbGroupsRequireCampus" runat="server" Label="Groups Require a Campus" Text="Yes"
                                     Help="This setting will require that all groups of this type have a campus when adding and editing." />
+                                <Rock:RockDropDownList ID="ddlGroupStatusDefinedType" runat="server" Label="Group Status Defined Type" Help="Select the defined type to use when setting the group's status. Leave this blank if you don't want groups to prompt for group status." EnhanceForLongLists="true" />
                             </div>
                             <div class="col-md-6">
                                 <div class="row">

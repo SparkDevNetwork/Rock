@@ -660,6 +660,7 @@ namespace RockWeb.Blocks.Groups
             group.CampusId = cpCampus.SelectedCampusId;
             group.GroupTypeId = CurrentGroupTypeId;
             group.ParentGroupId = gpParentGroup.SelectedValueAsInt();
+            group.StatusValueId = dvpGroupStatus.SelectedValueAsId();
             group.GroupCapacity = nbGroupCapacity.Text.AsIntegerOrNull();
             group.RequiredSignatureDocumentTemplateId = ddlSignatureDocumentTemplate.SelectedValueAsInt();
             group.IsSecurityRole = cbIsSecurityRole.Checked;
@@ -1375,6 +1376,7 @@ namespace RockWeb.Blocks.Groups
 
             ddlSignatureDocumentTemplate.SetValue( group.RequiredSignatureDocumentTemplateId );
             gpParentGroup.SetValue( group.ParentGroup ?? groupService.Get( group.ParentGroupId ?? 0 ) );
+            
 
             // hide sync and requirements panel if no admin access
             bool canAdministrate = group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
@@ -1442,6 +1444,15 @@ namespace RockWeb.Blocks.Groups
             nbGroupCapacity.Visible = groupTypeCache != null && groupTypeCache.GroupCapacityRule != GroupCapacityRule.None;
             SetScheduleControls( groupTypeCache, group );
             ShowGroupTypeEditDetails( groupTypeCache, group, true );
+
+            dvpGroupStatus.DefinedTypeId = groupTypeCache.GroupStatusDefinedTypeId;
+            if ( groupTypeCache.GroupStatusDefinedType != null )
+            {
+                dvpGroupStatus.Label = groupTypeCache.GroupStatusDefinedType.ToString();
+            }
+
+            dvpGroupStatus.Visible = groupTypeCache.GroupStatusDefinedTypeId.HasValue;
+            dvpGroupStatus.SetValue( group.StatusValueId );
 
             // if this block's attribute limit group to SecurityRoleGroups, don't let them edit the SecurityRole checkbox value
             if ( GetAttributeValue( "LimittoSecurityRoleGroups" ).AsBoolean() )

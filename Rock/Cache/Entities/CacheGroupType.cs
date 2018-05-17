@@ -314,20 +314,7 @@ namespace Rock.Cache
         /// <value>
         /// The group type purpose value.
         /// </value>
-        public CacheDefinedValue GroupTypePurposeValue
-        {
-            get
-            {
-                if ( GroupTypePurposeValueId.HasValue && GroupTypePurposeValueId.Value != 0 )
-                {
-                    return CacheDefinedValue.Get( GroupTypePurposeValueId.Value );
-                }
-                else
-                {
-                    return null;
-                }
-            }
-        }
+        public CacheDefinedValue GroupTypePurposeValue => GroupTypePurposeValueId.HasValue ? CacheDefinedValue.Get( GroupTypePurposeValueId.Value ) : null;
 
         /// <summary>
         /// Gets or sets a value indicating whether to ignore person inactivated.
@@ -358,6 +345,15 @@ namespace Rock.Cache
         /// </value>
         [DataMember]
         public bool EnableGroupHistory { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the DefinedType that Groups of this type will use for the Group.StatusValue
+        /// </summary>
+        /// <value>
+        /// The group status defined type identifier.
+        /// </value>
+        [DataMember]
+        public int? GroupStatusDefinedTypeId { get; private set; }
 
         /// <summary>
         /// The color used to visually distinguish groups on lists.
@@ -518,6 +514,14 @@ namespace Rock.Cache
             }
         }
 
+        /// <summary>
+        /// Gets or sets the DefinedType that Groups of this type will use for the Group.StatusValue
+        /// </summary>
+        /// <value>
+        /// The type of the group status defined.
+        /// </value>
+        public CacheDefinedType GroupStatusDefinedType => GroupStatusDefinedTypeId.HasValue ? CacheDefinedType.Get( this.GroupStatusDefinedTypeId.Value ) : null;
+
         #endregion
 
         #region Public Methods
@@ -580,6 +584,7 @@ namespace Rock.Cache
             EnableGroupHistory = groupType.EnableGroupHistory;
             GroupTypeColor = groupType.GroupTypeColor;
             ShowMaritalStatus = groupType.ShowMaritalStatus;
+            GroupStatusDefinedTypeId = groupType.GroupStatusDefinedTypeId;
         }
 
         /// <summary>
@@ -601,19 +606,13 @@ namespace Rock.Cache
         /// Gets the 'Family' Group Type.
         /// </summary>
         /// <returns></returns>
-        public static CacheGroupType GetFamilyGroupType()
-        {
-            return Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
-        }
+        public static CacheGroupType GetFamilyGroupType() => Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
 
         /// <summary>
         /// Gets the 'Security Role' Group Type.
         /// </summary>
         /// <returns></returns>
-        public static CacheGroupType GetSecurityRoleGroupType()
-        {
-            return Get( SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
-        }
+        public static CacheGroupType GetSecurityRoleGroupType() => Get( SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
 
         #endregion
     }

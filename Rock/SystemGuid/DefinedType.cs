@@ -195,7 +195,7 @@ namespace Rock.SystemGuid
         public const string PERSON_RECORD_STATUS_REASON =  "e17d5988-0372-4792-82cf-9e37c79f7319";
 
         /// <summary>
-        /// Guid for the person'S connection status (such as member, attendee, participant, etc.)
+        /// Guid for the person's connection status (such as member, attendee, participant, etc.)
         /// </summary>
         public const string PERSON_CONNECTION_STATUS =  "2e6540ea-63f0-40fe-be50-f2a84735e600";
 
@@ -268,6 +268,11 @@ namespace Rock.SystemGuid
         /// Guid for the button html
         /// </summary>
         public const string BUTTON_HTML = "407A3A73-A3EF-4970-B856-2A33F62AC72E";
+
+        /// <summary>
+        /// Guid for a group's (Family's) status for GroupType of Family
+        /// </summary>
+        public const string FAMILY_GROUP_STATUS = "792C6979-0F40-47C5-BD0C-06FA7DF22837";
 
         /// <summary>
         /// The REST allowed domains
