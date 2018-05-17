@@ -107,9 +107,9 @@ textarea,
   }
 
   i.fa {
-    text-align: center;
-    line-height: @line-height-base;
     width: auto;
+    line-height: @line-height-base;
+    text-align: center;
   }
 }
 
@@ -117,36 +117,36 @@ textarea,
   border-bottom: 1px solid @nav-tabs-border-color;
 
   > li {
-    margin: 0 0 -1px 0;
     padding: 0;
+    margin: 0 0 -1px 0;
 
     // Actual tabs (as links)
     > a {
-      margin-right: 0;
       padding: 2px 24px 17px;
+      margin-right: 0;
       line-height: @line-height-base;
-      border: 0;
       color: @gray;
+      border: 0;
       transition: color 300ms ease-in-out;
       &::after {
         position: absolute;
-        left: 24px;
         right: 24px;
         bottom:0;
+        left: 24px;
         height:0;
+        content: " ";
         opacity:0;
         transition: height 300ms ease-in-out, opacity 300ms ease-in-out;
-        content: " ";
       }
 
       &:hover,
       &:focus {
+        color: @gray-dark;
         background-color: transparent;
         border: 0;
-        color: @gray-dark;
         &::after {
-          background-color: rgb(170, 170, 170);
           height: 4px;
+          background-color: rgb(170, 170, 170);
           opacity: 1;
         }
       }
@@ -165,8 +165,8 @@ textarea,
       }
       &::after {
         height: 4px;
-        opacity: 1;
         background-color: @brand-primary;
+        opacity: 1;
       }
     }
   }
@@ -280,11 +280,11 @@ textarea,
   border: 0;
 
   .btn-link {
+    z-index: 100;
+    margin: 5px 0 0 7px;
     color: @ui-5;
     text-decoration: none;
     background: #fff;
-    margin: 5px 0 0 7px;
-    z-index: 100;
   }
 
   .grid-filter-entry {
@@ -904,8 +904,8 @@ td.grid-actions {
       }
 
       &.current {
-        border-left: 3px solid @brand-color;
         border-right: 3px solid transparent;
+        border-left: 3px solid @brand-color;
         > i {
           color: #fff;
         }
@@ -976,24 +976,24 @@ td.grid-actions {
           &.title {
             padding: 24px 20px 28px;
             margin: 0 -20px;
-            font-size: 28px;
-            line-height: 1; 
+            font-size: 28px; 
             font-weight: @font-weight-light;
+            line-height: 1;
             color: @navbarside-color;
           }
   
           &.header {
             padding-top: 11px;
+            padding-left: 5px !important;
             margin-top: 24px;
+            margin-bottom: 20px;
+            font-size: 11px;
             font-weight: 600;
             line-height: 1;
             color: #fff;
-            font-size: 11px;
             text-transform: uppercase;
-            border-top: 1px solid rgba(167,174,181,0.6);
             letter-spacing: 2px;
-            margin-bottom: 20px;
-            padding-left: 5px !important;
+            border-top: 1px solid rgba(167,174,181,.6);
   
             &:nth-child(2) {
               margin-top: 0;
@@ -1099,10 +1099,10 @@ body.navbar-side-close {
 
       > li + li::before {
         padding: 0 5;
-        content: @fa-var-chevron-right;
         font-family: FontAwesome;
-        font-weight: 600;
         font-size:80%;
+        font-weight: 600;
+        content: @fa-var-chevron-right;
       }
     }
   }
