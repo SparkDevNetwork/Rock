@@ -347,33 +347,33 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     }
 
                     var attendances = new AttendanceService( rockContext )
-                        .Queryable( "Schedule,Group,Location,AttendanceCode" )
+                        .Queryable( "Occurrence.Schedule,Occurrence.Group,Occurrence.Location,AttendanceCode" )
                         .Where( a =>
                             a.PersonAliasId.HasValue &&
                             a.PersonAliasId == personAliasId &&
-                            a.ScheduleId.HasValue &&
-                            a.GroupId.HasValue &&
-                            a.LocationId.HasValue &&
+                            a.Occurrence.ScheduleId.HasValue &&
+                            a.Occurrence.GroupId.HasValue &&
+                            a.Occurrence.LocationId.HasValue &&
                             a.DidAttend.HasValue &&
                             a.DidAttend.Value &&
-                            scheduleIds.Contains( a.ScheduleId.Value ) )
+                            scheduleIds.Contains( a.Occurrence.ScheduleId.Value ) )
                         .OrderByDescending( a => a.StartDateTime )
                         .Take( 20 )
-                        .ToList()                                                   // Run query to get recent most 20 checkins
-                        .OrderByDescending( a => a.StartDateTime )                  // Then sort again by startdatetime and schedule start (which is not avail to sql query )
-                        .ThenByDescending( a => a.Schedule.StartTimeOfDay )
+                        .ToList()                                                             // Run query to get recent most 20 checkins
+                        .OrderByDescending( a => a.Occurrence.OccurrenceDate )                // Then sort again by startdatetime and schedule start (which is not avail to sql query )
+                        .ThenByDescending( a => a.Occurrence.Schedule.StartTimeOfDay )
                         .Select( a => new AttendanceInfo
                         {
                             Id = a.Id,
                             Date = a.StartDateTime,
-                            GroupId = a.Group.Id,
-                            Group = a.Group.Name,
-                            LocationId = a.LocationId.Value,
-                            Location = a.Location.Name,
-                            Schedule = a.Schedule.Name,
+                            GroupId = a.Occurrence.Group.Id,
+                            Group = a.Occurrence.Group.Name,
+                            LocationId = a.Occurrence.LocationId.Value,
+                            Location = a.Occurrence.Location.Name,
+                            Schedule = a.Occurrence.Schedule.Name,
                             IsActive =
                                 a.StartDateTime > DateTime.Today &&
-                                activeScheduleIds.Contains( a.ScheduleId.Value ),
+                                activeScheduleIds.Contains( a.Occurrence.ScheduleId.Value ),
                             Code = a.AttendanceCode != null ? a.AttendanceCode.Code : ""
                         } ).ToList();
 

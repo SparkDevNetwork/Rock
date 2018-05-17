@@ -2692,8 +2692,12 @@ namespace Rock.Lava
             if ( person != null && numericalGroupTypeId.HasValue )
             {
                 return new AttendanceService( GetRockContext( context ) ).Queryable()
-                    .Where( a => a.Group.GroupTypeId == numericalGroupTypeId && a.PersonAlias.PersonId == person.Id && a.DidAttend == true )
-                    .Select( a => a.Group ).Distinct().ToList();
+                    .Where( a => 
+                        a.Occurrence.Group != null && 
+                        a.Occurrence.Group.GroupTypeId == numericalGroupTypeId && 
+                        a.PersonAlias.PersonId == person.Id && 
+                        a.DidAttend == true )
+                    .Select( a => a.Occurrence.Group ).Distinct().ToList();
             }
 
             return new List<Model.Group>();
@@ -2714,8 +2718,13 @@ namespace Rock.Lava
             if ( person != null && numericalGroupTypeId.HasValue )
             {
                 var attendance = new AttendanceService( GetRockContext( context ) ).Queryable( "Group" )
-                    .Where( a => a.Group.GroupTypeId == numericalGroupTypeId && a.PersonAlias.PersonId == person.Id && a.DidAttend == true )
-                    .OrderByDescending( a => a.StartDateTime ).FirstOrDefault();
+                    .Where( a => 
+                        a.Occurrence.Group != null &&
+                        a.Occurrence.Group.GroupTypeId == numericalGroupTypeId && 
+                        a.PersonAlias.PersonId == person.Id && 
+                        a.DidAttend == true )
+                    .OrderByDescending( a => a.StartDateTime )
+                    .FirstOrDefault();
 
                 return attendance;
             }

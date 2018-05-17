@@ -1222,7 +1222,7 @@ namespace RockWeb.Blocks.Groups
                         foreach ( var attendance in new AttendanceService( rockContext )
                             .Queryable().AsNoTracking()
                             .Where( a =>
-                                a.GroupId.HasValue && a.GroupId.Value == _group.Id &&
+                                a.Occurrence.GroupId.HasValue && a.Occurrence.GroupId.Value == _group.Id &&
                                 a.DidAttend.HasValue && a.DidAttend.Value )
                             .GroupBy( a => a.PersonAlias.PersonId )
                             .Select( g => new

@@ -33,6 +33,117 @@ namespace Rock.Model
     public partial class AttendanceService
     {
         /// <summary>
+        /// Adds or updates an attendance record and will create the occurrence if needed
+        /// </summary>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <param name="occurrenceDate">The occurrence date.</param>
+        /// <param name="groupId">The group identifier.</param>
+        /// <returns></returns>
+        public Attendance AddOrUpdate( int personAliasId, DateTime occurrenceDate, int? groupId )
+        {
+            return AddOrUpdate( personAliasId, occurrenceDate, groupId, null, null, null );
+        }
+
+        /// <summary>
+        /// Adds or updates an attendance record and will create the occurrence if needed
+        /// </summary>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <param name="occurrenceDate">The occurrence date.</param>
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="locationId">The location identifier.</param>
+        /// <param name="scheduleId">The schedule identifier.</param>
+        /// <param name="campusId">The campus identifier.</param>
+        /// <returns></returns>
+        public Attendance AddOrUpdate( int personAliasId, DateTime occurrenceDate,
+                    int? groupId, int? locationId, int? scheduleId, int? campusId )
+        {
+            return AddOrUpdate( personAliasId, occurrenceDate, groupId, null, null, null, null, null, null, null, null );
+        }
+
+        /// <summary>
+        /// Adds or updates an attendance record and will create the occurrence if needed
+        /// </summary>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <param name="checkinDateTime.Date">The check-in date time.</param>
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="locationId">The location identifier.</param>
+        /// <param name="scheduleId">The schedule identifier.</param>
+        /// <param name="campusId">The campus identifier.</param>
+        /// <param name="deviceId">The device identifier.</param>
+        /// <param name="searchTypeValueId">The search type value identifier.</param>
+        /// <param name="searchValue">The search value.</param>
+        /// <param name="searchResultGroupId">The search result group identifier.</param>
+        /// <param name="attendanceCodeId">The attendance code identifier.</param>
+        /// <returns></returns>
+        public Attendance AddOrUpdate( int? personAliasId, DateTime checkinDateTime,
+                    int? groupId, int? locationId, int? scheduleId, int? campusId,
+                    int? deviceId, int? searchTypeValueId, string searchValue, int? searchResultGroupId, int? attendanceCodeId )
+        {
+            // Check to see if an occurrence exists already
+            var occurrenceService = new AttendanceOccurrenceService( (RockContext)Context );
+            var occurrence = occurrenceService.Get( checkinDateTime.Date, groupId, locationId, scheduleId );
+
+            if ( occurrence == null )
+            {
+                // If occurrence does not yet exists, use a new context and create it
+                using ( var newContext = new RockContext() )
+                {
+                    occurrence = new AttendanceOccurrence
+                    {
+                        OccurrenceDate = checkinDateTime.Date,
+                        GroupId = groupId,
+                        LocationId = locationId,
+                        ScheduleId = scheduleId,
+                    };
+
+                    var newOccurrenceService = new AttendanceOccurrenceService( newContext );
+                    newOccurrenceService.Add( occurrence );
+                    newContext.SaveChanges();
+
+                    // Query for the new occurrence using original context.
+                    occurrence = occurrenceService.Get( occurrence.Id );
+                }
+            }
+
+            // If we still don't have an occurrence record (i.e. validation failed) return null 
+            if ( occurrence == null ) return null;
+
+            // Query for existing attendance record
+            Attendance attendance = null;
+            if ( personAliasId.HasValue )
+            {
+                attendance = occurrence.Attendees
+                .FirstOrDefault( a =>
+                    a.PersonAliasId.HasValue &&
+                    a.PersonAliasId.Value == personAliasId.Value );
+            }
+
+            // If an attendance record doesn't exist for the occurrence, add a new record
+            if ( attendance == null )
+            {
+                attendance = ( (RockContext)Context ).Attendances.Create();
+                {
+                    attendance.Occurrence = occurrence;
+                    attendance.OccurrenceId = occurrence.Id;
+                    attendance.PersonAliasId = personAliasId;
+                };
+                Add( attendance );
+            }
+
+            // Update details of the attendance (do not overwrite an existing value with an empty value)
+            if ( campusId.HasValue ) attendance.CampusId = campusId.Value;
+            if ( deviceId.HasValue ) attendance.DeviceId = deviceId.Value;
+            if ( searchTypeValueId.HasValue ) attendance.SearchTypeValueId = searchTypeValueId;
+            if ( searchValue.IsNotNullOrWhitespace() ) attendance.SearchValue = searchValue;
+            if ( searchResultGroupId.HasValue ) attendance.SearchResultGroupId = searchResultGroupId;
+            if ( attendanceCodeId.HasValue ) attendance.AttendanceCodeId = attendanceCodeId;
+            attendance.StartDateTime = checkinDateTime;
+            attendance.DidAttend = true;
+
+            return attendance;
+        }
+
+        /// <summary>
         /// Returns a specific <see cref="Rock.Model.Attendance"/> record.
         /// </summary>
         /// <param name="date">A <see cref="System.DateTime"/> representing the the date attended.</param>
@@ -43,18 +154,13 @@ namespace Rock.Model
         /// <returns>The first <see cref="Rock.Model.Attendance"/> entity that matches the provided values.</returns>
         public Attendance Get( DateTime date, int locationId, int scheduleId, int groupId, int personId )
         {
-            DateTime beginDate = date.Date;
-            DateTime endDate = beginDate.AddDays( 1 );
-
-            return Queryable( "Group,Schedule,PersonAlias.Person" )
-                .Where( a =>
-                    a.StartDateTime >= beginDate &&
-                    a.StartDateTime < endDate &&
-                    a.LocationId == locationId &&
-                    a.ScheduleId == scheduleId &&
-                    a.GroupId == groupId &&
-                    a.PersonAlias.PersonId == personId )
-                .FirstOrDefault();
+            return Queryable( "Occurrence.Group,Occurrence.Schedule,PersonAlias.Person" )
+                .FirstOrDefault(a => 
+                    a.Occurrence.OccurrenceDate == date.Date &&
+                    a.Occurrence.LocationId == locationId &&
+                    a.Occurrence.ScheduleId == scheduleId &&
+                    a.Occurrence.GroupId == groupId &&
+                    a.PersonAlias.PersonId == personId);
         }
 
         /// <summary>
@@ -65,15 +171,10 @@ namespace Rock.Model
         /// <returns>A queryable collection of <see cref="Rock.Model.Attendance"/> entities for a specific date and location.</returns>
         public IQueryable<Attendance> GetByDateAndLocation( DateTime date, int locationId )
         {
-            DateTime beginDate = date.Date;
-            DateTime endDate = beginDate.AddDays( 1 );
-
-            return Queryable( "Group,Schedule,PersonAlias.Person" )
+            return Queryable( "Occurrence.Group,Occurrence.Schedule,PersonAlias.Person" )
                 .Where( a =>
-                    a.StartDateTime >= beginDate &&
-                    a.StartDateTime < endDate &&
-                    !a.EndDateTime.HasValue &&
-                    a.LocationId == locationId &&
+                    a.Occurrence.OccurrenceDate == date.Date &&
+                    a.Occurrence.LocationId == locationId &&
                     a.DidAttend.HasValue &&
                     a.DidAttend.Value );
         }
@@ -116,12 +217,12 @@ namespace Rock.Model
 
             if ( startDate.HasValue )
             {
-                qryAttendance = qryAttendance.Where( a => a.StartDateTime >= startDate.Value );
+                qryAttendance = qryAttendance.Where( a => a.Occurrence.OccurrenceDate >= startDate.Value );
             }
 
             if ( endDate.HasValue )
             {
-                qryAttendance = qryAttendance.Where( a => a.StartDateTime < endDate.Value );
+                qryAttendance = qryAttendance.Where( a => a.Occurrence.OccurrenceDate < endDate.Value );
             }
 
             if ( dataViewId.HasValue )
@@ -134,8 +235,8 @@ namespace Rock.Model
                     var personService = new PersonService( rockContext );
 
                     var errorMessages = new List<string>();
-                    ParameterExpression paramExpression = personService.ParameterExpression;
-                    Expression whereExpression = dataView.GetExpression( personService, paramExpression, out errorMessages );
+                    var paramExpression = personService.ParameterExpression;
+                    var whereExpression = dataView.GetExpression( personService, paramExpression, out errorMessages );
 
                     Rock.Web.UI.Controls.SortProperty sort = null;
                     var dataViewPersonIdQry = personService
@@ -150,7 +251,10 @@ namespace Rock.Model
             if ( !string.IsNullOrWhiteSpace( groupIds ) )
             {
                 var groupIdList = groupIds.Split( ',' ).AsIntegerList();
-                qryAttendance = qryAttendance.Where( a => a.GroupId.HasValue && groupIdList.Contains( a.GroupId.Value ) );
+                qryAttendance = qryAttendance
+                    .Where( a => 
+                        a.Occurrence.GroupId.HasValue && 
+                        groupIdList.Contains( a.Occurrence.GroupId.Value ) );
             }
 
             // If campuses were included, filter attendances by those that have selected campuses
@@ -185,7 +289,7 @@ namespace Rock.Model
             scheduleIdList.Remove( 0 );
             if ( scheduleIdList.Any() )
             {
-                qryAttendance = qryAttendance.Where( a => a.ScheduleId.HasValue && scheduleIdList.Contains( a.ScheduleId.Value ) );
+                qryAttendance = qryAttendance.Where( a => a.Occurrence.ScheduleId.HasValue && scheduleIdList.Contains( a.Occurrence.ScheduleId.Value ) );
             }
 
             var qryAttendanceWithSummaryDateTime = qryAttendance.GetAttendanceWithSummaryDateTime( groupBy );
@@ -200,18 +304,18 @@ namespace Rock.Model
                 },
                 Group = new
                 {
-                    Id = a.Attendance.GroupId,
-                    Name = a.Attendance.Group.Name
+                    Id = a.Attendance.Occurrence.GroupId,
+                    Name = a.Attendance.Occurrence.Group.Name
                 },
                 Schedule = new
                 {
-                    Id = a.Attendance.ScheduleId,
-                    Name = a.Attendance.Schedule.Name
+                    Id = a.Attendance.Occurrence.ScheduleId,
+                    Name = a.Attendance.Occurrence.Schedule.Name
                 },
                 Location = new
                 {
-                    Id = a.Attendance.LocationId,
-                    Name = a.Attendance.Location.Name
+                    Id = a.Attendance.Occurrence.LocationId,
+                    Name = a.Attendance.Occurrence.Location.Name
                 }
             } );
 
@@ -467,7 +571,7 @@ namespace Rock.Model
             {
                 qryAttendanceGroupedBy = qryAttendance.Select( a => new AttendanceService.AttendanceWithSummaryDateTime
                 {
-                    SummaryDateTime = a.SundayDate,
+                    SummaryDateTime = a.Occurrence.SundayDate,
                     Attendance = a
                 } );
             }
@@ -475,7 +579,7 @@ namespace Rock.Model
             {
                 qryAttendanceGroupedBy = qryAttendance.Select( a => new AttendanceService.AttendanceWithSummaryDateTime
                 {
-                    SummaryDateTime = (DateTime)SqlFunctions.DateAdd( "day", -SqlFunctions.DatePart( "day", a.SundayDate ) + 1, a.SundayDate ),
+                    SummaryDateTime = (DateTime)SqlFunctions.DateAdd( "day", -SqlFunctions.DatePart( "day", a.Occurrence.SundayDate ) + 1, a.Occurrence.SundayDate ),
                     Attendance = a
                 } );
             }
@@ -483,7 +587,7 @@ namespace Rock.Model
             {
                 qryAttendanceGroupedBy = qryAttendance.Select( a => new AttendanceService.AttendanceWithSummaryDateTime
                 {
-                    SummaryDateTime = (DateTime)SqlFunctions.DateAdd( "day", -SqlFunctions.DatePart( "dayofyear", a.SundayDate ) + 1, a.SundayDate ),
+                    SummaryDateTime = (DateTime)SqlFunctions.DateAdd( "day", -SqlFunctions.DatePart( "dayofyear", a.Occurrence.SundayDate ) + 1, a.Occurrence.SundayDate ),
                     Attendance = a
                 } );
             }
@@ -492,7 +596,7 @@ namespace Rock.Model
                 // shouldn't happen
                 qryAttendanceGroupedBy = qryAttendance.Select( a => new AttendanceService.AttendanceWithSummaryDateTime
                 {
-                    SummaryDateTime = a.SundayDate,
+                    SummaryDateTime = a.Occurrence.SundayDate,
                     Attendance = a
                 } );
             }
