@@ -27,7 +27,7 @@
 
                         <div class="btn-group panel-toggle pull-right">
                             <asp:LinkButton ID="btnTransactions" CssClass="btn btn-xs btn-primary" runat="server" Text="Transactions" OnClick="btnTransactionsViewMode_Click" />
-                            <asp:LinkButton ID="btnTransactionDetails" CssClass="btn btn-xs btn-default" runat="server" Text="Transaction Details" OnClick="btnTransactionsViewMode_Click" />
+                            <asp:LinkButton ID="btnTransactionDetails" CssClass="btn btn-xs btn-outline-primary" runat="server" Text="Transaction Details" OnClick="btnTransactionsViewMode_Click" />
                         </div>
                     </div>
                     

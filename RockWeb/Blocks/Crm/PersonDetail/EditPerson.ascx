@@ -24,7 +24,7 @@
                 <div class="row">
 
                     <div class="col-md-3">
-                        <div class="well">
+                        <div class="well form-well">
                             <Rock:RockLiteral ID="lRecordStatusReadOnly" runat="server" Label="Record Status" />
                             <Rock:RockLiteral ID="lReasonReadOnly" runat="server" Label="Reason" />
                             <Rock:RockLiteral ID="lReasonNoteReadOnly" runat="server" Label="Inactive Reason Note" />
@@ -37,10 +37,10 @@
 
                     <div class="col-md-9">
 
-                        <div class="well">
+                        <div class="well form-well">
                             <fieldset>
 
-                                <div class="row">
+                                <div class="form-row">
                                     <div class="col-md-6">
                                         <Rock:RockDropDownList ID="ddlTitle" runat="server" CssClass="input-width-md" Label="Title" />
                                     </div>
@@ -48,7 +48,7 @@
                                         <Rock:DataTextBox ID="tbFirstName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="FirstName" autocomplete="off" />
                                     </div>
                                 </div>
-                                <div class="row">
+                                <div class="form-row">
                                     <div class="col-md-6">
                                         <Rock:DataTextBox ID="tbNickName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="NickName" Label="Nickname" autocomplete="off" />
                                     </div>
@@ -56,7 +56,7 @@
                                         <Rock:DataTextBox ID="tbMiddleName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="MiddleName" autocomplete="off" />
                                     </div>
                                 </div>
-                                <div class="row">
+                                <div class="form-row">
                                     <div class="col-md-6">
                                         <Rock:DataTextBox ID="tbLastName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="LastName" autocomplete="off" />
                                     </div>
@@ -65,7 +65,7 @@
                                     </div>
                                 </div>
 
-                                <div class="row">
+                                <div class="form-row">
                                     <div class="col-sm-6">
                                         <Rock:RockLiteral ID="lConnectionStatusReadOnly" runat="server" Label="Connection Status" />
                                         <Rock:RockDropDownList ID="ddlConnectionStatus" runat="server" Label="Connection Status" Required="true" />
@@ -79,30 +79,26 @@
                                     <asp:ListItem Text="Unknown" Value="Unknown" />
                                 </Rock:RockRadioButtonList>
                                 <Rock:BirthdayPicker ID="bpBirthDay" runat="server" Label="Birthday" />
-                                <asp:Panel ID="pnlGradeGraduation" runat="server" CssClass="row">
-                                    <div class="col-sm-3">
+                                <asp:Panel ID="pnlGradeGraduation" runat="server" CssClass="form-row">
+                                    <div class="col-xs-6 col-sm-3">
                                         <Rock:GradePicker ID="ddlGradePicker" runat="server" UseAbbreviation="true" UseGradeOffsetAsValue="true" CssClass="input-width-md" />
                                     </div>
-                                    <div class="col-sm-3">
+                                    <div class="col-xs-6 col-sm-3">
                                         <Rock:YearPicker ID="ypGraduation" runat="server" Label="Graduation Year" Help="High School Graduation Year." />
                                     </div>
-                                    <div class="col-sm-6">
-                                    </div>
                                 </asp:Panel>
-                                <div class="row">
+                                <div class="form-row">
                                     <div class="col-sm-3">
                                         <Rock:RockDropDownList ID="ddlMaritalStatus" runat="server" Label="Marital Status" />
                                     </div>
                                     <div class="col-sm-3">
                                         <Rock:DatePicker ID="dpAnniversaryDate" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="AnniversaryDate" StartView="decade" />
                                     </div>
-                                    <div class="col-sm-6">
-                                    </div>
                                 </div>
                             </fieldset>
                         </div>
 
-                        <div class="well">
+                        <div class="well form-well">
                             <fieldset>
                                 <legend>Contact Info</legend>
 
@@ -112,13 +108,13 @@
                                             <div class="form-group phonegroup">
                                                 <div class="control-label col-sm-1 phonegroup-label"><%# Rock.Cache.CacheDefinedValue.Get( (int)Eval("NumberTypeValueId")).Value  %></div>
                                                 <div class="controls col-sm-11 phonegroup-number">
-                                                    <div class="row">
-                                                        <div class="col-sm-7">
+                                                    <div class="form-row">
+                                                        <div class="col-sm-7 col-lg-4">
                                                             <asp:HiddenField ID="hfPhoneType" runat="server" Value='<%# Eval("NumberTypeValueId")  %>' />
                                                             <Rock:PhoneNumberBox ID="pnbPhone" runat="server" CountryCode='<%# Eval("CountryCode") %>' Number='<%# Eval("NumberFormatted")  %>' autocomplete="off" />
                                                         </div>
-                                                        <div class="col-sm-5">
-                                                            <div class="row">
+                                                        <div class="col-sm-5 col-lg-2">
+                                                            <div class="form-row">
                                                                 <div class="col-xs-6">
                                                                     <asp:CheckBox ID="cbSms" runat="server" Text="SMS" Checked='<%# (bool)Eval("IsMessagingEnabled") %>' CssClass="js-sms-number" />
                                                                 </div>

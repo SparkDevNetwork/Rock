@@ -125,13 +125,31 @@
     </form>
 
     <script>
+        function getScrollbarWidth() {
+            // thx d.walsh
+            var scrollDiv = document.createElement('div');
+            scrollDiv.className = "modal-scrollbar-measure";
+            document.body.appendChild(scrollDiv);
+            var scrollbarWidth = scrollDiv.offsetWidth - scrollDiv.clientWidth;
+            document.body.removeChild(scrollDiv);
+            return scrollbarWidth;
+        }; // Static
+
         Sys.Application.add_load( function () {
             $('.navbar-side > li').hover(function () {
                 if (!$('body').hasClass('zone-highlight')) {
-                    $(this).doTimeout('hover', 50, 'addClass', 'open');
+                    $(this).doTimeout('hover', 100, function(e) {
+                        $(this).addClass('open');
+                        $('body').addClass('modal-open').css("padding-right", getScrollbarWidth());
+                        $('.navbar-fixed-top').css("right", getScrollbarWidth());
+                    }, this)
                 }
             }, function () {
-                $(this).doTimeout('hover', 50, 'removeClass', 'open');
+                $(this).doTimeout('hover', 50, function(e) {
+                        $(this).removeClass('open');
+                        $('body').removeClass('modal-open').css("padding-right", 0);
+                        $('.navbar-fixed-top').css("right", 0);
+                    }, this);
             });
 
 
