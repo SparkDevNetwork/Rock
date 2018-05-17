@@ -1631,6 +1631,8 @@
     <Compile Include="Utility\Settings\DataAutomation\InteractionItem.cs" />
     <Compile Include="Utility\Settings\DataAutomation\MoveAdultChildren.cs" />
     <Compile Include="Utility\Settings\DataAutomation\ReactivatePeople.cs" />
+    <Compile Include="Utility\Settings\DataAutomation\UpdateFamilyStatus.cs" />
+    <Compile Include="Utility\Settings\DataAutomation\UpdatePersonConnectionStatus.cs" />
     <Compile Include="Utility\Settings\DataAutomation\UpdateFamilyCampus.cs" />
     <Compile Include="Utility\TextToWorkflow.cs" />
     <Compile Include="Web\Cache\AttributeCache.cs" />

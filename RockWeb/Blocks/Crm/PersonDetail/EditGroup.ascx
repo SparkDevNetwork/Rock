@@ -6,7 +6,10 @@
 
         <div class="panel panel-block" id="pnlEditGroup" runat="server">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-users"></i> <asp:Literal ID="lBanner" runat="server" /></h1>
+                <h1 class="panel-title">
+                    <i class="fa fa-users"></i> 
+                    <asp:Literal ID="lBanner" runat="server" />
+                </h1>
             </div>
             <div class="panel-body">
 
@@ -15,22 +18,27 @@
                 <Rock:NotificationBox ID="nbRoleLimitWarning" runat="server" NotificationBoxType="Warning" Heading="Role Limit Warning" />
 
                 <div class="row">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <fieldset>
                             <Rock:RockTextBox ID="tbGroupName" runat="server" Label='Group Name' Required="true" CssClass="input-meduim" AutoPostBack="true" OnTextChanged="tbGroupName_TextChanged" />
                         </fieldset>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <fieldset>
                             <Rock:CampusPicker ID="cpCampus" runat="server" Required="true" AutoPostBack="true" OnSelectedIndexChanged="cpCampus_SelectedIndexChanged" />
                         </fieldset>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <fieldset>
                             <Rock:RockDropDownList ID="ddlRecordStatus" runat="server" Label="Record Status" AutoPostBack="true" OnSelectedIndexChanged="ddlRecordStatus_SelectedIndexChanged" /><br />
                             <Rock:RockDropDownList ID="ddlReason" runat="server" Label="Reason" Visible="false" AutoPostBack="true" OnSelectedIndexChanged="ddlReason_SelectedIndexChanged"></Rock:RockDropDownList>
                         </fieldset>
 
+                    </div>
+                    <div class="col-md-3">
+                        <fieldset>
+                            <Rock:DefinedValuePicker ID="dvpGroupStatus" runat="server" Label="Family Status" AutoPostBack="true" OnSelectedIndexChanged="dvpGroupStatus_SelectedIndexChanged" />
+                        </fieldset>
                     </div>
                 </div>
 

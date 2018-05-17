@@ -521,6 +521,7 @@ namespace RockWeb.Blocks.Groups
             groupType.AllowGroupSync = cbAllowGroupSync.Checked;
             groupType.EnableSpecificGroupRequirements = cbEnableSpecificGroupReq.Checked;
             groupType.AllowSpecificGroupMemberWorkflows = cbAllowSpecificGrpMemWorkFlows.Checked;
+            groupType.GroupStatusDefinedTypeId = ddlGroupStatusDefinedType.SelectedValueAsInt();
 
             // if GroupHistory is turned off, we'll delete group and group member history for this group type
             bool deleteGroupHistory = false;
@@ -789,6 +790,9 @@ namespace RockWeb.Blocks.Groups
             ddlGroupTypePurpose.Enabled = !groupType.IsSystem;
             ddlGroupTypePurpose.SetValue( groupType.GroupTypePurposeValueId );
 
+            ddlGroupStatusDefinedType.Enabled = !groupType.IsSystem;
+            ddlGroupStatusDefinedType.SetValue( groupType.GroupStatusDefinedTypeId );
+
             ddlGroupCapacityRule.SetValue( (int)groupType.GroupCapacityRule );
 
             ChildGroupTypesList = new List<int>();
@@ -990,6 +994,13 @@ namespace RockWeb.Blocks.Groups
             foreach ( var item in groupTypePurposeList )
             {
                 ddlGroupTypePurpose.Items.Add( new ListItem( item.Value, item.Id.ToString() ) );
+            }
+
+            ddlGroupStatusDefinedType.Items.Clear();
+            ddlGroupStatusDefinedType.Items.Add( new ListItem() );
+            foreach ( var definedType in CacheDefinedType.All().OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
+            {
+                ddlGroupStatusDefinedType.Items.Add( new ListItem( definedType.Name, definedType.Id.ToString() ) );
             }
         }
 
