@@ -339,7 +339,7 @@ namespace Rock.Web.UI.Controls
     function phoneNumberBoxFormatNumber( tb ) {
         var countryCode = tb.closest('div.input-group').find('input:hidden').val();
         var origValue = tb.val();
-        var number = tb.val().replace(/\D/g,'');
+        var number = tb.val().replace(/\D/g,'').substring( 0, 20 );
         var formats = phoneNumberFormats[countryCode];
         for ( var i = 0; i < formats.length; i++) {
             var matchRegex = new RegExp(formats[i].match);
