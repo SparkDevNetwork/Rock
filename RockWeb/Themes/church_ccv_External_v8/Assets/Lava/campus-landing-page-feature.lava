@@ -15,9 +15,12 @@
 
 <div class="container graphicSection">
     <div class="row">
+        <div class="col-md-12">
+            <h1 class="campus-header">{{ campus.Name }} Campus</h1>
+        </div>
+    </div>
+    <div class="row">
         <div class="col-md-5">
-            <h1 class="h1-size-override">{{ campus.Name }} Campus</h1>
-
             {% assign campusLeader = campus.LeaderPersonAliasId | PersonByAliasId %}
             <div class="campus-leader">
                 <img src="{{ 'Global' | Attribute: 'PublicApplicationRoot' }}{{ campusLeader.PhotoUrl }}&width=90" style="border-radius: 45px;"/>

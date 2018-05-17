@@ -1,4 +1,4 @@
-{% include '~~/Assets/Lava/campus-landing-page-util.lava' %} 
+{% include '~~/Assets/Lava/campus-landing-page-util.lava' %}
 
 <h3>NOT SURE WHERE TO GO?</h3>
 <p>Use this map to find thigns like the kids building or where to get an iced latte before service.</p>
@@ -9,7 +9,7 @@
         <h3>NEED DIRECTIONS?</h3>
         <p>{{campus.Directions}}</p>
     </div>
-    <a href="https://maps.apple.com/maps?daddr={{campus.Location.Street1 | Replace: ' ', '+'}}+{{campus.Location.City | Replace: ' ', '+'}}+{{campus.Location.State | Replace: ' ', '+'}}+{{campus.Location.PostalCode | Replace: ' ', '+'}}" class="btn btn-primary" style="padding: 10px;">GET DETAILED DIRECTIONS</a>
+    <a href="https://maps.google.com/?q={{campus.Location.Street1 | Replace: ' ', '+'}}+{{campus.Location.City | Replace: ' ', '+'}}+{{campus.Location.State | Replace: ' ', '+'}}+{{campus.Location.PostalCode | Replace: ' ', '+'}}" class="btn btn-primary" style="padding: 10px;">GET DETAILED DIRECTIONS</a>
 </div>
 
 <div class="info-tile mt-25"> 
@@ -29,14 +29,21 @@
 
 <div class="info-tile-group mt-25">
     <div class="info-tile parking-info">
-        <h3>WHERE DO I PARK?</h3>
-        <p>1. Go Left</p>
-        <p>2. Go Right</p>
-        <p>3. Go Straight</p>
+        <div>
+            <h3>WHERE DO I PARK?</h3>
+            {% assign parkingSteps = campus.ParkingDirections | Split:'*' %}
+            <ul>
+                {% for step in parkingSteps %}
+                <li>{{step}}</li>
+                {% endfor %}
+            </ul>
+        </div>
     </div>
     <div class="info-tile attendance-info">
-        <h1>{{campus.AverageWeeklyAttendance}}</h1>
-        <h5>AVG ATTENDANCE</h5>
-        <p>per service</p>
+        <div>
+            <h1>{{campus.AveragePerServiceAttendance}}</h1>
+            <h5>AVG ATTENDANCE</h5>
+            <p>per service</p>
+        </div>
     </div>
 </div>

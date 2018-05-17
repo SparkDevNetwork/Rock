@@ -29,8 +29,12 @@
                     {% assign times = campus.ServiceTimes %}
                     {% include '~~/Assets/Lava/ServiceTimes/Grid.lava' %}
                 </div>
+
+                
+                {% assign campusNameUrl = campus.Name | Replace:' ', '-' | Downcase %}
+
                 <div class="link pull-right">
-                    <a href="{{ itemLink }}">
+                    <a href="our-campuses/{{ campusNameUrl }}">
                         <div>
                             <span>Learn More</span>
                             <i class="mdi mdi-chevron-right event-card-navigation-icon"></i>

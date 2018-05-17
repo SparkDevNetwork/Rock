@@ -2,5 +2,22 @@
 {% include '~~/Assets/Lava/campus-landing-page-util.lava' %} 
 {% endcomment %}
 
-{% assign campusIndex = PageParameter.campusIndex %}
-{% assign campus = Campuses | Where:'Id', campusIndex | First %}
+{% comment %}
+Split the URL into segments and take the last segment. That is the campus
+{% endcomment %}
+{% assign pageUrl = 'Global' | Page:'Url' %}
+
+{% assign urlSegments = pageUrl | Url:'segments' %}
+
+{% comment %}
+Now iterate thru the campuses and find a matching name
+{% endcomment %}
+{% assign campusName = urlSegments | Last | Downcase %}
+
+{% for currCampus in Campuses %}
+    {% assign lowerName = currCampus.Name | Replace:' ', '-' | Downcase %}
+    {% if lowerName == campusName %}
+        {% assign campus = currCampus %}
+    {% endif %}
+{% endfor %}
+

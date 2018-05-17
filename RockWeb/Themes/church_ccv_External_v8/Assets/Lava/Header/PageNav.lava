@@ -25,15 +25,15 @@
     <div class="dropdown">
       <a class="masthead-navitem" style="border: 0px;" href="/our-campusesv2">Our Campuses</a>
       <ul class="dropdown-menu">
-        <li><a href="/campusv2?campusIndex=8">Anthem</a></li>
-        <li><a href="/campusv2?campusIndex=9">Avondale</a></li>
-        <li><a href="/campusv2?campusIndex=11">Chandler</a></li>
-        <li><a href="/campusv2?campusIndex=7">East Valley</a></li>
-        <li><a href="/campusv2?campusIndex=10">Midtown Phoenix</a></li>
-        <li><a href="/campusv2?campusIndex=13">North Phoenix</a></li>
-        <li><a href="/campusv2?campusIndex=1">Peoria</a></li>
-        <li><a href="/campusv2?campusIndex=6">Scottsdale</a></li>
-        <li><a href="/campusv2?campusIndex=5">Surprise</a></li>
+        <li><a href="/our-campuses/anthem">Anthem</a></li>
+        <li><a href="/our-campuses/avondale">Avondale</a></li>
+        <li><a href="/our-campuses/chandler">Chandler</a></li>
+        <li><a href="/our-campuses/east-valley">East Valley</a></li>
+        <li><a href="/our-campuses/midtown-phoenix">Midtown Phoenix</a></li>
+        <li><a href="/our-campuses/north-phoenix">North Phoenix</a></li>
+        <li><a href="/our-campuses/peoria">Peoria</a></li>
+        <li><a href="/our-campuses/scottsdale">Scottsdale</a></li>
+        <li><a href="/our-campuses/surprise">Surprise</a></li>
       </ul>
     </div>
     
