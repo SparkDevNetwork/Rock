@@ -1251,7 +1251,7 @@ namespace RockWeb.Blocks.Examples
                         break;
 
                     case "related":
-                        roleId = groupTypeRoles.Where( r => r.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_IMPLIED_RELATIONSHIPS_RELATED.AsGuid() )
+                        roleId = groupTypeRoles.Where( r => r.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_PEER_NETWORK_RELATED.AsGuid() )
                             .Select( r => r.Id ).FirstOrDefault();
                         break;
 
