@@ -1289,6 +1289,7 @@
     <Compile Include="Model\RestController.cs" />
     <Compile Include="Model\RestControllerService.Partial.cs" />
     <Compile Include="Model\Schedule.cs" />
+    <Compile Include="Model\ScheduleService.Partial.cs" />
     <Compile Include="Model\SignalType.cs" />
     <Compile Include="Model\SiteDomain.cs" />
     <Compile Include="Model\LavaShortCode.cs" />
