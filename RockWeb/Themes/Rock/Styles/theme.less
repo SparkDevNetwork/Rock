@@ -605,6 +605,15 @@ td.grid-actions {
     }
   }
 
+  .navbar-nav.contextsetter, .contextsetter {
+    margin: 14px;
+    background-color: @btn-default-bg;
+    border: 1px solid @btn-default-border;
+    a {
+      color: @btn-default-color;
+    }
+  }
+
   // Bookmarks
   //
   // .bookmarks {
@@ -1249,6 +1258,7 @@ body.navbar-side-close {
   display: block;
   min-height: 19px;
   padding-left: 28px;  // Not sure if needed
+  margin: 7px 16px 7px 0 !important;
 
   label { // Override forms.less
     padding-left: 0;
@@ -1263,7 +1273,15 @@ body.navbar-side-close {
 
 .radio-inline,
 .checkbox-inline {
+  padding-right: 16px;
   padding-left: 30px;
+  margin-left: 0;
+}
+
+.radio-inline:first-child,
+.checkbox-inline:first-child,
+.radio-inline+.radio-inline {
+  margin-left: 0;
 }
 
 .radio,
