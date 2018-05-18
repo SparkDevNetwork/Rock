@@ -40,14 +40,13 @@ namespace Rock.SignNow
     [Description( "SignNow Digital Signature Provider" )]
     [Export( typeof( DigitalSignatureComponent ) )]
     [ExportMetadata( "ComponentName", "SignNow" )]
-
     [TextField( "Username", "Your SignNow Username", true, "", "", 0 )]
     [TextField( "Password", "Your SignNow Password", true, "", "", 1, null, true )]
     [TextField( "API Client Id", "The SignNow API Client Id", true, "", "", 2 )]
     [TextField( "API Client Secret", "The SignNow API Client Secret", true, "", "", 3, null, true )]
     [BooleanField( "Use API Sandbox", "Use the SignNow API Sandbox (vs. Production Environment)", false, "", 4 )]
     [TextField( "Webhook Url", "The URL of the webhook that SignNow should post to when a document is updated (signed).", true, "", "", 5 )]
-    [TextField( "Cookie Initialization Url", "The URL of the SignNow page to use for setting an initial cookie.", true, "https://mw.signnow.com/setcookie", "Advanced", 0)]
+    [TextField( "Cookie Initialization Url", "The URL of the SignNow page to use for setting an initial cookie.", true, "https://mw.signnow.com/setcookie", "Advanced", 0 )]
     [TextField( "Merge Field Attribute Key", "The key name of the merge document template key pair attribute for merge values.", false, "", "Advanced", 1 )]
     [LavaCommandsField( "Enabled Lava Commands", "The Lava commands that should be enabled for merge fields provided to this digital signature provider.", false, "", "Advanced", 2 )]
     public class SignNow : DigitalSignatureComponent
@@ -248,7 +247,7 @@ namespace Rock.SignNow
             if ( sendInvite && assignedTo != null && !string.IsNullOrEmpty( assignedTo.Email ) )
             {
                 string orgAbbrev = CacheGlobalAttributes.Value( "OrganizationAbbreviation" );
-                if ( string.IsNullOrWhiteSpace( orgAbbrev) )
+                if ( string.IsNullOrWhiteSpace( orgAbbrev ) )
                 {
                     orgAbbrev = CacheGlobalAttributes.Value( "OrganizationName" );
                 }
@@ -482,7 +481,7 @@ namespace Rock.SignNow
             {
                 errors.Add( "Invalid Assigned To Person or Email!" );
             }
-            
+
             if ( errors.Any() )
             {
                 return false;
@@ -522,9 +521,8 @@ namespace Rock.SignNow
 
             string subject = string.Format( "Digital Signature Request from {0}", orgAbbrev );
             string message = string.Format( "{0} has requested a digital signature for a '{1}' document for {2}.",
-                CacheGlobalAttributes.Value( "OrganizationName" ), document.SignatureDocumentTemplate.Name, 
+                CacheGlobalAttributes.Value( "OrganizationName" ), document.SignatureDocumentTemplate.Name,
                 document.AppliesToPersonAlias != null ? document.AppliesToPersonAlias.Person.FullName : document.AssignedToPersonAlias.Person.FullName );
-
 
             dynamic inviteObj = null;
             JArray roles = getDocumentRes.Value<JArray>( "roles" );
@@ -702,7 +700,7 @@ namespace Rock.SignNow
                 JArray invites = getDocumentRes.Value<JArray>( "field_invites" );
                 if ( invites != null )
                 {
-                    foreach( JObject invite in invites )
+                    foreach ( JObject invite in invites )
                     {
                         string inviteStatus = invite.Value<string>( "status" );
                         if ( inviteStatus == "expired" )
@@ -768,7 +766,7 @@ namespace Rock.SignNow
                 msgs.Add( "API Call returned a null result!" );
             }
             else
-            { 
+            {
                 JArray errors = jObject.Value<JArray>( "errors" );
                 if ( errors != null )
                 {
@@ -785,11 +783,7 @@ namespace Rock.SignNow
                 }
             }
 
-
             return msgs;
-
         }
-
-
     }
 }
