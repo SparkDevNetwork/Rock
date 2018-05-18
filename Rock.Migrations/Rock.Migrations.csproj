@@ -217,6 +217,10 @@
     <Compile Include="Migrations\201805172159583_GroupStatusValue.Designer.cs">
       <DependentUpon>201805172159583_GroupStatusValue.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201805182021328_Rollup0518.cs" />
+    <Compile Include="Migrations\201805182021328_Rollup0518.Designer.cs">
+      <DependentUpon>201805182021328_Rollup0518.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2908,6 +2912,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201805172159583_GroupStatusValue.resx">
       <DependentUpon>201805172159583_GroupStatusValue.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201805182021328_Rollup0518.resx">
+      <DependentUpon>201805182021328_Rollup0518.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.resx">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
