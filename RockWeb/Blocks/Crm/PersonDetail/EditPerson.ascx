@@ -81,7 +81,7 @@
                                 <Rock:BirthdayPicker ID="bpBirthDay" runat="server" Label="Birthday" />
                                 <asp:Panel ID="pnlGradeGraduation" runat="server" CssClass="form-row">
                                     <div class="col-xs-6 col-sm-3">
-                                        <Rock:GradePicker ID="ddlGradePicker" runat="server" UseAbbreviation="true" UseGradeOffsetAsValue="true" CssClass="input-width-md" />
+                                        <Rock:GradePicker ID="ddlGradePicker" runat="server" UseAbbreviation="true" UseGradeOffsetAsValue="true" />
                                     </div>
                                     <div class="col-xs-6 col-sm-3">
                                         <Rock:YearPicker ID="ypGraduation" runat="server" Label="Graduation Year" Help="High School Graduation Year." />
@@ -105,7 +105,7 @@
                                 <div class="row">
                                     <asp:Repeater ID="rContactInfo" runat="server">
                                         <ItemTemplate>
-                                            <div class="form-group phonegroup">
+                                            <div class="form-group phonegroup clearfix">
                                                 <div class="control-label col-sm-1 phonegroup-label"><%# Rock.Cache.CacheDefinedValue.Get( (int)Eval("NumberTypeValueId")).Value  %></div>
                                                 <div class="controls col-sm-11 phonegroup-number">
                                                     <div class="form-row">
@@ -114,14 +114,8 @@
                                                             <Rock:PhoneNumberBox ID="pnbPhone" runat="server" CountryCode='<%# Eval("CountryCode") %>' Number='<%# Eval("NumberFormatted")  %>' autocomplete="off" />
                                                         </div>
                                                         <div class="col-sm-5 col-lg-2">
-                                                            <div class="form-row">
-                                                                <div class="col-xs-6">
-                                                                    <asp:CheckBox ID="cbSms" runat="server" Text="SMS" Checked='<%# (bool)Eval("IsMessagingEnabled") %>' CssClass="js-sms-number" />
-                                                                </div>
-                                                                <div class="col-xs-6">
-                                                                    <asp:CheckBox ID="cbUnlisted" runat="server" Text="Unlisted" Checked='<%# (bool)Eval("IsUnlisted") %>' />
-                                                                </div>
-                                                            </div>
+                                                            <Rock:RockCheckBox ID="cbSms" runat="server" Text="SMS" Checked='<%# (bool)Eval("IsMessagingEnabled") %>' ContainerCssClass="pull-left" CssClass="js-sms-number" />
+                                                            <Rock:RockCheckBox ID="cbUnlisted" runat="server" Text="Unlisted" Checked='<%# (bool)Eval("IsUnlisted") %>' ContainerCssClass="pull-left" />
                                                         </div>
 
                                                     </div>
