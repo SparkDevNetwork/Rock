@@ -1,0 +1,33 @@
+.page-background {   
+    background-color: #EBEBEB;
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-image-missing.jpg");
+}
+
+.title {
+    margin-top: 30px;
+}
+
+.title h3 {
+    font-size: 60px;
+    font-weight: 900;
+    font-family: akrobat;
+    color: #FFFFFF;
+    text-align: center;
+    padding-top: 80px;
+}
+
+.title p {
+    text-align: center;
+    color: #FFFFFF;
+    font-size: 18px;
+    font-family: heebo;
+    font-weight: normal;
+}
+
+.desktop-spacer-top {
+    padding-top: 25px;
+}
+
+.desktop-spacer {
+    padding-top: 125px;
+}

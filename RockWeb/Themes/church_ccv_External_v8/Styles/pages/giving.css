@@ -266,6 +266,78 @@
 }
 
 
+/* Mobile Styling */
+@media screen and (max-width: 500px) {
+    #subnavbar-bg {
+        display: none;
+    }
+
+    .giving-info {
+        flex-direction: column-reverse;
+        margin-top: 0;
+    }
+
+    .giving-video {
+        width: 100%;
+    }
+
+    .giving-message {
+        width: 100%;
+        text-align: center;
+    }
+
+    .giving-message h2 {
+        font-size: 30px;
+    }
+
+    .giving-message p {
+        line-height: 24px;
+    }
+
+    .giving-calculator-card {
+        width: 90%;
+        margin: 0 auto;
+    }
+
+    .giving-actions {
+        align-items: center;
+    }
+
+    .giving-actions-items {
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-around;
+        margin: 0 10px;
+    }
+
+    .giving-actions-item {
+        width: 45%;
+        height: 200px;
+        margin: 10px 0;
+    }
+
+    .giving-actions-item p {
+        text-align: center;
+    }
+
+    .giving-annual-report {
+        flex-direction: column;
+    }
+
+    .annual-report-title p {
+        margin-top: 10px;
+        font-size: 24px;
+        line-height: 34px;
+    }
+
+    .giving-annual-report img {
+        width: 300px;
+        margin: 10px 0;
+    }
+}
+
+
 
 
 /* End Give */

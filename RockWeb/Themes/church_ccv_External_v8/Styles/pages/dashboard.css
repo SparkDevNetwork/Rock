@@ -427,12 +427,23 @@
 /* Dashboard Card */
 
 .dashboard-row {
-    margin: 40px 20px 0 20px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin: 0 50px;
 }
 
 @media screen and (max-width: 500px) {
     .dashboard-row {
-        margin: 40px 0 0 0;
+        margin: 0;
+        flex-direction: column;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .dashboard-row {
+        margin: 0 10px;
+        justify-content: center;
     }
 }
 
@@ -442,6 +453,7 @@
     border-radius: 5px;
     border: unset;
     border-width: unset;
+    width: 360px;
     height: 450px; 
     max-height: 450px; 
     background-color: #FFFFFF; 
@@ -590,14 +602,33 @@
     font-weight: bold;
 }
 
-/* Mobile Styling Dashboard Card */
+/* Dashboard Events Scroller */
+.dashboard-events-row {
+    margin: 0 50px;
+    margin-bottom: 20px;
+}
+
+.dashboard-events-row .event-cards-header {
+    margin-left: unset;
+}
+
+.event-cards-row {
+    margin: 0 -15px;
+}
+
+.event-card .image img {
+    object-fit: cover;
+ }
+
+ /* Mobile Styling Dashboard Card */
 @media screen and (max-width: 500px){
-    .dashboard-row {
-        margin-top: 0;
+    .dashboard-card {
+        width: 90%;
+        margin: 20px auto;
     }
 
-    .dashboard-card {
-        margin-top: 0;
+    .dashboard-card .title {
+        margin: 0 auto;
     }
 
     .panel-dropdown-menu {
@@ -606,11 +637,19 @@
         width: auto;
         text-align: center;
     }
-}
 
-/* Dashboard Events Scroller */
-.dashboard-events-row {
-    margin: 0 40px;
+    .dashboard-events-row {
+        margin: 0 auto;
+        width: 90%;
+    }
+
+    .event-cards-header h3 {
+        margin: 0;
+    }
+
+    .dashboard-events-row .event-cards-header {
+        width: 100%;
+    }    
 }
 
 /* End Dashboard Card */
@@ -731,9 +770,22 @@
 /* Mobile Styling Group Card */
 
 @media screen and (max-width: 500px){
+    .group-header {
+        padding: 15px 10px;
+    }
+
+    .group-header h5, .group-header span {
+        font-size: 16px;
+    }
+    
     .group-header a {
         overflow: unset;
-        margin-right: 11px;
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .group-header .mdi-chevron-right {
+        font-size: 21px;
     }
 
     .coach-video-text {
@@ -745,10 +797,6 @@
 @media screen and (max-width: 413px) {
     .group-header a span {
         white-space: normal;
-    }
-
-    .group-header a {
-        margin-left: 10px;
     }
 
     .coach-video-text {
@@ -864,7 +912,7 @@
     justify-content: space-around;
 }
 
-.baptism-dashboard-image {
+.baptism-dashboard-image, .baptism-dashboard-photo {
     flex-shrink: 0;
     position: relative;
 }
@@ -906,6 +954,94 @@
 /* Fix Blue Box around calling href bug */
 .baptism-print-button :focus {
     outline:none!important
+}
+
+/* iPad Styling */
+@media screen and (max-width: 768px) {
+    #section-a-bg {
+        padding: 20px 0;
+    }
+
+    .baptism-print-button {
+        margin-top: 10px;
+    }
+
+    .baptism-dashboard-image {
+        width: 100%;
+    }
+
+    .baptism-dashboard-image img {
+        width: 700px;
+        margin: 0 auto;
+    }
+
+    .baptism-certificate-name-container {
+        top: 190px;
+        left: 0;
+        width: 700px;
+    }
+    
+    .baptism-certificate-date-container {
+        width: 100px;
+        top: 385px;
+        left: 510px;
+    }
+}
+
+/* Mobile Styling */
+@media screen and (max-width: 500px) {
+    .baptism-print-button {
+        margin-top: 10px;
+    }
+
+    #btnPrint {
+        height: 40px;
+        margin: 0;
+    }
+
+    .baptism-dashboard-container {
+        margin: 15px;
+    }
+
+    .baptism-dashboard-photo {
+        width: 100%;
+    }
+
+    .baptism-dashboard-image {
+        width: 80%;
+    }
+
+    .baptism-dashboard-image img {
+        width: 280px;
+        margin: 0 auto;
+    }
+
+    .baptism-certificate-name-container {
+        top: 70px;
+        left: 0;
+        width: 280px;
+    }
+    
+    .baptism-certificate-name {
+        font-size: 20px;
+    }
+    
+    .baptism-certificate-date-container {
+        width: 100px;
+        top: 148px;
+        left: 175px;
+    }
+    
+    .baptism-certificate-date {
+        font-size: 12px;
+    }
+}
+
+/* Mobile iphone SE Styling */
+@media screen and (max-width: 320px) {
+    .baptism-dashboard-image {
+        width: 100%;
+    }
 }
 
 /* End Baptism Dashboard */
@@ -1005,6 +1141,7 @@
     flex-direction: column;
     justify-content: space-between;
 }
+
 @media screen and (min-width: 650px) {
     .latest-series-info {
     flex-direction: row;
@@ -1387,8 +1524,29 @@
         text-overflow: ellipsis;
     }
 
+    #gTransactions th:nth-child(2), #gTransactions th:nth-child(3), #gTransactions th:nth-child(4) {
+        display: none;
+    }
+
+    #gTransactions td:nth-child(2), #gTransactions td:nth-child(3), #gTransactions td:nth-child(4) {
+        display: none;
+    }
+
+    #gTransactions th:nth-child(1), #gTransactions th:nth-child(1) {
+        width: 100px;
+    }
+
+    #gTransactions th:last-child, #gTransactions td:last-child {
+        border-right: 1px solid #ddd;
+    }
+
     .giving-history-card {
         width: 90%;
+        margin-bottom: 15px;
+    }
+
+    .giving-history-card .well {
+        padding: 0;
     }
 }
 
@@ -1465,6 +1623,15 @@
     margin-top: 20px;
 }
 
+@media screen and (max-width: 768px) {
+    .profile {
+        padding: 20px 10px;
+    }
+
+    .profile-card .col-md-1 .photo {
+        width: 15%;
+    }
+}
 
 
 @media screen and (max-width: 500px) {
@@ -1479,6 +1646,10 @@
         margin-bottom: 15px;
     }
 
+    .account-actions .title, .recent-registrations .title {
+        margin: 0 auto;
+    }
+
     .form-control.input-width-sm {
         width: 60px;
         padding: 0
@@ -1489,6 +1660,42 @@
     }
 }
 
-
 /* End My Profile */
   
+/* Change Password Styling */
+.change-password-title {
+    width: 60%;
+    margin: 0 auto;
+}
+
+.change-password-card {
+    box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px;
+    transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
+    border-radius: 5px;
+    background-color: #FFFFFF;
+    margin: 25px auto 70px auto;
+    padding: 20px;
+    width: 60%;
+}
+
+.change-password-card legend {
+    display: none;
+}
+
+@media screen and (max-width: 500px) {
+    .change-password-title {
+        width: 90%;
+    }
+
+    .change-password-title h2 {
+        font-size: 24px;
+        text-align: center;
+    }
+
+    .change-password-card {
+        width: 90%;
+        margin: 25px auto;
+    }
+}
+
+/* End Change Password Styling */

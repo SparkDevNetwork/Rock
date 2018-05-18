@@ -1,11 +1,7 @@
 /* Login Page Styling */
 
-.page-background {   
-    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-image-missing.jpg");
-    background-position: center top;
-    margin: auto;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
+.page-background, #section-a-bg, #section-b-bg, #subnavbar-bg, #masthead {   
+    background-color: #000;
 }
 
 .title {
@@ -29,8 +25,12 @@
     font-weight: normal;
 }
 
-#desktopspacer {
-    padding-top: 100px;
+.desktop-spacer-top {
+    padding-top: 25px;
+}
+
+.desktop-spacer {
+    padding-top: 125px;
 }
 
 
@@ -38,15 +38,83 @@
     box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px;
     transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
     border-radius: 5px;
-    background-color: #FFFFFF;
     margin: 40px auto 70px auto;
     padding: 20px;
     width: 80%;
 }
 
+.login-card legend {
+    display: none;
+}
+
+.login-card p, .login-card label {
+    color: #999999;
+}
+
+.login-card input {
+    background-color: #424242;
+    border-bottom: unset;
+    border: unset;
+    color: #999999;
+}
+
+.login-card .btn-primary {
+    background-color: #7A1315;
+    border: 1px solid #7A1315;
+}
+
+.login-card .btn-link {
+    background-color: transparent;
+}
+
+.login-card .btn-link:hover {
+    color: #FFFFFF;
+    text-decoration: none;
+}
+
 .facebook {
     color: #FFFFFF;
     background-color: #3B5998;
+    border-color: #3B5998;
+}
+
+.login-card .btn:focus {
+    outline: none;
+}
+
+/* Mobile Device Styling */
+@media screen and (max-width: 500px) {
+    .title {
+        margin-top: 0;
+    }
+
+    .title h3 {
+        padding-top: 0;
+        margin: 0;
+        font-size: 30px;
+    }
+
+    .title p {
+        font-size: 14px;
+    }
+
+    .desktop-spacer-top, .desktop-spacer {
+        display: none;
+    }
+
+    #section-a-bg {
+        padding: 0;
+    }
+
+    .login-card {
+        margin: 0 auto 30px auto;
+        width: 100%;
+    }
+
+    /* This fixes a width display issue in mobile view */
+    #section-b-bg {
+        display: none;
+    }
 }
 
 /* End Login page */

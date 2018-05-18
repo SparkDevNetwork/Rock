@@ -1,0 +1,33 @@
+
+.page-background {   
+    background-color: #EBEBEB;
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-image-missing.jpg");
+}
+
+#subnavbar-bg {
+    display: none;
+}
+
+#section-a-bg {
+    background-color: #ffffff;
+}
+
+#section-b-bg {
+    display: none;
+}
+
+#section-c-bg {
+    display: none;
+}
+
+.nextsteps-container {
+    display: flex;
+    padding: 20px;
+}
+
+.nextsteps-icon {
+    min-width: 60px;
+    fill: #999;
+    margin-top: 30px;
+    margin-right: 30px;
+}

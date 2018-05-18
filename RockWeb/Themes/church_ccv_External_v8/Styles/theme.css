@@ -10377,9 +10377,12 @@ html,body{
 	background-color: #7A1315;
 }
 
-/* not sure */
-.nav>li>a:hover, .nav>li>a:focus {
-	background: rgba( 0, 0, 0, 0 );
+.loginstatus li a:hover {
+    transition: .25s;
+    background-color: rgba(255, 255, 255, .15);
+    border-radius: 4px;
+    cursor: pointer;
+    min-height: 45px;
 }
 
 .announcement-bar {
