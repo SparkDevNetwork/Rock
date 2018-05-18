@@ -1,56 +1,56 @@
 <div class="masthead-navitems">
     <div class="dropdown">
-       <a class="masthead-navitem" style="border: 0px;" href="/our-storyv2">About Us</a>
-      <ul class="dropdown-menu">
-        <li><a href="/leadershipv2">Leadership</a></li>
-        <li><a href="/kidsv2">Kids</a></li>
-        <li><a href="/studentsv2">Students</a></li>
-        <li><a href="/specialneedsv2">Special Needs</a></li>
-        <li><a href="/missionsv2">Missions</a></li>
-        <li><a href="/starsv2">STARS Youth Sports</a></li>
-        <li><a href="/leadership-instituteV2">Leadership Institute</a></li>
-      </ul>
+        <a class="masthead-navitem" style="border: 0px;" href="/about-us">About Us</a>
+        <ul class="dropdown-menu">
+            <li><a href="/about-us/leadership">Leadership</a></li>
+            <li><a href="/about-us/kids">Kids</a></li>
+            <li><a href="/about-us/students">Students</a></li>
+            <li><a href="/about-us/special-needs">Special Needs</a></li>
+            <li><a href="/about-us/missions">Missions</a></li>
+            <li><a href="/about-us/stars">STARS Youth Sports</a></li>
+            <li><a href="/about-us/leadership-institute">Leadership Institute</a></li>
+        </ul>
     </div>
 
-    <a class="masthead-navitem" href="/the-experiencev2">THE EXPERIENCE</a>
+    <a class="masthead-navitem" href="/the-experience">THE EXPERIENCE</a>
         
     <div class="dropdown">
-      <a class="masthead-navitem" style="border: 0px;" href="/involvedv2">Get Involved</a>
-      <ul class="dropdown-menu">
-        <li><a href="/nextstepsv2">Next Steps</a></li>
-        <li><a href="/eventsv2">Events</a></li>
-      </ul>
+        <a class="masthead-navitem" style="border: 0px;" href="/get-involved">Get Involved</a>
+        <ul class="dropdown-menu">
+            <li><a href="/get-involved/next-steps">Next Steps</a></li>
+            <li><a href="/get-involved/events">Events</a></li>
+        </ul>
     </div>
     
     <div class="dropdown">
-      <a class="masthead-navitem" style="border: 0px;" href="/our-campusesv2">Our Campuses</a>
-      <ul class="dropdown-menu">
-        <li><a href="/our-campuses/anthem">Anthem</a></li>
-        <li><a href="/our-campuses/avondale">Avondale</a></li>
-        <li><a href="/our-campuses/chandler">Chandler</a></li>
-        <li><a href="/our-campuses/east-valley">East Valley</a></li>
-        <li><a href="/our-campuses/midtown-phoenix">Midtown Phoenix</a></li>
-        <li><a href="/our-campuses/north-phoenix">North Phoenix</a></li>
-        <li><a href="/our-campuses/peoria">Peoria</a></li>
-        <li><a href="/our-campuses/scottsdale">Scottsdale</a></li>
-        <li><a href="/our-campuses/surprise">Surprise</a></li>
-      </ul>
+        <a class="masthead-navitem" style="border: 0px;" href="/our-campuses">Our Campuses</a>
+        <ul class="dropdown-menu">
+            <li><a href="/our-campuses/anthem">Anthem</a></li>
+            <li><a href="/our-campuses/avondale">Avondale</a></li>
+            <li><a href="/our-campuses/chandler">Chandler</a></li>
+            <li><a href="/our-campuses/east-valley">East Valley</a></li>
+            <li><a href="/our-campuses/midtown-phoenix">Midtown Phoenix</a></li>
+            <li><a href="/our-campuses/north-phoenix">North Phoenix</a></li>
+            <li><a href="/our-campuses/peoria">Peoria</a></li>
+            <li><a href="/our-campuses/scottsdale">Scottsdale</a></li>
+            <li><a href="/our-campuses/surprise">Surprise</a></li>
+        </ul>
     </div>
     
     
     <div class="dropdown">
-      <a class="masthead-navitem" style="border: 0px;" href="/watchv2">Watch</a>
-      <ul class="dropdown-menu">
-        <li><a href="http://live.ccv.church">CCV Live</a></li>
-        <li><a href="/storiesv2">Stories</a></li>
-      </ul>
+        <a class="masthead-navitem" style="border: 0px;" href="/watchv2">Watch</a>
+        <ul class="dropdown-menu">
+            <li><a href="http://live.ccv.church">CCV Live</a></li>
+            <li><a href="/watch/stories">Stories</a></li>
+        </ul>
     </div>
     
     <div class="dropdown">
-      <a class="masthead-navitem" style="border: 0px;" href="/givev2">Give</a>
-      <ul class="dropdown-menu">
-        <li><a href="/givev2/now">Give Now</a></li>
-      </ul>
+        <a class="masthead-navitem" style="border: 0px;" href="/givev2">Give</a>
+        <ul class="dropdown-menu">
+            <li><a href="/givev2/now">Give Now</a></li>
+        </ul>
     </div>
     
 </div>

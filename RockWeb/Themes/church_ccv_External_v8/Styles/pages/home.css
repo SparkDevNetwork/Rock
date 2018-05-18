@@ -65,6 +65,11 @@
     display: flex;
 }
 
+.cta-link:hover, .cta-link:focus, .cta-link:active {
+    color: #FFFFFF;
+    text-decoration: none;
+}
+
 .cta-link i {
     font-size: 30px;
     margin-right: 10px;
@@ -349,5 +354,12 @@
     }
 }
 
+.event-card .image img {
+    object-fit: cover;
+ }
 
 /* End Events Section */
+
+.btn.btn-primary:focus {
+    outline: none;
+}

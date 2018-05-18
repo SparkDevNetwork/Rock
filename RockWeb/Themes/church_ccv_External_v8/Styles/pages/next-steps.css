@@ -9,7 +9,7 @@
 }
 
 #section-a-bg {
-    background-color: #ffffff;
+    padding: 20px;
 }
 
 #section-b-bg {
@@ -23,6 +23,10 @@
 .nextsteps-container {
     display: flex;
     padding: 20px;
+    box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px; 
+    border-radius: 5px;
+    margin-bottom: 20px;
+    background-color: #ffffff;
 }
 
 .nextsteps-icon {
@@ -30,4 +34,14 @@
     fill: #999;
     margin-top: 30px;
     margin-right: 30px;
+}
+
+.btn-default {
+    margin-bottom: 20px;
+}
+
+@media screen and (min-width: 478px) {
+    .btn-default {
+        margin-bottom: 0px;
+    }
 }

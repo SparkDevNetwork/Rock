@@ -44,7 +44,7 @@
         <div class="image">
           {% assign imageGuid = item | Attribute:'Image', 'RawValue' %}
             {% assign appRoot = 'Global' | Attribute:'PublicApplicationRoot' %}
-            <img src="{{appRoot}}GetImage.ashx?Guid={{imageGuid}}&width=350&mode=crop"/>
+            <img src="/GetImage.ashx?Guid={{imageGuid}}&width=350&mode=crop"/>
         </div>
         <div class="header">
           <h4>{{ item.Title | Truncate: 30 }}</h4>

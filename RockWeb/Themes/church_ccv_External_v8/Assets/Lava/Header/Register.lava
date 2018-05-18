@@ -3,5 +3,5 @@
 {% endcomment %}
 
 {% unless CurrentPerson %}
-    <a id="masthead-navitem-register" class="masthead-navitem" onclick="displayLoginModal(true); displayCreateAccountPanel(false);">REGISTER</a>
+    <a id="masthead-navitem-register" class="masthead-navitem" href="/registerv2">REGISTER</a>
 {% endunless %}

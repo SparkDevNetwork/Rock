@@ -3,76 +3,77 @@
 </div>
 <div class="masthead-fullmenu-navitems">
     {% if CurrentPerson %}
-      <a class="masthead-fullmenu-navitem" href="/Dashboardv2">My Dashboard</a>
-      <a class="masthead-fullmenu-navitem" href="/Profilev2">My Profile</a>
-      <a class="masthead-fullmenu-navitem" href="/ManageAutomatedGiving">Manage Automated Giving</a>
-      <a class="masthead-fullmenu-navitem" href="/ManagePaymentAccounts">Manage Payment Accounts</a>
-      <a class="masthead-fullmenu-navitem" href="/GivingHistory">Giving History</a>
+        <a class="masthead-fullmenu-navitem" href="/dashboardv2">My Dashboard</a>
+        <a class="masthead-fullmenu-navitem" href="/dashboard/profile">My Profile</a>
+        <a class="masthead-fullmenu-navitem" href="/dashboard/profile/manage-automated-giving">Manage Automated Giving</a>
+        <a class="masthead-fullmenu-navitem" href="/dashboard/profile/manage-payment-accounts">Manage Payment Accounts</a>
+        <a class="masthead-fullmenu-navitem" href="/dashboard/profile/giving-history">Giving History</a>
     {% endif %}
 
-    <a class="masthead-fullmenu-navitem" href="/NextStepsv2">Next Steps</a>
+    <a class="masthead-fullmenu-navitem" href="/get-involved/">Get Involved</a>
         
     <div class="dropdown">
-      <button class="dropdown-toggle masthead-fullmenu-navitem" type="button" data-toggle="dropdown" style="border: 0px;">About Us<b class="fa fa-caret-down"></b></button>
-      <ul class="dropdown-menu">
-        <li><a href="/our-storyv2">About Us</a></li>
-        <li><a href="/leadershipv2">Leadership</a></li>
-        <li><a href="/kidsv2">Kids</a></li>
-        <li><a href="/studentsv2">Students</a></li>
-        <li><a href="/specialneedsv2">Special Needs</a></li>
-        <li><a href="/missionsv2">Missions</a></li>
-        <li><a href="/starsv2">STARS Youth Sports</a></li>
-        <li><a href="/leadership-instituteV2">Leadership Institute</a></li>
-      </ul>
+        <button class="dropdown-toggle masthead-fullmenu-navitem" type="button" data-toggle="dropdown" style="border: 0px;">About Us<b class="fa fa-caret-down"></b></button>
+        <ul class="dropdown-menu">
+            <li><a href="/about-us">About Us</a></li>
+            <li><a href="/about-us/leadership">Leadership</a></li>
+            <li><a href="/about-us/kids">Kids</a></li>
+            <li><a href="/about-us/students">Students</a></li>
+            <li><a href="/about-us/special-needs">Special Needs</a></li>
+            <li><a href="/about-us/missions">Missions</a></li>
+            <li><a href="/about-us/stars">STARS Youth Sports</a></li>
+            <li><a href="/about-us/leadership-institute">Leadership Institute</a></li>
+        </ul>
     </div>
 
-    <a class="masthead-fullmenu-navitem" href="/the-experiencev2">The Experience</a>
+    <a class="masthead-fullmenu-navitem" href="/the-experience">The Experience</a>
     
     <div class="dropdown">
-      <button class="dropdown-toggle masthead-fullmenu-navitem" type="button" data-toggle="dropdown" style="border: 0px;">Get Involved<b class="fa fa-caret-down"></b></button>
-      <ul class="dropdown-menu">
-        <li><a href="/nextstepsv2">Next Steps</a></li>
-        <li><a href="/eventsv2">Events</a></li>
-      </ul>
+        <button class="dropdown-toggle masthead-fullmenu-navitem" type="button" data-toggle="dropdown" style="border: 0px;">Get Involved<b class="fa fa-caret-down"></b></button>
+        <ul class="dropdown-menu">
+            <li><a href="/get-involved">Get Involved</a></li>
+            <li><a href="/get-involved/next-steps">Next Steps</a></li>
+            <li><a href="/get-involved/events">Events</a></li>
+        </ul>
     </div>
 
     <div class="dropdown">
-      <button class="dropdown-toggle masthead-fullmenu-navitem" type="button" data-toggle="dropdown" style="border: 0px;">Our Campuses<b class="fa fa-caret-down"></b></button>
-      <ul class="dropdown-menu">
-        <li><a href="/our-campusesv2">Our Campuses</a></li>
-        <li><a href="/our-campuses/anthem">Anthem</a></li>
-        <li><a href="/our-campuses/avondale">Avondale</a></li>
-        <li><a href="/our-campuses/chandler">Chandler</a></li>
-        <li><a href="/our-campuses/east-valley">East Valley</a></li>
-        <li><a href="/our-campuses/midtown-phoenix">Midtown Phoenix</a></li>
-        <li><a href="/our-campuses/north-phoenix">North Phoenix</a></li>
-        <li><a href="/our-campuses/peoria">Peoria</a></li>
-        <li><a href="/our-campuses/scottsdale">Scottsdale</a></li>
-        <li><a href="/our-campuses/surprise">Surprise</a></li>
-      </ul>
+        <button class="dropdown-toggle masthead-fullmenu-navitem" type="button" data-toggle="dropdown" style="border: 0px;">Our Campuses<b class="fa fa-caret-down"></b></button>
+        <ul class="dropdown-menu">
+            <li><a href="/our-campuses">Our Campuses</a></li>
+            <li><a href="/our-campuses/anthem">Anthem</a></li>
+            <li><a href="/our-campuses/avondale">Avondale</a></li>
+            <li><a href="/our-campuses/chandler">Chandler</a></li>
+            <li><a href="/our-campuses/east-valley">East Valley</a></li>
+            <li><a href="/our-campuses/midtown-phoenix">Midtown Phoenix</a></li>
+            <li><a href="/our-campuses/north-phoenix">North Phoenix</a></li>
+            <li><a href="/our-campuses/peoria">Peoria</a></li>
+            <li><a href="/our-campuses/scottsdale">Scottsdale</a></li>
+            <li><a href="/our-campuses/surprise">Surprise</a></li>
+        </ul>
     </div>
 
     <div class="dropdown">
-      <button class="dropdown-toggle masthead-fullmenu-navitem" type="button" data-toggle="dropdown" style="border: 0px;">Watch<b class="fa fa-caret-down"></b></button>
-      <ul class="dropdown-menu">
-        <li><a href="/watchv2">Watch</a></li>
-        <li><a href="http://live.ccv.church">CCV Live</a></li>
-        <li><a href="/storiesv2">Stories</a></li>
-      </ul>
+        <button class="dropdown-toggle masthead-fullmenu-navitem" type="button" data-toggle="dropdown" style="border: 0px;">Watch<b class="fa fa-caret-down"></b></button>
+        <ul class="dropdown-menu">
+            <li><a href="/watchv2">Watch</a></li>
+            <li><a href="http://live.ccv.church">CCV Live</a></li>
+            <li><a href="/watch/stories">Stories</a></li>
+        </ul>
     </div>
 
     <div class="dropdown">
-      <button class="dropdown-toggle masthead-fullmenu-navitem" type="button" data-toggle="dropdown" style="border: 0px;">Give<b class="fa fa-caret-down"></b></button>
-      <ul class="dropdown-menu">
-        <li><a href="/givev2">Give</a></li>
-        <li><a href="/givev2/now">Give Now</a></li>
-      </ul>
+        <button class="dropdown-toggle masthead-fullmenu-navitem" type="button" data-toggle="dropdown" style="border: 0px;">Give<b class="fa fa-caret-down"></b></button>
+        <ul class="dropdown-menu">
+            <li><a href="/givev2">Give</a></li>
+            <li><a href="/givev2/now">Give Now</a></li>
+        </ul>
     </div>
 
     {% if CurrentPerson %}
-      <a class="masthead-fullmenu-navitem" onclick="logout();">Logout</a>
+        <a class="masthead-fullmenu-navitem" onclick="logout();">Logout</a>
     {% else %}
-      <a class="masthead-fullmenu-navitem" onclick="displayLoginModal(true); displayCreateAccountPanel(false);">Register</a>
-      <a class="masthead-fullmenu-navitem" onclick="displayLoginModal(true);">Login</a>
+        <a class="masthead-fullmenu-navitem" href="/registerv2">Register</a>
+        <a class="masthead-fullmenu-navitem" href="/login">Login</a>
     {% endif %}
 </div>

@@ -9,7 +9,7 @@
         <h3>NEED DIRECTIONS?</h3>
         <p>{{campus.Directions}}</p>
     </div>
-    <a href="https://maps.google.com/?q={{campus.Location.Street1 | Replace: ' ', '+'}}+{{campus.Location.City | Replace: ' ', '+'}}+{{campus.Location.State | Replace: ' ', '+'}}+{{campus.Location.PostalCode | Replace: ' ', '+'}}" class="btn btn-primary" style="padding: 10px;">GET DETAILED DIRECTIONS</a>
+    <a target="_blank" href="https://maps.google.com/?q={{campus.Location.Street1 | Replace: ' ', '+'}}+{{campus.Location.City | Replace: ' ', '+'}}+{{campus.Location.State | Replace: ' ', '+'}}+{{campus.Location.PostalCode | Replace: ' ', '+'}}" class="btn btn-primary" style="padding: 10px;">GET DETAILED DIRECTIONS</a>
 </div>
 
 <div class="info-tile mt-25"> 

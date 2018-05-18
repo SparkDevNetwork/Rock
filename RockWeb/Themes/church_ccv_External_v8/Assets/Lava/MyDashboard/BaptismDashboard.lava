@@ -11,11 +11,10 @@
     {% comment %} Check for a photo {% endcomment %}
     {% if person | Attribute:'BaptismPhoto' %}
         <div class="baptism-print-button">
-            <a class="btn btn-primary" href="javascript:history.back()">Back</a>
             <input type='button' id='btnPrint' class="btn btn-primary" value='Print'>
         </div>
         <div id="divBaptismDashboard" class="baptism-dashboard-container">
-            <div class="baptism-dashboard-image">
+            <div class="baptism-dashboard-photo">
                 {{ person | Attribute:'BaptismPhoto' }}
             </div>
         </div>
@@ -36,7 +35,6 @@
     {% assign ccvBaptized = person | Attribute:'BaptizedHere' %}
     {% if ccvBaptized == 'Yes' %}
         <div class="baptism-print-button">
-            <a class="btn btn-primary" href="javascript:history.back()">Back</a>
             <input type='button' id='btnPrint' class="btn btn-primary" value='Print'>
         </div>
         <div id="divBaptismDashboard" class="baptism-dashboard-container">

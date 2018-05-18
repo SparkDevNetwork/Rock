@@ -1,14 +1,10 @@
-
-.page-background {
-    background-color: #000;
+.page-background {   
+    background-color: #EBEBEB;
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-image-missing.jpg");
 }
 
 .main-feature {
     padding-top: 75px;
-}
-
-.masthead {
-    background-color: black;
 }
 
 #subnavbar-bg {
@@ -27,11 +23,8 @@
     margin: 0 auto;
 }
 
-/* Override Theme.css */
-@media screen and (max-width: 800px) {
-    #section-a-bg {
-        padding: 40px 15px;
-    }
+.desktop-spacer-top {
+    padding-top: 100px;
 }
 
 .events-flex {
@@ -39,4 +32,43 @@
     justify-content: space-between;
     flex-wrap: wrap;
     margin-left: 15px;
+    margin-top: 20px;
+}
+
+.events-card {
+    box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px;
+    transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
+    border-radius: 5px;
+    background-color: #FFFFFF;
+    padding: 20px;
+    margin: 0 auto;
+    margin-bottom: 20px;
+    margin-top: 20px;
+}
+
+.events-title {
+    font-size: 60px;
+    font-weight: 900;
+    font-family: akrobat;
+    color: #FFFFFF;
+    text-align: center;
+}
+
+.events-subtitle {
+    text-align: center; 
+    color: #FFFFFF; 
+    font-size: 18px; 
+    font-family: heebo; 
+    font-weight: normal;
+}
+
+/* Override Theme.css */
+@media screen and (max-width: 800px) {
+    #section-a-bg {
+        padding: 40px 15px;
+    }
+
+    .desktop-spacer-top {
+        display: none;
+    }
 }

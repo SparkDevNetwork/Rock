@@ -9,7 +9,7 @@
 {% capture pageTitle %}{{ item.Title }} - Stories | {{ 'Global' | Attribute:'OrganizationAbbreviation' }}{% endcapture %}
 {{ pageTitle | SetPageTitle }}
 
-{% assign detailPage = detailPage | Default: '/story' %}
+{% assign detailPage = detailPage | Default: '/storyv2' %}
 
 {% assign itemWistiaId = item | Attribute:'WistiaId' %}
 
