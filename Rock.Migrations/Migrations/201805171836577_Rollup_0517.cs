@@ -36,6 +36,26 @@ namespace Rock.Migrations
             Sql( MigrationSQL._201805171836577_Rollup_0517_CreatePresenceUser );
 
             Sql( MigrationSQL._201805171836577_Rollup_0517_spAnalytics_ETL_Attendance );
+
+            Sql( @"-- Move Person Pages to People Page and hide from navigation
+                    DECLARE @ParentPageId int = (SELECT TOP 1 [Id] FROM [Page] WHERE [Guid] = '97ECDC48-6DF6-492E-8C72-161F76AE111B') -- Internal Homepage > People
+                    DECLARE @ChildPageId int = (SELECT TOP 1 [Id] FROM [Page] WHERE [Guid] = 'BF04BB7E-BE3A-4A38-A37C-386B55496303') -- Person Pages
+
+                    UPDATE [Page]
+                        SET [ParentPageId] = @ParentPageId,
+                        [DisplayInNavWhen] = 2
+                    WHERE
+                        [Id] = @ChildPageId"
+                );
+            Sql( @"-- Move Person Search to Person Pages
+                    DECLARE @ParentPageId int = (SELECT TOP 1 [Id] FROM [Page] WHERE [Guid] = 'BF04BB7E-BE3A-4A38-A37C-386B55496303') -- Person Pages
+                    DECLARE @ChildPageId int = (SELECT TOP 1 [Id] FROM [Page] WHERE [Guid] = '5E036ADE-C2A4-4988-B393-DAC58230F02E') -- Person Search
+
+                    UPDATE [Page]
+                        SET [ParentPageId] = @ParentPageId
+                    WHERE
+                        [Id] = @ChildPageId" 
+                );
         }
         
         /// <summary>
