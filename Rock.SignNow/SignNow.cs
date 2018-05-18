@@ -20,15 +20,17 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Web;
 
-using Rock.Cache;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using RestSharp;
+
 using Rock.Attribute;
+using Rock.Cache;
 using Rock.Model;
 using Rock.Security;
-
-using Newtonsoft.Json.Linq;
-using System.Web;
-using Rock.Communication;
 
 namespace Rock.SignNow
 {
@@ -46,6 +48,8 @@ namespace Rock.SignNow
     [BooleanField( "Use API Sandbox", "Use the SignNow API Sandbox (vs. Production Environment)", false, "", 4 )]
     [TextField( "Webhook Url", "The URL of the webhook that SignNow should post to when a document is updated (signed).", true, "", "", 5 )]
     [TextField( "Cookie Initialization Url", "The URL of the SignNow page to use for setting an initial cookie.", true, "https://mw.signnow.com/setcookie", "Advanced", 0)]
+    [TextField( "Merge Field Attribute Key", "The key name of the merge document template key pair attribute for merge values.", false, "", "Advanced", 1 )]
+    [LavaCommandsField( "Enabled Lava Commands", "The Lava commands that should be enabled for merge fields provided to this digital signature provider.", false, "", "Advanced", 2 )]
     public class SignNow : DigitalSignatureComponent
     {
         /// <summary>
@@ -252,6 +256,93 @@ namespace Rock.SignNow
                 string subject = string.Format( "Digital Signature Request from {0}", orgAbbrev );
                 string message = string.Format( "{0} has requested a digital signature for a '{1}' document for {2}.",
                     CacheGlobalAttributes.Value( "OrganizationName" ), documentTemplate.Name, appliesTo != null ? appliesTo.FullName : assignedTo.FullName );
+
+                // Get merge fields
+                var mergeKey = GetAttributeValue( "MergeFieldAttributeKey" );
+                if ( !string.IsNullOrWhiteSpace( mergeKey ) )
+                {
+                    documentTemplate.LoadAttributes();
+                    var mergeFieldPairs = documentTemplate.GetAttributeValue( mergeKey );
+
+                    if ( !string.IsNullOrWhiteSpace( mergeFieldPairs ) )
+                    {
+                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+                        mergeFields.Add( "DocumentTemplate", documentTemplate );
+                        mergeFields.Add( "AppliesTo", appliesTo );
+                        mergeFields.Add( "AssignedTo", assignedTo );
+
+                        var enabledLavaCommands = GetAttributeValue( "EnabledLavaCommands" );
+
+                        Dictionary<string, string> sourceKeyMap = null;
+                        string[] nameValues = mergeFieldPairs.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+                        if ( nameValues != null )
+                        {
+                            if ( sourceKeyMap == null )
+                            {
+                                sourceKeyMap = new Dictionary<string, string>();
+                            }
+                            foreach ( string nameValue in nameValues )
+                            {
+                                string[] nameAndValue = nameValue.Split( new char[] { '^' } );
+                                nameAndValue = nameAndValue.Select( s => HttpUtility.UrlDecode( s ) ).ToArray(); // url decode array items
+                                var sf = nameAndValue[0].ResolveMergeFields( mergeFields, enabledLavaCommands );
+                                var val = nameAndValue[1].ResolveMergeFields( mergeFields, enabledLavaCommands );
+                                sourceKeyMap.Add( sf, val );
+                            }
+                        }
+
+                        TimeSpan t = DateTime.UtcNow - new DateTime( 1970, 1, 1 );
+                        int secondsSinceEpoch = ( int ) t.TotalSeconds;
+
+                        dynamic json = new { data = new[] { sourceKeyMap }, client_timestamp = secondsSinceEpoch.ToString() };
+
+                        var documentIdWithIntegration = $"{ documentId }/integration/object/smartfields";
+
+                        //
+                        // begin sign now sdk workaround
+                        // sign now Update() uses PUT rather than POST
+                        //
+
+                        var useAPISandbox = GetAttributeValue( "UseAPISandbox" ).AsBoolean();
+
+                        var client = new RestClient();
+                        client.BaseUrl = new Uri( useAPISandbox ? "https://api-eval.signnow.com/" : "https://api.signnow.com/" );
+
+                        var request = new RestRequest( "/document/" + documentIdWithIntegration, Method.POST )
+                            .AddHeader( "Accept", "application/json" )
+                            .AddHeader( "Authorization", "Bearer " + accessToken );
+
+                        request.RequestFormat = DataFormat.Json;
+                        request.AddJsonBody( json );
+
+                        var response = client.Execute( request );
+
+                        dynamic results = "";
+
+                        if ( response.StatusCode == HttpStatusCode.OK )
+                        {
+                            results = response.Content;
+                        }
+                        else
+                        {
+                            Console.WriteLine( response.Content.ToString() );
+                            results = response.Content.ToString();
+                        }
+
+                        var mergeDocumentFields = JsonConvert.DeserializeObject( results );
+
+                        //
+                        // end sign now sdk work around
+                        //
+
+                        errors = ParseErrors( mergeDocumentFields );
+                        if ( errors.Any() )
+                        {
+                            errorMessage = errors.AsDelimited( "; " );
+                            return null;
+                        }
+                    }
+                }
 
                 // Get the document to determine the roles (if any) are needed
                 JObject getDocumentRes = SignNowSDK.Document.Get( accessToken, documentId );
