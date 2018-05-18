@@ -64,8 +64,8 @@
                                             </div>
                                         </div>
                                         <div class="actions">
-                                            <asp:LinkButton ID="lbNewGroup" runat="server" CssClass="btn btn-default btn-move btn-xs" CommandName="Move"><i class="fa fa-fw fa-external-link"></i></asp:LinkButton>
-                                            <asp:LinkButton ID="lbRemoveMember" runat="server" Visible="false" CssClass="btn btn-remove btn-default btn-xs" CommandName="Remove"><i class="fa fa-fw fa-times"></i></asp:LinkButton>
+                                            <asp:LinkButton ID="lbNewGroup" runat="server" CssClass="btn btn-default btn-square btn-move btn-sm" CommandName="Move"><i class="fa fa-fw fa-external-link"></i></asp:LinkButton>
+                                            <asp:LinkButton ID="lbRemoveMember" runat="server" Visible="false" CssClass="btn btn-remove btn-default btn-square btn-sm" CommandName="Remove"><i class="fa fa-fw fa-times"></i></asp:LinkButton>
                                         </div>
                                     </li>
                                 </ItemTemplate>

@@ -4,31 +4,30 @@
 
 // Bootstrap Colors *show in editor*
 @brand-success: #16c98d; // #color
-@brand-warning: #f7c46c; // #color
-@brand-danger: #fa5e5b; // #color
+@brand-warning: #ffc870; // #color
+@brand-danger: #d4442e; // #color
 @brand-info: #009ce3; // #color
 @brand-critical: #ee7624; // #color
 
-@gray-base:              #152934;
-@gray-darker:            #232a31; // #color
-@gray-dark:              #313b45;   // #color
-@gray:                   #67747c; // #color
-@gray-light:             #99a9b3; // #color
-@gray-lighter:           #dbe6ec; // #color
-@gray-lightest:          #f4fbfe;
+@gray-base:              #000;
+@gray-darker:            #2d2d2d; // #color
+@gray-dark:              #484848;   // #color
+@gray:                   #767676; // #color
+@gray-light:             #d8d8d8; // #color
+@gray-lighter:           #e6e6e6; // #color
+@gray-lightest:          #f3f3f3;
 
-@ui-1: @gray-lightest;
 @ui-2: #f5f7fa;
 @ui-3: #f0f3f6;
-@ui-4: #dfe3e6;
-@ui-5: #8c9ba5;
+@ui-4: #dbdbdb;
+@ui-5: #aaa;
 
-@body-background: @ui-2; // The page background color. #color
+@body-background: #fafafa; // The page background color. #color
 @text-color: @gray-dark; // The default text color. #color
-@text-muted:             @gray; // The muted color for text #color
+@text-muted: @gray; // The muted color for text #color
 
 @link-color: #007acc; // The color for all links. #color
-@link-hover-color:       @brand-info; // The rollover color for all links. #color
+@link-hover-color: @brand-info; // The rollover color for all links. #color
 
 
 @navbarside-background-color: @gray-darker; // This is the background color for the right-hand menu. #color
@@ -55,14 +54,15 @@
 @font-size-small: 14px;
 @line-height-base: 1.5; // The default line height.
 //--
-@help-color: #3d70b2; // The color of the help icon used in Rock. #color
+@help-color-hex: #3d70b2;
+@help-color: rgba(red(@help-color-hex), green(@help-color-hex), blue(@help-color-hex), .8); // The color of the help icon used in Rock. #color
 @required-field-color: @brand-danger; // Color of the small dot that denotes required fields. #color
 
 // Navbar Styling *show in editor*
 @side-nav-width: 80px;
 
 // Layers
-@shadow-raised: 0 1px 2px 0 rgba(0, 0, 0, .1);
+@shadow-raised: 0 0 1px 0 rgba(0, 0, 0, .03), 0 1px 3px 0 rgba(0, 0, 0, .08);
 @shadow-overlay: 0 4px 8px 0 rgba(0,0,0,.1);
 @shadow-sticky-nav: 0 6px 12px 0 rgba(0,0,0,.1);
 @shadow-temporary-nav: 0 8px 16px 0 rgba(0,0,0,.1);
@@ -87,14 +87,14 @@
 //
 //## Define common padding and border radius sizes and more. Values based on 14px text and 1.428 line-height (~20px to start).
 
-@padding-base-vertical:     7px;
-@padding-base-horizontal:   16px;
+@padding-base-vertical:     6px;
+@padding-base-horizontal:   12px;
 
-@padding-large-vertical:    11px;
-@padding-large-horizontal:  (@padding-base-horizontal * 2);
+@padding-large-vertical:    10px;
+@padding-large-horizontal:  16px;
 
 @padding-small-vertical:    5px;
-@padding-small-horizontal:  @padding-base-horizontal;
+@padding-small-horizontal:  10px;
 
 @padding-xs-vertical:       1px;
 @padding-xs-horizontal:     5px;
@@ -103,21 +103,22 @@
 @line-height-small:         1.5;
 
 
-// @state-warning-text: darken(desaturate(@brand-warning), 33), 9);
-// @state-warning-bg: lighten(saturate(spin(@brand-warning, 2.0144), 10.3226), 29.2157);
-// @state-warning-border: @brand-warning;
-// //--
-// @state-danger-text: #e55235;
-// @state-danger-bg: lighten(saturate(spin(@brand-danger, 2.0144), 10.3226), 29.2157);
-// @state-danger-border: @brand-danger;
-// //--
-// @state-success-text: @text-color;
-// //@state-success-bg: @brand-success;
-// @state-success-border: @brand-success;
-// //--
-// @state-info-text: darken(desaturate(@brand-info), 33), 9);
-// //@state-info-bg: @brand-info;
-// @state-info-border: @brand-info;
+@state-warning-text: #e55235; // darken(desaturate(@brand-warning), 33%), 20%);
+@state-warning-bg: #fffae5;
+@state-warning-border: @brand-warning;
+//--
+@state-danger-text: #e55235;
+@state-danger-bg: #fcf2f1;
+@state-danger-border: @brand-danger;
+
+//--
+@state-success-text: #108043;
+@state-success-bg: #eaf6ef;
+@state-success-border: @brand-success;
+//--
+@state-info-text: #108043; //darken(desaturate(@brand-info), 33%), 20%);
+@state-info-bg: #ecf9fd;
+@state-info-border: @brand-info;
 
 //== Alerts
 //
@@ -127,19 +128,19 @@
 @alert-border-radius:         @border-radius-base;
 @alert-link-font-weight:      bold;
 
-@alert-success-bg:            #f5fbfa;
+@alert-success-bg:            @state-success-bg;
 @alert-success-text:          @state-success-text;
 @alert-success-border:        @state-success-border;
 
-@alert-info-bg:              #daf1ff;
+@alert-info-bg:               @state-info-bg;
 @alert-info-text:             @state-info-text;
 @alert-info-border:           @state-info-border;
 
-@alert-warning-bg:            #fffdf9;
+@alert-warning-bg:            @state-warning-bg;
 @alert-warning-text:          @state-warning-text;
 @alert-warning-border:        @state-warning-border;
 
-@alert-danger-bg:             #fdedee;
+@alert-danger-bg:             @state-danger-bg;
 @alert-danger-text:           @state-danger-text;
 @alert-danger-border:         @state-danger-border;
 
@@ -199,7 +200,7 @@
 //// Breadcrumbs
 @breadcrumb-bg:               transparent;                     // Background color for the breadcrumbs. #color
 @breadcrumb-color:            lighten(@theme-4-text, 20%);  // Text color for the breadcrumbs. #color
-@breadcrumb-active-color:     @gray-light;            // The color of the active item in the breadcrumbs. #color
+@breadcrumb-active-color:     @gray;            // The color of the active item in the breadcrumbs. #color
 @breadcrumb-separator:        "/";                          // Separator character in the breadcrumbs.
 
 //// Footer
@@ -243,7 +244,7 @@
 @input-focus-transition: ~"border-color .15s ease-in-out, box-shadow .15s ease-in-out";
 
 @input-color-placeholder:        lighten(@text-color, 40%); // The text color of input placeholder text.
-@input-group-addon-bg:           @ui-4;                   // Used for pre (dollar signs, etc.) and post ( percent signs) input addons as well as picker backgrounds.
+@input-group-addon-bg:           @gray-lighter;                   // Used for pre (dollar signs, etc.) and post ( percent signs) input addons as well as picker backgrounds.
 @input-group-addon-border-color: @input-border;             // Used for pre (dollar signs, etc.) and post ( percent signs) input addons as well as picker borders (highly recommended that you use the same color as the input border).
 
 //// Picker
@@ -267,7 +268,7 @@
 @panel-bg: #fff; // The background color of the panel body.
 @panel-body-padding: 16px;
 @panel-heading-padding: 16px;
-@panel-heading-bg: @ui-2; // The background color of the panel's header.
+@panel-heading-bg: @gray-lightest; // The background color of the panel's header.
 @panel-text:                  @text-color;                  // The text color of the panel.
 @panel-border:                @ui-4;        // The panel's border color.
 @panel-top-border-color:      @ui-4;    // Color of the panel's top border often used as an accent color.
@@ -490,27 +491,27 @@
 //--
 @btn-primary-color:              #fff;
 @btn-primary-bg:                 @brand-primary;
-@btn-primary-border:             darken(@btn-primary-bg, 5%);
+@btn-primary-border:             @btn-primary-bg;
 //--
 @btn-success-color:              #fff;
 @btn-success-bg:                 @brand-success;
-@btn-success-border:             darken(@btn-success-bg, 5%);
+@btn-success-border:             @btn-success-bg;
 //--
 @btn-warning-color:              #fff;
 @btn-warning-bg:                 @brand-warning;
-@btn-warning-border:             darken(@btn-warning-bg, 5%);
+@btn-warning-border:             @btn-warning-bg;
 //--
 @btn-danger-color:               #fff;
 @btn-danger-bg:                  @brand-danger;
-@btn-danger-border:              darken(@btn-danger-bg, 5%);
+@btn-danger-border:              @btn-danger-bg;
 //--
 @btn-info-color:                 #fff;
 @btn-info-bg:                    @brand-info;
-@btn-info-border:                darken(@btn-info-bg, 5%);
+@btn-info-border:                @btn-info-bg;
 //--
-@btn-action-color:              @theme-8-text;
-@btn-action-bg:                 @theme-8;
-@btn-action-border:             darken(@btn-action-bg, 5%);
+@btn-action-color:              #fff;
+@btn-action-bg:                 @gray;
+@btn-action-border:             @btn-action-bg;
 //--
 @btn-security-color:            @btn-default-color;
 @btn-security-bg:               @btn-default-bg;
@@ -524,6 +525,7 @@
 @alert-default-text: @theme-6-text;
 
 // Custom Labels { The bootstrap labels use the brand colors. }
+@label-default-bg: @gray;
 @label-campus-bg: #83758f;               // Used for identifing campuses.
 @label-type-bg: @theme-8;  // Used for showing the 'type' of an idea. For instance on the group viewer this highlights the group's type.
 
@@ -534,7 +536,7 @@
 @code-color:                  #e83e8c;
 @code-bg:                     transparent;
 //--
-@pre-bg:                      @ui-1;
+@pre-bg:                      @gray-lightest;
 @pre-color:                   @gray-dark;
 @pre-border-color:            @panel-border;
 @pre-scrollable-max-height:   340px;

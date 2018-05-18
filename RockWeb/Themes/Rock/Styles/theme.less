@@ -125,7 +125,7 @@ textarea,
       padding: 2px 24px 17px;
       margin-right: 0;
       line-height: @line-height-base;
-      color: @gray;
+      color: @gray-dark;
       border: 0;
       transition: color 300ms ease-in-out;
       &::after {
@@ -146,7 +146,7 @@ textarea,
         border: 0;
         &::after {
           height: 4px;
-          background-color: rgb(170, 170, 170);
+          background-color: @gray;
           opacity: 1;
         }
       }
@@ -376,7 +376,7 @@ textarea,
 
 .rollover-item {
   > a {
-    color: @ui-5;
+    color: @gray;
 
     &:hover,
     &:focus {
@@ -668,7 +668,7 @@ td.grid-actions {
     }
 
     input.searchinput {
-      padding: 15px 0 15px 30px;
+      padding: 15px 0 15px 34px;
       color: @navbartop-color;
     }
 
@@ -686,11 +686,11 @@ td.grid-actions {
     }
 
     .tt-suggestion p {
-      padding: 13px 15px 13px 10px;
+      padding: 10px 15px 10px 10px;
     }
 
     .tt-hint {
-      padding: 14.5px 4px 4px 30px;
+      padding: 14.5px 4px 4px 34px;
       color: @navbartop-color;
       opacity: .5;
     }
@@ -976,25 +976,25 @@ td.grid-actions {
           &.title {
             padding: 24px 20px 28px;
             margin: 0 -20px;
-            font-size: 28px; 
+            font-size: 28px;
             font-weight: @font-weight-light;
             line-height: 1;
             color: @navbarside-color;
           }
-  
+
           &.header {
             padding-top: 11px;
             padding-left: 5px !important;
             margin-top: 24px;
-            margin-bottom: 20px;
+            margin-bottom: (@line-height-computed / 2);
             font-size: 11px;
             font-weight: 600;
             line-height: 1;
-            color: #fff;
+            color: rgba(167,174,181,.6);
             text-transform: uppercase;
             letter-spacing: 2px;
             border-top: 1px solid rgba(167,174,181,.6);
-  
+
             &:nth-child(2) {
               margin-top: 0;
             }
@@ -1073,6 +1073,7 @@ body.navbar-side-close {
     padding: 20px 15px;
     background-color: @pagetitle-background;
     background-color: var(--pagetitle-background);
+    border-bottom: 1px solid @gray-lighter;
 
     .title {
       margin: 0;
@@ -1222,15 +1223,6 @@ body.navbar-side-close {
   .previous-names {
     font-weight: @font-weight-light;
   }
-}
-
-// family edit
-.editgroup-list li.member .radio .label-text::before {
-  width: 16px;
-  height: 16px;
-  padding-left: 1px;
-  font-size: 8px;
-  line-height: 12px;
 }
 
 /*#endregion */
@@ -1471,14 +1463,12 @@ body.navbar-side-close {
   0% {
     transform: translate3d(0, -10px, 0);
   }
-  
+
   100% {
     transform: translate3d(0, 0, 0);
   }
 
 }
-
-
 
 /*#endregion */
 // @import "_print.less";

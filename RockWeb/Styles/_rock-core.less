@@ -466,13 +466,9 @@ th[align=center] {
 }
 
 .panel-persondetails {
-  border: 1px solid @panel-border;
+  .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
 
   .panel-heading {
-    margin: 0 @panel-body-padding;
-    padding: @panel-heading-padding 0;
-    border-bottom: 1px solid @panel-border;
-    line-height: 1;
     .actions {
       a {
         margin-left: 4px;
@@ -850,11 +846,11 @@ div.aspNetDisabled {
   .button-outline-variant(@btn-primary-color; @btn-primary-bg; @btn-primary-border);
 }
 // Success appears as green
-.btn-success {
+.btn-outline-success {
   .button-outline-variant(@btn-success-color; @btn-success-bg; @btn-success-border);
 }
 // Info appears as blue-green
-.btn-info {
+.btn-outline-info {
   .button-outline-variant(@btn-info-color; @btn-info-bg; @btn-info-border);
 }
 // Warning appears as orange
