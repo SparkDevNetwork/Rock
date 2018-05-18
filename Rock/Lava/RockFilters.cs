@@ -1113,24 +1113,30 @@ namespace Rock.Lava
 
             if ( date.HasValue )
             {
-                TimeSpan timeInterval = new TimeSpan();
                 switch ( interval )
                 {
+                    case "y":
+                        date = date.Value.AddYears( amount );
+                        break;
+                    case "M":
+                        date = date.Value.AddMonths( amount );
+                        break;
+                    case "w":
+                        date = date.Value.AddDays( amount * 7 );
+                        break;
                     case "d":
-                        timeInterval = new TimeSpan( amount, 0, 0, 0 );
+                        date = date.Value.AddDays( amount );
                         break;
                     case "h":
-                        timeInterval = new TimeSpan( 0, amount, 0, 0 );
+                        date = date.Value.AddHours( amount );
                         break;
                     case "m":
-                        timeInterval = new TimeSpan( 0, 0, amount, 0 );
+                        date = date.Value.AddMinutes( amount );
                         break;
                     case "s":
-                        timeInterval = new TimeSpan( 0, 0, 0, amount );
+                        date = date.Value.AddSeconds( amount );
                         break;
                 }
-
-                date = date.Value.Add( timeInterval );
             }
 
             return date;
