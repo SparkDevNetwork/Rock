@@ -486,6 +486,7 @@
     <Compile Include="Cache\Entities\CacheWorkflowType.cs" />
     <Compile Include="Cache\IItemCache.cs" />
     <Compile Include="Cache\NonEntities\CacheEntityNoteTypes.cs" />
+    <Compile Include="Cache\NonEntities\CacheIdFromGuid.cs" />
     <Compile Include="Cache\NonEntities\CacheWorkflowTriggers.cs" />
     <Compile Include="Cache\RockCache.cs" />
     <Compile Include="Cache\IRockCacheManager.cs" />
