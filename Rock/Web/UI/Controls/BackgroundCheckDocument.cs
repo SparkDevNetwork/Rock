@@ -15,11 +15,9 @@
 // </copyright>
 //
 using System;
-using System.ComponentModel;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Cache;
-using Rock.Constants;
 
 namespace Rock.Web.UI.Controls
 {
@@ -102,7 +100,6 @@ namespace Rock.Web.UI.Controls
                 _fileUploader.BinaryFileTypeGuid = value ?? Guid.Empty;
             }
         }
-
 
         /// <summary>
         /// Gets or sets the binary file id.

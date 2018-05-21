@@ -232,7 +232,7 @@ namespace Rock.Checkr
                     createdNewAttribute = true;
                 }
 
-                // Set the value for this action's instance to the current time
+                // Set the value for this attribute
                 var attributeValue = new Rock.Model.AttributeValue();
                 attributeValue.Attribute = attribute;
                 attributeValue.EntityId = workflow.Id;
