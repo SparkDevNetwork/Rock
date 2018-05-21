@@ -89,6 +89,10 @@ textarea,
 // 2. Bootstrap Overrides    */
 // -------------------------
 
+.badge {
+  border-radius: @border-radius-base;
+}
+
 .well {
   .box-shadow(none)
 }
@@ -282,7 +286,12 @@ textarea,
     margin: 5px 0 0 7px;
     color: @ui-5;
     text-decoration: none;
+    position: absolute;
     background: #fff;
+
+    &.is-open {
+      background: @panel-subheading;
+    }
   }
 
   .grid-filter-entry {
@@ -291,7 +300,7 @@ textarea,
     padding-top: 37px;
   }
 
-  .grid-filter-overview {
+  .grid-filter-overview fieldset {
     padding: 37px 16px 8px;
   }
 }
@@ -492,7 +501,7 @@ td.grid-actions {
 
   .checkbox:last-child,
   .radio:last-child {
-    margin: 0;
+    margin: 0 !important;
   }
 
   .checkbox input[type="checkbox"] + span.label-text::before,
