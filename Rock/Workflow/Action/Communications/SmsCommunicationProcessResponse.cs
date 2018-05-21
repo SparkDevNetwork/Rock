@@ -32,13 +32,13 @@ namespace Rock.Workflow.Action
     [ActionCategory( "Communications" )]
     [Description( "Submits a message into the two-way SMS system as if it was just received from the SMS provider." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Process As SMS Communication Response" )]
+    [ExportMetadata( "ComponentName", "SMS Communication Process Response" )]
 
     [WorkflowTextOrAttribute( "From Number", "Or Attribute", "The number to report that the message was received from. <span class='tip tip-lava'></span>", true, order: 0, key: "FromNumber" )]
     [WorkflowTextOrAttribute( "To Number", "Or Attribute", "The number to report that the message was sent to. <span class='tip tip-lava'></span>", true, order: 1, key: "ToNumber" )]
     [TextField( "Message", "The message content to process. <span class='tip tip-lava'></span>", true, order: 2 )]
     [WorkflowAttribute( "Error Attribute", "Filled in by the SMS system if an error occurred processing the message. This error should generally be sent back to the original sender. Empty string is set if no error occurred.", false, order: 3 )]
-    public class ProcessAsSmsCommunicationResponse : ActionComponent
+    public class SmsCommunicationProcessResponse : ActionComponent
     {
         /// <summary>
         /// Executes the specified workflow.
@@ -62,7 +62,7 @@ namespace Rock.Workflow.Action
             string errorMessage;
             new Rock.Communication.Medium.Sms().ProcessResponse( toNumber, fromNumber, message, out errorMessage );
 
-            action.AddLogEntry( string.Format( "Processed SMS '{2}' from '{0}' to '{1}' activity", fromNumber, toNumber, message ) );
+            action.AddLogEntry( string.Format( "Processed SMS '{2}' from '{0}' to '{1}'", fromNumber, toNumber, message ) );
 
             if ( !string.IsNullOrWhiteSpace( errorMessage ) )
             {
