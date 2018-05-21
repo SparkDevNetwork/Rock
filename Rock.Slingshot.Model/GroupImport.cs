@@ -41,6 +41,14 @@ namespace Rock.Slingshot.Model
         public string Name { get; set; }
 
         /// <summary>
+        /// Gets or sets the description.
+        /// </summary>
+        /// <value>
+        /// The description.
+        /// </value>
+        public string Description { get; set; }
+
+        /// <summary>
         /// Gets or sets the order.
         /// </summary>
         /// <value>
@@ -120,6 +128,14 @@ namespace Rock.Slingshot.Model
         /// The group members.
         /// </value>
         public List<GroupMemberImport> GroupMemberImports { get; set; }
+
+        /// <summary>
+        /// Gets or sets the addresses of the group
+        /// </summary>
+        /// <value>
+        /// The addresses.
+        /// </value>
+        public ICollection<GroupAddressImport> Addresses { get; set; }
 
         /// <summary>
         /// Gets or sets the attribute values.
