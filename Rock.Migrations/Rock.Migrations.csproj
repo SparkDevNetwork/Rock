@@ -221,6 +221,10 @@
     <Compile Include="Migrations\201805182021328_Rollup0518.Designer.cs">
       <DependentUpon>201805182021328_Rollup0518.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201805211735573_Homepage.cs" />
+    <Compile Include="Migrations\201805211735573_Homepage.Designer.cs">
+      <DependentUpon>201805211735573_Homepage.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2916,6 +2920,9 @@
     <EmbeddedResource Include="Migrations\201805182021328_Rollup0518.resx">
       <DependentUpon>201805182021328_Rollup0518.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201805211735573_Homepage.resx">
+      <DependentUpon>201805211735573_Homepage.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.resx">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
     </EmbeddedResource>
@@ -4960,6 +4967,10 @@
     <Content Include="Migrations\201805171836577_Rollup_0517_spAnalytics_ETL_Attendance.sql">
       <DependentUpon>201805171836577_Rollup_0517.cs</DependentUpon>
     </Content>
+    <Content Include="Migrations\201805211735573_Homepage_ContentChannel.sql" />
+    <Content Include="Migrations\201805211735573_Homepage_ContentChannel_Down.sql" />
+    <Content Include="Migrations\201805211735573_Homepage_Metrics.sql" />
+    <Content Include="Migrations\201805211735573_Homepage_Metrics_Down.sql" />
     <Content Include="Migrations\Version 7.0\Version 1.7.0\201707182207536_AttendanceAnalyticsQuery_NonAttendees.sql">
       <DependentUpon>201707182207536_PageShortLinks.cs</DependentUpon>
     </Content>
