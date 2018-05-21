@@ -1206,6 +1206,7 @@ namespace Rock.Slingshot
                 groupImport.GroupTypeId = this.GroupTypeLookupByForeignId[slingshotGroup.GroupTypeId].Id;
 
                 groupImport.Name = slingshotGroup.Name;
+                groupImport.Description = slingshotGroup.Description;
                 if ( string.IsNullOrWhiteSpace( slingshotGroup.Name ) )
                 {
                     groupImport.Name = "Unnamed Group";
@@ -1234,6 +1235,60 @@ namespace Rock.Slingshot
                         groupMemberImport.PersonForeignId = groupMember.PersonId;
                         groupMemberImport.RoleName = groupMember.Role;
                         groupImport.GroupMemberImports.Add( groupMemberImport );
+                    }
+                }
+
+                // Addresses
+                groupImport.Addresses = new List<Rock.Slingshot.Model.GroupAddressImport>();
+                foreach ( var slingshotGroupAddress in slingshotGroup.Addresses )
+                {
+                    if ( !string.IsNullOrEmpty( slingshotGroupAddress.Street1 ) )
+                    {
+                        int? groupLocationTypeValueId = null;
+                        switch ( slingshotGroupAddress.AddressType )
+                        {
+                            case SlingshotCore.Model.AddressType.Home:
+                                groupLocationTypeValueId = this.GroupLocationTypeValues[Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid()].Id;
+                                break;
+
+                            case SlingshotCore.Model.AddressType.Previous:
+                                groupLocationTypeValueId = this.GroupLocationTypeValues[Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid()].Id;
+                                break;
+
+                            case SlingshotCore.Model.AddressType.Work:
+                                groupLocationTypeValueId = this.GroupLocationTypeValues[Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid()].Id;
+                                break;
+
+                            case SlingshotCore.Model.AddressType.Other:
+                                var locationTypeOther = this.GroupLocationTypeValues.Values.FirstOrDefault( t => t.Value.Equals( "Other" ) );
+                                groupLocationTypeValueId = locationTypeOther != null ? this.GroupLocationTypeValues[locationTypeOther.Guid].Id :
+                                    this.GroupLocationTypeValues[Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid()].Id;
+                                break;
+                        }
+
+                        if ( groupLocationTypeValueId.HasValue )
+                        {
+                            var addressImport = new Rock.Slingshot.Model.GroupAddressImport()
+                            {
+                                GroupLocationTypeValueId = groupLocationTypeValueId.Value,
+                                IsMailingLocation = slingshotGroupAddress.IsMailing,
+                                IsMappedLocation = slingshotGroupAddress.AddressType == SlingshotCore.Model.AddressType.Home,
+                                Street1 = slingshotGroupAddress.Street1.Left( 100 ),
+                                Street2 = slingshotGroupAddress.Street2.Left( 100 ),
+                                City = slingshotGroupAddress.City.Left( 50 ),
+                                State = slingshotGroupAddress.State.Left( 50 ),
+                                Country = slingshotGroupAddress.Country.Left( 50 ),
+                                PostalCode = slingshotGroupAddress.PostalCode.Left( 50 ),
+                                Latitude = slingshotGroupAddress.Latitude.AsDoubleOrNull(),
+                                Longitude = slingshotGroupAddress.Longitude.AsDoubleOrNull()
+                            };
+
+                            groupImport.Addresses.Add( addressImport );
+                        }
+                        else
+                        {
+                            throw new Exception( $"Unexpected Address Type: {slingshotGroupAddress.AddressType}" );
+                        }
                     }
                 }
 
@@ -1612,16 +1667,16 @@ namespace Rock.Slingshot
         {
             int entityTypeIdPerson = EntityTypeCache.GetId<Rock.Model.Person>().Value;
             int entityTypeIdAttribute = EntityTypeCache.GetId<Rock.Model.Attribute>().Value;
-            var attributeCategoryNames = this.SlingshotPersonAttributes.Where( a => !string.IsNullOrWhiteSpace( a.Category ) ).Select( a => a.Category ).Distinct().ToList();
-            attributeCategoryNames.AddRange( this.SlingshotFamilyAttributes.Where( a => !string.IsNullOrWhiteSpace( a.Category ) ).Select( a => a.Category ).Distinct().ToList() );
-            attributeCategoryNames.AddRange( this.SlingshotGroupAttributes.Where( a => !string.IsNullOrWhiteSpace( a.Category ) ).Select( a => a.Category ).Distinct().ToList() );
+            int entityTypeIdGroup = EntityTypeCache.GetId<Rock.Model.Group>().Value;
+            var personCategoryNames = this.SlingshotPersonAttributes.Where( a => !string.IsNullOrWhiteSpace( a.Category ) ).Select( a => a.Category ).Distinct().ToList();
+            personCategoryNames.AddRange( this.SlingshotFamilyAttributes.Where( a => !string.IsNullOrWhiteSpace( a.Category ) ).Select( a => a.Category ).Distinct().ToList() );
 
             var rockContext = new RockContext();
             var categoryService = new CategoryService( rockContext );
 
             var attributeCategoryList = categoryService.Queryable().Where( a => a.EntityTypeId == entityTypeIdAttribute ).ToList();
 
-            foreach ( var slingshotAttributeCategoryName in attributeCategoryNames.Distinct().ToList() )
+            foreach ( var slingshotAttributeCategoryName in personCategoryNames.Distinct().ToList() )
             {
                 if ( !attributeCategoryList.Any( a => a.Name.Equals( slingshotAttributeCategoryName, StringComparison.OrdinalIgnoreCase ) ) )
                 {
@@ -1748,20 +1803,20 @@ namespace Rock.Slingshot
             var attributeCategoryList = new CategoryService( rockContext ).Queryable().Where( a => a.EntityTypeId == entityTypeIdAttribute ).ToList();
 
             // Add any Group Attributes to Rock that aren't in Rock yet
-            // NOTE: For now, just match by Attribute.Key. Don't try to do a customizable match
             foreach ( var slingshotGroupAttribute in this.SlingshotGroupAttributes )
             {
                 slingshotGroupAttribute.Key = slingshotGroupAttribute.Key;
 
                 if ( !this.GroupAttributeKeyLookup.Keys.Any( a => a.Equals( slingshotGroupAttribute.Key, StringComparison.OrdinalIgnoreCase ) ) )
                 {
+                    // the group attribute category targets the grouptype
                     var rockGroupAttribute = new Rock.Model.Attribute();
                     rockGroupAttribute.Key = slingshotGroupAttribute.Key;
                     rockGroupAttribute.Name = slingshotGroupAttribute.Name;
                     rockGroupAttribute.Guid = Guid.NewGuid();
                     rockGroupAttribute.EntityTypeId = entityTypeIdGroup;
-                    //rockGroupAttribute.EntityTypeQualifierColumn = "GroupType";
-                    //rockGroupAttribute.EntityTypeQualifierValue = slingshotGroupAttribute.Category;
+                    rockGroupAttribute.EntityTypeQualifierColumn = "GroupTypeId";
+                    rockGroupAttribute.EntityTypeQualifierValue = this.SlingshotGroupTypeList.FirstOrDefault( gt => gt.Name.Equals( slingshotGroupAttribute.Category ) )?.Id.ToString();
                     rockGroupAttribute.FieldTypeId = this.FieldTypeLookup[slingshotGroupAttribute.FieldType].Id;
 
                     if ( !string.IsNullOrWhiteSpace( slingshotGroupAttribute.Category ) )
