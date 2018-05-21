@@ -1362,6 +1362,7 @@
     <Compile Include="Reporting\DataSelect\PrayerRequest\CampusSelect.cs" />
     <Compile Include="Reporting\DataSelect\PrayerRequest\CategorySelect.cs" />
     <Compile Include="Reporting\DataSelect\PrayerRequest\PersonLinkSelect.cs" />
+    <Compile Include="Reporting\DataTransform\Person\FamilyMembersTransform.cs" />
     <Compile Include="Reporting\DataTransform\Person\FatherTransform.cs" />
     <Compile Include="Reporting\DataTransform\Person\GrandchildTransform.cs" />
     <Compile Include="Reporting\DataTransform\Person\GrandparentTransform.cs" />
