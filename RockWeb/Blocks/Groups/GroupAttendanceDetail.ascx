@@ -60,10 +60,10 @@
                                         <Rock:RockCheckBox ID="cbMember" runat="server" Checked='<%# Eval("Attended") %>' Text='<%# string.Concat(Eval("MergedTemplate"), " ", Eval("FullName"))%>' />
                                     </ItemTemplate>
                                 </asp:ListView>
-                                <div class="pull-right margin-b-lg margin-l-md">
+                                <div class="pull-left margin-b-md margin-r-md">
                                     <Rock:PersonPicker ID="ppAddPerson" runat="server" CssClass="picker-menu-right" OnSelectPerson="ppAddPerson_SelectPerson" />
                                 </div>
-                                <div class="pull-right margin-b-lg">
+                                <div class="pull-left margin-b-lg">
                                     <asp:LinkButton ID="lbAddMember" runat="server" CssClass="btn btn-default" OnClick="lbAddMember_Click" CausesValidation="false" Visible="false"><i class="fa fa-plus"></i> Add Group Member</asp:LinkButton>
                                 </div>
                             </div>
