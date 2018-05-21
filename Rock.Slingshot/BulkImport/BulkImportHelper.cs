@@ -1385,6 +1385,7 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
             person.InactiveReasonNote = personImport.InactiveReasonNote.Left( 1000 );
             person.CreatedDateTime = personImport.CreatedDateTime;
             person.ModifiedDateTime = personImport.ModifiedDateTime;
+            person.SystemNote = personImport.Note;
             person.ForeignId = personImport.PersonForeignId;
             person.ForeignKey = foreignSystemKey;
         }
