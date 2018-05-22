@@ -67,7 +67,7 @@
                             <Rock:RockCheckBox ID="cbRequireApproval" runat="server" Label="Items Require Approval" Text="Yes" />
 
                             <Rock:RockCheckBox ID="cbIndexChannel" runat="server" Label="Indexing Enabled" Text="Yes" />
-                            <Rock:RockTextBox ID="tbContentChannelItemPublishingPoint" runat="server" Label="Content Channel Item Publishing Point" Help="Lava template to the URL that the content item can be viewed (Keys: 'Id', 'Title', 'ContentChannelId')." />
+                            <Rock:RockTextBox ID="tbContentChannelItemPublishingPoint" runat="server" Label="Content Channel Item Publishing Point" Help="Lava template to the URL that the content item can be viewed (Keys: 'Id', 'Title', 'ContentChannelId', 'Slug')." />
 
                             <div class="row">
                                 <div class="col-xs-6">
