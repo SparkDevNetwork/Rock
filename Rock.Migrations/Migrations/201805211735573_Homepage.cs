@@ -304,9 +304,9 @@ namespace Rock.Migrations
 
 
             // Enable Group History on Small Groups
-            Sql( @"UPDATE [GroupType] SET [EnableGroupHistory] = 1 WHERE [Guid] = '50FCFB30-F51A-49DF-86F4-2B176EA1820B'" );
+            Sql( @"UPDATE [GroupType] SET [EnableGroupHistory] = 1, [GroupTypeColor] = '#03a9f4' WHERE [Guid] = '50FCFB30-F51A-49DF-86F4-2B176EA1820B'" );
             // Enable Group History on Serving Team
-            Sql( @"UPDATE [GroupType] SET [EnableGroupHistory] = 1 WHERE [Guid] = '2C42B2D4-1C5F-4AD5-A9AD-08631B872AC4'" );
+            Sql( @"UPDATE [GroupType] SET [EnableGroupHistory] = 1, [GroupTypeColor] = '#4caf50' WHERE [Guid] = '2C42B2D4-1C5F-4AD5-A9AD-08631B872AC4'" );
 
             RockMigrationHelper.AddPageRoute("7EA94B4F-013B-4A79-8D01-86994EB04604","group/{GroupId}/attendance");
             RockMigrationHelper.AddPageRoute("60995C8C-862F-40F5-AFBB-13B49CDA77EB","group/{GroupId}/map");
