@@ -18,7 +18,7 @@
             {% if campus.IsActive == true %}
 
                 <div class="campus-card">
-                    <h4>{{ campus.Name}}</h3>
+                    <h4>{{ campus.Name}}</h4>
                     <p>{{ campus.Location.Street1 }}</p>
                     <p>{{ campus.Location.City }}, {{ campus.Location.State }} {{ campus.Location.PostalCode }}</p>
                     <br />
@@ -77,14 +77,3 @@ $('.nav-next').click(function(){
     $('.campuses-cards-row').slick('slickNext');
 })
 </script>
-
-
-
-
-
-
-
-
-
-
-{% comment %} {{ 'Lava' | Debug }} {% endcomment %}

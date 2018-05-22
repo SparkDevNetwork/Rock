@@ -79,16 +79,16 @@
 .cta-cards {
     display: flex;
     justify-content: space-around;
-    margin: 0 -30px;
+    /* margin: 0 -30px; */
 }
 
 .cta-card {
     display: flex;
     flex-direction: column;
-    width: 33%;
+    width: 30%;
     min-height: 210px;
     background-color: #212121;
-    margin: 0 15px;
+    /* margin: 0 15px; */
     padding: 30px;
 }
 
@@ -221,6 +221,10 @@
     font-size: 18px;
     font-weight: 700;
     line-height: 27px;
+}
+
+.coming-soon-spacer {
+    height: 78px;
 }
 
 .service-times {

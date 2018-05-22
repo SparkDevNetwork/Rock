@@ -36,7 +36,8 @@
 @media screen and (min-width: 992px) {
    .event-cards-row {
       justify-content: left;
-      margin-left: -15px;
+      /*width: 95%;*/
+      margin: 0 auto;
    }
 }
 
@@ -89,9 +90,7 @@
    display: flex;
 }
 
-.mission-trips-header {
-   padding-left: 20px;
-}
+
 
 .missions-event-header-override h4 {
    width: 95%;
@@ -112,7 +111,18 @@
 
 .mission-trips-header a {
    margin-top: 7px;
-   margin-right: 100px;
+}
+
+@media screen and (max-width: 800px) {
+    .colombia-header {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+
+    .mission-trips-header {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
 }
 
 .missions-stories-header {

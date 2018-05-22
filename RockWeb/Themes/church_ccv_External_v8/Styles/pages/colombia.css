@@ -2,24 +2,23 @@
 /**
  * Adjustments for existing rock elements
  */
-.page-background {
-  color:#fff;
-}
-
-#masthead, .main-feature {
-  background-color:#000;
-}
-
-#subnavbar-bg {
+ .page-background {
+    color:#fff;
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-image-missing.jpg");
+  }
+    
+  #section-a-bg {
     display: none;
-}
+  }
 
-#section-a-bg {
-  background-color:#000;
-}
-.masthead-fullmenu {
-  background:#000;
-}
+  #section-f-bg {
+      background-color: #ffffff;
+  }
+
+  #subnavbar-bg {
+      display: none;
+  }
+
 /**
  * Namespace all css to avoid any issues with integrating into exisiting site.
  */

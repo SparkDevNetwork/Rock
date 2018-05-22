@@ -3,33 +3,6 @@
    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-image-missing.jpg");
 }
 
-/* Override Theme.css */
-@media screen and (max-width: 800px) {
-    #subnavbar-bg {
-        display: block;
-    }
-    
-    #desktopspacer {
-        display: none;
-    }
-    
-    #subnavbar-bg h1, #zone-sectiona h1 {
-        font-size: 35px;
-    }
-    
-    #section-a-bg {
-        padding: 0px 15px;
-    }
-}
-
-.masthead {
-    background-color: black;
-}
-
-.main-feature {
-    padding-top: 75px;
-}
-
 #subnavbar-bg {
 	display: none;
 }

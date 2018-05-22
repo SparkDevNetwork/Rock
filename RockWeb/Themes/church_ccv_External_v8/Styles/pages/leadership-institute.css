@@ -7,13 +7,8 @@
 	background-color: #f9f9f9;
 }
 
-
 #section-b-bg,#section-d-bg {
 	background-color: #ffffff;
-}
-
-.desktop-spacer-top {
-    padding-top: 100px;
 }
 
 .leadership-institute-card {
@@ -25,22 +20,6 @@
     margin: 0 auto;
     margin-bottom: 20px;
     margin-top: 20px;
-}
-
-.leadership-institute-title {
-    font-size: 60px;
-    font-weight: 900;
-    font-family: akrobat;
-    color: #FFFFFF;
-    text-align: center;
-}
-
-.leadership-institute-subtitle {
-    text-align: center; 
-    color: #FFFFFF; 
-    font-size: 18px; 
-    font-family: heebo; 
-    font-weight: normal;
 }
 
 .program-features-container {

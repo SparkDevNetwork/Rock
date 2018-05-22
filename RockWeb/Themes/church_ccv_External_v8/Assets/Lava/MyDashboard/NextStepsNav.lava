@@ -299,59 +299,62 @@
     }
 
     // Get Steps data from api
-    Sys.Application.add_load(function(){
-        // if current person query api for steps taken
-        var currentPersonGuid = '{{ CurrentPerson.Guid }}';
-        if (currentPersonGuid !== '') {
-            $.getJSON('/api/CCV/Badges/StepsBar/'+currentPersonGuid, function(data){
-                for (var key in data) {
-                    if (data.hasOwnProperty(key)) {
-                        var keyData = data[key];
-                        // Process response
-                        switch (key) {
-                            case 'BaptismResult': {
-                                renderBaptism(keyData);
-                                break;
-                            };
-                            case 'IsWorshipper': {
-                                renderWorship(keyData);
-                                break;
-                            };   
-                            case 'ConnectionResult': {
-                                renderConnect(keyData);
-                                break;
-                            };
-                            case 'IsTithing': {
-                                renderGive(keyData);
-                                break;
-                            };   
-                            case 'ServingResult': {
-                                renderServe(keyData);
-                                break;
-                            };  
-                            case 'CoachingResult': {
-                                renderCoach(keyData);
-                                break;
-                            };  
-                            case 'SharedStoryResult': {
-                                renderShare(keyData);
-                                break;
-                            };                           
-                            default:
-                                break;
+    Sys.Application.add_load(function(sender, args){
+        // check if post back
+        if (!args.get_isPartialLoad()){
+            // if current person query api for steps taken
+            var currentPersonGuid = '{{ CurrentPerson.Guid }}';
+            if (currentPersonGuid !== '') {
+                $.getJSON('/api/CCV/Badges/StepsBar/'+currentPersonGuid, function(data){
+                    for (var key in data) {
+                        if (data.hasOwnProperty(key)) {
+                            var keyData = data[key];
+                            // Process response
+                            switch (key) {
+                                case 'BaptismResult': {
+                                    renderBaptism(keyData);
+                                    break;
+                                };
+                                case 'IsWorshipper': {
+                                    renderWorship(keyData);
+                                    break;
+                                };   
+                                case 'ConnectionResult': {
+                                    renderConnect(keyData);
+                                    break;
+                                };
+                                case 'IsTithing': {
+                                    renderGive(keyData);
+                                    break;
+                                };   
+                                case 'ServingResult': {
+                                    renderServe(keyData);
+                                    break;
+                                };  
+                                case 'CoachingResult': {
+                                    renderCoach(keyData);
+                                    break;
+                                };  
+                                case 'SharedStoryResult': {
+                                    renderShare(keyData);
+                                    break;
+                                };                           
+                                default:
+                                    break;
+                            }
                         }
                     }
-                }
-            })
-        }
-        
-        // If current person query api for starting point step
-        var currentPersonId = '{{ CurrentPerson.Id }}';
-        if (currentPersonId !== '') {
-            $.getJSON('/api/CCV/Badges/TakenStartingPoint/'+currentPersonId, function(data){
-                // process response
-                renderStartingPoint(data);
-            })
+                })
+            }
+            
+            // If current person query api for starting point step
+            var currentPersonId = '{{ CurrentPerson.Id }}';
+            if (currentPersonId !== '') {
+                $.getJSON('/api/CCV/Badges/TakenStartingPoint/'+currentPersonId, function(data){
+                    // process response
+                    renderStartingPoint(data);
+                })
+            }
         }
 
     })

@@ -13,10 +13,10 @@
 }
 
 #section-a-bg {
-   background: url("/Themes/church_ccv_External_v8/Assets/Images/kids-experience.jpg") no-repeat;
+    background: url("/Themes/church_ccv_External_v8/Assets/Images/kids-experience.jpg") no-repeat;
     
-   background-size: cover;
-	background-color: #ffffff;
+    background-size: cover;
+    background-color: #ffffff;
 }
 
 #section-b-bg {

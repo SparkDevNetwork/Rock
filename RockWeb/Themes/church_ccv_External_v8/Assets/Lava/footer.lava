@@ -6,7 +6,7 @@
 <div class="footer">
     <div class="footer-logo">
         <img src="/Themes/church_ccv_External_v8/Assets/Images/logo-ccv-footer.svg" height="35" width="100">
-        <span class="footer-copyright">@2018 Christ's Church of the Valley.</span>
+        <span class="footer-copyright"><i class="fa fa-copyright"></i>2018 Christ's Church of the Valley.</span>
     </div>
 
     <div class="footer-links">
@@ -19,8 +19,8 @@
         <div class="footer-links-section">
             <h5>Community Services</h5>
             <a href="/community-services/premarital">Premarital</a>
-            <a href="/community-services/wedding">Wedding</a>
-            <a href="/community-services/funeral">Funeral</a>
+            <a href="/community-services/weddings-at-ccv">Weddings</a>
+            <a href="/community-services/funerals">Funerals</a>
         </div>
         <div class="footer-links-section" style="justify-content: space-between;">
             <div class="footer-links-subsection">
@@ -30,8 +30,7 @@
                 <a href="/get-involved#prayer-support">Prayer</a>
             </div>
             <div class="footer-links-legal">
-                <a href="/privacy">Privacy Policy</a>
-                <a href="/copyright" style="margin-left: 40px;">Copyright</a>
+                <a href="/privacy-policy">Privacy Policy</a>
             </div>            
         </div>
     </div>

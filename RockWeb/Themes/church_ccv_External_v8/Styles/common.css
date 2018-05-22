@@ -70,6 +70,23 @@
     margin: 0 auto;
 }
 
+@media screen and (max-width: 500px) {
+    .desktop-spacer-top {
+        display: none;
+    }
+
+    #section-a-bg {
+        padding: 20px;
+    }
+
+    #subnavbar-bg {
+        display: none;
+    }
+    
+    #zone-subnavbar {
+        display: none;
+    }
+}
 
 /* Nextstep Common Styling */
 .nextstep-icon-inactive {
@@ -360,22 +377,58 @@
 }
 /* End Hamburger Menu aka Full Menu*/
 
-.heroTitle {
-    text-align: center; 
-    color: #FFFFFF; 
-    font-family: akrobat; 
-    font-weight: 900; 
-    font-size: 60px
+.title {
+    margin-top: 0;
 }
 
-.heroText {
-   font-family: 'heebo';
-   font-size: 18px;
-   line-height: 36px;
-   text-align: center;
-   max-width: 650px;
-   color: #ffffff;
-   margin: 0 auto;
+.title img {
+    padding-top: 80px;
+    margin: 0 auto;
+    width: 500px;
+    display: block;
+}
+
+.title h3 {
+    font-size: 60px;
+    font-weight: 900;
+    font-family: akrobat;
+    color: #FFFFFF;
+    text-align: center;
+    padding-top: 70px;
+}
+
+.title p {
+    text-align: center;
+    color: #FFFFFF;
+    font-size: 18px;
+    font-family: heebo;
+    font-weight: normal;
+}
+
+.desktop-spacer-top {
+    padding-top: 70px;
+}
+
+@media screen and (max-width: 500px) {
+    .main-feature {
+        padding-top: 50px;
+    }
+
+    .title h3 {
+        padding-top: 0;
+        font-size: 36px;
+        font-weight: 400;
+    }
+
+    .title p {
+        font-size: 14px;
+    }
+
+    .title img {
+        padding-top: 0;
+        margin: 0 auto;
+        width: 250px;
+    }
 }
 
 .ccvRed {
@@ -736,6 +789,58 @@
     margin: 10px 0;
 }
 
+.footer-links-legal .legal-copyright {
+    margin-left: 40px;
+}
+
+/* Footer Mobile Styling */
+@media screen and (max-width: 768px) {
+    .footer-links-section h5 {
+        text-align: center;
+    }
+
+    .footer-links-legal {
+        flex-direction: column;
+    }
+
+    .footer-links-legal .legal-copyright {
+        margin-left: 0;
+    }
+}
+@media screen and (max-width: 500px) {
+    .footer {
+        flex-direction: column;
+        align-items: center;
+        padding: 20px 0;
+    }
+
+    .footer-logo {
+        width: 100%;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .footer-links, .footer-links-subsection {
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        margin-bottom: 20px;
+    }
+
+    .footer-links-section {
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .footer-links-section h5 {
+        text-align: center;
+    }
+
+    .footer-links-legal {
+        margin-bottom: -20px;
+        align-items: center;
+    }
+}
 
 
 

@@ -1,0 +1,20 @@
+{% comment %}
+{% include '~~/Assets/Lava/ColombiaChurchPlant/Static.lava' %}
+{% endcomment %}
+{% include '~~/Assets/Lava/ColombiaChurchPlant/ResolveFileName.lava' %}
+{% include churchDetailsLavaFile %}
+
+<div>
+   <h4 class="text-muted" style="margin-bottom: 0px;" >Located in</h4>
+   <h3 class="info-header" style="margin-top: 0px;">{{ churchLocation }}</h3>
+   <p>God is doing amazing things throughout Colombia. Here you will find updates on how each church is making a difference in their communities. Take a moment to learn about the Campus Pastor, read success stories, and how you can be praying for your Colombia church plant.</p>
+</div>
+
+<div class="static-church-info">
+   <img class="pastor-img" src="{{pastorImg}}"/>
+
+   <div class="pastor-bio">
+      <h4 class="info-header" style="margin-top: 0px;">Pastor {{ pastorName }}</h4>
+      <p>{{ pastorDetail }}</p>
+   </div>
+</div>

@@ -1,0 +1,37 @@
+{% comment %}
+{% include '~~/Assets/Lava/ColombiaChurchPlant/NewsLetter.lava' %}
+For use with block type Content Channel View
+{% endcomment %}
+{% include '~~/Assets/Lava/ColombiaChurchPlant/ResolveFileName.lava' %}
+{% include churchDetailsLavaFile %}
+
+{% assign churchUpdatesList = Items | Where:'ChurchName', contentChannelChurchName %}
+{% assign numChurchUpdates = churchUpdatesList | Size %}
+
+{% comment %}
+Make sure there are entries FOR the church specified
+{% endcomment %}
+{% if numChurchUpdates > 0 %}
+	
+   {% comment %}
+   See if there's an item ID for the channel. If not, use the latest.
+   {% endcomment %}
+   {% assign filteredItems = churchUpdatesList | Where:'Id', PageParameter.ContentId %}
+   
+   {% assign count = filteredItems | Size %}
+   {% if count > 0 %}
+      {% assign viewedItem = filteredItems | First %}
+   {% else %}
+      {% assign viewedItem = churchUpdatesList | First %}
+   {% endif %} 
+
+   <h3 class="info-header">Update for  {{ viewedItem.StartDateTime | Date:'M/d/yyyy' }}</h3>
+   <p>{{ viewedItem.Content }}</p>
+   <br/>
+   <h3 class="info-header">Prayer Requests</h3>
+   <p>{{ viewedItem.PrayerRequests }}</p>
+
+{% else %}
+	No Church Found
+{% endif %}
+

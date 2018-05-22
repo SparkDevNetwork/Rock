@@ -1,0 +1,88 @@
+.page-background {   
+    background-color: #EBEBEB;
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-image-missing.jpg");
+}
+
+#subnavbar-bg, #section-a-bg, #zone-sectiona {
+    background-color: #FFFFFF;
+}
+
+.premarital {
+    margin-top: 40px;
+}
+
+.premarital-section {
+    border-bottom: 2px solid #EEEEEE;
+    padding: 10px 0;
+}
+
+.premarital-header {
+    display: flex;
+    align-items: flex-end;
+}
+
+.premarital-header .event-campus-setter {
+    margin-left: 100px;
+}
+
+.premarital-section p {
+    font-family: heebo;
+    font-size: 14px;
+    line-height: 26px;
+    color: #707270;
+}
+
+.premarital-contact {
+    display: flex;
+}
+
+.contact-name p {
+    font-size: 16px;
+    font-weight: 900;
+    color: #000;
+}
+
+.contact-info {
+    display: flex;
+    flex-direction: column;
+    margin-left: 80px;
+    margin-bottom: 20px;
+}
+
+/* Mobile Styling */
+@media screen and (max-width: 500px) {
+    .premarital {
+        margin: 0;
+    }
+
+    .premarital-policy {
+        margin: 0;
+    }
+
+    .premarital-section h3 {
+        margin-top: 0;
+    }
+
+    .premarital-contact {
+        flex-direction: column;
+    }
+
+    .contact-info {
+        margin-left: 0;
+    }
+
+    
+    .premarital-header {
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    .premarital-header .event-campus-setter {
+        margin-left: 0;
+    }
+
+    .premarital-header .navbar-nav>li>a {
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+}

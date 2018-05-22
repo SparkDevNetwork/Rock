@@ -16,7 +16,7 @@
     background-color: #FFFFFF;
     box-shadow: 0px 0px 10px #E5E5E5;
     border-radius: 5px;
-    padding: 30px;
+    padding: 10px 30px 30px 30px;
     max-width: 1024px;
     margin: 0 auto;
     margin-top: 20px;
@@ -24,4 +24,13 @@
 
 #section-b-bg {
 	background-color: #F6F6F6;
+}
+
+.group-title h1 {
+    font-size: 60px;
+    font-weight: 900;
+    font-family: akrobat;
+    color: #7A1315;
+    text-align: center;
+    padding-bottom: 25px;
 }

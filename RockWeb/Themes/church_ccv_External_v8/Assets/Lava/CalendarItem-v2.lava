@@ -1,6 +1,6 @@
 <div class="event-detail-header">
       <br/>
-      <a href="/events" class="btn btn-primary">Return to Events</a>
+      <a href="/get-involved/events" class="btn btn-primary">Return to Events</a>
       <h1>{{Event.Name}}</h1>
 </div>
 

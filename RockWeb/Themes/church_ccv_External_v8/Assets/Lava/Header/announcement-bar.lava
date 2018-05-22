@@ -1,0 +1,23 @@
+{% comment %} 
+{% include '~~/Assets/Lava/Header/announcement-bar.lava' %}
+{% endcomment %}
+
+{% assign ccvLive = 'Global' | Attribute:'CCVLive' %}
+{% if ccvLive == 'Yes' %}
+    {% if CurrentPerson %}
+        {% assign liveURL = '/ssologin' %}
+    {% else %}
+        {% assign liveURL = 'http://live.ccv.church' %}
+    {% endif %}
+    <div class="announcement-bar">
+        <btn id="ccvlive" class="btn btn-default btn-live">Live</btn>CCV is live!<span> <a href="{{ liveURL }}">Tune into the sermon now ></a></span>
+    </div>
+{% endif %}
+
+{% assign upcomingMaintenance = 'Global' | Attribute:'UpcomingMaintenance' %}
+
+{% unless upcomingMaintenance == '' %}
+    <div class="announcement-bar">
+        CCV's website will be offline for maintenance starting at {{ upcomingMaintenance }}.
+    </div>
+{% endunless %}

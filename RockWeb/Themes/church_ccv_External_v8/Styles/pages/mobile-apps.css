@@ -7,27 +7,6 @@
     background-color: #EBEBEB;
 }
 
-.title {
-    margin-top: 30px;
-}
-
-.title h3 {
-    font-size: 60px;
-    font-weight: 900;
-    font-family: akrobat;
-    color: #FFFFFF;
-    text-align: center;
-    padding-top: 80px;
-}
-
-.title p {
-    text-align: center;
-    color: #FFFFFF;
-    font-size: 18px;
-    font-family: heebo;
-    font-weight: normal;
-}
-
 .desktop-spacer-top {
     padding-top: 25px;
 }
@@ -41,7 +20,7 @@
     transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
     border-radius: 5px;
     background-color: #FFFFFF;
-    margin: 25px auto 150px auto;
+    margin: 50px auto 150px auto;
     padding: 20px;
     width: 80%;
     display: flex;
@@ -79,4 +58,39 @@
 
 .logo-amazon {
     width: 160px;
+}
+
+/* Mobile Styling */
+@media screen and (max-width: 500px) {
+    #section-a-bg {
+        padding: 20px 0;
+    }
+    .mobile-app-card {
+        flex-direction: column-reverse;
+        align-items: center;
+        padding: 20px auto;
+        margin: 0 auto 50px auto;
+    }
+
+    .logo-ccv {
+        width: 50%;
+        height: 50%;
+        padding-bottom: 20px;
+    }
+
+    .content {
+        width: 100%;
+    }
+
+    .appstore-icons {
+        text-align: unset;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 20px;
+    }
+
+    .logo-apple {
+        width: 160px;
+    }
 }

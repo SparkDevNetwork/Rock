@@ -9,8 +9,6 @@
         <a class="masthead-fullmenu-navitem" href="/dashboard/profile/manage-payment-accounts">Manage Payment Accounts</a>
         <a class="masthead-fullmenu-navitem" href="/dashboard/profile/giving-history">Giving History</a>
     {% endif %}
-
-    <a class="masthead-fullmenu-navitem" href="/get-involved/">Get Involved</a>
         
     <div class="dropdown">
         <button class="dropdown-toggle masthead-fullmenu-navitem" type="button" data-toggle="dropdown" style="border: 0px;">About Us<b class="fa fa-caret-down"></b></button>

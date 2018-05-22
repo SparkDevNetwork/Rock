@@ -28,6 +28,7 @@ Is this campus coming soon?
 
 {% if isComingSoon == true %}
     <strong>Service times coming soon</strong>
+    <div class="coming-soon-spacer"></div>
 {% else %}
     {% for time in campus.ServiceTimes %}
         {% if time.Day == 'Saturday' %}
