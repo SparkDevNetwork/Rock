@@ -283,16 +283,6 @@ namespace Rock.Tests.Rock.Lava
         }
 
         /// <summary>
-        /// For use in Lava -- should not cast the decimal to an integer.
-        /// </summary>
-        [Fact]
-        public void AsInteger_InvalidDecimal()
-        {
-            var output = RockFilters.AsInteger( ( decimal ) 3.2d );
-            Assert.Null( output );
-        }
-
-        /// <summary>
         /// For use in Lava -- should cast the double to an integer.
         /// </summary>
         [Fact]
@@ -300,16 +290,6 @@ namespace Rock.Tests.Rock.Lava
         {
             var output = RockFilters.AsInteger( 3.0d );
             Assert.Equal( output, 3 );
-        }
-
-        /// <summary>
-        /// For use in Lava -- should not cast the double to an integer.
-        /// </summary>
-        [Fact]
-        public void AsInteger_InvalidDouble()
-        {
-            var output = RockFilters.AsInteger( 3.2d );
-            Assert.Null( output );
         }
 
         /// <summary>
@@ -336,10 +316,10 @@ namespace Rock.Tests.Rock.Lava
         /// For use in Lava -- should not cast the decimal string to an integer.
         /// </summary>
         [Fact]
-        public void AsInteger_InvalidDecimalString()
+        public void AsInteger_ValidDecimalString()
         {
-            var output = RockFilters.AsInteger( "3.0" );
-            Assert.Null( output );
+            var output = RockFilters.AsInteger( "3.2" );
+            Assert.Equal( output, 3 );
         }
 
         #endregion
