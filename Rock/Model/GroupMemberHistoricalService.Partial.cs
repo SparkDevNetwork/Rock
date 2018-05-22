@@ -43,7 +43,7 @@ namespace Rock.Model
             var personGroupMemberIdQuery = new GroupMemberService( rockContext ).AsNoFilter().Where( a => a.PersonId == personId ).Select( a => a.Id );
 
             // get all GroupMemberHistorical records for the Person
-            var groupMemberHistoricalQuery = this.Queryable().Where( a => personGroupMemberIdQuery.Contains( a.GroupMemberId ) );
+            var groupMemberHistoricalQuery = this.AsNoFilter().Where( a => personGroupMemberIdQuery.Contains( a.GroupMemberId ) );
 
             if ( startDateTime.HasValue )
             {
