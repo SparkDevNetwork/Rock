@@ -66,11 +66,12 @@
 
                             <Rock:RockControlWrapper ID="rcwSlugs" runat="server" Label="URL Slug" Help="While Rock generates URLs for your content channel items automatically, you can optionally create custom URLs for this post.">
                                 <div class="js-slugs">
-                                    <asp:Repeater ID="rSlugs" runat="server">
+                                    <asp:Repeater ID="rSlugs" runat="server" OnItemDataBound="rSlugs_ItemDataBound">
                                         <ItemTemplate>
                                             <div class="form-group margin-b-sm rollover-container js-slug-row clearfix">
+                                                <asp:Literal ID="lChannelUrl" runat="server" />
                                                 <input id="slugId" class="js-slug-id" type="hidden" value="<%# Eval("Id") %>" />
-                                                <literal class="js-slug-literal"> <%# Eval("Slug") %> </literal>
+                                                <span class="js-slug-literal"><%# Eval("Slug") %></span>
                                                 <div class="rollover-item actions pull-right">
                                                     <a class="js-slug-edit" href="#"><i class="fa fa-pencil"></i></a>
                                                     <a class="js-slug-remove" href="#"><i class="fa fa-close"></i></a>
