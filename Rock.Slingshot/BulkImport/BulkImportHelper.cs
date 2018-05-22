@@ -696,16 +696,19 @@ namespace Rock.Slingshot
                 group.ModifiedDateTime = importedDateTime;
 
                 // set weekly schedule
-                TimeSpan meetingTime;
-                if ( !string.IsNullOrWhiteSpace( groupImport.MeetingDay ) )
+                DayOfWeek meetingDay;
+                if ( !string.IsNullOrWhiteSpace( groupImport.MeetingDay ) && Enum.TryParse( groupImport.MeetingDay, out meetingDay ) )
                 {
+                    TimeSpan meetingTime;
                     TimeSpan.TryParse( groupImport.MeetingTime, out meetingTime );
                     group.Schedule = new Schedule()
                     {
-                        WeeklyDayOfWeek = groupImport.MeetingDay.AsType<DayOfWeek>(),
+                        Name = group.Name,
+                        IsActive = group.IsActive,
+                        WeeklyDayOfWeek = meetingDay,
                         WeeklyTimeOfDay = meetingTime,
-                        ForeignKey = foreignSystemKey,
                         ForeignId = groupImport.GroupForeignId,
+                        ForeignKey = foreignSystemKey,
                         CreatedDateTime = importedDateTime,
                         ModifiedDateTime = importedDateTime
                     };
@@ -768,6 +771,31 @@ namespace Rock.Slingshot
 
             rockContext.BulkInsert( groupMembersToInsert );
 
+            // populate Schedules from the new groups that we added
+            var groupSchedulesToInsert = new List<Schedule>();
+            foreach ( var groupWithSchedule in groupsToInsert.Where( g => g.Schedule != null && g.ForeignId != null ) )
+            {
+                var groupId = groupTypeGroupLookup.GetValueOrNull( groupWithSchedule.GroupTypeId )?.GetValueOrNull( (int)groupWithSchedule.ForeignId )?.Id;
+                groupSchedulesToInsert.Add( groupWithSchedule.Schedule );
+            }
+
+            rockContext.BulkInsert( groupSchedulesToInsert );
+
+            if ( groupSchedulesToInsert.Any() )
+            {
+                // manually update Group.ScheduleId since BulkInsert doesn't
+                rockContext.Database.ExecuteSqlCommand( string.Format( @"
+UPDATE [Group]
+SET ScheduleId = [Schedule].[Id]
+FROM [Group]
+JOIN [Schedule]
+ON [Group].[ForeignId] = [Schedule].[ForeignId]
+AND [Group].[Name] = [Schedule].[Name]
+AND [Group].[ForeignKey] = '{0}'
+AND [Schedule].[ForeignKey] = '{0}'
+                ", foreignSystemKey ) );
+            }
+
             // Attribute Values
             var attributeValuesToInsert = new List<AttributeValue>();
             foreach ( var groupWithAttributes in newGroupImports.Where( a => a.AttributeValues.Any() ) )
@@ -793,7 +821,7 @@ namespace Rock.Slingshot
             if ( attributeValuesToInsert.Any() )
             {
                 // manually update ValueAsDateTime since the tgrAttributeValue_InsertUpdate trigger won't fire during when using BulkInsert
-                var rowsUpdated = rockContext.Database.ExecuteSqlCommand( @"
+                rockContext.Database.ExecuteSqlCommand( @"
 UPDATE [AttributeValue] SET ValueAsDateTime =
 		CASE WHEN
 			LEN(value) < 50 and
