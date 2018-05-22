@@ -241,7 +241,7 @@
     renderGive = function(data) {
         if (data) {
             // giving
-            statusValue = `For Christians, tithing (a word meaning 'tenth') is the starting point. Tithing is giving the first 10% of our income back to the local church. If you call CCV your home, we encourage you to give generously, knowing that your money is being used to support the mission of Jesus Christ – both here in the Valley, and around the world.`; 
+            statusValue = `Thank you for generously giving to support our mission to reach others for Jesus Christ, both in the Valley and around the world.`; 
 
             // update modal content
             $('#modalContentGive').html(statusValue);

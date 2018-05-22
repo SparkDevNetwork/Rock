@@ -30,6 +30,7 @@
         {% else %}
             <a href="/dashboard/profile/spiritual-gifts-test">Take Spiritual Gifts Test</a>
         {% endif %}
+        <a href="/dashboard/profile/prayer-team">Prayer Team</a>
 
         {% comment %} SQL to check if camp coach {% endcomment %}
         {% sql %}

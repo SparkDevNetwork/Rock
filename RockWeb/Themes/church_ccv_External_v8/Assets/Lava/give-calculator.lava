@@ -1,5 +1,5 @@
 {% comment %}
-    {% include '~~/Assets/Lava/GivingCalculator.lava' %}
+    {% include '~~/Assets/Lava/give-calculator.lava' %}
 {% endcomment %}
 
 <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/rangeslider.js/2.1.1/rangeslider.min.css">

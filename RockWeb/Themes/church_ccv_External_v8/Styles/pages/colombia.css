@@ -10,10 +10,12 @@
   background-color:#000;
 }
 
-#section-a-bg {
-  
-  background-color:#000;
+#subnavbar-bg {
+    display: none;
+}
 
+#section-a-bg {
+  background-color:#000;
 }
 .masthead-fullmenu {
   background:#000;
@@ -138,6 +140,7 @@
       display: block; }
     .colombia #physical-needs .mockup {
       display:flex;
+      flex-direction: column;
     }
     .colombia #physical-needs .mockup .info {
       padding: 5% 15px 0; }
@@ -231,21 +234,6 @@
         background: #8b9164; }
       .colombia #physical-needs a {
         display: inline-block; }
-      .colombia #physical-needs .mockup .info {
-        width: 50%; padding-left:0; padding-right: 0;}
-        .colombia #physical-needs .info h5 {
-          font-weight:bold;
-        }
-      .colombia #physical-needs .app-store-icons {
-        padding: 5%;
-        width: 50%; }
-        .colombia #physical-needs .app-store-icons a {
-          display: block;
-          width: 100%;
-          margin-right: 0;
-          text-align: center; }
-          .colombia #physical-needs .app-store-icons a embed {
-            width: 95%; }
       .colombia #spiritual-needs {
         padding: 15% 5%; }
         .colombia #spiritual-needs .content {
@@ -261,6 +249,25 @@
         top: 0%; }
       .colombia #church-plants img {
         width: 60%; } }
+  @media (min-width: 768px) {
+    .colombia #physical-needs .mockup {
+      flex-direction: row;
+    }  
+    .colombia #physical-needs .mockup .info {
+        width: 50%; padding-left:0; padding-right: 0;}
+        .colombia #physical-needs .info h5 {
+          font-weight:bold;
+        }
+      .colombia #physical-needs .app-store-icons {
+        padding: 5%;
+        width: 50%; }
+        .colombia #physical-needs .app-store-icons a {
+          display: block;
+          width: 100%;
+          margin-right: 0;
+          text-align: center; }
+          .colombia #physical-needs .app-store-icons a embed {
+            width: 95%; }
   @media (min-width: 1200px) {
     .colombia #physical-needs .mockup {
       background: url(/Themes/church_ccv_External_v8/Assets/Images/colombia/mockup.png);

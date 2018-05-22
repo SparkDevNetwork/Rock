@@ -36,11 +36,11 @@
                 "Title": "Starting Point",
                 "Icon": "/Themes/church_ccv_External_v8/Assets/Images/icon-nextstep-startingpoint.png",
                 "Image": "/Themes/church_ccv_External_v8/Assets/Images/modal-startingpoint.jpg",
-                "Content": "Starting Point will give you a sneak peek into the basic beliefs and practices of CCV, equip you with the essentials of the Christian faith, and show you opportunities where you can get involved. This is your first step in getting connected with CCV and a prerequisite to becoming a member.",
+                "Content": "Dive deeper into the Christian faith and learn what CCV is all about. Take your first step in getting connected with CCV by attending our Starting Point class.",
                 "Buttons": [
                     {
                         "Label": "Learn More",
-                        "Link": "/startingpointV2",
+                        "Link": "/next-steps/starting-point",
                         "Class": "btn-primary"
                     }
                 ]
@@ -53,11 +53,11 @@
                 "Title": "Baptism",
                 "Icon": "/Themes/church_ccv_External_v8/Assets/Images/icon-nextstep-baptism.png",
                 "Image": "/Themes/church_ccv_External_v8/Assets/Images/modal-baptism.jpg",
-                "Content": "If you've made a commitment to Christ, it's time to take the next step and make your decision known. Baptism is the best way to express your faith and reflect your life change. Find out more about baptism through Starting Point, register online or contact your associate pastor.",
+                "Content": "If you've made a commitment to Christ, baptism is the best way to express your faith and reflect your life change.",
                 "Buttons": [
                     {
                         "Label": "Learn More",
-                        "Link": "/baptismV2",
+                        "Link": "/next-steps/baptism",
                         "Class": "btn-primary"
                     }
                 ]
@@ -70,11 +70,11 @@
                 "Title": "Worship",
                 "Icon": "/Themes/church_ccv_External_v8/Assets/Images/icon-nextstep-worship.png",
                 "Image": "/Themes/church_ccv_External_v8/Assets/Images/modal-worship.jpg",
-                "Content": "Some text in the Worship modal.",
+                "Content": "CCV is one church in many locations. Find the campus closest to home and join the family by attending regularly. Our exciting weekend programs for all ages are experiences you won't want to miss.",
                 "Buttons": [
                     {
                         "Label": "Locations & Times",
-                        "Link": "/campuses",
+                        "Link": "/our-campuses",
                         "Class": "btn-primary"
                     }
                 ]
@@ -91,7 +91,7 @@
                 "Buttons": [
                     {
                         "Label": "Find a Group",
-                        "Link": "/connectV2",
+                        "Link": "/next-steps/connect",
                         "Class": "btn-primary"
                     }
                 ]
@@ -104,11 +104,11 @@
                 "Title": "Serve",
                 "Icon": "/Themes/church_ccv_External_v8/Assets/Images/icon-nextstep-serve.png",
                 "Image": "/Themes/church_ccv_External_v8/Assets/Images/modal-serve.jpg",
-                "Content": "Serving others is one of the most effective ways to live out your faith. In a world focused on personal gain, there is perhaps no greater way to show others what a life devoted to Christ is about.",
+                "Content": "Serving others is a great way to live out your faith and get involved in the CCV community. Experience first-hand the impact you can make!",
                 "Buttons": [
                     {
                         "Label": "Serve at CCV",
-                        "Link": "/serveV2",
+                        "Link": "/next-steps/serve",
                         "Class": "btn-primary"
                     }
                 ]
@@ -121,7 +121,7 @@
                 "Title": "Give",
                 "Icon": "/Themes/church_ccv_External_v8/Assets/Images/icon-nextstep-give.png",
                 "Image": "/Themes/church_ccv_External_v8/Assets/Images/modal-give.jpg",
-                "Content": "Some text in the Give modal.",
+                "Content": "If you call CCV your home, we encourage you to give generously knowing that your money is being used to support the mission of Jesus Christ, both here in the Valley and around the world.",
                 "Buttons": [
                     {
                         "Label": "Learn More",
@@ -138,11 +138,11 @@
                 "Title": "Share",
                 "Icon": "/Themes/church_ccv_External_v8/Assets/Images/icon-nextstep-share.png",
                 "Image": "/Themes/church_ccv_External_v8/Assets/Images/modal-share.jpg",
-                "Content": "We each have a story. Sharing your faith is how we affect positive change in this world. This can be done through the bravery of sharing your personal faith story as well as inviting others to join you at church.",
+                "Content": "We each have a story, and we want to help you tell yours. Your story just might be the catalyst that will lead someone else to Christ.",
                 "Buttons": [
                     {
                         "Label": "Share Your Story",
-                        "Link": "/shareV2",
+                        "Link": "/next-steps/share-story",
                         "Class": "btn-primary"
                     }
                 ]
@@ -155,11 +155,16 @@
                 "Title": "Coach",
                 "Icon": "/Themes/church_ccv_External_v8/Assets/Images/icon-nextstep-coach.png",
                 "Image": "/Themes/church_ccv_External_v8/Assets/Images/modal-coach.jpg",
-                "Content": "Some text in the Coach modal.",
+                "Content": "CCV Coaches are trained individuals within the church whose sole responsibility is to help you determine your Next Steps at CCV.",
                 "Buttons": [
                     {
-                        "Label": "Learn More",
-                        "Link": "/coachV2",
+                        "Label": "Request a Coach",
+                        "Link": "/next-steps/coach-request?Whattypeofcoaching=Request%20a%20Coach",
+                        "Class": "btn-primary"
+                    },
+                    {
+                        "Label": "Become a Coach",
+                        "Link": "/next-steps/coach-request?Whattypeofcoaching=Become%20a%20Coach",
                         "Class": "btn-primary"
                     }
                 ]

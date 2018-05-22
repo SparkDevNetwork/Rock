@@ -1,0 +1,74 @@
+
+.page-background {   
+    background-color: #EBEBEB;
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-image-missing.jpg");
+}
+
+#subnavbar-bg {
+    display: none;
+}
+
+#section-a-bg {
+    background-color: #f9f9f9;
+    padding-top: 20px;
+}
+
+#section-b-bg {
+    display: none;
+}
+
+#section-c-bg {
+    display: none;
+}
+
+.control-wrapper textarea {
+    background-color: #eeeeee;
+    border-bottom: unset;
+    border: 1px solid #777777;
+    color: #333333;
+}
+
+.control-wrapper textarea::placeholder { 
+    color: #333333;
+}
+
+.workflow-entry-panel {
+    box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px; 
+    border-radius: 5px;
+    margin-top: 20px;
+    background-color: #ffffff;
+    padding: 20px;
+    width: 90%;
+    margin: 0 auto;
+}
+
+.name-fields, .info-fields {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+}
+
+.first-name, .last-name, .email-address, .phone-number {
+    width: 300px;
+}
+
+@media screen and (min-width: 927px) {
+    .workflow-entry-panel {
+        width: 75%;
+    }
+
+    .last-name, .phone-number {
+        margin-left: 25px;
+    }
+}
+
+@media screen and (min-width: 1149px) {
+    .workflow-entry-panel {
+        width: 60%;
+    }
+
+    .name-fields, .info-fields {
+        justify-content: space-between;
+    }
+}

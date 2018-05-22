@@ -1,0 +1,38 @@
+{% comment %}
+    {% include '~~/Assets/Lava/footer.lava' %}
+{% endcomment %}
+
+
+<div class="footer">
+    <div class="footer-logo">
+        <img src="/Themes/church_ccv_External_v8/Assets/Images/logo-ccv-footer.svg" height="35" width="100">
+        <span class="footer-copyright">@2018 Christ's Church of the Valley.</span>
+    </div>
+
+    <div class="footer-links">
+        <div class="footer-links-section">
+            <h5>GET SOCIAL</h5>
+            <a href="https://facebook.com/ccvonline"><i class="fa fa-facebook-official fa-lg" aria-hidden="true"></i><span style="font-size: 12px;">FACEBOOK</span></a>
+            <a href="https://instagram.com/ccvonline"><i class="fa fa-instagram fa-lg" aria-hidden="true"></i><span style="font-size: 12px;">INSTAGRAM</span></a>
+            <a href="https://twitter.com/ccvonline"><i class="fa fa-twitter fa-lg" aria-hidden="true"></i><span style="font-size: 12px;">TWITTER</span></a>
+        </div>
+        <div class="footer-links-section">
+            <h5>Community Services</h5>
+            <a href="/community-services/premarital">Premarital</a>
+            <a href="/community-services/wedding">Wedding</a>
+            <a href="/community-services/funeral">Funeral</a>
+        </div>
+        <div class="footer-links-section" style="justify-content: space-between;">
+            <div class="footer-links-subsection">
+                <h5>Reach out</h5>
+                <a href="/contact-us">Contact Us</a>
+                <a href="/career-opportunities">Careers</a>
+                <a href="/get-involved#prayer-support">Prayer</a>
+            </div>
+            <div class="footer-links-legal">
+                <a href="/privacy">Privacy Policy</a>
+                <a href="/copyright" style="margin-left: 40px;">Copyright</a>
+            </div>            
+        </div>
+    </div>
+</div>

@@ -1,0 +1,35 @@
+.page-background {
+   background-image: url("https://my.ccv.church/Themes/church_ccv_External_v8/Assets/Images/hero-image-missing.jpg");
+   background-color: #FFFFFF;
+}
+
+#section-a-bg,#section-c-bg,#section-e-bg {
+	background-color: #f9f9f9;
+}
+
+#section-b-bg,#section-d-bg {
+	background-color: #ffffff;
+}
+
+.control-wrapper textarea {
+    background-color: #eeeeee;
+    border-bottom: unset;
+    border: 1px solid #777777;
+    color: #333333;
+}
+
+.control-wrapper textarea::placeholder { 
+    color: #333333;
+}
+
+.workflow-entry-panel {
+    box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px; 
+    border-radius: 5px;
+    margin-top: 20px;
+    background-color: #ffffff;
+}
+
+.actions {
+    padding-left: 20px;
+    padding-bottom: 20px;
+}
