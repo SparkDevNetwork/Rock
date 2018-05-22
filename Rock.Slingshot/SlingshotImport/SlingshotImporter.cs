@@ -368,6 +368,7 @@ namespace Rock.Slingshot
             AddFamilyAttributes();
 
             AddGroupTypes();
+            AddGroupAttributes();
 
             // load lookups again in case we added some new ones
             this.ReportProgress( 0, "Reloading Rock Lookups..." );
@@ -1913,14 +1914,11 @@ namespace Rock.Slingshot
             // Family Attributes
             this.SlingshotFamilyAttributes = LoadSlingshotListFromFile<SlingshotCore.Model.FamilyAttribute>();
 
-            // Group Attributes
-            this.SlingshotGroupAttributes = LoadSlingshotListFromFile<SlingshotCore.Model.GroupAttribute>();
-
             /* Attendance */
             this.SlingshotAttendanceList = LoadSlingshotListFromFile<SlingshotCore.Model.Attendance>( false );
 
             /* Groups (non-family) (note: there might be duplicates, so just get the distinct ones */
-            this.SlingshotGroupList = LoadSlingshotListFromFile<SlingshotCore.Model.Group>().DistinctBy( a => a.Id ).ToList();
+            LoadGroupSlingshotLists();
 
             /* Group Members*/
             var groupMemberList = LoadSlingshotListFromFile<SlingshotCore.Model.GroupMember>().GroupBy( a => a.GroupId ).ToDictionary( k => k.Key, v => v.ToList() );
@@ -2020,6 +2018,25 @@ namespace Rock.Slingshot
             }
 
             this.SlingshotPersonAttributes = LoadSlingshotListFromFile<SlingshotCore.Model.PersonAttribute>().ToList();
+        }
+
+        /// <summary>
+        /// Loads the group slingshot lists.
+        /// </summary>
+        private void LoadGroupSlingshotLists()
+        {
+            this.SlingshotGroupList = LoadSlingshotListFromFile<SlingshotCore.Model.Group>().DistinctBy( a => a.Id ).ToList();
+
+            var groupAddressLookup = LoadSlingshotListFromFile<SlingshotCore.Model.GroupAddress>().GroupBy( a => a.GroupId ).ToDictionary( k => k.Key, v => v.ToList() );
+            var groupAttributeValueLookup = LoadSlingshotListFromFile<SlingshotCore.Model.GroupAttributeValue>().GroupBy( a => a.GroupId ).ToDictionary( k => k.Key, v => v.ToList() );
+
+            foreach ( var slingshotGroup in this.SlingshotGroupList )
+            {
+                slingshotGroup.Addresses = groupAddressLookup.ContainsKey( slingshotGroup.Id ) ? groupAddressLookup[slingshotGroup.Id] : new List<SlingshotCore.Model.GroupAddress>();
+                slingshotGroup.Attributes = groupAttributeValueLookup.ContainsKey( slingshotGroup.Id ) ? groupAttributeValueLookup[slingshotGroup.Id].ToList() : new List<SlingshotCore.Model.GroupAttributeValue>();
+            }
+
+            this.SlingshotGroupAttributes = LoadSlingshotListFromFile<SlingshotCore.Model.GroupAttribute>().ToList();
         }
 
         /// <summary>
@@ -2146,6 +2163,10 @@ namespace Rock.Slingshot
 
             // FieldTypes
             this.FieldTypeLookup = new FieldTypeService( rockContext ).Queryable().Select( a => a.Id ).ToList().Select( a => FieldTypeCache.Read( a ) ).ToDictionary( k => k.Class, v => v );
+
+            // Group Attributes
+            var groupAttributes = new AttributeService( rockContext ).Queryable().Where( a => a.EntityTypeId == entityTypeIdGroup ).Select( a => a.Id ).ToList().Select( a => AttributeCache.Read( a ) ).ToList();
+            this.GroupAttributeKeyLookup = groupAttributes.ToDictionary( k => k.Key, v => v );
 
             // GroupTypes
             this.GroupTypeLookupByForeignId = new GroupTypeService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == this.ForeignSystemKey ).ToList().Select( a => GroupTypeCache.Read( a ) ).ToDictionary( k => k.ForeignId.Value, v => v );
