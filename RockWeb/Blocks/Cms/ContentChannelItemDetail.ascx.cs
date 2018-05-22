@@ -428,6 +428,28 @@ namespace RockWeb.Blocks.Cms
             ShowDetail( hfId.ValueAsInt() );
         }
 
+        protected void rSlugs_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            var lChannelUrl = e.Item.FindControl( "lChannelUrl" ) as Literal;
+            var slug = e.Item.DataItem as ContentChannelItemSlug;
+
+            if ( lChannelUrl != null && slug != null )
+            {
+                if ( slug.ContentChannelItem.ContentChannel.ItemUrl.IsNullOrWhiteSpace()  )
+                {
+                    return;
+                }
+
+                var itemUrl = slug.ContentChannelItem.ContentChannel.ItemUrl.RemoveSpaces();
+
+                if ( itemUrl.EndsWith( "{{Slug}}" ) )
+                {
+                    lChannelUrl.Text = slug.ContentChannelItem.ContentChannel.ItemUrl.Replace( "{{ Slug }}", "" );
+                }
+                
+            }
+        }
+
         #region Child/Parent List Events
 
         private void gChildItems_GridRebind( object sender, GridRebindEventArgs e )
