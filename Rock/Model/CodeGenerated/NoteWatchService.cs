@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Note Service class
+    /// NoteWatch Service class
     /// </summary>
-    public partial class NoteService : Service<Note>
+    public partial class NoteWatchService : Service<NoteWatch>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="NoteService"/> class
+        /// Initializes a new instance of the <see cref="NoteWatchService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public NoteService(RockContext context) : base(context)
+        public NoteWatchService(RockContext context) : base(context)
         {
         }
 
@@ -48,15 +48,9 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( Note item, out string errorMessage )
+        public bool CanDelete( NoteWatch item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<Note>( Context ).Queryable().Any( a => a.ParentNoteId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} contains one or more child {1}.", Note.FriendlyTypeName, Note.FriendlyTypeName.Pluralize().ToLower() );
-                return false;
-            }  
             return true;
         }
     }
@@ -64,54 +58,47 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class NoteExtensionMethods
+    public static partial class NoteWatchExtensionMethods
     {
         /// <summary>
-        /// Clones this Note object to a new Note object
+        /// Clones this NoteWatch object to a new NoteWatch object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static Note Clone( this Note source, bool deepCopy )
+        public static NoteWatch Clone( this NoteWatch source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as Note;
+                return source.Clone() as NoteWatch;
             }
             else
             {
-                var target = new Note();
+                var target = new NoteWatch();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another Note object to this Note object
+        /// Copies the properties from another NoteWatch object to this NoteWatch object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this Note target, Note source )
+        public static void CopyPropertiesFrom( this NoteWatch target, NoteWatch source )
         {
             target.Id = source.Id;
-            target.ApprovalsSent = source.ApprovalsSent;
-            target.ApprovalStatus = source.ApprovalStatus;
-            target.ApprovedByPersonAliasId = source.ApprovedByPersonAliasId;
-            target.ApprovedDateTime = source.ApprovedDateTime;
-            target.Caption = source.Caption;
-            target.EditedByPersonAliasId = source.EditedByPersonAliasId;
-            target.EditedDateTime = source.EditedDateTime;
+            target.AllowOverride = source.AllowOverride;
             target.EntityId = source.EntityId;
+            target.EntityTypeId = source.EntityTypeId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.IsAlert = source.IsAlert;
-            target.IsPrivateNote = source.IsPrivateNote;
-            target.IsSystem = source.IsSystem;
+            target.IsWatching = source.IsWatching;
+            target.NoteId = source.NoteId;
             target.NoteTypeId = source.NoteTypeId;
-            target.NoteUrl = source.NoteUrl;
-            target.NotificationsSent = source.NotificationsSent;
-            target.ParentNoteId = source.ParentNoteId;
-            target.Text = source.Text;
+            target.WatcherGroupId = source.WatcherGroupId;
+            target.WatcherPersonAliasId = source.WatcherPersonAliasId;
+            target.WatchReplies = source.WatchReplies;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

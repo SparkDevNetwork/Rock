@@ -229,6 +229,10 @@
     <Compile Include="Migrations\201805211952360_FamilyMembers.Designer.cs">
       <DependentUpon>201805211952360_FamilyMembers.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201805231625436_NotesUpdates.cs" />
+    <Compile Include="Migrations\201805231625436_NotesUpdates.Designer.cs">
+      <DependentUpon>201805231625436_NotesUpdates.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2929,6 +2933,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201805211952360_FamilyMembers.resx">
       <DependentUpon>201805211952360_FamilyMembers.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201805231625436_NotesUpdates.resx">
+      <DependentUpon>201805231625436_NotesUpdates.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.resx">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>

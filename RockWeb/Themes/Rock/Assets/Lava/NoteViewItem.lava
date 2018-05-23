@@ -1,0 +1,170 @@
+{%- comment -%}
+##Important Notes when customizing##
+any CSS Classes that are prefixed with 'js-' are hooks that are required for editing notes (see noteEditor.js and NoteContainer.cs)
+{%- endcomment -%}
+{%- assign viewableChildNotesCount = note.ViewableChildNotes | Size -%}
+{%- if note.IsAlert -%}
+    {%- assign wrapperClass = "highlight" -%}
+{%- elsif note.IsPrivate -%}
+    {%- assign wrapperClass = "personal" -%}
+{%- else -%}
+    {%- assign wrapperClass = "" -%}
+{%- endif -%}
+
+{%- capture fontStyle -%}{%- if note.NoteType.FontColor != '' -%}color: {{ note.NoteType.FontColor }};{%- endif -%}{%- endcapture -%}
+{%- capture borderStyle -%}{%- if note.NoteType.BorderColor != '' -%}border-color: {{ note.NoteType.BorderColor }};{%- endif -%}{%- endcapture -%}
+{%- capture backgroundStyle -%}{%- if note.NoteType.BackgroundColor != '' -%}background-color: {{ note.NoteType.BackgroundColor }};{%- endif -%}{%- endcapture -%}
+{%- capture wrapperStyle -%}{{ fontStyle }}{{ borderStyle }}{{ backgroundStyle }}{%- endcapture -%}
+
+{%- assign noteDateTimeText = note.CreatedDateTime | HumanizeDateTime -%}
+{%- if note.EditedDateTime > note.CreatedDateTime -%}
+    {%- capture editedLabel -%}edited {{ note.EditedDateTime | HumanizeDateTime }}{%- endcapture -%}
+    {%- if note.EditedByPersonName != note.CreatedByPersonName -%}
+        {%- assign editedLabel = editedLabel | Append:' by ' | Append:note.EditedByPersonName -%}
+    {%- endif -%}
+    {%- assign noteDateTimeText =  noteDateTimeText | Append:' (' | Append:editedLabel | Append:')'%}
+{%- endif -%}
+
+{%- assign canReply = note.NoteType.AllowsReplies -%}
+{%- if canReply and note.NoteType.MaxReplyDepth -%}
+  {%- if noteReplyDepth > note.NoteType.MaxReplyDepth -%}
+    {%- assign canReply = false -%}
+  {%- endif -%}
+{%- endif -%}
+
+{%- assign noteText = note.Text | Escape | Linkify | FromMarkdown -%}
+
+{%- comment -%}If this note requires approval and is not yet approved, we might see it if the current person created the note or is an approver, so render its approval status and approval actions{%- endcomment -%}
+{%- assign approvalStatusHtml = '' -%}
+{%- assign approvalActionsHtml = '' -%}
+{%- if note.NoteType.RequiresApprovals and.ApprovalStatus != 'Approved' -%}
+    {%- assign canApprove = note | HasRightsTo:'Approve' -%}
+
+    {%- capture approvalStatusHtml -%}
+        {%- if note.ApprovalStatus == 'Denied' -%}
+            Not Approved
+        {%- elsif note.ApprovalStatus == 'PendingApproval' -%}
+            Pending Approval
+        {%- endif -%}
+    {%- endcapture -%}
+    
+    {%- capture approvalActionsHtml -%}
+        {%- if canApprove -%}
+        <div class="pull-right">
+            <a class="approve-note btn btn-xs btn-success" href="#" style="{{ fontStyle }}" onclick="{{ note.Id | Postback:'ApproveNote' }}">
+                Approve
+            </a>
+            <a class="approve-note btn btn-xs btn-danger" href="#" style="{{ fontStyle }}" onclick="{{ note.Id | Postback:'DenyApproveNote' }}">
+                Deny
+            </a>
+        </div>
+        {%- endif -%}
+    {%- endcapture -%}
+{%- endif -%}
+
+{%- if noteReplyDepth == 0 -%}
+    {%- assign avatarClass = "avatar-lg" -%}
+    {%- assign noteClass = "" -%}
+{%- else -%}
+    {%- assign avatarClass = "avatar-sm" -%}
+    {%- assign noteClass = "note-nested" -%}
+{%- endif -%}
+
+<li class="note {{ noteClass }}">
+    <article class="{{ wrapperClass }} note-view-item js-noteviewitem" style="{{ wrapperStyle }}" data-note-id="{{ note.Id }}" id="{{ note.NoteAnchorId }}">
+        {% comment %} <hgroup class="flag">
+            {{ note.NoteType.Name }}
+        </hgroup> {% endcomment %}
+        {%- if approvalStatusHtml != '' -%}
+            <hgroup class="flag clearfix">
+                {{ approvalStatusHtml }}
+                {{ approvalActionsHtml }}
+            </hgroup>
+        {%- endif -%}
+
+        <header class="meta">
+            <div class="meta-figure">
+                {%- if NoteOptions.UsePersonIcon -%}
+                {%- if noteReplyDepth == 0 -%}
+                    {%- assign avatarClass = "avatar-lg" -%}
+                {%- else -%}
+                    {%- assign avatarClass = "avatar-sm" -%}
+                {%- endif -%}
+                <a href="/person/{{ note.CreatedByPersonId }}" class="avatar {{ avatarClass }}"><img src="{{ note.CreatedByPersonPhotoUrl }}" alt="{{ note.CreatedByPersonName }}"></a>
+                {%- else -%}
+                <i class="{{ note.NoteType.IconCssClass | Default:'fa fa-comment' }}"></i>
+                {%- endif -%}
+            </div>
+            <div class="meta-body">
+                <div class="flex">
+                    <p>
+                        {%- if NoteOptions.DisplayNoteTypeHeading -%}
+                        {{ note.NoteType.Name }}
+                        {%- endif -%}
+                        {%- if note.Caption == '' -%}
+                        <a href="/person/{{ note.CreatedByPersonId }}">{{ note.CreatedByPersonName }}</a>
+                        {% else %}
+                        {{ note.Caption }}
+                        {%- endif -%}
+                        
+                    </p>
+                    <div class="navbar-right" style="margin:0">
+                        <div class="dropdown">
+                            <button id="{{ note.id }}-options" class="btn btn-link" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-h"></i></button>
+                            <ul class="dropdown-menu" id="{{ note.id }}-optionsmenu" aria-labelledby="{{ note.id }}-options"> 
+                                <li><a href="#{{ note.NoteAnchorId }}">Link</a></li> 
+                            {%- assign canEdit = note | HasRightsTo:'Edit' -%}
+                            {%- if canEdit -%}
+                                <li><a class="edit-note js-editnote">Edit</a></li>
+                                <li role="separator" class="divider"></li>
+                                <li><a class="dropdown-item-danger remove-note" href="#" onclick="{{ note.Id | Postback:'DeleteNote' }}">Delete</a></li>
+                            {%- endif -%}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                 <p class="date" title="{{ note.EditedDateTime }}">{{ noteDateTimeText }} {{ note.NoteType.Name }}</p>
+            </div>
+            
+        </header>
+        <div class="note-content">
+            {{ noteText }}
+        </div>
+        <footer class="note-footer">
+            <ul class="note-footer-actions-list list-horizontal">
+                {%- if canReply -%}
+                    <li><a href="#" class="js-replynote">Reply</a></li>
+                {%- endif -%}
+                {%- if note.NoteType.RequiresApprovals and note.ApprovalStatus == "Approved" -%}
+                    <li>Approved By {{ note.ApprovedByPersonAliasId | PersonByAliasId }} on {{ note.ApprovedDateTime }}</li>
+                {%- endif -%}
+            </ul>
+            <ul class="note-footer-meta-list list-horizontal">
+                {%- if viewableChildNotesCount > 0 -%}
+                    <li>{{ viewableChildNotesCount }} Replies</li>
+                {%- endif -%}
+            </ul>
+        </footer>
+    </article>
+
+
+    {%- comment -%}
+    Maintain the noteReplyDepth by incrementing here (for every note), and then decrementing after each child to indicate we are at the same level
+    {%- endcomment -%}
+    {%- assign noteReplyDepth = noteReplyDepth | Plus:1 -%}
+    {%- if viewableChildNotesCount > 0 -%}
+        {%- if noteReplyDepth == 1 -%}
+            {{- -}}<div class="note-comments">
+        {%- endif -%}
+        <ul class="list-unstyled note-list note-list-nested js-childnotes">
+        {%- for note in note.ViewableChildNotes -%}
+            {%- include '~~/Assets/Lava/NoteViewItem.lava' -%}
+            {%- assign noteReplyDepth = noteReplyDepth | Minus:1 -%}
+        {%- endfor -%}
+        </ul>
+        {%- if noteReplyDepth == 1 -%}
+            {{- -}}</div>
+        {%- endif -%}
+    {%- endif -%}
+</li>
