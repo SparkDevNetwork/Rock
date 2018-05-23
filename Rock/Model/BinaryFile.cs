@@ -397,6 +397,7 @@ namespace Rock.Model
                             {
 
                                 var ms = new MemoryStream();
+                                ContentStream.Position = 0;
                                 ContentStream.CopyTo( ms );
                                 ContentStream.Dispose();
 
@@ -410,6 +411,7 @@ namespace Rock.Model
                                 ContentStream = new MemoryStream();
                                 ms.Position = 0;
                                 ms.CopyTo( ContentStream );
+                                ContentStream.Position = 0;
                                 FileSize = ContentStream.Length;
                             }
                         }
