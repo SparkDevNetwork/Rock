@@ -614,10 +614,10 @@ namespace RockWeb.Blocks.Event
 
 
                                     var newGroupMember = new GroupMember();
-                                    groupMemberService.Add( newGroupMember );
                                     newGroupMember.Group = group;
                                     newGroupMember.PersonId = registrant.PersonAlias.PersonId;
                                     newGroupMember.GroupRoleId = groupRoleId.Value;
+                                    groupMemberService.Add( newGroupMember );
                                     rockContext.SaveChanges();
 
                                     newGroupMember = groupMemberService.Get( newGroupMember.Id );
@@ -1031,11 +1031,11 @@ namespace RockWeb.Blocks.Event
                                 if ( groupMember == null )
                                 {
                                     groupMember = new GroupMember();
-                                    groupMemberService.Add( groupMember );
                                     groupMember.GroupId = group.Id;
                                     groupMember.PersonId = registrant.PersonId.Value;
                                     groupMember.GroupRoleId = groupRoleId.Value;
                                     groupMember.GroupMemberStatus = RegistrationTemplateState.GroupMemberStatus;
+                                    groupMemberService.Add( groupMember );
 
                                     rockContext.SaveChanges();
 
