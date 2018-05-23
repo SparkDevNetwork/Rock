@@ -223,8 +223,7 @@ namespace RockWeb.Blocks.Connection
             {
                 ConnectionTypeService connectionTypeService = new ConnectionTypeService( rockContext );
 
-                var connectionType = connectionTypeService.Get( hfConnectionTypeId.Value.AsInteger() );
-                newConnectionTypeId = connectionTypeService.Copy( connectionType );
+                newConnectionTypeId = connectionTypeService.Copy( hfConnectionTypeId.Value.AsInteger() );
             }
 
             ConnectionWorkflowService.RemoveCachedTriggers();
