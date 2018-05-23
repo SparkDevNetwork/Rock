@@ -224,7 +224,7 @@ namespace RockWeb.Blocks.WorkFlow
 
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            if ( new List<string> { "Summary", "Notes", "Log" }.Contains( hfActiveTab.Value ) )
+            if ( new List<string> { "Summary", "Notes", "Log", string.Empty }.Contains( hfActiveTab.Value ) )
             {
                 hfActiveTab.Value = "Details";
             }
