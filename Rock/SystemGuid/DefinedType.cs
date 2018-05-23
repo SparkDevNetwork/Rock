@@ -39,6 +39,11 @@ namespace Rock.SystemGuid
         public const string BENEVOLENCE_RESULT_TYPE = "35FC0225-3DAC-48B4-BDF7-AFDE104FB60E";
 
         /// <summary>
+        /// Guid for Cache Tags
+        /// </summary>
+        public const string CACHE_TAGS = "BDF73089-9154-40C1-90E4-74518E9937DC";
+
+        /// <summary>
         /// The types of communication supported (i.e. email, sms, twitter, app-push, etc)
         /// </summary>
         public const string COMMUNICATION_MEDIUM = "DC8A841C-E91D-4BD4-A6A7-0DE765308E8F";
