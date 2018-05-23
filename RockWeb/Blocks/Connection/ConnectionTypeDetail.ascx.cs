@@ -229,14 +229,6 @@ namespace RockWeb.Blocks.Connection
 
             ConnectionWorkflowService.RemoveCachedTriggers();
             modalCopy.Show();
-
-            /*
-            // Navigate to new Connection Type
-            var qryParams = new Dictionary<string, string>();
-            qryParams["ConnectionTypeId"] = newConnectionTypeId.ToString();
-
-            NavigateToPage( RockPage.Guid, qryParams );
-            */
         }
         #endregion
 
