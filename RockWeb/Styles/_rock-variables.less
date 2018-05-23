@@ -83,6 +83,13 @@
 @help-color: #86b8cc; // The color of the help icon used in Rock.
 @required-field-color: #eca9a7; // Color of the small dot that denotes required fields.
 
+// Layers
+@shadow-raised: 0 0 1px 0 rgba(0, 0, 0, .03), 0 1px 3px 0 rgba(0, 0, 0, .08);
+@shadow-overlay: 0 4px 8px 0 rgba(0,0,0,.1);
+@shadow-sticky-nav: 0 6px 12px 0 rgba(0,0,0,.1);
+@shadow-temporary-nav: 0 8px 16px 0 rgba(0,0,0,.1);
+@shadow-modal: 0 12px 24px 0 rgba(0,0,0,.1);
+
 //// Scroll Bars
 @scroll-track-color: #aaa; // Color of the scrollbar track line.
 @scroll-thumb-color: #ccc; // Color of the scrollbar thumb which moves up and down the track line.
@@ -258,6 +265,10 @@
 @smartsearch-input-selection-background: #2e2e2e;
 @smartsearch-input-selection-text-color: #fff;
 @smartsearch-text-color: @header-text-color;
+
+@input-focus-rgba: rgba(red(@input-border-focus), green(@input-border-focus), blue(@input-border-focus), .6);
+@input-focus-box-shadow: ~"0 0 0 3px @{input-focus-rgba}";
+@input-focus-transition: ~"border-color .15s ease-in-out, box-shadow .15s ease-in-out";
 
 // Wizard Styles { Used on pages like 'Calendar' and 'Event Registration' to help guide the user through a complex series of screens. }
 @wizard-bg: @gray-lighter;

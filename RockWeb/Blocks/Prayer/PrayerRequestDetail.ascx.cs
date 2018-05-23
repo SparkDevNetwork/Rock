@@ -138,7 +138,7 @@ namespace RockWeb.Blocks.Prayer
         {
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "prayerRequestId" ).AsInteger() );
+                ShowDetail( PageParameter( "PrayerRequestId" ).AsInteger() );
             }
             else
             {
@@ -146,7 +146,7 @@ namespace RockWeb.Blocks.Prayer
                 {
                     var rockContext = new RockContext();
                     PrayerRequest prayerRequest;
-                    int? prayerRequestId = PageParameter( "prayerRequestId" ).AsIntegerOrNull();
+                    int? prayerRequestId = PageParameter( "PrayerRequestId" ).AsIntegerOrNull();
                     if ( prayerRequestId.HasValue && prayerRequestId.Value > 0 )
                     {
                         prayerRequest = new PrayerRequestService( rockContext ).Get( prayerRequestId.Value );

@@ -784,14 +784,6 @@ Sys.Application.add_load(function () {
                             CompletedText ="Done" CompletedDuration="3" CompletedMessage="&nbsp;Your Changes have been Saved!"/>
                     </div>
 
-                    <a id="NoteControl"></a>
-                    <h2 runat="server">Rock:NoteControl</h2>
-                    <div id="Div3" runat="server" class="r-example">
-                        <section class="panel-note">
-                            <Rock:NoteControl ID="noteExample" runat="server" IsAlert="false" IsPrivate="false" Text="Here is some example note text." CanEdit="true" />
-                        </section>
-                    </div>
-
                     <a id="AttributeEditor"></a>
                     <h2 runat="server">Rock:AttributeEditor</h2>
                     <div runat="server" class="r-example">
