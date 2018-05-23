@@ -27,45 +27,21 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for NoteType that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for NoteWatch that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class NoteTypeEntity
+    public partial class NoteWatchEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public bool AllowsReplies { get; set; }
+        public bool AllowOverride { get; set; }
 
         /// <summary />
-        public bool AllowsWatching { get; set; }
+        public int? EntityId { get; set; }
 
         /// <summary />
-        public string ApprovalUrlTemplate { get; set; }
-
-        /// <summary />
-        public bool AutoWatchAuthors { get; set; }
-
-        /// <summary />
-        public string BackgroundColor { get; set; }
-
-        /// <summary />
-        public string BorderColor { get; set; }
-
-        /// <summary />
-        public string CssClass { get; set; }
-
-        /// <summary />
-        public int EntityTypeId { get; set; }
-
-        /// <summary />
-        public string EntityTypeQualifierColumn { get; set; }
-
-        /// <summary />
-        public string EntityTypeQualifierValue { get; set; }
-
-        /// <summary />
-        public string FontColor { get; set; }
+        public int? EntityTypeId { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -74,13 +50,7 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public string IconCssClass { get; set; }
-
-        /// <summary />
-        public bool IsSystem { get; set; }
-
-        /// <summary />
-        public int? MaxReplyDepth { get; set; }
+        public bool IsWatching { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -88,19 +58,19 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
-        public string Name { get; set; }
+        public int? NoteId { get; set; }
 
         /// <summary />
-        public int Order { get; set; }
+        public int? NoteTypeId { get; set; }
 
         /// <summary />
-        public bool RequiresApprovals { get; set; }
+        public int? WatcherGroupId { get; set; }
 
         /// <summary />
-        public bool SendApprovalNotifications { get; set; }
+        public int? WatcherPersonAliasId { get; set; }
 
         /// <summary />
-        public bool UserSelectable { get; set; }
+        public bool WatchReplies { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -129,34 +99,24 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source NoteType object
+        /// Copies the base properties from a source NoteWatch object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( NoteType source )
+        public void CopyPropertiesFrom( NoteWatch source )
         {
             this.Id = source.Id;
-            this.AllowsReplies = source.AllowsReplies;
-            this.AllowsWatching = source.AllowsWatching;
-            this.ApprovalUrlTemplate = source.ApprovalUrlTemplate;
-            this.AutoWatchAuthors = source.AutoWatchAuthors;
-            this.BackgroundColor = source.BackgroundColor;
-            this.BorderColor = source.BorderColor;
-            this.CssClass = source.CssClass;
+            this.AllowOverride = source.AllowOverride;
+            this.EntityId = source.EntityId;
             this.EntityTypeId = source.EntityTypeId;
-            this.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
-            this.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
-            this.FontColor = source.FontColor;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.IconCssClass = source.IconCssClass;
-            this.IsSystem = source.IsSystem;
-            this.MaxReplyDepth = source.MaxReplyDepth;
+            this.IsWatching = source.IsWatching;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
-            this.Name = source.Name;
-            this.Order = source.Order;
-            this.RequiresApprovals = source.RequiresApprovals;
-            this.SendApprovalNotifications = source.SendApprovalNotifications;
-            this.UserSelectable = source.UserSelectable;
+            this.NoteId = source.NoteId;
+            this.NoteTypeId = source.NoteTypeId;
+            this.WatcherGroupId = source.WatcherGroupId;
+            this.WatcherPersonAliasId = source.WatcherPersonAliasId;
+            this.WatchReplies = source.WatchReplies;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -168,12 +128,24 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for NoteType that includes all the fields that are available for GETs. Use this for GETs (use NoteTypeEntity for POST/PUTs)
+    /// Client model for NoteWatch that includes all the fields that are available for GETs. Use this for GETs (use NoteWatchEntity for POST/PUTs)
     /// </summary>
-    public partial class NoteType : NoteTypeEntity
+    public partial class NoteWatch : NoteWatchEntity
     {
         /// <summary />
         public EntityType EntityType { get; set; }
+
+        /// <summary />
+        public Note Note { get; set; }
+
+        /// <summary />
+        public NoteType NoteType { get; set; }
+
+        /// <summary />
+        public Group WatcherGroup { get; set; }
+
+        /// <summary />
+        public PersonAlias WatcherPersonAlias { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

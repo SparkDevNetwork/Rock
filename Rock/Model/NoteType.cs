@@ -129,6 +129,100 @@ namespace Rock.Model
         [DataMember]
         public int Order { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [requires approvals].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [requires approvals]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool RequiresApprovals { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [allows watching].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allows watching]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AllowsWatching { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [allows replies].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allows replies]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AllowsReplies { get; set; }
+
+        /// <summary>
+        /// Gets or sets the maximum reply depth.
+        /// </summary>
+        /// <value>
+        /// The maximum reply depth.
+        /// </value>
+        [DataMember]
+        public int? MaxReplyDepth { get; set; }
+
+        /// <summary>
+        /// Gets or sets the background color of each note
+        /// </summary>
+        /// <value>
+        /// The color of the background.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string BackgroundColor { get; set; }
+
+        /// <summary>
+        /// Gets or sets the font color of the note text
+        /// </summary>
+        /// <value>
+        /// The color of the font.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string FontColor { get; set; }
+
+        /// <summary>
+        /// Gets or sets the border color of each note
+        /// </summary>
+        /// <value>
+        /// The color of the border.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string BorderColor { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [send approval notifications].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [send approval notifications]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool SendApprovalNotifications { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [automatic watch authors].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [automatic watch authors]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AutoWatchAuthors { get; set; }
+
+        /// <summary>
+        /// A optional Lava Template that can be used to general a URL where Notes of this type can be approved
+        /// If this is left blank, the Approval URL will be a URL to the page (including a hash anchor to the note) where the note was originally created
+        /// </summary>
+        /// <value>
+        /// The approval URL template.
+        /// </value>
+        [DataMember]
+        public string ApprovalUrlTemplate { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -145,6 +239,19 @@ namespace Rock.Model
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// A dictionary of actions that this class supports and the description of each.
+        /// </summary>
+        public override Dictionary<string, string> SupportedActions
+        {
+            get
+            {
+                var supportedActions = base.SupportedActions;
+                supportedActions.AddOrReplace( Rock.Security.Authorization.APPROVE, "The roles and/or users that have access to approve notes." );
+                return supportedActions;
+            }
+        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
