@@ -38,6 +38,7 @@
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
                         <span class="pull-right">
+                            <asp:LinkButton ID="btnCopy" runat="server" CssClass="btn btn-default btn-sm btn-square fa fa-clone" OnClick="btnCopy_Click" ToolTip="Copy Connection Type" />
                             <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" />
                         </span>
                     </div>
@@ -127,6 +128,10 @@
                     </div>
                 </div>
             </div>
+            <Rock:ModalDialog ID="modalCopy" runat="server" Title="Copy Finished">
+                <Content>
+                </Content>
+            </Rock:ModalDialog>
         </asp:Panel>
 
         <Rock:ModalAlert ID="modalAlert" runat="server" />
