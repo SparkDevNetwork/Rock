@@ -43,16 +43,6 @@ namespace Rock.Migrations
             // Fix the Interaction Detail page setting on Interaction Session List Block
             RockMigrationHelper.AddBlockAttributeValue( "0FCDA1B8-B3F1-4E78-8FCF-E81F2CA77D05", "922BDC9E-D1ED-4553-B84D-1C301B291F5F", @"b6f6ab6f-a572-45fe-a143-2e4b8f192c8d" );
 
-            // Add an index to help with performance of the Session List block
-            Sql( @"
-    IF EXISTS ( SELECT * FROM sys.indexes WHERE NAME = 'IX_PersonAliasId_InteractionSessionId' AND object_id = OBJECT_ID('Interaction') )
-	DROP INDEX [IX_PersonAliasId_InteractionSessionId] ON [dbo].[Interaction]
-
-    CREATE NONCLUSTERED INDEX [IX_PersonAliasId_InteractionSessionId]
-    ON [dbo].[Interaction] ([PersonAliasId],[InteractionSessionId])
-    INCLUDE ([InteractionDateTime],[InteractionComponentId])
-" );
-
             // Update the default session list template to link pages directly to the page that was viewed
             RockMigrationHelper.UpdateBlockTypeAttribute( "EA90EF4F-C783-48CD-B575-AD785DE896E9", "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5", "Default Template", "DefaultTemplate", "", @"The Lava template to use as default.", 2, @"
 {% if InteractionChannel != null and InteractionChannel != '' %}
