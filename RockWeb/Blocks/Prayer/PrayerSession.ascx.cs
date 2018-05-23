@@ -172,11 +172,11 @@ namespace RockWeb.Blocks.Prayer
                 var noteType = CacheNoteType.Get( NoteTypeId.Value );
                 if ( noteType != null )
                 {
-                    notesComments.NoteTypes = new List<CacheNoteType> { noteType };
+                    notesComments.NoteOptions.NoteTypes = new List<CacheNoteType> { noteType };
                 }
             }
 
-            notesComments.EntityId = CurrentPrayerRequestId;
+            notesComments.NoteOptions.EntityId = CurrentPrayerRequestId;
 
             if ( lbNext.Visible )
             {
@@ -535,8 +535,7 @@ namespace RockWeb.Blocks.Prayer
             pnlPrayerComments.Visible = prayerRequest.AllowComments ?? false;
             if ( notesComments.Visible )
             {
-                notesComments.EntityId = prayerRequest.Id;
-                notesComments.RebuildNotes( true );
+                notesComments.NoteOptions.EntityId = prayerRequest.Id;
             }
 
             CurrentPrayerRequestId = prayerRequest.Id;

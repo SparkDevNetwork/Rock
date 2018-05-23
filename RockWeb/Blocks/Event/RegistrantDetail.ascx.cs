@@ -436,11 +436,11 @@ namespace RockWeb.Blocks.Event
                                 if ( groupMember == null )
                                 {
                                     groupMember = new GroupMember();
-                                    groupMemberService.Add( groupMember );
                                     groupMember.GroupId = reloadedRegistrant.Registration.Group.Id;
                                     groupMember.PersonId = ppPerson.PersonId.Value;
                                     groupMember.GroupRoleId = groupRoleId.Value;
                                     groupMember.GroupMemberStatus = TemplateState.GroupMemberStatus;
+                                    groupMemberService.Add( groupMember );
 
                                     newRockContext.SaveChanges();
 

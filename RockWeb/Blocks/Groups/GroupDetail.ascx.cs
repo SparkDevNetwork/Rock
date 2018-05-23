@@ -1445,14 +1445,17 @@ namespace RockWeb.Blocks.Groups
             SetScheduleControls( groupTypeCache, group );
             ShowGroupTypeEditDetails( groupTypeCache, group, true );
 
-            dvpGroupStatus.DefinedTypeId = groupTypeCache.GroupStatusDefinedTypeId;
-            if ( groupTypeCache.GroupStatusDefinedType != null )
+            if ( groupTypeCache != null )
             {
-                dvpGroupStatus.Label = groupTypeCache.GroupStatusDefinedType.ToString();
-            }
+                dvpGroupStatus.DefinedTypeId = groupTypeCache.GroupStatusDefinedTypeId;
+                if ( groupTypeCache.GroupStatusDefinedType != null )
+                {
+                    dvpGroupStatus.Label = groupTypeCache.GroupStatusDefinedType.ToString();
+                }
 
-            dvpGroupStatus.Visible = groupTypeCache.GroupStatusDefinedTypeId.HasValue;
-            dvpGroupStatus.SetValue( group.StatusValueId );
+                dvpGroupStatus.Visible = groupTypeCache.GroupStatusDefinedTypeId.HasValue;
+                dvpGroupStatus.SetValue( group.StatusValueId );
+            }
 
             // if this block's attribute limit group to SecurityRoleGroups, don't let them edit the SecurityRole checkbox value
             if ( GetAttributeValue( "LimittoSecurityRoleGroups" ).AsBoolean() )

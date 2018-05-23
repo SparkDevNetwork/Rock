@@ -155,7 +155,7 @@
             $(_contentSlugSelector).val(slug);
         }
         $(row).find(_selectors.inputGroup).remove();
-        var html = '<literal class="js-slug-literal">' + slug + '</literal>' +
+        var html = '<span class="js-slug-literal">' + slug + '</span>' +
             '<div class="rollover-item actions pull-right">' +
             '<a class="js-slug-edit" href="#"><i class="fa fa-pencil"></i></a>' +
             '<a class="js-slug-remove" href="#"><i class="fa fa-close"></i></a>' +

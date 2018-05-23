@@ -89,8 +89,18 @@ textarea,
 // 2. Bootstrap Overrides    */
 // -------------------------
 
+.badge {
+  border-radius: @border-radius-base;
+}
+
 .well {
   .box-shadow(none)
+}
+
+.toggle-container {
+  .btn-group {
+    vertical-align: top;
+  }
 }
 
 .btn-square {
@@ -180,14 +190,6 @@ textarea,
 }
 
 .tooltip {
-  &.fade{
-    animation-name: css-1;
-    animation-duration: .267s;
-    animation-timing-function: cubic-bezier(.1, .25, .75, .9);
-    animation-delay: 300ms;
-    .transition(none);
-  }
-
   &.top {
     margin-bottom: 1px;
     .tooltip-arrow {
@@ -284,13 +286,22 @@ textarea,
     margin: 5px 0 0 7px;
     color: @ui-5;
     text-decoration: none;
+    position: absolute;
     background: #fff;
+
+    &.is-open {
+      background: @panel-subheading;
+    }
   }
 
   .grid-filter-entry {
     h4 { display: none; }
 
     padding-top: 37px;
+  }
+
+  .grid-filter-overview fieldset {
+    padding: 37px 16px 8px;
   }
 }
 
@@ -307,9 +318,9 @@ textarea,
 .grid .table > thead > tr > th {
   padding: 18px 0 18px 12px;
   vertical-align: middle;
-  &:last-child {
-    border-right: 1px solid @table-border-color;
-  }
+  // &:last-child {
+  //   border-right: 1px solid @table-border-color;
+  // }
 }
 
 .grid .table > thead > tr.grid-header-bold > th {
@@ -332,9 +343,9 @@ textarea,
     vertical-align: middle;
   }
 
-  &:last-child {
-    border-right: 1px solid @table-border-color;
-  }
+  // &:last-child {
+  //   border-right: 1px solid @table-border-color;
+  // }
 }
 
 .grid .table > tfoot {
@@ -490,7 +501,7 @@ td.grid-actions {
 
   .checkbox:last-child,
   .radio:last-child {
-    margin: 0;
+    margin: 0 !important;
   }
 
   .checkbox input[type="checkbox"] + span.label-text::before,
@@ -600,6 +611,15 @@ td.grid-actions {
 
     @media (min-width: @screen-sm-min) {
       display: block;
+    }
+  }
+
+  .navbar-nav.contextsetter, .contextsetter {
+    margin: 14px;
+    background-color: @btn-default-bg;
+    border: 1px solid @btn-default-border;
+    a {
+      color: @btn-default-color;
     }
   }
 
@@ -974,7 +994,7 @@ td.grid-actions {
           }
 
           &.title {
-            padding: 24px 20px 28px;
+            padding: 24px 20px 27px;
             margin: 0 -20px;
             font-size: 28px;
             font-weight: @font-weight-light;
@@ -1247,6 +1267,7 @@ body.navbar-side-close {
   display: block;
   min-height: 19px;
   padding-left: 28px;  // Not sure if needed
+  margin: 7px 16px 7px 0 !important;
 
   label { // Override forms.less
     padding-left: 0;
@@ -1261,7 +1282,15 @@ body.navbar-side-close {
 
 .radio-inline,
 .checkbox-inline {
+  padding-right: 16px;
   padding-left: 30px;
+  margin-left: 0;
+}
+
+.radio-inline:first-child,
+.checkbox-inline:first-child,
+.radio-inline+.radio-inline {
+  margin-left: 0;
 }
 
 .radio,

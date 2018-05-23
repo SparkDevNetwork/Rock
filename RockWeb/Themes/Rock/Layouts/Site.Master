@@ -138,14 +138,14 @@
         Sys.Application.add_load( function () {
             $('.navbar-side > li').hover(function () {
                 if (!$('body').hasClass('zone-highlight')) {
-                    $(this).doTimeout('hover', 0, function(e) {
+                    $(this).doTimeout('hover', 50, function(e) {
                         $(this).addClass('open');
                         $('body').addClass('modal-open').css("padding-right", getScrollbarWidth());
                         $('.navbar-fixed-top').css("right", getScrollbarWidth());
                     }, this)
                 }
             }, function () {
-                $(this).doTimeout('hover', 0, function(e) {
+                $(this).doTimeout('hover', 50, function(e) {
                         $(this).removeClass('open');
                         $('body').removeClass('modal-open').css("padding-right", 0);
                         $('.navbar-fixed-top').css("right", 0);

@@ -486,6 +486,7 @@
     <Compile Include="Cache\Entities\CacheWorkflowType.cs" />
     <Compile Include="Cache\IItemCache.cs" />
     <Compile Include="Cache\NonEntities\CacheEntityNoteTypes.cs" />
+    <Compile Include="Cache\NonEntities\CacheIdFromGuid.cs" />
     <Compile Include="Cache\NonEntities\CacheWorkflowTriggers.cs" />
     <Compile Include="Cache\RockCache.cs" />
     <Compile Include="Cache\IRockCacheManager.cs" />
@@ -818,6 +819,7 @@
     <Compile Include="Jobs\SendFollowingSuggestions.cs" />
     <Compile Include="Jobs\SendGroupEmail.cs" />
     <Compile Include="Jobs\SendGroupRequirementsNotification.cs" />
+    <Compile Include="Jobs\SendNoteNotifications.cs" />
     <Compile Include="Jobs\SendRegistrationPaymentReminders.cs" />
     <Compile Include="Jobs\SparkLink.cs" />
     <Compile Include="Jobs\SendRegistrationReminders.cs" />
@@ -901,6 +903,7 @@
     <Compile Include="Model\CodeGenerated\MetaPersonicxLifestageClusterService.cs" />
     <Compile Include="Model\CodeGenerated\MetaPersonicxLifestageGroupService.cs" />
     <Compile Include="Model\CodeGenerated\NcoaHistoryService.cs" />
+    <Compile Include="Model\CodeGenerated\NoteWatchService.cs" />
     <Compile Include="Model\CodeGenerated\PersonalDeviceService.cs" />
     <Compile Include="Model\CodeGenerated\AttributeMatrixItemService.cs" />
     <Compile Include="Model\CodeGenerated\AttributeMatrixService.cs" />
@@ -1239,6 +1242,7 @@
     <Compile Include="Model\NoteService.Partial.cs" />
     <Compile Include="Model\NoteType.cs" />
     <Compile Include="Model\NoteTypeService.Partial.cs" />
+    <Compile Include="Model\NoteWatch.cs" />
     <Compile Include="Model\Notification.cs" />
     <Compile Include="Model\NotificationRecipient.cs" />
     <Compile Include="Model\Page.cs" />
@@ -1361,6 +1365,7 @@
     <Compile Include="Reporting\DataSelect\PrayerRequest\CampusSelect.cs" />
     <Compile Include="Reporting\DataSelect\PrayerRequest\CategorySelect.cs" />
     <Compile Include="Reporting\DataSelect\PrayerRequest\PersonLinkSelect.cs" />
+    <Compile Include="Reporting\DataTransform\Person\FamilyMembersTransform.cs" />
     <Compile Include="Reporting\DataTransform\Person\FatherTransform.cs" />
     <Compile Include="Reporting\DataTransform\Person\GrandchildTransform.cs" />
     <Compile Include="Reporting\DataTransform\Person\GrandparentTransform.cs" />
@@ -1682,6 +1687,8 @@
     <Compile Include="Web\UI\Controls\Grid\EncryptedField.cs" />
     <Compile Include="Web\UI\Controls\Grid\HtmlField.cs" />
     <Compile Include="Web\UI\Controls\Grid\LavaField.cs" />
+    <Compile Include="Web\UI\Controls\NoteEditor.cs" />
+    <Compile Include="Web\UI\Controls\NoteOptions.cs" />
     <Compile Include="Web\UI\Controls\ControlMirror.cs" />
     <Compile Include="Web\UI\Controls\Lava.cs" />
     <Compile Include="Web\UI\Controls\ListItems.cs" />

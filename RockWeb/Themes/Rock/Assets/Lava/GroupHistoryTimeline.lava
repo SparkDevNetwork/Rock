@@ -191,7 +191,7 @@
     </ul>
 {%- endif -%}
 
-<a href="{{ GroupHistoryGridPage }}?GroupId={{ PageParameter.GroupId }}" class="btn btn-xs btn-default pull-right">View Grid</a>
+<a href="/group/{{ PageParameter.GroupId }}/history/grid" class="btn btn-xs btn-default pull-right">View Grid</a>
 
 <section class="rock-timeline">
     <div class="timeline-container">
@@ -307,7 +307,7 @@
                                 {%- comment -%} Shows a list of added/removed group members {%- endcomment -%}
                                 {%- if showSummaryEntity -%}
                                     {%- if historySummary.EntityTypeName == 'Group Member' -%}
-                                        <span class='historysummary-entity' title='{{ historySummary.CreatedDateTime }}'><a href="{{ GroupMemberHistoryPage }}?GroupId={{ PageParameter.GroupId }}&GroupMemberId={{ historySummary.EntityId }}">{{ historySummary.Entity | Default:historySummary.ValueName | ToString }}</a></span>
+                                        <span class='historysummary-entity' title='{{ historySummary.CreatedDateTime }}'><a href="{{ GroupMemberHistoryPage }}?GroupMemberId={{ historySummary.EntityId }}">{{ historySummary.Entity | Default:historySummary.ValueName | ToString }}</a></span>
                                     {%- endif -%}
                                 {%- endif -%}
                                 {%- comment -%} showHistoryDetails for complex sets of changes {%- endcomment -%}
@@ -338,7 +338,7 @@
                                                                     changed
                                                                     {%- if historySummary.Entity.Guid != PrimaryEntity.Guid -%}
                                                                         {%- assign timelineOtherEntity = historySummary.Entity | ToString -%}
-                                                                        <a href='{{ GroupMemberHistoryPage }}?GroupId={{ PageParameter.GroupId }}&GroupMemberId={{ historySummary.EntityId }}' class='history-otherentity'>{{ timelineOtherEntity | Possessive }}</a>
+                                                                        <a href='{{ GroupMemberHistoryPage }}?GroupMemberId={{ historySummary.EntityId }}' class='history-otherentity'>{{ timelineOtherEntity | Possessive }}</a>
                                                                     {%- else -%}
                                                                         the
                                                                     {%- endif -%}

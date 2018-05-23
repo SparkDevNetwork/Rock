@@ -77,9 +77,19 @@ namespace Rock.SystemGuid
         public const string WORKFLOW_FORM_NOTIFICATION = "88C7D1CC-3478-4562-A301-AE7D4D7FFF6D";
 
         /// <summary>
-        /// Gets the template guid for workflow form notifications
+        /// Gets the template guid for digital signature invite
         /// </summary>
         public const string DIGITAL_SIGNATURE_INVITE  = "791F2DE4-5A59-60AE-4F2F-FDC3EBC4FFA9";
+
+        /// <summary>
+        /// Gets the template guid for a notewatch notification
+        /// </summary>
+        public const string NOTEWATCH_NOTIFICATION = "21B92DE2-6825-45F3-BD27-43B47FE490D8";
+
+        /// <summary>
+        /// Gets the template guid for a note approval notification
+        /// </summary>
+        public const string NOTE_APPROVAL_NOTIFICATION = "B2E3D75F-681E-430F-82C9-D0D681040FAF";
 
     }
 }

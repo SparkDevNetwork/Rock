@@ -219,7 +219,7 @@ namespace Rock.Web.UI.Controls
 
                 writer.Write( "<header>" );
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-link btn-xs" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, visible ? "btn btn-link btn-xs is-open" : "btn btn-link btn-xs" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Button );
                 writer.Write( "Filter Options" );
 
