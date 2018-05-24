@@ -12,11 +12,10 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
 {%- endif -%}
 
 {%- capture fontStyle -%}{%- if note.NoteType.FontColor != '' -%}color: {{ note.NoteType.FontColor }};{%- endif -%}{%- endcapture -%}
-{%- capture borderStyle -%}{%- if note.NoteType.BorderColor != '' -%}box-shadow: inset 5px 0 0 0 {{ note.NoteType.BorderColor }};{%- endif -%}{%- endcapture -%}
+{%- capture borderStyle -%}{%- if note.NoteType.BorderColor != '' -%}box-shadow: inset px 0 0 0 {{ note.NoteType.BorderColor }};{%- endif -%}{%- endcapture -%}
 {%- capture backgroundStyle -%}{%- if note.NoteType.BackgroundColor != '' -%}background-color: {{ note.NoteType.BackgroundColor }};{%- endif -%}{%- endcapture -%}
-{%- capture wrapperStyle -%}{{ borderStyle }}{{{ fontStyle }}{%- endcapture -%}
+{%- capture wrapperStyle -%}{{ borderStyle }}{{ fontStyle }}{{ backgroundStyle }}{%- endcapture -%}
 {%- if wrapperStyle != '' -%}{%- capture wrapperStyle -%}style="{{ wrapperStyle }}"{%- endcapture -%}{%- endif -%}
-
 
 {%- assign noteDateTimeText = note.CreatedDateTime | HumanizeDateTime -%}
 {%- if note.EditedDateTime > note.CreatedDateTime -%}
@@ -35,7 +34,6 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
 {%- endif -%}
 
 {%- assign noteText = note.Text | Escape | Linkify | FromMarkdown -%}
-
 {%- comment -%}If this note requires approval and is not yet approved, we might see it if the current person created the note or is an approver, so render its approval status and approval actions{%- endcomment -%}
 {%- assign approvalStatusHtml = '' -%}
 {%- assign approvalActionsHtml = '' -%}
@@ -109,12 +107,17 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
                     </p>
 
                     {%- assign canEdit = note | HasRightsTo:'Edit' -%}
-                    {%- if canEdit -%}
+                    {%- if canEdit or canReply -%}
                     <div class="dropdown">
                         <button id="{{ note.Id }}-options" class="btn btn-link btn-overflow" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-h"></i></button>
                         <ul class="dropdown-menu" id="{{ note.Id }}-optionsmenu" aria-labelledby="{{ note.Id }}-options"> 
+                            {%- if canReply -%}
+                                <li><button type="button" class="dropdown-item btn-link js-replynote">Reply</button></li>
+                            {%- endif -%}
+                            {%- if canEdit -%}
                             <li><button type="button" class="dropdown-item btn-link js-editnote">Edit</button></li>
                             <li><a class="dropdown-item-danger remove-note" href="#" onclick="{{ note.Id | Postback:'DeleteNote' }}">Delete</a></li>
+                            {%- endif -%}
                         </ul>
                     </div>
                     {%- endif -%}
@@ -133,17 +136,15 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
             {{ noteText }}
         </div>
         <footer class="note-footer">
-            <ul class="note-footer-actions-list list-horizontal">
-                {%- if canReply -%}
-                    <li><button type="button" class="btn btn-link js-replynote"><i class="fa fa-comment"></i>Reply</button></li>
-                {%- endif -%}
+            {% comment %} <ul class="note-footer-actions-list list-horizontal">
+                
+            </ul> {% endcomment %}
+            <ul class="note-footer-meta-list list-horizontal">
                 {%- if note.NoteType.RequiresApprovals and note.ApprovalStatus == "Approved" -%}
                     <li>Approved By {{ note.ApprovedByPersonAliasId | PersonByAliasId }} on {{ note.ApprovedDateTime }}</li>
                 {%- endif -%}
-            </ul>
-            <ul class="note-footer-meta-list list-horizontal">
                 {%- if viewableChildNotesCount > 0 -%}
-                    <li>{{ viewableChildNotesCount }} Replies</li>
+                    <li><button type="button" class="btn btn-link js-expandreply">{{ 'Reply' | ToQuantity:viewableChildNotesCount }}</button></li>
                 {%- endif -%}
             </ul>
         </footer>

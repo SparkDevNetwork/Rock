@@ -449,14 +449,14 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _mdEditWarning );
 
             _lbSaveNote.ID = this.ID + "_lbSaveNote";
-            _lbSaveNote.Attributes["class"] = "btn btn-primary btn-sm";
+            _lbSaveNote.Attributes["class"] = "btn btn-primary btn-xs";
             _lbSaveNote.CausesValidation = false;
             _lbSaveNote.Click += lbSaveNote_Click;
 
             Controls.Add( _lbSaveNote );
 
             _aSecurity.ID = "_aSecurity";
-            _aSecurity.Attributes["class"] = "btn btn-security btn-sm btn-square security js-notesecurity";
+            _aSecurity.Attributes["class"] = "btn btn-security btn-xs btn-square security js-notesecurity";
             _aSecurity.Attributes["data-entitytype-id"] = CacheEntityType.Get( typeof( Rock.Model.Note ) ).Id.ToString();
             _aSecurity.InnerHtml = "<i class='fa fa-lock'></i>";
             Controls.Add( _aSecurity );
@@ -572,7 +572,7 @@ namespace Rock.Web.UI.Controls
                     }
                 }
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "edit-note-cancel js-editnote-cancel btn btn-link btn-sm" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "edit-note-cancel js-editnote-cancel btn btn-link btn-xs" );
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
                 writer.Write( "Cancel" );
                 writer.RenderEndTag();

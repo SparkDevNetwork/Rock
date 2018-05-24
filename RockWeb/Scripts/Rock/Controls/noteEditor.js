@@ -10,6 +10,7 @@
             var cancelNote = $(this).hasClass('js-editnote-cancel');
             var deleteNote = $(this).hasClass('js-removenote');
 
+
             var $noteContainer = $(this).closest('.js-notecontainer');
             var sortDirection = $noteContainer.data('sortdirection');
             var $noteEditor = $noteContainer.find('.js-note-editor');
@@ -87,6 +88,12 @@
 
             // show any notedetails that might have been hidden when doing the editing
             $noteEditor.parent().find('.js-noteviewitem').slideDown();
+        });
+
+        $('.js-expandreply').click(function (e) {
+            var $noteContainer = $(this).closest('.js-note');
+            var $noteEditor = $noteContainer.find('.js-childnotes');
+            $noteEditor.slideToggle();
         });
     });
 }(Sys));
