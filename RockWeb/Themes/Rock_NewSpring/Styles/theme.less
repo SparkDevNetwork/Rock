@@ -1,0 +1,798 @@
+﻿// Inspired By
+// http://tattek.com/minimal/#
+// http://192.241.236.31/test4.smartadmin/#ajax/dashboard.html
+// http://webapplayers.com/inspinia_admin-v1.2/form_basic.html
+
+
+// Load Master Styles
+// -------------------------
+@import "../../../Styles/Bootstrap/variables.less";
+
+@import "../../../Styles/_rock-core.less";
+@import "../../../Styles/_store.less";
+@import "../../../Styles/_rock-variables.less";
+@import "_variables.less";
+@import "_variable-overrides.less";
+
+
+/*#region
+// Fonts                       */
+// -------------------------
+
+// light (weight 400 = 'normal')
+// @font-face {
+//   font-family: 'OpenSans';
+//   src: url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.eot');
+//   src: url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.eot?#iefix') format('embedded-opentype'),
+//        url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.woff2') format('woff2'),
+//        url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.woff') format('woff');
+//   font-weight: 300;
+//   font-style: normal;
+// }
+
+// regular (weight 500)
+// @font-face {
+//   font-family: 'OpenSans';
+//   src: url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot');
+//   src: url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot?#iefix') format('embedded-opentype'),
+//        url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.woff2') format('woff2'),
+//        url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.woff') format('woff');
+//   font-weight: 400;
+//   font-style: normal;
+// }
+
+// semi-bold (weight 700)
+// @font-face {
+//   font-family: 'OpenSans';
+//   src: url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.eot');
+//   src: url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.eot?#iefix') format('embedded-opentype'),
+//        url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.woff2') format('woff2'),
+//        url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.woff') format('woff');
+//   font-weight: 700;
+//   font-style: normal;
+// }
+
+// bold (weight 900)
+// @font-face {
+//   font-family: 'OpenSans';
+//   src: url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.eot');
+//   src: url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.eot?#iefix') format('embedded-opentype'),
+//        url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.woff2') format('woff2'),
+//        url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.woff') format('woff');
+//   font-weight: 900;
+//   font-style: normal;
+// }
+/*#endregion */
+
+/*
+  Rock Theme Styles
+
+  1. HTML Overrides
+  2. Bootstrap Overides
+  3. Rock Overrides
+  4. Theme Styling
+  5. Utilities
+  6. Responsive Overrides
+  7. Side Navbar
+  8. First Word Weight
+
+*/
+
+
+/*#region
+// 1. HTML Overrides         */
+// -------------------------
+
+@-ms-viewport {
+  width: device-width;
+}
+
+html {
+  -ms-overflow-style: scrollbar; // need for IE 10 issue with scrollbars being on TOP of the content
+
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+main {
+  display: block;
+}
+
+body {
+  background-color: @nav-bg;
+}
+
+h1, h2, h3, h4 {
+  font-weight: @font-weight-light;
+  letter-spacing: -.5px;
+}
+
+a:hover {
+  text-decoration: none;
+}
+
+input[type=text],
+textarea,
+.form-control {
+  -webkit-transition: all .3s ease-in-out;
+     -moz-transition: all .3s ease-in-out;
+      -ms-transition: all .3s ease-in-out;
+       -o-transition: all .3s ease-in-out;
+}
+
+input[type=text]:focus,
+textarea:focus,
+.form-control:focus {
+  border: 1px solid rgba(238, 118, 36, .6);
+  box-shadow: 0 0 5px rgba(238, 118, 36, .6);
+}
+
+pre {
+  color: @theme-6-text;
+  background-color: @theme-6;
+  border-color: darken(@theme-6, 15%);
+}
+
+// text selection color
+::selection {
+  color: @text-selection-color;
+  background: @text-selection-bg;
+}
+::-moz-selection {
+  color: @text-selection-color;
+  background: @text-selection-bg;
+}
+
+/*#endregion */
+
+
+/*#region
+// 2. Bootstrap Overrides    */
+// -------------------------
+
+h1 small,
+h2 small,
+h3 small,
+h4 small,
+h5 small,
+h6 small,
+.h1 small,
+.h2 small,
+.h3 small,
+.h4 small,
+.h5 small,
+.h6 small,
+h1 .small,
+h2 .small,
+h3 .small,
+h4 .small,
+h5 .small,
+h6 .small,
+.h1 .small,
+.h2 .small,
+.h3 .small,
+.h4 .small,
+.h5 .small,
+.h6 .small {
+  font-weight: inherit;
+}
+
+h4, .h4 {
+  font-weight: 500;
+}
+
+.table-hover > tbody > tr:hover {
+  td {
+    background-color: @grid-hover-bg;
+  }
+}
+
+.breadcrumb {
+  background-color: transparent;
+}
+
+// panel tweaks
+.panel {
+  border-top-width: 3px;
+  border-radius: 0;
+
+  .panel-heading {
+    .panel-title {
+      font-size: 18px;
+      font-weight: @font-weight-semibold;
+      letter-spacing: -.5px;
+    }
+  }
+
+  &.panel-primary {
+    .panel-heading {
+      background-color: @brand-primary;
+    }
+  }
+}
+.panel-info {
+  border-top-color: @panel-top-border-color;
+
+  .panel-body {
+    background-color: @body-bg;
+  }
+
+  .list-group-item {
+    background-color: @body-bg;
+  }
+}
+
+.tag-letterlist a {
+  color: @brand-primary;
+}
+
+// change the color of the none selected links
+// by default bootsrap does not allow the color of a link roll-over to be a different color. Modified it to allow this.
+.nav-pills {
+  > li {
+    > a {
+      color: @nav-pills-link-color;
+
+      &:hover,
+      &:focus {
+        color: lighten(@nav-pills-active-link-hover-color, 20%);
+        background-color: lighten(@nav-pills-active-link-hover-bg, 20%);
+      }
+    }
+  }
+}
+
+/*#region
+// 3. Rock Overrides         */
+// -------------------------
+
+// make the no image svgs take on a bit of their background color
+.photo img[src*=no-photo],
+.person-image[style*=no-photo],
+.profile-photo[style*=no-photo] {
+  opacity: .5;
+}
+
+#cms-admin-footer {
+  border: 0;
+}
+
+.loginstatus {
+  margin-right: 2px;
+
+  .profile-photo {
+    float: left;
+    width: 35px;
+    height: 35px;
+    margin: -8px 4px 0 0;
+    background-repeat: no-repeat;
+    background-size: cover;
+    border-radius: 17.5px;
+    background-position-x: center;
+    -webkit-border-radius: 17.5px;
+    -moz-border-radius: 17.5px;
+  }
+}
+
+/*#endregion */
+
+
+/*#region
+// 4. Theme Styling          */
+// -------------------------
+
+.modal-backdrop, .modal-backdrop.fade.in {
+  background: @gray-darker;
+}
+
+// Notifications
+.navbar-top-links {
+  float: left;
+  margin-left: 12px;
+  color: @text-color;
+}
+.navbar-top-links > li {
+  display: inline-block;
+}
+.navbar-top-links > li > a {
+  padding: 15px;
+  color: @navbar-default-link-color;
+  &:hover, &:focus {
+    color: @theme-8-text;
+    background-color: @theme-8;
+    @media @sm {
+      color: @navbar-default-link-hover-color;
+      background-color: darken(@header-bg, 5%);
+    }
+  }
+}
+.navbar-top-links > li.open > a {
+  &, &:hover, &:focus {
+    background-color: @theme-8;
+    @media @sm {
+      background-color: darken(@header-bg, 10%);
+    }
+  }
+}
+.navbar-top-links ul .divider {
+  background-color: @gray-light!important;
+}
+.navbar-top-links .dropdown-menu {
+  width: 310px;
+  padding: 10px 0;
+}
+.navbar-top-links .dropdown-messages .media {
+  padding: 3px 15px;
+}
+
+.count-info .label {
+  position: absolute;
+  top: 6px;
+  right: 3px;
+  padding: 2px 4px;
+  line-height: 12px;
+}
+
+a.link-block,
+.link-block > a {
+  display: block;
+  padding: @grid-gutter-width/4;
+}
+
+
+#page-wrapper {
+  width: 100%;
+}
+
+#content-wrapper {
+  position: relative;
+  min-width: 320px;
+  background-color: @body-bg;
+
+  @media screen {
+    min-height: 1100px;
+  }
+
+  header {
+    .navbar-default {
+      margin-bottom: 0;
+      color: @nav-color;
+      background-color: @nav-bg;
+      border-color: darken(@nav-bg, 5%);
+
+      .navbar-header {
+        // float: left;
+        padding: 10px 0 0 12px;
+      }
+
+      .navbar-mobile-logo {
+        float: left;
+        width: 95px;
+        height: 34px;
+        margin: 8px 0 0 6px;
+        opacity: .8;
+
+        svg {
+          width: 100%;
+          height: 100%;
+
+          .rock-logo {
+            fill: darken(@theme-4, 5%);
+          }
+        }
+      }
+
+      .navbar-zone-header {
+        width: 100%;
+      }
+
+      .navbar-nav > .open > a,
+      .navbar-nav > .open > a:hover,
+      .navbar-nav > .open > a:focus {
+        background-color: @theme-2;
+      }
+
+      .navbar-nav > li > a {
+        color: @nav-color;
+      }
+
+      .dropdown-menu {
+        li.divider {
+          background-color: darken(@theme-2-text, 20%);
+        }
+      }
+    }
+  }
+
+  #page-title {
+    padding: 15px;
+    color: @pagetitle-text-color;
+    background-color: @pagetitle-bg;
+
+    h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: @font-weight-light;
+      letter-spacing: -.5px;
+
+      .page-icon {
+        display: inline;
+        opacity: .8;
+      }
+    }
+
+    .breadcrumb {
+      padding: 0;
+      margin: 4px 0 0;
+
+      a {
+        color: @breadcrumb-color;
+
+        &:hover {
+          color: lighten(@breadcrumb-color, 10%);
+        }
+      }
+
+      > .active {
+        color: @breadcrumb-color;
+      }
+
+      li + li:before {
+        color: @breadcrumb-color;
+      }
+    }
+
+    .pageoverview-description {
+      margin-top: 4px;
+      opacity: .4;
+      font-weight: 500;
+      color: @theme-1-text;
+    }
+  }
+
+  #page-content {
+    padding: 15px;
+  }
+
+  footer {
+    padding: 0 15px;
+
+    a {
+      color: @text-color;
+
+      &:hover {
+        color: lighten(@text-color, 20%);
+      }
+    }
+  }
+}
+
+#content-wrapper, .navbar-static-side {
+  -webkit-transition-duration: .5s;
+     -moz-transition-duration: .5s;
+       -o-transition-duration: .5s;
+          transition-duration: .5s;
+}
+
+.not-found h2 {
+  font-size: 200px;
+  font-weight: @font-weight-bold;
+  line-height: 210px;
+  letter-spacing: -5px;
+
+  i {
+    position: relative;
+    top: -12px;
+    font-size: 210px;
+    color: #f03;
+  }
+}
+
+body#splash {
+  background-color: @theme-4;
+  border-top: 36px solid @theme-2;
+
+  #content {
+    max-width: 400px;
+    padding: 15px;
+    margin: 24px auto 0;
+
+    #logo {
+      display: block;
+      width: 100px;
+      height: 100px;
+      margin: 0 auto;
+
+      svg {
+        width: 100%;
+        height: 100%;
+      }
+
+      .rock-logo {
+        fill: darken(@theme-4, 5%);
+      }
+    }
+  }
+
+
+  &.error #content {
+    max-width: 800px;
+    margin: 12px auto 0;
+
+    #logo {
+      width: 100px;
+      height: 100px;
+      margin: 0 auto;
+    }
+  }
+}
+
+.error-wrap .error-icon {
+  &.warning {
+    color: #dab751;
+  }
+}
+
+/*#endregion */
+
+
+/*#region
+// 5. Utilities              */
+// -------------------------
+
+.navbar-minimize {
+  display: inline-block;
+  padding: 6px 12px 5px;
+  color: @header-hambuger-color;
+  cursor: pointer;
+  background-color: @header-hambuger-bg;
+  border: 1px solid @header-hamburger-border;
+  border-radius: @border-radius-base;
+}
+
+
+/*#endregion */
+
+
+/*#region
+// 6. Responsive Overrides  */
+// -------------------------
+
+// default styling should be for phones 767px or less
+
+// Small devices (tablets, 768px and up)
+@media (min-width: @screen-sm-min) {
+  body#splash {
+    #content {
+      margin: 36px auto 0;
+
+      #logo {
+        display: block;
+        width: 150px;
+        height: 150px;
+        margin: 0 auto 12px;
+      }
+    }
+  }
+}
+
+// Medium devices (desktops, 992px and up)
+@media (min-width: @screen-md-min) {
+  #content-wrapper {
+    header {
+      .navbar-default {
+        height: @navbar-height;
+        color: @header-text-color;
+        background-color: @header-bg;
+        border-color: darken(@header-bg, 5%);
+
+        .navbar-mobile-logo {
+          display: none;
+        }
+
+        .navbar-zone-header {
+          width: inherit;
+        }
+
+        & .navbar-nav > .open > a,
+        & .navbar-nav > .open > a:hover,
+        & .navbar-nav > .open > a:focus {
+          background-color: darken(@header-bg, 5%);
+        }
+
+        & .navbar-nav > li > a {
+          color: @header-text-color;
+        }
+
+        .dropdown-menu {
+          li.divider {
+            background-color: @gray-lighter;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Large devices (large desktops, 1200px and up)
+@media (min-width: @screen-lg-min) {
+}
+/*#endregion */
+
+
+/*#region
+// 7. Side Navbar             */
+// -------------------------
+
+
+// base styles
+.navbar-static-side {
+  position: absolute;
+  display: none;
+  width: 70px;
+  color: @nav-color;
+  background-color: @nav-bg;
+
+  .navbar-header {
+    width: 100%;
+    height: @navbar-height;
+    background-color: @nav-logo-bg;
+
+    .logo {
+      width: 36px;
+      height: 35px;
+      margin: 8px auto 0;
+      background: url(../../../Assets/Images/rock-logo-sm.svg) no-repeat top left;
+      background-size: contain;
+      opacity: .8;
+    }
+  }
+
+  .navbar-side {
+    display: inline-block;
+    width: 100%;
+    cursor: default;
+
+    & > li {
+      margin-top: 0;
+      text-align: center;
+      border-top: 1px solid lighten(@nav-bg, 7%);
+
+      &:last-child {
+        border-bottom: 1px solid lighten(@nav-bg, 7%);
+      }
+
+      > i {
+        display: block;
+        padding: 16px 0;
+        font-size: 24px;
+
+        &:hover {
+          color: @nav-sub-color;
+          background-color: @nav-sub-bg;
+        }
+      }
+
+      &.open {
+        background-color: @nav-sub-bg;
+      }
+
+      .nav-childpages {
+        position: absolute;
+        top: 0;
+        left: 70px;
+        z-index: 9999;
+        display: none;
+        width: 220px;
+        padding: 9px 12px;
+        font-size: 14px;
+        text-align: left;
+        background-color: @nav-sub-bg;
+
+        li a {
+          padding: 6px;
+          line-height: 1.1em;
+          color: @nav-sub-color;
+
+          &:focus {
+            color: @nav-sub-text-rollover-color;
+            background-color: @nav-sub-text-rollover-bg;
+          }
+
+          &:hover {
+            color: @nav-sub-text-rollover-color;
+            background-color: @nav-sub-text-rollover-bg;
+          }
+        }
+
+        li.title {
+          margin-bottom: -8px;
+          font-size: 18px;
+          font-weight: @font-weight-light;
+          color: @nav-sub-title-color;
+        }
+
+        li.header {
+          padding-bottom: 2px;
+          margin-top: 14px;
+          margin-left: 4px;
+          font-weight: @font-weight-semibold;
+          font-weight: 400;
+          color: @nav-sub-heading-color;
+          border-bottom: 1px solid @nav-sub-heading-border;
+        }
+
+        li.header:first-child {
+          margin-top: 0;
+        }
+      }
+    }
+
+    > li.open {
+      .nav-childpages {
+        display: block;
+
+        li.header {
+          padding-left: 0;
+        }
+      }
+    }
+  }
+}
+
+// expanded view
+@media (min-width: @screen-md-min) {
+  .navbar-static-side {
+    display: block;
+  }
+
+  #content-wrapper {
+    margin-left: 70px;
+  }
+}
+
+// minimized view
+body.navbar-side-open {
+  .navbar-static-side {
+    display: block;
+    width: 70px;
+  }
+
+  #content-wrapper {
+    margin-left: 70px;
+  }
+}
+
+body.navbar-side-close {
+  .navbar-static-side {
+    display: none;
+  }
+
+  #content-wrapper {
+    margin-left: 0;
+  }
+}
+/*#endregion */
+
+
+/*#region
+// 8. First Word Weight  */
+// -------------------------
+.title {
+  font-weight: @font-weight-light;
+
+  .first-word {
+    font-weight: @font-weight-bold;
+  }
+}
+
+.public-profile-edit {
+  .title {
+    font-weight: @font-weight-bold;
+  }
+}
+/*#endregion */
+
+@import "../NewSpring/_theme-override.less";
+@import "_print.less";
+@import "_css-overrides.less";
