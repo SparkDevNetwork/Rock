@@ -14,7 +14,7 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
 {%- capture fontStyle -%}{%- if note.NoteType.FontColor != '' -%}color: {{ note.NoteType.FontColor }};{%- endif -%}{%- endcapture -%}
 {%- capture borderStyle -%}{%- if note.NoteType.BorderColor != '' -%}box-shadow: inset 5px 0 0 0 {{ note.NoteType.BorderColor }};{%- endif -%}{%- endcapture -%}
 {%- capture backgroundStyle -%}{%- if note.NoteType.BackgroundColor != '' -%}background-color: {{ note.NoteType.BackgroundColor }};{%- endif -%}{%- endcapture -%}
-{%- capture wrapperStyle -%}{{ borderStyle }}{{ backgroundStyle }}{%- endcapture -%}
+{%- capture wrapperStyle -%}{{ borderStyle }}{{{ fontStyle }}{%- endcapture -%}
 {%- if wrapperStyle != '' -%}{%- capture wrapperStyle -%}style="{{ wrapperStyle }}"{%- endcapture -%}{%- endif -%}
 
 
@@ -124,7 +124,7 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
                 <a href="#{{ note.NoteAnchorId }}" class="timestamp">
                     <relative-time datetime="{{ note.EditedDateTime | Date:'yyyy-MM-ddTHH:mm:ss' }}" title="{{ note.EditedDateTime | Date:'MMMM d, yyyy, h:mm tt' }}">{{ noteDateTimeText }}</a>
                 </a>
-                {%- if note.NoteType.Name != 'Personal Note' -%}<span class="tag-flair">{%- if note.NoteType.BackgroundColor != '' -%}<span class="tag-color" style="background-color:{{ note.NoteType.BackgroundColor }}"></span>{%- endif -%}<span class="tag-label">{{ note.NoteType.Name }}</span></span>{%- endif -%}
+                {%- if note.NoteType.Name != 'Personal Note' -%}<span class="tag-flair">{%- if note.NoteType.BorderColor != '' -%}<span class="tag-color" style="background-color:{{ note.NoteType.BorderColor }}"></span>{%- endif -%}<span class="tag-label">{{ note.NoteType.Name }}</span></span>{%- endif -%}
                 </div>
             </div>
             
