@@ -915,17 +915,17 @@ td.grid-actions {
 
         &:hover {
           color: @navbarside-color;
-          background-color: @navbarside-sub-bg;
         }
       }
 
       &.open {
+        box-shadow: inset 3px 0 0 0 rgba(255,255,255,0.5);
         background-color: @navbarside-sub-bg;
       }
 
-      &.current {
-        border-right: 3px solid transparent;
-        border-left: 3px solid @brand-color;
+      &.current,
+      &.current:hover {
+        box-shadow: inset 3px 0 0 0 @brand-color;
         > i {
           color: #fff;
         }
@@ -1461,13 +1461,6 @@ body.navbar-side-close {
 //   border-top: 2px solid #3d70b2;
 //   padding: 16px 16px 0 16px;
 //   margin: 0 -24px;
-// }
-
-// .fade {
-//   animation-name: css-1, css-11;
-//   animation-duration: .167s;
-//   animation-timing-function: cubic-bezier(.1, .25, .75, .9);
-//   animation-fill-mode: both;
 // }
 
 .picker-menu {
