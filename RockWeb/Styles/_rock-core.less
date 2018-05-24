@@ -158,14 +158,6 @@ a.warning {
 
 .dropdown-menu {
   .box-shadow(@shadow-overlay);
-  -webkit-transition: opacity 125ms ease-in,transform 125ms ease-in;
-  -moz-transition: opacity 125ms ease-in,transform 125ms ease-in;
-  transition: opacity 125ms ease-in,transform 125ms ease-in;
-  transform: translate3d(0,-10px,0);
-  -ms-transform: translate(0,-10px);
-  display: block;
-  opacity: 0;
-  visibility: hidden;
 
   .dropdown-item-danger {
     &:hover {
@@ -173,14 +165,6 @@ a.warning {
       color: #fff;
     }
   }
-}
-
-.open > .dropdown-menu {
-  transform: translate3d(0,0,0);
-  -ms-transform: translate(0,0);
-  display: block;
-  opacity: 1;
-  visibility: visible;
 }
 
 // make icons inside of a button fixed with
