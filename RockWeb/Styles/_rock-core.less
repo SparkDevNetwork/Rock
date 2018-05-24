@@ -160,9 +160,24 @@ a.warning {
   .box-shadow(@shadow-overlay);
 
   .dropdown-item-danger {
+    color: @brand-danger;
     &:hover {
-      background-color: @brand-danger;
       color: #fff;
+      background-color: @brand-danger;
+    }
+  }
+
+  .dropdown-item.btn-link {
+    width: 100%;
+    padding: 3px 20px;
+    color: @dropdown-link-color;
+    text-align: left;
+
+    &:hover,
+    &:focus {
+      color: @dropdown-link-hover-color;
+      text-decoration: none;
+      background-color: @dropdown-link-hover-bg;
     }
   }
 }
@@ -175,11 +190,11 @@ a.warning {
 
 .btn i.btn-icon {
   position: relative;
-  vertical-align: middle;
   top: -1px;
   width: 1em;
   height: 1em;
-  margin-left: 0.5em;
+  margin-left: .5em;
+  vertical-align: middle;
 }
 
 // add new alert style
