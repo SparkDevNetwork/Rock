@@ -45,7 +45,7 @@ install:
 
     Set-Content c:\users\appveyor\.ssh\id_rsa $fileContent
 
-    git clone -q --depth=1 git@github.com:NewSpring/rock-bookshelf.git c:\projects\Rock\rock-bookshelf
+    git clone -q --depth=1 git@github.com:NewSpring/rock-bookshelf.git c:\projects\Rock\.remote\rock-bookshelf
 
     git clone -q --depth=1 git@github.com:NewSpring/rock-power-bi.git c:\projects\Rock\.remote\rock-power-bi
 
@@ -56,8 +56,6 @@ install:
     git clone -q --depth=1 git@github.com:NewSpring/rock-misc.git c:\projects\rock-misc
 
     git clone -q --depth=1 git@github.com:NewSpring/rock-f1.git c:\projects\rock-f1
-
-    git clone -q --depth=1 git@github.com:NewSpring/rock-cybersource.git c:\projects\rock-cybersource
 
     git clone -q --depth=1 git@github.com:NewSpring/rock-cache-sync.git c:\projects\rock-cache-sync
 

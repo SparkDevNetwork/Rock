@@ -63,8 +63,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.centralaz.SpiritualGift
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cc.newspring.F1", "..\rock-f1\cc.newspring.F1.csproj", "{9F3591C6-451C-4C38-A1D2-6E8B99C81DB4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cc.newspring.CyberSource", "..\rock-cybersource\cc.newspring.CyberSource.csproj", "{83775A9E-0455-4801-B1EF-DC70D786D09B}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cc.newspring.CacheBreak", "..\rock-cache-sync\cc.newspring.CacheBreak.csproj", "{9F3591C6-451C-4C38-A1D2-6E8B99C81DA3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cc.newspring.AttendedCheckIn", "..\rock-attended-checkin\cc.newspring.AttendedCheckIn.csproj", "{BC36CAC2-1F25-4190-9297-157DDD2E4960}"
