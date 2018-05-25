@@ -38,7 +38,7 @@
             var inputSlug = $(this).val();
             var rowLength = $(_selectors.slugRow).length;
             if (rowLength === 0 && inputSlug !== '') {
-                var html = '<div class="row margin-l-sm margin-b-sm rollover-container js-slug-row clearfix">' +
+                var html = '<div class="form-group rollover-container js-slug-row">' +
                     '<input id="slugId" class="js-slug-id" type="hidden" value="" />' +
                     '</div >';
                 $(_selectors.btnAdd).before(html);
@@ -57,7 +57,7 @@
         $(_selectors.btnAdd).click(function (e) {
             e.preventDefault();
             e.stopPropagation();
-            var html = '<div class="row margin-l-sm margin-b-sm rollover-container js-slug-row clearfix">' +
+            var html = '<div class="form-group rollover-container js-slug-row">' +
                 '<input id="slugId" class="js-slug-id" type="hidden" value="" />' +
                 '<div class="input-group input-slug-group">' +
                 '<input class="form-control js-slug-input" />' +
