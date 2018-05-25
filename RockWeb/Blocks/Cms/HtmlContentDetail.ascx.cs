@@ -55,15 +55,25 @@ namespace RockWeb.Blocks.Cms
     [TextField( "Context Name", "Name to use to further 'personalize' content.  Blocks with the same name, and referenced with the same context parameter will share html values.", false, "", "", 7 )]
     [BooleanField( "Enable Versioning", "If checked, previous versions of the content will be preserved. Versioning is required if you want to require approval.", false, "", 8, "SupportVersions" )]
     [BooleanField( "Require Approval", "Require that content be approved?", false, "", 9 )]
+    [CustomCheckboxListField("Cache Tags", "Cached tags are used to link cached content so that it can be expired as a group", CACHE_TAG_LIST, false, key: "CacheTags", order: 10)]
     // Disable QuickEdit for v7
     //[CustomDropdownListField( "Quick Edit", "Allow quick editing of HTML contents.", "AIREDIT^In Place Editing,DBLCLICK^Double-Click For Edit Dialog", false, "", "", 11, "QuickEdit")]
 
-    [BooleanField( "Is Secondary Block", "Flag indicating whether this block is considered secondary and should be hidden when other secondary blocks are hidden.", false, "", 12 )]
+    [BooleanField( "Is Secondary Block", "Flag indicating whether this block is considered secondary and should be hidden when other secondary blocks are hidden.", false, "", 11 )]
     [ContextAware]
     public partial class HtmlContentDetail : RockBlockCustomSettings, ISecondaryBlock
     {
 
         #region Properties
+
+        /// <summary>
+        /// Supplies the CustomCheckboxListField "CacheTags" with a list of tags.
+        /// </summary>
+        private const string CACHE_TAG_LIST = @"
+            SELECT CAST([DefinedValue].[Id] AS VARCHAR) AS [Value], [DefinedValue].[Value] AS [Text]
+            FROM[DefinedType]
+            JOIN[DefinedValue] ON[DefinedType].[Id] = [DefinedValue].[DefinedTypeId]
+            WHERE[DefinedType].[Guid] = 'BDF73089-9154-40C1-90E4-74518E9937DC'";
 
         /// <summary>
         /// Gets the settings tool tip.
