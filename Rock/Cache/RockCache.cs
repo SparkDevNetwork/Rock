@@ -286,6 +286,37 @@ namespace Rock.Cache
         }
 
         /// <summary>
+        /// Clears all of the cached items for the type.
+        /// </summary>
+        /// <param name="cacheType">Type of the cache.</param>
+        /// <returns></returns>
+        public static string ClearCachedItemsForType( Type cacheType )
+        {
+            if ( _allManagers == null )
+            {
+                return "Nothing to clear";
+            }
+
+            Type rockCacheManagerType = typeof( RockCacheManager<> ).MakeGenericType( new Type[]{ cacheType } );
+
+            foreach ( var manager in _allManagers )
+            {
+                if( manager.GetType() == rockCacheManagerType )
+                {
+                    manager.Clear();
+                    return $"Cache for {cacheType.Name} cleared.";
+                }
+            }
+
+            return $"Nothing to clear for {cacheType.Name}.";
+        }
+
+        public static string ClearCachedItemsForType( string cacheTypeName )
+        {
+            return ClearCachedItemsForType( Type.GetType( $"Rock.Cache.{cacheTypeName},Rock" ) );
+        }
+
+        /// <summary>
         /// Gets all statistics fore each cache instance/handle
         /// </summary>
         /// <returns></returns>
