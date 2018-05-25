@@ -142,7 +142,7 @@
                 </div>
 
                 <div class="actions">
-                    <asp:LinkButton ID="btnApplyOptions" runat="server" Text="Apply" CssClass="btn btn-primary" OnClick="btnApplyOptions_Click" />
+                    <asp:LinkButton ID="btnApplyOptions" runat="server" Text="Apply" CssClass="btn btn-primary btn-xs" OnClick="btnApplyOptions_Click" />
                 </div>
             </asp:Panel>
 
