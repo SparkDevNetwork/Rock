@@ -211,16 +211,18 @@ textarea,
 .tooltip-arrow {
   width: 10px;
   height: 10px;
-  background: #fff;
+  background: @gray-darker;
   border: 1px solid @ui-4;
   transform: rotate(45deg);
 }
 
 .tooltip-inner {
-  .box-shadow(@shadow-overlay);
   padding: (@padding-base-horizontal / 2);
+  color: #fff;
   text-align: left;
+  background-color: @gray-darker;
   border: 1px solid @ui-4;
+  .box-shadow(@shadow-overlay);
 }
 
 .close {
@@ -282,11 +284,11 @@ textarea,
   border: 0;
 
   .btn-link {
+    position: absolute;
     z-index: 100;
     margin: 5px 0 0 7px;
     color: @ui-5;
     text-decoration: none;
-    position: absolute;
     background: #fff;
 
     &.is-open {
@@ -915,17 +917,36 @@ td.grid-actions {
 
         &:hover {
           color: @navbarside-color;
-          background-color: @navbarside-sub-bg;
         }
       }
 
       &.open {
         background-color: @navbarside-sub-bg;
+        box-shadow: inset 3px 0 0 0 @brand-color;
+
+        &::before {
+          position: absolute;
+          top: -(ceil(@navbarside-width * 1.15));
+          right: 0;
+          width: ceil(@navbarside-width * .35);
+          height: ceil(@navbarside-width * 1.15);
+          content: " ";
+        }
+
+        &::after {
+          position: absolute;
+          right: 0;
+          bottom: -(ceil(@navbarside-width * 1.15));
+          z-index: 1;
+          width: ceil(@navbarside-width * .35);
+          height: ceil(@navbarside-width * 1.15);
+          content: " ";
+        }
       }
 
-      &.current {
-        border-right: 3px solid transparent;
-        border-left: 3px solid @brand-color;
+      &.current,
+      &.current:hover {
+        box-shadow: inset 3px 0 0 0 @brand-color;
         > i {
           color: #fff;
         }
@@ -1289,7 +1310,7 @@ body.navbar-side-close {
 
 .radio-inline:first-child,
 .checkbox-inline:first-child,
-.radio-inline+.radio-inline {
+.radio-inline + .radio-inline {
   margin-left: 0;
 }
 
@@ -1461,13 +1482,6 @@ body.navbar-side-close {
 //   border-top: 2px solid #3d70b2;
 //   padding: 16px 16px 0 16px;
 //   margin: 0 -24px;
-// }
-
-// .fade {
-//   animation-name: css-1, css-11;
-//   animation-duration: .167s;
-//   animation-timing-function: cubic-bezier(.1, .25, .75, .9);
-//   animation-fill-mode: both;
 // }
 
 .picker-menu {

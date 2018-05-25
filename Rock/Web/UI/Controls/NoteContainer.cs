@@ -559,7 +559,10 @@ namespace Rock.Web.UI.Controls
                 {
                     if ( ShowMoreOption )
                     {
+                        writer.AddAttribute( HtmlTextWriterAttribute.Class, "load-more-container" );
+                        writer.RenderBeginTag( HtmlTextWriterTag.Div );
                         _lbShowMore.RenderControl( writer );
+                        writer.RenderEndTag();
                     }
                 }
 

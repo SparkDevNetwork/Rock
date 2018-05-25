@@ -35,9 +35,8 @@
     <title></title>
 
     <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest") %>"></script>
-    <script src="<%# ResolveRockUrl("~/Scripts/jquery.jquery-dotimeout.js" ) %>"></script>
 
-    
+
 
     <!-- Set the viewport width to device width for mobile -->
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -55,55 +54,45 @@
 
 </head>
 <body runat="server" id="body">
-
     <form id="form1" runat="server">
 
-    <div class="page-wrapper">
+        <div class="page-wrapper">
 
-        <nav class="navbar navbar-fixed-top rock-top-header">
-            <div class="navbar-toggle navbar-toggle-side-left collapsed" data-toggle="collapse" data-target=".navbar-static-side">
-                <i class="fa fa-bars"></i>
-            </div>
-            <asp:HyperLink ID="hlHomeCorner" runat="server" NavigateUrl="~" ToolTip="Rock RMS" CssClass="navbar-brand-corner" />
+            <nav class="navbar navbar-fixed-top rock-top-header">
+                <div class="navbar-toggle navbar-toggle-side-left collapsed" data-toggle="collapse" data-target=".navbar-static-side">
+                    <i class="fa fa-bars"></i>
+                </div>
+                <asp:HyperLink ID="hlHomeCorner" runat="server" NavigateUrl="~" ToolTip="Rock RMS" CssClass="navbar-brand-corner" />
 
-            <div id="fixed-header" class="header-content" role="navigation">
-                <div class="clearfix">
-                    <!-- bookmark markup goes here -->
+                <div id="fixed-header" class="header-content" role="navigation">
+                    <div class="clearfix">
+                        <!-- bookmark markup goes here -->
+                        <div class="navbar-zone-login"><Rock:Zone Name="Login" runat="server" /></div>
+                        <div class="navbar-zone-header"><Rock:Zone Name="Header" runat="server" /></div>
+                    </div>
+                </div>
+            </nav>
 
-                    <div class="navbar-zone-login"><Rock:Zone Name="Login" runat="server" /></div>
-                    <div class="navbar-zone-header"><Rock:Zone Name="Header" runat="server" /></div>
+            <nav class="navbar-default navbar-static-side" role="navigation">
+                <div class="navbar-toggle-side-left" data-toggle="collapse" data-target=".navbar-static-side">
+                    <i class="fa fa-bars"></i>
+                </div>
+                <Rock:Zone Name="Navigation" runat="server" />
+            </nav>
+
+            <div id="content-wrapper">
+                <asp:ContentPlaceHolder ID="feature" runat="server"></asp:ContentPlaceHolder>
+
+                <div class="main-content">
+                    <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
+
+                    <div class="main-footer">
+                        <Rock:Zone Name="Footer" runat="server" />
+                    </div>
                 </div>
             </div>
 
-        </nav>
-
-       <nav class="navbar-default navbar-static-side" role="navigation">
-           <div class="navbar-toggle-side-left" data-toggle="collapse" data-target=".navbar-static-side">
-               <i class="fa fa-bars"></i>
-           </div>
-           <Rock:Zone Name="Navigation" runat="server" />
-        </nav>
-
-        <div id="content-wrapper">
-            
-
-            <asp:ContentPlaceHolder ID="feature" runat="server"></asp:ContentPlaceHolder>
-
-            <div class="main-content">
-                <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
-
-                <div class="main-footer">
-                    <Rock:Zone Name="Footer" runat="server" />
-                </div>
-            </div>
-
-            
         </div>
-
-        
-    </div>
-
-        
 
         <%-- controls for scriptmanager and update panel --%>
         <asp:ScriptManager ID="sManager" runat="server"/>
@@ -111,52 +100,70 @@
 		        <ProgressTemplate>
 		            <div class="updateprogress-status">
                         <div class="spinner">
-                          <div class="rect1"></div>
-                          <div class="rect2"></div>
-                          <div class="rect3"></div>
-                          <div class="rect4"></div>
-                          <div class="rect5"></div>
+                          <div class="rect1"></div><div class="rect2"></div><div class="rect3"></div><div class="rect4"></div><div class="rect5"></div>
                         </div>
                     </div>
                     <div class="updateprogress-bg modal-backdrop"></div>
 		        </ProgressTemplate>
         </asp:UpdateProgress>
-
     </form>
 
     <script>
         function getScrollbarWidth() {
             // thx d.walsh
-            var scrollDiv = document.createElement('div');
+            var scrollDiv = document.createElement("div");
             scrollDiv.className = "modal-scrollbar-measure";
             document.body.appendChild(scrollDiv);
             var scrollbarWidth = scrollDiv.offsetWidth - scrollDiv.clientWidth;
             document.body.removeChild(scrollDiv);
             return scrollbarWidth;
-        }; // Static
+        } // Static
 
-        Sys.Application.add_load( function () {
-            $('.navbar-side > li').hover(function () {
-                if (!$('body').hasClass('zone-highlight')) {
-                    $(this).doTimeout('hover', 50, function(e) {
-                        $(this).addClass('open');
-                        $('body').addClass('modal-open').css("padding-right", getScrollbarWidth());
-                        $('.navbar-fixed-top').css("right", getScrollbarWidth());
-                    }, this)
+        var navElement = $('.navbar-side'),
+            hoverDelay = 250,
+            hideDelay = hoverDelay + 50;
+
+        Sys.Application.add_load(function () {
+            $('.navbar-side > li').mouseenter(function () {
+                var $this = $(this);
+                if ($this[0].navUnHoverTimeout !== undefined) {
+                    clearTimeout($this[0].navUnHoverTimeout);
+                    $this[0].navUnHoverTimeout = undefined;
+                } else if ($this[0].navHoverTimeout === undefined) {
+                    if (navElement.find('li.open').length > 0) {
+                        $this[0].navHoverTimeout = setTimeout(function () {
+                            navElement.find('li.open').removeClass('open');
+                            $this.addClass('open');
+                            $('body').addClass('modal-open').css('padding-right', getScrollbarWidth());
+                            $('.navbar-fixed-top').css('right', getScrollbarWidth());
+                            $this[0].navHoverTimeout = undefined;
+                        }, 35);
+                    } else {
+                        $this[0].navHoverTimeout = setTimeout(function () {
+                            $this.addClass('open');
+                            $("body").addClass('modal-open').css('padding-right', getScrollbarWidth());
+                            $(".navbar-fixed-top").css('right', getScrollbarWidth());
+                            $this[0].navHoverTimeout = undefined;
+                        }, hoverDelay);
+                    }
                 }
-            }, function () {
-                $(this).doTimeout('hover', 50, function(e) {
-                        $(this).removeClass('open');
-                        $('body').removeClass('modal-open').css("padding-right", 0);
-                        $('.navbar-fixed-top').css("right", 0);
-                    }, this);
             });
 
-
-            // enable sidbar sub menus
-            $('.navbar-side li').click(function () {
-                $('.navbar-side li').removeClass('open');
-                $(this).addClass('open');
+            $(".navbar-side > li").mouseleave(function () {
+                var $this = $(this);
+                if ($this[0].navHoverTimeout !== undefined) {
+                    clearTimeout($this[0].navHoverTimeout);
+                    $this[0].navHoverTimeout = undefined;
+                } else if ($this[0].navUnHoverTimeout === undefined && navElement.find('li.open').length > 0) {
+                    $this[0].navUnHoverTimeout = setTimeout(function () {
+                        $this.removeClass('open');
+                        if (navElement.find('li.open').length == 0) {
+                            $('body').removeClass('modal-open').css('padding-right', '');
+                            $('.navbar-fixed-top').css('right', '');
+                        }
+                        $this[0].navUnHoverTimeout = undefined;
+                    }, hideDelay);
+                }
             });
 
             $('#content-wrapper').click(function () {
@@ -165,15 +172,15 @@
 
             // show/hide sidebar nav
             $('.navbar-toggle-side-left').click(function () {
-                if ($('.navbar-static-side').is(":visible")) {
+                if ($('.navbar-static-side').is(':visible')) {
                     $('body').addClass('navbar-side-close').removeClass('navbar-side-open');
                 } else {
                     $('body').addClass('navbar-side-open').removeClass('navbar-side-close');
                 }
             });
         });
+
     </script>
 
 </body>
-
 </html>

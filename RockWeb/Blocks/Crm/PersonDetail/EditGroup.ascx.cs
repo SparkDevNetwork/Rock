@@ -536,8 +536,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     if ( divPersonImage != null )
                     {
                         divPersonImage.Style.Add( "background-image", @String.Format( @"url({0})", Person.GetPersonPhotoUrl( groupMember.Id, groupMember.PhotoId, groupMember.Age, groupMember.Gender, null ) + "&width=65" ) );
-                        divPersonImage.Style.Add( "background-size", "cover" );
-                        divPersonImage.Style.Add( "background-position", "50%" );
                     }
 
                     var rblRole = e.Item.FindControl( "rblRole" ) as RadioButtonList;
