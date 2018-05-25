@@ -78,10 +78,10 @@ namespace Rock.Workflow.Action.CheckIn
                             .Queryable().AsNoTracking()
                             .Where( a =>
                                 a.PersonAlias != null &&
-                                a.Group != null &&
-                                a.Schedule != null &&
+                                a.Occurrence.Group != null &&
+                                a.Occurrence.Schedule != null &&
                                 a.PersonAlias.PersonId == person.Person.Id &&
-                                groupTypeIds.Contains( a.Group.GroupTypeId ) &&
+                                groupTypeIds.Contains( a.Occurrence.Group.GroupTypeId ) &&
                                 a.StartDateTime >= sixMonthsAgo &&
                                 a.DidAttend.HasValue &&
                                 a.DidAttend.Value == true )
@@ -91,11 +91,11 @@ namespace Rock.Workflow.Action.CheckIn
                                 a.StartDateTime,
                                 a.EndDateTime,
                                 PersonId = a.PersonAlias.PersonId,
-                                GroupTypeId = a.Group.GroupTypeId,
-                                a.GroupId,
-                                a.LocationId,
-                                a.ScheduleId,
-                                a.Schedule
+                                GroupTypeId = a.Occurrence.Group.GroupTypeId,
+                                GroupId = a.Occurrence.GroupId,
+                                LocationId = a.Occurrence.LocationId,
+                                ScheduleId = a.Occurrence.ScheduleId,
+                                Schedule = a.Occurrence.Schedule
                             } )
                             .ToList();
 
@@ -111,7 +111,9 @@ namespace Rock.Workflow.Action.CheckIn
                             // that the person checked into on that date (if they somehow checked into multiple group/locations during same schedule, 
                             // only consider the the most recent group/location per schedule
                             var previousCheckins = new List<CheckinInfo>();
-                            if ( person.LastCheckIn.HasValue && person.LastCheckIn.Value.CompareTo( preSelectCutoff  ) >= 0 )
+                            if ( person.LastCheckIn.HasValue &&
+                                 preSelectCutoff.CompareTo( RockDateTime.Today ) < 0 &&
+                                 person.LastCheckIn.Value.CompareTo( preSelectCutoff  ) >= 0 )
                             {
                                 foreach ( var item in personAttendance
                                     .Where( a => a.StartDateTime.Date == person.LastCheckIn.Value.Date )

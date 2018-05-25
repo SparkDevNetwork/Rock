@@ -212,7 +212,6 @@ namespace RockWeb.Blocks.Examples
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnShowAttributeEditor_Click( object sender, EventArgs e )
         {
-            edtExample.FieldTypeId = Rock.Cache.CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
             pnlAttributeEditor.Visible = !pnlAttributeEditor.Visible;
         }
 

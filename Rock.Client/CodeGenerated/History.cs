@@ -41,6 +41,9 @@ namespace Rock.Client
         public int CategoryId { get; set; }
 
         /// <summary />
+        public string ChangeType { get; set; }
+
+        /// <summary />
         public int EntityId { get; set; }
 
         /// <summary />
@@ -53,12 +56,21 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
+        public bool? IsSensitive { get; set; }
+
+        /// <summary />
         public bool IsSystem { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
+        /// <summary />
+        public string NewValue { get; set; }
+
+        /// <summary />
+        public string OldValue { get; set; }
 
         /// <summary />
         public string RelatedData { get; set; }
@@ -70,7 +82,10 @@ namespace Rock.Client
         public int? RelatedEntityTypeId { get; set; }
 
         /// <summary />
-        public string Summary { get; set; }
+        public string SourceOfChange { get; set; }
+
+        /// <summary />
+        public string ValueName { get; set; }
 
         /// <summary />
         public string Verb { get; set; }
@@ -110,16 +125,21 @@ namespace Rock.Client
             this.Id = source.Id;
             this.Caption = source.Caption;
             this.CategoryId = source.CategoryId;
+            this.ChangeType = source.ChangeType;
             this.EntityId = source.EntityId;
             this.EntityTypeId = source.EntityTypeId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.IsSensitive = source.IsSensitive;
             this.IsSystem = source.IsSystem;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
+            this.NewValue = source.NewValue;
+            this.OldValue = source.OldValue;
             this.RelatedData = source.RelatedData;
             this.RelatedEntityId = source.RelatedEntityId;
             this.RelatedEntityTypeId = source.RelatedEntityTypeId;
-            this.Summary = source.Summary;
+            this.SourceOfChange = source.SourceOfChange;
+            this.ValueName = source.ValueName;
             this.Verb = source.Verb;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;

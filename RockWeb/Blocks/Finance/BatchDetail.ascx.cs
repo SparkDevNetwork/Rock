@@ -177,14 +177,14 @@ namespace RockWeb.Blocks.Finance
             var batchService = new FinancialBatchService( rockContext );
             FinancialBatch batch = null;
 
-            var changes = new List<string>();
+            var changes = new History.HistoryChangeList();
 
             int batchId = hfBatchId.Value.AsInteger();
             if ( batchId == 0 )
             {
                 batch = new FinancialBatch();
                 batchService.Add( batch );
-                changes.Add( "Created the batch" );
+                changes.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Batch" );
             }
             else
             {

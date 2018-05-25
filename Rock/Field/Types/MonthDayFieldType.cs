@@ -23,6 +23,7 @@ namespace Rock.Field.Types
 {
     /// <summary>
     /// Field Type used to for specifying a Month and Day portion of a Date
+    /// Stored as "M/d" (regardless of culture), but formatted value will be culture specific
     /// </summary>
     public class MonthDayFieldType : FieldType
     {
@@ -44,7 +45,7 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Returns the field's current value(s)
+        /// Returns the field's current value(s) formatted as a culture specific Month Day string
         /// </summary>
         /// <param name="parentControl">The parent control.</param>
         /// <param name="value">Information about the value</param>
@@ -53,16 +54,13 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            var valueAsDateTime = value.AsDateTime();
-
+            var valueAsDateTime = value.MonthDayStringAsDateTime();
             if ( valueAsDateTime.HasValue )
             {
                 return valueAsDateTime.Value.ToMonthDayString();
             }
-            else
-            {
-                return base.FormatValue( parentControl, value, configurationValues, condensed );
-            }
+
+            return base.FormatValue( parentControl, value, configurationValues, condensed );
         }
 
         /// <summary>
@@ -74,7 +72,7 @@ namespace Rock.Field.Types
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var mdpMonthDatePicker = control as MonthDayPicker;
-            return mdpMonthDatePicker?.SelectedDate?.ToString( "o" );
+            return mdpMonthDatePicker?.SelectedDate?.ToString( "M/d" );
         }
 
         /// <summary>
@@ -88,7 +86,7 @@ namespace Rock.Field.Types
             var mdpMonthDatePicker = control as MonthDayPicker;
             if ( mdpMonthDatePicker != null )
             {
-                mdpMonthDatePicker.SelectedDate = value.AsDateTime();
+                mdpMonthDatePicker.SelectedDate = value.MonthDayStringAsDateTime();
             }
         }
 

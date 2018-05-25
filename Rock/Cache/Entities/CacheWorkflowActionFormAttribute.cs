@@ -39,7 +39,7 @@ namespace Rock.Cache
         /// The Form Id.
         /// </value>
         [DataMember]
-        public int WorkflowActionFormId { get; set; }
+        public int WorkflowActionFormId { get; private set; }
 
         /// <summary>
         /// Gets or sets the attribute identifier.
@@ -48,7 +48,7 @@ namespace Rock.Cache
         /// The attribute identifier.
         /// </value>
         [DataMember]
-        public int AttributeId { get; set; }
+        public int AttributeId { get; private set; }
 
         /// <summary>
         /// Gets or sets the order.
@@ -57,7 +57,7 @@ namespace Rock.Cache
         /// The order.
         /// </value>
         [DataMember]
-        public int Order { get; set; }
+        public int Order { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [is visible].
@@ -66,7 +66,7 @@ namespace Rock.Cache
         ///   <c>true</c> if [is visible]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsVisible { get; set; }
+        public bool IsVisible { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [is read only].
@@ -75,7 +75,7 @@ namespace Rock.Cache
         ///   <c>true</c> if [is read only]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsReadOnly { get; set; }
+        public bool IsReadOnly { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [is required].
@@ -84,7 +84,7 @@ namespace Rock.Cache
         ///   <c>true</c> if [is required]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsRequired { get; set; }
+        public bool IsRequired { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [hide label].
@@ -93,7 +93,7 @@ namespace Rock.Cache
         ///   <c>true</c> if [hide label]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool HideLabel { get; set; }
+        public bool HideLabel { get; private set; }
 
         /// <summary>
         /// Gets or sets the pre HTML.
@@ -102,7 +102,7 @@ namespace Rock.Cache
         /// The pre HTML.
         /// </value>
         [DataMember]
-        public string PreHtml { get; set; }
+        public string PreHtml { get; private set; }
 
         /// <summary>
         /// Gets or sets the post HTML.
@@ -111,7 +111,7 @@ namespace Rock.Cache
         /// The post HTML.
         /// </value>
         [DataMember]
-        public string PostHtml { get; set; }
+        public string PostHtml { get; private set; }
 
         /// <summary>
         /// Gets the workflow action form.

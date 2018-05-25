@@ -186,26 +186,31 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Display an information box
         /// </summary>
-        Info,
+        Info = 0,
+
+        /// <summary>
+        /// Display an information box
+        /// </summary>
+        Validation = 5,
 
         /// <summary>
         /// Display a warning box
         /// </summary>
-        Warning,
+        Warning = 1,
 
         /// <summary>
         /// Display an error box
         /// </summary>
-        Danger,
+        Danger = 2,
 
         /// <summary>
         /// Display a success box
         /// </summary>
-        Success,
+        Success = 3,
 
         /// <summary>
         /// The default
         /// </summary>
-        Default
+        Default = 4
     }
 }

@@ -13,7 +13,7 @@
 
                 <asp:HiddenField ID="hfCommunicationTemplateId" runat="server" />
 
-                <asp:ValidationSummary ID="ValidationSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                <asp:ValidationSummary ID="ValidationSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
 
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
@@ -37,7 +37,6 @@
                         <Rock:CategoryPicker ID="cpCategory" runat="server" Required="false" Label="Category" EntityTypeName="Rock.Model.CommunicationTemplate" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:PersonPicker runat="server" id="ppSenderPerson" Label="Personal To" Help="If a person is selected, the template will be personal to that person and cannot be used by anyone else."/>
                     </div>
                 </div>
 

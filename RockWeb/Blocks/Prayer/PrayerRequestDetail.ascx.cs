@@ -138,7 +138,7 @@ namespace RockWeb.Blocks.Prayer
         {
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "prayerRequestId" ).AsInteger() );
+                ShowDetail( PageParameter( "PrayerRequestId" ).AsInteger() );
             }
             else
             {
@@ -146,7 +146,7 @@ namespace RockWeb.Blocks.Prayer
                 {
                     var rockContext = new RockContext();
                     PrayerRequest prayerRequest;
-                    int? prayerRequestId = PageParameter( "prayerRequestId" ).AsIntegerOrNull();
+                    int? prayerRequestId = PageParameter( "PrayerRequestId" ).AsIntegerOrNull();
                     if ( prayerRequestId.HasValue && prayerRequestId.Value > 0 )
                     {
                         prayerRequest = new PrayerRequestService( rockContext ).Get( prayerRequestId.Value );
@@ -199,7 +199,13 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void lbCancel_Click( object sender, EventArgs e )
         {
-            NavigateToParentPage();
+            var queryParms = new Dictionary<string, string>();
+            if ( !string.IsNullOrWhiteSpace( PageParameter( "PersonId" ) ) )
+            {
+                queryParms.Add( "PersonId", PageParameter( "PersonId" ) );
+            }
+
+            NavigateToParentPage( queryParms );
         }
 
         /// <summary>
@@ -234,7 +240,13 @@ namespace RockWeb.Blocks.Prayer
 
                 prayerRequestService.Delete( prayerRequest );
                 rockContext.SaveChanges();
-                NavigateToParentPage();
+
+                var queryParms = new Dictionary<string, string>();
+                if ( !string.IsNullOrWhiteSpace( PageParameter( "PersonId" ) ) )
+                {
+                    queryParms.Add( "PersonId", PageParameter( "PersonId" ) );
+                }
+                NavigateToParentPage( queryParms );
             }
         }
 

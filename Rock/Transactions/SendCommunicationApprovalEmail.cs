@@ -42,12 +42,12 @@ namespace Rock.Transactions
         public int CommunicationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the approval page URL.
+        /// Gets or sets the approval page URL. Defaults to ~/Communication/{communicationId}.
         /// </summary>
         /// <value>
         /// The approval page URL.
         /// </value>
-        public string ApprovalPageUrl { get; set; }
+        public string ApprovalPageUrl { get; set; } = null;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SendCommunicationApprovalEmail"/> class.
@@ -105,9 +105,10 @@ namespace Rock.Transactions
                         }
 
                         // create approval link if one was not provided
-                        if ( ApprovalPageUrl == null )
+                        if ( string.IsNullOrEmpty( ApprovalPageUrl ) )
                         {
-                            ApprovalPageUrl = string.Format( "{0}Communication/{1}", CacheGlobalAttributes.Value( "InternalApplicationRoot" ), communication.Id );
+                            var internalApplicationRoot = CacheGlobalAttributes.Value( "InternalApplicationRoot" ).EnsureTrailingForwardslash();
+                            ApprovalPageUrl = $"{internalApplicationRoot}Communication/{communication.Id}";
                         }
 
                         foreach ( var approver in approvers )

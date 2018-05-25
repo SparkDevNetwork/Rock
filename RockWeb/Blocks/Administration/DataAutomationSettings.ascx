@@ -14,7 +14,7 @@
 
                 <Rock:NotificationBox ID="nbMessage" runat="server" Visible="false" />
 
-                <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
 
                 <Rock:PanelWidget ID="pwGeneralSettings" runat="server" Title="General Settings">
                     <Rock:NumberBox ID="nbGenderAutoFill" runat="server" AppendText="%" CssClass="input-width-md" Label="Gender AutoFill Confidence" MinimumValue="0" MaximumValue="100" NumberType="Double" Help="The minimum confidence level required to automatically set blank genders in the Data Automation service job. If set to 0 then gender will not be automatically determined." />
@@ -269,7 +269,7 @@
 
                     </Rock:PanelWidget>
 
-                    <Rock:PanelWidget ID="pwUpdateCampus" runat="server" Title="Upate Family Campus">
+                    <Rock:PanelWidget ID="pwUpdateCampus" runat="server" Title="Update Family Campus">
 
                         <Rock:RockCheckBox ID="cbCampusUpdate" runat="server" 
                             Label="Enable" Text="Enable the automatic updating of campus for families who currently have a different campus than what is determined by the following selected criteria."
@@ -313,7 +313,7 @@
                                 </div>
                                 <div class="pull-left">
                                     <Rock:RockControlWrapper ID="rcwIgnoreCampusChanges" runat="server" Label="Ignore any update that would change the campus">
-                                    <asp:Repeater ID="rIgnoreCampusChanges" runat="server" OnItemDataBound="rIgnoreCampusChanges_ItemDataBound" OnItemCommand="rIgnoreCampusChanges_ItemCommand">
+                                    <asp:Repeater ID="rptIgnoreCampusChanges" runat="server" OnItemDataBound="rptIgnoreCampusChanges_ItemDataBound" OnItemCommand="rptIgnoreCampusChanges_ItemCommand">
                                         <ItemTemplate>
                                             <asp:HiddenField ID="hfRowId" runat="server" Value='<%# Eval("Id") %>' />
                                             <div class="row margin-l-sm margin-b-sm form-inline">
@@ -346,7 +346,7 @@
 
                         <hr />
 
-                        <asp:Panel ID="pnlAdultChildren" runat="server" Enabled="false" CssClas="data-integrity-options">
+                        <asp:Panel ID="pnlAdultChildren" runat="server" Enabled="false" CssClass="data-integrity-options">
 
                             <Rock:NumberBox ID="nbAdultAge" runat="server" Label="The age a child should be considered an adult" AppendText="years" CssClass="input-width-md" />
                             <Rock:GroupRolePicker ID="rpParentRelationship" runat="server" Label="An optional known relationship that should be added between the new adult and their parent(s)" />
@@ -359,6 +359,44 @@
 
                         </asp:Panel>
 
+                    </Rock:PanelWidget>
+
+                    <Rock:PanelWidget ID="pwUpdatePersonConnectionStatus" runat="server" Title="Update Person Connection Status">
+                        <Rock:RockCheckBox ID="cbUpdatePersonConnectionStatus" runat="server" 
+                            Label="Enable" Text="Enable the automatic updating of connection status."
+                            AutoPostBack="true" OnCheckedChanged="cbDataAutomationEnabled_CheckedChanged" />
+
+                        <hr />
+
+                        <asp:Panel ID="pnlUpdatePersonConnectionStatus" runat="server" Enabled="false" CssClass="data-integrity-options">
+                            <Rock:RockControlWrapper ID="rcwPersonConnectionStatusDataView" runat="server" Label="Update Connection Status based on Data View">
+                                <asp:Repeater ID="rptPersonConnectionStatusDataView" runat="server" OnItemDataBound="rptPersonConnectionStatusDataView_ItemDataBound">
+                                    <ItemTemplate>
+                                        <asp:HiddenField ID="hfPersonConnectionStatusValueId" runat="server" />
+                                        <Rock:DataViewPicker ID="dvpPersonConnectionStatusDataView" runat="server" />
+                                    </ItemTemplate>
+                                </asp:Repeater>
+                              </Rock:RockControlWrapper>
+                        </asp:Panel>
+                    </Rock:PanelWidget>
+
+                    <Rock:PanelWidget ID="pwUpdateFamilyStatus" runat="server" Title="Update Family Status">
+                        <Rock:RockCheckBox ID="cbUpdateFamilyStatus" runat="server" 
+                            Label="Enable" Text="Enable the automatic updating of family status."
+                            AutoPostBack="true" OnCheckedChanged="cbDataAutomationEnabled_CheckedChanged" />
+
+                        <hr />
+
+                        <asp:Panel ID="pnlUpdateFamilyStatus" runat="server" Enabled="false" CssClass="data-integrity-options">
+                            <Rock:RockControlWrapper ID="rcwUpdateFamilyStatus" runat="server" Label="Update Family Status based on Data View">
+                                <asp:Repeater ID="rptFamilyStatusDataView" runat="server" OnItemDataBound="rptFamilyStatusDataView_ItemDataBound">
+                                    <ItemTemplate>
+                                        <asp:HiddenField ID="hfGroupStatusValueId" runat="server" />
+                                        <Rock:DataViewPicker ID="dvpGroupStatusDataView" runat="server" />
+                                    </ItemTemplate>
+                                </asp:Repeater>
+                              </Rock:RockControlWrapper>
+                        </asp:Panel>
                     </Rock:PanelWidget>
 
                 </fieldset>

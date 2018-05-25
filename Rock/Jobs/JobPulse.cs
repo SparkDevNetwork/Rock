@@ -31,7 +31,7 @@ namespace Rock.Jobs
     public class JobPulse : IJob
     {
         /// <summary> 
-        /// Empty constructor for job initilization
+        /// Empty constructor for job initialization
         /// <para>
         /// Jobs require a public empty constructor so that the
         /// scheduler can instantiate the class whenever it needs.

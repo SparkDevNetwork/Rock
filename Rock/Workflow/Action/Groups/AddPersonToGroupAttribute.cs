@@ -71,10 +71,11 @@ namespace Rock.Workflow.Action
                     if ( groupGuid.HasValue )
                     {
                         group = new GroupService( rockContext ).Get( groupGuid.Value );
+
                         if ( group != null )
                         {
                             // use the group's grouptype's default group role if a group role wasn't specified
-                            groupRoleId = group.GroupType.DefaultGroupRoleId;
+                            groupRoleId = CacheGroupType.Get( group.GroupTypeId ).DefaultGroupRoleId;
                         }
                     }
                 }

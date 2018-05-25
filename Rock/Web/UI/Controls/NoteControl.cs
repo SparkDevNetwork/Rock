@@ -32,6 +32,7 @@ namespace Rock.Web.UI.Controls
     /// Displays a Rock Note.
     /// </summary>
     [ToolboxData( "<{0}:NoteControl runat=server></{0}:NoteControl>" )]
+    [Obsolete("No Longer Supported")]
     public class NoteControl : CompositeControl
     {
 
@@ -948,53 +949,6 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public event EventHandler<NoteEventArgs> DeleteButtonClick;
 
-
-
         #endregion
-
     }
-
-    /// <summary>
-    /// Note Event Argument includes id of note updated
-    /// </summary>
-    public class NoteEventArgs : EventArgs
-    {
-        /// <summary>
-        /// Gets the note identifier.
-        /// </summary>
-        /// <value>
-        /// The note identifier.
-        /// </value>
-        public int? NoteId { get; private set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="NoteEventArgs"/> class.
-        /// </summary>
-        /// <param name="noteId">The note identifier.</param>
-        public NoteEventArgs(int? noteId)
-        {
-            NoteId = noteId;
-        }
-    }
-    
-    #region Enums
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public enum NoteDisplayType
-    {
-        /// <summary>
-        /// The full
-        /// </summary>
-        Full,
-
-        /// <summary>
-        /// The light
-        /// </summary>
-        Light
-    }
-
-    #endregion
-
 }

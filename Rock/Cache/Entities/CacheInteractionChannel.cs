@@ -44,7 +44,7 @@ namespace Rock.Cache
         /// The name.
         /// </value>
         [DataMember]
-        public string Name { get; set; }
+        public string Name { get; private set; }
 
         /// <summary>
         /// Gets or sets the component entity type identifier.
@@ -53,7 +53,7 @@ namespace Rock.Cache
         /// The component entity type identifier.
         /// </value>
         [DataMember]
-        public int? ComponentEntityTypeId { get; set; }
+        public int? ComponentEntityTypeId { get; private set; }
 
         /// <summary>
         /// Gets or sets the interaction entity type identifier.
@@ -62,7 +62,7 @@ namespace Rock.Cache
         /// The interaction entity type identifier.
         /// </value>
         [DataMember]
-        public int? InteractionEntityTypeId { get; set; }
+        public int? InteractionEntityTypeId { get; private set; }
 
         /// <summary>
         /// Gets or sets the channel entity identifier.
@@ -71,7 +71,7 @@ namespace Rock.Cache
         /// The channel entity identifier.
         /// </value>
         [DataMember]
-        public int? ChannelEntityId { get; set; }
+        public int? ChannelEntityId { get; private set; }
 
         /// <summary>
         /// Gets or sets the channel type medium value identifier.
@@ -80,7 +80,7 @@ namespace Rock.Cache
         /// The channel type medium value identifier.
         /// </value>
         [DataMember]
-        public int? ChannelTypeMediumValueId { get; set; }
+        public int? ChannelTypeMediumValueId { get; private set; }
 
         /// <summary>
         /// Gets or sets the duration of the retention.
@@ -89,7 +89,7 @@ namespace Rock.Cache
         /// The duration of the retention.
         /// </value>
         [DataMember]
-        public int? RetentionDuration { get; set; }
+        public int? RetentionDuration { get; private set; }
 
         /// <summary>
         /// Gets or sets the length of time that components of this channel should be cached
@@ -98,7 +98,7 @@ namespace Rock.Cache
         /// The duration of the component cache.
         /// </value>
         [DataMember]
-        public int? ComponentCacheDuration { get; set; }
+        public int? ComponentCacheDuration { get; private set; }
 
         /// <summary>
         /// Gets the type of the component entity.
@@ -172,9 +172,9 @@ namespace Rock.Cache
 
                 InitComponentIds();
 
-                if ( _componentIds == null ) return components;
+                if ( InteractionComponentIds == null ) return components;
 
-                foreach ( var id in _componentIds )
+                foreach ( var id in InteractionComponentIds )
                 {
                     var component = CacheInteractionComponent.Get( id );
                     if ( component != null )
@@ -189,7 +189,7 @@ namespace Rock.Cache
         /// <summary>
         /// The component ids
         /// </summary>
-        private List<int> _componentIds;
+        internal List<int> InteractionComponentIds { get; private set; }
 
         #endregion
 
@@ -200,15 +200,15 @@ namespace Rock.Cache
         /// </summary>
         private void InitComponentIds()
         {
-            if ( _componentIds != null ) return;
+            if ( InteractionComponentIds != null ) return;
 
             lock ( _obj )
             {
-                if ( _componentIds != null ) return;
+                if ( InteractionComponentIds != null ) return;
 
                 using ( var rockContext = new RockContext() )
                 {
-                    _componentIds = new InteractionComponentService( rockContext )
+                    InteractionComponentIds = new InteractionComponentService( rockContext )
                         .GetByChannelId( Id )
                         .Select( v => v.Id )
                         .ToList();
@@ -224,13 +224,13 @@ namespace Rock.Cache
         {
             InitComponentIds();
 
-            if ( _componentIds == null ) return;
+            if ( InteractionComponentIds == null ) return;
 
             lock ( _obj )
             {
-                if ( !_componentIds.Contains( id ) )
+                if ( !InteractionComponentIds.Contains( id ) )
                 {
-                    _componentIds.Add( id );
+                    InteractionComponentIds.Add( id );
                 }
             }
         }
@@ -243,13 +243,13 @@ namespace Rock.Cache
         {
             InitComponentIds();
 
-            if ( _componentIds == null ) return;
+            if ( InteractionComponentIds == null ) return;
 
             lock ( _obj )
             {
-                if ( _componentIds.Contains( id ) )
+                if ( InteractionComponentIds.Contains( id ) )
                 {
-                    _componentIds.Remove( id );
+                    InteractionComponentIds.Remove( id );
                 }
             }
         }
@@ -276,7 +276,7 @@ namespace Rock.Cache
             ComponentCacheDuration = interactionChannel.ComponentCacheDuration;
 
             // set componentIds to null so it load them all at once on demand
-            _componentIds = null;
+            InteractionComponentIds = null;
         }
 
         /// <summary>

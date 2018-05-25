@@ -546,13 +546,13 @@ namespace Rock
         }
 
         /// <summary>
-        /// Resolves the merge fields.
+        /// Checks for merge fields and then resolves them.
         /// </summary>
         /// <param name="content">The content.</param>
         /// <param name="mergeObjects">The merge objects.</param>
         /// <param name="currentPersonOverride">The current person override.</param>
         /// <param name="enabledLavaCommands">The enabled lava commands.</param>
-        /// <returns></returns>
+        /// <returns>If lava present returns merged string, if no lava returns original string, if null returns empty string</returns>
         public static string ResolveMergeFields( this string content, IDictionary<string, object> mergeObjects, Person currentPersonOverride, string enabledLavaCommands )
         {
             try
@@ -727,6 +727,11 @@ namespace Rock
         private static Regex hasLavaMergeFields = new Regex( @"(?<=\{).+(?<=\})", RegexOptions.Compiled );
 
         /// <summary>
+        /// Compiled RegEx for detecting if a string has Lava {% %} command fields
+        /// </summary>
+        private static Regex hasLavaCommandFields = new Regex( @"(?<=\{%).+(?<=%\})", RegexOptions.Compiled );
+
+        /// <summary>
         /// Compiled RegEx for detecting if a string uses the Legacy "GlobalAttribute." syntax
         /// </summary>
         private static Regex hasLegacyGlobalAttributeLavaMergeFields = new Regex( @"(?<=\{).+GlobalAttribute.+(?<=\})", RegexOptions.Compiled );
@@ -740,11 +745,36 @@ namespace Rock
         public static bool HasMergeFields( this string content )
         {
             if ( content == null )
+            {
                 return false;
+            }
 
-            // If there's no merge codes, just return the content
-            if (!hasLavaMergeFields.IsMatch( content ))
+            // If there are no lava codes, return false
+            if ( !hasLavaMergeFields.IsMatch( content ) )
+            {
                 return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Determines whether the string potentially has lava command {% %} fields in it.
+        /// </summary>
+        /// <param name="content">The content.</param>
+        /// <returns></returns>
+        public static bool HasLavaCommandFields( this string content )
+        {
+            if ( content == null )
+            {
+                return false;
+            }
+
+            // If there are no lava command fields, return false
+            if ( !hasLavaCommandFields.IsMatch( content ) )
+            {
+                return false;
+            }
 
             return true;
         }

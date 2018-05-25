@@ -11,8 +11,9 @@
 
         <asp:Panel ID="pnlContent" runat="server">
             <asp:HiddenField ID="hfTransactionViewMode" runat="server" />
+            <asp:HiddenField ID="hfMoveToBatchId" runat="server" />
 
-            <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+            <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
 
             <div class="panel panel-block">
                 <div class="panel-heading">
@@ -26,7 +27,7 @@
 
                         <div class="btn-group panel-toggle pull-right">
                             <asp:LinkButton ID="btnTransactions" CssClass="btn btn-xs btn-primary" runat="server" Text="Transactions" OnClick="btnTransactionsViewMode_Click" />
-                            <asp:LinkButton ID="btnTransactionDetails" CssClass="btn btn-xs btn-default" runat="server" Text="Transaction Details" OnClick="btnTransactionsViewMode_Click" />
+                            <asp:LinkButton ID="btnTransactionDetails" CssClass="btn btn-xs btn-outline-primary" runat="server" Text="Transaction Details" OnClick="btnTransactionsViewMode_Click" />
                         </div>
                     </div>
                     

@@ -18,7 +18,7 @@
 
                 <asp:Panel ID="pnlSearch" runat="server">
 
-                    <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                    <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
 
                     <Rock:AddressControl ID="acAddress" runat="server" Required="true" RequiredErrorMessage="Your Address is Required" />
                     <Rock:RockCheckBoxList ID="cblCampus" runat="server" Label="Campuses" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" />
@@ -77,7 +77,7 @@
                     <asp:UpdatePanel ID="upnlEdit" runat="server">
                         <ContentTemplate>
 
-                            <asp:ValidationSummary ID="valSettings" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="GroupFinderSettings" />
+                            <asp:ValidationSummary ID="valSettings" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" ValidationGroup="GroupFinderSettings" />
 
                             <Rock:PanelWidget ID="wpFilter" runat="server" Title="Filter Settings" Expanded="true">
                                 <div class="row">

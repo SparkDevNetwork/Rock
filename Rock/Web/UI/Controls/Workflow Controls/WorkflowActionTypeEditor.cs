@@ -508,7 +508,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-lg-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-7" );
@@ -535,7 +535,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             writer.RenderEndTag();
 
             // action edit fields
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );

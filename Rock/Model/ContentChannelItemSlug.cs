@@ -29,7 +29,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "ContentChannelItemSlug" )]
     [DataContract]
-    public partial class ContentChannelItemSlug : Model<ContentChannelItem>
+    public partial class ContentChannelItemSlug : Model<ContentChannelItemSlug>
     {
 
         #region Entity Properties
@@ -42,6 +42,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [IgnoreCanDelete]
         public int ContentChannelItemId { get; set; }
 
         /// <summary>

@@ -137,7 +137,8 @@
 
             $('#' + controlId + ' a.picker-label').click(function (e) {
                 e.preventDefault();
-                $('#' + controlId).find('.picker-menu').first().slideToggle(function () {
+                $(this).toggleClass("active");
+                $('#' + controlId).find('.picker-menu').first().toggle(0, function () {
                     exports.personPickers[controlId].updateScrollbar();
                     $(this).find('.picker-search').focus();
                 });

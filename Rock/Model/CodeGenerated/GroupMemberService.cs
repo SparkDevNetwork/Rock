@@ -51,6 +51,12 @@ namespace Rock.Model
         public bool CanDelete( GroupMember item, out string errorMessage )
         {
             errorMessage = string.Empty;
+ 
+            if ( new Service<GroupMemberHistorical>( Context ).Queryable().Any( a => a.GroupMemberId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupMember.FriendlyTypeName, GroupMemberHistorical.FriendlyTypeName );
+                return false;
+            }  
             
             // ignoring RegistrationRegistrant,GroupMemberId 
             return true;
@@ -90,6 +96,8 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this GroupMember target, GroupMember source )
         {
             target.Id = source.Id;
+            target.ArchivedByPersonAliasId = source.ArchivedByPersonAliasId;
+            target.ArchivedDateTime = source.ArchivedDateTime;
             target.DateTimeAdded = source.DateTimeAdded;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
@@ -98,6 +106,8 @@ namespace Rock.Model
             target.GroupOrder = source.GroupOrder;
             target.GroupRoleId = source.GroupRoleId;
             target.GuestCount = source.GuestCount;
+            target.InactiveDateTime = source.InactiveDateTime;
+            target.IsArchived = source.IsArchived;
             target.IsNotified = source.IsNotified;
             target.IsSystem = source.IsSystem;
             target.Note = source.Note;

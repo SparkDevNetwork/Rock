@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Runtime.Serialization;
 using Rock.Data;
 
 namespace Rock.Cache
@@ -22,7 +23,7 @@ namespace Rock.Cache
     /// <summary>
     /// Interface for EntityCache items
     /// </summary>
-    public interface IEntityCache
+    public interface IEntityCache : IItemCache
     {
         /// <summary>
         /// Gets or sets the identifier.
@@ -30,7 +31,7 @@ namespace Rock.Cache
         /// <value>
         /// The identifier.
         /// </value>
-        int Id { get; set; }
+        int Id { get; }
 
         /// <summary>
         /// Gets or sets the unique identifier.
@@ -38,7 +39,31 @@ namespace Rock.Cache
         /// <value>
         /// The unique identifier.
         /// </value>
-        Guid Guid { get; set; }
+        Guid Guid { get; }
+
+        /// <summary>
+        /// Gets or sets the foreign identifier.
+        /// </summary>
+        /// <value>
+        /// The foreign identifier.
+        /// </value>
+        int? ForeignId { get; }
+
+        /// <summary>
+        /// Gets or sets the foreign unique identifier.
+        /// </summary>
+        /// <value>
+        /// The foreign unique identifier.
+        /// </value>
+        Guid? ForeignGuid { get; }
+
+        /// <summary>
+        /// Gets or sets the foreign key.
+        /// </summary>
+        /// <value>
+        /// The foreign key.
+        /// </value>
+        string ForeignKey { get; }
 
         /// <summary>
         /// Set's the cached objects properties from the model/entities properties.

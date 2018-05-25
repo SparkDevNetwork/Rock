@@ -38,7 +38,7 @@ namespace Rock.PersonProfile.Badge
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "Attending Duration" )]
     
-    public class AttendingDuration : BadgeComponent
+    public class AttendingDuration : BadgeComponentModern
     {
 
         private int _weeksPeriodInDays = 56;

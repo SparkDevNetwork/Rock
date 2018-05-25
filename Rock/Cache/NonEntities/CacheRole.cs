@@ -29,6 +29,17 @@ namespace Rock.Cache
     /// </summary>
     public class CacheRole : ItemCache<CacheRole>
     {
+        #region Constructors
+
+        /// <summary>
+        /// Use Static Get() method to instantiate a new Global Attributes object
+        /// </summary>
+        private CacheRole()
+        {
+        }
+
+        #endregion
+
         /// <summary>
         /// Gets the id.
         /// </summary>

@@ -19,9 +19,18 @@
                 </div>
                 <div class="panel-body">
                     <asp:Panel ID="pnlGrid" runat="server" CssClass="grid grid-panel">
-                            <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue">
+                            <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue" OnClearFilterClick="rFilter_ClearFilterClick">
                             <Rock:CategoryPicker ID="cpCategoriesFilter" runat="server" Label="Categories" AllowMultiSelect="true" />
-                            <Rock:RockCheckBox ID="cbAnalyticsEnabled" runat="server" Label="Show only attributes with Analytics Enabled" />
+                            <Rock:RockDropDownList ID="ddlActiveFilter" runat="server" Label="Active Status">
+                                <asp:ListItem Text="[All]" Value="" />
+                                <asp:ListItem Text="Active" Value="true" />
+                                <asp:ListItem Text="Inactive" Value="false" />
+                            </Rock:RockDropDownList>
+                            <Rock:RockDropDownList ID="ddlAnalyticsEnabled" runat="server" Label="Analytics Enabled">
+                                <asp:ListItem Text="[All]" Value="" />
+                                <asp:ListItem Text="Yes" Value="true" />
+                                <asp:ListItem Text="No" Value="false" />
+                            </Rock:RockDropDownList>
                         </Rock:GridFilter>
                             <Rock:Grid ID="rGrid" runat="server" RowItemText="setting" TooltipField="Description" OnRowSelected="rGrid_RowSelected">
                             <Columns>
@@ -70,7 +79,7 @@
 
         <Rock:ModalDialog ID="mdAttribute" runat="server" Title="Attribute" OnCancelScript="clearActiveDialog();" ValidationGroup="Attribute">
             <Content>
-                <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
                 <asp:panel ID="pnlEntityTypeQualifier" runat="server" Visible="false" class="well">
                     <Rock:EntityTypePicker ID="ddlAttrEntityType" runat="server" Label="Entity Type" IncludeGlobalOption="true" Required="true" AutoPostBack="true" OnSelectedIndexChanged="ddlAttrEntityType_SelectedIndexChanged" EnhanceForLongLists="true" />
                     <div class="row">
@@ -89,7 +98,7 @@
         <Rock:ModalDialog ID="mdAttributeValue" runat="server" Title="Attribute Value" OnCancelScript="clearActiveDialog();" ValidationGroup="AttributeValue">
             <Content>
                 <asp:HiddenField ID="hfIdValues" runat="server" />
-                <asp:ValidationSummary ID="ValidationSummaryValue" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="AttributeValue" />
+                <asp:ValidationSummary ID="ValidationSummaryValue" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" ValidationGroup="AttributeValue" />
                 <Rock:DynamicPlaceholder ID="phEditControls" runat="server" />
             </Content>
         </Rock:ModalDialog>

@@ -269,7 +269,7 @@ namespace Rock.Web.Cache
                         }
                     case "REMOVE_ENTITY_ATTRIBUTES":
                         {
-                            Rock.Web.Cache.AttributeCache.RemoveEntityAttributes();
+                            Rock.Web.Cache.AttributeCache.FlushEntityAttributes();
                             break;
                         }
                     case "PING":

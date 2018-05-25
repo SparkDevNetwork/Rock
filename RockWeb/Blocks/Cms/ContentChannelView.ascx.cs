@@ -39,7 +39,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Cms
 {
     /// <summary>
-    /// Block to display content items, html, xml, or transformed xml based on a SQL query or stored procedure.
+    /// Block to display dynamic content channel items
     /// </summary>
     [DisplayName( "Content Channel View" )]
     [Category( "CMS" )]
@@ -957,7 +957,7 @@ $(document).ready(function() {
 
                     // add item attributes
                     AttributeService attributeService = new AttributeService( rockContext );
-                    var itemAttributes = attributeService.GetByEntityTypeId( new ContentChannelItem().TypeId ).AsQueryable()
+                    var itemAttributes = attributeService.GetByEntityTypeId( new ContentChannelItem().TypeId, false ).AsQueryable()
                                             .Where( a => (
                                                     a.EntityTypeQualifierColumn.Equals( "ContentChannelTypeId", StringComparison.OrdinalIgnoreCase ) &&
                                                     a.EntityTypeQualifierValue.Equals( channel.ContentChannelTypeId.ToString() )
@@ -967,7 +967,7 @@ $(document).ready(function() {
                                                 ) )
                                             .OrderByDescending( a => a.EntityTypeQualifierColumn )
                                             .ThenBy( a => a.Order )
-                                            .ToList();
+                                            .ToCacheAttributeList();
 
                     foreach ( var attribute in itemAttributes )
                     {

@@ -50,6 +50,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [SecurityAction( "EditRecordStatus", "The roles and/or users that can edit the record status for the selected person." )]
     [BooleanField("Hide Grade", "Should the Grade (and Graduation Year) fields be hidden?", false, "", 0)]
     [BooleanField("Hide Anniversary Date", "Should the Anniversary Date field be hidden?", false, "", 1)]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_SEARCH_KEYS, "Search Key Types", "Optional list of search key types to limit the display in search keys grid. No selection will show all.", false, true, "", "", 2 )]
     public partial class EditPerson : Rock.Web.UI.PersonBlock
     {
         /// <summary>
@@ -104,6 +105,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             grdPreviousNames.Actions.ShowAdd = true;
             grdPreviousNames.Actions.AddClick += grdPreviousNames_AddClick;
+            gSearchKeys.Actions.ShowAdd = true;
+            gSearchKeys.Actions.AddClick += gSearchKeys_AddClick;
 
             pnlGradeGraduation.Visible = !GetAttributeValue( "HideGrade" ).AsBoolean();
             dpAnniversaryDate.Visible = !GetAttributeValue( "HideAnniversaryDate" ).AsBoolean();
@@ -159,6 +162,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         private List<PersonPreviousName> PersonPreviousNamesState { get; set; }
 
         /// <summary>
+        /// Gets or sets the state of the person search keys.
+        /// </summary>
+        /// <value>
+        /// The state of the person search keys.
+        /// </value>
+        private List<PersonSearchKey> PersonSearchKeysState { get; set; }
+
+        /// <summary>
         /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
         /// </summary>
         /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
@@ -175,6 +186,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             else
             {
                 PersonPreviousNamesState = PersonPreviousName.FromJsonAsList( json ) ?? new List<PersonPreviousName>();
+            }
+
+            json = ViewState["PersonSearchKeysState"] as string;
+
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                PersonSearchKeysState = new List<PersonSearchKey>();
+            }
+            else
+            {
+                PersonSearchKeysState = PersonSearchKey.FromJsonAsList( json ) ?? new List<PersonSearchKey>();
             }
         }
 
@@ -193,6 +215,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             };
 
             ViewState["PersonPreviousNamesState"] = JsonConvert.SerializeObject( PersonPreviousNamesState, Formatting.None, jsonSetting );
+            ViewState["PersonSearchKeysState"] = JsonConvert.SerializeObject( PersonSearchKeysState, Formatting.None, jsonSetting );
 
             return base.SaveViewState();
         }
@@ -450,6 +473,19 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         personPreviousNameService.Add( addedPreviousName );
                     }
 
+                    var personSearchKeyService = new PersonSearchKeyService( rockContext );
+                    var databaseSearchKeys = personSearchKeyService.Queryable().Where( a => a.PersonAlias.PersonId == person.Id ).ToList();
+                    foreach ( var deletedSearchKey in databaseSearchKeys.Where( a => !PersonSearchKeysState.Any( p => p.Guid == a.Guid ) ) )
+                    {
+                        personSearchKeyService.Delete( deletedSearchKey );
+                    }
+
+                    foreach ( var personSearchKey in PersonSearchKeysState.Where( a => !databaseSearchKeys.Any( d => d.Guid == a.Guid ) ) )
+                    {
+                        personSearchKey.PersonAliasId = person.PrimaryAliasId.Value;
+                        personSearchKeyService.Add( personSearchKey );
+                    }
+
                     if ( person.IsValid )
                     {
                         var saveChangeResult = rockContext.SaveChanges();
@@ -641,8 +677,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
 
             this.PersonPreviousNamesState = Person.GetPreviousNames().ToList();
+             var searchTypeQry = Person.GetPersonSearchKeys();
+
+            var searchTypesList = this.GetAttributeValue( "SearchKeyTypes" ).SplitDelimitedValues().AsGuidList();
+            if ( searchTypesList.Any() )
+            {
+                searchTypeQry = searchTypeQry.Where( a => searchTypesList.Contains( a.SearchTypeValue.Guid ) );
+            }
+            this.PersonSearchKeysState = searchTypeQry.ToList();
 
             BindPersonPreviousNamesGrid();
+            BindPersonSearchKeysGrid();
         }
 
         /// <summary>
@@ -653,6 +698,16 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             grdPreviousNames.DataKeyNames = new string[] { "Guid" };
             grdPreviousNames.DataSource = this.PersonPreviousNamesState;
             grdPreviousNames.DataBind();
+        }
+
+        /// <summary>
+        /// Binds the person previous names grid.
+        /// </summary>
+        private void BindPersonSearchKeysGrid()
+        {
+            gSearchKeys.DataKeyNames = new string[] { "Guid" };
+            gSearchKeys.DataSource = this.PersonSearchKeysState;
+            gSearchKeys.DataBind();
         }
 
         /// <summary>
@@ -667,14 +722,39 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         }
 
         /// <summary>
-        /// Handles the Delete event of the grdPreviousNames control.
+        /// Handles the AddClick event of the gSearchKeys control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
-        protected void grdPreviousNames_Delete( object sender, RowEventArgs e )
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gSearchKeys_AddClick(object sender, EventArgs e)
         {
-            this.PersonPreviousNamesState.RemoveEntity( (Guid)e.RowKeyValue );
-            BindPersonPreviousNamesGrid();
+            tbSearchValue.Text = string.Empty;
+            var searchValueTypes = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_SEARCH_KEYS ).DefinedValues;
+
+            var searchTypesList = this.GetAttributeValue( "SearchKeyTypes" ).SplitDelimitedValues().AsGuidList();
+            if ( searchTypesList.Any() )
+            {
+                searchValueTypes = searchValueTypes.Where( a => searchTypesList.Contains( a.Guid ) ).ToList();
+            }
+
+            ddlSearchValueType.DataSource = searchValueTypes;
+            ddlSearchValueType.DataTextField = "Value";
+            ddlSearchValueType.DataValueField = "Id";
+            ddlSearchValueType.DataBind();
+            ddlSearchValueType.Items.Insert( 0, new ListItem() );
+            mdSearchKey.Show();
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the mdSearchKey control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdSearchKey_SaveClick( object sender, EventArgs e )
+        {
+            this.PersonSearchKeysState.Add( new PersonSearchKey { SearchValue = tbSearchValue.Text, SearchTypeValueId = ddlSearchValueType.SelectedValue.AsInteger(), Guid = Guid.NewGuid() } );
+            BindPersonSearchKeysGrid();
+            mdSearchKey.Hide();
         }
 
         /// <summary>
@@ -688,6 +768,28 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             BindPersonPreviousNamesGrid();
 
             mdPreviousName.Hide();
+        }
+
+        /// <summary>
+        /// Handles the Delete event of the grdPreviousNames control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void grdPreviousNames_Delete( object sender, RowEventArgs e )
+        {
+            this.PersonPreviousNamesState.RemoveEntity( (Guid)e.RowKeyValue );
+            BindPersonPreviousNamesGrid();
+        }
+
+        /// <summary>
+        /// Handles the Delete event of the gSearchKeys control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gSearchKeys_Delete( object sender, RowEventArgs e )
+        {
+            this.PersonSearchKeysState.RemoveEntity( ( Guid ) e.RowKeyValue );
+            BindPersonSearchKeysGrid();
         }
 
         /// <summary>

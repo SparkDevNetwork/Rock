@@ -345,11 +345,13 @@ namespace RockWeb.Blocks.Event
             {
                 // No value gets them all, otherwise get the ones selected
                 // Block level campus filtering has already been performed on cblCampus, so no need to do it again here
+                // If CampusId is null, then the event is an 'All Campuses' event, so include those
                 qry = qry.Where( c => !c.CampusId.HasValue || selectedCampusIdList.Contains( c.CampusId.Value ) );
             }
             else if ( campusIdList.Any())
             {
                 // If no campus filter is selected then check the block filtering
+                // If CampusId is null, then the event is an 'All Campuses' event, so include those
                 qry = qry.Where( c => !c.CampusId.HasValue || campusIdList.Contains( c.CampusId.Value ) );
             }
 

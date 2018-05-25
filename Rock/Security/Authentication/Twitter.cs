@@ -327,11 +327,7 @@ namespace Rock.Security.ExternalAuthentication
                     // If person had an email, get the first person with the same name and email address.
                     if ( !string.IsNullOrWhiteSpace( email ) )
                     {
-                        var people = personService.GetByMatch( firstName, lastName, email );
-                        if ( people.Count() == 1 )
-                        {
-                            person = people.First();
-                        }
+                        person = personService.FindPerson( firstName, lastName, email, true );
                     }
 
                     var personRecordTypeId = CacheDefinedValue.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;

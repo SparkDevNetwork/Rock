@@ -634,11 +634,10 @@ namespace Rock.Web.UI.Controls
                 _ddlGender.SelectedValue = genderValue;
             }
 
-            _dpBirthdate.StartView = DatePicker.StartViewOption.decade;
-            _dpBirthdate.ForceParse = false;
-            _dpBirthdate.AllowFutureDateSelection = false;
             _dpBirthdate.RequiredErrorMessage = "Birthdate is required for all children";
             _dpBirthdate.Label = "Birth Date";
+            _dpBirthdate.ShowOnFocus = false;
+            _dpBirthdate.StartView = DatePicker.StartViewOption.decade;
 
             _ddlGradePicker.CssClass = "form-control";
             _ddlGradePicker.RequiredErrorMessage = _ddlGradePicker.Label + " is required for all children";

@@ -40,7 +40,7 @@ namespace Rock.PersonProfile.Badge
     [DefinedValueField( SystemGuid.DefinedType.GROUPTYPE_PURPOSE, "Group Type Purpose", "The purpose to filter on.")]
     [TextField( "Badge Icon CSS", "The CSS icon to use for the badge.", true, "fa fa-users", key:"BadgeIconCss")]
     [TextField( "Badge Color", "The color of the badge (#ffffff).", true, "#0ab4dd")]
-    public class InGroupWithPurpose : BadgeComponent
+    public class InGroupWithPurpose : BadgeComponentModern
     {        
         /// <summary>
         /// Renders the specified writer.

@@ -130,9 +130,9 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/Utility/TextToWorkflow/{fromNumber}/{toNumber}/{message}" )]
         public string TextToWorkflow( string fromNumber, string toNumber, string message )
         {
-            string processResponse = string.Empty;
+            var processResponse = string.Empty;
 
-            Rock.Utility.TextToWorkflow.MessageRecieved( toNumber, fromNumber, message, out processResponse );
+            Utility.TextToWorkflow.MessageRecieved( toNumber, fromNumber, message, out processResponse );
 
             return processResponse;
         }

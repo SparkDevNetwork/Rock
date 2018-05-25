@@ -78,7 +78,7 @@ namespace RockWeb.Blocks.Cms
             get { return _approvedCss; }
             set { _approvedCss = value; }
         }
-        
+
         /// <summary>
         /// Gets or sets the denied CSS.
         /// </summary>
@@ -196,6 +196,8 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnLoad( e );
 
+            RockPage.AddScriptLink( "~/Scripts/Rock/slug.js" );
+
             if ( !Page.IsPostBack )
             {
                 if (string.IsNullOrWhiteSpace(GetAttributeValue("ContentChannel")))
@@ -238,7 +240,7 @@ namespace RockWeb.Blocks.Cms
             }
 
             foreach ( var contentItemId in itemIds )
-            { 
+            {
                 ContentChannelItem contentItem = new ContentChannelItemService( new RockContext() ).Get( contentItemId );
                 if ( contentItem != null )
                 {
@@ -337,6 +339,12 @@ namespace RockWeb.Blocks.Cms
 
                 rockContext.WrapTransaction( () =>
                 {
+                    if ( !string.IsNullOrEmpty( hfSlug.Value ) )
+                    {
+                        var contentChannelItemSlugService = new ContentChannelItemSlugService( rockContext );
+                        contentChannelItemSlugService.SaveSlug( contentItem.Id, hfSlug.Value, null );
+                    }
+
                     rockContext.SaveChanges();
                     contentItem.SaveAttributeValues( rockContext );
 
@@ -354,7 +362,7 @@ namespace RockWeb.Blocks.Cms
                             .Queryable()
                             .Where( c =>
                                 c.ContentChannelItemId == contentItem.Id &&
-                                c.EventItemOccurrenceId == eventItemOccurrenceId.Value) 
+                                c.EventItemOccurrenceId == eventItemOccurrenceId.Value)
                             .FirstOrDefault();
 
                         if ( occurrenceChannelItem == null )
@@ -418,6 +426,17 @@ namespace RockWeb.Blocks.Cms
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
             ShowDetail( hfId.ValueAsInt() );
+        }
+
+        protected void rSlugs_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            var lChannelUrl = e.Item.FindControl( "lChannelUrl" ) as Literal;
+            var slug = e.Item.DataItem as ContentChannelItemSlug;
+
+            if ( lChannelUrl != null && slug != null )
+            {
+                lChannelUrl.Text = GetSlugPrefix( slug.ContentChannelItem.ContentChannel );
+            }
         }
 
         #region Child/Parent List Events
@@ -648,6 +667,28 @@ namespace RockWeb.Blocks.Cms
         #region Internal Methods
 
         /// <summary>
+        /// Gets the slug prefix.
+        /// </summary>
+        /// <param name="channel">The channel.</param>
+        /// <returns></returns>
+        private string GetSlugPrefix( ContentChannel channel )
+        {
+            if ( channel.ItemUrl.IsNullOrWhiteSpace() )
+            {
+                return string.Empty;
+            }
+
+            var itemUrl = channel.ItemUrl.RemoveSpaces();
+
+            if ( itemUrl.EndsWith( "{{Slug}}" ) )
+            {
+                return itemUrl.Replace( "{{Slug}}", "" );
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
         /// Gets the type of the content.
         /// </summary>
         /// <param name="contentItemId">The content type identifier.</param>
@@ -685,7 +726,7 @@ namespace RockWeb.Blocks.Cms
                     if ( hierarchy.Any() )
                     {
                         var parentItem = contentItemService.Get( hierarchy.Last().AsInteger() );
-                        if ( parentItem != null && 
+                        if ( parentItem != null &&
                             parentItem.IsAuthorized( Authorization.EDIT, CurrentPerson ) &&
                             parentItem.ContentChannel.ChildContentChannels.Any( c => c.Id == contentChannel.Id ) )
                         {
@@ -743,6 +784,8 @@ namespace RockWeb.Blocks.Cms
                 return;
             }
 
+            hfContentChannelItemUrl.Value = GetSlugPrefix( contentItem.ContentChannel );
+
             if ( contentItem.ContentChannel.IsTaggingEnabled )
             {
                 taglTags.EntityTypeId = CacheEntityType.Get( typeof( ContentChannelItem ) ).Id;
@@ -763,7 +806,7 @@ namespace RockWeb.Blocks.Cms
             if ( contentItem != null &&
                 contentItem.ContentChannelType != null &&
                 contentItem.ContentChannel != null &&
-                ( canEdit || contentItem.IsAuthorized( Authorization.EDIT, CurrentPerson ) ) ) 
+                ( canEdit || contentItem.IsAuthorized( Authorization.EDIT, CurrentPerson ) ) )
             {
                 hfIsDirty.Value = "false";
 
@@ -830,6 +873,9 @@ namespace RockWeb.Blocks.Cms
                 hlStatus.ToolTip = statusDetail.ToString();
 
                 tbTitle.Text = contentItem.Title;
+
+                rSlugs.DataSource =  contentItem.ContentChannelItemSlugs;
+                rSlugs.DataBind();
 
                 htmlContent.Visible = !contentItem.ContentChannelType.DisableContentField;
                 htmlContent.Text = contentItem.Content;

@@ -40,6 +40,12 @@ namespace Rock.Web.UI
 
         #region Public Properties
 
+        /// <summary>
+        /// Gets the page cache.
+        /// </summary>
+        /// <value>
+        /// The page cache.
+        /// </value>
         [Obsolete("Use CachePage instead")]
         internal protected CachePage PageCache
         {

@@ -366,11 +366,7 @@ namespace Rock.Security.ExternalAuthentication
                     if ( !string.IsNullOrWhiteSpace( email ) )
                     {
                         var personService = new PersonService( rockContext );
-                        var people = personService.GetByMatch( firstName, lastName, email );
-                        if ( people.Count() == 1)
-                        {
-                            person = people.First();
-                        }
+                        person = personService.FindPerson( firstName, lastName, email, true );
                     }
 
                     var personRecordTypeId = CacheDefinedValue.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;

@@ -174,7 +174,7 @@ namespace RockWeb.Blocks.Groups
                             #map_canvas {{
                                 width: 100%;
                                 height: 100%;
-                                border-radius: 8px;
+                                border-radius: var(--border-radius-base);
                             }}
                         </style>";
 

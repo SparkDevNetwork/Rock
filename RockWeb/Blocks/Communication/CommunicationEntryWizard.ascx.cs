@@ -613,7 +613,7 @@ namespace RockWeb.Blocks.Communication
             {
                 if ( !GetRecipientFromListSelection().Any() )
                 {
-                    nbRecipientsAlert.Text = "At least one recipient is required.";
+                    nbRecipientsAlert.Text = "The selected list doesn't have any people. <span>At least one recipient is required.</span>";
                     nbRecipientsAlert.Visible = true;
                     return;
                 }
@@ -1080,9 +1080,7 @@ namespace RockWeb.Blocks.Communication
 
             var templateQuery = new CommunicationTemplateService( rockContext )
                 .Queryable()
-                .Where( a => 
-                    a.IsActive &&
-                    ( !a.SenderPersonAliasId.HasValue || a.SenderPersonAliasId.Value == CurrentPersonAliasId ) );
+                .Where( a => a.IsActive );
 
             int? categoryId = cpCommunicationTemplate.SelectedValue.AsIntegerOrNull();
             if ( categoryId.HasValue && categoryId > 0 )
@@ -2215,7 +2213,6 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
             {
                 var approvalTransaction = new Rock.Transactions.SendCommunicationApprovalEmail();
                 approvalTransaction.CommunicationId = communication.Id;
-                approvalTransaction.ApprovalPageUrl = HttpContext.Current.Request.Url.AbsoluteUri;
                 Rock.Transactions.RockQueue.TransactionQueue.Enqueue( approvalTransaction );
             }
 

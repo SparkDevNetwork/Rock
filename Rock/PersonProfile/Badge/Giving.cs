@@ -57,7 +57,7 @@ namespace Rock.PersonProfile.Badge
   <i class='badge-icon fa fa-heartbeat' style='color: {{ iconColor }}'></i>
 </div>
 " )]
-    public class Giving : BadgeComponent
+    public class Giving : BadgeComponentModern
     {
         /// <summary>
         /// Renders the specified writer.

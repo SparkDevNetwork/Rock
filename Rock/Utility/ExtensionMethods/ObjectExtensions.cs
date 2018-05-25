@@ -30,6 +30,35 @@ namespace Rock
         #region Object Extensions
 
         /// <summary>
+        /// Determines whether the specified value is not null.
+        /// </summary>
+        /// <typeparam name="T">The value type.</typeparam>
+        /// <param name="value">The value.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified value is not null; otherwise, <c>false</c>.
+        /// </returns>
+        /// https://github.com/aljazsim/defensive-programming-framework-for-net
+        public static bool IsNotNull<T>( this T value )
+            where T : class
+        {
+            return !value.IsNull();
+        }
+
+        /// <summary>
+        /// Determines whether the specified value is null.
+        /// </summary>
+        /// <typeparam name="T">The value type.</typeparam>
+        /// <param name="value">The value.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified value is null; otherwise, <c>false</c>.
+        /// </returns>
+        /// https://github.com/aljazsim/defensive-programming-framework-for-net
+        public static bool IsNull<T>( this T value ) where T : class
+        {
+            return value == null;
+        }
+
+        /// <summary>
         /// Gets the property Value of the object's property as specified by propertyPathName.
         /// </summary>
         /// <param name="rootObj">The root obj.</param>

@@ -27,6 +27,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+
 using Rock.Security;
 using Rock.Web;
 using Rock.Cache;
@@ -56,7 +57,7 @@ The URL to redirect user to when they have completed the registration. The merge
 that is created/updated; 'RelatedChildren', which is a list of the children who have a relationship with the family, but are not in the family; 'ParentIds' which is a
 comma-delimited list of the person ids for each adult; 'ChildIds' which is a comma-delimited list of the person ids for each child; and 'PlannedVisitDate' which is 
 the value entered for the Planned Visit Date field if it was displayed.
-", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, "", "", 9 )]
+", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, true, "", "", 9 )]
 
     [CustomDropdownListField( "Suffix", "How should Suffix be displayed for adults?", "Hide,Optional", false, "Hide", "Adult Fields", 0, "AdultSuffix" )]
     [CustomDropdownListField( "Gender", "How should Gender be displayed for adults?", "Hide,Optional,Required", false, "Optional", "Adult Fields", 1, "AdultGender" )]
@@ -378,13 +379,15 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                     var currentFamilyMember = primaryFamily.Members.FirstOrDefault( m => m.PersonId == id );
                     if ( currentFamilyMember == null )
                     {
-                        currentFamilyMember = new GroupMember();
-                        groupMemberService.Add( currentFamilyMember );
+                        currentFamilyMember = new GroupMember
+                        {
+                            GroupId = primaryFamily.Id,
+                            PersonId = id,
+                            GroupRoleId = adultRoleId,
+                            GroupMemberStatus = GroupMemberStatus.Active
+                        };
 
-                        currentFamilyMember.GroupId = primaryFamily.Id;
-                        currentFamilyMember.PersonId = id;
-                        currentFamilyMember.GroupRoleId = adultRoleId;
-                        currentFamilyMember.GroupMemberStatus = GroupMemberStatus.Active;
+                        groupMemberService.Add( currentFamilyMember );
 
                         _rockContext.SaveChanges();
                     }
@@ -516,13 +519,12 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                         if ( !inPrimaryFamily )
                         {
                             var familyMember = new GroupMember();
-                            groupMemberService.Add( familyMember );
-
                             familyMember.GroupId = primaryFamily.Id;
                             familyMember.PersonId = person.Id;
                             familyMember.GroupRoleId = childRoleId;
                             familyMember.GroupMemberStatus = GroupMemberStatus.Active;
 
+                            groupMemberService.Add( familyMember );
                             _rockContext.SaveChanges();
                         }
                     }
@@ -1147,10 +1149,9 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                 // If not editing an existing person, attempt to match them to existing (if configured to do so)
                 if ( adult == null && showEmail && autoMatch )
                 {
-                    var people = personService.GetByMatch( tbFirstName.Text, tbLastName.Text, tbEmail.Text );
-                    if ( people.Count() == 1 )
+                    adult = personService.FindPerson( tbFirstName.Text, tbLastName.Text, tbEmail.Text, true );
+                    if ( adult != null )
                     {
-                        adult = people.First();
                         saveEmptyValues = false;
                         if ( primaryFamily == null )
                         {
@@ -1314,7 +1315,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                 var category = CacheCategory.Get( categoryGuid );
                 if ( category != null )
                 {
-                    foreach ( var attribute in new AttributeService( _rockContext ).GetByCategoryId( category.Id ) )
+                    foreach ( var attribute in new AttributeService( _rockContext ).GetByCategoryId( category.Id, false ) )
                     {
                         if ( attribute.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                         {
@@ -1483,13 +1484,12 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
 
             // Add the person to the family
             var familyMember = new GroupMember();
-            groupMemberService.Add( familyMember );
-
             familyMember.GroupId = newFamilyId.Value;
             familyMember.PersonId = personId;
             familyMember.GroupRoleId = childRoleId;
             familyMember.GroupMemberStatus = GroupMemberStatus.Active;
 
+            groupMemberService.Add( familyMember );
             _rockContext.SaveChanges();
         }
 

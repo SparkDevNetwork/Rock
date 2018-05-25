@@ -26,6 +26,7 @@
 
                     <div class="panel-labels">
                         <Rock:HighlightLabel ID="hlInactive" runat="server" CssClass="js-inactivegroup-label" LabelType="Danger" Text="Inactive" />
+                        <Rock:HighlightLabel ID="hlArchived" runat="server" CssClass="js-archivedgroup-label" LabelType="Danger" Text="Archived" />
                         <Rock:HighlightLabel ID="hlIsPrivate" runat="server" CssClass="js-privategroup-label" LabelType="Default" Text="Private" />
                         <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" />
                         <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" />
@@ -45,7 +46,7 @@
                     <Rock:NotificationBox ID="nbInvalidParentGroup" runat="server" NotificationBoxType="Danger" Visible="false"
                         Text="The selected parent group does not allow child groups of the selected group type." />
                     <Rock:NotificationBox ID="nbGroupCapacityMessage" runat="server" NotificationBoxType="Warning" Visible="false" />
-                    <asp:ValidationSummary ID="vsGroup" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                    <asp:ValidationSummary ID="vsGroup" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
                     <asp:CustomValidator ID="cvGroup" runat="server" Display="None" />
 
                     <div id="pnlEditDetails" runat="server">
@@ -80,6 +81,7 @@
                                         </div>
                                     </div>
                                     <Rock:GroupPicker ID="gpParentGroup" runat="server" Required="false" Label="Parent Group" OnSelectItem="ddlParentGroup_SelectedIndexChanged" />
+                                    <Rock:DefinedValuePicker ID="dvpGroupStatus" runat="server" Label="Status" />
                                     <Rock:NumberBox ID="nbGroupCapacity" runat="server" Label="Group Capacity" NumberType="Integer" />
                                 </div>
                                 <div class="col-md-6">
@@ -242,12 +244,14 @@
                             <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" ToolTip="Alt+m" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
                             <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                             <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
+                            <asp:LinkButton ID="btnArchive" runat="server" Text="Archive" CssClass="btn btn-link js-archive-group" OnClick="btnArchive_Click" CausesValidation="false" />
                             <span class="pull-right">
-                                <asp:HyperLink ID="hlFundraisingProgress" runat="server" CssClass="btn btn-sm btn-default" ToolTip="Fundraising"><i class="fa fa-line-chart"></i></asp:HyperLink>
-                                <asp:HyperLink ID="hlAttendance" runat="server" CssClass="btn btn-sm btn-default" ToolTip="Attendance"><i class="fa fa-check-square-o"></i></asp:HyperLink>
-                                <asp:HyperLink ID="hlMap" runat="server" CssClass="btn btn-sm btn-default" ToolTip="Interactive Map"><i class="fa fa-map-marker"></i></asp:HyperLink>
-                                <asp:LinkButton ID="btnCopy" runat="server" CssClass="btn btn-default btn-sm" OnClick="btnCopy_Click" ToolTip="Copies the group and all of its associated authorization rules"><i class="fa fa-clone"></i></asp:LinkButton>
-                                <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" Title="Secure Group" />
+                                <asp:HyperLink ID="hlGroupHistory" runat="server" CssClass="btn btn-sm btn-square btn-default" ToolTip="Group History"><i class="fa fa-history"></i></asp:HyperLink>
+                                <asp:HyperLink ID="hlFundraisingProgress" runat="server" CssClass="btn btn-sm btn-square btn-default" ToolTip="Fundraising"><i class="fa fa-line-chart"></i></asp:HyperLink>
+                                <asp:HyperLink ID="hlAttendance" runat="server" CssClass="btn btn-sm btn-square btn-default" ToolTip="Attendance"><i class="fa fa-check-square-o"></i></asp:HyperLink>
+                                <asp:HyperLink ID="hlMap" runat="server" CssClass="btn btn-sm btn-square btn-default" ToolTip="Interactive Map"><i class="fa fa-map-marker"></i></asp:HyperLink>
+                                <asp:LinkButton ID="btnCopy" runat="server" CssClass="btn btn-sm btn-square btn-default " OnClick="btnCopy_Click" ToolTip="Copies the group and all of its associated authorization rules"><i class="fa fa-clone"></i></asp:LinkButton>
+                                <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-square btn-security" Title="Secure Group" />
                             </span>
                         </div>
 
@@ -272,7 +276,7 @@
 
                 <asp:HiddenField ID="hfAddLocationGroupGuid" runat="server" />
 
-                <asp:ValidationSummary ID="valLocationSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="Location" />
+                <asp:ValidationSummary ID="valLocationSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" ValidationGroup="Location" />
 
                 <ul id="ulNav" runat="server" class="nav nav-pills">
                     <asp:Repeater ID="rptLocationTypes" runat="server">
@@ -308,7 +312,7 @@
 
                 <Rock:NotificationBox ID="nbDuplicateGroupRequirement" runat="server" NotificationBoxType="Warning" />
 
-                <asp:ValidationSummary ID="vsGroupRequirement" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="vg_GroupRequirement" />
+                <asp:ValidationSummary ID="vsGroupRequirement" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" ValidationGroup="vg_GroupRequirement" />
 
                 <Rock:RockDropDownList ID="ddlGroupRequirementType" runat="server" Label="Group Requirement Type" Required="true" ValidationGroup="vg_GroupRequirement" />
 
@@ -322,7 +326,7 @@
         <Rock:ModalDialog ID="mdGroupSyncSettings" runat="server" Title="Group Sync Settings" OnSaveClick="mdGroupSyncSettings_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="GroupSyncSettings">
             <Content>
                 <asp:HiddenField ID="hfGroupSyncGuid" runat="server" />
-                <asp:ValidationSummary ID="valGroupSyncSettings" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="GroupSyncSettings" />
+                <asp:ValidationSummary ID="valGroupSyncSettings" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" ValidationGroup="GroupSyncSettings" />
 
                 <div class="row">
                     <div class="col-md-6">
@@ -352,7 +356,7 @@
         <Rock:ModalDialog ID="dlgMemberWorkflowTriggers" runat="server" OnSaveClick="dlgMemberWorkflowTriggers_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Trigger">
             <Content>
                 <asp:HiddenField ID="hfTriggerGuid" runat="server" />
-                <asp:ValidationSummary ID="vsTrigger" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="Trigger" />
+                <asp:ValidationSummary ID="vsTrigger" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" ValidationGroup="Trigger" />
                 <Rock:NotificationBox ID="nbInvalidWorkflowType" runat="server" NotificationBoxType="Danger" Visible="false"
                     Text="The Workflow Type is missing or invalid. Make sure you selected a valid Workflow Type (and not a category)." />
                 <div class="row">
@@ -431,6 +435,15 @@
 
                 $('.js-ispublicgroup').each(function (i) {
                     setPrivateLabel(this);
+                });
+
+                $('.js-archive-group').on('click', function (e) {
+                    e.preventDefault();
+                    Rock.dialogs.confirm('Are you sure you want to archive this group?', function (result) {
+                        if (result) {
+                             window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+                        }
+                    });
                 });
             });
 

@@ -35,9 +35,8 @@
                             <Rock:RockLiteralField ID="lSupports" HeaderText="Supports" />
                             <Rock:RockBoundField DataField="CreatedByPersonAlias.Person.FullName" SortExpression="CreatedByPersonAlias.Person.FullName" HeaderText="Created By" />
                             <Rock:BoolField DataField="IsActive" SortExpression="IsActive" HeaderText="Active" />
-                            <Rock:RockBoundField DataField="SenderPersonAlias.Person.FullName" SortExpression="SenderPersonAlias.Person.FullName" HeaderText="Personal To" />
                             <Rock:SecurityField TitleField="Name" />
-                            <Rock:LinkButtonField HeaderText="Copy" CssClass="btn btn-default btn-sm fa fa-clone" OnClick="gCommunicationTemplates_Copy" HeaderStyle-HorizontalAlign="Center" />
+                            <Rock:LinkButtonField HeaderText="Copy" CssClass="btn btn-default btn-sm btn-square fa fa-clone" OnClick="gCommunicationTemplates_Copy" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
                             <Rock:DeleteField OnClick="gCommunicationTemplates_Delete" />
                         </Columns>
                     </Rock:Grid>

@@ -65,6 +65,9 @@ namespace Rock.Client
         public string Description { get; set; }
 
         /// <summary />
+        public bool EnableGroupHistory { get; set; }
+
+        /// <summary />
         public bool? EnableLocationSchedules { get; set; }
 
         /// <summary />
@@ -92,7 +95,16 @@ namespace Rock.Client
         public bool GroupsRequireCampus { get; set; }
 
         /// <summary />
+        public DefinedType GroupStatusDefinedType { get; set; }
+
+        /// <summary />
+        public int? GroupStatusDefinedTypeId { get; set; }
+
+        /// <summary />
         public string GroupTerm { get; set; }
+
+        /// <summary />
+        public string GroupTypeColor { get; set; }
 
         /// <summary />
         public int? GroupTypePurposeValueId { get; set; }
@@ -190,6 +202,7 @@ namespace Rock.Client
             this.AttendanceRule = source.AttendanceRule;
             this.DefaultGroupRoleId = source.DefaultGroupRoleId;
             this.Description = source.Description;
+            this.EnableGroupHistory = source.EnableGroupHistory;
             this.EnableLocationSchedules = source.EnableLocationSchedules;
             this.EnableSpecificGroupRequirements = source.EnableSpecificGroupRequirements;
             this.ForeignGuid = source.ForeignGuid;
@@ -199,7 +212,10 @@ namespace Rock.Client
             this.GroupCapacityRule = source.GroupCapacityRule;
             this.GroupMemberTerm = source.GroupMemberTerm;
             this.GroupsRequireCampus = source.GroupsRequireCampus;
+            this.GroupStatusDefinedType = source.GroupStatusDefinedType;
+            this.GroupStatusDefinedTypeId = source.GroupStatusDefinedTypeId;
             this.GroupTerm = source.GroupTerm;
+            this.GroupTypeColor = source.GroupTypeColor;
             this.GroupTypePurposeValueId = source.GroupTypePurposeValueId;
             this.GroupViewLavaTemplate = source.GroupViewLavaTemplate;
             this.IconCssClass = source.IconCssClass;

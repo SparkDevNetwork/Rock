@@ -42,7 +42,7 @@ namespace RockWeb.Blocks.Reporting
     [CategoryField( "Schedule Category", "The schedule category to use for list of service times.", false, "Rock.Model.Schedule", "", "", true, "", "", 0 )]
     [IntegerField( "Weeks Back", "The number of weeks back to display in the 'Week of' selection.", false, 8, "", 1 )]
     [IntegerField( "Weeks Ahead", "The number of weeks ahead to display in the 'Week of' selection.", false, 0, "", 2 )]
-    [MetricCategoriesField( "Metric Categories", "Select the metric categories to display (note: only metrics in those categories with a campus and scheudle partition will displayed).", true, "", "", 3 )]
+    [MetricCategoriesField( "Metric Categories", "Select the metric categories to display (note: only metrics in those categories with a campus and schedule partition will displayed).", true, "", "", 3 )]
     public partial class ServiceMetricsEntry : Rock.Web.UI.RockBlock
     {
         #region Fields

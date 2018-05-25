@@ -245,7 +245,7 @@ namespace Rock.Web.UI.Controls
 
             for (int i = 0; i < _actionControls.Count; i++)
             {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-row" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 // Write Action
@@ -315,7 +315,7 @@ namespace Rock.Web.UI.Controls
     function updateFormActions( e ) {
         var $actionList = e.closest('div.form-action-list');
         var newValue = '';
-        $actionList.find('div.form-action-rows:first').children('div.row').each(function( index ) {
+        $actionList.find('div.form-action-rows:first').children('div.form-row').each(function( index ) {
             newValue += 
                 $(this).find('.form-action-key:first').val() + '^' + 
                 $(this).find('.form-action-button:first').val() + '^' + 
@@ -334,7 +334,7 @@ namespace Rock.Web.UI.Controls
     $(document).on('click', 'a.form-action-remove', function (e) {
         e.preventDefault();
         var $rows = $(this).closest('div.form-action-rows');
-        $(this).closest('div.row').remove();
+        $(this).closest('div.form-row').remove();
         updateFormActions($rows);            
     });
 

@@ -221,7 +221,9 @@ namespace Rock.Communication.Transport
                                                 EntityTypeId = personEntityTypeId,
                                                 CategoryId = communicationCategoryId,
                                                 EntityId = recipient.PersonAlias.PersonId,
-                                                Summary = "Sent push notification.",
+                                                Verb = History.HistoryVerb.Sent.ConvertToString().ToUpper(),
+                                                ChangeType = History.HistoryChangeType.Record.ToString(),
+                                                ValueName = "Push Notification",
                                                 Caption = message.Truncate( 200 ),
                                                 RelatedEntityTypeId = communicationEntityTypeId,
                                                 RelatedEntityId = communication.Id

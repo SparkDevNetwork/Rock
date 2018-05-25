@@ -403,6 +403,12 @@ namespace Rock.StatementGenerator.Rest
 
                 foreach ( var financialTransaction in financialTransactionsList )
                 {
+                    if ( options.TransactionAccountIds != null)
+                    {
+                        // remove any Accounts that were not included (in case there was a mix of included and not included accounts in the transaction)
+                        financialTransaction.TransactionDetails = financialTransaction.TransactionDetails.Where( a => options.TransactionAccountIds.Contains( a.AccountId ) ).ToList();
+                    }
+
                     financialTransaction.TransactionDetails = financialTransaction.TransactionDetails.OrderBy( a => a.Account.Order ).ThenBy( a => a.Account.Name ).ToList();
                 }
 
@@ -536,6 +542,13 @@ namespace Rock.StatementGenerator.Rest
                         && options.CurrencyTypeIdsNonCash.Contains( a.Transaction.FinancialPaymentDetail.CurrencyTypeValueId.Value ) ).ToList();
                 }
 
+                // Add Merge Fields for Transactions for custom Statements that might want to organize the output by Transaction instead of TransactionDetail
+                var transactionListCash = transactionDetailListCash.GroupBy( a => a.Transaction ).Select( a => a.Key ).ToList();
+                var transactionListNonCash = transactionDetailListNonCash.GroupBy( a => a.Transaction ).Select( a => a.Key ).ToList();
+                mergeFields.Add( "Transactions", transactionListCash );
+                mergeFields.Add( "TransactionsNonCash", transactionListNonCash );
+                
+                // Add the standard TransactionDetails and TransactionDetailsNonCash that the default Rock templates use
                 mergeFields.Add( "TransactionDetails", transactionDetailListCash );
                 mergeFields.Add( "TransactionDetailsNonCash", transactionDetailListNonCash );
 

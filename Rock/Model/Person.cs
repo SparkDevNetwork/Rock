@@ -511,7 +511,8 @@ namespace Rock.Model
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if the Person is locked as child; otherwise <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsLockedAsChild {
+        public bool IsLockedAsChild
+        {
             get
             {
                 return _isLockedAsChild;
@@ -523,6 +524,15 @@ namespace Rock.Model
             }
         }
         private bool _isLockedAsChild = false;
+
+        /// <summary>
+        /// Gets or sets the deceased date.
+        /// </summary>
+        /// <value>
+        /// The deceased date.
+        /// </value>
+        [DataMember]
+        public DateTime? DeceasedDate { get; set; }
 
         #endregion
 
@@ -537,7 +547,7 @@ namespace Rock.Model
             _users = new Collection<UserLogin>();
             _phoneNumbers = new Collection<PhoneNumber>();
             _members = new Collection<GroupMember>();
-            _aliases = new Collection<PersonAlias>();          
+            _aliases = new Collection<PersonAlias>();
             CommunicationPreference = CommunicationType.Email;
         }
 
@@ -611,7 +621,7 @@ namespace Rock.Model
                 // intentionally blank
             }
         }
-        
+
         /// <summary>
         /// Gets a value indicating whether this instance is business.
         /// </summary>
@@ -1158,18 +1168,18 @@ namespace Rock.Model
         /// </summary>
         /// <param name="condensed">if set to <c>true</c> age in years is returned without a unit suffix.</param>
         /// <returns></returns>
-        public string FormatAge(bool condensed = false)
+        public string FormatAge( bool condensed = false )
         {
             var age = Age;
-            if (age != null)
+            if ( age != null )
             {
-                if (condensed)
+                if ( condensed )
                 {
                     return age.ToString();
                 }
-                if (age > 0)
+                if ( age > 0 )
                 {
-                    return age + (age == 1 ? " yr" : " yrs");
+                    return age + ( age == 1 ? " yr" : " yrs" );
                 }
                 else if ( age < -1 )
                 {
@@ -1564,7 +1574,7 @@ namespace Rock.Model
         /// The history changes.
         /// </value>
         [NotMapped]
-        private List<string> HistoryChanges { get; set; }
+        private History.HistoryChangeList HistoryChanges { get; set; }
 
         #endregion
 
@@ -1690,9 +1700,9 @@ namespace Rock.Model
                     string emailLink = string.Empty;
 
                     // create link
-                    if ( string.IsNullOrWhiteSpace(emailLinkPreference) || emailLinkPreference == "1" )
+                    if ( string.IsNullOrWhiteSpace( emailLinkPreference ) || emailLinkPreference == "1" )
                     {
-                        if ( communicationPageReference != null)
+                        if ( communicationPageReference != null )
                         {
                             communicationPageReference.QueryString = new System.Collections.Specialized.NameValueCollection( communicationPageReference.QueryString ?? new System.Collections.Specialized.NameValueCollection() );
                             communicationPageReference.QueryString["person"] = this.Id.ToString();
@@ -1702,11 +1712,12 @@ namespace Rock.Model
                         {
                             emailLink = string.Format( "{0}Communication?person={1}", rockUrlRoot, Id );
                         }
-                    } else
+                    }
+                    else
                     {
                         emailLink = string.Format( "mailto:{0}", Email );
                     }
-                    
+
                     switch ( EmailPreference )
                     {
                         case EmailPreference.EmailAllowed:
@@ -1852,13 +1863,13 @@ namespace Rock.Model
                 Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
             }
 
-            HistoryChanges = new List<string>();
+            HistoryChanges = new History.HistoryChangeList();
 
             switch ( entry.State )
             {
                 case System.Data.Entity.EntityState.Added:
                     {
-                        HistoryChanges.Add( "Person Created" );
+                        HistoryChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Person").SetNewValue( this.FullName );
 
                         History.EvaluateChange( HistoryChanges, "Record Type", (int?)null, RecordTypeValue, RecordTypeValueId );
                         History.EvaluateChange( HistoryChanges, "Record Status", (int?)null, RecordStatusValue, RecordStatusValueId );
@@ -1889,7 +1900,7 @@ namespace Rock.Model
 
                         if ( PhotoId.HasValue )
                         {
-                            HistoryChanges.Add( "Added a photo." );
+                            HistoryChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Property, "Photo" );
                         }
 
                         break;
@@ -1931,17 +1942,38 @@ namespace Rock.Model
                             {
                                 if ( PhotoId.Value != originalPhotoId.Value )
                                 {
-                                    HistoryChanges.Add( "Modified the photo." );
+                                    HistoryChanges.AddChange( History.HistoryVerb.Modify, History.HistoryChangeType.Property, "Photo" );
                                 }
                             }
                             else
                             {
-                                HistoryChanges.Add( "Deleted the photo." );
+                                HistoryChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Property, "Photo" );
                             }
                         }
                         else if (PhotoId.HasValue )
                         {
-                            HistoryChanges.Add( "Added a photo." );
+                            HistoryChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Property, "Photo" );
+                        }
+
+                        if ( entry.OriginalValues["Email"].ToStringSafe() != Email )
+                        {
+                            var currentEmail = entry.OriginalValues["Email"].ToStringSafe();
+                            if ( !string.IsNullOrEmpty( currentEmail ) )
+                            {
+                                var personSearchKeyService = new PersonSearchKeyService( rockContext );
+                                var searchTypeValue = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_EMAIL.AsGuid() );
+                                if ( !personSearchKeyService.Queryable().Any( a => a.PersonAlias.PersonId == Id && a.SearchTypeValueId == searchTypeValue.Id && a.SearchValue == currentEmail ) )
+                                {
+                                    PersonSearchKey personSearchKey = new PersonSearchKey()
+                                    {
+                                        PersonAliasId = PrimaryAliasId.Value,
+                                        SearchTypeValueId = searchTypeValue.Id,
+                                        SearchValue = currentEmail
+                                    };
+                                    personSearchKeyService.Add( personSearchKey );
+
+                                }
+                            }
                         }
 
                         break;
@@ -1949,7 +1981,7 @@ namespace Rock.Model
 
                 case System.Data.Entity.EntityState.Deleted:
                     {
-                        HistoryChanges.Add( "Deleted" );
+                        HistoryChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, null );
 
                         // If PersonRecord is getting deleted, don't do any of the remaining presavechanges
                         return;
@@ -2190,7 +2222,7 @@ namespace Rock.Model
                 }
 
                 return familySalutation;
-      
+
             }
 
             return $"{(useFormalNames ? person.FirstName : person.NickName)} {person.LastName}";
@@ -2348,7 +2380,8 @@ namespace Rock.Model
                             virtualPath = "~/Assets/Images/person-no-photo-child-male.svg?";
                         }
                     }
-                    else {
+                    else
+                    {
                         // it's an adult
                         if ( gender == Model.Gender.Female )
                         {
@@ -2461,22 +2494,17 @@ namespace Rock.Model
                 }
                 else
                 {
-                    // check family role
-                    Guid? familyRoleGuid = null;
+                    // check age classification
+                    AgeClassification? ageClassification = null;
                     if ( personId.HasValue )
                     {
-                        var familyGroupTypeId = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
-                        familyRoleGuid = new GroupMemberService( new RockContext() ).Queryable()
-                                            .Where( m =>
-                                                m.Group.GroupTypeId == familyGroupTypeId
-                                                && m.PersonId == personId )
-                                            .OrderBy( m => m.GroupOrder ?? int.MaxValue ).ThenBy( m => m.GroupRole.Order )
-                                            .Select( m => m.GroupRole.Guid )
-                                            .FirstOrDefault();
+                        using ( var rockContext = new RockContext() )
+                        {
+                            ageClassification = new PersonService( rockContext ).Queryable( true ).Where( a => a.Id == personId ).Select( a => ( AgeClassification ? )a.AgeClassification ).FirstOrDefault();
+                        }
                     }
-
-                    var familyRoleChildGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
-                    if ( familyRoleGuid.HasValue && familyRoleGuid == familyRoleChildGuid )
+                    
+                    if ( ageClassification.HasValue && ageClassification == AgeClassification.Child )
                     {
                         // it's a child
                         if ( gender == Model.Gender.Female )
@@ -2488,7 +2516,8 @@ namespace Rock.Model
                             virtualPath = "~/Assets/Images/person-no-photo-child-male.svg?";
                         }
                     }
-                    else {
+                    else
+                    {
                         // it's an adult
                         if ( gender == Model.Gender.Female )
                         {
@@ -2697,7 +2726,8 @@ namespace Rock.Model
                             photoUrl.Append( "Assets/Images/person-no-photo-child-male.svg?" );
                         }
                     }
-                    else {
+                    else
+                    {
                         // it's an adult
                         if ( gender == Model.Gender.Female )
                         {
@@ -2737,12 +2767,13 @@ namespace Rock.Model
         {
             if (person != null )
             {
-                return GetPersonPhotoImageTag( person.Id, person.PhotoId, person.Age, person.Gender, person.RecordTypeValue != null ? (Guid?)person.RecordTypeValue.Guid : null, maxWidth, maxHeight, altText, className );
-            } else
+                return GetPersonPhotoImageTag( person.Id, person.PhotoId, person.Age, person.Gender, person.RecordTypeValue != null ? ( Guid? ) person.RecordTypeValue.Guid : null, maxWidth, maxHeight, altText, className );
+            }
+            else
             {
                 return GetPersonPhotoImageTag( null, null, null, Gender.Unknown, null, maxWidth, maxHeight, altText, className );
             }
-            
+
         }
 
         /// <summary>
@@ -2821,22 +2852,17 @@ namespace Rock.Model
                 }
                 else
                 {
-                    // check family role
-                    Guid? familyRoleGuid = null;
+                    // check age classification
+                    AgeClassification? ageClassification = null;
                     if ( personId.HasValue )
                     {
-                        var familyGroupTypeId = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
-                        familyRoleGuid = new GroupMemberService( new RockContext() ).Queryable()
-                                            .Where( m =>
-                                                m.Group.GroupTypeId == familyGroupTypeId
-                                                && m.PersonId == personId )
-                                            .OrderBy( m => m.GroupOrder ?? int.MaxValue ).ThenBy( m => m.GroupRole.Order )
-                                            .Select( m => m.GroupRole.Guid )
-                                            .FirstOrDefault();
+                        using ( var rockContext = new RockContext() )
+                        {
+                            ageClassification = new PersonService( rockContext ).Queryable( true ).Where( a => a.Id == personId ).Select( a => ( AgeClassification? ) a.AgeClassification ).FirstOrDefault();
+                        }
                     }
 
-                    var familyRoleChildGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
-                    if ( familyRoleGuid.HasValue && familyRoleGuid == familyRoleChildGuid )
+                    if ( ageClassification.HasValue && ageClassification == AgeClassification.Child )
                     {
                         // it's a child
                         if ( gender == Model.Gender.Female )
@@ -2848,7 +2874,8 @@ namespace Rock.Model
                             photoUrl.Append( "Assets/Images/person-no-photo-child-male.svg?" );
                         }
                     }
-                    else {
+                    else
+                    {
                         // it's an adult
                         if ( gender == Model.Gender.Female )
                         {
@@ -2879,11 +2906,20 @@ namespace Rock.Model
         /// <returns>A string that represents the Icon to display or an empty string if no signal is active.</returns>
         public string GetSignalMarkup()
         {
-            if ( !string.IsNullOrWhiteSpace( TopSignalColor ) )
+            return Person.GetSignalMarkup( TopSignalColor, TopSignalIconCssClass );
+        }
+
+        /// <summary>
+        /// Gets the HTML markup to use for displaying the given signal color and icon.
+        /// </summary>
+        /// <returns>A string that represents the Icon to display or an empty string if no signal color was provided.</returns>
+        public static string GetSignalMarkup( string signalColor, string signalIconCssClass )
+        {
+            if ( !string.IsNullOrWhiteSpace( signalColor ) )
             {
                 return string.Format( "<i class='{1}' style='color: {0};'></i>",
-                    TopSignalColor,
-                    !string.IsNullOrWhiteSpace( TopSignalIconCssClass ) ? TopSignalIconCssClass : "fa fa-flag" );
+                    signalColor,
+                    !string.IsNullOrWhiteSpace( signalIconCssClass ) ? signalIconCssClass : "fa fa-flag" );
             }
 
             return string.Empty;
@@ -2962,21 +2998,15 @@ namespace Rock.Model
         /// </summary>
         /// <param name="gradeOffset"></param>
         /// <returns></returns>
-        public static int? GraduationYearFromGradeOffset(int? gradeOffset)
+        public static int? GraduationYearFromGradeOffset( int? gradeOffset )
         {
-            if (gradeOffset.HasValue && gradeOffset.Value >= 0)
+            if ( gradeOffset.HasValue && gradeOffset.Value >= 0 )
             {
-                var globalAttributes = CacheGlobalAttributes.Get();
-                var transitionDate = globalAttributes.GetValue("GradeTransitionDate").AsDateTime() ?? new DateTime( RockDateTime.Today.Year, 6, 1 );
-                transitionDate = new DateTime( RockDateTime.Today.Year, transitionDate.Month, transitionDate.Day );
-
-                int gradeOffsetAdjustment = (RockDateTime.Now.Date < transitionDate) ? gradeOffset.Value : gradeOffset.Value + 1;
-                return transitionDate.Year + gradeOffsetAdjustment;
+                return RockDateTime.CurrentGraduationYear + gradeOffset.Value;
             }
 
             return null;
         }
-
 
         /// <summary>
         /// Given a graduation year returns the grade offset
@@ -2991,8 +3021,7 @@ namespace Rock.Model
             }
             else
             {
-                var globalAttributes = CacheGlobalAttributes.Get();
-                return graduationYear.Value - globalAttributes.CurrentGraduationYear;
+                return graduationYear.Value - RockDateTime.CurrentGraduationYear;
             }
         }
 
@@ -3487,7 +3516,7 @@ namespace Rock.Model
                     currPhoneNumber.IsMessagingEnabled = false;
                 }
             }
-            
+
             // do they currently have this type of number?
             if ( phoneObject != null )
             {
@@ -3560,7 +3589,7 @@ namespace Rock.Model
         {
             return new PersonService( rockContext ?? new RockContext() ).GetGroupMembers( groupTypeId, person != null ? person.Id : 0, includeSelf );
         }
-        
+
         /// <summary>
         /// Gets any previous last names for this person sorted alphabetically by LastName
         /// </summary>
@@ -3570,6 +3599,17 @@ namespace Rock.Model
         public static IOrderedQueryable<PersonPreviousName> GetPreviousNames( this Person person, RockContext rockContext = null )
         {
             return new PersonService( rockContext ?? new RockContext() ).GetPreviousNames( person != null ? person.Id : 0 );
+        }
+
+        /// <summary>
+        /// Gets any search keys for this person
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static IQueryable<PersonSearchKey> GetPersonSearchKeys( this Person person, RockContext rockContext = null )
+        {
+            return new PersonService( rockContext ?? new RockContext() ).GetPersonSearchKeys( person != null ? person.Id : 0 );
         }
 
         /// <summary>
@@ -3698,7 +3738,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static IQueryable<Person> WhereGradeOffsetRange( this IQueryable<Person> personQry, int? minGradeOffset, int? maxGradeOffset, bool includePeopleWithNoGrade = true )
         {
-            var currentGradYear = CacheGlobalAttributes.Get().CurrentGraduationYear;
+            var currentGradYear = RockDateTime.CurrentGraduationYear;
 
             var qryWithGradeOffset = personQry.Select(
                       p => new

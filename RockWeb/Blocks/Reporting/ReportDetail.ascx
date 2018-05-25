@@ -12,7 +12,7 @@
                         </div>
                         <div class="panel-body">
 
-                            <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                            <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
 
                             <div class="row">
                                 <div class="col-md-6">
@@ -100,7 +100,7 @@
                                 <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" />
                                 <div class="pull-right">
                                     <asp:HyperLink ID="lbDataView" runat="server" Text="Data View" CssClass="btn btn-link" />
-                                    <asp:LinkButton ID="btnCopy" runat="server" Tooltip="Copy Report" CssClass="btn btn-default btn-sm fa fa-clone" OnClick="btnCopy_Click" />
+                                    <asp:LinkButton ID="btnCopy" runat="server" Tooltip="Copy Report" CssClass="btn btn-default btn-sm btn-square fa fa-clone" OnClick="btnCopy_Click" />
                                     <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" />
                                 </div>
                             </div>
@@ -158,7 +158,8 @@
                         {
                             $('#' + '<%=btnSave.ClientID %>').addClass('disabled');
                             var newItemIndex = $(ui.item).prevAll('.panel-widget').length;
-                            __doPostBack('<%=upReport.ClientID %>', 're-order-panel-widget:' + ui.item.attr('id') + ';' + newItemIndex);
+                            var postbackArg = 're-order-panel-widget:' + ui.item.attr('id') + ';' + newItemIndex;
+                            window.location = "javascript:__doPostBack('<%=upReport.ClientID %>', '" +  postbackArg + "')";
                         }
                     }
                 });

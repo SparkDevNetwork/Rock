@@ -34,7 +34,7 @@ namespace Rock.Web.Cache
     [Serializable]
     [DataContract]
     [Obsolete( "Use Rock.Cache.ModelCache instead" )]
-    public abstract class CachedModel<T> : CachedEntity<T>, ISecured, Data.IHasAttributes, Lava.ILiquidizable
+    public abstract class CachedModel<T> : CachedEntity<T>, ISecured, Attribute.IHasAttributes, Lava.ILiquidizable
         where T : Rock.Data.Entity<T>, ISecured, Rock.Data.IHasAttributes, new()
     {
         /// <summary>
@@ -53,7 +53,7 @@ namespace Rock.Web.Cache
                 this.SupportedActions = secureModel.SupportedActions;
             }
 
-            var attributeModel = model as Rock.Data.IHasAttributes;
+            var attributeModel = model as IHasAttributes;
             if ( attributeModel != null )
             {
                 if ( attributeModel.Attributes == null )
@@ -61,9 +61,38 @@ namespace Rock.Web.Cache
                     attributeModel.LoadAttributes();
                 }
 
-                this.Attributes = attributeModel.Attributes;
-                this.AttributeValues = attributeModel.AttributeValues;
+                SetOldAttributeValues( attributeModel.AttributeValues );
+                SetOldAttributes( attributeModel.Attributes );
             }
+        }
+
+        /// <summary>
+        /// Copies properties from a new cached entity
+        /// </summary>
+        /// <param name="cacheEntity">The cache entity.</param>
+        protected override void CopyFromNewCache(Rock.Cache.IEntityCache cacheEntity)
+        {
+            base.CopyFromNewCache( cacheEntity );
+
+            var secureItem = cacheEntity as ISecured;
+            if ( secureItem != null )
+            {
+                this.TypeId = secureItem.TypeId;
+                this.TypeName = secureItem.TypeName;
+                this.SupportedActions = secureItem.SupportedActions;
+            }
+
+            var attributeEntity = cacheEntity as IHasAttributes;
+            if (attributeEntity == null) return;
+
+            if ( attributeEntity.Attributes == null )
+            {
+                attributeEntity.LoadAttributes();
+            }
+
+            SetOldAttributeValues( attributeEntity.AttributeValues );
+            SetOldAttributes( attributeEntity.Attributes );
+
         }
 
         #region ISecured Implementation
@@ -195,15 +224,15 @@ namespace Rock.Web.Cache
         /// The attributes.
         /// </value>
         [LavaIgnore]
-        public Dictionary<string, Rock.Cache.CacheAttribute> Attributes
+        public Dictionary<string, AttributeCache> Attributes
         {
             get
             {
-                var attributes = new Dictionary<string, Rock.Cache.CacheAttribute>();
+                var attributes = new Dictionary<string, AttributeCache>();
 
                 foreach ( int id in AttributeIds.ToList() )
                 {
-                    var attribute = Rock.Cache.CacheAttribute.Get( id );
+                    var attribute = AttributeCache.Read( id );
                     attributes.Add( attribute.Key, attribute );
                 }
 
@@ -235,7 +264,7 @@ namespace Rock.Web.Cache
         /// </summary>
         [DataMember]
         [LavaIgnore]
-        public virtual Dictionary<string, Rock.Cache.CacheAttributeValue> AttributeValues { get; set; }
+        public virtual Dictionary<string, AttributeValueCache> AttributeValues { get; set; }
 
         /// <summary>
         /// Gets the attribute value defaults.
@@ -324,9 +353,11 @@ namespace Rock.Web.Cache
                 }
                 else if ( this.Attributes.ContainsKey( key ) )
                 {
-                    var attributeValue = new Rock.Cache.CacheAttributeValue();
-                    attributeValue.AttributeId = this.Attributes[key].Id;
-                    attributeValue.Value = value;
+                    var attributeValue = new AttributeValueCache
+                    {
+                        AttributeId = this.Attributes[key].Id,
+                        Value = value
+                    };
                     this.AttributeValues.Add( key, attributeValue );
                 }
             }
@@ -342,13 +373,35 @@ namespace Rock.Web.Cache
                 var service = new Service<T>( rockContext );
                 var model = service.Get( this.Id );
 
-                if ( model != null )
-                {
-                    model.LoadAttributes( rockContext );
+                if (model == null) return;
 
-                    this.AttributeValues = model.AttributeValues;
-                    this.Attributes = model.Attributes;
-                }
+                model.LoadAttributes( rockContext );
+
+                SetOldAttributeValues( model.AttributeValues);
+                SetOldAttributes(model.Attributes);
+            }
+        }
+
+        private void SetOldAttributes( Dictionary<string, Rock.Cache.CacheAttribute> newAttributes )
+        {
+            Attributes = new Dictionary<string, AttributeCache>();
+            foreach (var keyVal in newAttributes )
+            {
+                Attributes.Add( keyVal.Key, AttributeCache.Read( keyVal.Value.Id ) );
+            }
+        }
+
+        private void SetOldAttributeValues( Dictionary<string, Rock.Cache.CacheAttributeValue> newValues )
+        {
+            AttributeValues = new Dictionary<string, AttributeValueCache>();
+            foreach ( var keyVal in newValues )
+            {
+                AttributeValues.Add(keyVal.Key, new AttributeValueCache
+                {
+                    AttributeId = keyVal.Value.AttributeId,
+                    EntityId = keyVal.Value.EntityId,
+                    Value = keyVal.Value.Value
+                });
             }
         }
 
