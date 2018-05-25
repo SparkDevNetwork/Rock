@@ -774,6 +774,9 @@ namespace RockWeb.Blocks.Event
                 phPaymentAmount.Visible = true;
                 phManualDetails.Visible = true;
                 phCCDetails.Visible = false;
+                aStep2Submit.Visible = false;
+                lbSubmitPayment.Visible = true;
+                
             }
         }
 
