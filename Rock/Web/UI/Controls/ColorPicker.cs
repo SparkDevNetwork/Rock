@@ -14,7 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Linq;
 using System.Web.UI;
+using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -24,6 +27,22 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:ColorPicker runat=server></{0}:ColorPicker>" )]
     public class ColorPicker : RockTextBox
     {
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( System.EventArgs e )
+        {
+            base.OnInit( e );
+
+            if ( this.Visible && !ScriptManager.GetCurrent( this.Page ).IsInAsyncPostBack )
+            {
+                RockPage.AddCSSLink( Page, ResolveUrl( "~/Styles/bootstrap-colorpicker/bootstrap-colorpicker.min.css" ), true );
+            }
+
+            EnsureChildControls();
+        }
+
         /// <summary>
         /// Gets or sets the original value.
         /// </summary>
@@ -55,17 +74,38 @@ namespace Rock.Web.UI.Controls
                 this.Text = value;
             }
         }
-        
+
+        /// <summary>
+        /// Renders the base control.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        public override void RenderBaseControl( HtmlTextWriter writer )
+        {
+            writer.WriteLine( "<div class='rock-colorpicker'>" );
+            base.RenderBaseControl( writer );
+            writer.WriteLine( " </div>" );
+        }
+
         /// <summary>
         /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
         /// </summary>
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            this.AppendText = "<i></i>";
-            this.AddCssClass( "rock-colorpicker-input input-width-lg" );
+            this.AddCssClass( "input-width-lg" );
+            var defindValues = CacheDefinedType.Get( SystemGuid.DefinedType.COLOR_PICKER_SWATCHES ).DefinedValues.ToDictionary( a => a.Description, a=>a.Value );
 
-            string script = "$('.rock-colorpicker-input').colorpicker();";
+            string script = $@"$('.rock-colorpicker').colorpicker({{
+      inline: true,
+      container: true,
+      extensions: [
+        {{
+          name:'swatches',
+          colors: {defindValues.ToJson(Newtonsoft.Json.Formatting.Indented).Replace("\"","'")},
+          namesAsValues: true
+        }}
+      ]
+    }});";
             ScriptManager.RegisterStartupScript( this, this.GetType(), "rock-colorpicker", script, true );
             base.RenderControl( writer );
 

@@ -233,6 +233,10 @@
     <Compile Include="Migrations\201805231625436_NotesUpdates.Designer.cs">
       <DependentUpon>201805231625436_NotesUpdates.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201805251707072_AddDefinedTypeColorSwatches.cs" />
+    <Compile Include="Migrations\201805251707072_AddDefinedTypeColorSwatches.Designer.cs">
+      <DependentUpon>201805251707072_AddDefinedTypeColorSwatches.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2936,6 +2940,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201805231625436_NotesUpdates.resx">
       <DependentUpon>201805231625436_NotesUpdates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201805251707072_AddDefinedTypeColorSwatches.resx">
+      <DependentUpon>201805251707072_AddDefinedTypeColorSwatches.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.resx">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
