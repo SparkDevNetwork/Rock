@@ -48,12 +48,20 @@ namespace RockWeb.Blocks.Utility
     [CodeEditorField( "Body Template", "The Lava template for rendering the body of the block.", CodeEditorMode.Less, CodeEditorTheme.Rock, 600, true, "d", order: 5 )]
     [LavaCommandsField( "Enabled Lava Commands", "The Lava commands that should be made available to the block.", false, order: 6 )]
     [IntegerField( "Cache Duration", "The time, in seconds, to cache the data for this block. The Lava template will still be run to enable personalization. Only the data for the block will be cached.", false, 3600, order: 7)]
+    [CustomCheckboxListField( "Cache Tags", "Cached tags are used to link cached content so that it can be expired as a group", CACHE_TAG_LIST, false, key: "CacheTags", order: 10 )]
+
     public partial class InternalCommunicationView : Rock.Web.UI.RockBlock
     {
         #region Fields
 
         // used for private variables
         private int _currentPage = 0;
+
+        private const string CACHE_TAG_LIST = @"
+            SELECT CAST([DefinedValue].[Id] AS VARCHAR) AS [Value], [DefinedValue].[Value] AS [Text]
+            FROM[DefinedType]
+            JOIN[DefinedValue] ON[DefinedType].[Id] = [DefinedValue].[DefinedTypeId]
+            WHERE[DefinedType].[Guid] = 'BDF73089-9154-40C1-90E4-74518E9937DC'";
         #endregion
 
         #region Properties
