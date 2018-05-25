@@ -27,8 +27,6 @@ using Rock.Cache;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.SystemKey;
-using Rock.Utility.Settings.DataAutomation;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -42,21 +40,29 @@ public partial class CacheManager : RockBlock
         base.OnInit( e );
 
         // need to check user permissions and add adjust grid and other options accordingly
-        gCacheTagList.DataKeyNames = new string[] { "Id" };
+        gCacheTagList.DataKeyNames = new string[] { "DefinedValueId" };
         gCacheTagList.GridRebind += new GridRebindEventHandler( gCacheTagList_GridRebind );
         gCacheTagList.Actions.AddClick += gCacheTagList_Add;
+        gCacheTagList.Actions.ShowExcelExport = false;
+        gCacheTagList.Actions.ShowMergeTemplate = false;
 
-        if( IsUserAuthorized( Authorization.EDIT ))
+        if ( IsUserAuthorized( Authorization.EDIT ))
         {
             gCacheTagList.Actions.ShowAdd = true;
+        }
+        else
+        {
+            gCacheTagList.Actions.ShowAdd = false;
         }
     }
 
     protected void Page_Load( object sender, EventArgs e )
     {
-        if(!IsPostBack)
+        ClearNotifications();
+
+        if (!IsPostBack)
         {
-            //BindGrid();
+            BindGrid();
             PopulateDdlCacheTypes();
             PopulateCacheStatistics();
         }
@@ -65,9 +71,29 @@ public partial class CacheManager : RockBlock
     #region Grid
     private void BindGrid()
     {
+        int cacheTagDefinedTypeId = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.CACHE_TAGS ).Id;
         RockContext rockContext = new RockContext();
-        DefinedTypeService definedTypeService = new DefinedTypeService( rockContext );
+        DefinedValueService definedValueService = new DefinedValueService( rockContext );
+        var cacheTags = definedValueService.Queryable().Where( v => v.DefinedTypeId == cacheTagDefinedTypeId ).ToList();
 
+        var gridData = new List<CacheTagGridRow>();
+
+        foreach( var tag in cacheTags )
+        {
+            // do something here to get linked keys count
+            long linkedKeys = 0;
+            var row = new CacheTagGridRow
+            {
+                TagName = tag.Value,
+                TagDescription = tag.Description,
+                LinkedKeys = linkedKeys,
+                DefinedValueId = tag.Id
+            };
+
+            gridData.Add( row );
+        }
+        gCacheTagList.DataSource = gridData;
+        gCacheTagList.DataBind();
     }
 
 
@@ -76,18 +102,17 @@ public partial class CacheManager : RockBlock
         dlgAddTag.Show();
     }
 
-    protected void gCacheTagList_RowDataBound( object sender, GridViewRowEventArgs e )
-    {
-
-    }
-
-    protected void gCacheTagList_RowSelected( object sender, RowEventArgs e )
-    {
-
-    }
-
+    /// <summary>
+    /// Handles the ClearCacheTag event of the gCacheTagList control.
+    /// </summary>
+    /// <param name="sender">The source of the event.</param>
+    /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
     protected void gCacheTagList_ClearCacheTag( object sender, RowEventArgs e )
     {
+        int definedValueId = e.RowKeyId;
+
+
+
 
     }
 
@@ -97,6 +122,26 @@ public partial class CacheManager : RockBlock
     }
 
     #endregion
+
+    protected void DisplayNotification( NotificationBox notificationBox, string message, NotificationBoxType notificationBoxType )
+    {
+        notificationBox.Text = message;
+        notificationBox.NotificationBoxType = notificationBoxType;
+        notificationBox.Visible = true;
+    }
+
+    /// <summary>
+    /// Clear and hide all notification boxes.
+    /// </summary>
+    protected void ClearNotifications()
+    {
+        nbMessage.Text = string.Empty;
+        nbMessage.NotificationBoxType = NotificationBoxType.Info;
+        nbMessage.Visible = false;
+        nbModalMessage.Text = string.Empty;
+        nbModalMessage.NotificationBoxType = NotificationBoxType.Info;
+        nbModalMessage.Visible = false;
+    }
 
     /// <summary>
     /// Populates the drop down list with an ordered list of cache type names.
@@ -122,14 +167,20 @@ public partial class CacheManager : RockBlock
     /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
     protected void btnClearCache_Click( object sender, EventArgs e )
     {
+        List<string> result = new List<string>();
+
         if ( ddlCacheTypes.SelectedValue == "all" )
         {
-            RockCache.ClearAllCachedItems();
+            result = RockCache.ClearAllCachedItems();
         }
         else
         {
-            RockCache.ClearCachedItemsForType( ddlCacheTypes.SelectedValue );
+            result.Add( RockCache.ClearCachedItemsForType( ddlCacheTypes.SelectedValue ) );
         }
+
+        PopulateCacheStatistics();
+
+        DisplayNotification( nbMessage, result.Aggregate( (a, b) => a + Environment.NewLine + b ), NotificationBoxType.Success );
     }
 
 
@@ -144,7 +195,18 @@ public partial class CacheManager : RockBlock
         long gets = 0;
         long clears = 0;
 
-        foreach ( CacheItemStatistics cacheItemStat in RockCache.GetAllStatistics().OrderBy( s => s.Name ) )
+        var cacheItemStatistics = new List<CacheItemStatistics>();
+
+        if ( ddlCacheTypes.SelectedValue == "all" )
+        {
+            cacheItemStatistics = RockCache.GetAllStatistics().OrderBy( s => s.Name ).ToList();
+        }
+        else
+        {
+            cacheItemStatistics.Add( RockCache.GetStatisticsForType( ddlCacheTypes.SelectedValue ) );
+        }
+            
+        foreach ( CacheItemStatistics cacheItemStat in cacheItemStatistics )
         {
             foreach ( CacheHandleStatistics cacheHandleStat in cacheItemStat.HandleStats )
             {
@@ -171,27 +233,22 @@ public partial class CacheManager : RockBlock
     /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
     protected void dlgAddTag_SaveClick( object sender, EventArgs e )
     {
-
-        bool isValid = true;
-
-        // make sure key is unique
-
-        if ( isValid )
+        if ( IsValid() )
         {
             SaveTag();
+            DisplayNotification( nbMessage, string.Format( "tag {0} added successfully.", tbTagName.Text.Trim().ToLower() ), NotificationBoxType.Success );
             ClearModal();
-        }
-        else
-        {
-            // show error
+            BindGrid();
         }
     }
 
-    private bool isValid()
+    private bool IsValid()
     {
-        if( tbTagName.Text.Trim().IsNullOrWhiteSpace() )
+        string tagName = tbTagName.Text.Trim();
+
+        if ( tagName.IsNullOrWhiteSpace() )
         {
-            // show key required error
+            DisplayNotification( nbModalMessage, string.Format( "Tag name is required.", tagName ), NotificationBoxType.Warning );
             return false;
         }
         
@@ -200,12 +257,12 @@ public partial class CacheManager : RockBlock
         var rockContext = new RockContext();
         var definedValueService = new DefinedValueService( rockContext );
 
-        if ( definedValueService.Queryable().AsNoTracking().Where( v => v.Value == tbTagName.Text ).Any() )
+        if ( definedValueService.Queryable().AsNoTracking().Where( v => v.DefinedTypeId == cachedTagDefinedTypeId && v.Value == tbTagName.Text ).Any() )
         {
             // show key in use error
+            DisplayNotification( nbModalMessage, string.Format( "Tag name {0} already in use.", tagName ), NotificationBoxType.Warning );
             return false;
         }
-
 
         return true;
     }
@@ -224,7 +281,7 @@ public partial class CacheManager : RockBlock
         var definedValue = new DefinedValue
         {
             DefinedTypeId = cachedTagDefinedTypeId,
-            Value = tbTagName.Text.ToLower(),
+            Value = tbTagName.Text.Trim().ToLower(),
             Description = tbTagDescription.Text,
             Order = order
         };
@@ -241,5 +298,26 @@ public partial class CacheManager : RockBlock
         tbTagName.Text = string.Empty;
         tbTagDescription.Text = string.Empty;
         dlgAddTag.Hide();
+    }
+
+    /// <summary>
+    /// POCO to list tags on the CacheManager grid
+    /// </summary>
+    private class CacheTagGridRow
+    {
+        public string TagName { get; set; }
+        public string TagDescription { get; set; }
+        public long LinkedKeys { get; set; }
+        public int DefinedValueId { get; set; }
+    }
+
+    /// <summary>
+    /// Handles the SelectedIndexChanged event of the ddlCacheTypes control and updates statistics for the selected cache type.
+    /// </summary>
+    /// <param name="sender">The source of the event.</param>
+    /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+    protected void ddlCacheTypes_SelectedIndexChanged( object sender, EventArgs e )
+    {
+        PopulateCacheStatistics();
     }
 }

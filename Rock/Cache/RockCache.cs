@@ -296,7 +296,7 @@ namespace Rock.Cache
             {
                 return "Nothing to clear";
             }
-
+            
             Type rockCacheManagerType = typeof( RockCacheManager<> ).MakeGenericType( new Type[]{ cacheType } );
 
             foreach ( var manager in _allManagers )
@@ -335,6 +335,43 @@ namespace Rock.Cache
             }
 
             return cacheStats;
+        }
+
+        /// <summary>
+        /// Gets the statistics for the given type.
+        /// </summary>
+        /// <param name="cacheType">Type of the cache.</param>
+        /// <returns></returns>
+        public static CacheItemStatistics GetStatisticsForType( Type cacheType )
+        {
+            var cacheStats = new CacheItemStatistics( string.Empty );
+            if( _allManagers == null )
+            {
+                return cacheStats;
+            }
+
+            Type rockCacheManagerType = typeof( RockCacheManager<> ).MakeGenericType( new Type[] { cacheType } );
+
+            foreach( var manager in _allManagers )
+            {
+                if( manager.GetType() == rockCacheManagerType )
+                {
+                    cacheStats = manager.GetStatistics();
+                    break;
+                }
+            }
+
+            return cacheStats;
+        }
+
+        /// <summary>
+        /// Gets the statistics for the given type name.
+        /// </summary>
+        /// <param name="cacheTypeName">Name of the cache type.</param>
+        /// <returns></returns>
+        public static CacheItemStatistics GetStatisticsForType( string cacheTypeName )
+        {
+            return GetStatisticsForType( Type.GetType( $"Rock.Cache.{cacheTypeName},Rock" ) );
         }
 
         #endregion
