@@ -435,18 +435,7 @@ namespace RockWeb.Blocks.Cms
 
             if ( lChannelUrl != null && slug != null )
             {
-                if ( slug.ContentChannelItem.ContentChannel.ItemUrl.IsNullOrWhiteSpace()  )
-                {
-                    return;
-                }
-
-                var itemUrl = slug.ContentChannelItem.ContentChannel.ItemUrl.RemoveSpaces();
-
-                if ( itemUrl.EndsWith( "{{Slug}}" ) )
-                {
-                    lChannelUrl.Text = slug.ContentChannelItem.ContentChannel.ItemUrl.Replace( "{{ Slug }}", "" );
-                }
-                
+                lChannelUrl.Text = GetSlugPrefix( slug.ContentChannelItem.ContentChannel );
             }
         }
 
@@ -678,6 +667,28 @@ namespace RockWeb.Blocks.Cms
         #region Internal Methods
 
         /// <summary>
+        /// Gets the slug prefix.
+        /// </summary>
+        /// <param name="channel">The channel.</param>
+        /// <returns></returns>
+        private string GetSlugPrefix( ContentChannel channel )
+        {
+            if ( channel.ItemUrl.IsNullOrWhiteSpace() )
+            {
+                return string.Empty;
+            }
+
+            var itemUrl = channel.ItemUrl.RemoveSpaces();
+
+            if ( itemUrl.EndsWith( "{{Slug}}" ) )
+            {
+                return itemUrl.Replace( "{{Slug}}", "" );
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
         /// Gets the type of the content.
         /// </summary>
         /// <param name="contentItemId">The content type identifier.</param>
@@ -772,6 +783,8 @@ namespace RockWeb.Blocks.Cms
                 this.Visible = false;
                 return;
             }
+
+            hfContentChannelItemUrl.Value = GetSlugPrefix( contentItem.ContentChannel );
 
             if ( contentItem.ContentChannel.IsTaggingEnabled )
             {
