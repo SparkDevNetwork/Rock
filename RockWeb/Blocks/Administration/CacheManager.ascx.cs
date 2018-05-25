@@ -73,7 +73,7 @@ public partial class CacheManager : RockBlock
 
     protected void gCacheTagList_Add( object sender, EventArgs e )
     {
-        dlgAddTag.Show()
+        dlgAddTag.Show();
     }
 
     protected void gCacheTagList_RowDataBound( object sender, GridViewRowEventArgs e )
