@@ -40,7 +40,7 @@
                                 <Rock:RockBoundField DataField="EntityName" HeaderText="Source Name"></Rock:RockBoundField>
                                 <Rock:RockBoundField DataField="Role" HeaderText="User / Role"></Rock:RockBoundField>
                                 <Rock:RockBoundField DataField="Access" HeaderText="Access" HtmlEncode="false"></Rock:RockBoundField>
-                                <Rock:LinkButtonField HeaderText="" CssClass="btn btn-default btn-sm fa fa-unlock" OnClick="gUnlock_Click"></Rock:LinkButtonField>
+                                <Rock:LinkButtonField HeaderText="" CssClass="btn btn-default btn-sm" OnClick="gUnlock_Click" Text="<i class='fa fa-unlock'></i>"></Rock:LinkButtonField>
                             </Columns>
                         </Rock:Grid>
                     </asp:Panel>
