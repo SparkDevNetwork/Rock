@@ -29,7 +29,7 @@
         <Rock:ModalDialog ID="mdEditSignal" runat="server" Title="Edit Signal" OnSaveClick="mdEditSignal_SaveClick" ValidationGroup="EditSignal">
             <Content>
                 <asp:HiddenField ID="hfEditSignalId" runat="server" />
-                <asp:ValidationSummary ID="vsEditSignal" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="EditSignal" />
+                <asp:ValidationSummary ID="vsEditSignal" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" ValidationGroup="EditSignal" />
 
                 <div class="row">
                     <div class="col-md-6">

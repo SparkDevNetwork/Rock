@@ -63,7 +63,7 @@ namespace Rock.Transactions
             {
                 using ( var rockContext = new RockContext() )
                 {
-                    var workflowType = Web.Cache.WorkflowTypeCache.Read(Trigger.WorkflowTypeId );
+                    var workflowType = Cache.CacheWorkflowType.Get(Trigger.WorkflowTypeId );
                     if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                     {
                         var workflow = Rock.Model.Workflow.Activate( workflowType, Trigger.WorkflowName );

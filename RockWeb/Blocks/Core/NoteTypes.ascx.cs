@@ -26,7 +26,7 @@ using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Security;
@@ -72,7 +72,7 @@ namespace RockWeb.Blocks.Core
 
                 foreach ( var securityField in rGrid.Columns.OfType<SecurityField>() )
                 {
-                    securityField.EntityTypeId = EntityTypeCache.Read( typeof( NoteType ) ).Id;
+                    securityField.EntityTypeId = CacheEntityType.Get( typeof( NoteType ) ).Id;
                 }
 
                 modalDetails.SaveClick += modalDetails_SaveClick;
@@ -141,7 +141,7 @@ namespace RockWeb.Blocks.Core
                     int? entityTypeId = e.Value.AsIntegerOrNull();
                     if ( entityTypeId.HasValue )
                     {
-                        var entityType = EntityTypeCache.Read( entityTypeId.Value );
+                        var entityType = CacheEntityType.Get( entityTypeId.Value );
                         if ( entityType != null )
                         {
                             e.Value = entityType.FriendlyName;
@@ -183,8 +183,8 @@ namespace RockWeb.Blocks.Core
                         service.Delete( noteType );
                         rockContext.SaveChanges();
 
-                        NoteTypeCache.Flush( id );
-                        NoteTypeCache.FlushEntityNoteTypes();
+                        CacheNoteType.Remove( id );
+                        CacheNoteType.RemoveEntityNoteTypes();
                     }
                     else
                     {
@@ -232,7 +232,7 @@ namespace RockWeb.Blocks.Core
                 new NoteTypeService( rockContext ).Reorder( noteTypes, e.OldIndex, e.NewIndex );
                 rockContext.SaveChanges();
 
-                noteTypes.ForEach( t => NoteTypeCache.Flush( t.Id ) );
+                noteTypes.ForEach( t => CacheNoteType.Remove( t.Id ) );
             }
 
             BindGrid();
@@ -284,8 +284,8 @@ namespace RockWeb.Blocks.Core
             {
                 rockContext.SaveChanges();
 
-                NoteTypeCache.Flush( noteType.Id );
-                NoteTypeCache.FlushEntityNoteTypes();
+                CacheNoteType.Remove( noteType.Id );
+                CacheNoteType.RemoveEntityNoteTypes();
 
                 hfIdValue.Value = string.Empty;
                 modalDetails.Hide();

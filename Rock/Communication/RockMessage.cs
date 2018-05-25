@@ -21,7 +21,7 @@ using System.Linq;
 using System.Web;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Communication
 {
@@ -255,7 +255,7 @@ namespace Rock.Communication
             {
                 if ( this._recipients.Any() )
                 {
-                    var mediumEntity = EntityTypeCache.Read( MediumEntityTypeId );
+                    var mediumEntity = CacheEntityType.Get( MediumEntityTypeId );
                     if ( mediumEntity != null )
                     {
                         var medium = MediumContainer.GetComponent( mediumEntity.Name );

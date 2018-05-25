@@ -12,7 +12,7 @@
                         </div>
                         <div class="panel-body">
 
-                            <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                            <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
 
                             <div class="row">
                                 <div class="col-md-6">
@@ -158,7 +158,8 @@
                         {
                             $('#' + '<%=btnSave.ClientID %>').addClass('disabled');
                             var newItemIndex = $(ui.item).prevAll('.panel-widget').length;
-                            __doPostBack('<%=upReport.ClientID %>', 're-order-panel-widget:' + ui.item.attr('id') + ';' + newItemIndex);
+                            var postbackArg = 're-order-panel-widget:' + ui.item.attr('id') + ';' + newItemIndex;
+                            window.location = "javascript:__doPostBack('<%=upReport.ClientID %>', '" +  postbackArg + "')";
                         }
                     }
                 });

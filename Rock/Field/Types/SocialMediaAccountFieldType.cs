@@ -21,7 +21,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock.Data;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -272,11 +272,12 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( control != null && control is TextBox )
+            var editControl = control as TextBox;
+            if ( editControl != null )
             {
                 if ( configurationValues != null && configurationValues.ContainsKey( "baseurl" ) )
                 {
-                    string value = ( ( TextBox ) control ).Text;
+                    string value = editControl.Text;
                     if ( !value.StartsWith( configurationValues[BASEURL].Value ) && !string.IsNullOrEmpty( value ) )
                     {
                         return string.Format( "{0}{1}", configurationValues[BASEURL].Value, value );
@@ -298,15 +299,23 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value != null && control != null && control is TextBox && !string.IsNullOrEmpty( value ) )
+            var editControl = control as TextBox;
+            if ( editControl != null )
             {
-                try
+                if ( string.IsNullOrEmpty( value ) )
                 {
-                    ( (TextBox)control ).Text = new Uri( value ).Segments.Last();
+                    editControl.Text = value;
                 }
-                catch
+                else
                 {
-                    ( (TextBox)control ).Text = value;
+                    try
+                    {
+                        editControl.Text = new Uri( value ).Segments.Last();
+                    }
+                    catch
+                    {
+                        editControl.Text = value;
+                    }
                 }
             }
         }

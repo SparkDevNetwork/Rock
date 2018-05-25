@@ -1,8 +1,8 @@
-﻿// These classes are used to map v4 FontAwesome classes to v5
+// These classes are used to map v4 FontAwesome classes to v5
 // and make v5 a bit more flexible allowing .fa to be dynamically
 // mapped.
 
-/* 
+/*
   Summary of customizations for Rock:
   1. Make sure the _update-map.less file is in place
   2. Make 'virtual links' mixins.less -> _mixins.less and variables.less -> _variables.less to support older Rock themes
@@ -13,7 +13,7 @@
 
 .fa {
   font-family: @fa-font-face;
-  font-weight: @fa-theme-weight; 
+  font-weight: @fa-theme-weight;
 }
 
 /* prefix start */
@@ -33,9 +33,10 @@
 }
 
 .fab {
-  font-family: '@{fa-font-face} Brands';
+  font-family: "@{fa-font-face} Brands";
   font-weight: normal;
 }
+
 /* prefix end */
 
 // overrides for key icons
@@ -47,8 +48,8 @@
 
 .fa.fa-rating-unselected:before,
 .fa.fa-rating-off:before {
-  content: @fa-var-star;
   font-weight: @fa-theme-weight-outline;
+  content: @fa-var-star;
 }
 
 // map all the missing v4 icons to fontawesome
@@ -185,6 +186,56 @@
 .fa.fa-times-rectangle {
   font-family: @fa-font-face;
   font-weight: @fa-theme-weight;
+}
+
+.fa-fw {
+  width: 1.25em;
+  text-align: center;
+}
+
+.fa-layers {
+  position: relative;
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  text-align: center;
+  vertical-align: -.125em;
+
+  i {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    margin: auto;
+  }
+}
+
+.fa-layers-counter {
+  top: 0;
+  right: 0;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  min-width: 1.5em;
+  max-width: 5em;
+  height: 1.5em;
+  padding: .25em;
+  overflow: hidden;
+  line-height: 1;
+  color: #fff;
+  text-overflow: ellipsis;
+  background-color: @brand-danger;
+  border-radius: 1em;
+  -webkit-transform: scale(.25);
+  transform: scale(.25);
+  -webkit-transform-origin: top right;
+  transform-origin: top right;
+}
+
+.fa-layers-counter, .fa-layers-text {
+  position: absolute;
+  display: inline-block;
+  text-align: center;
 }
 
 // mapping for brand icons
@@ -529,7 +580,7 @@
 .fa.fa-fa,
 .fa.fa-eercast
 {
-  font-family: '@{fa-font-face} Brands';
+  font-family: "@{fa-font-face} Brands";
   font-weight: normal !important;
 }
 
@@ -678,286 +729,272 @@
 }
 
 // set content for v4 missing icons
-.fa-glass:before { content: @fa-var-glass-martini; }
-.fa-star-o:before { content: @fa-var-star; }
-.fa-remove:before { content: @fa-var-times; }
-.fa-close:before { content: @fa-var-times; }
-.fa-gear:before { content: @fa-var-cog; }
-.fa-trash-o:before { content: @fa-var-trash-alt; }
-.fa-file-o:before { content: @fa-var-file; }
-.fa-clock-o:before { content: @fa-var-clock; }
+.fa-address-book-o:before { content: @fa-var-address-book; }
+.fa-address-card-o:before { content: @fa-var-address-card; }
+.fa-area-chart:before { content: @fa-var-chart-area; }
 .fa-arrow-circle-o-down:before { content: @fa-var-arrow-alt-circle-down; }
+.fa-arrow-circle-o-left:before { content: @fa-var-arrow-alt-circle-left; }
+.fa-arrow-circle-o-right:before { content: @fa-var-arrow-alt-circle-right; }
 .fa-arrow-circle-o-up:before { content: @fa-var-arrow-alt-circle-up; }
-.fa-play-circle-o:before { content: @fa-var-play-circle; }
-.fa-repeat:before { content: @fa-var-redo; }
-.fa-rotate-right:before { content: @fa-var-redo; }
-.fa-refresh:before { content: @fa-var-sync; }
-.fa-dedent:before { content: @fa-var-outdent; }
-.fa-video-camera:before { content: @fa-var-video; }
-.fa-picture-o:before { content: @fa-var-image; }
-.fa-photo:before { content: @fa-var-image; }
-.fa-image:before { content: @fa-var-image; }
-.fa-pencil:before { content: @fa-var-pencil-alt; }
-.fa-map-marker:before { content: @fa-var-map-marker-alt; }
-.fa-pencil-square-o:before { content: @fa-var-edit; }
-.fa-share-square-o:before { content: @fa-var-share-square; }
-.fa-check-square-o:before { content: @fa-var-check-square; }
 .fa-arrows:before { content: @fa-var-arrows-alt; }
-.fa-times-circle-o:before { content: @fa-var-times-circle; }
-.fa-check-circle-o:before { content: @fa-var-check-circle; }
-.fa-mail-forward:before { content: @fa-var-share; }
-.fa-warning:before { content: @fa-var-exclamation-triangle; }
-.fa-calendar:before { content: @fa-var-calendar-alt; }
-.fa-arrows-v:before { content: @fa-var-arrows-alt-v; }
-.fa-arrows-h:before { content: @fa-var-arrows-alt-h; }
-.fa-bar-chart:before { content: @fa-var-chart-bar; }
-.fa-bar-chart-o:before { content: @fa-var-chart-bar; }
-.fa-gears:before { content: @fa-var-cogs; }
-.fa-thumbs-o-up:before { content: @fa-var-thumbs-up; }
-.fa-thumbs-o-down:before { content: @fa-var-thumbs-down; }
-.fa-heart-o:before { content: @fa-var-heart; }
-.fa-sign-out:before { content: @fa-var-sign-out-alt; }
-.fa-linkedin-square:before { content: @fa-var-linkedin; }
-.fa-thumb-tack:before { content: @fa-var-thumbtack; }
-.fa-external-link:before { content: @fa-var-external-link-alt; }
-.fa-sign-in:before { content: @fa-var-sign-in-alt; }
-.fa-lemon-o:before { content: @fa-var-lemon; }
-.fa-square-o:before { content: @fa-var-square; }
-.fa-bookmark-o:before { content: @fa-var-bookmark; }
-.fa-facebook:before { content: @fa-var-facebook-f; }
-.fa-facebook-f:before { content: @fa-var-facebook-f; }
-.fa-feed:before { content: @fa-var-rss; }
-.fa-hdd-o:before { content: @fa-var-hdd; }
-.fa-hand-o-right:before { content: @fa-var-hand-point-right; }
-.fa-hand-o-left:before { content: @fa-var-hand-point-left; }
-.fa-hand-o-up:before { content: @fa-var-hand-point-up; }
-.fa-hand-o-down:before { content: @fa-var-hand-point-down; }
 .fa-arrows-alt:before { content: @fa-var-expand-arrows-alt; }
-.fa-group:before { content: @fa-var-users; }
+.fa-arrows-h:before { content: @fa-var-arrows-alt-h; }
+.fa-arrows-v:before { content: @fa-var-arrows-alt-v; }
+.fa-asl-interpreting:before { content: @fa-var-american-sign-language-interpreting; }
+.fa-automobile:before { content: @fa-var-car; }
+.fa-bank:before { content: @fa-var-university; }
+.fa-bar-chart-o:before { content: @fa-var-chart-bar; }
+.fa-bar-chart:before { content: @fa-var-chart-bar; }
+.fa-bathtub:before { content: @fa-var-bath; }
+.fa-battery:before { content: @fa-var-battery-full; }
+.fa-battery-0:before { content: @fa-var-battery-empty; }
+.fa-battery-1:before { content: @fa-var-battery-quarter; }
+.fa-battery-2:before { content: @fa-var-battery-half; }
+.fa-battery-3:before { content: @fa-var-battery-three-quarters; }
+.fa-battery-4:before { content: @fa-var-battery-full; }
+.fa-bell-o:before { content: @fa-var-bell; }
+.fa-bell-slash-o:before { content: @fa-var-bell-slash; }
+.fa-bitbucket-square:before { content: @fa-var-bitbucket; }
+.fa-bitcoin:before { content: @fa-var-btc; }
+.fa-bookmark-o:before { content: @fa-var-bookmark; }
+.fa-building-o:before { content: @fa-var-building; }
+.fa-cab:before { content: @fa-var-taxi; }
+.fa-calendar:before { content: @fa-var-calendar-alt; }
+.fa-calendar-alt:before { content: @fa-var-calendar; }
+.fa-calendar-check-o:before { content: @fa-var-calendar-check; }
+.fa-calendar-minus-o:before { content: @fa-var-calendar-minus; }
+.fa-calendar-o:before { content: @fa-var-calendar; }
+.fa-calendar-plus-o:before { content: @fa-var-calendar-plus; }
+.fa-calendar-times-o:before { content: @fa-var-calendar-times; }
+.fa-caret-square-o-down:before { content: @fa-var-caret-square-down; }
+.fa-caret-square-o-left:before { content: @fa-var-caret-square-left; }
+.fa-caret-square-o-right:before { content: @fa-var-caret-square-right; }
+.fa-caret-square-o-up:before { content: @fa-var-caret-square-up; }
+.fa-cc:before { content: @fa-var-closed-captioning; }
 .fa-chain:before { content: @fa-var-link; }
-.fa-scissors:before { content: @fa-var-cut; }
-.fa-files-o:before { content: @fa-var-copy; }
-.fa-floppy-o:before { content: @fa-var-save; }
-.fa-navicon:before { content: @fa-var-bars; }
-.fa-reorder:before { content: @fa-var-bars; }
-.fa-google-plus:before { content: @fa-var-google-plus-g; }
-.fa-money:before { content: @fa-var-money-bill-alt; }
-.fa-unsorted:before { content: @fa-var-sort; }
-.fa-sort-desc:before { content: @fa-var-sort-down; }
-.fa-sort-asc:before { content: @fa-var-sort-up; }
-.fa-linkedin:before { content: @fa-var-linkedin-in; }
-.fa-rotate-left:before { content: @fa-var-undo; }
-.fa-legal:before { content: @fa-var-gavel; }
-.fa-tachometer:before { content: @fa-var-tachometer-alt; }
-.fa-dashboard:before { content: @fa-var-tachometer-alt; }
-.fa-comment-o:before { content: @fa-var-comment; }
-.fa-comments-o:before { content: @fa-var-comments; }
-.fa-flash:before { content: @fa-var-bolt; }
-.fa-paste:before { content: @fa-var-clipboard; }
-.fa-lightbulb-o:before { content: @fa-var-lightbulb; }
-.fa-exchange:before { content: @fa-var-exchange-alt; }
+.fa-chain-broken:before { content: @fa-var-unlink; }
+.fa-check-circle-o:before { content: @fa-var-check-circle; }
+.fa-check-square-o:before { content: @fa-var-check-square; }
+.fa-circle-o-notch:before { content: @fa-var-circle-notch; }
+.fa-circle-o:before { content: @fa-var-circle; }
+.fa-circle-thin:before { content: @fa-var-circle; }
+.fa-clock-o:before { content: @fa-var-clock; }
+.fa-close:before { content: @fa-var-times; }
 .fa-cloud-download:before { content: @fa-var-cloud-download-alt; }
 .fa-cloud-upload:before { content: @fa-var-cloud-upload-alt; }
-.fa-bell-o:before { content: @fa-var-bell; }
+.fa-cny:before, .fa-jpy:before, .fa-rmb:before, .fa-yen:before { content: @fa-var-yen-sign; }
+.fa-code-fork:before { content: @fa-var-code-branch; }
+.fa-comment-o:before { content: @fa-var-comment; }
+.fa-commenting-o:before { content: @fa-var-comment-alt; }
+.fa-commenting:before { content: @fa-var-comment-alt; }
+.fa-comments-o:before { content: @fa-var-comments; }
+.fa-credit-card-alt:before { content: @fa-var-credit-card; }
 .fa-cutlery:before { content: @fa-var-utensils; }
+.fa-dashboard:before { content: @fa-var-tachometer-alt; }
+.fa-deafness:before { content: @fa-var-deaf; }
+.fa-dedent:before { content: @fa-var-outdent; }
+.fa-diamond:before { content: @fa-var-gem; }
+.fa-dollar:before, .fa-usd:before { content: @fa-var-dollar-sign; }
+.fa-dot-circle-o:before { content: @fa-var-dot-circle; }
+.fa-drivers-license-o:before { content: @fa-var-id-card; }
+.fa-drivers-license:before { content: @fa-var-id-card; }
+.fa-eercast:before { content: @fa-var-sellcast; }
+.fa-envelope-o:before { content: @fa-var-envelope; }
+.fa-envelope-open-o:before { content: @fa-var-envelope-open; }
+.fa-eur:before, .fa-euro:before { content: @fa-var-euro-sign; }
+.fa-exchange:before { content: @fa-var-exchange-alt; }
+.fa-external-link-square:before { content: @fa-var-external-link-square-alt; }
+.fa-external-link:before { content: @fa-var-external-link-alt; }
+.fa-eyedropper:before { content: @fa-var-eye-dropper; }
+.fa-fa:before { content: @fa-var-font-awesome; }
+.fa-facebook-f:before { content: @fa-var-facebook-f; }
+.fa-facebook-official:before { content: @fa-var-facebook; }
+.fa-facebook:before { content: @fa-var-facebook-f; }
+.fa-feed:before { content: @fa-var-rss; }
+.fa-file-archive-o:before { content: @fa-var-file-archive; }
+.fa-file-audio-o:before { content: @fa-var-file-audio; }
+.fa-file-code-o:before { content: @fa-var-file-code; }
+.fa-file-excel-o:before { content: @fa-var-file-excel; }
+.fa-file-image-o:before { content: @fa-var-file-image; }
+.fa-file-movie-o:before { content: @fa-var-file-video; }
+.fa-file-o:before { content: @fa-var-file; }
+.fa-file-pdf-o:before { content: @fa-var-file-pdf; }
+.fa-file-photo-o:before { content: @fa-var-file-image; }
+.fa-file-picture-o:before { content: @fa-var-file-image; }
+.fa-file-powerpoint-o:before { content: @fa-var-file-powerpoint; }
+.fa-file-sound-o:before { content: @fa-var-file-audio; }
 .fa-file-text-o:before { content: @fa-var-file-alt; }
-.fa-building-o:before { content: @fa-var-building; }
-.fa-hospital-o:before { content: @fa-var-hospital; }
-.fa-tablet:before { content: @fa-var-tablet-alt; }
-.fa-mobile:before { content: @fa-var-mobile-alt; }
-.fa-mobile-phone:before { content: @fa-var-mobile-alt; }
-.fa-circle-o:before { content: @fa-var-circle; }
-.fa-mail-reply:before { content: @fa-var-reply; }
+.fa-file-text:before { content: @fa-var-file-alt; }
+.fa-file-video-o:before { content: @fa-var-file-video; }
+.fa-file-word-o:before { content: @fa-var-file-word; }
+.fa-file-zip-o:before { content: @fa-var-file-archive; }
+.fa-files-o:before { content: @fa-var-copy; }
+.fa-flag-o:before { content: @fa-var-flag; }
+.fa-flash:before { content: @fa-var-bolt; }
+.fa-floppy-o:before { content: @fa-var-save; }
 .fa-folder-o:before { content: @fa-var-folder; }
 .fa-folder-open-o:before { content: @fa-var-folder-open; }
-.fa-smile-o:before { content: @fa-var-smile; }
 .fa-frown-o:before { content: @fa-var-frown; }
-.fa-meh-o:before { content: @fa-var-meh; }
-.fa-keyboard-o:before { content: @fa-var-keyboard; }
-.fa-flag-o:before { content: @fa-var-flag; }
-.fa-mail-reply-all:before { content: @fa-var-reply-all; }
-.fa-star-half-o:before { content: @fa-var-star-half; }
-.fa-star-half-empty:before { content: @fa-var-star-half; }
-.fa-star-half-full:before { content: @fa-var-star-half; }
-.fa-code-fork:before { content: @fa-var-code-branch; }
-.fa-chain-broken:before { content: @fa-var-unlink; }
-.fa-shield:before { content: @fa-var-shield-alt; }
-.fa-calendar-o:before { content: @fa-var-calendar; }
-.fa-ticket:before { content: @fa-var-ticket-alt; }
-.fa-minus-square-o:before { content: @fa-var-minus-square; }
-.fa-level-up:before { content: @fa-var-level-up-alt; }
-.fa-level-down:before { content: @fa-var-level-down-alt; }
-.fa-pencil-square:before { content: @fa-var-pen-square; }
-.fa-external-link-square:before { content: @fa-var-external-link-square-alt; }
-.fa-caret-square-o-down:before { content: @fa-var-caret-square-down; }
-.fa-toggle-down:before { content: @fa-var-caret-square-down; }
-.fa-caret-square-o-up:before { content: @fa-var-caret-square-up; }
-.fa-toggle-up:before { content: @fa-var-caret-square-up; }
-.fa-caret-square-o-right:before { content: @fa-var-caret-square-right; }
-.fa-toggle-right:before { content: @fa-var-caret-square-right; }
-.fa-eur:before { content: @fa-var-euro-sign; }
-.fa-euro:before { content: @fa-var-euro-sign; }
+.fa-futbol-o:before { content: @fa-var-futbol; }
 .fa-gbp:before { content: @fa-var-pound-sign; }
-.fa-usd:before { content: @fa-var-dollar-sign; }
-.fa-dollar:before { content: @fa-var-dollar-sign; }
+.fa-ge:before { content: @fa-var-empire; }
+.fa-gear:before { content: @fa-var-cog; }
+.fa-gears:before { content: @fa-var-cogs; }
+.fa-gittip:before { content: @fa-var-gratipay; }
+.fa-glass:before { content: @fa-var-glass-martini; }
+.fa-google-plus-circle:before, .fa-google-plus-official:before { content: @fa-var-google-plus; }
+.fa-google-plus:before { content: @fa-var-google-plus-g; }
+.fa-group:before { content: @fa-var-users; }
+.fa-hand-grab-o:before { content: @fa-var-hand-rock; }
+.fa-hand-lizard-o:before { content: @fa-var-hand-lizard; }
+.fa-hand-o-down:before { content: @fa-var-hand-point-down; }
+.fa-hand-o-left:before { content: @fa-var-hand-point-left; }
+.fa-hand-o-right:before { content: @fa-var-hand-point-right; }
+.fa-hand-o-up:before { content: @fa-var-hand-point-up; }
+.fa-hand-paper-o:before { content: @fa-var-hand-paper; }
+.fa-hand-peace-o:before { content: @fa-var-hand-peace; }
+.fa-hand-pointer-o:before { content: @fa-var-hand-pointer; }
+.fa-hand-rock-o:before { content: @fa-var-hand-rock; }
+.fa-hand-scissors-o:before { content: @fa-var-hand-scissors; }
+.fa-hand-spock-o:before { content: @fa-var-hand-spock; }
+.fa-hand-stop-o:before { content: @fa-var-hand-paper; }
+.fa-handshake-o:before { content: @fa-var-handshake; }
+.fa-hard-of-hearing:before { content: @fa-var-deaf; }
+.fa-hdd-o:before { content: @fa-var-hdd; }
+.fa-header:before { content: @fa-var-heading; }
+.fa-heart-o:before { content: @fa-var-heart; }
+.fa-hospital-o:before { content: @fa-var-hospital; }
+.fa-hotel:before { content: @fa-var-bed; }
+.fa-hourglass-1:before { content: @fa-var-hourglass-start; }
+.fa-hourglass-2:before { content: @fa-var-hourglass-half; }
+.fa-hourglass-3:before { content: @fa-var-hourglass-end; }
+.fa-hourglass-o:before { content: @fa-var-hourglass; }
+.fa-id-card-o:before { content: @fa-var-id-card; }
+.fa-ils:before { content: @fa-var-shekel-sign; }
+.fa-image:before { content: @fa-var-image; }
 .fa-inr:before { content: @fa-var-rupee-sign; }
-.fa-rupee:before { content: @fa-var-rupee-sign; }
-.fa-jpy:before { content: @fa-var-yen-sign; }
-.fa-cny:before { content: @fa-var-yen-sign; }
-.fa-rmb:before { content: @fa-var-yen-sign; }
-.fa-yen:before { content: @fa-var-yen-sign; }
-.fa-rub:before { content: @fa-var-ruble-sign; }
-.fa-ruble:before { content: @fa-var-ruble-sign; }
+.fa-institution:before { content: @fa-var-university; }
+.fa-intersex:before { content: @fa-var-transgender; }
+.fa-keyboard-o:before { content: @fa-var-keyboard; }
+.fa-krw:before, .fa-won:before { content: @fa-var-won-sign; }
+.fa-legal:before { content: @fa-var-gavel; }
+.fa-lemon-o:before { content: @fa-var-lemon; }
+.fa-level-down:before { content: @fa-var-level-down-alt; }
+.fa-level-up:before { content: @fa-var-level-up-alt; }
+.fa-life-bouy:before, .fa-life-saver:before { content: @fa-var-life-ring; }
+.fa-lightbulb-o:before { content: @fa-var-lightbulb; }
+.fa-line-chart:before { content: @fa-var-chart-line; }
+.fa-linkedin:before { content: @fa-var-linkedin-in; }
+.fa-linkedin-square:before { content: @fa-var-linkedin; }
+.fa-long-arrow-down:before { content: @fa-var-long-arrow-alt-down; }
+.fa-long-arrow-left:before { content: @fa-var-long-arrow-alt-left; }
+.fa-long-arrow-right:before { content: @fa-var-long-arrow-alt-right; }
+.fa-long-arrow-up:before { content: @fa-var-long-arrow-alt-up; }
+.fa-mail-forward:before { content: @fa-var-share; }
+.fa-mail-reply-all:before { content: @fa-var-reply-all; }
+.fa-mail-reply:before { content: @fa-var-reply; }
+.fa-map-marker:before { content: @fa-var-map-marker-alt; }
+.fa-map-o:before { content: @fa-var-map; }
+.fa-meanpath:before { content: @fa-var-font-awesome; }
+.fa-meh-o:before { content: @fa-var-meh; }
+.fa-minus-square-o:before { content: @fa-var-minus-square; }
+.fa-mobile-phone:before { content: @fa-var-mobile-alt; }
+.fa-mobile:before { content: @fa-var-mobile-alt; }
+.fa-money:before { content: @fa-var-money-bill-alt; }
+.fa-moon-o:before { content: @fa-var-moon; }
+.fa-mortar-board:before { content: @fa-var-graduation-cap; }
+.fa-navicon:before { content: @fa-var-bars; }
+.fa-newspaper-o:before { content: @fa-var-newspaper; }
+.fa-paper-plane-o:before { content: @fa-var-paper-plane; }
+.fa-paste:before { content: @fa-var-clipboard; }
+.fa-pause-circle-o:before { content: @fa-var-pause-circle; }
+.fa-pencil-square-o:before { content: @fa-var-edit; }
+.fa-pencil-square:before { content: @fa-var-pen-square; }
+.fa-pencil:before { content: @fa-var-pencil-alt; }
+.fa-photo:before { content: @fa-var-image; }
+.fa-picture-o:before { content: @fa-var-image; }
+.fa-pie-chart:before { content: @fa-var-chart-pie; }
+.fa-play-circle-o:before { content: @fa-var-play-circle; }
+.fa-plus-square-o:before { content: @fa-var-plus-square; }
+.fa-question-circle-o:before { content: @fa-var-question-circle; }
+.fa-ra:before { content: @fa-var-rebel; }
+.fa-refresh:before { content: @fa-var-sync; }
+.fa-remove:before { content: @fa-var-times; }
+.fa-reorder:before { content: @fa-var-bars; }
+.fa-repeat:before { content: @fa-var-redo; }
+.fa-resistance:before { content: @fa-var-rebel; }
+.fa-rotate-left:before { content: @fa-var-undo; }
+.fa-rotate-right:before { content: @fa-var-redo; }
 .fa-rouble:before { content: @fa-var-ruble-sign; }
-.fa-krw:before { content: @fa-var-won-sign; }
-.fa-won:before { content: @fa-var-won-sign; }
-.fa-bitcoin:before { content: @fa-var-btc; }
-.fa-file-text:before { content: @fa-var-file-alt; }
+.fa-rub:before, .fa-ruble:before { content: @fa-var-ruble-sign; }
+.fa-rupee:before { content: @fa-var-rupee-sign; }
+.fa-s15:before { content: @fa-var-bath; }
+.fa-scissors:before { content: @fa-var-cut; }
+.fa-send-o:before { content: @fa-var-paper-plane; }
+.fa-send:before { content: @fa-var-paper-plane; }
+.fa-share-square-o:before { content: @fa-var-share-square; }
+.fa-shekel:before, .fa-sheqel:before { content: @fa-var-shekel-sign; }
+.fa-shield:before { content: @fa-var-shield-alt; }
+.fa-sign-in:before { content: @fa-var-sign-in-alt; }
+.fa-sign-out:before { content: @fa-var-sign-out-alt; }
+.fa-signing:before { content: @fa-var-sign-language; }
+.fa-sliders:before { content: @fa-var-sliders-h; }
+.fa-smile-o:before { content: @fa-var-smile; }
+.fa-snowflake-o:before { content: @fa-var-snowflake; }
+.fa-soccer-ball-o:before { content: @fa-var-futbol; }
 .fa-sort-alpha-asc:before { content: @fa-var-sort-alpha-down; }
 .fa-sort-alpha-desc:before { content: @fa-var-sort-alpha-up; }
 .fa-sort-amount-asc:before { content: @fa-var-sort-amount-down; }
 .fa-sort-amount-desc:before { content: @fa-var-sort-amount-up; }
+.fa-sort-asc:before { content: @fa-var-sort-up; }
+.fa-sort-desc:before { content: @fa-var-sort-down; }
 .fa-sort-numeric-asc:before { content: @fa-var-sort-numeric-down; }
 .fa-sort-numeric-desc:before { content: @fa-var-sort-numeric-up; }
-.fa-youtube-square:before { content: @fa-var-youtube; }
-.fa-youtube-play:before { content: @fa-var-youtube; }
-.fa-bitbucket-square:before { content: @fa-var-bitbucket; }
-.fa-long-arrow-down:before { content: @fa-var-long-arrow-alt-down; }
-.fa-long-arrow-up:before { content: @fa-var-long-arrow-alt-up; }
-.fa-long-arrow-left:before { content: @fa-var-long-arrow-alt-left; }
-.fa-long-arrow-right:before { content: @fa-var-long-arrow-alt-right; }
-.fa-gittip:before { content: @fa-var-gratipay; }
-.fa-sun-o:before { content: @fa-var-sun; }
-.fa-moon-o:before { content: @fa-var-moon; }
-.fa-arrow-circle-o-right:before { content: @fa-var-arrow-alt-circle-right; }
-.fa-arrow-circle-o-left:before { content: @fa-var-arrow-alt-circle-left; }
-.fa-caret-square-o-left:before { content: @fa-var-caret-square-left; }
-.fa-toggle-left:before { content: @fa-var-caret-square-left; }
-.fa-dot-circle-o:before { content: @fa-var-dot-circle; }
-.fa-try:before { content: @fa-var-lira-sign; }
-.fa-turkish-lira:before { content: @fa-var-lira-sign; }
-.fa-plus-square-o:before { content: @fa-var-plus-square; }
-.fa-institution:before { content: @fa-var-university; }
-.fa-bank:before { content: @fa-var-university; }
-.fa-mortar-board:before { content: @fa-var-graduation-cap; }
 .fa-spoon:before { content: @fa-var-utensil-spoon; }
-.fa-automobile:before { content: @fa-var-car; }
-.fa-cab:before { content: @fa-var-taxi; }
-.fa-envelope-o:before { content: @fa-var-envelope; }
-.fa-file-pdf-o:before { content: @fa-var-file-pdf; }
-.fa-file-word-o:before { content: @fa-var-file-word; }
-.fa-file-excel-o:before { content: @fa-var-file-excel; }
-.fa-file-powerpoint-o:before { content: @fa-var-file-powerpoint; }
-.fa-file-image-o:before { content: @fa-var-file-image; }
-.fa-file-photo-o:before { content: @fa-var-file-image; }
-.fa-file-picture-o:before { content: @fa-var-file-image; }
-.fa-file-archive-o:before { content: @fa-var-file-archive; }
-.fa-file-zip-o:before { content: @fa-var-file-archive; }
-.fa-file-audio-o:before { content: @fa-var-file-audio; }
-.fa-file-sound-o:before { content: @fa-var-file-audio; }
-.fa-file-video-o:before { content: @fa-var-file-video; }
-.fa-file-movie-o:before { content: @fa-var-file-video; }
-.fa-file-code-o:before { content: @fa-var-file-code; }
-.fa-life-bouy:before { content: @fa-var-life-ring; }
-.fa-life-buoy:before { content: @fa-var-life-ring; }
-.fa-life-saver:before { content: @fa-var-life-ring; }
-.fa-support:before { content: @fa-var-life-ring; }
-.fa-circle-o-notch:before { content: @fa-var-circle-notch; }
-.fa-ra:before { content: @fa-var-rebel; }
-.fa-resistance:before { content: @fa-var-rebel; }
-.fa-ge:before { content: @fa-var-empire; }
-.fa-y-combinator-square:before { content: @fa-var-hacker-news; }
-.fa-yc-square:before { content: @fa-var-hacker-news; }
-.fa-wechat:before { content: @fa-var-weixin; }
-.fa-send:before { content: @fa-var-paper-plane; }
-.fa-paper-plane-o:before { content: @fa-var-paper-plane; }
-.fa-send-o:before { content: @fa-var-paper-plane; }
-.fa-circle-thin:before { content: @fa-var-circle; }
-.fa-header:before { content: @fa-var-heading; }
-.fa-sliders:before { content: @fa-var-sliders-h; }
-.fa-futbol-o:before { content: @fa-var-futbol; }
-.fa-soccer-ball-o:before { content: @fa-var-futbol; }
-.fa-newspaper-o:before { content: @fa-var-newspaper; }
-.fa-bell-slash-o:before { content: @fa-var-bell-slash; }
-.fa-trash:before { content: @fa-var-trash-alt; }
-.fa-eyedropper:before { content: @fa-var-eye-dropper; }
-.fa-area-chart:before { content: @fa-var-chart-area; }
-.fa-pie-chart:before { content: @fa-var-chart-pie; }
-.fa-line-chart:before { content: @fa-var-chart-line; }
-.fa-cc:before { content: @fa-var-closed-captioning; }
-.fa-ils:before { content: @fa-var-shekel-sign; }
-.fa-shekel:before { content: @fa-var-shekel-sign; }
-.fa-sheqel:before { content: @fa-var-shekel-sign; }
-.fa-meanpath:before { content: @fa-var-font-awesome; }
-.fa-diamond:before { content: @fa-var-gem; }
-.fa-intersex:before { content: @fa-var-transgender; }
-.fa-facebook-official:before { content: @fa-var-facebook; }
-.fa-hotel:before { content: @fa-var-bed; }
-.fa-yc:before { content: @fa-var-y-combinator; }
-.fa-battery-4:before { content: @fa-var-battery-full; }
-.fa-battery:before { content: @fa-var-battery-full; }
-.fa-battery-3:before { content: @fa-var-battery-three-quarters; }
-.fa-battery-2:before { content: @fa-var-battery-half; }
-.fa-battery-1:before { content: @fa-var-battery-quarter; }
-.fa-battery-0:before { content: @fa-var-battery-empty; }
+.fa-square-o:before { content: @fa-var-square; }
+.fa-star-half-empty:before { content: @fa-var-star-half; }
+.fa-star-half-full:before { content: @fa-var-star-half; }
+.fa-star-half-o:before { content: @fa-var-star-half; }
+.fa-star-o:before { content: @fa-var-star; }
 .fa-sticky-note-o:before { content: @fa-var-sticky-note; }
-.fa-hourglass-o:before { content: @fa-var-hourglass; }
-.fa-hourglass-1:before { content: @fa-var-hourglass-start; }
-.fa-hourglass-2:before { content: @fa-var-hourglass-half; }
-.fa-hourglass-3:before { content: @fa-var-hourglass-end; }
-.fa-hand-rock-o:before { content: @fa-var-hand-rock; }
-.fa-hand-grab-o:before { content: @fa-var-hand-rock; }
-.fa-hand-paper-o:before { content: @fa-var-hand-paper; }
-.fa-hand-stop-o:before { content: @fa-var-hand-paper; }
-.fa-hand-scissors-o:before { content: @fa-var-hand-scissors; }
-.fa-hand-lizard-o:before { content: @fa-var-hand-lizard; }
-.fa-hand-spock-o:before { content: @fa-var-hand-spock; }
-.fa-hand-pointer-o:before { content: @fa-var-hand-pointer; }
-.fa-hand-peace-o:before { content: @fa-var-hand-peace; }
-.fa-television:before { content: @fa-var-tv; }
-.fa-calendar-plus-o:before { content: @fa-var-calendar-plus; }
-.fa-calendar-minus-o:before { content: @fa-var-calendar-minus; }
-.fa-calendar-times-o:before { content: @fa-var-calendar-times; }
-.fa-calendar-check-o:before { content: @fa-var-calendar-check; }
-.fa-map-o:before { content: @fa-var-map; }
-.fa-commenting:before { content: @fa-var-comment-alt; }
-.fa-commenting-o:before { content: @fa-var-comment-alt; }
-.fa-vimeo:before { content: @fa-var-vimeo-v; }
-.fa-credit-card-alt:before { content: @fa-var-credit-card; }
-.fa-pause-circle-o:before { content: @fa-var-pause-circle; }
 .fa-stop-circle-o:before { content: @fa-var-stop-circle; }
-.fa-wheelchair-alt:before { content: @fa-var-accessible-icon; }
-.fa-question-circle-o:before { content: @fa-var-question-circle; }
-.fa-volume-control-phone:before { content: @fa-var-phone-volume; }
-.fa-asl-interpreting:before { content: @fa-var-american-sign-language-interpreting; }
-.fa-deafness:before { content: @fa-var-deaf; }
-.fa-hard-of-hearing:before { content: @fa-var-deaf; }
-.fa-signing:before { content: @fa-var-sign-language; }
-.fa-google-plus-official:before { content: @fa-var-google-plus; }
-.fa-google-plus-circle:before { content: @fa-var-google-plus; }
-.fa-fa:before { content: @fa-var-font-awesome; }
-.fa-handshake-o:before { content: @fa-var-handshake; }
-.fa-envelope-open-o:before { content: @fa-var-envelope-open; }
-.fa-address-book-o:before { content: @fa-var-address-book; }
-.fa-vcard:before { content: @fa-var-address-card; }
-.fa-address-card-o:before { content: @fa-var-address-card; }
-.fa-vcard-o:before { content: @fa-var-address-card; }
-.fa-user-circle-o:before { content: @fa-var-user-circle; }
-.fa-user-o:before { content: @fa-var-user; }
-.fa-drivers-license:before { content: @fa-var-id-card; }
-.fa-id-card-o:before { content: @fa-var-id-card; }
-.fa-drivers-license-o:before { content: @fa-var-id-card; }
+.fa-sun-o:before { content: @fa-var-sun; }
+.fa-support:before { content: @fa-var-life-ring; }
+.fa-tablet:before { content: @fa-var-tablet-alt; }
+.fa-tachometer:before { content: @fa-var-tachometer-alt; }
+.fa-television:before { content: @fa-var-tv; }
+.fa-thermometer-0:before { content: @fa-var-thermometer-empty; }
+.fa-thermometer-1:before { content: @fa-var-thermometer-quarter; }
+.fa-thermometer-2:before { content: @fa-var-thermometer-half; }
+.fa-thermometer-3:before { content: @fa-var-thermometer-three-quarters; }
 .fa-thermometer-4:before { content: @fa-var-thermometer-full; }
 .fa-thermometer:before { content: @fa-var-thermometer-full; }
-.fa-thermometer-3:before { content: @fa-var-thermometer-three-quarters; }
-.fa-thermometer-2:before { content: @fa-var-thermometer-half; }
-.fa-thermometer-1:before { content: @fa-var-thermometer-quarter; }
-.fa-thermometer-0:before { content: @fa-var-thermometer-empty; }
-.fa-bathtub:before { content: @fa-var-bath; }
-.fa-s15:before { content: @fa-var-bath; }
-.fa-times-rectangle:before { content: @fa-var-window-close; }
-.fa-window-close-o:before { content: @fa-var-window-close; }
+.fa-thumb-tack:before { content: @fa-var-thumbtack; }
+.fa-thumbs-o-down:before { content: @fa-var-thumbs-down; }
+.fa-thumbs-o-up:before { content: @fa-var-thumbs-up; }
+.fa-ticket:before { content: @fa-var-ticket-alt; }
+.fa-times-circle-o:before { content: @fa-var-times-circle; }
 .fa-times-rectangle-o:before { content: @fa-var-window-close; }
-.fa-eercast:before { content: @fa-var-sellcast; }
-.fa-snowflake-o:before { content: @fa-var-snowflake; }
-.fa-picture-o:before { content: @fa-var-image; }
+.fa-times-rectangle:before { content: @fa-var-window-close; }
+.fa-toggle-down:before { content: @fa-var-caret-square-down; }
+.fa-toggle-left:before { content: @fa-var-caret-square-left; }
+.fa-toggle-right:before { content: @fa-var-caret-square-right; }
+.fa-toggle-up:before { content: @fa-var-caret-square-up; }
+.fa-trash-o:before { content: @fa-var-trash-alt; }
+.fa-trash:before { content: @fa-var-trash-alt; }
+.fa-try:before, .fa-turkish-lira:before { content: @fa-var-lira-sign; }
+.fa-unsorted:before { content: @fa-var-sort; }
+.fa-user-circle-o:before { content: @fa-var-user-circle; }
+.fa-user-o:before { content: @fa-var-user; }
+.fa-vcard:before, .fa-vcard-o:before { content: @fa-var-address-card; }
+.fa-video-camera:before { content: @fa-var-video; }
+.fa-vimeo:before { content: @fa-var-vimeo-v; }
+.fa-volume-control-phone:before { content: @fa-var-phone-volume; }
+.fa-warning:before { content: @fa-var-exclamation-triangle; }
+.fa-wechat:before { content: @fa-var-weixin; }
+.fa-wheelchair-alt:before { content: @fa-var-accessible-icon; }
+.fa-window-close-o:before { content: @fa-var-window-close; }
+.fa-y-combinator-square:before { content: @fa-var-hacker-news; }
+.fa-yc-square:before { content: @fa-var-hacker-news; }
+.fa-yc:before { content: @fa-var-y-combinator; }
+.fa-youtube-play:before { content: @fa-var-youtube; }

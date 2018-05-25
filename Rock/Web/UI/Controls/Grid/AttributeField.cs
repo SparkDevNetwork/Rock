@@ -19,9 +19,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.UI.WebControls;
-using Rock.Attribute;
+
+using Rock.Cache;
+using Rock.Data;
 using Rock.Field.Types;
-using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -113,7 +114,7 @@ namespace Rock.Web.UI.Controls
                     dataItem.LoadAttributes();
                 }
 
-                AttributeCache attrib = null;
+                CacheAttribute attrib = null;
                 string rawValue = string.Empty;
 
                 bool exists = dataItem.Attributes.ContainsKey( this.DataField );
@@ -222,7 +223,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The attributes.
         /// </value>
-        public Dictionary<string, AttributeCache> Attributes { get; set; }
+        public Dictionary<string, CacheAttribute> Attributes { get; set; }
 
         /// <summary>
         /// Dictionary of all attributes and their value.  Key is the attribute key, and value is the associated attribute value
@@ -230,7 +231,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The attribute values.
         /// </value>
-        public Dictionary<string, AttributeValueCache> AttributeValues { get; set; }
+        public Dictionary<string, CacheAttributeValue> AttributeValues { get; set; }
 
         /// <summary>
         /// Gets the attribute value defaults.  This property can be used by a subclass to override the parent class's default
@@ -303,8 +304,8 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public AttributeFieldObject()
         {
-            Attributes = new Dictionary<string, AttributeCache>();
-            AttributeValues = new Dictionary<string, AttributeValueCache>();
+            Attributes = new Dictionary<string, CacheAttribute>();
+            AttributeValues = new Dictionary<string, CacheAttributeValue>();
         }
     }
 }

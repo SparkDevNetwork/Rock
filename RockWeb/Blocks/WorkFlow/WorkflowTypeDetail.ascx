@@ -26,7 +26,7 @@
             <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body container-fluid">
 
-                <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
                 <Rock:NotificationBox ID="nbValidationError" runat="server" NotificationBoxType="Danger" EnableViewState="false" />
 
                 <div id="pnlEditDetails" runat="server">
@@ -212,7 +212,8 @@
                     },
                     update: function (event, ui) {
                         {
-                            __doPostBack('<%=upDetail.ClientID %>', 're-order-activity:' + ui.item.attr('data-key') + ';' + ui.item.index());
+                            var postbackArg = 're-order-activity:' + ui.item.attr('data-key') + ';' + ui.item.index();
+                            window.location = "javascript:__doPostBack('<%=upDetail.ClientID %>', '" +  postbackArg + "')";
                         }
                     }
                 });
@@ -230,7 +231,8 @@
                     },
                     update: function (event, ui) {
                         {
-                            __doPostBack('<%=upDetail.ClientID %>', 're-order-action:' + ui.item.attr('data-key') + ';' + ui.item.index());
+                            var postbackArg = 're-order-action:' + ui.item.attr('data-key') + ';' + ui.item.index();
+                            window.location = "javascript:__doPostBack('<%=upDetail.ClientID %>', '" +  postbackArg + "')";
                         }
                     }
                 });
@@ -248,7 +250,8 @@
                     },
                     update: function (event, ui) {
                         {
-                            __doPostBack('<%=upDetail.ClientID %>', 're-order-formfield:' + ui.item.attr('data-key') + ';' + ui.item.index());
+                            var postbackArg = 're-order-formfield:' + ui.item.attr('data-key') + ';' + ui.item.index();
+                            window.location = "javascript:__doPostBack('<%=upDetail.ClientID %>', '" +  postbackArg + "')";
                         }
                     }
                 });

@@ -28,7 +28,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using System.ComponentModel;
 using Rock.Data;
-using Rock.Web.Cache;
+using Rock.Cache;
 using System.Text;
 using HtmlAgilityPack;
 using System.Web;
@@ -46,7 +46,7 @@ namespace RockWeb.Blocks.Cms
     [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve HTML content." )]
 
     [LavaCommandsField("Enabled Lava Commands", "The Lava commands that should be enabled for this HTML block.", false, order: 0)]
-    [BooleanField( "Use Code Editor", "Use the code editor instead of the WYSIWYG editor", true, "", 1 )]
+    [BooleanField( "Start in Code Editor mode", "Start the editor in code editor mode instead of WYSIWYG editor mode.", defaultValue: true, key:"UseCodeEditor", order:1 )]
     [TextField("Document Root Folder", "The folder to use as the root when browsing or uploading documents.", false, "~/Content", "", 2 )]
     [TextField( "Image Root Folder", "The folder to use as the root when browsing or uploading images.", false, "~/Content", "", 3 )]
     [BooleanField( "User Specific Folders", "Should the root folders be specific to current user?", false, "", 4 )]
@@ -445,7 +445,7 @@ namespace RockWeb.Blocks.Cms
                     v.ExpireDateTime
                 } ).ToList();
 
-            gVersions.EntityTypeId = EntityTypeCache.Read<HtmlContent>().Id;
+            gVersions.EntityTypeId = CacheEntityType.Get<HtmlContent>().Id;
             gVersions.DataSource = versions;
             
             gVersions.DataBind();
@@ -668,7 +668,7 @@ namespace RockWeb.Blocks.Cms
                         if ( content.Content.HasMergeFields() )
                         {
                             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-                            mergeFields.Add( "CurrentPage", this.PageCache );
+                            mergeFields.Add( "CurrentPage", this.CachePage );
 
                             if ( CurrentPerson != null )
                             {

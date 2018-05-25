@@ -116,7 +116,7 @@
     position: relative;
     display: table;
     max-width: 200px;
-    padding: 5px 5px 5px 5px;
+    padding: 5px;
     margin: 0 auto;
     background-color: @persondetails-bio-photo-border;
 
@@ -141,6 +141,10 @@
         color: #fff;
         opacity: 0;
         transition: 1s;
+      }
+
+      &:hover i {
+        opacity: .5;
       }
 
       &.following {
@@ -525,6 +529,14 @@
       font-size: 11px;
       font-weight: @font-weight-semibold;
     }
+  }
+}
+
+.badge-content {
+  &.fa-layers {
+    width: 50px;
+    height: 43px;
+    font-size: 4em;
   }
 }
 
@@ -1213,7 +1225,7 @@ tr.inactive {
       width: 100%;
       height: 70%;
       background-color: transparent;
-      border-top: 2px solid red;
+      border-top: 2px solid @brand-danger;
       border-radius: 0;
     }
   }

@@ -31,7 +31,7 @@
 
             <Rock:ModalDialog ID="mdThemeClone" runat="server" Title="Clone Theme" ValidationGroup="vgClone" SaveButtonText="Clone" OnSaveClick="mdThemeClone_SaveClick" OnCancelScript="clearActiveDialog();">
                 <Content>
-                    <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Enter A New Theme Name" CssClass="alert alert-danger" />
+                    <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Enter A New Theme Name" CssClass="alert alert-validation" />
                     <Rock:RockTextBox ID="tbNewThemeName" runat="server" Label="New Theme Name" Required="true" ValidationGroup="vgClone" />
                     <small>Note: Spaces and special characters will be removed.</small>
                 </Content>

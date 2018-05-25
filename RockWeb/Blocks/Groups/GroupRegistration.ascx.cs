@@ -27,7 +27,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -56,6 +56,7 @@ namespace RockWeb.Blocks.Groups
     [CustomRadioListField( "Auto Fill Form", "If set to FALSE then the form will not load the context of the logged in user (default: 'True'.)", "true^True,false^False", true, "true", "", 10 )]
     [TextField( "Register Button Alt Text", "Alternate text to use for the Register button (default is 'Register').", false, "", "", 11 )]
     [BooleanField( "Prevent Overcapacity Registrations", "When set to true, user cannot register for groups that are at capacity or whose default GroupTypeRole are at capacity. If only one spot is available, no spouses can be registered.", true, "", 12 )]
+
     public partial class GroupRegistration : RockBlock
     {
         #region Fields
@@ -64,11 +65,11 @@ namespace RockWeb.Blocks.Groups
         string _mode = "Simple";
         Group _group = null;
         GroupTypeRole _defaultGroupRole = null;
-        DefinedValueCache _dvcConnectionStatus = null;
-        DefinedValueCache _dvcRecordStatus = null;
-        DefinedValueCache _married = null;
-        DefinedValueCache _homeAddressType = null;
-        GroupTypeCache _familyType = null;
+        CacheDefinedValue _dvcConnectionStatus = null;
+        CacheDefinedValue _dvcRecordStatus = null;
+        CacheDefinedValue _married = null;
+        CacheDefinedValue _homeAddressType = null;
+        CacheGroupType _familyType = null;
         GroupTypeRoleCache _adultRole = null;
         bool _autoFill = true;
         bool _isValidSettings = true;
@@ -210,10 +211,9 @@ namespace RockWeb.Blocks.Groups
                 // Try to find person by name/email 
                 if ( person == null )
                 {
-                    var matches = personService.GetByMatch( tbFirstName.Text.Trim(), tbLastName.Text.Trim(), tbEmail.Text.Trim() );
-                    if ( matches.Count() == 1 )
+                    person = personService.FindPerson( tbFirstName.Text.Trim(), tbLastName.Text.Trim(), tbEmail.Text.Trim(), true );
+                    if ( person != null )
                     {
-                        person = matches.First();
                         isMatch = true;
                     }
                 }
@@ -228,7 +228,7 @@ namespace RockWeb.Blocks.Groups
                     person.Email = tbEmail.Text.Trim();
                     person.IsEmailActive = true;
                     person.EmailPreference = EmailPreference.EmailAllowed;
-                    person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                    person.RecordTypeValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
                     person.ConnectionStatusValueId = _dvcConnectionStatus.Id;
                     person.RecordStatusValueId = _dvcRecordStatus.Id;
                     person.Gender = Gender.Unknown;
@@ -364,11 +364,11 @@ namespace RockWeb.Blocks.Groups
                 rockContext.SaveChanges();
 
                 // Check to see if a workflow should be launched for each person
-                WorkflowTypeCache workflowType = null;
+                CacheWorkflowType workflowType = null;
                 Guid? workflowTypeGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
                 if ( workflowTypeGuid.HasValue )
                 {
-                    workflowType = WorkflowTypeCache.Read( workflowTypeGuid.Value );
+                    workflowType = CacheWorkflowType.Get( workflowTypeGuid.Value );
                 }
 
                 // Save the registrations ( and launch workflows )
@@ -539,7 +539,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="person">The person.</param>
         /// <param name="workflowType">Type of the workflow.</param>
         /// <param name="groupMembers">The group members.</param>
-        private void AddPersonToGroup( RockContext rockContext, Person person, WorkflowTypeCache workflowType, List<GroupMember> groupMembers )
+        private void AddPersonToGroup( RockContext rockContext, Person person, CacheWorkflowType workflowType, List<GroupMember> groupMembers )
         {
             if (person != null )
             {
@@ -605,8 +605,6 @@ namespace RockWeb.Blocks.Groups
 
             _autoFill = GetAttributeValue( "AutoFillForm" ).AsBoolean();
 
-            tbEmail.Required = _autoFill;
-
             string registerButtonText = GetAttributeValue( "RegisterButtonAltText" );
             if ( string.IsNullOrWhiteSpace( registerButtonText ) )
             {
@@ -665,7 +663,7 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
-            _dvcConnectionStatus = DefinedValueCache.Read( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
+            _dvcConnectionStatus = CacheDefinedValue.Get( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
             if ( _dvcConnectionStatus == null )
             {
                 nbNotice.Heading = "Invalid Connection Status";
@@ -673,7 +671,7 @@ namespace RockWeb.Blocks.Groups
                 return false;
             }
 
-            _dvcRecordStatus = DefinedValueCache.Read( GetAttributeValue( "RecordStatus" ).AsGuid() );
+            _dvcRecordStatus = CacheDefinedValue.Get( GetAttributeValue( "RecordStatus" ).AsGuid() );
             if ( _dvcRecordStatus == null )
             {
                 nbNotice.Heading = "Invalid Record Status";
@@ -681,9 +679,9 @@ namespace RockWeb.Blocks.Groups
                 return false;
             }
 
-            _married = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() );
-            _homeAddressType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
-            _familyType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
+            _married = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() );
+            _homeAddressType = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
+            _familyType = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
             _adultRole = _familyType.Roles.FirstOrDefault( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ) );
 
             if ( _married == null || _homeAddressType == null || _familyType == null || _adultRole == null )
@@ -706,7 +704,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="phoneTypeGuid">The phone type unique identifier.</param>
         private void SetPhoneNumber( RockContext rockContext, Person person, PhoneNumberBox pnbNumber, RockCheckBox cbSms, Guid phoneTypeGuid )
         {
-            var phoneType = DefinedValueCache.Read( phoneTypeGuid );
+            var phoneType = CacheDefinedValue.Get( phoneTypeGuid );
             if ( phoneType != null )
             {
                 var phoneNumber = person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == phoneType.Id );

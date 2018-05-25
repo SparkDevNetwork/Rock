@@ -25,7 +25,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using System.Text;
@@ -235,7 +235,7 @@ namespace RockWeb.Blocks.Groups
                     personPageParams.Add( "PersonId", string.Empty );
                     var personProfilePage = LinkedPageUrl( "PersonProfilePage", personPageParams );
 
-                    var groupEntityType = EntityTypeCache.Read( typeof( Group ) );
+                    var groupEntityType = CacheEntityType.Get( typeof( Group ) );
                     var dynamicGroups = new List<dynamic>();
 
 
@@ -310,7 +310,7 @@ namespace RockWeb.Blocks.Groups
                         var groupAttributes = new List<dynamic>();
                         foreach ( AttributeValue value in group.AttributeValues )
                         {
-                            var attrCache = AttributeCache.Read( value.AttributeId );
+                            var attrCache = CacheAttribute.Get( value.AttributeId );
                             var dictAttribute = new Dictionary<string, object>();
                             dictAttribute.Add( "Key", attrCache.Key );
                             dictAttribute.Add( "Name", attrCache.Name );
@@ -401,7 +401,7 @@ namespace RockWeb.Blocks.Groups
                     string styleCode = "null";
                     string markerColor = "FE7569";
 
-                    DefinedValueCache dvcMapStyle = DefinedValueCache.Read( GetAttributeValue( "MapStyle" ).AsGuid() );
+                    CacheDefinedValue dvcMapStyle = CacheDefinedValue.Get( GetAttributeValue( "MapStyle" ).AsGuid() );
                     if ( dvcMapStyle != null )
                     {
                         styleCode = dvcMapStyle.GetAttributeValue( "DynamicMapStyle" );

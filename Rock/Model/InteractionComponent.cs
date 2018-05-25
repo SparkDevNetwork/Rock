@@ -124,12 +124,12 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public override void PostSaveChanges( Data.DbContext dbContext )
         {
-            Web.Cache.InteractionComponentCache.Flush( this.Id );
+            Cache.CacheInteractionComponent.Remove( this.Id );
 
             if ( this.SaveState == System.Data.Entity.EntityState.Added ||
                 this.SaveState == System.Data.Entity.EntityState.Deleted )
             {
-                var channel = Web.Cache.InteractionChannelCache.Read( this.ChannelId );
+                var channel = Cache.CacheInteractionChannel.Get( this.ChannelId );
                 if ( channel != null )
                 {
                     if ( this.SaveState == System.Data.Entity.EntityState.Added )

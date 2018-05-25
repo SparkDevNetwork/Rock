@@ -24,7 +24,7 @@ using Rock;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -154,7 +154,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="emailTemplateId">The email template id.</param>
         protected void ShowEdit( int emailTemplateId )
         {
-            var globalAttributes = GlobalAttributesCache.Read();
+            var globalAttributes = CacheGlobalAttributes.Get();
             
             string globalFromName = globalAttributes.GetValue( "OrganizationName" );
             tbFromName.Help = string.Format( "If a From Name value is not entered the 'Organization Name' Global Attribute value of '{0}' will be used when this template is sent. <small><span class='tip tip-lava'></span></small>", globalFromName );

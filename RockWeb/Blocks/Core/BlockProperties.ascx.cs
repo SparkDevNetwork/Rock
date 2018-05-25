@@ -24,7 +24,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Security;
 using Rock.Data;
@@ -116,7 +116,7 @@ namespace RockWeb.Blocks.Core
 
                 if ( _block.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
                 {
-                    var blockType = BlockTypeCache.Read( _block.BlockTypeId );
+                    var blockType = CacheBlockType.Get( _block.BlockTypeId );
                     if ( blockType != null && !blockType.IsInstancePropertiesVerified )
                     {
                         System.Web.UI.Control control = Page.LoadControl( blockType.Path );
@@ -125,7 +125,7 @@ namespace RockWeb.Blocks.Core
                             using ( var rockContext = new RockContext() )
                             {
                                 var rockBlock = control as RockBlock;
-                                int? blockEntityTypeId = EntityTypeCache.Read( typeof( Block ) ).Id;
+                                int? blockEntityTypeId = CacheEntityType.Get( typeof( Block ) ).Id;
                                 Rock.Attribute.Helper.UpdateAttributes( rockBlock.GetType(), blockEntityTypeId, "BlockTypeId", blockType.Id.ToString(), rockContext );
                             }
 
@@ -178,7 +178,7 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         /// <param name="blockType">Type of the block.</param>
         /// <returns></returns>
-        private List<string> GetTabs( BlockTypeCache blockType )
+        private List<string> GetTabs( CacheBlockType blockType )
         {
             var result = new List<string> { "Basic Settings", "Advanced Settings" };
 
@@ -197,7 +197,7 @@ namespace RockWeb.Blocks.Core
         protected override void OnLoad( EventArgs e )
         {
             int blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
-            BlockCache _block = BlockCache.Read( blockId );
+            CacheBlock _block = CacheBlock.Get( blockId );
 
             var blockControlType = System.Web.Compilation.BuildManager.GetCompiledType( _block.BlockType.Path );
             this.ShowCustomGridColumns = typeof( Rock.Web.UI.ICustomGridColumns ).IsAssignableFrom( blockControlType );
@@ -252,7 +252,7 @@ namespace RockWeb.Blocks.Core
                 CurrentTab = lb.Text;
 
                 int blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
-                BlockCache _block = BlockCache.Read( blockId );
+                CacheBlock _block = CacheBlock.Get( blockId );
                 rptProperties.DataSource = GetTabs( _block.BlockType );
                 rptProperties.DataBind();
             }
@@ -339,7 +339,7 @@ namespace RockWeb.Blocks.Core
 
                 block.SaveAttributeValues( rockContext );
 
-                Rock.Web.Cache.BlockCache.Flush( block.Id );
+                Rock.Cache.CacheBlock.Remove( block.Id );
 
                 StringBuilder scriptBuilder = new StringBuilder();
 
@@ -406,7 +406,7 @@ namespace RockWeb.Blocks.Core
         private void BindCustomColumnsConfig()
         {
             int blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
-            BlockCache _block = BlockCache.Read( blockId );
+            CacheBlock _block = CacheBlock.Get( blockId );
 
             rptCustomGridColumns.DataSource = CustomGridColumnsConfigState.ColumnsConfig;
             rptCustomGridColumns.DataBind();

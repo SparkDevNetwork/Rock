@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock
 {
@@ -30,12 +30,12 @@ namespace Rock
         #region IHasAttributes extensions
 
         /// <summary>
-        /// Loads the attribute.
+        /// Loads the attributes.
         /// </summary>
         /// <param name="entity">The entity.</param>
-        public static void LoadAttributes( this Rock.Attribute.IHasAttributes entity )
+        public static void LoadAttributes( this IHasAttributes entity )
         {
-            Rock.Attribute.Helper.LoadAttributes( entity );
+            Attribute.Helper.LoadAttributes( entity );
         }
 
         /// <summary>
@@ -43,9 +43,34 @@ namespace Rock
         /// </summary>
         /// <param name="entity">The entity.</param>
         /// <param name="rockContext">The rock context.</param>
-        public static void LoadAttributes( this Rock.Attribute.IHasAttributes entity, RockContext rockContext )
+        public static void LoadAttributes( this IHasAttributes entity, RockContext rockContext )
         {
-            Rock.Attribute.Helper.LoadAttributes( entity, rockContext );
+            Attribute.Helper.LoadAttributes( entity, rockContext );
+        }
+
+        /// <summary>
+        /// Loads the attributes for all entities.
+        /// </summary>
+        /// <param name="entities">The entities.</param>
+        public static void LoadAttributes( this IEnumerable<IHasAttributes> entities )
+        {
+            foreach ( var entity in entities )
+            {
+                Attribute.Helper.LoadAttributes( entity );
+            }
+        }
+
+        /// <summary>
+        /// Loads the attributes for all entities.
+        /// </summary>
+        /// <param name="entities">The entities.</param>
+        /// <param name="rockContext">The rock context.</param>
+        public static void LoadAttributes( this IEnumerable<IHasAttributes> entities, RockContext rockContext )
+        {
+            foreach ( var entity in entities )
+            {
+                Attribute.Helper.LoadAttributes( entity, rockContext );
+            }
         }
 
         /// <summary>
@@ -53,9 +78,9 @@ namespace Rock
         /// </summary>
         /// <param name="entity">The entity.</param>
         /// <param name="rockContext">The rock context.</param>
-        public static void SaveAttributeValues( this Rock.Attribute.IHasAttributes entity, RockContext rockContext = null )
+        public static void SaveAttributeValues( this IHasAttributes entity, RockContext rockContext = null )
         {
-            Rock.Attribute.Helper.SaveAttributeValues( entity, rockContext );
+            Attribute.Helper.SaveAttributeValues( entity, rockContext );
         }
 
         /// <summary>
@@ -64,13 +89,13 @@ namespace Rock
         /// <param name="entity">The entity.</param>
         /// <param name="keys">The attribute keys.</param>
         /// <param name="rockContext">The rock context.</param>
-        public static void SaveAttributeValues( this Rock.Attribute.IHasAttributes entity, IEnumerable<string> keys, RockContext rockContext = null )
+        public static void SaveAttributeValues( this IHasAttributes entity, IEnumerable<string> keys, RockContext rockContext = null )
         {
             foreach ( var key in keys )
             {
                 if ( entity.AttributeValues.ContainsKey( key ) )
                 {
-                    Rock.Attribute.Helper.SaveAttributeValue( entity, entity.Attributes[key], entity.AttributeValues[key].Value, rockContext );
+                    Attribute.Helper.SaveAttributeValue( entity, entity.Attributes[key], entity.AttributeValues[key].Value, rockContext );
                 }
             }
         }
@@ -81,11 +106,11 @@ namespace Rock
         /// <param name="entity">The entity.</param>
         /// <param name="key">The attribute key.</param>
         /// <param name="rockContext">The rock context.</param>
-        public static void SaveAttributeValue( this Rock.Attribute.IHasAttributes entity, string key, RockContext rockContext = null)
+        public static void SaveAttributeValue( this IHasAttributes entity, string key, RockContext rockContext = null )
         {
             if ( entity.AttributeValues.ContainsKey( key ) )
             {
-                Rock.Attribute.Helper.SaveAttributeValue( entity, entity.Attributes[key], entity.AttributeValues[key].Value, rockContext );
+                Attribute.Helper.SaveAttributeValue( entity, entity.Attributes[key], entity.AttributeValues[key].Value, rockContext );
             }
         }
 
@@ -94,9 +119,9 @@ namespace Rock
         /// </summary>
         /// <param name="entity">The entity.</param>
         /// <param name="source">The source.</param>
-        public static void CopyAttributesFrom( this Rock.Attribute.IHasAttributes entity, Rock.Attribute.IHasAttributes source )
+        public static void CopyAttributesFrom( this IHasAttributes entity, IHasAttributes source )
         {
-            Rock.Attribute.Helper.CopyAttributes( source, entity );
+            Attribute.Helper.CopyAttributes( source, entity );
         }
 
         /// <summary>
@@ -105,7 +130,7 @@ namespace Rock
         /// <param name="entity">The entity.</param>
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
-        public static void SetAttributeValue( this Rock.Attribute.IHasAttributes entity, string key, int? value )
+        public static void SetAttributeValue( this IHasAttributes entity, string key, int? value )
         {
             entity.SetAttributeValue( key, value.ToString() );
         }
@@ -116,7 +141,7 @@ namespace Rock
         /// <param name="entity">The entity.</param>
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
-        public static void SetAttributeValue( this Rock.Attribute.IHasAttributes entity, string key, decimal? value )
+        public static void SetAttributeValue( this IHasAttributes entity, string key, decimal? value )
         {
             entity.SetAttributeValue( key, value.ToString() );
         }
@@ -127,7 +152,7 @@ namespace Rock
         /// <param name="entity">The entity.</param>
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
-        public static void SetAttributeValue( this Rock.Attribute.IHasAttributes entity, string key, Guid? value )
+        public static void SetAttributeValue( this IHasAttributes entity, string key, Guid? value )
         {
             entity.SetAttributeValue( key, value.ToString() );
         }
@@ -138,16 +163,9 @@ namespace Rock
         /// <param name="entity">The entity.</param>
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
-        public static void SetAttributeValue( this Rock.Attribute.IHasAttributes entity, string key, DateTime? value )
+        public static void SetAttributeValue( this IHasAttributes entity, string key, DateTime? value )
         {
-            if ( value.HasValue )
-            {
-                entity.SetAttributeValue( key, value.Value.ToString( "o" ) );
-            }
-            else
-            {
-                entity.SetAttributeValue( key, string.Empty );
-            }
+            entity.SetAttributeValue(key, value?.ToString("o") ?? string.Empty);
         }
 
         /// <summary>
@@ -157,18 +175,17 @@ namespace Rock
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
         /// <returns></returns>
-        public static Dictionary<string, AttributeCache> GetAuthorizedAttributes ( this Rock.Attribute.IHasAttributes entity, string action, Person person)
+        public static Dictionary<string, CacheAttribute> GetAuthorizedAttributes ( this IHasAttributes entity, string action, Person person)
         {
-            var authorizedAttributes = new Dictionary<string, AttributeCache>();
+            var authorizedAttributes = new Dictionary<string, CacheAttribute>();
 
-            if ( entity != null )
+            if (entity == null) return authorizedAttributes;
+
+            foreach ( var item in entity.Attributes )
             {
-                foreach( var item in entity.Attributes )
+                if ( item.Value.IsAuthorized( action, person ) )
                 {
-                    if ( item.Value.IsAuthorized( action, person ) )
-                    {
-                        authorizedAttributes.Add( item.Key, item.Value );
-                    }
+                    authorizedAttributes.Add( item.Key, item.Value );
                 }
             }
 

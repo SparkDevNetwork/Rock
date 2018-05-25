@@ -20,7 +20,7 @@ using System.Data;
 using Rock.Attribute;
 using Rock.Extension;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Financial
 {
@@ -147,9 +147,9 @@ namespace Rock.Financial
         /// <value>
         /// The supported payment schedules.
         /// </value>
-        public virtual List<DefinedValueCache> SupportedPaymentSchedules
+        public virtual List<CacheDefinedValue> SupportedPaymentSchedules
         {
-            get { return new List<DefinedValueCache>(); }
+            get { return new List<CacheDefinedValue>(); }
         }
 
         /// <summary>
@@ -203,8 +203,19 @@ namespace Rock.Financial
         /// Returnes a boolean value indicating if 'Saved Account' functionality is supported for the given currency type. 
         /// </summary>
         /// <param name="currencyType">Type of the currency.</param>
+        /// <returns></returns>       
+        [Obsolete]
+        public virtual bool SupportsSavedAccount( Rock.Web.Cache.DefinedValueCache currencyType )
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// Returnes a boolean value indicating if 'Saved Account' functionality is supported for the given currency type. 
+        /// </summary>
+        /// <param name="currencyType">Type of the currency.</param>
         /// <returns></returns>
-        public virtual bool SupportsSavedAccount( DefinedValueCache currencyType )
+        public virtual bool SupportsSavedAccount( CacheDefinedValue currencyType )
         {
             return true;
         }

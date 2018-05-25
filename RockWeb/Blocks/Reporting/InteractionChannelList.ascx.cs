@@ -28,7 +28,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -142,7 +142,7 @@ namespace RockWeb.Blocks.Reporting
                     var mediumTypeValueId = e.Value.AsIntegerOrNull();
                     if ( mediumTypeValueId.HasValue )
                     {
-                        var mediumTypeValue = DefinedValueCache.Read( mediumTypeValueId.Value );
+                        var mediumTypeValue = CacheDefinedValue.Get( mediumTypeValueId.Value );
                         e.Value = mediumTypeValue.Value;
                     }
                     break;
@@ -170,7 +170,7 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         private void BindFilter()
         {
-            var definedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.INTERACTION_CHANNEL_MEDIUM.AsGuid() );
+            var definedType = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.INTERACTION_CHANNEL_MEDIUM.AsGuid() );
             ddlMediumValue.BindToDefinedType( definedType, true );
 
             var channelMediumValueId = gfFilter.GetUserPreference( MEDIUM_TYPE_FILTER ).AsIntegerOrNull();

@@ -489,13 +489,13 @@ namespace Rock.Rest
 
             CheckCanEdit( model );
 
-            Rock.Attribute.IHasAttributes modelWithAttributes = model as Rock.Attribute.IHasAttributes;
+            IHasAttributes modelWithAttributes = model as IHasAttributes;
             if ( modelWithAttributes != null )
             {
                 using ( var rockContext = new RockContext() )
                 {
                     modelWithAttributes.LoadAttributes( rockContext );
-                    Rock.Web.Cache.AttributeCache attributeCache = modelWithAttributes.Attributes.ContainsKey( attributeKey ) ? modelWithAttributes.Attributes[attributeKey] : null;
+                    Rock.Cache.CacheAttribute attributeCache = modelWithAttributes.Attributes.ContainsKey( attributeKey ) ? modelWithAttributes.Attributes[attributeKey] : null;
 
                     if ( attributeCache != null )
                     {

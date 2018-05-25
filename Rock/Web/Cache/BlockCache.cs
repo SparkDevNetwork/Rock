@@ -15,9 +15,8 @@
 // </copyright>
 //
 using System;
-using System.Data.Entity;
-using System.Linq;
 
+using Rock.Cache;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -29,6 +28,7 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
+    [Obsolete( "Use Rock.Cache.CacheBlock instead" )]
     public class BlockCache : CachedModel<Block>
     {
         #region Constructors
@@ -37,9 +37,9 @@ namespace Rock.Web.Cache
         {
         }
 
-        private BlockCache( Block block )
+        private BlockCache( CacheBlock cacheBlock )
         {
-            CopyFromModel( block );
+            CopyFromNewCache( cacheBlock );
         }
 
         #endregion
@@ -217,13 +217,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Gets the block type
         /// </summary>
-        public BlockTypeCache BlockType
-        {
-            get
-            {
-                return BlockTypeCache.Read( BlockTypeId );
-            }
-        }
+        public BlockTypeCache BlockType => BlockTypeCache.Read( BlockTypeId );
 
         /// <summary>
         /// Gets the parent authority.
@@ -235,14 +229,14 @@ namespace Rock.Web.Cache
         {
             get
             {
-                switch ( this.BlockLocation )
+                switch ( BlockLocation )
                 {
                     case BlockLocation.Page:
-                        return this.Page != null ? this.Page : base.ParentAuthority;
+                        return Page ?? base.ParentAuthority;
                     case BlockLocation.Layout:
-                        return this.Layout != null ? this.Layout : base.ParentAuthority;
+                        return Layout ?? base.ParentAuthority;
                     case BlockLocation.Site:
-                        return this.Site != null ? this.Site : base.ParentAuthority;
+                        return Site ?? base.ParentAuthority;
                     default:
                         return base.ParentAuthority;
                 }
@@ -259,22 +253,22 @@ namespace Rock.Web.Cache
         {
             get
             {
-                if ( this.PageId.HasValue )
+                if ( PageId.HasValue )
                 {
                     return BlockLocation.Page;
                 }
-                else if ( this.LayoutId.HasValue )
+
+                if ( LayoutId.HasValue )
                 {
                     return BlockLocation.Layout;
                 }
-                else if ( this.SiteId.HasValue )
+
+                if ( SiteId.HasValue )
                 {
                     return BlockLocation.Site;
                 }
-                else
-                {
-                    return BlockLocation.None;
-                }
+
+                return BlockLocation.None;
             }
         }
 
@@ -286,26 +280,50 @@ namespace Rock.Web.Cache
         /// Copies from model.
         /// </summary>
         /// <param name="model">The model.</param>
-        public override void CopyFromModel( Data.IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
             base.CopyFromModel( model );
 
-            if ( model is Block )
-            {
-                var block = (Block)model;
-                this.IsSystem = block.IsSystem;
-                this.PageId = block.PageId;
-                this.LayoutId = block.LayoutId;
-                this.SiteId = block.SiteId;
-                this.BlockTypeId = block.BlockTypeId;
-                this.Zone = block.Zone;
-                this.Order = block.Order;
-                this.Name = block.Name;
-                this.CssClass = block.CssClass;
-                this.PreHtml = block.PreHtml;
-                this.PostHtml = block.PostHtml;
-                this.OutputCacheDuration = block.OutputCacheDuration;
-            }
+            if ( !( model is Block ) ) return;
+
+            var block = (Block)model;
+            IsSystem = block.IsSystem;
+            PageId = block.PageId;
+            LayoutId = block.LayoutId;
+            SiteId = block.SiteId;
+            BlockTypeId = block.BlockTypeId;
+            Zone = block.Zone;
+            Order = block.Order;
+            Name = block.Name;
+            CssClass = block.CssClass;
+            PreHtml = block.PreHtml;
+            PostHtml = block.PostHtml;
+            OutputCacheDuration = block.OutputCacheDuration;
+        }
+
+        /// <summary>
+        /// Copies properties from a new cached entity
+        /// </summary>
+        /// <param name="cacheEntity">The cache entity.</param>
+        protected sealed override void CopyFromNewCache( IEntityCache cacheEntity )
+        {
+            base.CopyFromNewCache( cacheEntity );
+
+            if ( !( cacheEntity is CacheBlock ) ) return;
+
+            var block = (CacheBlock)cacheEntity;
+            IsSystem = block.IsSystem;
+            PageId = block.PageId;
+            LayoutId = block.LayoutId;
+            SiteId = block.SiteId;
+            BlockTypeId = block.BlockTypeId;
+            Zone = block.Zone;
+            Order = block.Order;
+            Name = block.Name;
+            CssClass = block.CssClass;
+            PreHtml = block.PreHtml;
+            PostHtml = block.PostHtml;
+            OutputCacheDuration = block.OutputCacheDuration;
         }
 
         /// <summary>
@@ -316,17 +334,12 @@ namespace Rock.Web.Cache
         /// </returns>
         public override string ToString()
         {
-            return this.Name;
+            return Name;
         }
 
         #endregion
 
         #region Static Methods
-
-        private static string CacheKey( int id )
-        {
-            return string.Format( "Rock:Block:{0}", id );
-        }
 
         /// <summary>
         /// Returns Block object from cache.  If block does not already exist in cache, it
@@ -337,33 +350,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static BlockCache Read( int id, RockContext rockContext = null )
         {
-            return GetOrAddExisting( BlockCache.CacheKey( id ),
-                () => LoadById( id, rockContext ) );
-        }
-
-        private static BlockCache LoadById( int id, RockContext rockContext )
-        {
-            if ( rockContext != null )
-            {
-                return LoadById2( id, rockContext );
-            }
-
-            using ( var rockContext2 = new RockContext() )
-            {
-                return LoadById2( id, rockContext2 );
-            }
-        }
-
-        private static BlockCache LoadById2( int id, RockContext rockContext )
-        {
-            var blockService = new BlockService( rockContext );
-            var blockModel = blockService.Get( id );
-            if ( blockModel != null )
-            {
-                return new BlockCache( blockModel );
-            }
-
-            return null;
+            return new BlockCache( CacheBlock.Get( id, rockContext ) );
         }
 
         /// <summary>
@@ -374,33 +361,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static BlockCache Read( Guid guid, RockContext rockContext = null )
         {
-            int id = GetOrAddExisting( guid.ToString(),
-                () => LoadByGuid( guid, rockContext ) );
-
-            return Read( id, rockContext );
-        }
-
-        private static int LoadByGuid( Guid guid, RockContext rockContext )
-        {
-            if ( rockContext != null )
-            {
-                return LoadByGuid2( guid, rockContext );
-            }
-
-            using ( var rockContext2 = new RockContext() )
-            {
-                return LoadByGuid2( guid, rockContext2 );
-            }
-        }
-        
-        private static int LoadByGuid2( Guid guid, RockContext rockContext )
-        {
-            var blockService = new BlockService( rockContext );
-            return blockService
-                .Queryable().AsNoTracking()
-                .Where( c => c.Guid.Equals( guid ) )
-                .Select( c => c.Id )
-                .FirstOrDefault();
+            return new BlockCache( CacheBlock.Get( guid, rockContext ) );
         }
 
         /// <summary>
@@ -410,19 +371,8 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static BlockCache Read( Block blockModel )
         {
-            return GetOrAddExisting( BlockCache.CacheKey( blockModel.Id ),
-                () => LoadByModel( blockModel ) );
+            return new BlockCache( CacheBlock.Get( blockModel ) );
         }
-
-        private static BlockCache LoadByModel( Block blockModel )
-        {
-            if ( blockModel != null )
-            {
-                return new BlockCache( blockModel );
-            }
-            return null;
-        }
-
 
         /// <summary>
         /// Removes block from cache
@@ -430,7 +380,7 @@ namespace Rock.Web.Cache
         /// <param name="id"></param>
         public static void Flush( int id )
         {
-            FlushCache( BlockCache.CacheKey( id ) );
+            CacheBlock.Remove( id );
         }
 
         #endregion

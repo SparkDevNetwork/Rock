@@ -25,7 +25,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using System.ComponentModel;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Cache;
 using System.Collections.Generic;
 using DotLiquid;
 using System.Web.UI.WebControls;
@@ -153,6 +153,7 @@ namespace RockWeb.Blocks.Cms
                 LavaShortcode dataItem = (LavaShortcode)e.Item.DataItem;
 
                 e.Item.FindControl( "divEditPanel" ).Visible = !dataItem.IsSystem;
+                e.Item.FindControl( "divViewPanel" ).Visible = dataItem.IsSystem;
             }
         }
 

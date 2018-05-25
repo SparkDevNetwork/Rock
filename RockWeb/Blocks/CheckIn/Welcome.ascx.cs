@@ -28,7 +28,7 @@ using Rock.CheckIn;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace RockWeb.Blocks.CheckIn
 {
@@ -122,12 +122,12 @@ namespace RockWeb.Blocks.CheckIn
                 {
                     if ( Request.Form["__EVENTARGUMENT"] == "Wedge_Entry" )
                     {
-                        var dv = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_SCANNED_ID );
+                        var dv = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_SCANNED_ID );
                         DoFamilySearch( dv, hfSearchEntry.Value );
                     }
                     else if ( Request.Form["__EVENTARGUMENT"] == "Family_Id_Search" )
                     {
-                        var dv = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_FAMILY_ID );
+                        var dv = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_FAMILY_ID );
                         DoFamilySearch( dv, hfSearchEntry.Value );
                     }
                 }
@@ -176,7 +176,7 @@ namespace RockWeb.Blocks.CheckIn
             script.AppendFormat( @"
 
         function PostRefresh() {{
-            {0};
+            window.location = ""javascript:{0}"";
         }}
 
 ", this.Page.ClientScript.GetPostBackEventReference( lbRefresh, "" ) );
@@ -194,7 +194,7 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         /// <param name="searchType">Type of the search.</param>
         /// <param name="searchValue">The search value.</param>
-        private void DoFamilySearch( DefinedValueCache searchType, string searchValue )
+        private void DoFamilySearch( CacheDefinedValue searchType, string searchValue )
         {
             CurrentCheckInState.CheckIn.UserEnteredSearch = false;
             CurrentCheckInState.CheckIn.ConfirmSingleFamily = false;
@@ -329,7 +329,7 @@ namespace RockWeb.Blocks.CheckIn
                     if ( !locations.Contains( location.Location.Id ) )
                     {
                         locations.Add( location.Location.Id );
-                        var locationAttendance = KioskLocationAttendance.Read( location.Location.Id );
+                        var locationAttendance = KioskLocationAttendance.Get( location.Location.Id );
 
                         if ( locationAttendance != null )
                         {
@@ -406,7 +406,7 @@ namespace RockWeb.Blocks.CheckIn
             if ( userLogin != null && userLogin.EntityTypeId.HasValue )
             {
                 // make sure this is a PIN auth user login
-                var userLoginEntityType = EntityTypeCache.Read( userLogin.EntityTypeId.Value );
+                var userLoginEntityType = CacheEntityType.Get( userLogin.EntityTypeId.Value );
                 if ( userLoginEntityType != null && userLoginEntityType.Id == pinAuth.EntityType.Id )
                 {
                     if ( pinAuth != null && pinAuth.IsActive )
@@ -489,13 +489,13 @@ namespace RockWeb.Blocks.CheckIn
                     {
                         location.IsActive = true;
                         rockContext.SaveChanges();
-                        KioskDevice.FlushAll();
+                        KioskDevice.Clear();
                     }
                     else if ( e.CommandName == "Close" && location.IsActive )
                     {
                         location.IsActive = false;
                         rockContext.SaveChanges();
-                        KioskDevice.FlushAll();
+                        KioskDevice.Clear();
                     }
                 }
 
@@ -536,7 +536,7 @@ namespace RockWeb.Blocks.CheckIn
                 lLocationName.Text = locationDataItem.GetPropertyValue( "Name" ) as string;
 
                 var lLocationCount = e.Item.FindControl( "lLocationCount" ) as Literal;
-                lLocationCount.Text = KioskLocationAttendance.Read( (int)locationDataItem.GetPropertyValue( "LocationId" ) ).CurrentCount.ToString();
+                lLocationCount.Text = KioskLocationAttendance.Get( (int)locationDataItem.GetPropertyValue( "LocationId" ) ).CurrentCount.ToString();
             }
         }
 

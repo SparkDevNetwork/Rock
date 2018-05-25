@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 
+using Rock.Cache;
 using Rock.Data;
 using Rock.Model;
 
@@ -29,6 +30,7 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
+    [Obsolete( "Use Rock.Cache.CacheCampus instead" )]
     public class CampusCache : CachedModel<Campus>
     {
         #region Constructors
@@ -37,9 +39,9 @@ namespace Rock.Web.Cache
         {
         }
 
-        private CampusCache( Campus campus )
+        private CampusCache( CacheCampus cacheCampus )
         {
-            CopyFromModel( campus );
+            CopyFromNewCache( cacheCampus );
         }
 
         #endregion
@@ -155,21 +157,19 @@ namespace Rock.Web.Cache
             {
                 var serviceTimes = new List<ServiceTime>();
 
-                if ( !string.IsNullOrWhiteSpace( RawServiceTimes ) )
-                {
-                    string[] KeyValues = RawServiceTimes.Split( new char[] { '|' }, System.StringSplitOptions.RemoveEmptyEntries );
-                    foreach ( string keyValue in KeyValues )
+                if ( string.IsNullOrWhiteSpace( RawServiceTimes ) ) return serviceTimes;
+                var KeyValues = RawServiceTimes.Split( new[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+
+                serviceTimes.AddRange(
+                    from keyValue in KeyValues
+                    select keyValue.Split( '^' )
+                    into dayTime
+                    where dayTime.Length == 2
+                    select new ServiceTime
                     {
-                        var dayTime = keyValue.Split( new char[] { '^' } );
-                        if ( dayTime.Length == 2 )
-                        {
-                            var serviceTime = new ServiceTime();
-                            serviceTime.Day = dayTime[0];
-                            serviceTime.Time = dayTime[1];
-                            serviceTimes.Add( serviceTime );
-                        }
-                    }
-                }
+                        Day = dayTime[0],
+                        Time = dayTime[1]
+                    } );
 
                 return serviceTimes;
             }
@@ -183,27 +183,51 @@ namespace Rock.Web.Cache
         /// Copies from model.
         /// </summary>
         /// <param name="model">The model.</param>
-        public override void CopyFromModel( Data.IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
             base.CopyFromModel( model );
 
-            if ( model is Campus )
-            {
-                var campus = (Campus)model;
-                this.IsSystem = campus.IsSystem;
-                this.Name = campus.Name;
-                this.Description = campus.Description;
-                this.IsActive = campus.IsActive;
-                this.ShortCode = campus.ShortCode;
-                this.Url = campus.Url;
-                this.LocationId = campus.LocationId;
-                this.TimeZoneId = campus.TimeZoneId;
-                this.PhoneNumber = campus.PhoneNumber;
-                this.LeaderPersonAliasId = campus.LeaderPersonAliasId;
-                this.RawServiceTimes = campus.ServiceTimes;
+            if ( !( model is Campus ) ) return;
 
-                this.Location = new CampusLocation( campus.Location );
-            }
+            var campus = (Campus)model;
+            IsSystem = campus.IsSystem;
+            Name = campus.Name;
+            Description = campus.Description;
+            IsActive = campus.IsActive;
+            ShortCode = campus.ShortCode;
+            Url = campus.Url;
+            LocationId = campus.LocationId;
+            TimeZoneId = campus.TimeZoneId;
+            PhoneNumber = campus.PhoneNumber;
+            LeaderPersonAliasId = campus.LeaderPersonAliasId;
+            RawServiceTimes = campus.ServiceTimes;
+
+            Location = new CampusLocation( campus.Location );
+        }
+
+        /// <summary>
+        /// Copies properties from a new cached entity
+        /// </summary>
+        /// <param name="cacheEntity">The cache entity.</param>
+        protected sealed override void CopyFromNewCache( IEntityCache cacheEntity )
+        {
+            base.CopyFromNewCache( cacheEntity );
+
+            if ( !( cacheEntity is CacheCampus ) ) return;
+
+            var campus = (CacheCampus)cacheEntity;
+            IsSystem = campus.IsSystem;
+            Name = campus.Name;
+            Description = campus.Description;
+            IsActive = campus.IsActive;
+            ShortCode = campus.ShortCode;
+            Url = campus.Url;
+            LocationId = campus.LocationId;
+            TimeZoneId = campus.TimeZoneId;
+            PhoneNumber = campus.PhoneNumber;
+            LeaderPersonAliasId = campus.LeaderPersonAliasId;
+            RawServiceTimes = campus.RawServiceTimes;
+            Location = new CampusLocation( campus.Location );
         }
 
         /// <summary>
@@ -214,22 +238,12 @@ namespace Rock.Web.Cache
         /// </returns>
         public override string ToString()
         {
-            return this.Name;
+            return Name;
         }
 
         #endregion
 
         #region Static Methods
-
-        /// <summary>
-        /// Gets the cache key for the selected campu id.
-        /// </summary>
-        /// <param name="id">The campus id.</param>
-        /// <returns></returns>
-        private static string CacheKey( int id )
-        {
-            return string.Format( "Rock:Campus:{0}", id );
-        }
 
         /// <summary>
         /// Returns Campus object from cache.  If campus does not already exist in cache, it
@@ -240,35 +254,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static CampusCache Read( int id, RockContext rockContext = null )
         {
-            return GetOrAddExisting( CampusCache.CacheKey( id ), 
-                () => LoadById( id, rockContext ) );
-        }
-
-        private static CampusCache LoadById( int id, RockContext rockContext )
-        {
-            if ( rockContext != null )
-            {
-                return LoadById2( id, rockContext );
-            }
-
-            using ( var rockContext2 = new RockContext() )
-            {
-                return LoadById2( id, rockContext2 );
-            }
-        }
-
-        private static CampusCache LoadById2( int id, RockContext rockContext )
-        {
-            var campusService = new CampusService( rockContext );
-            var campusModel = campusService
-                .Queryable( "Location" ).AsNoTracking()
-                .FirstOrDefault( c => c.Id == id );
-            if ( campusModel != null )
-            {
-                return new CampusCache( campusModel );
-            }
-
-            return null;
+            return new CampusCache( CacheCampus.Get( id, rockContext ) );
         }
 
         /// <summary>
@@ -279,33 +265,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static CampusCache Read( Guid guid, RockContext rockContext = null )
         {
-            int id = GetOrAddExisting( guid.ToString(),
-                () => LoadByGuid( guid, rockContext ) );
-
-            return Read( id, rockContext );
-        }
-
-        private static int LoadByGuid( Guid guid, RockContext rockContext )
-        {
-            if ( rockContext != null )
-            {
-                return LoadByGuid2( guid, rockContext );
-            }
-
-            using ( var rockContext2 = new RockContext() )
-            {
-                return LoadByGuid2( guid, rockContext2 );
-            }
-        }
-
-        private static int LoadByGuid2( Guid guid, RockContext rockContext )
-        {
-            var campusService = new CampusService( rockContext );
-            return campusService
-                .Queryable().AsNoTracking()
-                .Where( c => c.Guid.Equals( guid ))
-                .Select( c => c.Id )
-                .FirstOrDefault();
+            return new CampusCache( CacheCampus.Get( guid, rockContext ) );
         }
 
         /// <summary>
@@ -315,17 +275,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static CampusCache Read( Campus campusModel )
         {
-            return GetOrAddExisting( CampusCache.CacheKey( campusModel.Id ),
-                () => LoadByModel( campusModel ) );
-        }
-
-        private static CampusCache LoadByModel( Campus campusModel )
-        {
-            if ( campusModel != null )
-            {
-                return new CampusCache( campusModel );
-            }
-            return null;
+            return new CampusCache( CacheCampus.Get( campusModel ) );
         }
 
         /// <summary>
@@ -344,32 +294,17 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static List<CampusCache> All( bool includeInactive )
         {
-            List<CampusCache> campuses = new List<CampusCache>();
-            var campusIds = GetOrAddExisting( "Rock:Campus:All", () => LoadAll() );
-            if ( campusIds != null )
-            {
-                foreach ( int campusId in campusIds )
-                {
-                    var campusCache = CampusCache.Read( campusId );
-                    if ( campusCache != null && ( includeInactive || ( campusCache.IsActive ?? false ) ) )
-                    {
-                        campuses.Add( campusCache );
-                    }
-                }
-            }
-            return campuses;
-        }
+            var campuses = new List<CampusCache>();
 
-        private static List<int> LoadAll()
-        {
-            using ( var rockContext = new RockContext() )
+            var cacheCampuses = CacheCampus.All( includeInactive );
+            if ( cacheCampuses == null ) return campuses;
+
+            foreach ( var cacheCampus in cacheCampuses )
             {
-                return new CampusService( rockContext )
-                    .Queryable().AsNoTracking()
-                    .OrderBy( c => c.Name )
-                    .Select( c => c.Id )
-                    .ToList();
+                campuses.Add( new CampusCache( cacheCampus ) );
             }
+
+            return campuses;
         }
 
         /// <summary>
@@ -378,8 +313,7 @@ namespace Rock.Web.Cache
         /// <param name="id"></param>
         public static void Flush( int id )
         {
-            FlushCache( CampusCache.CacheKey( id ) );
-            FlushCache( "Rock:Campus:All" );
+            CacheCampus.Remove( id );
         }
 
         #endregion
@@ -491,28 +425,45 @@ namespace Rock.Web.Cache
             /// Initializes a new instance of the <see cref="CampusLocation"/> class.
             /// </summary>
             /// <param name="locationModel">The location model.</param>
-            public CampusLocation( Rock.Model.Location locationModel )
+            public CampusLocation( Location locationModel )
             {
-                if ( locationModel != null )
+                if ( locationModel == null ) return;
+
+                Street1 = locationModel.Street1;
+                Street2 = locationModel.Street2;
+                City = locationModel.City;
+                State = locationModel.State;
+                PostalCode = locationModel.PostalCode;
+                Country = locationModel.Country;
+
+                if ( locationModel.Image != null )
                 {
-                    Street1 = locationModel.Street1;
-                    Street2 = locationModel.Street2;
-                    City = locationModel.City;
-                    State = locationModel.State;
-                    PostalCode = locationModel.PostalCode;
-                    Country = locationModel.Country;
-
-                    if ( locationModel.Image != null )
-                    {
-                        ImageUrl = locationModel.Image.Url;
-                    }
-
-                    if ( locationModel.GeoPoint != null )
-                    {
-                        Latitude = locationModel.GeoPoint.Latitude;
-                        Longitude = locationModel.GeoPoint.Longitude;
-                    }
+                    ImageUrl = locationModel.Image.Url;
                 }
+
+                if ( locationModel.GeoPoint == null ) return;
+
+                Latitude = locationModel.GeoPoint.Latitude;
+                Longitude = locationModel.GeoPoint.Longitude;
+            }
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="CampusLocation"/> class.
+            /// </summary>
+            /// <param name="campusLocation">The campus location.</param>
+            public CampusLocation( CacheCampus.CampusLocation campusLocation )
+            {
+                if ( campusLocation == null ) return;
+
+                Street1 = campusLocation.Street1;
+                Street2 = campusLocation.Street2;
+                City = campusLocation.City;
+                State = campusLocation.State;
+                PostalCode = campusLocation.PostalCode;
+                Country = campusLocation.Country;
+                ImageUrl = campusLocation.ImageUrl;
+                Latitude = campusLocation.Latitude;
+                Longitude = campusLocation.Longitude;
             }
         }
 

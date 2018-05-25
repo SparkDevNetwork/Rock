@@ -1285,7 +1285,7 @@ order by [parentTable], [columnName]
             }
 
             // if this is a IHasAttributes type, generate Attribute/AttributeValues since they can be fetched thru REST when ?loadAttributes is specified
-            if ( typeof( Rock.Attribute.IHasAttributes ).IsAssignableFrom( type ) )
+            if ( typeof( Rock.Data.IHasAttributes ).IsAssignableFrom( type ) )
             {
                 sb.AppendLine( "        /// <summary>" );
                 sb.AppendLine( "        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' " );

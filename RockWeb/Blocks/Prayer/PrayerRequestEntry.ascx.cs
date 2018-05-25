@@ -29,7 +29,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -104,7 +104,7 @@ namespace RockWeb.Blocks.Prayer
 
             if ( cpCampus.Visible )
             {
-                cpCampus.Campuses = CampusCache.All( false );
+                cpCampus.Campuses = CacheCampus.All( false );
             }
 
             var categoryGuid = GetAttributeValue( "GroupCategoryId" );
@@ -117,7 +117,7 @@ namespace RockWeb.Blocks.Prayer
                 {
                     
                     Guid defaultCategoryGuid = GetAttributeValue( "DefaultCategory" ).AsGuid();
-                    var defaultCategoryId = CategoryCache.Read( defaultCategoryGuid, rockContext ).Id;
+                    var defaultCategoryId = CacheCategory.Get( defaultCategoryGuid, rockContext ).Id;
 
                     bddlCategory.SetValue( defaultCategoryId );
                 }
@@ -128,7 +128,7 @@ namespace RockWeb.Blocks.Prayer
             }
 
             Type type = new PrayerRequest().GetType();
-            this.PrayerRequestEntityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( type.FullName );
+            this.PrayerRequestEntityTypeId = Rock.Cache.CacheEntityType.GetId( type.FullName );
 
             int charLimit = GetAttributeValue( "CharacterLimit" ).AsInteger();
             if ( charLimit > 0 )
@@ -409,7 +409,7 @@ namespace RockWeb.Blocks.Prayer
             Guid? workflowTypeGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
             if ( workflowTypeGuid.HasValue )
             {
-                var workflowType = WorkflowTypeCache.Read( workflowTypeGuid.Value );
+                var workflowType = CacheWorkflowType.Get( workflowTypeGuid.Value );
                 if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                 {
                     try

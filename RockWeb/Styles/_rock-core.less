@@ -58,18 +58,25 @@
 @import "./Bootstrap/mixins.less";
 
 
-
-
-
 // 2. HTML Overrides
 //--------------------------------
 
 iframe {
-  border: 1px solid @input-border;
+  border: 0 solid @input-border;
 }
 
 // 3. Utility Classes
 //--------------------------------
+
+.form-row {
+  .make-row(10px);
+
+  & > .col,
+  & > [class*=col-] {
+    padding-right: 5px;
+    padding-left: 5px;
+  }
+}
 
 .clickable {
   cursor: pointer;
@@ -84,13 +91,13 @@ iframe {
 
   &.tip-liquid,
   &.tip-lava {
-    &:after {
+    &::after {
       content: "{{ Lava }}";
     }
   }
 
   &.tip-html {
-    &:after {
+    &::after {
       content: "< HTML />";
     }
   }
@@ -162,6 +169,22 @@ a.warning {
 // add new alert style
 .alert-default {
   .alert-variant(@alert-default-bg; @alert-default-border; @alert-default-text);
+}
+
+.alert-validation {
+  .alert-variant(@alert-validation-bg; @alert-validation-border; @alert-validation-heading);
+  font-weight: 700;
+
+  ul,
+  span {
+    font-weight: 400;
+    color: #484848;
+  }
+
+  ul {
+    padding: 5px 25px 0;
+    line-height: 1.5;
+  }
 }
 
 // fix btn colors that are inside of panels
@@ -669,23 +692,10 @@ th[align=center] {
 }
 
 
-
 .btn-minimal {
   padding: 0;
   color: lighten(@text-color, 30%);
   text-decoration: none;
-}
-
-// alert extentions
-.alert {
-  // styling for exceptions
-
-  pre {
-    padding: 0;
-    color: inherit;
-    background-color: transparent;
-    border: 0;
-  }
 }
 
 // make links in alerts the same color as the text with a nice dotted underline
@@ -731,25 +741,9 @@ th[align=center] {
   }
 }
 
-.alert {
-  // hide the styling of pre's inside of alerts
-  pre {
-    padding: 0;
-    color: inherit;
-    background-color: transparent;
-    border: 0;
-  }
-}
-
 // system errors
 
 .system-error {
-  pre {
-    color: inherit;
-    background-color: transparent;
-    border: 0;
-  }
-
   .close {
     color: inherit;
   }

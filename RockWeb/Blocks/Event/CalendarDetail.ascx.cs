@@ -30,7 +30,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
@@ -97,10 +97,18 @@ namespace RockWeb.Blocks.Event
             gContentChannels.GridRebind += gContentChannels_GridRebind;
 
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', 'This will also delete all the calendar items! Are you sure you wish to continue with the delete?');", EventCalendar.FriendlyTypeName );
-            btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.EventCalendar ) ).Id;
+            btnSecurity.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.EventCalendar ) ).Id;
 
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upEventCalendar );
+
+            // Setup for being able to copy text to clipboard
+            RockPage.AddScriptLink( this.Page, "~/Scripts/clipboard.js/clipboard.min.js" );
+            string script = string.Format( @"
+    new Clipboard('#{0}');
+    $('#{0}').tooltip();
+", btnCopyToClipboard.ClientID );
+            ScriptManager.RegisterStartupScript( btnCopyToClipboard, btnCopyToClipboard.GetType(), "share-copy", script, true );
         }
 
         /// <summary>
@@ -113,7 +121,15 @@ namespace RockWeb.Blocks.Event
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "EventCalendarId" ).AsInteger() );
+                var calendarEventId = PageParameter( "EventCalendarId" ).AsInteger();
+
+                // Set URL in feed button
+                var globalAttributes = CacheGlobalAttributes.Get();
+                btnCopyToClipboard.Attributes["data-clipboard-text"] = string.Format( "{0}GetEventCalendarFeed.ashx?CalendarId={1}", globalAttributes.GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash(), calendarEventId );
+                btnCopyToClipboard.Disabled = false;
+
+
+                ShowDetail( calendarEventId );
             }
             else
             {
@@ -410,7 +426,7 @@ namespace RockWeb.Blocks.Event
         protected void lbCalendarsDetail_Click( object sender, EventArgs e )
         {
             var qryParams = new Dictionary<string, string>();
-            var pageCache = PageCache.Read( RockPage.PageId );
+            var pageCache = CachePage.Get( RockPage.PageId );
             if ( pageCache != null && pageCache.ParentPage != null )
             {
                 NavigateToPage( pageCache.ParentPage.Guid, qryParams );
@@ -874,7 +890,7 @@ namespace RockWeb.Blocks.Event
                     a.Guid,
                     a.Name,
                     a.Description,
-                    FieldType = FieldTypeCache.GetName( a.FieldTypeId ),
+                    FieldType = CacheFieldType.GetName( a.FieldTypeId ),
                     a.IsRequired,
                     a.IsGridColumn,
                     a.AllowSearch
@@ -893,7 +909,7 @@ namespace RockWeb.Blocks.Event
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
-                attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
+                attribute.FieldTypeId = CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
             }
             else
             {
@@ -927,7 +943,7 @@ namespace RockWeb.Blocks.Event
             {
                 attributeService.Delete( attr );
                 rockContext.SaveChanges();
-                AttributeCache.Flush( attr.Id );
+                CacheAttribute.Remove( attr.Id );
             }
 
             // Update the Attributes that were assigned in the UI
@@ -936,7 +952,7 @@ namespace RockWeb.Blocks.Event
                 Helper.SaveAttributeEdits( attribute, entityTypeId, qualifierColumn, qualifierValue, rockContext );
             }
 
-            AttributeCache.FlushEntityAttributes();
+            CacheAttribute.RemoveEntityAttributes();
         }
 
         #endregion
@@ -962,6 +978,5 @@ namespace RockWeb.Blocks.Event
         #endregion
 
         #endregion
-
     }
 }

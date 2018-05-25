@@ -70,6 +70,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ContentChannel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ContentChannelItem.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ContentChannelItemAssociation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ContentChannelItemSlug.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ContentChannelType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\DataView.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\DataViewFilter.cs" />
@@ -161,6 +162,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonBadge.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonDuplicate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonPreviousName.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonSearchKey.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonSignal.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonToken.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonViewed.cs" />

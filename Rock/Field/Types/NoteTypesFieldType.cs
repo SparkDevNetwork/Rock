@@ -23,7 +23,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -57,7 +57,7 @@ namespace Rock.Field.Types
                     Guid? guid = guidString.AsGuidOrNull();
                     if ( guid.HasValue )
                     {
-                        var noteType = NoteTypeCache.Read( guid.Value );
+                        var noteType = CacheNoteType.Get( guid.Value );
                         if ( noteType != null )
                         {
                             names.Add( noteType.Name );
@@ -97,7 +97,7 @@ namespace Rock.Field.Types
                     entityTypeName = configurationValues[ENTITY_TYPE_NAME_KEY].Value;
                     if ( !string.IsNullOrWhiteSpace( entityTypeName ) && entityTypeName != None.IdValue )
                     {
-                        var entityType = EntityTypeCache.Read( entityTypeName );
+                        var entityType = CacheEntityType.Get( entityTypeName );
                         if ( entityType != null )
                         {
                             entityTypeId = entityType.Id;
@@ -152,15 +152,10 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            List<string> values = new List<string>();
-
-            if ( control != null && control is RockCheckBoxList )
+            var picker = control as RockCheckBoxList;
+            if ( picker != null )
             {
-                RockCheckBoxList cbl = (RockCheckBoxList)control;
-                foreach ( ListItem li in cbl.Items )
-                    if ( li.Selected )
-                        values.Add( li.Value );
-                return values.AsDelimited<string>( "," );
+                return picker.SelectedValues.AsDelimited( "," );
             }
 
             return null;
@@ -174,16 +169,13 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value != null )
+            var picker = control as ListControl;
+            if ( picker != null )
             {
-                List<string> values = new List<string>();
-                values.AddRange( value.Split( ',' ) );
-
-                if ( control != null && control is RockCheckBoxList )
+                List<string> values = value?.Split( ',' ).ToList() ?? new List<string>();
+                foreach ( ListItem li in picker.Items )
                 {
-                    RockCheckBoxList cbl = (RockCheckBoxList)control;
-                    foreach ( ListItem li in cbl.Items )
-                        li.Selected = values.Contains( li.Value, StringComparer.OrdinalIgnoreCase );
+                    li.Selected = values.Contains( li.Value, StringComparer.OrdinalIgnoreCase );
                 }
             }
         }

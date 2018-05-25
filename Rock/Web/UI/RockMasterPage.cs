@@ -17,7 +17,7 @@
 using System;
 using System.Web.UI;
 
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Web.UI
 {
@@ -26,7 +26,7 @@ namespace Rock.Web.UI
     /// </summary>
     public class RockMasterPage : MasterPage
     {
-        private PageCache _pageCache = null;
+        private CachePage _pageCache = null;
         private bool _showTitle = true;
 
         /// <summary>
@@ -45,7 +45,7 @@ namespace Rock.Web.UI
         /// Sets the page.
         /// </summary>
         /// <param name="pageCache">The page cache.</param>
-        internal void SetPage(PageCache pageCache)
+        internal void SetPage(CachePage pageCache)
         {
             _pageCache = pageCache;
         }

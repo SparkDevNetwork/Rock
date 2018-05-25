@@ -14,7 +14,6 @@
 @import "_variables.less";
 @import "_variable-overrides.less";
 @import "_root.less";
-
 /*
   Rock Theme Styles
   1. HTML Overrides
@@ -63,18 +62,15 @@ a:hover {
 input[type="text"],
 textarea,
 .form-control {
-  -webkit-transition: all .3s ease-in-out;
-  -moz-transition: all .3s ease-in-out;
-  -ms-transition: all .3s ease-in-out;
-  -o-transition: all .3s ease-in-out;
+  box-shadow: none;
+  transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+
+  &:focus {
+    border: 1px solid @brand-primary;
+    box-shadow: 0 0 0 3px rgba(red(@brand-primary), green(@brand-primary), blue(@brand-primary), .6);
+  }
 }
 
-input[type="text"]:focus,
-textarea:focus,
-.form-control:focus {
-  border: 1px solid rgba(238, 118, 36, .6);
-  box-shadow: 0 0 5px rgba(238, 118, 36, .6);
-}
 
 // text selection color
 ::selection {
@@ -94,14 +90,15 @@ textarea:focus,
 // 2. Bootstrap Overrides    */
 // -------------------------
 
-.btn-group.open .dropdown-toggle {
-  -webkit-box-shadow: 0;
-  box-shadow: 0;
+.alert {
+  border-width: 0;
+  border-top-width: 3px;
+  box-shadow: 0 0 0 1px rgba(63,63,68,.05), 0 1px 3px 0 rgba(63,63,68,.15);
 }
 
-/*.btn-xs, .btn-group-xs>.btn {
-  line-height: 1;
-} */ // made buttons way to swishy
+.btn-group.open .dropdown-toggle {
+  box-shadow: none;
+}
 
 .input-group-addon,
 .form-control {
@@ -109,16 +106,17 @@ textarea:focus,
 }
 .has-error .form-control,
 .has-error .input-group-addon {
-  border-color: @alert-danger-bg;
+  box-shadow: 0;
+}
+
+.has-error .form-control:focus {
+  border-color: @brand-danger;
+  box-shadow: 0 0 0 3px rgba(red(@brand-danger), green(@brand-danger), blue(@brand-danger), .2);
 }
 
 .has-error .control-label {
-  color: @alert-danger-bg;
+  color: @brand-danger;
 }
-
-/*.form-group label {
-  font-weight: @font-weight-semibold;
-}*/ // commented out as it made radio list labels bold
 
 .nav .open > a,
 .nav .open > a:focus,
@@ -129,18 +127,11 @@ textarea:focus,
 
 .label {
   font-weight: 400; // make the font light
-
   border-radius: 0; // labels always have curves
-}
-
-.table-bordered > tbody > tr > td {
-  border-width: @table-column-border-width;
 }
 
 .grid .table > tbody > tr > td,
 .grid .table > tbody > tr > th,
-.grid .table > tfoot > tr > td,
-.grid .table > tfoot > tr > th,
 .grid .table > thead > tr > td,
 .grid .table > thead > tr > th {
   padding: 18px 12px;
@@ -148,20 +139,34 @@ textarea:focus,
   border-top-width: 1px;
 }
 
+.grid .table > tbody > tr > td {
+  &.grid-columnreorder {
+    padding-top: 18px;
+  }
+}
+
+.grid .table > tfoot {
+  border-top: 1px solid @table-border-color;
+  > tr > td,
+  > tr > th {
+    color: @text-color;
+    background: @panel-bg;
+  }
+}
+
 .grid .table > tbody > tr > td.grid-columncommand {
   padding-top: 14px;
   padding-bottom: 0;
 }
 
-.table-bordered > thead > tr > td,
-.table-bordered > thead > tr > th,
-.table.table-light > thead > tr > th {
-  border-color: @grid-border-color;
+.grid-columncommand .btn {
+  width: 33px;
+  padding: 5px 10px 5px 7px;
 }
 
-.breadcrumb > .active { // make the active item in the breadcrumbs not look like a link
-  color: @text-color;
-  color: var(--text-color);
+.grid-columncommand .btn.fa-clone {
+  width: 33px;
+  padding: 8px 8px 8px 7px;
 }
 
 .btn.active,
@@ -174,16 +179,15 @@ textarea:focus,
   font-weight: @font-weight-semibold;
 }
 
-
 /*#endregion */
 
 /*#region
 // 3. Rock Overrides         */
 // -------------------------
 
-.note a {
-  color: inherit;
-  text-decoration: underline;
+.modal {
+  .box-shadow(0 12px 24px 0 rgba(0, 0, 0, 0.1));
+  border-radius: 0;
 }
 
 .modal-header small {
@@ -231,6 +235,10 @@ textarea:focus,
   box-shadow: none;
 }
 
+.panel {
+  .box-shadow(none);
+}
+
 .panel-block {
 
   > .panel-heading {
@@ -247,10 +255,6 @@ textarea:focus,
 
 .panel .panel-heading.panel-follow {
   padding-right: 60px;
-}
-
-.panel-widget > .panel-heading {
-  background-color: @gray-lighter;
 }
 
 .panel .panel-heading .panel-options {
@@ -296,10 +300,6 @@ td.grid-actions {
     font-size: 1.125em;
     background-color: transparent;
     border: 0;
-
-    &:hover {
-      background-color: @btn-default-bg;
-    }
   }
 }
 
@@ -327,16 +327,8 @@ td.grid-actions {
     position: relative;
   }
 
-  .header-content {
-    padding: 12px;
-  }
-
   .navbar-zone-login {
     float: right;
-  }
-
-  .navbar-zone-header {
-    float: left;
   }
 
   @media (min-width: @screen-sm-min) {
@@ -354,7 +346,7 @@ td.grid-actions {
   .navbar-toggle {
     float: left;
     margin-top: 12px;
-    margin-left: calc(@navbarside-width * .24);
+    margin-left: @navbarside-width * .24;
     font-size: 1.5em;
     color: #fff;
     cursor: pointer;
@@ -397,69 +389,72 @@ td.grid-actions {
     }
   }
 
-  .navbar-brand-center {
-    display: block;
-    width: @navbar-top-height;
-    height: @navbar-top-height;
-    margin: 0 auto;
-    background-image: url("../../../Assets/Images/rock-logo-circle-white.svg");
-    background-repeat: no-repeat;
-    background-position: center center;
-    background-size: 45px;
+  // Bookmarks
+  // 
+  // .bookmarks {
+  //   margin: 0;
 
-    @media (min-width: @screen-sm-min) {
-      display: none;
-    }
-  }
+  //   & > li {
+  //     padding-bottom: 12px;
+  //   }
 
-  .bookmarks {
-    margin: 0;
+  //   a {
+  //     padding: 0 16px;
+  //     font-size: 1em;
+  //     line-height: 14px;
+  //     color: @navbartop-color;
 
-    & > li {
-      padding-bottom: 12px;
-    }
+  //     &:hover,
+  //     &:focus {
+  //       background-color: transparent;
+  //       opacity: .8;
+  //     }
 
-    a {
-      padding: 0 16px;
-      font-size: 1em;
-      line-height: 14px;
-      color: @navbartop-color;
+  //     @media (min-width: @screen-sm-min) {
+  //       margin-left: 24px;
+  //       line-height: @navbar-top-height;
 
-      &:hover,
-      &:focus {
-        background-color: transparent;
-        opacity: .8;
-      }
-
-      @media (min-width: @screen-sm-min) {
-        margin-left: 24px;
-        line-height: @navbar-top-height;
-
-        & > li {
-          float: left;
-          padding-bottom: 24px;
-        }
-      }
-    }
-  }
+  //       & > li {
+  //         float: left;
+  //         padding-bottom: 24px;
+  //       }
+  //     }
+  //   }
+  // }
 
   .smartsearch {
+    position: relative;
     float: right;
-    width: 340px;
+    width: ~"calc(100% - 160px)";
     height: 50px;
+    padding: 0;
     margin: 15px 0;
     font-size: .875em;
     color: @navbartop-color;
     border: 0;
 
+    @media (min-width: @screen-sm-min) {
+      width: 340px;
+    }
+
     i {
-      margin-top: 14px;
-      margin-left: 6px;
+      margin-top: 16px;
+      margin-left: 10px;
+    }
+
+    .twitter-typeahead {
+      margin-right: 80px
+    }
+
+    .smartsearch-type {
+      position: absolute;
+      right: 0;
+      z-index: 100;
+      width: auto;
     }
 
     input.searchinput {
-      padding-left: 30px;
-      margin-top: 10px;
+      padding: 15px 0 15px 30px;
       color: @navbartop-color;
     }
 
@@ -476,6 +471,10 @@ td.grid-actions {
       }
     }
 
+    .tt-suggestion p {
+      padding: 13px 15px 13px 10px;
+    }
+
     .tt-hint {
       padding: 14.5px 4px 4px 30px;
       color: @navbartop-color;
@@ -483,7 +482,8 @@ td.grid-actions {
     }
 
     .tt-dropdown-menu {
-      margin-top: 10px;
+      min-width: 340px;
+      padding: 0;
     }
   }
 
@@ -492,22 +492,32 @@ td.grid-actions {
 
     & > li {
       min-width: inherit;
+      @media (max-width: @screen-sm-max) {
+        position: static;
+      }
 
       > a {
         padding: 0 18px;
         line-height: @navbar-top-height;
         color: @navbartop-color;
 
+        @media (max-width: @screen-sm-max) {
+          .fa-caret-down {
+            display: none;
+          }
+        }
 
         .profile-photo {
           float: left;
           width: 43px;
           height: 43px;
           margin-top: 17px;
-          margin-right: 12px;
           background-repeat: no-repeat;
           background-size: cover;
           border-radius: 50%;
+          @media (min-width: @screen-sm-min) {
+            margin-right: 12px;
+          }
 
           &[style*="no-photo"] {
             opacity: .4;
@@ -531,6 +541,19 @@ td.grid-actions {
       .dropdown-menu {
         right: 0;
         left: auto;
+        @media (max-width: @screen-xs-max) {
+          position: absolute;
+          top: 80px;
+          left: 0;
+          z-index: 1000;
+          background-color: @brand-color;
+          background-color: var(--brand-color);
+
+          &>li>a{
+            color: @navbartop-color;
+            color: var(--navbartop-color);
+          }
+        }
       }
     }
   }
@@ -551,18 +574,12 @@ td.grid-actions {
     a {
       width: 100%;
       line-height: 34px;
-      color: @navbartop-color;
 
       &:hover {
         color: #fff;
         background-color: @brand-color;
         background-color: var(--brand-color);
         opacity: 1;
-      }
-
-      @media (min-width: @screen-sm-min) {
-        color: @text-color;
-        color: var(--text-color);
       }
     }
 
@@ -581,21 +598,6 @@ td.grid-actions {
     }
   }
 
-  #header-collapse { // the collapse for the bookmarks search and login status
-
-    display: none;
-    width: 100%;
-    padding: 12px 0;
-    font-size: 1em;
-    color: @navbarside-color;
-    text-align: center;
-    cursor: pointer;
-    background-color: lighten(@brand-color, 30%);
-
-    @media (max-width: @screen-sm-min) {
-      display: block;
-    }
-  }
 }
 
 #content-wrapper {
@@ -628,7 +630,7 @@ td.grid-actions {
     display: block;
     height: @navbar-top-height;
     padding-top: 22px;
-    padding-left: calc(@navbarside-width * .37);
+    padding-left: @navbarside-width * .37;
     font-size: 1.5em;
     cursor: pointer;
     border-bottom: 1px solid lighten(@navbarside-background-color, 10%);
@@ -743,17 +745,16 @@ td.grid-actions {
         li.header:first-child {
           margin-top: 0;
         }
-      }
-
-      .nav-childpages::-webkit-scrollbar {
-        width: 10px;
-        background-color: transparent;
-      }
-
-      .nav-childpages::-webkit-scrollbar-thumb {
-        width: 10px;
-        background-color: rgba(0,0,0, .2);
-        border-radius: 10px;
+        &::-webkit-scrollbar {
+          width: 10px;
+          background-color: transparent;
+        }
+  
+        &::-webkit-scrollbar-thumb {
+          width: 10px;
+          background-color: rgba(0,0,0, .2);
+          border-radius: 10px;
+        }
       }
     }
 
@@ -795,7 +796,7 @@ body.navbar-side-open {
 body.navbar-side-close {
   .navbar-static-side {
 
-    @media (max-width: @screen-xs-max) {
+    @media (max-width: @screen-sm-max) {
       display: none;
     }
   }
@@ -807,7 +808,7 @@ body.navbar-side-close {
 
   #page-content {
     min-height: 600px;
-    padding: 12px;
+    padding: 15px;
 
     @media (min-width: @screen-md-min) {
       padding: 0;
@@ -815,7 +816,7 @@ body.navbar-side-close {
   }
 
   .page-title {
-    padding: 20px 35px;
+    padding: 20px 15px;
     background-color: @pagetitle-background;
     background-color: var(--pagetitle-background);
 
@@ -833,18 +834,28 @@ body.navbar-side-close {
       padding: 4px 0 0;
       margin: 0;
       font-size: .875em;
-      background-color: transparent;
+
+      a:hover {
+        text-decoration: underline;
+      }
 
       i {
         display: none;
       }
+
+      > li+li:before {
+        padding: 0 6px 0 7px;
+      }
     }
   }
+
+
 
   @media (min-width: @screen-md-min) {
     margin: 35px 35px 0 35px;
 
     .page-title {
+      padding: 20px 35px;
       margin: -35px -35px 15px -35px;
     }
   }
@@ -915,14 +926,18 @@ body.navbar-side-close {
   }
 }
 
+.tableFloatingHeaderOriginal {
+  border-bottom: 1px solid @grid-column-header-border-color;
+  box-shadow: @shadow-sticky-nav;
+}
+
 /*#endregion */
 
 /*#region
 // 5. Specific Page Styling        */
 // -------------------------
 .personprofilebar-bio {
-  .name .nickname,
-  .name .lastname {
+  .name {
     font-weight: 700;
   }
 
@@ -950,115 +965,201 @@ body.navbar-side-close {
 /*#region
 // 6. Components          */
 // -------------------------
+
+// Date Picker
+.picker-daterange {
+  .input-group-lower{
+    .input-group-addon {
+      display: none;
+    }
+  }
+}
+
 // radio buttons & checkboxes - fancy styling
-.radio label,
-.checkbox label {
-  padding-left: 0;
+.radio,
+.checkbox {
+  position: relative;
+  display: block;
+  min-height: 19px;
+  padding-left: 28px;  // Not sure if needed
+
+  label { // Override forms.less
+    padding-left: 0;
+  }
 }
 
-.radio-inline label,
-.checkbox label {
-  font-weight: normal;
-  cursor: pointer;
+.radio-inline,
+.checkbox-inline {
+  padding-left: 30px;
 }
 
-.checkbox-inline:first-child,
-.radio-inline:first-child {
-  padding-left: 0;
+.radio,
+.checkbox,
+.radio-inline,
+.checkbox-inline {
+  // Custom control indicators
+  //
+  // Build the custom controls out of psuedo-elements.
+  .label-text {
+    margin-bottom: 0;
+
+    // Background-color and (when enabled) gradient
+    &::before {
+      position: absolute;
+      top: @custom-control-indicator-offset;
+      left: 0;
+      display: block;
+      width: @custom-control-indicator-size;
+      height: @custom-control-indicator-size;
+      pointer-events: none;
+      content: "";
+      user-select: none;
+      background-color: #fff;
+      border: 2px solid @input-border;
+      border-radius: .25rem;
+    }
+
+    // Foreground (icon)
+    &::after {
+      position: absolute;
+      top: @custom-control-indicator-offset;
+      left: 0;
+      display: block;
+      width: @custom-control-indicator-size;
+      height: @custom-control-indicator-size;
+      content: "";
+      background-repeat: no-repeat;
+      background-position: center center;
+      background-size: 50% 50%;
+    }
+  }
+
+  input[type="checkbox"],
+  input[type="radio"] {
+    position: absolute;
+    z-index: -1; // Put the input behind the label so it doesn't overlay text
+    opacity: 0;
+
+    &:checked ~ .label-text::before {
+      background-color: @brand-color;
+      border-color: @brand-color;
+    }
+
+    &:focus ~ .label-text::before {
+      // the mixin is not used here to make sure there is feedback
+      box-shadow: 0 0 0 1px #fff, 0 0 0 3px rgba(red(@brand-primary), green(@brand-primary), blue(@brand-primary), .2);
+    }
+
+    &:active ~ .label-text::before {
+      color: #fff;
+      background-color: lighten(@brand-color, 30%);
+    }
+
+    &:disabled {
+      ~ .label-text {
+        color: #6c757d;
+
+        &::before {
+          background-color: #e9ecef;
+        }
+      }
+    }
+
+  }
 }
 
-/*.controls .row .checkbox:first-child {
-  margin-top: -5px;
-}*/ // horizontal checkbox lists were being thrown off
+.checkbox,
+.checkbox-inline {
+  input[type="checkbox"] {
+    &:checked ~ .label-text::after {
+      background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath fill='%23ffffff' d='M6.564.75l-3.59 3.612-1.538-1.55L0 4.26 2.974 7.25 8 2.193z'/%3E%3C/svg%3E");
+    }
+  }
+}
 
-.checkbox input[type="checkbox"],
-.checkbox-inline input[type="checkbox"],
-.radio input[type="radio"],
-.radio-inline input[type="radio"] {
-  display: none;
-  width: 22px;
+.radio,
+.radio-inline {
+  .label-text::before {
+    border-radius: 50%;
+  }
+
+  input[type="radio"] {
+    &:checked ~ .label-text::after {
+      background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3E%3Ccircle r='3' fill='%23ffffff'/%3E%3C/svg%3E");
+    }
+  }
+}
+
+
+
+.note-editor.note-frame {
+  margin-bottom: 0;
+  border: 0;
+}
+
+.note-editor .note-toolbar {
+  padding: 0;
   margin: 0;
+  border: 0;
+  border-top: 1px solid #eaeaea !important;
 }
 
-.checkbox input[type="checkbox"]:checked + span.label-text::before,
-.checkbox-inline input[type="checkbox"]:checked + span.label-text::before,
-.radio input[type="radio"]:checked + span.label-text::before,
-.radio-inline input[type="radio"]:checked + span.label-text::before {
+.note-btn {
+  padding: 5px 10px 7px;
+  background:#fff;
+  border: 0;
+
+  &:hover,
+  &:focus {
+    background:#fff;
+  }
+
+  &:active,
+  &:active:focus,
+  &.active,
+  &.active:focus,
+  &.active:hover {
+    background: #cbeefa;
+  }
+}
+
+.btn-mergefield {
   font-weight: @fa-theme-weight;
-  color: @brand-color;
-  color: var(--brand-color);
-  content: @fa-var-check;
-  border-color: @brand-color;
-  border-color: var(--brand-color);
 }
 
-.radio-inline input[type="radio"] + span.label-text::before,
-.radio input[type="radio"] + span.label-text::before {
-  font-size: 14px;
-  line-height: 17px;
-  border-radius: 50%;
+// .note-editor .note-toolbar .btn .fa {
+//   font-size: 14px
+// }
+
+.note-editor .note-toolbar>.btn-group {
+  margin-top: 0;
 }
 
-.radio input[type="radio"]:checked + span.label-text::before,
-.radio-inline input[type="radio"]:checked + span.label-text::before {
-  font-weight: 900;
-  content: @fa-var-circle;
+// .note-editor .note-toolbar .note-color .dropdown-toggle {
+//   padding-left: 5px;
+//   width: 20px
+// }
+
+// .note-editor .note-statusbar {
+//   background-color: #f6f6f6
+// }
+
+// .note-editor .note-statusbar .note-resizebar {
+//   height: auto;
+//   padding-top: 3px;
+//   padding-bottom: 4px
+// }
+
+.note-editor .note-editable {
+  border: 1px solid #eaeaea;
 }
 
-.checkbox input[type="checkbox"] + span.label-text::before,
-.radio input[type="radio"] + span.label-text::before,
-.checkbox-inline input[type="checkbox"] + span.label-text::before,
-.radio-inline input[type="radio"] + span.label-text::before {
-  display: inline-block;
-  width: 22px;
-  height: 22px;
-  margin-right: 5px;
-  font-family: FontAwesome;
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 19px;
-  text-align: center;
-  vertical-align: bottom;
-  pointer-events: none;
-  cursor: pointer;
-  content: "";
-  background-color: #fff;
-  border: 2px solid @input-border;
-}
+// .note-editor .note-editing-area .note-editable {
+//   color: #555
+// }
 
-.radio input[type="radio"] + span.label-text::before,
-.radio-inline input[type="radio"] + span.label-text::before {
-  font-size: 13px;
-}
 
-// slider styling
-.irs-bar-edge {
-  background: @brand-color !important;
-  background: var(--brand-color) !important;
-  border: 1px solid @brand-color !important;
-  border-color: var(--brand-color) !important;
-}
-
-.irs-bar {
-  background: @brand-color !important;
-  background: var(--brand-color) !important;
-  border: 1px solid @brand-color !important;
-  border-color: var(--brand-color) !important;
-}
-
-.irs-from,
-.irs-to,
-.irs-single {
-  background: @brand-color !important;
-  background: var(--brand-color) !important;
-}
-
-.irs-slider {
-  background: #fff !important;
-  border: 1px solid #aaa !important;
-  box-shadow: none !important;
-}
 
 /*#endregion */
-@import "_print.less";
+// @import "_print.less";
 @import "_css-overrides.less";

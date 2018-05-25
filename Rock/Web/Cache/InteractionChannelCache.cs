@@ -16,9 +16,9 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 
+using Rock.Cache;
 using Rock.Data;
 using Rock.Model;
 
@@ -29,20 +29,21 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
+    [Obsolete( "Use Rock.Cache.CacheInteractionChannel instead" )]
     public class InteractionChannelCache : CachedModel<InteractionChannel>
     {
         #region Constructors
 
-        private InteractionChannelCache( InteractionChannel model )
+        private InteractionChannelCache( CacheInteractionChannel cacheInteractionChannel )
         {
-            CopyFromModel( model );
+            CopyFromNewCache( cacheInteractionChannel );
         }
 
         #endregion
 
         #region Properties
 
-        private object _obj = new object();
+        private readonly object _obj = new object();
 
         /// <summary>
         /// Gets or sets the name.
@@ -106,18 +107,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The type of the component entity.
         /// </value>
-        public EntityTypeCache ComponentEntityType
-        {
-            get
-            {
-                if ( ComponentEntityTypeId.HasValue )
-                {
-                    return EntityTypeCache.Read( ComponentEntityTypeId.Value );
-                }
-
-                return null;
-            }
-        }
+        public EntityTypeCache ComponentEntityType => ComponentEntityTypeId.HasValue ? EntityTypeCache.Read( ComponentEntityTypeId.Value ) : null;
 
 
         /// <summary>
@@ -126,18 +116,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The type of the interaction entity.
         /// </value>
-        public EntityTypeCache InteractionEntityType
-        {
-            get
-            {
-                if ( InteractionEntityTypeId.HasValue )
-                {
-                    return EntityTypeCache.Read( InteractionEntityTypeId.Value );
-                }
-
-                return null;
-            }
-        }
+        public EntityTypeCache InteractionEntityType => InteractionEntityTypeId.HasValue ? EntityTypeCache.Read( InteractionEntityTypeId.Value ) : null;
 
         /// <summary>
         /// Gets the channel type medium value.
@@ -145,18 +124,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The channel type medium value.
         /// </value>
-        public DefinedValueCache ChannelTypeMediumValue
-        {
-            get
-            {
-                if ( ChannelTypeMediumValueId.HasValue )
-                {
-                    return DefinedValueCache.Read( ChannelTypeMediumValueId.Value );
-                }
-
-                return null;
-            }
-        }
+        public DefinedValueCache ChannelTypeMediumValue => ChannelTypeMediumValueId.HasValue ? DefinedValueCache.Read( ChannelTypeMediumValueId.Value ) : null;
 
         /// <summary>
         /// Gets the interaction components.
@@ -172,7 +140,7 @@ namespace Rock.Web.Cache
 
                 InitComponentIds();
 
-                foreach ( int id in componentIds )
+                foreach ( var id in componentIds )
                 {
                     var component = InteractionComponentCache.Read( id );
                     if ( component != null )
@@ -187,7 +155,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// The component ids
         /// </summary>
-        private List<int> componentIds = null;
+        private List<int> componentIds;
 
         #endregion
 
@@ -200,15 +168,14 @@ namespace Rock.Web.Cache
         {
             lock ( _obj )
             {
-                if ( componentIds == null )
+                if (componentIds != null) return;
+
+                using ( var rockContext = new RockContext() )
                 {
-                    using ( var rockContext = new RockContext() )
-                    {
-                        componentIds = new Model.InteractionComponentService( rockContext )
-                            .GetByChannelId( this.Id )
-                            .Select( v => v.Id )
-                            .ToList();
-                    }
+                    componentIds = new InteractionComponentService( rockContext )
+                        .GetByChannelId( Id )
+                        .Select( v => v.Id )
+                        .ToList();
                 }
             }
         }
@@ -251,26 +218,48 @@ namespace Rock.Web.Cache
         /// Copies from model.
         /// </summary>
         /// <param name="model">The model.</param>
-        public override void CopyFromModel( Data.IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
             base.CopyFromModel( model );
 
-            if ( model is InteractionChannel )
-            {
-                var interactionChannel = (InteractionChannel)model;
-                this.Name = interactionChannel.Name;
-                this.ChannelEntityId = interactionChannel.ChannelEntityId;
-                this.ChannelTypeMediumValueId = interactionChannel.ChannelTypeMediumValueId;
-                this.ComponentEntityTypeId = interactionChannel.ComponentEntityTypeId;
-                this.ForeignGuid = interactionChannel.ForeignGuid;
-                this.ForeignKey = interactionChannel.ForeignKey;
-                this.InteractionEntityTypeId = interactionChannel.InteractionEntityTypeId;
-                this.RetentionDuration = interactionChannel.RetentionDuration;
-                this.ComponentCacheDuration = interactionChannel.ComponentCacheDuration;
+            if (!(model is InteractionChannel)) return;
 
-                // set componentIds to null so it load them all at once on demand
-                this.componentIds = null;
-            }
+            var interactionChannel = (InteractionChannel)model;
+            Name = interactionChannel.Name;
+            ChannelEntityId = interactionChannel.ChannelEntityId;
+            ChannelTypeMediumValueId = interactionChannel.ChannelTypeMediumValueId;
+            ComponentEntityTypeId = interactionChannel.ComponentEntityTypeId;
+            ForeignGuid = interactionChannel.ForeignGuid;
+            ForeignKey = interactionChannel.ForeignKey;
+            InteractionEntityTypeId = interactionChannel.InteractionEntityTypeId;
+            RetentionDuration = interactionChannel.RetentionDuration;
+            ComponentCacheDuration = interactionChannel.ComponentCacheDuration;
+
+            // set componentIds to null so it load them all at once on demand
+            componentIds = null;
+        }
+
+        /// <summary>
+        /// Copies properties from a new cached entity
+        /// </summary>
+        /// <param name="cacheEntity">The cache entity.</param>
+        protected sealed override void CopyFromNewCache(IEntityCache cacheEntity)
+        {
+            base.CopyFromNewCache( cacheEntity );
+
+            if ( !( cacheEntity is CacheInteractionChannel ) ) return;
+
+            var interactionChannel = (CacheInteractionChannel)cacheEntity;
+            Name = interactionChannel.Name;
+            ChannelEntityId = interactionChannel.ChannelEntityId;
+            ChannelTypeMediumValueId = interactionChannel.ChannelTypeMediumValueId;
+            ComponentEntityTypeId = interactionChannel.ComponentEntityTypeId;
+            ForeignGuid = interactionChannel.ForeignGuid;
+            ForeignKey = interactionChannel.ForeignKey;
+            InteractionEntityTypeId = interactionChannel.InteractionEntityTypeId;
+            RetentionDuration = interactionChannel.RetentionDuration;
+            ComponentCacheDuration = interactionChannel.ComponentCacheDuration;
+            componentIds = interactionChannel.InteractionComponentIds;
         }
 
         /// <summary>
@@ -281,17 +270,12 @@ namespace Rock.Web.Cache
         /// </returns>
         public override string ToString()
         {
-            return this.Name;
+            return Name;
         }
 
         #endregion
 
         #region Static Methods
-
-        private static string CacheKey( int id )
-        {
-            return string.Format( "Rock:InteractionChannel:{0}", id );
-        }
 
         /// <summary>
         /// Returns InteractionChannel object from cache.  If interactionChannel does not already exist in cache, it
@@ -302,37 +286,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static InteractionChannelCache Read( int id, RockContext rockContext = null )
         {
-            return GetOrAddExisting( InteractionChannelCache.CacheKey( id ),
-                () => LoadById( id, rockContext ) );
-        }
-
-        private static InteractionChannelCache LoadById( int id, RockContext rockContext )
-        {
-            if ( rockContext != null )
-            {
-                return LoadById2( id, rockContext );
-            }
-
-            using ( var rockContext2 = new RockContext() )
-            {
-                return LoadById2( id, rockContext2 );
-            }
-        }
-
-        private static InteractionChannelCache LoadById2( int id, RockContext rockContext )
-        {
-            var interactionChannelService = new InteractionChannelService( rockContext );
-            var interactionChannelModel = interactionChannelService
-                .Queryable()
-                .Where( t => t.Id == id )
-                .FirstOrDefault();
-
-            if ( interactionChannelModel != null )
-            {
-                return new InteractionChannelCache( interactionChannelModel );
-            }
-
-            return null;
+            return new InteractionChannelCache( CacheInteractionChannel.Get( id, rockContext ) );
         }
 
         /// <summary>
@@ -343,33 +297,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static InteractionChannelCache Read( Guid guid, RockContext rockContext = null )
         {
-            int id = GetOrAddExisting( guid.ToString(),
-                () => LoadByGuid( guid, rockContext ) );
-
-            return Read( id, rockContext );
-        }
-
-        private static int LoadByGuid( Guid guid, RockContext rockContext )
-        {
-            if ( rockContext != null )
-            {
-                return LoadByGuid2( guid, rockContext );
-            }
-
-            using ( var rockContext2 = new RockContext() )
-            {
-                return LoadByGuid2( guid, rockContext2 );
-            }
-        }
-
-        private static int LoadByGuid2( Guid guid, RockContext rockContext )
-        {
-            var interactionChannelService = new InteractionChannelService( rockContext );
-            return interactionChannelService
-                .Queryable().AsNoTracking()
-                .Where( c => c.Guid.Equals( guid ) )
-                .Select( c => c.Id )
-                .FirstOrDefault();
+            return new InteractionChannelCache( CacheInteractionChannel.Get( guid, rockContext ) );
         }
 
         /// <summary>
@@ -380,17 +308,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static InteractionChannelCache Read( InteractionChannel interactionChannelModel, RockContext rockContext = null )
         {
-            return GetOrAddExisting( InteractionChannelCache.CacheKey( interactionChannelModel.Id ),
-                () => LoadByModel( interactionChannelModel ) );
-        }
-
-        private static InteractionChannelCache LoadByModel( InteractionChannel interactionChannelModel )
-        {
-            if ( interactionChannelModel != null )
-            {
-                return new InteractionChannelCache( interactionChannelModel );
-            }
-            return null;
+            return new InteractionChannelCache( CacheInteractionChannel.Get( interactionChannelModel ) );
         }
 
         /// <summary>
@@ -399,7 +317,7 @@ namespace Rock.Web.Cache
         /// <param name="id"></param>
         public static void Flush( int id )
         {
-            FlushCache( InteractionChannelCache.CacheKey( id ) );
+            CacheInteractionChannel.Remove( id );
         }
 
         #endregion

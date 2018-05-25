@@ -32,14 +32,14 @@ using Rock.Data;
 using Rock.Field.Types;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Cms
 {
     /// <summary>
-    /// Block to display content items, html, xml, or transformed xml based on a SQL query or stored procedure.
+    /// Block to display dynamic content channel items
     /// </summary>
     [DisplayName( "Content Channel View" )]
     [Category( "CMS" )]
@@ -201,9 +201,9 @@ namespace RockWeb.Blocks.Cms
 
         void ContentDynamic_BlockUpdated( object sender, EventArgs e )
         {
-            FlushCacheItem( CONTENT_CACHE_KEY );
-            FlushCacheItem( TEMPLATE_CACHE_KEY );
-            FlushCacheItem( OUTPUT_CACHE_KEY );
+            RemoveCacheItem( CONTENT_CACHE_KEY );
+            RemoveCacheItem( TEMPLATE_CACHE_KEY );
+            RemoveCacheItem( OUTPUT_CACHE_KEY );
 
             ShowView();
         }
@@ -275,9 +275,9 @@ namespace RockWeb.Blocks.Cms
 
             SaveAttributeValues();
 
-            FlushCacheItem( CONTENT_CACHE_KEY );
-            FlushCacheItem( TEMPLATE_CACHE_KEY );
-            FlushCacheItem( OUTPUT_CACHE_KEY );
+            RemoveCacheItem( CONTENT_CACHE_KEY );
+            RemoveCacheItem( TEMPLATE_CACHE_KEY );
+            RemoveCacheItem( OUTPUT_CACHE_KEY );
 
             mdEdit.Hide();
             pnlEditModal.Visible = false;
@@ -603,8 +603,7 @@ $(document).ready(function() {
 
                 if ( OutputCacheDuration.HasValue && OutputCacheDuration.Value > 0 )
                 {
-                    var cacheItemPolicy = new CacheItemPolicy { AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( OutputCacheDuration.Value ) };
-                    AddCacheItem( OUTPUT_CACHE_KEY, outputContents, cacheItemPolicy );
+                    AddCacheItem( OUTPUT_CACHE_KEY, outputContents, OutputCacheDuration.Value );
                 }
             }
 
@@ -649,8 +648,7 @@ $(document).ready(function() {
 
                     if ( ItemCacheDuration.HasValue && ItemCacheDuration.Value > 0 )
                     {
-                        var cacheItemPolicy = new CacheItemPolicy { AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( ItemCacheDuration.Value ) };
-                        AddCacheItem( TEMPLATE_CACHE_KEY, template, cacheItemPolicy );
+                        AddCacheItem( TEMPLATE_CACHE_KEY, template, ItemCacheDuration.Value );
                     }
                 }
             }
@@ -828,8 +826,7 @@ $(document).ready(function() {
 
                         if ( ItemCacheDuration.HasValue && ItemCacheDuration.Value > 0 && !queryParameterFiltering )
                         {
-                            var cacheItemPolicy = new CacheItemPolicy { AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( ItemCacheDuration.Value ) };
-                            AddCacheItem( CONTENT_CACHE_KEY, items, cacheItemPolicy );
+                            AddCacheItem( CONTENT_CACHE_KEY, items, ItemCacheDuration.Value );
                         }
 
                         // If items could be filtered by querystring values, check for filters
@@ -1023,7 +1020,7 @@ $(document).ready(function() {
         {
             if ( channel != null )
             {
-                var entityTypeCache = EntityTypeCache.Read( ITEM_TYPE_NAME );
+                var entityTypeCache = CacheEntityType.Get( ITEM_TYPE_NAME );
                 if ( entityTypeCache != null )
                 {
                     var entityType = entityTypeCache.GetEntityType();
@@ -1039,7 +1036,7 @@ $(document).ready(function() {
                         .ToList() )
                     {
                         // remove EntityFields that aren't attributes for this ContentChannelType or ChannelChannel (to avoid duplicate Attribute Keys)
-                        var attribute = AttributeCache.Read( entityField.AttributeGuid.Value );
+                        var attribute = CacheAttribute.Get( entityField.AttributeGuid.Value );
                         if ( attribute != null &&
                             attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" &&
                             attribute.EntityTypeQualifierValue.AsInteger() != channel.ContentChannelTypeId )
@@ -1147,7 +1144,7 @@ $(document).ready(function() {
 
                     if ( filter.EntityTypeId.HasValue )
                     {
-                        var entityTypeCache = Rock.Web.Cache.EntityTypeCache.Read( filter.EntityTypeId.Value, rockContext );
+                        var entityTypeCache = Rock.Cache.CacheEntityType.Get( filter.EntityTypeId.Value, rockContext );
                         if ( entityTypeCache != null )
                         {
                             filterControl.FilterEntityTypeName = entityTypeCache.Name;
@@ -1249,7 +1246,7 @@ $(document).ready(function() {
             filter.Expanded = filterField.Expanded;
             if ( filterField.FilterEntityTypeName != null )
             {
-                filter.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( filterField.FilterEntityTypeName ).Id;
+                filter.EntityTypeId = Rock.Cache.CacheEntityType.Get( filterField.FilterEntityTypeName ).Id;
                 filter.Selection = filterField.GetSelection();
             }
 

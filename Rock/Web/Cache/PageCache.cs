@@ -17,12 +17,11 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Data.Entity;
 using System.Linq;
-using System.Runtime.Caching;
 using System.Web;
 using System.Xml.Linq;
 
+using Rock.Cache;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -34,20 +33,21 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
+    [Obsolete( "Use Rock.Cache.CachePage instead" )]
     public class PageCache : CachedModel<Page>
     {
         #region Constructors
 
-        private PageCache( Page page )
+        private PageCache( CachePage cachePage )
         {
-            CopyFromModel( page );
+            CopyFromNewCache( cachePage );
         }
 
         #endregion
 
         #region Properties
 
-        private object _obj = new object();
+        private readonly object _obj = new object();
 
         /// <summary>
         /// Gets or sets the internal name to use when administering this page
@@ -285,25 +285,17 @@ namespace Rock.Web.Cache
             {
                 if ( ParentPageId != null && ParentPageId.Value != 0 )
                 {
-                    return PageCache.Read( ParentPageId.Value );
+                    return Read( ParentPageId.Value );
                 }
-                else
-                {
-                    return null;
-                }
+
+                return null;
             }
         }
 
         /// <summary>
         /// Gets the <see cref="Site"/> object for the page.
         /// </summary>
-        public LayoutCache Layout
-        {
-            get
-            {
-                return LayoutCache.Read( LayoutId );
-            }
-        }
+        public LayoutCache Layout => LayoutCache.Read( LayoutId );
 
         /// <summary>
         /// Gets the site identifier of the Page's Layout
@@ -312,13 +304,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The site identifier.
         /// </value>
-        public virtual int SiteId
-        {
-            get
-            {
-                return this.Layout?.SiteId ?? 0;
-            }
-        }
+        public virtual int SiteId => Layout?.SiteId ?? 0;
 
         /// <summary>
         /// Gets a List of child <see cref="PageCache" /> objects.
@@ -326,22 +312,22 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public List<PageCache> GetPages( RockContext rockContext )
         {
-            List<PageCache> pages = new List<PageCache>();
+            var pages = new List<PageCache>();
 
-            lock( _obj )
-            { 
+            lock ( _obj )
+            {
                 if ( pageIds == null )
                 {
                     pageIds = new PageService( rockContext )
-                        .GetByParentPageId( this.Id )
+                        .GetByParentPageId( Id )
                         .Select( p => p.Id )
                         .ToList();
                 }
             }
 
-            foreach ( int id in pageIds )
+            foreach ( var id in pageIds )
             {
-                var page = PageCache.Read( id, rockContext );
+                var page = Read( id, rockContext );
                 if ( page != null )
                 {
                     pages.Add( page );
@@ -350,7 +336,7 @@ namespace Rock.Web.Cache
 
             return pages;
         }
-        private List<int> pageIds = null;
+        private List<int> pageIds;
 
         /// <summary>
         /// Gets a List of all the <see cref="BlockCache"/> objects configured for the page and the page's layout.
@@ -359,53 +345,45 @@ namespace Rock.Web.Cache
         {
             get
             {
-                var blocks = new List<BlockCache>();
-
                 lock ( _obj )
                 {
-                    if ( blockIds == null )
+                    if ( blockIds != null )
+                        return blockIds
+                            .Distinct()
+                            .Select( id => BlockCache.Read( id ) ).Where( block => block != null )
+                            .ToList();
+
+                    using ( var rockContext = new RockContext() )
                     {
-                        using ( var rockContext = new RockContext() )
-                        {
-                            BlockService blockService = new BlockService( rockContext );
+                        var blockService = new BlockService( rockContext );
 
-                            // Load Site Blocks (blocks that should be shown on all pages of a site)
-                            var siteBlockIds = blockService
-                                .GetBySite( this.SiteId )
-                                .Select( b => b.Id )
-                                .ToList();
+                        // Load Site Blocks (blocks that should be shown on all pages of a site)
+                        var siteBlockIds = blockService
+                            .GetBySite( SiteId )
+                            .Select( b => b.Id )
+                            .ToList();
 
-                            // Load Layout Blocks
-                            var layoutBlockIds = blockService
-                                .GetByLayout( this.LayoutId )
-                                .Select( b => b.Id )
-                                .ToList();
+                        // Load Layout Blocks
+                        var layoutBlockIds = blockService
+                            .GetByLayout( LayoutId )
+                            .Select( b => b.Id )
+                            .ToList();
 
-                            // Load Page Blocks
-                            var pageBlockIds = blockService
-                                .GetByPage( this.Id )
-                                .Select( b => b.Id )
-                                .ToList();
+                        // Load Page Blocks
+                        var pageBlockIds = blockService
+                            .GetByPage( Id )
+                            .Select( b => b.Id )
+                            .ToList();
 
-                            // NOTE: starting from the top of zone, starts with all Site Blocks, then Layout Blocks, then any page specific blocks
-                            blockIds = siteBlockIds.Union(layoutBlockIds).Union( pageBlockIds ).ToList();
-                        }
+                        // NOTE: starting from the top of zone, starts with all Site Blocks, then Layout Blocks, then any page specific blocks
+                        blockIds = siteBlockIds.Union( layoutBlockIds ).Union( pageBlockIds ).ToList();
                     }
                 }
 
-                foreach ( int id in blockIds.Distinct() )
-                {
-                    var block = BlockCache.Read( id );
-                    if ( block != null )
-                    {
-                        blocks.Add( block );
-                    }
-                }
-
-                return blocks;
+                return blockIds.Distinct().Select( id => BlockCache.Read( id ) ).Where( block => block != null ).ToList();
             }
         }
-        private List<int> blockIds = null;
+        private List<int> blockIds;
 
         /// <summary>
         /// Gets or sets the page contexts that have been defined for the page
@@ -434,6 +412,25 @@ namespace Rock.Web.Cache
             /// The route
             /// </summary>
             public string Route { get; set; }
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="PageRouteInfo"/> class.
+            /// </summary>
+            public PageRouteInfo()
+            {
+
+            }
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="PageRouteInfo"/> class.
+            /// </summary>
+            /// <param name="cachePageRouteInfo">The cache page route information.</param>
+            public PageRouteInfo( CachePage.PageRouteInfo cachePageRouteInfo )
+            {
+                Id = cachePageRouteInfo.Id;
+                Guid = cachePageRouteInfo.Guid;
+                Route = cachePageRouteInfo.Route;
+            }
         }
 
         /// <summary>
@@ -454,14 +451,12 @@ namespace Rock.Web.Cache
         {
             get
             {
-                if ( this.ParentPage != null )
+                if ( ParentPage != null )
                 {
-                    return this.ParentPage;
+                    return ParentPage;
                 }
-                else
-                {
-                    return this.Layout.Site;
-                }
+
+                return Layout.Site;
             }
         }
 
@@ -479,7 +474,7 @@ namespace Rock.Web.Cache
 
                 if ( BreadCrumbDisplayIcon && !string.IsNullOrWhiteSpace( IconCssClass ) )
                 {
-                    bcName = string.Format( "<i class='{0}'></i> ", IconCssClass );
+                    bcName = $"<i class='{IconCssClass}'></i> ";
                 }
 
                 if ( BreadCrumbDisplayName )
@@ -502,13 +497,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The site.
         /// </value>
-        public string Site
-        {
-            get
-            {
-                return this.Layout?.Site?.Name;
-            }
-        }
+        public string Site => Layout?.Site?.Name;
 
         /// <summary>
         /// Gets the site theme.
@@ -517,13 +506,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The site theme.
         /// </value>
-        public string SiteTheme
-        {
-            get
-            {
-                return this.Layout?.Site?.Theme;
-            }
-        }
+        public string SiteTheme => Layout?.Site?.Theme;
 
         /// <summary>
         /// Gets the page icon.
@@ -532,13 +515,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The page icon.
         /// </value>
-        public string PageIcon
-        {
-            get
-            {
-                return this.IconCssClass;
-            }
-        }
+        public string PageIcon => IconCssClass;
 
         #endregion
 
@@ -548,52 +525,92 @@ namespace Rock.Web.Cache
         /// Copies from model.
         /// </summary>
         /// <param name="model">The model.</param>
-        public override void CopyFromModel( Data.IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
             base.CopyFromModel( model );
 
-            if ( model is Page )
+            if ( !( model is Page ) ) return;
+
+            var page = (Page)model;
+            InternalName = page.InternalName;
+            PageTitle = page.PageTitle;
+            BrowserTitle = page.BrowserTitle;
+            ParentPageId = page.ParentPageId;
+            LayoutId = page.LayoutId;
+            IsSystem = page.IsSystem;
+            RequiresEncryption = page.RequiresEncryption;
+            EnableViewState = page.EnableViewState;
+            PageDisplayTitle = page.PageDisplayTitle;
+            PageDisplayBreadCrumb = page.PageDisplayBreadCrumb;
+            PageDisplayIcon = page.PageDisplayIcon;
+            PageDisplayDescription = page.PageDisplayDescription;
+            DisplayInNavWhen = page.DisplayInNavWhen;
+            MenuDisplayDescription = page.MenuDisplayDescription;
+            MenuDisplayIcon = page.MenuDisplayIcon;
+            MenuDisplayChildPages = page.MenuDisplayChildPages;
+            BreadCrumbDisplayName = page.BreadCrumbDisplayName;
+            BreadCrumbDisplayIcon = page.BreadCrumbDisplayIcon;
+            IconCssClass = page.IconCssClass;
+            Order = page.Order;
+            OutputCacheDuration = page.OutputCacheDuration;
+            Description = page.Description;
+            KeyWords = page.KeyWords;
+            HeaderContent = page.HeaderContent;
+            IncludeAdminFooter = page.IncludeAdminFooter;
+            AllowIndexing = page.AllowIndexing;
+            BodyCssClass = page.BodyCssClass;
+
+            PageContexts = new Dictionary<string, string>();
+            page.PageContexts?.ToList().ForEach( c => PageContexts.Add( c.Entity, c.IdParameter ) );
+
+            PageRoutes = new List<PageRouteInfo>();
+            page.PageRoutes?.ToList().ForEach( r => PageRoutes.Add( new PageRouteInfo { Id = r.Id, Guid = r.Guid, Route = r.Route } ) );
+        }
+
+        /// <summary>
+        /// Copies properties from a new cached entity
+        /// </summary>
+        /// <param name="cacheEntity">The cache entity.</param>
+        protected sealed override void CopyFromNewCache( IEntityCache cacheEntity )
+        {
+            base.CopyFromNewCache( cacheEntity );
+
+            if ( !( cacheEntity is CachePage ) ) return;
+
+            var page = (CachePage)cacheEntity;
+            InternalName = page.InternalName;
+            PageTitle = page.PageTitle;
+            BrowserTitle = page.BrowserTitle;
+            ParentPageId = page.ParentPageId;
+            LayoutId = page.LayoutId;
+            IsSystem = page.IsSystem;
+            RequiresEncryption = page.RequiresEncryption;
+            EnableViewState = page.EnableViewState;
+            PageDisplayTitle = page.PageDisplayTitle;
+            PageDisplayBreadCrumb = page.PageDisplayBreadCrumb;
+            PageDisplayIcon = page.PageDisplayIcon;
+            PageDisplayDescription = page.PageDisplayDescription;
+            DisplayInNavWhen = page.DisplayInNavWhen;
+            MenuDisplayDescription = page.MenuDisplayDescription;
+            MenuDisplayIcon = page.MenuDisplayIcon;
+            MenuDisplayChildPages = page.MenuDisplayChildPages;
+            BreadCrumbDisplayName = page.BreadCrumbDisplayName;
+            BreadCrumbDisplayIcon = page.BreadCrumbDisplayIcon;
+            IconCssClass = page.IconCssClass;
+            Order = page.Order;
+            OutputCacheDuration = page.OutputCacheDuration;
+            Description = page.Description;
+            KeyWords = page.KeyWords;
+            HeaderContent = page.HeaderContent;
+            IncludeAdminFooter = page.IncludeAdminFooter;
+            AllowIndexing = page.AllowIndexing;
+            BodyCssClass = page.BodyCssClass;
+            PageContexts = new Dictionary<string, string>( page.PageContexts );
+
+            PageRoutes = new List<PageRouteInfo>();
+            foreach ( var pagePageRoute in page.PageRoutes )
             {
-                var page = (Page)model;
-                this.InternalName = page.InternalName;
-                this.PageTitle = page.PageTitle;
-                this.BrowserTitle = page.BrowserTitle;
-                this.ParentPageId = page.ParentPageId;
-                this.LayoutId = page.LayoutId;
-                this.IsSystem = page.IsSystem;
-                this.RequiresEncryption = page.RequiresEncryption;
-                this.EnableViewState = page.EnableViewState;
-                this.PageDisplayTitle = page.PageDisplayTitle;
-                this.PageDisplayBreadCrumb = page.PageDisplayBreadCrumb;
-                this.PageDisplayIcon = page.PageDisplayIcon;
-                this.PageDisplayDescription = page.PageDisplayDescription;
-                this.DisplayInNavWhen = page.DisplayInNavWhen;
-                this.MenuDisplayDescription = page.MenuDisplayDescription;
-                this.MenuDisplayIcon = page.MenuDisplayIcon;
-                this.MenuDisplayChildPages = page.MenuDisplayChildPages;
-                this.BreadCrumbDisplayName = page.BreadCrumbDisplayName;
-                this.BreadCrumbDisplayIcon = page.BreadCrumbDisplayIcon;
-                this.IconCssClass = page.IconCssClass;
-                this.Order = page.Order;
-                this.OutputCacheDuration = page.OutputCacheDuration;
-                this.Description = page.Description;
-                this.KeyWords = page.KeyWords;
-                this.HeaderContent = page.HeaderContent;
-                this.IncludeAdminFooter = page.IncludeAdminFooter;
-                this.AllowIndexing = page.AllowIndexing;
-                this.BodyCssClass = page.BodyCssClass;
-
-                this.PageContexts = new Dictionary<string, string>();
-                if ( page.PageContexts != null )
-                {
-                    page.PageContexts.ToList().ForEach( c => this.PageContexts.Add( c.Entity, c.IdParameter ) );
-                }
-
-                this.PageRoutes = new List<PageRouteInfo>();
-                if ( page.PageRoutes != null )
-                {
-                    page.PageRoutes.ToList().ForEach( r => this.PageRoutes.Add( new PageRouteInfo { Id = r.Id, Guid = r.Guid, Route = r.Route } ) );
-                }
+                PageRoutes.Add( new PageRouteInfo( pagePageRoute ) );
             }
         }
 
@@ -605,12 +622,12 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public bool DisplayInNav( Person person )
         {
-            switch ( this.DisplayInNavWhen )
+            switch ( DisplayInNavWhen )
             {
-                case Model.DisplayInNavWhen.Always:
+                case DisplayInNavWhen.Always:
                     return true;
-                case Model.DisplayInNavWhen.WhenAllowed:
-                    return this.IsAuthorized( Authorization.VIEW, person );
+                case DisplayInNavWhen.WhenAllowed:
+                    return IsAuthorized( Authorization.VIEW, person );
                 default:
                     return false;
             }
@@ -624,10 +641,7 @@ namespace Rock.Web.Cache
         {
             var pages = new List<PageCache> { this };
 
-            if ( ParentPage != null )
-            {
-                ParentPage.GetPageHierarchy().ForEach( p => pages.Add( p ) );
-            }
+            ParentPage?.GetPageHierarchy().ForEach( p => pages.Add( p ) );
 
             return pages;
         }
@@ -656,7 +670,7 @@ namespace Rock.Web.Cache
         /// </returns>
         public override string ToString()
         {
-            return this.InternalName;
+            return InternalName;
         }
 
         #region Menu XML Methods
@@ -684,7 +698,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public XDocument MenuXml( int levelsDeep, Person person, RockContext rockContext, PageCache currentPage = null, Dictionary<string, string> parameters = null, NameValueCollection queryString = null )
         {
-            XElement menuElement = MenuXmlElement( levelsDeep, person, rockContext, currentPage, parameters, queryString );
+            var menuElement = MenuXmlElement( levelsDeep, person, rockContext, currentPage, parameters, queryString );
             return new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ), menuElement );
         }
 
@@ -700,57 +714,46 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         private XElement MenuXmlElement( int levelsDeep, Person person, RockContext rockContext, PageCache currentPage = null, Dictionary<string, string> parameters = null, NameValueCollection queryString = null )
         {
-            if ( levelsDeep >= 0 && this.DisplayInNav( person ) )
+            if ( levelsDeep < 0 || !DisplayInNav( person ) ) return null;
+
+            var iconUrl = string.Empty;
+            if ( IconFileId.HasValue )
             {
-                string iconUrl = string.Empty;
-                if ( this.IconFileId.HasValue )
-                {
-                    iconUrl = string.Format(
-                        "{0}/GetImage.ashx?{1}",
-                        HttpContext.Current.Request.ApplicationPath,
-                        this.IconFileId.Value );
-                }
-
-                bool isCurrentPage = currentPage != null && currentPage.Id == this.Id;
-
-                XElement pageElement = new XElement(
-                    "page",
-                    new XAttribute( "id", this.Id ),
-                    new XAttribute( "title", string.IsNullOrWhiteSpace( this.PageTitle ) ? this.InternalName : this.PageTitle ),
-                    new XAttribute( "current", isCurrentPage.ToString() ),
-                    new XAttribute( "url", new PageReference( this.Id, 0, parameters, queryString ).BuildUrl() ),
-                    new XAttribute( "display-description", this.MenuDisplayDescription.ToString().ToLower() ),
-                    new XAttribute( "display-icon", this.MenuDisplayIcon.ToString().ToLower() ),
-                    new XAttribute( "display-child-pages", this.MenuDisplayChildPages.ToString().ToLower() ),
-                    new XAttribute( "icon-css-class", this.IconCssClass ?? string.Empty ),
-                    new XElement( "description", this.Description ?? string.Empty ),
-                    new XElement( "icon-url", iconUrl ) );
-
-                XElement childPagesElement = new XElement( "pages" );
-
-                pageElement.Add( childPagesElement );
-
-                if ( levelsDeep > 0 && this.MenuDisplayChildPages )
-                {
-                    foreach ( PageCache page in GetPages( rockContext ) )
-                    {
-                        if ( page != null )
-                        {
-                            XElement childPageElement = page.MenuXmlElement( levelsDeep - 1, person, rockContext, currentPage, parameters, queryString );
-                            if ( childPageElement != null )
-                            {
-                                childPagesElement.Add( childPageElement );
-                            }
-                        }
-                    }
-                }
-
-                return pageElement;
+                iconUrl = $"{HttpContext.Current.Request.ApplicationPath}/GetImage.ashx?{IconFileId.Value}";
             }
-            else
+
+            var isCurrentPage = currentPage != null && currentPage.Id == Id;
+
+            var pageElement = new XElement(
+                "page",
+                new XAttribute( "id", Id ),
+                new XAttribute( "title", string.IsNullOrWhiteSpace( PageTitle ) ? InternalName : PageTitle ),
+                new XAttribute( "current", isCurrentPage.ToString() ),
+                new XAttribute( "url", new PageReference( Id, 0, parameters, queryString ).BuildUrl() ),
+                new XAttribute( "display-description", MenuDisplayDescription.ToString().ToLower() ),
+                new XAttribute( "display-icon", MenuDisplayIcon.ToString().ToLower() ),
+                new XAttribute( "display-child-pages", MenuDisplayChildPages.ToString().ToLower() ),
+                new XAttribute( "icon-css-class", IconCssClass ?? string.Empty ),
+                new XElement( "description", Description ?? string.Empty ),
+                new XElement( "icon-url", iconUrl ) );
+
+            var childPagesElement = new XElement( "pages" );
+
+            pageElement.Add( childPagesElement );
+
+            if ( levelsDeep <= 0 || !MenuDisplayChildPages ) return pageElement;
+
+            foreach ( var page in GetPages( rockContext ) )
             {
-                return null;
+                var childPageElement = page?.MenuXmlElement( levelsDeep - 1, person, rockContext, currentPage, parameters, queryString );
+                if ( childPageElement != null )
+                {
+                    childPagesElement.Add( childPageElement );
+                }
             }
+
+            return pageElement;
+
         }
 
         #endregion
@@ -780,72 +783,58 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public Dictionary<string, object> GetMenuProperties( int levelsDeep, Person person, RockContext rockContext, List<int> currentPageHeirarchy = null, Dictionary<string, string> parameters = null, NameValueCollection queryString = null )
         {
-            if ( levelsDeep >= 0 )
+            if ( levelsDeep < 0 ) return null;
+
+            var iconUrl = string.Empty;
+            if ( IconFileId.HasValue )
             {
-                string iconUrl = string.Empty;
-                if ( this.IconFileId.HasValue )
-                {
-                    iconUrl = string.Format(
-                        "{0}/GetImage.ashx?{1}",
-                        HttpContext.Current.Request.ApplicationPath,
-                        this.IconFileId.Value );
-                }
-
-                bool isCurrentPage = false;
-                bool isParentOfCurrent = false;
-                if ( currentPageHeirarchy != null && currentPageHeirarchy.Any() )
-                {
-                    isCurrentPage = currentPageHeirarchy.First() == this.Id;
-                    isParentOfCurrent = currentPageHeirarchy.Skip( 1 ).Any( p => p == this.Id );
-                }
-
-                var properties = new Dictionary<string, object>();
-                properties.Add( "Id", this.Id );
-                properties.Add( "Title", string.IsNullOrWhiteSpace( this.PageTitle ) ? this.InternalName : this.PageTitle );
-                properties.Add( "Current", isCurrentPage.ToString().ToLower() );
-                properties.Add( "IsParentOfCurrent", isParentOfCurrent.ToString().ToLower() );
-                properties.Add( "Url", new PageReference( this.Id, 0, parameters, queryString ).BuildUrl() );
-                properties.Add( "DisplayDescription", this.MenuDisplayDescription.ToString().ToLower() );
-                properties.Add( "DisplayIcon", this.MenuDisplayIcon.ToString().ToLower() );
-                properties.Add( "DisplayChildPages", this.MenuDisplayChildPages.ToString().ToLower() );
-                properties.Add( "IconCssClass", this.IconCssClass ?? string.Empty );
-                properties.Add( "Description", this.Description ?? string.Empty );
-                properties.Add( "IconUrl", iconUrl );
-
-                if ( levelsDeep > 0 && this.MenuDisplayChildPages )
-                {
-                    var childPages = new List<Dictionary<string, object>>();
-
-                    foreach ( PageCache page in GetPages( rockContext ) )
-                    {
-                        if ( page != null && page.DisplayInNav( person ) )
-                        {
-                            var childPageElement = page.GetMenuProperties( levelsDeep - 1, person, rockContext, currentPageHeirarchy, parameters, queryString );
-                            if ( childPageElement != null )
-                            {
-                                childPages.Add( childPageElement );
-                            }
-                        }
-                    }
-
-                    // Add the Pages property so that Lava users can check it via the "empty" check or size.
-                    properties.Add( "Pages", childPages );
-                    
-                }
-
-                return properties;
+                iconUrl = $"{HttpContext.Current.Request.ApplicationPath}/GetImage.ashx?{IconFileId.Value}";
             }
-            else
+
+            var isCurrentPage = false;
+            var isParentOfCurrent = false;
+            if ( currentPageHeirarchy != null && currentPageHeirarchy.Any() )
             {
-                return null;
+                isCurrentPage = currentPageHeirarchy.First() == Id;
+                isParentOfCurrent = currentPageHeirarchy.Skip( 1 ).Any( p => p == Id );
             }
+
+            var properties = new Dictionary<string, object>
+            {
+                {"Id", Id},
+                {"Title", string.IsNullOrWhiteSpace(PageTitle) ? InternalName : PageTitle},
+                {"Current", isCurrentPage.ToString().ToLower()},
+                {"IsParentOfCurrent", isParentOfCurrent.ToString().ToLower()},
+                {"Url", new PageReference(Id, 0, parameters, queryString).BuildUrl()},
+                {"DisplayDescription", MenuDisplayDescription.ToString().ToLower()},
+                {"DisplayIcon", MenuDisplayIcon.ToString().ToLower()},
+                {"DisplayChildPages", MenuDisplayChildPages.ToString().ToLower()},
+                {"IconCssClass", IconCssClass ?? string.Empty},
+                {"Description", Description ?? string.Empty},
+                {"IconUrl", iconUrl}
+            };
+
+            if ( levelsDeep <= 0 || !MenuDisplayChildPages ) return properties;
+            var childPages = new List<Dictionary<string, object>>();
+
+            foreach ( var page in GetPages( rockContext ) )
+            {
+                if ( page == null || !page.DisplayInNav( person ) ) continue;
+                var childPageElement = page.GetMenuProperties( levelsDeep - 1, person, rockContext, currentPageHeirarchy, parameters, queryString );
+                if ( childPageElement != null )
+                {
+                    childPages.Add( childPageElement );
+                }
+            }
+
+            // Add the Pages property so that Lava users can check it via the "empty" check or size.
+            properties.Add( "Pages", childPages );
+
+            return properties;
+
         }
 
         #endregion
-
-        #endregion
-
-        #region Private Methods
 
         #endregion
 
@@ -859,7 +848,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static string FormatPath( string theme, string layout )
         {
-            return string.Format( "~/Themes/{0}/Layouts/{1}.aspx", theme, layout );
+            return CachePage.FormatPath( theme, layout );
         }
 
         /// <summary>
@@ -869,7 +858,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static string CacheKey( int pageId )
         {
-            return string.Format( "Rock:Page:{0}", pageId );
+            return $"Rock:Page:{pageId}";
         }
 
         /// <summary>
@@ -881,34 +870,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static PageCache Read( int id, RockContext rockContext = null )
         {
-            return GetOrAddExisting( PageCache.CacheKey( id ),
-                () => LoadById( id, rockContext ) );
-        }
-
-        private static PageCache LoadById( int id, RockContext rockContext )
-        {
-            if ( rockContext != null )
-            {
-                return LoadById2( id, rockContext );
-            }
-
-            using ( var rockContext2 = new RockContext() )
-            {
-                return LoadById2( id, rockContext2 );
-            }
-        }
-
-        private static PageCache LoadById2( int id, RockContext rockContext = null )
-        {
-            var pageService = new PageService( rockContext );
-            var pageModel = pageService.Queryable( "PageContexts,PageRoutes" )
-                .FirstOrDefault( a => a.Id == id );
-            if ( pageModel != null )
-            {
-                return new PageCache( pageModel );
-            }
-
-            return null;
+            return new PageCache( CachePage.Get( id, rockContext ) );
         }
 
         /// <summary>
@@ -919,33 +881,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static PageCache Read( Guid guid, RockContext rockContext = null )
         {
-            int id = GetOrAddExisting( guid.ToString(),
-                () => LoadByGuid( guid, rockContext ) );
-
-            return Read( id, rockContext );
-        }
-
-        private static int LoadByGuid( Guid guid, RockContext rockContext )
-        {
-            if ( rockContext != null )
-            {
-                return LoadByGuid2( guid, rockContext );
-            }
-
-            using ( var rockContext2 = new RockContext() )
-            {
-                return LoadByGuid2( guid, rockContext2 );
-            }
-        }
-
-        private static int LoadByGuid2( Guid guid, RockContext rockContext )
-        {
-            var pageService = new PageService( rockContext );
-            return pageService
-                .Queryable().AsNoTracking()
-                .Where( c => c.Guid.Equals( guid ) )
-                .Select( c => c.Id )
-                .FirstOrDefault();
+            return new PageCache( CachePage.Get( guid, rockContext ) );
         }
 
         /// <summary>
@@ -955,17 +891,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static PageCache Read( Page pageModel )
         {
-            return GetOrAddExisting( PageCache.CacheKey( pageModel.Id ),
-                () => LoadByModel( pageModel ) );
-        }
-
-        private static PageCache LoadByModel( Page pageModel )
-        {
-            if ( pageModel != null )
-            {
-                return new PageCache( pageModel );
-            }
-            return null;
+            return new PageCache( CachePage.Get( pageModel ) );
         }
 
         /// <summary>
@@ -974,7 +900,7 @@ namespace Rock.Web.Cache
         /// <param name="id"></param>
         public static void Flush( int id )
         {
-            FlushCache( PageCache.CacheKey( id ) );
+            CachePage.Remove( id );
         }
 
         /// <summary>
@@ -982,18 +908,7 @@ namespace Rock.Web.Cache
         /// </summary>
         public static void FlushLayout( int layoutId )
         {
-            RockMemoryCache cache = RockMemoryCache.Default;
-            foreach ( var item in cache )
-            {
-                if ( item.Key.StartsWith( "Rock:Page:" ) )
-                {
-                    var page = cache[item.Key] as PageCache;
-                    if ( page != null && page.LayoutId == layoutId )
-                    {
-                        cache.Remove( item.Key );
-                    }
-                }
-            }
+            CachePage.RemoveLayout( layoutId );
         }
 
         /// <summary>
@@ -1001,18 +916,7 @@ namespace Rock.Web.Cache
         /// </summary>
         public static void FlushLayoutBlocks( int layoutId )
         {
-            RockMemoryCache cache = RockMemoryCache.Default;
-            foreach ( var item in cache )
-            {
-                if ( item.Key.StartsWith( "Rock:Page:" ) )
-                {
-                    var page = cache[item.Key] as PageCache;
-                    if ( page != null && page.LayoutId == layoutId )
-                    {
-                        page.FlushBlocks();
-                    }
-                }
-            }
+            CachePage.RemoveLayoutBlocks( layoutId );
         }
 
         /// <summary>
@@ -1020,18 +924,7 @@ namespace Rock.Web.Cache
         /// </summary>
         public static void FlushSiteBlocks( int siteId )
         {
-            RockMemoryCache cache = RockMemoryCache.Default;
-            foreach ( var item in cache )
-            {
-                if ( item.Key.StartsWith( "Rock:Page:" ) )
-                {
-                    var page = cache[item.Key] as PageCache;
-                    if ( page != null && page.SiteId == siteId )
-                    {
-                        page.FlushBlocks();
-                    }
-                }
-            }
+            CachePage.RemoveSiteBlocks( siteId );
         }
 
         #endregion

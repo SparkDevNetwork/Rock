@@ -109,13 +109,13 @@ namespace RockWeb.Blocks.Utility
                     string eventParam = nameValue[0];
                     if ( eventParam.Equals( "folder-selected" ) )
                     {
-                        string folderPath = nameValue[1];
+                        string folderPath = nameValue[1].Replace( @"/", @"\" );
                         hfSelectedFolder.Value = folderPath;
                         ListFolderContents( folderPath );
                     }
                     else if ( eventParam.Equals( "file-delete" ) )
                     {
-                        string fileRelativePath = nameValue[1];
+                        string fileRelativePath = nameValue[1].Replace( @"/", @"\" );
                         DeleteFile( fileRelativePath );
                     }
                 }

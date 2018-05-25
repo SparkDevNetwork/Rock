@@ -33,7 +33,7 @@ using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls.Communication;
 using Rock.Web.UI.Controls;
@@ -48,6 +48,8 @@ namespace RockWeb.Blocks.Communication
     [Description( "Used for displaying details of an existing communication that has already been created." )]
 
     [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve new communications." )]
+
+    [BooleanField( "Enable Personal Templates", "Should support for personal templates be enabled? These are templates that a user can create and are personal to them. If enabled, they will be able to create a new template based on the current communication.", false, "", 0 )]
 
     public partial class CommunicationDetail : RockBlock
     {
@@ -118,6 +120,12 @@ namespace RockWeb.Blocks.Communication
 
             _editingApproved = PageParameter( "Edit" ).AsBoolean() && IsUserAuthorized( "Approve" );
 
+            if ( GetAttributeValue( "EnablePersonalTemplates" ).AsBoolean() )
+            {
+                btnTemplate.Visible = true;
+                mdCreateTemplate.SaveClick += mdSaveTemplate_Click;
+            }
+
         }
 
         /// <summary>
@@ -127,6 +135,8 @@ namespace RockWeb.Blocks.Communication
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+
+            nbTemplateCreated.Visible = false;
 
             if ( !Page.IsPostBack )
             {
@@ -171,6 +181,11 @@ namespace RockWeb.Blocks.Communication
                     }
                 }
             }
+            else
+            {
+                ShowDialog();
+            }
+
         }
 
         protected override void OnPreRender( EventArgs e )
@@ -464,6 +479,93 @@ namespace RockWeb.Blocks.Communication
             }
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnTemplate control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnTemplate_Click( object sender, EventArgs e )
+        {
+            if ( !CommunicationId.HasValue ) return;
+
+            using ( var rockContext = new RockContext() )
+            {
+                var communication = new CommunicationService( rockContext ).Get( CommunicationId.Value );
+                if ( communication == null ) return;
+
+                tbTemplateName.Text = communication.Name;
+                cpTemplateCategory.SetValue( communication.CommunicationTemplate != null
+                    ? communication.CommunicationTemplate.Category
+                    : null );
+                tbTemplateDescription.Text = string.Empty;
+
+                ShowDialog( "Template" );
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the mdSaveTemplate control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdSaveTemplate_Click( object sender, EventArgs e )
+        {
+            if ( !Page.IsValid || !CommunicationId.HasValue ) return;
+
+            using ( var rockContext = new RockContext() )
+            {
+                var communication = new CommunicationService( rockContext ).Get( CommunicationId.Value );
+                if ( communication == null ) return;
+
+                var template = new CommunicationTemplate
+                {
+                    SenderPersonAliasId = CurrentPersonAliasId,
+                    Name = tbTemplateName.Text,
+                    CategoryId = cpTemplateCategory.SelectedValue.AsIntegerOrNull(),
+                    Description = tbTemplateDescription.Text,
+                    Subject = communication.Subject,
+                    FromName = communication.FromName,
+                    FromEmail = communication.FromEmail,
+                    ReplyToEmail = communication.ReplyToEmail,
+                    CCEmails = communication.CCEmails,
+                    BCCEmails = communication.BCCEmails,
+                    Message = "{% raw %}" + communication.Message + "{% endraw %}",
+                    MessageMetaData = communication.MessageMetaData,
+                    SMSFromDefinedValueId = communication.SMSFromDefinedValueId,
+                    SMSMessage = communication.SMSMessage,
+                    PushTitle = communication.PushTitle,
+                    PushMessage = communication.PushMessage,
+                    PushSound = communication.PushSound
+                };
+
+                foreach ( var attachment in communication.Attachments.ToList() )
+                {
+                    var newAttachment = new CommunicationTemplateAttachment
+                    {
+                        BinaryFileId = attachment.BinaryFileId,
+                        CommunicationType = attachment.CommunicationType
+                    };
+                    template.Attachments.Add( newAttachment );
+                }
+
+                var templateService = new CommunicationTemplateService( rockContext );
+                templateService.Add( template );
+                rockContext.SaveChanges();
+
+                template = templateService.Get(template.Id);
+                if (template != null)
+                {
+                    template.MakePrivate( Authorization.VIEW, CurrentPerson );
+                    template.MakePrivate( Authorization.EDIT, CurrentPerson );
+                    template.MakePrivate( Authorization.ADMINISTRATE, CurrentPerson );
+                }
+
+                nbTemplateCreated.Visible = true;
+            }
+
+            HideDialog();
+        }
+
         #endregion
 
         #region Private Methods
@@ -500,7 +602,8 @@ namespace RockWeb.Blocks.Communication
             ShowActions( communication );
         }
 
-        private void SetPersonDateValue( Literal literal, PersonAlias personAlias, DateTime? datetime, string labelText ) {
+        private void SetPersonDateValue( Literal literal, PersonAlias personAlias, DateTime? datetime, string labelText )
+        {
 
             if ( personAlias != null )
             {
@@ -798,7 +901,7 @@ namespace RockWeb.Blocks.Communication
 
             return sb.ToString();
         }
-    
+
         private void AppendMediumData( StringBuilder sb, string key, string value )
         {
             if ( key.IsNotNullOrWhitespace() && value.IsNotNullOrWhitespace() )
@@ -807,15 +910,44 @@ namespace RockWeb.Blocks.Communication
             }
         }
 
+        private void ShowDialog( string dialog, bool setValues = false )
+        {
+            hfActiveDialog.Value = dialog.ToUpper().Trim();
+            ShowDialog( setValues );
+        }
+
+        private void ShowDialog( bool setValues = false )
+        {
+            switch ( hfActiveDialog.Value )
+            {
+                case "TEMPLATE":
+                    mdCreateTemplate.Show();
+                    break;
+            }
+        }
+
+        private void HideDialog()
+        {
+            switch ( hfActiveDialog.Value )
+            {
+
+                case "TEMPLATE":
+                    mdCreateTemplate.Hide();
+                    break;
+            }
+
+            hfActiveDialog.Value = string.Empty;
+        }
+
         #endregion
 
         protected void gInteractions_RowDataBound( object sender, GridViewRowEventArgs e )
         {
             Interaction interaction = e.Row.DataItem as Interaction;
-            if (interaction != null)
+            if ( interaction != null )
             {
                 Literal lActivityDetails = e.Row.FindControl( "lActivityDetails" ) as Literal;
-                if (lActivityDetails != null)
+                if ( lActivityDetails != null )
                 {
                     lActivityDetails.Text = CommunicationRecipient.GetInteractionDetails( interaction );
                 }

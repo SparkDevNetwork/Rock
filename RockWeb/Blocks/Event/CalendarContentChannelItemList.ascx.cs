@@ -29,7 +29,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -445,7 +445,7 @@ namespace RockWeb.Blocks.Event
                     }
 
                     // Add attribute columns
-                    int entityTypeId = EntityTypeCache.Read( typeof( Rock.Model.ContentChannelItem ) ).Id;
+                    int entityTypeId = CacheEntityType.Get( typeof( Rock.Model.ContentChannelItem ) ).Id;
                     string qualifier = contentChannel.ContentChannelTypeId.ToString();
                     foreach ( var attribute in new AttributeService( rockContext ).Queryable()
                         .Where( a =>
@@ -465,7 +465,7 @@ namespace RockWeb.Blocks.Event
                             boundField.AttributeId = attribute.Id;
                             boundField.HeaderText = attribute.Name;
 
-                            var attributeCache = Rock.Web.Cache.AttributeCache.Read( attribute.Id );
+                            var attributeCache = Rock.Cache.CacheAttribute.Get( attribute.Id );
                             if ( attributeCache != null )
                             {
                                 boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
@@ -539,7 +539,7 @@ namespace RockWeb.Blocks.Event
 
                             gItems.ObjectList = new Dictionary<string, object>();
                             items.ForEach( i => gItems.ObjectList.Add( i.Id.ToString(), i ) );
-                            gItems.EntityTypeId = EntityTypeCache.Read<ContentChannelItem>().Id;
+                            gItems.EntityTypeId = CacheEntityType.Get<ContentChannelItem>().Id;
 
                             gItems.DataSource = items.Select( i => new
                             {

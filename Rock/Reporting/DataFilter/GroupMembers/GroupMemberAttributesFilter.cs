@@ -26,7 +26,7 @@ using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
 
@@ -87,10 +87,10 @@ namespace Rock.Reporting.DataFilter.GroupMember
 
                 // Derive GroupTypeId from AttributeKey
                 var attributeGuid = AttributeKey.Split( '_' ).LastOrDefault().AsGuidOrNull();
-                AttributeCache attribute = null;
+                CacheAttribute attribute = null;
                 if ( attributeGuid.HasValue )
                 {
-                    attribute = AttributeCache.Read( attributeGuid.Value );
+                    attribute = CacheAttribute.Get( attributeGuid.Value );
                 }
 
                 this.GroupTypeId = null;

@@ -26,7 +26,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using System.Linq;
 using System.Collections.Generic;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace RockWeb.Blocks.Crm
 {
@@ -163,13 +163,13 @@ namespace RockWeb.Blocks.Crm
                 {
                     if ( item.PersonalDevice.PersonalDeviceTypeValueId.HasValue )
                     {
-                        var value = DefinedValueCache.Read( item.PersonalDevice.PersonalDeviceTypeValueId.Value );
+                        var value = CacheDefinedValue.Get( item.PersonalDevice.PersonalDeviceTypeValueId.Value );
                         item.DeviceIconCssClass = value.GetAttributeValue( "IconCssClass" );
                     }
 
                     if ( item.PersonalDevice.PlatformValueId.HasValue )
                     {
-                        item.PlatformValue = DefinedValueCache.Read( item.PersonalDevice.PlatformValueId.Value ).Value;
+                        item.PlatformValue = CacheDefinedValue.Get( item.PersonalDevice.PlatformValueId.Value ).Value;
 
                     }
                 }

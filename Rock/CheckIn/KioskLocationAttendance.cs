@@ -17,8 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Caching;
 
+using Rock.Cache;
 using Rock.Model;
 
 namespace Rock.CheckIn
@@ -26,7 +26,7 @@ namespace Rock.CheckIn
     /// <summary>
     /// Helper class for storing the current attendance for a given kiosk location
     /// </summary>
-    public class KioskLocationAttendance
+    public class KioskLocationAttendance : ItemCache<KioskLocationAttendance>
     {
         /// <summary>
         /// Prevents a default instance of the <see cref="KioskLocationAttendance"/> class from being created.
@@ -98,13 +98,14 @@ namespace Rock.CheckIn
         #region Static Methods
 
         /// <summary>
-        /// Caches the key.
+        /// Reads the specified id.
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns></returns>
-        private static string CacheKey( int id )
+        [Obsolete( "Use Get( int id ) instead.")]
+        public static KioskLocationAttendance Read( int id )
         {
-            return string.Format( "Rock:CheckIn:KioskLocationAttendance:{0}", id );
+            return Get( id );
         }
 
         /// <summary>
@@ -112,41 +113,30 @@ namespace Rock.CheckIn
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns></returns>
-        public static KioskLocationAttendance Read( int id )
+        public static KioskLocationAttendance Get( int id )
         {
-            string cacheKey = KioskLocationAttendance.CacheKey( id );
+            return GetOrAddExisting( id, () => Create( id ), new TimeSpan( 0, 2, 0 ) );
+        }
 
-            ObjectCache cache = Rock.Web.Cache.RockMemoryCache.Default;
-            KioskLocationAttendance locationAttendance = cache[cacheKey] as KioskLocationAttendance;
-
-            if ( locationAttendance != null )
+        private static KioskLocationAttendance Create( int id )
+        { 
+            using ( var rockContext = new Rock.Data.RockContext() )
             {
-                return locationAttendance;
-            }
-            else
-            {
-                using ( var rockContext = new Rock.Data.RockContext() )
+                var location = new LocationService( rockContext ).Get( id );
+                if ( location != null )
                 {
-                    var location = new LocationService( rockContext ).Get( id );
-                    if ( location != null )
+                    var locationAttendance = new KioskLocationAttendance();
+                    locationAttendance.LocationId = location.Id;
+                    locationAttendance.LocationName = location.Name;
+                    locationAttendance.Groups = new List<KioskGroupAttendance>();
+
+                    var attendanceService = new AttendanceService( rockContext );
+                    foreach ( var attendance in attendanceService.GetByDateAndLocation( RockDateTime.Today, location.Id ) )
                     {
-                        locationAttendance = new KioskLocationAttendance();
-                        locationAttendance.LocationId = location.Id;
-                        locationAttendance.LocationName = location.Name;
-                        locationAttendance.Groups = new List<KioskGroupAttendance>();
-
-                        var attendanceService = new AttendanceService( rockContext );
-                        foreach ( var attendance in attendanceService.GetByDateAndLocation( RockDateTime.Today, location.Id ) )
-                        {
-                            AddAttendanceRecord( locationAttendance, attendance );
-                        }
-
-                        var cachePolicy = new CacheItemPolicy();
-                        cachePolicy.AbsoluteExpiration = DateTimeOffset.Now.AddMinutes( 2 );
-                        cache.Set( cacheKey, locationAttendance, cachePolicy );
-
-                        return locationAttendance;
+                        AddAttendanceRecord( locationAttendance, attendance );
                     }
+
+                    return locationAttendance;
                 }
             }
 
@@ -157,10 +147,10 @@ namespace Rock.CheckIn
         /// Flushes the specified id.
         /// </summary>
         /// <param name="id">The id.</param>
+        [Obsolete( "Use Remove( int id ) insted.")]
         public static void Flush( int id )
         {
-            ObjectCache cache = Rock.Web.Cache.RockMemoryCache.Default;
-            cache.Remove( KioskLocationAttendance.CacheKey( id ) );
+            Remove( id );
         }
 
         /// <summary>
@@ -171,7 +161,7 @@ namespace Rock.CheckIn
         {
             if ( attendance.LocationId.HasValue )
             {
-                var location = KioskLocationAttendance.Read(attendance.LocationId.Value);
+                var location = KioskLocationAttendance.Get(attendance.LocationId.Value);
                 if (location != null)
                 {
                     AddAttendanceRecord( location, attendance );

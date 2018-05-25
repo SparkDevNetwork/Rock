@@ -31,7 +31,7 @@ using Rock.Model;
 using Rock.Reporting;
 using Rock.Security;
 using Rock.Web;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -137,7 +137,7 @@ $(document).ready(function() {
             ScriptManager.RegisterStartupScript( this.Page, this.Page.GetType(), "toggle-switch-init", script, true );
 
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", DataView.FriendlyTypeName );
-            btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.DataView ) ).Id;
+            btnSecurity.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.DataView ) ).Id;
 
             gReport.GridRebind += gReport_GridRebind;
 
@@ -475,12 +475,12 @@ $(document).ready(function() {
             int? entityTypeId = etpEntityType.SelectedEntityTypeId;
             if ( entityTypeId.HasValue )
             {
-                var filteredEntityType = EntityTypeCache.Read( entityTypeId.Value );
+                var filteredEntityType = CacheEntityType.Get( entityTypeId.Value );
                 foreach ( var component in DataTransformContainer.GetComponentsByTransformedEntityName( filteredEntityType.Name ).OrderBy( c => c.Title ) )
                 {
                     if ( component.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) )
                     {
-                        var transformEntityType = EntityTypeCache.Read( component.TypeName );
+                        var transformEntityType = CacheEntityType.Get( component.TypeName );
                         ListItem li = new ListItem( component.Title, transformEntityType.Id.ToString() );
                         ddlTransform.Items.Add( li );
                     }
@@ -661,7 +661,7 @@ $(document).ready(function() {
 
             if ( dataView.DataViewFilter != null && dataView.EntityTypeId.HasValue )
             {
-                var entityTypeCache = EntityTypeCache.Read( dataView.EntityTypeId.Value );
+                var entityTypeCache = CacheEntityType.Get( dataView.EntityTypeId.Value );
                 if ( entityTypeCache != null )
                 {
                     var entityTypeType = entityTypeCache.GetEntityType();
@@ -684,7 +684,7 @@ $(document).ready(function() {
             lPersisted.Text = descriptionListPersisted.Html;
 
             DescriptionList descriptionListDataviews = new DescriptionList();
-            var dataViewFilterEntityId = EntityTypeCache.Read( typeof( Rock.Reporting.DataFilter.OtherDataViewFilter ) ).Id;
+            var dataViewFilterEntityId = CacheEntityType.Get( typeof( Rock.Reporting.DataFilter.OtherDataViewFilter ) ).Id;
 
             var rockContext = new RockContext();
             DataViewService dataViewService = new DataViewService( rockContext );
@@ -781,7 +781,7 @@ $(document).ready(function() {
             {
                 string authorizationMessage = string.Empty;
 
-                bool isPersonDataSet = dataView.EntityTypeId == EntityTypeCache.Read( typeof( Rock.Model.Person ) ).Id;
+                bool isPersonDataSet = dataView.EntityTypeId == CacheEntityType.Get( typeof( Rock.Model.Person ) ).Id;
 
                 if ( isPersonDataSet )
                 {
@@ -795,7 +795,7 @@ $(document).ready(function() {
 
                 if ( dataView.EntityTypeId.HasValue )
                 {
-                    var entityTypeCache = EntityTypeCache.Read( dataView.EntityTypeId.Value, rockContext );
+                    var entityTypeCache = CacheEntityType.Get( dataView.EntityTypeId.Value, rockContext );
                     if (entityTypeCache != null)
                     {
                         gReport.RowItemText = entityTypeCache.FriendlyName;
@@ -854,7 +854,7 @@ $(document).ready(function() {
 
             if ( dataView.EntityTypeId.HasValue )
             {
-                var cachedEntityType = EntityTypeCache.Read( dataView.EntityTypeId.Value );
+                var cachedEntityType = CacheEntityType.Get( dataView.EntityTypeId.Value );
                 if ( cachedEntityType != null && cachedEntityType.AssemblyName != null )
                 {
                     Type entityType = cachedEntityType.GetEntityType();
@@ -922,7 +922,7 @@ $(document).ready(function() {
 
             if ( dataView.EntityTypeId.HasValue )
             {
-                grid.RowItemText = EntityTypeCache.Read( dataView.EntityTypeId.Value ).FriendlyName;
+                grid.RowItemText = CacheEntityType.Get( dataView.EntityTypeId.Value ).FriendlyName;
             }
 
             if ( grid.DataSource != null )
@@ -1054,7 +1054,7 @@ $(document).ready(function() {
             phFilters.Controls.Clear();
             if ( filter != null && filteredEntityTypeId.HasValue )
             {
-                var filteredEntityType = EntityTypeCache.Read( filteredEntityTypeId.Value );
+                var filteredEntityType = CacheEntityType.Get( filteredEntityTypeId.Value );
                 CreateFilterControl( phFilters, filter, filteredEntityType.Name, setSelection, rockContext );
             }
         }
@@ -1080,7 +1080,7 @@ $(document).ready(function() {
                     filterControl.FilteredEntityTypeName = filteredEntityTypeName;
                     if ( filter.EntityTypeId.HasValue )
                     {
-                        var entityTypeCache = Rock.Web.Cache.EntityTypeCache.Read( filter.EntityTypeId.Value, rockContext );
+                        var entityTypeCache = Rock.Cache.CacheEntityType.Get( filter.EntityTypeId.Value, rockContext );
                         if ( entityTypeCache != null )
                         {
                             filterControl.FilterEntityTypeName = entityTypeCache.Name;

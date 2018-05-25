@@ -24,9 +24,9 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
+using Rock.Cache;
 using Rock.Utility;
-using Rock.Web.Cache;
+using Rock.Security;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
 
@@ -206,7 +206,7 @@ function() {
             filterControl.Controls.Add( ddlDataView );
 
             // Populate the Data View Picker
-            int entityTypeId = EntityTypeCache.Read( typeof( Model.PersonalDevice ) ).Id;
+            int entityTypeId = CacheEntityType.Get( typeof( Model.PersonalDevice ) ).Id;
             ddlDataView.EntityTypeId = entityTypeId;
 
             return new Control[] { ddlDataView };

@@ -122,7 +122,7 @@ namespace Rock.Web.UI
                 return PersonGroups( (int)Context.Items[itemKey] );
             }
 
-            var groupType = Rock.Web.Cache.GroupTypeCache.Read( groupTypeGuid );
+            var groupType = Rock.Cache.CacheGroupType.Get( groupTypeGuid );
             int groupTypeId = groupType != null ? groupType.Id : 0;
 
             if ( !Context.Items.Contains( itemKey ) )

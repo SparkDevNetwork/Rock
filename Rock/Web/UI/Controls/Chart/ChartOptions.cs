@@ -21,7 +21,7 @@ using Newtonsoft.Json;
 
 using Rock.Model;
 using Rock.Utility;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -39,7 +39,7 @@ namespace Rock.Web.UI.Controls
             ChartStyle chartStyle = null;
             if ( chartStyleDefinedValueGuid.HasValue )
             {
-                var definedValue = DefinedValueCache.Read( chartStyleDefinedValueGuid.Value );
+                var definedValue = CacheDefinedValue.Get( chartStyleDefinedValueGuid.Value );
                 if ( definedValue != null )
                 {
                     chartStyle = ChartStyle.CreateFromJson( definedValue.Value, definedValue.GetAttributeValue( "ChartStyle" ) );

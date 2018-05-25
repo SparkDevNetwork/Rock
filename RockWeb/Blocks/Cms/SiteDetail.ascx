@@ -24,7 +24,7 @@
             <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body">
 
-                <asp:ValidationSummary ID="vsSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                <asp:ValidationSummary ID="vsSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
 
                 <div id="pnlEditDetails" runat="server">
 
@@ -101,7 +101,7 @@
                         </div>
                         <div class="row">
                             <div class="col-md-12">
-                                <Rock:CodeEditor ID="cePageHeaderContent" runat="server" Label="Page Header Content" Help="The content provided here will be added to each page's head section." EditorMode="Html" EditorTheme="Rock" Height="300" />
+                                <Rock:CodeEditor ID="cePageHeaderContent" runat="server" Label="Page Header Content" Help="The content provided here will be added to each page's head section." EditorMode="Lava" EditorTheme="Rock" Height="300" />
                             </div>
                         </div>
                     </Rock:PanelWidget>

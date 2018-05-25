@@ -21,7 +21,7 @@ using System.Linq;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Transactions
 {
@@ -64,7 +64,7 @@ namespace Rock.Transactions
         {
             using ( var rockContext = new RockContext() )
             {
-                var relationshipGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
+                var relationshipGroupType = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
                 if ( relationshipGroupType != null )
                 {
                     var ownerRole = relationshipGroupType.Roles

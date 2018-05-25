@@ -26,7 +26,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Security;
@@ -76,12 +76,12 @@ namespace RockWeb.Blocks.Core
             Guid entityTypeGuid = Guid.Empty;
             if ( Guid.TryParse( GetAttributeValue( "EntityType" ), out entityTypeGuid ) )
             {
-                entityTypeId = EntityTypeCache.Read( entityTypeGuid ).Id;
+                entityTypeId = CacheEntityType.Get( entityTypeGuid ).Id;
             }
             entityTypeQualifierProperty = GetAttributeValue( "EntityTypeQualifierProperty" );
             entityTypeQualifierValue = GetAttributeValue( "EntityTypeQualifierValue" );
 
-            btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Category ) ).Id;
+            btnSecurity.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.Category ) ).Id;
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -187,7 +187,7 @@ namespace RockWeb.Blocks.Core
                 {
                     parentCategoryId = category.ParentCategoryId;
 
-                    CategoryCache.Flush( category.Id );
+                    CacheCategory.Remove( category.Id );
 
                     categoryService.Delete( category );
                     rockContext.SaveChanges();
@@ -279,7 +279,7 @@ namespace RockWeb.Blocks.Core
             }
 
             rockContext.SaveChanges();
-            CategoryCache.Flush( category.Id );
+            CacheCategory.Remove( category.Id );
 
             var qryParams = new Dictionary<string, string>();
             qryParams["CategoryId"] = category.Id.ToString();
@@ -428,7 +428,7 @@ namespace RockWeb.Blocks.Core
             {
                 foreach ( var excludeCategoryGuid in excludeCategoriesGuids )
                 {
-                    var excludedCategory = CategoryCache.Read( excludeCategoryGuid );
+                    var excludedCategory = CacheCategory.Get( excludeCategoryGuid );
                     if ( excludedCategory != null )
                     {
                         excludedCategoriesIds.Add( excludedCategory.Id );
@@ -440,7 +440,7 @@ namespace RockWeb.Blocks.Core
             cpParentCategory.EntityTypeQualifierColumn = category.EntityTypeQualifierColumn;
             cpParentCategory.EntityTypeQualifierValue = category.EntityTypeQualifierValue;
             cpParentCategory.ExcludedCategoryIds = excludedCategoriesIds.AsDelimited( "," );
-            var rootCategory = CategoryCache.Read( this.GetAttributeValue( "RootCategory" ).AsGuid() );
+            var rootCategory = CacheCategory.Get( this.GetAttributeValue( "RootCategory" ).AsGuid() );
 
             cpParentCategory.RootCategoryId = rootCategory != null ? rootCategory.Id : (int?)null;
             cpParentCategory.SetValue( category.ParentCategoryId );
@@ -482,7 +482,7 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         protected override void ShowSettings()
         {
-            var entityType = EntityTypeCache.Read( this.GetAttributeValue( "EntityType" ).AsGuid() );
+            var entityType = CacheEntityType.Get( this.GetAttributeValue( "EntityType" ).AsGuid() );
             var rootCategory = new CategoryService( new RockContext() ).Get( this.GetAttributeValue( "RootCategory" ).AsGuid() );
 
             cpRootCategoryDetail.EntityTypeId = entityType != null ? entityType.Id : 0;
@@ -524,14 +524,14 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void mdCategoryDetailConfig_SaveClick( object sender, EventArgs e )
         {
-            var selectedCategory = CategoryCache.Read( cpRootCategoryDetail.SelectedValue.AsInteger() );
+            var selectedCategory = CacheCategory.Get( cpRootCategoryDetail.SelectedValue.AsInteger() );
             this.SetAttributeValue( "RootCategory", selectedCategory != null ? selectedCategory.Guid.ToString() : string.Empty );
 
             var excludedCategoryIds = cpExcludeCategoriesDetail.SelectedValuesAsInt();
             var excludedCategoryGuids = new List<Guid>();
             foreach ( int excludedCategoryId in excludedCategoryIds )
             {
-                var excludedCategory = CategoryCache.Read( excludedCategoryId );
+                var excludedCategory = CacheCategory.Get( excludedCategoryId );
                 if ( excludedCategory != null )
                 {
                     excludedCategoryGuids.Add( excludedCategory.Guid );

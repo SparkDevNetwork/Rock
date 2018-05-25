@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Linq.Expressions;
+using Z.EntityFramework.Plus;
 
 namespace Rock.Data
 {
@@ -103,6 +104,15 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Gets an <see cref="IQueryable{T}"/> list of all models ensuring that any EntityFramework.Plus Filter or service specific filter is not applied
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<T> AsNoFilter()
+        {
+            return _objectSet.AsNoFilter();
+        }
+
+        /// <summary>
         /// Gets an <see cref="IQueryable{T}"/> list of all models
         /// with eager loading of properties specified in includes
         /// </summary>
@@ -131,7 +141,7 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual T Get( int id )
         {
-            return Queryable().FirstOrDefault( t => t.Id == id );
+            return AsNoFilter().FirstOrDefault( t => t.Id == id );
         }
 
         /// <summary>
@@ -141,7 +151,53 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual T Get( Guid guid )
         {
-            return Queryable().FirstOrDefault( t => t.Guid == guid );
+            return AsNoFilter().FirstOrDefault( t => t.Guid == guid );
+        }
+
+        /// <summary>
+        /// Gets the model with the id value but doesn't load it into the EF ChangeTracker.
+        /// Use this if you won't be making any changes to the record
+        /// </summary>
+        /// <param name="id">id</param>
+        /// <returns></returns>
+        public virtual T GetNoTracking( int id )
+        {
+            return AsNoFilter().AsNoTracking().FirstOrDefault( t => t.Id == id );
+        }
+
+        /// <summary>
+        /// Gets the model with the Guid value but doesn't load it into the EF ChangeTracker.
+        /// Use this if you won't be making any changes to the record
+        /// </summary>
+        /// <param name="guid">The GUID.</param>
+        /// <returns></returns>
+        public virtual T GetNoTracking( Guid guid )
+        {
+            return AsNoFilter().AsNoTracking().FirstOrDefault( t => t.Guid == guid );
+        }
+
+        /// <summary>
+        /// Gets the model with the id value into the selected form
+        /// </summary>
+        /// <typeparam name="TResult">The type of the result.</typeparam>
+        /// <param name="Id">The identifier.</param>
+        /// <param name="selector">The selector.</param>
+        /// <returns></returns>
+        public TResult GetSelect<TResult>( int Id, System.Linq.Expressions.Expression<Func<T, TResult>> selector )
+        {
+            return AsNoFilter().Where( a => a.Id == Id ).Select( selector ).FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Gets the model with the Guid value into the selected form
+        /// </summary>
+        /// <typeparam name="TResult">The type of the result.</typeparam>
+        /// <param name="Id">The identifier.</param>
+        /// <param name="selector">The selector.</param>
+        /// <returns></returns>
+        public TResult GetSelect<TResult>( Guid guid, System.Linq.Expressions.Expression<Func<T, TResult>> selector )
+        {
+            return AsNoFilter().Where( a => a.Guid == guid ).Select( selector ).FirstOrDefault();
         }
 
         /// <summary>
@@ -198,15 +254,17 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual Guid? GetGuid( int id )
         {
-            var result = this.Queryable().Where( a => a.Id == id ).Select( a => a.Guid ).FirstOrDefault();
-            if (result.IsEmpty())
-            {
-                return null;
-            }
-            else
-            {
-                return result;
-            }
+            return this.Queryable().Where( a => a.Id == id ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Gets the Id for the entity that has the specified Guid
+        /// </summary>
+        /// <param name="guid">The unique identifier.</param>
+        /// <returns></returns>
+        public virtual int? GetId( Guid guid )
+        {
+            return this.Queryable().Where( a => a.Guid == guid ).Select( a => ( int? ) a.Id ).FirstOrDefault();
         }
 
         /// <summary>
@@ -449,7 +507,7 @@ namespace Rock.Data
         {
             var rockContext = this.Context as RockContext;
 
-            var entityType = Rock.Web.Cache.EntityTypeCache.Read( typeof( T ), false, rockContext );
+            var entityType = Rock.Cache.CacheEntityType.Get( typeof( T ), false, rockContext );
             if ( entityType != null )
             {
                 var followerPersonIds = new Rock.Model.FollowingService( rockContext )
@@ -476,7 +534,7 @@ namespace Rock.Data
         {
             var rockContext = this.Context as RockContext;
 
-            var entityType = Rock.Web.Cache.EntityTypeCache.Read( typeof( T ), false, rockContext );
+            var entityType = Rock.Cache.CacheEntityType.Get( typeof( T ), false, rockContext );
             if ( entityType != null )
             {
                 var ids = new Rock.Model.FollowingService( rockContext )

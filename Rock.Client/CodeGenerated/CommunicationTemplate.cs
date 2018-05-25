@@ -195,6 +195,9 @@ namespace Rock.Client
         public Category Category { get; set; }
 
         /// <summary />
+        public bool IsPersonal { get; set; }
+
+        /// <summary />
         public Dictionary<string, string> LavaFields { get; set; }
 
         /// <summary />

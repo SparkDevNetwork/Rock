@@ -19,11 +19,12 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
+using System.Web.Http;
 using System.Web.Http.OData;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Rest.Controllers
 {
@@ -174,12 +175,26 @@ namespace Rock.Rest.Controllers
         /// Gets the name of the series partition.
         /// </summary>
         /// <param name="metricId">The metric identifier.</param>
-        /// <param name="metricValuePartitionEntityIds">The metric value partition as a comma-delimited list of EntityTypeId|EntityId.</param>
+        /// <param name="metricValuePartitionEntityIds">The metric value partition entity ids.</param>
         /// <returns></returns>
         [System.Web.Http.Route( "api/MetricValues/GetSeriesPartitionName/{metricId}/{metricValuePartitionEntityIds}" )]
+        [Obsolete( "Use POST ~api/MetricValues/GetSeriesPartitionName/{metricId} with List<string> of EntityTypeId|EntityId as the body")]
         public string GetSeriesPartitionName( int metricId, string metricValuePartitionEntityIds )
         {
-            var entityTypeEntityIdList = metricValuePartitionEntityIds.Split( ',' ).Select( a => a.Split( '|' ) ).Select( a =>
+            return GetSeriesPartitionName( metricId, metricValuePartitionEntityIds.Split( ',' ).ToList() );
+        }
+
+        /// <summary>
+        /// Gets the name of the series partition using POST
+        /// </summary>
+        /// <param name="metricId">The metric identifier.</param>
+        /// <param name="metricValuePartitionEntityIdList">The metric value partition entity identifier list.</param>
+        /// <returns></returns>
+        [System.Web.Http.Route( "api/MetricValues/GetSeriesPartitionName/{metricId}" )]
+        [HttpPost]
+        public string GetSeriesPartitionName( int metricId, [FromBody] List<string> metricValuePartitionEntityIdList )
+        {
+            var entityTypeEntityIdList = metricValuePartitionEntityIdList.Select( a => a.Split( '|' ) ).Select( a =>
                 new
                 {
                     EntityTypeId = a[0].AsIntegerOrNull(),
@@ -194,20 +209,20 @@ namespace Rock.Rest.Controllers
             {
                 if ( entityTypeEntity.EntityTypeId.HasValue && entityTypeEntity.EntityId.HasValue )
                 {
-                    var entityTypeCache = EntityTypeCache.Read( entityTypeEntity.EntityTypeId.Value );
+                    var entityTypeCache = CacheEntityType.Get( entityTypeEntity.EntityTypeId.Value );
                     if ( entityTypeCache != null )
                     {
-                        if ( entityTypeCache.Id == EntityTypeCache.GetId<Campus>() )
+                        if ( entityTypeCache.Id == CacheEntityType.GetId<Campus>() )
                         {
-                            var campus = CampusCache.Read( entityTypeEntity.EntityId.Value );
+                            var campus = CacheCampus.Get( entityTypeEntity.EntityId.Value );
                             if ( campus != null )
                             {
                                 seriesPartitionValues.Add( campus.Name );
                             }
                         }
-                        else if ( entityTypeCache.Id == EntityTypeCache.GetId<DefinedValue>() )
+                        else if ( entityTypeCache.Id == CacheEntityType.GetId<DefinedValue>() )
                         {
-                            var definedValue = DefinedValueCache.Read( entityTypeEntity.EntityId.Value );
+                            var definedValue = CacheDefinedValue.Get( entityTypeEntity.EntityId.Value );
                             if ( definedValue != null )
                             {
                                 seriesPartitionValues.Add( definedValue.ToString() );

@@ -28,7 +28,7 @@ using Newtonsoft.Json;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 /// <summary>
 /// A webhook for launching a workflow. Does basic decoding of FORM data
@@ -56,7 +56,7 @@ public class LaunchWorkflow : IHttpHandler
                     Guid guid = hook.GetAttributeValue( "WorkflowType" ).AsGuid();
 
 
-                    WorkflowTypeCache workflowType = WorkflowTypeCache.Read( guid );
+                    CacheWorkflowType workflowType = CacheWorkflowType.Get( guid );
                     if ( workflowType != null )
                     {
                         Workflow workflow = Workflow.Activate( workflowType, context.Request.UserHostName );
@@ -115,21 +115,21 @@ public class LaunchWorkflow : IHttpHandler
     #region SuMethods
 
     /// <summary>
-    /// Retrieve the DefinedValueCache for this request by matching the Method, Url
+    /// Retrieve the CacheDefinedValue for this request by matching the Method, Url
     /// and any other filters defined by subclasses.
     /// </summary>
     /// <param name="requestDict">The request dictionary.</param>
     /// <returns>
     /// A DefinedValue for the webhook request that was matched or null if one was not found.
     /// </returns>
-    protected List<DefinedValueCache> GetHooksForRequest( Dictionary<string, object> requestDict )
+    protected List<CacheDefinedValue> GetHooksForRequest( Dictionary<string, object> requestDict )
     {
-        var hooks = new List<DefinedValueCache>();
+        var hooks = new List<CacheDefinedValue>();
 
-        var dt = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.WEBHOOK_TO_WORKFLOW.AsGuid() );
+        var dt = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.WEBHOOK_TO_WORKFLOW.AsGuid() );
         if ( dt != null )
         {
-            foreach ( DefinedValueCache hook in dt.DefinedValues.OrderBy( h => h.Order ) )
+            foreach ( CacheDefinedValue hook in dt.DefinedValues.OrderBy( h => h.Order ) )
             {
                 if ( hook.GetAttributeValue( "ProcessRequest" ).ResolveMergeFields( requestDict ).Trim().AsBoolean() )
                 {
@@ -148,7 +148,7 @@ public class LaunchWorkflow : IHttpHandler
     /// <param name="workflow">The workflow whose attributes need to be set.</param>
     /// <param name="hook">The DefinedValue of the currently executing webhook.</param>
     /// <param name="mergeFields">The merge fields.</param>
-    protected void PopulateWorkflowAttributes( Workflow workflow, DefinedValueCache hook, Dictionary<string, object> mergeFields )
+    protected void PopulateWorkflowAttributes( Workflow workflow, CacheDefinedValue hook, Dictionary<string, object> mergeFields )
     {
         // Set workflow attributes
         string workflowAttributes = hook.GetAttributeValue( "WorkflowAttributes" );

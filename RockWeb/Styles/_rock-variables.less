@@ -246,6 +246,7 @@
 @autocomplete-border: darken(@autocomplete-bg, 10%);
 @autocomplete-text: @theme-4;
 @autocomplete-rollover-bg: darken(@autocomplete-bg, 10%); // the background color of the rollover for autocompletes.
+@autocomplete-rollover-color: @text-color;
 
 // Smart Search
 @smartsearch-bg: rgba(255, 255, 255, .1);
@@ -294,6 +295,11 @@
 @alert-default-bg: @gray-lighter;
 @alert-default-border: darken(@alert-default-bg, 10%);
 @alert-default-text: @text-color;
+
+@alert-validation-bg: @alert-warning-bg;
+@alert-validation-border: darken(@alert-warning-bg, 10%);
+@alert-validation-heading: @state-danger-text;
+@alert-validation-text: @text-color;
 
 // Custom Labels { The bootstrap labels use the brand colors. }
 @label-campus-bg: #83758f; // Used for identifing campuses.

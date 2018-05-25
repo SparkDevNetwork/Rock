@@ -24,7 +24,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Workflow.Action
 {
@@ -63,7 +63,7 @@ namespace Rock.Workflow.Action
 
             if ( guidGroupAttribute.HasValue )
             {
-                var attributeGroup = AttributeCache.Read( guidGroupAttribute.Value, rockContext );
+                var attributeGroup = CacheAttribute.Get( guidGroupAttribute.Value, rockContext );
                 if ( attributeGroup != null )
                 {
                     var groupGuid = action.GetWorklowAttributeValue( guidGroupAttribute.Value ).AsGuidOrNull();
@@ -71,10 +71,11 @@ namespace Rock.Workflow.Action
                     if ( groupGuid.HasValue )
                     {
                         group = new GroupService( rockContext ).Get( groupGuid.Value );
+
                         if ( group != null )
                         {
                             // use the group's grouptype's default group role if a group role wasn't specified
-                            groupRoleId = group.GroupType.DefaultGroupRoleId;
+                            groupRoleId = CacheGroupType.Get( group.GroupTypeId ).DefaultGroupRoleId;
                         }
                     }
                 }
@@ -98,7 +99,7 @@ namespace Rock.Workflow.Action
 
             if ( guidPersonAttribute.HasValue )
             {
-                var attributePerson = AttributeCache.Read( guidPersonAttribute.Value, rockContext );
+                var attributePerson = CacheAttribute.Get( guidPersonAttribute.Value, rockContext );
                 if ( attributePerson != null )
                 {
                     string attributePersonValue = action.GetWorklowAttributeValue( guidPersonAttribute.Value );
@@ -154,7 +155,7 @@ namespace Rock.Workflow.Action
 
                     if ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
                     {
-                        Rock.Security.Role.Flush( group.Id );
+                        Rock.Cache.CacheRole.Remove( group.Id );
                     }
                 }
                 else

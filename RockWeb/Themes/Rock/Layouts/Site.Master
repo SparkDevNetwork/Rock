@@ -65,19 +65,14 @@
                 <i class="fa fa-bars"></i>
             </div>
             <asp:HyperLink ID="hlHomeCorner" runat="server" NavigateUrl="~" ToolTip="Rock RMS" CssClass="navbar-brand-corner" />
-            <asp:HyperLink ID="hlHomeCenter" runat="server" NavigateUrl="~" ToolTip="Rock RMS" CssClass="navbar-brand-center" />
 
-            <div class="header-content collapse navbar-collapse" role="navigation">
+            <div id="fixed-header" class="header-content" role="navigation">
                 <div class="clearfix">
                     <!-- bookmark markup goes here -->
 
                     <div class="navbar-zone-login"><Rock:Zone Name="Login" runat="server" /></div>
                     <div class="navbar-zone-header"><Rock:Zone Name="Header" runat="server" /></div>
                 </div>
-            </div>
-            
-            <div id="header-collapse" class="collapsed" data-toggle="collapse" data-target=".header-content">
-                <i class="fa fa-chevron-down"></i>
             </div>
 
         </nav>

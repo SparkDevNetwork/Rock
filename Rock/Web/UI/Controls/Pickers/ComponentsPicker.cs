@@ -21,7 +21,7 @@ using System.Reflection;
 using System.Web.UI.WebControls;
 
 using Rock.Extension;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -57,7 +57,7 @@ namespace Rock.Web.UI.Controls
                                 {
                                     if ( component.Value.Value.IsActive )
                                     {
-                                        var entityType = EntityTypeCache.Read( component.Value.Value.GetType() );
+                                        var entityType = CacheEntityType.Get( component.Value.Value.GetType() );
                                         if ( entityType != null )
                                         {
                                             this.Items.Add( new ListItem( entityType.FriendlyName, entityType.Guid.ToString() ) );

@@ -23,7 +23,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Workflow.Action
 {
@@ -122,7 +122,7 @@ namespace Rock.Workflow.Action
         /// <param name="rockContext">The rock context.</param>
         /// <param name="identifier">The identifier.</param>
         /// <returns></returns>
-        private InteractionChannelCache GetChannel( RockContext rockContext, string identifier )
+        private CacheInteractionChannel GetChannel( RockContext rockContext, string identifier )
         {
             if ( identifier.IsNotNullOrWhitespace() )
             {
@@ -130,7 +130,7 @@ namespace Rock.Workflow.Action
                 int? id = identifier.AsIntegerOrNull();
                 if ( id.HasValue )
                 {
-                    var channel = InteractionChannelCache.Read( id.Value );
+                    var channel = CacheInteractionChannel.Get( id.Value );
                     if ( channel != null )
                     {
                         return channel;
@@ -141,7 +141,7 @@ namespace Rock.Workflow.Action
                 Guid? guid = identifier.AsGuidOrNull();
                 if ( guid.HasValue )
                 {
-                    var channel = InteractionChannelCache.Read( guid.Value );
+                    var channel = CacheInteractionChannel.Get( guid.Value );
                     if ( channel != null )
                     {
                         return channel;
@@ -156,7 +156,7 @@ namespace Rock.Workflow.Action
                     .FirstOrDefault( c => c.Name == identifier );
                     if ( interactionChannel != null )
                     {
-                        return InteractionChannelCache.Read( interactionChannel );
+                        return CacheInteractionChannel.Get( interactionChannel );
                     }
 
                     // If still no match, and we have a name, create a new channel
@@ -166,7 +166,7 @@ namespace Rock.Workflow.Action
                         interactionChannel.Name = identifier;
                         new InteractionChannelService( newRockContext ).Add( interactionChannel );
                         newRockContext.SaveChanges();
-                        return InteractionChannelCache.Read( interactionChannel.Id );
+                        return CacheInteractionChannel.Get( interactionChannel.Id );
                     }
                 }
             }
@@ -182,7 +182,7 @@ namespace Rock.Workflow.Action
         /// <param name="entityId">The entity identifier.</param>
         /// <param name="identifier">The identifier.</param>
         /// <returns></returns>
-        private InteractionComponentCache GetComponent( RockContext rockContext, InteractionChannelCache channel, int? entityId, string identifier )
+        private CacheInteractionComponent GetComponent( RockContext rockContext, CacheInteractionChannel channel, int? entityId, string identifier )
         {
             if ( channel != null )
             {
@@ -202,7 +202,7 @@ namespace Rock.Workflow.Action
                     int? id = identifier.AsIntegerOrNull();
                     if ( id.HasValue )
                     {
-                        var component = InteractionComponentCache.Read( id.Value );
+                        var component = CacheInteractionComponent.Get( id.Value );
                         if ( component != null && component.ChannelId == channel.Id )
                         {
                             return component;
@@ -213,7 +213,7 @@ namespace Rock.Workflow.Action
                     Guid? guid = identifier.AsGuidOrNull();
                     if ( guid.HasValue )
                     {
-                        var component = InteractionComponentCache.Read( guid.Value );
+                        var component = CacheInteractionComponent.Get( guid.Value );
                         if ( component != null && component.ChannelId == channel.Id )
                         {
                             return component;
@@ -238,7 +238,7 @@ namespace Rock.Workflow.Action
                             new InteractionComponentService( newRockContext ).Add( interactionComponent );
                             newRockContext.SaveChanges();
 
-                            return InteractionComponentCache.Read( interactionComponent.Id );
+                            return CacheInteractionComponent.Get( interactionComponent.Id );
                         }
                     }
                 }

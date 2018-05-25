@@ -32,7 +32,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -218,6 +218,12 @@ namespace RockWeb.Blocks.Finance
                         txn.FinancialPaymentDetail = new FinancialPaymentDetail();
                     }
 
+                    // it is possible that an existing transaction doesn't have a FinancialPaymentDetail (usually because it was imported), so create it if is doesn't exist
+                    if ( txn.FinancialPaymentDetail == null )
+                    {
+                        txn.FinancialPaymentDetail = new FinancialPaymentDetail();
+                    }
+
                     // Update the transaction's properties to match what is currently selected on the screen
                     // This allows the shown attributes to change during AutoPostBack events, based on any Qualifiers specified in the attributes
                     txn.FinancialPaymentDetail.CurrencyTypeValueId = ddlCurrencyType.SelectedValueAsInt();
@@ -290,7 +296,11 @@ namespace RockWeb.Blocks.Finance
             if ( txn != null )
             {
                 txn.LoadAttributes( rockContext );
-                txn.FinancialPaymentDetail.LoadAttributes(rockContext);
+                if ( txn.FinancialPaymentDetail != null )
+                {
+                    txn.FinancialPaymentDetail.LoadAttributes( rockContext );
+                }
+
                 ShowEditDetails( txn, rockContext );
             }
         }
@@ -313,7 +323,11 @@ namespace RockWeb.Blocks.Finance
                 if ( savedTxn != null )
                 {
                     savedTxn.LoadAttributes();
-                    savedTxn.FinancialPaymentDetail.LoadAttributes();
+                    if ( savedTxn.FinancialPaymentDetail != null )
+                    {
+                        savedTxn.FinancialPaymentDetail.LoadAttributes();
+                    }
+
                     ShowReadOnlyDetails( savedTxn );
                 }
             }
@@ -946,7 +960,7 @@ namespace RockWeb.Blocks.Finance
                     boundField.AttributeId = attribute.Id;
                     boundField.HeaderText = attribute.Name;
 
-                    var attributeCache = Rock.Web.Cache.AttributeCache.Read( attribute.Id );
+                    var attributeCache = Rock.Cache.CacheAttribute.Get( attribute.Id );
                     if ( attributeCache != null )
                     {
                         boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
@@ -1237,7 +1251,7 @@ namespace RockWeb.Blocks.Finance
                     detailsLeft.Add( "Payment Method", "<div class='alert alert-warning'>No Payment Information found. This could be due to transaction that was imported from external system.</div>" );
                 }
 
-                var registrationEntityType = EntityTypeCache.Read( typeof( Rock.Model.Registration ) );
+                var registrationEntityType = CacheEntityType.Get( typeof( Rock.Model.Registration ) );
                 if ( registrationEntityType != null )
                 {
                     var registrationIds = txn.TransactionDetails
@@ -1573,12 +1587,12 @@ namespace RockWeb.Blocks.Finance
         /// <param name="rockContext">The rock context.</param>
         private void BindDropdowns( RockContext rockContext )
         {
-            ddlTransactionType.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE.AsGuid(), rockContext ) );
-            ddlSourceType.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE.AsGuid(), rockContext ), true );
-            ddlCurrencyType.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE.AsGuid(), rockContext ), true );
-            ddlCreditCardType.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE.AsGuid(), rockContext ), true );
-            ddlRefundReasonEdit.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_REFUND_REASON.AsGuid(), rockContext ), true );
-            ddlRefundReason.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_REFUND_REASON.AsGuid(), rockContext ), true );
+            ddlTransactionType.BindToDefinedType( CacheDefinedType.Get( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE.AsGuid(), rockContext ) );
+            ddlSourceType.BindToDefinedType( CacheDefinedType.Get( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE.AsGuid(), rockContext ), true );
+            ddlCurrencyType.BindToDefinedType( CacheDefinedType.Get( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE.AsGuid(), rockContext ), true );
+            ddlCreditCardType.BindToDefinedType( CacheDefinedType.Get( Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE.AsGuid(), rockContext ), true );
+            ddlRefundReasonEdit.BindToDefinedType( CacheDefinedType.Get( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_REFUND_REASON.AsGuid(), rockContext ), true );
+            ddlRefundReason.BindToDefinedType( CacheDefinedType.Get( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_REFUND_REASON.AsGuid(), rockContext ), true );
         }
 
         /// <summary>
@@ -1587,7 +1601,7 @@ namespace RockWeb.Blocks.Finance
         private void SetCreditCardVisibility()
         {
             int? currencyType = ddlCurrencyType.SelectedValueAsInt();
-            var creditCardCurrencyType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD );
+            var creditCardCurrencyType = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD );
             ddlCreditCardType.Visible = currencyType.HasValue && currencyType.Value == creditCardCurrencyType.Id;
         }
 
@@ -1801,7 +1815,7 @@ namespace RockWeb.Blocks.Finance
         {
             if ( definedValueId.HasValue )
             {
-                var dv = DefinedValueCache.Read( definedValueId.Value );
+                var dv = CacheDefinedValue.Get( definedValueId.Value );
                 if ( dv != null )
                 {
                     return dv.Value;

@@ -23,7 +23,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.Person
@@ -120,7 +120,7 @@ function() {
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 2 )
             {
-                var groupType = Rock.Web.Cache.GroupTypeCache.Read( selectionValues[0].AsGuid() );
+                var groupType = Rock.Cache.CacheGroupType.Get( selectionValues[0].AsGuid() );
 
                 var groupTypeRoleGuidList = selectionValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.AsGuid() ).ToList();
 
@@ -217,7 +217,7 @@ function() {
         /// <param name="groupTypeId">The group type identifier.</param>
         private void PopulateGroupRolesCheckList( int groupTypeId )
         {
-            var groupType = Rock.Web.Cache.GroupTypeCache.Read( groupTypeId );
+            var groupType = Rock.Cache.CacheGroupType.Get( groupTypeId );
             if ( groupType != null )
             {
                 cblRole.Items.Clear();
@@ -260,7 +260,7 @@ function() {
 
             int groupTypeId = groupTypePicker.SelectedValueAsId() ?? 0;
             Guid? groupTypeGuid = null;
-            var groupType = Rock.Web.Cache.GroupTypeCache.Read( groupTypeId );
+            var groupType = Rock.Cache.CacheGroupType.Get( groupTypeId );
             if ( groupType != null )
             {
                 groupTypeGuid = groupType.Guid;
@@ -330,7 +330,7 @@ function() {
                 int groupTypeId = 0;
 
                 Guid groupTypeGuid = selectionValues[0].AsGuid();
-                var groupType = GroupTypeCache.Read( groupTypeGuid );
+                var groupType = CacheGroupType.Get( groupTypeGuid );
                 if ( groupType != null )
                 {
                     groupTypeId = groupType.Id;

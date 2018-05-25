@@ -25,7 +25,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Core
@@ -107,7 +107,7 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         protected void LoadCampusDropdowns()
         {
-            var campusEntityType = EntityTypeCache.Read( typeof( Campus ) );
+            var campusEntityType = CacheEntityType.Get( typeof( Campus ) );
             var currentCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
 
             var campusIdString = Request.QueryString["campusId"];
@@ -139,7 +139,7 @@ namespace RockWeb.Blocks.Core
                 _currentCampusText = GetAttributeValue( "NoCampusText" );
             }
 
-            var campusList = CampusCache.All()
+            var campusList = CacheCampus.All()
                 .Select( a => new CampusItem { Name = a.Name, Id = a.Id } )
                 .ToList();
 
@@ -176,7 +176,7 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void LoadScheduleDropdowns()
         {
-            var scheduleEntityType = EntityTypeCache.Read( typeof( Schedule ) );
+            var scheduleEntityType = CacheEntityType.Get( typeof( Schedule ) );
             var currentSchedule = RockPage.GetCurrentContext( scheduleEntityType ) as Schedule;
 
             var scheduleIdString = Request.QueryString["scheduleId"];

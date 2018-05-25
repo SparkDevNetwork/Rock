@@ -24,7 +24,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using DDay.iCal;
 using Rock.Data;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Model
 {
@@ -260,6 +260,16 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the first start date time.
+        /// </summary>
+        /// <value>
+        /// The first start date time.
+        /// </value>
+        [NotMapped]
+        [LavaInclude]
+        public virtual DateTime? FirstStartDateTime => GetFirstStartDateTime();
+
+        /// <summary>
         /// Gets the first start date time this week.
         /// </summary>
         /// <value>
@@ -390,7 +400,7 @@ namespace Rock.Model
                 var exclusionDates = new List<DateRange>();
                 if ( this.CategoryId.HasValue && this.CategoryId.Value > 0 )
                 {
-                    var category = CategoryCache.Read( this.CategoryId.Value );
+                    var category = CacheCategory.Get( this.CategoryId.Value );
                     if ( category != null )
                     {
                         exclusionDates = category.ScheduleExclusions

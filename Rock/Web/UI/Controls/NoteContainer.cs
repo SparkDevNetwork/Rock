@@ -23,8 +23,8 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
+using Rock.Cache;
 using Rock.Security;
-using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -50,7 +50,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The available note types.
         /// </value>
-        public List<NoteTypeCache> NoteTypes
+        public List<CacheNoteType> NoteTypes
         {
             get 
             {
@@ -64,8 +64,8 @@ namespace Rock.Web.UI.Controls
                 {
                     var currentPerson = GetCurrentPerson();
                     
-                    var viewableNoteTypes = new List<NoteTypeCache>();
-                    var editableNoteTypes = new List<NoteTypeCache>();
+                    var viewableNoteTypes = new List<CacheNoteType>();
+                    var editableNoteTypes = new List<CacheNoteType>();
 
                     foreach ( var noteType in value )
                     {
@@ -85,7 +85,7 @@ namespace Rock.Web.UI.Controls
             }
         }
 
-        private List<NoteTypeCache> ViewableNoteTypes
+        private List<CacheNoteType> ViewableNoteTypes
         {
             get
             {
@@ -97,7 +97,7 @@ namespace Rock.Web.UI.Controls
             }
         }
 
-        private List<NoteTypeCache> EditableNoteTypes
+        private List<CacheNoteType> EditableNoteTypes
         {
             get
             {
@@ -111,13 +111,13 @@ namespace Rock.Web.UI.Controls
             }
         }
 
-        private List<NoteTypeCache> GetNoteTypes( string viewStateKey )
+        private List<CacheNoteType> GetNoteTypes( string viewStateKey )
         {
-            var noteTypes = new List<NoteTypeCache>();
+            var noteTypes = new List<CacheNoteType>();
             var noteTypeIds = ViewState[viewStateKey] as List<int> ?? new List<int>();
             foreach ( var noteTypeId in noteTypeIds )
             {
-                var noteType = NoteTypeCache.Read( noteTypeId );
+                var noteType = CacheNoteType.Get( noteTypeId );
                 if ( noteType != null )
                 {
                     noteTypes.Add( noteType );
@@ -449,7 +449,8 @@ namespace Rock.Web.UI.Controls
         var $newNotePanel = $(this).closest('.panel-note').find('.note-new > .note');
         $newNotePanel.find('textarea').val('');
         $newNotePanel.find('input:checkbox').prop('checked', false);
-        $newNotePanel.children().slideToggle(""slow"");
+        $newNotePanel.children().slideToggle();
+        $newNotePanel.find('textarea').focus();
     });
 ";
 

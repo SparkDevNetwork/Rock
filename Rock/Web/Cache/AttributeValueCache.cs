@@ -15,23 +15,9 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
-using System.Data.Entity;
-using System.Linq;
-using System.Reflection;
 using System.Runtime.Serialization;
-using System.Web.UI;
-using System.Web.UI.HtmlControls;
-using System.Web.UI.WebControls;
-
-using DotLiquid;
-using Newtonsoft.Json;
 
 using Rock.Data;
-using Rock.Field;
-using Rock.Model;
-using Rock.Security;
-using Rock.Web.UI.Controls;
 
 namespace Rock.Web.Cache
 {
@@ -40,7 +26,8 @@ namespace Rock.Web.Cache
     /// </summary>
     [Serializable]
     [DataContract]
-    [DotLiquid.LiquidType( "AttributeId", "Value", "ValueFormatted", "AttributeName", "AttributeKey", "AttributeIsGridColumn" )]
+    [DotLiquid.LiquidType( "AttributeId", "EntityId", "Value", "ValueFormatted", "AttributeName", "AttributeKey", "AttributeIsGridColumn" )]
+    [Obsolete( "Use Rock.Cache.CacheAttributeValue instead" )]
     public class AttributeValueCache
     {
         #region constructors
@@ -56,7 +43,7 @@ namespace Rock.Web.Cache
         /// Initializes a new instance of the <see cref="AttributeValueCache"/> class.
         /// </summary>
         /// <param name="model">The model.</param>
-        public AttributeValueCache( Rock.Model.AttributeValue model )
+        public AttributeValueCache( Model.AttributeValue model )
         {
             AttributeId = model.AttributeId;
             Value = model.Value;
@@ -104,7 +91,7 @@ namespace Rock.Web.Cache
         {
             get
             {
-                var attribute = AttributeCache.Read( this.AttributeId );
+                var attribute = AttributeCache.Read( AttributeId );
                 if ( attribute != null )
                 {
                     return attribute.FieldType.Field.ValueAsFieldType( null, Value, attribute.QualifierValues );
@@ -123,13 +110,8 @@ namespace Rock.Web.Cache
         {
             get
             {
-                var attribute = AttributeCache.Read( this.AttributeId );
-                if ( attribute != null )
-                {
-                    return attribute.FieldType.Field.SortValue( null, Value, attribute.QualifierValues );
-                }
-
-                return Value;
+                var attribute = AttributeCache.Read( AttributeId );
+                return attribute != null ? attribute.FieldType.Field.SortValue( null, Value, attribute.QualifierValues ) : Value;
             }
         }
 
@@ -144,12 +126,8 @@ namespace Rock.Web.Cache
         {
             get
             {
-                var attribute = AttributeCache.Read( this.AttributeId );
-                if ( attribute != null )
-                {
-                    return attribute.FieldType.Field.FormatValue( null, attribute.EntityTypeId, EntityId, Value, attribute.QualifierValues, false );
-                }
-                return Value;
+                var attribute = AttributeCache.Read( AttributeId );
+                return attribute != null ? attribute.FieldType.Field.FormatValue( null, attribute.EntityTypeId, EntityId, Value, attribute.QualifierValues, false ) : Value;
             }
         }
 
@@ -168,12 +146,8 @@ namespace Rock.Web.Cache
         {
             get
             {
-                var attribute = AttributeCache.Read( this.AttributeId );
-                if ( attribute != null )
-                {
-                    return attribute.Name;
-                }
-                return string.Empty;
+                var attribute = AttributeCache.Read( AttributeId );
+                return attribute != null ? attribute.Name : string.Empty;
             }
         }
 
@@ -192,12 +166,8 @@ namespace Rock.Web.Cache
         {
             get
             {
-                var attribute = AttributeCache.Read( this.AttributeId );
-                if ( attribute != null )
-                {
-                    return attribute.Key;
-                }
-                return string.Empty;
+                var attribute = AttributeCache.Read( AttributeId );
+                return attribute != null ? attribute.Key : string.Empty;
             }
         }
 
@@ -216,12 +186,8 @@ namespace Rock.Web.Cache
         {
             get
             {
-                var attribute = AttributeCache.Read( this.AttributeId );
-                if ( attribute != null )
-                {
-                    return attribute.IsGridColumn;
-                }
-                return false;
+                var attribute = AttributeCache.Read( AttributeId );
+                return attribute != null && attribute.IsGridColumn;
             }
         }
         /// <summary>
@@ -232,7 +198,7 @@ namespace Rock.Web.Cache
         /// </returns>
         public override string ToString()
         {
-            return this.ValueFormatted;
+            return ValueFormatted;
         }
 
         #endregion

@@ -31,7 +31,7 @@ using Rock.Field.Types;
 using Rock.Lava;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -302,7 +302,7 @@ namespace RockWeb.Blocks.Crm
 
                             foreach ( var keyVal in AttributeValueState )
                             {
-                                var attribute = AttributeCache.Read( keyVal.Key );
+                                var attribute = CacheAttribute.Get( keyVal.Key );
                                 if ( attribute != null && ( CurrentPageIndex >= FormState.Count || !pageAttributeIds.Any() || pageAttributeIds.Contains( attribute.Id ) ) )
                                 {
                                     person.SetAttributeValue( attribute.Key, keyVal.Value );
@@ -316,7 +316,7 @@ namespace RockWeb.Blocks.Crm
                                 Guid? workflowTypeGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
                                 if ( workflowTypeGuid.HasValue )
                                 {
-                                    var workflowType = WorkflowTypeCache.Read( workflowTypeGuid.Value );
+                                    var workflowType = CacheWorkflowType.Get( workflowTypeGuid.Value );
                                     if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                                     {
                                         try
@@ -628,7 +628,7 @@ namespace RockWeb.Blocks.Crm
                                 a.AttributeId.HasValue &&
                                 a.ShowCurrentValue == true ) )
                         {
-                            var attributeCache = AttributeCache.Read( field.AttributeId.Value );
+                            var attributeCache = CacheAttribute.Get( field.AttributeId.Value );
                             if ( attributeCache != null )
                             {
                                 AttributeValueState.AddOrReplace( field.AttributeId.Value, CurrentPerson.GetAttributeValue( attributeCache.Key ) );
@@ -700,7 +700,7 @@ namespace RockWeb.Blocks.Crm
                         {
                             value = AttributeValueState[field.AttributeId.Value];
                         }
-                        var attribute = AttributeCache.Read( field.AttributeId.Value );
+                        var attribute = CacheAttribute.Get( field.AttributeId.Value );
                         attribute.AddControl( phContent.Controls, value, BlockValidationGroup, setValues, true, field.IsRequired, null, string.Empty );
 
                         if ( !string.IsNullOrWhiteSpace( field.PostText ) )
@@ -721,7 +721,7 @@ namespace RockWeb.Blocks.Crm
                     .Where( f => f.AttributeId.HasValue )
                     .OrderBy( f => f.Order ) )
                 {
-                    var attribute = AttributeCache.Read( field.AttributeId.Value );
+                    var attribute = CacheAttribute.Get( field.AttributeId.Value );
                     string fieldId = "attribute_field_" + attribute.Id.ToString();
 
                     Control control = phContent.FindControl( fieldId );
@@ -1666,13 +1666,13 @@ $('.template-form > .panel-body').on('validation-error', function() {
         public string PostText { get; set; }
 
         [Newtonsoft.Json.JsonIgnore]
-        public AttributeCache Attribute
+        public CacheAttribute Attribute
         {
             get
             {
                 if ( AttributeId.HasValue )
                 {
-                    return AttributeCache.Read( AttributeId.Value );
+                    return CacheAttribute.Get( AttributeId.Value );
                 }
 
                 return null;

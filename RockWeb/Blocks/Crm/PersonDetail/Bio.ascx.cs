@@ -26,7 +26,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -101,7 +101,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 pnlFollow.Visible = GetAttributeValue( "AllowFollowing" ).AsBoolean();
 
                 // Record Type - this is always "business". it will never change.
-                if ( Person.RecordTypeValueId == DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id )
+                if ( Person.RecordTypeValueId == CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id )
                 {
                     var parms = new Dictionary<string, string>();
                     parms.Add( "businessId", Person.Id.ToString() );
@@ -124,7 +124,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                         Guid guid = badgeGuid.AsGuid();
                         if ( guid != Guid.Empty )
                         {
-                            var personBadge = PersonBadgeCache.Read( guid );
+                            var personBadge = CachePersonBadge.Get( guid );
                             if ( personBadge != null )
                             {
                                 blStatus.PersonBadges.Add( personBadge );
@@ -216,28 +216,36 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                             formattedAge += " old";
                         }
 
-                        lAge.Text = string.Format( "{0} <small>({1})</small><br/>", formattedAge, ( Person.BirthYear.HasValue && Person.BirthYear != DateTime.MinValue.Year ) ? Person.BirthDate.Value.ToShortDateString() : Person.BirthDate.Value.ToMonthDayString() );
+                        lAge.Text = string.Format( "<dd>{0} <small>({1})</small></dd>", formattedAge, ( Person.BirthYear.HasValue && Person.BirthYear != DateTime.MinValue.Year ) ? Person.BirthDate.Value.ToShortDateString() : Person.BirthDate.Value.ToMonthDayString() );
                     }
 
-                    lGender.Text = Person.Gender.ToString();
+                    lGender.Text = string.Format( "<dd>{0}</dd>", Person.Gender.ToString() );
 
                     if ( GetAttributeValue( "DisplayGraduation" ).AsBoolean() )
                     {
                         if ( Person.GraduationYear.HasValue && Person.HasGraduated.HasValue )
                         {
                             lGraduation.Text = string.Format(
-                                "<small>({0} {1})</small>",
+                                "<dd><small>{0} {1}</small></dd>",
                                 Person.HasGraduated.Value ? "Graduated " : "Graduates ",
                                 Person.GraduationYear.Value );
                         }
                         lGrade.Text = Person.GradeFormatted;
                     }
 
-                    lMaritalStatus.Text = Person.MaritalStatusValueId.DefinedValue();
                     if ( Person.AnniversaryDate.HasValue && GetAttributeValue("DisplayAnniversaryDate").AsBoolean() )
                     {
-                        lAnniversary.Text = string.Format( "{0} yrs <small>({1})</small>", Person.AnniversaryDate.Value.Age(), Person.AnniversaryDate.Value.ToMonthDayString() );
+                        lMaritalStatus.Text = string.Format( "<dd>{0}",  Person.MaritalStatusValueId.DefinedValue() );
+                        lAnniversary.Text = string.Format( "{0} yrs <small>({1})</small></dd>", Person.AnniversaryDate.Value.Age(), Person.AnniversaryDate.Value.ToMonthDayString() );
                     }
+                    else
+                    {
+                        if ( Person.MaritalStatusValueId.HasValue )
+                        {
+                        lMaritalStatus.Text = string.Format( "<dd>{0}</dd>",  Person.MaritalStatusValueId.DefinedValue() );
+                        }
+                    }
+
 
                     if ( Person.PhoneNumbers != null )
                     {
@@ -356,7 +364,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
             if ( Person.RecordTypeValueId.HasValue )
             {
-                int recordTypeValueIdBusiness = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
+                int recordTypeValueIdBusiness = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
 
                 isBusiness = ( Person.RecordTypeValueId.Value == recordTypeValueIdBusiness );
             }
@@ -382,7 +390,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 // Prefix with Title if they have a Title with IsFormal=True
                 if ( Person.TitleValueId.HasValue )
                 {
-                    var personTitleValue = DefinedValueCache.Read( Person.TitleValueId.Value );
+                    var personTitleValue = CacheDefinedValue.Get( Person.TitleValueId.Value );
                     if ( personTitleValue != null && personTitleValue.GetAttributeValue( "IsFormal" ).AsBoolean() )
                     {
                         nameText = string.Format( "<span class='title'>{0}</span> ", personTitleValue.Value ) + nameText;
@@ -401,7 +409,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 // Add Suffix.
                 if ( Person.SuffixValueId.HasValue )
                 {
-                    var suffix = DefinedValueCache.Read( Person.SuffixValueId.Value );
+                    var suffix = CacheDefinedValue.Get( Person.SuffixValueId.Value );
                     if ( suffix != null )
                     {
                         nameText += " " + suffix.Value;
@@ -512,7 +520,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 }
             }
 
-            var phoneType = DefinedValueCache.Read( phoneNumberTypeId );
+            var phoneType = CacheDefinedValue.Get( phoneNumberTypeId );
             if ( phoneType != null )
             {
                 string phoneMarkup = formattedNumber;

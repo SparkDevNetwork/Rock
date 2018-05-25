@@ -24,7 +24,7 @@ using System.Threading.Tasks;
 using DotLiquid;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using System.Linq.Dynamic;
 using DotLiquid.Util;
 using System.Text.RegularExpressions;
@@ -81,7 +81,7 @@ namespace Rock.Lava.Blocks
             bool hasFilter = false;
 
             // get a service for the entity based off it's friendly name
-            var entityTypes = EntityTypeCache.All();
+            var entityTypes = CacheEntityType.All();
 
             var model = string.Empty;
 
@@ -298,9 +298,9 @@ namespace Rock.Lava.Blocks
 
                                     // get attribute id
                                     int? attributeId = null;
-                                    foreach ( var id in AttributeCache.GetByEntity( entityTypeCache.Id ).SelectMany( a => a.AttributeIds ) )
+                                    foreach ( var id in CacheAttribute.GetByEntity( entityTypeCache.Id ).SelectMany( a => a.AttributeIds ) )
                                     {
-                                        var attribute = AttributeCache.Read( id );
+                                        var attribute = CacheAttribute.Get( id );
                                         if ( attribute.Key == propertyName )
                                         {
                                             attributeId = id;
@@ -406,7 +406,7 @@ namespace Rock.Lava.Blocks
         private IQueryable<IEntity> PersonFilters(IQueryable<Person> query, Dictionary<string,string> parms)
         {
             // limit to record type of person
-            var personRecordTypeId = DefinedValueCache.Read( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON ).Id;
+            var personRecordTypeId = CacheDefinedValue.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON ).Id;
 
             query = query.Where( p => p.RecordTypeValueId == personRecordTypeId );
 
@@ -435,7 +435,7 @@ namespace Rock.Lava.Blocks
         private IQueryable<IEntity> BusinessFilters( IQueryable<Person> query, Dictionary<string, string> parms )
         {
             // limit to record type of business
-            var businessRecordTypeId = DefinedValueCache.Read( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS ).Id;
+            var businessRecordTypeId = CacheDefinedValue.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS ).Id;
 
             query = query.Where( p => p.RecordTypeValueId == businessRecordTypeId );
             return query;
@@ -456,7 +456,7 @@ namespace Rock.Lava.Blocks
         /// </summary>
         public static void RegisterEntityCommands()
         {
-            var entityTypes = EntityTypeCache.All();
+            var entityTypes = CacheEntityType.All();
 
             // register a business entity
             Template.RegisterTag<Rock.Lava.Blocks.RockEntity>( "business" );
@@ -486,7 +486,7 @@ namespace Rock.Lava.Blocks
 
         }
 
-        private static void RegisterEntityCommand( EntityTypeCache entityType )
+        private static void RegisterEntityCommand( CacheEntityType entityType )
         {
             if ( entityType != null )
             {
@@ -645,7 +645,7 @@ namespace Rock.Lava.Blocks
         /// <param name="entityTypeCache">The entity type cache.</param>
         /// <returns></returns>
         /// <exception cref="System.Exception"></exception>
-        private Expression GetDataViewExpression( int dataViewId, IService service, ParameterExpression parmExpression, EntityTypeCache entityTypeCache )
+        private Expression GetDataViewExpression( int dataViewId, IService service, ParameterExpression parmExpression, CacheEntityType entityTypeCache )
         {
             var dataViewSource = new DataViewService( _rockContext ).Get( dataViewId );
             bool isCorrectDataType = dataViewSource.EntityTypeId == entityTypeCache.Id;
@@ -672,7 +672,7 @@ namespace Rock.Lava.Blocks
         /// <param name="entityType">Type of the entity.</param>
         /// <param name="entityTypeCache">The entity type cache.</param>
         /// <returns></returns>
-        private Expression ParseWhere( string whereClause, Type type, IService service, ParameterExpression parmExpression, Type entityType, EntityTypeCache entityTypeCache )
+        private Expression ParseWhere( string whereClause, Type type, IService service, ParameterExpression parmExpression, Type entityType, CacheEntityType entityTypeCache )
         {
             Expression returnExpression = null;
 
@@ -722,10 +722,10 @@ namespace Rock.Lava.Blocks
                     }
                     else
                     {
-                        AttributeCache filterAttribute = null;
-                        foreach ( var id in AttributeCache.GetByEntity( entityTypeCache.Id ).SelectMany( a => a.AttributeIds ) )
+                        CacheAttribute filterAttribute = null;
+                        foreach ( var id in CacheAttribute.GetByEntity( entityTypeCache.Id ).SelectMany( a => a.AttributeIds ) )
                         {
-                            var attribute = AttributeCache.Read( id );
+                            var attribute = CacheAttribute.Get( id );
                             if ( attribute.Key == property )
                             {
                                 filterAttribute = attribute;

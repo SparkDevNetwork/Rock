@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI.WebControls;
 
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -60,7 +60,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return ViewState["CampusIds"] as List<int> ?? CampusCache.All().Select( c => c.Id ).ToList();
+                return ViewState["CampusIds"] as List<int> ?? CacheCampus.All().Select( c => c.Id ).ToList();
 
             }
 
@@ -96,7 +96,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The campuses.
         /// </value>
-        public List<CampusCache> Campuses
+        public List<CacheCampus> Campuses
         {
             set
             {
@@ -128,6 +128,14 @@ namespace Rock.Web.UI.Controls
                 {
                     li.Selected = true;
                 }
+                else
+                {
+                    // if setting CampusId to NULL or 0, just default to the first item in the list (which should be nothing)
+                    if ( this.Items.Count > 0 )
+                    {
+                        this.SelectedIndex = 0;
+                    }
+                }
             }
         }
 
@@ -138,9 +146,9 @@ namespace Rock.Web.UI.Controls
         /// <param name="value">The value.</param>
         public void CheckItem( int? value )
         {
-            if ( value.HasValue &&
+            if ( value.HasValue && value.Value > 0 &&
                 this.Items.FindByValue( value.Value.ToString() ) == null &&
-                CampusCache.Read( value.Value ) != null )
+                CacheCampus.Get( value.Value ) != null )
             {
                 LoadItems( value );
             }
@@ -163,14 +171,14 @@ namespace Rock.Web.UI.Controls
             // add Empty option first
             Items.Add( new ListItem( firstItemText, string.Empty ) );
 
-            var campuses = CampusCache.All()
+            var campuses = CacheCampus.All()
                 .Where( c =>
                     ( CampusIds.Contains( c.Id ) && ( !c.IsActive.HasValue || c.IsActive.Value || IncludeInactive ) ) ||
                     ( selectedValue.HasValue && c.Id == selectedValue.Value ) )
                 .OrderBy( c => c.Name )
                 .ToList();
 
-            foreach ( CampusCache campus in campuses )
+            foreach ( CacheCampus campus in campuses )
             {
                 var li = new ListItem( campus.Name, campus.Id.ToString() );
                 li.Selected = selectedItems.Contains( campus.Id );

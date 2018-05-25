@@ -23,7 +23,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.Person
@@ -112,7 +112,7 @@ function() {
             if ( selectionValues.Length >= 2 )
             {
                 int noteTypeId = selectionValues[0].AsInteger();
-                var selectedNoteType = NoteTypeCache.Read( noteTypeId );
+                var selectedNoteType = CacheNoteType.Get( noteTypeId );
                 if ( selectedNoteType != null )
                 {
                     result = $"Has a {selectedNoteType.Name} note";
@@ -145,7 +145,7 @@ function() {
             filterControl.Controls.Add( ddlNoteType );
 
             var noteTypeService = new NoteTypeService( new RockContext() );
-            var entityTypeIdPerson = EntityTypeCache.GetId<Rock.Model.Person>();
+            var entityTypeIdPerson = CacheEntityType.GetId<Rock.Model.Person>();
             var noteTypes = noteTypeService.Queryable().Where( a => a.EntityTypeId == entityTypeIdPerson )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
@@ -233,7 +233,7 @@ function() {
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 2 )
             {
-                var entityTypeIdPerson = EntityTypeCache.GetId<Rock.Model.Person>();
+                var entityTypeIdPerson = CacheEntityType.GetId<Rock.Model.Person>();
                 var containsText = selectionValues[1];
                 var noteQry = new NoteService( ( RockContext ) serviceInstance.Context ).Queryable()
                     .Where( x => x.NoteType.EntityTypeId == entityTypeIdPerson );

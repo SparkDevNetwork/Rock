@@ -27,7 +27,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -217,16 +217,16 @@ namespace RockWeb.Blocks.Finance
                 History.EvaluateChange( changes, "Status", batch.Status, batchStatus );
                 batch.Status = batchStatus;
 
-                CampusCache oldCampus = null;
+                CacheCampus oldCampus = null;
                 if ( batch.CampusId.HasValue )
                 {
-                    oldCampus = CampusCache.Read( batch.CampusId.Value );
+                    oldCampus = CacheCampus.Get( batch.CampusId.Value );
                 }
 
-                CampusCache newCampus = null;
+                CacheCampus newCampus = null;
                 if ( campCampus.SelectedCampusId.HasValue )
                 {
-                    newCampus = CampusCache.Read( campCampus.SelectedCampusId.Value );
+                    newCampus = CacheCampus.Get( campCampus.SelectedCampusId.Value );
                 }
 
                 History.EvaluateChange( changes, "Campus", oldCampus != null ? oldCampus.Name : "None", newCampus != null ? newCampus.Name : "None" );
@@ -458,7 +458,7 @@ namespace RockWeb.Blocks.Finance
                 string campusName = string.Empty;
                 if ( batch.CampusId.HasValue )
                 {
-                    var campus = CampusCache.Read( batch.CampusId.Value );
+                    var campus = CacheCampus.Get( batch.CampusId.Value );
                     if ( campus != null )
                     {
                         campusName = campus.ToString();
@@ -527,7 +527,7 @@ namespace RockWeb.Blocks.Finance
                     .Select( s => new
                     {
                         Id = s.CurrencyTypeValueId,
-                        Name = DefinedValueCache.GetName( s.CurrencyTypeValueId ),
+                        Name = CacheDefinedValue.GetName( s.CurrencyTypeValueId ),
                         Amount = s.Amount
                     } ).OrderBy( a => a.Name ).ToList();
 
@@ -550,7 +550,7 @@ namespace RockWeb.Blocks.Finance
 
                 if ( batchNamesDefinedTypeGuid.HasValue )
                 {
-                    var batchNamesDefinedType = DefinedTypeCache.Read( batchNamesDefinedTypeGuid.Value );
+                    var batchNamesDefinedType = CacheDefinedType.Get( batchNamesDefinedTypeGuid.Value );
                     if ( batchNamesDefinedType != null )
                     {
                         ddlBatchName.BindToDefinedType( batchNamesDefinedType, true, false );
@@ -592,7 +592,7 @@ namespace RockWeb.Blocks.Finance
                     ddlStatus.Enabled = false;
                 }
 
-                campCampus.Campuses = CampusCache.All();
+                campCampus.Campuses = CacheCampus.All();
                 if ( batch.CampusId.HasValue )
                 {
                     campCampus.SetValue( batch.CampusId.Value );

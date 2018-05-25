@@ -29,7 +29,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -122,7 +122,7 @@ namespace RockWeb.Blocks.Finance
         console.log(evt.type);
         console.log(params);
         $('#{0}').attr('disabled', 'disabled');
-        __doPostBack('{1}', '');
+        window.location = ""javascript: __doPostBack('{1}', '')"";
     }});
 ", btnNext.ClientID, ddlAddAccount.ClientID );
 
@@ -274,7 +274,7 @@ namespace RockWeb.Blocks.Finance
 
             UpdateVisibleAccountBoxes();
 
-            rcwEnvelope.Visible = GlobalAttributesCache.Read().EnableGivingEnvelopeNumber;
+            rcwEnvelope.Visible = CacheGlobalAttributes.Get().EnableGivingEnvelopeNumber;
         }
 
         /// <summary>
@@ -494,7 +494,7 @@ namespace RockWeb.Blocks.Finance
 
                     // stored the value in cents to avoid javascript floating point math issues
                     hfOriginalTotalAmount.Value = (transactionToMatch.TotalAmount*100).ToString();
-                    hfCurrencySymbol.Value = GlobalAttributesCache.Value( "CurrencySymbol" );
+                    hfCurrencySymbol.Value = CacheGlobalAttributes.Value( "CurrencySymbol" );
 
                     // get the first 2 images (should be no more than 2, but just in case)
                     var transactionImages = transactionToMatch.Images.OrderBy( a => a.Order ).Take( 2 ).ToList();
@@ -798,7 +798,7 @@ namespace RockWeb.Blocks.Finance
 
             cbOnlyShowSelectedAccounts.Checked = this.GetUserPreference( keyPrefix + "only-show-selected-accounts" ).AsBoolean();
 
-            cpAccounts.Campuses = Rock.Web.Cache.CampusCache.All();
+            cpAccounts.Campuses = Rock.Cache.CacheCampus.All();
             cpAccounts.SelectedCampusId = ( this.GetUserPreference( keyPrefix + "account-campus" ) ?? string.Empty ).AsIntegerOrNull();
 
             mdAccountsPersonalFilter.Show();
@@ -1088,7 +1088,7 @@ namespace RockWeb.Blocks.Finance
         protected void btnFindByEnvelopeNumber_Click( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
-            var personGivingEnvelopeAttribute = AttributeCache.Read( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
+            var personGivingEnvelopeAttribute = CacheAttribute.Get( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
             var envelopeNumber = tbEnvelopeNumber.Text;
             if ( !string.IsNullOrEmpty( envelopeNumber ) )
             {

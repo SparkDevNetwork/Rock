@@ -22,7 +22,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 using System.Linq;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Field.Types
 {
@@ -69,7 +69,7 @@ namespace Rock.Field.Types
 
             ddl.Items.Add( new ListItem() );
             
-            var contentChannels = ContentChannelCache.All().OrderBy( a => a.Name ).ToList();
+            var contentChannels = CacheContentChannel.All().OrderBy( a => a.Name ).ToList();
             contentChannels.ForEach( g =>
                 ddl.Items.Add( new ListItem( g.Name, g.Id.ToString().ToUpper() ) )
             );
@@ -179,17 +179,20 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            ContentChannelItemPicker contentChannelItemPicker = control as ContentChannelItemPicker;
-            if ( contentChannelItemPicker != null )
+            var picker = control as ContentChannelItemPicker;
+            if ( picker != null )
             {
-                if ( contentChannelItemPicker.ContentChannelItemId.HasValue )
+                int? itemId = picker.ContentChannelItemId;
+                Guid? itemGuid = null;
+                if ( itemId.HasValue )
                 {
-                    var contentChannelItem = new ContentChannelItemService( new RockContext() ).Get( contentChannelItemPicker.ContentChannelItemId.Value );
-                    if ( contentChannelItem != null )
+                    using ( var rockContext = new RockContext() )
                     {
-                        return contentChannelItem.Guid.ToString();
+                        itemGuid = new ContentChannelItemService( rockContext ).Queryable().Where( a => a.Id == itemId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
                     }
                 }
+
+                return itemGuid?.ToString();
             }
 
             return null;
@@ -203,26 +206,23 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-
-            ContentChannelItemPicker contentChannelItemPicker = control as ContentChannelItemPicker;
-            if ( contentChannelItemPicker != null )
+            var picker = control as ContentChannelItemPicker;
+            if ( picker != null )
             {
-            Guid guid = Guid.Empty;
-                if ( Guid.TryParse( value, out guid ) )
+                int? itemId = null;
+                Guid? itemGuid = value.AsGuidOrNull();
+                if ( itemGuid.HasValue )
                 {
-                    var contentChannelItem = new ContentChannelItemService( new RockContext() ).Get( guid );
-                    if ( contentChannelItem != null )
+                    using ( var rockContext = new RockContext() )
                     {
-                        contentChannelItemPicker.ContentChannelItemId = contentChannelItem.Id;
-                        return;
+                        itemId = new ContentChannelItemService( rockContext ).Queryable().Where( a => a.Guid == itemGuid.Value ).Select( a => ( int? ) a.Id ).FirstOrDefault();
                     }
                 }
 
-                contentChannelItemPicker.ContentChannelItemId = null;
+                picker.ContentChannelItemId = itemId;
             }
         }
 
         #endregion
-
     }
 }

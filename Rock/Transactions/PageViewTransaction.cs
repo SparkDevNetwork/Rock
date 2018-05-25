@@ -20,7 +20,7 @@ using System.Web;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using UAParser;
 
 namespace Rock.Transactions
@@ -137,7 +137,7 @@ namespace Rock.Transactions
                     if ( clientType != "Crawler" )
                     {
                         // lookup the interaction channel, and create it if it doesn't exist
-                        int channelMediumTypeValueId = DefinedValueCache.Read( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
+                        int channelMediumTypeValueId = CacheDefinedValue.Get( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
                         var interactionChannelService = new InteractionChannelService( rockContext );
                         var interactionChannel = interactionChannelService.Queryable()
                             .Where( a =>
@@ -147,10 +147,10 @@ namespace Rock.Transactions
                         if ( interactionChannel == null )
                         {
                             interactionChannel = new InteractionChannel();
-                            interactionChannel.Name = SiteCache.Read( SiteId ?? 1 ).Name;
+                            interactionChannel.Name = CacheSite.Get( SiteId ?? 1 ).Name;
                             interactionChannel.ChannelTypeMediumValueId = channelMediumTypeValueId;
                             interactionChannel.ChannelEntityId = this.SiteId;
-                            interactionChannel.ComponentEntityTypeId = EntityTypeCache.Read<Rock.Model.Page>().Id;
+                            interactionChannel.ComponentEntityTypeId = CacheEntityType.Get<Rock.Model.Page>().Id;
                             interactionChannelService.Add( interactionChannel );
                             rockContext.SaveChanges();
                         }

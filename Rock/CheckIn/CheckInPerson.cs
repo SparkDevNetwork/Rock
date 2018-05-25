@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 
-using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.CheckIn

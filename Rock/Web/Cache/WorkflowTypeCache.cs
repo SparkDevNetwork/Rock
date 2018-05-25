@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 
+using Rock.Cache;
 using Rock.Data;
 using Rock.Model;
 
@@ -29,20 +30,21 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
+    [Obsolete( "Use Rock.Cache.CacheWorkflowType instead" )]
     public class WorkflowTypeCache : CachedModel<WorkflowType>
     {
         #region Constructors
 
-        private WorkflowTypeCache( WorkflowType model )
+        private WorkflowTypeCache( CacheWorkflowType cacheItem )
         {
-            CopyFromModel( model );
+            CopyFromNewCache( cacheItem );
         }
 
         #endregion
 
         #region Properties
 
-        private object _obj = new object();
+        private readonly object _obj = new object();
 
         /// <summary>
         /// Gets or sets a flag indicating if this WorkflowType is part of the Rock core system/framework.
@@ -214,21 +216,21 @@ namespace Rock.Web.Cache
                 var activityTypes = new List<WorkflowActivityTypeCache>();
 
                 lock ( _obj )
-                { 
+                {
                     if ( activityTypeIds == null )
                     {
                         using ( var rockContext = new RockContext() )
                         {
-                            activityTypeIds = new Model.WorkflowActivityTypeService( rockContext )
+                            activityTypeIds = new WorkflowActivityTypeService( rockContext )
                                 .Queryable().AsNoTracking()
-                                .Where( a => a.WorkflowTypeId == this.Id )
+                                .Where( a => a.WorkflowTypeId == Id )
                                 .Select( v => v.Id )
                                 .ToList();
                         }
                     }
                 }
 
-                foreach ( int id in activityTypeIds )
+                foreach ( var id in activityTypeIds )
                 {
                     var activityType = WorkflowActivityTypeCache.Read( id );
                     if ( activityType != null )
@@ -240,7 +242,7 @@ namespace Rock.Web.Cache
                 return activityTypes;
             }
         }
-        private List<int> activityTypeIds = null;
+        private List<int> activityTypeIds;
 
         #endregion
 
@@ -250,33 +252,64 @@ namespace Rock.Web.Cache
         /// Copies from model.
         /// </summary>
         /// <param name="model">The model.</param>
-        public override void CopyFromModel( Data.IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
             base.CopyFromModel( model );
 
-            if ( model is WorkflowType )
-            {
-                var WorkflowType = (WorkflowType)model;
-                this.IsSystem = WorkflowType.IsSystem;
-                this.IsActive = WorkflowType.IsActive;
-                this.WorkflowIdPrefix = WorkflowType.WorkflowIdPrefix;
-                this.Name = WorkflowType.Name;
-                this.Description = WorkflowType.Description;
-                this.CategoryId = WorkflowType.CategoryId;
-                this.Order = WorkflowType.Order;
-                this.WorkTerm = WorkflowType.WorkTerm;
-                this.ProcessingIntervalSeconds = WorkflowType.ProcessingIntervalSeconds;
-                this.IsPersisted = WorkflowType.IsPersisted;
-                this.SummaryViewText = WorkflowType.SummaryViewText;
-                this.NoActionMessage = WorkflowType.NoActionMessage;
-                this.LogRetentionPeriod = WorkflowType.LogRetentionPeriod;
-                this.CompletedWorkflowRetentionPeriod = WorkflowType.CompletedWorkflowRetentionPeriod;
-                this.LoggingLevel = WorkflowType.LoggingLevel;
-                this.IconCssClass = WorkflowType.IconCssClass;
+            if ( !( model is WorkflowType ) ) return;
 
-                // set activityTypeIds to null so it load them all at once on demand
-                this.activityTypeIds = null;
-            }
+            var WorkflowType = (WorkflowType)model;
+            IsSystem = WorkflowType.IsSystem;
+            IsActive = WorkflowType.IsActive;
+            WorkflowIdPrefix = WorkflowType.WorkflowIdPrefix;
+            Name = WorkflowType.Name;
+            Description = WorkflowType.Description;
+            CategoryId = WorkflowType.CategoryId;
+            Order = WorkflowType.Order;
+            WorkTerm = WorkflowType.WorkTerm;
+            ProcessingIntervalSeconds = WorkflowType.ProcessingIntervalSeconds;
+            IsPersisted = WorkflowType.IsPersisted;
+            SummaryViewText = WorkflowType.SummaryViewText;
+            NoActionMessage = WorkflowType.NoActionMessage;
+            LogRetentionPeriod = WorkflowType.LogRetentionPeriod;
+            CompletedWorkflowRetentionPeriod = WorkflowType.CompletedWorkflowRetentionPeriod;
+            LoggingLevel = WorkflowType.LoggingLevel;
+            IconCssClass = WorkflowType.IconCssClass;
+
+            // set activityTypeIds to null so it load them all at once on demand
+            activityTypeIds = null;
+        }
+
+        /// <summary>
+        /// Copies properties from a new cached entity
+        /// </summary>
+        /// <param name="cacheEntity">The cache entity.</param>
+        protected sealed override void CopyFromNewCache( IEntityCache cacheEntity )
+        {
+            base.CopyFromNewCache( cacheEntity );
+
+            if ( !( cacheEntity is CacheWorkflowType ) ) return;
+
+            var WorkflowType = (CacheWorkflowType)cacheEntity;
+            IsSystem = WorkflowType.IsSystem;
+            IsActive = WorkflowType.IsActive;
+            WorkflowIdPrefix = WorkflowType.WorkflowIdPrefix;
+            Name = WorkflowType.Name;
+            Description = WorkflowType.Description;
+            CategoryId = WorkflowType.CategoryId;
+            Order = WorkflowType.Order;
+            WorkTerm = WorkflowType.WorkTerm;
+            ProcessingIntervalSeconds = WorkflowType.ProcessingIntervalSeconds;
+            IsPersisted = WorkflowType.IsPersisted;
+            SummaryViewText = WorkflowType.SummaryViewText;
+            NoActionMessage = WorkflowType.NoActionMessage;
+            LogRetentionPeriod = WorkflowType.LogRetentionPeriod;
+            CompletedWorkflowRetentionPeriod = WorkflowType.CompletedWorkflowRetentionPeriod;
+            LoggingLevel = WorkflowType.LoggingLevel;
+            IconCssClass = WorkflowType.IconCssClass;
+
+            // set activityTypeIds to null so it load them all at once on demand
+            activityTypeIds = null;
         }
 
         /// <summary>
@@ -287,17 +320,12 @@ namespace Rock.Web.Cache
         /// </returns>
         public override string ToString()
         {
-            return this.Name;
+            return Name;
         }
 
         #endregion
 
         #region Static Methods
-
-        private static string CacheKey( int id )
-        {
-            return string.Format( "Rock:WorkflowType:{0}", id );
-        }
 
         /// <summary>
         /// Returns WorkflowType object from cache.  If WorkflowType does not already exist in cache, it
@@ -308,37 +336,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static WorkflowTypeCache Read( int id, RockContext rockContext = null )
         {
-            return GetOrAddExisting( WorkflowTypeCache.CacheKey( id ),
-                () => LoadById( id, rockContext ) );
-        }
-
-        private static WorkflowTypeCache LoadById( int id, RockContext rockContext )
-        {
-            if ( rockContext != null )
-            {
-                return LoadById2( id, rockContext );
-            }
-
-            using ( var rockContext2 = new RockContext() )
-            {
-                return LoadById2( id, rockContext2 );
-            }
-        }
-
-        private static WorkflowTypeCache LoadById2( int id, RockContext rockContext )
-        {
-            var WorkflowTypeService = new WorkflowTypeService( rockContext );
-            var WorkflowTypeModel = WorkflowTypeService
-                .Queryable()
-                .Where( t => t.Id == id )
-                .FirstOrDefault();
-
-            if ( WorkflowTypeModel != null )
-            {
-                return new WorkflowTypeCache( WorkflowTypeModel );
-            }
-
-            return null;
+            return new WorkflowTypeCache( CacheWorkflowType.Get( id, rockContext ) );
         }
 
         /// <summary>
@@ -349,33 +347,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static WorkflowTypeCache Read( Guid guid, RockContext rockContext = null )
         {
-            int id = GetOrAddExisting( guid.ToString(),
-                () => LoadByGuid( guid, rockContext ) );
-
-            return Read( id, rockContext );
-        }
-
-        private static int LoadByGuid( Guid guid, RockContext rockContext )
-        {
-            if ( rockContext != null )
-            {
-                return LoadByGuid2( guid, rockContext );
-            }
-
-            using ( var rockContext2 = new RockContext() )
-            {
-                return LoadByGuid2( guid, rockContext2 );
-            }
-        }
-
-        private static int LoadByGuid2( Guid guid, RockContext rockContext )
-        {
-            var WorkflowTypeService = new WorkflowTypeService( rockContext );
-            return WorkflowTypeService
-                .Queryable().AsNoTracking()
-                .Where( c => c.Guid.Equals( guid ) )
-                .Select( c => c.Id )
-                .FirstOrDefault();
+            return new WorkflowTypeCache( CacheWorkflowType.Get( guid, rockContext ) );
         }
 
         /// <summary>
@@ -386,17 +358,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static WorkflowTypeCache Read( WorkflowType WorkflowTypeModel, RockContext rockContext = null )
         {
-            return GetOrAddExisting( WorkflowTypeCache.CacheKey( WorkflowTypeModel.Id ),
-                () => LoadByModel( WorkflowTypeModel ) );
-        }
-
-        private static WorkflowTypeCache LoadByModel( WorkflowType WorkflowTypeModel )
-        {
-            if ( WorkflowTypeModel != null )
-            {
-                return new WorkflowTypeCache( WorkflowTypeModel );
-            }
-            return null;
+            return new WorkflowTypeCache( CacheWorkflowType.Get( WorkflowTypeModel ) );
         }
 
         /// <summary>
@@ -405,15 +367,7 @@ namespace Rock.Web.Cache
         /// <param name="id"></param>
         public static void Flush( int id )
         {
-            var workflowType = WorkflowTypeCache.Read( id );
-            if ( workflowType != null )
-            {
-                foreach ( var activityType in workflowType.ActivityTypes )
-                {
-                    WorkflowActivityTypeCache.Flush( activityType.Id );
-                }
-            }
-            FlushCache( WorkflowTypeCache.CacheKey( id ) );
+            CacheWorkflowType.Remove( id );
         }
 
         #endregion

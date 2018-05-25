@@ -27,8 +27,8 @@ using System.Web;
 
 using Rock;
 using Rock.Data;
+using Rock.Cache;
 using Rock.Security;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -169,17 +169,38 @@ namespace Rock.Model
         /// The workflow type cache.
         /// </value>
         [LavaInclude]
-        public virtual WorkflowTypeCache WorkflowTypeCache
+        [Obsolete( "Use CacheWorkflowType property instead")]
+        public virtual Rock.Web.Cache.WorkflowTypeCache WorkflowTypeCache
         {
             get
             {
                 if ( WorkflowTypeId > 0 )
                 {
-                    return WorkflowTypeCache.Read( WorkflowTypeId );
+                    return Web.Cache.WorkflowTypeCache.Read( WorkflowTypeId );
+                }
+
+                return WorkflowType == null ? null : Web.Cache.WorkflowTypeCache.Read( WorkflowType.Id );
+            }
+        }
+
+        /// <summary>
+        /// Gets the workflow type cache.
+        /// </summary>
+        /// <value>
+        /// The workflow type cache.
+        /// </value>
+        [LavaInclude]
+        public virtual CacheWorkflowType CacheWorkflowType
+        {
+            get
+            {
+                if ( WorkflowTypeId > 0 )
+                {
+                    return CacheWorkflowType.Get( WorkflowTypeId );
                 }
                 else if ( WorkflowType != null )
                 {
-                    return WorkflowTypeCache.Read( WorkflowType.Id );
+                    return CacheWorkflowType.Get( WorkflowType.Id );
                 }
                 return null;
             }
@@ -283,7 +304,7 @@ namespace Rock.Model
         {
             get
             {
-                var workflowTypeCache = this.WorkflowTypeCache;
+                var workflowTypeCache = this.CacheWorkflowType;
                 return workflowTypeCache != null ? workflowTypeCache : base.ParentAuthority;
             }
         }
@@ -324,7 +345,7 @@ namespace Rock.Model
                 string propertyKey = key.ToStringSafe();
                 if ( propertyKey == "WorkflowType" )
                 {
-                    return WorkflowTypeCache;
+                    return CacheWorkflowType;
                 }
                 return base[key];
             }
@@ -511,7 +532,7 @@ namespace Rock.Model
         /// <param name="force">if set to <c>true</c> will ignore logging level and always add the entry.</param>
         public virtual void AddLogEntry( string logText, bool force = false )
         {
-            var workflowType = this.WorkflowTypeCache;
+            var workflowType = this.CacheWorkflowType;
             if ( force || (
                 workflowType != null && (
                 workflowType.LoggingLevel == WorkflowLoggingLevel.Workflow ||
@@ -617,7 +638,7 @@ namespace Rock.Model
         /// <param name="workflowType">The <see cref="Rock.Model.WorkflowType"/>  being activated.</param>
         /// <param name="name">A <see cref="System.String"/> representing the name of the <see cref="Rock.Model.Workflow"/> instance.</param>
         /// <returns>The <see cref="Rock.Model.Workflow"/> instance.</returns>
-        [Obsolete( "For improved performance, use the Activate method that takes a WorkflowTypeCache parameter instead. IMPORTANT NOTE: When using the new method, the Workflow object that is returned by that method will not have the WorkflowType property set. If you are referencing the WorkflowType property on a Workflow returned by that method, you will get a Null Reference Exception! You should use the new WorkflowTypeCache property on the workflow instead." )]
+        [Obsolete( "For improved performance, use the Activate method that takes a CacheWorkflowType parameter instead. IMPORTANT NOTE: When using the new method, the Workflow object that is returned by that method will not have the WorkflowType property set. If you are referencing the WorkflowType property on a Workflow returned by that method, you will get a Null Reference Exception! You should use the new CacheWorkflowType property on the workflow instead." )]
         public static Workflow Activate( WorkflowType workflowType, string name )
         {
             using ( var rockContext = new RockContext() )
@@ -635,12 +656,12 @@ namespace Rock.Model
         /// <returns>
         /// The <see cref="Rock.Model.Workflow" /> instance.
         /// </returns>
-        [Obsolete( "For improved performance, use the Activate method that takes a WorkflowTypeCache parameter instead. IMPORTANT NOTE: When using the new method, the Workflow object that is returned by that method will not have the WorkflowType property set. If you are referencing the WorkflowType property on a Workflow returned by that method, you will get a Null Reference Exception! You should use the new WorkflowTypeCache property on the workflow instead." )]
+        [Obsolete( "For improved performance, use the Activate method that takes a CacheWorkflowType parameter instead. IMPORTANT NOTE: When using the new method, the Workflow object that is returned by that method will not have the WorkflowType property set. If you are referencing the WorkflowType property on a Workflow returned by that method, you will get a Null Reference Exception! You should use the new CacheWorkflowType property on the workflow instead." )]
         public static Workflow Activate( WorkflowType workflowType, string name, RockContext rockContext )
         {
             if ( workflowType != null )
             {
-                var workflowTypeCache = WorkflowTypeCache.Read( workflowType.Id );
+                var workflowTypeCache = CacheWorkflowType.Get( workflowType.Id );
                 var workflow = Activate( workflowTypeCache, name, rockContext );
                 if ( workflow != null )
                 {
@@ -658,7 +679,22 @@ namespace Rock.Model
         /// <param name="workflowTypeCache">The workflow type cache.</param>
         /// <param name="name">The name.</param>
         /// <returns></returns>
-        public static Workflow Activate( WorkflowTypeCache workflowTypeCache, string name )
+        [Obsolete]
+        public static Workflow Activate( Web.Cache.WorkflowTypeCache workflowTypeCache, string name )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                return Activate( workflowTypeCache, name, rockContext );
+            }
+        }
+
+        /// <summary>
+        /// Activates the specified workflow type cache.
+        /// </summary>
+        /// <param name="workflowTypeCache">The workflow type cache.</param>
+        /// <param name="name">The name.</param>
+        /// <returns></returns>
+        public static Workflow Activate( CacheWorkflowType workflowTypeCache, string name )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -673,7 +709,20 @@ namespace Rock.Model
         /// <param name="name">The name.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static Workflow Activate( WorkflowTypeCache workflowTypeCache, string name, RockContext rockContext )
+        [Obsolete]
+        public static Workflow Activate( Web.Cache.WorkflowTypeCache workflowTypeCache, string name, RockContext rockContext )
+        {
+            return Activate( CacheWorkflowType.Get( workflowTypeCache.Id ), name, rockContext );
+        }
+
+        /// <summary>
+        /// Activates the specified workflow type cache.
+        /// </summary>
+        /// <param name="workflowTypeCache">The workflow type cache.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static Workflow Activate( CacheWorkflowType workflowTypeCache, string name, RockContext rockContext )
         {
             var workflow = new Workflow();
             workflow.WorkflowTypeId = workflowTypeCache.Id;

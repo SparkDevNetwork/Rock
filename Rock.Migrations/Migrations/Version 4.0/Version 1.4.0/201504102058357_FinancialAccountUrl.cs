@@ -41,7 +41,7 @@ namespace Rock.Migrations
                 var rockContext = new Rock.Data.RockContext();
                 var financialTransactionService = new Rock.Model.FinancialTransactionService( rockContext );
                 Guid currencyTypeCheckGuid = Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
-                var currencyTypeCheckId = Rock.Web.Cache.DefinedValueCache.Read( currencyTypeCheckGuid ).Id;
+                var currencyTypeCheckId = Rock.Cache.CacheDefinedValue.Get( currencyTypeCheckGuid ).Id;
                 var tran = rockContext.Database.BeginTransaction();
                 try
                 {

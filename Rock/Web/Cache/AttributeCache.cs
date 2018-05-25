@@ -21,11 +21,10 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Web.UI;
-using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
 using Newtonsoft.Json;
 
+using Rock.Cache;
 using Rock.Data;
 using Rock.Field;
 using Rock.Model;
@@ -44,8 +43,9 @@ namespace Rock.Web.Cache
     /// </summary>
     [Serializable]
     [DataContract]
-    [JsonConverter( typeof( Rock.Utility.AttributeCacheJsonConverter ) )]
-    public class AttributeCache : CachedModel<Rock.Model.Attribute>
+    [JsonConverter( typeof( Utility.AttributeCacheJsonConverter ) )]
+    [Obsolete( "Use Rock.Cache.CacheAttribute instead" )]
+    public class AttributeCache : CachedModel<Model.Attribute>
     {
         #region constructors
 
@@ -53,21 +53,15 @@ namespace Rock.Web.Cache
         {
         }
 
-        private AttributeCache( Rock.Model.Attribute model )
+        private AttributeCache( CacheAttribute attribute )
         {
-            CopyFromModel( model );
+            CopyFromNewCache( attribute );
         }
 
-        private AttributeCache( Rock.Model.Attribute model, Dictionary<string, string> qualifiers )
-        {
-            CopyFromModel( model, qualifiers );
-        }
 
         #endregion
 
         #region Properties
-
-        private object _obj = new object();
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is system.
@@ -183,13 +177,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The default type of the value as.
         /// </value>
-        public object DefaultValueAsType
-        {
-            get
-            {
-                return FieldType.Field.ValueAsFieldType( null, DefaultValue, QualifierValues );
-            }
-        }
+        public object DefaultValueAsType => FieldType.Field.ValueAsFieldType( null, DefaultValue, QualifierValues );
 
         /// <summary>
         /// Gets the default value to use for sorting as the most appropriate datatype
@@ -197,13 +185,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The default type of the value as.
         /// </value>
-        public object DefaultSortValue
-        {
-            get
-            {
-                return FieldType.Field.SortValue( null, DefaultValue, QualifierValues );
-            }
-        }
+        public object DefaultSortValue => FieldType.Field.SortValue( null, DefaultValue, QualifierValues );
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is multi value.
@@ -271,10 +253,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The type of the field.
         /// </value>
-        public FieldTypeCache FieldType
-        {
-            get { return FieldTypeCache.Read( FieldTypeId ); }
-        }
+        public FieldTypeCache FieldType => FieldTypeCache.Read( FieldTypeId );
 
         /// <summary>
         /// Gets the qualifier values if any have been defined for the attribute
@@ -292,14 +271,13 @@ namespace Rock.Web.Cache
         {
             get
             {
-                List<CategoryCache> categories = new List<CategoryCache>();
+                var categories = new List<CategoryCache>();
 
-                if ( categoryIds != null )
+                if ( categoryIds == null ) return categories;
+
+                foreach ( var id in categoryIds.ToList() )
                 {
-                    foreach ( int id in categoryIds.ToList() )
-                    {
-                        categories.Add( CategoryCache.Read( id ) );
-                    }
+                    categories.Add( CategoryCache.Read( id ) );
                 }
 
                 return categories;
@@ -319,7 +297,7 @@ namespace Rock.Web.Cache
             set { categoryIds = value; }
         }
 
-        private List<int> categoryIds = null;
+        private List<int> categoryIds;
 
         #endregion
 
@@ -329,23 +307,21 @@ namespace Rock.Web.Cache
         /// Copies from model.
         /// </summary>
         /// <param name="model">The model.</param>
-        public override void CopyFromModel( Data.IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
-            if ( model is Rock.Model.Attribute )
+            if ( !( model is Model.Attribute ) ) return;
+            var attribute = (Model.Attribute)model;
+
+            var qualifiers = new Dictionary<string, string>();
+            if ( attribute.AttributeQualifiers != null )
             {
-                var attribute = (Rock.Model.Attribute)model;
-
-                var qualifiers = new Dictionary<string, string>();
-                if ( attribute.AttributeQualifiers != null )
+                foreach ( var qualifier in attribute.AttributeQualifiers )
                 {
-                    foreach ( Rock.Model.AttributeQualifier qualifier in attribute.AttributeQualifiers )
-                    {
-                        qualifiers.Add( qualifier.Key, qualifier.Value );
-                    }
+                    qualifiers.Add( qualifier.Key, qualifier.Value );
                 }
-
-                CopyFromModel( attribute, qualifiers );
             }
+
+            CopyFromModel( attribute, qualifiers );
         }
 
         /// <summary>
@@ -353,36 +329,71 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="attribute">The attribute.</param>
         /// <param name="qualifiers">The qualifiers.</param>
-        public void CopyFromModel( Rock.Model.Attribute attribute, Dictionary<string, string> qualifiers )
+        public void CopyFromModel( Model.Attribute attribute, Dictionary<string, string> qualifiers )
         {
             base.CopyFromModel( attribute );
 
-            this.IsSystem = attribute.IsSystem;
-            this.FieldTypeId = attribute.FieldTypeId;
-            this.EntityTypeId = attribute.EntityTypeId;
-            this.EntityTypeQualifierColumn = attribute.EntityTypeQualifierColumn;
-            this.EntityTypeQualifierValue = attribute.EntityTypeQualifierValue;
-            this.Key = attribute.Key;
-            this.Name = attribute.Name;
-            this.Description = attribute.Description;
-            this.Order = attribute.Order;
-            this.IconCssClass = attribute.IconCssClass;
-            this.IsGridColumn = attribute.IsGridColumn;
-            this.DefaultValue = attribute.DefaultValue;
-            this.IsMultiValue = attribute.IsMultiValue;
-            this.IsRequired = attribute.IsRequired;
-            this.AllowSearch = attribute.AllowSearch;
-            this.IsIndexEnabled = attribute.IsIndexEnabled;
-            this.IsAnalytic = attribute.IsAnalytic;
-            this.IsAnalyticHistory = attribute.IsAnalyticHistory;
+            IsSystem = attribute.IsSystem;
+            FieldTypeId = attribute.FieldTypeId;
+            EntityTypeId = attribute.EntityTypeId;
+            EntityTypeQualifierColumn = attribute.EntityTypeQualifierColumn;
+            EntityTypeQualifierValue = attribute.EntityTypeQualifierValue;
+            Key = attribute.Key;
+            Name = attribute.Name;
+            Description = attribute.Description;
+            Order = attribute.Order;
+            IconCssClass = attribute.IconCssClass;
+            IsGridColumn = attribute.IsGridColumn;
+            DefaultValue = attribute.DefaultValue;
+            IsMultiValue = attribute.IsMultiValue;
+            IsRequired = attribute.IsRequired;
+            AllowSearch = attribute.AllowSearch;
+            IsIndexEnabled = attribute.IsIndexEnabled;
+            IsAnalytic = attribute.IsAnalytic;
+            IsAnalyticHistory = attribute.IsAnalyticHistory;
 
-            this.QualifierValues = new Dictionary<string, ConfigurationValue>();
+            QualifierValues = new Dictionary<string, ConfigurationValue>();
             foreach ( var qualifier in qualifiers )
             {
-                this.QualifierValues.Add( qualifier.Key, new ConfigurationValue( qualifier.Value ) );
+                QualifierValues.Add( qualifier.Key, new ConfigurationValue( qualifier.Value ) );
             }
 
-            this.categoryIds = attribute.Categories.Select( c => c.Id ).ToList();
+            categoryIds = attribute.Categories.Select( c => c.Id ).ToList();
+        }
+
+        /// <summary>
+        /// Copies properties from a new cached entity
+        /// </summary>
+        /// <param name="cacheEntity">The cache entity.</param>
+        protected sealed override void CopyFromNewCache( IEntityCache cacheEntity )
+        {
+            base.CopyFromNewCache( cacheEntity );
+
+            if ( !( cacheEntity is CacheAttribute ) ) return;
+
+            var attribute = (CacheAttribute)cacheEntity;
+            IsSystem = attribute.IsSystem;
+            FieldTypeId = attribute.FieldTypeId;
+            EntityTypeId = attribute.EntityTypeId;
+            EntityTypeQualifierColumn = attribute.EntityTypeQualifierColumn;
+            EntityTypeQualifierValue = attribute.EntityTypeQualifierValue;
+            Key = attribute.Key;
+            Name = attribute.Name;
+            Description = attribute.Description;
+            Order = attribute.Order;
+            IconCssClass = attribute.IconCssClass;
+            IsGridColumn = attribute.IsGridColumn;
+            DefaultValue = attribute.DefaultValue;
+            IsMultiValue = attribute.IsMultiValue;
+            IsRequired = attribute.IsRequired;
+            AllowSearch = attribute.AllowSearch;
+            IsIndexEnabled = attribute.IsIndexEnabled;
+            IsAnalytic = attribute.IsAnalytic;
+            IsAnalyticHistory = attribute.IsAnalyticHistory;
+
+            QualifierValues = new Dictionary<string, ConfigurationValue>( attribute.QualifierValues );
+
+            categoryIds = attribute.Categories.Select( c => c.Id ).ToList();
         }
 
         /// <summary>
@@ -439,7 +450,7 @@ namespace Rock.Web.Cache
                     if ( renderLabel || renderHelp || renderWarning )
                     {
                         DynamicControlsHtmlGenericControl div = new DynamicControlsHtmlGenericControl( "div" );
-                        div.ID = $"_formgroup_div_{this.Id}";  
+                        div.ID = $"_formgroup_div_{this.Id}";
                         controls.Add( div );
 
                         div.Controls.Clear();
@@ -547,11 +558,6 @@ namespace Rock.Web.Cache
 
         #region Static Methods
 
-        private static string CacheKey( int id )
-        {
-            return string.Format( "Rock:Attribute:{0}", id );
-        }
-
         /// <summary>
         /// Returns Attribute object from cache.  If attribute does not already exist in cache, it
         /// will be read and added to cache
@@ -561,33 +567,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static AttributeCache Read( int id, RockContext rockContext = null )
         {
-            return GetOrAddExisting( AttributeCache.CacheKey( id ),
-                () => LoadById( id, rockContext ) );
-        }
-
-        private static AttributeCache LoadById( int id, RockContext rockContext )
-        {
-            if ( rockContext != null )
-            {
-                return LoadById2( id, rockContext );
-            }
-
-            using ( var rockContext2 = new RockContext() )
-            {
-                return LoadById2( id, rockContext2 );
-            }
-        }
-
-        private static AttributeCache LoadById2( int id, RockContext rockContext )
-        {
-            var attributeService = new Rock.Model.AttributeService( rockContext );
-            var attributeModel = attributeService.Get( id );
-            if ( attributeModel != null )
-            {
-                return new AttributeCache( attributeModel );
-            }
-
-            return null;
+            return new AttributeCache( CacheAttribute.Get( id, rockContext ) );
         }
 
         /// <summary>
@@ -598,38 +578,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static AttributeCache Read( Guid guid, RockContext rockContext = null )
         {
-            if ( guid.IsEmpty() )
-            {
-                return null;
-            }
-
-            int id = GetOrAddExisting( guid.ToString(),
-                () => LoadByGuid( guid, rockContext ) );
-
-            return Read( id, rockContext );
-        }
-
-        private static int LoadByGuid( Guid guid, RockContext rockContext )
-        {
-            if ( rockContext != null )
-            {
-                return LoadByGuid2( guid, rockContext );
-            }
-
-            using ( var rockContext2 = new RockContext() )
-            {
-                return LoadByGuid2( guid, rockContext2 );
-            }
-        }
-
-        private static int LoadByGuid2( Guid guid, RockContext rockContext )
-        {
-            var attributeService = new AttributeService( rockContext );
-            return attributeService
-                .Queryable().AsNoTracking()
-                .Where( c => c.Guid.Equals( guid ) )
-                .Select( c => c.Id )
-                .FirstOrDefault();
+            return new AttributeCache( CacheAttribute.Get( guid, rockContext ) );
         }
 
         /// <summary>
@@ -637,19 +586,9 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="attributeModel">The attributeModel to cache</param>
         /// <returns></returns>
-        public static AttributeCache Read( Rock.Model.Attribute attributeModel )
+        public static AttributeCache Read( Model.Attribute attributeModel )
         {
-            return GetOrAddExisting( AttributeCache.CacheKey( attributeModel.Id ),
-                () => LoadByModel( attributeModel ) );
-        }
-
-        private static AttributeCache LoadByModel( Rock.Model.Attribute attributeModel )
-        {
-            if ( attributeModel != null )
-            {
-                return new AttributeCache( attributeModel );
-            }
-            return null;
+            return new AttributeCache( CacheAttribute.Get( attributeModel ) );
         }
 
         /// <summary>
@@ -658,19 +597,9 @@ namespace Rock.Web.Cache
         /// <param name="attributeModel">The attribute model.</param>
         /// <param name="qualifiers">The qualifiers.</param>
         /// <returns></returns>
-        public static AttributeCache Read( Rock.Model.Attribute attributeModel, Dictionary<string, string> qualifiers )
+        public static AttributeCache Read( Model.Attribute attributeModel, Dictionary<string, string> qualifiers )
         {
-            return GetOrAddExisting( AttributeCache.CacheKey( attributeModel.Id ),
-                () => LoadByModel( attributeModel, qualifiers ) );
-        }
-
-        private static AttributeCache LoadByModel( Rock.Model.Attribute attributeModel, Dictionary<string, string> qualifiers )
-        {
-            if ( attributeModel != null )
-            {
-                return new AttributeCache( attributeModel, qualifiers );
-            }
-            return null;
+            return new AttributeCache( CacheAttribute.Get( attributeModel, qualifiers ) );
         }
 
         /// <summary>
@@ -679,7 +608,7 @@ namespace Rock.Web.Cache
         /// <param name="id">The id of the attribute to remove from cache</param>
         public static void Flush( int id )
         {
-            FlushCache( AttributeCache.CacheKey( id ) );
+            CacheAttribute.Remove( id );
         }
 
         #endregion
@@ -740,18 +669,13 @@ namespace Rock.Web.Cache
         #region Entity Attributes Cache
 
         /// <summary>
-        /// The _lock
-        /// </summary>
-        private static object _lock = new object();
-
-        /// <summary>
         /// Gets or sets all entity attributes.
         /// </summary>
         /// <value>
         /// All entity attributes.
         /// </value>
         private static List<EntityAttributes> AllEntityAttributes { get; set; }
-        
+
         /// <summary>
         /// Gets the by entity.
         /// </summary>
@@ -759,11 +683,18 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         internal static List<EntityAttributes> GetByEntity( int? entityTypeid )
         {
-            LoadEntityAttributes();
+            var entityAttributes = new List<EntityAttributes>();
 
-            return AllEntityAttributes
-                .Where( a => a.EntityTypeId.Equals( entityTypeid ) )
-                .ToList();
+            var cacheEntityAttributes = CacheAttribute.GetByEntity( entityTypeid );
+            if ( cacheEntityAttributes == null ) return entityAttributes;
+
+            foreach ( var cacheEntityAttribute in cacheEntityAttributes )
+            {
+                entityAttributes.Add( new EntityAttributes( cacheEntityAttribute ) );
+
+            }
+
+            return entityAttributes;
         }
 
         /// <summary>
@@ -775,32 +706,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         internal static List<int> GetByEntity( int? entityTypeid, string entityTypeQualifierColumn, string entityTypeQualifierValue )
         {
-            LoadEntityAttributes();
-
-            return AllEntityAttributes
-                .Where( a =>
-                    a.EntityTypeId.Equals( entityTypeid ) &&
-                    a.EntityTypeQualifierColumn.Equals( entityTypeQualifierColumn ) &&
-                    a.EntityTypeQualifierValue.Equals( entityTypeQualifierValue ) )
-                .SelectMany( a => a.AttributeIds )
-                .ToList();
-        }
-
-        /// <summary>
-        /// Loads the entity attributes.
-        /// </summary>
-        private static void LoadEntityAttributes()
-        {
-            lock ( _lock )
-            {
-                if ( AllEntityAttributes == null )
-                {
-                    using ( var rockContext = new RockContext() )
-                    {
-                        AllEntityAttributes = QryEntityAttributes( rockContext );
-                    }
-                }
-            }
+            return CacheAttribute.GetByEntity( entityTypeid, entityTypeQualifierColumn, entityTypeQualifierValue );
         }
 
         /// <summary>
@@ -809,33 +715,7 @@ namespace Rock.Web.Cache
         /// <param name="rockContext">The rock context.</param>
         public static void LoadEntityAttributes( RockContext rockContext )
         {
-            lock ( _lock )
-            {
-                if ( AllEntityAttributes == null )
-                {
-                    AllEntityAttributes = QryEntityAttributes( rockContext );
-                }
-            }
-        }
-
-        private static List<EntityAttributes> QryEntityAttributes( RockContext rockContext )
-        {
-            return new AttributeService( rockContext )
-                .Queryable().AsNoTracking()
-                .GroupBy( a => new
-                {
-                    a.EntityTypeId,
-                    a.EntityTypeQualifierColumn,
-                    a.EntityTypeQualifierValue
-                } )
-                .Select( a => new EntityAttributes()
-                {
-                    EntityTypeId = a.Key.EntityTypeId,
-                    EntityTypeQualifierColumn = a.Key.EntityTypeQualifierColumn,
-                    EntityTypeQualifierValue = a.Key.EntityTypeQualifierValue,
-                    AttributeIds = a.Select( v => v.Id ).ToList()
-                } )
-                .ToList();
+            CacheEntityAttributes.Clear();
         }
 
         /// <summary>
@@ -843,26 +723,7 @@ namespace Rock.Web.Cache
         /// </summary>
         public static void FlushEntityAttributes()
         {
-            var rockMemoryCache = RockMemoryCache.Default;
-            if ( rockMemoryCache.IsRedisClusterEnabled && rockMemoryCache.IsRedisConnected )
-            { 
-                rockMemoryCache.SendRedisCommand( "REMOVE_ENTITY_ATTRIBUTES" );
-            }
-            else
-            {
-                RemoveEntityAttributes();
-            }
-        }
-
-        /// <summary>
-        /// Removes the entity attributes.
-        /// </summary>
-        internal static void RemoveEntityAttributes()
-        {
-            lock ( _lock )
-            {
-                AllEntityAttributes = null;
-            }
+            CacheEntityAttributes.Clear();
         }
 
         #endregion
@@ -874,6 +735,7 @@ namespace Rock.Web.Cache
     /// 
     /// </summary>
     [Serializable]
+    [Obsolete( "Use Rock.Cache.EntityAttributes instead" )]
     internal class EntityAttributes
     {
         /// <summary>
@@ -907,6 +769,17 @@ namespace Rock.Web.Cache
         /// The attribute ids.
         /// </value>
         public List<int> AttributeIds { get; set; }
+
+        public EntityAttributes( Rock.Cache.EntityAttributes entityAttributes )
+        {
+            if ( entityAttributes == null ) return;
+
+            EntityTypeId = entityAttributes.EntityTypeId;
+            EntityTypeQualifierColumn = entityAttributes.EntityTypeQualifierColumn;
+            EntityTypeQualifierValue = entityAttributes.EntityTypeQualifierValue;
+            AttributeIds = new List<int>( entityAttributes.AttributeIds );
+        }
+
     }
 
     #endregion

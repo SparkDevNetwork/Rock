@@ -21,7 +21,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Extension;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls.Communication;
 
 namespace Rock.Communication
@@ -48,7 +48,7 @@ namespace Rock.Communication
                     foreach ( var serviceEntry in TransportContainer.Instance.Components )
                     {
                         var component = serviceEntry.Value.Value;
-                        var entityType = EntityTypeCache.Read( component.GetType() );
+                        var entityType = CacheEntityType.Get( component.GetType() );
                         if ( entityType != null && entityType.Guid.Equals( entityTypeGuid ) )
                         {
                             return component;
@@ -92,7 +92,7 @@ namespace Rock.Communication
             if ( this.IsActive )
             {
                 // Get the Medium's Entity Type Id
-                int mediumEntityTypeId = EntityTypeCache.Read( this.GetType() ).Id;
+                int mediumEntityTypeId = CacheEntityType.Get( this.GetType() ).Id;
 
                 // Add the Medium's settings as attributes for the Transport to use.
                 var mediumAttributes = new Dictionary<string, string>();
@@ -108,7 +108,7 @@ namespace Rock.Communication
                 // If there have not been any EnabledLavaCommands explicitely set, then use the global defaults.
                 if ( rockMessage.EnabledLavaCommands == null )
                 {
-                    rockMessage.EnabledLavaCommands = GlobalAttributesCache.Read().GetValue( "DefaultEnabledLavaCommands" );
+                    rockMessage.EnabledLavaCommands = CacheGlobalAttributes.Get().GetValue( "DefaultEnabledLavaCommands" );
                 }
 
                 // Use the transport to send communication
@@ -137,7 +137,7 @@ namespace Rock.Communication
             if ( this.IsActive )
             {
                 // Get the Medium's Entity Type Id
-                int mediumEntityTypeId = EntityTypeCache.Read( this.GetType() ).Id;
+                int mediumEntityTypeId = CacheEntityType.Get( this.GetType() ).Id;
 
                 // Add the Medium's settings as attributes for the Transport to use.
                 var mediumAttributes = new Dictionary<string, string>();

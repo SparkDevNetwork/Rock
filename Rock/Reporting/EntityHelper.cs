@@ -24,7 +24,7 @@ using System.Web;
 using Rock.Data;
 using Rock.Field;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting
@@ -103,7 +103,7 @@ namespace Rock.Reporting
                     // Enum Properties
                     else if ( property.PropertyType.IsEnum )
                     {
-                        entityField.FieldType = FieldTypeCache.Read( SystemGuid.FieldType.SINGLE_SELECT.AsGuid() );
+                        entityField.FieldType = CacheFieldType.Get( SystemGuid.FieldType.SINGLE_SELECT.AsGuid() );
 
                         var list = new List<string>();
                         foreach ( var value in Enum.GetValues( property.PropertyType ) )
@@ -119,7 +119,7 @@ namespace Rock.Reporting
                     // Boolean properties
                     else if ( property.PropertyType == typeof( bool ) || property.PropertyType == typeof( bool? ) )
                     {
-                        entityField.FieldType = FieldTypeCache.Read( SystemGuid.FieldType.BOOLEAN.AsGuid() );
+                        entityField.FieldType = CacheFieldType.Get( SystemGuid.FieldType.BOOLEAN.AsGuid() );
                     }
 
                     // Datetime properties
@@ -128,30 +128,30 @@ namespace Rock.Reporting
                         var colAttr = property.GetCustomAttributes( typeof( ColumnAttribute ), true ).FirstOrDefault();
                         if ( colAttr != null && ( (ColumnAttribute)colAttr ).TypeName == "Date" )
                         {
-                            entityField.FieldType = FieldTypeCache.Read( SystemGuid.FieldType.DATE.AsGuid() );
+                            entityField.FieldType = CacheFieldType.Get( SystemGuid.FieldType.DATE.AsGuid() );
                         }
                         else
                         {
-                            entityField.FieldType = FieldTypeCache.Read( SystemGuid.FieldType.DATE_TIME.AsGuid() );
+                            entityField.FieldType = CacheFieldType.Get( SystemGuid.FieldType.DATE_TIME.AsGuid() );
                         }
                     }
 
                     // Decimal properties
                     else if ( property.PropertyType == typeof( decimal ) || property.PropertyType == typeof( decimal? ) )
                     {
-                        entityField.FieldType = FieldTypeCache.Read( SystemGuid.FieldType.DECIMAL.AsGuid() );
+                        entityField.FieldType = CacheFieldType.Get( SystemGuid.FieldType.DECIMAL.AsGuid() );
                     }
 
                     // Text Properties
                     else if ( property.PropertyType == typeof( string ) )
                     {
-                        entityField.FieldType = FieldTypeCache.Read( SystemGuid.FieldType.TEXT.AsGuid() );
+                        entityField.FieldType = CacheFieldType.Get( SystemGuid.FieldType.TEXT.AsGuid() );
                     }
 
                     // Integer Properties (which may be a DefinedValue)
                     else if ( property.PropertyType == typeof( int ) || property.PropertyType == typeof( int? ) )
                     {
-                        entityField.FieldType = FieldTypeCache.Read( SystemGuid.FieldType.INTEGER.AsGuid() );
+                        entityField.FieldType = CacheFieldType.Get( SystemGuid.FieldType.INTEGER.AsGuid() );
 
                         var definedValueAttribute = property.GetCustomAttribute<Rock.Data.DefinedValueAttribute>();
                         if ( definedValueAttribute != null )
@@ -160,11 +160,11 @@ namespace Rock.Reporting
                             Guid? definedTypeGuid = ( (Rock.Data.DefinedValueAttribute)definedValueAttribute ).DefinedTypeGuid;
                             if ( definedTypeGuid.HasValue )
                             {
-                                var definedType = DefinedTypeCache.Read( definedTypeGuid.Value );
+                                var definedType = CacheDefinedType.Get( definedTypeGuid.Value );
                                 entityField.Title = definedType != null ? definedType.Name : property.Name.Replace( "ValueId", string.Empty ).SplitCase();
                                 if ( definedType != null )
                                 {
-                                    entityField.FieldType = FieldTypeCache.Read( SystemGuid.FieldType.DEFINED_VALUE.AsGuid() );
+                                    entityField.FieldType = CacheFieldType.Get( SystemGuid.FieldType.DEFINED_VALUE.AsGuid() );
                                     entityField.FieldConfig.Add( "definedtype", new Field.ConfigurationValue( definedType.Id.ToString() ) );
                                 }
                             }
@@ -179,7 +179,7 @@ namespace Rock.Reporting
             }
 
             // Get Attributes
-            var entityTypeCache = EntityTypeCache.Read( entityType, true );
+            var entityTypeCache = CacheEntityType.Get( entityType, true );
             if ( entityTypeCache != null )
             {
                 int entityTypeId = entityTypeCache.Id;
@@ -225,7 +225,7 @@ namespace Rock.Reporting
 
                     foreach ( var attributeId in attributeIdList )
                     {
-                        AddEntityFieldForAttribute( entityFields, AttributeCache.Read( attributeId ), limitToFilterableFields );
+                        AddEntityFieldForAttribute( entityFields, CacheAttribute.Get( attributeId ), limitToFilterableFields );
                     }
                 }
             }
@@ -258,7 +258,7 @@ namespace Rock.Reporting
         {
             if ( fieldTypeAttribute != null )
             {
-                var fieldTypeCache = FieldTypeCache.Read( fieldTypeAttribute.FieldTypeGuid );
+                var fieldTypeCache = CacheFieldType.Get( fieldTypeAttribute.FieldTypeGuid );
                 if ( fieldTypeCache != null && fieldTypeCache.Field != null )
                 {
                     if ( fieldTypeCache.Field.HasFilterControl() )
@@ -288,7 +288,19 @@ namespace Rock.Reporting
         /// <param name="entityFields">The entity fields.</param>
         /// <param name="attribute">The attribute.</param>
         /// <param name="limitToFilterableAttributes">if set to <c>true</c> [limit to filterable attributes].</param>
-        public static void AddEntityFieldForAttribute( List<EntityField> entityFields, AttributeCache attribute, bool limitToFilterableAttributes = true )
+        [Obsolete]
+        public static void AddEntityFieldForAttribute( List<EntityField> entityFields, Web.Cache.AttributeCache attribute, bool limitToFilterableAttributes = true )
+        {
+            AddEntityFieldForAttribute( entityFields, CacheAttribute.Get( attribute.Id ), limitToFilterableAttributes );
+        }
+
+        /// <summary>
+        /// Adds the entity field for attribute.
+        /// </summary>
+        /// <param name="entityFields">The entity fields.</param>
+        /// <param name="attribute">The attribute.</param>
+        /// <param name="limitToFilterableAttributes">if set to <c>true</c> [limit to filterable attributes].</param>
+        public static void AddEntityFieldForAttribute( List<EntityField> entityFields, CacheAttribute attribute, bool limitToFilterableAttributes = true )
         {
             var entityField = GetEntityFieldForAttribute( attribute, limitToFilterableAttributes );
 
@@ -297,7 +309,7 @@ namespace Rock.Reporting
                 return;
 
 
-            var entityType = EntityTypeCache.Read( attribute.EntityTypeId ?? 0 );
+            var entityType = CacheEntityType.Get( attribute.EntityTypeId ?? 0 );
 
             string legacyFieldName = entityField.Name;
             if ( entityType != null )
@@ -305,7 +317,7 @@ namespace Rock.Reporting
                 // in the case of ContentChannelItem attribute fields qualified by ContentChannelId, fully qualify the fieldName to ensure that other attributes on this 
                 // that have the exact same Name don't cause a random attribute with the same name to get picked
                 // NOTE: this is an issue with any Qualified Attribute, but since ContentChannelId is new, we don't have to worry about backwards compatibility
-                if ( entityType.Id == EntityTypeCache.GetId<ContentChannelItem>() && attribute.EntityTypeQualifierColumn == "ContentChannelId" )
+                if ( entityType.Id == CacheEntityType.GetId<ContentChannelItem>() && attribute.EntityTypeQualifierColumn == "ContentChannelId" )
                 {
                     legacyFieldName = $"{entityField.Name}_{attribute.EntityTypeQualifierColumn}_{attribute.EntityTypeQualifierValue}";
                 }
@@ -328,7 +340,18 @@ namespace Rock.Reporting
         /// </summary>
         /// <param name="attribute">The attribute.</param>
         /// <param name="limitToFilterableAttributes"></param>
-        public static EntityField GetEntityFieldForAttribute( AttributeCache attribute, bool limitToFilterableAttributes = true )
+        [Obsolete]
+        public static EntityField GetEntityFieldForAttribute( Web.Cache.AttributeCache attribute, bool limitToFilterableAttributes = true )
+        {
+            return GetEntityFieldForAttribute( CacheAttribute.Get( attribute.Id ), limitToFilterableAttributes );
+        }
+
+        /// <summary>
+        /// Create an EntityField for an Attribute.
+        /// </summary>
+        /// <param name="attribute">The attribute.</param>
+        /// <param name="limitToFilterableAttributes"></param>
+        public static EntityField GetEntityFieldForAttribute( CacheAttribute attribute, bool limitToFilterableAttributes = true )
         {
             // Ensure field name only has Alpha, Numeric and underscore chars
             string fieldName = attribute.Key.RemoveSpecialCharacters().Replace( ".", "" );
@@ -336,7 +359,7 @@ namespace Rock.Reporting
             EntityField entityField = null;
 
             // Make sure that the attributes field type actually renders a filter control if limitToFilterableAttributes
-            var fieldType = FieldTypeCache.Read( attribute.FieldTypeId );
+            var fieldType = CacheFieldType.Get( attribute.FieldTypeId );
             if ( fieldType != null && ( !limitToFilterableAttributes || fieldType.Field.HasFilterControl() ) )
             {
                 entityField = new EntityField( fieldName, FieldKind.Attribute, typeof( string ), attribute.Guid, fieldType );
@@ -349,11 +372,11 @@ namespace Rock.Reporting
                 }
 
                 // Special processing for Entity Type "Group" or "GroupMember" to handle sub-types that are distinguished by GroupTypeId.
-                if ( ( attribute.EntityTypeId == EntityTypeCache.GetId( typeof( Group ) ) || attribute.EntityTypeId == EntityTypeCache.GetId( typeof( GroupMember ) ) && attribute.EntityTypeQualifierColumn == "GroupTypeId" ) )
+                if ( ( attribute.EntityTypeId == CacheEntityType.GetId( typeof( Group ) ) || attribute.EntityTypeId == CacheEntityType.GetId( typeof( GroupMember ) ) && attribute.EntityTypeQualifierColumn == "GroupTypeId" ) )
                 {
                     using ( var rockContext = new RockContext() )
                     {
-                        var groupType = GroupTypeCache.Read( attribute.EntityTypeQualifierValue.AsInteger(), rockContext );
+                        var groupType = CacheGroupType.Get( attribute.EntityTypeQualifierValue.AsInteger(), rockContext );
                         if ( groupType != null )
                         {
                             // Append the Qualifier to the title
@@ -364,7 +387,7 @@ namespace Rock.Reporting
                 }
 
                 // Special processing for Entity Type "ContentChannelItem" to handle sub-types that are distinguished by ContentChannelTypeId.
-                if ( attribute.EntityTypeId == EntityTypeCache.GetId( typeof( ContentChannelItem ) ) && attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" )
+                if ( attribute.EntityTypeId == CacheEntityType.GetId( typeof( ContentChannelItem ) ) && attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" )
                 {
                     using ( var rockContext = new RockContext() )
                     {
@@ -379,7 +402,7 @@ namespace Rock.Reporting
                 }
 
                 // Special processing for Entity Type "ContentChannelItem" to handle sub-types that are distinguished by ContentChannelId.
-                if ( attribute.EntityTypeId == EntityTypeCache.GetId( typeof( ContentChannelItem ) ) && attribute.EntityTypeQualifierColumn == "ContentChannelId" )
+                if ( attribute.EntityTypeId == CacheEntityType.GetId( typeof( ContentChannelItem ) ) && attribute.EntityTypeQualifierColumn == "ContentChannelId" )
                 {
                     using ( var rockContext = new RockContext() )
                     {
@@ -394,7 +417,7 @@ namespace Rock.Reporting
                 }
 
                 // Special processing for Entity Type "Workflow" to handle sub-types that are distinguished by WorkflowTypeId.
-                if ( attribute.EntityTypeId == EntityTypeCache.GetId( typeof( Rock.Model.Workflow ) ) && attribute.EntityTypeQualifierColumn == "WorkflowTypeId" )
+                if ( attribute.EntityTypeId == CacheEntityType.GetId( typeof( Rock.Model.Workflow ) ) && attribute.EntityTypeQualifierColumn == "WorkflowTypeId" )
                 {
                     using ( var rockContext = new RockContext() )
                     {
@@ -555,7 +578,7 @@ namespace Rock.Reporting
         /// <value>
         /// The type of the filter field.
         /// </value>
-        public FieldTypeCache FieldType { get; set; }
+        public CacheFieldType FieldType { get; set; }
 
         /// <summary>
         /// Gets the type of the bound field.
@@ -612,7 +635,25 @@ namespace Rock.Reporting
         /// <param name="propertyType">Type of the property.</param>
         /// <param name="attributeGuid">The attribute unique identifier.</param>
         /// <param name="fieldType">Type of the field.</param>
-        public EntityField( string name, FieldKind fieldKind, Type propertyType, Guid attributeGuid, FieldTypeCache fieldType )
+        [Obsolete]
+        public EntityField( string name, FieldKind fieldKind, Type propertyType, Guid attributeGuid, Web.Cache.FieldTypeCache fieldType )
+            : this( name, fieldKind, propertyType, null, attributeGuid )
+        {
+            if ( fieldType != null )
+            {
+                this.FieldType = CacheFieldType.Get( fieldType.Id );
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EntityField" /> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="fieldKind">Kind of the field.</param>
+        /// <param name="propertyType">Type of the property.</param>
+        /// <param name="attributeGuid">The attribute unique identifier.</param>
+        /// <param name="fieldType">Type of the field.</param>
+        public EntityField( string name, FieldKind fieldKind, Type propertyType, Guid attributeGuid, CacheFieldType fieldType )
             : this( name, fieldKind, propertyType, null, attributeGuid )
         {
             this.FieldType = fieldType;

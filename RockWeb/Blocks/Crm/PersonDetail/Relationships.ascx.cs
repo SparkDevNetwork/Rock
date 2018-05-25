@@ -364,7 +364,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         }
                         else
                         {
-                            lGroupName.Text = this.BlockCache.Name;
+                            lGroupName.Text = this.CacheBlock.Name;
                         }
                     }
                 }

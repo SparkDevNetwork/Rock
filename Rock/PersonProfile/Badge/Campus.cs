@@ -55,7 +55,7 @@ namespace Rock.PersonProfile.Badge
                         .Select(g => g.CampusId)
                         .Distinct()
                         .ToList())
-                        campusNames.Add(Rock.Web.Cache.CampusCache.Read(campusId).Name);
+                        campusNames.Add(Rock.Cache.CacheCampus.Get(campusId).Name);
 
                     label.Text = campusNames.OrderBy(n => n).ToList().AsDelimited(", ");
 

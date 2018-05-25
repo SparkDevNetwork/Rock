@@ -181,6 +181,26 @@
     <Compile Include="Migrations\201804121040419_AddDimensionToBinaryFile.Designer.cs">
       <DependentUpon>201804121040419_AddDimensionToBinaryFile.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201804161720510_AddContentChannelItemSlug.cs" />
+    <Compile Include="Migrations\201804161720510_AddContentChannelItemSlug.Designer.cs">
+      <DependentUpon>201804161720510_AddContentChannelItemSlug.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201804192145436_AddPersonSearchKeys.cs" />
+    <Compile Include="Migrations\201804192145436_AddPersonSearchKeys.Designer.cs">
+      <DependentUpon>201804192145436_AddPersonSearchKeys.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201804271736429_Rollup_0427.cs" />
+    <Compile Include="Migrations\201804271736429_Rollup_0427.Designer.cs">
+      <DependentUpon>201804271736429_Rollup_0427.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201804272301456_MergeFromV7_4.cs" />
+    <Compile Include="Migrations\201804272301456_MergeFromV7_4.Designer.cs">
+      <DependentUpon>201804272301456_MergeFromV7_4.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201805042225214_Rollup_0504.cs" />
+    <Compile Include="Migrations\201805042225214_Rollup_0504.Designer.cs">
+      <DependentUpon>201805042225214_Rollup_0504.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.cs" />
     <Compile Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.Designer.cs">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
@@ -2846,6 +2866,21 @@
     <EmbeddedResource Include="Migrations\201804121040419_AddDimensionToBinaryFile.resx">
       <DependentUpon>201804121040419_AddDimensionToBinaryFile.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201804161720510_AddContentChannelItemSlug.resx">
+      <DependentUpon>201804161720510_AddContentChannelItemSlug.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201804192145436_AddPersonSearchKeys.resx">
+      <DependentUpon>201804192145436_AddPersonSearchKeys.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201804271736429_Rollup_0427.resx">
+      <DependentUpon>201804271736429_Rollup_0427.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201804272301456_MergeFromV7_4.resx">
+      <DependentUpon>201804272301456_MergeFromV7_4.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201805042225214_Rollup_0504.resx">
+      <DependentUpon>201805042225214_Rollup_0504.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.resx">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
     </EmbeddedResource>
@@ -4811,6 +4846,33 @@
     </Content>
     <Content Include="Migrations\201803301619284_Rollup_0330.sql">
       <DependentUpon>201803301619284_Rollup_0330.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201804272301456_MergeFromV7_4_AddVimeoShortCode.sql">
+      <DependentUpon>201804272301456_MergeFromV7_4.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201804272301456_MergeFromV7_4_FixAccordionShortCode.sql">
+      <DependentUpon>201804272301456_MergeFromV7_4.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201804272301456_MergeFromV7_4_FixThankyouAndOngoingHyphenations.sql">
+      <DependentUpon>201804272301456_MergeFromV7_4.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201804272301456_MergeFromV7_4_GivingAnalyticsAccounts_AccountTotals.sql">
+      <DependentUpon>201804272301456_MergeFromV7_4.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201804272301456_MergeFromV7_4_GivingAnalyticsAccounts_PersonSummary.sql">
+      <DependentUpon>201804272301456_MergeFromV7_4.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201804272301456_MergeFromV7_4_GivingAnalyticsAccounts_TransactionData.sql">
+      <DependentUpon>201804272301456_MergeFromV7_4.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201804272301456_MergeFromV7_4_spAnalytics_ETL_Campus.sql">
+      <DependentUpon>201804272301456_MergeFromV7_4.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201804272301456_MergeFromV7_4_spCrm_PersonDuplicateFinder.sql">
+      <DependentUpon>201804272301456_MergeFromV7_4.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201804272301456_MergeFromV7_4_spCrm_PersonMerge.sql">
+      <DependentUpon>201804272301456_MergeFromV7_4.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 7.0\Version 1.7.0\201707182207536_AttendanceAnalyticsQuery_NonAttendees.sql">
       <DependentUpon>201707182207536_PageShortLinks.cs</DependentUpon>

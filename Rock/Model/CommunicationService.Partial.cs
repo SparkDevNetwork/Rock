@@ -17,9 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Rock.Communication;
+
 using Rock.Data;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -122,45 +121,46 @@ namespace Rock.Model
             CommunicationRecipientStatus recipientStatus = CommunicationRecipientStatus.Delivered,
             int? senderPersonAliasId = null)
         {
-            var recipients = new PersonService( (RockContext)this.Context )
+            var recipients = new PersonService( (RockContext)Context )
                 .Queryable()
                 .Where( p => recipientEmails.Contains( p.Email ) )
                 .ToList();
 
-            if ( recipients.Any() )
+            if (!recipients.Any()) return null;
+
+            var communication = new Communication
             {
-                Rock.Model.Communication communication = new Rock.Model.Communication();
-                Add( communication );
+                CommunicationType = CommunicationType.Email,
+                Status = CommunicationStatus.Approved,
+                SenderPersonAliasId = senderPersonAliasId
+            };
+            communication.FromName = fromName.TrimForMaxLength( communication, "FromName" );
+            communication.FromEmail = fromAddress.TrimForMaxLength( communication, "FromEmail" );
+            communication.ReplyToEmail = replyTo.TrimForMaxLength( communication, "ReplyToEmail" );
+            communication.Subject = subject.TrimForMaxLength( communication, "Subject" );
+            communication.Message = message;
+            communication.IsBulkCommunication = bulkCommunication;
+            communication.FutureSendDateTime = null;
+            communication.SendDateTime = sendDateTime;
+            Add( communication );
 
-                communication.CommunicationType = CommunicationType.Email;
-                communication.Status = CommunicationStatus.Approved;
-                communication.SenderPersonAliasId = senderPersonAliasId;
-                communication.FromName = fromName.TrimForMaxLength( communication, "FromName" );
-                communication.FromEmail = fromAddress.TrimForMaxLength( communication, "FromEmail" );
-                communication.ReplyToEmail = replyTo.TrimForMaxLength( communication, "ReplyToEmail" );
-                communication.Subject = subject.TrimForMaxLength( communication, "Subject" );
-                communication.Message = message;
-                communication.IsBulkCommunication = bulkCommunication;
-                communication.FutureSendDateTime = null;
-                communication.SendDateTime = sendDateTime;
-                // add each person as a recipient to the communication
-                foreach ( var person in recipients )
+            // add each person as a recipient to the communication
+            foreach ( var person in recipients )
+            {
+                var personAliasId = person.PrimaryAliasId;
+                if (!personAliasId.HasValue) continue;
+
+                var communicationRecipient = new CommunicationRecipient
                 {
-                    int? personAliasId = person.PrimaryAliasId;
-                    if ( personAliasId.HasValue )
-                    {
-                        var communicationRecipient = new CommunicationRecipient();
-                        communicationRecipient.PersonAliasId = personAliasId.Value;
-                        communicationRecipient.Status = recipientStatus;
-                        communicationRecipient.SendDateTime = sendDateTime;
-                        communication.Recipients.Add( communicationRecipient );
-                    }
-                }
-
-                return communication;
+                    PersonAliasId = personAliasId.Value,
+                    Status = recipientStatus,
+                    SendDateTime = sendDateTime
+                };
+                communication.Recipients.Add( communicationRecipient );
             }
 
-            return null;
+            return communication;
+
         }
 
 
@@ -185,11 +185,11 @@ namespace Rock.Model
             return Queryable()
                 .Where( c =>
                     ( c.Status == CommunicationStatus.Approved || ( includePending && c.Status == CommunicationStatus.PendingApproval ) ) &&
-                    ( qryPendingRecipients.Where( r => r.CommunicationId == c.Id ).Any() || c.ListGroupId.HasValue ) &&
                     (
                         ( !c.FutureSendDateTime.HasValue && c.CreatedDateTime.HasValue && c.CreatedDateTime.Value.CompareTo( beginWindow ) >= 0 && c.CreatedDateTime.Value.CompareTo( endWindow ) <= 0 ) ||
-                        ( c.FutureSendDateTime.HasValue && c.FutureSendDateTime.Value.CompareTo( beginWindow ) >= 0 && ( includeFuture || c.FutureSendDateTime.Value.CompareTo( nowDate ) <= 0 ) )
-                    ) );
+                        ( c.FutureSendDateTime.HasValue && c.FutureSendDateTime.Value.CompareTo( beginWindow ) >= 0 && ( includeFuture || c.FutureSendDateTime.Value.CompareTo( nowDate ) <= 0 ) ) 
+                    ) &&
+                    ( c.ListGroupId.HasValue || qryPendingRecipients.Any( r => r.CommunicationId == c.Id ) ) );
         }
 
     }

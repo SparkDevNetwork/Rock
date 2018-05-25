@@ -23,7 +23,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace RockWeb.Blocks.Reporting
 {
@@ -178,7 +178,7 @@ namespace RockWeb.Blocks.Reporting
         private IEntity GetInteractionEntity( RockContext rockContext, Interaction interaction )
         {
             IEntity interactionEntity = null;
-            var interactionEntityType = EntityTypeCache.Read( interaction.InteractionComponent.Channel.InteractionEntityTypeId.Value ).GetEntityType();
+            var interactionEntityType = CacheEntityType.Get( interaction.InteractionComponent.Channel.InteractionEntityTypeId.Value ).GetEntityType();
             IService serviceInstance = Reflection.GetServiceForEntityType( interactionEntityType, rockContext );
             if ( serviceInstance != null )
             {

@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI.WebControls;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -96,7 +96,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The campuses.
         /// </value>
-        public List<CampusCache> Campuses
+        public List<CacheCampus> Campuses
         {
             set
             {
@@ -156,7 +156,7 @@ namespace Rock.Web.UI.Controls
                 foreach ( int value in values )
                 {
                     if ( this.Items.FindByValue( value.ToString() ) == null &&
-                    CampusCache.Read( value ) != null )
+                    CacheCampus.Get( value ) != null )
                     {
                         LoadItems( values );
                         return;
@@ -177,7 +177,7 @@ namespace Rock.Web.UI.Controls
 
             Items.Clear();
 
-            var allCampuses = CampusCache.All();
+            var allCampuses = CacheCampus.All();
 
             var campusIds = this.CampusIds ?? allCampuses.Select( a => a.Id ).ToList();
 
@@ -188,7 +188,7 @@ namespace Rock.Web.UI.Controls
                 .OrderBy( c => c.Name )
                 .ToList();
 
-            foreach ( CampusCache campus in campuses )
+            foreach ( CacheCampus campus in campuses )
             {
                 var li = new ListItem( campus.Name, campus.Id.ToString() );
                 li.Selected = selectedItems.Contains( campus.Id );

@@ -22,7 +22,7 @@ using System.Linq.Expressions;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Reporting.DataSelect.Person
 {
@@ -130,7 +130,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection )
         {
-            int familyGroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
+            int familyGroupTypeId = CacheGroupType.GetFamilyGroupType().Id;
 
             var familyGroups = new GroupService( context ).Queryable()
                 .Where( m => m.GroupTypeId == familyGroupTypeId );
