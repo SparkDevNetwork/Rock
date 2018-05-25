@@ -747,7 +747,6 @@ namespace RockWeb.Blocks.Finance
             {
                 groupMember = new GroupMember();
                 groupMember.Group = new Group();
-                groupMemberService.Add( groupMember );
             }
 
             groupMember.PersonId = businessId;
@@ -757,6 +756,11 @@ namespace RockWeb.Blocks.Finance
             groupMember.Group.GroupTypeId = groupType.Id;
             groupMember.Group.Name = groupName;
             groupMember.Group.CampusId = campusId;
+
+            if ( groupMember.Id == 0)
+            {
+                groupMemberService.Add( groupMember );
+            }
 
             return groupMember;
         }

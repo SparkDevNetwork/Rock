@@ -10,8 +10,9 @@
             var cancelNote = $(this).hasClass('js-editnote-cancel');
             var deleteNote = $(this).hasClass('js-removenote');
 
+
             var $noteContainer = $(this).closest('.js-notecontainer');
-            var sortDirection = $noteContainer.attr('data-sortdirection');
+            var sortDirection = $noteContainer.data('sortdirection');
             var $noteEditor = $noteContainer.find('.js-note-editor');
             var $currentNote = $(false);
             $noteEditor.detach();
@@ -33,13 +34,12 @@
             }
             else {
                 $currentNote = $(this).closest('.js-noteviewitem');
-                var currentNoteId = $currentNote.attr("data-note-id");
+                var currentNoteId = $currentNote.data("note-id");
 
                 if (replyNote) {
                     // display the 'noteEditor' as a reply to the current note
                     $noteEditor.find('.js-parentnoteid').val(currentNoteId);
-                    var $childNotesList = $currentNote.find('.js-childnotes').first();
-                    $childNotesList.append($noteEditor)
+                    $currentNote.append($noteEditor)
                 }
                 else if (editNote) {
                     // display the 'noteEditor' in place of the currentNote
@@ -52,11 +52,11 @@
                         $noteEditor.find('.js-noteid').val(currentNoteId);
 
                         var $securityBtn = $noteEditor.find('.js-notesecurity');
-                        $securityBtn.attr('data-entity-id', currentNoteId);
+                        $securityBtn.data('entity-id', currentNoteId);
                         $securityBtn.show();
 
                         e.preventDefault();
-                        $currentNote.prepend($noteEditor);
+                        $currentNote.parent('.js-note').prepend($noteEditor);
                     });
                 }
             }
@@ -64,19 +64,19 @@
             if (editNote) {
                 // hide the readonly details of the note that we are editing then show the editor
                 $noteEditor.fadeIn();
-                $currentNote.find('.js-notedetails:first').hide();
+                $currentNote.hide();
             }
             else {
                 // slide the noteeditor into view
-                $noteEditor.slideDown();
+                $noteEditor.slideDown().find('textarea').focus();
             }
         });
 
         $('.js-notecontainer .js-notesecurity').click(function (e) {
             var $securityBtn = $(this);
-            var entityTypeId = $securityBtn.attr('data-entitytype-id');
-            var title = $securityBtn.attr('data-title');
-            var currentNoteId = $securityBtn.attr('data-entity-id');
+            var entityTypeId = $securityBtn.data('entitytype-id');
+            var title = $securityBtn.data('title');
+            var currentNoteId = $securityBtn.data('entity-id');
             var securityUrl = Rock.settings.get('baseUrl') + "Secure/" + entityTypeId + "/" + currentNoteId + "?t=" + title + "&pb=&sb=Done";
             Rock.controls.modal.show($securityBtn, securityUrl);
         });
@@ -87,7 +87,13 @@
             $noteEditor.slideUp();
 
             // show any notedetails that might have been hidden when doing the editing
-            $noteEditor.closest('.js-noteviewitem').find('.js-notedetails').slideDown();
+            $noteEditor.parent().find('.js-noteviewitem').slideDown();
+        });
+
+        $('.js-expandreply').click(function (e) {
+            var $noteContainer = $(this).closest('.js-note');
+            var $noteEditor = $noteContainer.find('.js-childnotes');
+            $noteEditor.slideToggle();
         });
     });
 }(Sys));

@@ -137,7 +137,7 @@ namespace Rock.Model
                         }
 
                         string documentKey = string.Empty;
-                        if ( document == null || string.IsNullOrWhiteSpace( documentKey ) )
+                        if ( document == null  )
                         {
                             documentKey = provider.CreateDocument( signatureDocumentTemplate, appliesToPerson, assignedToPerson, documentName, out sendErrors, true );
                         }
