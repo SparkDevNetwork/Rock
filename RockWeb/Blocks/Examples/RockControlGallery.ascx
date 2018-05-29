@@ -598,14 +598,19 @@ Sys.Application.add_load(function () {
 
                     <h2>Reporting</h2>
 
-                    <a id="DataViewPicker"></a>
+                    <a id="DataViewItemPicker"></a>
                     <div runat="server" class="r-example">
-                        <Rock:DataViewItemPicker ID="dvpDataViewPicker" runat="server" Label="DataViewPicker for Person Dataviews" EntityTypeId="15" />
+                        <Rock:DataViewItemPicker ID="dvpDataViewPicker" runat="server" Label="DataViewItemPicker for Person Dataviews" EntityTypeId="15" />
                     </div>
 
                     <a id="DataViewsPicker"></a>
                     <div runat="server" class="r-example">
                         <Rock:DataViewsPicker ID="dvpDataViewsPicker" runat="server" Label="Rock:DataViewsPicker for Person Dataviews" EntityTypeId="15"/>
+                    </div>
+
+                    <a id="ReportPicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:ReportPicker ID="rpReports" runat="server" Label="ReportPicker for Person Reports" EntityTypeId="15" />
                     </div>
 
                     <a id="MetricCategoryPicker"></a>
