@@ -40,7 +40,7 @@ namespace Rock.Cache
         ///   <c>true</c> if this instance is system; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsSystem { get; set; }
+        public bool IsSystem { get; private set; }
 
         /// <summary>
         /// Gets or sets the name.
@@ -49,7 +49,7 @@ namespace Rock.Cache
         /// The name.
         /// </value>
         [DataMember]
-        public string Name { get; set; }
+        public string Name { get; private set; }
 
         /// <summary>
         /// Gets or sets the description.
@@ -58,7 +58,7 @@ namespace Rock.Cache
         /// The description.
         /// </value>
         [DataMember]
-        public string Description { get; set; }
+        public string Description { get; private set; }
 
         /// <summary>
         /// Gets or sets the is active.
@@ -67,7 +67,7 @@ namespace Rock.Cache
         /// The is active.
         /// </value>
         [DataMember]
-        public bool? IsActive { get; set; }
+        public bool? IsActive { get; private set; }
 
         /// <summary>
         /// Gets or sets the icons CSS class.
@@ -76,7 +76,7 @@ namespace Rock.Cache
         /// The icons CSS class.
         /// </value>
         [DataMember]
-        public string IconCssClass { get; set; }
+        public string IconCssClass { get; private set; }
 
         #endregion
 

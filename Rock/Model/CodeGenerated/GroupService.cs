@@ -194,6 +194,7 @@ namespace Rock.Model
             target.ParentGroupId = source.ParentGroupId;
             target.RequiredSignatureDocumentTemplateId = source.RequiredSignatureDocumentTemplateId;
             target.ScheduleId = source.ScheduleId;
+            target.StatusValueId = source.StatusValueId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

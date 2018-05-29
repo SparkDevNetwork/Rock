@@ -202,10 +202,10 @@
                                 <Rock:RockBoundField DataField="Name" HeaderText="Fee" />
                                 <Rock:EnumField DataField="FeeType" HeaderText="Options" />
                                 <Rock:RockBoundField DataField="Cost" HeaderText="Cost" ItemStyle-Wrap="true"/>
-                                <Rock:BoolField DataField="AllowMultiple" HeaderText="Enable<br />Quantity" HtmlEncode="false" HeaderStyle-HorizontalAlign="Center" />
-                                <Rock:BoolField DataField="DiscountApplies" HeaderText="Discount<br />Applies" HtmlEncode="false" HeaderStyle-HorizontalAlign="Center" />
-                                <Rock:BoolField DataField="IsActive" HeaderText="Is<br />Active" HtmlEncode="false" HeaderStyle-HorizontalAlign="Center" />
-                                <Rock:BoolField DataField="IsRequired" HeaderText="Is<br />Required" HtmlEncode="false" HeaderStyle-HorizontalAlign="Center" />
+                                <Rock:BoolField DataField="AllowMultiple" HeaderText="Enable<br />Quantity" HtmlEncode="false" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
+                                <Rock:BoolField DataField="DiscountApplies" HeaderText="Discount<br />Applies" HtmlEncode="false" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
+                                <Rock:BoolField DataField="IsActive" HeaderText="Is<br />Active" HtmlEncode="false" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
+                                <Rock:BoolField DataField="IsRequired" HeaderText="Is<br />Required" HtmlEncode="false" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
                                 <Rock:EditField OnClick="gFees_Edit" />
                                 <Rock:DeleteField OnClick="gFees_Delete" />
                             </Columns>
@@ -377,7 +377,7 @@
                         <Rock:HiddenFieldWithClass ID="hfHasRegistrations" runat="server" CssClass="js-has-registrations" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link js-delete-template" OnClick="btnDelete_Click" CausesValidation="false" />
                         <span class="pull-right">
-                            <asp:LinkButton ID="btnCopy" runat="server" CssClass="btn btn-default btn-sm fa fa-clone" OnClick="btnCopy_Click"/>
+                            <asp:LinkButton ID="btnCopy" runat="server" CssClass="btn btn-default btn-sm btn-square fa fa-clone" OnClick="btnCopy_Click"/>
                             <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" />
                         </span>
 

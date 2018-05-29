@@ -38,7 +38,6 @@ namespace Rock.Attribute
     /// </summary>
     public static class Helper
     {
-
         /// <summary>
         /// Updates the attributes.
         /// </summary>
@@ -886,6 +885,38 @@ namespace Rock.Attribute
             edtAttribute.GetAttributeProperties( newAttribute );
 
             return SaveAttributeEdits( newAttribute, entityTypeId, entityTypeQualifierColumn, entityTypeQualifierValue, rockContext );
+        }
+
+        /// <summary>
+        /// Saves the attribute edits.
+        /// </summary>
+        /// <param name="attributes">The attributes.</param>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
+        /// <param name="entityTypeQualifierValue">The entity type qualifier value.</param>
+        /// <param name="rockContext">The rock context.</param>
+        public static void SaveAttributeEdits( List<Rock.Model.Attribute> attributes, int? entityTypeId, string entityTypeQualifierColumn, string entityTypeQualifierValue, RockContext rockContext = null )
+        {
+            // Get the existing attributes for this entity type and qualifier value
+            var attributeService = new AttributeService( rockContext );
+            var existingAttributes = attributeService.GetByEntityTypeQualifier( entityTypeId, entityTypeQualifierColumn, entityTypeQualifierValue, true );
+
+            // Delete any of those attributes that don't exist in the specified attributes
+            var selectedAttributeGuids = attributes.Select( a => a.Guid );
+            foreach ( var attr in existingAttributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
+            {
+                attributeService.Delete( attr );
+                rockContext.SaveChanges();
+                CacheAttribute.Remove( attr.Id );
+            }
+
+            // Update the Attributes that were assigned in the UI
+            foreach ( var attribute in attributes )
+            {
+                Helper.SaveAttributeEdits( attribute, entityTypeId, entityTypeQualifierColumn, entityTypeQualifierValue, rockContext );
+            }
+
+            CacheAttribute.RemoveEntityAttributes();
         }
 
         /// <summary>

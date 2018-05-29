@@ -645,10 +645,16 @@ namespace RockWeb.Blocks.Finance
                         }
                     }
 
+                    bool isExporting = false;
+                    if ( e is RockGridViewRowEventArgs )
+                    {
+                        isExporting = ( e as RockGridViewRowEventArgs ).IsExporting;
+                    }
+
                     var lBatchId = e.Row.FindControl( "lBatchId" ) as Literal;
                     if ( lBatchId != null )
                     {
-                        if ( _batchPageRoute.IsNotNullOrWhitespace() && txn.BatchId.HasValue )
+                        if ( _batchPageRoute.IsNotNullOrWhitespace() && txn.BatchId.HasValue && !isExporting )
                         {
                             var cell = e.Row.Cells.OfType<DataControlFieldCell>().Where( a => a == lBatchId.FirstParentControlOfType<DataControlFieldCell>() ).First();
                             cell.RemoveCssClass( "grid-select-cell" );
@@ -663,12 +669,6 @@ namespace RockWeb.Blocks.Finance
                     var lAccounts = e.Row.FindControl( "lAccounts" ) as Literal;
                     if ( lAccounts != null)
                     {
-                        bool isExporting = false;
-                        if (e is RockGridViewRowEventArgs )
-                        {
-                            isExporting = ( e as RockGridViewRowEventArgs ).IsExporting;
-                        }
-
                         lAccounts.Text = this.GetAccounts( txn, isExporting );
                     }
                 }
@@ -1261,13 +1261,13 @@ namespace RockWeb.Blocks.Finance
         {
             if ( hfTransactionViewMode.Value == "Transactions" )
             {
-                btnTransactionDetails.CssClass = "btn btn-xs btn-default";
+                btnTransactionDetails.CssClass = "btn btn-xs btn-outline-primary";
                 btnTransactions.CssClass = "btn btn-xs btn-primary";
             }
             else
             {
                 btnTransactionDetails.CssClass = "btn btn-xs btn-primary";
-                btnTransactions.CssClass = "btn btn-xs btn-default";
+                btnTransactions.CssClass = "btn btn-xs btn-outline-primary";
             }
 
             _currencyTypes = new Dictionary<int, string>();

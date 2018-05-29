@@ -2767,7 +2767,6 @@ namespace RockWeb.Blocks.Event
                         if ( groupMember == null )
                         {
                             groupMember = new GroupMember();
-                            groupMemberService.Add( groupMember );
                             groupMember.GroupId = group.Id;
                             groupMember.PersonId = personAlias.PersonId;
 
@@ -2788,6 +2787,8 @@ namespace RockWeb.Blocks.Event
                                     groupMember.GroupRoleId = group.GroupType.Roles.Select( r => r.Id ).FirstOrDefault();
                                 }
                             }
+
+                            groupMemberService.Add( groupMember );
                         }
 
                         groupMember.GroupMemberStatus = RegistrationTemplate.GroupMemberStatus;

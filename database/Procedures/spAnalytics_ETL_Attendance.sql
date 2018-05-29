@@ -7,8 +7,7 @@ IF EXISTS (
     DROP PROCEDURE [dbo].spAnalytics_ETL_Attendance
 GO
 
--- EXECUTE [dbo].[spAnalytics_ETL_Attendance] 
-CREATE PROCEDURE [dbo].spAnalytics_ETL_Attendance
+CREATE PROCEDURE [dbo].[spAnalytics_ETL_Attendance]
 AS
 BEGIN
     DECLARE @MinDateTime DATETIME = DATEFROMPARTS(1900, 1, 1)
@@ -119,7 +118,7 @@ BEGIN
         SELECT max(pc.Id) [PersonKey]
         FROM AnalyticsDimPersonCurrent pc
         JOIN PersonAlias pa ON asa.PersonAliasId = pa.Id
-        WHERE pc.PersonId = pa.PersonId
+    WHERE pc.PersonId = pa.PersonId
         ) x
     WHERE isnull(asa.[CurrentPersonKey], 0) != isnull(x.PersonKey, 0)
 
@@ -153,7 +152,7 @@ BEGIN
 
     -- update just in case any records where modified since originally inserted
     UPDATE asa
-    SET asa.[Count] = x.[Count]
+    SET  asa.[Count] = x.[Count]
         ,asa.[LocationId] = x.[LocationId]
         ,asa.[CampusId] = x.[CampusId]
         ,asa.[ScheduleId] = x.[ScheduleId]
@@ -194,19 +193,19 @@ BEGIN
         WHERE isnull(a.DidNotOccur, 0) = 0
         ) x ON x.AttendanceId = asa.AttendanceId
         AND (
-            asa.[LocationId] != x.[LocationId]
-            OR asa.[CampusId] != x.[CampusId]
-            OR asa.[ScheduleId] != x.[ScheduleId]
-            OR asa.[GroupId] != x.[GroupId]
-            OR asa.[PersonAliasId] != x.[PersonAliasId]
-            OR asa.[DeviceId] != x.[DeviceId]
-            OR asa.[SearchTypeName] != x.[SearchTypeName]
-            OR asa.[StartDateTime] != x.[StartDateTime]
-            OR asa.[EndDateTime] != x.[EndDateTime]
-            OR asa.[RSVP] != x.[RSVP]
-            OR asa.[DidAttend] != x.[DidAttend]
-            OR asa.[Note] != x.[Note]
-            OR asa.[SundayDate] != x.[SundayDate]
+               COALESCE(asa.[LocationId], '') != COALESCE(x.[LocationId], '')
+            OR COALESCE(asa.[CampusId], '') != COALESCE(x.[CampusId], '')
+            OR COALESCE(asa.[ScheduleId], '') != COALESCE(x.[ScheduleId], '')
+            OR COALESCE(asa.[GroupId], '') != COALESCE(x.[GroupId], '')
+            OR COALESCE(asa.[PersonAliasId], '') != COALESCE(x.[PersonAliasId], '')
+            OR COALESCE(asa.[DeviceId], '') != COALESCE(x.[DeviceId], '')
+            OR COALESCE(asa.[SearchTypeName], '') != COALESCE(x.[SearchTypeName], '')
+            OR COALESCE(asa.[StartDateTime], '') != COALESCE(x.[StartDateTime], '')
+            OR COALESCE(asa.[EndDateTime], '') != COALESCE(x.[EndDateTime], '')
+            OR COALESCE(asa.[RSVP], '') != COALESCE(x.[RSVP], '')
+            OR COALESCE(asa.[DidAttend], '') != COALESCE(x.[DidAttend], '')
+            OR COALESCE(asa.[Note], '') != COALESCE(x.[Note], '')
+            OR COALESCE(asa.[SundayDate], '') != COALESCE(x.[SundayDate], '')
             )
 
     -- Update [DaysSinceLastAttendanceOfType]

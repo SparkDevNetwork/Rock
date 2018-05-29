@@ -59,7 +59,7 @@
 
                 <div class="actions ">
                     <div class="pull-right">
-                        <asp:LinkButton ID="btnAddBlock" runat="server" ToolTip="Add Block" Text="<i class='fa fa-plus-circle'></i>" CssClass="btn btn-default btn-sm" OnClick="btnAddBlock_Click" />
+                        <asp:LinkButton ID="btnAddBlock" runat="server" Text="<i class='fa fa-plus-circle'></i> Add Block to Zone" CssClass="btn btn-default btn-sm" OnClick="btnAddBlock_Click" />
                     </div>
 
                 </div>

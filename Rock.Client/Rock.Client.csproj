@@ -176,6 +176,7 @@
     <Compile Include="CodeGenerated\NcoaHistory.cs" />
     <Compile Include="CodeGenerated\Note.cs" />
     <Compile Include="CodeGenerated\NoteType.cs" />
+    <Compile Include="CodeGenerated\NoteWatch.cs" />
     <Compile Include="CodeGenerated\Notification.cs" />
     <Compile Include="CodeGenerated\NotificationRecipient.cs" />
     <Compile Include="CodeGenerated\Page.cs" />

@@ -39,7 +39,8 @@ namespace Rock.Model
         {
             bool isValid = false;
 
-            slug = slug.ToLower().Replace( " ", "-" ).Left( 75 );
+            slug = MakeSlugValid( slug );
+
             int intialSlugLength = slug.Length;
             int paddedNumber = 0;
             do
@@ -102,6 +103,41 @@ namespace Rock.Model
 
             rockContext.SaveChanges();
             return contentChannelItemSlug;
+        }
+
+        /// <summary>
+        /// Replace space with dash
+        /// Remove unsafe and reserved characters ; / ? : @ = & < > # % " { } | \ ^ [ ] `
+        /// Limit to 75 characters.
+        /// </summary>
+        /// <param name="slug">The slug.</param>
+        /// <returns></returns>
+        private string MakeSlugValid( string slug )
+        {
+            return slug
+                .ToLower()
+                .Replace( " ", "-" )
+                .Replace( ";", "" )
+                .Replace( "/", "" )
+                .Replace( "?", "" )
+                .Replace( ":", "" )
+                .Replace( "@", "" )
+                .Replace( "=", "" )
+                .Replace( "&", "" )
+                .Replace( "<", "" )
+                .Replace( ">", "" )
+                .Replace( "#", "" )
+                .Replace( "%", "" )
+                .Replace( "\"", "" )
+                .Replace( "{", "" )
+                .Replace( "}", "" )
+                .Replace( "|", "" )
+                .Replace( "\\", "" )
+                .Replace( "^", "" )
+                .Replace( "[", "" )
+                .Replace( "]", "" )
+                .Replace( "`", "" )
+                .Left( 75 );
         }
     }
 }

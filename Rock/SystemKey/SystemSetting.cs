@@ -64,6 +64,16 @@ namespace Rock.SystemKey
         public const string DATA_AUTOMATION_ADULT_CHILDREN = "core_DataAutomationAdultChildren";
 
         /// <summary>
+        /// Settings for Updating Person Connection Status
+        /// </summary>
+        public const string DATA_AUTOMATION_UPDATE_PERSON_CONNECTION_STATUS = "core_DataAutomationUpdatePersonConnectionStatus";
+
+        /// <summary>
+        /// Settings for Updating Family Status
+        /// </summary>
+        public const string DATA_AUTOMATION_UPDATE_FAMILY_STATUS = "core_DataAutomationUpdateFamilyStatus";
+
+        /// <summary>
         /// The font awesome pro key
         /// </summary>
         public const string FONT_AWESOME_PRO_KEY = "core_FontAwesomeProKey";

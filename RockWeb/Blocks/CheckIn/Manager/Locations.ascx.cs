@@ -246,16 +246,16 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 var currentAttendeeIds = attendanceService
                     .Queryable().AsNoTracking()
                     .Where( a =>
-                        a.ScheduleId.HasValue &&
-                        a.GroupId.HasValue &&
-                        a.LocationId.HasValue &&
+                        a.Occurrence.ScheduleId.HasValue &&
+                        a.Occurrence.GroupId.HasValue &&
+                        a.Occurrence.LocationId.HasValue &&
                         a.PersonAlias != null &&
                         a.DidAttend.HasValue &&
                         a.DidAttend.Value &&
                         a.StartDateTime > today &&
                         !a.EndDateTime.HasValue &&
-                        activeScheduleIds.Contains( a.ScheduleId.Value ) &&
-                        groupIds.Contains( a.GroupId.Value ) )
+                        activeScheduleIds.Contains( a.Occurrence.ScheduleId.Value ) &&
+                        groupIds.Contains( a.Occurrence.GroupId.Value ) )
                     .Select( a =>
                         a.PersonAlias.PersonId )
                     .Distinct();
@@ -264,13 +264,13 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 var attendanceQry = attendanceService
                     .Queryable().AsNoTracking()
                     .Where( a =>
-                        a.ScheduleId.HasValue &&
-                        a.GroupId.HasValue &&
-                        a.LocationId.HasValue &&
+                        a.Occurrence.ScheduleId.HasValue &&
+                        a.Occurrence.GroupId.HasValue &&
+                        a.Occurrence.LocationId.HasValue &&
                         a.PersonAliasId.HasValue &&
                         a.DidAttend.Value &&
-                        scheduleIds.Contains( a.ScheduleId.Value ) &&
-                        groupIds.Contains( a.GroupId.Value ) )
+                        scheduleIds.Contains( a.Occurrence.ScheduleId.Value ) &&
+                        groupIds.Contains( a.Occurrence.GroupId.Value ) )
                     .GroupBy( a => new
                     {
                         PersonId = a.PersonAlias.PersonId
@@ -684,14 +684,14 @@ namespace RockWeb.Blocks.CheckIn.Manager
                                         a.StartDateTime > dayStart &&
                                         a.StartDateTime < now &&
                                         !a.EndDateTime.HasValue &&
-                                        a.LocationId.HasValue &&
-                                        a.LocationId.Value == itemId.Value &&
+                                        a.Occurrence.LocationId.HasValue &&
+                                        a.Occurrence.LocationId.Value == itemId.Value &&
                                         a.PersonAlias != null &&
                                         a.PersonAlias.PersonId == personId &&
                                         a.DidAttend.HasValue &&
                                         a.DidAttend.Value &&
-                                        a.ScheduleId.HasValue &&
-                                        activeSchedules.Contains( a.ScheduleId.Value ) ) )
+                                        a.Occurrence.ScheduleId.HasValue &&
+                                        activeSchedules.Contains( a.Occurrence.ScheduleId.Value ) ) )
                                 {
                                     attendanceService.Delete( attendance );
                                 }
@@ -1003,20 +1003,20 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
                     var attendanceQry = new AttendanceService( rockContext ).Queryable()
                         .Where( a =>
-                            a.ScheduleId.HasValue &&
-                            a.GroupId.HasValue &&
-                            a.LocationId.HasValue &&
+                            a.Occurrence.ScheduleId.HasValue &&
+                            a.Occurrence.GroupId.HasValue &&
+                            a.Occurrence.LocationId.HasValue &&
                             a.StartDateTime > dayStart &&
                             a.StartDateTime < now &&
                             !a.EndDateTime.HasValue &&
                             a.DidAttend.HasValue &&
                             a.DidAttend.Value &&
-                            groupIds.Contains( a.GroupId.Value ) &&
-                            locationIds.Contains( a.LocationId.Value ) );
+                            groupIds.Contains( a.Occurrence.GroupId.Value ) &&
+                            locationIds.Contains( a.Occurrence.LocationId.Value ) );
 
                     if ( scheduleId.HasValue )
                     {
-                        attendanceQry = attendanceQry.Where( a => a.ScheduleId == scheduleId.Value );
+                        attendanceQry = attendanceQry.Where( a => a.Occurrence.ScheduleId == scheduleId.Value );
 
                         var schedule = new ScheduleService( rockContext ).Get( scheduleId.Value );
                         if ( schedule != null )
@@ -1051,12 +1051,12 @@ namespace RockWeb.Blocks.CheckIn.Manager
                             .Where( a =>
                                 a.StartDateTime < chartTime &&
                                 a.PersonAlias != null &&
-                                activeSchedules.Contains( a.ScheduleId.Value ) )
+                                activeSchedules.Contains( a.Occurrence.ScheduleId.Value ) )
                             .GroupBy( a => new
                             {
-                                ScheduleId = a.ScheduleId.Value,
-                                GroupId = a.GroupId.Value,
-                                LocationId = a.LocationId.Value
+                                ScheduleId = a.Occurrence.ScheduleId.Value,
+                                GroupId = a.Occurrence.GroupId.Value,
+                                LocationId = a.Occurrence.LocationId.Value
                             } )
                             .Select( g => new
                             {
@@ -1418,18 +1418,18 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         var dayStart = RockDateTime.Today;
                         var now = RockDateTime.Now;
                         var attendees = new AttendanceService( rockContext )
-                            .Queryable( "Group,PersonAlias.Person,Schedule,AttendanceCode" )
+                            .Queryable( "Occurrence.Group,PersonAlias.Person,Occurrence.Schedule,AttendanceCode" )
                             .AsNoTracking()
                             .Where( a =>
                                 a.StartDateTime > dayStart &&
                                 a.StartDateTime < now &&
                                 !a.EndDateTime.HasValue &&
-                                a.LocationId.HasValue &&
-                                a.LocationId == locationItem.Id &&
+                                a.Occurrence.LocationId.HasValue &&
+                                a.Occurrence.LocationId == locationItem.Id &&
                                 a.DidAttend.HasValue &&
                                 a.DidAttend.Value &&
-                                a.ScheduleId.HasValue &&
-                                activeSchedules.Contains( a.ScheduleId.Value ) )
+                                a.Occurrence.ScheduleId.HasValue &&
+                                activeSchedules.Contains( a.Occurrence.ScheduleId.Value ) )
                             .ToList();
 
                         int? scheduleId = CurrentScheduleId.AsIntegerOrNull();
@@ -1445,7 +1445,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                                 .Where( a => a.PersonAlias.PersonId == personId )
                                 .ToList();
 
-                            if ( !scheduleId.HasValue || matchingAttendees.Any( a => a.ScheduleId == scheduleId.Value ) )
+                            if ( !scheduleId.HasValue || matchingAttendees.Any( a => a.Occurrence.ScheduleId == scheduleId.Value ) )
                             {
                                 people.Add( new PersonResult( matchingAttendees ) );
                             }
@@ -1648,8 +1648,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
                     ScheduleGroupNames = attendances
                         .Select( a => string.Format( "<br/><small>{0}{1}{2}</small>",
-                                a.Group.Name,
-                                a.Schedule != null ? " - " + a.Schedule.Name : "",
+                                a.Occurrence.Group.Name,
+                                a.Occurrence.Schedule != null ? " - " + a.Occurrence.Schedule.Name : "",
                                 a.AttendanceCode != null ? " - " + a.AttendanceCode.Code : "" ) )
                         .Distinct()
                         .ToList()

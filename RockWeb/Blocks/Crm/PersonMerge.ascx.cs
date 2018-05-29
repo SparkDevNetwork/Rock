@@ -331,6 +331,10 @@ validity of the request before completing this merge." :
                 {
                     e.Row.AddCssClass( "grid-section-header" );
                 }
+                else
+                {
+                    e.Row.Cells[1].AddCssClass("grid-row-header");
+                }
             }
             else if ( e.Row.RowType == DataControlRowType.Header )
             {

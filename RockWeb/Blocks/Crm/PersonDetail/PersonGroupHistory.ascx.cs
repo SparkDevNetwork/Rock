@@ -142,16 +142,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 // if group types are filtered on the user filter, use that
                 groupTypeIds = gtGroupTypesFilter.SelectedGroupTypeIds;
-
-                // show the group type names from the UserFilter
-                lSelectedGroupTypes.Visible = gtGroupTypesFilter.SelectedGroupTypeIds.Any();
-                lSelectedGroupTypes.Text = gtGroupTypesFilter.SelectedGroupTypeIds.Select( a => CacheGroupType.Get( a ).Name ).ToList().AsDelimited( "," );
             }
             else
             {
                 // if no group types are selected in the user filter, restrict grouptypes to the ones in the block settings (if any)
                 groupTypeIds = _blockSettingsGroupTypeIds;
-                lSelectedGroupTypes.Visible = false;
             }
 
             hfGroupTypeIds.Value = groupTypeIds.AsDelimited( "," );

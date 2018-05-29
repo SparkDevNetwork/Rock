@@ -19,7 +19,7 @@ namespace Rock.Jobs
     [DisallowConcurrentExecution]
     [DisplayName( "Data Migrations for v8.0" )]
     [Description( "This job will take care of any data migrations that need to occur after updating to v80. After all the operations are done, this job will delete itself." )]
-    class PostV80DataMigrations : IJob
+    public class PostV80DataMigrations : IJob
     {
         /// <summary>
         /// Executes the specified context. When updating large data sets SQL will burn a lot of time updating the indexes. If performing multiple inserts/updates
@@ -32,6 +32,8 @@ namespace Rock.Jobs
         {
             UpdateInteractionSummaryForPageViews();
             UpdateSlugForContentChannelItems();
+            CreateIndexInteractionPersonAliasSession();
+
             // Keep these two last.
             CreateIndexInteractionsForeignKey();
             DeleteJob( context.GetJobId() );
@@ -55,6 +57,24 @@ namespace Rock.Jobs
                     return;
                 }
             }
+        }
+
+        /// <summary>
+        /// Add an index to help with performance of the Session List block
+        /// </summary>
+        private static void CreateIndexInteractionPersonAliasSession()
+        {
+            using ( RockContext rockContext = new RockContext() )
+            {
+                rockContext.Database.ExecuteSqlCommand( @"
+    IF EXISTS ( SELECT * FROM sys.indexes WHERE NAME = 'IX_PersonAliasId_InteractionSessionId' AND object_id = OBJECT_ID('Interaction') )
+	DROP INDEX [IX_PersonAliasId_InteractionSessionId] ON [dbo].[Interaction]
+
+    CREATE NONCLUSTERED INDEX [IX_PersonAliasId_InteractionSessionId]
+    ON [dbo].[Interaction] ([PersonAliasId],[InteractionSessionId])
+    INCLUDE ([InteractionDateTime],[InteractionComponentId])
+" );
+            };
         }
 
         /// <summary>

@@ -41,7 +41,7 @@ namespace Rock.Cache
         ///   <c>true</c> if this instance is system; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsSystem { get; set; }
+        public bool IsSystem { get; private set; }
 
         /// <summary>
         /// Gets or sets the site id.
@@ -50,7 +50,7 @@ namespace Rock.Cache
         /// The site id.
         /// </value>
         [DataMember]
-        public int SiteId { get; set; }
+        public int SiteId { get; private set; }
 
         /// <summary>
         /// Gets or sets the name of the file.
@@ -59,7 +59,7 @@ namespace Rock.Cache
         /// The name of the file.
         /// </value>
         [DataMember]
-        public string FileName { get; set; }
+        public string FileName { get; private set; }
 
         /// <summary>
         /// Gets or sets the name.
@@ -68,7 +68,7 @@ namespace Rock.Cache
         /// The name.
         /// </value>
         [DataMember]
-        public string Name { get; set; }
+        public string Name { get; private set; }
 
         /// <summary>
         /// Gets or sets the description.
@@ -77,7 +77,7 @@ namespace Rock.Cache
         /// The description.
         /// </value>
         [DataMember]
-        public string Description { get; set; }
+        public string Description { get; private set; }
 
         /// <summary>
         /// Gets the site.

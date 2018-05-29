@@ -18,7 +18,7 @@
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                             <Rock:PersonField DataField="OwnerPersonAlias" HeaderText="Owner" SortExpression="OwnerPersonAlias" />
                             <Rock:RockBoundField DataField="Note" HeaderText="Note" SortExpression="Note" />
-                            <Rock:DateField DataField="ExpirationDate" HeaderText="Expiration Date" SortExpression="ExpirationDate" HeaderStyle-HorizontalAlign="Right" />
+                            <Rock:DateField DataField="ExpirationDate" HeaderText="Expiration Date" SortExpression="ExpirationDate" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" />
                         </Columns>
                     </Rock:Grid>
                 </div>

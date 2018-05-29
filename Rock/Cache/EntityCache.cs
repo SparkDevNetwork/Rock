@@ -48,7 +48,7 @@ namespace Rock.Cache
         /// The identifier.
         /// </value>
         [DataMember]
-        public virtual int Id { get; set; }
+        public virtual int Id { get; protected set; }
 
         /// <summary>
         /// Gets or sets the unique identifier.
@@ -57,7 +57,7 @@ namespace Rock.Cache
         /// The unique identifier.
         /// </value>
         [DataMember]
-        public virtual Guid Guid { get; set; }
+        public virtual Guid Guid { get; protected set; }
 
         /// <summary>
         /// Gets or sets the foreign identifier.
@@ -66,7 +66,7 @@ namespace Rock.Cache
         /// The foreign identifier.
         /// </value>
         [DataMember]
-        public int? ForeignId { get; set; }
+        public int? ForeignId { get; protected set; }
 
         /// <summary>
         /// Gets or sets the foreign unique identifier.
@@ -75,7 +75,7 @@ namespace Rock.Cache
         /// The foreign unique identifier.
         /// </value>
         [DataMember]
-        public Guid? ForeignGuid { get; set; }
+        public Guid? ForeignGuid { get; protected set; }
 
         /// <summary>
         /// Gets or sets the foreign key.
@@ -84,7 +84,7 @@ namespace Rock.Cache
         /// The foreign key.
         /// </value>
         [DataMember]
-        public string ForeignKey { get; set; }
+        public string ForeignKey { get; protected set; }
 
         #endregion
 
@@ -121,7 +121,21 @@ namespace Rock.Cache
         /// <returns></returns>
         public static T Get( int id, RockContext rockContext )
         {
-            return id == 0 ? default(T) : GetOrAddExisting( id, () => QueryDb( id, rockContext ) );
+            if ( id == 0)
+            {
+                return default( T );
+            }
+
+            return GetOrAddExisting( id, () =>
+            {
+                var result = QueryDb( id, rockContext );
+                if ( result != null )
+                {
+                    CacheIdFromGuid.UpdateCacheItem( result.Guid.ToString(), new CacheIdFromGuid( id ), TimeSpan.MaxValue );
+                }
+
+                return result;
+            } );
         }
 
         /// <summary>
@@ -153,14 +167,20 @@ namespace Rock.Cache
         /// <returns></returns>
         public static T Get( Guid guid, RockContext rockContext )
         {
-            // First check to see if there's an item in the All list 
-            var cachedEntity = All().FirstOrDefault( i => i.Guid.Equals( guid ) );
-            if ( cachedEntity != null ) return cachedEntity;
+            // see if the Id is stored in CacheIdFromGuid
+            int? idFromGuid = CacheIdFromGuid.GetId( guid );
+            T cachedEntity;
+            if ( idFromGuid.HasValue )
+            {
+                cachedEntity = Get( idFromGuid.Value, rockContext );
+                return cachedEntity;
+            }
 
             // If not, query the database for it, and then add to cache (if found)
             cachedEntity = QueryDb( guid, rockContext );
             if ( cachedEntity != null )
             {
+                CacheIdFromGuid.UpdateCacheItem( guid.ToString(), new CacheIdFromGuid( cachedEntity.Id ), TimeSpan.MaxValue );
                 UpdateCacheItem( cachedEntity.Id.ToString(), cachedEntity, TimeSpan.MaxValue );
             }
 
@@ -178,10 +198,11 @@ namespace Rock.Cache
 
             var value = new T();
             value.SetFromEntity( entity );
+
+            CacheIdFromGuid.UpdateCacheItem( entity.Guid.ToString(), new CacheIdFromGuid( entity.Id ), TimeSpan.MaxValue );
             UpdateCacheItem( entity.Id.ToString(), value, TimeSpan.MaxValue );
 
             return value;
-
         }
 
         /// <summary>
@@ -287,6 +308,11 @@ namespace Rock.Cache
         /// <returns></returns>
         private static T QueryDb( Guid guid, DbContext rockContext )
         {
+            if ( guid.IsEmpty() )
+            {
+                return default( T );
+            }
+
             if ( rockContext != null )
             {
                 return QueryDbWithContext( guid, rockContext );

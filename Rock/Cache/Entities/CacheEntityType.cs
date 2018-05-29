@@ -46,7 +46,7 @@ namespace Rock.Cache
         /// The name.
         /// </value>
         [DataMember]
-        public string Name { get; set; }
+        public string Name { get; private set; }
 
         /// <summary>
         /// Gets or sets the name of the assembly.
@@ -55,7 +55,7 @@ namespace Rock.Cache
         /// The name of the assembly.
         /// </value>
         [DataMember]
-        public string AssemblyName { get; set; }
+        public string AssemblyName { get; private set; }
 
         /// <summary>
         /// Gets or sets the name of the friendly.
@@ -64,7 +64,7 @@ namespace Rock.Cache
         /// The name of the friendly.
         /// </value>
         [DataMember]
-        public string FriendlyName { get; set; }
+        public string FriendlyName { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is entity.
@@ -73,7 +73,7 @@ namespace Rock.Cache
         ///   <c>true</c> if this instance is entity; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsEntity { get; set; }
+        public bool IsEntity { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is secured.
@@ -82,7 +82,7 @@ namespace Rock.Cache
         /// <c>true</c> if this instance is secured; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsSecured { get; set; }
+        public bool IsSecured { get; private set; }
 
         /// <summary>
         /// Gets or sets the single value field type identifier.
@@ -91,7 +91,7 @@ namespace Rock.Cache
         /// The single value field type identifier.
         /// </value>
         [DataMember]
-        internal int? SingleValueFieldTypeId { get; set; }
+        internal int? SingleValueFieldTypeId { get; private set; }
 
         /// <summary>
         /// Gets the type of the single value field.
@@ -119,7 +119,7 @@ namespace Rock.Cache
         /// The multi value field type identifier.
         /// </value>
         [DataMember]
-        internal int? MultiValueFieldTypeId { get; set; }
+        internal int? MultiValueFieldTypeId { get; private set; }
 
         /// <summary>
         /// Gets the type of the multi value field.
@@ -147,7 +147,7 @@ namespace Rock.Cache
         /// <c>true</c> if this instance is indexing enabled; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsIndexingEnabled { get; set; }
+        public bool IsIndexingEnabled { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is indexing supported.
@@ -156,7 +156,7 @@ namespace Rock.Cache
         /// <c>true</c> if this instance is indexing supported; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsIndexingSupported { get; set; }
+        public bool IsIndexingSupported { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is analytic supported.
@@ -166,7 +166,7 @@ namespace Rock.Cache
         /// </value>
         [Obsolete]
         [DataMember]
-        public bool IsAnalyticSupported { get; set; }
+        public bool IsAnalyticSupported { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is analytic historical supported.
@@ -176,7 +176,7 @@ namespace Rock.Cache
         /// </value>
         [Obsolete]
         [DataMember]
-        public bool IsAnalyticHistoricalSupported { get; set; }
+        public bool IsAnalyticHistoricalSupported { get; private set; }
 
         /// <summary>
         /// Determines whether [is analytics supported] [the specified entity type qualifier column].
@@ -260,7 +260,7 @@ namespace Rock.Cache
         /// The index result template.
         /// </value>
         [DataMember]
-        public string IndexResultTemplate { get; set; }
+        public string IndexResultTemplate { get; private set; }
 
         /// <summary>
         /// Gets or sets the index document URL.
@@ -269,7 +269,7 @@ namespace Rock.Cache
         /// The index document URL.
         /// </value>
         [DataMember]
-        public string IndexDocumentUrl { get; set; }
+        public string IndexDocumentUrl { get; private set; }
 
         /// <summary>
         /// Gets or sets a lava template that can be used for generating a link to view details for this entity (i.e. "~/person/{{ Entity.Id }}").
@@ -278,7 +278,7 @@ namespace Rock.Cache
         /// The link URL.
         /// </value>
         [DataMember]
-        public string LinkUrlLavaTemplate { get; set; }
+        public string LinkUrlLavaTemplate { get; private set; }
 
         #endregion
 

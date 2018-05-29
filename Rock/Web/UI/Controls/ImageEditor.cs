@@ -971,7 +971,7 @@ Rock.controls.imageUploader.initialize({{
 
 $('#{6}').Jcrop({{
     aspectRatio:1,
-    setSelect: [ 0,0,300,300 ],
+    setSelect:   [0,0, $('#{6}').width(), $('#{6}').height() ],
     boxWidth:480,
     boxHeight:480,
     onSelect: function(c) {{

@@ -49,7 +49,7 @@ namespace Rock.Cache
         /// A <see cref="System.String"/> that represents the internal name of the Page.
         /// </value>
         [DataMember]
-        public string InternalName { get; set; }
+        public string InternalName { get; private set; }
 
         /// <summary>
         /// Gets or sets the title of the of the Page to use as the page caption, in menu's, breadcrumb display etc.
@@ -58,7 +58,7 @@ namespace Rock.Cache
         /// A <see cref="System.String"/> that represents the page title of the Page.
         /// </value>
         [DataMember]
-        public string PageTitle { get; set; }
+        public string PageTitle { get; private set; }
 
         /// <summary>
         /// Gets or sets the browser title to use for the page
@@ -67,7 +67,7 @@ namespace Rock.Cache
         /// The browser title.
         /// </value>
         [DataMember]
-        public string BrowserTitle { get; set; }
+        public string BrowserTitle { get; private set; }
 
         /// <summary>
         /// Gets or sets the parent page id.
@@ -76,7 +76,7 @@ namespace Rock.Cache
         /// The parent page id.
         /// </value>
         [DataMember]
-        public int? ParentPageId { get; set; }
+        public int? ParentPageId { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is system.
@@ -85,7 +85,7 @@ namespace Rock.Cache
         ///   <c>true</c> if this instance is system; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsSystem { get; set; }
+        public bool IsSystem { get; private set; }
 
         /// <summary>
         /// Gets or sets the layout id.
@@ -94,7 +94,7 @@ namespace Rock.Cache
         /// The layout id.
         /// </value>
         [DataMember]
-        public int LayoutId { get; set; }
+        public int LayoutId { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [requires encryption].
@@ -103,7 +103,7 @@ namespace Rock.Cache
         ///   <c>true</c> if [requires encryption]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool RequiresEncryption { get; set; }
+        public bool RequiresEncryption { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [enable view state].
@@ -112,7 +112,7 @@ namespace Rock.Cache
         ///   <c>true</c> if [enable view state]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool EnableViewState { get; set; }
+        public bool EnableViewState { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [page display title].
@@ -121,7 +121,7 @@ namespace Rock.Cache
         ///   <c>true</c> if [page display title]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool PageDisplayTitle { get; set; }
+        public bool PageDisplayTitle { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [page display breadcrumb].
@@ -130,7 +130,7 @@ namespace Rock.Cache
         /// <c>true</c> if [page display breadcrumb]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool PageDisplayBreadCrumb { get; set; }
+        public bool PageDisplayBreadCrumb { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [page display icon].
@@ -139,7 +139,7 @@ namespace Rock.Cache
         ///   <c>true</c> if [page display icon]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool PageDisplayIcon { get; set; }
+        public bool PageDisplayIcon { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [page display description].
@@ -148,7 +148,7 @@ namespace Rock.Cache
         /// <c>true</c> if [page display description]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool PageDisplayDescription { get; set; }
+        public bool PageDisplayDescription { get; private set; }
 
         /// <summary>
         /// Gets or sets the display in nav when.
@@ -157,7 +157,7 @@ namespace Rock.Cache
         /// The display in nav when.
         /// </value>
         [DataMember]
-        public DisplayInNavWhen DisplayInNavWhen { get; set; }
+        public DisplayInNavWhen DisplayInNavWhen { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [menu display description].
@@ -166,7 +166,7 @@ namespace Rock.Cache
         /// <c>true</c> if [menu display description]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool MenuDisplayDescription { get; set; }
+        public bool MenuDisplayDescription { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [menu display icon].
@@ -175,7 +175,7 @@ namespace Rock.Cache
         ///   <c>true</c> if [menu display icon]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool MenuDisplayIcon { get; set; }
+        public bool MenuDisplayIcon { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [menu display child pages].
@@ -184,7 +184,7 @@ namespace Rock.Cache
         /// <c>true</c> if [menu display child pages]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool MenuDisplayChildPages { get; set; }
+        public bool MenuDisplayChildPages { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [breadcrumb display name].
@@ -193,7 +193,7 @@ namespace Rock.Cache
         /// <c>true</c> if [breadcrumb display name]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool BreadCrumbDisplayName { get; set; }
+        public bool BreadCrumbDisplayName { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [breadcrumb display icon].
@@ -202,7 +202,7 @@ namespace Rock.Cache
         /// <c>true</c> if [breadcrumb display icon]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool BreadCrumbDisplayIcon { get; set; }
+        public bool BreadCrumbDisplayIcon { get; private set; }
 
         /// <summary>
         /// Gets or sets the icon CSS class.
@@ -211,7 +211,7 @@ namespace Rock.Cache
         /// The icon CSS class.
         /// </value>
         [DataMember]
-        public string IconCssClass { get; set; }
+        public string IconCssClass { get; private set; }
 
         /// <summary>
         /// Gets or sets the order.
@@ -220,7 +220,7 @@ namespace Rock.Cache
         /// The order.
         /// </value>
         [DataMember]
-        public int Order { get; set; }
+        public int Order { get; private set; }
 
         /// <summary>
         /// Gets or sets the duration of the output cache.
@@ -229,7 +229,7 @@ namespace Rock.Cache
         /// The duration of the output cache.
         /// </value>
         [DataMember]
-        public int OutputCacheDuration { get; set; }
+        public int OutputCacheDuration { get; private set; }
 
         /// <summary>
         /// Gets or sets the description.
@@ -238,7 +238,7 @@ namespace Rock.Cache
         /// The description.
         /// </value>
         [DataMember]
-        public string Description { get; set; }
+        public string Description { get; private set; }
 
         /// <summary>
         /// Gets or sets the key words.
@@ -247,7 +247,7 @@ namespace Rock.Cache
         /// The key words.
         /// </value>
         [DataMember]
-        public string KeyWords { get; set; }
+        public string KeyWords { get; private set; }
 
         /// <summary>
         /// Gets or sets html content to add to the page header area of the page when rendered.
@@ -256,7 +256,7 @@ namespace Rock.Cache
         /// The content of the header.
         /// </value>
         [DataMember]
-        public string HeaderContent { get; set; }
+        public string HeaderContent { get; private set; }
 
         /// <summary>
         /// Gets or sets the icon file id.
@@ -265,7 +265,7 @@ namespace Rock.Cache
         /// The icon file id.
         /// </value>
         [DataMember]
-        public int? IconFileId { get; set; }
+        public int? IconFileId { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [include admin footer].
@@ -274,7 +274,7 @@ namespace Rock.Cache
         ///   <c>true</c> if [include admin footer]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IncludeAdminFooter { get; set; }
+        public bool IncludeAdminFooter { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [allow indexing].
@@ -283,7 +283,7 @@ namespace Rock.Cache
         ///   <c>true</c> if [allow indexing]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool AllowIndexing { get; set; }
+        public bool AllowIndexing { get; private set; }
 
         /// <summary>
         /// Gets or sets the body CSS class.
@@ -292,7 +292,7 @@ namespace Rock.Cache
         /// The body CSS class.
         /// </value>
         [DataMember]
-        public string BodyCssClass { get; set; }
+        public string BodyCssClass { get; private set; }
 
         /// <summary>
         /// Gets the parent page.
@@ -427,7 +427,7 @@ namespace Rock.Cache
         /// The page contexts.
         /// </value>
         [DataMember]
-        public Dictionary<string, string> PageContexts { get; set; }
+        public Dictionary<string, string> PageContexts { get; private set; }
 
         /// <summary>
         /// Helper class for PageRoute information
@@ -437,17 +437,17 @@ namespace Rock.Cache
             /// <summary>
             /// The id
             /// </summary>
-            public int Id { get; set; }
+            public int Id { get; internal set; }
 
             /// <summary>
             /// The GUID
             /// </summary>
-            public Guid Guid { get; set; }
+            public Guid Guid { get; internal set; }
 
             /// <summary>
             /// The route
             /// </summary>
-            public string Route { get; set; }
+            public string Route { get; internal set; }
         }
 
         /// <summary>
@@ -457,7 +457,7 @@ namespace Rock.Cache
         /// The page routes.
         /// </value>
         [DataMember]
-        public List<PageRouteInfo> PageRoutes { get; set; }
+        public List<PageRouteInfo> PageRoutes { get; private set; }
 
         /// <summary>
         /// Gets the parent authority.

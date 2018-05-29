@@ -411,6 +411,7 @@ function() {
                     new
                     {
                         PersonId = xx.Key,
+                        AnyAmount = xx.Any(ss => ss.TransactionDetails.Where( td => !limitToAccounts || accountIdList.Contains( td.AccountId ) ).Any() ),
                         TotalAmount = xx.Sum( ss => ss.TransactionDetails.Where( td => !limitToAccounts || accountIdList.Contains( td.AccountId ) ).Sum( td => td.Amount ) )
                     } );
 
@@ -430,10 +431,11 @@ function() {
             }
             else if ( comparisonType == ComparisonType.GreaterThanOrEqualTo )
             {
-                // NOTE: if the amount filter is 'they gave $0.00 or more', there no account filter, and doing a GreaterThanOrEqualTo, then we don't need to calculate and compare against TotalAmount
-                if ( amount == 0.00M && !accountIdList.Any())
+                // NOTE: if the amount filter is 'they gave $0.00 or more', and doing a GreaterThanOrEqualTo, then we don't need to calculate and compare against TotalAmount
+                if ( amount == 0.00M )
                 {
-                    // don't query against TotalAmount if we don't care about amount or accounts
+                    // just query if there is 'any' amount
+                    financialTransactionDetailsIndividualQry = financialTransactionDetailsIndividualQry.Where( xx => xx.AnyAmount );
                 }
                 else
                 {
@@ -456,6 +458,7 @@ function() {
                     new
                     {
                         GivingGroupId = xx.Key,
+                        AnyAmount = xx.Any( ss => ss.Txn.TransactionDetails.Where( td => !limitToAccounts || accountIdList.Contains( td.AccountId ) ).Any() ),
                         TotalAmount = xx.Sum( ss => ss.Txn.TransactionDetails.Where( td => !limitToAccounts || accountIdList.Contains( td.AccountId ) ).Sum( td => td.Amount ) )
                     } );
 
@@ -474,10 +477,11 @@ function() {
                 }
                 else if ( comparisonType == ComparisonType.GreaterThanOrEqualTo )
                 {
-                    // NOTE: if the amount filter is 'they gave $0.00 or more', there no account filter, and doing a GreaterThanOrEqualTo, then we don't need to calculate and compare against TotalAmount
-                    if ( amount == 0.00M && !accountIdList.Any() )
+                    // NOTE: if the amount filter is 'they gave $0.00 or more', and doing a GreaterThanOrEqualTo, then we don't need to calculate and compare against TotalAmount
+                    if ( amount == 0.00M )
                     {
                         // don't query against TotalAmount if we don't care about amount or accounts
+                        financialTransactionDetailsGivingGroupQry = financialTransactionDetailsGivingGroupQry.Where( xx => xx.AnyAmount );
                     }
                     else
                     {

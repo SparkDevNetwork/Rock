@@ -43,7 +43,7 @@ namespace Rock.Cache
         ///   <c>true</c> if this instance is system; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsSystem { get; set; }
+        public bool IsSystem { get; private set; }
 
         /// <summary>
         /// Gets or sets the name.
@@ -52,7 +52,7 @@ namespace Rock.Cache
         /// The name.
         /// </value>
         [DataMember]
-        public string Name { get; set; }
+        public string Name { get; private set; }
 
         /// <summary>
         /// Gets or sets the description.
@@ -61,7 +61,7 @@ namespace Rock.Cache
         /// The description.
         /// </value>
         [DataMember]
-        public string Description { get; set; }
+        public string Description { get; private set; }
 
         /// <summary>
         /// Gets or sets the documentation.
@@ -70,7 +70,7 @@ namespace Rock.Cache
         /// The documentation.
         /// </value>
         [DataMember]
-        public string Documentation { get; set; }
+        public string Documentation { get; private set; }
 
         /// <summary>
         /// Gets or sets the is active.
@@ -79,7 +79,7 @@ namespace Rock.Cache
         /// The is active.
         /// </value>
         [DataMember]
-        public bool IsActive { get; set; }
+        public bool IsActive { get; private set; }
 
         /// <summary>
         /// Gets or sets the name of the tag.
@@ -88,7 +88,7 @@ namespace Rock.Cache
         /// The name of the tag.
         /// </value>
         [DataMember]
-        public string TagName { get; set; }
+        public string TagName { get; private set; }
 
         /// <summary>
         /// Gets or sets the markup.
@@ -97,7 +97,7 @@ namespace Rock.Cache
         /// The markup.
         /// </value>
         [DataMember]
-        public string Markup { get; set; }
+        public string Markup { get; private set; }
 
         /// <summary>
         /// Gets or sets the type of the tag.
@@ -106,7 +106,7 @@ namespace Rock.Cache
         /// The type of the tag.
         /// </value>
         [DataMember]
-        public TagType TagType { get; set; }
+        public TagType TagType { get; private set; }
 
         /// <summary>
         /// Gets or sets the parameters.
@@ -115,7 +115,7 @@ namespace Rock.Cache
         /// The parameters.
         /// </value>
         [DataMember]
-        public string Parameters { get; set; }
+        public string Parameters { get; private set; }
 
         /// <summary>
         /// Gets or sets the enabled lava commands.
@@ -124,7 +124,7 @@ namespace Rock.Cache
         /// The enabled lava commands.
         /// </value>
         [DataMember]
-        public string EnabledLavaCommands { get; set; }
+        public string EnabledLavaCommands { get; private set; }
 
         #endregion
 
