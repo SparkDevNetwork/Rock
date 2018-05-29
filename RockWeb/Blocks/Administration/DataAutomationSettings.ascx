@@ -142,7 +142,7 @@
                                     <Rock:RockCheckBox ID="cbIncludeDataView" runat="server" />
                                 </div>
                                 <div class="pull-left">
-                                    <Rock:DataViewPicker ID="dvIncludeDataView" runat="server" Label="The person is in the following data view" CssClass="input-width-xl" />
+                                    <Rock:DataViewItemPicker ID="dvIncludeDataView" runat="server" Label="The person is in the following data view" CssClass="input-width-xl" />
                                 </div>
                             </div>
 
@@ -151,7 +151,7 @@
                                     <Rock:RockCheckBox ID="cbExcludeDataView" runat="server" />
                                 </div>
                                 <div class="pull-left">
-                                    <Rock:DataViewPicker ID="dvExcludeDataView" runat="server" Label="Exclude any person in the following data view" CssClass="input-width-xl" />
+                                    <Rock:DataViewItemPicker ID="dvExcludeDataView" runat="server" Label="Exclude any person in the following data view" CssClass="input-width-xl" />
                                 </div>
                             </div>
 
@@ -262,7 +262,7 @@
                                     <Rock:RockCheckBox ID="cbNotInDataView" runat="server" />
                                 </div>
                                 <div class="pull-left">
-                                    <Rock:DataViewPicker ID="dvNotInDataView" runat="server" Label="The person is not in the following data view" CssClass="input-width-xl" />
+                                    <Rock:DataViewItemPicker ID="dvNotInDataView" runat="server" Label="The person is not in the following data view" CssClass="input-width-xl" />
                                 </div>
                             </div>
                         </asp:Panel>
@@ -373,7 +373,7 @@
                                 <asp:Repeater ID="rptPersonConnectionStatusDataView" runat="server" OnItemDataBound="rptPersonConnectionStatusDataView_ItemDataBound">
                                     <ItemTemplate>
                                         <asp:HiddenField ID="hfPersonConnectionStatusValueId" runat="server" />
-                                        <Rock:DataViewPicker ID="dvpPersonConnectionStatusDataView" runat="server" />
+                                        <Rock:DataViewItemPicker ID="dvpPersonConnectionStatusDataView" runat="server" />
                                     </ItemTemplate>
                                 </asp:Repeater>
                               </Rock:RockControlWrapper>
@@ -392,7 +392,7 @@
                                 <asp:Repeater ID="rptFamilyStatusDataView" runat="server" OnItemDataBound="rptFamilyStatusDataView_ItemDataBound">
                                     <ItemTemplate>
                                         <asp:HiddenField ID="hfGroupStatusValueId" runat="server" />
-                                        <Rock:DataViewPicker ID="dvpGroupStatusDataView" runat="server" />
+                                        <Rock:DataViewItemPicker ID="dvpGroupStatusDataView" runat="server" />
                                     </ItemTemplate>
                                 </asp:Repeater>
                               </Rock:RockControlWrapper>

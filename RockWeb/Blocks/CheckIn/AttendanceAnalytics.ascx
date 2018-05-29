@@ -109,7 +109,7 @@
 
                             </asp:Panel>
 
-                            <Rock:DataViewPicker ID="dvpDataView" runat="server" Label="Limit by DataView" Visible="false" EnhanceForLongLists="true" />
+                            <Rock:DataViewItemPicker ID="dvpDataView" runat="server" Label="Limit by DataView" Visible="false" />
 
                         </div>
                         <div class="col-md-9">

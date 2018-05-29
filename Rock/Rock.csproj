@@ -1695,6 +1695,7 @@
     <Compile Include="Web\UI\Controls\NumberBoxBase.cs" />
     <Compile Include="Web\UI\Controls\NumberUpDownGroup.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ContentChannelItemPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\DataViewItemPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\RegistrationInstancePicker.cs" />
     <Compile Include="Web\UI\Controls\PreRegistration\Children.cs" />
     <Compile Include="Web\UI\Controls\PreRegistration\ChildRow.cs" />
