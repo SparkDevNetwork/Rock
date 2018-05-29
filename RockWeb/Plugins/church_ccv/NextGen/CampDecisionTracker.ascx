@@ -50,7 +50,6 @@
                         </div>
                         <div style="padding-top: 10px; padding-bottom: 25px; text-align: center;">
                             <asp:HiddenField runat="server" ID="studentGroupMemberId"></asp:HiddenField>
-                            <asp:HiddenField runat="server" ID="studentAttribValueId"></asp:HiddenField>
                             <div ID="checkbox-wrapper" style="text-align: left;">
                                 <asp:CheckBoxList ID="studentDecisions" runat="server"/>
                             </div>

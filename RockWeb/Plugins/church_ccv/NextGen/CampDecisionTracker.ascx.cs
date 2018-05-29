@@ -149,10 +149,6 @@ namespace RockWeb.Plugins.church_ccv.NextGen
                     if( decisionAV != null )
                     {
                         cblDecisions.SetValues( decisionAV.Value.Split( ',' ) );
-
-                        // and set the hidden field Attribute Value ID so we can directly update this attribute (vs creating a new one)
-                        HiddenField hfAttribValueId = e.Item.FindControl("studentAttribValueId") as HiddenField;
-                        hfAttribValueId.Value = decisionAV.Id.ToString( );
                     }
                 }
             }
@@ -254,28 +250,20 @@ namespace RockWeb.Plugins.church_ccv.NextGen
                 // now write the Attribute Value Id for decisions made--even if it's empty
                 using ( RockContext rockContext = new RockContext( ) )
                 {
-                    // first, see if there's an existing Attribute Value ID to use
-                    var hfAttribValueId = student.Controls.OfType<HiddenField>( ).Where( c => c.ID == "studentAttribValueId" ).FirstOrDefault( );
+                    // first, see if there's an existing Attribute Value ID to use. It will be an AttributeValue
+                    // who's EntityId is the student's group member ID, and who's AttributeId is the DecisionMade ID.
 
-                    int attribValueId = 0;
-                    int.TryParse( hfAttribValueId.Value, out attribValueId );
-                    
+                    // first get the hidden field holding this student's group member Id
+                    var hfGroupMemberId = student.Controls.OfType<HiddenField>( ).Where( c => c.ID == "studentGroupMemberId" ).FirstOrDefault( );
+                    int groupMemberId = int.Parse( hfGroupMemberId.Value );
+
+                    // now load the attribute, if it exists
                     AttributeValueService avService = new AttributeValueService( rockContext );
-                    AttributeValue avItem = null;
+                    AttributeValue avItem = avService.Queryable( ).Where( av => av.EntityId == groupMemberId && av.AttributeId == sDecisionsMade_AttributeId ).SingleOrDefault( );
 
-                    // if we have a valid ID, load that attribute value
-                    if( attribValueId > 0 )
+                    // if it doesn't exist, we'll create a new attribute value (which is tied to the group member ID)
+                    if( avItem == null )
                     {
-                        avService.TryGet( attribValueId, out avItem );
-                    }
-                    else
-                    {
-                        // otherwise, we'll create a new attribute value (which is tied to the group member ID)
-
-                        // first get the hidden field holding this student's group member Id
-                        var hfGroupMemberId = student.Controls.OfType<HiddenField>( ).Where( c => c.ID == "studentGroupMemberId" ).FirstOrDefault( );
-                        int groupMemberId = int.Parse( hfGroupMemberId.Value );
-
                         // now create a new attribute value tied to the group member, and of attribute type "Decisions Made"
                         avItem = new AttributeValue( );
                         avItem.EntityId = groupMemberId;
