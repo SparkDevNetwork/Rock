@@ -78,7 +78,7 @@ namespace RockWeb.Blocks.Cms
         private readonly string OUTPUT_CACHE_KEY = "Output";
 
         private const string CACHE_TAG_LIST = @"
-            SELECT CAST([DefinedValue].[Id] AS VARCHAR) AS [Value], [DefinedValue].[Value] AS [Text]
+            SELECT CAST([DefinedValue].[Value] AS VARCHAR) AS [Value], [DefinedValue].[Value] AS [Text]
             FROM[DefinedType]
             JOIN[DefinedValue] ON[DefinedType].[Id] = [DefinedValue].[DefinedTypeId]
             WHERE[DefinedType].[Guid] = 'BDF73089-9154-40C1-90E4-74518E9937DC'";
