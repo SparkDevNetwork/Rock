@@ -13,13 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
-using System.Text;
-using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
@@ -35,6 +34,10 @@ using Rock.Web.UI.Controls;
 [Description( "Block used to view cache statistics and clear the existing cache." )]
 public partial class CacheManager : RockBlock
 {
+    /// <summary>
+    /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+    /// </summary>
+    /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
     protected override void OnInit( EventArgs e )
     {
         base.OnInit( e );
@@ -56,6 +59,11 @@ public partial class CacheManager : RockBlock
         }
     }
 
+    /// <summary>
+    /// Handles the Load event of the Page control.
+    /// </summary>
+    /// <param name="sender">The source of the event.</param>
+    /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
     protected void Page_Load( object sender, EventArgs e )
     {
         ClearNotifications();
@@ -69,6 +77,10 @@ public partial class CacheManager : RockBlock
     }
 
     #region Grid
+
+    /// <summary>
+    /// Binds the grid.
+    /// </summary>
     private void BindGrid()
     {
         int cacheTagDefinedTypeId = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.CACHE_TAGS ).Id;
@@ -81,7 +93,7 @@ public partial class CacheManager : RockBlock
         foreach( var tag in cacheTags )
         {
             // do something here to get linked keys count
-            long linkedKeys = 0;
+            long linkedKeys = RockCache.GetCountOfCachedItemsForTag( tag.Value );
             var row = new CacheTagGridRow
             {
                 TagName = tag.Value,
@@ -97,6 +109,11 @@ public partial class CacheManager : RockBlock
     }
 
 
+    /// <summary>
+    /// Handles the Add event of the gCacheTagList control, shows the add tag modal.
+    /// </summary>
+    /// <param name="sender">The source of the event.</param>
+    /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
     protected void gCacheTagList_Add( object sender, EventArgs e )
     {
         dlgAddTag.Show();
@@ -109,13 +126,17 @@ public partial class CacheManager : RockBlock
     /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
     protected void gCacheTagList_ClearCacheTag( object sender, RowEventArgs e )
     {
-        int definedValueId = e.RowKeyId;
-
-
-
-
+        var definedValueId = e.RowKeyId;
+        var definedValue = CacheDefinedValue.Get( definedValueId );
+        RockCache.RemoveForTags( definedValue.Value );
+        DisplayNotification( nbMessage, string.Format( "Remove Cache command for tab \"{0}\" sent.", definedValue.Value), NotificationBoxType.Success );
     }
 
+    /// <summary>
+    /// Handles the GridRebind event of the gCacheTagList control.
+    /// </summary>
+    /// <param name="sender">The source of the event.</param>
+    /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
     protected void gCacheTagList_GridRebind( object sender, EventArgs e )
     {
         BindGrid();
@@ -123,6 +144,12 @@ public partial class CacheManager : RockBlock
 
     #endregion
 
+    /// <summary>
+    /// Displays the notification.
+    /// </summary>
+    /// <param name="notificationBox">The notification box.</param>
+    /// <param name="message">The message.</param>
+    /// <param name="notificationBoxType">Type of the notification box.</param>
     protected void DisplayNotification( NotificationBox notificationBox, string message, NotificationBoxType notificationBoxType )
     {
         notificationBox.Text = message;
@@ -158,6 +185,8 @@ public partial class CacheManager : RockBlock
         {
             ddlCacheTypes.Items.Add( new ListItem( cacheItemStat.Name, cacheItemStat.Name ) );
         }
+
+
     }
 
     /// <summary>
@@ -242,6 +271,12 @@ public partial class CacheManager : RockBlock
         }
     }
 
+    /// <summary>
+    /// Verifies tag name is valid and unique.
+    /// </summary>
+    /// <returns>
+    ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+    /// </returns>
     private bool IsValid()
     {
         string tagName = tbTagName.Text.Trim();

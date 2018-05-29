@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Newtonsoft.Json;
 
 namespace Rock.Cache
@@ -27,6 +28,7 @@ namespace Rock.Cache
     {
         private static readonly object _obj = new object();
         private static List<IRockCacheManager> _allManagers;
+        private const string CACHE_TAG_REGION_NAME = "cachetags";
 
         #region Private Static Methods
 
@@ -208,7 +210,7 @@ namespace Rock.Cache
         public static void AddOrUpdate( string key, string region, object obj, DateTime expiration )
         {
             var timespan = expiration.Subtract( RockDateTime.Now );
-            AddOrUpdate( key, region, obj, timespan );
+            AddOrUpdate( key, region, obj, timespan, string.Empty );
         }
 
         /// <summary>
@@ -220,6 +222,17 @@ namespace Rock.Cache
         /// <param name="expiration">The expiration.</param>
         public static void AddOrUpdate( string key, string region, object obj, TimeSpan expiration )
         {
+            AddOrUpdate( key, region, obj, expiration, string.Empty );
+        }
+
+        public static void AddOrUpdate( string key, string region, object obj, DateTime expiration, string cacheTags )
+        {
+            var timespan = expiration.Subtract( RockDateTime.Now );
+            AddOrUpdate( key, region, obj, timespan, cacheTags );
+        }
+
+        public static void AddOrUpdate( string key, string region, object obj, TimeSpan expiration, string cacheTags )
+        {
             if ( region.IsNotNullOrWhitespace() )
             {
                 RockCacheManager<object>.Instance.AddOrUpdate( key, region, obj, expiration );
@@ -227,6 +240,21 @@ namespace Rock.Cache
             else
             {
                 RockCacheManager<object>.Instance.AddOrUpdate( key, obj, expiration );
+            }
+
+            // Add the tag here!
+            if( cacheTags.IsNotNullOrWhitespace() )
+            {
+                var cacheTagList = cacheTags.Split( ',' );
+                foreach( var cacheTag in cacheTagList )
+                {
+                    var value = RockCacheManager<List<string>>.Instance.Cache.Get( cacheTag, CACHE_TAG_REGION_NAME ) ?? new List<string>();
+                    if ( value.FirstOrDefault( v => v.Contains( key ) ) == null )
+                    {
+                        value.Add( key );
+                        RockCacheManager<List<string>>.Instance.AddOrUpdate( cacheTag, CACHE_TAG_REGION_NAME, value );
+                    }
+                }
             }
         }
 
@@ -267,6 +295,23 @@ namespace Rock.Cache
         }
 
         /// <summary>
+        /// Removes all items from cache for comma seperated list of cache tags
+        /// </summary>
+        /// <param name="cacheTag">The cache tag.</param>
+        public static void RemoveForTags( string cacheTags )
+        {
+            var cacheTagList = cacheTags.Split( ',' );
+            foreach ( var cacheTag in cacheTagList )
+            {
+                var cachedItemKeys = RockCacheManager<List<string>>.Instance.Cache.Get( cacheTag, CACHE_TAG_REGION_NAME ) ?? new List<string>();
+                foreach ( var key in cachedItemKeys )
+                {
+                    Remove( key );
+                }
+            }
+        }
+
+        /// <summary>
         /// Clears all cached items (MemoryCache, Authorizations, EntityAttributes, CacheSite, TriggerCache).
         /// </summary>
         /// <returns></returns>
@@ -286,16 +331,31 @@ namespace Rock.Cache
         }
 
         /// <summary>
+        /// Clears all of the cached items for the type name.
+        /// </summary>
+        /// <param name="cacheTypeName">Name of the cache type.</param>
+        /// <returns></returns>
+        public static string ClearCachedItemsForType( string cacheTypeName )
+        {
+            if ( _allManagers == null )
+            {
+                return "Nothing to clear";
+            }
+            if ( cacheTypeName.StartsWith( "Cache" ) )
+            {
+                return ClearCachedItemsForType( Type.GetType( $"Rock.Cache.{cacheTypeName},Rock" ) );
+            }
+
+            return ClearCachedItemsForSystemType( cacheTypeName );
+        }
+
+        /// <summary>
         /// Clears all of the cached items for the type.
         /// </summary>
         /// <param name="cacheType">Type of the cache.</param>
         /// <returns></returns>
         public static string ClearCachedItemsForType( Type cacheType )
         {
-            if ( _allManagers == null )
-            {
-                return "Nothing to clear";
-            }
             
             Type rockCacheManagerType = typeof( RockCacheManager<> ).MakeGenericType( new Type[]{ cacheType } );
 
@@ -311,9 +371,36 @@ namespace Rock.Cache
             return $"Nothing to clear for {cacheType.Name}.";
         }
 
-        public static string ClearCachedItemsForType( string cacheTypeName )
+        public static string ClearCachedItemsForSystemType( string cacheTypeName )
         {
-            return ClearCachedItemsForType( Type.GetType( $"Rock.Cache.{cacheTypeName},Rock" ) );
+            switch ( cacheTypeName )
+            {
+                case "System.String":
+                    RockCacheManager<List<string>>.Instance.Clear();
+                    return $"Cache for {cacheTypeName} cleared.";
+
+                case "System.Int32":
+                    RockCacheManager<int?>.Instance.Clear();
+                    return $"Cache for {cacheTypeName} cleared.";
+
+                case "Object":
+                    RockCacheManager<object>.Instance.Clear();
+                    return $"Cache for {cacheTypeName} cleared.";
+
+                default:
+                    return $"Nothing to clear for {cacheTypeName}.";
+            }
+        }
+
+        /// <summary>
+        /// Gets the count of cached items for tag.
+        /// </summary>
+        /// <param name="cacheTag">The cache tag.</param>
+        /// <returns></returns>
+        public static long GetCountOfCachedItemsForTag( string cacheTag )
+        {
+            var cachedItemKeys = RockCacheManager<List<string>>.Instance.Cache.Get( cacheTag, CACHE_TAG_REGION_NAME ) ?? new List<string>();
+            return cachedItemKeys.Count();
         }
 
         /// <summary>
@@ -364,6 +451,30 @@ namespace Rock.Cache
             return cacheStats;
         }
 
+        public static CacheItemStatistics GetStatForSystemType( string cacheTypeName )
+        {
+            var cacheStats = new CacheItemStatistics( string.Empty );
+            if ( _allManagers == null )
+            {
+                return cacheStats;
+            }
+
+            if ( cacheTypeName == "System.String" )
+            {
+                return RockCacheManager<List<string>>.Instance.GetStatistics();
+            }
+            else if ( cacheTypeName == "System.Int32")
+            {
+                return RockCacheManager<int?>.Instance.GetStatistics();
+            }
+            else if( cacheTypeName == "Object" )
+            {
+                return RockCacheManager<object>.Instance.GetStatistics();
+            }
+
+            return cacheStats;
+        }
+
         /// <summary>
         /// Gets the statistics for the given type name.
         /// </summary>
@@ -371,7 +482,11 @@ namespace Rock.Cache
         /// <returns></returns>
         public static CacheItemStatistics GetStatisticsForType( string cacheTypeName )
         {
-            return GetStatisticsForType( Type.GetType( $"Rock.Cache.{cacheTypeName},Rock" ) );
+            if ( cacheTypeName.StartsWith( "Cache" ) )
+            {
+                return GetStatisticsForType( Type.GetType( $"Rock.Cache.{cacheTypeName},Rock" ) );
+            }
+            return GetStatForSystemType( cacheTypeName );
         }
 
         #endregion

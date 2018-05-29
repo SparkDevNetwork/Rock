@@ -70,7 +70,7 @@ namespace RockWeb.Blocks.Cms
         /// Supplies the CustomCheckboxListField "CacheTags" with a list of tags.
         /// </summary>
         private const string CACHE_TAG_LIST = @"
-            SELECT CAST([DefinedValue].[Id] AS VARCHAR) AS [Value], [DefinedValue].[Value] AS [Text]
+            SELECT CAST([DefinedValue].[Value] AS VARCHAR) AS [Value], [DefinedValue].[Value] AS [Text]
             FROM[DefinedType]
             JOIN[DefinedValue] ON[DefinedType].[Id] = [DefinedValue].[DefinedTypeId]
             WHERE[DefinedType].[Guid] = 'BDF73089-9154-40C1-90E4-74518E9937DC'";
@@ -657,6 +657,7 @@ namespace RockWeb.Blocks.Cms
             string html = string.Empty;
 
             int cacheDuration = GetAttributeValue( "CacheDuration" ).AsInteger();
+            string cacheTags = GetAttributeValue( "CacheTags" ) ?? string.Empty;
             string cachedContent = null;
 
             // only load from the cache if a cacheDuration was specified
@@ -711,7 +712,7 @@ namespace RockWeb.Blocks.Cms
                 // cache content
                 if ( cacheDuration > 0 )
                 {
-                    HtmlContentService.AddCachedContent( this.BlockId, entityValue, html, cacheDuration );
+                    HtmlContentService.AddCachedContent( this.BlockId, entityValue, html, cacheDuration, cacheTags );
                 }
             }
             else
