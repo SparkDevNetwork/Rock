@@ -72,7 +72,7 @@ namespace RockWeb.Blocks.Reporting
 
             btnSecurity.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.Metric ) ).Id;
 
-            ddlDataView.Help = @"NOTE: When using DataView to populate Metrics, multiple partitions is not supported.
+            dvpDataView.Help = @"NOTE: When using DataView to populate Metrics, multiple partitions is not supported.
 
 When using a DataView as the Source Type, the Metric Values will based on the number of records returned by the DataView when the Calculate Metrics job processes this metric.
 
@@ -306,7 +306,7 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
 
             if ( metric.SourceValueTypeId == sourceTypeDataView )
             {
-                metric.DataViewId = ddlDataView.SelectedValueAsId();
+                metric.DataViewId = dvpDataView.SelectedValueAsId();
             }
             else
             {
@@ -924,7 +924,7 @@ The Lava can include Lava merge fields:";
                 ltLastRunDateTime.Text = "Never Run";
             }
 
-            ddlDataView.SetValue( metric.DataViewId );
+            dvpDataView.SetValue( metric.DataViewId );
 
             // make sure the control visibility is set based on SourceType
             ddlSourceType_SelectedIndexChanged( null, new EventArgs() );
@@ -1107,18 +1107,6 @@ The Lava can include Lava merge fields:";
         private void LoadDropDowns()
         {
             RockContext rockContext = new RockContext();
-            ddlDataView.Items.Clear();
-            var dataviewList = new DataViewService( rockContext ).Queryable().Select(
-                s => new
-                {
-                    s.Id,
-                    s.Name
-                } ).OrderBy( a => a.Name ).ToList();
-
-            foreach ( var item in dataviewList )
-            {
-                ddlDataView.Items.Add( new ListItem( item.Name, item.Id.ToString() ) );
-            }
 
             ddlSourceType.Items.Clear();
             foreach ( var item in new DefinedValueService( rockContext ).GetByDefinedTypeGuid( Rock.SystemGuid.DefinedType.METRIC_SOURCE_TYPE.AsGuid() ) )
