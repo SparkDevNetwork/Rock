@@ -28,7 +28,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public class DataViewItemPicker : ItemPicker
+    public class ReportPicker : ItemPicker
     {
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -38,7 +38,7 @@ namespace Rock.Web.UI.Controls
         {
             SetExtraRestParams();
 
-            this.IconCssClass = "fa fa-filter";
+            this.IconCssClass = "fa fa-list-alt";
             base.OnInit( e );
         }
 
@@ -50,7 +50,7 @@ namespace Rock.Web.UI.Controls
             ItemRestUrlExtraParams = $"?getCategorizedItems=true&showCategoriesThatHaveNoChildren=false";
 
             // set the entityType of the category
-            ItemRestUrlExtraParams += "&entityTypeId=" + CacheEntityType.Get<Rock.Model.DataView>().Id;
+            ItemRestUrlExtraParams += "&entityTypeId=" + CacheEntityType.Get<Rock.Model.Report>().Id;
 
             if ( this.CategoryGuids?.Any() == true )
             {
@@ -115,15 +115,15 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Sets the value.
         /// </summary>
-        /// <param name="dataView">The data view.</param>
-        public void SetValue( DataView dataView )
+        /// <param name="report">The report.</param>
+        public void SetValue( Report report )
         {
-            if ( dataView != null )
+            if ( report != null )
             {
-                ItemId = dataView.Id.ToString();
+                ItemId = report.Id.ToString();
 
                 string parentCategoryIds = string.Empty;
-                var parentCategory = dataView.CategoryId.HasValue ? CacheCategory.Get( dataView.CategoryId.Value ) : null;
+                var parentCategory = report.CategoryId.HasValue ? CacheCategory.Get( report.CategoryId.Value ) : null;
                 while ( parentCategory != null )
                 {
                     parentCategoryIds = parentCategory.Id + "," + parentCategoryIds;
@@ -131,7 +131,7 @@ namespace Rock.Web.UI.Controls
                 }
 
                 InitialItemParentIds = parentCategoryIds.TrimEnd( new[] { ',' } );
-                ItemName = dataView.Name;
+                ItemName = report.Name;
             }
             else
             {
@@ -143,24 +143,24 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Sets the values.
         /// </summary>
-        /// <param name="dataViews">The data views.</param>
-        public void SetValues( IEnumerable<DataView> dataViews )
+        /// <param name="reports">The reports.</param>
+        public void SetValues( IEnumerable<Report> reports )
         {
-            var dataViewList = dataViews.ToList();
+            var reportList = reports.ToList();
 
-            if ( dataViewList.Any() )
+            if ( reportList.Any() )
             {
                 var ids = new List<string>();
                 var names = new List<string>();
                 var parentCategoryIds = string.Empty;
 
-                foreach ( var dataView in dataViewList )
+                foreach ( var report in reportList )
                 {
-                    if ( dataView != null )
+                    if ( report != null )
                     {
-                        ids.Add( dataView.Id.ToString() );
-                        names.Add( dataView.Name );
-                        var parentCategory = dataView.Category;
+                        ids.Add( report.Id.ToString() );
+                        names.Add( report.Name );
+                        var parentCategory = report.Category;
 
                         while ( parentCategory != null )
                         {
@@ -186,8 +186,8 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected override void SetValueOnSelect()
         {
-            var dataView = new DataViewService( new RockContext() ).Get( ItemId.AsInteger() );
-            SetValue( dataView );
+            var report = new ReportService( new RockContext() ).Get( ItemId.AsInteger() );
+            SetValue( report );
         }
 
         /// <summary>
@@ -195,8 +195,8 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected override void SetValuesOnSelect()
         {
-            var dataViews = new DataViewService( new RockContext() ).Queryable().Where( g => ItemIds.Contains( g.Id.ToString() ) );
-            this.SetValues( dataViews );
+            var reports = new ReportService( new RockContext() ).Queryable().Where( g => ItemIds.Contains( g.Id.ToString() ) );
+            this.SetValues( reports );
         }
     }
 }
