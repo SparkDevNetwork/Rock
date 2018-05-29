@@ -363,7 +363,7 @@ namespace Rock.Reporting
             if ( fieldType != null && ( !limitToFilterableAttributes || fieldType.Field.HasFilterControl() ) )
             {
                 entityField = new EntityField( fieldName, FieldKind.Attribute, typeof( string ), attribute.Guid, fieldType );
-                entityField.Title = attribute.Name.SplitCase();
+                entityField.Title = attribute.Name;
                 entityField.TitleWithoutQualifier = entityField.Title;
 
                 foreach ( var config in attribute.QualifierValues )
