@@ -47,9 +47,6 @@ namespace Rock.Client
         public bool? DidAttend { get; set; }
 
         /// <summary />
-        public bool? DidNotOccur { get; set; }
-
-        /// <summary />
         public DateTime? EndDateTime { get; set; }
 
         /// <summary />
@@ -58,12 +55,6 @@ namespace Rock.Client
         /// <summary />
         public string ForeignKey { get; set; }
 
-        /// <summary />
-        public int? GroupId { get; set; }
-
-        /// <summary />
-        public int? LocationId { get; set; }
-
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
@@ -71,6 +62,9 @@ namespace Rock.Client
 
         /// <summary />
         public string Note { get; set; }
+
+        /// <summary />
+        public int OccurrenceId { get; set; }
 
         /// <summary />
         public int? PersonAliasId { get; set; }
@@ -83,9 +77,6 @@ namespace Rock.Client
 
         /// <summary />
         public Rock.Client.Enums.RSVP RSVP { get; set; }
-
-        /// <summary />
-        public int? ScheduleId { get; set; }
 
         /// <summary />
         public int? SearchResultGroupId { get; set; }
@@ -136,19 +127,16 @@ namespace Rock.Client
             this.CampusId = source.CampusId;
             this.DeviceId = source.DeviceId;
             this.DidAttend = source.DidAttend;
-            this.DidNotOccur = source.DidNotOccur;
             this.EndDateTime = source.EndDateTime;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.GroupId = source.GroupId;
-            this.LocationId = source.LocationId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Note = source.Note;
+            this.OccurrenceId = source.OccurrenceId;
             this.PersonAliasId = source.PersonAliasId;
             this.Processed = source.Processed;
             this.QualifierValueId = source.QualifierValueId;
             this.RSVP = source.RSVP;
-            this.ScheduleId = source.ScheduleId;
             this.SearchResultGroupId = source.SearchResultGroupId;
             this.SearchTypeValueId = source.SearchTypeValueId;
             this.SearchValue = source.SearchValue;
@@ -179,9 +167,6 @@ namespace Rock.Client
 
         /// <summary />
         public DefinedValue SearchTypeValue { get; set; }
-
-        /// <summary />
-        public DateTime SundayDate { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

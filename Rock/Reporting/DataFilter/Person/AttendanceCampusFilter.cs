@@ -401,13 +401,13 @@ function() {
             if ( dateRange.Start.HasValue )
             {
                 var startDate = dateRange.Start.Value;
-                attendanceQry = attendanceQry.Where( a => a.StartDateTime >= startDate );
+                attendanceQry = attendanceQry.Where( a => a.Occurrence.OccurrenceDate >= startDate );
             }
 
             if ( dateRange.End.HasValue )
             {
                 var endDate = dateRange.End.Value;
-                attendanceQry = attendanceQry.Where( a => a.StartDateTime < endDate );
+                attendanceQry = attendanceQry.Where( a => a.Occurrence.OccurrenceDate < endDate );
             }
 
             var qry = new PersonService( rockContext ).Queryable()

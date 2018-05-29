@@ -44,7 +44,7 @@ namespace Rock.Cache
         /// The content channel type identifier.
         /// </value>
         [DataMember]
-        public int ContentChannelTypeId { get; set; }
+        public int ContentChannelTypeId { get; private set; }
 
         /// <summary>
         /// Gets or sets the name.
@@ -53,7 +53,7 @@ namespace Rock.Cache
         /// The name.
         /// </value>
         [DataMember]
-        public string Name { get; set; }
+        public string Name { get; private set; }
 
         /// <summary>
         /// Gets or sets the description.
@@ -62,7 +62,7 @@ namespace Rock.Cache
         /// The description.
         /// </value>
         [DataMember]
-        public string Description { get; set; }
+        public string Description { get; private set; }
 
         /// <summary>
         /// Gets or sets the icon CSS class.
@@ -71,7 +71,7 @@ namespace Rock.Cache
         /// The icon CSS class.
         /// </value>
         [DataMember]
-        public string IconCssClass { get; set; }
+        public string IconCssClass { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [requires approval].
@@ -80,7 +80,7 @@ namespace Rock.Cache
         ///   <c>true</c> if [requires approval]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool RequiresApproval { get; set; }
+        public bool RequiresApproval { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether items are manually ordered or not
@@ -89,7 +89,7 @@ namespace Rock.Cache
         /// <c>true</c> if [items manually ordered]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool ItemsManuallyOrdered { get; set; }
+        public bool ItemsManuallyOrdered { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether child items are manually ordered or not
@@ -98,7 +98,7 @@ namespace Rock.Cache
         /// <c>true</c> if [child items manually ordered]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool ChildItemsManuallyOrdered { get; set; }
+        public bool ChildItemsManuallyOrdered { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [enable RSS].
@@ -107,7 +107,7 @@ namespace Rock.Cache
         ///   <c>true</c> if [enable RSS]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool EnableRss { get; set; }
+        public bool EnableRss { get; private set; }
 
         /// <summary>
         /// Gets or sets the channel URL.
@@ -116,7 +116,7 @@ namespace Rock.Cache
         /// The channel URL.
         /// </value>
         [DataMember]
-        public string ChannelUrl { get; set; }
+        public string ChannelUrl { get; private set; }
 
         /// <summary>
         /// Gets or sets the item URL.
@@ -125,7 +125,7 @@ namespace Rock.Cache
         /// The item URL.
         /// </value>
         [DataMember]
-        public string ItemUrl { get; set; }
+        public string ItemUrl { get; private set; }
 
         /// <summary>
         /// Gets or sets the number of minutes a feed can stay cached before refreshing it from the source.
@@ -134,7 +134,7 @@ namespace Rock.Cache
         /// The time to live.
         /// </value>
         [DataMember]
-        public int? TimeToLive { get; set; }
+        public int? TimeToLive { get; private set; }
 
         /// <summary>
         /// Gets or sets the type of the control to render when editing content for items of this type.
@@ -143,7 +143,7 @@ namespace Rock.Cache
         /// The type of the item control.
         /// </value>
         [DataMember]
-        public ContentControlType ContentControlType { get; set; }
+        public ContentControlType ContentControlType { get; private set; }
 
         /// <summary>
         /// Gets or sets the root image directory to use when the Html control type is used
@@ -152,7 +152,7 @@ namespace Rock.Cache
         /// The image root directory.
         /// </value>
         [DataMember]
-        public string RootImageDirectory { get; set; }
+        public string RootImageDirectory { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is index enabled.
@@ -161,7 +161,7 @@ namespace Rock.Cache
         /// <c>true</c> if this instance is index enabled; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsIndexEnabled { get; set; }
+        public bool IsIndexEnabled { get; private set; }
 
         /// <summary>
         /// Gets the supported actions.
@@ -187,7 +187,7 @@ namespace Rock.Cache
         /// The child content channel ids.
         /// </value>
         [DataMember]
-        public List<int> ChildContentChannelIds { get; set; }
+        public List<int> ChildContentChannelIds { get; private set; }
 
         /// <summary>
         /// Gets the child Content Channels.
@@ -240,7 +240,7 @@ namespace Rock.Cache
         /// The parent content channel ids.
         /// </value>
         [DataMember]
-        public List<int> ParentContentChannelIds { get; set; }
+        public List<int> ParentContentChannelIds { get; private set; }
 
         /// <summary>
         /// Gets the parent content channels.

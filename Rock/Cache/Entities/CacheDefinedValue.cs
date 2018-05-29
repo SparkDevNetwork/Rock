@@ -39,7 +39,7 @@ namespace Rock.Cache
         ///   <c>true</c> if this instance is system; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsSystem { get; set; }
+        public bool IsSystem { get; private set; }
 
         /// <summary>
         /// Gets or sets the defined type identifier.
@@ -48,7 +48,7 @@ namespace Rock.Cache
         /// The defined type identifier.
         /// </value>
         [DataMember]
-        public int DefinedTypeId { get; set; }
+        public int DefinedTypeId { get; private set; }
 
         /// <summary>
         /// Gets or sets the order.
@@ -57,7 +57,7 @@ namespace Rock.Cache
         /// The order.
         /// </value>
         [DataMember]
-        public int Order { get; set; }
+        public int Order { get; private set; }
 
         /// <summary>
         /// Gets or sets the value.
@@ -66,7 +66,7 @@ namespace Rock.Cache
         /// The value.
         /// </value>
         [DataMember]
-        public string Value { get; set; }
+        public string Value { get; private set; }
 
         /// <summary>
         /// Gets or sets the description.
@@ -75,7 +75,7 @@ namespace Rock.Cache
         /// The description.
         /// </value>
         [DataMember]
-        public string Description { get; set; }
+        public string Description { get; private set; }
 
         #endregion
 

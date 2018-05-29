@@ -43,7 +43,7 @@ namespace Rock.Cache
         /// The defined type id.
         /// </value>
         [DataMember]
-        public int ControllerId { get; set; }
+        public int ControllerId { get; private set; }
 
         /// <summary>
         /// Gets or sets the name.
@@ -52,7 +52,7 @@ namespace Rock.Cache
         /// The name.
         /// </value>
         [DataMember]
-        public string Method { get; set; }
+        public string Method { get; private set; }
 
         /// <summary>
         /// Gets or sets the description.
@@ -61,7 +61,7 @@ namespace Rock.Cache
         /// The description.
         /// </value>
         [DataMember]
-        public string ApiId { get; set; }
+        public string ApiId { get; private set; }
 
         /// <summary>
         /// Gets or sets the path.
@@ -70,7 +70,7 @@ namespace Rock.Cache
         /// The path.
         /// </value>
         [DataMember]
-        public string Path { get; set; }
+        public string Path { get; private set; }
 
         /// <summary>
         /// Gets the type of the field.

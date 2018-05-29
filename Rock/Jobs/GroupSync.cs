@@ -66,6 +66,8 @@ namespace Rock.Jobs
             // Counters for displaying results
             int groupsSynced = 0;
             int groupsChanged = 0;
+            string groupName = string.Empty;
+            string dataViewName = string.Empty;
 
             try
             {
@@ -99,6 +101,9 @@ namespace Rock.Jobs
                         {
                             List<string> errorMessages = new List<string>();
 
+                            dataViewName = sync.SyncDataView.Name;
+                            groupName = sync.Group.Name;
+
                             // Get the person id's from the dataview (source)
                             var personService = new PersonService( rockContext );
                             var parameterExpression = personService.ParameterExpression;
@@ -107,6 +112,13 @@ namespace Rock.Jobs
                                 .Get( parameterExpression, whereExpression )
                                 .Select( q => q.Id )
                                 .ToList();
+                            
+                            // If any error occurred, just skip this sync for now.
+                            if ( errorMessages.Count > 0 )
+                            {
+                                ExceptionLogService.LogException( new Exception( string.Format( "An error occurred while trying to GroupSync group '{0}' and data view '{1}' so the sync was skipped. Error: {2}", groupName, dataViewName, String.Join( ",", errorMessages ) ) ) );
+                                continue;
+                            }
 
                             // Get the person id's in the group (target)
                             var targetPersonIds = new GroupMemberService( rockContext )

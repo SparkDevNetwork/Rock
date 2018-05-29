@@ -272,15 +272,13 @@ namespace Rock.Cache
         /// <returns></returns>
         public static List<string> ClearAllCachedItems()
         {
-            // TODO: Clear all items
-
             var msgs = new List<string>();
 
             // Clear all cached items
             ClearAll();
             msgs.Add( "RockCacheManager has been cleared" );
 
-            //// Clear workflow trigger cache
+            // Clear workflow trigger cache
             CacheWorkflowTriggers.Refresh();
             //msgs.Add( "TriggerCache has been cleared" );
 

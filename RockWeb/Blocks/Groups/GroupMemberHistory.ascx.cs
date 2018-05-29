@@ -290,6 +290,7 @@ namespace RockWeb.Blocks.Groups
                 lGroupTitle.Text = group.Name.FormatAsHtmlTitle();
             }
 
+            lGroupGridTitle.Visible = true;
             lGroupMemberPreHtml.Visible = false;
             lGroupMemberTitle.Visible = false;
 
@@ -387,6 +388,7 @@ namespace RockWeb.Blocks.Groups
                 lGroupMemberTitle.Text = groupMember.ToString().FormatAsHtmlTitle();
                 lGroupMemberPreHtml.Visible = true;
                 lGroupMemberTitle.Visible = true;
+                lGroupGridTitle.Visible = false;
             }
 
             var rockContext = new RockContext();
@@ -398,7 +400,7 @@ namespace RockWeb.Blocks.Groups
 
             string timelineLavaTemplate = this.GetAttributeValue( "TimelineLavaTemplate" );
             string timelineHtml = historyService.GetTimelineHtml( timelineLavaTemplate, primaryEntityType, entityId, null, additionalMergeFields );
-            lTimelineHtml.Text = timelineHtml;
+            lTimelineHtml.Text = "<div class='panel-body'>" + timelineHtml +  "</div>";
         }
 
         #endregion

@@ -103,7 +103,7 @@ namespace RockWeb.Blocks.Prayer
         protected void gPrayerComments_Edit( object sender, RowEventArgs e )
         {
             // NOTE: DataKeys for Grid has two fields "id,entityId"
-            NavigateToLinkedPage( "DetailPage", "noteId", (int)e.RowKeyValues["id"], "prayerRequestId", (int)e.RowKeyValues["entityid"] );
+            NavigateToLinkedPage( "DetailPage", "noteId", (int)e.RowKeyValues["id"], "PrayerRequestId", (int)e.RowKeyValues["entityid"] );
         }
 
         /// <summary>

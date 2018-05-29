@@ -50,7 +50,7 @@ namespace Rock.Cache
         ///   <c>true</c> if this instance is system; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsSystem { get; set; }
+        public bool IsSystem { get; private set; }
 
         /// <summary>
         /// Gets or sets the name.
@@ -59,7 +59,7 @@ namespace Rock.Cache
         /// The name.
         /// </value>
         [DataMember]
-        public string Name { get; set; }
+        public string Name { get; private set; }
 
         /// <summary>
         /// Gets or sets the description.
@@ -68,7 +68,7 @@ namespace Rock.Cache
         /// The description.
         /// </value>
         [DataMember]
-        public string Description { get; set; }
+        public string Description { get; private set; }
 
         /// <summary>
         /// Gets or sets the configured theme. The 'Theme' property will check to see if current request url/cookie has specified a different them and if so return that one
@@ -77,7 +77,7 @@ namespace Rock.Cache
         /// The configured theme.
         /// </value>
         [DataMember]
-        public string ConfiguredTheme { get; set; }
+        public string ConfiguredTheme { get; private set; }
 
         /// <summary>
         /// Gets or sets the theme.
@@ -149,7 +149,7 @@ namespace Rock.Cache
                 return ConfiguredTheme;
             }
 
-            set
+            private set
             {
                 ConfiguredTheme = value;
             }
@@ -162,7 +162,7 @@ namespace Rock.Cache
         /// The default page id.
         /// </value>
         [DataMember]
-        public int? DefaultPageId { get; set; }
+        public int? DefaultPageId { get; private set; }
 
         /// <summary>
         /// Gets or sets the default page route unique identifier.
@@ -171,7 +171,7 @@ namespace Rock.Cache
         /// The default page route unique identifier.
         /// </value>
         [DataMember]
-        public int? DefaultPageRouteId { get; set; }
+        public int? DefaultPageRouteId { get; private set; }
 
         /// <summary>
         /// Gets the default page reference.
@@ -189,7 +189,7 @@ namespace Rock.Cache
         /// The change password page identifier.
         /// </value>
         [DataMember]
-        public int? ChangePasswordPageId { get; set; }
+        public int? ChangePasswordPageId { get; private set; }
 
         /// <summary>
         /// Gets or sets the change password page route identifier.
@@ -198,7 +198,7 @@ namespace Rock.Cache
         /// The change password page route identifier.
         /// </value>
         [DataMember]
-        public int? ChangePasswordPageRouteId { get; set; }
+        public int? ChangePasswordPageRouteId { get; private set; }
 
         /// <summary>
         /// Gets the change password page reference.
@@ -215,7 +215,7 @@ namespace Rock.Cache
         /// The 404 page id.
         /// </value>
         [DataMember]
-        public int? PageNotFoundPageId { get; set; }
+        public int? PageNotFoundPageId { get; private set; }
 
         /// <summary>
         /// Gets or sets the 404 page route unique identifier.
@@ -224,7 +224,7 @@ namespace Rock.Cache
         /// The 404 page route unique identifier.
         /// </value>
         [DataMember]
-        public int? PageNotFoundPageRouteId { get; set; }
+        public int? PageNotFoundPageRouteId { get; private set; }
 
         /// <summary>
         /// Gets the page not found page reference.
@@ -241,7 +241,7 @@ namespace Rock.Cache
         /// The login page id.
         /// </value>
         [DataMember]
-        public int? LoginPageId { get; set; }
+        public int? LoginPageId { get; private set; }
 
         /// <summary>
         /// Gets or sets the login page route id.
@@ -250,7 +250,7 @@ namespace Rock.Cache
         /// The login page route id.
         /// </value>
         [DataMember]
-        public int? LoginPageRouteId { get; set; }
+        public int? LoginPageRouteId { get; private set; }
 
         /// <summary>
         /// Gets the login page reference.
@@ -267,7 +267,7 @@ namespace Rock.Cache
         /// The communication page identifier.
         /// </value>
         [DataMember]
-        public int? CommunicationPageId { get; set; }
+        public int? CommunicationPageId { get; private set; }
 
         /// <summary>
         /// Gets or sets the communication page route identifier.
@@ -276,7 +276,7 @@ namespace Rock.Cache
         /// The communication page route identifier.
         /// </value>
         [DataMember]
-        public int? CommunicationPageRouteId { get; set; }
+        public int? CommunicationPageRouteId { get; private set; }
 
         /// <summary>
         /// Gets the communication page reference.
@@ -293,7 +293,7 @@ namespace Rock.Cache
         /// The registration page id.
         /// </value>
         [DataMember]
-        public int? RegistrationPageId { get; set; }
+        public int? RegistrationPageId { get; private set; }
 
         /// <summary>
         /// Gets or sets the registration page route id.
@@ -302,7 +302,7 @@ namespace Rock.Cache
         /// The registration page route id.
         /// </value>
         [DataMember]
-        public int? RegistrationPageRouteId { get; set; }
+        public int? RegistrationPageRouteId { get; private set; }
 
         /// <summary>
         /// Gets the registration page reference.
@@ -319,7 +319,7 @@ namespace Rock.Cache
         /// The error page.
         /// </value>
         [DataMember]
-        public string ErrorPage { get; set; }
+        public string ErrorPage { get; private set; }
 
         /// <summary>
         /// Gets or sets the google analytics code.
@@ -328,7 +328,7 @@ namespace Rock.Cache
         /// The google analytics code.
         /// </value>
         [DataMember]
-        public string GoogleAnalyticsCode { get; set; }
+        public string GoogleAnalyticsCode { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [enable mobile redirect].
@@ -337,7 +337,7 @@ namespace Rock.Cache
         /// <c>true</c> if [enable mobile redirect]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool EnableMobileRedirect { get; set; }
+        public bool EnableMobileRedirect { get; private set; }
 
         /// <summary>
         /// Gets or sets the mobile page identifier.
@@ -346,7 +346,7 @@ namespace Rock.Cache
         /// The mobile page identifier.
         /// </value>
         [DataMember]
-        public int? MobilePageId { get; set; }
+        public int? MobilePageId { get; private set; }
 
         /// <summary>
         /// Gets or sets the external URL.
@@ -355,7 +355,7 @@ namespace Rock.Cache
         /// The external URL.
         /// </value>
         [DataMember]
-        public string ExternalUrl { get; set; }
+        public string ExternalUrl { get; private set; }
 
         /// <summary>
         /// Gets or sets the allowed frame domains.
@@ -364,7 +364,7 @@ namespace Rock.Cache
         /// The allowed frame domains.
         /// </value>
         [DataMember]
-        public string AllowedFrameDomains { get; set; }
+        public string AllowedFrameDomains { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [redirect tablets].
@@ -373,7 +373,7 @@ namespace Rock.Cache
         ///   <c>true</c> if [redirect tablets]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool RedirectTablets { get; set; }
+        public bool RedirectTablets { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether page views will be stored in the Interaction tables
@@ -381,7 +381,7 @@ namespace Rock.Cache
         /// <value>
         ///   <c>true</c> if [enable page views]; otherwise, <c>false</c>.
         /// </value>
-        public bool EnablePageViews { get; set; }
+        public bool EnablePageViews { get; private set; }
 
         /// <summary>
         /// Gets or sets the content of the page header.
@@ -390,7 +390,7 @@ namespace Rock.Cache
         /// The content of the page header.
         /// </value>
         [DataMember]
-        public string PageHeaderContent { get; set; }
+        public string PageHeaderContent { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [allow indexing].
@@ -399,7 +399,7 @@ namespace Rock.Cache
         ///   <c>true</c> if [allow indexing]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool AllowIndexing { get; set; }
+        public bool AllowIndexing { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is index enabled.
@@ -408,7 +408,7 @@ namespace Rock.Cache
         /// <c>true</c> if this instance is index enabled; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsIndexEnabled { get; set; }
+        public bool IsIndexEnabled { get; private set; }
 
         /// <summary>
         /// Gets or sets the index starting location.
@@ -417,7 +417,7 @@ namespace Rock.Cache
         /// The index starting location.
         /// </value>
         [DataMember]
-        public string IndexStartingLocation { get; set; }
+        public string IndexStartingLocation { get; private set; }
 
         /// <summary>
         /// Gets the default page.
@@ -442,7 +442,7 @@ namespace Rock.Cache
         ///   <c>true</c> if [requires encryption]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool RequiresEncryption { get; set; }
+        public bool RequiresEncryption { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this site should be available to be used for shortlinks (the shortlink can still reference url of other sites).
@@ -451,7 +451,7 @@ namespace Rock.Cache
         ///   <c>true</c> if [enabled for shortening]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool EnabledForShortening { get; set; } = true;
+        public bool EnabledForShortening { get; private set; } = true;
 
         /// <summary>
         /// Gets or sets the favicon binary file identifier.
@@ -460,7 +460,7 @@ namespace Rock.Cache
         /// The favicon binary file identifier.
         /// </value>
         [DataMember]
-        public int? FavIconBinaryFileId { get; set; }
+        public int? FavIconBinaryFileId { get; private set; }
 
         /// <summary>
         /// Gets or sets the default domain URI.
@@ -469,7 +469,7 @@ namespace Rock.Cache
         /// The default domain URI.
         /// </value>
         [DataMember]
-        public Uri DefaultDomainUri { get; set; }
+        public Uri DefaultDomainUri { get; private set; }
         #endregion
 
         #region Public Methods

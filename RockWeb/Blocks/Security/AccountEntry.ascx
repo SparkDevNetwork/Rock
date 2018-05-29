@@ -103,7 +103,7 @@
                         <legend>Phone Numbers</legend>
                         <asp:Repeater ID="rPhoneNumbers" runat="server">
                                     <ItemTemplate>
-                                        <div class="form-group phonegroup">
+                                        <div class="form-group phonegroup clearfix">
                                             <div class="control-label col-sm-1 phonegroup-label"><%# Eval("NumberTypeValue.Value")  %>&nbsp;</div>
                                             <div class="controls col-sm-11 phonegroup-number">
                                                 <div class="row">

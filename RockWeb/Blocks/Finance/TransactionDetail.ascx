@@ -16,7 +16,8 @@
 
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-credit-card"></i>Financial Transaction
+                    <i class="fa fa-credit-card"></i>
+                    Financial Transaction
                 </h1>
                 <div class="panel-labels">
                     <Rock:HighlightLabel ID="hlBatchId" LabelType="Info" runat="server" />

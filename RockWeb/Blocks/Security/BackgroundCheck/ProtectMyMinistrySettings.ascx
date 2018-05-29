@@ -62,6 +62,7 @@
 
                     <div class="actions">
                         <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CssClass="btn btn-primary" OnClick="lbEdit_Click" />
+                        <asp:LinkButton ID="btnDefault" runat="server" CssClass="btn btn-primary" OnClick="btnDefault_Click">Enable As Default Background Check Provider</asp:LinkButton>
                     </div>
                 </div>
 

@@ -82,7 +82,7 @@ namespace Rock.Jobs
                 var groupService = new GroupService( rockContext );
                 var groupMemberService = new GroupMemberService( rockContext );
                 var scheduleService = new ScheduleService( rockContext );
-                var attendanceService = new AttendanceService( rockContext );
+                var attendanceOccurrenceService = new AttendanceOccurrenceService( rockContext );
 
                 var startDate = dates.Min();
                 var endDate = dates.Max().AddDays( 1 );
@@ -158,22 +158,24 @@ namespace Rock.Jobs
                 }
 
                 // Remove any 'occurrenes' that already have attendance data entered
-                foreach ( var occurrence in attendanceService
+                foreach ( var occurrence in attendanceOccurrenceService
                     .Queryable().AsNoTracking()
                     .Where( a =>
-                        a.StartDateTime >= startDate &&
-                        a.StartDateTime < endDate &&
+                        a.OccurrenceDate >= startDate &&
+                        a.OccurrenceDate < endDate &&
+                        a.GroupId.HasValue &&
                         occurrences.Keys.Contains( a.GroupId.Value ) &&
-                        a.ScheduleId.HasValue )
+                        a.ScheduleId.HasValue &&
+                        ( a.Attendees.Any() || ( a.DidNotOccur.HasValue && a.DidNotOccur.Value ) ) )
                     .Select( a => new
                     {
                         GroupId = a.GroupId.Value,
-                        a.StartDateTime
+                        a.OccurrenceDate
                     } )
                     .Distinct()
                     .ToList() )
                 {
-                    occurrences[occurrence.GroupId].RemoveAll( d => d.Date == occurrence.StartDateTime.Date );
+                    occurrences[occurrence.GroupId].RemoveAll( d => d.Date == occurrence.OccurrenceDate.Date );
                 }
 
                 // Get the groups that have occurrences

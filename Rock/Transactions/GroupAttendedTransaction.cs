@@ -65,14 +65,23 @@ namespace Rock.Transactions
 
                     if ( valid )
                     {
-                        // Save the values
-                        GroupId = attendance.GroupId;
-                        PersonAliasId = attendance.PersonAliasId;
-                        AttendanceDateTime = attendance.StartDateTime;
-
-                        if ( attendance.Group != null )
+                        var occ = attendance.Occurrence;
+                        if (occ == null )
                         {
-                            GroupTypeId = attendance.Group.GroupTypeId;
+                            occ = new AttendanceOccurrenceService(new RockContext()).Get(attendance.OccurrenceId);
+                        }
+
+                        if (occ != null)
+                        {
+                            // Save the values
+                            GroupId = occ.GroupId;
+                            AttendanceDateTime = occ.OccurrenceDate;
+                            PersonAliasId = attendance.PersonAliasId;
+
+                            if (occ.Group != null)
+                            {
+                                GroupTypeId = occ.Group.GroupTypeId;
+                            }
                         }
                     }
                 }
@@ -162,15 +171,13 @@ namespace Rock.Transactions
 
                                         // Check if there are any other attendances for this group/person and if so, do not launch workflow
                                         if ( new AttendanceService( rockContext )
-                                            .Queryable().AsNoTracking()
-                                            .Where( a =>
-                                                a.GroupId.HasValue &&
-                                                a.GroupId.Value == GroupId.Value &&
+                                            .Queryable().AsNoTracking(  )
+                                            .Count(a => a.Occurrence.GroupId.HasValue &&
+                                                a.Occurrence.GroupId.Value == GroupId.Value &&
                                                 a.PersonAlias != null &&
                                                 a.PersonAlias.PersonId == personId &&
                                                 a.DidAttend.HasValue &&
-                                                a.DidAttend.Value )
-                                            .Count() > 1 )
+                                                a.DidAttend.Value) > 1 )
                                         {
                                             launchIt = false;
                                         }

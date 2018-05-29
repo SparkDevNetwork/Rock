@@ -31,7 +31,7 @@ namespace Rock.Cache
         /// <value>
         /// The identifier.
         /// </value>
-        int Id { get; set; }
+        int Id { get; }
 
         /// <summary>
         /// Gets or sets the unique identifier.
@@ -39,7 +39,7 @@ namespace Rock.Cache
         /// <value>
         /// The unique identifier.
         /// </value>
-        Guid Guid { get; set; }
+        Guid Guid { get; }
 
         /// <summary>
         /// Gets or sets the foreign identifier.
@@ -47,7 +47,7 @@ namespace Rock.Cache
         /// <value>
         /// The foreign identifier.
         /// </value>
-        int? ForeignId { get; set; }
+        int? ForeignId { get; }
 
         /// <summary>
         /// Gets or sets the foreign unique identifier.
@@ -55,7 +55,7 @@ namespace Rock.Cache
         /// <value>
         /// The foreign unique identifier.
         /// </value>
-        Guid? ForeignGuid { get; set; }
+        Guid? ForeignGuid { get; }
 
         /// <summary>
         /// Gets or sets the foreign key.
@@ -63,7 +63,7 @@ namespace Rock.Cache
         /// <value>
         /// The foreign key.
         /// </value>
-        string ForeignKey { get; set; }
+        string ForeignKey { get; }
 
         /// <summary>
         /// Set's the cached objects properties from the model/entities properties.

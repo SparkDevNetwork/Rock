@@ -98,6 +98,7 @@ namespace Rock.Jobs
                         || a.Group.ScheduleId != a.GroupHistorical.ScheduleId
                         || ( a.Group.ScheduleId.HasValue && ( a.Group.Schedule.ModifiedDateTime != a.GroupHistorical.ScheduleModifiedDateTime ) )
                         || a.Group.Description != a.GroupHistorical.Description
+                        || a.Group.StatusValueId != a.GroupHistorical.StatusValueId
                         || a.Group.IsArchived != a.GroupHistorical.IsArchived
                         || a.Group.ArchivedDateTime != a.GroupHistorical.ArchivedDateTime
                         || a.Group.ArchivedByPersonAliasId != a.GroupHistorical.ArchivedByPersonAliasId

@@ -205,6 +205,38 @@
     <Compile Include="Migrations\201805072022522_GroupHistory.Designer.cs">
       <DependentUpon>201805072022522_GroupHistory.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201805152055059_AttendanceOccurrence.cs" />
+    <Compile Include="Migrations\201805152055059_AttendanceOccurrence.Designer.cs">
+      <DependentUpon>201805152055059_AttendanceOccurrence.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201805171836577_Rollup_0517.cs" />
+    <Compile Include="Migrations\201805171836577_Rollup_0517.Designer.cs">
+      <DependentUpon>201805171836577_Rollup_0517.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201805172159583_GroupStatusValue.cs" />
+    <Compile Include="Migrations\201805172159583_GroupStatusValue.Designer.cs">
+      <DependentUpon>201805172159583_GroupStatusValue.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201805182021328_Rollup0518.cs" />
+    <Compile Include="Migrations\201805182021328_Rollup0518.Designer.cs">
+      <DependentUpon>201805182021328_Rollup0518.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201805211735573_Homepage.cs" />
+    <Compile Include="Migrations\201805211735573_Homepage.Designer.cs">
+      <DependentUpon>201805211735573_Homepage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201805211952360_FamilyMembers.cs" />
+    <Compile Include="Migrations\201805211952360_FamilyMembers.Designer.cs">
+      <DependentUpon>201805211952360_FamilyMembers.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201805231625436_NotesUpdates.cs" />
+    <Compile Include="Migrations\201805231625436_NotesUpdates.Designer.cs">
+      <DependentUpon>201805231625436_NotesUpdates.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201805251707072_AddDefinedTypeColorSwatches.cs" />
+    <Compile Include="Migrations\201805251707072_AddDefinedTypeColorSwatches.Designer.cs">
+      <DependentUpon>201805251707072_AddDefinedTypeColorSwatches.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2888,6 +2920,30 @@
     <EmbeddedResource Include="Migrations\201805072022522_GroupHistory.resx">
       <DependentUpon>201805072022522_GroupHistory.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201805152055059_AttendanceOccurrence.resx">
+      <DependentUpon>201805152055059_AttendanceOccurrence.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201805171836577_Rollup_0517.resx">
+      <DependentUpon>201805171836577_Rollup_0517.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201805172159583_GroupStatusValue.resx">
+      <DependentUpon>201805172159583_GroupStatusValue.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201805182021328_Rollup0518.resx">
+      <DependentUpon>201805182021328_Rollup0518.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201805211735573_Homepage.resx">
+      <DependentUpon>201805211735573_Homepage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201805211952360_FamilyMembers.resx">
+      <DependentUpon>201805211952360_FamilyMembers.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201805231625436_NotesUpdates.resx">
+      <DependentUpon>201805231625436_NotesUpdates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201805251707072_AddDefinedTypeColorSwatches.resx">
+      <DependentUpon>201805251707072_AddDefinedTypeColorSwatches.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.resx">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
     </EmbeddedResource>
@@ -4887,6 +4943,55 @@
     <Content Include="Migrations\201805072022522_GroupHistory_spCrm_PersonMergeRelationships.sql">
       <DependentUpon>201805072022522_GroupHistory.cs</DependentUpon>
     </Content>
+    <Content Include="Migrations\201805152055059_AttendanceOccurrence_spAnalytics_ETL_Attendance.sql">
+      <DependentUpon>201805152055059_AttendanceOccurrence.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201805152055059_AttendanceOccurrence_spCheckin_AttendanceAnalyticsQuery_AttendeeDates.sql">
+      <DependentUpon>201805152055059_AttendanceOccurrence.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201805152055059_AttendanceOccurrence_spCheckin_AttendanceAnalyticsQuery_AttendeeFirstDates.sql">
+      <DependentUpon>201805152055059_AttendanceOccurrence.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201805152055059_AttendanceOccurrence_spCheckin_AttendanceAnalyticsQuery_AttendeeLastAttendance.sql">
+      <DependentUpon>201805152055059_AttendanceOccurrence.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201805152055059_AttendanceOccurrence_spCheckin_AttendanceAnalyticsQuery_Attendees.sql">
+      <DependentUpon>201805152055059_AttendanceOccurrence.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201805152055059_AttendanceOccurrence_spCheckin_AttendanceAnalyticsQuery_NonAttendees.sql">
+      <DependentUpon>201805152055059_AttendanceOccurrence.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201805152055059_AttendanceOccurrence_spCheckin_BadgeAttendance.sql">
+      <DependentUpon>201805152055059_AttendanceOccurrence.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201805152055059_AttendanceOccurrence_spCheckin_WeeksAttendedInDuration.sql">
+      <DependentUpon>201805152055059_AttendanceOccurrence.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201805152055059_AttendanceOccurrence_spCrm_FamilyAnalyticsAttendance.sql">
+      <DependentUpon>201805152055059_AttendanceOccurrence.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201805152055059_AttendanceOccurrence_spCrm_FamilyAnalyticsEraDataset.sql">
+      <DependentUpon>201805152055059_AttendanceOccurrence.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201805152055059_AttendanceOccurrence_spCrm_FamilyAnalyticsUpdateVisitDates.sql">
+      <DependentUpon>201805152055059_AttendanceOccurrence.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201805152055059_AttendanceOccurrence_vCheckin_Attendance.sql">
+      <DependentUpon>201805152055059_AttendanceOccurrence.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201805152055059_AttendanceOccurrence_vCheckin_GroupTypeAttendance.sql">
+      <DependentUpon>201805152055059_AttendanceOccurrence.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201805171836577_Rollup_0517_CreatePresenceUser.sql">
+      <DependentUpon>201805171836577_Rollup_0517.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201805171836577_Rollup_0517_spAnalytics_ETL_Attendance.sql">
+      <DependentUpon>201805171836577_Rollup_0517.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201805211735573_Homepage_ContentChannel.sql" />
+    <Content Include="Migrations\201805211735573_Homepage_ContentChannel_Down.sql" />
+    <Content Include="Migrations\201805211735573_Homepage_Metrics.sql" />
+    <Content Include="Migrations\201805211735573_Homepage_Metrics_Down.sql" />
     <Content Include="Migrations\Version 7.0\Version 1.7.0\201707182207536_AttendanceAnalyticsQuery_NonAttendees.sql">
       <DependentUpon>201707182207536_PageShortLinks.cs</DependentUpon>
     </Content>

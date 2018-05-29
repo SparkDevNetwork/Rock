@@ -44,7 +44,7 @@ namespace Rock.Cache
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if the WorkflowActivityType is active; otherwise <c>false</c>.
         /// </value>
         [DataMember]
-        public bool? IsActive { get; set; }
+        public bool? IsActive { get; private set; }
 
         /// <summary>
         /// Gets or sets the WorkflowTypeId of the <see cref="Rock.Model.WorkflowType"/> that this WorkflowActivityType belongs to.
@@ -53,7 +53,7 @@ namespace Rock.Cache
         /// A <see cref="System.Int32"/> representing the WorkflowTypeId of the <see cref="Rock.Model.WorkflowType"/> that this WorkflowActivityType belongs to.
         /// </value>
         [DataMember]
-        public int WorkflowTypeId { get; set; }
+        public int WorkflowTypeId { get; private set; }
 
         /// <summary>
         /// Gets or sets the friendly Name of this WorkflowActivityType. This property is required.
@@ -62,7 +62,7 @@ namespace Rock.Cache
         /// A <see cref="System.String"/> representing the friendly name of this WorkflowActivityType
         /// </value>
         [DataMember]
-        public string Name { get; set; }
+        public string Name { get; private set; }
 
         /// <summary>
         /// Gets or sets the description or summary about this WorkflowActivityType.
@@ -71,7 +71,7 @@ namespace Rock.Cache
         /// A <see cref="System.String"/> containing a description or summary about this WorkflowActivityType.
         /// </value>
         [DataMember]
-        public string Description { get; set; }
+        public string Description { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating if this WorkflowActivityType is activated with the workflow.
@@ -80,7 +80,7 @@ namespace Rock.Cache
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if this instance is activated with workflow; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsActivatedWithWorkflow { get; set; }
+        public bool IsActivatedWithWorkflow { get; private set; }
 
         /// <summary>
         /// Gets or sets the order that this WorkflowActivityType will be executed in the WorkflowType's process. 
@@ -89,7 +89,7 @@ namespace Rock.Cache
         /// A <see cref="System.Int32"/> indicating the order that this Activity will be executed in the Workflow.
         /// </value>
         [DataMember]
-        public int Order { get; set; }
+        public int Order { get; private set; }
 
         /// <summary>
         /// Gets the type of the workflow.

@@ -96,10 +96,10 @@ namespace RockWeb.Blocks.Cms
                 CachePage currentPage = CachePage.Get( RockPage.PageId );
                 CachePage rootPage = null;
 
-                Guid pageGuid = Guid.Empty;
-                if ( Guid.TryParse( GetAttributeValue( ROOT_PAGE ), out pageGuid ) )
+                Guid? rootPageGuid = GetAttributeValue( ROOT_PAGE ).AsGuidOrNull();
+                if ( rootPageGuid.HasValue && !rootPageGuid.Value.IsEmpty() )
                 {
-                    rootPage = CachePage.Get( pageGuid );
+                    rootPage = CachePage.Get( rootPageGuid.Value );
                 }
 
                 // If a root page was not found, use current page

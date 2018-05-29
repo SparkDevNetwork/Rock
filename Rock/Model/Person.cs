@@ -525,6 +525,15 @@ namespace Rock.Model
         }
         private bool _isLockedAsChild = false;
 
+        /// <summary>
+        /// Gets or sets the deceased date.
+        /// </summary>
+        /// <value>
+        /// The deceased date.
+        /// </value>
+        [DataMember]
+        public DateTime? DeceasedDate { get; set; }
+
         #endregion
 
         #region Constructors

@@ -41,7 +41,7 @@ namespace Rock.Cache
         ///   <c>true</c> if this instance is system; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsSystem { get; set; }
+        public bool IsSystem { get; private set; }
 
         /// <summary>
         /// Gets or sets the name.
@@ -50,7 +50,7 @@ namespace Rock.Cache
         /// The name.
         /// </value>
         [DataMember]
-        public string Name { get; set; }
+        public string Name { get; private set; }
 
         /// <summary>
         /// Gets or sets the description.
@@ -59,7 +59,7 @@ namespace Rock.Cache
         /// The description.
         /// </value>
         [DataMember]
-        public string Description { get; set; }
+        public string Description { get; private set; }
 
         /// <summary>
         /// Gets or sets the assembly.
@@ -68,7 +68,7 @@ namespace Rock.Cache
         /// The assembly.
         /// </value>
         [DataMember]
-        public string Assembly { get; set; }
+        public string Assembly { get; private set; }
 
         /// <summary>
         /// Gets or sets the class.
@@ -77,7 +77,7 @@ namespace Rock.Cache
         /// The class.
         /// </value>
         [DataMember]
-        public string Class { get; set; }
+        public string Class { get; private set; }
 
         /// <summary>
         /// Gets the field.

@@ -182,7 +182,13 @@ namespace RockWeb.Blocks.Core
                     parms += string.Format( "&entityTypeId={0}", cachedEntityType.Id );
                     parms += string.Format( "&includeInactiveItems={0}", ( !tglHideInactiveItems.Checked ).ToTrueFalse() );
 
-                    var rootCategory = CacheCategory.Get( this.GetAttributeValue( "RootCategory" ).AsGuid() );
+                    Guid? rootCategoryGuid = this.GetAttributeValue( "RootCategory" ).AsGuidOrNull();
+
+                    CacheCategory rootCategory = null;
+                    if ( rootCategoryGuid.HasValue )
+                    {
+                        rootCategory = CacheCategory.Get( rootCategoryGuid.Value );
+                    }
 
                     // make sure the rootCategory matches the EntityTypeId (just in case they changed the EntityType after setting RootCategory
                     if ( rootCategory != null && rootCategory.EntityTypeId == cachedEntityType.Id )
