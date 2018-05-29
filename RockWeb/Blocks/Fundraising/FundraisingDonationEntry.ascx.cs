@@ -143,44 +143,19 @@ namespace RockWeb.Blocks.Fundraising
 
         private IEnumerable<int> GetChildGroupIds( Guid? rootGroupGuid, RockContext context )
         {
-            var sql =
-                @"; with groupCTE AS
-                 (
-                     SELECT
-                         [Id]
-             
-                     FROM
-                         [Group]
-             
-                     WHERE
-                         [Guid] = @RootGroupGuid
-             
-                         AND[IsActive] = 1
-             
-                     UNION ALL
-             
-                     SELECT
-             
-                         g.[Id]
-             
-                     FROM
-                         [Group] g
-             
-                         INNER JOIN[groupCTE] c on g.ParentGroupId = c.Id
-             
-                     WHERE
-             
-                         g.[IsActive] = 1
 
-                 )
-                SELECT
-                    [Id]
-                FROM
-                    groupCTE";
+            var service = new GroupService( context );
+            var groupIds = new List<int>();
 
-            var results = context.Database.SqlQuery<int>( sql, new SqlParameter( "@RootGroupGuid", rootGroupGuid ?? Guid.Empty ) );
+            var baseGroup = service.Get( rootGroupGuid ?? Guid.Empty );
 
-            return results;
+            if ( baseGroup != null )
+            {
+                groupIds.Add( baseGroup.Id );
+                groupIds.AddRange( service.GetAllDescendents( baseGroup.Id ).Select( g => g.Id ) );
+            }
+
+            return groupIds;
 
         }
 
