@@ -121,7 +121,7 @@
 
         var navElement = $('.navbar-side'),
             hoverDelay = 250,
-            hideDelay = hoverDelay + 50;
+            hideDelay = 50;
 
         Sys.Application.add_load(function () {
             $('.navbar-side > li').mouseenter(function () {
@@ -132,6 +132,7 @@
                 } else if ($this[0].navHoverTimeout === undefined) {
                     if (navElement.find('li.open').length > 0) {
                         $this[0].navHoverTimeout = setTimeout(function () {
+                            console.log("Multi");
                             navElement.find('li.open').removeClass('open');
                             $this.addClass('open');
                             $('body').addClass('modal-open').css('padding-right', getScrollbarWidth());
