@@ -52,11 +52,6 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
-            if ( new Service<Note>( Context ).Queryable().Any( a => a.ParentNoteId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} contains one or more child {1}.", Note.FriendlyTypeName, Note.FriendlyTypeName.Pluralize().ToLower() );
-                return false;
-            }  
             return true;
         }
     }

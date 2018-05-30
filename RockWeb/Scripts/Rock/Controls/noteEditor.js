@@ -91,9 +91,27 @@
         });
 
         $('.js-expandreply').click(function (e) {
-            var $noteContainer = $(this).closest('.js-note');
-            var $noteEditor = $noteContainer.find('.js-childnotes');
-            $noteEditor.slideToggle();
+            var $noteContainer = $(this).closest('.js-notecontainer');
+            
+            var $currentNote = $(this).closest('.js-note');
+            var $childNotesContainer = $currentNote.find('.js-childnotes:first');
+            $childNotesContainer.slideToggle(function (x) {
+
+                // get a list of noteIds that have their child items visible, so that we can maintain that expansion after a postback
+                var expandedNoteIds = $(this).closest('.js-notecontainer').find('.js-noteviewitem:visible').map(function () {
+                    var $noteItem = $(this).closest('.js-note');
+                    var $childNotesExpanded = $noteItem.find('.js-childnotes:first').is(':visible');
+                    if ($childNotesExpanded) {
+                        return $(this).attr('data-note-id');
+                    }
+                    else {
+                        return null;
+                    }
+                }).get().join();
+
+                var $expandedNoteIdsHiddenField = $noteContainer.find('.js-expandednoteids');
+                $expandedNoteIdsHiddenField.val(expandedNoteIds);
+            });
         });
     });
 }(Sys));
