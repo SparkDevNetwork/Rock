@@ -16,54 +16,38 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Rock.UniversalSearch.IndexModels;
-
-
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.IO;
+using System.Linq;
 using System.Reflection;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Rock.Attribute;
-using Rock.Data;
-using Rock.Model;
-using Rock.UniversalSearch.IndexModels.Attributes;
-using Rock.Cache;
-using Lucene.Net.Analysis.TokenAttributes;
 using Lucene.Net.Analysis;
 using Lucene.Net.Analysis.Core;
 using Lucene.Net.Analysis.Miscellaneous;
-using Lucene.Net.Analysis.Standard;
-using Lucene.Net.Analysis.Util;
 using Lucene.Net.Analysis.Snowball;
+using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
-using Lucene.Net.QueryParsers.Classic;
 using Lucene.Net.Search;
-using Lucene.Net.Util;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using Directory = Lucene.Net.Store.Directory;
 using Lucene.Net.Store;
-using System.IO;
+using Lucene.Net.Util;
+using Newtonsoft.Json.Linq;
+using Rock.Cache;
+using Rock.Data;
+using Rock.Model;
+using Rock.UniversalSearch.IndexModels;
+using Rock.UniversalSearch.IndexModels.Attributes;
 
 namespace Rock.UniversalSearch.IndexComponents
 {
     /// <summary>
-    /// Elastic Search Index Provider
+    /// Lucene Search Index Provider
     /// </summary>
     /// <seealso cref="Rock.UniversalSearch.IndexComponent" />
     [Description( "Lucene.Net Universal Search Index (v4.8)" )]
     [Export( typeof( IndexComponent ) )]
     [ExportMetadata( "ComponentName", "Lucene.Net 4.8" )]
 
-    [TextField( "Node URL", "The URL of the ElasticSearch node (http://myserver:9200)", true, key: "NodeUrl" )]
-    [IntegerField( "Shard Count", "The number of shards to use for each index. More shards support larger databases, but can make the results less accurate. We recommend using 1 unless your database get's very large (> 50GB).", true, 1 )]
     public class Lucene : IndexComponent
     {
         private static readonly LuceneVersion MatchVersion = LuceneVersion.LUCENE_48;
@@ -78,7 +62,8 @@ namespace Rock.UniversalSearch.IndexComponents
         {
             if ( writer == null )
             {
-                path = System.Web.HttpContext.Current.Server.MapPath( "~/App_Data/LuceneSearchIndex" );
+                path = Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "App_Data", "LuceneSearchIndex" );
+                // path = System.Web.HttpContext.Current.Server.MapPath( "~/App_Data/LuceneSearchIndex" ); // Do not work with jobs
                 indexWriterConfig = new IndexWriterConfig( MatchVersion, null ) // No default Analyzer. Have to explicitly specify it when using IndexReader/IndexWriter
                 {
                     OpenMode = OpenMode.CREATE_OR_APPEND,
@@ -100,6 +85,12 @@ namespace Rock.UniversalSearch.IndexComponents
 
         }
 
+        /// <summary>
+        /// Gets the Lucene directory.
+        /// </summary>
+        /// <value>
+        /// The Lucene directory.
+        /// </value>
         private static FSDirectory directory
         {
             get
@@ -113,11 +104,17 @@ namespace Rock.UniversalSearch.IndexComponents
             }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether Lucene IndexWriter is connected.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if Lucene IndexWriter is connected; otherwise, <c>false</c>.
+        /// </value>
         public override bool IsConnected
         {
             get
             {
-                return writer != null;
+                return writer != null && !writer.IsClosed;
             }
         }
 
