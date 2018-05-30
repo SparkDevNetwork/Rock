@@ -77,9 +77,9 @@ namespace Rock.Jobs
                 }
             }            
 
-            string results = string.Empty;           
-
-            foreach(var entityTypeCache in selectedEntityTypes )
+            string results = string.Empty;
+            var timerTotal = System.Diagnostics.Stopwatch.StartNew();
+            foreach (var entityTypeCache in selectedEntityTypes )
             {
                 EntityTypeService entityTypeService = new EntityTypeService( rockContext );
                 var entityType = entityTypeService.Get( entityTypeCache.Id );
@@ -103,7 +103,7 @@ namespace Rock.Jobs
                     }
                 }
             }
-
+            results += $"Total Time: {timerTotal.ElapsedMilliseconds / 1000}s,";
             context.Result = "Indexing results: " + results.Trim( ',' );
         }
     }
