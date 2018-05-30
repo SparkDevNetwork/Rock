@@ -67,10 +67,10 @@ namespace Rock.Web.UI.Controls
         {
             this.AppendText = "<i></i>";
             this.AddCssClass( "rock-colorpicker-input input-width-lg" );
-            var defindValues = CacheDefinedType.Get( SystemGuid.DefinedType.COLOR_PICKER_SWATCHES ).DefinedValues.ToDictionary( a => a.Description, a=>a.Value );
+            var definedValues = CacheDefinedType.Get( SystemGuid.DefinedType.COLOR_PICKER_SWATCHES )?.DefinedValues.ToDictionary( a => a.Description, a=>a.Value );
 
             string script = $@"$('.rock-colorpicker-input').colorpicker({{
-                colorSelectors: {defindValues.ToJson(Newtonsoft.Json.Formatting.Indented).Replace("\"","'")}
+                colorSelectors: {definedValues.ToJson(Newtonsoft.Json.Formatting.Indented).Replace("\"","'")}
             }});";
             ScriptManager.RegisterStartupScript( this, this.GetType(), "rock-colorpicker", script, true );
             base.RenderControl( writer );
