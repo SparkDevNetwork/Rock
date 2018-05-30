@@ -22,10 +22,6 @@
     </div>
     <div class="container bigblock-shade-inner">
       <h1 class="underline">{{ campus.Name }} Campus</h1>
-      {% assign vimeoId = campus | Attribute: 'CampusTourVimeoId' %}
-      {% if vimeoId != empty %}
-        <a class="btn btn-default btn-sm margin-t-sm popup-vimeo" href="//vimeo.com/{{ vimeoId }}" ><i class="fa fa-play-circle"></i> Take a Tour</a>
-      {% endif %}
     </div>
   </div>
 

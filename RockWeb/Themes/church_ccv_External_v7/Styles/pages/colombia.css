@@ -46,6 +46,7 @@
 .pastor-img {
    height: 100%; 
    align-self: left;
+   object-fit: contain;
 }
 
 @media screen and (min-width: 490px) {
@@ -78,4 +79,9 @@
 
 p {
    color: #505050;
+}
+
+.church-plant-image {
+    padding-bottom: 25px; 
+    max-width: 800px;
 }
