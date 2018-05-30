@@ -35,7 +35,7 @@ namespace Rock.Migrations
             RockMigrationHelper.AddDefinedType( "CMS Settings", "Cache Tags", cacheTagDefineTypeDesc, "BDF73089-9154-40C1-90E4-74518E9937DC", cacheTagDefineTypeDesc );
 
             // Page: CacheManager
-            RockMigrationHelper.AddPage( true, "B4A24AB7-9369-4055-883F-4F4892C39AE3", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "CacheManager", "", "4B8691C7-537F-4B6E-9ED1-E3BA3FA0051E", "fa fa-tachometer-alt" ); // Site:Rock RMS
+            RockMigrationHelper.AddPage( true, "B4A24AB7-9369-4055-883F-4F4892C39AE3", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Cache Manager", "", "4B8691C7-537F-4B6E-9ED1-E3BA3FA0051E", "fa fa-tachometer-alt" ); // Site:Rock RMS
             RockMigrationHelper.AddPageRoute( "4B8691C7-537F-4B6E-9ED1-E3BA3FA0051E", "cachemanager" );
             RockMigrationHelper.UpdateBlockType( "Cache Manager", "Block used to view cache statistics and clear the existing cache.", "~/Blocks/Cms/CacheManager.ascx", "CMS", "48AD1B85-C51C-4C51-A902-E2DC4586B903" );
             // Add Block to Page: CacheManager, Site: Rock RMS

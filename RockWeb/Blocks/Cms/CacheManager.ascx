@@ -14,13 +14,18 @@
         <div class="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-tachometer"></i>Cache Manager</h1>
+
+                <asp:LinkButton ID="btnClearCache" runat="server" CssClass="btn btn-primary btn-xs pull-right" OnClick="btnClearCache_Click" CausesValidation="false">
+                    <i class="fa fa-repeat"></i> Clear Cache
+                </asp:LinkButton>
             </div>
             <div class="panel-body">
-                <Rock:NotificationBox ID="nbMessage" runat="server" Visible="false" />
+                <Rock:NotificationBox ID="nbMessage" runat="server" Visible="false" Dismissable="true" />
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:Grid ID="gCacheTagList" runat="server" AllowSorting="true" EmptyDataText="No Tags Found">
+                        <h4>Cache Tags</h4>
+                        <Rock:Grid ID="gCacheTagList" runat="server" AllowSorting="true" EmptyDataText="No Tags Found" DisplayType="Light">
                         <Columns>
                             <Rock:RockBoundField DataField="TagName" HeaderText="Tag Name" SortExpression="TagName" />
                             <Rock:RockBoundField DataField="TagDescription" HeaderText="Description" SortExpression="TagDescription" TruncateLength="255" HtmlEncode="false" />
@@ -29,16 +34,10 @@
                         </Columns>
                     </Rock:Grid>
                     </div>
-                    <div class="col-md-3">
-                        <asp:Literal ID="lCacheStatistics" runat="server"></asp:Literal>
-                    </div>
-                    <div class="col-md-3"> 
-                        <p class="clearfix">
-                            <asp:LinkButton ID="btnClearCache" runat="server" CssClass="btn btn-action btn-sm pull-right" OnClick="btnClearCache_Click" CausesValidation="false">
-                                <i class="fa fa-repeat"></i> Clear Cache
-                            </asp:LinkButton>
-                        </p>
+                    <div class="col-md-6">
+                        <h4>Cache Statistics</h4>
                         <Rock:RockDropDownList ID="ddlCacheTypes" runat="server" DataTextField="Name" DataValueField="Id" Label="Cache Types" OnSelectedIndexChanged="ddlCacheTypes_SelectedIndexChanged" AutoPostBack="true" />
+                        <asp:Literal ID="lCacheStatistics" runat="server"></asp:Literal>
                     </div>
                 </div>
 
@@ -49,21 +48,11 @@
             <Content>
                 <Rock:NotificationBox ID="nbModalMessage" runat="server" Visible="false" />
                 <div class="row">
-                    <div class="col-md-2"></div>
-                    <div class="col-md-10">
-                        <div class="row">
-                            <div class="col-md-4">
-                                Tag Name
-                                <asp:TextBox ID="tbTagName" runat="server" onkeypress="this.value = this.value.toLowerCase();" Style="text-transform: lowercase;" Width="100%"/>
-                            </div>
-                        </div> 
-                        <br />
-                        <div class="row">
-                            <div class="col-md-8">
-                                Description
-                                <asp:TextBox ID="tbTagDescription" runat="server" TextMode="MultiLine" Rows="3" Width="100%"/>
-                            </div>
-                        </div>
+                    <div class="col-md-6">
+                        <Rock:RockTextBox ID="tbTagName" runat="server" Label="Tag Name" onkeypress="this.value = this.value.toLowerCase().replace(' ', '-');" Style="text-transform: lowercase;" Width="100%"/>
+                    </div>
+                    <div class="col-md-6">
+                        <Rock:RockTextBox ID="tbTagDescription" runat="server" Label="Description" TextMode="MultiLine" Rows="3" Width="100%"/>
                     </div>
                 </div>
             </Content>

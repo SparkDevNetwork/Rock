@@ -129,7 +129,7 @@ public partial class CacheManager : RockBlock
         var definedValueId = e.RowKeyId;
         var definedValue = CacheDefinedValue.Get( definedValueId );
         RockCache.RemoveForTags( definedValue.Value );
-        DisplayNotification( nbMessage, string.Format( "Remove Cache command for tab \"{0}\" sent.", definedValue.Value), NotificationBoxType.Success );
+        DisplayNotification( nbMessage, string.Format( "Removed cached items tagged with \"{0}\".", definedValue.Value), NotificationBoxType.Success );
     }
 
     /// <summary>
@@ -207,7 +207,7 @@ public partial class CacheManager : RockBlock
 
         PopulateCacheStatistics();
 
-        DisplayNotification( nbMessage, result.Aggregate( (a, b) => a + Environment.NewLine + b ), NotificationBoxType.Success );
+        DisplayNotification( nbMessage, "All cached items have been cleared.", NotificationBoxType.Success );
     }
 
     /// <summary>
@@ -261,7 +261,6 @@ public partial class CacheManager : RockBlock
         if ( IsValid() )
         {
             SaveTag();
-            DisplayNotification( nbMessage, string.Format( "tag {0} added successfully.", tbTagName.Text.Trim().ToLower() ), NotificationBoxType.Success );
             ClearModal();
             BindGrid();
         }
