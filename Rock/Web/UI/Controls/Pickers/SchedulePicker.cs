@@ -162,10 +162,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The item rest URL.
         /// </value>
-        public override string ItemRestUrl
-        {
-            get { return "~/api/Categories/GetChildren/"; }
-        }
+        public override string ItemRestUrl => "~/api/Categories/GetChildren/";
 
         /// <summary>
         /// Render any additional picker actions

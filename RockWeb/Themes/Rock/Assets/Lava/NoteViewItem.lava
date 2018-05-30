@@ -4,17 +4,18 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
 {%- endcomment -%}
 {%- assign viewableChildNotesCount = note.ViewableChildNotes | Size -%}
 {%- if note.IsAlert -%}
-    {%- assign wrapperClass = "highlight" -%}
-{%- elsif note.IsPrivate -%}
-    {%- assign wrapperClass = "personal" -%}
+    {%- assign wrapperClass = "is-alert" -%}
+{%- elsif note.IsPrivateNote -%}
+    {%- assign wrapperClass = "is-personal" -%}
 {%- else -%}
     {%- assign wrapperClass = "" -%}
 {%- endif -%}
 
 {%- capture fontStyle -%}{%- if note.NoteType.FontColor != '' -%}color: {{ note.NoteType.FontColor }};{%- endif -%}{%- endcapture -%}
-{%- capture borderStyle -%}{%- if note.NoteType.BorderColor != '' -%}border-color: {{ note.NoteType.BorderColor }};{%- endif -%}{%- endcapture -%}
+{%- capture borderStyle -%}{%- if note.NoteType.BorderColor != '' -%}box-shadow: inset 5px 0 0 0 {{ note.NoteType.BorderColor }};{%- endif -%}{%- endcapture -%}
 {%- capture backgroundStyle -%}{%- if note.NoteType.BackgroundColor != '' -%}background-color: {{ note.NoteType.BackgroundColor }};{%- endif -%}{%- endcapture -%}
-{%- capture wrapperStyle -%}{{ fontStyle }}{{ borderStyle }}{{ backgroundStyle }}{%- endcapture -%}
+{%- capture wrapperStyle -%}{{ borderStyle }}{{ fontStyle }}{{ backgroundStyle }}{%- endcapture -%}
+{%- if wrapperStyle != '' -%}{%- capture wrapperStyle -%}style="{{ wrapperStyle }}"{%- endcapture -%}{%- endif -%}
 
 {%- assign noteDateTimeText = note.CreatedDateTime | HumanizeDateTime -%}
 {%- if note.EditedDateTime > note.CreatedDateTime -%}
@@ -33,7 +34,6 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
 {%- endif -%}
 
 {%- assign noteText = note.Text | Escape | Linkify | FromMarkdown -%}
-
 {%- comment -%}If this note requires approval and is not yet approved, we might see it if the current person created the note or is an approver, so render its approval status and approval actions{%- endcomment -%}
 {%- assign approvalStatusHtml = '' -%}
 {%- assign approvalActionsHtml = '' -%}
@@ -63,18 +63,20 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
 {%- endif -%}
 
 {%- if noteReplyDepth == 0 -%}
-    {%- assign avatarClass = "avatar-lg" -%}
+     {%- assign avatarSize = "lg" -%}
     {%- assign noteClass = "" -%}
 {%- else -%}
-    {%- assign avatarClass = "avatar-sm" -%}
+    {%- assign avatarSize = "md" -%}
     {%- assign noteClass = "note-nested" -%}
 {%- endif -%}
 
-<li class="note {{ noteClass }}">
-    <article class="{{ wrapperClass }} note-view-item js-noteviewitem" style="{{ wrapperStyle }}" data-note-id="{{ note.Id }}" id="{{ note.NoteAnchorId }}">
-        {% comment %} <hgroup class="flag">
-            {{ note.NoteType.Name }}
-        </hgroup> {% endcomment %}
+<li class="note js-note {{ noteClass }}">
+    <article class="note-view-item js-noteviewitem {{ wrapperClass }}" {{ wrapperStyle }} data-note-id="{{ note.Id }}" id="{{ note.NoteAnchorId }}">
+        {% if note.IsAlert %} 
+        <hgroup class="flag">
+            Alert: {{ note.NoteType.Name }}
+        </hgroup> 
+        {% endif %}
         {%- if approvalStatusHtml != '' -%}
             <hgroup class="flag clearfix">
                 {{ approvalStatusHtml }}
@@ -85,14 +87,9 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
         <header class="meta">
             <div class="meta-figure">
                 {%- if NoteOptions.UsePersonIcon -%}
-                {%- if noteReplyDepth == 0 -%}
-                    {%- assign avatarClass = "avatar-lg" -%}
+                    <a href="/person/{{ note.CreatedByPersonId }}" class="avatar avatar-{{ avatarSize }}"><img src="{{ note.CreatedByPersonPhotoUrl }}" alt="{{ note.CreatedByPersonName }}"></a>
                 {%- else -%}
-                    {%- assign avatarClass = "avatar-sm" -%}
-                {%- endif -%}
-                <a href="/person/{{ note.CreatedByPersonId }}" class="avatar {{ avatarClass }}"><img src="{{ note.CreatedByPersonPhotoUrl }}" alt="{{ note.CreatedByPersonName }}"></a>
-                {%- else -%}
-                <i class="{{ note.NoteType.IconCssClass | Default:'fa fa-comment' }}"></i>
+                    <div class="icon icon-{{ avatarSize }}" {%- if note.IsAlert or note.NoteType.FontColor != '' -%}style="{%- if note.IsAlert -%}color: var(--state-danger-text,#fcf2f1);{% else %}{{ fontStyle }}{% endif %}"{% endif %}><i class="{{ note.NoteType.IconCssClass | Default:'fa fa-comment' }}"></i></div>
                 {%- endif -%}
             </div>
             <div class="meta-body">
@@ -101,30 +98,37 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
                         {%- if NoteOptions.DisplayNoteTypeHeading -%}
                         {{ note.NoteType.Name }}
                         {%- endif -%}
-                        {%- if note.Caption == '' -%}
+                        {%- comment -%}Private notes always have a caption, so go by the person instead.{%- endcomment -%}
+                        {%- if note.Caption == '' or note.IsPrivateNote -%}
                         <a href="/person/{{ note.CreatedByPersonId }}">{{ note.CreatedByPersonName }}</a>
                         {% else %}
                         {{ note.Caption }}
-                        {%- endif -%}
-                        
+                        {%- endif -%} 
                     </p>
-                    <div class="navbar-right" style="margin:0">
-                        <div class="dropdown">
-                            <button id="{{ note.id }}-options" class="btn btn-link" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-h"></i></button>
-                            <ul class="dropdown-menu" id="{{ note.id }}-optionsmenu" aria-labelledby="{{ note.id }}-options"> 
-                                <li><a href="#{{ note.NoteAnchorId }}">Link</a></li> 
-                            {%- assign canEdit = note | HasRightsTo:'Edit' -%}
-                            {%- if canEdit -%}
-                                <li><a class="edit-note js-editnote">Edit</a></li>
-                                <li role="separator" class="divider"></li>
-                                <li><a class="dropdown-item-danger remove-note" href="#" onclick="{{ note.Id | Postback:'DeleteNote' }}">Delete</a></li>
+
+                    {%- assign canEdit = note | HasRightsTo:'Edit' -%}
+                    {%- if canEdit or canReply -%}
+                    <div class="dropdown">
+                        <button id="{{ note.Id }}-options" class="btn btn-link btn-overflow" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-h"></i></button>
+                        <ul class="dropdown-menu" id="{{ note.Id }}-optionsmenu" aria-labelledby="{{ note.Id }}-options"> 
+                            {%- if canReply -%}
+                                <li><button type="button" class="dropdown-item btn-link js-replynote">Reply</button></li>
                             {%- endif -%}
-                            </ul>
-                        </div>
+                            {%- if canEdit -%}
+                            <li><button type="button" class="dropdown-item btn-link js-editnote">Edit</button></li>
+                            <li><a class="dropdown-item-danger remove-note" href="#" onclick="{{ note.Id | Postback:'DeleteNote' }}">Delete</a></li>
+                            {%- endif -%}
+                        </ul>
                     </div>
+                    {%- endif -%}
                 </div>
 
-                 <p class="date" title="{{ note.EditedDateTime }}">{{ noteDateTimeText }} {{ note.NoteType.Name }}</p>
+                <div class="note-details">
+                <a href="#{{ note.NoteAnchorId }}" class="timestamp">
+                    <relative-time datetime="{{ note.EditedDateTime | Date:'yyyy-MM-ddTHH:mm:ss' }}" title="{{ note.EditedDateTime | Date:'MMMM d, yyyy, h:mm tt' }}">{{ noteDateTimeText }}</a>
+                </a>
+                {%- if note.NoteType.Name != 'Personal Note' -%}<span class="tag-flair">{%- if note.NoteType.BorderColor != '' -%}<span class="tag-color" style="background-color:{{ note.NoteType.BorderColor }}"></span>{%- endif -%}<span class="tag-label">{{ note.NoteType.Name }}</span></span>{%- endif -%}
+                </div>
             </div>
             
         </header>
@@ -132,22 +136,19 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
             {{ noteText }}
         </div>
         <footer class="note-footer">
-            <ul class="note-footer-actions-list list-horizontal">
-                {%- if canReply -%}
-                    <li><a href="#" class="js-replynote">Reply</a></li>
-                {%- endif -%}
+            {% comment %} <ul class="note-footer-actions-list list-horizontal">
+                
+            </ul> {% endcomment %}
+            <ul class="note-footer-meta-list list-horizontal">
                 {%- if note.NoteType.RequiresApprovals and note.ApprovalStatus == "Approved" -%}
                     <li>Approved By {{ note.ApprovedByPersonAliasId | PersonByAliasId }} on {{ note.ApprovedDateTime }}</li>
                 {%- endif -%}
-            </ul>
-            <ul class="note-footer-meta-list list-horizontal">
                 {%- if viewableChildNotesCount > 0 -%}
-                    <li>{{ viewableChildNotesCount }} Replies</li>
+                    <li><button type="button" class="btn btn-link js-expandreply">{{ 'Reply' | ToQuantity:viewableChildNotesCount }}</button></li>
                 {%- endif -%}
             </ul>
         </footer>
     </article>
-
 
     {%- comment -%}
     Maintain the noteReplyDepth by incrementing here (for every note), and then decrementing after each child to indicate we are at the same level
