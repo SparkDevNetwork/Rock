@@ -30,7 +30,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 [DisplayName( "Cache Manager" )]
-[Category( "Administration" )]
+[Category( "CMS" )]
 [Description( "Block used to view cache statistics and clear the existing cache." )]
 public partial class CacheManager : RockBlock
 {
@@ -306,7 +306,12 @@ public partial class CacheManager : RockBlock
         int cachedTagDefinedTypeId = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.CACHE_TAGS ).Id;
         var rockContext = new RockContext();
         var definedValueService = new DefinedValueService( rockContext );
-        int order = definedValueService.Queryable().AsNoTracking().Where( v => v.DefinedTypeId == cachedTagDefinedTypeId ).Max( v => v.Order ) + 1;
+        int order = 0;
+
+        if ( definedValueService.Queryable().AsNoTracking().Where( v => v.DefinedTypeId == cachedTagDefinedTypeId ).Any() )
+        {
+            order = definedValueService.Queryable().AsNoTracking().Where( v => v.DefinedTypeId == cachedTagDefinedTypeId ).Max( v => v.Order ) + 1;
+        }
 
         var definedValue = new DefinedValue
         {
