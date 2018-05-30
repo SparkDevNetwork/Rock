@@ -365,13 +365,22 @@ namespace Rock.Model
         public int? FavIconBinaryFileId { get; set; }
 
         /// <summary>
+        /// Gets or sets the site logo binary file identifier.
+        /// </summary>
+        /// <value>
+        /// The site logo binary file identifier.
+        /// </value>
+        [DataMember]
+        public int? SiteLogoBinaryFileId { get; set; }
+
+        /// <summary>
         /// Gets or sets the FontAwesome icon CSS weight that will be used for the Site
         /// </summary>
         /// <value>
         /// The icon CSS weight.
         /// </value>
         [DataMember]
-        [Obsolete("Moved to Theme")]
+        [Obsolete( "Moved to Theme" )]
         public IconCssWeight IconCssWeight { get; set; }
 
         #endregion
@@ -541,15 +550,24 @@ namespace Rock.Model
         public virtual BinaryFile FavIconBinaryFile { get; set; }
 
         /// <summary>
+        /// Gets or sets the site logo binary file.
+        /// </summary>
+        /// <value>
+        /// The site logo binary file.
+        /// </value>
+        [LavaInclude]
+        public virtual BinaryFile SiteLogoBinaryFile { get; set; }
+
+        /// <summary>
         /// Gets the default domain URI.
         /// </summary>
         /// <value>
         /// The default domain URI.
         /// </value>
         [LavaInclude]
-        public virtual Uri DefaultDomainUri 
+        public virtual Uri DefaultDomainUri
         {
-            get 
+            get
             {
                 try
                 {
@@ -699,7 +717,7 @@ namespace Rock.Model
     /// <summary>
     /// Font Awesome Icon CSS Weight
     /// </summary>
-    [Obsolete("Moved to Theme")]
+    [Obsolete( "Moved to Theme" )]
     public enum IconCssWeight
     {
 
@@ -752,6 +770,7 @@ namespace Rock.Model
             this.HasOptional( p => p.CommunicationPageRoute ).WithMany().HasForeignKey( p => p.CommunicationPageRouteId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.MobilePage ).WithMany().HasForeignKey( p => p.MobilePageId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.FavIconBinaryFile ).WithMany().HasForeignKey( p => p.FavIconBinaryFileId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.SiteLogoBinaryFile ).WithMany().HasForeignKey( p => p.SiteLogoBinaryFileId ).WillCascadeOnDelete( false );
 
 #pragma warning disable 0618
             // Need Associative table for IconExtensions (which are Defined Values)
