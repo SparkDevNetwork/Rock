@@ -20,8 +20,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Linq;
 
 using Rock.Data;
 
@@ -108,7 +106,6 @@ namespace Rock.Model
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
-
         }
     }
 }

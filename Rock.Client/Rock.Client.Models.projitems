@@ -150,6 +150,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\NcoaHistory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Note.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\NoteType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\NoteWatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Notification.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\NotificationRecipient.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Page.cs" />

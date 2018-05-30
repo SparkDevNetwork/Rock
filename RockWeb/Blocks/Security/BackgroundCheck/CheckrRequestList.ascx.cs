@@ -371,7 +371,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         }
 
         /// <summary>
-        /// 
+        /// The Checkr table row columns tags
         /// </summary>
         private class BackgroundCheckRow
         {

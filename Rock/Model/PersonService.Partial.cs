@@ -2549,11 +2549,16 @@ namespace Rock.Model
         /// </returns>
         private static int UpdatePersonAgeClassifications( int? personId, RockContext rockContext )
         {
-            var personQuery = new PersonService( rockContext ).Queryable( includeDeceased: true, includeBusinesses: false );
+            var personService = new PersonService( rockContext );
+            IQueryable<Person> personQuery;
 
             if ( personId.HasValue )
             {
-                personQuery = personQuery.Where( a => a.Id == personId.Value );
+                personQuery = personService.AsNoFilter().Where( a => a.Id == personId );
+            }
+            else
+            {
+                personQuery = personService.Queryable( includeDeceased: true, includeBusinesses: false );
             }
 
             // get the min birthdate of people 18 and younger;
@@ -2564,18 +2569,7 @@ namespace Rock.Model
             int groupRoleChildId = familyGroupType.Roles.FirstOrDefault( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ).Id;
 
             var familyPersonRoleQuery = new GroupMemberService( rockContext ).Queryable()
-                .Where( a => a.Group.GroupTypeId == familyGroupTypeId )
-                .Select( a => new
-                {
-                    a.PersonId,
-                    a.GroupRoleId
-                } );
-
-            if ( personId.HasValue )
-            {
-                personQuery = personQuery.Where( a => a.Id == personId.Value );
-                familyPersonRoleQuery = familyPersonRoleQuery.Where( a => a.PersonId == personId.Value );
-            }
+                .Where( a => a.Group.GroupTypeId == familyGroupTypeId );
 
             // Adult if Age >= 18 OR has a role of Adult in one or more (ANY) families
             var adultBasedOnBirthdateOrFamilyRole = personQuery
@@ -2590,9 +2584,7 @@ namespace Rock.Model
                         ||
                         familyPersonRoleQuery.Where( f => f.PersonId == p.Id ).All( f => f.GroupRoleId == groupRoleChildId )
                     ) );
-
-            DateTime modifiedDateTime = RockDateTime.Now;
-
+            
             // update records that aren't marked as Adult but now should be
             int updatedAdultCount = rockContext.BulkUpdate(
                 adultBasedOnBirthdateOrFamilyRole.Where( a => a.AgeClassification != AgeClassification.Adult && !a.IsLockedAsChild ),
@@ -2673,14 +2665,19 @@ FROM (
 
             if ( personId.HasValue )
             {
-                sqlUpdateBuilder.Append( $" AND ( p.Id = {personId}) " );
+                sqlUpdateBuilder.Append( $" AND ( p.Id = @personId) " );
             }
 
             sqlUpdateBuilder.Append( @"    ) x " );
 
-            int recordsUpdated = rockContext.Database.ExecuteSqlCommand( sqlUpdateBuilder.ToString() );
-
-            return recordsUpdated;
+            if ( personId.HasValue )
+            {
+                return rockContext.Database.ExecuteSqlCommand( sqlUpdateBuilder.ToString(), new System.Data.SqlClient.SqlParameter( "@personId", personId.Value ) );
+            }
+            else
+            {
+                return rockContext.Database.ExecuteSqlCommand( sqlUpdateBuilder.ToString() );
+            }
         }
 
         #endregion

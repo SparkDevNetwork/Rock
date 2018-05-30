@@ -59,6 +59,12 @@ namespace RockWeb.Blocks.Cms
             bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             gPageRoutes.Actions.ShowAdd = canAddEditDelete;
             gPageRoutes.IsDeleteEnabled = canAddEditDelete;
+
+            AddAttributeColumns();
+
+            var deleteField = new DeleteField();
+            gPageRoutes.Columns.Add( deleteField );
+            deleteField.Click += gPageRoutes_Delete;
         }
 
         /// <summary>
@@ -177,6 +183,46 @@ namespace RockWeb.Blocks.Cms
         #region Internal Methods
 
         /// <summary>
+        /// Adds columns for any page route attributes marked as Show In Grid
+        /// </summary>
+        protected void AddAttributeColumns()
+        {
+            // Remove attribute columns
+            foreach ( var column in gPageRoutes.Columns.OfType<AttributeField>().ToList() )
+            {
+                gPageRoutes.Columns.Remove( column );
+            }
+
+            int entityTypeId = new PageRoute().TypeId;
+            foreach ( var attribute in new AttributeService( new RockContext() ).Queryable()
+                .Where( a =>
+                    a.EntityTypeId == entityTypeId &&
+                    a.IsGridColumn
+                   )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name ) )
+            {
+                string dataFieldExpression = attribute.Key;
+                bool columnExists = gPageRoutes.Columns.OfType<AttributeField>().FirstOrDefault( a => a.DataField.Equals( dataFieldExpression ) ) != null;
+                if ( !columnExists )
+                {
+                    AttributeField boundField = new AttributeField();
+                    boundField.DataField = dataFieldExpression;
+                    boundField.AttributeId = attribute.Id;
+                    boundField.HeaderText = attribute.Name;
+
+                    var attributeCache = Rock.Cache.CacheAttribute.Get( attribute.Id );
+                    if ( attributeCache != null )
+                    {
+                        boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
+                    }
+
+                    gPageRoutes.Columns.Add( boundField );
+                }
+            }
+        }
+
+        /// <summary>
         /// Binds the filter.
         /// </summary>
         private void BindFilter()
@@ -207,24 +253,13 @@ namespace RockWeb.Blocks.Cms
                 queryable = queryable.Where( d => d.Page.Layout.SiteId == siteId.Value );
             }
 
-            var qry = queryable.Select( a =>
-                    new
-                    {
-                        a.Id,
-                        a.Route,
-                        Site = a.Page.Layout.Site.Name,
-                        PageName = a.Page.InternalName,
-                        PageId = a.Page.Id,
-                        a.IsSystem
-                    } );
-
             if ( sortProperty != null )
             {
-                gPageRoutes.DataSource = qry.Sort( sortProperty ).ToList();
+                gPageRoutes.DataSource = queryable.Sort( sortProperty ).ToList();
             }
             else
             {
-                gPageRoutes.DataSource = qry.OrderBy( p => p.Route ).ToList();
+                gPageRoutes.DataSource = queryable.OrderBy( p => p.Route ).ToList();
             }
 
             gPageRoutes.DataBind();

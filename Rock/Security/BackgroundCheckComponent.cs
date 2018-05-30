@@ -15,10 +15,9 @@
 // </copyright>
 //
 using System.Collections.Generic;
-
+using Rock.Cache;
 using Rock.Data;
 using Rock.Extension;
-using Rock.Cache;
 
 namespace Rock.Security
 {

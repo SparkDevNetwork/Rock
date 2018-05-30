@@ -115,9 +115,115 @@ namespace Rock.Cache
         [DataMember]
         public int Order { get; private set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [requires approvals].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [requires approvals]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool RequiresApprovals { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [allows watching].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allows watching]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AllowsWatching { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [allows replies].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allows replies]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AllowsReplies { get; set; }
+
+        /// <summary>
+        /// Gets or sets the maximum reply depth.
+        /// </summary>
+        /// <value>
+        /// The maximum reply depth.
+        /// </value>
+        [DataMember]
+        public int? MaxReplyDepth { get; set; }
+
+        /// <summary>
+        /// Gets or sets the background color of each note
+        /// </summary>
+        /// <value>
+        /// The color of the background.
+        /// </value>
+        [DataMember]
+        public string BackgroundColor { get; set; }
+
+        /// <summary>
+        /// Gets or sets the font color of the note text
+        /// </summary>
+        /// <value>
+        /// The color of the font.
+        /// </value>
+        [DataMember]
+        public string FontColor { get; set; }
+
+        /// <summary>
+        /// Gets or sets the border color of each note
+        /// </summary>
+        /// <value>
+        /// The color of the border.
+        /// </value>
+        [DataMember]
+        public string BorderColor { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [send approval notifications].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [send approval notifications]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool SendApprovalNotifications { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [automatic watch authors].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [automatic watch authors]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AutoWatchAuthors { get; set; }
+
+        /// <summary>
+        /// Gets or sets the approval URL template.
+        /// </summary>
+        /// <value>
+        /// The approval URL template.
+        /// </value>
+        [DataMember]
+        public string ApprovalUrlTemplate
+        {
+            get; set;
+        }
+
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// A dictionary of actions that this class supports and the description of each.
+        /// </summary>
+        public override Dictionary<string, string> SupportedActions
+        {
+            get
+            {
+                var supportedActions = base.SupportedActions;
+                supportedActions.AddOrReplace( Rock.Security.Authorization.APPROVE, "The roles and/or users that have access to approve notes." );
+                return supportedActions;
+            }
+        }
 
         /// <summary>
         /// Copies from model.
@@ -128,7 +234,8 @@ namespace Rock.Cache
             base.SetFromEntity( entity );
 
             var noteType = entity as NoteType;
-            if ( noteType == null ) return;
+            if ( noteType == null )
+                return;
 
             IsSystem = noteType.IsSystem;
             EntityTypeId = noteType.EntityTypeId;
@@ -139,6 +246,16 @@ namespace Rock.Cache
             CssClass = noteType.CssClass;
             IconCssClass = noteType.IconCssClass;
             Order = noteType.Order;
+            RequiresApprovals = noteType.RequiresApprovals;
+            AllowsWatching = noteType.AllowsWatching;
+            AllowsReplies = noteType.AllowsReplies;
+            MaxReplyDepth = noteType.MaxReplyDepth;
+            BackgroundColor = noteType.BackgroundColor;
+            FontColor = noteType.FontColor;
+            BorderColor = noteType.BorderColor;
+            SendApprovalNotifications = noteType.SendApprovalNotifications;
+            AutoWatchAuthors = noteType.AutoWatchAuthors;
+            ApprovalUrlTemplate = noteType.ApprovalUrlTemplate;
         }
 
         /// <summary>
@@ -168,7 +285,8 @@ namespace Rock.Cache
         {
             var allEntityNoteTypes = CacheEntityNoteTypes.Get();
 
-            if ( allEntityNoteTypes == null ) return new List<CacheNoteType>();
+            if ( allEntityNoteTypes == null )
+                return new List<CacheNoteType>();
 
             var matchingNoteTypeIds = allEntityNoteTypes.EntityNoteTypes
                 .Where( a => a.EntityTypeId.Equals( entityTypeid ) )

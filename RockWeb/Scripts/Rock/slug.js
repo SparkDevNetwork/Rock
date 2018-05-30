@@ -38,7 +38,7 @@
             var inputSlug = $(this).val();
             var rowLength = $(_selectors.slugRow).length;
             if (rowLength === 0 && inputSlug !== '') {
-                var html = '<div class="row margin-l-sm margin-b-sm rollover-container js-slug-row clearfix">' +
+                var html = '<div class="form-group rollover-container js-slug-row">' +
                     '<input id="slugId" class="js-slug-id" type="hidden" value="" />' +
                     '</div >';
                 $(_selectors.btnAdd).before(html);
@@ -57,7 +57,7 @@
         $(_selectors.btnAdd).click(function (e) {
             e.preventDefault();
             e.stopPropagation();
-            var html = '<div class="row margin-l-sm margin-b-sm rollover-container js-slug-row clearfix">' +
+            var html = '<div class="form-group rollover-container js-slug-row">' +
                 '<input id="slugId" class="js-slug-id" type="hidden" value="" />' +
                 '<div class="input-group input-slug-group">' +
                 '<input class="form-control js-slug-input" />' +
@@ -155,7 +155,7 @@
             $(_contentSlugSelector).val(slug);
         }
         $(row).find(_selectors.inputGroup).remove();
-        var html = '<literal class="js-slug-literal">' + slug + '</literal>' +
+        var html = '<span class="js-slug-literal">' + slug + '</span>' +
             '<div class="rollover-item actions pull-right">' +
             '<a class="js-slug-edit" href="#"><i class="fa fa-pencil"></i></a>' +
             '<a class="js-slug-remove" href="#"><i class="fa fa-close"></i></a>' +

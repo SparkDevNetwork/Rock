@@ -108,6 +108,7 @@ namespace Rock.Model
             target.ScheduleId = source.ScheduleId;
             target.ScheduleModifiedDateTime = source.ScheduleModifiedDateTime;
             target.ScheduleName = source.ScheduleName;
+            target.StatusValueId = source.StatusValueId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

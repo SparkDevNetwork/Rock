@@ -15,7 +15,7 @@
                             <li class="header">{{ grandchildPage.Title }}</li>
                             {%- if grandchildPage.DisplayChildPages == 'true' -%}
                                 {%- for greatgrandchildPage in grandchildPage.Pages -%}
-                                    {%- if greatgrandchildPage.IsParentOfCurrent == 'true' -%}
+                                    {%- if greatgrandchildPage.IsParentOfCurrent == 'true' or greatgrandchildPage.Current == 'true' -%}
                                         <li class="current">
                                     {%- else -%}
                                         <li>

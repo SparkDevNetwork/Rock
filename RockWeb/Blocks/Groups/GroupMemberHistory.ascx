@@ -9,6 +9,7 @@
                 <h1 class="panel-title">
                     <i class="fa fa-history"></i>
                     <asp:Literal ID="lGroupTitle" runat="server" />
+                    <asp:Literal ID="lGroupGridTitle" runat="server" Text=" | Historical Group Members" Visible="false" />
                     <%-- lGroupMemberPreHtml and lGroupMemberTitle will be Visible=true when a GroupMember is selected  --%>
                     <asp:Literal ID="lGroupMemberPreHtml" runat="server" Text=" | " Visible="false" />
                     <asp:Literal ID="lGroupMemberTitle" runat="server" Visible="false" />
@@ -16,15 +17,7 @@
             </div>
 
             <asp:Panel ID="pnlMembers" runat="server" Visible="false">
-                <div class="panel panel-block">
-
-                    <div class="panel-heading clearfix">
-                        <h1 class="panel-title pull-left">
-                            <i class="fa fa-users"></i>
-                            <asp:Literal ID="lHeading" runat="server" Text="Historical Group Members" />
-                        </h1>
-                    </div>
-
+                <div class="panel-body">
                     <div class="grid grid-panel">
                         <Rock:GridFilter ID="gfGroupMembers" runat="server" OnDisplayFilterValue="gfGroupMembers_DisplayFilterValue" OnClearFilterClick="gfGroupMembers_ClearFilterClick" OnApplyFilterClick="gfGroupMembers_ApplyFilterClick">
                             <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" />
@@ -47,7 +40,6 @@
                             </Columns>
                         </Rock:Grid>
                     </div>
-
                 </div>
 
                 <script>
@@ -97,10 +89,8 @@
                 </script>
             </asp:Panel>
 
-            <div class="panel-body">
-                <asp:Literal ID="lTimelineHtml" runat="server" />
-            </div>
-        </div>
 
+            <asp:Literal ID="lTimelineHtml" runat="server" />
+        </div>
     </ContentTemplate>
 </asp:UpdatePanel>

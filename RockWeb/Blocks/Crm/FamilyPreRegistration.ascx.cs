@@ -519,13 +519,12 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                         if ( !inPrimaryFamily )
                         {
                             var familyMember = new GroupMember();
-                            groupMemberService.Add( familyMember );
-
                             familyMember.GroupId = primaryFamily.Id;
                             familyMember.PersonId = person.Id;
                             familyMember.GroupRoleId = childRoleId;
                             familyMember.GroupMemberStatus = GroupMemberStatus.Active;
 
+                            groupMemberService.Add( familyMember );
                             _rockContext.SaveChanges();
                         }
                     }
@@ -1485,13 +1484,12 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
 
             // Add the person to the family
             var familyMember = new GroupMember();
-            groupMemberService.Add( familyMember );
-
             familyMember.GroupId = newFamilyId.Value;
             familyMember.PersonId = personId;
             familyMember.GroupRoleId = childRoleId;
             familyMember.GroupMemberStatus = GroupMemberStatus.Active;
 
+            groupMemberService.Add( familyMember );
             _rockContext.SaveChanges();
         }
 

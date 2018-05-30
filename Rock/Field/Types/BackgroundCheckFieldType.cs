@@ -18,12 +18,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
-
+using Rock.Cache;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
-using System.Web.UI.WebControls;
-using Rock.Cache;
 
 namespace Rock.Field.Types
 {
@@ -33,7 +31,10 @@ namespace Rock.Field.Types
     /// </summary>
     public class BackgroundCheckFieldType : BinaryFileFieldType
     {
-
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
         public override List<Control> ConfigurationControls()
         {
             return base.ConfigurationControls();

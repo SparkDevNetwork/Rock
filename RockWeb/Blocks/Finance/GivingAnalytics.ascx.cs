@@ -677,7 +677,7 @@ function(item) {
                 cblAccounts.SetValues( accountIdList );
             }
 
-            dvpDataView.SetValue( GetSetting( keyPrefix, "DataView" ) );
+            dvpDataView.SetValue( GetSetting( keyPrefix, "DataView" ).AsIntegerOrNull() );
             HideShowDataViewResultOption();
 
             rblDataViewAction.SetValue( GetSetting( keyPrefix, "DataViewAction" ) );
