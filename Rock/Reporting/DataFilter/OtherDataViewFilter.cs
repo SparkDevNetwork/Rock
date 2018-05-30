@@ -138,7 +138,7 @@ namespace Rock.Reporting.DataFilter
         {
             int entityTypeId = CacheEntityType.Get( entityType ).Id;
 
-            var ddlDataViews = new DataViewPicker();
+            var ddlDataViews = new DataViewItemPicker();
             ddlDataViews.ID = filterControl.ID + "_0";
             filterControl.Controls.Add( ddlDataViews );
             
@@ -185,7 +185,7 @@ namespace Rock.Reporting.DataFilter
         /// <returns></returns>
         public override string GetSelection( Type entityType, Control[] controls )
         {
-            return ( (DataViewPicker)controls[0] ).SelectedValue;
+            return ( ( DataViewItemPicker ) controls[0] ).SelectedValue;
         }
 
         /// <summary>
@@ -196,7 +196,7 @@ namespace Rock.Reporting.DataFilter
         /// <param name="selection">The selection.</param>
         public override void SetSelection( Type entityType, Control[] controls, string selection )
         {
-            ( (DataViewPicker)controls[0] ).SelectedValue = selection;
+            ( ( DataViewItemPicker ) controls[0] ).SetValue( selection.AsIntegerOrNull() );
         }
 
         /// <summary>

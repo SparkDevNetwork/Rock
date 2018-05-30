@@ -166,13 +166,23 @@ namespace Rock.Transactions
                             var clientOs = client.OS.ToString();
                             var clientBrowser = client.UserAgent.ToString();
 
-                            // remove site name from browser title
-                            if ( BrowserTitle.Contains( "|" ) )
+                            var title = string.Empty;
+                            if ( BrowserTitle.IsNotNullOrWhitespace() )
                             {
-                                BrowserTitle = BrowserTitle.Substring( 0, BrowserTitle.LastIndexOf( '|' ) ).Trim();
+                                title = BrowserTitle;
+                            }
+                            else
+                            {
+                                title = PageTitle;
                             }
 
-                            var interaction = new InteractionService( rockContext ).AddInteraction( interactionComponent.Id, null, "View", BrowserTitle, Url, PersonAliasId, DateViewed,
+                            // remove site name from browser title
+                            if ( title.Contains( "|" ) )
+                            {
+                                title = title.Substring( 0, title.LastIndexOf( '|' ) ).Trim();
+                            }
+
+                            var interaction = new InteractionService( rockContext ).AddInteraction( interactionComponent.Id, null, "View", title, Url, PersonAliasId, DateViewed,
                                 clientBrowser, clientOs, clientType, userAgent, IPAddress, this.SessionId?.AsGuidOrNull() );
 
                             if ( Url.IsNotNullOrWhitespace() && Url.IndexOf( "utm_", StringComparison.OrdinalIgnoreCase ) >= 0 )

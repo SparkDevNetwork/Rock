@@ -12,7 +12,7 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
 {%- endif -%}
 
 {%- capture fontStyle -%}{%- if note.NoteType.FontColor != '' -%}color: {{ note.NoteType.FontColor }};{%- endif -%}{%- endcapture -%}
-{%- capture borderStyle -%}{%- if note.NoteType.BorderColor != '' -%}box-shadow: inset px 0 0 0 {{ note.NoteType.BorderColor }};{%- endif -%}{%- endcapture -%}
+{%- capture borderStyle -%}{%- if note.NoteType.BorderColor != '' -%}box-shadow: inset 5px 0 0 0 {{ note.NoteType.BorderColor }};{%- endif -%}{%- endcapture -%}
 {%- capture backgroundStyle -%}{%- if note.NoteType.BackgroundColor != '' -%}background-color: {{ note.NoteType.BackgroundColor }};{%- endif -%}{%- endcapture -%}
 {%- capture wrapperStyle -%}{{ borderStyle }}{{ fontStyle }}{{ backgroundStyle }}{%- endcapture -%}
 {%- if wrapperStyle != '' -%}{%- capture wrapperStyle -%}style="{{ wrapperStyle }}"{%- endcapture -%}{%- endif -%}

@@ -98,7 +98,7 @@
                                 </ItemTemplate>
                             </Rock:RockTemplateField>
                             <Rock:RockBoundField DataField="Connector" HeaderText="Connector" SortExpression="Connector.PersonAlias.Person.LastName,Connector.PersonAlias.Person.NickName" />
-                            <Rock:RockBoundField DataField="LastActivity" HeaderText="Last Activity" HtmlEncode="false" />
+                            <Rock:RockBoundField DataField="LastActivity" HeaderText="Last Activity" HtmlEncode="false" SortExpression="LastActivity" />
                             <Rock:RockBoundField DataField="LastActivityNote" HeaderText="Last Activity Note" HtmlEncode="false" />
                             <asp:TemplateField HeaderText="State" SortExpression="ConnectionState" >
                                 <ItemTemplate>
