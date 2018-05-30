@@ -50,7 +50,8 @@ namespace RockWeb.Blocks.Core
     [BooleanField( "Allow Backdated Notes", "", false, "", 12 )]
     [NoteTypeField( "Note Types", "Optional list of note types to limit display to", true, "", "", "", false, "", "", 12 )]
     [BooleanField( "Display Note Type Heading", "Should each note's Note Type be displayed as a heading above each note?", false, "", 13 )]
-    [CodeEditorField( "Note View Lava Template", "The Lava Template to use when rendering the readonly view of all the notes.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false, @"{% include '~~/Assets/Lava/NoteViewList.lava' %}", order: 14 )]
+    [BooleanField( "Expand Replies", "Should replies to automatically expanded?", false, "", 14 )]
+    [CodeEditorField( "Note View Lava Template", "The Lava Template to use when rendering the readonly view of all the notes.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false, @"{% include '~~/Assets/Lava/NoteViewList.lava' %}", order: 15 )]
     public partial class Notes : RockBlock, ISecondaryBlock
     {
         #region Base Control Methods
@@ -113,7 +114,8 @@ namespace RockWeb.Blocks.Core
                         ShowCreateDateInput = GetAttributeValue( "AllowBackdatedNotes" ).AsBoolean(),
                         NoteViewLavaTemplate = GetAttributeValue( "NoteViewLavaTemplate" ),
                         DisplayNoteTypeHeading = GetAttributeValue( "DisplayNoteTypeHeading" ).AsBoolean(),
-                        UsePersonIcon = GetAttributeValue( "UsePersonIcon" ).AsBoolean()
+                        UsePersonIcon = GetAttributeValue( "UsePersonIcon" ).AsBoolean(),
+                        ExpandReplies = GetAttributeValue( "ExpandReplies" ).AsBoolean()
                     };
 
                     notesTimeline.NoteOptions = noteOptions;

@@ -114,6 +114,7 @@ namespace Rock.Model
         /// The parent note identifier.
         /// </value>
         [DataMember]
+        [IgnoreCanDelete]
         public int? ParentNoteId { get; set; }
 
         /// <summary>
@@ -339,6 +340,65 @@ namespace Rock.Model
                 return approvalUrl;
             }
         }
+
+        /// <summary>
+        /// Gets a value indicating whether the currently logged in person is watching this specific note
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is current person watching; otherwise, <c>false</c>.
+        /// </value>
+        [LavaInclude]
+        public virtual bool IsCurrentPersonWatching
+        {
+            get
+            {
+                var currentPerson = System.Web.HttpContext.Current?.Items["CurrentPerson"] as Person;
+                var currentPersonId = currentPerson?.Id;
+                if ( currentPersonId.HasValue )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        bool isWatching = new NoteWatchService( rockContext ).Queryable()
+                                .Where( a => a.NoteId == this.Id 
+                                    && a.WatcherPersonAlias.PersonId == currentPersonId.Value 
+                                    && a.IsWatching == true ).Any();
+
+                        return isWatching;
+                    }
+                }
+
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Gets the count of that are descendants (replies) of this note.
+        /// </summary>
+        /// <value>
+        /// The viewable descendents count.
+        /// </value>
+        [LavaInclude]
+        public virtual int ViewableDescendentsCount
+        {
+            get
+            {
+                if ( !_viewableDescendentsCount.HasValue )
+                {
+                    var currentPerson = System.Web.HttpContext.Current?.Items["CurrentPerson"] as Person;
+
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var noteDescendents = new NoteService( rockContext ).GetAllDescendents( this.Id ).ToList();
+                        var viewableDescendents = noteDescendents.ToList().Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) ).ToList();
+                        _viewableDescendentsCount = viewableDescendents.Count();
+                    }
+                }
+
+                return _viewableDescendentsCount.Value;
+            }
+        }
+
+        private int? _viewableDescendentsCount = null;
 
         /// <summary>
         /// Gets the parent security authority of this Note. Where security is inherited from.

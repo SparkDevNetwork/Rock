@@ -2,7 +2,7 @@
 ##Important Notes when customizing##
 any CSS Classes that are prefixed with 'js-' are hooks that are required for editing notes (see noteEditor.js and NoteContainer.cs)
 {%- endcomment -%}
-{%- assign viewableChildNotesCount = note.ViewableChildNotes | Size -%}
+{%- assign viewableChildNotesCount = note.ViewableDescendentsCount -%}
 {%- if note.IsAlert -%}
     {%- assign wrapperClass = "is-alert" -%}
 {%- elsif note.IsPrivateNote -%}
@@ -25,6 +25,8 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
     {%- endif -%}
     {%- assign noteDateTimeText =  noteDateTimeText | Append:' (' | Append:editedLabel | Append:')'%}
 {%- endif -%}
+
+{%- assign allowsWatching = note.NoteType.AllowsWatching -%}
 
 {%- assign canReply = note.NoteType.AllowsReplies -%}
 {%- if canReply and note.NoteType.MaxReplyDepth -%}
@@ -107,7 +109,7 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
                     </p>
 
                     {%- assign canEdit = note | HasRightsTo:'Edit' -%}
-                    {%- if canEdit or canReply -%}
+                    {%- if canEdit or canReply or allowsWatching -%}
                     <div class="dropdown">
                         <button id="{{ note.Id }}-options" class="btn btn-link btn-overflow" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-h"></i></button>
                         <ul class="dropdown-menu" id="{{ note.Id }}-optionsmenu" aria-labelledby="{{ note.Id }}-options"> 
@@ -118,6 +120,15 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
                             <li><button type="button" class="dropdown-item btn-link js-editnote">Edit</button></li>
                             <li><a class="dropdown-item-danger remove-note" href="#" onclick="{{ note.Id | Postback:'DeleteNote' }}">Delete</a></li>
                             {%- endif -%}
+                            {%- if allowsWatching -%}
+                                <li>
+                                    {%- if note.IsCurrentPersonWatching -%}
+                                    <a class="button unwatch-note" href="#" onclick="{{ note.Id | Postback:'UnwatchNote' }}">Unwatch</a>
+                                    {%- else -%}  
+                                    <a class="button watch-note" href="#" onclick="{{ note.Id | Postback:'WatchNote' }}">Watch</a>
+                                    {%- endif -%}
+                                </li>
+                            {%- endif -%}
                         </ul>
                     </div>
                     {%- endif -%}
@@ -125,7 +136,7 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
 
                 <div class="note-details">
                 <a href="#{{ note.NoteAnchorId }}" class="timestamp">
-                    <relative-time datetime="{{ note.EditedDateTime | Date:'yyyy-MM-ddTHH:mm:ss' }}" title="{{ note.EditedDateTime | Date:'MMMM d, yyyy, h:mm tt' }}">{{ noteDateTimeText }}</a>
+                    <relative-time datetime="{{ note.EditedDateTime | Date:'yyyy-MM-ddTHH:mm:ss' }}" title="{{ note.EditedDateTime | Date:'MMMM d, yyyy, h:mm tt' }}">{{ noteDateTimeText }}</relative-time>
                 </a>
                 {%- if note.NoteType.Name != 'Personal Note' -%}<span class="tag-flair">{%- if note.NoteType.BorderColor != '' -%}<span class="tag-color" style="background-color:{{ note.NoteType.BorderColor }}"></span>{%- endif -%}<span class="tag-label">{{ note.NoteType.Name }}</span></span>{%- endif -%}
                 </div>
@@ -158,7 +169,14 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
         {%- if noteReplyDepth == 1 -%}
             {{- -}}<div class="note-comments">
         {%- endif -%}
-        <ul class="list-unstyled note-list note-list-nested js-childnotes">
+
+        {%- assign expandNote = ExpandedNoteIds | Contains:note.Id -%}
+        {%- if NoteOptions.ExpandReplies or expandNote -%}
+            {%- assign childNotesStyle = '' -%}
+        {%- else -%}
+            {%- assign childNotesStyle = 'display: none;' -%}
+        {%- endif -%}
+        <ul class="list-unstyled note-list note-list-nested js-childnotes" style="{{ childNotesStyle }}">
         {%- for note in note.ViewableChildNotes -%}
             {%- include '~~/Assets/Lava/NoteViewItem.lava' -%}
             {%- assign noteReplyDepth = noteReplyDepth | Minus:1 -%}
