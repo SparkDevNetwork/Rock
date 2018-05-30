@@ -90,7 +90,7 @@ public partial class CacheManager : RockBlock
 
         var gridData = new List<CacheTagGridRow>();
 
-        foreach( var tag in cacheTags )
+        foreach ( var tag in cacheTags )
         {
             // do something here to get linked keys count
             long linkedKeys = RockCache.GetCountOfCachedItemsForTag( tag.Value );
@@ -104,10 +104,10 @@ public partial class CacheManager : RockBlock
 
             gridData.Add( row );
         }
+
         gCacheTagList.DataSource = gridData;
         gCacheTagList.DataBind();
     }
-
 
     /// <summary>
     /// Handles the Add event of the gCacheTagList control, shows the add tag modal.
@@ -185,8 +185,6 @@ public partial class CacheManager : RockBlock
         {
             ddlCacheTypes.Items.Add( new ListItem( cacheItemStat.Name, cacheItemStat.Name ) );
         }
-
-
     }
 
     /// <summary>
@@ -211,7 +209,6 @@ public partial class CacheManager : RockBlock
 
         DisplayNotification( nbMessage, result.Aggregate( (a, b) => a + Environment.NewLine + b ), NotificationBoxType.Success );
     }
-
 
     /// <summary>
     /// Computes and displays a summary of cache statistics.
@@ -252,7 +249,6 @@ public partial class CacheManager : RockBlock
         string htmlText = "Hits: {0:N0}<br />Misses: {1:N0}<br />Adds: {2:N0}<br />Gets: {3:N0}<br />Clears: {4:N0}";
         lCacheStatistics.Text = string.Format( htmlText, hits, misses, adds, gets, clears );
     }
-
 
     /// <summary>
     /// Handles the SaveClick event of the dlgAddTag control.
@@ -302,7 +298,6 @@ public partial class CacheManager : RockBlock
         return true;
     }
 
-    
     /// <summary>
     /// Saves the tag, caller is responsible for validation.
     /// </summary>
@@ -340,9 +335,36 @@ public partial class CacheManager : RockBlock
     /// </summary>
     private class CacheTagGridRow
     {
+        /// <summary>
+        /// Gets or sets the name of the tag.
+        /// </summary>
+        /// <value>
+        /// The name of the tag.
+        /// </value>
         public string TagName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the tag description.
+        /// </summary>
+        /// <value>
+        /// The tag description.
+        /// </value>
         public string TagDescription { get; set; }
+
+        /// <summary>
+        /// Gets or sets the linked keys.
+        /// </summary>
+        /// <value>
+        /// The linked keys.
+        /// </value>
         public long LinkedKeys { get; set; }
+
+        /// <summary>
+        /// Gets or sets the DefinedValue identifier for the tag
+        /// </summary>
+        /// <value>
+        /// The defined value identifier.
+        /// </value>
         public int DefinedValueId { get; set; }
     }
 

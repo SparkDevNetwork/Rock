@@ -26,7 +26,7 @@ namespace Rock.Cache
     /// </summary>
     public class RockCache
     {
-        private static readonly object _obj = new object();
+        private static readonly object Obj = new object();
         private static List<IRockCacheManager> _allManagers;
         private const string CACHE_TAG_REGION_NAME = "cachetags";
 
@@ -38,14 +38,18 @@ namespace Rock.Cache
         /// <param name="manager">The manager.</param>
         internal static void AddManager( IRockCacheManager manager )
         {
-            if ( manager == null ) return;
+            if ( manager == null )
+            {
+                return;
+            }
 
-            lock ( _obj )
+            lock ( Obj )
             {
                 if ( _allManagers == null )
                 {
                     _allManagers = new List<IRockCacheManager>();
                 }
+
                 _allManagers.Add( manager );
             }
         }
@@ -55,7 +59,11 @@ namespace Rock.Cache
         /// </summary>
         private static void ClearAll()
         {
-            if ( _allManagers == null ) return;
+            if ( _allManagers == null )
+            {
+                return;
+            }
+
             foreach ( var cacheManager in _allManagers )
             {
                 cacheManager?.Clear();
@@ -70,7 +78,10 @@ namespace Rock.Cache
         internal static void UpdateCacheHitMiss( string key, bool hit )
         {
             var httpContext = System.Web.HttpContext.Current;
-            if ( httpContext == null || !httpContext.Items.Contains( "Cache_Hits" ) ) return;
+            if ( httpContext == null || !httpContext.Items.Contains( "Cache_Hits" ) )
+            {
+                return;
+            }
 
             var cacheHits = httpContext.Items["Cache_Hits"] as Dictionary<string, bool>;
             cacheHits?.AddOrIgnore( key, hit );
@@ -86,11 +97,12 @@ namespace Rock.Cache
         /// <returns></returns>
         public string ToJson()
         {
-            return JsonConvert.SerializeObject( this, Formatting.None,
-                new JsonSerializerSettings()
-                {
-                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-                } );
+            var jsonSerializerSettings = new JsonSerializerSettings()
+            {
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+            };
+
+            return JsonConvert.SerializeObject( this, Formatting.None, jsonSerializerSettings );
         }
 
         #endregion
@@ -162,10 +174,16 @@ namespace Rock.Cache
                 return value;
             }
 
-            if ( itemFactory == null ) return null;
+            if ( itemFactory == null )
+            {
+                return null;
+            }
 
             value = itemFactory();
-            if ( value == null ) return null;
+            if ( value == null )
+            {
+                return null;
+            }
 
             if ( region.IsNotNullOrWhitespace() )
             {
@@ -225,12 +243,28 @@ namespace Rock.Cache
             AddOrUpdate( key, region, obj, expiration, string.Empty );
         }
 
+        /// <summary>
+        /// Adds or updates an item in cache.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="region">The region.</param>
+        /// <param name="obj">The object.</param>
+        /// <param name="expiration">The expiration.</param>
+        /// <param name="cacheTags">The cache tags.</param>
         public static void AddOrUpdate( string key, string region, object obj, DateTime expiration, string cacheTags )
         {
             var timespan = expiration.Subtract( RockDateTime.Now );
             AddOrUpdate( key, region, obj, timespan, cacheTags );
         }
 
+        /// <summary>
+        /// Adds or updates an item in cache.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="region">The region.</param>
+        /// <param name="obj">The object.</param>
+        /// <param name="expiration">The expiration.</param>
+        /// <param name="cacheTags">The cache tags.</param>
         public static void AddOrUpdate( string key, string region, object obj, TimeSpan expiration, string cacheTags )
         {
             if ( region.IsNotNullOrWhitespace() )
@@ -242,10 +276,10 @@ namespace Rock.Cache
                 RockCacheManager<object>.Instance.AddOrUpdate( key, obj, expiration );
             }
 
-            if( cacheTags.IsNotNullOrWhitespace() )
+            if ( cacheTags.IsNotNullOrWhitespace() )
             {
                 var cacheTagList = cacheTags.Split( ',' );
-                foreach( var cacheTag in cacheTagList )
+                foreach ( var cacheTag in cacheTagList )
                 {
                     var value = RockCacheManager<List<string>>.Instance.Cache.Get( cacheTag, CACHE_TAG_REGION_NAME ) ?? new List<string>();
                     if ( value.FirstOrDefault( v => v.Contains( key ) ) == null )
@@ -324,7 +358,7 @@ namespace Rock.Cache
 
             // Clear workflow trigger cache
             CacheWorkflowTriggers.Refresh();
-            //msgs.Add( "TriggerCache has been cleared" );
+            ////msgs.Add( "TriggerCache has been cleared" );
 
             return msgs;
         }
@@ -340,6 +374,7 @@ namespace Rock.Cache
             {
                 return "Nothing to clear";
             }
+
             if ( cacheTypeName.StartsWith( "Cache" ) )
             {
                 return ClearCachedItemsForType( Type.GetType( $"Rock.Cache.{cacheTypeName},Rock" ) );
@@ -355,12 +390,11 @@ namespace Rock.Cache
         /// <returns></returns>
         public static string ClearCachedItemsForType( Type cacheType )
         {
-            
-            Type rockCacheManagerType = typeof( RockCacheManager<> ).MakeGenericType( new Type[]{ cacheType } );
+            Type rockCacheManagerType = typeof( RockCacheManager<> ).MakeGenericType( new Type[] { cacheType } );
 
             foreach ( var manager in _allManagers )
             {
-                if( manager.GetType() == rockCacheManagerType )
+                if ( manager.GetType() == rockCacheManagerType )
                 {
                     manager.Clear();
                     return $"Cache for {cacheType.Name} cleared.";
@@ -370,6 +404,11 @@ namespace Rock.Cache
             return $"Nothing to clear for {cacheType.Name}.";
         }
 
+        /// <summary>
+        /// Clears all cached items for a non-rock cache types string, int, and object
+        /// </summary>
+        /// <param name="cacheTypeName">Name of the cache type.</param>
+        /// <returns></returns>
         public static string ClearCachedItemsForSystemType( string cacheTypeName )
         {
             switch ( cacheTypeName )
@@ -410,7 +449,10 @@ namespace Rock.Cache
         {
             var cacheStats = new List<CacheItemStatistics>();
 
-            if ( _allManagers == null ) return cacheStats;
+            if ( _allManagers == null )
+            {
+                return cacheStats;
+            }
 
             foreach ( var cacheManager in _allManagers )
             {
@@ -431,16 +473,16 @@ namespace Rock.Cache
         public static CacheItemStatistics GetStatisticsForType( Type cacheType )
         {
             var cacheStats = new CacheItemStatistics( string.Empty );
-            if( _allManagers == null )
+            if ( _allManagers == null )
             {
                 return cacheStats;
             }
 
             Type rockCacheManagerType = typeof( RockCacheManager<> ).MakeGenericType( new Type[] { cacheType } );
 
-            foreach( var manager in _allManagers )
+            foreach ( var manager in _allManagers )
             {
-                if( manager.GetType() == rockCacheManagerType )
+                if ( manager.GetType() == rockCacheManagerType )
                 {
                     cacheStats = manager.GetStatistics();
                     break;
@@ -450,6 +492,11 @@ namespace Rock.Cache
             return cacheStats;
         }
 
+        /// <summary>
+        /// Gets the cache statistics for a cache type
+        /// </summary>
+        /// <param name="cacheTypeName">Name of the cache type.</param>
+        /// <returns></returns>
         public static CacheItemStatistics GetStatForSystemType( string cacheTypeName )
         {
             var cacheStats = new CacheItemStatistics( string.Empty );
@@ -466,7 +513,7 @@ namespace Rock.Cache
             {
                 return RockCacheManager<int?>.Instance.GetStatistics();
             }
-            else if( cacheTypeName == "Object" )
+            else if ( cacheTypeName == "Object" )
             {
                 return RockCacheManager<object>.Instance.GetStatistics();
             }
@@ -485,6 +532,7 @@ namespace Rock.Cache
             {
                 return GetStatisticsForType( Type.GetType( $"Rock.Cache.{cacheTypeName},Rock" ) );
             }
+
             return GetStatForSystemType( cacheTypeName );
         }
 
