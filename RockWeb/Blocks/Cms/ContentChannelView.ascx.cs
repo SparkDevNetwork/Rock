@@ -611,7 +611,8 @@ $(document).ready(function() {
 
                 if ( OutputCacheDuration.HasValue && OutputCacheDuration.Value > 0 )
                 {
-                    AddCacheItem( OUTPUT_CACHE_KEY, outputContents, OutputCacheDuration.Value );
+                    string cacheTags = GetAttributeValue( "CacheTags" ) ?? string.Empty;
+                    AddCacheItem( OUTPUT_CACHE_KEY, outputContents, OutputCacheDuration.Value, cacheTags );
                 }
             }
 
@@ -656,7 +657,8 @@ $(document).ready(function() {
 
                     if ( ItemCacheDuration.HasValue && ItemCacheDuration.Value > 0 )
                     {
-                        AddCacheItem( TEMPLATE_CACHE_KEY, template, ItemCacheDuration.Value );
+                        string cacheTags = GetAttributeValue( "CacheTags" ) ?? string.Empty;
+                        AddCacheItem( TEMPLATE_CACHE_KEY, template, ItemCacheDuration.Value, cacheTags );
                     }
                 }
             }
@@ -834,7 +836,8 @@ $(document).ready(function() {
 
                         if ( ItemCacheDuration.HasValue && ItemCacheDuration.Value > 0 && !queryParameterFiltering )
                         {
-                            AddCacheItem( CONTENT_CACHE_KEY, items, ItemCacheDuration.Value );
+                            string cacheTags = GetAttributeValue( "CacheTags" ) ?? string.Empty;
+                            AddCacheItem( CONTENT_CACHE_KEY, items, ItemCacheDuration.Value, cacheTags );
                         }
 
                         // If items could be filtered by querystring values, check for filters

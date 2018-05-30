@@ -198,6 +198,7 @@ namespace RockWeb.Blocks.Utility
             var blockTitleIconCssClass = GetAttributeValue( "BlockTitleIconCssClass" );
             var metricValueCount = GetAttributeValue( "MetricValueCount" ).AsInteger();
             var cacheDuration = GetAttributeValue( "CacheDuration" ).AsInteger();
+            string cacheTags = GetAttributeValue( "CacheTags" ) ?? string.Empty;
 
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( RockPage, CurrentPerson );
 
@@ -286,7 +287,7 @@ namespace RockWeb.Blocks.Utility
                     cachedData.Metrics = metrics;
 
                     var expiration = RockDateTime.Now.AddSeconds( cacheDuration );
-                    RockCache.AddOrUpdate( cacheKey, string.Empty, cachedData, expiration );
+                    RockCache.AddOrUpdate( cacheKey, string.Empty, cachedData, expiration, cacheTags );
                 }
             }
 

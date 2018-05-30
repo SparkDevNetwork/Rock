@@ -242,7 +242,6 @@ namespace Rock.Cache
                 RockCacheManager<object>.Instance.AddOrUpdate( key, obj, expiration );
             }
 
-            // Add the tag here!
             if( cacheTags.IsNotNullOrWhitespace() )
             {
                 var cacheTagList = cacheTags.Split( ',' );
