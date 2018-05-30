@@ -1335,6 +1335,7 @@
     <Compile Include="Reporting\DataFilter\BenevolenceRequest\CampusFilter.cs" />
     <Compile Include="Reporting\DataFilter\BenevolenceRequest\TotalBenevolenceFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\BenevolenceRequestDataViewFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\CommunicationStatusFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\ConnectionRequestDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\FinancialPledgeDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\FinancialScheduledTransactionDataViewFilter.cs" />
