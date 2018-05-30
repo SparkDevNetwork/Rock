@@ -100,54 +100,52 @@ Update Family Status: {updateFamilyStatus}
             int recordsUpdated = 0;
             int recordsWithError = 0;
 
-            List<int> persons = new PersonService( new RockContext() )
+            var persons = new PersonService( new RockContext() )
                 .Queryable()
-                .Where( p => p.Gender == Gender.Unknown )
-                .Select( p => p.Id )
+                .AsNoTracking()
+                .Where( p => !string.IsNullOrEmpty( p.FirstName ) && p.Gender == Gender.Unknown )
                 .ToList();
 
-            foreach ( int personId in persons )
+            var firstNameGenderDictionary = new MetaFirstNameGenderLookupService( new RockContext() )
+                            .Queryable()
+                            .Where( n => n.FemalePercent >= autofillConfidence || n.MalePercent >= autofillConfidence )
+                            .ToDictionary( k => k.FirstName, v => new { v.MalePercent, v.FemalePercent }, StringComparer.OrdinalIgnoreCase );
+
+            foreach ( var person in persons )
             {
-                Person person = null;
                 try
                 {
                     using ( RockContext rockContext = new RockContext() )
                     {
-                        var personService = new PersonService( rockContext );
-                        person = personService.Get( personId );
-
-                        var nameGenderLookupService = new MetaFirstNameGenderLookupService( rockContext );
+                        // attach the person object to this rockContext so that it will do changetracking on it
+                        rockContext.People.Attach( person );
 
                         // find the name
-                        MetaFirstNameGenderLookup metaFirstNameGenderLookup = nameGenderLookupService
-                            .Queryable()
-                            .Where( n => n.FirstName == person.FirstName )
-                            .Where( n => n.FemalePercent >= autofillConfidence || n.MalePercent >= autofillConfidence )
-                            .FirstOrDefault();
+                        var metaFirstNameGenderLookup = firstNameGenderDictionary.GetValueOrNull( person.FirstName );
 
                         if ( metaFirstNameGenderLookup != null )
                         {
-                            List<Person> otherAdults = new List<Person>();
+                            List<Gender> otherAdultsGender = new List<Gender>();
 
                             // If the person is an adult we want to get the other adults in the family
                             // Adults will not update their gender if there is another adult in the family with the same gender
                             if ( person.AgeClassification == AgeClassification.Adult )
                             {
-                                otherAdults = person.GetFamilyMembers( false, rockContext )
+                                otherAdultsGender = person.GetFamilyMembers( false, rockContext )
                                     .AsNoTracking()
                                     .Where( m => m.Person.AgeClassification == AgeClassification.Adult )
-                                    .Select( m => m.Person )
+                                    .Select( m => m.Person.Gender )
                                     .ToList();
                             }
 
                             // Adults = Change based on the confidence unless they are in a family as an adult where there is another adult with the same gender
-                            if ( metaFirstNameGenderLookup.FemalePercent >= autofillConfidence && !otherAdults.Any( a => a.Gender == Gender.Female ) )
+                            if ( metaFirstNameGenderLookup.FemalePercent >= autofillConfidence && !otherAdultsGender.Any( a => a == Gender.Female ) )
                             {
                                 person.Gender = Gender.Female;
                                 rockContext.SaveChanges();
                                 recordsUpdated += 1;
                             }
-                            else if ( metaFirstNameGenderLookup.MalePercent >= autofillConfidence && !otherAdults.Any( a => a.Gender == Gender.Male ) )
+                            else if ( metaFirstNameGenderLookup.MalePercent >= autofillConfidence && !otherAdultsGender.Any( a => a == Gender.Male ) )
                             {
                                 person.Gender = Gender.Male;
                                 rockContext.SaveChanges();
@@ -1151,12 +1149,16 @@ Update Family Status: {updateFamilyStatus}
             }
 
             int recordsUpdated = 0;
+            int totalToUpdate = 0;
+            int recordsWithError = 0;
 
             context.UpdateLastStatusMessage( $"Processing Connection Status Update" );
 
             foreach ( var connectionStatusDataviewMapping in settings.ConnectionStatusValueIdDataviewIdMapping.Where( a => a.Value.HasValue ) )
             {
                 int connectionStatusValueId = connectionStatusDataviewMapping.Key;
+                var cacheConnectionStatusValue = CacheDefinedValue.Get( connectionStatusValueId );
+                context.UpdateLastStatusMessage( $"Processing Connection Status Update for {cacheConnectionStatusValue}" );
                 int dataViewId = connectionStatusDataviewMapping.Value.Value;
                 using ( var dataViewRockContext = new RockContext() )
                 {
@@ -1165,25 +1167,34 @@ Update Family Status: {updateFamilyStatus}
                     {
                         List<string> errorMessages = new List<string>();
                         var qryPersonsInDataView = dataView.GetQuery( null, dataViewRockContext, null, out errorMessages ) as IQueryable<Person>;
-                        if ( qryPersonsInDataView != null)
+                        if ( qryPersonsInDataView != null )
                         {
                             var personsToUpdate = qryPersonsInDataView.Where( a => a.ConnectionStatusValueId != connectionStatusValueId ).AsNoTracking().ToList();
-                            int totalToUpdate = personsToUpdate.Count();
-                            foreach( var person in personsToUpdate )
+                            totalToUpdate += personsToUpdate.Count();
+                            foreach ( var person in personsToUpdate )
                             {
-                                using ( var updateRockContext = new RockContext() )
+                                try
                                 {
-                                    // Attach the person to the updateRockContext so that it'll be tracked/saved using updateRockContext 
-                                    updateRockContext.People.Attach( person );
-                                    
-                                    recordsUpdated++;
-                                    person.ConnectionStatusValueId = connectionStatusValueId;
-                                    updateRockContext.SaveChanges();
-
-                                    if ( recordsUpdated % 100 == 0 )
+                                    using ( var updateRockContext = new RockContext() )
                                     {
-                                        context.UpdateLastStatusMessage( $"Processing Connection Status Update: {recordsUpdated:N0} of {totalToUpdate:N0}" );
+                                        // Attach the person to the updateRockContext so that it'll be tracked/saved using updateRockContext 
+                                        updateRockContext.People.Attach( person );
+
+                                        recordsUpdated++;
+                                        person.ConnectionStatusValueId = connectionStatusValueId;
+                                        updateRockContext.SaveChanges();
+
+                                        if ( recordsUpdated % 100 == 0 )
+                                        {
+                                            context.UpdateLastStatusMessage( $"Processing Connection Status Update for {cacheConnectionStatusValue}: {recordsUpdated:N0} of {totalToUpdate:N0}" );
+                                        }
                                     }
+                                }
+                                catch ( Exception ex )
+                                {
+                                    // log but don't throw
+                                    ExceptionLogService.LogException( new Exception( $"Exception occurred trying to update connection status for PersonId:{person.Id}.", ex ), _httpContext );
+                                    recordsWithError += 1;
                                 }
                             }
                         }
@@ -1192,7 +1203,13 @@ Update Family Status: {updateFamilyStatus}
             }
 
             // Format the result message
-            return $"{recordsUpdated:N0} person records were updated with new connection status.";
+            string result = $"{recordsUpdated:N0} person records were updated with new connection status.";
+            if ( recordsWithError > 0 )
+            {
+                result += " {recordsWithError:N0} records logged an exception.";
+            }
+
+            return result;
         }
 
         #endregion  Update Person Connection Status
@@ -1213,6 +1230,7 @@ Update Family Status: {updateFamilyStatus}
             }
 
             int recordsUpdated = 0;
+            int totalToUpdate = 0;
 
             context.UpdateLastStatusMessage( $"Processing Family Status Update" );
 
@@ -1230,14 +1248,14 @@ Update Family Status: {updateFamilyStatus}
                         if ( qryGroupsInDataView != null )
                         {
                             var groupsToUpdate = qryGroupsInDataView.Where( a => a.StatusValueId != groupStatusValueId ).AsNoTracking().ToList();
-                            int totalToUpdate = groupsToUpdate.Count();
+                            totalToUpdate += groupsToUpdate.Count();
                             foreach ( var group in groupsToUpdate )
                             {
                                 using ( var updateRockContext = new RockContext() )
                                 {
                                     // Attach the group to the updateRockContext so that it'll be tracked/saved using updateRockContext 
                                     updateRockContext.Groups.Attach( group );
-                                    
+
                                     recordsUpdated++;
                                     group.StatusValueId = groupStatusValueId;
                                     updateRockContext.SaveChanges();

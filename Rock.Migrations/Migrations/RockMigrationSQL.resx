@@ -748,4 +748,16 @@
   <data name="_201805171836577_Rollup_0517_spAnalytics_ETL_Attendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201805171836577_rollup_0517_spanalytics_etl_attendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
+  <data name="_201805211735573_Homepage_ContentChannel" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201805211735573_homepage_contentchannel.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201805211735573_Homepage_ContentChannel_Down" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201805211735573_homepage_contentchannel_down.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201805211735573_Homepage_Metrics" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201805211735573_homepage_metrics.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201805211735573_Homepage_Metrics_Down" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201805211735573_homepage_metrics_down.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
 </root>

@@ -30,7 +30,7 @@ Rock McKinley 7.4
 + Fixed an issue preventing user-drawn geofences from filtering groups and people.
 + Fixed an issue that kept inline Lava shortcodes from having recursive capabilities.
 + Fixed an issue when impersonating another user that would result in the Restore button not always being visible in the administrator toolbar.
-+ Fixed an issue where copying a communication template would not reset IsSystem to false.)
++ Fixed an issue where copying a communication template would not reset IsSystem to false.
 + Fixed an issue where text and SMS messages created through a workflow, job, etc., would not resolve Lava commands successfully.
 + Fixed an issue where the URL value on Redirect workflow actions was getting lost.
 + Fixed an issue with communication recipient fields not working for a dataview when used by a Dynamic Report block.
@@ -42,6 +42,7 @@ Rock McKinley 7.4
 + Fixed check-out success message to correctly show the schedule name instead of the frequency.
 + Fixed Communication Entry to create recipient correctly when linked to a person from another page (i.e., from Person Profile).
 + Fixed confirmation email for registration never being received. Changed email send logic to better fall back on global org email for the from address if one is not specified in the email object.
++ Fixed error in the batch list that prevented batches in the grid list from being opened or closed using the drop down list. (Fixes #2977)
 + Fixed error that could occur when using the Attribute Editor to edit attributes with different field types and at least one of the field types had multiple configuration controls.
 + Fixed error when adding a person to a new family in a workflow.
 + Fixed event registration so that it displays fees in the correct order.

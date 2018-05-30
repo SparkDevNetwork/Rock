@@ -87,7 +87,8 @@
     margin-bottom: 4px;
     text-align: center;
 
-    .full-name, .previous-names {
+    .full-name,
+    .previous-names {
       display: none;
       font-size: 18px;
     }
@@ -263,7 +264,7 @@
 }
 
 .originate-call {
-  &:before {
+  &::before {
     margin-right: 6px;
     font-family: @fa-font-face;
     font-weight: @fa-theme-weight;
@@ -309,7 +310,7 @@
 .badge-era {
   position: relative;
 
-  &:before {
+  &::before {
     font-family: @fa-font-face;
     font-size: 45px;
     font-weight: @fa-theme-weight;
@@ -360,7 +361,7 @@
         min-height: 1px;
         background: @persondetails-badge-color;
 
-        @media screen and (-webkit-min-device-pixel-ratio:0) {
+        @media screen and (-webkit-min-device-pixel-ratio: 0) {
           // needed for chrome but kills ie
           position: absolute;
           bottom: 0;
@@ -403,7 +404,7 @@
         min-height: 2px;
         background: lighten(#4f89bd, 20%);
 
-        @media screen and (-webkit-min-device-pixel-ratio:0) {
+        @media screen and (-webkit-min-device-pixel-ratio: 0) {
           // needed for chrome but kills ie
           position: absolute;
           bottom: 0;
@@ -451,7 +452,7 @@
   color: #686576;
 
   .duration-metric {
-    &:before {
+    &::before {
       font-family: @fa-font-face;
       font-size: 45px;
       font-weight: @fa-theme-weight;
@@ -502,7 +503,7 @@
     position: relative;
     color: #686576;
 
-    &:before {
+    &::before {
       font-family: @fa-font-face;
       font-size: 45px;
       font-weight: @fa-theme-weight;
@@ -722,23 +723,25 @@
       }
 
       .person-image {
-        border-color: @persondetails-familybar-photo-bg;
-        border-radius: 50%;
+        position: relative;
         overflow: hidden;
         background-color: #fafafa;
+        background-position: center;
+        background-size: cover;
         border: none;
-        position:relative;
+        border-color: @persondetails-familybar-photo-bg;
+        border-radius: 50%;
 
         &::after {
-          border: 1px solid rgba(0,0,0,.0975);
-          border-radius: 50%;
+          position: absolute;
+          top: 0;
+          right: 0;
           bottom: 0;
-          content: "";
           left: 0;
           pointer-events: none;
-          position: absolute;
-          right: 0;
-          top: 0;
+          content: "";
+          border: 1px solid rgba(0,0,0,.0975);
+          border-radius: 50%;
         }
       }
 
@@ -825,7 +828,7 @@
 // history page
 span.field-name {
   padding: 2px 4px;
-  font-family: Monaco,Menlo,Consolas,"Courier New",monospace;
+  font-family: @font-family-monospace;
   font-size: 90%;
   color: @pagetitle-text-color;
   white-space: nowrap;
@@ -836,7 +839,7 @@ span.field-name {
 /* white-space was nowrap but changed to inherit; see discussion at https://github.com/SparkDevNetwork/Rock/commit/e4230496c8a1dc199f1bbb26f95dfa025d64dd02#r28278277 */
 span.field-value {
   padding: 2px 4px;
-  font-family: Monaco,Menlo,Consolas,"Courier New",monospace;
+  font-family: @font-family-monospace;
   font-size: 90%;
   color: @pagetitle-text-color;
   white-space: inherit;
@@ -904,7 +907,7 @@ span.field-value {
     > tbody > tr {
       counter-increment: rowNumber;
 
-      &:before {
+      &::before {
         /* Now like a table header */
         position: relative;
         display: block;
@@ -923,31 +926,31 @@ span.field-value {
 
     /* Label the data */
     tbody {
-      td:nth-of-type(1):before {
+      td:nth-of-type(1)::before {
         content: "Role";
       }
 
-      td:nth-of-type(2):before {
+      td:nth-of-type(2)::before {
         content: "Title";
       }
 
-      td:nth-of-type(3):before {
+      td:nth-of-type(3)::before {
         content: "Name";
       }
 
-      td:nth-of-type(4):before {
+      td:nth-of-type(4)::before {
         content: "Suffix";
       }
 
-      td:nth-of-type(5):before {
+      td:nth-of-type(5)::before {
         content: "Connection Status";
       }
 
-      td:nth-of-type(6):before {
+      td:nth-of-type(6)::before {
         content: "Gender";
       }
 
-      td:nth-of-type(7):before {
+      td:nth-of-type(7)::before {
         content: "Birthdate";
       }
 
@@ -955,16 +958,17 @@ span.field-value {
         display: none;
       }
 
-      td:nth-of-type(8):before {
+      td:nth-of-type(8)::before {
         content: "Grade";
       }
 
-      td:nth-of-type(9):before {
+      td:nth-of-type(9)::before {
         content: "Cancel";
       }
     }
 
-    > tfoot, > tfoot > tr > td {
+    > tfoot,
+    > tfoot > tr > td {
       display: block;
       width: 100%;
       padding: 0;
@@ -988,7 +992,6 @@ span.field-value {
     }
   }
 }
-
 
 
 // 8. Add Groups
@@ -1024,7 +1027,8 @@ span.field-value {
     .name {
       text-align: left;
 
-      .full-name, .previous-names {
+      .full-name,
+      .previous-names {
         display: inline;
       }
     }
@@ -1064,10 +1068,6 @@ span.field-value {
       }
     }
   }
-}
-
-/* Large devices (large desktops, 1200px and up) */
-@media (min-width: @screen-lg-min) {
 }
 
 // 11. Person Merge
@@ -1254,7 +1254,7 @@ tr.inactive {
   .discbar {
     border: 1px solid #ddd;
 
-    &:before {
+    &::before {
       position: absolute;
       top: 5%;
       right: 0;

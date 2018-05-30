@@ -37,7 +37,8 @@
   transition: stroke-width .3s ease;
   fill: #b8c2cc;
   stroke: #8d99a6;
-  stroke-width: 0; }
+  stroke-width: 0;
+  opacity: 0.8 }
 
 .swimlanes .bar-invalid {
   fill: transparent;
@@ -49,8 +50,8 @@
 
 .swimlanes .bar-label {
   font-size: 12px;
-  font-weight: lighter;
-  fill: #fff;
+  font-weight: 400;
+  fill: #000;
   dominant-baseline: central;
   text-anchor: middle; }
   .swimlanes .bar-label.big {
@@ -141,7 +142,7 @@
                 </div>
 
                 <div class="actions">
-                    <asp:LinkButton ID="btnApplyOptions" runat="server" Text="Apply" CssClass="btn btn-primary" OnClick="btnApplyOptions_Click" />
+                    <asp:LinkButton ID="btnApplyOptions" runat="server" Text="Apply" CssClass="btn btn-primary btn-xs" OnClick="btnApplyOptions_Click" />
                 </div>
             </asp:Panel>
 

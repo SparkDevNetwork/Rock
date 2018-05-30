@@ -428,6 +428,17 @@ namespace RockWeb.Blocks.Cms
             ShowDetail( hfId.ValueAsInt() );
         }
 
+        protected void rSlugs_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            var lChannelUrl = e.Item.FindControl( "lChannelUrl" ) as Literal;
+            var slug = e.Item.DataItem as ContentChannelItemSlug;
+
+            if ( lChannelUrl != null && slug != null )
+            {
+                lChannelUrl.Text = GetSlugPrefix( slug.ContentChannelItem.ContentChannel );
+            }
+        }
+
         #region Child/Parent List Events
 
         private void gChildItems_GridRebind( object sender, GridRebindEventArgs e )
@@ -656,6 +667,28 @@ namespace RockWeb.Blocks.Cms
         #region Internal Methods
 
         /// <summary>
+        /// Gets the slug prefix.
+        /// </summary>
+        /// <param name="channel">The channel.</param>
+        /// <returns></returns>
+        private string GetSlugPrefix( ContentChannel channel )
+        {
+            if ( channel.ItemUrl.IsNullOrWhiteSpace() )
+            {
+                return string.Empty;
+            }
+
+            var itemUrl = channel.ItemUrl.RemoveSpaces();
+
+            if ( itemUrl.EndsWith( "{{Slug}}" ) )
+            {
+                return itemUrl.Replace( "{{Slug}}", "" );
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
         /// Gets the type of the content.
         /// </summary>
         /// <param name="contentItemId">The content type identifier.</param>
@@ -750,6 +783,8 @@ namespace RockWeb.Blocks.Cms
                 this.Visible = false;
                 return;
             }
+
+            hfContentChannelItemUrl.Value = GetSlugPrefix( contentItem.ContentChannel );
 
             if ( contentItem.ContentChannel.IsTaggingEnabled )
             {

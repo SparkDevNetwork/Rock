@@ -191,9 +191,9 @@ namespace Rock.Model
             // and all the child models/components
             if ( authorized && string.Compare( action, Authorization.VIEW, true ) == 0 )
             {
-                if ( EntityType != null )
+                if ( EntityTypeId.HasValue )
                 {
-                    var filterComponent = Rock.Reporting.DataFilterContainer.GetComponent( EntityType.Name );
+                    var filterComponent = Rock.Reporting.DataFilterContainer.GetComponent( CacheEntityType.Get( this.EntityTypeId.Value )?.Name );
                     if ( filterComponent != null )
                     {
                         authorized = filterComponent.IsAuthorized( action, person );

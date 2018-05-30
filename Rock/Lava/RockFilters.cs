@@ -1113,24 +1113,30 @@ namespace Rock.Lava
 
             if ( date.HasValue )
             {
-                TimeSpan timeInterval = new TimeSpan();
                 switch ( interval )
                 {
+                    case "y":
+                        date = date.Value.AddYears( amount );
+                        break;
+                    case "M":
+                        date = date.Value.AddMonths( amount );
+                        break;
+                    case "w":
+                        date = date.Value.AddDays( amount * 7 );
+                        break;
                     case "d":
-                        timeInterval = new TimeSpan( amount, 0, 0, 0 );
+                        date = date.Value.AddDays( amount );
                         break;
                     case "h":
-                        timeInterval = new TimeSpan( 0, amount, 0, 0 );
+                        date = date.Value.AddHours( amount );
                         break;
                     case "m":
-                        timeInterval = new TimeSpan( 0, 0, amount, 0 );
+                        date = date.Value.AddMinutes( amount );
                         break;
                     case "s":
-                        timeInterval = new TimeSpan( 0, 0, 0, amount );
+                        date = date.Value.AddSeconds( amount );
                         break;
                 }
-
-                date = date.Value.Add( timeInterval );
             }
 
             return date;
@@ -3419,6 +3425,23 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Convert strings within the text that appear to be http/ftp/https links into clickable html links
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string Linkify( string input)
+        {
+            if ( input != null )
+            {
+                return input.Linkify();
+            }
+            else
+            {
+                return input;
+            }
+        }
+
+        /// <summary>
         /// adds a meta tag to the head of the document
         /// </summary>
         /// <param name="input">The input to use for the content attribute of the tag.</param>
@@ -4264,10 +4287,9 @@ namespace Rock.Lava
         /// <exception cref="System.Exception">Could not determine type for the input provided. Consider passing it in (e.g. 'Rock.Model.Person')</exception>
         public static bool HasRightsTo( DotLiquid.Context context, object input, string verb, string typeName = "" )
         {
-          
             if (string.IsNullOrWhiteSpace( verb ) )
             {
-                throw new Exception( "Could not determine the verd to check against (e.g. 'View', 'Edit'...)" );
+                throw new Exception( "Could not determine the verb to check against (e.g. 'View', 'Edit'...)" );
             }
 
             if ( input == null )
@@ -4276,13 +4298,17 @@ namespace Rock.Lava
             }
             else
             {
-                var type = input.GetType();
-
                 // if the input is a model call IsAuthorized and get out of here
-                if ( type.IsAssignableFrom( typeof( ISecured ) ) )
+                if ( input is ISecured )
                 {
                     var model = (ISecured)input;
                     return model.IsAuthorized( verb, GetCurrentPerson( context ) );
+                }
+
+                var type = input.GetType();
+                if ( type.IsDynamicProxyType() )
+                {
+                    type = type.BaseType;
                 }
 
                 // not so easy then...
@@ -4290,7 +4316,6 @@ namespace Rock.Lava
                 {
                     // attempt to read it from the input object
                     var propertyInfo = type.GetProperty( "TypeName" );
-
                     if ( propertyInfo != null )
                     {
                         typeName = propertyInfo.GetValue( input, null ).ToString();

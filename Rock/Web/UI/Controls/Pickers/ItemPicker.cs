@@ -852,7 +852,7 @@ $@"Rock.controls.itemPicker.initialize({{
         }
 
         /// <summary>
-        /// Sets the value.
+        /// Sets the selected value to the item with the specified id
         /// </summary>
         /// <param name="id">The id.</param>
         public void SetValue( int? id )
@@ -862,7 +862,7 @@ $@"Rock.controls.itemPicker.initialize({{
         }
 
         /// <summary>
-        /// Sets the values.
+        /// Sets the selected values to the items with the specified ids
         /// </summary>
         /// <param name="ids">The ids.</param>
         public void SetValues( IEnumerable<int> ids )

@@ -24,12 +24,12 @@ namespace Rock.Migrations
     public partial class Checkr_CreatePages : Migration
     {
         /// <summary>
-        /// The new Protect My Ministry workflow action name
+        /// The new Protect My Ministry workflow name
         /// </summary>
         public static readonly string NEW_PMM_WORKFLOW_TYPE_NAME = "Background Check (PMM)";
 
         /// <summary>
-        /// Makes the Checkr the default workflow action.
+        /// Makes the Checkr the default workflow action in Bio block.
         /// </summary>
         public void MakeCheckrDefaultWorkflowAction()
         {

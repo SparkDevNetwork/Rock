@@ -32,6 +32,8 @@ namespace Rock.Jobs
         {
             UpdateInteractionSummaryForPageViews();
             UpdateSlugForContentChannelItems();
+            CreateIndexInteractionPersonAliasSession();
+
             // Keep these two last.
             CreateIndexInteractionsForeignKey();
             DeleteJob( context.GetJobId() );
@@ -55,6 +57,24 @@ namespace Rock.Jobs
                     return;
                 }
             }
+        }
+
+        /// <summary>
+        /// Add an index to help with performance of the Session List block
+        /// </summary>
+        private static void CreateIndexInteractionPersonAliasSession()
+        {
+            using ( RockContext rockContext = new RockContext() )
+            {
+                rockContext.Database.ExecuteSqlCommand( @"
+    IF EXISTS ( SELECT * FROM sys.indexes WHERE NAME = 'IX_PersonAliasId_InteractionSessionId' AND object_id = OBJECT_ID('Interaction') )
+	DROP INDEX [IX_PersonAliasId_InteractionSessionId] ON [dbo].[Interaction]
+
+    CREATE NONCLUSTERED INDEX [IX_PersonAliasId_InteractionSessionId]
+    ON [dbo].[Interaction] ([PersonAliasId],[InteractionSessionId])
+    INCLUDE ([InteractionDateTime],[InteractionComponentId])
+" );
+            };
         }
 
         /// <summary>

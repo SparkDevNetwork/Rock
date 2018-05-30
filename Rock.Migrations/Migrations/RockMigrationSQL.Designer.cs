@@ -4991,5 +4991,69 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201805171836577_Rollup_0517_spAnalytics_ETL_Attendance", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DECLARE @ImageFieldTypeId int = ( SELECT TOP 1 [Id] FROM [FieldType] WHERE [Guid] = &apos;97F8157D-A8C8-4AB3-96A2-9CB2A9049E6D&apos; )
+        ///DECLARE @TextFieldTypeId int = ( SELECT TOP 1 [Id] FROM [FieldType] WHERE [Guid] = &apos;9C204CD0-1233-41C5-818A-C5DA439445AA&apos; )
+        ///DECLARE @HtmlFieldTypeId int = ( SELECT TOP 1 [Id] FROM [FieldType] WHERE [Guid] = &apos;dd7ed4c0-a9e0-434f-acfe-bd4f56b043df&apos; )
+        ///DECLARE @MatrixFieldTypeId int = ( SELECT TOP 1 [Id] FROM [FieldType] WHERE [Guid] = &apos;f16fc460-dc1e-4821-9012-5f21f974c677&apos; )
+        ///DECLARE @ [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201805211735573_Homepage_ContentChannel {
+            get {
+                return ResourceManager.GetString("_201805211735573_Homepage_ContentChannel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DELETE FROM [dbo].[BinaryFileData]
+        ///WHERE [GUID] IN (&apos;F49A2647-D433-4E69-B2E8-DDEA2CD35DD4&apos;, &apos;B7590A4F-2B9D-48E8-BC82-8FEC8529BBD1&apos;, &apos;42C08826-3A54-4763-A31F-5DF7879DD14A&apos;, &apos;FB3D9D9F-9A7D-465B-849B-6B06AE0FDBB4&apos;)
+        ///
+        ///DELETE FROM [dbo].[BinaryFile]
+        ///WHERE [GUID] IN (&apos;3839721C-856D-42E4-BDC3-8DFC11B93FE9&apos;, &apos;92955739-E8F1-4A5F-9CB5-25D0A09C634E&apos;, &apos;4B032178-1CCE-4D28-8601-1A958C883160&apos;, &apos;06899C1D-2CD4-4D80-8B05-D90C8E9EEC9D&apos;)
+        ///
+        ///DELETE FROM [dbo].[AttributeQualifier]
+        ///WHERE [GUID] IN 
+        ///	(&apos;1a95d9f2-6f56-4a30-9573 [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201805211735573_Homepage_ContentChannel_Down {
+            get {
+                return ResourceManager.GetString("_201805211735573_Homepage_ContentChannel_Down", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DECLARE @SourceValueTypeId int = ( SELECT TOP 1 [Id] FROM [DefinedValue] WHERE [Guid] = &apos;6a1e1a1b-a636-4e12-b90c-d7fd1bdae764&apos; )
+        ///DECLARE @CategoryId int = ( SELECT TOP 1 [Id] FROM [Category] WHERE [Guid] = &apos;073add0c-b1f3-43ab-8360-89a1ce05a95d&apos; )
+        ///
+        ///INSERT INTO [Metric] ( [IsSystem], [Title], [SubTitle], [Description], [IconCssClass], [IsCumulative], [SourceValueTypeId], [SourceSql], [YAxisLabel], [Guid], [NumericDataType] )
+        ///VALUES 
+        ///	( 0
+        ///	, &apos;Active Records&apos;
+        ///	, &apos;&apos;
+        ///	, &apos;The number of active person record [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201805211735573_Homepage_Metrics {
+            get {
+                return ResourceManager.GetString("_201805211735573_Homepage_Metrics", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 
+        ///DELETE FROM [dbo].[MetricValuePartition]
+        ///WHERE [Guid] IN (&apos;d72e40cf-2e85-44b9-b864-140a37e85afd&apos;,&apos;465d1cad-0798-4e3c-8671-b53c032a0eac&apos;, &apos;d7af2f13-8f7d-46a0-b91a-424c6b080afb&apos;)
+        ///
+        ///DELETE FROM [dbo].[MetricValue]
+        ///WHERE [GUID] IN (&apos;34325795-9016-47e9-a9d9-6283d1a84275&apos;, &apos;90cd5a83-3079-4656-b7ce-bfa21055c980&apos;, &apos;932479dd-9612-4d07-b9cd-9227976cf5dd&apos;)
+        ///
+        ///DELETE FROM [dbo].[MetricPartition]
+        ///WHERE [GUID] IN (&apos;20bd0c1e-2faf-41ea-b443-839cbe2dce9a&apos;, &apos;f879279d-3484-4f58-a16d-f64bdb277358&apos;, &apos;bd1bd405-e6f0-439b-90 [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201805211735573_Homepage_Metrics_Down {
+            get {
+                return ResourceManager.GetString("_201805211735573_Homepage_Metrics_Down", resourceCulture);
+            }
+        }
     }
 }
