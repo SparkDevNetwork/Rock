@@ -45,6 +45,12 @@
     margin: 0 auto;
 }
 
+.title h3 {
+    padding-top: unset;
+    color: #7A1315;
+    font-weight: unset;
+}
+
 .title-greeting {
     text-align: center; 
     color: #FFFFFF; 
@@ -1614,14 +1620,9 @@
     padding: 20px;
 }
 
-.recent-registration {
-    text-align: center;
-}
-
 .balance-due {
     color: red;
 }
-
 
 .recent-registrations {
     margin-top: 20px;

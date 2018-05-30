@@ -16,12 +16,14 @@
                     {% assign balanceDueCssClass = "balance-due" %}
                     {% capture balanceDueMessage %}<br />(Balance Due: {{ registration.BalanceDue | FormatAsCurrency }}){% endcapture %}
                 {% endif %}
-            <a href="/eventsv2/Registration?RegistrationId={{ registration.Id }}" class="recent-registration {{ balanceDueCssClass }}" >{{ registration.RegistrationInstance.Name }}{{ balanceDueMessage }}</a> 
+                <a href="/eventsv2/Registration?RegistrationId={{ registration.Id }}" class="recent-registration {{ balanceDueCssClass }}" >{{ registration.RegistrationInstance.Name }}{{ balanceDueMessage }}</a> 
                 
+                {% comment %} reset variables for next registration {% endcomment %}
+                {% assign balanceDueMessage = "" %}
+                {% assign balanceDueCssClass = "" %}
             {% endfor %}
         {% else %}
             No Recent Registrations
         {% endif %}
     </div>
 </div>
-

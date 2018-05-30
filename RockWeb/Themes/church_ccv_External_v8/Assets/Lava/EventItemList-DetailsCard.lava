@@ -1,7 +1,7 @@
 {% comment %}YOU MUST SET THE ID VIA {% assign eventDetailsCardId = value %} BEFORE INCLUDING {% endcomment %}
 {% comment %}YOU MUST SET THE DISPLAY PROPERTY VIA {% assign eventDetailCardDisplayStyle = 'none' %} BEFORE INCLUDING {% endcomment %}
 <div id="event-details-card-{{eventDetailsCardId}}" class="event-detail-card" style="visibility: hidden; display: {{eventDetailCardDisplayStyle}};">
-   <img id="event-detail-card-img" src="" style="max-width: 400px; max-height: 400px;" class="img-responsive"></img>
+   <img id="event-detail-card-img" src="" style="object-fit: cover; max-width: 400px; max-height: 400px;" class="img-responsive"></img>
    
    <h4 id="event-detail-card-name"></h4>
    <p id="event-detail-card-summary"></p>

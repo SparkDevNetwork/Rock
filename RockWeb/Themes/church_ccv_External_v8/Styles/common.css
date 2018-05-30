@@ -71,10 +71,6 @@
 }
 
 @media screen and (max-width: 500px) {
-    .desktop-spacer-top {
-        display: none;
-    }
-
     #section-a-bg {
         padding: 20px;
     }
@@ -125,7 +121,7 @@
 /* Adjust page background for large screens */
 @media screen and (min-width: 1600px){
     .page-background {
-        background-size: contain;
+        background-size: unset;
     }
 }
 
@@ -256,7 +252,9 @@
 }
 
 .masthead-navitem.active {
-   border-bottom: 2px solid #555;
+    background: rgba( 255, 255, 255, .15);
+    border-radius: 4px;
+    color: #ffffff;
 }
 
 #masthead-navitem-register {
@@ -394,7 +392,7 @@
     font-family: akrobat;
     color: #FFFFFF;
     text-align: center;
-    padding-top: 70px;
+    padding-top: 100px;
 }
 
 .title p {
@@ -403,6 +401,7 @@
     font-size: 18px;
     font-family: heebo;
     font-weight: normal;
+    padding-bottom: 170px;
 }
 
 .desktop-spacer-top {
@@ -422,12 +421,17 @@
 
     .title p {
         font-size: 14px;
+        padding-bottom: 0;
     }
 
     .title img {
         padding-top: 0;
         margin: 0 auto;
         width: 250px;
+    }
+
+    .desktop-spacer-top {
+        display: none;
     }
 }
 
@@ -521,7 +525,45 @@
       margin-top: 0px;
    }
 }
+
+@media screen and (max-width: 500px) {
+    .graphicSection {
+        padding-top: 0;
+        padding-bottom: 0;
+     }
+}
 /*End 'Right Hand Side Video' fix */
+
+/*Use when you have layouts that have text on one side of the screen and a video on the other*/
+.info-and-video-container {
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 25px;
+    padding-top: 25px;
+}
+
+.info-and-video-container .video {
+    padding-top: 25px;
+}
+
+@media only screen and (min-width: 768px) {
+    .info-and-video-container {
+        flex-wrap: nowrap;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: unset;
+        padding-top: unset;
+    }
+
+    .info-and-video-container .info {
+        max-width: 40%;
+    }
+    
+    .info-and-video-container .video {
+        width: 50%;
+    }
+}
 
 /*  Start Event Card Styling */
 .event-cards-header {
@@ -690,22 +732,6 @@
 
 /* End Event Card Styling */
 
-/* Start Mobile View Styling  *** DO WE NEED, or left over from pmg2 days? *** */
-@media screen and (max-width: 800px) {
-    /* Push first section down below header */
-    #section-a-bg {
-        padding: 40px 0px;
-    }
-
-    /* Style Form Fields */
-    .form-control {
-        width: 100%;
-    }
-}
-
-/* End Mobile View Styling */
-
-
 /* Footer Styling */
 
 .footer {
@@ -735,6 +761,21 @@
     font-weight: 200;
 }
 
+.footer-social {
+    display: flex;
+}
+
+.footer-social i {
+    color: #FFFFFF;
+    font-size: 30px;
+    margin: 10px 0;
+    padding: 0 20px;
+}
+
+.footer-social i:first-of-type {
+    margin-left: -20px;
+}
+
 .footer-links {
     display: flex;
     justify-content: space-around;
@@ -749,7 +790,7 @@
 .footer-links-section {
     display: flex;
     flex-direction: column;
-    width: 100%;
+    width: 250px;
 }
 
 .footer-links-section h5 {
@@ -759,13 +800,6 @@
     width: 80%;
     margin: 0;
     margin-bottom: 10px;
-}
-
-.footer-links-section i {
-    color: #FFFFFF;
-    font-size: 30px;
-    margin: 10px 0;
-    padding-right: 10px;
 }
 
 .footer-links-section a {
@@ -795,6 +829,10 @@
 
 /* Footer Mobile Styling */
 @media screen and (max-width: 768px) {
+    .footer-links-section {
+        width: 100%;
+    }
+
     .footer-links-section h5 {
         text-align: center;
     }
@@ -807,7 +845,7 @@
         margin-left: 0;
     }
 }
-@media screen and (max-width: 500px) {
+@media screen and (max-width: 1100px) {
     .footer {
         flex-direction: column;
         align-items: center;
@@ -841,107 +879,3 @@
         align-items: center;
     }
 }
-
-
-
-
-
-
-/* 
-
-
-.mainfootersocial i {
-    color: #FFFFFF;
-    padding-right: 10px;
-    font-size: 20px;
-}
-
-@media screen and (min-width: 1024px) {
-    .mainfooter {
-        padding: 10px 40px;
-        display: block;
-    }
-
-    .mainfooter-flex {
-        display: flex;
-        justify-content: space-between;
-        text-align: start;
-    }
-
-    .mainfooterlinks {
-        flex-direction: row;
-    }
-
-    .mainfooterlogo {
-        display: flex;
-        flex-direction: column;
-        padding-top: 10px;
-    }
-
-    .mainfootersocial {
-        width: 250px;
-        padding: 0px 10px 20px 10px;
-    }
-
-    .mainfooter-privacypolicy {
-        margin-top: 0px;
-    }
-}
-
-@media screen and (min-width: 1200px) {
-    .mainfootersocial {
-        width: 300px;
-    }
-}
-
-@media screen and (min-width: 1400px) {
-    .mainfootersocial {
-        width: 350px;
-    }
-}
-
-.footernav {
-    text-transform: uppercase;
-    letter-spacing: .75px;
-    font-family: heebo;
-    font-size: 18px;
-    line-height: 25px;
-    margin-top: 44.1px;
-}
-
-.footernav-col {
-    display: inline-block;
-    text-align: left;
-    vertical-align: top;
-    padding-left: 30px;
-    max-width: 35%;
-}
-
-.footernav-col-main {
-    padding-left: 0;
-    font-weight: 700;
-}
-
-.footernav-header {
-    margin-top: 0;
-    font-size: inherit;
-}
-
-.footernav-items {
-    padding-left: 0;
-    list-style-type: none;
-}
-
-.footernav-item {
-    margin-bottom: 15px;
-    line-height: 1.1;
-}
-
-.footernav-item-sub {
-    opacity: .5;
-} */
-
-
-/* Footer Mobile styling  */
-
-/* End Footer Styling */

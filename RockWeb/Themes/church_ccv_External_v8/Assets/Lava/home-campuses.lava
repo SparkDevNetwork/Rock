@@ -21,7 +21,6 @@
                     <h4>{{ campus.Name}}</h4>
                     <p>{{ campus.Location.Street1 }}</p>
                     <p>{{ campus.Location.City }}, {{ campus.Location.State }} {{ campus.Location.PostalCode }}</p>
-                    <br />
                     <a class="directions" href="https://maps.google.com/?q={{ campus.Location.Street1 }},{{ campus.Location.City }},{{ campus.Location.State }},{{ campus.Location.PostalCode }}">Get Directions <i class="mdi mdi-chevron-right"></i></a>
                     <br />
                     <h5>Service Times</h5>
@@ -37,7 +36,7 @@
                         {% assign useLightIcon = true %}
                         {% include '~~/Assets/Lava/ServiceTimes/Grid.lava' %}
                     </div>
-                    <a class="btn btn-primary" href="/our-campuses/{{ campus.Name | Downcase }}">Learn More <i class="mdi mdi-chevron-right"></i></a>
+                    <a class="btn btn-primary btn-campus" href="/our-campuses/{{ campus.Name | Downcase }}">Learn More</a>
                 </div>
             {% endif %}
 

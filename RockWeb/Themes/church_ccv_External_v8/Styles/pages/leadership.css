@@ -6,3 +6,39 @@
 #section-a-bg {
 	background-color: #f9f9f9;
 }
+
+.leaders {
+    display: flex;
+    flex-wrap: wrap;
+    padding-top: 40px;
+}
+
+.leader {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 25%;
+    align-items: center;
+    padding-bottom: 40px;
+}
+
+.leader img {
+    width: 150px;
+    height: 150px;
+}
+
+/* Mobile Styling */
+@media screen and (max-width: 500px) {
+    .leaders {
+        padding-top: 0;
+    }
+    
+    .leader {
+        width: 100%;
+    }
+
+    .leader img {
+        width: 200px;
+        height: 200px;
+    }
+}

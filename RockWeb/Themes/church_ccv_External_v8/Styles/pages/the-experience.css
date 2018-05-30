@@ -21,3 +21,35 @@
 .thumbnail {
    min-height: 200px;
 }
+
+.graphicSection h3 {
+    color: #ffffff !important;
+}
+
+.relax-container {
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 25px;
+}
+
+.relax-container .video {
+    padding-top: 25px;
+}
+
+@media only screen and (min-width: 768px) {
+    .relax-container {
+        flex-wrap: nowrap;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: unset;
+    }
+
+    .relax-container .text {
+        max-width: 40%;
+    }
+    
+    .relax-container .video {
+        width: 50%;
+    }
+}

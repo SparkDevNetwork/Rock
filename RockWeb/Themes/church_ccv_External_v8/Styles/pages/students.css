@@ -40,6 +40,12 @@
    display: flex;
    flex-wrap: nowrap;
    align-items: center;
+   margin-bottom: 15px;
+}
+
+.students-service-times-header h2 {
+    font-size: 46px;
+    margin: 0;
 }
 
 .students-service-detail,
@@ -56,17 +62,89 @@
 }
 
 .students-service-detail-dark a {
-   color: white;
+   color: #FFFFFF;
 }
 
 .graphicSection p {
    line-height: 2.0;
 }
 
-.contextsetter-campus a {
-   color: white;
-   border: 2px solid white;
+.contextsetter-campus-hs, .contextsetter-campus-jr {
    border-radius: 25px;
-   padding-top: 5px !important;
-   padding-bottom: 5px !important;
+   margin-left: 20px;
 }
+
+.contextsetter-campus-hs a, .contextsetter-campus-jr a {
+    padding-top: 2px !important;
+    padding-bottom: 2px !important;
+}
+
+.contextsetter-campus-hs {
+    border: 2px solid #FFFFFF;
+}
+
+.contextsetter-campus-hs .contextsetter-campus a {
+    color: #FFFFFF;
+}
+
+.contextsetter-campus-hs .contextsetter-campus .dropdown-menu a {
+    color: #333;
+}
+
+.contextsetter-campus-jr {
+    border: 2px solid #7A1315;
+}
+
+/* Mobile Styling */
+@media screen and (max-width: 500px) {
+    .small-video-thumb-dark {
+        flex-direction: column;
+    }
+
+    .students-service-times-header {
+        flex-direction: column;
+    }
+
+    .students-service-times-header h2 {
+        margin-bottom: 10px;
+    }
+
+    .students-service-detail, .students-service-detail-dark {
+        flex-direction: column;
+    }
+
+    .graphicSection {
+        padding-top: 50px;
+        padding-bottom: 50px;
+    }
+}
+
+
+/* override default/bootstrap dropdown styling */
+.nav>li>a:hover, .nav>li>a:focus {
+    background-color: transparent;
+}
+
+.contextsetter-campus:hover {
+    color: transparent;
+    background: unset;
+    transition: unset;
+    border-radius: unset;
+    cursor: unset;
+}
+
+.dropdown-menu {
+    left: 10px;
+}
+
+@media screen and (max-width: 767px) {
+    .navbar-nav .open .dropdown-menu {
+        position: absolute;
+        float: left;
+        background-color: #fff;
+        border: 1px solid rgba(0,0,0,.15);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.175);
+    }
+}
+
+/* End override */

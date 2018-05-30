@@ -157,3 +157,23 @@ function updateSubNavbarLinks( ) {
 	var subnavAnchorElem = $("#subnav-" + nearestElem[0].id);
 	subnavAnchorElem.addClass( "subnavbar-anchor-active");
 }
+
+function onSubnavLinkClick( anchorLink ) {
+
+    // find the anchor on the page
+    var anchor = $(anchorLink);
+
+    // grab the top navbar and the sub navbar
+    var topNavbar = document.getElementById("masthead");
+    var subNavbar = document.getElementById("subnavbar-bg");
+
+    var anchorPos = anchor.offset().top;
+    var offsetAmount = (topNavbar.offsetHeight + subNavbar.offsetHeight)
+
+    var scrollYPos = anchorPos - offsetAmount;
+
+    // scroll to the anchor, but then factor in the height of nav bar and SUB navbar, so that they don't obstruct the start of this section.
+    $('html, body').animate({
+        scrollTop: scrollYPos
+    }, 200);
+}

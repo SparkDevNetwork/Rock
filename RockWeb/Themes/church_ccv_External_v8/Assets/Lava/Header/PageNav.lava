@@ -1,6 +1,19 @@
+
+{% assign urlSegs = 'Global' | Page:'Url' | Url:'segments' %}
+{% assign navSection = urlSegs[1] | Downcase %}
+{% assign navSection = navSection | Replace:'/', '' %}
+
 <div class="masthead-navitems">
+
+    {% comment %}About Us{% endcomment %}
     <div class="dropdown">
-        <a class="masthead-navitem" style="border: 0px;" href="/about-us">About Us</a>
+
+        {% assign activeTag = '' %}
+        {% if navSection == 'about-us' %}
+            {% assign activeTag = 'active' %}
+        {% endif %}
+        <a class="masthead-navitem {{ activeTag }}" style="border: 0px;" href="/about-us">About Us</a>
+
         <ul class="dropdown-menu">
             <li><a href="/about-us/leadership">Leadership</a></li>
             <li><a href="/about-us/kids">Kids</a></li>
@@ -12,18 +25,37 @@
         </ul>
     </div>
 
-    <a class="masthead-navitem" href="/the-experience">THE EXPERIENCE</a>
-        
+    {% comment %}The Experience{% endcomment %}
+    {% assign activeTag = '' %}
+    {% if navSection == 'the-experience' %}
+        {% assign activeTag = 'active' %}
+    {% endif %}
+    <a class="masthead-navitem {{ activeTag }}" href="/the-experience">The Experience</a>
+    
+    {% comment %}Get Involved{% endcomment %}
     <div class="dropdown">
-        <a class="masthead-navitem" style="border: 0px;" href="/get-involved">Get Involved</a>
+
+        {% assign activeTag = '' %}
+        {% if navSection == 'get-involved' %}
+            {% assign activeTag = 'active' %}
+        {% endif %}
+        <a class="masthead-navitem {{ activeTag }}" style="border: 0px;" href="/get-involved">Get Involved</a>
+
         <ul class="dropdown-menu">
             <li><a href="/get-involved/next-steps">Next Steps</a></li>
             <li><a href="/get-involved/events">Events</a></li>
         </ul>
     </div>
     
+    {% comment %}Our Campuses{% endcomment %}
     <div class="dropdown">
-        <a class="masthead-navitem" style="border: 0px;" href="/our-campuses">Our Campuses</a>
+
+        {% assign activeTag = '' %}
+        {% if navSection == 'our-campuses' %}
+            {% assign activeTag = 'active' %}
+        {% endif %}
+        <a class="masthead-navitem {{ activeTag }}" style="border: 0px;" href="/our-campuses">Our Campuses</a>
+
         <ul class="dropdown-menu">
             <li><a href="/our-campuses/anthem">Anthem</a></li>
             <li><a href="/our-campuses/avondale">Avondale</a></li>
@@ -36,18 +68,31 @@
             <li><a href="/our-campuses/surprise">Surprise</a></li>
         </ul>
     </div>
-    
-    
+        
+    {% comment %}Watch{% endcomment %}
     <div class="dropdown">
-        <a class="masthead-navitem" style="border: 0px;" href="/watchv2">Watch</a>
+
+        {% assign activeTag = '' %}
+        {% if navSection == 'watch' %}
+            {% assign activeTag = 'active' %}
+        {% endif %}
+        <a class="masthead-navitem {{ activeTag }}" style="border: 0px;" href="/watchv2">Watch</a>
+
         <ul class="dropdown-menu">
             <li><a href="http://live.ccv.church">CCV Live</a></li>
             <li><a href="/watch/stories">Stories</a></li>
         </ul>
     </div>
     
+    {% comment %}Give{% endcomment %}
     <div class="dropdown">
-        <a class="masthead-navitem" style="border: 0px;" href="/givev2">Give</a>
+
+        {% assign activeTag = '' %}
+        {% if navSection == 'givev2' %}
+            {% assign activeTag = 'active' %}
+        {% endif %}
+        <a class="masthead-navitem {{ activeTag }}" style="border: 0px;" href="/givev2">Give</a>
+
         <ul class="dropdown-menu">
             <li><a href="/givev2/now">Give Now</a></li>
         </ul>

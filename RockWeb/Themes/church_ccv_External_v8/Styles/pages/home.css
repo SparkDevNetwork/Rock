@@ -1,19 +1,20 @@
 .page-background {
-    background-color: fuchsia !important;
-    /* background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-image-missing.jpg") !important; */
+    background-color :#000 !important;
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-home.jpg") !important;
+    background-size: unset;
 }
 
 .title h1 {
     color: #FFFFFF;
     text-align: center;
-    padding-top: 80px;
+    padding-top: 50px;
 }
 
 .title-buttons {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-bottom: 225px;
+    margin-bottom: 155px;
     margin-top: 25px;
 }
 
@@ -48,11 +49,11 @@
 }
 
 #loggedinspacer {
-    padding-top: 300px;
+    padding-top: 230px;
 }
 
 #desktopspacer {
-    padding-top: 200px;
+    padding-top: 100px;
 }
 
 #subnavbar-bg, #section-a-bg {
@@ -87,7 +88,7 @@
     flex-direction: column;
     width: 30%;
     min-height: 210px;
-    background-color: #212121;
+    background-color: rgba(0,0,0,.7);
     /* margin: 0 15px; */
     padding: 30px;
 }
@@ -96,10 +97,11 @@
     color: #FFFFFF;
     font-family: akrobat;
     font-weight: 700;
-    font-size: 20px;
-    line-height: 22px;
+    font-size: 22px;
+    line-height: 24px;
     text-transform: uppercase;
     display: flex;
+    align-items: center;
 }
 
 .cta-link:hover, .cta-link:focus, .cta-link:active {
@@ -107,9 +109,14 @@
     text-decoration: none;
 }
 
-.cta-link i {
-    font-size: 30px;
+.cta-link img {
+    width: 30px;
+    height: 30px;
     margin-right: 10px;
+}
+
+.cta-link i {
+    line-height: normal !important;
 }
 
 .cta-link i:first-child {
@@ -118,7 +125,7 @@
 
 .cta-content {
     margin-top: 15px;
-    color: #eee;
+    color: rgb(215, 215, 215);
     font-family: Heebo;
     font-size: 14px;
     font-weight: 400;
@@ -250,6 +257,10 @@
         padding: 0;
         margin-top: -70px;
     }
+
+    .btn-campus {
+        margin-bottom: 20px;
+    }
 }
 
 /* End Campus Cards Section */
@@ -258,6 +269,7 @@
 .about-church {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     margin: 150px 0;
 }
 
@@ -271,17 +283,16 @@
     color: #000;
     font-family: akrobat;
     font-weight: 700;
+    margin-top: 0;
 }
 
 .about-church .content p {
     color: #707270;
-    border-left: 5px solid #7a1315;
-    padding: 0 30px;
     font-family: Heebo;
     font-weight: 400;
     font-size: 16px;
     line-height: 36px;
-    width: 75%;
+    width: 80%;
     margin: unset;
 }
 
@@ -290,12 +301,22 @@
     height: auto;
 }
 
+.about-church .image img {
+    width: 90%;
+    border-radius: 6px;
+}
+
 /* Mobile Styling */
 @media screen and (max-width: 500px) { 
     .about-church {
         flex-direction: column-reverse;
         padding: 20px 0;
         margin: 0;
+    }
+
+    .about-church .image img {
+        width: 100%;
+        margin-bottom: 10px;
     }
 
     .about-church .content h1 {
@@ -367,6 +388,10 @@
 
     .kids, .students {
         width: 100%;
+    }
+
+    .students img {
+        width: 90%;
     }
 }
 

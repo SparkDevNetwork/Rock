@@ -1,5 +1,5 @@
-<div class="row">
-   <div class="col-md-5">
+<div class="info-and-video-container">
+   <div class="video">
       <div>
          <script src="https://fast.wistia.com/embed/medias/4je48nc2sz.jsonp" async></script><script src="https://fast.wistia.com/assets/external/E-v1.js" async></script><div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;"><div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;"><span class="wistia_embed wistia_async_4je48nc2sz popover=true popoverAnimateThumbnail=true videoFoam=true" style="display:inline-block;height:100%;position:relative;width:100%">&nbsp;</span></div></div>
       </div>
@@ -7,7 +7,7 @@
       <h4>EXCEPTIONAL STARS</h4>
       <p>Exceptional STARS is a recreational sports program geared toward children and adults with special needs, and compliments the church’s CCV STARS youth sports program. Featured sports in the Exceptional STARS program include basketball, football, golf, soccer and baseball.</p>
    </div>
-   <div class="col-md-offset-1 col-md-6">
+   <div class="info">
       <img class="img-responsive" src="~~/Assets/Images/logo-stars-white.svg" style="max-width: 250px;"/>
       <h4>SOCCER, FOOTBALL & BASKETBALL 4 YEARS OLD - 12TH GRADE</h4>
       <p>STARS Youth sports experience is Striving To Achieve Real Significance, on the field and in your home.</p>

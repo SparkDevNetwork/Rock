@@ -11,9 +11,12 @@
 </div>
 
 <script>
-    // convert current time to number for comparing
+    // convert current time to number for comparing (getMinutes does not return the leading zero (which breaks calculation below) so used work around to include it for first 9 minutes of hour)
     var currentTime = new Date();
-    var time = parseInt((currentTime.getHours() + "" + currentTime.getMinutes()), 10);
+    var leadingZero = currentTime.getMinutes() < 10  ? '0' : '';
+    var time = parseInt((currentTime.getHours() + leadingZero  + currentTime.getMinutes()), 10);
+
+    console.log('Time: ', time);
 
     // set default greeting, message, and background
     var titleGreeting = "Hello, ";
