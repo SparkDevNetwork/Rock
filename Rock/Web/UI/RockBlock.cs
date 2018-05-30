@@ -379,6 +379,20 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Adds the cache item with an expiration and tags.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="seconds">The seconds.</param>
+        /// <param name="cacheTags">The cache tags.</param>
+        protected virtual void AddCacheItem( string key, object value, int seconds, string cacheTags )
+        {
+            var now = RockDateTime.Now;
+            var expiration = now.AddSeconds( seconds ).Subtract( now );
+            AddCacheItem( key, value, expiration, cacheTags );
+        }
+
+        /// <summary>
         /// Adds an object with a <see cref="System.Runtime.Caching.CacheItemPolicy" /> to the default <see cref="System.Runtime.Caching.MemoryCache" />
         /// </summary>
         /// <param name="key">A <see cref="System.String" /> representing the name of the key to differentiate items from same block instance</param>
@@ -388,7 +402,19 @@ namespace Rock.Web.UI
         {
             RockCache.AddOrUpdate( ItemCacheKey( key ), null, value, expiration );
         }
-        
+
+        /// <summary>
+        /// Adds the cache item with an expiration and tags
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="expiration">The expiration.</param>
+        /// <param name="cacheTags">The cache tags.</param>
+        protected virtual void AddCacheItem( string key, object value, TimeSpan expiration, string cacheTags )
+        {
+            RockCache.AddOrUpdate( ItemCacheKey( key ), null, value, expiration, cacheTags );
+        }
+
         /// <summary>
         /// Adds an object with a <see cref="System.Runtime.Caching.CacheItemPolicy"/> to the default <see cref="System.Runtime.Caching.MemoryCache"/> 
         /// </summary>

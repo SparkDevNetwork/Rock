@@ -146,7 +146,8 @@ namespace RockWeb.Blocks.Groups
                         availableGroupIds = new List<int>();
                     }
                     var cacheLength = GetAttributeValue( "CacheDuration" ).AsInteger();
-                    AddCacheItem( "GroupListPersonalizedLava:" + parentGroupGuid.ToString(), availableGroupIds, cacheLength );
+                    string cacheTags = GetAttributeValue( "CacheTags" ) ?? string.Empty;
+                    AddCacheItem( "GroupListPersonalizedLava:" + parentGroupGuid.ToString(), availableGroupIds, cacheLength, cacheTags );
                 }
                 qry = qry.Where( m => availableGroupIds.Contains( m.GroupId ) );
             }
