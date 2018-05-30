@@ -49,6 +49,8 @@ namespace RockWeb.Blocks.Cms
     [LavaCommandsField( "Enabled Lava Commands", "The Lava commands that should be enabled for this content channel block.", false, order: 0 )]
     [LinkedPage( "Detail Page", "The page to navigate to for details.", false, "", "", 1 )]
     [BooleanField( "Enable Legacy Global Attribute Lava", "This should only be enabled if your lava is using legacy Global Attributes. Enabling this option, will negatively affect the performance of this block.", false, "", 2, "SupportLegacy" )]
+    [CustomCheckboxListField( "Cache Tags", "Cached tags are used to link cached content so that it can be expired as a group", CACHE_TAG_LIST, false, key: "CacheTags", order: 3 )]
+
 
     // Custom Settings
     [ContentChannelField( "Channel", "The channel to display items from.", false, "", "CustomSetting" )]
@@ -74,6 +76,12 @@ namespace RockWeb.Blocks.Cms
         private readonly string CONTENT_CACHE_KEY = "Content";
         private readonly string TEMPLATE_CACHE_KEY = "Template";
         private readonly string OUTPUT_CACHE_KEY = "Output";
+
+        private const string CACHE_TAG_LIST = @"
+            SELECT CAST([DefinedValue].[Value] AS VARCHAR) AS [Value], [DefinedValue].[Value] AS [Text]
+            FROM[DefinedType]
+            JOIN[DefinedValue] ON[DefinedType].[Id] = [DefinedValue].[DefinedTypeId]
+            WHERE[DefinedType].[Guid] = 'BDF73089-9154-40C1-90E4-74518E9937DC'";
 
         #endregion
 
@@ -603,7 +611,8 @@ $(document).ready(function() {
 
                 if ( OutputCacheDuration.HasValue && OutputCacheDuration.Value > 0 )
                 {
-                    AddCacheItem( OUTPUT_CACHE_KEY, outputContents, OutputCacheDuration.Value );
+                    string cacheTags = GetAttributeValue( "CacheTags" ) ?? string.Empty;
+                    AddCacheItem( OUTPUT_CACHE_KEY, outputContents, OutputCacheDuration.Value, cacheTags );
                 }
             }
 
@@ -648,7 +657,8 @@ $(document).ready(function() {
 
                     if ( ItemCacheDuration.HasValue && ItemCacheDuration.Value > 0 )
                     {
-                        AddCacheItem( TEMPLATE_CACHE_KEY, template, ItemCacheDuration.Value );
+                        string cacheTags = GetAttributeValue( "CacheTags" ) ?? string.Empty;
+                        AddCacheItem( TEMPLATE_CACHE_KEY, template, ItemCacheDuration.Value, cacheTags );
                     }
                 }
             }
@@ -826,7 +836,8 @@ $(document).ready(function() {
 
                         if ( ItemCacheDuration.HasValue && ItemCacheDuration.Value > 0 && !queryParameterFiltering )
                         {
-                            AddCacheItem( CONTENT_CACHE_KEY, items, ItemCacheDuration.Value );
+                            string cacheTags = GetAttributeValue( "CacheTags" ) ?? string.Empty;
+                            AddCacheItem( CONTENT_CACHE_KEY, items, ItemCacheDuration.Value, cacheTags );
                         }
 
                         // If items could be filtered by querystring values, check for filters
