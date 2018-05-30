@@ -1695,6 +1695,8 @@
     <Compile Include="Web\UI\Controls\NumberBoxBase.cs" />
     <Compile Include="Web\UI\Controls\NumberUpDownGroup.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ContentChannelItemPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\ReportPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\DataViewItemPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\RegistrationInstancePicker.cs" />
     <Compile Include="Web\UI\Controls\PreRegistration\Children.cs" />
     <Compile Include="Web\UI\Controls\PreRegistration\ChildRow.cs" />
@@ -2136,6 +2138,8 @@
     <Compile Include="Workflow\Action\CheckIn\RemoveEmptyPeople.cs" />
     <Compile Include="Workflow\Action\CheckIn\SaveAttendance.cs" />
     <Compile Include="Workflow\Action\CheckIn\SetAvailableSchedules.cs" />
+    <Compile Include="Workflow\Action\Cms\AddContentChannelItem.cs" />
+    <Compile Include="Workflow\Action\Communications\SmsCommunicationProcessResponse.cs" />
     <Compile Include="Workflow\Action\Communications\SendEmail.cs" />
     <Compile Include="Workflow\Action\Communications\SendEmailWithEvents.cs" />
     <Compile Include="Workflow\Action\Communications\SendNotification.cs" />

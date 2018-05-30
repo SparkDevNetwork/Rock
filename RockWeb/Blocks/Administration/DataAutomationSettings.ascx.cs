@@ -611,7 +611,7 @@ namespace RockWeb.Blocks.Administration
             foreach (var item in rptPersonConnectionStatusDataView.Items.OfType<RepeaterItem>())
             {
                 HiddenField hfPersonConnectionStatusValueId = item.FindControl( "hfPersonConnectionStatusValueId" ) as HiddenField;
-                DataViewPicker dvpPersonConnectionStatusDataView = item.FindControl( "dvpPersonConnectionStatusDataView" ) as DataViewPicker;
+                DataViewItemPicker dvpPersonConnectionStatusDataView = item.FindControl( "dvpPersonConnectionStatusDataView" ) as DataViewItemPicker;
                 _updatePersonConnectionStatus.ConnectionStatusValueIdDataviewIdMapping.AddOrReplace( hfPersonConnectionStatusValueId.Value.AsInteger(), dvpPersonConnectionStatusDataView.SelectedValueAsId() );
             }
 
@@ -621,7 +621,7 @@ namespace RockWeb.Blocks.Administration
             foreach ( var item in rptFamilyStatusDataView.Items.OfType<RepeaterItem>() )
             {
                 HiddenField hfGroupStatusValueId = item.FindControl( "hfGroupStatusValueId" ) as HiddenField;
-                DataViewPicker dvpGroupStatusDataView = item.FindControl( "dvpGroupStatusDataView" ) as DataViewPicker;
+                DataViewItemPicker dvpGroupStatusDataView = item.FindControl( "dvpGroupStatusDataView" ) as DataViewItemPicker;
                 _updateFamilyStatus.GroupStatusValueIdDataviewIdMapping.AddOrReplace( hfGroupStatusValueId.Value.AsInteger(), dvpGroupStatusDataView.SelectedValueAsId() );
             }
 
@@ -708,7 +708,7 @@ namespace RockWeb.Blocks.Administration
         {
             PersonConnectionStatusDataView personConnectionStatusDataView = e.Item.DataItem as PersonConnectionStatusDataView;
             HiddenField hfPersonConnectionStatusValueId = e.Item.FindControl( "hfPersonConnectionStatusValueId" ) as HiddenField;
-            DataViewPicker dvpPersonConnectionStatusDataView = e.Item.FindControl( "dvpPersonConnectionStatusDataView" ) as DataViewPicker;
+            DataViewItemPicker dvpPersonConnectionStatusDataView = e.Item.FindControl( "dvpPersonConnectionStatusDataView" ) as DataViewItemPicker;
             if ( personConnectionStatusDataView != null )
             {
                 hfPersonConnectionStatusValueId.Value = personConnectionStatusDataView.PersonConnectionStatusValue.Id.ToString();
@@ -753,7 +753,7 @@ namespace RockWeb.Blocks.Administration
         {
             FamilyStatusDataView groupStatusDataView = e.Item.DataItem as FamilyStatusDataView;
             HiddenField hfGroupStatusValueId = e.Item.FindControl( "hfGroupStatusValueId" ) as HiddenField;
-            DataViewPicker dvpGroupStatusDataView = e.Item.FindControl( "dvpGroupStatusDataView" ) as DataViewPicker;
+            DataViewItemPicker dvpGroupStatusDataView = e.Item.FindControl( "dvpGroupStatusDataView" ) as DataViewItemPicker;
             if ( groupStatusDataView != null )
             {
                 hfGroupStatusValueId.Value = groupStatusDataView.GroupStatusValue.Id.ToString();

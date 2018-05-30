@@ -482,32 +482,30 @@ namespace Rock.Model
                             {
                                 settings.Add( attributeValue.Key, attributeValue.Value.Value );
                             }
-                            string newSettingsJson = settings.ToJson();
-                            string oldSettingsJson = ( StorageSettings ?? new Dictionary<string, string>() ).ToJson();
+                            string settingsJson = settings.ToJson();
 
                             if ( StorageProvider != null && (
                                 StorageEntityTypeId.Value != BinaryFileType.StorageEntityTypeId.Value ||
-                                oldSettingsJson != newSettingsJson ) )
+                                StorageEntitySettings != settingsJson ) )
                             {
-                                try
-                                {
-                                    // Save the file contents before deleting
-                                    var contentStream = ContentStream;
 
-                                    // Delete the current provider's storage
-                                    StorageProvider.DeleteContent( this );
+                                var ms = new MemoryStream();
+                                ContentStream.Position = 0;
+                                ContentStream.CopyTo( ms );
+                                ContentStream.Dispose();
 
-                                    // Reset the content stream
-                                    ContentStream = contentStream;
-                                }
-                                catch ( Exception ex )
-                                {
-                                    ExceptionLogService.LogException( ex );
-                                }
+                                // Delete the current provider's storage
+                                StorageProvider.DeleteContent( this );
 
                                 // Set the new storage provider with its settings
                                 StorageEntityTypeId = BinaryFileType.StorageEntityTypeId;
-                                StorageEntitySettings = newSettingsJson;
+                                StorageEntitySettings = settingsJson;
+
+                                ContentStream = new MemoryStream();
+                                ms.Position = 0;
+                                ms.CopyTo( ContentStream );
+                                ContentStream.Position = 0;
+                                FileSize = ContentStream.Length;
                             }
                         }
                     }
