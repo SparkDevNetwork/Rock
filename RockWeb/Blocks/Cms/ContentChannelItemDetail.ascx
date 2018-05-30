@@ -63,12 +63,12 @@
                     <div class="row">
                         <div class="col-md-7">
                             <Rock:DataTextBox ID="tbTitle" runat="server" SourceTypeName="Rock.Model.ContentChannelItem, Rock" PropertyName="Title" Placeholder="Enter a title..." />
-
+                            <asp:HiddenField ID="hfContentChannelItemUrl" runat="server" />
                             <Rock:RockControlWrapper ID="rcwSlugs" runat="server" Label="URL Slug" Help="While Rock generates URLs for your content channel items automatically, you can optionally create custom URLs for this post.">
                                 <div class="js-slugs">
                                     <asp:Repeater ID="rSlugs" runat="server" OnItemDataBound="rSlugs_ItemDataBound">
                                         <ItemTemplate>
-                                            <div class="form-group margin-b-sm rollover-container js-slug-row clearfix">
+                                            <div class="form-group rollover-container js-slug-row">
                                                 <asp:Literal ID="lChannelUrl" runat="server" />
                                                 <input id="slugId" class="js-slug-id" type="hidden" value="<%# Eval("Id") %>" />
                                                 <span class="js-slug-literal"><%# Eval("Slug") %></span>
@@ -79,7 +79,7 @@
                                             </div>
                                         </ItemTemplate>
                                     </asp:Repeater>
-                                    <a id="lbAdd" class="btn btn-xs btn-action btn-square margin-l-sm">
+                                    <a id="lbAdd" title="Add Slug" class="btn btn-xs btn-action btn-square">
                                         <i class="fa fa-plus-circle"></i>
                                     </a>
                                 </div>

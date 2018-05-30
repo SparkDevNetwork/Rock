@@ -38,6 +38,15 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string BENEVOLENCE_RESULT_TYPE = "35FC0225-3DAC-48B4-BDF7-AFDE104FB60E";
 
+        /// Guid for Cache Tags
+        /// </summary>
+        public const string CACHE_TAGS = "BDF73089-9154-40C1-90E4-74518E9937DC";
+
+        /// <summary>
+        /// The types of static color swatches supported
+        /// </summary>
+        public const string COLOR_PICKER_SWATCHES = "CC1400B3-E161-45E3-BF49-49825D3D6467";
+
         /// <summary>
         /// The types of communication supported (i.e. email, sms, twitter, app-push, etc)
         /// </summary>

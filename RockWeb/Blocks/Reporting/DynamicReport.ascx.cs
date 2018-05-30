@@ -544,8 +544,11 @@ namespace RockWeb.Blocks.Reporting
         protected override void ShowSettings()
         {
             pnlConfigure.Visible = true;
-            LoadDropDowns();
-            ddlReport.SetValue( this.GetAttributeValue( "Report" ).AsGuidOrNull() );
+
+            Guid? reportGuid = this.GetAttributeValue( "Report" ).AsGuidOrNull();
+            int? reportId = reportGuid != null ? new ReportService( new RockContext() ).GetId( reportGuid.Value ) : null;
+
+            rpReport.SetValue( reportId );
             txtResultsTitle.Text = this.GetAttributeValue( "ResultsTitle" );
             txtResultsIconCssClass.Text = this.GetAttributeValue( "ResultsIconCssClass" );
             txtFilterTitle.Text = this.GetAttributeValue( "FilterTitle" );
@@ -617,7 +620,9 @@ namespace RockWeb.Blocks.Reporting
             this.SetAttributeValue( "ResultsIconCssClass", txtResultsIconCssClass.Text );
             this.SetAttributeValue( "FilterTitle", txtFilterTitle.Text );
             this.SetAttributeValue( "FilterIconCssClass", txtFilterIconCssClass.Text );
-            this.SetAttributeValue( "Report", ddlReport.SelectedValue.AsGuidOrNull().ToString() );
+
+            Guid? reportGuid = rpReport.SelectedValueAsId().HasValue ? new ReportService( new RockContext() ).GetGuid( rpReport.SelectedValueAsId().Value ) : null;
+            this.SetAttributeValue( "Report", reportGuid.ToString() );
             this.SetAttributeValue( "PersonIdField", ddlPersonIdField.SelectedValue );
             SaveAttributeValues();
 
@@ -625,28 +630,11 @@ namespace RockWeb.Blocks.Reporting
         }
 
         /// <summary>
-        /// Loads the drop downs.
-        /// </summary>
-        protected void LoadDropDowns()
-        {
-            var rockContext = new RockContext();
-            var reportService = new ReportService( rockContext );
-            var reportQry = reportService.Queryable().OrderBy( a => a.Name );
-
-            ddlReport.Items.Clear();
-            ddlReport.Items.Add( new ListItem() );
-            foreach ( var report in reportQry.ToList() )
-            {
-                ddlReport.Items.Add( new ListItem( report.Name, report.Guid.ToString() ) );
-            }
-        }
-        
-        /// <summary>
-        /// Handles the SelectedIndexChanged event of the ddlReport control.
+        /// Handles the SelectItem event of the rpReport control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void ddlReport_SelectedIndexChanged( object sender, EventArgs e )
+        protected void rpReport_SelectItem( object sender, EventArgs e )
         {
             // reset the configs since there is a new report selected
             _configurableDataFilterGuids = null;
@@ -664,11 +652,11 @@ namespace RockWeb.Blocks.Reporting
             var rockContext = new RockContext();
             var reportService = new ReportService( rockContext );
 
-            var reportGuid = ddlReport.SelectedValueAsGuid();
+            var reportId = rpReport.SelectedValueAsId();
             Report report = null;
-            if ( reportGuid.HasValue )
+            if ( reportId.HasValue )
             {
-                report = reportService.Get( reportGuid.Value );
+                report = reportService.Get( reportId.Value );
             }
 
             nbConfigurationWarning.Visible = false;
@@ -833,5 +821,7 @@ namespace RockWeb.Blocks.Reporting
         }
 
         #endregion Configuration Classes
+
+        
     }
 }
