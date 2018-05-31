@@ -118,7 +118,7 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
                             {%- endif -%}
                             {%- if canEdit -%}
                             <li><button type="button" class="dropdown-item btn-link js-editnote">Edit</button></li>
-                            <li><a class="dropdown-item-danger remove-note" href="#" onclick="{{ note.Id | Postback:'DeleteNote' }}">Delete</a></li>
+                            <li><a class="dropdown-item-danger remove-note js-removenote" href='#'>Delete</a></li>
                             {%- endif -%}
                             {%- if allowsWatching -%}
                                 <li>
