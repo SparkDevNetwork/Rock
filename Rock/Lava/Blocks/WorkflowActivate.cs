@@ -363,11 +363,11 @@ namespace Rock.Lava.Blocks
                 {
                     if ( itemParts[1].Trim()[0] == '\'' )
                     {
-                        parms.AddOrReplace( itemParts[0].Trim().ToLower(), itemParts[1].Trim().Substring( 1, itemParts[1].Length - 2 ) );
+                        parms.AddOrReplace( itemParts[0].Trim(), itemParts[1].Trim().Substring( 1, itemParts[1].Length - 2 ) );
                     }
                     else
                     {
-                        parms.AddOrReplace( itemParts[0].Trim().ToLower(), itemParts[1].Trim() );
+                        parms.AddOrReplace( itemParts[0].Trim(), itemParts[1].Trim() );
                     }
                 }
             }
