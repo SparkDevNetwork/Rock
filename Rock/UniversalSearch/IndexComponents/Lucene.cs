@@ -118,6 +118,12 @@ namespace Rock.UniversalSearch.IndexComponents
             }
         }
 
+        /// <summary>
+        /// Gets the index location.
+        /// </summary>
+        /// <value>
+        /// The index location.
+        /// </value>
         public override string IndexLocation
         {
             get
@@ -127,6 +133,11 @@ namespace Rock.UniversalSearch.IndexComponents
             }
         }
 
+        /// <summary>
+        /// Creates the index.
+        /// </summary>
+        /// <param name="documentType">Type of the document.</param>
+        /// <param name="deleteIfExists">if set to <c>true</c> [delete if exists].</param>
         public override void CreateIndex( Type documentType, bool deleteIfExists = true )
         {
             var indexName = documentType.Name.ToLower();
@@ -287,6 +298,10 @@ namespace Rock.UniversalSearch.IndexComponents
             writer.Commit();
         }
 
+        /// <summary>
+        /// Delete all documents by type.
+        /// </summary>
+        /// <param name="documentType">Type of the document.</param>
         public override void DeleteIndex( Type documentType )
         {
             writer.DeleteDocuments( new Term( "type", documentType.Name.ToLower() ) );
@@ -316,6 +331,13 @@ namespace Rock.UniversalSearch.IndexComponents
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Indexes the document.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="document">The document.</param>
+        /// <param name="indexName">Name of the index.</param>
+        /// <param name="mappingType">Type of the mapping.</param>
         public override void IndexDocument<T>( T document, string indexName = null, string mappingType = null )
         {
             Type documentType = document.GetType();
@@ -345,12 +367,9 @@ namespace Rock.UniversalSearch.IndexComponents
             }
 
             IndexModelBase docIndexModelBase = document as IndexModelBase;
-            //doc.Add( new TextField( "Type", mappingType, global::Lucene.Net.Documents.Field.Store.YES ));
-            //doc.Add( new TextField( "Id", docIndexModelBase.Id.ToString(), global::Lucene.Net.Documents.Field.Store.YES ) );
             doc.AddStoredField( "type", mappingType );
             doc.AddStoredField( "id", docIndexModelBase.Id.ToString() );
-            // Stores all the properties as JSON to retreive object on lookup
-            doc.AddStoredField( "JSON", document.ToJson() );
+            doc.AddStoredField( "JSON", document.ToJson() ); // Stores all the properties as JSON to retreive object on lookup
 
             // Use the analyzer in fieldAnalyzers if that field is in that dictionary, otherwise use StandardAnalyzer.
             PerFieldAnalyzerWrapper analyzer = new PerFieldAnalyzerWrapper( defaultAnalyzer: new StandardAnalyzer( MatchVersion ), fieldAnalyzers: index.FieldAnalyzers );
@@ -397,27 +416,13 @@ namespace Rock.UniversalSearch.IndexComponents
             return false;
         }
 
-        /*
-        private void AddOrAndString( ref StringBuilder subQueryString, CriteriaSearchType SearchType )
-        {
-            if ( SearchType == CriteriaSearchType.Or )
-            {
-                if ( subQueryString.Length != 0 )
-                {
-                    subQueryString.Append( " OR " );
-                }
-            }
-            else
-            {
-                if ( subQueryString.Length != 0 )
-                {
-                    subQueryString.Append( " AND " );
-                }
-            }
-        }
-        */
-
-        private void CombineTypes( List<Type> entityTypes, out List<string> combinedTags, out Dictionary<string, Analyzer> combinedFieldAnalyzers )
+        /// <summary>
+        /// Combines the tags and analyzers of the different index types.
+        /// </summary>
+        /// <param name="entityTypes">The entity types.</param>
+        /// <param name="combinedTags">The combined tags.</param>
+        /// <param name="combinedFieldAnalyzers">The combined field analyzers.</param>
+        private void CombineIndexTypes( List<Type> entityTypes, out List<string> combinedTags, out Dictionary<string, Analyzer> combinedFieldAnalyzers )
         {
             Dictionary<string, bool> combinedTagsDictionary = new Dictionary<string, bool>();
             combinedFieldAnalyzers = new Dictionary<string, Analyzer>();
@@ -498,7 +503,7 @@ namespace Rock.UniversalSearch.IndexComponents
                     }
 
                     indexModelTypes = indexModelTypes.Distinct().ToList();
-                    CombineTypes( indexModelTypes, out combinedFields, out combinedFieldAnalyzers );
+                    CombineIndexTypes( indexModelTypes, out combinedFields, out combinedFieldAnalyzers );
 
                     if ( entities != null && entities.Count != 0 )
                     {
@@ -514,7 +519,6 @@ namespace Rock.UniversalSearch.IndexComponents
 
                 BooleanQuery fieldCriteriaQuery = new BooleanQuery();
 
-                // QueryContainer matchQuery = null; -> Elasticsearch
                 if ( fieldCriteria != null && fieldCriteria.FieldValues?.Count > 0 )
                 {
                     Occur occur = fieldCriteria.SearchType == CriteriaSearchType.And ? Occur.MUST : Occur.SHOULD;
@@ -548,21 +552,18 @@ namespace Rock.UniversalSearch.IndexComponents
                             if ( wordQuery.Count() != 0 )
                             {
                                 queryContainer.Add( wordQuery, Occur.MUST );
-                                //queryContainer &= matchQuery; // queryContainer = queryContainer AND ( subquery )
                             }
 
                             // special logic to support emails
                             if ( query.Contains( "@" ) )
                             {
                                 queryContainer.Add( new BooleanClause( new TermQuery( new Term( "email", query ) ), Occur.SHOULD ) );
-                                // queryContainer |= new QueryStringQuery { Query = "email:" + query, Analyzer = "whitespace" }; // analyzer = whitespace to keep the email from being parsed into 3 variables because the @ will act as a delimitor by default
                             }
 
                             // special logic to support phone search
                             if ( query.IsDigitsOnly() )
                             {
                                 queryContainer.Add( new BooleanClause( new WildcardQuery( new Term( "phone", "*" + query + "*" ) ), Occur.SHOULD ) );
-                                // queryContainer |= new QueryStringQuery { Query = "phone:*" + query + "*", AnalyzeWildcard = true };
                             }
 
                             // add a search for all the words as one single search term
@@ -573,7 +574,6 @@ namespace Rock.UniversalSearch.IndexComponents
                                 queryContainer.Add( phraseQuery, Occur.SHOULD );
                             }
 
-                            //topDocs = _client.Search<dynamic>( searchDescriptor ); / / indexSearcher.Search( _query, 10 );
                             break;
                         }
                     case SearchType.Fuzzy:
@@ -635,7 +635,7 @@ namespace Rock.UniversalSearch.IndexComponents
                                     // special logic to support phone search
                                     if ( query.IsDigitsOnly() )
                                     {
-                                        wildcardQuery.Add( new PrefixQuery( new Term( "NickName", queryTerms.First().ToLower() ) ), Occur.SHOULD );
+                                        wildcardQuery.Add( new PrefixQuery( new Term( "PhoneNumbers", queryTerms.First().ToLower() ) ), Occur.SHOULD );
                                     }
                                 }
 
@@ -749,21 +749,63 @@ namespace Rock.UniversalSearch.IndexComponents
             searcherManager = null;
         }
 
-
+        /// <summary>
+        /// Property and Analyzer cache
+        /// </summary>
         private class Index
         {
+            /// <summary>
+            /// Gets or sets the index type mapping properties.
+            /// </summary>
+            /// <value>
+            /// The index type mapping properties.
+            /// </value>
             public Dictionary<string, TypeMappingProperties> MappingProperties { get; set; } = new Dictionary<string, TypeMappingProperties>();
+
+            /// <summary>
+            /// Gets or sets the field analyzers.
+            /// </summary>
+            /// <value>
+            /// The field analyzers.
+            /// </value>
             public Dictionary<string, Analyzer> FieldAnalyzers { get; set; } = new Dictionary<string, Analyzer>();
         }
 
+        /// <summary>
+        /// Index type mapping properties
+        /// </summary>
         private class TypeMappingProperties
         {
+            /// <summary>
+            /// Gets or sets the name.
+            /// </summary>
+            /// <value>
+            /// The name.
+            /// </value>
             public string Name { get; set; }
 
+            /// <summary>
+            /// Gets or sets the boost.
+            /// </summary>
+            /// <value>
+            /// The boost.
+            /// </value>
             public float Boost { get; set; }
 
+            /// <summary>
+            /// Gets or sets the type of the index.
+            /// </summary>
+            /// <value>
+            /// The type of the index.
+            /// </value>
             public IndexType IndexType { get; set; }
 
+            /// <summary>
+            /// Gets or sets the analyzer.
+            /// </summary>
+            /// <value>
+            /// The analyzer.
+            /// </value>
             public string Analyzer { get; set; }
         }
     }
