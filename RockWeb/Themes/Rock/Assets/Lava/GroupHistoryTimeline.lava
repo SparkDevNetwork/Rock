@@ -191,8 +191,6 @@
     </ul>
 {%- endif -%}
 
-<a href="/group/{{ PageParameter.GroupId }}/history/grid" class="btn btn-xs btn-default pull-right">View Grid</a>
-
 <section class="rock-timeline">
     <div class="timeline-container">
         {%- for historySummaryByDateByVerb in HistorySummaryByDateByVerbList -%}
