@@ -60,7 +60,7 @@ namespace Rock.UniversalSearch.IndexComponents
 
         public Lucene()
         {
-            if ( writer == null )
+            if ( this.IsActive && writer == null )
             {
                 path = Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "App_Data", "LuceneSearchIndex" );
                 // path = System.Web.HttpContext.Current.Server.MapPath( "~/App_Data/LuceneSearchIndex" ); // Do not work with jobs
