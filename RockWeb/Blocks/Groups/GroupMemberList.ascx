@@ -3,6 +3,9 @@
 <script type="text/javascript">
     Sys.Application.add_load(function () {
         $('.js-group-member-note').tooltip();
+
+        // data view sync list popover
+        $('.js-sync-popover').popover()
     });
 </script>
 
@@ -22,7 +25,7 @@
                         </h1>
 
                         <div class="panel-labels">
-                            <Rock:HighlightLabel ID="hlSyncStatus" runat="server" LabelType="Info" Visible="false" Text="<i class='fa fa-exchange'></i>" /> &nbsp;
+                            <span runat="server" ID="spanSyncLink" Visible="false" data-toggle="popover" class="label label-info js-sync-popover" data-trigger="hover click focus" data-html="true" data-placement="left" data-delay="{&quot;hide&quot;: 1500}" ><i class='fa fa-exchange'></i></span> &nbsp;
                         </div>
                     </div>
 
