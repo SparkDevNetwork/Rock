@@ -81,15 +81,6 @@ namespace Rock.Cache
 
         #region Static Methods
 
-        /// <summary>
-        /// Caches the key.
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        private static string CacheKey( int id )
-        {
-            return $"Rock:Role:{id}";
-        }
 
         /// <summary>
         /// Returns Role object from cache.  If role does not already exist in cache, it
@@ -99,7 +90,7 @@ namespace Rock.Cache
         /// <returns></returns>
         public static CacheRole Get( int id )
         {
-            return GetOrAddExisting( CacheKey( id ), () => LoadById( id ) );
+            return GetOrAddExisting( id, () => LoadById( id ) );
         }
 
         /// <summary>
