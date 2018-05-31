@@ -90,6 +90,20 @@
             $noteEditor.parent().find('.js-noteviewitem').slideDown();
         });
 
+        $('.js-notecontainer .js-removenote').click(function (e) {
+            var $currentNote = $(this).closest('.js-noteviewitem');
+            var currentNoteId = $currentNote.attr('data-note-id');
+            var $noteContainer = $(this).closest('.js-notecontainer');
+            $noteContainer.find('.js-currentnoteid').val(currentNoteId);
+
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            var postbackJs = $noteContainer.find(".js-delete-postback").attr('href');
+            return Rock.dialogs.confirm('Are you sure you want to delete this note?', function () {
+                window.location = postbackJs;
+            });
+        });
+
         $('.js-expandreply').click(function (e) {
             var $noteContainer = $(this).closest('.js-notecontainer');
             
