@@ -233,6 +233,18 @@
     <Compile Include="Migrations\201805231625436_NotesUpdates.Designer.cs">
       <DependentUpon>201805231625436_NotesUpdates.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201805251707072_AddDefinedTypeColorSwatches.cs" />
+    <Compile Include="Migrations\201805251707072_AddDefinedTypeColorSwatches.Designer.cs">
+      <DependentUpon>201805251707072_AddDefinedTypeColorSwatches.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201805301747145_CacheTags.cs" />
+    <Compile Include="Migrations\201805301747145_CacheTags.Designer.cs">
+      <DependentUpon>201805301747145_CacheTags.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201805301858246_AddLogoToSite.cs" />
+    <Compile Include="Migrations\201805301858246_AddLogoToSite.Designer.cs">
+      <DependentUpon>201805301858246_AddLogoToSite.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\201805302320038_Lucene.cs" />
     <Compile Include="Migrations\201805302320038_Lucene.Designer.cs">
       <DependentUpon>201805302320038_Lucene.cs</DependentUpon>
@@ -2940,6 +2952,15 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201805231625436_NotesUpdates.resx">
       <DependentUpon>201805231625436_NotesUpdates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201805251707072_AddDefinedTypeColorSwatches.resx">
+      <DependentUpon>201805251707072_AddDefinedTypeColorSwatches.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201805301747145_CacheTags.resx">
+      <DependentUpon>201805301747145_CacheTags.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201805301858246_AddLogoToSite.resx">
+      <DependentUpon>201805301858246_AddLogoToSite.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201805302320038_Lucene.resx">
       <DependentUpon>201805302320038_Lucene.cs</DependentUpon>
