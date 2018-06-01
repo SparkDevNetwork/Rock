@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PersonSignalTypeDetail.ascx.cs" Inherits="RockWeb.Blocks.Crm.PersonSignalTypeDetail" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PersonSignalTypeDetail_.ascx.cs" Inherits="RockWeb.Blocks.Crm.PersonSignalTypeDetail" %>
 
 <asp:UpdatePanel ID="upPersonSignalType" runat="server">
     <ContentTemplate>
