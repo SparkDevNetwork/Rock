@@ -26,8 +26,11 @@ using Rock.Cache;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+
+using Newtonsoft.Json;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -75,7 +78,34 @@ namespace RockWeb.Blocks.Cms
                 BindGrid();
                 PopulateDdlCacheTypes();
                 PopulateCacheStatistics();
+                PopulateRedisView();
             }
+        }
+
+        /// <summary>
+        /// Displays the notification.
+        /// </summary>
+        /// <param name="notificationBox">The notification box.</param>
+        /// <param name="message">The message.</param>
+        /// <param name="notificationBoxType">Type of the notification box.</param>
+        protected void DisplayNotification( NotificationBox notificationBox, string message, NotificationBoxType notificationBoxType )
+        {
+            notificationBox.Text = message;
+            notificationBox.NotificationBoxType = notificationBoxType;
+            notificationBox.Visible = true;
+        }
+
+        /// <summary>
+        /// Clear and hide all notification boxes.
+        /// </summary>
+        protected void ClearNotifications()
+        {
+            nbMessage.Text = string.Empty;
+            nbMessage.NotificationBoxType = NotificationBoxType.Info;
+            nbMessage.Visible = false;
+            nbModalMessage.Text = string.Empty;
+            nbModalMessage.NotificationBoxType = NotificationBoxType.Info;
+            nbModalMessage.Visible = false;
         }
 
         #region Grid
@@ -144,33 +174,137 @@ namespace RockWeb.Blocks.Cms
             BindGrid();
         }
 
+        /// <summary>
+        /// POCO to list tags on the CacheManager grid
+        /// </summary>
+        private class CacheTagGridRow
+        {
+            /// <summary>
+            /// Gets or sets the name of the tag.
+            /// </summary>
+            /// <value>
+            /// The name of the tag.
+            /// </value>
+            public string TagName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the tag description.
+            /// </summary>
+            /// <value>
+            /// The tag description.
+            /// </value>
+            public string TagDescription { get; set; }
+
+            /// <summary>
+            /// Gets or sets the linked keys.
+            /// </summary>
+            /// <value>
+            /// The linked keys.
+            /// </value>
+            public long LinkedKeys { get; set; }
+
+            /// <summary>
+            /// Gets or sets the DefinedValue identifier for the tag
+            /// </summary>
+            /// <value>
+            /// The defined value identifier.
+            /// </value>
+            public int DefinedValueId { get; set; }
+        }
+
         #endregion
 
-        /// <summary>
-        /// Displays the notification.
-        /// </summary>
-        /// <param name="notificationBox">The notification box.</param>
-        /// <param name="message">The message.</param>
-        /// <param name="notificationBoxType">Type of the notification box.</param>
-        protected void DisplayNotification( NotificationBox notificationBox, string message, NotificationBoxType notificationBoxType )
+        #region Redis
+
+        protected void PopulateRedisView()
         {
-            notificationBox.Text = message;
-            notificationBox.NotificationBoxType = notificationBoxType;
-            notificationBox.Visible = true;
+            // clear and hide edit
+            ClearAndHideRedisEdit();
+
+            string serverList = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.REDIS_ENDPOINT_LIST );
+            
+            // show and populate view
+            redisView.Visible = true;
+            cbEnabled.Checked = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER ).IsNullOrWhiteSpace() ? false : true;
+            lEndPointList.Text = serverList;
+            lblPassword.Text = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.REDIS_PASSWORD ).IsNullOrWhiteSpace() ? string.Empty : "***********";
+            lblDatabaseNumber.Text = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.REDIS_DATABASE_NUMBER );
+        }
+        
+        protected void PopulateRedisEdit()
+        {
+            ClearAndHideRedisView();
+            redisEdit.Visible = true;
+
+            string enabled = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER );
+            cbEnabledEdit.Checked = enabled.IsNullOrWhiteSpace() || enabled.ToLower() == "false" ? false : true;
+
+            var keyValuePairs = new List<ListItems.KeyValuePair>();
+            var endPoints = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.REDIS_ENDPOINT_LIST ).Split( ',' );
+            foreach ( var endPoint in endPoints )
+            {
+                keyValuePairs.Add( new ListItems.KeyValuePair { Value = endPoint } );
+            }
+
+            var endPointsValue = JsonConvert.SerializeObject( keyValuePairs );
+            liEndPoints.Value = endPointsValue;
+
+            tbPassword.Text = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.REDIS_PASSWORD );
+            tbDatabaseNumber.Text = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.REDIS_DATABASE_NUMBER );
         }
 
-        /// <summary>
-        /// Clear and hide all notification boxes.
-        /// </summary>
-        protected void ClearNotifications()
+        protected void ClearAndHideRedisEdit()
         {
-            nbMessage.Text = string.Empty;
-            nbMessage.NotificationBoxType = NotificationBoxType.Info;
-            nbMessage.Visible = false;
-            nbModalMessage.Text = string.Empty;
-            nbModalMessage.NotificationBoxType = NotificationBoxType.Info;
-            nbModalMessage.Visible = false;
+            redisEdit.Visible = false;
+            cbEnabledEdit.Checked = false;
+            liEndPoints.Value = string.Empty;
+            tbPassword.Text = string.Empty;
+            tbDatabaseNumber.Text = string.Empty;
         }
+
+        protected void ClearAndHideRedisView()
+        {
+            redisView.Visible = false;
+            cbEnabled.Checked = false;
+            lEndPointList.Text = string.Empty;
+            lblPassword.Text = string.Empty;
+            lblDatabaseNumber.Text = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.REDIS_DATABASE_NUMBER );
+        }
+
+        protected void btnEditRedis_Click( object sender, EventArgs e )
+        {
+            PopulateRedisEdit();
+        }
+
+        protected void btnSaveRedis_Click( object sender, EventArgs e )
+        {
+            string serverList = string.Empty;
+            var keyValuePairs = JsonConvert.DeserializeObject<List<Rock.Web.UI.Controls.ListItems.KeyValuePair>>( liEndPoints.Value );
+
+            foreach ( var keyValuePair in keyValuePairs )
+            {
+                serverList += keyValuePair.Value + ",";
+            }
+
+            serverList = serverList.TrimEnd( ',' );
+
+            SystemSettings.SetValue( Rock.SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER, cbEnabledEdit.Checked.ToString() );
+            SystemSettings.SetValue( Rock.SystemKey.SystemSetting.REDIS_ENDPOINT_LIST, serverList );
+            SystemSettings.SetValue( Rock.SystemKey.SystemSetting.REDIS_PASSWORD, tbPassword.Text );
+            SystemSettings.SetValue( Rock.SystemKey.SystemSetting.REDIS_DATABASE_NUMBER, tbDatabaseNumber.Text );
+
+            PopulateRedisView();
+        }
+
+        protected void btnCancelRedis_Click( object sender, EventArgs e )
+        {
+            ClearAndHideRedisEdit();
+            PopulateRedisView();
+        }
+
+        #endregion
+
+        #region Cache Statistics
 
         /// <summary>
         /// Populates the drop down list with an ordered list of cache type names.
@@ -251,6 +385,20 @@ namespace RockWeb.Blocks.Cms
             string htmlText = "<tr><td>Hits</td><td>{0:N0}</td><tr><td>Misses</td><td>{1:N0}</td></tr><tr><td>Adds</td><td>{2:N0}</td></tr><tr><td>Gets</td><td>{3:N0}</td></tr><tr><td>Clears</td><td>{4:N0}</td></tr>";
             lCacheStatistics.Text = string.Format( htmlText, hits, misses, adds, gets, clears );
         }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlCacheTypes control and updates statistics for the selected cache type.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlCacheTypes_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            PopulateCacheStatistics();
+        }
+
+        #endregion
+
+        #region Add Tag Modal
 
         /// <summary>
         /// Handles the SaveClick event of the dlgAddTag control.
@@ -336,52 +484,7 @@ namespace RockWeb.Blocks.Cms
             dlgAddTag.Hide();
         }
 
-        /// <summary>
-        /// POCO to list tags on the CacheManager grid
-        /// </summary>
-        private class CacheTagGridRow
-        {
-            /// <summary>
-            /// Gets or sets the name of the tag.
-            /// </summary>
-            /// <value>
-            /// The name of the tag.
-            /// </value>
-            public string TagName { get; set; }
+        #endregion
 
-            /// <summary>
-            /// Gets or sets the tag description.
-            /// </summary>
-            /// <value>
-            /// The tag description.
-            /// </value>
-            public string TagDescription { get; set; }
-
-            /// <summary>
-            /// Gets or sets the linked keys.
-            /// </summary>
-            /// <value>
-            /// The linked keys.
-            /// </value>
-            public long LinkedKeys { get; set; }
-
-            /// <summary>
-            /// Gets or sets the DefinedValue identifier for the tag
-            /// </summary>
-            /// <value>
-            /// The defined value identifier.
-            /// </value>
-            public int DefinedValueId { get; set; }
-        }
-
-        /// <summary>
-        /// Handles the SelectedIndexChanged event of the ddlCacheTypes control and updates statistics for the selected cache type.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void ddlCacheTypes_SelectedIndexChanged( object sender, EventArgs e )
-        {
-            PopulateCacheStatistics();
-        }
     }
 }

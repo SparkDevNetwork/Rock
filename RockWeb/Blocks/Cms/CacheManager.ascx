@@ -41,6 +41,42 @@
                             <thead><tr><td colspan="2"></td></tr><tr><th>Stat</th><th>Count</th></tr></thead>
                             <asp:Literal ID="lCacheStatistics" runat="server" /><tr><td colspan="2"></td></tr>
                         </table>
+
+                        <br />
+                        <Rock:PanelWidget ID="wpGroupSync" runat="server" Title="Redis Backplane Settings" Expanded="false" Visible="false">
+                            <div id="redisView" runat="server">
+                                <div class="row"><div class="col-md-12"><asp:CheckBox ID="cbEnabled" runat="server" Text="Enable" Enabled="false" /></div></div>
+                                <div class="row"><div class="col-md-12">End Points<asp:Literal ID="lEndPointList" runat="server"></asp:Literal></div></div>
+                                <div class="row"><div class="col-md-12">Password<asp:Label ID="lblPassword" runat="server"></asp:Label></div></div>
+                                <div class="row"><div class="col-md-12">Database Number<asp:Label ID="lblDatabaseNumber" runat="server"></asp:Label></div></div>
+
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="actions">
+                                            <asp:LinkButton ID="btnEditRedis" runat="server" AccessKey="m" ToolTip="Alt+m" Text="Edit Settings" CssClass="btn btn-primary" OnClick="btnEditRedis_Click" CausesValidation="false" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div id="redisEdit" runat="server">
+                                <div class="row"><div class="col-md-12"><asp:CheckBox ID="cbEnabledEdit" runat="server" Text="Enable" /></div></div>
+                                <div class="row"><div class="col-md-12">End Points<Rock:ListItems ID="liEndPoints" runat="server" Help="List of Redis endpoints (e.g. server.com:6379) to connect to."></Rock:ListItems></div></div>
+                                <div class="row"><div class="col-md-12">Password<Rock:RockTextBox ID="tbPassword" runat="server" TextMode="Password" Help="The password used to connect. The need for a password is dependent on your Redis server configuration." ></Rock:RockTextBox></div></div>
+                                <div class="row"><div class="col-md-12">Database Number<Rock:RockTextBox ID="tbDatabaseNumber" runat="server" TextMode="Number" Help="The database index number (the default is 0)"></Rock:RockTextBox></div></div>
+                                
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="actions">
+                                            <asp:LinkButton ID="btnSaveRedis" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSaveRedis_Click" />
+                                            <asp:LinkButton ID="btnCancelRedis" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancelRedis_Click" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </Rock:PanelWidget>
                     </div>
                 </div>
 
