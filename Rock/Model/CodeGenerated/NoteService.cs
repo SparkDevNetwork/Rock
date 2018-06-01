@@ -51,7 +51,8 @@ namespace Rock.Model
         public bool CanDelete( Note item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
+            
+            // ignoring Note,ParentNoteId 
             return true;
         }
     }
