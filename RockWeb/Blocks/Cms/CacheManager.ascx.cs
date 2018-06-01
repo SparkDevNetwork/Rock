@@ -248,7 +248,7 @@ namespace RockWeb.Blocks.Cms
                 }
             }
 
-            string htmlText = "Hits: {0:N0}<br />Misses: {1:N0}<br />Adds: {2:N0}<br />Gets: {3:N0}<br />Clears: {4:N0}";
+            string htmlText = "<tr><td>Hits</td><td>{0:N0}</td><tr><td>Misses</td><td>{1:N0}</td></tr><tr><td>Adds</td><td>{2:N0}</td></tr><tr><td>Gets</td><td>{3:N0}</td></tr><tr><td>Clears</td><td>{4:N0}</td></tr>";
             lCacheStatistics.Text = string.Format( htmlText, hits, misses, adds, gets, clears );
         }
 
