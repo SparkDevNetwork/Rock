@@ -61,8 +61,11 @@
                                         <Rock:RockCheckBox ID="cbMember" runat="server" Checked='<%# Eval("Attended") %>' Text='<%# string.Concat(Eval("MergedTemplate"), " ", Eval("FullName"))%>' />
                                     </ItemTemplate>
                                 </asp:ListView>
-                                <div class="pull-right margin-b-lg">
-                                    <Rock:PersonPicker ID="ppAddPerson" runat="server" CssClass="picker-menu-right" PersonName="Add New Attendee" OnSelectPerson="ppAddPerson_SelectPerson" />
+                                <div class="pull-left margin-b-md margin-r-md">
+                                    <Rock:PersonPicker ID="ppAddPerson" runat="server" OnSelectPerson="ppAddPerson_SelectPerson" />
+                                </div>
+                                <div class="pull-left margin-b-lg">
+                                    <asp:LinkButton ID="lbAddMember" runat="server" CssClass="btn btn-default" OnClick="lbAddMember_Click" CausesValidation="false" Visible="false"><i class="fa fa-plus"></i> Add Group Member</asp:LinkButton>
                                 </div>
                             </div>
 
@@ -99,7 +102,6 @@
 
         </div>
 
-
         <script>
             Sys.Application.add_load(function () {
                 // toggle all checkboxes
@@ -122,7 +124,6 @@
                 });
             });
         </script>
-
 
     </ContentTemplate>
 </asp:UpdatePanel>

@@ -379,7 +379,7 @@ validity of the request before completing this merge." :
                     var binaryFileService = new BinaryFileService( rockContext );
                     var phoneNumberService = new PhoneNumberService( rockContext );
                     var taggedItemService = new TaggedItemService( rockContext );
-
+                    var personSearchKeyService = new PersonSearchKeyService( rockContext );
                     Person primaryPerson = personService.Get( MergeData.PrimaryPersonId ?? 0 );
                     if ( primaryPerson != null )
                     {
@@ -557,6 +557,24 @@ validity of the request before completing this merge." :
                             }
                         }
                         rockContext.SaveChanges();
+
+                        //merge search keys on merge
+                        var searchTypeValue = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_EMAIL.AsGuid() );
+                        var personSearchKeys = primaryPerson.GetPersonSearchKeys( rockContext ).Where( a => a.SearchTypeValueId == searchTypeValue.Id ).ToList();
+                        foreach ( var p in MergeData.People.Where( p => p.Id != primaryPersonId.Value ) )
+                        {
+                            if ( !string.IsNullOrEmpty( p.Email ) && p.Email != GetNewStringValue( "Email" ) && !personSearchKeys.Any( a => a.SearchValue == p.Email ) )
+                            {
+                                PersonSearchKey personSearchKey = new PersonSearchKey()
+                                {
+                                    PersonAliasId = primaryPerson.PrimaryAliasId.Value,
+                                    SearchTypeValueId = searchTypeValue.Id,
+                                    SearchValue = p.Email
+                                };
+                                personSearchKeyService.Add( personSearchKey );
+                                rockContext.SaveChanges();
+                            }
+                        }
 
                         // Delete merged person's family records and any families that would be empty after merge
                         foreach ( var p in MergeData.People.Where( p => p.Id != primaryPersonId.Value ) )

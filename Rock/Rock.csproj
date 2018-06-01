@@ -886,6 +886,7 @@
     <Compile Include="Model\AnalyticsSourcePersonHistorical.cs" />
     <Compile Include="Model\AnalyticsFactFinancialTransaction.cs" />
     <Compile Include="Model\AnalyticsSourceFinancialTransaction.cs" />
+    <Compile Include="Model\ConnectionTypeService.Partial.cs" />
     <Compile Include="Model\AttendanceOccurrence.cs" />
     <Compile Include="Model\Attendance.cs" />
     <Compile Include="Model\AttendanceCode.cs" />

@@ -49,7 +49,6 @@ namespace Rock.Model
                 noteType.Name = name;
                 noteType.UserSelectable = true;
                 noteType.IconCssClass = string.Empty;
-                noteType.CssClass = string.Empty;
                 noteType.Order = noteTypes.Any() ? noteTypes.Max( t => t.Order ) + 1 : 0;
 
                 // Create a new context/service so that save does not affect calling method's context
