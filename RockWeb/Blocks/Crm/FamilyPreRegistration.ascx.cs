@@ -27,6 +27,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+
 using Rock.Security;
 using Rock.Web;
 using Rock.Cache;
@@ -56,7 +57,7 @@ The URL to redirect user to when they have completed the registration. The merge
 that is created/updated; 'RelatedChildren', which is a list of the children who have a relationship with the family, but are not in the family; 'ParentIds' which is a
 comma-delimited list of the person ids for each adult; 'ChildIds' which is a comma-delimited list of the person ids for each child; and 'PlannedVisitDate' which is 
 the value entered for the Planned Visit Date field if it was displayed.
-", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, "", "", 9 )]
+", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, true, "", "", 9 )]
 
     [CustomDropdownListField( "Suffix", "How should Suffix be displayed for adults?", "Hide,Optional", false, "Hide", "Adult Fields", 0, "AdultSuffix" )]
     [CustomDropdownListField( "Gender", "How should Gender be displayed for adults?", "Hide,Optional,Required", false, "Optional", "Adult Fields", 1, "AdultGender" )]
@@ -329,8 +330,8 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
 
                 // Save the adults
                 var adultIds = new List<int>();
-                SaveAdult( ref primaryFamily, adultIds, 1, hfAdultGuid1, tbFirstName1, tbLastName1, dvpSuffix1, ddlGender1, dppBirthDate1, dvpMaritalStatus1, tbEmail1, pnMobilePhone1, phAttributes1 );
-                SaveAdult( ref primaryFamily, adultIds, 2, hfAdultGuid2, tbFirstName2, tbLastName2, dvpSuffix2, ddlGender2, dppBirthDate2, dvpMaritalStatus2, tbEmail2, pnMobilePhone2, phAttributes2 );
+                SaveAdult( ref primaryFamily, adultIds, 1, hfAdultGuid1, tbFirstName1, tbLastName1, dvpSuffix1, ddlGender1, dpBirthDate1, dvpMaritalStatus1, tbEmail1, pnMobilePhone1, phAttributes1 );
+                SaveAdult( ref primaryFamily, adultIds, 2, hfAdultGuid2, tbFirstName2, tbLastName2, dvpSuffix2, ddlGender2, dpBirthDate2, dvpMaritalStatus2, tbEmail2, pnMobilePhone2, phAttributes2 );
 
                 // If two adults were entered, let's check to see if we should assume they're married
                 if ( adultIds.Count == 2 )
@@ -378,13 +379,15 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                     var currentFamilyMember = primaryFamily.Members.FirstOrDefault( m => m.PersonId == id );
                     if ( currentFamilyMember == null )
                     {
-                        currentFamilyMember = new GroupMember();
-                        groupMemberService.Add( currentFamilyMember );
+                        currentFamilyMember = new GroupMember
+                        {
+                            GroupId = primaryFamily.Id,
+                            PersonId = id,
+                            GroupRoleId = adultRoleId,
+                            GroupMemberStatus = GroupMemberStatus.Active
+                        };
 
-                        currentFamilyMember.GroupId = primaryFamily.Id;
-                        currentFamilyMember.PersonId = id;
-                        currentFamilyMember.GroupRoleId = adultRoleId;
-                        currentFamilyMember.GroupMemberStatus = GroupMemberStatus.Active;
+                        groupMemberService.Add( currentFamilyMember );
 
                         _rockContext.SaveChanges();
                     }
@@ -516,13 +519,12 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                         if ( !inPrimaryFamily )
                         {
                             var familyMember = new GroupMember();
-                            groupMemberService.Add( familyMember );
-
                             familyMember.GroupId = primaryFamily.Id;
                             familyMember.PersonId = person.Id;
                             familyMember.GroupRoleId = childRoleId;
                             familyMember.GroupMemberStatus = GroupMemberStatus.Active;
 
+                            groupMemberService.Add( familyMember );
                             _rockContext.SaveChanges();
                         }
                     }
@@ -696,8 +698,8 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
 
             // Adult Birthdate
             isRequired = SetControl( "AdultBirthDate", pnlBirthDate1, pnlBirthDate2 );
-            dppBirthDate1.Required = isRequired;
-            dppBirthDate2.Required = isRequired;
+            dpBirthDate1.Required = isRequired;
+            dpBirthDate2.Required = isRequired;
 
             // Adult Marital Status
             isRequired = SetControl( "AdultMaritalStatus", pnlMaritalStatus1, pnlMaritalStatus2 );
@@ -798,7 +800,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
 
             dvpSuffix1.SetValue( adult1 != null ? adult1.SuffixValueId : (int?)null );
             ddlGender1.SetValue( adult1 != null ? adult1.Gender.ConvertToInt() : 0 );
-            dppBirthDate1.SelectedDate = ( adult1 != null ? adult1.BirthDate : (DateTime?)null );
+            dpBirthDate1.SelectedDate = ( adult1 != null ? adult1.BirthDate : (DateTime?)null );
             dvpMaritalStatus1.SetValue( adult1 != null ? adult1.MaritalStatusValueId : (int?)null );
             tbEmail1.Text = ( adult1 != null ? adult1.Email : string.Empty );
             SetPhoneNumber( adult1, pnMobilePhone1 );
@@ -818,7 +820,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
 
             dvpSuffix2.SetValue( adult2 != null ? adult2.SuffixValueId : (int?)null );
             ddlGender2.SetValue( adult2 != null ? adult2.Gender.ConvertToInt() : 0 );
-            dppBirthDate2.SelectedDate = ( adult2 != null ? adult2.BirthDate : (DateTime?)null );
+            dpBirthDate2.SelectedDate = ( adult2 != null ? adult2.BirthDate : (DateTime?)null );
             dvpMaritalStatus2.SetValue( adult2 != null ? adult2.MaritalStatusValueId : (int?)null );
             tbEmail2.Text = ( adult2 != null ? adult2.Email : string.Empty );
             SetPhoneNumber( adult2, pnMobilePhone2 );
@@ -1108,7 +1110,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             RockTextBox tbLastName,
             DefinedValuePicker dvpSuffix,
             RockDropDownList ddlGender,
-            DatePartsPicker dppBirthDate,
+            DatePicker dpBirthDate,
             DefinedValuePicker dvpMaritalStatus,
             EmailBox tbEmail,
             PhoneNumberBox pnMobilePhone,
@@ -1147,10 +1149,9 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                 // If not editing an existing person, attempt to match them to existing (if configured to do so)
                 if ( adult == null && showEmail && autoMatch )
                 {
-                    var people = personService.GetByMatch( tbFirstName.Text, tbLastName.Text, tbEmail.Text );
-                    if ( people.Count() == 1 )
+                    adult = personService.FindPerson( tbFirstName.Text, tbLastName.Text, tbEmail.Text, true );
+                    if ( adult != null )
                     {
-                        adult = people.First();
                         saveEmptyValues = false;
                         if ( primaryFamily == null )
                         {
@@ -1193,7 +1194,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
 
                 if ( showBirthDate )
                 {
-                    var birthDate = dppBirthDate.SelectedDate;
+                    var birthDate = dpBirthDate.SelectedDate;
                     if ( birthDate.HasValue || saveEmptyValues )
                     {
                         adult.SetBirthDate( birthDate );
@@ -1314,7 +1315,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                 var category = CacheCategory.Get( categoryGuid );
                 if ( category != null )
                 {
-                    foreach ( var attribute in new AttributeService( _rockContext ).GetByCategoryId( category.Id ) )
+                    foreach ( var attribute in new AttributeService( _rockContext ).GetByCategoryId( category.Id, false ) )
                     {
                         if ( attribute.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                         {
@@ -1371,7 +1372,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             }
 
             ValidateRequiredField( "AdultGender", "Gender is required for each adult.", ddlGender1.SelectedValueAsEnumOrNull<Gender>() != null, ddlGender2.SelectedValueAsEnumOrNull<Gender>() != null, errorMessages );
-            ValidateRequiredField( "AdultBirthdate", "Birthdate is required for each adult.", dppBirthDate1.SelectedDate != null, dppBirthDate2.SelectedDate != null, errorMessages );
+            ValidateRequiredField( "AdultBirthdate", "Birthdate is required for each adult.", dpBirthDate1.SelectedDate != null, dpBirthDate2.SelectedDate != null, errorMessages );
             ValidateRequiredField( "AdultEmail", "Email is required for each adult.", tbEmail1.Text.IsNotNullOrWhitespace(), tbEmail2.Text.IsNotNullOrWhitespace(), errorMessages );
             ValidateRequiredField( "AdultMobilePhone", "Mobile Phone is required for each adult.", PhoneNumber.CleanNumber( pnMobilePhone1.Number ).IsNotNullOrWhitespace(), PhoneNumber.CleanNumber( pnMobilePhone2.Number ).IsNotNullOrWhitespace(), errorMessages );
 
@@ -1483,13 +1484,12 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
 
             // Add the person to the family
             var familyMember = new GroupMember();
-            groupMemberService.Add( familyMember );
-
             familyMember.GroupId = newFamilyId.Value;
             familyMember.PersonId = personId;
             familyMember.GroupRoleId = childRoleId;
             familyMember.GroupMemberStatus = GroupMemberStatus.Active;
 
+            groupMemberService.Add( familyMember );
             _rockContext.SaveChanges();
         }
 

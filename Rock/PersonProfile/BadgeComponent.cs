@@ -138,7 +138,7 @@ namespace Rock.PersonProfile
         /// <param name="badge">The badge.</param>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        [Obsolete]
+        [Obsolete( "Use GetAttributeValue() method that uses new CachePersonBadge parameter instead.", false )]
         protected string GetAttributeValue( Web.Cache.PersonBadgeCache badge, string key )
         {
             return GetAttributeValue( CachePersonBadge.Get( badge.Id ), key );
@@ -160,7 +160,8 @@ namespace Rock.PersonProfile
         /// </summary>
         /// <param name="badge">The badge.</param>
         /// <param name="writer">The writer.</param>
-        public abstract void Render( CachePersonBadge badge, HtmlTextWriter writer );
+        [Obsolete( "Badge Components should inherit from BadgeComponentModern instead and implement its Render method that uses a new CachePersonBadge parameter.", false ) ]
+        public abstract void Render( Web.Cache.PersonBadgeCache badge, HtmlTextWriter writer );
 
     }
 }

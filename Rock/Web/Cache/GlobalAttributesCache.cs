@@ -243,8 +243,14 @@ namespace Rock.Web.Cache
         /// <value>
         /// Returns current year if transition month/day has not passed, otherwise will return next year
         /// </value>
-        public int CurrentGraduationYear => CacheGlobalAttributes.Get().CurrentGraduationYear;
-
+        [Obsolete("Moved to RockDateTime.CurrentGraduationYear")]
+        public int CurrentGraduationYear
+        {
+            get
+            {
+                return RockDateTime.CurrentGraduationYear;
+            }
+        }
         /// <summary>
         /// Gets the organization location (OrganizationAddress)
         /// </summary>

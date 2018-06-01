@@ -193,8 +193,8 @@ namespace RockWeb
 
                     // Preload the commonly used objects
                     stopwatch.Restart();
-                    LoadComponenetData( rockContext );
                     LoadCacheObjects( rockContext );
+                    LoadComponenetData( rockContext );
                     if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                     {
                         System.Diagnostics.Debug.WriteLine( string.Format( "LoadCacheObjects - {0} ms", stopwatch.Elapsed.TotalMilliseconds ) );

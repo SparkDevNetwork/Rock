@@ -1634,7 +1634,7 @@ namespace Rock.Data
         /// <param name="key">The key.  Defaults to Name without Spaces. If this is a core global attribute, specify the key with a 'core.' prefix</param>
         public void AddGlobalAttribute( string fieldTypeGuid, string entityTypeQualifierColumn, string entityTypeQualifierValue, string name, string description, int order, string defaultValue, string guid, string key = null )
         {
-            this.AddGlobalAttribute( fieldTypeGuid, entityTypeQualifierColumn, entityTypeQualifierColumn, name, description, order, defaultValue, guid, key, true );
+            this.AddGlobalAttribute( fieldTypeGuid, entityTypeQualifierColumn, entityTypeQualifierValue, name, description, order, defaultValue, guid, key, true );
 
         }
         /// <summary>
@@ -1990,6 +1990,40 @@ BEGIN
                     blockGuid,
                     attributeGuid )
             );
+        }
+
+        /// <summary>
+        /// Deletes a block attribute value for the given block guid and attribute guid
+        /// </summary>
+        /// <param name="blockGuid">The block GUID.</param>
+        /// <param name="attributeGuid">The attribute GUID.</param>
+        /// <param name="value">The value to delete.</param>
+        // https://stackoverflow.com/questions/48193162/remove-value-from-comma-delimited-string-sql-server
+        public void DeleteBlockAttributeValue(string blockGuid, string attributeGuid, string value)
+        {
+            Migration.Sql( string.Format( @"
+                DECLARE @BlockId int
+                SET @BlockId = (SELECT [Id] FROM [Block] WHERE [Guid] = '{0}')
+
+                DECLARE @AttributeId int
+                SET @AttributeId = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{1}')
+
+                IF @BlockId IS NOT NULL AND @AttributeId IS NOT NULL
+                BEGIN
+                    WITH CTE AS
+                        (
+                            SELECT Value, REPLACE(','+ Value +',', ',{2},',',') As newValue
+                            FROM [AttributeValue] WHERE [AttributeId] = @AttributeId AND [EntityId] = @BlockId 
+                        )
+
+
+                        UPDATE CTE
+                        SET Value = ISNULL(
+                                            STUFF(
+                                                STUFF(newValue, 1, 1, ''), 
+                                                LEN(newValue)-1, 2, '')
+                                        , '')
+                END", blockGuid, attributeGuid, value ) );
         }
 
         #endregion

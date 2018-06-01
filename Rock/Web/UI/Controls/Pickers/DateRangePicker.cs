@@ -313,12 +313,12 @@ $('#{4},#{5}').on('change', function (ev) {{
 
             _tbLowerValue = new DatePicker();
             _tbLowerValue.ID = this.ID + "_lower";
-            _tbLowerValue.CssClass = "input-width-md date input-group-lower js-lower";
+            _tbLowerValue.CssClass = "input-group-lower js-lower";
             Controls.Add( _tbLowerValue );
 
             _tbUpperValue = new DatePicker();
             _tbUpperValue.ID = this.ID + "_upper";
-            _tbUpperValue.CssClass = "input-width-md date input-group-upper js-upper";
+            _tbUpperValue.CssClass = "input-group-upper js-upper";
             Controls.Add( _tbUpperValue );
 
             // add custom validator

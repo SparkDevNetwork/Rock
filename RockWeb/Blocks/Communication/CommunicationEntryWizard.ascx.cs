@@ -613,7 +613,7 @@ namespace RockWeb.Blocks.Communication
             {
                 if ( !GetRecipientFromListSelection().Any() )
                 {
-                    nbRecipientsAlert.Text = "At least one recipient is required.";
+                    nbRecipientsAlert.Text = "The selected list doesn't have any people. <span>At least one recipient is required.</span>";
                     nbRecipientsAlert.Visible = true;
                     return;
                 }

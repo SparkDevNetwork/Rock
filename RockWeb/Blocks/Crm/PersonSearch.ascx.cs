@@ -178,6 +178,7 @@ namespace RockWeb.Blocks.Crm
                         sbPersonDetails.Append( string.Format( "<div class=\"photo-round photo-round-sm pull-left\" data-original=\"{0}&w=100\" style=\"background-image: url('{1}');\"></div>", person.PhotoUrl, ResolveUrl("~/Assets/Images/person-no-photo-male.svg") ) );
                         sbPersonDetails.Append("<div class=\"pull-left margin-l-sm\">");
                         sbPersonDetails.Append(string.Format("<strong>{0}</strong> ", person.FullNameReversed));
+                        sbPersonDetails.Append( string.Format( "{0} ", Person.GetSignalMarkup( person.TopSignalColor, person.TopSignalIconCssClass ) ) );
                         sbPersonDetails.Append( string.Format( "<small class=\"hidden-sm hidden-md hidden-lg\"><br>{0}</br></small>", delimitedCampuses ) );
                         sbPersonDetails.Append( string.Format( "<small class=\"hidden-sm hidden-md hidden-lg\">{0}</small>", CacheDefinedValue.GetName( person.ConnectionStatusValueId ) ) );
                         sbPersonDetails.Append(string.Format(" <small class=\"hidden-md hidden-lg\">{0}</small>", person.AgeFormatted));
@@ -433,7 +434,9 @@ namespace RockWeb.Blocks.Crm
                             NumberTypeValueId = n.NumberTypeValueId.Value,
                             Number = n.NumberFormatted
                         } )
-                        .ToList()
+                        .ToList(),
+                    TopSignalColor = p.TopSignalColor,
+                    TopSignalIconCssClass = p.TopSignalIconCssClass
                 } ).ToList();
 
                 if ( personList.Count == 1 )
@@ -777,6 +780,22 @@ namespace RockWeb.Blocks.Crm
         /// The phone numbers.
         /// </value>
         public List<PersonSearchResultPhone> PhoneNumbers { get; set; }
+
+        /// <summary>
+        /// Gets or sets the top signal color to indicate if this person has a signal attached.
+        /// </summary>
+        /// <value>
+        /// The top signal color.
+        /// </value>
+        public string TopSignalColor { get; set; }
+
+        /// <summary>
+        /// Gets or sets the top signal icon of the person.
+        /// </summary>
+        /// <value>
+        /// The top signal icon.
+        /// </value>
+        public string TopSignalIconCssClass { get; set; }
     }
 
     /// <summary>

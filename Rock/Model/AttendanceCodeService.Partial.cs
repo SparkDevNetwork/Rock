@@ -154,6 +154,7 @@ namespace Rock.Model
         /// <param name="alphaLength">Length of the alpha.</param>
         /// <param name="numericLength">Length of the numeric.</param>
         /// <param name="isRandomized">if set to <c>true</c> [is randomized].</param>
+        /// <param name="lastCode">The last code.</param>
         /// <returns></returns>
         public static string GetNextNumericCodeAsString( int alphaNumericLength, int alphaLength, int numericLength, bool isRandomized, string lastCode )
         {

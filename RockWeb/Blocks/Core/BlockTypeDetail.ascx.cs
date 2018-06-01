@@ -315,7 +315,7 @@ namespace RockWeb.Blocks.Core
                 List<string> blockStaticAttributeKeys = GetBlockTypeStaticAttributeKeys();
 
                 var attributes = new AttributeService( new RockContext() )
-                    .GetByEntityTypeId( new Rock.Model.Block().TypeId ).AsQueryable()
+                    .GetByEntityTypeId( new Rock.Model.Block().TypeId, true ).AsQueryable()
                     .Where( a =>
                         a.EntityTypeQualifierColumn.Equals( "BlockTypeId", StringComparison.OrdinalIgnoreCase ) &&
                         a.EntityTypeQualifierValue.Equals( qualifierValue ) )
@@ -385,7 +385,7 @@ namespace RockWeb.Blocks.Core
             }
 
             edtBlockTypeAttributes.ReservedKeyNames = new AttributeService( new RockContext() )
-                .GetByEntityTypeId( new Rock.Model.Block().TypeId ).AsQueryable()
+                .GetByEntityTypeId( new Rock.Model.Block().TypeId, true ).AsQueryable()
                 .Where( a =>
                     a.EntityTypeQualifierColumn.Equals( "BlockTypeId", StringComparison.OrdinalIgnoreCase ) &&
                     a.EntityTypeQualifierValue.Equals( hfBlockTypeId.Value ) &&
@@ -414,7 +414,7 @@ namespace RockWeb.Blocks.Core
 
             int order = 0;
             var attributes = attributeService
-                .GetByEntityTypeId( new Rock.Model.Block().TypeId ).AsQueryable()
+                .GetByEntityTypeId( new Rock.Model.Block().TypeId, true ).AsQueryable()
                 .Where( a =>
                     a.EntityTypeQualifierColumn.Equals( "BlockTypeId", StringComparison.OrdinalIgnoreCase ) &&
                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )

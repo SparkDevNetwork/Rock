@@ -227,6 +227,24 @@ namespace Rock.Model
         [DataMember]
         public bool IsAnalyticHistory { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this attribute is active.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsActive { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether changes to this attribute's attribute values should be logged in AttributeValueHistorical
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable history]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool EnableHistory { get; set; } = false;
+
         #endregion
 
         #region Virtual Properties

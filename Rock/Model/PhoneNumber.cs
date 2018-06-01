@@ -189,7 +189,7 @@ namespace Rock.Model
         /// The history changes.
         /// </value>
         [NotMapped]
-        private Dictionary<int, List<string>> PersonHistoryChanges { get; set; }
+        private Dictionary<int, History.HistoryChangeList> PersonHistoryChanges { get; set; }
 
         #endregion
 
@@ -215,7 +215,7 @@ namespace Rock.Model
 
             var rockContext = (RockContext)dbContext;
             int personId = PersonId;
-            PersonHistoryChanges = new Dictionary<int, List<string>> { { personId, new List<string>() } };
+            PersonHistoryChanges = new Dictionary<int, History.HistoryChangeList> { { personId, new History.HistoryChangeList() } };
 
             switch ( entry.State )
             {
@@ -251,7 +251,7 @@ namespace Rock.Model
                 case System.Data.Entity.EntityState.Deleted:
                     {
                         personId = entry.OriginalValues["PersonId"].ToStringSafe().AsInteger();
-                        PersonHistoryChanges.AddOrIgnore( personId, new List<string>() );
+                        PersonHistoryChanges.AddOrIgnore( personId, new History.HistoryChangeList() );
                         int? oldPhoneNumberTypeId = entry.OriginalValues["NumberTypeValueId"].ToStringSafe().AsIntegerOrNull();
                         History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone", CacheDefinedValue.GetName( oldPhoneNumberTypeId ) ), entry.OriginalValues["NumberFormatted"].ToStringSafe(), string.Empty );
 

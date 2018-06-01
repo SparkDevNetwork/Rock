@@ -39,7 +39,7 @@ namespace Rock.Cache
         /// The activity type id.
         /// </value>
         [DataMember]
-        public int ActivityTypeId { get; set; }
+        public int ActivityTypeId { get; private set; }
 
         /// <summary>
         /// Gets or sets the friendly name of the ActionType
@@ -48,7 +48,7 @@ namespace Rock.Cache
         /// A <see cref="System.String"/> representing the name of the ActionType.
         /// </value>
         [DataMember]
-        public string Name { get; set; }
+        public string Name { get; private set; }
 
         /// <summary>
         /// Gets or sets the order of the ActionType in the <see cref="Rock.Model.WorkflowActivityType" />
@@ -57,7 +57,7 @@ namespace Rock.Cache
         /// Order.
         /// </value>
         [DataMember]
-        public int Order { get; set; }
+        public int Order { get; private set; }
 
         /// <summary>
         /// Gets or sets the EntityTypeId of the <see cref="Rock.Model.EntityType"/> that the action is operating against.
@@ -66,7 +66,7 @@ namespace Rock.Cache
         /// A <see cref="System.Int32"/> representing the EntityTypeId of the <see cref="Rock.Model.EntityType"/> that the action is operating against.
         /// </value>
         [DataMember]
-        public int EntityTypeId { get; set; }
+        public int EntityTypeId { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is action completed on success.
@@ -75,7 +75,7 @@ namespace Rock.Cache
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if this instance is action completed on success; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsActionCompletedOnSuccess { get; set; }
+        public bool IsActionCompletedOnSuccess { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is activity completed on success.
@@ -84,7 +84,7 @@ namespace Rock.Cache
         /// A <see cref="System.Boolean"/> that is <c>true</c> if this instance is activity completed on success; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsActivityCompletedOnSuccess { get; set; }
+        public bool IsActivityCompletedOnSuccess { get; private set; }
 
         /// <summary>
         /// Gets or sets the workflow form identifier.
@@ -93,7 +93,7 @@ namespace Rock.Cache
         /// The workflow form identifier.
         /// </value>
         [DataMember]
-        public int? WorkflowFormId { get; set; }
+        public int? WorkflowFormId { get; private set; }
 
         /// <summary>
         /// Gets or sets the criteria attribute unique identifier.
@@ -102,7 +102,7 @@ namespace Rock.Cache
         /// The criteria attribute unique identifier.
         /// </value>
         [DataMember]
-        public Guid? CriteriaAttributeGuid { get; set; }
+        public Guid? CriteriaAttributeGuid { get; private set; }
 
         /// <summary>
         /// Gets or sets the type of the criteria comparison.
@@ -111,7 +111,7 @@ namespace Rock.Cache
         /// The type of the criteria comparison.
         /// </value>
         [DataMember]
-        public ComparisonType CriteriaComparisonType { get; set; }
+        public ComparisonType CriteriaComparisonType { get; private set; }
 
         /// <summary>
         /// Gets or sets the criteria value.
@@ -120,7 +120,7 @@ namespace Rock.Cache
         /// The criteria value.
         /// </value>
         [DataMember]
-        public string CriteriaValue { get; set; }
+        public string CriteriaValue { get; private set; }
 
         /// <summary>
         /// Gets the type of the activity.

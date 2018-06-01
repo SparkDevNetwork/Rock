@@ -43,7 +43,7 @@ namespace Rock.Cache
         ///   <c>true</c> if this instance is system; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsSystem { get; set; }
+        public bool IsSystem { get; private set; }
 
         /// <summary>
         /// Gets or sets the name.
@@ -52,7 +52,7 @@ namespace Rock.Cache
         /// The name.
         /// </value>
         [DataMember]
-        public string Name { get; set; }
+        public string Name { get; private set; }
 
         /// <summary>
         /// Gets or sets the description.
@@ -61,7 +61,7 @@ namespace Rock.Cache
         /// The description.
         /// </value>
         [DataMember]
-        public string Description { get; set; }
+        public string Description { get; private set; }
 
         /// <summary>
         /// Gets or sets the group term.
@@ -70,7 +70,7 @@ namespace Rock.Cache
         /// The group term.
         /// </value>
         [DataMember]
-        public string GroupTerm { get; set; }
+        public string GroupTerm { get; private set; }
 
         /// <summary>
         /// Gets or sets the group member term.
@@ -79,7 +79,7 @@ namespace Rock.Cache
         /// The group member term.
         /// </value>
         [DataMember]
-        public string GroupMemberTerm { get; set; }
+        public string GroupMemberTerm { get; private set; }
 
         /// <summary>
         /// Gets or sets the default group role identifier.
@@ -88,7 +88,7 @@ namespace Rock.Cache
         /// The default group role identifier.
         /// </value>
         [DataMember]
-        public int? DefaultGroupRoleId { get; set; }
+        public int? DefaultGroupRoleId { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [allow multiple locations].
@@ -97,7 +97,7 @@ namespace Rock.Cache
         /// <c>true</c> if [allow multiple locations]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool AllowMultipleLocations { get; set; }
+        public bool AllowMultipleLocations { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [show in group list].
@@ -106,7 +106,7 @@ namespace Rock.Cache
         ///   <c>true</c> if [show in group list]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool ShowInGroupList { get; set; }
+        public bool ShowInGroupList { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [show in navigation].
@@ -115,7 +115,7 @@ namespace Rock.Cache
         ///   <c>true</c> if [show in navigation]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool ShowInNavigation { get; set; }
+        public bool ShowInNavigation { get; private set; }
 
         /// <summary>
         /// Gets or sets the icon CSS class.
@@ -124,7 +124,7 @@ namespace Rock.Cache
         /// The icon CSS class.
         /// </value>
         [DataMember]
-        public string IconCssClass { get; set; }
+        public string IconCssClass { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [takes attendance].
@@ -133,7 +133,7 @@ namespace Rock.Cache
         ///   <c>true</c> if [takes attendance]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool TakesAttendance { get; set; }
+        public bool TakesAttendance { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [attendance counts as weekend service].
@@ -142,7 +142,7 @@ namespace Rock.Cache
         /// <c>true</c> if [attendance counts as weekend service]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool AttendanceCountsAsWeekendService { get; set; }
+        public bool AttendanceCountsAsWeekendService { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [send attendance reminder].
@@ -151,7 +151,7 @@ namespace Rock.Cache
         /// <c>true</c> if [send attendance reminder]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool SendAttendanceReminder { get; set; }
+        public bool SendAttendanceReminder { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [show connection status].
@@ -160,7 +160,7 @@ namespace Rock.Cache
         /// <c>true</c> if [show connection status]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool ShowConnectionStatus { get; set; }
+        public bool ShowConnectionStatus { get; private set; }
 
         /// <summary>
         /// Gets or sets the attendance rule.
@@ -169,7 +169,7 @@ namespace Rock.Cache
         /// The attendance rule.
         /// </value>
         [DataMember]
-        public AttendanceRule AttendanceRule { get; set; }
+        public AttendanceRule AttendanceRule { get; private set; }
 
         /// <summary>
         /// Gets or sets the group capacity rule.
@@ -178,7 +178,7 @@ namespace Rock.Cache
         /// The group capacity rule.
         /// </value>
         [DataMember]
-        public GroupCapacityRule GroupCapacityRule { get; set; }
+        public GroupCapacityRule GroupCapacityRule { get; private set; }
 
         /// <summary>
         /// Gets or sets the attendance print to.
@@ -187,7 +187,7 @@ namespace Rock.Cache
         /// The attendance print to.
         /// </value>
         [DataMember]
-        public PrintTo AttendancePrintTo { get; set; }
+        public PrintTo AttendancePrintTo { get; private set; }
 
         /// <summary>
         /// Gets or sets the order.
@@ -196,7 +196,7 @@ namespace Rock.Cache
         /// The order.
         /// </value>
         [DataMember]
-        public int Order { get; set; }
+        public int Order { get; private set; }
 
         /// <summary>
         /// Gets or sets the inherited group type identifier.
@@ -205,7 +205,7 @@ namespace Rock.Cache
         /// The inherited group type identifier.
         /// </value>
         [DataMember]
-        public int? InheritedGroupTypeId { get; set; }
+        public int? InheritedGroupTypeId { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is indexable.
@@ -214,7 +214,7 @@ namespace Rock.Cache
         /// <c>true</c> if this instance is indexable; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsIndexEnabled { get; set; }
+        public bool IsIndexEnabled { get; private set; }
 
         /// <summary>
         /// Gets or sets a flag indicating if specific groups are allowed to have their own member attributes.
@@ -223,7 +223,7 @@ namespace Rock.Cache
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if this specific group are allowed to have their own member attributes, otherwise <c>false</c>.
         /// </value>
         [DataMember]
-        public bool AllowSpecificGroupMemberAttributes { get; set; }
+        public bool AllowSpecificGroupMemberAttributes { get; private set; }
 
         /// <summary>
         /// Gets or sets a flag indicating if group requirements section is enabled for group of this type.
@@ -232,7 +232,7 @@ namespace Rock.Cache
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if group requirements section is enabled for group of this type, otherwise <c>false</c>.
         /// </value>
         [DataMember]
-        public bool EnableSpecificGroupRequirements { get; set; }
+        public bool EnableSpecificGroupRequirements { get; private set; }
 
         /// <summary>
         /// Gets or sets a flag indicating if groups of this type are allowed to be sync'ed.
@@ -241,7 +241,7 @@ namespace Rock.Cache
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if groups of this type are allowed to be sync'ed, otherwise <c>false</c>.
         /// </value>
         [DataMember]
-        public bool AllowGroupSync { get; set; }
+        public bool AllowGroupSync { get; private set; }
 
         /// <summary>
         /// Gets or sets a flag indicating if groups of this type should be allowed to have Group Member Workflows.
@@ -250,7 +250,7 @@ namespace Rock.Cache
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if groups of this type should be allowed to have group member workflows, otherwise <c>false</c>.
         /// </value>
         [DataMember]
-        public bool AllowSpecificGroupMemberWorkflows { get; set; }
+        public bool AllowSpecificGroupMemberWorkflows { get; private set; }
 
         /// <summary>
         /// Gets the type of the inherited group.
@@ -278,7 +278,7 @@ namespace Rock.Cache
         /// The allowed schedule types.
         /// </value>
         [DataMember]
-        public ScheduleType AllowedScheduleTypes { get; set; }
+        public ScheduleType AllowedScheduleTypes { get; private set; }
 
 
         /// <summary>
@@ -288,7 +288,7 @@ namespace Rock.Cache
         /// The location selection mode.
         /// </value>
         [DataMember]
-        public GroupLocationPickerMode LocationSelectionMode { get; set; }
+        public GroupLocationPickerMode LocationSelectionMode { get; private set; }
 
         /// <summary>
         /// Gets or sets the enable location schedules.
@@ -297,7 +297,7 @@ namespace Rock.Cache
         /// The enable location schedules.
         /// </value>
         [DataMember]
-        public bool? EnableLocationSchedules { get; set; }
+        public bool? EnableLocationSchedules { get; private set; }
 
         /// <summary>
         /// Gets or sets the group type purpose value identifier.
@@ -306,7 +306,7 @@ namespace Rock.Cache
         /// The group type purpose value identifier.
         /// </value>
         [DataMember]
-        public int? GroupTypePurposeValueId { get; set; }
+        public int? GroupTypePurposeValueId { get; private set; }
 
         /// <summary>
         /// Gets the group type purpose value.
@@ -314,20 +314,7 @@ namespace Rock.Cache
         /// <value>
         /// The group type purpose value.
         /// </value>
-        public CacheDefinedValue GroupTypePurposeValue
-        {
-            get
-            {
-                if ( GroupTypePurposeValueId.HasValue && GroupTypePurposeValueId.Value != 0 )
-                {
-                    return CacheDefinedValue.Get( GroupTypePurposeValueId.Value );
-                }
-                else
-                {
-                    return null;
-                }
-            }
-        }
+        public CacheDefinedValue GroupTypePurposeValue => GroupTypePurposeValueId.HasValue ? CacheDefinedValue.Get( GroupTypePurposeValueId.Value ) : null;
 
         /// <summary>
         /// Gets or sets a value indicating whether to ignore person inactivated.
@@ -339,7 +326,7 @@ namespace Rock.Cache
         /// <c>true</c> if [ignore person inactivated]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IgnorePersonInactivated { get; set; }
+        public bool IgnorePersonInactivated { get; private set; }
 
         /// <summary>
         /// Gets or sets a lava template that can be used for generating  view details for Group.
@@ -348,7 +335,43 @@ namespace Rock.Cache
         /// The Group View Lava Template.
         /// </value>
         [DataMember]
-        public string GroupViewLavaTemplate { get; set; }
+        public string GroupViewLavaTemplate { get; private set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether group history should be enabled for groups of this type
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable group history]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool EnableGroupHistory { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the DefinedType that Groups of this type will use for the Group.StatusValue
+        /// </summary>
+        /// <value>
+        /// The group status defined type identifier.
+        /// </value>
+        [DataMember]
+        public int? GroupStatusDefinedTypeId { get; private set; }
+
+        /// <summary>
+        /// The color used to visually distinguish groups on lists.
+        /// </summary>
+        /// <value>
+        /// The group type color.
+        /// </value>
+        [DataMember]
+        public string GroupTypeColor { get; private set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show marital status].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show marital status]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool ShowMaritalStatus { get; private set; }
 
         /// <summary>
         /// Gets or sets the roles.
@@ -357,7 +380,7 @@ namespace Rock.Cache
         /// The roles.
         /// </value>
         [DataMember]
-        public List<GroupTypeRoleCache> Roles { get; set; }
+        public List<GroupTypeRoleCache> Roles { get; private set; }
 
         /// <summary>
         /// Gets or sets the group schedule exclusions.
@@ -366,7 +389,7 @@ namespace Rock.Cache
         /// The group schedule exclusions.
         /// </value>
         [DataMember]
-        public List<DateRange> GroupScheduleExclusions { get; set; }
+        public List<DateRange> GroupScheduleExclusions { get; private set; }
 
         /// <summary>
         /// Gets the child group types.
@@ -466,7 +489,7 @@ namespace Rock.Cache
         /// The location type value i ds.
         /// </value>
         [DataMember]
-        public List<int> LocationTypeValueIDs { get; set; }
+        public List<int> LocationTypeValueIDs { get; private set; }
 
         /// <summary>
         /// Gets the location type values.
@@ -490,6 +513,14 @@ namespace Rock.Cache
 
             }
         }
+
+        /// <summary>
+        /// Gets or sets the DefinedType that Groups of this type will use for the Group.StatusValue
+        /// </summary>
+        /// <value>
+        /// The type of the group status defined.
+        /// </value>
+        public CacheDefinedType GroupStatusDefinedType => GroupStatusDefinedTypeId.HasValue ? CacheDefinedType.Get( this.GroupStatusDefinedTypeId.Value ) : null;
 
         #endregion
 
@@ -549,6 +580,11 @@ namespace Rock.Cache
                 .OrderBy( s => s.StartDate )
                 .ToList()
                 .ForEach( s => GroupScheduleExclusions.Add( new DateRange( s.StartDate, s.EndDate ) ) );
+
+            EnableGroupHistory = groupType.EnableGroupHistory;
+            GroupTypeColor = groupType.GroupTypeColor;
+            ShowMaritalStatus = groupType.ShowMaritalStatus;
+            GroupStatusDefinedTypeId = groupType.GroupStatusDefinedTypeId;
         }
 
         /// <summary>
@@ -570,19 +606,13 @@ namespace Rock.Cache
         /// Gets the 'Family' Group Type.
         /// </summary>
         /// <returns></returns>
-        public static CacheGroupType GetFamilyGroupType()
-        {
-            return Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
-        }
+        public static CacheGroupType GetFamilyGroupType() => Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
 
         /// <summary>
         /// Gets the 'Security Role' Group Type.
         /// </summary>
         /// <returns></returns>
-        public static CacheGroupType GetSecurityRoleGroupType()
-        {
-            return Get( SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
-        }
+        public static CacheGroupType GetSecurityRoleGroupType() => Get( SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
 
         #endregion
     }
@@ -601,7 +631,7 @@ namespace Rock.Cache
         /// The identifier.
         /// </value>
         [DataMember]
-        public int Id { get; set; }
+        public int Id { get; private set; }
 
         /// <summary>
         /// Gets or sets the unique identifier.
@@ -610,7 +640,7 @@ namespace Rock.Cache
         /// The unique identifier.
         /// </value>
         [DataMember]
-        public Guid Guid { get; set; }
+        public Guid Guid { get; private set; }
 
         /// <summary>
         /// Gets or sets the name.
@@ -619,7 +649,7 @@ namespace Rock.Cache
         /// The name.
         /// </value>
         [DataMember]
-        public string Name { get; set; }
+        public string Name { get; private set; }
 
         /// <summary>
         /// Gets or sets the order.
@@ -628,7 +658,7 @@ namespace Rock.Cache
         /// The order.
         /// </value>
         [DataMember]
-        public int Order { get; set; }
+        public int Order { get; private set; }
 
         /// <summary>
         /// Gets or sets the maximum count.
@@ -637,7 +667,7 @@ namespace Rock.Cache
         /// The maximum count.
         /// </value>
         [DataMember]
-        public int? MaxCount { get; set; }
+        public int? MaxCount { get; private set; }
 
         /// <summary>
         /// Gets or sets the minimum count.
@@ -646,7 +676,7 @@ namespace Rock.Cache
         /// The minimum count.
         /// </value>
         [DataMember]
-        public int? MinCount { get; set; }
+        public int? MinCount { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is leader.
@@ -655,7 +685,7 @@ namespace Rock.Cache
         ///   <c>true</c> if this instance is leader; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsLeader { get; set; }
+        public bool IsLeader { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance can view.
@@ -664,7 +694,7 @@ namespace Rock.Cache
         ///   <c>true</c> if this instance can view; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool CanView { get; set; }
+        public bool CanView { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance can edit.
@@ -673,7 +703,7 @@ namespace Rock.Cache
         ///   <c>true</c> if this instance can edit; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool CanEdit { get; set; }
+        public bool CanEdit { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance can manage members.
@@ -682,7 +712,7 @@ namespace Rock.Cache
         ///   <c>true</c> if this instance can manage members; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool CanManageMembers { get; set; }
+        public bool CanManageMembers { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupTypeRoleCache"/> class.

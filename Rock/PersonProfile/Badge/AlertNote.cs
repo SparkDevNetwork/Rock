@@ -42,7 +42,7 @@ namespace Rock.PersonProfile.AlertNote
 
     [NoteTypeField( "Note Types", "The note types you want to look for alerts on.", true, "Rock.Model.Person", "", "", true, Rock.SystemGuid.NoteType.PERSON_TIMELINE_NOTE, order: 0 )]
     [CodeEditorField( "Badge Content", "", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, true, "<span class='label label-danger'>Alert Note Exists</span>", order: 1 )]
-    public class AlertNote : BadgeComponent
+    public class AlertNote : BadgeComponentModern
     {
 
         /// <summary>

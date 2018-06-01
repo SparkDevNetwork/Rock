@@ -22,7 +22,7 @@ namespace Rock.Cache
     /// <summary>
     /// 
     /// </summary>
-    [DotLiquid.LiquidType( "AttributeId", "Value", "ValueFormatted", "AttributeName", "AttributeKey", "AttributeIsGridColumn" )]
+    [DotLiquid.LiquidType( "AttributeId", "EntityId", "Value", "ValueFormatted", "AttributeName", "AttributeKey", "AttributeIsGridColumn" )]
     public class CacheAttributeValue
     {
         #region constructors

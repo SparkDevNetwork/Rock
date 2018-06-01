@@ -1,4 +1,4 @@
-﻿// These classes are used to map v4 FontAwesome classes to v5
+// These classes are used to map v4 FontAwesome classes to v5
 // and make v5 a bit more flexible allowing .fa to be dynamically
 // mapped.
 
@@ -33,9 +33,10 @@
 }
 
 .fab {
-  font-family: '@{fa-font-face} Brands';
+  font-family: "@{fa-font-face} Brands";
   font-weight: normal;
 }
+
 /* prefix end */
 
 // overrides for key icons
@@ -47,8 +48,8 @@
 
 .fa.fa-rating-unselected:before,
 .fa.fa-rating-off:before {
-  content: @fa-var-star;
   font-weight: @fa-theme-weight-outline;
+  content: @fa-var-star;
 }
 
 // map all the missing v4 icons to fontawesome
@@ -185,6 +186,56 @@
 .fa.fa-times-rectangle {
   font-family: @fa-font-face;
   font-weight: @fa-theme-weight;
+}
+
+.fa-fw {
+  width: 1.25em;
+  text-align: center;
+}
+
+.fa-layers {
+  position: relative;
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  text-align: center;
+  vertical-align: -.125em;
+
+  i {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    margin: auto;
+  }
+}
+
+.fa-layers-counter {
+  top: 0;
+  right: 0;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  min-width: 1.5em;
+  max-width: 5em;
+  height: 1.5em;
+  padding: .25em;
+  overflow: hidden;
+  line-height: 1;
+  color: #fff;
+  text-overflow: ellipsis;
+  background-color: @brand-danger;
+  border-radius: 1em;
+  -webkit-transform: scale(.25);
+  transform: scale(.25);
+  -webkit-transform-origin: top right;
+  transform-origin: top right;
+}
+
+.fa-layers-counter, .fa-layers-text {
+  position: absolute;
+  display: inline-block;
+  text-align: center;
 }
 
 // mapping for brand icons
@@ -529,7 +580,7 @@
 .fa.fa-fa,
 .fa.fa-eercast
 {
-  font-family: '@{fa-font-face} Brands';
+  font-family: "@{fa-font-face} Brands";
   font-weight: normal !important;
 }
 
@@ -708,7 +759,6 @@
 .fa-bookmark-o:before { content: @fa-var-bookmark; }
 .fa-building-o:before { content: @fa-var-building; }
 .fa-cab:before { content: @fa-var-taxi; }
-
 .fa-calendar:before { content: @fa-var-calendar-alt; }
 .fa-calendar-alt:before { content: @fa-var-calendar; }
 .fa-calendar-check-o:before { content: @fa-var-calendar-check; }
@@ -716,7 +766,6 @@
 .fa-calendar-o:before { content: @fa-var-calendar; }
 .fa-calendar-plus-o:before { content: @fa-var-calendar-plus; }
 .fa-calendar-times-o:before { content: @fa-var-calendar-times; }
-
 .fa-caret-square-o-down:before { content: @fa-var-caret-square-down; }
 .fa-caret-square-o-left:before { content: @fa-var-caret-square-left; }
 .fa-caret-square-o-right:before { content: @fa-var-caret-square-right; }
@@ -733,7 +782,7 @@
 .fa-close:before { content: @fa-var-times; }
 .fa-cloud-download:before { content: @fa-var-cloud-download-alt; }
 .fa-cloud-upload:before { content: @fa-var-cloud-upload-alt; }
-.fa-cny:before { content: @fa-var-yen-sign; }
+.fa-cny:before, .fa-jpy:before, .fa-rmb:before, .fa-yen:before { content: @fa-var-yen-sign; }
 .fa-code-fork:before { content: @fa-var-code-branch; }
 .fa-comment-o:before { content: @fa-var-comment; }
 .fa-commenting-o:before { content: @fa-var-comment-alt; }
@@ -745,15 +794,14 @@
 .fa-deafness:before { content: @fa-var-deaf; }
 .fa-dedent:before { content: @fa-var-outdent; }
 .fa-diamond:before { content: @fa-var-gem; }
-.fa-dollar:before { content: @fa-var-dollar-sign; }
+.fa-dollar:before, .fa-usd:before { content: @fa-var-dollar-sign; }
 .fa-dot-circle-o:before { content: @fa-var-dot-circle; }
 .fa-drivers-license-o:before { content: @fa-var-id-card; }
 .fa-drivers-license:before { content: @fa-var-id-card; }
 .fa-eercast:before { content: @fa-var-sellcast; }
 .fa-envelope-o:before { content: @fa-var-envelope; }
 .fa-envelope-open-o:before { content: @fa-var-envelope-open; }
-.fa-eur:before { content: @fa-var-euro-sign; }
-.fa-euro:before { content: @fa-var-euro-sign; }
+.fa-eur:before, .fa-euro:before { content: @fa-var-euro-sign; }
 .fa-exchange:before { content: @fa-var-exchange-alt; }
 .fa-external-link-square:before { content: @fa-var-external-link-square-alt; }
 .fa-external-link:before { content: @fa-var-external-link-alt; }
@@ -794,8 +842,7 @@
 .fa-gears:before { content: @fa-var-cogs; }
 .fa-gittip:before { content: @fa-var-gratipay; }
 .fa-glass:before { content: @fa-var-glass-martini; }
-.fa-google-plus-circle:before { content: @fa-var-google-plus; }
-.fa-google-plus-official:before { content: @fa-var-google-plus; }
+.fa-google-plus-circle:before, .fa-google-plus-official:before { content: @fa-var-google-plus; }
 .fa-google-plus:before { content: @fa-var-google-plus-g; }
 .fa-group:before { content: @fa-var-users; }
 .fa-hand-grab-o:before { content: @fa-var-hand-rock; }
@@ -828,15 +875,13 @@
 .fa-inr:before { content: @fa-var-rupee-sign; }
 .fa-institution:before { content: @fa-var-university; }
 .fa-intersex:before { content: @fa-var-transgender; }
-.fa-jpy:before { content: @fa-var-yen-sign; }
 .fa-keyboard-o:before { content: @fa-var-keyboard; }
-.fa-krw:before { content: @fa-var-won-sign; }
+.fa-krw:before, .fa-won:before { content: @fa-var-won-sign; }
 .fa-legal:before { content: @fa-var-gavel; }
 .fa-lemon-o:before { content: @fa-var-lemon; }
 .fa-level-down:before { content: @fa-var-level-down-alt; }
 .fa-level-up:before { content: @fa-var-level-up-alt; }
-.fa-life-bouy:before { content: @fa-var-life-ring; }
-.fa-life-saver:before { content: @fa-var-life-ring; }
+.fa-life-bouy:before, .fa-life-saver:before { content: @fa-var-life-ring; }
 .fa-lightbulb-o:before { content: @fa-var-lightbulb; }
 .fa-line-chart:before { content: @fa-var-chart-line; }
 .fa-linkedin:before { content: @fa-var-linkedin-in; }
@@ -878,20 +923,17 @@
 .fa-reorder:before { content: @fa-var-bars; }
 .fa-repeat:before { content: @fa-var-redo; }
 .fa-resistance:before { content: @fa-var-rebel; }
-.fa-rmb:before { content: @fa-var-yen-sign; }
 .fa-rotate-left:before { content: @fa-var-undo; }
 .fa-rotate-right:before { content: @fa-var-redo; }
 .fa-rouble:before { content: @fa-var-ruble-sign; }
-.fa-rub:before { content: @fa-var-ruble-sign; }
-.fa-ruble:before { content: @fa-var-ruble-sign; }
+.fa-rub:before, .fa-ruble:before { content: @fa-var-ruble-sign; }
 .fa-rupee:before { content: @fa-var-rupee-sign; }
 .fa-s15:before { content: @fa-var-bath; }
 .fa-scissors:before { content: @fa-var-cut; }
 .fa-send-o:before { content: @fa-var-paper-plane; }
 .fa-send:before { content: @fa-var-paper-plane; }
 .fa-share-square-o:before { content: @fa-var-share-square; }
-.fa-shekel:before { content: @fa-var-shekel-sign; }
-.fa-sheqel:before { content: @fa-var-shekel-sign; }
+.fa-shekel:before, .fa-sheqel:before { content: @fa-var-shekel-sign; }
 .fa-shield:before { content: @fa-var-shield-alt; }
 .fa-sign-in:before { content: @fa-var-sign-in-alt; }
 .fa-sign-out:before { content: @fa-var-sign-out-alt; }
@@ -940,14 +982,11 @@
 .fa-toggle-up:before { content: @fa-var-caret-square-up; }
 .fa-trash-o:before { content: @fa-var-trash-alt; }
 .fa-trash:before { content: @fa-var-trash-alt; }
-.fa-try:before { content: @fa-var-lira-sign; }
-.fa-turkish-lira:before { content: @fa-var-lira-sign; }
+.fa-try:before, .fa-turkish-lira:before { content: @fa-var-lira-sign; }
 .fa-unsorted:before { content: @fa-var-sort; }
-.fa-usd:before { content: @fa-var-dollar-sign; }
 .fa-user-circle-o:before { content: @fa-var-user-circle; }
 .fa-user-o:before { content: @fa-var-user; }
-.fa-vcard-o:before { content: @fa-var-address-card; }
-.fa-vcard:before { content: @fa-var-address-card; }
+.fa-vcard:before, .fa-vcard-o:before { content: @fa-var-address-card; }
 .fa-video-camera:before { content: @fa-var-video; }
 .fa-vimeo:before { content: @fa-var-vimeo-v; }
 .fa-volume-control-phone:before { content: @fa-var-phone-volume; }
@@ -955,10 +994,7 @@
 .fa-wechat:before { content: @fa-var-weixin; }
 .fa-wheelchair-alt:before { content: @fa-var-accessible-icon; }
 .fa-window-close-o:before { content: @fa-var-window-close; }
-.fa-won:before { content: @fa-var-won-sign; }
 .fa-y-combinator-square:before { content: @fa-var-hacker-news; }
 .fa-yc-square:before { content: @fa-var-hacker-news; }
 .fa-yc:before { content: @fa-var-y-combinator; }
-.fa-yen:before { content: @fa-var-yen-sign; }
 .fa-youtube-play:before { content: @fa-var-youtube; }
-.fa-youtube-square:before { content: @fa-var-youtube; }

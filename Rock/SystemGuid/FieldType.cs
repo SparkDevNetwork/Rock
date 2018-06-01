@@ -34,6 +34,11 @@ namespace Rock.SystemGuid
         public const string AUDIO = "0D842975-7439-4D2E-BB94-BAD8DDF22260";
 
         /// <summary>
+        /// Backgroundcheck field type
+        /// </summary>
+        public const string BACKGROUNDCHECK = "d05b3808-803a-4531-9680-dd4aab8adf1a";
+
+        /// <summary>
         /// Binary File field type
         /// </summary>
         public const string BINARY_FILE = "C403E219-A56B-439E-9D50-9302DFE760CF";
@@ -302,6 +307,11 @@ namespace Rock.SystemGuid
         /// Metrics field type
         /// </summary>
         public const string METRICS = "3AF9AD35-9F3E-4497-BFDE-60C6C1827653";
+
+        /// <summary>
+        /// Month/Day field type
+        /// </summary>
+        public const string MONTH_DAY = "8BED8DD8-8167-4052-B807-A1E72C133611";
 
         /// <summary>
         /// Multi-Select field type

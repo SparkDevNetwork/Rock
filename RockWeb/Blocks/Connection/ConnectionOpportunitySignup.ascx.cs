@@ -158,12 +158,7 @@ namespace RockWeb.Blocks.Connection
                     else
                     {
                         // Try to find matching person
-                        var personMatches = personService.GetByMatch( firstName, lastName, email );
-                        if ( personMatches.Count() == 1 )
-                        {
-                            // If one person with same name and email address exists, use that person
-                            person = personMatches.First();
-                        }
+                        person = personService.FindPerson( firstName, lastName, email, true );
                     }
 
                     // If person was not found, create a new one

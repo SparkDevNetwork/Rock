@@ -99,6 +99,26 @@ namespace Rock.Plugin
         }
 
         /// <summary>
+        /// Executes a sql statement
+        /// </summary>
+        /// <param name="sql">The SQL.</param>
+        public object SqlScalar( string sql )
+        {
+            if ( SqlConnection != null || SqlTransaction != null )
+            {
+                using ( SqlCommand sqlCommand = new SqlCommand( sql, SqlConnection, SqlTransaction ) )
+                {
+                    sqlCommand.CommandType = CommandType.Text;
+                    return sqlCommand.ExecuteScalar();
+                }
+            }
+            else
+            {
+                throw new NullReferenceException( "The Plugin Migration requires valid SqlConnection and SqlTransaction values when executing SQL" );
+            }
+        }
+
+        /// <summary>
         ///     Adds an operation to create a new table.  This is a wrapper for the default DBMigration CreateTable.
         /// </summary>
         /// <typeparam name="TColumns"> The columns in this create table operation. You do not need to specify this type, it will be inferred from the columnsAction parameter you supply. </typeparam>

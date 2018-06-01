@@ -45,7 +45,7 @@ namespace Rock.Cache
         /// A <see cref="System.Boolean"/> that is <c>true</c> if the WorkflowType is part of the Rock core system/framework; otherwise <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsSystem { get; set; }
+        public bool IsSystem { get; private set; }
 
         /// <summary>
         /// Gets or sets a flag indicating if this WorkflowType is active.
@@ -54,7 +54,7 @@ namespace Rock.Cache
         /// A <see cref="System.Boolean"/> that is <c>true</c> if the WorkflowType is active; otherwise <c>false</c>.
         /// </value>
         [DataMember]
-        public bool? IsActive { get; set; }
+        public bool? IsActive { get; private set; }
 
         /// <summary>
         /// Gets or sets the workflow identifier prefix.
@@ -63,7 +63,7 @@ namespace Rock.Cache
         /// The workflow identifier prefix.
         /// </value>
         [DataMember]
-        public string WorkflowIdPrefix { get; set; }
+        public string WorkflowIdPrefix { get; private set; }
 
         /// <summary>
         /// Gets or sets the friendly Name of the WorkflowType. This property is required.
@@ -72,7 +72,7 @@ namespace Rock.Cache
         /// A <see cref="System.String"/> representing the friendly Name of the WorkflowType.
         /// </value>
         [DataMember]
-        public string Name { get; set; }
+        public string Name { get; private set; }
 
         /// <summary>
         /// Gets or sets a user defined description or summary about the WorkflowType.
@@ -81,7 +81,7 @@ namespace Rock.Cache
         /// A <see cref="System.String"/> representing a description/summary of the WorkflowType.
         /// </value>
         [DataMember]
-        public string Description { get; set; }
+        public string Description { get; private set; }
 
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace Rock.Cache
         /// If the WorkflowType does not belong to a category, this value will be null.
         /// </value>
         [DataMember]
-        public int? CategoryId { get; set; }
+        public int? CategoryId { get; private set; }
 
         /// <summary>
         /// Gets or sets the display order of the WorkFlowType, the lower the number the higher up that the WorkflowType will display in the workflow list. This
@@ -102,7 +102,7 @@ namespace Rock.Cache
         /// A <see cref="System.Int32"/> representing the display order of the WorkflowType.  
         /// </value>
         [DataMember]
-        public int Order { get; set; }
+        public int Order { get; private set; }
 
         /// <summary>
         /// Gets or sets the work term for the WorkflowType. This is the action that is being performed by this WorkflowType. This property is required.
@@ -111,7 +111,7 @@ namespace Rock.Cache
         /// A <see cref="System.String"/> representing the WorkItem that is being performed by this WorkflowType
         /// </value>
         [DataMember]
-        public string WorkTerm { get; set; }
+        public string WorkTerm { get; private set; }
 
         /// <summary>
         /// Gets or sets the minimum length of time, in seconds, before a persisted <see cref="Rock.Model.Workflow"/> instance that implements this 
@@ -122,7 +122,7 @@ namespace Rock.Cache
         /// that implements this WorkflowType can be re-executed.
         /// </value>
         [DataMember]
-        public int? ProcessingIntervalSeconds { get; set; }
+        public int? ProcessingIntervalSeconds { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether <see cref="Rock.Model.Workflow"/> instances of this WorkflowType are persisted.
@@ -131,7 +131,7 @@ namespace Rock.Cache
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if <see cref="Rock.Model.Workflow"/> instances of this WorkflowType are persisted; otherwise <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsPersisted { get; set; }
+        public bool IsPersisted { get; private set; }
 
         /// <summary>
         /// Gets or sets the summary view text to be displayed when a workflow of this type has no form or has been completed. This field supports Lava.
@@ -140,7 +140,7 @@ namespace Rock.Cache
         /// The summary view text.
         /// </value>
         [DataMember]
-        public string SummaryViewText { get; set; }
+        public string SummaryViewText { get; private set; }
 
         /// <summary>
         /// Gets or sets the text to be displayed when a workflow of this type workflow is active, but does not have an active form. This field supports Lava.
@@ -149,7 +149,7 @@ namespace Rock.Cache
         /// The summary view text.
         /// </value>
         [DataMember]
-        public string NoActionMessage { get; set; }
+        public string NoActionMessage { get; private set; }
 
         /// <summary>
         /// Gets or sets the log retention period in days.
@@ -158,7 +158,7 @@ namespace Rock.Cache
         /// The log retention period in days.
         /// </value>
         [DataMember]
-        public int? LogRetentionPeriod { get; set; }
+        public int? LogRetentionPeriod { get; private set; }
 
         /// <summary>
         /// Gets or sets the completed workflow rention period in days.
@@ -167,7 +167,7 @@ namespace Rock.Cache
         /// The completed workflow rention period in days.
         /// </value>
         [DataMember]
-        public int? CompletedWorkflowRetentionPeriod { get; set; }
+        public int? CompletedWorkflowRetentionPeriod { get; private set; }
 
         /// <summary>
         /// Gets or sets the logging level.
@@ -181,7 +181,7 @@ namespace Rock.Cache
         /// When <c>WorkflowLoggingLevel.Action</c> workflow, activity and action events will be logged.
         /// </value>
         [DataMember]
-        public WorkflowLoggingLevel LoggingLevel { get; set; }
+        public WorkflowLoggingLevel LoggingLevel { get; private set; }
 
         /// <summary>
         /// Gets or sets the name of the icon CSS class. This property is only used for CSS based icons.
@@ -190,7 +190,7 @@ namespace Rock.Cache
         /// A <see cref="System.String"/> representing the name of the icon CSS class. This property will be null if a file based icon is being used.
         /// </value>
         [DataMember]
-        public string IconCssClass { get; set; }
+        public string IconCssClass { get; private set; }
 
         /// <summary>
         /// Gets the category.
@@ -305,7 +305,6 @@ namespace Rock.Cache
         }
 
         #endregion
-
 
         #region Static Methods
 

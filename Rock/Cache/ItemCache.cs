@@ -28,9 +28,14 @@ namespace Rock.Cache
     /// <typeparam name="T"></typeparam>
     [Serializable]
     [DataContract]
-    public abstract class ItemCache<T>
+    public abstract class ItemCache<T> : IItemCache
+        where T : IItemCache
     {
         private const string _AllRegion = "AllItems";
+
+        // This static field will be different for each generic type. See (https://www.jetbrains.com/help/resharper/2018.1/StaticMemberInGenericType.html)
+        // This is intentional behaviour in this case.
+        private static readonly object _obj = new object();
 
         private static string AllKey => $"{typeof( T ).Name}";
 
@@ -107,11 +112,24 @@ namespace Rock.Cache
         /// <param name="expiration">The expiration.</param>
         protected static void UpdateCacheItem( string key, T item, TimeSpan expiration )
         {
+            // Add the item to cache
             RockCacheManager<T>.Instance.AddOrUpdate( key, item, expiration );
 
+            // Do any postcache processing that this item cache type may need to do
+            item.PostCached();
+
+            // Get the dictionary of all item ids
             var allKeys = RockCacheManager<List<string>>.Instance.Cache.Get( AllKey, _AllRegion ) ?? new List<string>();
-            allKeys.Add( key, true );
-            RockCacheManager<List<string>>.Instance.AddOrUpdate( AllKey, _AllRegion, allKeys );
+            if (allKeys.Contains (key) ) return;
+
+            // If the key is not part of the dictionary all ready
+            lock (_obj)
+            {
+                // Add it.
+                allKeys.Add( key, true );
+                RockCacheManager<List<string>>.Instance.AddOrUpdate( AllKey, _AllRegion, allKeys );
+            }
+
         }
 
         /// <summary>
@@ -137,7 +155,6 @@ namespace Rock.Cache
         protected static List<string> AddKeys( Func<List<string>> keyFactory )
         {
             var allKeys = keyFactory?.Invoke();
-
             if ( allKeys != null )
             {
                 RockCacheManager<List<string>>.Instance.AddOrUpdate( AllKey, _AllRegion, allKeys );
@@ -191,8 +208,13 @@ namespace Rock.Cache
             RockCacheManager<T>.Instance.Cache.Remove( key );
 
             var allIds = RockCacheManager<List<string>>.Instance.Cache.Get( AllKey, _AllRegion ) ?? new List<string>();
-            allIds.Remove( key );
-            RockCacheManager<List<string>>.Instance.AddOrUpdate( AllKey, _AllRegion, allIds );
+            if ( !allIds.Contains( key ) ) return;
+
+            lock (_obj)
+            {
+                allIds.Remove(key);
+                RockCacheManager<List<string>>.Instance.AddOrUpdate(AllKey, _AllRegion, allIds);
+            }
         }
 
         /// <summary>
@@ -202,6 +224,14 @@ namespace Rock.Cache
         {
             RockCacheManager<T>.Instance.Cache.Clear();
             RockCacheManager<List<string>>.Instance.Cache.Remove( AllKey, _AllRegion );
+        }
+
+
+        /// <summary>
+        /// Method that is called by the framework immediately after being added to cache
+        /// </summary>
+        public virtual void PostCached()
+        {
         }
 
         #endregion

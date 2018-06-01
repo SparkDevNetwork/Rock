@@ -44,7 +44,7 @@ namespace Rock.Cache
         /// The notification system email identifier.
         /// </value>
         [DataMember]
-        public int? NotificationSystemEmailId { get; set; }
+        public int? NotificationSystemEmailId { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [include actions in notification].
@@ -53,7 +53,7 @@ namespace Rock.Cache
         /// <c>true</c> if [include actions in notification]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IncludeActionsInNotification { get; set; }
+        public bool IncludeActionsInNotification { get; private set; }
 
         /// <summary>
         /// Gets or sets the header.
@@ -62,7 +62,7 @@ namespace Rock.Cache
         /// The header.
         /// </value>
         [DataMember]
-        public string Header { get; set; }
+        public string Header { get; private set; }
 
         /// <summary>
         /// Gets or sets the footer.
@@ -71,7 +71,7 @@ namespace Rock.Cache
         /// The footer.
         /// </value>
         [DataMember]
-        public string Footer { get; set; }
+        public string Footer { get; private set; }
 
         /// <summary>
         /// Gets or sets the delimited list of action buttons and actions.
@@ -80,7 +80,7 @@ namespace Rock.Cache
         /// The actions.
         /// </value>
         [DataMember]
-        public string Actions { get; set; }
+        public string Actions { get; private set; }
 
         /// <summary>
         /// An optional text attribute that will be updated with the action that was selected
@@ -89,7 +89,7 @@ namespace Rock.Cache
         /// The action attribute unique identifier.
         /// </value>
         [DataMember]
-        public Guid? ActionAttributeGuid { get; set; }
+        public Guid? ActionAttributeGuid { get; private set; }
 
         /// <summary>
         /// Gets or sets the allow notes.
@@ -98,7 +98,7 @@ namespace Rock.Cache
         /// The allow notes.
         /// </value>
         [DataMember]
-        public bool? AllowNotes { get; set; }
+        public bool? AllowNotes { get; private set; }
 
         /// <summary>
         /// Gets the defined values.

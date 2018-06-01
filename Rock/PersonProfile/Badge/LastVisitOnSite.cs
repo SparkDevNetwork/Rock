@@ -39,7 +39,7 @@ namespace Rock.PersonProfile.Badge
     
     [SiteField("Site", "Site to filter for.", true, "3", "", 1)]
     [LinkedPage("Page View Details", "Page to show the details of the page views. If blank no link is created.", false, "", "", 2)]
-    public class LastVisitOnSite : BadgeComponent
+    public class LastVisitOnSite : BadgeComponentModern
     {        
         /// <summary>
         /// Renders the specified writer.

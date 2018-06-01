@@ -818,7 +818,7 @@ namespace RockWeb.Blocks.Event
         {
             var attributeService = new AttributeService( rockContext );
             EventAttributesState = attributeService
-                .GetByEntityTypeId( new EventCalendarItem().TypeId ).AsQueryable()
+                .GetByEntityTypeId( new EventCalendarItem().TypeId, true ).AsQueryable()
                 .Where( a =>
                     a.EntityTypeQualifierColumn.Equals( "EventCalendarId", StringComparison.OrdinalIgnoreCase ) &&
                     a.EntityTypeQualifierValue.Equals( eventCalendar.Id.ToString() ) )
@@ -935,7 +935,7 @@ namespace RockWeb.Blocks.Event
         {
             // Get the existing attributes for this entity type and qualifier value
             var attributeService = new AttributeService( rockContext );
-            var existingAttributes = attributeService.Get( entityTypeId, qualifierColumn, qualifierValue );
+            var existingAttributes = attributeService.GetByEntityTypeQualifier( entityTypeId, qualifierColumn, qualifierValue, true );
 
             // Delete any of those attributes that were removed in the UI
             var selectedAttributeGuids = attributes.Select( a => a.Guid );

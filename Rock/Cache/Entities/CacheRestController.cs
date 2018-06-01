@@ -45,7 +45,7 @@ namespace Rock.Cache
         /// The name.
         /// </value>
         [DataMember]
-        public string Name { get; set; }
+        public string Name { get; private set; }
 
         /// <summary>
         /// Gets or sets the description.
@@ -54,7 +54,7 @@ namespace Rock.Cache
         /// The description.
         /// </value>
         [DataMember]
-        public string ClassName { get; set; }
+        public string ClassName { get; private set; }
 
         /// <summary>
         /// Gets the defined values.

@@ -91,15 +91,16 @@ BEGIN
 				FROM dbo.ufnUtility_GetSundaysBetweenDates(@StartDay, @LastDay) s
 				LEFT OUTER JOIN (	
 						SELECT 
-							DISTINCT a.[SundayDate]AS [AttendedSunday],
+							DISTINCT O.[SundayDate] AS [AttendedSunday],
 							1 as [Attended]
 						FROM
 							[Attendance] a
+							INNER JOIN [AttendanceOccurrence] O ON O.[Id] = A.[OccurrenceId]
 							INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]
 						WHERE 
-							[GroupId] IN (select groupId from @groupIds)
+							O.[GroupId] IN (select groupId from @groupIds)
+							AND O.[OccurrenceDate] BETWEEN @StartDay AND @LastDay
 							AND pa.[PersonId] IN (select PersonId from @familyMemberPersonIds) 
-							AND a.[StartDateTime] BETWEEN @StartDay AND @LastDay
 							AND a.[DidAttend] = 1
 						) a ON [AttendedSunday] = s.[SundayDate]
 
@@ -120,15 +121,16 @@ BEGIN
 				FROM dbo.ufnUtility_GetSundaysBetweenDates(@StartDay, @LastDay) s
 				LEFT OUTER JOIN (	
 						SELECT 
-							DISTINCT a.[SundayDate] AS [AttendedSunday],
+							DISTINCT O.[SundayDate] AS [AttendedSunday],
 							1 as [Attended]
 						FROM
 							[Attendance] a
+							INNER JOIN [AttendanceOccurrence] O ON O.[Id] = A.[OccurrenceId]
 							INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]
 						WHERE 
-							[GroupId] IN (select groupId from @groupIds)
+							O.[GroupId] IN (select groupId from @groupIds)
+							AND O.[OccurrenceDate] BETWEEN @StartDay AND @LastDay
 							AND pa.[PersonId] = @PersonId 
-							AND a.[StartDateTime] BETWEEN @StartDay AND @LastDay
 							AND a.[DidAttend] = 1
 						) a ON [AttendedSunday] = s.[SundayDate]
 

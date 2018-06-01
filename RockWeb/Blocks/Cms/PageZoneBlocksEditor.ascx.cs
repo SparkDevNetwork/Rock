@@ -386,13 +386,13 @@ namespace RockWeb.Blocks.Cms
 
             // Block Properties
             Literal btnBlockProperties = new Literal();
-            btnBlockProperties.Text = string.Format( @"<a title='Block Properties' class='btn btn-sm btn-default properties' id='aBlockProperties' href='javascript: Rock.controls.modal.show($(this), ""/BlockProperties/{0}?t=Block Properties"")' height='500px'><i class='fa fa-cog'></i></a>", block.Id );
+            btnBlockProperties.Text = string.Format( @"<a title='Block Properties' class='btn btn-sm btn-default btn-square properties' id='aBlockProperties' href='javascript: Rock.controls.modal.show($(this), ""/BlockProperties/{0}?t=Block Properties"")' height='500px'><i class='fa fa-cog'></i></a>", block.Id );
             pnlAdminButtons.Controls.Add( btnBlockProperties );
 
             // Block Security
             int entityTypeBlockId = CacheEntityType.Get<Rock.Model.Block>().Id;
             SecurityButton btnBlockSecurity = new SecurityButton { ID = "btnBlockSecurity", EntityTypeId = entityTypeBlockId, EntityId = block.Id, Title = block.Name };
-            btnBlockSecurity.AddCssClass( "btn btn-sm btn-security" );
+            btnBlockSecurity.AddCssClass( "btn btn-sm btn-square btn-security" );
             pnlAdminButtons.Controls.Add( btnBlockSecurity );
 
             // Move Block
@@ -400,7 +400,7 @@ namespace RockWeb.Blocks.Cms
             btnMoveBlock.ID = string.Format( "btnMoveBlock_{0}", block.Id );
             btnMoveBlock.CommandName = "BlockId";
             btnMoveBlock.CommandArgument = block.Id.ToString();
-            btnMoveBlock.CssClass = "btn btn-sm btn-default fa fa-external-link";
+            btnMoveBlock.CssClass = "btn btn-sm btn-default btn-square fa fa-external-link";
             btnMoveBlock.ToolTip = "Move Block";
             btnMoveBlock.Click += btnMoveBlock_Click;
             pnlAdminButtons.Controls.Add( btnMoveBlock );
@@ -410,7 +410,7 @@ namespace RockWeb.Blocks.Cms
             btnDeleteBlock.ID = string.Format( "btnDeleteBlock_{0}", block.Id );
             btnDeleteBlock.CommandName = "BlockId";
             btnDeleteBlock.CommandArgument = block.Id.ToString();
-            btnDeleteBlock.CssClass = "btn btn-xs btn-danger";
+            btnDeleteBlock.CssClass = "btn btn-sm btn-square btn-danger";
             btnDeleteBlock.Text = "<i class='fa fa-times'></i>";
             btnDeleteBlock.ToolTip = "Delete Block";
             btnDeleteBlock.Click += btnDeleteBlock_Click;

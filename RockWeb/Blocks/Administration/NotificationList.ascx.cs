@@ -34,16 +34,18 @@ using System.Web.UI.HtmlControls;
 namespace RockWeb.Blocks.Utility
 {
     /// <summary>
-    /// Template block for developers to use to start a new block.
+    /// Displays notifications to the user and allows them to be marked as read.
     /// </summary>
     [DisplayName( "Notification List" )]
     [Category( "Core" )]
     [Description( "Displays Notifications." )]
     public partial class NotificationList : Rock.Web.UI.RockBlock
     {
-
         #region Properties
 
+        /// <summary>
+        /// Gets or sets the number of notifications currently being displayed.
+        /// </summary>
         public int NotificationCount
         {
             get { return ViewState["NotificationCount"] as int? ?? 0; }
@@ -53,8 +55,6 @@ namespace RockWeb.Blocks.Utility
         #endregion
 
         #region Base Control Methods
-
-        //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -107,8 +107,6 @@ namespace RockWeb.Blocks.Utility
 
         #region Events
 
-        // handlers called by the controls on your block
-
         /// <summary>
         /// Handles the BlockUpdated event of the control.
         /// </summary>
@@ -119,17 +117,11 @@ namespace RockWeb.Blocks.Utility
             OnLoad( e );
         }
 
-        #endregion
-
-        #region Methods
-
-        protected void HidePanel()
-        {
-            upnlContent.Visible = false;
-        }
-
-        #endregion
-
+        /// <summary>
+        /// Handles the ItemCommand event of the control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
         protected void rptProjects_ItemCommand( object Sender, RepeaterCommandEventArgs e )
         {
             if ( e.CommandName == "Close" )
@@ -142,7 +134,8 @@ namespace RockWeb.Blocks.Utility
                     var notificationItem = notificationRecipientService.Get( notificationRecipientGuid.Value );
                     if ( notificationItem != null )
                     {
-                        notificationRecipientService.Delete( notificationItem );
+                        notificationItem.Read = true;
+                        notificationItem.ReadDateTime = RockDateTime.Now;
                     }
 
                     var toHide = e.Item.FindControl( "rptNotificationAlert" );
@@ -154,7 +147,7 @@ namespace RockWeb.Blocks.Utility
                     rockContext.SaveChanges();
 
                     NotificationCount--;
-                    if (NotificationCount == 0 )
+                    if ( NotificationCount == 0 )
                     {
                         HidePanel();
                     }
@@ -162,12 +155,34 @@ namespace RockWeb.Blocks.Utility
             }
         }
 
+        /// <summary>
+        /// Handles the ItemDataBound event of the control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
         protected void rptNotifications_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
             var notificationRecipient = e.Item.DataItem as NotificationRecipient;
             var div = e.Item.FindControl( "rptNotificationAlert" ) as HtmlGenericControl;
             string alertType = notificationRecipient.Notification.Classification.ToString().ToLowerInvariant();
             div.AddCssClass( "alert-" + alertType );
+
+            var icon = e.Item.FindControl( "iIconCssClass" ) as HtmlGenericControl;
+            icon.Visible = !string.IsNullOrWhiteSpace( notificationRecipient.Notification.IconCssClass );
         }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Hides the top-most content panel of this block so it is no longer visible.
+        /// </summary>
+        protected void HidePanel()
+        {
+            upnlContent.Visible = false;
+        }
+
+        #endregion
     }
 }

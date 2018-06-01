@@ -28,7 +28,7 @@ namespace Rock.Web.Cache
     /// Information about a NoteType that is cached by Rock. 
     /// </summary>
     [Serializable]
-    [Obsolete( "Use Rock.Cache.NoteTypeCache instead" )]
+    [Obsolete( "Use Rock.Cache.CacheNoteType instead" )]
     public class NoteTypeCache : CachedModel<NoteType>
     {
         #region constructors

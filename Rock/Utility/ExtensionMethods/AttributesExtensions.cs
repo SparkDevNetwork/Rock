@@ -16,6 +16,8 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
+using System.Linq;
 using Rock.Data;
 using Rock.Model;
 using Rock.Cache;
@@ -30,7 +32,7 @@ namespace Rock
         #region IHasAttributes extensions
 
         /// <summary>
-        /// Loads the attribute.
+        /// Loads the attributes.
         /// </summary>
         /// <param name="entity">The entity.</param>
         public static void LoadAttributes( this IHasAttributes entity )
@@ -46,6 +48,31 @@ namespace Rock
         public static void LoadAttributes( this IHasAttributes entity, RockContext rockContext )
         {
             Attribute.Helper.LoadAttributes( entity, rockContext );
+        }
+
+        /// <summary>
+        /// Loads the attributes for all entities.
+        /// </summary>
+        /// <param name="entities">The entities.</param>
+        public static void LoadAttributes( this IEnumerable<IHasAttributes> entities )
+        {
+            foreach ( var entity in entities )
+            {
+                Attribute.Helper.LoadAttributes( entity );
+            }
+        }
+
+        /// <summary>
+        /// Loads the attributes for all entities.
+        /// </summary>
+        /// <param name="entities">The entities.</param>
+        /// <param name="rockContext">The rock context.</param>
+        public static void LoadAttributes( this IEnumerable<IHasAttributes> entities, RockContext rockContext )
+        {
+            foreach ( var entity in entities )
+            {
+                Attribute.Helper.LoadAttributes( entity, rockContext );
+            }
         }
 
         /// <summary>
@@ -81,7 +108,7 @@ namespace Rock
         /// <param name="entity">The entity.</param>
         /// <param name="key">The attribute key.</param>
         /// <param name="rockContext">The rock context.</param>
-        public static void SaveAttributeValue( this IHasAttributes entity, string key, RockContext rockContext = null)
+        public static void SaveAttributeValue( this IHasAttributes entity, string key, RockContext rockContext = null )
         {
             if ( entity.AttributeValues.ContainsKey( key ) )
             {
@@ -165,6 +192,16 @@ namespace Rock
             }
 
             return authorizedAttributes;
+        }
+
+        /// <summary>
+        /// Selects just the Id from the Attribute Query and reads the Ids into a list of CacheAttribute
+        /// </summary>
+        /// <param name="attributeQuery">The attribute query.</param>
+        /// <returns></returns>
+        public static List<CacheAttribute> ToCacheAttributeList( this IQueryable<Rock.Model.Attribute> attributeQuery )
+        {
+            return attributeQuery.AsNoTracking().Select( a => a.Id ).ToList().Select( a => CacheAttribute.Get( a ) ).ToList().Where( a => a != null ).ToList();
         }
 
         #endregion IHasAttributes extensions

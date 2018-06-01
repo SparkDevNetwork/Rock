@@ -16,6 +16,8 @@
 //
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.IO;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -43,7 +45,7 @@ namespace Rock.Cache
         ///   <c>true</c> if this instance is system; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsSystem { get; set; }
+        public bool IsSystem { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether this instance is common.
@@ -61,7 +63,7 @@ namespace Rock.Cache
         /// The path.
         /// </value>
         [DataMember]
-        public string Path { get; set; }
+        public string Path { get; private set; }
 
         /// <summary>
         /// Gets or sets the name.
@@ -70,7 +72,7 @@ namespace Rock.Cache
         /// The name.
         /// </value>
         [DataMember]
-        public string Name { get; set; }
+        public string Name { get; private set; }
 
         /// <summary>
         /// Gets or sets the description.
@@ -79,7 +81,7 @@ namespace Rock.Cache
         /// The description.
         /// </value>
         [DataMember]
-        public string Description { get; set; }
+        public string Description { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether the  attributes have been
@@ -89,7 +91,7 @@ namespace Rock.Cache
         /// <c>true</c> if attributes have already been verified; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsInstancePropertiesVerified { get; set; }
+        public bool IsInstancePropertiesVerified { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [checked security actions].
@@ -98,7 +100,7 @@ namespace Rock.Cache
         ///   <c>true</c> if [checked security actions]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool CheckedSecurityActions { get; set; }
+        public bool CheckedSecurityActions { get; private set; }
 
         /// <summary>
         /// Gets or sets the security actions.
@@ -107,7 +109,7 @@ namespace Rock.Cache
         /// The security actions.
         /// </value>
         [DataMember]
-        public ConcurrentDictionary<string, string> SecurityActions { get; set; }
+        public ConcurrentDictionary<string, string> SecurityActions { get; private set; }
 
         #endregion
 
@@ -152,6 +154,45 @@ namespace Rock.Cache
         }
 
         /// <summary>
+        /// Method that is called by the framework immediately after being added to cache
+        /// </summary>
+        public override void PostCached()
+        {
+            base.PostCached();
+
+            // This will add a file system watcher so that when the block on the file system changes, this 
+            // object will be removed from cache. This is to force the cmsPage object to revalidate any
+            // BlockPropery attributes that may have been added or modified.
+            var physicalPath = System.Web.HttpContext.Current.Request.MapPath( Path );
+            var fileinfo = new FileInfo( physicalPath );
+            if (!fileinfo.Exists) return;
+
+            // Create a new FileSystemWatcher and set its properties.
+            var watcher = new FileSystemWatcher
+            {
+                Path = fileinfo.DirectoryName,
+                NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.DirectoryName,
+                Filter = fileinfo.Name + ".*"
+            };
+
+            // Add event handlers.
+            watcher.Changed += FileSystemWatcher_OnChanged;
+            watcher.Deleted += FileSystemWatcher_OnChanged;
+            watcher.Renamed += FileSystemWatcher_OnRenamed;
+
+            // Begin watching.
+            watcher.EnableRaisingEvents = true;
+        }
+
+        /// <summary>
+        /// Updates the Is Instance Properties Verified flag
+        /// </summary>
+        public void MarkInstancePropertiesVerified( bool verified )
+        {
+            IsInstancePropertiesVerified = verified;
+        }
+
+        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>
@@ -163,6 +204,17 @@ namespace Rock.Cache
         }
 
         #endregion
+
+        private void FileSystemWatcher_OnRenamed(object sender, RenamedEventArgs renamedEventArgs)
+        {
+            Remove( Id );
+        }
+
+        private void FileSystemWatcher_OnChanged( object sender, FileSystemEventArgs fileSystemEventArgs )
+        {
+            Remove( Id );
+        }
+
 
     }
 }
