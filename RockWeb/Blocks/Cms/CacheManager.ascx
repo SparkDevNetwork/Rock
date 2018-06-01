@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="CacheManager.ascx.cs" Inherits="CacheManager" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="CacheManager.ascx.cs" Inherits="RockWeb.Blocks.Cms.CacheManager" %>
 
 <script type="text/javascript">
     function clearActiveDialog() {
