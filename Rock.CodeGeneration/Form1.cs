@@ -514,7 +514,7 @@ on kcu.COLUMN_NAME = cc.Name and kcu.TABLE_NAME = OBJECT_NAME([fk].[parent_objec
 where cc.object_id = fk.parent_object_id
 and [fk].[delete_referential_action_desc] != 'CASCADE'
 ) sub
-where [refTable] = '{0}'
+where [refTable] = @refTable
 order by [parentTable], [columnName] 
 ";
 
@@ -526,8 +526,8 @@ order by [parentTable], [columnName]
                 return string.Empty;
             }
 
-            sqlCommand.CommandText = string.Format( sql, tableAttribute.Name );
-
+            sqlCommand.CommandText = sql;
+            sqlCommand.Parameters.Add( new SqlParameter( "@refTable", tableAttribute.Name ) );
             var reader = sqlCommand.ExecuteReader();
 
             List<TableColumnInfo> parentTableColumnNameList = new List<TableColumnInfo>();

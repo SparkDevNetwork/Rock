@@ -141,6 +141,9 @@ namespace Rock.Client
         public bool RequiresEncryption { get; set; }
 
         /// <summary />
+        public int? SiteLogoBinaryFileId { get; set; }
+
+        /// <summary />
         public string Theme { get; set; }
 
         /// <summary>
@@ -209,6 +212,7 @@ namespace Rock.Client
             this.RegistrationPageId = source.RegistrationPageId;
             this.RegistrationPageRouteId = source.RegistrationPageRouteId;
             this.RequiresEncryption = source.RequiresEncryption;
+            this.SiteLogoBinaryFileId = source.SiteLogoBinaryFileId;
             this.Theme = source.Theme;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
