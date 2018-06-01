@@ -49,15 +49,7 @@ namespace Rock.Web.UI.Controls
 
         #endregion
 
-        #region Properties
-
-        /// <summary>
-        /// Gets or sets the note options.
-        /// </summary>
-        /// <value>
-        /// The note options.
-        /// </value>
-        public NoteOptions NoteOptions { get; set; } = new NoteOptions();
+        #region Obsolete Properties
 
         /// <summary>
         /// Gets or sets the note types.
@@ -95,6 +87,191 @@ namespace Rock.Web.UI.Controls
                 NoteOptions.EntityId = value;
             }
         }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [add always visible].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [add always visible]; otherwise, <c>false</c>.
+        /// </value>
+        [Obsolete( "Use NoteOptions.AddAlwaysVisible instead" )]
+        public bool AddAlwaysVisible
+        {
+            get
+            {
+                return this.NoteOptions.AddAlwaysVisible;
+            }
+            set
+            {
+                this.NoteOptions.AddAlwaysVisible = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [display note type heading].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [display note type heading]; otherwise, <c>false</c>.
+        /// </value>
+        [Obsolete( "Use NoteOptions.DisplayNoteTypeHeading instead" )]
+        public bool DisplayNoteTypeHeading
+        {
+            get
+            {
+                return this.NoteOptions.DisplayNoteTypeHeading;
+            }
+            set
+            {
+                this.NoteOptions.DisplayNoteTypeHeading = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the display type.
+        /// </summary>
+        /// <value>
+        /// The display type.
+        /// </value>
+        [Obsolete( "Use NoteOptions.DisplayType instead" )]
+        public NoteDisplayType DisplayType
+        {
+            get
+            {
+                return this.NoteOptions.DisplayType;
+            }
+            set
+            {
+                this.NoteOptions.DisplayType = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show alert CheckBox].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show alert CheckBox]; otherwise, <c>false</c>.
+        /// </value>
+        [Obsolete( "Use NoteOptions.ShowAlertCheckBox instead" )]
+        public bool ShowAlertCheckBox
+        {
+            get
+            {
+                return this.NoteOptions.ShowAlertCheckBox;
+            }
+            set
+            {
+                this.NoteOptions.ShowAlertCheckBox = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show create date input].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show create date input]; otherwise, <c>false</c>.
+        /// </value>
+        [Obsolete( "Use NoteOptions.ShowCreateDateInput instead" )]
+        public bool ShowCreateDateInput
+        {
+            get
+            {
+                return this.NoteOptions.ShowCreateDateInput;
+            }
+            set
+            {
+                this.NoteOptions.ShowCreateDateInput = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show private CheckBox].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show private CheckBox]; otherwise, <c>false</c>.
+        /// </value>
+        [Obsolete( "Use NoteOptions.ShowPrivateCheckBox instead" )]
+        public bool ShowPrivateCheckBox
+        {
+            get
+            {
+                return this.NoteOptions.ShowPrivateCheckBox;
+            }
+            set
+            {
+                this.NoteOptions.ShowPrivateCheckBox = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show security button].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show security button]; otherwise, <c>false</c>.
+        /// </value>
+        [Obsolete( "Use NoteOptions.ShowSecurityButton instead" )]
+        public bool ShowSecurityButton
+        {
+            get
+            {
+                return this.NoteOptions.ShowSecurityButton;
+            }
+            set
+            {
+                this.NoteOptions.ShowSecurityButton = value;
+            }
+        }
+
+        /// <summary>
+        /// This property is not relevant to the class anymore.
+        /// Always returns an empty string.
+        /// </summary>
+        /// <value>
+        /// The term.
+        /// </value>
+        [Obsolete( "Use NoteOptions.NoteLabel instead" )]
+        public string Term
+        {
+            get
+            {
+                return this.NoteOptions.NoteLabel;
+            }
+            set
+            {
+                this.NoteOptions.NoteLabel = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [use person icon].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [use person icon]; otherwise, <c>false</c>.
+        /// </value>
+        [Obsolete( "Use NoteOptions.UsePersonIcon instead" )]
+        public bool UsePersonIcon
+        {
+            get
+            {
+                return this.NoteOptions.UsePersonIcon;
+            }
+            set
+            {
+                this.NoteOptions.UsePersonIcon = value;
+            }
+        }
+
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets the note options.
+        /// </summary>
+        /// <value>
+        /// The note options.
+        /// </value>
+        public NoteOptions NoteOptions { get; set; } = new NoteOptions();
 
         /// <summary>
         /// Gets or sets a value indicating whether to display heading of the note container
