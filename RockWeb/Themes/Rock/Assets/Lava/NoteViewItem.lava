@@ -10,12 +10,16 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
 {%- else -%}
     {%- assign wrapperClass = "" -%}
 {%- endif -%}
-
+{%- assign noteTypeName = note.NoteType.Name | ToCssClass | Prepend:" note-type-" -%}
+{%- assign wrapperClass =  wrapperClass | Append:noteTypeName -%}
+{%- assign wrapperStyle = "" -%}
+{%- if noteReplyDepth == '0' -%}
 {%- capture fontStyle -%}{%- if note.NoteType.FontColor and note.NoteType.FontColor != '' -%}color: {{ note.NoteType.FontColor }};{%- endif -%}{%- endcapture -%}
 {%- capture borderStyle -%}{%- if note.NoteType.BorderColor and note.NoteType.BorderColor != '' -%}box-shadow: inset 5px 0 0 0 {{ note.NoteType.BorderColor }};{%- endif -%}{%- endcapture -%}
-{%- capture backgroundStyle -%}{%- if note.NoteType.BackgroundColor and note.NoteType.BorderColor != '' -%}background-color: {{ note.NoteType.BackgroundColor }};{%- endif -%}{%- endcapture -%}
+{%- capture backgroundStyle -%}{%- if note.NoteType.BackgroundColor and note.NoteType.BackgroundColor != '' -%}background-color: {{ note.NoteType.BackgroundColor }};{%- endif -%}{%- endcapture -%}
 {%- capture wrapperStyle -%}{{ borderStyle }}{{ fontStyle }}{{ backgroundStyle }}{%- endcapture -%}
 {%- if wrapperStyle != '' -%}{%- capture wrapperStyle -%}style="{{ wrapperStyle }}"{%- endcapture -%}{%- endif -%}
+{%- endif -%}
 
 {%- assign noteDateTimeText = note.CreatedDateTime | HumanizeDateTime -%}
 {%- if note.EditedDateTime > note.CreatedDateTime -%}
