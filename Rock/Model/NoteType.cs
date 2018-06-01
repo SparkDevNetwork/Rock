@@ -106,9 +106,21 @@ namespace Rock.Model
         /// <value>
         /// The CSS class.
         /// </value>
-        [MaxLength( 100 )]
-        [DataMember]
-        public string CssClass { get; set; }
+        [Obsolete( "No Longer Supported" )]
+        [NotMapped]
+        [LavaIgnore]
+        public string CssClass
+        {
+            get
+            {
+                return null;
+            }
+
+            set
+            {
+                //
+            }
+        }
 
         /// <summary>
         /// Gets or sets the name of an icon CSS class. 

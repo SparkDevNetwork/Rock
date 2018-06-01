@@ -34,11 +34,20 @@
             }
             else {
                 $currentNote = $(this).closest('.js-noteviewitem');
-                var currentNoteId = $currentNote.data("note-id");
+                var currentNoteId = $currentNote.data('note-id');
+                var currentNoteNoteTypeId = $currentNote.data('notetype-id');
 
                 if (replyNote) {
                     // display the 'noteEditor' as a reply to the current note
                     $noteEditor.find('.js-parentnoteid').val(currentNoteId);
+
+                    // restrict note replies to use the notetype of the parent note (if there is only one notetype option there won't be a $noteTypeInput)
+                    var $noteTypeInput = $noteEditor.find('.js-notenotetype');
+                    if ($noteTypeInput.length) {
+                        $noteTypeInput.val(currentNoteNoteTypeId)
+                        $noteTypeInput.hide();
+                    }
+
                     $currentNote.append($noteEditor)
                 }
                 else if (editNote) {
@@ -48,6 +57,7 @@
                         $noteEditor.find('.js-notetext').val(noteData.Text);
                         $noteEditor.find('.js-noteprivate').prop('checked', noteData.IsPrivateNote);
                         $noteEditor.find('.js-notealert').prop('checked', noteData.IsAlert);
+                        $noteEditor.find('.js-notenotetype').val(noteData.NoteTypeId);
 
                         $noteEditor.find('.js-noteid').val(currentNoteId);
 
@@ -106,7 +116,7 @@
 
         $('.js-expandreply').click(function (e) {
             var $noteContainer = $(this).closest('.js-notecontainer');
-            
+
             var $currentNote = $(this).closest('.js-note');
             var $childNotesContainer = $currentNote.find('.js-childnotes:first');
             $childNotesContainer.slideToggle(function (x) {

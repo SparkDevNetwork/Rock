@@ -140,8 +140,7 @@ namespace RockWeb.Blocks.Core
             noteType.EntityTypeId = entityTypeId;
             noteType.EntityTypeQualifierColumn = string.Empty;
             noteType.EntityTypeQualifierValue = string.Empty;
-
-            noteType.CssClass = tbCssClass.Text;
+            
             noteType.IconCssClass = tbIconCssClass.Text;
             noteType.BackgroundColor = cpBackgroundColor.Text;
             noteType.FontColor = cpFontColor.Text;
@@ -237,8 +236,7 @@ namespace RockWeb.Blocks.Core
             epEntityType.SelectedEntityTypeId = noteType.EntityTypeId;
             
             lEntityTypeReadOnly.Text = entityType != null ? entityType.FriendlyName : string.Empty;
-
-            tbCssClass.Text = noteType.CssClass;
+            
             tbIconCssClass.Text = noteType.IconCssClass;
             cpBackgroundColor.Text = noteType.BackgroundColor;
             cpFontColor.Text = noteType.FontColor;

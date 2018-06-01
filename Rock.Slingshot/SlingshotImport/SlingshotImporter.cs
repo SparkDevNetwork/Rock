@@ -735,7 +735,6 @@ namespace Rock.Slingshot
                     noteType.Name = noteTypeName;
                     noteType.UserSelectable = true;
                     noteType.IconCssClass = string.Empty;
-                    noteType.CssClass = string.Empty;
                     noteTypeService.Add( noteType );
                     rockContext.SaveChanges();
 
