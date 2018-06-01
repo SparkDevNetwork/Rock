@@ -47,6 +47,9 @@
                         $noteTypeInput.val(currentNoteNoteTypeId)
                         $noteTypeInput.hide();
                     }
+                    else {
+                        $noteTypeInput.show();
+                    }
 
                     $currentNote.append($noteEditor)
                 }
@@ -57,7 +60,29 @@
                         $noteEditor.find('.js-notetext').val(noteData.Text);
                         $noteEditor.find('.js-noteprivate').prop('checked', noteData.IsPrivateNote);
                         $noteEditor.find('.js-notealert').prop('checked', noteData.IsAlert);
-                        $noteEditor.find('.js-notenotetype').val(noteData.NoteTypeId);
+
+                        var $noteTypeInput = $noteEditor.find('.js-notenotetype');
+
+                        // noteType dropdown will only be rendered if more than one notetype is pickable
+                        if ($noteTypeInput.length) {
+
+                            // it is possible that we are editing a note that has a notetype that is not user selectable, so it won't be in the dropdown.  In that case, just hide the picker keep the current notetype
+                            var $unselectableNoteType = $noteEditor.find('.js-has-unselectable-notetype');
+                            if ($noteTypeInput.find('option[value=' + noteData.NoteTypeId + ']').length) {
+
+                                $unselectableNoteType.val('false');
+                                $noteTypeInput.show();
+                            }
+                            else {
+                                // indicate that this not has an unselectable notetype so that postback will keep the value that it had
+                                $unselectableNoteType.val('true');
+
+                                $noteTypeInput.hide();
+                            }
+
+                            $noteTypeInput.val(noteData.NoteTypeId);
+                        }
+
 
                         $noteEditor.find('.js-noteid').val(currentNoteId);
 
