@@ -138,13 +138,8 @@ namespace Rock.Web.UI.Controls
             Controls.Clear();
             foreach ( var attribute in AttributeList )
             {
-                // Temporarily set name and description to empty so that wrapping html will not be generated
-                string name = attribute.Name;
-                string desc = attribute.Description;
-                attribute.Name = string.Empty;
-                attribute.Description = string.Empty;
-
-                var attributeControl = attribute.AddControl( Controls, string.Empty, string.Empty, false, true );
+                // Set label/description to empty so that wrapping html will not be generated
+                var attributeControl = attribute.AddControl( Controls, string.Empty, string.Empty, false, true, null, string.Empty, string.Empty );
 
                 // If required, need to set the error message since the name was cleared 
                 if ( attribute.IsRequired && attributeControl != null )
@@ -152,13 +147,9 @@ namespace Rock.Web.UI.Controls
                     var rockControl = attributeControl as IRockControl;
                     if ( rockControl != null )
                     {
-                        rockControl.RequiredErrorMessage = name + " Is Required";
+                        rockControl.RequiredErrorMessage = attribute.Name + " Is Required";
                     }
                 }
-
-                // Set name and description back
-                attribute.Name = name;
-                attribute.Description = desc;
             }
         }
 

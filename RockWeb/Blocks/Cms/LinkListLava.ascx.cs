@@ -33,7 +33,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Cms
 {
     /// <summary>
-    /// Displays a lit of links.
+    /// Displays a list of links.
     /// </summary>
     [DisplayName( "Link List Lava" )]
     [Category( "CMS" )]
@@ -460,7 +460,7 @@ namespace RockWeb.Blocks.Cms
                     {
                         var attributeService = new AttributeService( rockContext );
                         var attributes = new AttributeService( rockContext )
-                            .Get( entityType.Id, "DefinedTypeId", definedType.Id.ToString() )
+                            .GetByEntityTypeQualifier( entityType.Id, "DefinedTypeId", definedType.Id.ToString(), false )
                             .ToList();
 
                         // Verify (and create if neccessary) the "Is Link" attribute

@@ -181,7 +181,10 @@ namespace Rock.UniversalSearch.Crawler
                                 }
 
                                 IndexContainer.IndexDocument( sitePage );
+                            }
 
+                            if ( metaRobot == null || metaRobot.Attributes["content"] == null || !metaRobot.Attributes["content"].Value.Contains( "nofollow" ) )
+                            {
                                 // crawl all the links found on the page.
                                 var links = ParseLinks( htmlDoc );
 
@@ -212,6 +215,12 @@ namespace Rock.UniversalSearch.Crawler
                 {
                     HtmlAttribute hrefAttribute = link.Attributes["href"];
                     string anchorLink = hrefAttribute.Value;
+
+                    // Skip links that have been flagged to not be followed.
+                    if ( link.Attributes.Contains( "rel" ) && link.Attributes["rel"].Value.Contains( "nofollow" ) )
+                    {
+                        continue;
+                    }
 
                     // check for links that aren't pages (javascript:, mailto:)
                     if ( IsValidLink( anchorLink ) )
@@ -520,5 +529,26 @@ namespace Rock.UniversalSearch.Crawler
             return true;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public class CrawlUrl
+        {
+            /// <summary>
+            /// Gets or sets the level.
+            /// </summary>
+            /// <value>
+            /// The level.
+            /// </value>
+            public int Level { get; set; }
+
+            /// <summary>
+            /// Gets or sets the URL.
+            /// </summary>
+            /// <value>
+            /// The URL.
+            /// </value>
+            public string Url { get; set; }
+        }
     }
 }

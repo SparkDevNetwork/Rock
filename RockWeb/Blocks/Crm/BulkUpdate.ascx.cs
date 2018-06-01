@@ -610,7 +610,7 @@ namespace RockWeb.Blocks.Crm
 
                     if ( pw != null )
                     {
-                        var orderedAttributeList = new AttributeService( rockContext ).GetByCategoryId( category.Id )
+                        var orderedAttributeList = new AttributeService( rockContext ).GetByCategoryId( category.Id, false )
                             .OrderBy( a => a.Order ).ThenBy( a => a.Name );
                         foreach ( var attribute in orderedAttributeList )
                         {
@@ -1064,7 +1064,7 @@ namespace RockWeb.Blocks.Crm
 
                 if ( pw != null )
                 {
-                    var orderedAttributeList = new AttributeService( rockContext ).GetByCategoryId( category.Id )
+                    var orderedAttributeList = new AttributeService( rockContext ).GetByCategoryId( category.Id, false )
                         .OrderBy( a => a.Order ).ThenBy( a => a.Name );
                     foreach ( var attribute in orderedAttributeList )
                     {
@@ -1316,7 +1316,7 @@ namespace RockWeb.Blocks.Crm
                 int tagId = ddlTagList.SelectedValue.AsInteger();
 
                 var tag = new TagService( rockContext ).Get( tagId );
-                if ( tag != null && tag.IsAuthorized( "TAG", CurrentPerson ) )
+                if ( tag != null && tag.IsAuthorized( "Tag", CurrentPerson ) )
                 {
                     var taggedItemService = new TaggedItemService( rockContext );
 
@@ -1541,7 +1541,7 @@ namespace RockWeb.Blocks.Crm
                 }
                 pw.Title = category.Name;
 
-                var orderedAttributeList = new AttributeService( rockContext ).GetByCategoryId( category.Id )
+                var orderedAttributeList = new AttributeService( rockContext ).GetByCategoryId( category.Id, false )
                     .OrderBy( a => a.Order ).ThenBy( a => a.Name );
                 foreach ( var attribute in orderedAttributeList )
                 {

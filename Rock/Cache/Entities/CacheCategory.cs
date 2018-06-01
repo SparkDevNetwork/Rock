@@ -45,7 +45,7 @@ namespace Rock.Cache
         ///   <c>true</c> if this instance is system; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsSystem { get; set; }
+        public bool IsSystem { get; private set; }
 
         /// <summary>
         /// Gets or sets the parent category identifier.
@@ -54,7 +54,7 @@ namespace Rock.Cache
         /// The parent category identifier.
         /// </value>
         [DataMember]
-        public int? ParentCategoryId { get; set; }
+        public int? ParentCategoryId { get; private set; }
 
         /// <summary>
         /// Gets or sets the entity type identifier.
@@ -63,7 +63,7 @@ namespace Rock.Cache
         /// The entity type identifier.
         /// </value>
         [DataMember]
-        public int? EntityTypeId { get; set; }
+        public int? EntityTypeId { get; private set; }
 
         /// <summary>
         /// Gets or sets the entity type qualifier column.
@@ -72,7 +72,7 @@ namespace Rock.Cache
         /// The entity type qualifier column.
         /// </value>
         [DataMember]
-        public string EntityTypeQualifierColumn { get; set; }
+        public string EntityTypeQualifierColumn { get; private set; }
 
         /// <summary>
         /// Gets or sets the entity type qualifier value.
@@ -81,7 +81,7 @@ namespace Rock.Cache
         /// The entity type qualifier value.
         /// </value>
         [DataMember]
-        public string EntityTypeQualifierValue { get; set; }
+        public string EntityTypeQualifierValue { get; private set; }
 
         /// <summary>
         /// Gets or sets the name.
@@ -90,7 +90,7 @@ namespace Rock.Cache
         /// The name.
         /// </value>
         [DataMember]
-        public string Name { get; set; }
+        public string Name { get; private set; }
 
         /// <summary>
         /// Gets or sets the description.
@@ -99,7 +99,7 @@ namespace Rock.Cache
         /// The description.
         /// </value>
         [DataMember]
-        public string Description { get; set; }
+        public string Description { get; private set; }
 
         /// <summary>
         /// Gets or sets the order.
@@ -108,7 +108,7 @@ namespace Rock.Cache
         /// The order.
         /// </value>
         [DataMember]
-        public int Order { get; set; }
+        public int Order { get; private set; }
 
         /// <summary>
         /// Gets or sets the icon CSS class.
@@ -117,7 +117,7 @@ namespace Rock.Cache
         /// The icon CSS class.
         /// </value>
         [DataMember]
-        public string IconCssClass { get; set; }
+        public string IconCssClass { get; private set; }
 
         /// <summary>
         /// Gets or sets the color of the highlight.
@@ -126,7 +126,7 @@ namespace Rock.Cache
         /// The color of the highlight.
         /// </value>
         [DataMember]
-        public string HighlightColor { get; set; }
+        public string HighlightColor { get; private set; }
 
         /// <summary>
         /// Gets the parent category.
@@ -219,7 +219,7 @@ namespace Rock.Cache
 
                 return _scheduleExclusions;
             }
-            set
+            private set
             {
                 _scheduleExclusions = value;
             }

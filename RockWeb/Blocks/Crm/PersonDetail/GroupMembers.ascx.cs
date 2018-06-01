@@ -195,7 +195,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         if ( groupHeaderLava.IsNotNullOrWhitespace() || groupFooterLava.IsNotNullOrWhitespace() )
                         {
                             // add header and footer information
-                            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, CurrentPerson );
+                            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
                             mergeFields.Add( "Group", group );
                             mergeFields.Add( "GroupMembers", members );
 
@@ -203,7 +203,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             Literal lGroupFooter = e.Item.FindControl( "lGroupFooter" ) as Literal;
 
                             lGroupHeader.Text = groupHeaderLava.ResolveMergeFields( mergeFields );
-                            lGroupFooter.Text = groupHeaderLava.ResolveMergeFields( mergeFields );
+                            lGroupFooter.Text = groupFooterLava.ResolveMergeFields( mergeFields );
                         }
 
                         var orderedMembers = new List<GroupMember>();

@@ -51,5 +51,27 @@ namespace Rock.Model
 
             return qry;
         }
+
+        /// <summary>
+        /// Returns an enumerable collection of the <see cref="Rock.Model.FinancialAccount" /> Ids that are ancestors of a specified accountId sorted starting with the most immediate parent
+        /// </summary>
+        /// <param name="accountId">The account identifier.</param>
+        /// <returns></returns>
+        public IOrderedEnumerable<int> GetAllAncestorIds( int accountId )
+        {
+            var result = this.Context.Database.SqlQuery<int>(
+                @"
+                with CTE as (
+                select *, 0 as [Level] from [FinancialAccount] where [Id]={0}
+                union all
+                select [a].*, [Level] + 1 as [Level] from [FinancialAccount] [a]
+                inner join CTE pcte on pcte.ParentAccountId = [a].[Id]
+                )
+                select Id from CTE where Id != {0} order by Level
+                ", accountId );
+
+            // already ordered within the sql, so do a dummy order by to get IOrderedEnumerable
+            return result.OrderBy( a => 0 );
+        }
     }
 }

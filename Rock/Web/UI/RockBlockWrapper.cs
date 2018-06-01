@@ -105,8 +105,8 @@ namespace Rock.Web.UI
                 if ( preHtml.HasMergeFields() || postHtml.HasMergeFields() )
                 {
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( _rockBlock.RockPage );
-                    preHtml = preHtml.ResolveMergeFields( mergeFields );
-                    postHtml = postHtml.ResolveMergeFields( mergeFields );
+                    preHtml = preHtml.ResolveMergeFields( mergeFields, "All" );
+                    postHtml = postHtml.ResolveMergeFields( mergeFields, "All" );
                 }
             }
 

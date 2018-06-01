@@ -187,7 +187,7 @@ namespace RockWeb.Blocks.Core
             AttributeService attributeService = new AttributeService( rockContext );
 
             string qualifierValue = binaryFileType.Id.ToString();
-            var qryBinaryFileAttributes = attributeService.GetByEntityTypeId( new BinaryFile().TypeId ).AsQueryable()
+            var qryBinaryFileAttributes = attributeService.GetByEntityTypeId( new BinaryFile().TypeId, true ).AsQueryable()
                 .Where( a => a.EntityTypeQualifierColumn.Equals( "BinaryFileTypeId", StringComparison.OrdinalIgnoreCase )
                 && a.EntityTypeQualifierValue.Equals( qualifierValue ) );
 
@@ -336,7 +336,7 @@ namespace RockWeb.Blocks.Core
                 var entityTypeId = Rock.Cache.CacheEntityType.Get( typeof( BinaryFile ) ).Id;
 
                 // delete BinaryFileAttributes that are no longer configured in the UI
-                var attributes = attributeService.Get( entityTypeId, "BinaryFileTypeId", binaryFileType.Id.ToString() );
+                var attributes = attributeService.GetByEntityTypeQualifier( entityTypeId, "BinaryFileTypeId", binaryFileType.Id.ToString(), true );
                 var selectedAttributeGuids = BinaryFileAttributesState.Select( a => a.Guid );
                 foreach ( var attr in attributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
                 {

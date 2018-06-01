@@ -64,6 +64,12 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<GroupMemberHistorical>( Context ).Queryable().Any( a => a.GroupRoleId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupTypeRole.FriendlyTypeName, GroupMemberHistorical.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<GroupSync>( Context ).Queryable().Any( a => a.GroupTypeRoleId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupTypeRole.FriendlyTypeName, GroupSync.FriendlyTypeName );

@@ -845,7 +845,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnNext_Click( object sender, EventArgs e )
         {
-            var changes = new List<string>();
+            var changes = new History.HistoryChangeList();
 
             var rockContext = new RockContext();
             var financialTransactionService = new FinancialTransactionService( rockContext );
@@ -880,7 +880,7 @@ namespace RockWeb.Blocks.Finance
                     financialTransactionDetailService.Delete( detail );
                 }
 
-                changes.Add( "Unmatched transaction" );
+                changes.AddChange( History.HistoryVerb.Unmatched, History.HistoryChangeType.Record,  "Transaction" );
 
                 HistoryService.SaveChanges(
                     rockContext,
@@ -984,7 +984,7 @@ namespace RockWeb.Blocks.Finance
                 financialTransaction.FinancialPaymentDetail.LoadAttributes(rockContext);
                 Helper.GetEditValues(phPaymentAttributeEdits, financialTransaction.FinancialPaymentDetail);
 
-                changes.Add( "Matched transaction" );
+                changes.AddChange( History.HistoryVerb.Matched, History.HistoryChangeType.Record, "Transaction" );
 
                 HistoryService.SaveChanges(
                     rockContext,

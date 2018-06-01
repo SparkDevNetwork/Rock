@@ -230,6 +230,20 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Does a direct Bulk Delete of group history for all groups and group members of the specified group type and commits the changes to the database.
+        /// </summary>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        public void BulkDeleteGroupHistory( int groupTypeId )
+        {
+            var rockContext = this.Context as RockContext;
+            var groupHistoryRecordsToDelete = new GroupHistoricalService( rockContext ).Queryable().Where( a => a.GroupTypeId == groupTypeId );
+            var groupMemberHistoryRecordsToDelete = new GroupMemberHistoricalService( rockContext ).Queryable().Where( a => a.Group.GroupTypeId == groupTypeId );
+
+            rockContext.BulkDelete( groupHistoryRecordsToDelete );
+            rockContext.BulkDelete( groupMemberHistoryRecordsToDelete );
+        }
+
+        /// <summary>
         /// Gets the Guid for the GroupType that has the specified Id
         /// </summary>
         /// <param name="id">The identifier.</param>

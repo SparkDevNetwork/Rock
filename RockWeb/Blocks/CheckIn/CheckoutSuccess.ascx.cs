@@ -105,13 +105,13 @@ namespace RockWeb.Blocks.CheckIn
                                     {
                                         attendance.EndDateTime = now;
 
-                                        if ( attendance.Group != null &&
-                                            attendance.Location != null &&
-                                            attendance.Schedule != null )
+                                        if ( attendance.Occurrence.Group != null &&
+                                            attendance.Occurrence.Location != null &&
+                                            attendance.Occurrence.Schedule != null )
                                         {
                                             var li = new HtmlGenericControl( "li" );
                                             li.InnerText = string.Format( GetAttributeValue( "DetailMessage" ),
-                                                person.ToString(), attendance.Group.ToString(), attendance.Location.ToString(), attendance.Schedule.Name );
+                                                person.ToString(), attendance.Occurrence.Group.ToString(), attendance.Occurrence.Location.ToString(), attendance.Occurrence.Schedule.Name );
 
                                             phResults.Controls.Add( li );
                                         }

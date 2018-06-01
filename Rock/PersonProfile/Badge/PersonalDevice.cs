@@ -33,7 +33,7 @@ namespace Rock.PersonProfile.Badge
     [ExportMetadata( "ComponentName", "Personal Device" )]
 
     [LinkedPage( "Personal Devices Detail", "Page to show the details of the personal devices added.", false, order: 1 )]
-    public class PersonalDevice : BadgeComponent
+    public class PersonalDevice : BadgeComponentModern
     {
         /// <summary>
         /// Renders the specified writer.

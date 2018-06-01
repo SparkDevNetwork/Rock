@@ -83,10 +83,9 @@ namespace Rock.Workflow.Action
                     Person person = null;
                     PersonAlias personAlias = null;
                     var personService = new PersonService( rockContext );
-                    var people = personService.GetByMatch( firstName, lastName, email ).ToList();
-                    if ( people.Count == 1 )
+                    person = personService.FindPerson( firstName, lastName, email, true );
+                    if ( person.IsNotNull() )
                     {
-                        person = people.First();
                         personAlias = person.PrimaryAlias;
                     }
                     else

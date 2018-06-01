@@ -339,7 +339,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                     else
                     {
                         var attendanceQry = new AttendanceService( rockContext ).Queryable();
-                        var didAttend = attendanceQry.Where( a => a.GroupId == group.Id ).Any();
+                        var didAttend = attendanceQry.Where( a => a.Occurrence.GroupId == group.Id ).Any();
 
                         if ( !didAttend )
                         {

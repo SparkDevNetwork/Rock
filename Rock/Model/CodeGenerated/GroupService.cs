@@ -87,6 +87,30 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} contains one or more child {1}.", Group.FriendlyTypeName, Group.FriendlyTypeName.Pluralize().ToLower() );
                 return false;
             }  
+ 
+            if ( new Service<GroupHistorical>( Context ).Queryable().Any( a => a.GroupId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, GroupHistorical.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<GroupHistorical>( Context ).Queryable().Any( a => a.ParentGroupId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} contains one or more child {1}.", Group.FriendlyTypeName, GroupHistorical.FriendlyTypeName.Pluralize().ToLower() );
+                return false;
+            }  
+ 
+            if ( new Service<GroupLocationHistorical>( Context ).Queryable().Any( a => a.GroupId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, GroupLocationHistorical.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<GroupMemberHistorical>( Context ).Queryable().Any( a => a.GroupId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, GroupMemberHistorical.FriendlyTypeName );
+                return false;
+            }  
             
             // ignoring GroupRequirement,GroupId 
  
@@ -151,13 +175,17 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.AllowGuests = source.AllowGuests;
+            target.ArchivedByPersonAliasId = source.ArchivedByPersonAliasId;
+            target.ArchivedDateTime = source.ArchivedDateTime;
             target.CampusId = source.CampusId;
             target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.GroupCapacity = source.GroupCapacity;
             target.GroupTypeId = source.GroupTypeId;
+            target.InactiveDateTime = source.InactiveDateTime;
             target.IsActive = source.IsActive;
+            target.IsArchived = source.IsArchived;
             target.IsPublic = source.IsPublic;
             target.IsSecurityRole = source.IsSecurityRole;
             target.IsSystem = source.IsSystem;
@@ -166,6 +194,7 @@ namespace Rock.Model
             target.ParentGroupId = source.ParentGroupId;
             target.RequiredSignatureDocumentTemplateId = source.RequiredSignatureDocumentTemplateId;
             target.ScheduleId = source.ScheduleId;
+            target.StatusValueId = source.StatusValueId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

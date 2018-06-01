@@ -21,6 +21,7 @@ using System.Data.Entity.Spatial;
 using System.Linq;
 using Rock.Data;
 using Rock.Cache;
+using Z.EntityFramework.Plus;
 
 namespace Rock.Model
 {
@@ -30,6 +31,37 @@ namespace Rock.Model
     public partial class GroupService
     {
         /// <summary>
+        /// Returns a queryable collection of <see cref="Rock.Model.Group">Groups</see>, excluding archived groups
+        /// </summary>
+        /// <returns></returns>
+        public override IQueryable<Group> Queryable()
+        {
+            // override Group Queryable so that Archived groups are never included
+            return base.Queryable().Where( a => a.IsArchived == false );
+        }
+
+        /// <summary>
+        /// Returns a queryable collection of <see cref="Rock.Model.Group">Groups</see>, excluding archived groups,
+        /// with eager loading of properties specified in includes
+        /// </summary>
+        /// <param name="includes"></param>
+        /// <returns></returns>
+        public override IQueryable<Group> Queryable( string includes )
+        {
+            // override Group Queryable so that Archived groups are never included
+            return base.Queryable( includes ).Where( a => a.IsArchived == false );
+        }
+
+        /// <summary>
+        /// Returns a queryable of archived groups
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<Group> GetArchived()
+        {
+            return this.AsNoFilter().Where( a => a.IsArchived == true );
+        }
+
+        /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.Group"/> entities that by their <see cref="Rock.Model.GroupType"/> Id.
         /// </summary>
         /// <param name="groupTypeId">An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.GroupType"/> that they belong to.</param>
@@ -38,7 +70,6 @@ namespace Rock.Model
         {
             return Queryable().Where( t => t.GroupTypeId == groupTypeId );
         }
-
 
         /// <summary>
         /// Returns the <see cref="Rock.Model.Group"/> containing a Guid property that matches the provided value.
@@ -1038,7 +1069,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Deletes a specified group. Returns a boolean flag indicating if the deletion was successful.
+        /// Deletes or Archives (Soft-Deletes) Group record depending on GroupType.EnableGroupHistory and if the Group has history snapshots. Returns a boolean flag indicating if the deletion was successful.
         /// </summary>
         /// <param name="item">The <see cref="Rock.Model.Group" /> to delete.</param>
         /// <returns>
@@ -1046,6 +1077,20 @@ namespace Rock.Model
         /// </returns>
         public override bool Delete( Group item )
         {
+            var groupTypeCache = CacheGroupType.Get( item.GroupTypeId );
+            if ( groupTypeCache?.EnableGroupHistory == true )
+            {
+                var rockContext = this.Context as RockContext;
+                var groupHistoricalService = new GroupHistoricalService( rockContext );
+                var groupMemberHistoricalService = new GroupMemberHistoricalService( rockContext );
+                if ( groupHistoricalService.Queryable().Any( a => a.GroupId == item.Id ) || groupMemberHistoricalService.Queryable().Any( a => a.GroupId == item.Id ) )
+                {
+                    // if this group's GroupType has GroupHistory enabled, and this group has group or group member history snapshots, then we need to Archive instead of Delete
+                    this.Archive( item, null, false );
+                    return true;
+                }
+            }
+
             string message;
             if ( !CanDelete( item, out message ) )
             {
@@ -1055,6 +1100,99 @@ namespace Rock.Model
             return base.Delete( item );
         }
 
+        /// <summary>
+        /// Deletes or Archives (Soft-Deletes) Group record depending on GroupType.EnableGroupHistory and if the Group has history snapshots, with an option to
+        /// remove it from Auth if it is a security role
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <param name="removeFromAuthTables">if set to <c>true</c> [remove from authentication tables].</param>
+        public void Delete( Group group, bool removeFromAuthTables )
+        {
+            bool isSecurityRoleGroup = group.IsActive && ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) );
+            if ( removeFromAuthTables && isSecurityRoleGroup )
+            {
+                AuthService authService = new AuthService( this.Context as RockContext );
+
+                Rock.Cache.CacheRole.Remove( group.Id );
+                foreach ( var auth in authService.Queryable().Where( a => a.GroupId == group.Id ).ToList() )
+                {
+                    authService.Delete( auth );
+                }
+
+                Rock.Security.Authorization.Clear();
+            }
+
+            this.Delete( group );
+        }
+
+        /// <summary>
+        /// Archives the specified group and removes it from Auth if it is a security role
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <param name="currentPersonAliasId">The current person alias identifier.</param>
+        /// <param name="removeFromAuthTables">if set to <c>true</c> remove from auth if this group is a security role.</param>
+        public void Archive( Group group, int? currentPersonAliasId, bool removeFromAuthTables)
+        {
+            group.IsArchived = true;
+            group.ArchivedByPersonAliasId = currentPersonAliasId;
+            group.ArchivedDateTime = RockDateTime.Now;
+
+            bool isSecurityRoleGroup = group.IsActive && ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) );
+            if ( removeFromAuthTables && isSecurityRoleGroup )
+            {
+                AuthService authService = new AuthService( this.Context as RockContext );
+
+                Rock.Cache.CacheRole.Remove( group.Id );
+                foreach ( var auth in authService.Queryable().Where( a => a.GroupId == group.Id ).ToList() )
+                {
+                    authService.Delete( auth );
+                }
+
+                Rock.Security.Authorization.Clear();
+            }
+        }
+
+        /// <summary>
+        /// Checks to see if there is an Archived Member of the group for the specified personId and groupRoleId
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="groupRoleId">The group role identifier.</param>
+        /// <param name="archivedGroupMember">The archived group member record (if there are multiple, this will be the most recently archived record</param>
+        /// <returns></returns>
+        public bool ExistsAsArchived( Group group, int personId, int groupRoleId, out GroupMember archivedGroupMember )
+        {
+            var groupMemberService = new GroupMemberService( this.Context as RockContext );
+            archivedGroupMember = groupMemberService.GetArchived().Where( a => a.GroupId == group.Id && a.PersonId == personId && a.GroupRoleId == groupRoleId ).OrderByDescending( a => a.ArchivedDateTime ).FirstOrDefault();
+            return archivedGroupMember != null;
+        }
+
+        /// <summary>
+        /// Returns true if duplicate group members are allowed in groups
+        /// Normally this is false, but there is a web.config option to allow it
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <returns></returns>
+        public bool AllowsDuplicateMembers( Group group )
+        {
+            bool allowDuplicateGroupMembers = System.Configuration.ConfigurationManager.AppSettings["AllowDuplicateGroupMembers"].AsBoolean();
+            return allowDuplicateGroupMembers;
+        }
+
+        /// <summary>
+        /// Checks to see if there is an (unarchived) member of the group for the specified personId and groupRoleId
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="groupRoleId">The group role identifier.</param>
+        /// <param name="groupMember">The group member.</param>
+        /// <returns></returns>
+        public bool ExistsAsMember( Group group, int personId, int groupRoleId, out GroupMember groupMember )
+        {
+            var groupMemberService = new GroupMemberService( this.Context as RockContext );
+            groupMember = groupMemberService.AsNoFilter().Where( a => a.IsArchived == false && a.GroupId == group.Id && a.PersonId == personId && a.GroupRoleId == groupRoleId ).FirstOrDefault();
+            return groupMember != null;
+        }
     }
 
     /// <summary>

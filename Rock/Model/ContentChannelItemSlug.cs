@@ -42,6 +42,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [IgnoreCanDelete]
         public int ContentChannelItemId { get; set; }
 
         /// <summary>

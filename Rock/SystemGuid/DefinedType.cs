@@ -24,6 +24,11 @@ namespace Rock.SystemGuid
     public class DefinedType
     {
         /// <summary>
+        /// Background check package types
+        /// </summary>
+        public const string BACKGROUND_CHECK_TYPES = "BC2FDF9A-93B8-4325-8DE9-2F7B1943BFDF";
+
+        /// <summary>
         /// Guid for the types of Benevolence Request status (e.g. pending, active, answered, etc.)
         /// </summary>
         public const string BENEVOLENCE_REQUEST_STATUS = "2787B088-D607-4D69-84FF-850A6891EE34";
@@ -32,6 +37,15 @@ namespace Rock.SystemGuid
         /// The types of results for a Benevolence Request
         /// </summary>
         public const string BENEVOLENCE_RESULT_TYPE = "35FC0225-3DAC-48B4-BDF7-AFDE104FB60E";
+
+        /// Guid for Cache Tags
+        /// </summary>
+        public const string CACHE_TAGS = "BDF73089-9154-40C1-90E4-74518E9937DC";
+
+        /// <summary>
+        /// The types of static color swatches supported
+        /// </summary>
+        public const string COLOR_PICKER_SWATCHES = "CC1400B3-E161-45E3-BF49-49825D3D6467";
 
         /// <summary>
         /// The types of communication supported (i.e. email, sms, twitter, app-push, etc)
@@ -190,7 +204,7 @@ namespace Rock.SystemGuid
         public const string PERSON_RECORD_STATUS_REASON =  "e17d5988-0372-4792-82cf-9e37c79f7319";
 
         /// <summary>
-        /// Guid for the person'S connection status (such as member, attendee, participant, etc.)
+        /// Guid for the person's connection status (such as member, attendee, participant, etc.)
         /// </summary>
         public const string PERSON_CONNECTION_STATUS =  "2e6540ea-63f0-40fe-be50-f2a84735e600";
 
@@ -250,11 +264,6 @@ namespace Rock.SystemGuid
         public const string PROTECT_MY_MINISTRY_MVR_JURISDICTION_CODES = "2F8821E8-05B9-4CD5-9FA4-303662AAC85D";
 
         /// <summary>
-        /// Protect My Ministry background package types
-        /// </summary>
-        public const string PROTECT_MY_MINISTRY_PACKAGES = "BC2FDF9A-93B8-4325-8DE9-2F7B1943BFDF";
-
-        /// <summary>
         /// Guid for the types of map styles
         /// </summary>
         public const string MAP_STYLES = "4EF89471-C049-49ED-AB50-677F689A4E4E";
@@ -268,6 +277,11 @@ namespace Rock.SystemGuid
         /// Guid for the button html
         /// </summary>
         public const string BUTTON_HTML = "407A3A73-A3EF-4970-B856-2A33F62AC72E";
+
+        /// <summary>
+        /// Guid for a group's (Family's) status for GroupType of Family
+        /// </summary>
+        public const string FAMILY_GROUP_STATUS = "792C6979-0F40-47C5-BD0C-06FA7DF22837";
 
         /// <summary>
         /// The REST allowed domains

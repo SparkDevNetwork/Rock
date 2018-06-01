@@ -49,32 +49,15 @@ namespace Rock.Workflow.Action
         {
             errorMessages = new List<string>();
 
-            var workflow = action.Activity.Workflow;
-            workflow.IsPersisted = true;
+            action.Activity.Workflow.IsPersisted = true;
+            action.AddLogEntry( "Updated workflow to be persisted!" );
 
             if ( GetAttributeValue( action, "PersistImmediately" ).AsBoolean( false ) )
             {
-                workflow.IsProcessing = true;
-
                 var service = new WorkflowService( rockContext );
-                if ( workflow.Id == 0 )
-                {
-                    service.Add( workflow );
-                }
-
-                rockContext.WrapTransaction( () =>
-                {
-                    rockContext.SaveChanges();
-                    workflow.SaveAttributeValues( rockContext );
-                    foreach ( var activity in workflow.Activities )
-                    {
-                        activity.SaveAttributeValues( rockContext );
-                    }
-                } );
+                service.PersistImmediately( action );
             }
-
-            action.AddLogEntry( "Updated workflow to be persisted!" );
-
+            
             return true;
         }
     }

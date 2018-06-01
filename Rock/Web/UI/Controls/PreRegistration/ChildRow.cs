@@ -39,7 +39,7 @@ namespace Rock.Web.UI.Controls
         private RockTextBox _tbLastName;
         private DefinedValuePicker _ddlSuffix;
         private RockDropDownList _ddlGender;
-        private DatePartsPicker _dppBirthdate;
+        private DatePicker _dpBirthdate;
         private GradePicker _ddlGradePicker;
         private PhoneNumberBox _pnbMobile;
         private RockDropDownList _ddlRelationshipType;
@@ -130,12 +130,12 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _dppBirthdate.Visible;
+                return _dpBirthdate.Visible;
             }
             set
             {
                 EnsureChildControls();
-                _dppBirthdate.Visible = value;
+                _dpBirthdate.Visible = value;
             }
         }
 
@@ -150,12 +150,12 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _dppBirthdate.Required;
+                return _dpBirthdate.Required;
             }
             set
             {
                 EnsureChildControls();
-                _dppBirthdate.Required = value;
+                _dpBirthdate.Required = value;
             }
         }
 
@@ -420,13 +420,13 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _dppBirthdate.SelectedDate;
+                return _dpBirthdate.SelectedDate;
             }
 
             set
             {
                 EnsureChildControls();
-                _dppBirthdate.SelectedDate = value;
+                _dpBirthdate.SelectedDate = value;
             }
         }
 
@@ -531,7 +531,7 @@ namespace Rock.Web.UI.Controls
                 _tbLastName.ValidationGroup = value;
                 _ddlSuffix.ValidationGroup = value;
                 _ddlGender.ValidationGroup = value;
-                _dppBirthdate.ValidationGroup = value;
+                _dpBirthdate.ValidationGroup = value;
                 _ddlGradePicker.ValidationGroup = value;
                 _pnbMobile.ValidationGroup = value;
                 _ddlRelationshipType.ValidationGroup = value;
@@ -558,7 +558,7 @@ namespace Rock.Web.UI.Controls
             _tbLastName = new RockTextBox();
             _ddlSuffix = new DefinedValuePicker();
             _ddlGender = new RockDropDownList();
-            _dppBirthdate = new DatePartsPicker();
+            _dpBirthdate = new DatePicker();
             _ddlGradePicker = new GradePicker { UseAbbreviation = true, UseGradeOffsetAsValue = true };
             _ddlGradePicker.Label = string.Empty;
             _pnbMobile = new PhoneNumberBox();
@@ -581,7 +581,7 @@ namespace Rock.Web.UI.Controls
             _tbLastName.ID = "_tbLastName";
             _ddlSuffix.ID = "_ddlSuffix";
             _ddlGender.ID = "_ddlGender";
-            _dppBirthdate.ID = "_dtBirthdate";
+            _dpBirthdate.ID = "_dtBirthdate";
             _ddlGradePicker.ID = "_ddlGrade";
             _pnbMobile.ID = "_pnbPhone";
             _ddlRelationshipType.ID = "_ddlRelationshipType";
@@ -593,7 +593,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _tbNickName );
             Controls.Add( _tbLastName );
             Controls.Add( _ddlSuffix );
-            Controls.Add( _dppBirthdate );
+            Controls.Add( _dpBirthdate );
             Controls.Add( _ddlGender );
             Controls.Add( _ddlGradePicker );
             Controls.Add( _pnbMobile );
@@ -634,10 +634,10 @@ namespace Rock.Web.UI.Controls
                 _ddlGender.SelectedValue = genderValue;
             }
 
-            _dppBirthdate.AllowFutureDates = false;
-            _dppBirthdate.RequiredErrorMessage = "Birthdate is required for all children";
-            _dppBirthdate.RequireYear = true;
-            _dppBirthdate.Label = "Birth Date";
+            _dpBirthdate.RequiredErrorMessage = "Birthdate is required for all children";
+            _dpBirthdate.Label = "Birth Date";
+            _dpBirthdate.ShowOnFocus = false;
+            _dpBirthdate.StartView = DatePicker.StartViewOption.decade;
 
             _ddlGradePicker.CssClass = "form-control";
             _ddlGradePicker.RequiredErrorMessage = _ddlGradePicker.Label + " is required for all children";
@@ -729,9 +729,9 @@ namespace Rock.Web.UI.Controls
 
                 if ( this.ShowBirthDate )
                 {
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-6" );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-3" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                    _dppBirthdate.RenderControl( writer );
+                    _dpBirthdate.RenderControl( writer );
                     writer.RenderEndTag();
                 }
 

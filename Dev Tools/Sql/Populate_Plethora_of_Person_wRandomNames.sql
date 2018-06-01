@@ -12234,6 +12234,7 @@ BEGIN
             ,GroupRoleId
             ,[Guid]
             ,GroupMemberStatus
+			,DateTimeAdded
             )
         VALUES (
             0
@@ -12242,6 +12243,7 @@ BEGIN
             ,@adultRole
             ,newid()
             ,0
+			,SYSDATETIME()
             )
 
         INSERT INTO [GroupMember] (
@@ -12251,6 +12253,7 @@ BEGIN
             ,GroupRoleId
             ,[Guid]
             ,GroupMemberStatus
+			,DateTimeAdded
             )
         VALUES (
             0
@@ -12259,6 +12262,7 @@ BEGIN
             ,@adultRole
             ,newid()
             ,0
+			,SYSDATETIME()
             )
 
 		-- Kids loop
@@ -12339,6 +12343,7 @@ BEGIN
 				,GroupRoleId
 				,[Guid]
 				,GroupMemberStatus
+				,DateTimeAdded
 				)
 			VALUES (
 				0
@@ -12347,6 +12352,7 @@ BEGIN
 				,@childRole
 				,newid()
 				,0
+				,SYSDATETIME()
 				)
 
 			set @kidCounter += 1

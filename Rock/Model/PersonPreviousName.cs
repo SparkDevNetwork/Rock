@@ -91,7 +91,7 @@ namespace Rock.Model
         /// The history changes.
         /// </value>
         [NotMapped]
-        private List<string> HistoryChanges { get; set; }
+        private History.HistoryChangeList HistoryChanges { get; set; }
 
         /// <summary>
         /// Gets or sets the history person identifier.
@@ -127,7 +127,7 @@ namespace Rock.Model
 
             if ( HistoryPersonId.HasValue )
             {
-                HistoryChanges = new List<string>();
+                HistoryChanges = new History.HistoryChangeList();
 
                 switch ( entry.State )
                 {

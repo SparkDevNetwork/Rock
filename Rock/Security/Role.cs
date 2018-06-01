@@ -82,6 +82,10 @@ namespace Rock.Security
             return People.TryGetValue( personGuid.Value, out inRole ) && inRole;
         }
 
+        /// <summary>
+        /// Copies from new cache.
+        /// </summary>
+        /// <param name="cacheEntity">The cache entity.</param>
         protected void CopyFromNewCache( IEntityCache cacheEntity )
         {
           }

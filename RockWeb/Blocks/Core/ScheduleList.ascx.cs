@@ -208,7 +208,7 @@ namespace RockWeb.Blocks.Administration
                     CategoryName = a.Category.Name
                 } );
 
-            _schedulesWithAttendance = new HashSet<int>( new AttendanceService( rockContext ).Queryable().Where( a => a.ScheduleId.HasValue ).Select( a => a.ScheduleId.Value ).Distinct().ToList() );
+            _schedulesWithAttendance = new HashSet<int>( new AttendanceService( rockContext ).Queryable().Where( a => a.Occurrence.ScheduleId.HasValue ).Select( a => a.Occurrence.ScheduleId.Value ).Distinct().ToList() );
 
             if ( sortProperty != null )
             {

@@ -85,10 +85,13 @@ namespace RockWeb.Blocks.Core
             if ( entityTypeGuid.HasValue )
             {
                 _isEntityTypeConfigured = true;
-                if (default(Guid) == entityTypeGuid) {
-                    _entityTypeId = default(int);
-                } else {
-                    _entityTypeId = CacheEntityType.Get(entityTypeGuid.Value).Id;
+                if ( default( Guid ) == entityTypeGuid )
+                {
+                    _entityTypeId = default( int );
+                }
+                else
+                {
+                    _entityTypeId = CacheEntityType.Get( entityTypeGuid.Value ).Id;
                 }
             }
             else
@@ -219,7 +222,7 @@ namespace RockWeb.Blocks.Core
                 BindFilterForSelectedEntityType();
                 BindGrid();
             }
-            
+
         }
 
         /// <summary>
@@ -236,9 +239,21 @@ namespace RockWeb.Blocks.Core
                 .AsDelimited( "," );
 
             rFilter.SaveUserPreference( "Categories", categoryFilterValue );
-            rFilter.SaveUserPreference( "Analytics Enabled", cbAnalyticsEnabled.Checked.ToString() );
+            rFilter.SaveUserPreference( "Analytics Enabled", ddlAnalyticsEnabled.SelectedValue );
+            rFilter.SaveUserPreference( "Active", ddlActiveFilter.SelectedValue );
 
             BindGrid();
+        }
+
+        /// <summary>
+        /// Handles the ClearFilterClick event of the rFilter control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void rFilter_ClearFilterClick( object sender, EventArgs e )
+        {
+            rFilter.DeleteUserPreferences();
+            BindFilter();
         }
 
         /// <summary>
@@ -276,16 +291,28 @@ namespace RockWeb.Blocks.Core
 
                 case "Analytics Enabled":
 
-                    if ( !cbAnalyticsEnabled.Visible )
+                    if ( !ddlAnalyticsEnabled.Visible )
                     {
                         e.Value = string.Empty;
                     }
                     else
                     {
-                        if ( e.Value.AsBoolean() )
-                        {
-                            e.Value = "Yes";
-                        }
+                        var filterValue = e.Value.AsBooleanOrNull();
+                        e.Value = filterValue.HasValue ? filterValue.Value.ToYesNo() : null;
+                    }
+
+                    break;
+
+                case "Active":
+
+                    if ( !ddlActiveFilter.Visible )
+                    {
+                        e.Value = string.Empty;
+                    }
+                    else
+                    {
+                        var filterValue = e.Value.AsBooleanOrNull();
+                        e.Value = filterValue.HasValue ? filterValue.Value.ToYesNo() : null;
                     }
 
                     break;
@@ -443,6 +470,11 @@ namespace RockWeb.Blocks.Core
                         lDefaultValue.Text = fieldType.Field.FormatValueAsHtml( lDefaultValue, attribute.EntityTypeId, _entityId, attribute.DefaultValue, attribute.QualifierValues, true );
                     }
                 }
+
+                if ( attribute.IsActive == false )
+                {
+                    e.Row.AddCssClass( "is-inactive" );
+                }
             }
         }
 
@@ -580,7 +612,7 @@ namespace RockWeb.Blocks.Core
         private void BindFilter()
         {
             ddlEntityType.Visible = !_isEntityTypeConfigured;
-            ddlEntityType.SelectedValue = rFilter.GetUserPreference( "Entity Type" );
+            ddlEntityType.SetValue( rFilter.GetUserPreference( "Entity Type" ) );
             BindFilterForSelectedEntityType();
         }
 
@@ -589,10 +621,11 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void BindFilterForSelectedEntityType()
         {
-
             var entityTypeCache = _isEntityTypeConfigured ? CacheEntityType.Get( _entityTypeId.Value ) : null;
-            cbAnalyticsEnabled.Visible = entityTypeCache != null && entityTypeCache.IsAnalyticsSupported( null, null );
-            cbAnalyticsEnabled.Checked = rFilter.GetUserPreference( "Analytics Enabled" ).AsBoolean();
+            ddlAnalyticsEnabled.Visible = entityTypeCache != null && entityTypeCache.IsAnalyticsSupported( null, null );
+            ddlAnalyticsEnabled.SetValue( rFilter.GetUserPreference( "Analytics Enabled" ) );
+
+            ddlActiveFilter.SetValue( rFilter.GetUserPreference( "Active" ) );
 
             BindCategoryFilter();
         }
@@ -630,10 +663,13 @@ namespace RockWeb.Blocks.Core
             AttributeService attributeService = new AttributeService( rockContext );
             if ( _entityTypeId.HasValue )
             {
-                if (_entityTypeId == default(int)) {
-                    query = attributeService.GetByEntityTypeId(null);
-                } else {
-                    query = attributeService.Get(_entityTypeId, _entityQualifierColumn, _entityQualifierValue);
+                if ( _entityTypeId == default( int ) )
+                {
+                    query = attributeService.GetByEntityTypeId( null, true );
+                }
+                else
+                {
+                    query = attributeService.GetByEntityTypeQualifier( _entityTypeId, _entityQualifierColumn, _entityQualifierValue, true );
                 }
             }
 
@@ -649,9 +685,22 @@ namespace RockWeb.Blocks.Core
                 catch { }
             }
 
-            if ( cbAnalyticsEnabled.Visible && cbAnalyticsEnabled.Checked )
+            if ( ddlAnalyticsEnabled.Visible )
             {
-                query = query.Where( a => a.IsAnalytic || a.IsAnalyticHistory );
+                var filterValue = ddlAnalyticsEnabled.SelectedValue.AsBooleanOrNull();
+                if ( filterValue.HasValue )
+                {
+                    query = query.Where( a => ( a.IsAnalytic || a.IsAnalyticHistory ) == filterValue );
+                }
+            }
+
+            if ( ddlActiveFilter.Visible )
+            {
+                var filterValue = ddlActiveFilter.SelectedValue.AsBooleanOrNull();
+                if ( filterValue.HasValue )
+                {
+                    query = query.Where( a => a.IsActive == filterValue );
+                }
             }
 
             var selectedCategoryIds = new List<int>();
@@ -727,11 +776,11 @@ namespace RockWeb.Blocks.Core
             }
 
             Type type = null;
-            if ( attributeModel.EntityTypeId.HasValue && attributeModel.EntityTypeId > 0)
+            if ( attributeModel.EntityTypeId.HasValue && attributeModel.EntityTypeId > 0 )
             {
                 type = CacheEntityType.Get( attributeModel.EntityTypeId.Value ).GetEntityType();
             }
-            edtAttribute.ReservedKeyNames = attributeService.Get( attributeModel.EntityTypeId, attributeModel.EntityTypeQualifierColumn, attributeModel.EntityTypeQualifierValue )
+            edtAttribute.ReservedKeyNames = attributeService.GetByEntityTypeQualifier( attributeModel.EntityTypeId, attributeModel.EntityTypeQualifierColumn, attributeModel.EntityTypeQualifierValue, true )
                  .Where( a => a.Id != attributeId )
                  .Select( a => a.Key )
                  .Distinct()

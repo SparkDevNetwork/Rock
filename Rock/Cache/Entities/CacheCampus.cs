@@ -41,7 +41,7 @@ namespace Rock.Cache
         ///   <c>true</c> if this instance is system; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsSystem { get; set; }
+        public bool IsSystem { get; private set; }
 
         /// <summary>
         /// Gets or sets the name.
@@ -50,7 +50,7 @@ namespace Rock.Cache
         /// The name.
         /// </value>
         [DataMember]
-        public string Name { get; set; }
+        public string Name { get; private set; }
 
         /// <summary>
         /// Gets or sets the description.
@@ -59,7 +59,7 @@ namespace Rock.Cache
         /// The description.
         /// </value>
         [DataMember]
-        public string Description { get; set; }
+        public string Description { get; private set; }
 
         /// <summary>
         /// Gets or sets the is active.
@@ -68,7 +68,7 @@ namespace Rock.Cache
         /// The is active.
         /// </value>
         [DataMember]
-        public bool? IsActive { get; set; }
+        public bool? IsActive { get; private set; }
 
         /// <summary>
         /// Gets or sets the short code.
@@ -77,7 +77,7 @@ namespace Rock.Cache
         /// The short code.
         /// </value>
         [DataMember]
-        public string ShortCode { get; set; }
+        public string ShortCode { get; private set; }
 
         /// <summary>
         /// Gets or sets the URL.
@@ -86,7 +86,7 @@ namespace Rock.Cache
         /// The URL.
         /// </value>
         [DataMember]
-        public string Url { get; set; }
+        public string Url { get; private set; }
 
         /// <summary>
         /// Gets or sets the location identifier.
@@ -95,7 +95,7 @@ namespace Rock.Cache
         /// The location identifier.
         /// </value>
         [DataMember]
-        public int? LocationId { get; set; }
+        public int? LocationId { get; private set; }
 
         /// <summary>
         /// Gets or sets the time zone identifier (<see cref="System.TimeZoneInfo.Id"/>)
@@ -105,7 +105,7 @@ namespace Rock.Cache
         /// The time zone identifier. 
         /// </value>
         [DataMember]
-        public string TimeZoneId { get; set; }
+        public string TimeZoneId { get; private set; }
 
         /// <summary>
         /// Gets or sets the location.
@@ -114,7 +114,7 @@ namespace Rock.Cache
         /// The location.
         /// </value>
         [DataMember]
-        public CampusLocation Location { get; set; }
+        public CampusLocation Location { get; private set; }
 
         /// <summary>
         /// Gets or sets the phone number.
@@ -123,7 +123,7 @@ namespace Rock.Cache
         /// The phone number.
         /// </value>
         [DataMember]
-        public string PhoneNumber { get; set; }
+        public string PhoneNumber { get; private set; }
 
         /// <summary>
         /// Gets or sets the leader person alias identifier.
@@ -132,7 +132,7 @@ namespace Rock.Cache
         /// The leader person alias identifier.
         /// </value>
         [DataMember]
-        public int? LeaderPersonAliasId { get; set; }
+        public int? LeaderPersonAliasId { get; private set; }
 
         /// <summary>
         /// Gets or sets the service times.
@@ -141,7 +141,7 @@ namespace Rock.Cache
         /// The service times.
         /// </value>
         [DataMember]
-        public string RawServiceTimes { get; set; }
+        public string RawServiceTimes { get; private set; }
 
         /// <summary>
         /// Gets the service times.
@@ -245,7 +245,7 @@ namespace Rock.Cache
             /// <value>
             /// The day.
             /// </value>
-            public string Day { get; set; }
+            public string Day { get; internal set; }
 
             /// <summary>
             /// Gets or sets the time.
@@ -253,7 +253,7 @@ namespace Rock.Cache
             /// <value>
             /// The time.
             /// </value>
-            public string Time { get; set; }
+            public string Time { get; internal set; }
         }
 
         /// <summary>
@@ -268,7 +268,7 @@ namespace Rock.Cache
             /// <value>
             /// The street1.
             /// </value>
-            public string Street1 { get; set; }
+            public string Street1 { get; private set; }
 
             /// <summary>
             /// Gets or sets the street2.
@@ -276,7 +276,7 @@ namespace Rock.Cache
             /// <value>
             /// The street2.
             /// </value>
-            public string Street2 { get; set; }
+            public string Street2 { get; private set; }
 
             /// <summary>
             /// Gets or sets the city.
@@ -284,7 +284,7 @@ namespace Rock.Cache
             /// <value>
             /// The city.
             /// </value>
-            public string City { get; set; }
+            public string City { get; private set; }
 
             /// <summary>
             /// Gets or sets the state.
@@ -292,7 +292,7 @@ namespace Rock.Cache
             /// <value>
             /// The state.
             /// </value>
-            public string State { get; set; }
+            public string State { get; private set; }
 
             /// <summary>
             /// Gets or sets the postal code.
@@ -300,7 +300,7 @@ namespace Rock.Cache
             /// <value>
             /// The postal code.
             /// </value>
-            public string PostalCode { get; set; }
+            public string PostalCode { get; private set; }
 
             /// <summary>
             /// Gets or sets the country.
@@ -308,7 +308,7 @@ namespace Rock.Cache
             /// <value>
             /// The country.
             /// </value>
-            public string Country { get; set; }
+            public string Country { get; private set; }
 
             /// <summary>
             /// Gets or sets the latitude.
@@ -316,7 +316,7 @@ namespace Rock.Cache
             /// <value>
             /// The latitude.
             /// </value>
-            public double? Latitude { get; set; }
+            public double? Latitude { get; private set; }
 
             /// <summary>
             /// Gets or sets the longitude.
@@ -324,7 +324,7 @@ namespace Rock.Cache
             /// <value>
             /// The longitude.
             /// </value>
-            public double? Longitude { get; set; }
+            public double? Longitude { get; private set; }
 
             /// <summary>
             /// Gets or sets the URL for the image.
@@ -332,7 +332,7 @@ namespace Rock.Cache
             /// <value>
             /// The image url.
             /// </value>
-            public string ImageUrl { get; set; }
+            public string ImageUrl { get; private set; }
 
             /// <summary>
             /// Initializes a new instance of the <see cref="CampusLocation"/> class.

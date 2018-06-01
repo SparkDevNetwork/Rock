@@ -42,6 +42,13 @@ namespace Rock.Cache
         /// </value>
         public List<EntityNoteTypes> EntityNoteTypes { get; set; }
 
+        /// <summary>
+        /// Use Static Get() method to instantiate a new Global Attributes object
+        /// </summary>
+        private CacheEntityNoteTypes()
+        {
+        }
+
         #region Public Methods
 
         /// <summary>

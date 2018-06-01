@@ -78,7 +78,11 @@ public class SafeDirectoryCatalog : ComposablePartCatalog
             }
             catch ( ReflectionTypeLoadException e )
             {
-                // TODO: Add error logging
+                foreach ( var loaderException in e.LoaderExceptions )
+                {
+                    Rock.Model.ExceptionLogService.LogException( new Exception( "Unable to load MEF from " + file, loaderException ) );
+                }
+
                 string msg = e.Message;
             }
         }

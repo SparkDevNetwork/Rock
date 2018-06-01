@@ -232,7 +232,7 @@ namespace Rock.Web.UI.Controls
         private TextBox _tbState;
         private DropDownList _ddlState;
         private TextBox _tbPostalCode;
-        private DropDownList _ddlCountry;
+        private RockDropDownList _ddlCountry;
 
         #endregion
 
@@ -576,7 +576,8 @@ namespace Rock.Web.UI.Controls
             _tbPostalCode.ID = "tbPostalCode";
             _tbPostalCode.CssClass = "form-control";
 
-            _ddlCountry = new DropDownList();
+            _ddlCountry = new RockDropDownList();
+            _ddlCountry.EnhanceForLongLists = true;
             Controls.Add( _ddlCountry );
             _ddlCountry.ID = "ddlCountry";
             _ddlCountry.DataValueField = "Id";

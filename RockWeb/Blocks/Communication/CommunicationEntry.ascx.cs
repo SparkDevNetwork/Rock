@@ -1148,16 +1148,32 @@ namespace RockWeb.Blocks.Communication
             var template = new CommunicationTemplateService( new RockContext() ).Get( templateId );
             if ( template != null )
             {
+                // save what was entered for FromEmail and FromName in case the template blanks it out
+                var enteredFromEmail = CommunicationData.FromEmail;
+                var enteredFromName = CommunicationData.FromName;
+
                 // copy all communication details from the Template to CommunicationData
                 CommunicationDetails.Copy( template, CommunicationData );
 
+                // if the FromName was cleared by the template, use the one that was there before the template was changed (similar logic to CommunicationEntryWizard)
+                // Otherwise, if the template does have a FromName, we want to template's FromName to overwrite it (which CommunicationDetails.Copy already did)
+                if ( CommunicationData.FromName.IsNullOrWhiteSpace() )
+                {
+                    CommunicationData.FromName = enteredFromName;
+                }
+
+                // if the FromEmail was cleared by the template, use the one that was there before the template was changed (similar logic to CommunicationEntryWizard)
+                // Otherwise, if the template does have a FromEmail, we want to template's fromemail to overwrite it (which CommunicationDetails.Copy already did)
+                if ( CommunicationData.FromEmail.IsNullOrWhiteSpace() )
+                {
+                    CommunicationData.FromEmail = enteredFromEmail;
+                }
+
                 CommunicationData.EmailAttachmentBinaryFileIds = template.EmailAttachmentBinaryFileIds;
+
                 if ( loadControl )
                 {
                     var mediumControl = LoadMediumControl( true );
-
-                    // InitializeFromSender will set the FromName, FromEmail etc if the template cleared out the values for those fields (similar logic is used in the CommunicationEntryWizard)
-                    mediumControl.InitializeFromSender( CurrentPerson );
                 }
             }
         }

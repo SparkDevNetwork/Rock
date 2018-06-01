@@ -229,7 +229,9 @@ namespace Rock.Workflow.Action
 
                 if ( locationUpdated  )
                 {
-                    var groupChanges = new List<string> { string.Format( "<em>(Location was updated by the '{0}' workflow)</em>", action.ActionTypeCache.ActivityType.WorkflowType.Name ) };
+                    var groupChanges = new History.HistoryChangeList();
+                    groupChanges.AddChange( History.HistoryVerb.Modify, History.HistoryChangeType.Record, "Location" ).SourceOfChange = $"{action.ActionTypeCache.ActivityType.WorkflowType.Name} workflow";
+
                     foreach ( var fm in family.Members )
                     {
                         HistoryService.SaveChanges(

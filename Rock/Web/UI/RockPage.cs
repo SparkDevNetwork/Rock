@@ -883,8 +883,17 @@ namespace Rock.Web.UI
                         // If not authorized, and the user has logged in, redirect to error page
                         Page.Trace.Warn( "Redirecting to error page" );
 
-                        Response.Redirect( "~/Error.aspx?type=security", false );
-                        Context.ApplicationInstance.CompleteRequest();
+                        if ( Site != null && !string.IsNullOrWhiteSpace( Site.ErrorPage ) )
+                        {
+                            Context.Response.Redirect( string.Format( "{0}?type=security", Site.ErrorPage.TrimEnd( new char[] { '/' } ) ), false );
+                            Context.ApplicationInstance.CompleteRequest();
+                            return;
+                        }
+                        else
+                        {
+                            Response.Redirect( "~/Error.aspx?type=security", false );
+                            Context.ApplicationInstance.CompleteRequest();
+                        }
                     }
                 }
                 else
@@ -1170,7 +1179,7 @@ namespace Rock.Web.UI
                                                 .ToList()
                                                 .ForEach( b => b.ReloadAttributeValues() );
                                         }
-                                        block.BlockType.IsInstancePropertiesVerified = true;
+                                        block.BlockType.MarkInstancePropertiesVerified( true );
                                     }
 
                                 }
@@ -2240,14 +2249,14 @@ Sys.Application.add_load(function () {
             // Add Zone Wrappers
             foreach ( KeyValuePair<string, KeyValuePair<string, Zone>> zoneControl in this.Zones )
             {
-                Control control = zoneControl.Value.Value;
+                var control = zoneControl.Value.Value;
                 Control parent = zoneControl.Value.Value.Parent;
 
                 HtmlGenericControl zoneWrapper = new HtmlGenericControl( "div" );
                 parent.Controls.AddAt( parent.Controls.IndexOf( control ), zoneWrapper );
                 zoneWrapper.ID = string.Format( "zone-{0}", zoneControl.Key.ToLower() );
                 zoneWrapper.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                zoneWrapper.Attributes.Add( "class", "zone-instance" + ( canConfigPage ? " can-configure" : "" ) );
+                zoneWrapper.Attributes.Add( "class", ("zone-instance" + ( canConfigPage ? " can-configure " : " " ) + control.CssClass).Trim() );
 
                 if ( canConfigPage )
                 {

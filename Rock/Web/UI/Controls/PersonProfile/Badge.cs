@@ -20,6 +20,7 @@ using Rock;
 using Rock.Model;
 using Rock.PersonProfile;
 using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -109,22 +110,33 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the server control content.</param>
         protected override void Render( HtmlTextWriter writer )
         {
-            if (PersonBadge != null)
-            { 
-                var badgeComponent = PersonBadge.BadgeComponent;
-                if ( badgeComponent != null )
+            var badgeComponent = PersonBadge?.BadgeComponent;
+            if ( badgeComponent != null )
+            {
+                var personBlock = ParentPersonBlock;
+                if ( personBlock != null )
                 {
-                    var personBlock = ParentPersonBlock;
-                    if ( personBlock != null )
+                    badgeComponent.ParentPersonBlock = personBlock;
+                    badgeComponent.Person = personBlock.Person;
+
+                    var badgeComponentModern = badgeComponent as BadgeComponentModern;
+                    if (badgeComponentModern != null)
                     {
-                        badgeComponent.ParentPersonBlock = personBlock;
-                        badgeComponent.Person = personBlock.Person;
-                        badgeComponent.Render( PersonBadge, writer );
+                        badgeComponentModern.Render( PersonBadge, writer);
+                    }
+                    else
+                    {
+                        // NOTE: this call to the obsolete Render() method is needed due to custom plugin badges that may still be 
+                        // using the obsolete Render() method. This is needed in V8 so that it is not a breaking change.
+                        // it can be removed after V8.
+                        #pragma warning disable 0618
+                        badgeComponent.Render( PersonBadgeCache.Read( PersonBadge.Id ), writer );
+                        #pragma warning restore 0618
                     }
                 }
             }
 
-            string script = "$('.badge[data-toggle=\"tooltip\"]').tooltip({html: true}); $('.badge[data-toggle=\"popover\"]').popover();";
+            const string script = "$('.badge[data-toggle=\"tooltip\"]').tooltip({html: true}); $('.badge[data-toggle=\"popover\"]').popover();";
             ScriptManager.RegisterStartupScript( this, this.GetType(), "badge-popover", script, true );
 
         }

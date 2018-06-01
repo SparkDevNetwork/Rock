@@ -221,17 +221,30 @@ namespace Rock
         #region HtmlControl Extensions
 
         /// <summary>
-        /// Adds a CSS class name to an html control.
+        /// Adds a CSS class name to an html control, will not add duplicates.
         /// </summary>
         /// <param name="htmlControl">The html control.</param>
         /// <param name="className">Name of the class.</param>
         public static void AddCssClass( this System.Web.UI.HtmlControls.HtmlControl htmlControl, string className )
         {
-            string match = @"\b" + className + "\b";
+            if ( className.IsNullOrWhiteSpace() )
+            {
+                return;
+            }
+
             string css = htmlControl.Attributes["class"] ?? string.Empty;
 
-            if ( !Regex.IsMatch( css, match, RegexOptions.IgnoreCase ) )
-                htmlControl.Attributes["class"] = Regex.Replace( css + " " + className, @"^\s+", "", RegexOptions.IgnoreCase );
+            if ( css.IsNullOrWhiteSpace() )
+            {
+                htmlControl.Attributes["class"] = className;
+                return;
+            }
+
+            string pattern = $"\\b{className}\\b";
+            if ( !Regex.IsMatch( css, pattern, RegexOptions.IgnoreCase ) )
+            {
+                htmlControl.Attributes["class"] += $" {className}";
+            }
         }
 
         /// <summary>
@@ -241,11 +254,16 @@ namespace Rock
         /// <param name="className">Name of the class.</param>
         public static void RemoveCssClass( this System.Web.UI.HtmlControls.HtmlControl htmlControl, string className )
         {
-            string match = @"\s*\b" + className + @"\b";
+            if (className.IsNullOrWhiteSpace() || htmlControl.Attributes["class"].IsNullOrWhiteSpace() )
+            {
+                return;
+            }
+
+            string match = $"\\s*\\b{className}\\b";
             string css = htmlControl.Attributes["class"] ?? string.Empty;
 
-            if ( Regex.IsMatch( css, match, RegexOptions.IgnoreCase ) )
-                htmlControl.Attributes["class"] = Regex.Replace( css, match, "", RegexOptions.IgnoreCase );
+            //the internals of regex.replace do a match before trying a replace. https://referencesource.microsoft.com/#System/regex/system/text/regularexpressions/RegexReplacement.cs,261
+            htmlControl.Attributes["class"] = Regex.Replace( css, match, "", RegexOptions.IgnoreCase );
         }
 
         #endregion HtmlControl Extensions

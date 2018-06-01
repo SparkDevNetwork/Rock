@@ -38,7 +38,6 @@ namespace Rock.Attribute
     /// </summary>
     public static class Helper
     {
-
         /// <summary>
         /// Updates the attributes.
         /// </summary>
@@ -139,7 +138,7 @@ namespace Rock.Attribute
                     // if the entity is a block that implements IDynamicAttributesBlock, don't delete the attribute
                     if ( !dynamicAttributesBlock )
                     {
-                        foreach ( var a in attributeService.Get( entityTypeId, entityQualifierColumn, entityQualifierValue ).ToList() )
+                        foreach ( var a in attributeService.GetByEntityTypeQualifier( entityTypeId, entityQualifierColumn, entityQualifierValue, true ).ToList() )
                         {
                             if ( !existingKeys.Contains( a.Key ) )
                             {
@@ -712,7 +711,7 @@ namespace Rock.Attribute
         {
             if ( entity != null )
             {
-                var attributes = entity.Attributes.Select( a => a.Value );
+                var attributes = entity.Attributes.Select( a => a.Value ).Where( a => a.IsActive );
                 if ( !supressOrdering )
                 {
                     attributes = attributes.OrderBy(t => t.EntityTypeQualifierValue).ThenBy( t => t.Order ).ThenBy( t => t.Name );
@@ -886,6 +885,38 @@ namespace Rock.Attribute
             edtAttribute.GetAttributeProperties( newAttribute );
 
             return SaveAttributeEdits( newAttribute, entityTypeId, entityTypeQualifierColumn, entityTypeQualifierValue, rockContext );
+        }
+
+        /// <summary>
+        /// Saves the attribute edits.
+        /// </summary>
+        /// <param name="attributes">The attributes.</param>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
+        /// <param name="entityTypeQualifierValue">The entity type qualifier value.</param>
+        /// <param name="rockContext">The rock context.</param>
+        public static void SaveAttributeEdits( List<Rock.Model.Attribute> attributes, int? entityTypeId, string entityTypeQualifierColumn, string entityTypeQualifierValue, RockContext rockContext = null )
+        {
+            // Get the existing attributes for this entity type and qualifier value
+            var attributeService = new AttributeService( rockContext );
+            var existingAttributes = attributeService.GetByEntityTypeQualifier( entityTypeId, entityTypeQualifierColumn, entityTypeQualifierValue, true );
+
+            // Delete any of those attributes that don't exist in the specified attributes
+            var selectedAttributeGuids = attributes.Select( a => a.Guid );
+            foreach ( var attr in existingAttributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
+            {
+                attributeService.Delete( attr );
+                rockContext.SaveChanges();
+                CacheAttribute.Remove( attr.Id );
+            }
+
+            // Update the Attributes that were assigned in the UI
+            foreach ( var attribute in attributes )
+            {
+                Helper.SaveAttributeEdits( attribute, entityTypeId, entityTypeQualifierColumn, entityTypeQualifierValue, rockContext );
+            }
+
+            CacheAttribute.RemoveEntityAttributes();
         }
 
         /// <summary>
@@ -1112,6 +1143,24 @@ namespace Rock.Attribute
                     model.AttributeValues[attribute.Key] = new Rock.Web.Cache.AttributeValueCache( attributeValue );
                 }
             }
+        }
+
+        /// <summary>
+        /// Saves an attribute value.
+        /// </summary>
+        /// <param name="model">The model.</param>
+        /// <param name="attribute">The attribute.</param>
+        /// <param name="newValue">The new value.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <remarks>
+        /// If a rockContext value is included, this method will save any previous changes made to the context
+        /// </remarks>
+        [Obsolete]
+        public static void SaveAttributeValue(Rock.Data.IHasAttributes model, Web.Cache.AttributeCache attribute, string newValue, RockContext rockContext = null)
+        {
+            if (attribute == null) return;
+            var newAttribute = CacheAttribute.Get( attribute.Id );
+            SaveAttributeValue( model, newAttribute, newValue, rockContext );
         }
 
         /// <summary>
@@ -1434,11 +1483,12 @@ namespace Rock.Attribute
             {
                 foreach ( var attributeCategory in GetAttributeCategories( item, false, false, supressOrdering ) )
                 {
-                    if ( attributeCategory.Attributes.Where( a => !exclude.Contains( a.Name ) && !exclude.Contains( a.Key ) ).Select( a => a.Key ).Count() > 0 )
+                    var attributeCategoryCacheAttributes = attributeCategory.Attributes.Select( a => CacheAttribute.Get( a.Id ) ).ToList();
+                    if ( attributeCategoryCacheAttributes.Where( a => a.IsActive ).Where( a => !exclude.Contains( a.Name ) && !exclude.Contains( a.Key ) ).Select( a => a.Key ).Count() > 0 )
                     {
                         AddEditControls(
                             attributeCategory.Category != null ? attributeCategory.Category.Name : string.Empty,
-                            attributeCategory.Attributes.Select( a => a.Key ).ToList(),
+                            attributeCategoryCacheAttributes.Where( a => a.IsActive ).Select( a => a.Key ).ToList(),
                             item, parentControl, validationGroup, setValue, exclude, numberOfColumns );
                     }
                 }
@@ -1461,11 +1511,11 @@ namespace Rock.Attribute
             {
                 foreach ( var attributeCategory in GetAttributeCategories( item, false, false, supressOrdering ) )
                 {
-                    if ( attributeCategory.Attributes.Where( a => !exclude.Contains( a.Name ) && !exclude.Contains( a.Key ) ).Select( a => a.Key ).Count() > 0 )
+                    if ( attributeCategory.Attributes.Where( a => a.IsActive ).Where( a => !exclude.Contains( a.Name ) && !exclude.Contains( a.Key ) ).Select( a => a.Key ).Count() > 0 )
                     {
                         AddEditControls(
                             attributeCategory.Category != null ? attributeCategory.Category.Name : string.Empty,
-                            attributeCategory.Attributes.Select( a => a.Key ).ToList(),
+                            attributeCategory.Attributes.Where( a => a.IsActive ).Select( a => a.Key ).ToList(),
                             item, parentControl, validationGroup, setValue, exclude, numberOfColumns );
                     }
                 }
@@ -1647,7 +1697,7 @@ namespace Rock.Attribute
             {
                 var attribute = item.Attributes[key];
 
-                if ( !exclude.Contains( attribute.Name ) && !exclude.Contains( attribute.Key ) )
+                if ( attribute.IsActive && !exclude.Contains( attribute.Name ) && !exclude.Contains( attribute.Key ) )
                 {
                     // Add the control for editing the attribute value
 
@@ -1738,7 +1788,7 @@ namespace Rock.Attribute
                 HtmlGenericControl dl = new HtmlGenericControl( "dl" );
                 parentControl.Controls.Add( dl );
 
-                foreach ( var attribute in attributeCategory.Attributes )
+                foreach ( var attribute in attributeCategory.Attributes.Where( a => CacheAttribute.Get( a.Id ).IsActive ) )
                 {
                     if ( exclude == null || ( !exclude.Contains( attribute.Name ) && !exclude.Contains( attribute.Key ) ) )
                     {
@@ -1798,7 +1848,7 @@ namespace Rock.Attribute
                 HtmlGenericControl dl = new HtmlGenericControl( "dl" );
                 parentControl.Controls.Add( dl );
 
-                foreach ( var attribute in attributeCategory.Attributes )
+                foreach ( var attribute in attributeCategory.Attributes.Where( a => CacheAttribute.Get( a.Id ).IsActive ) )
                 {
                     if ( exclude == null || ( !exclude.Contains( attribute.Name ) && !exclude.Contains( attribute.Key ) ) )
                     {

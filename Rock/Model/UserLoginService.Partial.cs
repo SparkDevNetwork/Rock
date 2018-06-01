@@ -20,10 +20,10 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Security;
-
-using Rock.Data;
 using Rock.Cache;
+using Rock.Data;
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -346,7 +346,7 @@ namespace Rock.Model
                     var historyCategory = CacheCategory.Get( Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid(), rockContext );
                     if ( historyCategory != null )
                     {
-                        var changes = new List<string>();
+                        var changes = new History.HistoryChangeList();
                         History.EvaluateChange( changes, "User Login", string.Empty, username );
                         HistoryService.SaveChanges( rockContext, typeof( Person ), historyCategory.Guid, person.Id, changes );
                     }
@@ -418,20 +418,21 @@ namespace Rock.Model
 
                     if ( personId.HasValue )
                     {
-                        var summary = new System.Text.StringBuilder();
+                        var relatedDataBuilder = new System.Text.StringBuilder();
+                        int? relatedEntityTypeId = null;
+                        int? relatedEntityId = null;
+
                         if ( impersonated )
                         {
-                            summary.Append( "Impersonated user logged in" );
-
                             var impersonatedByUser = HttpContext.Current?.Session["ImpersonatedByUser"] as UserLogin;
+
+                            relatedEntityTypeId = CacheEntityType.GetId<Rock.Model.Person>();
+                            relatedEntityId = impersonatedByUser?.PersonId;
+                            
                             if ( impersonatedByUser != null )
                             {
-                                summary.Append( $" ( impersonated by { impersonatedByUser.Person.FullName } ) " );
+                                relatedDataBuilder.Append( $" impersonated by { impersonatedByUser.Person.FullName }" );
                             }
-                        }
-                        else
-                        {
-                            summary.AppendFormat( "User logged in with <span class='field-name'>{0}</span> username", userName );
                         }
                         
                         if ( HttpContext.Current != null && HttpContext.Current.Request != null )
@@ -442,27 +443,20 @@ namespace Rock.Model
                             Regex returnurlRegEx = new Regex( @"returnurl=([^&]*)" );
                             cleanUrl = returnurlRegEx.Replace( cleanUrl, "returnurl=XXXXXXXXXXXXXXXXXXXXXXXXXXXX" );
 
-                            summary.AppendFormat( ", to <span class='field-value'>{0}</span>, from <span class='field-value'>{1}</span>",
+                            relatedDataBuilder.AppendFormat( " to <span class='field-value'>{0}</span>, from <span class='field-value'>{1}</span>",
                                 cleanUrl, HttpContext.Current.Request.UserHostAddress );
                         }
 
-                        summary.Append( "." );
+                        var historyChangeList = new History.HistoryChangeList();
+                        var historyChange = historyChangeList.AddChange( History.HistoryVerb.Login, History.HistoryChangeType.Record, userName );
 
-                        var historyService = new HistoryService( rockContext );
-                        var personEntityTypeId = CacheEntityType.Get( "Rock.Model.Person" ).Id;
-                        var activityCategoryId = CacheCategory.Get( Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid(), rockContext ).Id;
-
-                        historyService.Add( new History
+                        if ( relatedDataBuilder.Length > 0 )
                         {
-                            EntityTypeId = personEntityTypeId,
-                            CategoryId = activityCategoryId,
-                            EntityId = personId.Value,
-                            Summary = summary.ToString(),
-                            Verb = "LOGIN"
-                        } );
-                    }
+                            historyChange.SetRelatedData( relatedDataBuilder.ToString(), null, null );
+                        }
 
-                    rockContext.SaveChanges();
+                        HistoryService.SaveChanges( rockContext, typeof( Rock.Model.Person ), Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid(), personId.Value, historyChangeList, true );
+                    }
                 }
             }
         }

@@ -216,28 +216,36 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                             formattedAge += " old";
                         }
 
-                        lAge.Text = string.Format( "{0} <small>({1})</small><br/>", formattedAge, ( Person.BirthYear.HasValue && Person.BirthYear != DateTime.MinValue.Year ) ? Person.BirthDate.Value.ToShortDateString() : Person.BirthDate.Value.ToMonthDayString() );
+                        lAge.Text = string.Format( "<dd>{0} <small>({1})</small></dd>", formattedAge, ( Person.BirthYear.HasValue && Person.BirthYear != DateTime.MinValue.Year ) ? Person.BirthDate.Value.ToShortDateString() : Person.BirthDate.Value.ToMonthDayString() );
                     }
 
-                    lGender.Text = Person.Gender.ToString();
+                    lGender.Text = string.Format( "<dd>{0}</dd>", Person.Gender.ToString() );
 
                     if ( GetAttributeValue( "DisplayGraduation" ).AsBoolean() )
                     {
                         if ( Person.GraduationYear.HasValue && Person.HasGraduated.HasValue )
                         {
                             lGraduation.Text = string.Format(
-                                "<small>({0} {1})</small>",
+                                "<dd><small>{0} {1}</small></dd>",
                                 Person.HasGraduated.Value ? "Graduated " : "Graduates ",
                                 Person.GraduationYear.Value );
                         }
                         lGrade.Text = Person.GradeFormatted;
                     }
 
-                    lMaritalStatus.Text = Person.MaritalStatusValueId.DefinedValue();
                     if ( Person.AnniversaryDate.HasValue && GetAttributeValue("DisplayAnniversaryDate").AsBoolean() )
                     {
-                        lAnniversary.Text = string.Format( "{0} yrs <small>({1})</small>", Person.AnniversaryDate.Value.Age(), Person.AnniversaryDate.Value.ToMonthDayString() );
+                        lMaritalStatus.Text = string.Format( "<dd>{0}",  Person.MaritalStatusValueId.DefinedValue() );
+                        lAnniversary.Text = string.Format( "{0} yrs <small>({1})</small></dd>", Person.AnniversaryDate.Value.Age(), Person.AnniversaryDate.Value.ToMonthDayString() );
                     }
+                    else
+                    {
+                        if ( Person.MaritalStatusValueId.HasValue )
+                        {
+                        lMaritalStatus.Text = string.Format( "<dd>{0}</dd>",  Person.MaritalStatusValueId.DefinedValue() );
+                        }
+                    }
+
 
                     if ( Person.PhoneNumbers != null )
                     {

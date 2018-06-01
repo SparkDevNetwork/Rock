@@ -185,7 +185,7 @@ namespace Rock.Reporting
                 int entityTypeId = entityTypeCache.Id;
                 using ( var rockContext = new RockContext() )
                 {
-                    var qryAttributes = new AttributeService( rockContext ).Queryable().Where( a => a.EntityTypeId == entityTypeId );
+                    var qryAttributes = new AttributeService( rockContext ).GetByEntityTypeId( entityTypeId );
                     if ( entityType == typeof( Group ) || entityType == typeof( GroupMember ) )
                     {
                         // in the case of Group or GroupMember, show attributes that are entity global, but also ones that are qualified by GroupTypeId
@@ -221,11 +221,11 @@ namespace Rock.Reporting
                         qryAttributes = qryAttributes.Where( a => string.IsNullOrEmpty( a.EntityTypeQualifierColumn ) && string.IsNullOrEmpty( a.EntityTypeQualifierValue ) );
                     }
 
-                    var attributeIdList = qryAttributes.Select( a => a.Id ).ToList();
+                    var cacheAttributeList = qryAttributes.ToCacheAttributeList();
 
-                    foreach ( var attributeId in attributeIdList )
+                    foreach ( var attributeCache in cacheAttributeList )
                     {
-                        AddEntityFieldForAttribute( entityFields, CacheAttribute.Get( attributeId ), limitToFilterableFields );
+                        AddEntityFieldForAttribute( entityFields, attributeCache, limitToFilterableFields );
                     }
                 }
             }
@@ -363,7 +363,7 @@ namespace Rock.Reporting
             if ( fieldType != null && ( !limitToFilterableAttributes || fieldType.Field.HasFilterControl() ) )
             {
                 entityField = new EntityField( fieldName, FieldKind.Attribute, typeof( string ), attribute.Guid, fieldType );
-                entityField.Title = attribute.Name.SplitCase();
+                entityField.Title = attribute.Name;
                 entityField.TitleWithoutQualifier = entityField.Title;
 
                 foreach ( var config in attribute.QualifierValues )

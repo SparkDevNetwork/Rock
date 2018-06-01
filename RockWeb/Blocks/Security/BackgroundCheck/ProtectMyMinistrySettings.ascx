@@ -21,7 +21,7 @@
 
             <div class="panel-body">
 
-                <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
                 <Rock:NotificationBox ID="nbNotification" runat="server" Title="Please Correct the Following" NotificationBoxType="Danger" Visible="false" />
 
                 <div id="pnlNew" runat="server" class="row">
@@ -62,6 +62,7 @@
 
                     <div class="actions">
                         <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CssClass="btn btn-primary" OnClick="lbEdit_Click" />
+                        <asp:LinkButton ID="btnDefault" runat="server" CssClass="btn btn-primary" OnClick="btnDefault_Click">Enable As Default Background Check Provider</asp:LinkButton>
                     </div>
                 </div>
 
@@ -127,7 +128,7 @@
             <Content>
 
                 <asp:HiddenField ID="hfDefinedValueId" runat="server" />
-                <asp:ValidationSummary ID="valSummaryPackage" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="Package" />
+                <asp:ValidationSummary ID="valSummaryPackage" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" ValidationGroup="Package" />
 
                 <div class="row">
                     <div class="col-md-6">

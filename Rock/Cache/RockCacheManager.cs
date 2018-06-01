@@ -202,7 +202,18 @@ namespace Rock.Cache
         /// <returns></returns>
         public CacheItemStatistics GetStatistics()
         {
-            var cacheStatistics = new CacheItemStatistics( typeof( T ).Name );
+            //type.IsGenericType && type.GenericTypeArguments[0] == typeof( Rock.Model.Person );
+            var type = typeof( T );
+
+            string name = type.Name;
+            if( type.IsGenericType && type.GenericTypeArguments[0] != null )
+            {
+                name = type.GenericTypeArguments[0].ToString();
+            }
+
+            var cacheStatistics = new CacheItemStatistics( name );
+
+            //var cacheStatistics = new CacheItemStatistics( typeof( T ).Name );
 
             foreach ( var handle in Cache.CacheHandles )
             {

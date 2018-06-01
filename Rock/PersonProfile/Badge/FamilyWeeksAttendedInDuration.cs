@@ -38,7 +38,7 @@ namespace Rock.PersonProfile.Badge
     [ExportMetadata( "ComponentName", "Family Weeks Attended In Duration" )]
     
     [IntegerField("Duration", "The number of weeks to use for the duration (default 16.)", false, 16)]
-    public class FamilyWeeksAttendedInDuration : BadgeComponent
+    public class FamilyWeeksAttendedInDuration : BadgeComponentModern
     {        
         /// <summary>
         /// Renders the specified writer.

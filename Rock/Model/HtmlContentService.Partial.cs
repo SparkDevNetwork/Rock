@@ -161,10 +161,10 @@ namespace Rock.Model
         /// <param name="entityValue">The entity value.</param>
         /// <param name="html">The HTML.</param>
         /// <param name="cacheDuration">Duration of the cache.</param>
-        public static void AddCachedContent( int blockId, string entityValue, string html, int cacheDuration )
+        public static void AddCachedContent( int blockId, string entityValue, string html, int cacheDuration, string cacheTags )
         {
             var expiration = RockDateTime.Now.AddSeconds( cacheDuration );
-            RockCache.AddOrUpdate( HtmlContentCacheKey( blockId, entityValue ), string.Empty, html, expiration );
+            RockCache.AddOrUpdate( HtmlContentCacheKey( blockId, entityValue ), string.Empty, html, expiration, cacheTags );
         }
 
         /// <summary>

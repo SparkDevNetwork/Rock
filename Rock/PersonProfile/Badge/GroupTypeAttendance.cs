@@ -63,7 +63,7 @@ namespace Rock.PersonProfile.Badge
   <i class='badge-icon {{ groupIcon }}' style='color: {{ iconColor }}'></i>
 </div>
 " )]
-    public class GroupTypeAttendance : BadgeComponent
+    public class GroupTypeAttendance : BadgeComponentModern
     {
         /// <summary>
         /// Renders the specified writer.
@@ -92,9 +92,13 @@ namespace Rock.PersonProfile.Badge
 
                     var personAliasIds = Person.Aliases.Select( a => a.Id ).ToList();
 
-                    var attendanceQuery = new AttendanceService( rockContext ).Queryable().Where( a =>
-                        a.Group.GroupTypeId == groupTypeId && a.DidAttend == true
-                        && personAliasIds.Contains( a.PersonAliasId.Value ) );
+                    var attendanceQuery = new AttendanceService( rockContext )
+                        .Queryable()
+                        .Where( a =>
+                            a.Occurrence.Group != null &&
+                            a.Occurrence.Group.GroupTypeId == groupTypeId && 
+                            a.DidAttend == true && 
+                            personAliasIds.Contains( a.PersonAliasId.Value ) );
 
                     if ( dateRange.Start.HasValue )
                     {

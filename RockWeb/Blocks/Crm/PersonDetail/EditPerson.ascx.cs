@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [SecurityAction( "EditRecordStatus", "The roles and/or users that can edit the record status for the selected person." )]
     [BooleanField("Hide Grade", "Should the Grade (and Graduation Year) fields be hidden?", false, "", 0)]
     [BooleanField("Hide Anniversary Date", "Should the Anniversary Date field be hidden?", false, "", 1)]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_SEARCH_KEYS, "Search Types", "Optional list of search types to limit the display in Search Keys grid. No selection will show all.", false, true, "", "", 2 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_SEARCH_KEYS, "Search Key Types", "Optional list of search key types to limit the display in search keys grid. No selection will show all.", false, true, "", "", 2 )]
     public partial class EditPerson : Rock.Web.UI.PersonBlock
     {
         /// <summary>
@@ -679,7 +679,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             this.PersonPreviousNamesState = Person.GetPreviousNames().ToList();
              var searchTypeQry = Person.GetPersonSearchKeys();
 
-            var searchTypesList = this.GetAttributeValue( "SearchTypes" ).SplitDelimitedValues().AsGuidList();
+            var searchTypesList = this.GetAttributeValue( "SearchKeyTypes" ).SplitDelimitedValues().AsGuidList();
             if ( searchTypesList.Any() )
             {
                 searchTypeQry = searchTypeQry.Where( a => searchTypesList.Contains( a.SearchTypeValue.Guid ) );
@@ -731,7 +731,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             tbSearchValue.Text = string.Empty;
             var searchValueTypes = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_SEARCH_KEYS ).DefinedValues;
 
-            var searchTypesList = this.GetAttributeValue( "SearchTypes" ).SplitDelimitedValues().AsGuidList();
+            var searchTypesList = this.GetAttributeValue( "SearchKeyTypes" ).SplitDelimitedValues().AsGuidList();
             if ( searchTypesList.Any() )
             {
                 searchValueTypes = searchValueTypes.Where( a => searchTypesList.Contains( a.Guid ) ).ToList();

@@ -39,7 +39,7 @@ namespace Rock.PersonProfile.Badge
     [ExportMetadata( "ComponentName", "DISC" )]
 
     [LinkedPage( "DISC Result Detail", "Page to show the details of the DISC assessment results. If blank no link is created.", false )]
-    public class DISC : BadgeComponent
+    public class DISC : BadgeComponentModern
     {
         /// <summary>
         /// The max value of a Natural DISC score.

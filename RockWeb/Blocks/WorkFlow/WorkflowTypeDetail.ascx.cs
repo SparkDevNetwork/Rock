@@ -1325,7 +1325,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             {
                 var attributeService = new AttributeService( rockContext );
                 AttributesState = attributeService
-                    .GetByEntityTypeId( new Workflow().TypeId ).AsQueryable()
+                    .GetByEntityTypeId( new Workflow().TypeId, true ).AsQueryable()
                     .Where( a =>
                         a.EntityTypeQualifierColumn.Equals( "WorkflowTypeId", StringComparison.OrdinalIgnoreCase ) &&
                         a.EntityTypeQualifierValue.Equals( workflowType.Id.ToString() ) )
@@ -1339,7 +1339,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                 foreach ( var activityType in ActivityTypesState )
                 {
                     var activityTypeAttributes = attributeService
-                        .GetByEntityTypeId( new WorkflowActivity().TypeId ).AsQueryable()
+                        .GetByEntityTypeId( new WorkflowActivity().TypeId, true ).AsQueryable()
                         .Where( a =>
                             a.EntityTypeQualifierColumn.Equals( "ActivityTypeId", StringComparison.OrdinalIgnoreCase ) &&
                             a.EntityTypeQualifierValue.Equals( activityType.Id.ToString() ) )
@@ -1992,7 +1992,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
         {
             // Get the existing attributes for this entity type and qualifier value
             var attributeService = new AttributeService( rockContext );
-            var existingAttributes = attributeService.Get( entityTypeId, qualifierColumn, qualifierValue );
+            var existingAttributes = attributeService.GetByEntityTypeQualifier( entityTypeId, qualifierColumn, qualifierValue, true );
 
             // Delete any of those attributes that were removed in the UI
             var selectedAttributeGuids = attributes.Select( a => a.Guid );

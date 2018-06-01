@@ -18,7 +18,7 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-
+            /*
             // Fix for https://github.com/SparkDevNetwork/Rock/issues/2788
             Sql( @"UPDATE [CommunicationTemplate]
 SET [Message] = REPLACE([Message], 
@@ -73,6 +73,8 @@ WHERE [Message] LIKE '%<!-- prevent Gmail on iOS font size manipulation -->
 
             AddStickyHeaderToScheduleGrid();
 
+            FixTyposIssue2928();
+
             // Add Vimeo Short Code
             Sql( HotFixMigrationResource._050_MigrationRollupsForV7_4_AddVimeoShortCode );
 
@@ -86,8 +88,14 @@ WHERE [Message] LIKE '%<!-- prevent Gmail on iOS font size manipulation -->
 
             // Thank-you and on-going Are Hyphenated Unnecessarily #1711
             Sql( HotFixMigrationResource._050_MigrationRollupsForV7_4_FixThankyouAndOngoingHyphenations );
-        }
 
+            // Fix for #2722
+            UpdateGradeTransitionDateFieldType();
+
+            FixFamilyPreregistrationTitle();
+            
+            */
+        }
 
         /// <summary>
         /// The commands to undo a migration from a specific version
@@ -95,6 +103,29 @@ WHERE [Message] LIKE '%<!-- prevent Gmail on iOS font size manipulation -->
         public override void Down()
         {
             //
+        }
+
+        private void UpdateGradeTransitionDateFieldType()
+        {
+            RockMigrationHelper.UpdateFieldType( "Month Day", "", "Rock", "Rock.Field.Types.MonthDayFieldType", Rock.SystemGuid.FieldType.MONTH_DAY );
+
+            Sql( $@"
+DECLARE @FieldTypeIdMonthDay INT = (
+		SELECT TOP 1 Id
+		FROM FieldType
+		WHERE [Guid] = '{Rock.SystemGuid.FieldType.MONTH_DAY}'
+		)
+
+UPDATE Attribute
+SET FieldTypeId = @FieldTypeIdMonthDay
+	,[Description] = 'The date when kids are moved to the next grade level.'
+WHERE [Key] = 'GradeTransitionDate'
+	AND [EntityTypeId] IS NULL
+	AND (
+		FieldTypeId != @FieldTypeIdMonthDay
+		OR [Description] != 'The date when kids are moved to the next grade level.'
+		)
+" );
         }
 
         private void AddCheckinByGender()
@@ -195,6 +226,25 @@ WHERE [Message] LIKE '%<!-- prevent Gmail on iOS font size manipulation -->
 </ul>
 <p>Note: Due to the javascript requirements of this shortcode, you will need to do a full page reload before changes to the shortcode appear on your page.</p>'
                 WHERE [Guid] = '4B6452EF-6FEA-4A66-9FB9-1A7CCE82E7A4'" );
+        }
+
+        private void FixFamilyPreregistrationTitle()
+        {
+            Sql( @"
+    UPDATE [Page] SET 
+        [InternalName] = 'Family Pre-Registration'
+        ,[PageTitle] = 'Family Pre-Registration'
+        ,[BrowserTitle] = 'Family Pre-Registration'
+    WHERE [Guid] IN ( '3B31B9A2-DE35-4407-8E7D-3633F93906CD', 'B37D22BE-D2A8-4EFA-8B2B-2E0EFF6EDB44' )
+
+    UPDATE [BlockType] SET 
+        [Name] = 'Family Pre-Registration'
+    WHERE [Path] = '~/Blocks/Crm/FamilyPreRegistration.ascx'
+" );
+
+            RockMigrationHelper.AddPageRoute( "3B31B9A2-DE35-4407-8E7D-3633F93906CD", "FamilyPreRegistration", "F4EC3FCD-6410-44A9-B66B-A4BC207CA7DA" );// for Page:Family Pre-Registration
+            RockMigrationHelper.AddPageRoute( "B37D22BE-D2A8-4EFA-8B2B-2E0EFF6EDB44", "FamilyPreRegistrationSuccess", "3C39DF30-00B0-4096-B623-200A93D85CA9" );// for Page:Family Pre-Registration Success
+
         }
     }
 }

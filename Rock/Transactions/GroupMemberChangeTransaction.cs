@@ -115,19 +115,21 @@ namespace Rock.Transactions
                 // If any triggers exist
                 if ( cachedTriggers != null && cachedTriggers.Any() )
                 {
-                    // Get the triggers associated to the group 
+                    // Get the ACTIVE group member triggers associated to the group 
                     var groupTriggers = cachedTriggers
                         .Where( w =>
                             groupMemberWorkflowChangeTriggers.Contains( w.TriggerType ) &&
+                            w.IsActive &&
                             w.GroupId.HasValue &&
                             w.GroupId.Value == GroupId.Value )
                         .OrderBy( w => w.Order )
                         .ToList();
 
-                    // Get any triggers associated to a group type ( if any are found, will then filter by group type )
+                    // Get any ACTIVE triggers associated to a group type ( if any are found, will then filter by group type )
                     var groupTypeTriggers = cachedTriggers
                         .Where( w =>
                             groupMemberWorkflowChangeTriggers.Contains( w.TriggerType ) &&
+                            w.IsActive &&
                             w.GroupTypeId.HasValue )
                         .OrderBy( w => w.Order )
                         .ToList();
