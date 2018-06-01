@@ -328,7 +328,10 @@
   &-nested {
     > .note-list-nested {
       margin-left: 16px;
-      //margin-left: 44px;
+
+      @media @sm {
+        margin-left: 44px;
+      }
     }
   }
 }
@@ -336,10 +339,9 @@
 .note-list-nested {
   margin-left: 0;
 
-  > .note-list-nested {
-    margin-left: 8px;
+  @media @sm {
+    margin-left: 60px;
   }
-  //margin-left: 60px;
 
   > .note:first-child {
     border-top: 0;
