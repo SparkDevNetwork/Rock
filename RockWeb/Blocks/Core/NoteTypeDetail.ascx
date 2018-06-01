@@ -23,7 +23,6 @@
                         <Rock:EntityTypePicker ID="epEntityType" runat="server" Required="true" Label="Entity Type" IncludeGlobalOption="false" EnhanceForLongLists="true" />
                         <Rock:RockLiteral ID="lEntityTypeReadOnly" runat="server" Visible="false" Label="Entity Type" />
 
-                        <Rock:RockTextBox ID="tbCssClass" runat="server" Label="CSS Class" />
                         <Rock:RockTextBox ID="tbIconCssClass" runat="server" Label="Icon CSS Class" />
                         <Rock:ColorPicker ID="cpBackgroundColor" runat="server" Label="Background Color" />
                         <Rock:ColorPicker ID="cpFontColor" runat="server" Label="Font Color" />

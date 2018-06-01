@@ -475,10 +475,6 @@ namespace Rock.Web.UI.Controls
             var noteType = NoteTypeId.HasValue ? CacheNoteType.Get( NoteTypeId.Value ) : null;
             StringBuilder noteCss = new StringBuilder();
             noteCss.Append( "note-editor js-note-editor meta" );
-            if ( !string.IsNullOrEmpty( noteType?.CssClass ) )
-            {
-                noteCss.Append( " " + noteType.CssClass );
-            }
 
             if ( !string.IsNullOrEmpty( this.CssClass ) )
             {

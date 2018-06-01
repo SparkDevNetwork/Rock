@@ -78,7 +78,7 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
 {%- endif -%}
 
 <li class="note js-note {{ noteClass }}">
-    <article class="note-view-item js-noteviewitem {{ wrapperClass }}" {{ wrapperStyle }} data-note-id="{{ note.Id }}" id="{{ note.NoteAnchorId }}">
+    <article class="note-view-item js-noteviewitem {{ wrapperClass }}" {{ wrapperStyle }} data-note-id="{{ note.Id }}" data-notetype-id="{{ note.NoteTypeId }}" id="{{ note.NoteAnchorId }}">
         {% if note.IsAlert %} 
         <hgroup class="flag">
             Alert: {{ note.NoteType.Name }}
