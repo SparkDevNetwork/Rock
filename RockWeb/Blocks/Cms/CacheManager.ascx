@@ -37,7 +37,10 @@
                     <div class="col-md-6">
                         <h4>Cache Statistics</h4>
                         <Rock:RockDropDownList ID="ddlCacheTypes" runat="server" DataTextField="Name" DataValueField="Id" Label="Cache Types" OnSelectedIndexChanged="ddlCacheTypes_SelectedIndexChanged" AutoPostBack="true" />
-                        <asp:Literal ID="lCacheStatistics" runat="server"></asp:Literal>
+                        <table class="grid-table table table-condensed table-light">
+                            <thead><tr><td colspan="2"></td></tr><tr><th>Stat</th><th>Count</th></tr></thead>
+                            <asp:Literal ID="lCacheStatistics" runat="server" /><tr><td colspan="2"></td></tr>
+                        </table>
                     </div>
                 </div>
 
