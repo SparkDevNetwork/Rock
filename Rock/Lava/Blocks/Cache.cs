@@ -210,7 +210,7 @@ namespace Rock.Lava.Blocks
                 {
                     var expiration = RockDateTime.Now.AddSeconds( cacheDuration );
                     var cachedHash = CalculateContentHash( _blockMarkup.ToString() );
-                    RockCache.AddOrUpdate( cacheKey, string.Empty, new CacheLavaTag { Hash = cachedHash, Content = lavaResults }, expiration );
+                    RockCache.AddOrUpdate( cacheKey, string.Empty, new CacheLavaTag { Hash = cachedHash, Content = lavaResults }, expiration, parms["tags"] );
                 }
             }
 
