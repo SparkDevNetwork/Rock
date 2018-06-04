@@ -117,6 +117,24 @@ namespace Rock.Cache
                 .EnableStatistics()
                 .Build();
 
+            //var config = new ConfigurationBuilder( "InProcess With Redis Backplane" )
+            //    .WithJsonSerializer()
+            //    //.WithSystemRuntimeCacheHandle( "inProcessCache" )
+            //    .WithDictionaryHandle()
+            //    .And
+            //    .WithRedisConfiguration( "redis", redisConfig =>
+            //    {
+            //        redisConfig.WithAllowAdmin()
+            //                        .WithDatabase( 0 )
+            //                        .WithEndpoint( "192.168.1.152", 6379 );
+            //    } )
+            //    .WithMaxRetries( 1000 )
+            //    .WithRetryTimeout( 100 )
+            //    .WithRedisBackplane( "redis" )
+            //    .WithRedisCacheHandle( "redis", true )
+            //    .EnableStatistics()
+            //    .Build();
+
             return config;
         }
 
