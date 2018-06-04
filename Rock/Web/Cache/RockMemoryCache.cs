@@ -164,11 +164,15 @@ namespace Rock.Web.Cache
             _isCachingDisabled = ConfigurationManager.AppSettings["DisableCaching"].AsBoolean();
 
             // setup redis cache clustering if needed
-            _isRedisClusterEnabled = ConfigurationManager.AppSettings["EnableRedisCacheCluster"].AsBoolean();
+            //_isRedisClusterEnabled = ConfigurationManager.AppSettings["EnableRedisCacheCluster"].AsBoolean();
+            string enabledSetting = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER );
+            _isRedisClusterEnabled = enabledSetting.IsNullOrWhiteSpace() || enabledSetting.ToLower() == "false" ? false : true;
+
 
             if ( _isRedisClusterEnabled && _isCachingDisabled == false )
             {
-                string connectionString = ConfigurationManager.AppSettings["RedisConnectionString"];
+                //string connectionString = ConfigurationManager.AppSettings["RedisConnectionString"];
+                string connectionString = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.REDIS_CONNECTION_STRING );
 
                 if ( !string.IsNullOrWhiteSpace( connectionString ) )
                 {
