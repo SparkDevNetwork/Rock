@@ -41,7 +41,7 @@
                         <asp:Literal ID="lUpdatesContentItemsHtml" runat="server" />
                     </asp:Panel>
                     <asp:Panel ID="pnlComments" CssClass="margin-t-md" runat="server">
-                        <Rock:NoteContainer ID="notesCommentsTimeline" runat="server" AddAllowed="true" />
+                        <Rock:NoteContainer ID="notesCommentsTimeline" runat="server" UsePersonIcon="true" AddAllowed="true" />
                         <asp:Literal ID="lNoLoginNoCommentsYet" runat="server" ><br /><i>No comments yet.</i></asp:Literal>
                         <asp:LinkButton ID="btnLoginToComment" CssClass="btn btn-link pull-right" runat="server" Text="Login to Comment" OnClick="btnLoginToComment_Click" />
                     </asp:Panel>
