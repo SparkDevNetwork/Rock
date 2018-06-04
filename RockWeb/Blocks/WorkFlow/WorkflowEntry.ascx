@@ -47,7 +47,15 @@
             </div>
 
             <div id="divNotes" runat="server" class="col-md-6">
-                <Rock:NoteContainer ID="ncWorkflowNotes" runat="server" ShowHeading="true" Title="Notes" TitleIconCssClass="fa fa-comment" AllowAnonymousEntry="false" SortDirection="Descending" />
+
+                <Rock:NoteContainer ID="ncWorkflowNotes" runat="server" Term="Note" 
+                    ShowHeading="true" Title="Notes" TitleIconCssClass="fa fa-comment"
+                    DisplayType="Full" UsePersonIcon="false" ShowAlertCheckBox="true"
+                    ShowPrivateCheckBox="false" ShowSecurityButton="false"
+                    AllowAnonymousEntry="false" AddAlwaysVisible="false"
+                    SortDirection="Descending"/>
+               
+
             </div>
 
         </div>
