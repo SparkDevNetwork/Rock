@@ -169,7 +169,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                         Context.ApplicationInstance.CompleteRequest();
                         return;
                     }
-                    catch ( ThreadAbortException ex )
+                    catch ( ThreadAbortException )
                     {
                         // Can safely ignore this exception
                     }
@@ -197,7 +197,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                             Response.Redirect( url, false );
                             Context.ApplicationInstance.CompleteRequest(); // https://blogs.msdn.microsoft.com/tmarq/2009/06/25/correct-use-of-system-web-httpresponse-redirect/
                         }
-                        catch ( ThreadAbortException ex )
+                        catch ( ThreadAbortException )
                         {
                             // Can safely ignore this exception
                         }

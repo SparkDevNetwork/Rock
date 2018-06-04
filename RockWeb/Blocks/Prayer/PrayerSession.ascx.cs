@@ -148,6 +148,14 @@ namespace RockWeb.Blocks.Prayer
             _enableCommunityFlagging = GetAttributeValue( "EnableCommunityFlagging" ).AsBoolean();
             lWelcomeInstructions.Text = GetAttributeValue( "WelcomeIntroductionText" );
             cpCampus.Visible = GetAttributeValue( "DisplayCampus" ).AsBoolean();
+
+            notesComments.NoteOptions.NoteLabel = "Comment";
+            notesComments.NoteOptions.DisplayType = NoteDisplayType.Full;
+            notesComments.NoteOptions.UsePersonIcon = true;
+            notesComments.NoteOptions.ShowAlertCheckBox = false;
+            notesComments.NoteOptions.ShowPrivateCheckBox = false;
+            notesComments.NoteOptions.ShowSecurityButton = false;
+            notesComments.NoteOptions.AddAlwaysVisible = true;
         }
 
         /// <summary>
