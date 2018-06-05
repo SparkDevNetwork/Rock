@@ -43,8 +43,6 @@ namespace Rock.Lava.Blocks
 
         string _markup = string.Empty;
         string _tagName = string.Empty;
-        Dictionary<string, object> _internalMergeFields;
-        string _enabledSecurityCommands = "";
 
         StringBuilder _blockMarkup = new StringBuilder();
 
@@ -231,7 +229,6 @@ namespace Rock.Lava.Blocks
         /// Calculates the content hash.
         /// </summary>
         /// <param name="content">The content.</param>
-        /// <param name="settings">The settings.</param>
         /// <returns></returns>
         private int CalculateContentHash( string content )
         {

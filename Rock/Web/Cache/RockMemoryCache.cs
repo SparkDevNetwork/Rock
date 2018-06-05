@@ -85,7 +85,7 @@ namespace Rock.Web.Cache
                 return _redisConnection;
             }
         }
-        private ConnectionMultiplexer _redisConnection;
+        private ConnectionMultiplexer _redisConnection = null;
 
         /// <summary>
         /// Gets a value indicating whether the redis cache cluster feature is enabled.

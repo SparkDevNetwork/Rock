@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace Rock.SystemGuid
 {
+    /// <summary>
+    /// System Workflow Type Guids
+    /// </summary>
     public class WorkflowType
     {
         /// <summary>

@@ -48,7 +48,7 @@
 
             <div id="divNotes" runat="server" class="col-md-6">
 
-                <Rock:NoteContainer ID="ncWorkflowNotes" runat="server" Term="Note" 
+                <Rock:NoteContainer ID="ncWorkflowNotes" runat="server" Label="Note" 
                     ShowHeading="true" Title="Notes" TitleIconCssClass="fa fa-comment"
                     DisplayType="Full" UsePersonIcon="false" ShowAlertCheckBox="true"
                     ShowPrivateCheckBox="false" ShowSecurityButton="false"

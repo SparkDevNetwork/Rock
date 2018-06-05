@@ -42,6 +42,11 @@ namespace Rock.Cache
 
         #region Protected Methods
 
+        /// <summary>
+        /// Returns the key prefixed with the type of ojbect being cached.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
         protected static string QualifiedKey( string key )
         {
             return $"{KeyPrefix}:{key}";

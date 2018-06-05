@@ -73,7 +73,7 @@
                     <!-- Comments -->
                     <asp:Panel ID="pnlPrayerComments" runat="server">
                         <h4>Comments</h4>
-                        <Rock:NoteContainer ID="notesComments" runat="server" Term="Comment" ShowHeading="false"
+                        <Rock:NoteContainer ID="notesComments" runat="server" Label="Comment" ShowHeading="false"
                             DisplayType="Full" UsePersonIcon="true" ShowAlertCheckBox="false"
                             ShowPrivateCheckBox="false" ShowSecurityButton="false"
                             AllowAnonymousEntry="false" AddAlwaysVisible="true" SortDirection="Ascending"/>

@@ -50,7 +50,7 @@ namespace Rock.Cache
         /// <summary>
         /// Returns Id associated with the Guid.  If the Item with that Guid hasn't been cached yet, returns null
         /// </summary>
-        /// <param name="id">The id.</param>
+        /// <param name="guid">The unique identifier.</param>
         /// <returns></returns>
         public static int? GetId( Guid guid )
         {

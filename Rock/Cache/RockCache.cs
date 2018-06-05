@@ -353,7 +353,7 @@ namespace Rock.Cache
         /// <summary>
         /// Removes all items from cache for comma seperated list of cache tags
         /// </summary>
-        /// <param name="cacheTag">The cache tag.</param>
+        /// <param name="cacheTags">The cache tags.</param>
         public static void RemoveForTags( string cacheTags )
         {
             var cacheTagList = cacheTags.Split( ',' );
