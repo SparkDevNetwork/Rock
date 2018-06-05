@@ -559,6 +559,35 @@ namespace Rock.Cache
             return GetStatForSystemType( cacheTypeName );
         }
 
+        /// <summary>
+        /// Determines whether the end point is available.
+        /// </summary>
+        /// <param name="socket">The socket.</param>
+        /// <param name="password">The password.</param>
+        /// <returns>
+        ///   <c>true</c> if [is end point available] [the specified socket]; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsEndPointAvailable( string socket, string password )
+        {
+            try
+            {
+                var configurationOptions = StackExchange.Redis.ConfigurationOptions.Parse( socket );
+                configurationOptions.ConnectRetry = 1;
+                configurationOptions.ConnectTimeout = 1000;
+
+                if ( password.IsNotNullOrWhitespace() )
+                {
+                    configurationOptions.Password = password;
+                }
+                
+                var redisConnection = StackExchange.Redis.ConnectionMultiplexer.Connect( configurationOptions );
+                return redisConnection.IsConnected;
+            }
+            catch(Exception)
+            {
+                return false;
+            }
+        }
         #endregion
     }
 }
