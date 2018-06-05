@@ -301,9 +301,19 @@ namespace Rock.Cache
 
             if ( cacheTags.IsNotNullOrWhitespace() )
             {
-                var cacheTagList = cacheTags.Split( ',' );
+                // trim the results since the tag name could come from lava and not from a prevalidated value stored in DefinedValue.
+                var cacheTagList = cacheTags.Split( ',' ).Select( t => t.Trim() );
                 foreach ( var cacheTag in cacheTagList )
                 {
+                    // Don't save the tag if it is not valid.
+                    int cacheTagDefinedTypeId = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.CACHE_TAGS ).Id;
+                    Rock.Model.DefinedValueService definedValueService = new Rock.Model.DefinedValueService( new Rock.Data.RockContext() );
+                    var validCacheTags = definedValueService.Queryable().Where( v => v.DefinedTypeId == cacheTagDefinedTypeId && v.Value == cacheTag ).ToList();
+                    if ( validCacheTags.Count == 0 )
+                    {
+                        return;
+                    }
+
                     var value = RockCacheManager<List<string>>.Instance.Cache.Get( cacheTag, CACHE_TAG_REGION_NAME ) ?? new List<string>();
                     if ( value.FirstOrDefault( v => v.Contains( key ) ) == null )
                     {
@@ -559,6 +569,35 @@ namespace Rock.Cache
             return GetStatForSystemType( cacheTypeName );
         }
 
+        /// <summary>
+        /// Determines whether the end point is available.
+        /// </summary>
+        /// <param name="socket">The socket.</param>
+        /// <param name="password">The password.</param>
+        /// <returns>
+        ///   <c>true</c> if [is end point available] [the specified socket]; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsEndPointAvailable( string socket, string password )
+        {
+            try
+            {
+                var configurationOptions = StackExchange.Redis.ConfigurationOptions.Parse( socket );
+                configurationOptions.ConnectRetry = 1;
+                configurationOptions.ConnectTimeout = 1000;
+
+                if ( password.IsNotNullOrWhitespace() )
+                {
+                    configurationOptions.Password = password;
+                }
+                
+                var redisConnection = StackExchange.Redis.ConnectionMultiplexer.Connect( configurationOptions );
+                return redisConnection.IsConnected;
+            }
+            catch(Exception)
+            {
+                return false;
+            }
+        }
         #endregion
     }
 }

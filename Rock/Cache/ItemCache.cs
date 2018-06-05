@@ -225,11 +225,12 @@ namespace Rock.Cache
             RockCacheManager<T>.Instance.Cache.Remove( qualifiedKey );
 
             var allIds = RockCacheManager<List<string>>.Instance.Cache.Get( AllKey, _AllRegion ) ?? new List<string>();
-            if ( !allIds.Contains( qualifiedKey ) ) return;
+            if ( !allIds.Contains( key ) )
+                return;
 
             lock ( _obj )
             {
-                allIds.Remove( qualifiedKey );
+                allIds.Remove( key );
                 RockCacheManager<List<string>>.Instance.AddOrUpdate( AllKey, _AllRegion, allIds );
             }
         }
