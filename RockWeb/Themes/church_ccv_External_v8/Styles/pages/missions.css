@@ -96,6 +96,7 @@
    overflow: hidden;
    text-overflow: ellipsis;
    margin: 0;
+   padding-bottom: 5px;
 }
 
 @media screen and (min-width: 768px) {
@@ -181,7 +182,7 @@
 }
 
 .stay-in-the-know-info i {
-   display: hidden;
+   display: none;
 }
 
 @media screen and (min-width: 992px) {
@@ -195,13 +196,14 @@
 .stay-in-the-know-words {   
    display: flex;
    flex-direction: column;
-   min-width: 300px;
+    min-width: 250px;
 }
 
 @media screen and (min-width: 992px) {
    .stay-in-the-know-words {   
       margin-left: -100px;
       margin-top: -50px;
+       min-width: 300px;
    }
 }
 
@@ -253,7 +255,8 @@
 }
 
 .alert {
-   margin-right: 100px;
+    margin-left: 20px;
+    margin-right: 20px;
 }
 
 .alert-danger {
@@ -267,6 +270,10 @@
 }
 
 @media screen and (min-width: 992px) {
+    .alert {
+        margin-right: 100px;
+     }
+
    .name-fields {
       display: flex;
       flex-direction: row;

@@ -1,36 +1,36 @@
 <div class="container infoSection">
     <a id="culture"></a>
     <div>
-        <h2>OUR CULTURE</h2>
-        <p>We consider ourselves a closely knit team of peers with one driven focus. Andouille porchetta pig venison, ham capicola shank turducken. Landjaeger tail kevin, tenderloin ball tip pork chop pig tongue hamburger. Ball tip ham short ribs jerky boudin pork belly beef burgdoggen.</p>
+      <h2>OUR CULTURE</h2>
+      <p>We consider ourselves a closely knit team of peers with one driven focus. </p>
     </div>
     <div class="culture-features">
-        <div class="feature">
-            <h3>MINDFULNESS</h3>
-            <p>Chicken ribeye ball tip meatloaf fatback pork chop leberkas pork. Short loin turkey fatback brisket.</p>
-        </div>
-        <div class="feature">
-            <h3>MENTORSHIP</h3>
-            <p>Chicken ribeye ball tip meatloaf fatback pork chop leberkas pork. Short loin turkey fatback brisket.</p>
-        </div>
-        <div class="feature">
-            <h3>TRANSPARENCY</h3>
-            <p>Chicken ribeye ball tip meatloaf fatback pork chop leberkas pork. Short loin turkey fatback brisket.</p>
-        </div>
+      <div class="feature">
+        <h3>403B Retirement Plan</h3>
+        <p>We care about your future. We have an awesome 403b Plan available to all full-time employees over age 18 with no waiting period, no vesting, and CCV matches up to 5% of your earnings. </p>
+      </div>
+      <div class="feature">
+        <h3>WELLNESS BENEFITS</h3>
+        <p>Your health is important to us. We offer excellent medical, dental and vision plans that rival the top employers in the valley.</p>
+      </div>
+      <div class="feature">
+        <h3>LEADERSHIP DEVELOPMENT</h3>
+        <p>When you get better, we get better. We have a development team that will create growth plans specific to you which includes dollars to invest in your training and development.</p>
+      </div>
     </div>
     <div class="culture-features">
-        <div class="feature">
-            <h3>HAPPINESS</h3>
-            <p>Chicken ribeye ball tip meatloaf fatback pork chop leberkas pork. Short loin turkey fatback brisket.</p>
-        </div>
-        <div class="feature">
-            <h3>HEALTHY</h3>
-            <p>Chicken ribeye ball tip meatloaf fatback pork chop leberkas pork. Short loin turkey fatback brisket.</p>
-        </div>
-        <div class="feature">
-            <h3>EXCELLENT BENEFITS</h3>
-            <p>Chicken ribeye ball tip meatloaf fatback pork chop leberkas pork. Short loin turkey fatback brisket.</p>
-        </div>
+      <div class="feature">
+        <h3>TECHNOLOGY RICH</h3>
+        <p>You’ll have the tools you need to do your job with excellence. Just like we use technology in our efforts to reach people for Christ, you’ll be well equipped for your role.</p>
+      </div>
+      <div class="feature">
+        <h3>TEAM EVENTS & RETREATS</h3>
+        <p>Teamwork is one of our Core Values. Teams take time together away from the office to learn, get to know each other better, celebrate a job well done, and share ideas for what’s ahead.</p>
+      </div>
+      <div class="feature">
+        <h3>EMPLOYEE DISCOUNTS</h3>
+        <p>Ministry is serious business, so we like to include a few perks where we can. Employees enjoy discounted food, sports, and summer camp rates for your entire family.</p>
+      </div>
     </div>
 
     <div class="culture-images">

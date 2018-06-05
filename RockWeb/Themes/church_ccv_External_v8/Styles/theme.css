@@ -10254,7 +10254,7 @@ html,body{
 
 @media screen and (min-width: 1024px) {
     .announcement-bar {
-        padding: 20px 0px;
+        padding: 10px 0px;
         margin-bottom: 5px;
         font-size: 20px;
     }

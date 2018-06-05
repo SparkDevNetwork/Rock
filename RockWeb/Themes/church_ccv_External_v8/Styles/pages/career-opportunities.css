@@ -41,10 +41,17 @@
     .culture-features {
         flex-direction: row;
     }
+
+    .feature {
+        padding: 15px;
+        max-width: 400px;
+    }
 }
 
-.feature {
-    padding: 5px;
+@media screen and (min-width: 1200px) {
+    .culture-features {
+        justify-content: flex-start;
+    }
 }
 
 .culture-images {
@@ -64,12 +71,6 @@
 .culture-images img {
     padding: 10px;
     object-fit: cover;
-}
-
-@media screen and (min-width: 1200px) {
-    .culture-features {
-        justify-content: flex-start;
-    }
 }
 
 @media screen and (max-width: 568px) {

@@ -214,7 +214,7 @@
                            {
                               itemOccurrenceId: '{{ eventOccurrenceSummary.EventItemOccurrence.Id }}',
                               photoGuid: '{{ eventOccurrenceSummary.EventItem.Photo.Guid }}',
-                              name: '{{ eventOccurrenceSummary.Name }}',
+                              name: '{{ eventOccurrenceSummary.Name | Escape }}',
                               summary: '{{ eventOccurrenceSummary.Summary | Escape }}',
                               detailUrl: '{{ detailUrl }}',
                               contactEmail: '{{ eventOccurrenceSummary.EventItemOccurrence.ContactEmail }}',
@@ -435,7 +435,7 @@
             imageObj.hide();
          }
          
-         $("#event-detail-card-name", parentEventItemCard).text( eventItem.name );
+         $("#event-detail-card-name", parentEventItemCard).text( decodeHtml( eventItem.name ) );
          $("#event-detail-card-summary", parentEventItemCard).text( decodeHtml( eventItem.summary ) );
          $("#event-detail-card-learnmore-btn", parentEventItemCard).attr( "href", eventItem.detailUrl );
          

@@ -1,7 +1,7 @@
 {% include '~~/Assets/Lava/campus-landing-page-util.lava' %}
 
 <h3>NOT SURE WHERE TO GO?</h3>
-<p>Use this map to find thigns like the kids building or where to get an iced latte before service.</p>
+<p>Use this map to find things like the kids building or where to get an iced latte before service.</p>
 <img class="info-tile" src="~~/Assets/Images/campus-landing/campus-maps/{{campus.ShortCode | Downcase}}-map.jpg" width="100%"/>
 
 <div class="info-tile mt-25"> 

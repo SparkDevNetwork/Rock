@@ -7,9 +7,10 @@
 {% include '~~/Assets/Lava/ScriptCampusLocations.lava' %}
 
 
+
 {% comment %}
 <script src="~~/Scripts/_map.js"></script>
 <script src="~~/Scripts/our-campuses-map.js"></script>
 {% endcomment %}
 
-<script src="~~/Scripts/min/our-campuses-map.min.js?v=2"></script>
+<script src="~~/Scripts/min/our-campuses-map.min.js?v=4"></script>

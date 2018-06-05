@@ -677,6 +677,10 @@
     align-items: center;
 }
 
+.group-name-row a {
+    max-width: 60%;
+}
+
 .group-name-row-content {
     display: flex;
 }
@@ -824,6 +828,7 @@
     border-radius: 5px;
     border: unset;
     border-width: unset;
+    width: 360px;
     height: 450px; 
     max-height: 450px; 
     background-color: #FFFFFF; 

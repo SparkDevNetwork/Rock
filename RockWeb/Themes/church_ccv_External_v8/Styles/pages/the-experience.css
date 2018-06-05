@@ -1,5 +1,5 @@
 .page-background {
-   background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-image-missing.jpg");
+   background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-the-experience.jpg");
    background-color: white;
 }
 
@@ -52,4 +52,8 @@
     .relax-container .video {
         width: 50%;
     }
+}
+
+.thumbnail a {
+    outline: 0;
 }

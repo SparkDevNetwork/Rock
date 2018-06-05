@@ -40,7 +40,7 @@
                 "Buttons": [
                     {
                         "Label": "Learn More",
-                        "Link": "/next-steps/starting-point",
+                        "Link": "/get-involved/next-steps/starting-point",
                         "Class": "btn-primary"
                     }
                 ]
@@ -57,7 +57,7 @@
                 "Buttons": [
                     {
                         "Label": "Learn More",
-                        "Link": "/next-steps/baptism",
+                        "Link": "/get-involved/next-steps/baptism",
                         "Class": "btn-primary"
                     }
                 ]
@@ -91,7 +91,7 @@
                 "Buttons": [
                     {
                         "Label": "Find a Group",
-                        "Link": "/next-steps/connect",
+                        "Link": "/get-involved/next-steps/connect/group-search",
                         "Class": "btn-primary"
                     }
                 ]
@@ -108,7 +108,7 @@
                 "Buttons": [
                     {
                         "Label": "Serve at CCV",
-                        "Link": "/next-steps/serve",
+                        "Link": "/get-involved/next-steps/serve",
                         "Class": "btn-primary"
                     }
                 ]
@@ -142,7 +142,7 @@
                 "Buttons": [
                     {
                         "Label": "Share Your Story",
-                        "Link": "/next-steps/share-story",
+                        "Link": "/get-involved/next-steps/share-story",
                         "Class": "btn-primary"
                     }
                 ]
@@ -159,12 +159,12 @@
                 "Buttons": [
                     {
                         "Label": "Request a Coach",
-                        "Link": "/next-steps/coach-request?Whattypeofcoaching=Request%20a%20Coach",
+                        "Link": "/get-involved/next-steps/coach-request?Whattypeofcoaching=Request%20a%20Coach",
                         "Class": "btn-primary"
                     },
                     {
                         "Label": "Become a Coach",
-                        "Link": "/next-steps/coach-request?Whattypeofcoaching=Become%20a%20Coach",
+                        "Link": "/get-involved/next-steps/coach-request?Whattypeofcoaching=Become%20a%20Coach",
                         "Class": "btn-primary"
                     }
                 ]

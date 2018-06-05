@@ -215,8 +215,7 @@
       result += '      <span class="phone">'+campus.phone+'</span>'
       result += '    </div>'
       result += '  </div>'
-      if (typeof this.selectCampus == 'function')
-        result += '  <a class="select" onclick="'+this.getInstanceName()+'.selectCampus('+campus.id+')">Select this Campus</a>'
+      result += '  <a class="select" href="/our-campuses/' + campus.name.replace( ' ', '-' ).toLowerCase() + '"' + '>Select this Campus</a>'
       result += '</div>'
       return result
     }

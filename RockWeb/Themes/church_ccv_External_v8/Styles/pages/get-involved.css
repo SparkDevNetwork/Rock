@@ -1,32 +1,30 @@
 
 .page-background {   
     background-color: #EBEBEB;
-    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-image-missing.jpg");
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-get-involved.jpg");
 }
 
 #subnavbar-bg {
-    background-color: #ffffff;
+    background-color: #FFFFFF;
 }
 
 #section-a-bg {
-    background-color: #EBEBEB;
+    background-color: #F9F9F9;
     padding: 0 15px 0 15px;
 }
 
 #section-b-bg {
-    background-color: #f9f9f9;
-	background: url("/Themes/church_ccv_External_v8/Assets/Images/get-involved-groups-info.jpg") no-repeat;
+    background-color: #F9F9F9;
+	background: url("/Themes/church_ccv_External_v8/Assets/Images/strip-get-involved-groups.jpg") no-repeat;
 	background-size: cover;
 }
 
 #section-c-bg {
-    background-color: #f9f9f9;
-    background: url("/Themes/church_ccv_External_v8/Assets/Images/get-involved-prayer.jpg") no-repeat;
-	background-size: cover;
+    background-color: #F9F9F9;
 }
 
 #section-d-bg {
-    background-color: #f9f9f9;
+    background-color: #F9F9F9;
     background: url("/Themes/church_ccv_External_v8/Assets/Images/get-involved-missions.jpg") no-repeat;
 	background-size: cover;
 }
@@ -95,6 +93,18 @@
 
 .prayer-request textarea::placeholder { 
     color: #333333;
+ }
+
+ .prayer-request-info-override {
+    width: 500px;
+ }
+ 
+ .info.prayer-request-info-override  {
+     max-width: unset;
+ }
+
+ .prayer-request-video-override {
+     width: unset;
  }
 
  .event-card .image img {

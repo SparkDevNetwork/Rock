@@ -19,7 +19,7 @@
                     <i class="mdi mdi-dots-vertical dashboard-title-icon tooltip-more-options"></i>
                 </button>
                 <ul class="dropdown-menu panel-dropdown-menu">
-                    <li><a href="/servev2">CCV Serving Opportunities</a></li>
+                    <li><a href="/get-involved/next-steps/serve">CCV Serving Opportunities</a></li>
                 </ul>
             </div>   
         </div>
@@ -87,7 +87,7 @@
             <p>We have opportunities for every age and interest.  Behind the scenes or upfront and personal, you can find the perfect fit for you and your family.</p>
         </div>
         <div class="link">
-            <a href="/servev2">
+            <a href="/get-involved/next-steps/serve">
                 <div>
                     <span>Find the right spot for you</span>
                     <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path></svg>

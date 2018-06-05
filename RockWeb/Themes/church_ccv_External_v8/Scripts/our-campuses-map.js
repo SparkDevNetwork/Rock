@@ -39,9 +39,6 @@ CCV.showMapCampusModal = function() {
     }
     window.campusModalMap.mapOptions = options;
 
-    campusModalMap.selectCampus = function (campusId) {
-      CCV.selectCampus(campusId)
-    }
     campusModalMap.draw()
     CCV.campusModalMapHasBeenDrawn = true
   }

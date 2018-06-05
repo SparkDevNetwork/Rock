@@ -229,6 +229,11 @@
   color: white;
 }
 
+.masthead-navitems .dropdown .dropdown-menu li a:focus {
+    background-color: #7A1315;;
+    outline: 0;
+}
+
 .masthead-navbar-flex {
    display: flex;
    justify-content: space-between;
@@ -278,6 +283,10 @@
     font-size: 14px;
 }
 
+.masthead-navbar-login .loginstatus .dropdown-menu li a:hover {
+    min-height: unset;
+}
+
 .masthead-navbar-login .loginstatus .dropdown-menu li a {
     padding: 5px 0px 5px 5px;
     margin: 5px 0px 5px 0px;
@@ -285,6 +294,11 @@
 
 .masthead-navbar-login .loginstatus .dropdown-menu li a:hover {
     color: #FFFFFF;
+}
+
+.masthead-navbar-login .loginstatus .dropdown-menu li a:focus {
+    background-color: #7A1315;;
+    outline: 0;
 }
 
 /* Mobile styling for header */
@@ -405,7 +419,9 @@
 }
 
 .desktop-spacer-top {
+    /*
     padding-top: 70px;
+    */
 }
 
 @media screen and (max-width: 500px) {

@@ -68,7 +68,7 @@
        
          <div class="col-sm-6 col-md-4">
             <div class="thumbnail padding-b-none js-series">
-               <a href="{{ Message.Attributes.3rdPartyFullVideoUrl }}" data-lity>
+               <a href="{{ message.Attributes.3rdPartyFullVideoUrl }}" data-lity>
                   <div class="videoThumbnail">
                      <img class="img-full" src="/GetImage.ashx?guid={{ series.Attributes.Image_16_9 }}" alt="{{ message.Name }}">
                   </div>
