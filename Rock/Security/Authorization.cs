@@ -25,6 +25,7 @@ using System.Web.Security;
 using Rock.Data;
 using Rock.Model;
 using Rock.Cache;
+using System.Runtime.Serialization;
 
 namespace Rock.Security
 {
@@ -1284,6 +1285,8 @@ namespace Rock.Security
     /// <summary>
     /// Lightweight struct to store if a particular user or role is allowed or denied access
     /// </summary>
+	[Serializable]
+    [DataContract]
     public struct AuthRule
     {
 
@@ -1293,6 +1296,7 @@ namespace Rock.Security
         /// <value>
         /// The id.
         /// </value>
+        [DataMember]
         public int Id { get; set; }
 
         /// <summary>
@@ -1301,6 +1305,7 @@ namespace Rock.Security
         /// <value>
         /// The entity id.
         /// </value>
+        [DataMember]
         public int? EntityId { get; set; }
 
         /// <summary>
@@ -1309,6 +1314,7 @@ namespace Rock.Security
         /// <value>
         /// The allow or deny.
         /// </value>
+        [DataMember]
         public char AllowOrDeny { get; set; }
 
         /// <summary>
@@ -1317,6 +1323,7 @@ namespace Rock.Security
         /// <value>
         /// The special role.
         /// </value>
+        [DataMember]
         public SpecialRole SpecialRole { get; set; }
 
         /// <summary>
@@ -1325,6 +1332,7 @@ namespace Rock.Security
         /// <value>
         /// The person identifier.
         /// </value>
+        [DataMember]
         public int? PersonId { get; set; }
 
         /// <summary>
@@ -1333,6 +1341,7 @@ namespace Rock.Security
         /// <value>
         /// The person alias identifier.
         /// </value>
+        [DataMember]
         public int? PersonAliasId { get; set; }
 
         /// <summary>
@@ -1341,6 +1350,7 @@ namespace Rock.Security
         /// <value>
         /// The group id.
         /// </value>
+        [DataMember]
         public int? GroupId { get; set; }
 
         /// <summary>
@@ -1349,6 +1359,7 @@ namespace Rock.Security
         /// <value>
         /// The order.
         /// </value>
+        [DataMember]
         public int Order { get; set; }
 
         /// <summary>

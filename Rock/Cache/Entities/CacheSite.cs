@@ -381,6 +381,7 @@ namespace Rock.Cache
         /// <value>
         ///   <c>true</c> if [enable page views]; otherwise, <c>false</c>.
         /// </value>
+		[DataMember]
         public bool EnablePageViews { get; private set; }
 
         /// <summary>

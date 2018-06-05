@@ -85,7 +85,7 @@ namespace Rock.Web.Cache
                 return _redisConnection;
             }
         }
-        private ConnectionMultiplexer _redisConnection;
+        private ConnectionMultiplexer _redisConnection = null;
 
         /// <summary>
         /// Gets a value indicating whether the redis cache cluster feature is enabled.
@@ -163,48 +163,8 @@ namespace Rock.Web.Cache
             // Check to see if caching has been disabled
             _isCachingDisabled = ConfigurationManager.AppSettings["DisableCaching"].AsBoolean();
 
-            // setup redis cache clustering if needed
-            _isRedisClusterEnabled = ConfigurationManager.AppSettings["EnableRedisCacheCluster"].AsBoolean();
-
-            if ( _isRedisClusterEnabled && _isCachingDisabled == false )
-            {
-                string connectionString = ConfigurationManager.AppSettings["RedisConnectionString"];
-
-                if ( !string.IsNullOrWhiteSpace( connectionString ) )
-                {
-                    try
-                    {
-                        _redisConnection = ConnectionMultiplexer.Connect( connectionString );
-                        _redisConnection.PreserveAsyncOrder = false; // enable concurrent processing of pub/sub messages https://github.com/StackExchange/StackExchange.Redis/blob/master/Docs/PubSubOrder.md
-                        _redisConnection.ConnectionRestored += _redisConnection_ConnectionRestored;
-                        _redisConnection.ConnectionFailed += _redisConnection_ConnectionFailed;
-
-                        _isRedisConnected = true;
-                    }
-                    catch ( Exception ex )
-                    {
-                        Model.ExceptionLogService.LogException( ex, null );
-                    }
-
-                    if ( _redisConnection != null )
-                    {
-                        // setup the subscription to listen for published instructions on caching
-                        ISubscriber sub = _redisConnection.GetSubscriber();
-
-                        sub.Subscribe( REDIS_CHANNEL_NAME, ( channel, message ) => {
-                            ProcessRedisCacheInstruction( channel, message );
-                        } );
-                    }
-                    else
-                    {
-                        _isRedisClusterEnabled = false;
-                    }
-                }
-                else
-                {
-                    _isRedisClusterEnabled = false;
-                }
-            }
+            // setup redis cache clustering is not available for legacy cache
+            _isRedisClusterEnabled = false;
         }
 
         private void _redisConnection_ConnectionFailed( object sender, ConnectionFailedEventArgs e )

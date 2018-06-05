@@ -35,7 +35,9 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// Note Container control
     /// </summary>
+    [DefaultProperty( "NoteViewLavaTemplate" )]
     [ToolboxData( "<{0}:NoteContainer runat=server></{0}:NoteContainer>" )]
+    [ParseChildren( true, "NoteViewLavaTemplate" )]
     public class NoteContainer : CompositeControl, INamingContainer
     {
         #region Fields
@@ -57,7 +59,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The note types.
         /// </value>
-        [Obsolete( "Use NoteOptions.NoteTypes instead" )]
+        [Obsolete( "Use NoteTypeList instead" )]
         public List<Rock.Web.Cache.NoteTypeCache> NoteTypes
         {
             get
@@ -72,9 +74,70 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the entity identifier.
+        /// Gets or sets the term.
         /// </summary>
-        [Obsolete( "Use NoteOptions.EntityId instead" )]
+        /// <value>
+        /// The term.
+        /// </value>
+        [Obsolete( "Use NoteLabel instead" )]
+        public string Term
+        {
+            get
+            {
+                return this.NoteOptions.NoteLabel;
+            }
+            set
+            {
+                this.NoteOptions.NoteLabel = value;
+            }
+        }
+
+        #endregion Obsolete Properties
+
+        #region Note Options
+
+        /// <summary>
+        /// Gets or sets the NoteOptions for note type list.
+        /// </summary>
+        /// <value>
+        /// The note type list.
+        /// </value>
+        public List<CacheNoteType> NoteTypeList
+        {
+            get
+            {
+                return NoteOptions?.NoteTypes;
+            }
+
+            set
+            {
+                NoteOptions.NoteTypes = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the note view lava template.
+        /// </summary>
+        /// <value>
+        /// The note view lava template.
+        /// </value>
+        [PersistenceMode( PersistenceMode.InnerDefaultProperty )]
+        public string NoteViewLavaTemplate
+        {
+            get
+            {
+                return NoteOptions?.NoteViewLavaTemplate;
+            }
+
+            set
+            {
+                NoteOptions.NoteViewLavaTemplate = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the NoteOptions for entity identifier.
+        /// </summary>
         public int? EntityId
         {
             get
@@ -89,12 +152,11 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [add always visible].
+        /// Gets or sets the NoteOptions for indicating whether [add always visible].
         /// </summary>
         /// <value>
         ///   <c>true</c> if [add always visible]; otherwise, <c>false</c>.
         /// </value>
-        [Obsolete( "Use NoteOptions.AddAlwaysVisible instead" )]
         public bool AddAlwaysVisible
         {
             get
@@ -108,12 +170,11 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [display note type heading].
+        /// Gets or sets the NoteOptions for indicating whether [display note type heading].
         /// </summary>
         /// <value>
         ///   <c>true</c> if [display note type heading]; otherwise, <c>false</c>.
         /// </value>
-        [Obsolete( "Use NoteOptions.DisplayNoteTypeHeading instead" )]
         public bool DisplayNoteTypeHeading
         {
             get
@@ -127,12 +188,11 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the display type.
+        /// Gets or sets the NoteOptions for display type.
         /// </summary>
         /// <value>
         /// The display type.
         /// </value>
-        [Obsolete( "Use NoteOptions.DisplayType instead" )]
         public NoteDisplayType DisplayType
         {
             get
@@ -146,12 +206,11 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [show alert CheckBox].
+        /// Gets or sets the NoteOptions indicating whether [show alert CheckBox].
         /// </summary>
         /// <value>
         ///   <c>true</c> if [show alert CheckBox]; otherwise, <c>false</c>.
         /// </value>
-        [Obsolete( "Use NoteOptions.ShowAlertCheckBox instead" )]
         public bool ShowAlertCheckBox
         {
             get
@@ -165,12 +224,11 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [show create date input].
+        /// Gets or sets the NoteOptions indicating whether [show create date input].
         /// </summary>
         /// <value>
         ///   <c>true</c> if [show create date input]; otherwise, <c>false</c>.
         /// </value>
-        [Obsolete( "Use NoteOptions.ShowCreateDateInput instead" )]
         public bool ShowCreateDateInput
         {
             get
@@ -184,12 +242,11 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [show private CheckBox].
+        /// Gets or sets the NoteOptions indicating whether [show private CheckBox].
         /// </summary>
         /// <value>
         ///   <c>true</c> if [show private CheckBox]; otherwise, <c>false</c>.
         /// </value>
-        [Obsolete( "Use NoteOptions.ShowPrivateCheckBox instead" )]
         public bool ShowPrivateCheckBox
         {
             get
@@ -203,12 +260,11 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [show security button].
+        /// Gets or sets the NoteOptions indicating whether [show security button].
         /// </summary>
         /// <value>
         ///   <c>true</c> if [show security button]; otherwise, <c>false</c>.
         /// </value>
-        [Obsolete( "Use NoteOptions.ShowSecurityButton instead" )]
         public bool ShowSecurityButton
         {
             get
@@ -222,14 +278,12 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// This property is not relevant to the class anymore.
-        /// Always returns an empty string.
+        /// Gets or sets the NoteOptions note label.
         /// </summary>
         /// <value>
-        /// The term.
+        /// The note label.
         /// </value>
-        [Obsolete( "Use NoteOptions.NoteLabel instead" )]
-        public string Term
+        public string NoteLabel
         {
             get
             {
@@ -242,12 +296,11 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [use person icon].
+        /// Gets or sets the NoteOptions value indicating whether [use person icon].
         /// </summary>
         /// <value>
         ///   <c>true</c> if [use person icon]; otherwise, <c>false</c>.
         /// </value>
-        [Obsolete( "Use NoteOptions.UsePersonIcon instead" )]
         public bool UsePersonIcon
         {
             get
@@ -261,12 +314,12 @@ namespace Rock.Web.UI.Controls
         }
 
 
-        #endregion
+        #endregion Note Options
 
         #region Properties
 
         /// <summary>
-        /// Gets or sets the note options.
+        /// Gets or sets all the note options as a NoteOptions object
         /// </summary>
         /// <value>
         /// The note options.
@@ -720,6 +773,8 @@ namespace Rock.Web.UI.Controls
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-body" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                _noteEditor.ShowEditMode = NoteOptions.AddAlwaysVisible;
 
                 if ( canAdd && SortDirection == ListSortDirection.Descending )
                 {

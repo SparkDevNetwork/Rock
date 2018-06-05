@@ -563,6 +563,18 @@ namespace Rock.Web.Cache
         #region Static Methods
 
         /// <summary>
+        /// Performs an implicit conversion from <see cref="SiteCache"/> to <see cref="CacheSite"/>.
+        /// </summary>
+        /// <param name="c">The c.</param>
+        /// <returns>
+        /// The result of the conversion.
+        /// </returns>
+        public static implicit operator CacheSite( SiteCache c )
+        {
+            return CacheSite.Get( c.Id );
+        }
+
+        /// <summary>
         /// Returns Site object from cache.  If site does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>

@@ -77,6 +77,7 @@ namespace RockWeb.Blocks.Cms
         private readonly string TEMPLATE_CACHE_KEY = "Template";
         private readonly string OUTPUT_CACHE_KEY = "Output";
 
+        // Fetch the Value as Value and Text instead Guid, so we'll fetch using SQL and use CustomCheckboxListField instead of using DefinedValueField
         private const string CACHE_TAG_LIST = @"
             SELECT CAST([DefinedValue].[Value] AS VARCHAR) AS [Value], [DefinedValue].[Value] AS [Text]
             FROM[DefinedType]

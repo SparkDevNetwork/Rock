@@ -107,6 +107,29 @@ namespace Rock.Cache
 
         #endregion
 
+        #region Public Static Properties
+
+        /// <summary>
+        /// Gets an indicator of whether cache manager is configured in a way that items will be serialized (i.e. if using Redis)
+        /// </summary>
+        /// <value>
+        /// Flag indicating if cache items are serialized
+        /// </value>
+        public static bool IsCacheSerialized
+        {
+            get
+            {
+                if ( Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER ).IsNullOrWhiteSpace() ? false : true )
+                {
+                    return true;
+                }
+
+                return true; //false;
+            }
+        }
+
+        #endregion
+
         #region Public Static Methods
 
         /// <summary>
@@ -330,7 +353,7 @@ namespace Rock.Cache
         /// <summary>
         /// Removes all items from cache for comma seperated list of cache tags
         /// </summary>
-        /// <param name="cacheTag">The cache tag.</param>
+        /// <param name="cacheTags">The cache tags.</param>
         public static void RemoveForTags( string cacheTags )
         {
             var cacheTagList = cacheTags.Split( ',' );
@@ -509,7 +532,7 @@ namespace Rock.Cache
             {
                 return RockCacheManager<List<string>>.Instance.GetStatistics();
             }
-            else if ( cacheTypeName == "System.Int32")
+            else if ( cacheTypeName == "System.Int32" )
             {
                 return RockCacheManager<int?>.Instance.GetStatistics();
             }

@@ -305,6 +305,18 @@ namespace Rock.Web.Cache
         #region Static Methods
 
         /// <summary>
+        /// Performs an implicit conversion from <see cref="CategoryCache"/> to <see cref="CacheCategory"/>.
+        /// </summary>
+        /// <param name="c">The c.</param>
+        /// <returns>
+        /// The result of the conversion.
+        /// </returns>
+        public static implicit operator CacheCategory( CategoryCache c )
+        {
+            return CacheCategory.Get( c.Id );
+        }
+
+        /// <summary>
         /// Returns Category object from cache.  If category does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>

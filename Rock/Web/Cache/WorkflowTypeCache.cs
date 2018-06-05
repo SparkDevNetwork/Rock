@@ -328,6 +328,18 @@ namespace Rock.Web.Cache
         #region Static Methods
 
         /// <summary>
+        /// Performs an implicit conversion from <see cref="WorkflowTypeCache"/> to <see cref="CacheWorkflowType"/>.
+        /// </summary>
+        /// <param name="c">The c.</param>
+        /// <returns>
+        /// The result of the conversion.
+        /// </returns>
+        public static implicit operator CacheWorkflowType( WorkflowTypeCache c )
+        {
+            return CacheWorkflowType.Get( c.Id );
+        }
+
+        /// <summary>
         /// Returns WorkflowType object from cache.  If WorkflowType does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>

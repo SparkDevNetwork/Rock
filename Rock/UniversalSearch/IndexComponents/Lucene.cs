@@ -58,6 +58,9 @@ namespace Rock.UniversalSearch.IndexComponents
         private static string path = null;
         private static FSDirectory _directory;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Lucene"/> class.
+        /// </summary>
         public Lucene()
         {
             if ( this.IsActive && writer == null )

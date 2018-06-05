@@ -159,14 +159,6 @@ namespace RockWeb.Blocks.WorkFlow
                     lIconHtml.Text = string.Format( "<i class='{0}' ></i>", _workflowType.IconCssClass );
                 }
             }
-
-            ncWorkflowNotes.NoteOptions.NoteLabel = "Note";
-            ncWorkflowNotes.NoteOptions.DisplayType = NoteDisplayType.Full;
-            ncWorkflowNotes.NoteOptions.UsePersonIcon = false;
-            ncWorkflowNotes.NoteOptions.ShowAlertCheckBox = true;
-            ncWorkflowNotes.NoteOptions.ShowPrivateCheckBox = false;
-            ncWorkflowNotes.NoteOptions.ShowSecurityButton = false;
-            ncWorkflowNotes.NoteOptions.AddAlwaysVisible = false;
         }
 
 
