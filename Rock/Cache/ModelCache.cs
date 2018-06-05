@@ -122,7 +122,7 @@ namespace Rock.Cache
         /// </summary>
         [DataMember]
         [LavaIgnore]
-        public virtual Dictionary<string, string> SupportedActions { get; private set; }
+        public virtual Dictionary<string, string> SupportedActions { get; private set; } = new Dictionary<string, string>();
 
         /// <summary>
         /// Return <c>true</c> if the user is authorized to perform the selected action on this object.

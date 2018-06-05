@@ -1938,15 +1938,17 @@ Sys.Application.add_load(function () {
         {
             var result = new List<CacheEntityType>();
 
-            foreach ( var item in this.ModelContext.Keys )
+            if ( this.ModelContext != null )
             {
-                var entityType = CacheEntityType.Get( item );
-                if ( entityType != null )
+                foreach ( var item in this.ModelContext.Keys )
                 {
-                    result.Add( entityType );
+                    var entityType = CacheEntityType.Get( item );
+                    if ( entityType != null )
+                    {
+                        result.Add( entityType );
+                    }
                 }
             }
-
             return result;
         }
 
