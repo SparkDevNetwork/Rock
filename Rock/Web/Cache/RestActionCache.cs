@@ -155,6 +155,18 @@ namespace Rock.Web.Cache
         #region Static Methods
 
         /// <summary>
+        /// Performs an implicit conversion from <see cref="RestActionCache"/> to <see cref="CacheRestAction"/>.
+        /// </summary>
+        /// <param name="c">The c.</param>
+        /// <returns>
+        /// The result of the conversion.
+        /// </returns>
+        public static implicit operator CacheRestAction( RestActionCache c )
+        {
+            return CacheRestAction.Get( c.Id );
+        }
+
+        /// <summary>
         /// Returns RestAction object from cache.  If RestAction does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>
