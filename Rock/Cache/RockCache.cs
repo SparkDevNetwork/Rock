@@ -301,9 +301,19 @@ namespace Rock.Cache
 
             if ( cacheTags.IsNotNullOrWhitespace() )
             {
-                var cacheTagList = cacheTags.Split( ',' );
+                // trim the results since the tag name could come from lava and not from a prevalidated value stored in DefinedValue.
+                var cacheTagList = cacheTags.Split( ',' ).Select( t => t.Trim() );
                 foreach ( var cacheTag in cacheTagList )
                 {
+                    // Don't save the tag if it is not valid.
+                    int cacheTagDefinedTypeId = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.CACHE_TAGS ).Id;
+                    Rock.Model.DefinedValueService definedValueService = new Rock.Model.DefinedValueService( new Rock.Data.RockContext() );
+                    var validCacheTags = definedValueService.Queryable().Where( v => v.DefinedTypeId == cacheTagDefinedTypeId && v.Value == cacheTag ).ToList();
+                    if ( validCacheTags.Count == 0 )
+                    {
+                        return;
+                    }
+
                     var value = RockCacheManager<List<string>>.Instance.Cache.Get( cacheTag, CACHE_TAG_REGION_NAME ) ?? new List<string>();
                     if ( value.FirstOrDefault( v => v.Contains( key ) ) == null )
                     {
