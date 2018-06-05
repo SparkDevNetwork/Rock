@@ -51,7 +51,7 @@
                                 <small>Opened</small></a>
                         </asp:Panel>
                         <asp:Panel id="pnlFailed" runat="server">
-                            <a id="aFailed" runat="server" class="btn btn-lg btn-block btn-danger">
+                            <a id="aFailed" runat="server" class="btn btn-lg btn-block btn-danger-solid">
                                 <asp:Literal ID="lFailed" runat="server"></asp:Literal><br />
                                 <small>Failed</small></a>
                         </asp:Panel>
