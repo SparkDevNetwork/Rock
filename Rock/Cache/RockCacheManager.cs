@@ -116,7 +116,7 @@ namespace Rock.Cache
             int redisDbIndex = attributeService.GetSystemSetting( SystemKey.SystemSetting.REDIS_DATABASE_NUMBER ).DefaultValue.AsIntegerOrNull() ?? 0;
 
             return new ConfigurationBuilder( "InProcess With Redis Backplane" )
-                //.WithJsonSerializer()
+                .WithJsonSerializer()
                 //.WithSystemRuntimeCacheHandle( "inProcessCache" )
                 .WithDictionaryHandle()
                 .And

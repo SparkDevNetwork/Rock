@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
 
@@ -380,7 +381,37 @@ namespace Rock.Cache
         /// The roles.
         /// </value>
         [DataMember]
-        public List<GroupTypeRoleCache> Roles { get; private set; }
+        public List<GroupTypeRoleCache> Roles
+        {
+            get
+            {
+                if ( _roles == null )
+                {
+                    lock ( _obj )
+                    {
+                        if ( _roles == null )
+                        {
+                            using ( var rockContext = new RockContext() )
+                            {
+                                Roles = new List<GroupTypeRoleCache>();
+                                new GroupTypeRoleService( rockContext )
+                                    .Queryable().AsNoTracking()
+                                    .Where( r => r.GroupTypeId == Id )
+                                    .OrderBy( r => r.Order )
+                                    .ToList()
+                                    .ForEach( r => Roles.Add( new GroupTypeRoleCache( r ) ) );
+                            }
+                        }
+                    }
+                }
+                return _roles;
+            }
+            private set
+            {
+                _roles = value;
+            }
+        }
+        private List<GroupTypeRoleCache> _roles = null;
 
         /// <summary>
         /// Gets or sets the group schedule exclusions.
@@ -389,7 +420,38 @@ namespace Rock.Cache
         /// The group schedule exclusions.
         /// </value>
         [DataMember]
-        public List<DateRange> GroupScheduleExclusions { get; private set; }
+        public List<DateRange> GroupScheduleExclusions
+        {
+            get
+            {
+                if ( _groupScheduleExclusions == null )
+                {
+                    lock ( _obj )
+                    {
+                        if ( _groupScheduleExclusions == null )
+                        {
+                            using ( var rockContext = new RockContext() )
+                            {
+                                GroupScheduleExclusions = new List<DateRange>();
+                                new GroupScheduleExclusionService( rockContext )
+                                    .Queryable().AsNoTracking()
+                                    .Where( s => s.GroupTypeId == Id )
+                                    .OrderBy( s => s.StartDate )
+                                    .ToList()
+                                    .ForEach( s => GroupScheduleExclusions.Add( new DateRange( s.StartDate, s.EndDate ) ) );
+
+                            }
+                        }
+                    }
+                }
+                return _groupScheduleExclusions;
+            }
+            private set
+            {
+                _groupScheduleExclusions = value;
+            }
+        }
+        private List<DateRange> _groupScheduleExclusions;
 
         /// <summary>
         /// Gets the child group types.
@@ -403,15 +465,15 @@ namespace Rock.Cache
             {
                 var childGroupTypes = new List<CacheGroupType>();
 
-                if ( _childGroupTypeIds == null )
+                if ( ChildGroupTypeIds == null )
                 {
                     lock ( _obj )
                     {
-                        if ( _childGroupTypeIds == null )
+                        if ( ChildGroupTypeIds == null )
                         {
                             using ( var rockContext = new RockContext() )
                             {
-                                _childGroupTypeIds = new GroupTypeService( rockContext )
+                                ChildGroupTypeIds = new GroupTypeService( rockContext )
                                     .GetChildGroupTypes( Id )
                                     .Select( g => g.Id )
                                     .ToList();
@@ -421,9 +483,9 @@ namespace Rock.Cache
                 }
 
 
-                if ( _childGroupTypeIds == null ) return childGroupTypes;
+                if ( ChildGroupTypeIds == null ) return childGroupTypes;
 
-                foreach ( var id in _childGroupTypeIds )
+                foreach ( var id in ChildGroupTypeIds )
                 {
                     var groupType = Get( id );
                     if ( groupType != null )
@@ -435,7 +497,9 @@ namespace Rock.Cache
                 return childGroupTypes;
             }
         }
-        private List<int> _childGroupTypeIds;
+
+        [DataMember]
+        private List<int> ChildGroupTypeIds { get; set; }
 
         /// <summary>
         /// Gets the parent group types.
@@ -568,19 +632,6 @@ namespace Rock.Cache
             EnableSpecificGroupRequirements = groupType.EnableSpecificGroupRequirements;
             AllowGroupSync = groupType.AllowGroupSync;
             AllowSpecificGroupMemberWorkflows = groupType.AllowSpecificGroupMemberWorkflows;
-
-            Roles = new List<GroupTypeRoleCache>();
-            groupType.Roles
-                .OrderBy( r => r.Order )
-                .ToList()
-                .ForEach( r => Roles.Add( new GroupTypeRoleCache( r ) ) );
-
-            GroupScheduleExclusions = new List<DateRange>();
-            groupType.GroupScheduleExclusions
-                .OrderBy( s => s.StartDate )
-                .ToList()
-                .ForEach( s => GroupScheduleExclusions.Add( new DateRange( s.StartDate, s.EndDate ) ) );
-
             EnableGroupHistory = groupType.EnableGroupHistory;
             GroupTypeColor = groupType.GroupTypeColor;
             ShowMaritalStatus = groupType.ShowMaritalStatus;
@@ -720,6 +771,11 @@ namespace Rock.Cache
         /// <param name="role">The role.</param>
         public GroupTypeRoleCache( GroupTypeRole role )
         {
+            if ( role == null )
+            {
+                return;
+            }
+
             Id = role.Id;
             Guid = role.Guid;
             Name = role.Name;
