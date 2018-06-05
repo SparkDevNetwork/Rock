@@ -151,6 +151,18 @@ namespace Rock.Web.Cache
         #region Static Methods
 
         /// <summary>
+        /// Performs an implicit conversion from <see cref="PersonBadgeCache"/> to <see cref="CachePersonBadge"/>.
+        /// </summary>
+        /// <param name="c">The c.</param>
+        /// <returns>
+        /// The result of the conversion.
+        /// </returns>
+        public static implicit operator CachePersonBadge( PersonBadgeCache c )
+        {
+            return CachePersonBadge.Get( c.Id );
+        }
+
+        /// <summary>
         /// Returns PersonBadge object from cache.  If personBadge does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>

@@ -235,6 +235,18 @@ namespace Rock.Web.Cache
         #region Static Methods
 
         /// <summary>
+        /// Performs an implicit conversion from <see cref="DefinedTypeCache"/> to <see cref="CacheDefinedType"/>.
+        /// </summary>
+        /// <param name="c">The c.</param>
+        /// <returns>
+        /// The result of the conversion.
+        /// </returns>
+        public static implicit operator CacheDefinedType( DefinedTypeCache c )
+        {
+            return CacheDefinedType.Get( c.Id );
+        }
+
+        /// <summary>
         /// Returns DefinedType object from cache.  If definedType does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>

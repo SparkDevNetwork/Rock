@@ -193,6 +193,17 @@ namespace Rock.Web.Cache
 
         #region Static Methods
 
+        /// <summary>
+        /// Performs an implicit conversion from <see cref="LavaShortcodeCache"/> to <see cref="CacheLavaShortcode"/>.
+        /// </summary>
+        /// <param name="c">The c.</param>
+        /// <returns>
+        /// The result of the conversion.
+        /// </returns>
+        public static implicit operator CacheLavaShortcode( LavaShortcodeCache c )
+        {
+            return CacheLavaShortcode.Get( c.Id );
+        }
 
         /// <summary>
         /// Returns lava shortcode object from cache.  If lava shortcode does not already exist in cache, it

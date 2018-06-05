@@ -354,6 +354,18 @@ namespace Rock.Web.Cache
         #region Static Methods
 
         /// <summary>
+        /// Performs an implicit conversion from <see cref="ContentChannelCache"/> to <see cref="CacheContentChannel"/>.
+        /// </summary>
+        /// <param name="c">The c.</param>
+        /// <returns>
+        /// The result of the conversion.
+        /// </returns>
+        public static implicit operator CacheContentChannel( ContentChannelCache c )
+        {
+            return CacheContentChannel.Get( c.Id );
+        }
+
+        /// <summary>
         /// Returns content channel object from cache.  If content channel does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>
