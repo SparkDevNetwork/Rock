@@ -85,7 +85,7 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
         </hgroup> 
         {% endif %}
         {%- if approvalStatusHtml != '' -%}
-            <hgroup class="flag clearfix">
+            <hgroup class="flag clearfix {% if note.ApprovalStatus == 'PendingApproval' %}warning{% endif %}{{- -}}">
                 {{ approvalStatusHtml }}
                 {{ approvalActionsHtml }}
             </hgroup>
