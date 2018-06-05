@@ -592,7 +592,7 @@ td.grid-actions {
     background-size: 45px;
     border-bottom: 1px solid lighten(@navbarside-background-color, 10%);
 
-    &::after {
+    &.no-logo::after {
       position: absolute;
       top: 0;
       right: 0;
@@ -608,6 +608,12 @@ td.grid-actions {
     &:hover {
       background-color: @navbarside-background-color;
       background-color: var(--navbarside-background-color);
+    }
+
+    .logo {
+      width: 47px;
+      height: 47px;
+      margin: 10px;
     }
 
     @media (min-width: @screen-sm-min) {
