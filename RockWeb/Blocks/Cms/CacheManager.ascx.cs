@@ -221,11 +221,24 @@ namespace RockWeb.Blocks.Cms
             // clear and hide edit
             ClearAndHideRedisEdit();
 
-            string serverList = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.REDIS_ENDPOINT_LIST );
+            string enabledSetting = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER );
+            bool enabled = enabledSetting.IsNullOrWhiteSpace() || enabledSetting.ToLower() == "false" ? false : true;
+
+            if(!enabled )
+            {
+                redisNotEnabled.Visible = true;
+                redisEnabled.Visible = false;
+                return;
+            }
+
+            redisNotEnabled.Visible = false;
+            redisEnabled.Visible = true;
+
+            string serverList = string.Join( "", SystemSettings.GetValue( Rock.SystemKey.SystemSetting.REDIS_ENDPOINT_LIST ).Split( ',' ).Select( s => s + "<br />" ) );
             
             // show and populate view
             redisView.Visible = true;
-            cbEnabled.Checked = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER ).IsNullOrWhiteSpace() ? false : true;
+            cbEnabled.Checked = enabled;
             lEndPointList.Text = serverList;
             lblPassword.Text = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.REDIS_PASSWORD ).IsNullOrWhiteSpace() ? string.Empty : "***********";
             lblDatabaseNumber.Text = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.REDIS_DATABASE_NUMBER );
@@ -472,6 +485,8 @@ namespace RockWeb.Blocks.Cms
 
             definedValueService.Add( definedValue );
             rockContext.SaveChanges();
+
+            Rock.Cache.CacheDefinedType.Remove( definedValue.DefinedTypeId );
         }
 
         /// <summary>

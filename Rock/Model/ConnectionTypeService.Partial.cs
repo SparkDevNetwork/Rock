@@ -48,7 +48,6 @@ namespace Rock.Model
         /// <summary>
         /// Copies the connection opportunities.
         /// </summary>
-        /// <param name="rockContext">The rock context.</param>
         /// <param name="connectionType">Source connectionType.</param>
         /// <param name="newConnectionType">Destination connectionType.</param>
         private void CopyConnectionOpportunities( ConnectionType connectionType, ConnectionType newConnectionType )
@@ -141,8 +140,10 @@ namespace Rock.Model
         /// <summary>
         /// Copies the specified connection type.
         /// </summary>
-        /// <param name="connectionType">ID of ConnectionType to copy.</param>
-        /// <returns>Return the new ConnectionType ID</returns>
+        /// <param name="connectionTypeId">The connection type identifier.</param>
+        /// <returns>
+        /// Return the new ConnectionType ID
+        /// </returns>
         public int Copy( int connectionTypeId )
         {
             var connectionType = this.Get( connectionTypeId );

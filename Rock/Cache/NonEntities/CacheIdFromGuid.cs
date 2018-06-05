@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Runtime.Serialization;
 
 namespace Rock.Cache
 {
@@ -22,6 +23,8 @@ namespace Rock.Cache
     /// Internal cache for looking up Id from Guid
     /// This information will be cached by the engine
     /// </summary>
+	[Serializable]
+    [DataContract]
     internal class CacheIdFromGuid : ItemCache<CacheIdFromGuid>
     {
         #region Constructors
@@ -39,6 +42,7 @@ namespace Rock.Cache
         /// <summary>
         /// Gets the id.
         /// </summary>
+		[DataMember]
         public int Id { get; private set; }
 
         #region Static Methods
@@ -46,7 +50,7 @@ namespace Rock.Cache
         /// <summary>
         /// Returns Id associated with the Guid.  If the Item with that Guid hasn't been cached yet, returns null
         /// </summary>
-        /// <param name="id">The id.</param>
+        /// <param name="guid">The unique identifier.</param>
         /// <returns></returns>
         public static int? GetId( Guid guid )
         {

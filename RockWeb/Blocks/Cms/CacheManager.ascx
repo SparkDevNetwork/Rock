@@ -43,12 +43,25 @@
                         </table>
 
                         <br />
-                        <Rock:PanelWidget ID="wpGroupSync" runat="server" Title="Redis Backplane Settings" Expanded="false" Visible="false">
+                        <Rock:PanelWidget ID="wpGroupSync" runat="server" Title="Redis Backplane Settings" Expanded="false" >
+                            
                             <div id="redisView" runat="server">
-                                <div class="row"><div class="col-md-12"><asp:CheckBox ID="cbEnabled" runat="server" Text="Enable" Enabled="false" /></div></div>
-                                <div class="row"><div class="col-md-12">End Points<asp:Literal ID="lEndPointList" runat="server"></asp:Literal></div></div>
-                                <div class="row"><div class="col-md-12">Password<asp:Label ID="lblPassword" runat="server"></asp:Label></div></div>
-                                <div class="row"><div class="col-md-12">Database Number<asp:Label ID="lblDatabaseNumber" runat="server"></asp:Label></div></div>
+                                <div id="redisNotEnabled" runat="server" class="alert alert-info">
+                                    Redis is currently not enabled. Review documentation for more information on enabling the Redis backplane support.
+                                </div>
+
+                                <div id="redisEnabled" runat="server">
+                                    <div class="row"><div class="col-md-12"><Rock:RockCheckBox ID="cbEnabled" runat="server" Text="Enable" Enabled="false" /></div></div>
+                                    <br />
+                                    <div class="row"><div class="col-md-12">End Points<br /><asp:Literal ID="lEndPointList" runat="server"></asp:Literal></div></div>
+                                    <br />
+                                    <div class="row"><div class="col-md-12">Password<br /><asp:Label ID="lblPassword" runat="server"></asp:Label></div></div>
+                                    <br />
+                                    <div class="row"><div class="col-md-12">Database Number<br /><asp:Label ID="lblDatabaseNumber" runat="server"></asp:Label></div></div>
+                                </div>
+
+                                <br />
+                                <br />
 
                                 <div class="row">
                                     <div class="col-md-12">
@@ -60,7 +73,7 @@
 
                             </div>
                             <div id="redisEdit" runat="server">
-                                <div class="row"><div class="col-md-12"><asp:CheckBox ID="cbEnabledEdit" runat="server" Text="Enable" /></div></div>
+                                <div class="row"><div class="col-md-12"><Rock:RockCheckBox ID="cbEnabledEdit" runat="server" Text="Enable" /></div></div>
                                 <div class="row"><div class="col-md-12">End Points<Rock:ListItems ID="liEndPoints" runat="server" Help="List of Redis endpoints (e.g. server.com:6379) to connect to."></Rock:ListItems></div></div>
                                 <div class="row"><div class="col-md-12">Password<Rock:RockTextBox ID="tbPassword" runat="server" TextMode="Password" Help="The password used to connect. The need for a password is dependent on your Redis server configuration." ></Rock:RockTextBox></div></div>
                                 <div class="row"><div class="col-md-12">Database Number<Rock:RockTextBox ID="tbDatabaseNumber" runat="server" TextMode="Number" Help="The database index number (the default is 0)"></Rock:RockTextBox></div></div>

@@ -39,10 +39,10 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.OccurrenceAttendance"/> that the attendance is for. 
+        /// Gets or sets the Id of the AttendanceOccurrence that the attendance is for.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.OccurrenceAttendance"/> that the attendance is for. 
+        /// A <see cref="System.Int32" /> representing the Id of the AttendanceOccurrence that the attendance is for.
         /// </value>
         [DataMember]
         public int OccurrenceId { get; set; }

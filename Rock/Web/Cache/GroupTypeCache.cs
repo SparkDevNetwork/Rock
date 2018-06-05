@@ -606,6 +606,18 @@ namespace Rock.Web.Cache
         #region Static Methods
 
         /// <summary>
+        /// Performs an implicit conversion from <see cref="GroupTypeCache"/> to <see cref="CacheGroupType"/>.
+        /// </summary>
+        /// <param name="c">The c.</param>
+        /// <returns>
+        /// The result of the conversion.
+        /// </returns>
+        public static implicit operator CacheGroupType( GroupTypeCache c )
+        {
+            return CacheGroupType.Get( c.Id );
+        }
+
+        /// <summary>
         /// Returns GroupType object from cache.  If groupType does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>

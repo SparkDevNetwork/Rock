@@ -165,7 +165,7 @@ namespace Rock.Cache
             // BlockPropery attributes that may have been added or modified.
             var physicalPath = System.Web.HttpContext.Current.Request.MapPath( Path );
             var fileinfo = new FileInfo( physicalPath );
-            if (!fileinfo.Exists) return;
+            if ( !fileinfo.Exists ) return;
 
             // Create a new FileSystemWatcher and set its properties.
             var watcher = new FileSystemWatcher
@@ -205,7 +205,9 @@ namespace Rock.Cache
 
         #endregion
 
-        private void FileSystemWatcher_OnRenamed(object sender, RenamedEventArgs renamedEventArgs)
+        #region File Watcher Events
+
+        private void FileSystemWatcher_OnRenamed( object sender, RenamedEventArgs renamedEventArgs )
         {
             Remove( Id );
         }
@@ -215,6 +217,7 @@ namespace Rock.Cache
             Remove( Id );
         }
 
+        #endregion
 
     }
 }
