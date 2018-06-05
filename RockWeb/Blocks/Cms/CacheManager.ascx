@@ -77,10 +77,15 @@
 
                             </div>
                             <div id="redisEdit" runat="server">
-                                <div class="row"><div class="col-md-12"><Rock:RockCheckBox ID="cbEnabledEdit" runat="server" Text="Enable" /></div></div>
-                                <div class="row"><div class="col-md-12">End Points<Rock:ListItems ID="liEndPoints" runat="server" Help="List of Redis endpoints (e.g. server.com:6379) to connect to."></Rock:ListItems></div></div>
-                                <div class="row"><div class="col-md-12">Password<Rock:RockTextBox ID="tbPassword" runat="server" TextMode="Password" Help="The password used to connect. The need for a password is dependent on your Redis server configuration." ></Rock:RockTextBox></div></div>
-                                <div class="row"><div class="col-md-12">Database Number<Rock:RockTextBox ID="tbDatabaseNumber" runat="server" TextMode="Number" Help="The database index number (the default is 0)"></Rock:RockTextBox></div></div>
+
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <Rock:RockCheckBox ID="cbEnabledEdit" runat="server" Text="Enable" />
+                                        <Rock:ListItems ID="liEndPoints" runat="server" Help="List of Redis endpoints (e.g. server.com:6379) to connect to." Label="End Points"></Rock:ListItems>
+                                        <Rock:RockTextBox ID="tbPassword" runat="server" TextMode="Password" Help="The password used to connect. The need for a password is dependent on your Redis server configuration." Label="Password" ></Rock:RockTextBox>
+                                        <Rock:RockTextBox ID="tbDatabaseNumber" runat="server" TextMode="Number" Help="The database index number (the default is 0)" Label="Database Number"></Rock:RockTextBox>
+                                    </div>
+                                </div>
                                 
                                 <div class="row">
                                     <div class="col-md-12">
