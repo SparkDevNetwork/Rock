@@ -101,9 +101,9 @@ namespace Rock.Cache
         {
             // We need to get the settings from the DB instead of the cache or else we'll go into an infinite loop (which is bad).
             var attributeService = new Model.AttributeService( new Data.RockContext() );
-            var redisEnabled = attributeService.GetSystemSetting( SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER ).DefaultValue.ToLower();
+            bool redisEnabled = attributeService.GetSystemSetting( SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER )?.DefaultValue.AsBoolean() ?? false;
 
-            if ( redisEnabled == "false" )
+            if ( redisEnabled == false )
             {
                 return new ConfigurationBuilder( "InProcess" )
                 //.WithSystemRuntimeCacheHandle( "inProcessCache" )
