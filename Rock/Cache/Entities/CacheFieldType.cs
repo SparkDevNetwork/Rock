@@ -97,7 +97,7 @@ namespace Rock.Cache
                 return _field;
             }
         }
-        public Field.IFieldType _field = null;
+        private Field.IFieldType _field = null;
 
         #endregion
 

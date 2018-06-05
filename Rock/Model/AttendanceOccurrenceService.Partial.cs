@@ -37,7 +37,6 @@ namespace Rock.Model
         /// <param name="groupId">The group identifier.</param>
         /// <param name="locationId">The location identifier.</param>
         /// <param name="scheduleId">The schedule identifier.</param>
-        /// <param name="">The .</param>
         /// <returns></returns>
         public AttendanceOccurrence Get( DateTime occurrenceDate, int? groupId, int? locationId, int? scheduleId )
         {
