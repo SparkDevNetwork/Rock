@@ -17,11 +17,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Caching;
+using System.Runtime.Serialization;
+
+using Rock.Cache;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
 
 namespace Rock.Web
 {
@@ -29,6 +30,7 @@ namespace Rock.Web
     /// System Settings can be used to persist a key/value 
     /// </summary>
     [Serializable]
+    [DataContract]
     public class SystemSettings
     {
         #region Constructors
@@ -39,6 +41,7 @@ namespace Rock.Web
 
         #region Properties
 
+        [DataMember]
         private List<CacheAttribute> Attributes { get; set; }
 
         #endregion
@@ -165,7 +168,7 @@ namespace Rock.Web
         /// <summary>
         /// Flushes this instance.
         /// </summary>
-        [Obsolete( "Use Remove() method instead")]
+        [Obsolete( "Use Remove() method instead" )]
         public static void Flush()
         {
             Remove();

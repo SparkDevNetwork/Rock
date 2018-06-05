@@ -14,18 +14,19 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Text.RegularExpressions;
+
 using DotLiquid;
-using DotLiquid.Exceptions;
-using Rock.Data;
-using System.Dynamic;
-using Rock.Cache;
 using DotLiquid.Util;
+
+using Rock.Cache;
 
 namespace Rock.Lava.Blocks
 {
@@ -170,7 +171,7 @@ namespace Rock.Lava.Blocks
             var cachedResult = RockCache.Get( cacheKey ) as CacheLavaTag;
 
             // Check that the cached value is current
-            if (cachedResult != null )
+            if ( cachedResult != null )
             {
                 var currentHash = CalculateContentHash( _blockMarkup.ToString() );
                 if ( currentHash != cachedResult.Hash )
@@ -194,7 +195,7 @@ namespace Rock.Lava.Blocks
                 base.Render( context, result );
                 return;
             }
-            
+
             // Cached value not available so render the template and cache it  
             var lavaResults = MergeLava( _blockMarkup.ToString(), context );
 
@@ -221,8 +222,8 @@ namespace Rock.Lava.Blocks
 
             result.Write( lavaResults );
 
-            
-                            
+
+
             base.Render( context, result );
         }
 
@@ -240,6 +241,8 @@ namespace Rock.Lava.Blocks
         /// <summary>
         /// Cace
         /// </summary>
+		[Serializable]
+        [DataContract]
         private class CacheLavaTag
         {
             /// <summary>
@@ -248,13 +251,16 @@ namespace Rock.Lava.Blocks
             /// <value>
             /// The hash.
             /// </value>
+			[DataMember]
             public int Hash { get; set; }
+
             /// <summary>
             /// Gets or sets the lava.
             /// </summary>
             /// <value>
             /// The lava.
             /// </value>
+			[DataMember]
             public string Content { get; set; }
         }
 
@@ -264,7 +270,7 @@ namespace Rock.Lava.Blocks
         /// <param name="lavaTemplate">The lava template.</param>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        private string MergeLava(string lavaTemplate, Context context)
+        private string MergeLava( string lavaTemplate, Context context )
         {
             // Get enabled commands
             var enabledCommands = context.Registers["EnabledCommands"].ToString();
