@@ -410,7 +410,7 @@ namespace RockWeb.Blocks.Finance
 
                 if ( cbIsRefund.Checked )
                 {
-                    if ( txn.RefundDetails != null )
+                    if ( txn.RefundDetails == null )
                     {
                         txn.RefundDetails = new FinancialTransactionRefund();
                     }
