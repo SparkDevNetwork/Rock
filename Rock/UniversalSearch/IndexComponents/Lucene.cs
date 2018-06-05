@@ -21,6 +21,7 @@ using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using Lucene.Net.Analysis;
 using Lucene.Net.Analysis.Core;
 using Lucene.Net.Analysis.Miscellaneous;
@@ -54,35 +55,103 @@ namespace Rock.UniversalSearch.IndexComponents
         private static Dictionary<string, Index> Indexes = new Dictionary<string, Index>();
         private static IndexWriterConfig indexWriterConfig = null;
         private static IndexWriter writer = null;
-        private static SearcherManager searcherManager = null;
-        private static string path = null;
+        private static DirectoryReader reader = null;
+        private static IndexSearcher indexSearcher = null;
         private static FSDirectory _directory;
+        private static Timer timer = null;
+        private static readonly string path = Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "App_Data", "LuceneSearchIndex" );
+        static readonly object lockWriter = new object();
 
         public Lucene()
         {
-            if ( writer == null )
-            {
-                path = Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "App_Data", "LuceneSearchIndex" );
-                // path = System.Web.HttpContext.Current.Server.MapPath( "~/App_Data/LuceneSearchIndex" ); // Do not work with jobs
-                indexWriterConfig = new IndexWriterConfig( MatchVersion, null ) // No default Analyzer. Have to explicitly specify it when using IndexReader/IndexWriter
-                {
-                    OpenMode = OpenMode.CREATE_OR_APPEND,
-                    WriteLockTimeout = 10000
-                };
 
-                indexWriterConfig.OpenMode = OpenMode.CREATE_OR_APPEND;
-                if ( IndexWriter.IsLocked( directory ) )
+        }
+
+        private void OpenWriter()
+        {
+            lock ( lockWriter )
+            {
+                if ( writer == null )
                 {
-                    IndexWriter.Unlock( directory );
+                    // path = System.Web.HttpContext.Current.Server.MapPath( "~/App_Data/LuceneSearchIndex" ); // Do not work with jobs
+                    indexWriterConfig = new IndexWriterConfig( MatchVersion, null ) // No default Analyzer. Have to explicitly specify it when using IndexReader/IndexWriter
+                    {
+                        OpenMode = OpenMode.CREATE_OR_APPEND
+                    };
+
+                    indexWriterConfig.OpenMode = OpenMode.CREATE_OR_APPEND;
+                    if ( IndexWriter.IsLocked( directory ) )
+                    {
+                        IndexWriter.Unlock( directory );
+                    }
+
+                    writer = new IndexWriter( directory, indexWriterConfig );
+                    writer.Flush( true, true );
+                    writer.Commit();
                 }
 
-                writer = new IndexWriter( directory, indexWriterConfig );
+                if ( timer == null )
+                {
+                    timer = new Timer( new TimerCallback( CloseWriter ), null, 10000, 0 );
+                }
+                else
+                {
+                    timer.Change( 10000, 0 );
+                }
+            }
+        }
+
+        private static void FlushWriter()
+        {
+            if ( writer != null )
+            {
                 writer.Flush( true, true );
                 writer.Commit();
-
-                searcherManager = new SearcherManager( writer, true, null );
             }
+        }
 
+        private void CloseWriter( object state )
+        {
+            lock ( lockWriter )
+            {
+                FlushWriter();
+                if ( writer != null )
+                {
+                    try
+                    {
+                        writer.Dispose(true);
+                    }
+                    finally
+                    {
+                        if ( IndexWriter.IsLocked( directory ) )
+                        {
+                            IndexWriter.Unlock( directory );
+                        }
+
+                        writer = null;
+                    }
+                }
+            }
+        }
+
+        private void OpenReader()
+        {
+            if ( reader == null )
+            {
+                reader = DirectoryReader.Open( directory );
+                indexSearcher = new IndexSearcher( reader );
+            }
+            else
+            {
+                DirectoryReader newReader =
+                    DirectoryReader.OpenIfChanged( reader );
+                if ( newReader != null )
+                {
+                    reader.Dispose();
+                    reader = newReader;
+                    indexSearcher = new IndexSearcher( reader );
+                }
+            }
         }
 
         /// <summary>
@@ -105,16 +174,16 @@ namespace Rock.UniversalSearch.IndexComponents
         }
 
         /// <summary>
-        /// Gets a value indicating whether Lucene IndexWriter is connected.
+        /// Lucene is connected when needed, so not needed
         /// </summary>
         /// <value>
-        ///   <c>true</c> if Lucene IndexWriter is connected; otherwise, <c>false</c>.
+        ///   Always return <c>true</c> because it connects as needed.
         /// </value>
         public override bool IsConnected
         {
             get
             {
-                return writer != null && !writer.IsClosed;
+                return true;
             }
         }
 
@@ -219,7 +288,7 @@ namespace Rock.UniversalSearch.IndexComponents
                         }
                         else if ( typeMappingProperty.Analyzer?.ToLowerInvariant() == "whitespace" )
                         {
-                            fieldAnalyzers[typeMappingProperty.Name] = Analyzer.NewAnonymous( createComponents: ( fieldName, reader ) =>
+                            fieldAnalyzers[propertyName] = Analyzer.NewAnonymous( createComponents: ( fieldName, reader ) =>
                             {
                                 var tokenizer = new WhitespaceTokenizer( MatchVersion, reader );
                                 TokenStream result = new StandardFilter( MatchVersion, tokenizer );
@@ -247,9 +316,14 @@ namespace Rock.UniversalSearch.IndexComponents
                 indexName = typeof( T ).Name.ToLower();
             }
 
-            writer.DeleteDocuments( new Term( "type", typeof( T ).Name.ToLower() ) );
-            writer.Flush( true, true );
-            writer.Commit();
+            OpenWriter();
+            lock ( lockWriter )
+            {
+                if ( writer != null )
+                {
+                    writer.DeleteDocuments( new Term( "type", typeof( T ).Name.ToLower() ) );
+                }
+            }
         }
 
         /// <summary>
@@ -266,9 +340,14 @@ namespace Rock.UniversalSearch.IndexComponents
             }
 
             IndexModelBase docIndexModelBase = document as IndexModelBase;
-            writer.DeleteDocuments( new Term( "index", document.GetType().Name.ToLower() + "_" + docIndexModelBase.Id.ToString( "0000000" ) ) );
-            writer.Flush( true, true );
-            writer.Commit();
+            OpenWriter();
+            lock ( lockWriter )
+            {
+                if ( writer != null )
+                {
+                    writer.DeleteDocuments( new Term( "index", document.GetType().Name.ToLower() + "_" + docIndexModelBase.Id.ToString( "0000000" ) ) );
+                }
+            }
         }
 
         /// <summary>
@@ -278,11 +357,16 @@ namespace Rock.UniversalSearch.IndexComponents
         /// <param name="id">The identifier.</param>
         public override void DeleteDocumentById( Type documentType, int id )
         {
-            writer.DeleteDocuments( new Term( "index", documentType.Name.ToLower() + "_" + id.ToString( "0000000" ) ) );
-            writer.Flush( true, true );
-            writer.Commit();
-
-            this.DeleteDocumentByProperty( documentType, "id", id );
+            OpenWriter();
+            lock ( lockWriter )
+            {
+                if ( writer != null )
+                {
+                    writer.DeleteDocuments( new Term( "index", documentType.Name.ToLower() + "_" + id.ToString( "0000000" ) ) );
+                    writer.Flush( true, true );
+                    writer.Commit();
+                }
+            }
         }
 
         /// <summary>
@@ -293,9 +377,14 @@ namespace Rock.UniversalSearch.IndexComponents
         /// <param name="propertyValue">The property value.</param>
         public override void DeleteDocumentByProperty( Type documentType, string propertyName, object propertyValue )
         {
-            writer.DeleteDocuments( new Term[] { new Term( "type", documentType.Name.ToLower() ), new Term( propertyName, propertyValue.ToStringSafe() ) } );
-            writer.Flush( true, true );
-            writer.Commit();
+            OpenWriter();
+            lock ( lockWriter )
+            {
+                if ( writer != null )
+                {
+                    writer.DeleteDocuments( new Term[] { new Term( "type", documentType.Name.ToLower() ), new Term( propertyName, propertyValue.ToStringSafe() ) } );
+                }
+            }
         }
 
         /// <summary>
@@ -304,9 +393,14 @@ namespace Rock.UniversalSearch.IndexComponents
         /// <param name="documentType">Type of the document.</param>
         public override void DeleteIndex( Type documentType )
         {
-            writer.DeleteDocuments( new Term( "type", documentType.Name.ToLower() ) );
-            writer.Flush( true, true );
-            writer.Commit();
+            OpenWriter();
+            lock ( lockWriter )
+            {
+                if ( writer != null )
+                {
+                    writer.DeleteDocuments( new Term( "type", documentType.Name.ToLower() ) );
+                }
+            }
         }
 
         /// <summary>
@@ -328,7 +422,17 @@ namespace Rock.UniversalSearch.IndexComponents
         /// <returns></returns>
         public override IndexModelBase GetDocumentById( Type documentType, string id )
         {
-            throw new NotImplementedException();
+            OpenReader();
+            string mappingType = documentType.Name.ToLower();
+            var query = new TermQuery( new Term( "index", mappingType + "_" + id.PadLeft( 7, '0' ) ) );
+            var docs = indexSearcher.Search( query, 1 );
+
+            if ( docs.TotalHits >= 1 )
+            {
+                return LuceneDocToIndexModel( query, docs.ScoreDocs[0] );
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -367,16 +471,23 @@ namespace Rock.UniversalSearch.IndexComponents
             }
 
             IndexModelBase docIndexModelBase = document as IndexModelBase;
-            doc.AddStoredField( "type", mappingType );
-            doc.AddStoredField( "id", docIndexModelBase.Id.ToString() );
+            string indexValue = mappingType + "_" + docIndexModelBase.Id.ToString( "0000000" );
+            doc.AddStringField( "type", mappingType, global::Lucene.Net.Documents.Field.Store.YES );
+            doc.AddStringField( "id", docIndexModelBase.Id.ToString(), global::Lucene.Net.Documents.Field.Store.YES );
+            doc.AddStringField( "index", indexValue, global::Lucene.Net.Documents.Field.Store.YES );
             doc.AddStoredField( "JSON", document.ToJson() ); // Stores all the properties as JSON to retreive object on lookup
 
             // Use the analyzer in fieldAnalyzers if that field is in that dictionary, otherwise use StandardAnalyzer.
             PerFieldAnalyzerWrapper analyzer = new PerFieldAnalyzerWrapper( defaultAnalyzer: new StandardAnalyzer( MatchVersion ), fieldAnalyzers: index.FieldAnalyzers );
 
-            writer.UpdateDocument( new Term( "index", mappingType + "_" + docIndexModelBase.Id.ToString( "0000000" ) ), doc, analyzer ); // Must specify analyzer because the default analyzer that is specified in indexWriterConfig is null.
-            writer.Flush( true, true );
-            writer.Commit();
+            OpenWriter();
+            lock ( lockWriter )
+            {
+                if ( writer != null )
+                {
+                    writer.UpdateDocument( new Term( "index", indexValue ), doc, analyzer ); // Must specify analyzer because the default analyzer that is specified in indexWriterConfig is null.
+                }
+            }
         }
 
         /// <summary>
@@ -451,6 +562,41 @@ namespace Rock.UniversalSearch.IndexComponents
             combinedTags = combinedTagsDictionary.Keys.ToList();
         }
 
+        private IndexModelBase LuceneDocToIndexModel(Query queryContainer, ScoreDoc hit)
+        {
+            var doc = indexSearcher.Doc( hit.Doc );
+
+            IndexModelBase document = new IndexModelBase();
+
+            try
+            {
+                var hitJsonField = doc.GetField( "JSON" );
+                if ( hitJsonField != null )
+                {
+                    string hitJson = hitJsonField.GetStringValue();
+                    JObject jObject = JObject.Parse( hitJson );
+                    Type indexModelType = Type.GetType( $"{ jObject["IndexModelType"].ToStringSafe() }, { jObject["IndexModelAssembly"].ToStringSafe() }" );
+
+                    if ( indexModelType != null )
+                    {
+                        document = (IndexModelBase)jObject.ToObject( indexModelType ); // return the source document as the derived type
+                    }
+                    else
+                    {
+                        document = jObject.ToObject<IndexModelBase>(); // return the source document as the base type
+                    }
+                }
+
+                Explanation explanation = indexSearcher.Explain( queryContainer, hit.Doc );
+                document["Explain"] = explanation.ToString();
+                document.Score = hit.Score;
+
+                return document;
+            }
+            catch { } // ignore if the result if an exception resulted (most likely cause is getting a result from a non-rock index)
+            return null;
+        }
+
         /// <summary>
         /// Searches the specified query.
         /// </summary>
@@ -466,106 +612,184 @@ namespace Rock.UniversalSearch.IndexComponents
         {
             List<IndexModelBase> documents = new List<IndexModelBase>();
             totalResultsAvailable = 0;
+            bool allEntities = false;
 
-            if ( writer != null )
+            BooleanQuery queryContainer = new BooleanQuery();
+            List<string> combinedFields = new List<string>();
+            List<Type> indexModelTypes = new List<Type>();
+            Dictionary<string, Analyzer> combinedFieldAnalyzers = new Dictionary<string, Analyzer>();
+
+            using ( RockContext rockContext = new RockContext() )
             {
-                BooleanQuery queryContainer = new BooleanQuery();
-                List<string> combinedFields = new List<string>();
-                List<Type> indexModelTypes = new List<Type>();
-                Dictionary<string, Analyzer> combinedFieldAnalyzers = new Dictionary<string, Analyzer>();
-
-                using ( RockContext rockContext = new RockContext() )
+                var entityTypeService = new EntityTypeService( rockContext );
+                if ( entities == null || entities.Count == 0 )
                 {
-                    var entityTypeService = new EntityTypeService( rockContext );
-                    if ( entities == null || entities.Count == 0 )
+                    //add all entities
+                    allEntities = true;
+                    var selectedEntityTypes = CacheEntityType.All().Where( e => e.IsIndexingSupported && e.IsIndexingEnabled && e.FriendlyName != "Site" );
+
+                    foreach ( var entityTypeCache in selectedEntityTypes )
                     {
-                        //add all entities
-                        var selectedEntityTypes = CacheEntityType.All().Where( e => e.IsIndexingSupported && e.IsIndexingEnabled && e.FriendlyName != "Site" );
-
-                        foreach ( var entityTypeCache in selectedEntityTypes )
-                        {
-                            entities.Add( entityTypeCache.Id );
-                        }
-                    }
-
-                    foreach ( var entityId in entities )
-                    {
-                        // get entities search model name
-                        var entityType = entityTypeService.Get( entityId );
-                        indexModelTypes.Add( entityType.IndexModelType );
-
-                        // check if this is a person model, if so we need to add two model types one for person and the other for businesses
-                        // wish there was a cleaner way to do this
-                        if ( entityType.Guid == SystemGuid.EntityType.PERSON.AsGuid() )
-                        {
-                            indexModelTypes.Add( typeof( BusinessIndex ) );
-                        }
-                    }
-
-                    indexModelTypes = indexModelTypes.Distinct().ToList();
-                    CombineIndexTypes( indexModelTypes, out combinedFields, out combinedFieldAnalyzers );
-
-                    if ( entities != null && entities.Count != 0 )
-                    {
-                        var indexModelTypesQuery = new BooleanQuery();
-                        indexModelTypes.ForEach( f => indexModelTypesQuery.Add( new PrefixQuery( new Term( "type", f.Name.ToLower() ) ), Occur.SHOULD ) );
-                        queryContainer.Add( indexModelTypesQuery, Occur.MUST );
+                        entities.Add( entityTypeCache.Id );
                     }
                 }
 
-                TopDocs topDocs = null;
-                // Use the analyzer in fieldAnalyzers if that field is in that dictionary, otherwise use StandardAnalyzer.
-                PerFieldAnalyzerWrapper analyzer = new PerFieldAnalyzerWrapper( defaultAnalyzer: new StandardAnalyzer( MatchVersion ), fieldAnalyzers: combinedFieldAnalyzers );
-
-                BooleanQuery fieldCriteriaQuery = new BooleanQuery();
-
-                if ( fieldCriteria != null && fieldCriteria.FieldValues?.Count > 0 )
+                foreach ( var entityId in entities )
                 {
-                    Occur occur = fieldCriteria.SearchType == CriteriaSearchType.And ? Occur.MUST : Occur.SHOULD;
-                    foreach ( var match in fieldCriteria.FieldValues )
-                    {
-                        BooleanClause booleanClause = new BooleanClause( new TermQuery( new Term( match.Field, match.Value ) ), occur );
-                        booleanClause.Query.Boost = match.Boost;
-                        fieldCriteriaQuery.Add( booleanClause );
-                    }
+                    // get entities search model name
+                    var entityType = entityTypeService.Get( entityId );
+                    indexModelTypes.Add( entityType.IndexModelType );
 
-                    queryContainer.Add( fieldCriteriaQuery, Occur.MUST );
+                    // check if this is a person model, if so we need to add two model types one for person and the other for businesses
+                    // wish there was a cleaner way to do this
+                    if ( entityType.Guid == SystemGuid.EntityType.PERSON.AsGuid() )
+                    {
+                        indexModelTypes.Add( typeof( BusinessIndex ) );
+                    }
                 }
 
-                switch ( searchType )
-                {
-                    case SearchType.ExactMatch:
-                        {
-                            var wordQuery = new BooleanQuery();
+                indexModelTypes = indexModelTypes.Distinct().ToList();
+                CombineIndexTypes( indexModelTypes, out combinedFields, out combinedFieldAnalyzers );
 
-                            if ( !string.IsNullOrWhiteSpace( query ) )
+                if ( entities != null && entities.Count != 0 && !allEntities )
+                {
+                    var indexModelTypesQuery = new BooleanQuery();
+                    indexModelTypes.ForEach( f => indexModelTypesQuery.Add( new TermQuery( new Term( "type", f.Name.ToLower() ) ), Occur.SHOULD ) );
+                    queryContainer.Add( indexModelTypesQuery, Occur.MUST );
+                }
+            }
+
+            TopDocs topDocs = null;
+            // Use the analyzer in fieldAnalyzers if that field is in that dictionary, otherwise use StandardAnalyzer.
+            PerFieldAnalyzerWrapper analyzer = new PerFieldAnalyzerWrapper( defaultAnalyzer: new StandardAnalyzer( MatchVersion ), fieldAnalyzers: combinedFieldAnalyzers );
+
+            BooleanQuery fieldCriteriaQuery = new BooleanQuery();
+
+            if ( fieldCriteria != null && fieldCriteria.FieldValues?.Count > 0 )
+            {
+                Occur occur = fieldCriteria.SearchType == CriteriaSearchType.And ? Occur.MUST : Occur.SHOULD;
+                foreach ( var match in fieldCriteria.FieldValues )
+                {
+                    BooleanClause booleanClause = new BooleanClause( new TermQuery( new Term( match.Field, match.Value ) ), occur );
+                    booleanClause.Query.Boost = match.Boost;
+                    fieldCriteriaQuery.Add( booleanClause );
+                }
+
+                queryContainer.Add( fieldCriteriaQuery, Occur.MUST );
+            }
+
+            switch ( searchType )
+            {
+                case SearchType.ExactMatch:
+                    {
+                        var wordQuery = new BooleanQuery();
+
+                        if ( !string.IsNullOrWhiteSpace( query ) )
+                        {
+                            var words = query.Split( new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries );
+                            foreach ( var word in words )
                             {
-                                var words = query.Split( new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries );
-                                foreach ( var word in words )
+                                var innerQuery = new BooleanQuery();
+                                combinedFields.ForEach( f => innerQuery.Add( new PrefixQuery( new Term( f, word.ToLower() ) ), Occur.SHOULD ) );
+                                wordQuery.Add( innerQuery, Occur.SHOULD );
+                            }
+                        }
+
+                        if ( wordQuery.Count() != 0 )
+                        {
+                            queryContainer.Add( wordQuery, Occur.MUST );
+                        }
+
+                        // special logic to support emails
+                        if ( query.Contains( "@" ) )
+                        {
+                            queryContainer.Add( new BooleanClause( new TermQuery( new Term( "Email", query ) ), Occur.SHOULD ) );
+                        }
+
+                        // special logic to support phone search
+                        if ( query.IsDigitsOnly() )
+                        {
+                            queryContainer.Add( new BooleanClause( new WildcardQuery( new Term( "PhoneNumbers", "*" + query + "*" ) ), Occur.SHOULD ) );
+                        }
+
+                        // add a search for all the words as one single search term
+                        foreach ( var field in combinedFields )
+                        {
+                            var phraseQuery = new PhraseQuery();
+                            phraseQuery.Add( new Term( field, query.ToLower() ) );
+                            queryContainer.Add( phraseQuery, Occur.SHOULD );
+                        }
+
+                        break;
+                    }
+                case SearchType.Fuzzy:
+                    {
+                        foreach ( var field in combinedFields )
+                        {
+                            queryContainer.Add( new FuzzyQuery( new Term( field, query.ToLower() ) ), Occur.SHOULD );
+                        }
+                        break;
+                    }
+                case SearchType.Wildcard:
+                    {
+                        bool enablePhraseSearch = true;
+
+                        if ( !string.IsNullOrWhiteSpace( query ) )
+                        {
+                            BooleanQuery wildcardQuery = new BooleanQuery();
+
+                            // break each search term into a separate query and add the * to the end of each
+                            var queryTerms = query.Split( ' ' ).Select( p => p.Trim() ).ToList();
+
+                            // special logic to support emails
+                            if ( queryTerms.Count == 1 && query.Contains( "@" ) )
+                            {
+                                wildcardQuery.Add( new WildcardQuery( new Term( "Email", "*" + query.ToLower() + "*" ) ), Occur.SHOULD );
+                                enablePhraseSearch = false;
+                            }
+                            else
+                            {
+                                foreach ( var queryTerm in queryTerms )
                                 {
-                                    var innerQuery = new BooleanQuery();
-                                    combinedFields.ForEach( f => innerQuery.Add( new PrefixQuery( new Term( f, word.ToLower() ) ), Occur.SHOULD ) );
-                                    wordQuery.Add( innerQuery, Occur.SHOULD );
+                                    if ( !string.IsNullOrWhiteSpace( queryTerm ) )
+                                    {
+                                        var innerQuery = new BooleanQuery();
+                                        combinedFields.ForEach( f => innerQuery.Add( new PrefixQuery( new Term( f, queryTerm.ToLower() ) ), Occur.SHOULD ) );
+                                        wildcardQuery.Add( innerQuery, Occur.MUST );
+                                    }
+                                }
+
+                                // add special logic to help boost last names
+                                if ( queryTerms.Count() > 1 && ( indexModelTypes.Contains( typeof( PersonIndex ) ) || indexModelTypes.Contains( typeof( BusinessIndex ) ) ) )
+                                {
+                                    BooleanQuery nameQuery = new BooleanQuery
+                                        {
+                                            { new PrefixQuery( new Term( "FirstName", queryTerms.First().ToLower() ) ), Occur.MUST },
+                                            { new PrefixQuery( new Term( "LastName", queryTerms.Last().ToLower() ) ) { Boost = 30 }, Occur.MUST }
+                                        };
+                                    wildcardQuery.Add( nameQuery, Occur.SHOULD );
+
+                                    nameQuery = new BooleanQuery
+                                        {
+                                            { new PrefixQuery( new Term( "NickName", queryTerms.First().ToLower() ) ), Occur.MUST },
+                                            { new PrefixQuery( new Term( "LastName", queryTerms.Last().ToLower() ) ) { Boost = 30 }, Occur.MUST }
+                                        };
+                                    wildcardQuery.Add( nameQuery, Occur.SHOULD );
+                                }
+
+                                // special logic to support phone search
+                                if ( query.IsDigitsOnly() )
+                                {
+                                    wildcardQuery.Add( new PrefixQuery( new Term( "PhoneNumbers", queryTerms.First().ToLower() ) ), Occur.SHOULD );
                                 }
                             }
 
-                            if ( wordQuery.Count() != 0 )
-                            {
-                                queryContainer.Add( wordQuery, Occur.MUST );
-                            }
+                            queryContainer.Add( wildcardQuery, Occur.MUST );
+                        }
 
-                            // special logic to support emails
-                            if ( query.Contains( "@" ) )
-                            {
-                                queryContainer.Add( new BooleanClause( new TermQuery( new Term( "email", query ) ), Occur.SHOULD ) );
-                            }
-
-                            // special logic to support phone search
-                            if ( query.IsDigitsOnly() )
-                            {
-                                queryContainer.Add( new BooleanClause( new WildcardQuery( new Term( "phone", "*" + query + "*" ) ), Occur.SHOULD ) );
-                            }
-
+                        // add a search for all the words as one single search term
+                        if ( enablePhraseSearch )
+                        {
                             // add a search for all the words as one single search term
                             foreach ( var field in combinedFields )
                             {
@@ -573,152 +797,43 @@ namespace Rock.UniversalSearch.IndexComponents
                                 phraseQuery.Add( new Term( field, query.ToLower() ) );
                                 queryContainer.Add( phraseQuery, Occur.SHOULD );
                             }
-
-                            break;
                         }
-                    case SearchType.Fuzzy:
-                        {
-                            foreach ( var field in combinedFields )
-                            {
-                                queryContainer.Add( new FuzzyQuery( new Term( field, query.ToLower() ) ), Occur.SHOULD );
-                            }
-                            break;
-                        }
-                    case SearchType.Wildcard:
-                        {
-                            bool enablePhraseSearch = true;
 
-                            if ( !string.IsNullOrWhiteSpace( query ) )
-                            {
-                                BooleanQuery wildcardQuery = new BooleanQuery();
+                        break;
+                    }
+            }
 
-                                // break each search term into a separate query and add the * to the end of each
-                                var queryTerms = query.Split( ' ' ).Select( p => p.Trim() ).ToList();
+            int returnSize = 10;
+            if ( size.HasValue )
+            {
+                returnSize = size.Value;
+            }
 
-                                // special logic to support emails
-                                if ( queryTerms.Count == 1 && query.Contains( "@" ) )
-                                {
-                                    wildcardQuery.Add( new WildcardQuery( new Term( "email", "*" + query.ToLower() + "*" ) ), Occur.SHOULD );
-                                    enablePhraseSearch = false;
-                                }
-                                else
-                                {
-                                    foreach ( var queryTerm in queryTerms )
-                                    {
-                                        if ( !string.IsNullOrWhiteSpace( queryTerm ) )
-                                        {
-                                            var innerQuery = new BooleanQuery();
-                                            combinedFields.ForEach( f => innerQuery.Add( new PrefixQuery( new Term( f, queryTerm.ToLower() ) ), Occur.SHOULD ) );
-                                            wildcardQuery.Add( innerQuery, Occur.MUST );
-                                        }
-                                    }
+            OpenReader();
 
-                                    // add special logic to help boost last names
-                                    if ( queryTerms.Count() > 1 && ( indexModelTypes.Contains( typeof( PersonIndex ) ) || indexModelTypes.Contains( typeof( BusinessIndex ) ) ) )
-                                    {
-                                        BooleanQuery nameQuery = new BooleanQuery
-                                        {
-                                            { new PrefixQuery( new Term( "FirstName", queryTerms.First().ToLower() ) ), Occur.MUST },
-                                            { new PrefixQuery( new Term( "LastName", queryTerms.Last().ToLower() ) ) { Boost = 30 }, Occur.MUST }
-                                        };
-                                        wildcardQuery.Add( nameQuery, Occur.SHOULD );
+            if ( from.HasValue )
+            {
+                TopScoreDocCollector collector = TopScoreDocCollector.Create( returnSize * 10, true ); // Search for 10 pages with returnSize entries in each page
+                indexSearcher.Search( queryContainer, collector );
+                topDocs = collector.GetTopDocs( from.Value, returnSize );
+            }
+            else
+            {
+                topDocs = indexSearcher.Search( queryContainer, returnSize );
+            }
 
-                                        nameQuery = new BooleanQuery
-                                        {
-                                            { new PrefixQuery( new Term( "NickName", queryTerms.First().ToLower() ) ), Occur.MUST },
-                                            { new PrefixQuery( new Term( "LastName", queryTerms.Last().ToLower() ) ) { Boost = 30 }, Occur.MUST }
-                                        };
-                                        wildcardQuery.Add( nameQuery, Occur.SHOULD );
+            totalResultsAvailable = topDocs.TotalHits;
 
-                                    }
-
-                                    // special logic to support phone search
-                                    if ( query.IsDigitsOnly() )
-                                    {
-                                        wildcardQuery.Add( new PrefixQuery( new Term( "PhoneNumbers", queryTerms.First().ToLower() ) ), Occur.SHOULD );
-                                    }
-                                }
-
-                                queryContainer.Add( wildcardQuery, Occur.MUST );
-                            }
-
-                            // add a search for all the words as one single search term
-                            if ( enablePhraseSearch )
-                            {
-                                // add a search for all the words as one single search term
-                                foreach ( var field in combinedFields )
-                                {
-                                    var phraseQuery = new PhraseQuery();
-                                    phraseQuery.Add( new Term( field, query.ToLower() ) );
-                                    queryContainer.Add( phraseQuery, Occur.SHOULD );
-                                }
-                            }
-
-                            break;
-                        }
-                }
-
-                int returnSize = 10;
-                if ( size.HasValue )
+            if ( topDocs != null )
+            {
+                foreach ( var hit in topDocs.ScoreDocs )
                 {
-                    returnSize = size.Value;
-                }
-
-                searcherManager.MaybeRefreshBlocking();
-                IndexSearcher indexSearcher = searcherManager.Acquire();
-
-                if ( from.HasValue )
-                {
-                    TopScoreDocCollector collector = TopScoreDocCollector.Create( returnSize * 10, true ); // Search for 10 pages with returnSize entries in each page
-                    indexSearcher.Search( queryContainer, collector );
-                    topDocs = collector.GetTopDocs( from.Value, returnSize );
-                }
-                else
-                {
-                    topDocs = indexSearcher.Search( queryContainer, returnSize );
-                }
-
-                totalResultsAvailable = topDocs.TotalHits;
-
-                if ( topDocs != null )
-                {
-                    foreach ( var hit in topDocs.ScoreDocs )
+                    var document = LuceneDocToIndexModel( queryContainer, hit );
+                    if ( document != null)
                     {
-                        var doc = indexSearcher.Doc( hit.Doc );
-
-                        IndexModelBase document = new IndexModelBase();
-
-                        try
-                        {
-                            var hitJsonField = doc.GetField( "JSON" );
-                            if ( hitJsonField != null )
-                            {
-                                string hitJson = hitJsonField.GetStringValue();
-                                JObject jObject = JObject.Parse( hitJson );
-                                Type indexModelType = Type.GetType( $"{ jObject["IndexModelType"].ToStringSafe() }, { jObject["IndexModelAssembly"].ToStringSafe() }" );
-
-                                if ( indexModelType != null )
-                                {
-                                    document = (IndexModelBase)jObject.ToObject( indexModelType ); // return the source document as the derived type
-                                }
-                                else
-                                {
-                                    document = jObject.ToObject<IndexModelBase>(); // return the source document as the base type
-                                }
-                            }
-
-                            Explanation explanation = indexSearcher.Explain( queryContainer, hit.Doc );
-                            document["Explain"] = explanation.ToString();
-                            document.Score = hit.Score;
-
-                            documents.Add( document );
-                        }
-                        catch { } // ignore if the result if an exception resulted (most likely cause is getting a result from a non-rock index)
+                        documents.Add( document );
                     }
                 }
-
-                searcherManager.Release( indexSearcher );
-                indexSearcher = null; // Don't use searcher after this point!
             }
 
             return documents;
@@ -729,24 +844,29 @@ namespace Rock.UniversalSearch.IndexComponents
         /// </summary>
         public static void Dispose()
         {
-            if ( writer != null )
+            lock ( lockWriter )
             {
-                try
+                if ( writer != null )
                 {
-                    writer.Dispose();
-                }
-                finally
-                {
-                    if ( IndexWriter.IsLocked( directory ) )
+                    try
                     {
-                        IndexWriter.Unlock( directory );
+                        FlushWriter();
+                        writer.Dispose();
                     }
+                    finally
+                    {
+                        if ( IndexWriter.IsLocked( directory ) )
+                        {
+                            IndexWriter.Unlock( directory );
+                        }
 
-                    writer = null;
+                        writer = null;
+                    }
                 }
             }
-            searcherManager?.Dispose();
-            searcherManager = null;
+
+            reader?.Dispose();
+            reader = null;
         }
 
         /// <summary>
