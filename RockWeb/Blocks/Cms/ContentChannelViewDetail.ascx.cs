@@ -18,21 +18,15 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Runtime.Caching;
-using System.Text;
-using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-using DotLiquid;
+
 using Rock;
 using Rock.Attribute;
-using Rock.Data;
-using Rock.Field.Types;
-using Rock.Model;
-using Rock.Security;
 using Rock.Cache;
+using Rock.Data;
+using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -81,12 +75,35 @@ Guid - ContentChannelItem Guid
     [TextField( "Open Graph Description Attribute", required: false, category: "CustomSetting" )]
     [TextField( "Open Graph Image Attribute", required: false, category: "CustomSetting" )]
     [TextField( "Twitter Title Attribute", required: false, category: "CustomSetting" )]
-    [TextField( "Twitter Title Description", required: false, category: "CustomSetting" )]
-    [TextField( "Twitter Title Image", required: false, category: "CustomSetting" )]
-    [TextField( "Twitter Title Attribute", required: false, category: "CustomSetting" )]
-    [TextField( "Twitter Card", required: false, category: "CustomSetting" )]
+    [TextField( "Twitter Description Attribute", required: false, category: "CustomSetting" )]
+    [TextField( "Twitter Image Attribute", required: false, category: "CustomSetting" )]
+    [TextField( "Twitter Card", required: false, defaultValue: "none", category: "CustomSetting" )]
     public partial class ContentChannelViewDetail : RockBlockCustomSettings
     {
+        #region Fields
+
+        private readonly string OUTPUT_CACHE_KEY = "Output";
+
+        #endregion
+
+        #region Base Control Methods
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
+
+            if ( !Page.IsPostBack )
+            {
+                ShowView();
+            }
+        }
+
+        #endregion Base Control Methods
+
         #region Settings
 
         /// <summary>
@@ -102,13 +119,16 @@ Guid - ContentChannelItem Guid
                 ddlContentChannel.Items.Add( new ListItem( contentChannel.Name, contentChannel.Guid.ToString() ) );
             }
 
-            ddlContentChannel.SetValue( this.GetAttributeValue( "ContentChannel" ).AsGuidOrNull() );
+            var channelGuid = this.GetAttributeValue( "ContentChannel" ).AsGuidOrNull();
+            ddlContentChannel.SetValue( channelGuid );
+            UpdateSocialMediaDropdowns( channelGuid );
 
             tbContentChannelQueryParameter.Text = this.GetAttributeValue( "ContentChannelQueryParameter" );
             ceLavaTemplate.Text = this.GetAttributeValue( "LavaTemplate" );
-            rbOutputCacheDuration.Text = this.GetAttributeValue( "OutputCacheDuration" );
+            nbOutputCacheDuration.Text = this.GetAttributeValue( "OutputCacheDuration" );
             cbSetPageTitle.Checked = this.GetAttributeValue( "SetPageTitle" ).AsBoolean();
 
+            // Interaction
             ddlInteractionChannel.Items.Clear();
             ddlInteractionChannel.Items.Add( new ListItem() );
             foreach ( var interactionChannel in CacheInteractionChannel.All().OrderBy( a => a.Name ) )
@@ -116,12 +136,40 @@ Guid - ContentChannelItem Guid
                 ddlInteractionChannel.Items.Add( new ListItem( interactionChannel.Name, interactionChannel.Guid.ToString() ) );
             }
 
+            ddlInteractionChannel.SetValue( this.GetAttributeValue( "InteractionChannel" ).AsGuidOrNull() );
+
 
             tbInteractionOperation.Text = this.GetAttributeValue( "InteractionOperation" );
             cbWriteInteractionOnlyIfIndividualLoggedIn.Checked = this.GetAttributeValue( "WriteInteractionOnlyIfIndividualLoggedIn" ).AsBoolean();
 
-            //ddlMetaDescriptionAttribute
+            var rockContext = new RockContext();
 
+            // Workflow
+            Guid? workflowTypeGuid = this.GetAttributeValue( "WorkflowType" ).AsGuidOrNull();
+            if ( workflowTypeGuid.HasValue )
+            {
+                wtpWorkflowType.SetValue( new WorkflowTypeService( rockContext ).GetNoTracking( workflowTypeGuid.Value ) );
+            }
+            else
+            {
+                wtpWorkflowType.SetValue( null );
+            }
+
+            cbLaunchWorkflowOnlyIfIndividualLoggedIn.Checked = this.GetAttributeValue( "LaunchWorkflowOnlyIfIndividualLoggedIn" ).AsBoolean();
+            cbLaunchWorkflowOncePerPerson.Checked = this.GetAttributeValue( "LaunchWorkflowOncePerPerson" ).AsBoolean();
+
+
+            // Social Media
+            ddlMetaDescriptionAttribute.SetValue( this.GetAttributeValue( "MetaDescriptionAttribute" ) );
+            ddlOpenGraphType.SetValue( this.GetAttributeValue( "OpenGraphType" ) );
+            ddlOpenGraphTitleAttribute.SetValue( this.GetAttributeValue( "OpenGraphTitleAttribute" ) );
+            ddlOpenGraphDescriptionAttribute.SetValue( this.GetAttributeValue( "OpenGraphDescriptionAttribute" ) );
+            ddlOpenGraphImageAttribute.SetValue( this.GetAttributeValue( "OpenGraphImageAttribute" ) );
+
+            ddlTwitterTitleAttribute.SetValue( this.GetAttributeValue( "TwitterTitleAttribute" ) );
+            ddlTwitterDescriptionAttribute.SetValue( this.GetAttributeValue( "TwitterDescriptionAttribute" ) );
+            ddlTwitterImageAttribute.SetValue( this.GetAttributeValue( "TwitterImageAttribute" ) );
+            rblTwitterCard.SetValue( this.GetAttributeValue( "TwitterCard" ) );
 
             mdSettings.Show();
         }
@@ -133,7 +181,30 @@ Guid - ContentChannelItem Guid
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void mdSettings_SaveClick( object sender, EventArgs e )
         {
-            // TODO
+            this.SetAttributeValue( "ContentChannel", ddlContentChannel.SelectedValue );
+            this.SetAttributeValue( "ContentChannelQueryParameter", tbContentChannelQueryParameter.Text );
+            this.SetAttributeValue( "LavaTemplate", ceLavaTemplate.Text );
+            this.SetAttributeValue( "OutputCacheDuration", nbOutputCacheDuration.Text );
+            this.SetAttributeValue( "SetPageTitle", cbSetPageTitle.Checked.ToString() );
+            this.SetAttributeValue( "InteractionChannel", ddlInteractionChannel.SelectedValue );
+            this.SetAttributeValue( "InteractionOperation", tbInteractionOperation.Text );
+            this.SetAttributeValue( "WriteInteractionOnlyIfIndividualLoggedIn", cbWriteInteractionOnlyIfIndividualLoggedIn.Checked.ToString() );
+            this.SetAttributeValue( "WorkflowType", wtpWorkflowType.SelectedValue );
+            this.SetAttributeValue( "LaunchWorkflowOnlyIfIndividualLoggedIn", cbLaunchWorkflowOnlyIfIndividualLoggedIn.Checked.ToString() );
+            this.SetAttributeValue( "LaunchWorkflowOncePerPerson", cbLaunchWorkflowOncePerPerson.Checked.ToString() );
+            this.SetAttributeValue( "MetaDescriptionAttribute", ddlMetaDescriptionAttribute.SelectedValue );
+            this.SetAttributeValue( "OpenGraphType", ddlOpenGraphType.SelectedValue );
+            this.SetAttributeValue( "OpenGraphTitleAttribute", ddlOpenGraphTitleAttribute.SelectedValue );
+            this.SetAttributeValue( "OpenGraphDescriptionAttribute", ddlOpenGraphDescriptionAttribute.SelectedValue );
+            this.SetAttributeValue( "OpenGraphImageAttribute", ddlOpenGraphImageAttribute.SelectedValue );
+            this.SetAttributeValue( "TwitterTitleAttribute", ddlTwitterTitleAttribute.SelectedValue );
+            this.SetAttributeValue( "TwitterDescriptionAttribute", ddlTwitterDescriptionAttribute.SelectedValue );
+            this.SetAttributeValue( "TwitterImageAttribute", ddlTwitterImageAttribute.SelectedValue );
+            this.SetAttributeValue( "TwitterCard", rblTwitterCard.SelectedValue );
+
+            SaveAttributeValues();
+
+            RemoveCacheItem( OUTPUT_CACHE_KEY );
 
             mdSettings.Hide();
             pnlSettings.Visible = false;
@@ -144,19 +215,249 @@ Guid - ContentChannelItem Guid
 
         #endregion Settings
 
+        #region Events
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlContentChannel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlContentChannel_SelectedIndexChanged( object sender, EventArgs e )
         {
-
+            var channelGuid = ddlContentChannel.SelectedValue.AsGuidOrNull();
+            UpdateSocialMediaDropdowns( channelGuid );
         }
 
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlInteractionChannel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlInteractionChannel_SelectedIndexChanged( object sender, EventArgs e )
         {
-
+            // TODO
         }
 
+        /// <summary>
+        /// Handles the SelectItem event of the wtpWorkflowType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void wtpWorkflowType_SelectItem( object sender, EventArgs e )
         {
-
+            // TODO
         }
+
+        #endregion Events
+
+        #region Methods
+
+        /// <summary>
+        /// Shows the view.
+        /// </summary>
+        private void ShowView()
+        {
+            // todo
+            int? outputCacheDuration = GetAttributeValue( "OutputCacheDuration" ).AsIntegerOrNull();
+
+            string outputContents = null;
+
+            if ( outputCacheDuration.HasValue && outputCacheDuration.Value > 0 )
+            {
+                outputContents = GetCacheItem( OUTPUT_CACHE_KEY ) as string;
+            }
+
+            if ( outputContents == null )
+            {
+                ContentChannelItem contentChannelItem = null;
+                // TODO
+
+                var rockContext = new RockContext();
+                contentChannelItem = new ContentChannelItemService( rockContext ).Get( 1 );
+                if ( contentChannelItem == null )
+                {
+                    return;
+                }
+
+                contentChannelItem.LoadAttributes();
+
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
+                mergeFields.Add( "Item", contentChannelItem );
+
+
+                string metaDescriptionValue = GetMetaValueFromAttribute( this.GetAttributeValue( "MetaDescriptionAttribute" ), contentChannelItem );
+
+                if ( !string.IsNullOrWhiteSpace( metaDescriptionValue ) )
+                {
+                    // remove default meta description
+                    RockPage.Header.Description = metaDescriptionValue.SanitizeHtml( true );
+                }
+
+                AddHtmlMeta( "og:type", this.GetAttributeValue( "OpenGraphType" ) );
+                AddHtmlMeta( "og:title", GetMetaValueFromAttribute( this.GetAttributeValue( "OpenGraphTitleAttribute" ), contentChannelItem ) );
+                AddHtmlMeta( "og:description", GetMetaValueFromAttribute( this.GetAttributeValue( "OpenGraphDescriptionAttribute" ), contentChannelItem ) );
+                AddHtmlMeta( "og:image", GetMetaValueFromAttribute( this.GetAttributeValue( "OpenGraphImageAttribute" ), contentChannelItem ) );
+                AddHtmlMeta( "twitter:title", GetMetaValueFromAttribute( this.GetAttributeValue( "TwitterTitleAttribute" ), contentChannelItem ) );
+                AddHtmlMeta( "twitter:description", GetMetaValueFromAttribute( this.GetAttributeValue( "TwitterDescriptionAttribute" ), contentChannelItem ) );
+                AddHtmlMeta( "twitter:image", GetMetaValueFromAttribute( this.GetAttributeValue( "TwitterImageAttribute" ), contentChannelItem ) );
+                AddHtmlMeta( "twitter:card", this.GetAttributeValue( "TwitterCard" ) );
+
+                string lavaTemplate = this.GetAttributeValue( "LavaTemplate" );
+                string enabledLavaCommands = this.GetAttributeValue( "EnabledLavaCommands" );
+                outputContents = lavaTemplate.ResolveMergeFields( mergeFields, enabledLavaCommands );
+            }
+
+            phContent.Controls.Add( new LiteralControl( outputContents ) );
+        }
+
+        /// <summary>
+        /// Adds the HTML meta from attribute value.
+        /// </summary>
+        /// <param name="metaName">Name of the meta.</param>
+        /// <param name="metaContent">Content of the meta.</param>
+        private void AddHtmlMeta( string metaName, string metaContent )
+        {
+            if ( string.IsNullOrEmpty( metaContent ) )
+            {
+                return;
+            }
+
+            RockPage.Header.Controls.Add( new HtmlMeta
+            {
+                Name = metaName,
+                Content = metaContent
+            } );
+        }
+
+        /// <summary>
+        /// Gets the meta value from attribute.
+        /// </summary>
+        /// <param name="attributeComputedKey">The attribute computed key.</param>
+        /// <param name="contentChannelItem">The content channel item.</param>
+        /// <returns>
+        /// a string value
+        /// </returns>
+        private string GetMetaValueFromAttribute( string attributeComputedKey, ContentChannelItem contentChannelItem )
+        {
+            if ( string.IsNullOrEmpty(attributeComputedKey) )
+            {
+                return null;
+            }
+
+            string attributeEntityType = attributeComputedKey.Split( '^' )[0].ToString() ?? "C";
+            string attributeKey = attributeComputedKey.Split( '^' )[1].ToString() ?? "";
+
+            string attributeValue = string.Empty;
+
+            object mergeObject;
+
+            if ( attributeEntityType == "C" )
+            {
+                mergeObject = CacheContentChannel.Get( contentChannelItem.ContentChannelId );
+            }
+            else
+            {
+                mergeObject = contentChannelItem;
+            }
+
+            string metaTemplate = string.Format( "{{{{ mergeObject | Attribute:'{0}':'Url' }}}}", attributeKey );
+
+            string resolvedValue = metaTemplate.ResolveMergeFields( new Dictionary<string, object> { { "mergeObject", mergeObject } } );
+
+            return resolvedValue;
+        }
+
+        /// <summary>
+        /// Updates the social media dropdowns.
+        /// </summary>
+        /// <param name="channelGuid">The channel unique identifier.</param>
+        private void UpdateSocialMediaDropdowns( Guid? channelGuid )
+        {
+            List<CacheAttribute> channelAttributes = new List<CacheAttribute>();
+            List<CacheAttribute> itemAttributes = new List<CacheAttribute>();
+
+            if ( channelGuid.HasValue )
+            {
+                var rockContext = new RockContext();
+                var channel = new ContentChannelService( rockContext ).GetNoTracking( channelGuid.Value );
+
+                // add channel attributes
+                channel.LoadAttributes();
+                channelAttributes = channel.Attributes.Select( a => a.Value ).ToList();
+
+                // add item attributes
+                AttributeService attributeService = new AttributeService( rockContext );
+                itemAttributes = attributeService.GetByEntityTypeId( new ContentChannelItem().TypeId, false ).AsQueryable()
+                                        .Where( a => (
+                                                a.EntityTypeQualifierColumn.Equals( "ContentChannelTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                                                a.EntityTypeQualifierValue.Equals( channel.ContentChannelTypeId.ToString() )
+                                            ) || (
+                                                a.EntityTypeQualifierColumn.Equals( "ContentChannelId", StringComparison.OrdinalIgnoreCase ) &&
+                                                a.EntityTypeQualifierValue.Equals( channel.Id.ToString() )
+                                            ) )
+                                        .OrderByDescending( a => a.EntityTypeQualifierColumn )
+                                        .ThenBy( a => a.Order )
+                                        .ToCacheAttributeList();
+            }
+
+            RockDropDownList[] attributeDropDowns = new RockDropDownList[]
+            {
+                ddlMetaDescriptionAttribute,
+                ddlOpenGraphTitleAttribute,
+                ddlOpenGraphDescriptionAttribute,
+                ddlOpenGraphImageAttribute,
+                ddlTwitterTitleAttribute,
+                ddlTwitterDescriptionAttribute,
+                ddlTwitterImageAttribute,
+                ddlMetaDescriptionAttribute
+            };
+
+            RockDropDownList[] attributeDropDownsImage = new RockDropDownList[]
+            {
+                ddlOpenGraphImageAttribute,
+                ddlTwitterImageAttribute,
+            };
+
+            foreach ( var attributeDropDown in attributeDropDowns )
+            {
+                attributeDropDown.Items.Clear();
+                attributeDropDown.Items.Add( new ListItem() );
+                foreach ( var attribute in channelAttributes )
+                {
+                    string computedKey = "C^" + attribute.Key;
+                    if ( attributeDropDownsImage.Contains( attributeDropDown ) )
+                    {
+                        if ( attribute.FieldType.Name == "Image" )
+                        {
+                            attributeDropDown.Items.Add( new ListItem( "Channel: " + attribute.Name, computedKey ) );
+                        }
+                    }
+                    else
+                    {
+                        attributeDropDown.Items.Add( new ListItem( "Channel: " + attribute.Name, computedKey ) );
+                    }
+                }
+
+                // get all the possible Item attributes for items in this Content Channel and add those as options too
+                foreach ( var attribute in itemAttributes.DistinctBy( a => a.Key ).ToList() )
+                {
+                    string computedKey = "I^" + attribute.Key;
+                    if ( attributeDropDownsImage.Contains( attributeDropDown ) )
+                    {
+                        if ( attribute.FieldType.Name == "Image" )
+                        {
+                            attributeDropDown.Items.Add( new ListItem( "Item: " + attribute.Name, computedKey ) );
+                        }
+                    }
+                    else
+                    {
+                        attributeDropDown.Items.Add( new ListItem( "Item: " + attribute.Name, computedKey ) );
+                    }
+                }
+            }
+        }
+
+        #endregion Methods
     }
 }

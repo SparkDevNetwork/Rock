@@ -4,6 +4,13 @@
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
+        <%-- View Panel --%>
+        <asp:Panel ID="pnlView" runat="server">
+            <Rock:NotificationBox ID="nbContentError" runat="server" Dismissable="true" Visible="false" />
+            <asp:PlaceHolder ID="phContent" runat="server" />
+            <asp:Literal ID="lDebug" runat="server" />
+        </asp:Panel>
+
         <%-- Custom Block Settings --%>
         <asp:Panel ID="pnlSettings" runat="server" Visible="false">
             <Rock:ModalDialog ID="mdSettings" runat="server" OnSaveClick="mdSettings_SaveClick">
@@ -19,7 +26,7 @@ String - ContentChannelItem Slug
 Guid - ContentChannelItem Guid" />
 
                             <Rock:CodeEditor ID="ceLavaTemplate" runat="server" Label="Lava Template" Help="The template to use when formatting the content channel item." EditorMode="Lava" EditorTheme="Rock" EditorHeight="200" />
-                            <Rock:NumberBox ID="rbOutputCacheDuration" runat="server" Label="Output Cache Duration" Help="Number of seconds to cache the resolved output. Only cache the output if you are not personalizing the output based on current user, current page, or any other merge field value." />
+                            <Rock:NumberBox ID="nbOutputCacheDuration" runat="server" Label="Output Cache Duration" Help="Number of seconds to cache the resolved output. Only cache the output if you are not personalizing the output based on current user, current page, or any other merge field value." />
                             <Rock:RockCheckBox ID="cbSetPageTitle" runat="server" Label="Set Page Title" Help="Determines if the block should set the page title with the channel name or content item." />
                         </div>
                     </div>
@@ -36,11 +43,22 @@ Guid - ContentChannelItem Guid" />
 
                             </fieldset>
 
+                            
+                        </div>
+                        <div class="col-md-6">
                             <fieldset>
-                                <legend>Social Media Settings</legend>
+                                <legend>Workflows</legend>
+                                <Rock:WorkflowTypePicker ID="wtpWorkflowType" runat="server" Label="Workflow Type" Help="The workflow type to launch when the content is viewed." OnSelectItem="wtpWorkflowType_SelectItem" />
+                                <Rock:RockCheckBox ID="cbLaunchWorkflowOnlyIfIndividualLoggedIn" runat="server" Label="Launch Workflow Only If Individual Logged In" Help="Set to true to only launch a workflow for logged in users, or set to false to launch for both logged in and anonymous users." />
+                                <Rock:RockCheckBox ID="cbLaunchWorkflowOncePerPerson" runat="server" Label="Launch Workflow Once Per Person" />
+                            </fieldset>
+                        </div>
+                    </div>
+
+                    <Rock:PanelWidget ID="pwSocialMediaSettings" runat="server" Title="Social Media Settings">
                                 <Rock:RockDropDownList ID="ddlMetaDescriptionAttribute" Label="Meta Description Attribute" Help="Attribute to use for the page's meta description." runat="server" />
 
-                                <Rock:RockDropDownList ID="tbOpenGraphType" Label="Open Graph Type (og:type)" runat="server">
+                                <Rock:RockDropDownList ID="ddlOpenGraphType" Label="Open Graph Type (og:type)" runat="server">
                                     <asp:ListItem />
                                     <asp:ListItem Text="article" />
                                     <asp:ListItem Text="website" />
@@ -57,26 +75,15 @@ Guid - ContentChannelItem Guid" />
                                 <Rock:RockDropDownList ID="ddlOpenGraphDescriptionAttribute" Label="Open Graph Description (og:description) Attribute" runat="server" />
                                 <Rock:RockDropDownList ID="ddlOpenGraphImageAttribute" Label="Open Graph Image (og:image) Attribute" runat="server" />
 
-                                <Rock:RockDropDownList ID="ddlTwitterTitle" Label="Twitter Title (twitter:title) Attribute" runat="server" />
-                                <Rock:RockDropDownList ID="ddlTwitterDescription" Label="Twitter Description (twitter:description) Attribute" runat="server" />
-                                <Rock:RockDropDownList ID="ddlTwitterImage" Label="Twitter Image (twitter:image) Attribute" runat="server" />
-                                <Rock:RockRadioButtonList ID="rbTwitterCard" Label="Twitter Card (twitter:card)" runat="server">
+                                <Rock:RockDropDownList ID="ddlTwitterTitleAttribute" Label="Twitter Title (twitter:title) Attribute" runat="server" />
+                                <Rock:RockDropDownList ID="ddlTwitterDescriptionAttribute" Label="Twitter Description (twitter:description) Attribute" runat="server" />
+                                <Rock:RockDropDownList ID="ddlTwitterImageAttribute" Label="Twitter Image (twitter:image) Attribute" runat="server" />
+                                <Rock:RockRadioButtonList ID="rblTwitterCard" Label="Twitter Card (twitter:card)" runat="server">
                                     <asp:ListItem Text="none" Value="none" />
                                     <asp:ListItem Text="Summary" Value="summary" />
                                     <asp:ListItem Text="Large Image" Value="summary_large_image" />
                                 </Rock:RockRadioButtonList>
-
-                            </fieldset>
-                        </div>
-                        <div class="col-md-6">
-                            <fieldset>
-                                <legend>Workflows</legend>
-                                <Rock:WorkflowTypePicker ID="wtpWorkflowType" runat="server" Label="Workflow Type" Help="The workflow type to launch when the content is viewed." OnSelectItem="wtpWorkflowType_SelectItem" />
-                                <Rock:RockCheckBox ID="cbLaunchWorkflowOnlyIfIndividualLoggedIn" runat="server" Label="Launch Workflow Only If Individual Logged In" Help="Set to true to only launch a workflow for logged in users, or set to false to launch for both logged in and anonymous users." />
-                                <Rock:RockCheckBox ID="cbLaunchWorkflowOncePerPerson" runat="server" Label="Launch Workflow Once Per Person" />
-                            </fieldset>
-                        </div>
-                    </div>
+                            </Rock:PanelWidget>
                 </Content>
 
             </Rock:ModalDialog>
