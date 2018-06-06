@@ -205,7 +205,7 @@ namespace Rock.CheckIn
                     scheduleAttendance = new KioskScheduleAttendance();
                     scheduleAttendance.ScheduleId = attendance.Occurrence.ScheduleId.Value;
                     scheduleAttendance.ScheduleName = attendance.Occurrence.Schedule.Name;
-                    scheduleAttendance.IsActive = attendance.Occurrence.Schedule.IsScheduleOrCheckInActive;
+                    scheduleAttendance.IsActive = attendance.IsCurrentlyCheckedIn;
                     scheduleAttendance.PersonIds = new List<int>();
                     groupAttendance.Schedules.Add( scheduleAttendance );
                 }

@@ -227,21 +227,11 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 // Get a lit of the schedule ids
                 var scheduleIds = schedules.Select( s => s.Id ).ToList();
 
-                // Get a list of the schedule id that are currently active for checkin
-                var activeScheduleIds = new List<int>();
-                foreach ( var schedule in schedules )
-                {
-                    if ( schedule.IsScheduleOrCheckInActive )
-                    {
-                        activeScheduleIds.Add( schedule.Id );
-                    }
-                }
-
                 // Get a list of all the groups that we're concerned about
                 var groupIds = NavData.Groups.Select( g => g.Id ).ToList();
 
                 // Get a list of all the people that are currently checked in
-                var today = RockDateTime.Today;
+                var minDate = RockDateTime.Today.AddDays( -1 );
                 var attendanceService = new AttendanceService( rockContext );
                 var currentAttendeeIds = attendanceService
                     .Queryable().AsNoTracking()
@@ -252,12 +242,13 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         a.PersonAlias != null &&
                         a.DidAttend.HasValue &&
                         a.DidAttend.Value &&
-                        a.StartDateTime > today &&
+                        a.StartDateTime > minDate &&
                         !a.EndDateTime.HasValue &&
-                        activeScheduleIds.Contains( a.Occurrence.ScheduleId.Value ) &&
+                        scheduleIds.Contains( a.Occurrence.ScheduleId.Value ) &&
                         groupIds.Contains( a.Occurrence.GroupId.Value ) )
-                    .Select( a =>
-                        a.PersonAlias.PersonId )
+                    .ToList()
+                    .Where( a => a.IsCurrentlyCheckedIn )
+                    .Select( a => a.PersonAlias.PersonId )
                     .Distinct();
 
                 // Create a qry to get the last checkin date (used in next statement's join)
@@ -661,28 +652,17 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
                         if ( itemType == "L" && itemId.HasValue )
                         {
-                            var dayStart = RockDateTime.Today;
-                            var now = RockDateTime.Now;
+                            // Only get attendance for last couple days. We'll then check each one based on timezone
+                            // to see if it's active.
+                            var minDate = RockDateTime.Today.AddDays( -1 );
 
                             using ( var rockContext = new RockContext() )
                             {
-                                var activeSchedules = new List<int>();
-                                foreach ( var schedule in new ScheduleService( rockContext )
-                                    .Queryable().AsNoTracking()
-                                    .Where( s => s.IsActive && s.CheckInStartOffsetMinutes.HasValue ) )
-                                {
-                                    if ( schedule.IsScheduleOrCheckInActive )
-                                    {
-                                        activeSchedules.Add( schedule.Id );
-                                    }
-                                }
-
                                 var attendanceService = new AttendanceService( rockContext );
                                 foreach ( var attendance in attendanceService
                                     .Queryable()
                                     .Where( a =>
-                                        a.StartDateTime > dayStart &&
-                                        a.StartDateTime < now &&
+                                        a.StartDateTime > minDate &&
                                         !a.EndDateTime.HasValue &&
                                         a.Occurrence.LocationId.HasValue &&
                                         a.Occurrence.LocationId.Value == itemId.Value &&
@@ -690,8 +670,9 @@ namespace RockWeb.Blocks.CheckIn.Manager
                                         a.PersonAlias.PersonId == personId &&
                                         a.DidAttend.HasValue &&
                                         a.DidAttend.Value &&
-                                        a.Occurrence.ScheduleId.HasValue &&
-                                        activeSchedules.Contains( a.Occurrence.ScheduleId.Value ) ) )
+                                        a.Occurrence.ScheduleId.HasValue )
+                                    .ToList()
+                                    .Where( a => a.IsCurrentlyCheckedIn ) )
                                 {
                                     attendanceService.Delete( attendance );
                                 }
@@ -1404,32 +1385,21 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         lbUpdateThreshold.Attributes["data-key"] = locationItem.Id.ToString();
 
                         var rockContext = new RockContext();
-                        var activeSchedules = new List<int>();
-                        foreach ( var schedule in new ScheduleService( rockContext )
-                            .Queryable().AsNoTracking()
-                            .Where( s => s.IsActive && s.CheckInStartOffsetMinutes.HasValue ) )
-                        {
-                            if ( schedule.IsScheduleOrCheckInActive )
-                            {
-                                activeSchedules.Add( schedule.Id );
-                            }
-                        }
 
-                        var dayStart = RockDateTime.Today;
-                        var now = RockDateTime.Now;
+                        var dayStart = RockDateTime.Today.AddDays( -1 );
                         var attendees = new AttendanceService( rockContext )
                             .Queryable( "Occurrence.Group,PersonAlias.Person,Occurrence.Schedule,AttendanceCode" )
                             .AsNoTracking()
                             .Where( a =>
                                 a.StartDateTime > dayStart &&
-                                a.StartDateTime < now &&
                                 !a.EndDateTime.HasValue &&
                                 a.Occurrence.LocationId.HasValue &&
                                 a.Occurrence.LocationId == locationItem.Id &&
                                 a.DidAttend.HasValue &&
                                 a.DidAttend.Value &&
-                                a.Occurrence.ScheduleId.HasValue &&
-                                activeSchedules.Contains( a.Occurrence.ScheduleId.Value ) )
+                                a.Occurrence.ScheduleId.HasValue )
+                            .ToList()
+                            .Where( a => a.IsCurrentlyCheckedIn )
                             .ToList();
 
                         int? scheduleId = CurrentScheduleId.AsIntegerOrNull();

@@ -14,11 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Collections.Generic;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -174,6 +175,31 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual PersonAlias LeaderPersonAlias { get; set; }
+
+        /// <summary>
+        /// Gets the current date time.
+        /// </summary>
+        /// <value>
+        /// The current date time.
+        /// </value>
+        [NotMapped]
+        public virtual DateTime CurrentDateTime
+        {
+            get
+            {
+                if ( TimeZoneId.IsNotNullOrWhitespace() )
+                {
+                    var campusTimeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById( TimeZoneId );
+                    if ( campusTimeZoneInfo != null )
+                    {
+                        return TimeZoneInfo.ConvertTime( DateTime.UtcNow, campusTimeZoneInfo );
+                    }
+                }
+
+                return RockDateTime.Now;
+            }
+        }
+
 
         #endregion
 
