@@ -377,6 +377,7 @@ namespace RockWeb.Blocks.Administration
             dvNotInDataView.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.Person ) ).Id;
             dvNotInDataView.SetValue( _inactivateSettings.NotInDataview );
             cbNoInteractions.Checked = _inactivateSettings.IsNoInteractionsEnabled;
+            nbRecordsOlderThan.Text = _inactivateSettings.RecordsOlderThan.ToStringSafe();
 
             var inactivateChannelTypes = interactionChannels.Select( c => new InteractionItem( c.Guid, c.Name ) ).ToList();
             if ( _inactivateSettings.NoInteractions != null )
@@ -550,6 +551,8 @@ namespace RockWeb.Blocks.Administration
             _inactivateSettings.NotInDataview = dvNotInDataView.SelectedValueAsInt();
 
             _inactivateSettings.IsNoInteractionsEnabled = cbNoInteractions.Checked;
+
+            _inactivateSettings.RecordsOlderThan = nbRecordsOlderThan.Text.AsInteger();
 
             foreach ( RepeaterItem rItem in rNoInteractions.Items )
             {

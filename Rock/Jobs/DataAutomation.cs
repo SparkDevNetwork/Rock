@@ -33,7 +33,6 @@ namespace Rock.Jobs
     /// <summary>
     /// Job to update people/families based on the Data Automation settings.
     /// </summary>
-    [IntegerField( "Records older than", "The number of days that the records must be Older to get considered for Inactivate process.", true, 180 )]
     [DisallowConcurrentExecution]
     public class DataAutomation : IJob
     {
@@ -438,8 +437,7 @@ Update Family Status: {updateFamilyStatus}
                     // Create a new queryable of family member person ids
                     personIdQry = CreateEntitySetIdQuery( personIds, rockContext );
 
-                    int recordsOlderThan = Int32.Parse( context.JobDetail.JobDataMap.GetString( "Recordsolderthan" ) );
-                    var maxRecordCreationDate = RockDateTime.Now.AddDays( recordsOlderThan * -1 );
+                    var maxRecordCreationDate = RockDateTime.Now.AddDays( settings.RecordsOlderThan * -1 );
                     // Start the person qry by getting any of the people who are currently active and not in the list of people with activity
                     var personQry = new PersonService( rockContext )
                         .Queryable().AsNoTracking()
