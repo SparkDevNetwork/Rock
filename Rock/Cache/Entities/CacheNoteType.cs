@@ -95,6 +95,7 @@ namespace Rock.Cache
         /// The description.
         /// </value>
         [DataMember]
+        [Obsolete( "No Longer Supported" )]
         public string CssClass { get; private set; }
 
         /// <summary>
@@ -243,7 +244,6 @@ namespace Rock.Cache
             EntityTypeQualifierValue = noteType.EntityTypeQualifierValue;
             Name = noteType.Name;
             UserSelectable = noteType.UserSelectable;
-            CssClass = noteType.CssClass;
             IconCssClass = noteType.IconCssClass;
             Order = noteType.Order;
             RequiresApprovals = noteType.RequiresApprovals;

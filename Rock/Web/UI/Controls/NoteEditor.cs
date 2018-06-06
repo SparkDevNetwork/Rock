@@ -36,6 +36,7 @@ namespace Rock.Web.UI.Controls
         #region Fields
 
         private DropDownList _ddlNoteType;
+        private HiddenFieldWithClass _hfHasUnselectableNoteType;
         private RockTextBox _tbNote;
         private CheckBox _cbAlert;
         private CheckBox _cbPrivate;
@@ -370,6 +371,7 @@ namespace Rock.Web.UI.Controls
             _hfNoteId = new HiddenFieldWithClass();
             _tbNote.Placeholder = "Write a note...";
             _ddlNoteType = new DropDownList();
+            _hfHasUnselectableNoteType = new HiddenFieldWithClass();
             _cbAlert = new CheckBox();
             _cbPrivate = new CheckBox();
             _lbSaveNote = new LinkButton();
@@ -435,6 +437,10 @@ namespace Rock.Web.UI.Controls
             _ddlNoteType.DataTextField = "Name";
             Controls.Add( _ddlNoteType );
 
+            _hfHasUnselectableNoteType.ID = this.ID + "_hfHasUnselectableNoteType";
+            _hfHasUnselectableNoteType.CssClass = "js-has-unselectable-notetype";
+            Controls.Add( _hfHasUnselectableNoteType );
+
             _cbAlert.ID = this.ID + "_cbAlert";
             _cbAlert.Text = "Alert";
             _cbAlert.CssClass = "js-notealert";
@@ -475,10 +481,6 @@ namespace Rock.Web.UI.Controls
             var noteType = NoteTypeId.HasValue ? CacheNoteType.Get( NoteTypeId.Value ) : null;
             StringBuilder noteCss = new StringBuilder();
             noteCss.Append( "note-editor js-note-editor meta" );
-            if ( !string.IsNullOrEmpty( noteType?.CssClass ) )
-            {
-                noteCss.Append( " " + noteType.CssClass );
-            }
 
             if ( !string.IsNullOrEmpty( this.CssClass ) )
             {
@@ -509,7 +511,7 @@ namespace Rock.Web.UI.Controls
             {
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "meta-figure" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                
+
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "avatar avatar-lg" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
@@ -530,61 +532,62 @@ namespace Rock.Web.UI.Controls
             writer.RenderEndTag();
 
 
-                // Options
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "settings clearfix" );
+            // Options
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "settings clearfix" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            // The optional create date text box, but only for new notes...
+            if ( NoteOptions.ShowCreateDateInput && !NoteId.HasValue )
+            {
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "createDate" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _dtCreateDate.RenderControl( writer );
+                writer.RenderEndTag();  // createDate div
+            }
 
-                // The optional create date text box, but only for new notes...
-                if ( NoteOptions.ShowCreateDateInput && !NoteId.HasValue )
+            _ddlNoteType.RenderControl( writer );
+            _hfHasUnselectableNoteType.RenderControl( writer );
+
+            if ( NoteOptions.DisplayType == NoteDisplayType.Full )
+            {
+                if ( NoteOptions.ShowAlertCheckBox )
                 {
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "createDate" );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                    _dtCreateDate.RenderControl( writer );
-                    writer.RenderEndTag();  // createDate div
+                    _cbAlert.RenderControl( writer );
                 }
 
-                _ddlNoteType.RenderControl( writer );
-
-                if ( NoteOptions.DisplayType == NoteDisplayType.Full )
+                if ( NoteOptions.ShowPrivateCheckBox )
                 {
-                    if ( NoteOptions.ShowAlertCheckBox )
-                    {
-                        _cbAlert.RenderControl( writer );
-                    }
-
-                    if ( NoteOptions.ShowPrivateCheckBox )
-                    {
-                        _cbPrivate.RenderControl( writer );
-                    }
+                    _cbPrivate.RenderControl( writer );
                 }
+            }
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "commands" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "commands" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                _mdEditWarning.RenderControl( writer );
+            _mdEditWarning.RenderControl( writer );
 
-                if ( NoteOptions.DisplayType == NoteDisplayType.Full )
+            if ( NoteOptions.DisplayType == NoteDisplayType.Full )
+            {
+                if ( NoteOptions.ShowSecurityButton )
                 {
-                    if ( NoteOptions.ShowSecurityButton )
-                    {
-                        _aSecurity.Attributes["data-title"] = this.Label;
-                        _aSecurity.RenderControl( writer );
-                    }
+                    _aSecurity.Attributes["data-title"] = this.Label;
+                    _aSecurity.RenderControl( writer );
                 }
+            }
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "edit-note-cancel js-editnote-cancel btn btn-link btn-xs" );
-                writer.RenderBeginTag( HtmlTextWriterTag.A );
-                writer.Write( "Cancel" );
-                writer.RenderEndTag();
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "edit-note-cancel js-editnote-cancel btn btn-link btn-xs" );
+            writer.RenderBeginTag( HtmlTextWriterTag.A );
+            writer.Write( "Cancel" );
+            writer.RenderEndTag();
 
-                _lbSaveNote.Text = "Save " + Label;
-                _lbSaveNote.CommandName = "SaveNote";
-                _lbSaveNote.CommandArgument = this.NoteId.ToString();
-                _lbSaveNote.RenderControl( writer );
+            _lbSaveNote.Text = "Save " + Label;
+            _lbSaveNote.CommandName = "SaveNote";
+            _lbSaveNote.CommandArgument = this.NoteId.ToString();
+            _lbSaveNote.RenderControl( writer );
 
-                writer.RenderEndTag();  // commands div
+            writer.RenderEndTag();  // commands div
 
-                writer.RenderEndTag();  // settings div
+            writer.RenderEndTag();  // settings div
 
 
             writer.RenderEndTag();  // panel body
@@ -640,7 +643,15 @@ namespace Rock.Web.UI.Controls
                     }
                 }
 
-                note.NoteTypeId = NoteTypeId.Value;
+                if ( _hfHasUnselectableNoteType.Value.AsBoolean() && note.NoteTypeId > 0 && note.Id > 0 )
+                {
+                    // a note type with an unselectable notetype was edited, so just keep the notetype that is had before
+                }
+                else
+                {
+                    note.NoteTypeId = NoteTypeId.Value;
+                }
+
                 string personalNoteCaption = "You - Personal Note";
                 if ( string.IsNullOrWhiteSpace( note.Caption ) )
                 {
@@ -675,6 +686,8 @@ namespace Rock.Web.UI.Controls
                     if ( note.IsAuthorized( Authorization.APPROVE, currentPerson ) )
                     {
                         note.ApprovalStatus = NoteApprovalStatus.Approved;
+                        note.ApprovedByPersonAliasId = currentPerson?.PrimaryAliasId;
+                        note.ApprovedDateTime = RockDateTime.Now;
                     }
                     else
                     {

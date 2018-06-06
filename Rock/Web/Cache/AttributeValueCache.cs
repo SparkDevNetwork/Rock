@@ -203,5 +203,26 @@ namespace Rock.Web.Cache
 
         #endregion
 
+        #region Static Methods
+
+        /// <summary>
+        /// Performs an implicit conversion from <see cref="AttributeValueCache"/> to <see cref="Rock.Cache.CacheAttributeValue"/>.
+        /// </summary>
+        /// <param name="c">The c.</param>
+        /// <returns>
+        /// The result of the conversion.
+        /// </returns>
+        public static implicit operator Rock.Cache.CacheAttributeValue( AttributeValueCache c )
+        {
+            return new Rock.Cache.CacheAttributeValue
+            {
+                AttributeId = c.AttributeId,
+                EntityId = c.EntityId,
+                Value = c.Value
+            };
+        }
+
+        #endregion
+
     }
 }

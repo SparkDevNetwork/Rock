@@ -53,9 +53,6 @@ namespace Rock.Client
         public string BorderColor { get; set; }
 
         /// <summary />
-        public string CssClass { get; set; }
-
-        /// <summary />
         public int EntityTypeId { get; set; }
 
         /// <summary />
@@ -141,7 +138,6 @@ namespace Rock.Client
             this.AutoWatchAuthors = source.AutoWatchAuthors;
             this.BackgroundColor = source.BackgroundColor;
             this.BorderColor = source.BorderColor;
-            this.CssClass = source.CssClass;
             this.EntityTypeId = source.EntityTypeId;
             this.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
             this.EntityTypeQualifierValue = source.EntityTypeQualifierValue;

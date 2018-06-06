@@ -19,25 +19,24 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
-using System.Runtime.Caching;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Web.UI;
+
 using DotLiquid;
+
 using Rock;
 using Rock.Attribute;
-using Rock.Data;
-using Rock.Security;
 using Rock.Cache;
+using Rock.Data;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 
 namespace RockWeb.Blocks.Cms
 {
-    [DisplayName("Page Menu")]
-    [Category("CMS")]
-    [Description("Renders a page menu based on a root page and liquid template.")]
+    [DisplayName( "Page Menu" )]
+    [Category( "CMS" )]
+    [Description( "Renders a page menu based on a root page and liquid template." )]
     [CodeEditorField( "Template", "The liquid template to use for rendering. This template would typically be in the theme's \"Assets/Lava\" folder.",
         CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, true, @"{% include '~~/Assets/Lava/PageNav.lava' %}" )]
     [LinkedPage( "Root Page", "The root page to use for the page collection. Defaults to the current page instance if not set.", false, "" )]
@@ -86,11 +85,11 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void PageMenu_BlockUpdated( object sender, EventArgs e )
         {
-            RockCache.Remove( CacheKey() );
+            CacheLavaTemplate.Remove( CacheKey() );
         }
 
         private void Render()
-        { 
+        {
             try
             {
                 CachePage currentPage = CachePage.Get( RockPage.PageId );
@@ -163,12 +162,12 @@ namespace RockWeb.Blocks.Cms
             catch ( Exception ex )
             {
                 StringBuilder errorMessage = new StringBuilder();
-                errorMessage.Append( "<div class='alert alert-warning'>");
+                errorMessage.Append( "<div class='alert alert-warning'>" );
                 errorMessage.Append( "An error has occurred while generating the page menu. Error details:" );
                 errorMessage.Append( ex.Message );
                 errorMessage.Append( "</div>" );
 
-                phContent.Controls.Add( new LiteralControl( errorMessage.ToString()) );
+                phContent.Controls.Add( new LiteralControl( errorMessage.ToString() ) );
             }
         }
 
@@ -181,13 +180,8 @@ namespace RockWeb.Blocks.Cms
 
         private Template GetTemplate()
         {
-            string cacheKey = CacheKey();
-            return RockCache.GetOrAddExisting( cacheKey, () => ParseTemplate() ) as Template;
-        }
-
-        private Template ParseTemplate()
-        {
-            return Template.Parse( GetAttributeValue( "Template" ) );
+            var cacheTemplate = CacheLavaTemplate.Get( CacheKey(), GetAttributeValue( "Template" ) );
+            return cacheTemplate != null ? cacheTemplate.Template : null;
         }
 
         /// <summary>

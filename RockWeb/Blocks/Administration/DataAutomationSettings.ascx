@@ -324,7 +324,7 @@
                                                     <asp:ListItem Text="Giving" Value="1" />
                                                     <asp:ListItem Text="Attendance" Value="2" />
                                                 </Rock:RockDropDownList>
-                                                <asp:LinkButton ID="lbDelete" runat="server" CssClass="btn btn-xs btn-danger form-action-remove" CommandName="delete" CommandArgument='<%# Eval("Id") %>'><i class="fa fa-minus-circle"></i></asp:LinkButton>
+                                                <asp:LinkButton ID="lbDelete" runat="server" CssClass="btn btn-xs btn-danger form-action-remove" CommandName="delete" CommandArgument='<%# Eval("Id") %>'><i class="fa fa-times"></i></asp:LinkButton>
                                             </div>
                                         </ItemTemplate>
                                     </asp:Repeater>

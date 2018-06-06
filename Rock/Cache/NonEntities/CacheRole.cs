@@ -18,6 +18,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -27,6 +28,7 @@ namespace Rock.Cache
     /// Information about a Role that is required by the rendering engine.
     /// This information will be cached by the engine
     /// </summary>
+    [DataContract]
     public class CacheRole : ItemCache<CacheRole>
     {
         #region Constructors
@@ -43,11 +45,13 @@ namespace Rock.Cache
         /// <summary>
         /// Gets the id.
         /// </summary>
+		[DataMember]
         public int Id { get; private set; }
 
         /// <summary>
         /// Gets the name.
         /// </summary>
+        [DataMember]
         public string Name { get; private set; }
 
         /// <summary>
@@ -56,6 +60,7 @@ namespace Rock.Cache
         /// <value>
         /// <c>true</c> if this instance is security type group; otherwise, <c>false</c>.
         /// </value>
+        [DataMember]
         public bool IsSecurityTypeGroup { get; private set; }
 
         /// <summary>
@@ -64,7 +69,8 @@ namespace Rock.Cache
         /// <value>
         /// The people.
         /// </value>
-        public ConcurrentDictionary<Guid, bool> People { get; private set; }
+        [DataMember]
+        public ConcurrentDictionary<Guid, bool> People { get; private set; } = new ConcurrentDictionary<Guid, bool>();
 
         /// <summary>
         /// Is user in role
@@ -81,15 +87,6 @@ namespace Rock.Cache
 
         #region Static Methods
 
-        /// <summary>
-        /// Caches the key.
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        private static string CacheKey( int id )
-        {
-            return $"Rock:Role:{id}";
-        }
 
         /// <summary>
         /// Returns Role object from cache.  If role does not already exist in cache, it
@@ -99,7 +96,7 @@ namespace Rock.Cache
         /// <returns></returns>
         public static CacheRole Get( int id )
         {
-            return GetOrAddExisting( CacheKey( id ), () => LoadById( id ) );
+            return GetOrAddExisting( id, () => LoadById( id ) );
         }
 
         /// <summary>

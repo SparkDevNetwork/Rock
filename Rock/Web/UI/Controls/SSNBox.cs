@@ -174,8 +174,14 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string ValidationGroup
         {
-            get { return ViewState["ValidationGroup"] as string; }
-            set { ViewState["ValidationGroup"] = value; }
+            get
+            {
+                return RequiredFieldValidator.ValidationGroup;
+            }
+            set
+            {
+                RequiredFieldValidator.ValidationGroup = value;
+            }
         }
 
         /// <summary>
@@ -281,7 +287,7 @@ namespace Rock.Web.UI.Controls
                 ssnGroup.Attributes["value"] = ssnGroup.Text;
             }
 
-            base.OnLoad( e );  
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -334,13 +340,14 @@ namespace Rock.Web.UI.Controls
                 Text = Encryption.DecryptString( value );
             }
         }
-    
+
         /// <summary>
         /// Initializes a new instance of the <see cref="BirthdayPicker"/> class.
         /// </summary>
         public SSNBox()
             : base()
         {
+            RequiredFieldValidator = new HiddenFieldValidator();
             HelpBlock = new HelpBlock();
             WarningBlock = new WarningBlock();
         }
@@ -356,8 +363,11 @@ namespace Rock.Web.UI.Controls
             RockControlHelper.CreateChildControls( this, Controls );
 
             hfSSN = new HiddenFieldWithClass();
-            hfSSN.ID = this.ID;
+            hfSSN.ID = string.Format( "hfSSN_{0}", this.ID );
             hfSSN.CssClass = "js-ssn";
+
+            this.RequiredFieldValidator.InitialValue = string.Empty;
+            this.RequiredFieldValidator.ControlToValidate = hfSSN.ID;
 
             ssnArea =  new TextBox();
             ssnArea.CssClass = "form-control ssn-part ssn-area";

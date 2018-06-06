@@ -113,6 +113,7 @@
     <Compile Include="ApiControllerBase.cs" />
     <Compile Include="Controllers\CodeGenerated\AnalyticsDimCampusController.cs" />
     <Compile Include="Controllers\CodeGenerated\AnalyticsSourceCampusController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AttendanceOccurrencesController.cs" />
     <Compile Include="Controllers\CodeGenerated\AttributeValueHistoricalsController.cs" />
     <Compile Include="Controllers\CodeGenerated\CommunicationTemplateAttachmentsController.cs" />
     <Compile Include="Controllers\CodeGenerated\ContentChannelItemSlugsController.cs" />

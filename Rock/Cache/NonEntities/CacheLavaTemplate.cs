@@ -52,14 +52,32 @@ namespace Rock.Cache
         #region Static Methods
 
         /// <summary>
-        /// Returns LavaTemplate object from cache.  If definedValue does not already exist in cache, it
+        /// Returns LavaTemplate object from cache.  If template does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>
         /// <param name="content">The content.</param>
         /// <returns></returns>
         public static CacheLavaTemplate Get( string content )
         {
-            return GetOrAddExisting( content, () => Load( content ), new TimeSpan( 0, 10, 0 ) );
+            return Get( content, content );
+        }
+
+        /// <summary>
+        /// Returns LavaTemplate object from cache.  If template does not already exist in cache, it
+        /// will be read and added to cache
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="content">The content.</param>
+        /// <returns></returns>
+        public static CacheLavaTemplate Get( string key, string content )
+        {
+            // If cache items need to be serialized, do not cache the template (it's not serializable)
+            if ( RockCache.IsCacheSerialized )
+            {
+                return Load( content );
+            }
+
+            return GetOrAddExisting( key, () => Load( content ), new TimeSpan( 0, 10, 0 ) );
         }
 
         private static CacheLavaTemplate Load( string content )

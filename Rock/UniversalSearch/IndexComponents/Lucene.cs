@@ -62,6 +62,9 @@ namespace Rock.UniversalSearch.IndexComponents
         private static readonly string path = Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "App_Data", "LuceneSearchIndex" );
         static readonly object lockWriter = new object();
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Lucene"/> class.
+        /// </summary>
         public Lucene()
         {
 

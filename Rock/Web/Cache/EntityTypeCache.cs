@@ -339,6 +339,18 @@ namespace Rock.Web.Cache
         #region Static Methods
 
         /// <summary>
+        /// Performs an implicit conversion from <see cref="EntityTypeCache"/> to <see cref="CacheEntityType"/>.
+        /// </summary>
+        /// <param name="c">The c.</param>
+        /// <returns>
+        /// The result of the conversion.
+        /// </returns>
+        public static implicit operator CacheEntityType( EntityTypeCache c )
+        {
+            return CacheEntityType.Get( c.Id );
+        }
+
+        /// <summary>
         /// Gets the id.
         /// </summary>
         /// <param name="type">The type.</param>
