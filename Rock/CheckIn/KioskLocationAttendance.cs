@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using System.Runtime.Serialization;
 using Rock.Cache;
 using Rock.Model;
 
@@ -26,6 +26,7 @@ namespace Rock.CheckIn
     /// <summary>
     /// Helper class for storing the current attendance for a given kiosk location
     /// </summary>
+    [DataContract]
     public class KioskLocationAttendance : ItemCache<KioskLocationAttendance>
     {
         /// <summary>
@@ -41,6 +42,7 @@ namespace Rock.CheckIn
         /// <value>
         /// The location id.
         /// </value>
+        [DataMember]
         public int LocationId { get; set; }
 
         /// <summary>
@@ -49,6 +51,7 @@ namespace Rock.CheckIn
         /// <value>
         /// The name of the location.
         /// </value>
+        [DataMember]
         public string LocationName { get; set; }
 
         /// <summary>
@@ -57,6 +60,7 @@ namespace Rock.CheckIn
         /// <value>
         /// The groups.
         /// </value>
+        [DataMember]
         public List<KioskGroupAttendance> Groups { get; set; }
 
         /// <summary>

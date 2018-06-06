@@ -34,11 +34,23 @@
             }
             else {
                 $currentNote = $(this).closest('.js-noteviewitem');
-                var currentNoteId = $currentNote.data("note-id");
+                var currentNoteId = $currentNote.data('note-id');
+                var currentNoteNoteTypeId = $currentNote.data('notetype-id');
 
                 if (replyNote) {
                     // display the 'noteEditor' as a reply to the current note
                     $noteEditor.find('.js-parentnoteid').val(currentNoteId);
+
+                    // restrict note replies to use the notetype of the parent note (if there is only one notetype option there won't be a $noteTypeInput)
+                    var $noteTypeInput = $noteEditor.find('.js-notenotetype');
+                    if ($noteTypeInput.length) {
+                        $noteTypeInput.val(currentNoteNoteTypeId)
+                        $noteTypeInput.hide();
+                    }
+                    else {
+                        $noteTypeInput.show();
+                    }
+
                     $currentNote.append($noteEditor)
                 }
                 else if (editNote) {
@@ -48,6 +60,29 @@
                         $noteEditor.find('.js-notetext').val(noteData.Text);
                         $noteEditor.find('.js-noteprivate').prop('checked', noteData.IsPrivateNote);
                         $noteEditor.find('.js-notealert').prop('checked', noteData.IsAlert);
+
+                        var $noteTypeInput = $noteEditor.find('.js-notenotetype');
+
+                        // noteType dropdown will only be rendered if more than one notetype is pickable
+                        if ($noteTypeInput.length) {
+
+                            // it is possible that we are editing a note that has a notetype that is not user selectable, so it won't be in the dropdown.  In that case, just hide the picker keep the current notetype
+                            var $unselectableNoteType = $noteEditor.find('.js-has-unselectable-notetype');
+                            if ($noteTypeInput.find('option[value=' + noteData.NoteTypeId + ']').length) {
+
+                                $unselectableNoteType.val('false');
+                                $noteTypeInput.show();
+                            }
+                            else {
+                                // indicate that this not has an unselectable notetype so that postback will keep the value that it had
+                                $unselectableNoteType.val('true');
+
+                                $noteTypeInput.hide();
+                            }
+
+                            $noteTypeInput.val(noteData.NoteTypeId);
+                        }
+
 
                         $noteEditor.find('.js-noteid').val(currentNoteId);
 
@@ -90,9 +125,23 @@
             $noteEditor.parent().find('.js-noteviewitem').slideDown();
         });
 
+        $('.js-notecontainer .js-removenote').click(function (e) {
+            var $currentNote = $(this).closest('.js-noteviewitem');
+            var currentNoteId = $currentNote.attr('data-note-id');
+            var $noteContainer = $(this).closest('.js-notecontainer');
+            $noteContainer.find('.js-currentnoteid').val(currentNoteId);
+
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            var postbackJs = $noteContainer.find(".js-delete-postback").attr('href');
+            return Rock.dialogs.confirm('Are you sure you want to delete this note?', function () {
+                window.location = postbackJs;
+            });
+        });
+
         $('.js-expandreply').click(function (e) {
             var $noteContainer = $(this).closest('.js-notecontainer');
-            
+
             var $currentNote = $(this).closest('.js-note');
             var $childNotesContainer = $currentNote.find('.js-childnotes:first');
             $childNotesContainer.slideToggle(function (x) {

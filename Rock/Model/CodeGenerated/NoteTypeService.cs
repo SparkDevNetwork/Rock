@@ -100,7 +100,6 @@ namespace Rock.Model
             target.AutoWatchAuthors = source.AutoWatchAuthors;
             target.BackgroundColor = source.BackgroundColor;
             target.BorderColor = source.BorderColor;
-            target.CssClass = source.CssClass;
             target.EntityTypeId = source.EntityTypeId;
             target.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
             target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;

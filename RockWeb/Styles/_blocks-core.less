@@ -239,15 +239,28 @@
 .note {
   border-top: 1px solid @panel-border;
   .flag {
-    padding: 6px 23px;
-    margin: -12px -16px 12px;
+    padding: 6px 8px;
+    margin: -12px -12px 8px;
     color: @brand-danger;
     background: @state-danger-bg;
     border-left: 5px solid @brand-danger;
+    @media @sm {
+      padding: 6px 23px;
+      margin: -12px -16px 12px;
+    }
+
+    &.warning {
+      color: @state-warning-text;
+      background: @state-warning-bg;
+      border-left-color: @brand-warning;
+    }
   }
 
   article {
-    padding: 12px 16px 20px;
+    padding: 12px 12px 2px;
+    @media @sm {
+      padding: 12px 16px 20px;
+    }
     &.is-alert {
       box-shadow: inset 5px 0 0 0 @brand-danger;
     }
@@ -263,12 +276,16 @@
   }
 
   .meta {
-    margin-bottom: 12px;
+    margin-bottom: 6px;
+    @media @sm {
+      margin-bottom: 12px;
+    }
   }
 
-
-  .note-content {
-    margin: 0 0 24px 60px;
+  @media @sm {
+    .note-content {
+      margin: 0 0 24px 60px;
+    }
   }
 
   .note-footer {
@@ -316,13 +333,21 @@
 
   &-nested {
     > .note-list-nested {
-      margin-left: 44px;
+      margin-left: 16px;
+
+      @media @sm {
+        margin-left: 44px;
+      }
     }
   }
 }
 
 .note-list-nested {
-  margin-left: 60px;
+  margin-left: 0;
+
+  @media @sm {
+    margin-left: 60px;
+  }
 
   > .note:first-child {
     border-top: 0;
@@ -357,6 +382,7 @@
 
   .settings {
     padding: 3px 12px 6px;
+    background: @input-bg;
 
     .createDate {
       float: left;

@@ -841,6 +841,18 @@ namespace Rock.Web.Cache
         #region Static Methods
 
         /// <summary>
+        /// Performs an implicit conversion from <see cref="PageCache"/> to <see cref="CachePage"/>.
+        /// </summary>
+        /// <param name="c">The c.</param>
+        /// <returns>
+        /// The result of the conversion.
+        /// </returns>
+        public static implicit operator CachePage( PageCache c )
+        {
+            return CachePage.Get( c.Id );
+        }
+
+        /// <summary>
         /// Formats the page url based on the selected theme and layout
         /// </summary>
         /// <param name="theme"></param>

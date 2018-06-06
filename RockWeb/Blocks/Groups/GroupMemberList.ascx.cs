@@ -43,6 +43,7 @@ namespace RockWeb.Blocks.Groups
     [LinkedPage( "Detail Page" )]
     [LinkedPage( "Person Profile Page", "Page used for viewing a person's profile. If set a view profile button will show for each group member.", false, "", "", 2, "PersonProfilePage" )]
     [LinkedPage( "Registration Page", "Page used for viewing the registration(s) associated with a particular group member", false, "", "", 3 )]
+    [LinkedPage( "Data View Detail Page", "Page used to view data views that are used with the group member sync.", false, order: 3 )]
     [BooleanField( "Show Campus Filter", "Setting to show/hide campus filter.", true, order: 4 )]
     [BooleanField( "Show First/Last Attendance", "If the group allows attendance, should the first and last attendance date be displayed for each group member?", false, "", 5, "ShowAttendance" )]
     [BooleanField( "Show Date Added", "Should the date that person was added to the group be displayed for each group member?", false, "", 6 )]
@@ -179,12 +180,24 @@ namespace RockWeb.Blocks.Groups
                         .Any();
                 }
             }
-
+            
+            // Show the sync icon if group member sync is set up for this group.
             if ( _group != null && _group.GroupSyncs != null && _group.GroupSyncs.Count() > 0 )
             {
-                string syncedRoles = string.Join( "\r\n", _group.GroupSyncs.Select( s => s.GroupTypeRole.Name ).ToArray() );
-                hlSyncStatus.ToolTip = syncedRoles;
-                hlSyncStatus.Visible = true;
+                string syncedRolesHtml = string.Empty;
+                var dataViewDetailPage = GetAttributeValue( "DataViewDetailPage" );
+
+                if ( !string.IsNullOrWhiteSpace( dataViewDetailPage ) )
+                {
+                    syncedRolesHtml = string.Join( "<br>", _group.GroupSyncs.Select( s => string.Format( "<small><a href='{0}'>{1}</a> as {2}</small>", LinkedPageUrl( "DataViewDetailPage", new Dictionary<string, string>() { { "DataViewId", s.SyncDataViewId.ToString() } } ), s.SyncDataView.Name, s.GroupTypeRole.Name ) ).ToArray() );
+                }
+                else
+                {
+                    syncedRolesHtml = string.Join( "<br>", _group.GroupSyncs.Select( s => string.Format( "<small><i class='text-info'>{0}</i> as {1}</small>", s.SyncDataView.Name, s.GroupTypeRole.Name ) ).ToArray() );
+                }
+
+                spanSyncLink.Attributes.Add( "data-content", syncedRolesHtml );
+                spanSyncLink.Visible = true;
             }
         }
 

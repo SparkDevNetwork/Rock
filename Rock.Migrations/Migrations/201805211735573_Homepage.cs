@@ -260,8 +260,8 @@ namespace Rock.Migrations
             Sql( @"UPDATE [Block] SET [Order] = 1 WHERE [Guid] = '1CBE10C7-5E64-4385-BEE3-81DCA43DC47F'" );
 
             // Page: Group History Grid              
-            RockMigrationHelper.AddPage( true, "FCCF2570-DC09-4129-87BE-F1CAE25F1B9D","D65F783D-87A9-4CC9-8110-E83466A0EADB","Group History Grid","","FB9A6BC0-0B51-4A92-A32C-58AC822CD2D0",""); // Site:Rock RMS
-            RockMigrationHelper.AddPageRoute("FB9A6BC0-0B51-4A92-A32C-58AC822CD2D0","group/{GroupId}/history/grid");
+            RockMigrationHelper.AddPage( true, "FCCF2570-DC09-4129-87BE-F1CAE25F1B9D","D65F783D-87A9-4CC9-8110-E83466A0EADB","Group History Grid","", Rock.SystemGuid.Page.GROUP_HISTORY_GRID, ""); // Site:Rock RMS
+            RockMigrationHelper.AddPageRoute( Rock.SystemGuid.Page.GROUP_HISTORY_GRID,"group/{GroupId}/history/grid");
             RockMigrationHelper.UpdateBlockType("Group Member History","Displays a timeline of history for a group member","~/Blocks/Groups/GroupMemberHistory.ascx","Groups","EA6EA2E7-6504-41FE-AB55-0B1E7D04B226");
             // Add Block to Page: Group History Grid, Site: Rock RMS              
             RockMigrationHelper.AddBlock( true, "FB9A6BC0-0B51-4A92-A32C-58AC822CD2D0","","EA6EA2E7-6504-41FE-AB55-0B1E7D04B226","Group Member History","Main","","",0,"C41CBC63-0DB6-4F69-8DEA-894580E27312");   
@@ -277,8 +277,8 @@ namespace Rock.Migrations
             RockMigrationHelper.UpdateBlockTypeAttribute("EA6EA2E7-6504-41FE-AB55-0B1E7D04B226","BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108","Group Member History Page","GroupMemberHistoryPage","","",3,@"","A1D22BA4-4D39-4187-9F6B-C0B8DC6D6896");  
 
             // Page: Group Member History              
-            RockMigrationHelper.AddPage( true, "FCCF2570-DC09-4129-87BE-F1CAE25F1B9D","D65F783D-87A9-4CC9-8110-E83466A0EADB","Group Member History","","EAAB757E-524F-4DB9-A124-D5EFBCDCA63B",""); // Site:Rock RMS
-            RockMigrationHelper.AddPageRoute("EAAB757E-524F-4DB9-A124-D5EFBCDCA63B","group/{GroupId}/history/groupmember/{GroupMemberId}");
+            RockMigrationHelper.AddPage( true, "FCCF2570-DC09-4129-87BE-F1CAE25F1B9D","D65F783D-87A9-4CC9-8110-E83466A0EADB","Group Member History","", Rock.SystemGuid.Page.GROUP_MEMBER_HISTORY, ""); // Site:Rock RMS
+            RockMigrationHelper.AddPageRoute( Rock.SystemGuid.Page.GROUP_MEMBER_HISTORY, "group/{GroupId}/history/groupmember/{GroupMemberId}" );
             RockMigrationHelper.UpdateBlockType("Group Member History","Displays a timeline of history for a group member","~/Blocks/Groups/GroupMemberHistory.ascx","Groups","EA6EA2E7-6504-41FE-AB55-0B1E7D04B226");
             // Add Block to Page: Group Member History, Site: Rock RMS              
             RockMigrationHelper.AddBlock( true, "EAAB757E-524F-4DB9-A124-D5EFBCDCA63B","","EA6EA2E7-6504-41FE-AB55-0B1E7D04B226","Group Member History","Main","","",0,"03FB6DBD-3320-46A8-B3E1-662AE2C3FC41");   

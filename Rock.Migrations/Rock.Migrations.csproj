@@ -249,6 +249,14 @@
     <Compile Include="Migrations\201805302320038_Lucene.Designer.cs">
       <DependentUpon>201805302320038_Lucene.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201806011737240_RemoveNoteTypeCssClass.cs" />
+    <Compile Include="Migrations\201806011737240_RemoveNoteTypeCssClass.Designer.cs">
+      <DependentUpon>201806011737240_RemoveNoteTypeCssClass.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201806012358276_Rollup_0601.cs" />
+    <Compile Include="Migrations\201806012358276_Rollup_0601.Designer.cs">
+      <DependentUpon>201806012358276_Rollup_0601.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2964,6 +2972,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201805302320038_Lucene.resx">
       <DependentUpon>201805302320038_Lucene.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201806011737240_RemoveNoteTypeCssClass.resx">
+      <DependentUpon>201806011737240_RemoveNoteTypeCssClass.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201806012358276_Rollup_0601.resx">
+      <DependentUpon>201806012358276_Rollup_0601.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.resx">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>

@@ -121,7 +121,7 @@ namespace Rock.Cache
         /// <returns></returns>
         public static T Get( int id, RockContext rockContext )
         {
-            if ( id == 0)
+            if ( id == 0 )
             {
                 return default( T );
             }
@@ -211,7 +211,7 @@ namespace Rock.Cache
         /// <returns></returns>
         public static List<T> All()
         {
-            return All(null);
+            return All( null );
         }
 
         /// <summary>
@@ -220,11 +220,11 @@ namespace Rock.Cache
         /// <returns></returns>
         public static List<T> All( RockContext rockContext )
         {
-            var cachedKeys = GetOrAddKeys(() => QueryDbForAllIds(rockContext));
-            if ( cachedKeys == null) return new List<T>();
+            var cachedKeys = GetOrAddKeys( () => QueryDbForAllIds( rockContext ) );
+            if ( cachedKeys == null ) return new List<T>();
 
             var allValues = new List<T>();
-            foreach ( var key in cachedKeys )
+            foreach ( var key in cachedKeys.ToList() )
             {
                 var value = Get( key.AsInteger() );
                 if ( value != null )

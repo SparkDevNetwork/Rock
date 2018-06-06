@@ -516,9 +516,8 @@ namespace Rock.Cache
             var value = new CacheAttribute();
             value.SetFromEntity( entity, qualifiers );
 
-            var key = entity.Id.ToString();
-            RockCacheManager<CacheAttribute>.Instance.AddOrUpdate( key, value );
-            RockCacheManager<int?>.Instance.AddOrUpdate( value.Guid.ToString(), value.Id );
+            RockCacheManager<CacheAttribute>.Instance.AddOrUpdate( QualifiedKey( entity.Id.ToString() ), value );
+            RockCacheManager<int?>.Instance.AddOrUpdate( QualifiedKey( value.Guid.ToString() ), value.Id );
 
             return value;
 

@@ -35,7 +35,9 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// Note Container control
     /// </summary>
+    [DefaultProperty( "NoteViewLavaTemplate" )]
     [ToolboxData( "<{0}:NoteContainer runat=server></{0}:NoteContainer>" )]
+    [ParseChildren( true, "NoteViewLavaTemplate" )]
     public class NoteContainer : CompositeControl, INamingContainer
     {
         #region Fields
@@ -45,20 +47,11 @@ namespace Rock.Web.UI.Controls
         private HiddenFieldWithClass _hfCurrentNoteId;
         private HiddenFieldWithClass _hfExpandedNoteIds;
         private ModalAlert _mdDeleteWarning;
-        private ModalDialog _mdConfirmDelete;
-        private Literal _lConfirmDeleteMsg;
+        private LinkButton _lbDeleteNote;
 
         #endregion
 
-        #region Properties
-
-        /// <summary>
-        /// Gets or sets the note options.
-        /// </summary>
-        /// <value>
-        /// The note options.
-        /// </value>
-        public NoteOptions NoteOptions { get; set; } = new NoteOptions();
+        #region Obsolete Properties
 
         /// <summary>
         /// Gets or sets the note types.
@@ -66,7 +59,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The note types.
         /// </value>
-        [Obsolete( "Use NoteOptions.NoteTypes instead" )]
+        [Obsolete( "Use NoteTypeList instead" )]
         public List<Rock.Web.Cache.NoteTypeCache> NoteTypes
         {
             get
@@ -81,9 +74,70 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the entity identifier.
+        /// Gets or sets the term.
         /// </summary>
-        [Obsolete( "Use NoteOptions.EntityId instead" )]
+        /// <value>
+        /// The term.
+        /// </value>
+        [Obsolete( "Use NoteLabel instead" )]
+        public string Term
+        {
+            get
+            {
+                return this.NoteOptions.NoteLabel;
+            }
+            set
+            {
+                this.NoteOptions.NoteLabel = value;
+            }
+        }
+
+        #endregion Obsolete Properties
+
+        #region Note Options
+
+        /// <summary>
+        /// Gets or sets the NoteOptions for note type list.
+        /// </summary>
+        /// <value>
+        /// The note type list.
+        /// </value>
+        public List<CacheNoteType> NoteTypeList
+        {
+            get
+            {
+                return NoteOptions?.NoteTypes;
+            }
+
+            set
+            {
+                NoteOptions.NoteTypes = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the note view lava template.
+        /// </summary>
+        /// <value>
+        /// The note view lava template.
+        /// </value>
+        [PersistenceMode( PersistenceMode.InnerDefaultProperty )]
+        public string NoteViewLavaTemplate
+        {
+            get
+            {
+                return NoteOptions?.NoteViewLavaTemplate;
+            }
+
+            set
+            {
+                NoteOptions.NoteViewLavaTemplate = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the NoteOptions for entity identifier.
+        /// </summary>
         public int? EntityId
         {
             get
@@ -96,6 +150,181 @@ namespace Rock.Web.UI.Controls
                 NoteOptions.EntityId = value;
             }
         }
+
+        /// <summary>
+        /// Gets or sets the NoteOptions for indicating whether [add always visible].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [add always visible]; otherwise, <c>false</c>.
+        /// </value>
+        public bool AddAlwaysVisible
+        {
+            get
+            {
+                return this.NoteOptions.AddAlwaysVisible;
+            }
+            set
+            {
+                this.NoteOptions.AddAlwaysVisible = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the NoteOptions for indicating whether [display note type heading].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [display note type heading]; otherwise, <c>false</c>.
+        /// </value>
+        public bool DisplayNoteTypeHeading
+        {
+            get
+            {
+                return this.NoteOptions.DisplayNoteTypeHeading;
+            }
+            set
+            {
+                this.NoteOptions.DisplayNoteTypeHeading = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the NoteOptions for display type.
+        /// </summary>
+        /// <value>
+        /// The display type.
+        /// </value>
+        public NoteDisplayType DisplayType
+        {
+            get
+            {
+                return this.NoteOptions.DisplayType;
+            }
+            set
+            {
+                this.NoteOptions.DisplayType = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the NoteOptions indicating whether [show alert CheckBox].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show alert CheckBox]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowAlertCheckBox
+        {
+            get
+            {
+                return this.NoteOptions.ShowAlertCheckBox;
+            }
+            set
+            {
+                this.NoteOptions.ShowAlertCheckBox = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the NoteOptions indicating whether [show create date input].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show create date input]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowCreateDateInput
+        {
+            get
+            {
+                return this.NoteOptions.ShowCreateDateInput;
+            }
+            set
+            {
+                this.NoteOptions.ShowCreateDateInput = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the NoteOptions indicating whether [show private CheckBox].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show private CheckBox]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowPrivateCheckBox
+        {
+            get
+            {
+                return this.NoteOptions.ShowPrivateCheckBox;
+            }
+            set
+            {
+                this.NoteOptions.ShowPrivateCheckBox = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the NoteOptions indicating whether [show security button].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show security button]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowSecurityButton
+        {
+            get
+            {
+                return this.NoteOptions.ShowSecurityButton;
+            }
+            set
+            {
+                this.NoteOptions.ShowSecurityButton = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the NoteOptions note label.
+        /// </summary>
+        /// <value>
+        /// The note label.
+        /// </value>
+        public string NoteLabel
+        {
+            get
+            {
+                return this.NoteOptions.NoteLabel;
+            }
+            set
+            {
+                this.NoteOptions.NoteLabel = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the NoteOptions value indicating whether [use person icon].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [use person icon]; otherwise, <c>false</c>.
+        /// </value>
+        public bool UsePersonIcon
+        {
+            get
+            {
+                return this.NoteOptions.UsePersonIcon;
+            }
+            set
+            {
+                this.NoteOptions.UsePersonIcon = value;
+            }
+        }
+
+
+        #endregion Note Options
+
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets all the note options as a NoteOptions object
+        /// </summary>
+        /// <value>
+        /// The note options.
+        /// </value>
+        public NoteOptions NoteOptions { get; set; } = new NoteOptions();
 
         /// <summary>
         /// Gets or sets a value indicating whether to display heading of the note container
@@ -286,10 +515,6 @@ namespace Rock.Web.UI.Controls
 
                     switch ( action )
                     {
-                        case "DeleteNote":
-                            noteId = parameters.AsIntegerOrNull();
-                            DisplayDeleteNote( noteId );
-                            break;
                         case "ApproveNote":
                             noteId = parameters.AsIntegerOrNull();
                             ApproveNote( noteId, true );
@@ -338,15 +563,13 @@ namespace Rock.Web.UI.Controls
             _hfExpandedNoteIds.CssClass = "js-expandednoteids";
             Controls.Add( _hfExpandedNoteIds );
 
-            _mdConfirmDelete = new ModalDialog();
-            _mdConfirmDelete.ID = this.ID + "_mdConfirmDelete";
-            _mdConfirmDelete.Title = "Please Confirm";
-            _mdConfirmDelete.SaveButtonText = "Yes";
-            _mdConfirmDelete.SaveClick += _mdConfirmDelete_SaveClick;
-            Controls.Add( _mdConfirmDelete );
-            _lConfirmDeleteMsg = new Literal();
-            _lConfirmDeleteMsg.ID = this.ID + "_lConfirmDeleteMsg";
-            _mdConfirmDelete.Content.Controls.Add( _lConfirmDeleteMsg );
+            // Create a hidden DeleteNote linkbutton that will hookup to the Lava'd Delete button
+            _lbDeleteNote = new LinkButton();
+            _lbDeleteNote.ID = this.ID + "_lbDeleteNote";
+            _lbDeleteNote.CssClass = "js-delete-postback";
+            _lbDeleteNote.Click += _lbDeleteNote_Click;
+            _lbDeleteNote.Style[HtmlTextWriterStyle.Display] = "none";
+            Controls.Add( _lbDeleteNote );
 
             _mdDeleteWarning = new ModalAlert();
             _mdDeleteWarning.ID = this.ID + "_mdDeleteWarning";
@@ -372,25 +595,13 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Handles the SaveClick event of the _mdConfirmDelete control.
+        /// Handles the Click event of the _lbDeleteNote control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void _mdConfirmDelete_SaveClick( object sender, EventArgs e )
+        private void _lbDeleteNote_Click( object sender, EventArgs e )
         {
-            _mdConfirmDelete.Hide();
             DeleteNote( _hfCurrentNoteId.Value.AsIntegerOrNull() );
-        }
-
-        /// <summary>
-        /// Displays the delete note.
-        /// </summary>
-        /// <param name="noteId">The note identifier.</param>
-        private void DisplayDeleteNote( int? noteId )
-        {
-            _lConfirmDeleteMsg.Text = "Are you sure you want to delete this note?";
-            _hfCurrentNoteId.Value = noteId.ToString();
-            _mdConfirmDelete.Show();
         }
 
         /// <summary>
@@ -563,6 +774,8 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-body" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
+                _noteEditor.ShowEditMode = NoteOptions.AddAlwaysVisible;
+
                 if ( canAdd && SortDirection == ListSortDirection.Descending )
                 {
                     if ( !ShowHeading && !NoteOptions.AddAlwaysVisible )
@@ -575,7 +788,7 @@ namespace Rock.Web.UI.Controls
 
                 _hfCurrentNoteId.RenderControl( writer );
                 _hfExpandedNoteIds.RenderControl( writer );
-                _mdConfirmDelete.RenderControl( writer );
+                _lbDeleteNote.RenderControl( writer );
                 _mdDeleteWarning.RenderControl( writer );
                 using ( var rockContext = new RockContext() )
                 {
