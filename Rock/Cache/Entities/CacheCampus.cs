@@ -173,6 +173,29 @@ namespace Rock.Cache
             }
         }
 
+        /// <summary>
+        /// Gets the current date time.
+        /// </summary>
+        /// <value>
+        /// The current date time.
+        /// </value>
+        public DateTime CurrentDateTime
+        {
+            get
+            {
+                if ( TimeZoneId.IsNotNullOrWhitespace() )
+                {
+                    var campusTimeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById( TimeZoneId );
+                    if ( campusTimeZoneInfo != null )
+                    {
+                        return TimeZoneInfo.ConvertTime( DateTime.UtcNow, campusTimeZoneInfo );
+                    }
+                }
+
+                return RockDateTime.Now;
+            }
+        }
+
         #endregion
 
         #region Public Methods
