@@ -17,7 +17,6 @@
 using System;
 using System.IO;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Web;
 using Rock;
 using Rock.Data;
@@ -40,83 +39,20 @@ namespace RockWeb
         /// <returns>An IAsyncResult that contains information about the status of the process.</returns>
         public IAsyncResult BeginProcessRequest( HttpContext context, AsyncCallback cb, object extraData )
         {
-            try
-            {
-                // Check to see if this is a BinaryFileType/BinaryFile or just a plain content file (if isBinaryFile not specified, assume it is a BinaryFile)
-                bool isBinaryFile = ( context.Request.QueryString["isBinaryFile"] ?? "T" ).AsBoolean();
-                context.Items.Add( "isBinaryFile", isBinaryFile );
-
-                if ( isBinaryFile )
-                {
-                    return BeginProcessBinaryFileRequest( context, cb );
-                }
-                else
-                {
-                    return BeginProcessContentFileRequest( context );
-                }
-            }
-            catch ( Exception ex )
-            {
-                ExceptionLogService.LogException( ex, context );
-                context.Response.StatusCode = 500;
-                context.Response.StatusDescription = ex.Message;
-                context.ApplicationInstance.CompleteRequest();
-
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Begins the process content file request.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        /// <returns></returns>
-        /// <exception cref="System.Exception">fileName must be specified</exception>
-        private static IAsyncResult BeginProcessContentFileRequest( HttpContext context )
-        {
-            string relativeFilePath = context.Request.QueryString["fileName"];
-
-            if ( string.IsNullOrWhiteSpace( relativeFilePath ) )
-            {
-                throw new Exception( "fileName must be specified" );
-            }
-
-            return Task.Run( () =>
-            {
-                const string RootContentFolder = "~/Content";
-                string physicalRootFolder = context.Request.MapPath( RootContentFolder );
-                string physicalContentFileName = Path.Combine( physicalRootFolder, relativeFilePath.TrimStart( new char[] { '/', '\\' } ) );
-                var sourceStream = File.OpenRead( physicalContentFileName );
-                context.Items.Add( "fileContents", sourceStream );
-                context.Items.Add( "physicalContentFileName", physicalContentFileName );
-            } );
-        }
-
-        /// <summary>
-        /// Begins the process binary file request.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        /// <param name="cb">The cb.</param>
-        /// <returns></returns>
-        /// <exception cref="System.Exception">file id key must be a guid or an int</exception>
-        private static IAsyncResult BeginProcessBinaryFileRequest( HttpContext context, AsyncCallback cb )
-        {
             int fileId = context.Request.QueryString["id"].AsInteger();
             Guid fileGuid = context.Request.QueryString["guid"].AsGuid();
 
-            if ( fileId == 0 && fileGuid.Equals( Guid.Empty ) )
-            {
-                throw new Exception( "file id key must be a guid or an int" );
-            }
-
-            BinaryFileService binaryFileService = new BinaryFileService( new RockContext() );
             if ( fileGuid != Guid.Empty )
             {
-                return binaryFileService.BeginGet( cb, context, fileGuid );
+                return new BinaryFileService( new RockContext() ).BeginGet( cb, context, fileGuid );
+            }
+            else if ( fileId != 0 )
+            {
+                return new BinaryFileService( new RockContext() ).BeginGet( cb, context, fileId );
             }
             else
             {
-                return binaryFileService.BeginGet( cb, context, fileId );
+                return new SendErrorDelegate( SendError ).BeginInvoke(context, 400, "File id key must be a guid or an int.", cb, extraData);
             }
         }
 
@@ -129,69 +65,36 @@ namespace RockWeb
             // restore the context from the asyncResult.AsyncState 
             HttpContext context = (HttpContext)result.AsyncState;
 
-            try
+            if ( context != null )
             {
+
                 context.Response.Clear();
 
-                bool isBinaryFile = (bool)context.Items["isBinaryFile"];
+                var rockContext = new RockContext();
 
-                if ( isBinaryFile )
+                bool requiresViewSecurity = false;
+                BinaryFile binaryFile = new BinaryFileService( rockContext ).EndGet( result, context, out requiresViewSecurity );
+                if ( binaryFile != null )
                 {
-                    var rockContext = new RockContext();
-
-                    bool requiresViewSecurity = false;
-                    BinaryFile binaryFile = new BinaryFileService( rockContext ).EndGet( result, context, out requiresViewSecurity );
-                    if ( binaryFile != null )
+                    //// if the binaryFile's BinaryFileType requires security, check security
+                    //// note: we put a RequiresViewSecurity flag on BinaryFileType because checking security for every file would be slow (~40ms+ per request)
+                    if ( requiresViewSecurity )
                     {
-                        //// if the binaryFile's BinaryFileType requires security, check security
-                        //// note: we put a RequiresViewSecurity flag on BinaryFileType because checking security for every file would be slow (~40ms+ per request)
-                        if ( requiresViewSecurity )
+                        var currentUser = new UserLoginService( rockContext ).GetByUserName( UserLogin.GetCurrentUserName() );
+                        Person currentPerson = currentUser != null ? currentUser.Person : null;
+                        binaryFile.BinaryFileType = binaryFile.BinaryFileType ?? new BinaryFileTypeService( rockContext ).Get( binaryFile.BinaryFileTypeId.Value );
+                        if ( !binaryFile.IsAuthorized( Authorization.VIEW, currentPerson ) )
                         {
-                            var currentUser = new UserLoginService( rockContext ).GetByUserName( UserLogin.GetCurrentUserName() );
-                            Person currentPerson = currentUser != null ? currentUser.Person : null;
-                            binaryFile.BinaryFileType = binaryFile.BinaryFileType ?? new BinaryFileTypeService( rockContext ).Get( binaryFile.BinaryFileTypeId.Value );
-                            if ( !binaryFile.IsAuthorized( Authorization.VIEW, currentPerson ) )
-                            {
-                                SendNotAuthorized( context );
-                                return;
-                            }
+                            SendError(context, 403, "Not authorized to view file.");
+                            return;
                         }
-
-                        SendFile( context, binaryFile.ContentStream, binaryFile.MimeType, binaryFile.FileName, binaryFile.Guid.ToString("N") );
-                        return;
                     }
-                }
-                else
-                {
-                    Stream fileContents = (Stream)context.Items["fileContents"];
-                    string physicalContentFileName = context.Items["physicalContentFileName"] as string;
 
-                    if ( fileContents != null )
-                    {
-                        string mimeType = System.Web.MimeMapping.GetMimeMapping( physicalContentFileName );
-                        string fileName = Path.GetFileName( physicalContentFileName );
-                        SendFile( context, fileContents, mimeType, fileName, "" );
-                        return;
-                    }
+                    SendFile( context, binaryFile.ContentStream, binaryFile.MimeType, binaryFile.FileName, binaryFile.Guid.ToString( "N" ) );
+                    return;
                 }
-
-                context.Response.StatusCode = 404;
-                context.Response.StatusDescription = "Unable to find the requested file.";
-            }
-            catch ( Exception ex )
-            {
-                ExceptionLogService.LogException( ex, context );
-                try
-                {
-                    context.Response.StatusCode = 500;
-                    context.Response.StatusDescription = ex.Message;
-                    context.Response.Flush();
-                    context.ApplicationInstance.CompleteRequest();
-                }
-                catch ( Exception ex2 )
-                {
-                    ExceptionLogService.LogException( ex2, context );
-                }
+                
+                SendError( context, 404, "File could not be found." );
             }
         }
 
@@ -214,11 +117,11 @@ namespace RockWeb
             {
                 var match = Regex.Match( context.Request.Headers["Range"], @"bytes=(\d*)-(\d*)" );
                 startIndex = match.Groups[1].Value.AsInteger();
-                responseLength = (match.Groups[2].Value.AsIntegerOrNull() + 1 ?? fileLength ) - startIndex;
+                responseLength = ( match.Groups[2].Value.AsIntegerOrNull() + 1 ?? fileLength ) - startIndex;
                 context.Response.StatusCode = (int)System.Net.HttpStatusCode.PartialContent;
                 context.Response.Headers["Content-Range"] = "bytes " + startIndex + "-" + ( startIndex + responseLength - 1 ) + "/" + fileLength;
             }
-            
+
             context.Response.Clear();
             context.Response.Buffer = false;
             context.Response.Headers["Accept-Ranges"] = "bytes";
@@ -277,6 +180,23 @@ namespace RockWeb
             context.ApplicationInstance.CompleteRequest();
         }
 
+
+        private delegate void SendErrorDelegate( HttpContext context, int code, string message );
+
+        /// <summary>
+        /// Sends an error code response and completes the request.
+        /// </summary>
+        /// <param name="context">THe HttpContext for this request.</param>
+        /// <param name="code">The response code to send.</param>
+        /// <param name="message">The response message to send.</param>
+        private void SendError( HttpContext context, int code, string message )
+        {
+            context.Response.Clear();
+            context.Response.StatusCode = code;
+            context.Response.StatusDescription = message;
+            context.ApplicationInstance.CompleteRequest();
+        }
+
         /// <summary>
         /// Enables processing of HTTP Web requests by a custom HttpHandler that implements the <see cref="T:System.Web.IHttpHandler" /> interface.
         /// </summary>
@@ -288,17 +208,6 @@ namespace RockWeb
         }
 
         /// <summary>
-        /// Sends a 403 (forbidden)
-        /// </summary>
-        /// <param name="context">The context.</param>
-        private void SendNotAuthorized( HttpContext context )
-        {
-            context.Response.StatusCode = System.Net.HttpStatusCode.Forbidden.ConvertToInt();
-            context.Response.StatusDescription = "Not authorized to view file";
-            context.ApplicationInstance.CompleteRequest();
-        }
-
-        /// <summary>
         /// Gets a value indicating whether another request can use the <see cref="T:System.Web.IHttpHandler" /> instance.
         /// </summary>
         /// <returns>true if the <see cref="T:System.Web.IHttpHandler" /> instance is reusable; otherwise, false.</returns>
@@ -306,7 +215,7 @@ namespace RockWeb
         {
             get
             {
-                return false;
+                return true;
             }
         }
     }
