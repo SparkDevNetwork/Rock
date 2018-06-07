@@ -503,7 +503,7 @@ namespace RockWeb.Blocks.Finance
                     financialTransactionDetailQuery = financialTransactionDetailQuery.Where( a => a.Transaction.BatchId == batchId.Value );
                 }
 
-                if ( dataViewId.HasValue )
+                if ( dataViewId.HasValue && dataViewId > 0 )
                 {
                     var dataView = new DataViewService( rockContext ).Get( dataViewId.Value );
                     List<string> errorMessages;
