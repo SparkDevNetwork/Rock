@@ -1383,6 +1383,7 @@
     <Compile Include="Reporting\DataSelect\GroupMember\GroupLinkSelect.cs" />
     <Compile Include="Reporting\DataSelect\GroupMember\GroupAttributeSelect.cs" />
     <Compile Include="Reporting\DataSelect\Group\GroupFormattedFieldSelect.cs" />
+    <Compile Include="Reporting\DataSelect\Group\ScheduleSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\PersonFormattedFieldSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\SignalSelect.cs" />
     <Compile Include="Reporting\DataSelect\PrayerRequest\CampusSelect.cs" />
