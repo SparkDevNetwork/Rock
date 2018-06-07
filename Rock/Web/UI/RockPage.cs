@@ -66,12 +66,7 @@ namespace Rock.Web.UI
         /// <summary>
         /// Gets a dictionary of the current context items (models).
         /// </summary>
-        internal Dictionary<string, Rock.Data.KeyEntity> ModelContext
-        {
-            get { return _modelContext; }
-            set { _modelContext = value; }
-        }
-        private Dictionary<string, Data.KeyEntity> _modelContext;
+        internal Dictionary<string, Rock.Data.KeyEntity> ModelContext = new Dictionary<string, Data.KeyEntity>();
 
         #endregion
 
@@ -900,7 +895,6 @@ namespace Rock.Web.UI
                 {
                     // Set current models (context)
                     Page.Trace.Warn( "Checking for Context" );
-                    ModelContext = new Dictionary<string, Data.KeyEntity>();
                     try
                     {
                         char[] delim = new char[1] { ',' };
@@ -1938,15 +1932,17 @@ Sys.Application.add_load(function () {
         {
             var result = new List<CacheEntityType>();
 
-            foreach ( var item in this.ModelContext.Keys )
+            if ( this.ModelContext != null )
             {
-                var entityType = CacheEntityType.Get( item );
-                if ( entityType != null )
+                foreach ( var item in this.ModelContext.Keys )
                 {
-                    result.Add( entityType );
+                    var entityType = CacheEntityType.Get( item );
+                    if ( entityType != null )
+                    {
+                        result.Add( entityType );
+                    }
                 }
             }
-
             return result;
         }
 

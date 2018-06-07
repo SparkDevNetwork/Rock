@@ -103,6 +103,7 @@ namespace Rock.Jobs
                     }
                 }
             }
+
             results += $"Total Time: {timerTotal.ElapsedMilliseconds / 1000}s,";
             context.Result = "Indexing results: " + results.Trim( ',' );
         }

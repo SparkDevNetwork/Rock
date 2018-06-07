@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using Newtonsoft.Json;
+using Rock.Attribute;
 using Rock.Cache;
 using Rock.Checkr.CheckrApi;
 using Rock.Checkr.Constants;
@@ -36,6 +37,7 @@ namespace Rock.Checkr
     [Export( typeof( BackgroundCheckComponent ) )]
     [ExportMetadata( "ComponentName", "Checkr" )]
 
+    [EncryptedTextField( "Access Token", "Checkr Access Token", true, "", "", 0, null, true )]
     public class Checkr : BackgroundCheckComponent
     {
         #region BackgroundCheckComponent Implementation
@@ -567,12 +569,11 @@ namespace Rock.Checkr
                         definedValue.SetAttributeValue( "MVRJurisdiction", string.Empty );
                         definedValue.SetAttributeValue( "SendHomeStateMVR", "False" );
                         definedValue.SaveAttributeValues( rockContext );
-
-                        CacheDefinedValue.Remove( definedValue.Id );
                     }
                 }
             }
 
+            CacheDefinedValue.Clear();
             return true;
         }
 
