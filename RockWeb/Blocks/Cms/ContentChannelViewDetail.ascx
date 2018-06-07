@@ -31,24 +31,21 @@ Guid - ContentChannelItem Guid" />
                         </div>
                     </div>
                     <div class="row">
-
                         <div class="col-md-6">
                             <fieldset>
                                 <legend>Interactions</legend>
 
-                                <Rock:RockDropDownList ID="ddlInteractionChannel" runat="server" Label="Interaction Channel" Help="The Interaction Channel to log interactions to. Leave blank to not log interactions." AutoPostBack="true" OnSelectedIndexChanged="ddlInteractionChannel_SelectedIndexChanged" />
+                                <Rock:RockDropDownList ID="ddlInteractionChannel" runat="server" Label="Interaction Channel" Help="The Interaction Channel to log interactions to. Leave blank to not log interactions." />
                                 <Rock:RockTextBox ID="tbInteractionOperation" runat="server" Label="Interaction Operation" />
                                 <Rock:RockCheckBox ID="cbWriteInteractionOnlyIfIndividualLoggedIn" runat="server" Label="Write Interaction Only If Individual Logged In" Help="Set to true to only launch a workflow for logged in users, or set to false to launch for both logged in and anonymous users." />
 
-
                             </fieldset>
-
-                            
                         </div>
                         <div class="col-md-6">
                             <fieldset>
                                 <legend>Workflows</legend>
-                                <Rock:WorkflowTypePicker ID="wtpWorkflowType" runat="server" Label="Workflow Type" Help="The workflow type to launch when the content is viewed." OnSelectItem="wtpWorkflowType_SelectItem" />
+
+                                <Rock:WorkflowTypePicker ID="wtpWorkflowType" runat="server" Label="Workflow Type" Help="The workflow type to launch when the content is viewed." />
                                 <Rock:RockCheckBox ID="cbLaunchWorkflowOnlyIfIndividualLoggedIn" runat="server" Label="Launch Workflow Only If Individual Logged In" Help="Set to true to only launch a workflow for logged in users, or set to false to launch for both logged in and anonymous users." />
                                 <Rock:RockCheckBox ID="cbLaunchWorkflowOncePerPerson" runat="server" Label="Launch Workflow Once Per Person" />
                             </fieldset>
@@ -56,34 +53,34 @@ Guid - ContentChannelItem Guid" />
                     </div>
 
                     <Rock:PanelWidget ID="pwSocialMediaSettings" runat="server" Title="Social Media Settings">
-                                <Rock:RockDropDownList ID="ddlMetaDescriptionAttribute" Label="Meta Description Attribute" Help="Attribute to use for the page's meta description." runat="server" />
+                        <Rock:RockDropDownList ID="ddlMetaDescriptionAttribute" Label="Meta Description Attribute" Help="Attribute to use for the page's meta description." runat="server" />
 
-                                <Rock:RockDropDownList ID="ddlOpenGraphType" Label="Open Graph Type (og:type)" runat="server">
-                                    <asp:ListItem />
-                                    <asp:ListItem Text="article" />
-                                    <asp:ListItem Text="website" />
-                                    <asp:ListItem Text="book" />
-                                    <asp:ListItem Text="place" />
-                                    <asp:ListItem Text="product" />
-                                    <asp:ListItem Text="profile" />
-                                    <asp:ListItem Text="video.episode" />
-                                    <asp:ListItem Text="video.movie" />
-                                    <asp:ListItem Text="video.other" />
-                                    <asp:ListItem Text="video.tv_show" />
-                                </Rock:RockDropDownList>
-                                <Rock:RockDropDownList ID="ddlOpenGraphTitleAttribute" Label="Open Graph Title (og:title) Attribute" runat="server" />
-                                <Rock:RockDropDownList ID="ddlOpenGraphDescriptionAttribute" Label="Open Graph Description (og:description) Attribute" runat="server" />
-                                <Rock:RockDropDownList ID="ddlOpenGraphImageAttribute" Label="Open Graph Image (og:image) Attribute" runat="server" />
+                        <Rock:RockDropDownList ID="ddlOpenGraphType" Label="Open Graph Type (og:type)" runat="server">
+                            <asp:ListItem />
+                            <asp:ListItem Text="article" />
+                            <asp:ListItem Text="website" />
+                            <asp:ListItem Text="book" />
+                            <asp:ListItem Text="place" />
+                            <asp:ListItem Text="product" />
+                            <asp:ListItem Text="profile" />
+                            <asp:ListItem Text="video.episode" />
+                            <asp:ListItem Text="video.movie" />
+                            <asp:ListItem Text="video.other" />
+                            <asp:ListItem Text="video.tv_show" />
+                        </Rock:RockDropDownList>
+                        <Rock:RockDropDownList ID="ddlOpenGraphTitleAttribute" Label="Open Graph Title (og:title) Attribute" runat="server" />
+                        <Rock:RockDropDownList ID="ddlOpenGraphDescriptionAttribute" Label="Open Graph Description (og:description) Attribute" runat="server" />
+                        <Rock:RockDropDownList ID="ddlOpenGraphImageAttribute" Label="Open Graph Image (og:image) Attribute" runat="server" />
 
-                                <Rock:RockDropDownList ID="ddlTwitterTitleAttribute" Label="Twitter Title (twitter:title) Attribute" runat="server" />
-                                <Rock:RockDropDownList ID="ddlTwitterDescriptionAttribute" Label="Twitter Description (twitter:description) Attribute" runat="server" />
-                                <Rock:RockDropDownList ID="ddlTwitterImageAttribute" Label="Twitter Image (twitter:image) Attribute" runat="server" />
-                                <Rock:RockRadioButtonList ID="rblTwitterCard" Label="Twitter Card (twitter:card)" runat="server">
-                                    <asp:ListItem Text="none" Value="none" />
-                                    <asp:ListItem Text="Summary" Value="summary" />
-                                    <asp:ListItem Text="Large Image" Value="summary_large_image" />
-                                </Rock:RockRadioButtonList>
-                            </Rock:PanelWidget>
+                        <Rock:RockDropDownList ID="ddlTwitterTitleAttribute" Label="Twitter Title (twitter:title) Attribute" runat="server" />
+                        <Rock:RockDropDownList ID="ddlTwitterDescriptionAttribute" Label="Twitter Description (twitter:description) Attribute" runat="server" />
+                        <Rock:RockDropDownList ID="ddlTwitterImageAttribute" Label="Twitter Image (twitter:image) Attribute" runat="server" />
+                        <Rock:RockRadioButtonList ID="rblTwitterCard" Label="Twitter Card (twitter:card)" runat="server">
+                            <asp:ListItem Text="none" Value="none" />
+                            <asp:ListItem Text="Summary" Value="summary" />
+                            <asp:ListItem Text="Large Image" Value="summary_large_image" />
+                        </Rock:RockRadioButtonList>
+                    </Rock:PanelWidget>
                 </Content>
 
             </Rock:ModalDialog>
