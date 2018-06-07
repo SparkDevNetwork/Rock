@@ -59,7 +59,8 @@ Guid - ContentChannelItem Guid
     [IntegerField( "Output Cache Duration", "Number of seconds to cache the resolved output. Only cache the output if you are not personalizing the output based on current user, current page, or any other merge field value.", required: false, key: "OutputCacheDuration", category: "CustomSetting" )]
     [BooleanField( "Set Page Title", "Determines if the block should set the page title with the channel name or content item.", category: "CustomSetting" )]
 
-    [InteractionChannelField( "Interaction Channel", "The Interaction Channel to log interactions to. Leave blank to not log interactions.", category: "CustomSetting", required: false )]
+    //[InteractionChannelField( "Interaction Channel", "The Interaction Channel to log interactions to. Leave blank to not log interactions.", category: "CustomSetting", required: false )]
+    [BooleanField( "Log Interactions", category: "CustomSetting" )]
     [TextField( "Interaction Operation", "", defaultValue: "View", category: "Interactions" )]
     [BooleanField( "Write Interaction Only If Individual Logged In", "Set to true to only write interactions for logged in users, or set to false to write interactions for both logged in and anonymous users.", category: "CustomSetting" )]
 
@@ -130,16 +131,20 @@ Guid - ContentChannelItem Guid
             cbSetPageTitle.Checked = this.GetAttributeValue( "SetPageTitle" ).AsBoolean();
 
             // Interaction
+            /*
             ddlInteractionChannel.Items.Clear();
             ddlInteractionChannel.Items.Add( new ListItem() );
             int? componentEntityTypeId = CacheEntityType.GetId<ContentChannelItem>();
-            foreach ( var interactionChannel in CacheInteractionChannel.All().Where(a => a.ComponentEntityTypeId == componentEntityTypeId ).OrderBy( a => a.Name ) )
+            foreach ( var interactionChannel in CacheInteractionChannel.All().Where( a => a.ComponentEntityTypeId == componentEntityTypeId ).OrderBy( a => a.Name ) )
             {
                 ddlInteractionChannel.Items.Add( new ListItem( interactionChannel.Name, interactionChannel.Guid.ToString() ) );
             }
 
             ddlInteractionChannel.SetValue( this.GetAttributeValue( "InteractionChannel" ).AsGuidOrNull() );
+            */
 
+
+            cbLogInteractions.Checked = this.GetAttributeValue( "LogInteractions" ).AsBoolean();
             tbInteractionOperation.Text = this.GetAttributeValue( "InteractionOperation" );
             cbWriteInteractionOnlyIfIndividualLoggedIn.Checked = this.GetAttributeValue( "WriteInteractionOnlyIfIndividualLoggedIn" ).AsBoolean();
 
@@ -186,10 +191,18 @@ Guid - ContentChannelItem Guid
             this.SetAttributeValue( "LavaTemplate", ceLavaTemplate.Text );
             this.SetAttributeValue( "OutputCacheDuration", nbOutputCacheDuration.Text );
             this.SetAttributeValue( "SetPageTitle", cbSetPageTitle.Checked.ToString() );
-            this.SetAttributeValue( "InteractionChannel", ddlInteractionChannel.SelectedValue );
+            //this.SetAttributeValue( "InteractionChannel", ddlInteractionChannel.SelectedValue );
+            this.SetAttributeValue( "LogInteractions", cbLogInteractions.Checked.ToString() );
             this.SetAttributeValue( "InteractionOperation", tbInteractionOperation.Text );
             this.SetAttributeValue( "WriteInteractionOnlyIfIndividualLoggedIn", cbWriteInteractionOnlyIfIndividualLoggedIn.Checked.ToString() );
-            this.SetAttributeValue( "WorkflowType", wtpWorkflowType.SelectedValue );
+            int? selectedWorkflowTypeId = wtpWorkflowType.SelectedValue.AsIntegerOrNull();
+            Guid? selectedWorkflowTypeGuid = null;
+            if ( selectedWorkflowTypeId.HasValue )
+            {
+                selectedWorkflowTypeGuid = CacheWorkflowType.Get( selectedWorkflowTypeId.Value ).Guid;
+            }
+
+            this.SetAttributeValue( "WorkflowType", selectedWorkflowTypeGuid.ToString() );
             this.SetAttributeValue( "LaunchWorkflowOnlyIfIndividualLoggedIn", cbLaunchWorkflowOnlyIfIndividualLoggedIn.Checked.ToString() );
             this.SetAttributeValue( "LaunchWorkflowOncePerPerson", cbLaunchWorkflowOncePerPerson.Checked.ToString() );
             this.SetAttributeValue( "MetaDescriptionAttribute", ddlMetaDescriptionAttribute.SelectedValue );
@@ -248,7 +261,7 @@ Guid - ContentChannelItem Guid
 
             if ( outputContents == null )
             {
-                ContentChannelItem contentChannelItem = GetContentChannelItem();
+                ContentChannelItem contentChannelItem = GetContentChannelItem( GetContentChannelItemParameterValue() );
 
                 if ( contentChannelItem == null )
                 {
@@ -306,10 +319,9 @@ Guid - ContentChannelItem Guid
         /// Gets the content channel item using the first page parameter or ContentChannelQueryParameter
         /// </summary>
         /// <returns></returns>
-        private ContentChannelItem GetContentChannelItem()
+        private static ContentChannelItem GetContentChannelItem( string contentChannelItemKey )
         {
             ContentChannelItem contentChannelItem = null;
-            string contentChannelItemKey = GetContentChannelItemParameterValue();
 
             if ( string.IsNullOrEmpty( contentChannelItemKey ) )
             {
@@ -365,7 +377,7 @@ Guid - ContentChannelItem Guid
         /// </summary>
         private void LaunchInteraction()
         {
-            var interactionChannelGuid = this.GetAttributeValue( "InteractionChannel" ).AsGuidOrNull();
+            /*var interactionChannelGuid = this.GetAttributeValue( "InteractionChannel" ).AsGuidOrNull();
 
             if ( !interactionChannelGuid.HasValue )
             {
@@ -374,6 +386,12 @@ Guid - ContentChannelItem Guid
 
             var interactionChannel = CacheInteractionChannel.Get( interactionChannelGuid.Value );
             if ( interactionChannel == null )
+            {
+                return;
+            }*/
+
+            bool logInteractions = this.GetAttributeValue( "LogInteractions" ).AsBoolean();
+            if ( !logInteractions )
             {
                 return;
             }
@@ -386,13 +404,34 @@ Guid - ContentChannelItem Guid
             }
 
             var rockContext = new RockContext();
+            var contentChannelItem = GetContentChannelItem( GetContentChannelItemParameterValue() );
 
-            var contentChannelItem = this.GetContentChannelItem();
+            // lookup the interaction channel, and create it if it doesn't exist
+            int channelMediumTypeValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_CONTENTCHANNEL.AsGuid() ).Id;
+            var interactionChannelService = new InteractionChannelService( rockContext );
+            var interactionChannelId = interactionChannelService.Queryable()
+                .Where( a =>
+                    a.ChannelTypeMediumValueId == channelMediumTypeValueId &&
+                    a.ChannelEntityId == contentChannelItem.ContentChannelId )
+                .Select( a => ( int? ) a.Id )
+                .FirstOrDefault();
+            if ( interactionChannelId == null )
+            {
+                var interactionChannel = new InteractionChannel();
+                interactionChannel.Name = CacheContentChannel.Get( contentChannelItem.ContentChannelId ).Name;
+                interactionChannel.ChannelTypeMediumValueId = channelMediumTypeValueId;
+                interactionChannel.ChannelEntityId = contentChannelItem.ContentChannelId;
+                interactionChannel.ComponentEntityTypeId = CacheEntityType.Get<Rock.Model.ContentChannelItem>().Id;
+                interactionChannelService.Add( interactionChannel );
+                rockContext.SaveChanges();
+                interactionChannelId = interactionChannel.Id;
+            }
+
 
             // check that the contentChannelItem exists as a component
-            var interactionComponent = new InteractionComponentService( rockContext ).GetComponentByEntityId( interactionChannel.Id, contentChannelItem.Id, contentChannelItem.Title );
+            var interactionComponent = new InteractionComponentService( rockContext ).GetComponentByEntityId( interactionChannelId.Value, contentChannelItem.Id, contentChannelItem.Title );
             rockContext.SaveChanges();
-            
+
 
             // Add the interaction
             if ( interactionComponent != null )
@@ -435,7 +474,7 @@ Guid - ContentChannelItem Guid
         {
             // Check to see if a workflow should be launched when viewed
             CacheWorkflowType workflowType = null;
-            Guid? workflowTypeGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
+            Guid? workflowTypeGuid = GetAttributeValue( "WorkflowType" ).AsGuidOrNull();
             if ( !workflowTypeGuid.HasValue )
             {
                 return;
@@ -463,45 +502,68 @@ Guid - ContentChannelItem Guid
                 return;
             }
 
-            try
+            var contentChannelItemParameterValue = this.GetContentChannelItemParameterValue();
+            var currentPersonAliasId = this.CurrentPersonAliasId;
+
+            // launch workflow in a thread instead of a WorkflowTransaction so that the launchWorkflowOncePerPerson logic will work correctly
+            System.Threading.Tasks.Task.Run( () =>
             {
-                using ( var rockContext = new RockContext() )
+                ProcessWorkflow( workflowType, launchWorkflowOncePerPerson, contentChannelItemParameterValue, currentPersonAliasId );
+            } );
+        }
+
+        /// <summary>
+        /// Processes the workflow.
+        /// </summary>
+        /// <param name="workflowType">Type of the workflow.</param>
+        /// <param name="launchWorkflowOncePerPerson">if set to <c>true</c> [launch workflow once per person].</param>
+        /// <param name="contentChannelItemParameterValue">The content channel item parameter value.</param>
+        /// <param name="currentPersonAliasId">The current person alias identifier.</param>
+        private static void ProcessWorkflow( CacheWorkflowType workflowType, bool launchWorkflowOncePerPerson, string contentChannelItemParameterValue, int? currentPersonAliasId )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                Person currentPerson = null;
+                if ( currentPersonAliasId.HasValue )
                 {
-                    var workflowService = new WorkflowService( rockContext );
-                    if ( launchWorkflowOncePerPerson && this.CurrentPersonId.HasValue )
-                    {
-                        int workflowTypeId = workflowType.Id;
-                        int currentPersonId = this.CurrentPersonId.Value;
-                        var alreadyLaunchedForPerson = workflowService.Queryable().Where( a => a.WorkflowTypeId == workflowTypeId && a.InitiatorPersonAlias.PersonId == currentPersonId ).Any();
-                        if ( alreadyLaunchedForPerson )
-                        {
-                            // Workflow of this WorkflowType was already launched for this person
-                            return;
-                        }
-                    }
-
-                    var workflowAttributeValues = new Dictionary<string, string>();
-                    LaunchWorkflowTransaction launchWorkflowTransaction;
-                    if ( this.CurrentPersonId.HasValue )
-                    {
-                        launchWorkflowTransaction = new Rock.Transactions.LaunchWorkflowTransaction<Person>( workflowType.Id, null, CurrentPersonId.Value );
-                    }
-                    else
-                    {
-                        launchWorkflowTransaction = new Rock.Transactions.LaunchWorkflowTransaction( workflowType.Id, null );
-                    }
-
-                    if ( workflowAttributeValues != null )
-                    {
-                        launchWorkflowTransaction.WorkflowAttributeValues = workflowAttributeValues;
-                    }
-
-                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( launchWorkflowTransaction );
+                    currentPerson = new PersonAliasService( rockContext ).GetSelect( currentPersonAliasId.Value, s => s.Person );
                 }
-            }
-            catch ( Exception ex )
-            {
-                ExceptionLogService.LogException( ex, this.Context );
+
+                var workflowService = new WorkflowService( rockContext );
+                if ( launchWorkflowOncePerPerson && currentPersonAliasId.HasValue )
+                {
+                    int workflowTypeId = workflowType.Id;
+                    var alreadyLaunchedForPerson = workflowService.Queryable().Where( a => a.WorkflowTypeId == workflowTypeId && a.InitiatorPersonAliasId == currentPersonAliasId.Value ).Any();
+                    if ( alreadyLaunchedForPerson )
+                    {
+                        // Workflow of this WorkflowType was already launched for this person
+                        return;
+                    }
+                }
+
+                var contentChannelItem = GetContentChannelItem( contentChannelItemParameterValue );
+
+                var workflowAttributeValues = new Dictionary<string, string>();
+                workflowAttributeValues.Add( "ContentChannelItem", contentChannelItem.Guid.ToString() );
+
+                LaunchWorkflowTransaction launchWorkflowTransaction;
+                if ( currentPerson != null )
+                {
+                    workflowAttributeValues.Add( "Person", currentPerson.Guid.ToString() );
+                    launchWorkflowTransaction = new Rock.Transactions.LaunchWorkflowTransaction<Person>( workflowType.Id, null, currentPerson.Id );
+                }
+                else
+                {
+                    launchWorkflowTransaction = new Rock.Transactions.LaunchWorkflowTransaction( workflowType.Id, null );
+                }
+
+                if ( workflowAttributeValues != null )
+                {
+                    launchWorkflowTransaction.WorkflowAttributeValues = workflowAttributeValues;
+                }
+
+                launchWorkflowTransaction.InitiatorPersonAliasId = currentPersonAliasId;
+                launchWorkflowTransaction.Execute();
             }
         }
 

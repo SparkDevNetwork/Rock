@@ -18,6 +18,7 @@
                     <div class="row">
                         <div class="col-md-12">
                             <Rock:RockDropDownList ID="ddlContentChannel" runat="server" Label="Content Channel" Help="Limits content channel items to a specific channel and enables Social Media Settings to be configurable, or leave blank to leave unrestricted." AutoPostBack="true" OnSelectedIndexChanged="ddlContentChannel_SelectedIndexChanged" />
+                            
                             <Rock:RockTextBox ID="tbContentChannelQueryParameter" runat="server" Label="Content Channel Query Parameter" Help="Specify the URL parameter to use to determine which Content Channel Item to show, or leave blank to use whatever the first parameter is. 
 The type of the value will determine how the content channel item will be determined as follows:
 
@@ -36,6 +37,7 @@ Guid - ContentChannelItem Guid" />
                                 <legend>Interactions</legend>
 
                                 <Rock:RockDropDownList ID="ddlInteractionChannel" runat="server" Label="Interaction Channel" Help="The Interaction Channel to log interactions to. Leave blank to not log interactions." />
+                                <Rock:RockCheckBox ID="cbLogInteractions" runat="server" Label="Log Interactions" />
                                 <Rock:RockTextBox ID="tbInteractionOperation" runat="server" Label="Interaction Operation" />
                                 <Rock:RockCheckBox ID="cbWriteInteractionOnlyIfIndividualLoggedIn" runat="server" Label="Write Interaction Only If Individual Logged In" Help="Set to true to only launch a workflow for logged in users, or set to false to launch for both logged in and anonymous users." />
 
