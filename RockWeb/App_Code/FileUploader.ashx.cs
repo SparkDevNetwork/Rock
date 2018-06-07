@@ -133,54 +133,82 @@ namespace RockWeb
             // validate file type (child FileUploader classes, like ImageUploader, can do additional validation);
             this.ValidateFileType( context, uploadedFile );
 
-            //
-            // Get filename and scrub invalid characters.
-            //
-            var filename = Path.GetFileName( uploadedFile.FileName );
-            filename = Regex.Replace( filename, @"[<>*%&:\\]", string.Empty, RegexOptions.CultureInvariant );
 
-            // get folderPath and construct filePath
-            string relativeFolderPath = context.Request.Form["folderPath"] ?? string.Empty;
-            string relativeFilePath = Path.Combine( relativeFolderPath, filename );
-            string rootFolderParam = context.Request.QueryString["rootFolder"];
+            // NEVER TRUST THE CLIENT!!!!
+            string untrustedFileName = uploadedFile.FileName;
+            string untrustedFolderPath = context.Request.Form["folderPath"] ?? string.Empty;
+            string encryptedRootFolder = context.Request.QueryString["rootFolder"];
 
-            string rootFolder = string.Empty;
+        
+            /* Scrub the file name */
 
-            if ( !string.IsNullOrWhiteSpace( rootFolderParam ) )
+            string scrubedFileName = ScrubFileName( untrustedFileName );
+
+
+            /* Determine the root upload folder */
+
+            string trustedRootFolder = string.Empty;
+
+            // If a rootFolder was specified in the URL, try decrypting it (It is encrypted to help prevent direct access to filesystem).
+            if ( !string.IsNullOrWhiteSpace( encryptedRootFolder ) )
             {
-                // if a rootFolder was specified in the URL, decrypt it (it is encrypted to help prevent direct access to filesystem)
-                rootFolder = Rock.Security.Encryption.DecryptString( rootFolderParam );
+                trustedRootFolder = Encryption.DecryptString( encryptedRootFolder );
             }
 
-            if ( string.IsNullOrWhiteSpace( rootFolder ) )
+            // If we don't have a rootFolder, default to the ~/Content folder.
+            if ( string.IsNullOrWhiteSpace( trustedRootFolder ) )
             {
-                // set to default rootFolder if not specified in the params
-                rootFolder = "~/Content";
+                trustedRootFolder = "~/Content";
             }
 
-            string physicalRootFolder = context.Request.MapPath( rootFolder );
-            string physicalContentFolderName = Path.Combine( physicalRootFolder, relativeFolderPath.TrimStart( new char[] { '/', '\\' } ) );
 
-            // Make sure the physicalContentFolderName doesn't have any special directory navigation indicators
-            if ( physicalContentFolderName != System.IO.Path.GetFullPath( physicalContentFolderName ) )
+            /* Combine the root and folder paths to get the real physical location */
+
+            // Get the absolute path for our trusted root.
+            string trustedPhysicalRootFolder = Path.GetFullPath( context.Request.MapPath( trustedRootFolder ) );
+
+            // Treat rooted folder paths as relative
+            string untrustedRelativeFolderPath = untrustedFolderPath.TrimStart( Path.GetPathRoot( untrustedFolderPath ).ToCharArray() );
+
+            // Get the absolute path for our untrusted folder.
+            string untrustedPhysicalFolderPath = Path.GetFullPath( Path.Combine( trustedPhysicalRootFolder, untrustedRelativeFolderPath ) );
+
+
+            /* Make sure the physical location is valid */
+
+            // Make sure the untrusted folder is inside our trusted root folder.
+            string trustedPhysicalFolderPath = string.Empty;
+            if ( untrustedPhysicalFolderPath.StartsWith( trustedPhysicalRootFolder ) )
             {
-                throw new Rock.Web.FileUploadException( "Unable to upload file", System.Net.HttpStatusCode.BadRequest );
+                // If so, then we can trust it.
+                trustedPhysicalFolderPath = untrustedPhysicalFolderPath;
+            }
+            else
+            {
+                // Otherwise, something's fishy
+                throw new Rock.Web.FileUploadException( "Invalid folderPath", System.Net.HttpStatusCode.BadRequest );
             }
 
-            string physicalFilePath = Path.Combine( physicalContentFolderName, filename );
-            var fileContent = GetFileContentStream( context, uploadedFile );
+            // Yay! We now have a trusted physical path and a safe filename
+            // Let's put those together and upload our file
+            string physicalFilePath = Path.Combine( trustedPhysicalFolderPath, scrubedFileName );
 
-            // store the content file in the specified physical content folder
-            if ( !Directory.Exists( physicalContentFolderName ) )
+            // Make sure the physical path exists
+            if ( !Directory.Exists( trustedPhysicalFolderPath ) )
             {
-                Directory.CreateDirectory( physicalContentFolderName );
+                Directory.CreateDirectory( trustedPhysicalFolderPath );
             }
 
+            // If the file already exists, bail
             if ( File.Exists( physicalFilePath ) )
             {
-                File.Delete( physicalFilePath );
+                throw new Rock.Web.FileUploadException( "File already exists", System.Net.HttpStatusCode.BadRequest );
             }
 
+            // Get the file contents
+            var fileContent = GetFileContentStream( context, uploadedFile );
+
+            // Write it out to the response
             using ( var writeStream = File.OpenWrite( physicalFilePath ) )
             {
                 if ( fileContent.CanSeek )
@@ -194,7 +222,7 @@ namespace RockWeb
             var response = new
             {
                 Id = string.Empty,
-                FileName = relativeFilePath
+                FileName = Path.Combine( untrustedRelativeFolderPath, scrubedFileName )
             };
 
             context.Response.Write( response.ToJson() );
@@ -298,11 +326,27 @@ namespace RockWeb
             // clean up list
             contentFileTypeBlackList = contentFileTypeBlackList.Select( a => a.ToLower().TrimStart( new char[] { '.', ' ' } ) );
 
-            string fileExtension = Path.GetExtension( uploadedFile.FileName ).ToLower().TrimStart( new char[] { '.' } );
+            var filename = ScrubFileName( uploadedFile.FileName );
+
+            string fileExtension = Path.GetExtension( filename ).ToLower().TrimStart( new char[] { '.' } );
             if ( contentFileTypeBlackList.Contains( fileExtension ) )
             {
                 throw new Rock.Web.FileUploadException( "Filetype not allowed", System.Net.HttpStatusCode.NotAcceptable );
             }
+        }
+
+        /// <summary>
+        /// Scrubs a filename to make sure it doen't have any directories or bad characters
+        /// </summary>
+        /// <param name="untrustedFileName">The filename.</param>
+        /// <returns>A scrubed filename.</returns>
+        public string ScrubFileName(string untrustedFileName )
+        {
+            // Get the base filename
+            string baseFileName = Path.GetFileName( untrustedFileName );
+
+            // Scrub invalid characters
+            return Regex.Replace( baseFileName, "[" + Regex.Escape( Path.GetInvalidFileNameChars().ToString() ) + "]", string.Empty, RegexOptions.CultureInvariant );
         }
     }
 }
