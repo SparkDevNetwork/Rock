@@ -193,7 +193,7 @@
                                         </ItemTemplate>
                                     </Rock:RockTemplateField>
                                     <Rock:DateTimeField DataField="CreatedDateTime" HeaderText="When" SortExpression="CreatedDateTime" />
-                                    <Rock:RockTemplateField HeaderText="Discount Code" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" SortExpression="DiscountCode" Visible="false">
+                                    <Rock:RockTemplateField HeaderText="Discount Code" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" SortExpression="DiscountCode" Visible="false">
                                         <ItemTemplate>
                                             <asp:Label ID="lDiscount" runat="server" CssClass="label label-default" />
                                         </ItemTemplate>
@@ -376,9 +376,9 @@
                                 <Columns>
                                     <Rock:RockBoundField HeaderText="Registration ID" DataField="RegistrationId" ExcelExportBehavior="AlwaysInclude" Visible="false" />
                                     <Rock:RockBoundField HeaderText="Registered By" DataField="RegisteredByName" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left"/>
-                                    <Rock:DateField HeaderText="Registration Date" DataField="RegistrationDate" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center"/>
-                                    <Rock:RockBoundField HeaderText="Registrant Count" DataField="RegistrantCount" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center"/>
-                                    <Rock:RockBoundField HeaderText="Discount Code" DataField="DiscountCode" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center"/>
+                                    <Rock:DateField HeaderText="Registration Date" DataField="RegistrationDate" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left"/>
+                                    <Rock:RockBoundField HeaderText="Registrant Count" DataField="RegistrantCount" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right"/>
+                                    <Rock:RockBoundField HeaderText="Discount Code" DataField="DiscountCode" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left"/>
                                     <Rock:RockBoundField HeaderText="Discount" DataField="Discount" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right"/>
                                     <Rock:CurrencyField HeaderText="Total Cost" DataField="TotalCost" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right"/>
                                     <Rock:CurrencyField HeaderText="Discount Qualified Cost" DataField="DiscountQualifiedCost" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right"/>
@@ -392,7 +392,7 @@
                             <div class="col-md-4 col-md-offset-8 margin-t-md">
                                 <asp:Panel ID="pnlDiscountSummary" runat="server" CssClass="panel panel-block">
                                     <div class="panel-heading">
-                                        <h1 class="panel-title">Totals For Results</h1>
+                                        <h1 class="panel-title">Total Results</h1>
                                     </div>
                                     <div class="panel-body">
                                         <div class="row">
@@ -400,7 +400,7 @@
                                             <div class='col-xs-4 text-right'><asp:Literal ID="lTotalTotalCost" runat="server" /></div>
                                         </div>
                                         <div class="row">
-                                            <div class="col-xs-8">Dicscount Qualified Cost</div>
+                                            <div class="col-xs-8">Discount Qualified Cost</div>
                                             <div class='col-xs-4 text-right'><asp:Literal ID="lTotalDiscountQualifiedCost" runat="server" /></div>
                                         </div>
                                         <div class="row">

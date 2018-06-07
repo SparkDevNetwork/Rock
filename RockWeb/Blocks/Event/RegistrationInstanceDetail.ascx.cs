@@ -4505,10 +4505,10 @@ namespace RockWeb.Blocks.Event
 
         private void PopulateTotals( List<TemplateDiscountReport> report )
         {
-            lTotalTotalCost.Text = string.Format( CacheGlobalAttributes.Value( "CurrencySymbol" ) + "{0:0,0.00}", report.Sum( r => r.TotalCost ) );
-            lTotalDiscountQualifiedCost.Text = string.Format( CacheGlobalAttributes.Value( "CurrencySymbol" ) + "{0:0,0.00}", report.Sum( r => r.DiscountQualifiedCost ) );
-            lTotalDiscounts.Text = string.Format( CacheGlobalAttributes.Value( "CurrencySymbol" ) + "{0:0,0.00}", report.Sum( r => r.TotalDiscount ) );
-            lTotalRegistrationCost.Text = string.Format( CacheGlobalAttributes.Value( "CurrencySymbol" ) + "{0:0,0.00}", report.Sum( r => r.RegistrationCost ) );
+            lTotalTotalCost.Text = string.Format( CacheGlobalAttributes.Value( "CurrencySymbol" ) + "{0:#,##0.00}", report.Sum( r => r.TotalCost ) );
+            lTotalDiscountQualifiedCost.Text = string.Format( CacheGlobalAttributes.Value( "CurrencySymbol" ) + "{0:#,##0.00}", report.Sum( r => r.DiscountQualifiedCost ) );
+            lTotalDiscounts.Text = string.Format( CacheGlobalAttributes.Value( "CurrencySymbol" ) + "{0:#,##0.00}", report.Sum( r => r.TotalDiscount ) );
+            lTotalRegistrationCost.Text = string.Format( CacheGlobalAttributes.Value( "CurrencySymbol" ) + "{0:#,##0.00}", report.Sum( r => r.RegistrationCost ) );
             lTotalRegistrations.Text = report.Count().ToString();
             lTotalRegistrants.Text = report.Sum( r => r.RegistrantCount ).ToString();
         }
