@@ -1,0 +1,82 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.RockMasterPage" %><%@ Import Namespace="System.Web.Optimization" %><!DOCTYPE html>
+<script runat="server">
+    // keep code below to call base class init method
+
+    /// <summary>
+    /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+    /// </summary>
+    /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+    protected override void OnInit( EventArgs e )
+    {
+        base.OnInit( e );
+    }
+
+</script><html class="no-js">
+<head runat="server">
+    <meta charset="utf-8">
+    <title></title>
+
+    <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" ) %>"></script>
+
+    <!-- Set the viewport width to device width for mobile -->
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <asp:ContentPlaceHolder ID="css" runat="server" />
+
+	<!-- Included CSS Files -->
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>"/>
+	<link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>"/>
+    <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js" ) %>" ></script>
+
+    <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
+
+</head>
+<body runat="server" id="body">
+
+    <form id="form1" runat="server">
+        <Rock:Zone Name="Notification Bar" CssClass="notification-bar" runat="server" />
+
+        <!-- Page Header -->
+        <header role="banner">
+            <!-- Brand Bar -->
+            <nav class="navbar navbar-static-top">
+                <div class="container-fluid">
+			        <div class="navbar-header">
+                        <Rock:Lava ID="Header" runat="server">
+                        <a class="navbar-brand" href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}">
+                        {%- if CurrentPage.Layout.Site.SiteLogoBinaryFileId != '' -%}
+                            <img src="/GetImage.ashx?id={{ CurrentPage.Layout.Site.SiteLogoBinaryFileId }}" alt="{{ 'Global' | Attribute:'OrganizationName' }}" class="logo">
+                        {%- else -%}
+                            {{ 'Global' | Attribute:'OrganizationName' }}
+                        {%- endif -%}
+                        </a>
+                        </Rock:Lava>
+			        </div>
+                    <div class="navbar-collapse collapse">
+                        <!-- Main Navigation -->
+                        <Rock:Zone Name="Login" CssClass="pull-right" runat="server" />
+                        <Rock:Zone Name="Navigation" runat="server" />
+			        </div>
+                </div>
+            </nav>
+        </header>
+
+        <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
+
+
+        <%-- controls for scriptmanager and update panel --%>
+        <asp:ScriptManager ID="sManager" runat="server"/>
+        <asp:UpdateProgress id="updateProgress" runat="server" DisplayAfter="800">
+		        <ProgressTemplate>
+		            <div class="updateprogress-status">
+                        <div class="spinner">
+                          <div class="rect1"></div><div class="rect2"></div><div class="rect3"></div><div class="rect4"></div><div class="rect5"></div>
+                        </div>
+                    </div>
+                    <div class="updateprogress-bg modal-backdrop"></div>
+		        </ProgressTemplate>
+        </asp:UpdateProgress>
+
+    </form>
+</body>
+</html>
