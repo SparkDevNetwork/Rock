@@ -119,7 +119,8 @@ namespace Rock.Web.UI.Controls
                 definedValues += GetDefinedValue( definedValueId ) + ", ";
             }
 
-            return definedValues.TrimEnd( ',' );
+            definedValues = definedValues.TrimEnd( ',', ' ' );
+            return definedValues;
         }
     }
 }
