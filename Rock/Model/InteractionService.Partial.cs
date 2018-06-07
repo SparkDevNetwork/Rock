@@ -15,11 +15,9 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Caching;
+
 using Rock.Data;
-using Rock.Cache;
 
 namespace Rock.Model
 {
@@ -28,7 +26,6 @@ namespace Rock.Model
     /// </summary>
     public partial class InteractionService
     {
-
         /// <summary>
         /// Adds the interaction.
         /// </summary>
@@ -48,6 +45,30 @@ namespace Rock.Model
         /// <returns></returns>
         public Interaction AddInteraction( int interactionComponentId, int? entityId, string operation, string interactionSummary, string interactionData, int? personAliasId, DateTime dateTime,
             string deviceApplication, string deviceOs, string deviceClientType, string deviceTypeData, string ipAddress, Guid? browserSessionId )
+        {
+            Interaction interaction = CreateInteraction( interactionComponentId, entityId, operation, interactionSummary, interactionData, personAliasId, dateTime, deviceApplication, deviceOs, deviceClientType, deviceTypeData, ipAddress, browserSessionId );
+            this.Add( interaction );
+            return interaction;
+        }
+
+        /// <summary>
+        /// Creates a new interaction.
+        /// </summary>
+        /// <param name="interactionComponentId">The interaction component identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="operation">The operation.</param>
+        /// <param name="interactionSummary">The interaction summary.</param>
+        /// <param name="interactionData">The interaction data.</param>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <param name="dateTime">The date time.</param>
+        /// <param name="deviceApplication">The device application.</param>
+        /// <param name="deviceOs">The device os.</param>
+        /// <param name="deviceClientType">Type of the device client.</param>
+        /// <param name="deviceTypeData">The device type data.</param>
+        /// <param name="ipAddress">The ip address.</param>
+        /// <param name="browserSessionId">The browser session identifier.</param>
+        /// <returns></returns>
+        public Interaction CreateInteraction( int interactionComponentId, int? entityId, string operation, string interactionSummary, string interactionData, int? personAliasId, DateTime dateTime, string deviceApplication, string deviceOs, string deviceClientType, string deviceTypeData, string ipAddress, Guid? browserSessionId )
         {
             Interaction interaction = new Interaction();
             interaction.InteractionComponentId = interactionComponentId;
@@ -73,7 +94,41 @@ namespace Rock.Model
                 interaction.InteractionSessionId = session.Id;
             }
 
-            this.Add( interaction );
+            return interaction;
+        }
+
+        /// <summary>
+        /// The ua parser
+        /// </summary>
+        private static UAParser.Parser uaParser = UAParser.Parser.GetDefault();
+
+        /// <summary>
+        /// Creates the interaction.
+        /// </summary>
+        /// <param name="interactionComponentId">The interaction component identifier.</param>
+        /// <param name="userAgent">The user agent.</param>
+        /// <param name="url">The URL.</param>
+        /// <param name="ipAddress">The ip address.</param>
+        /// <param name="browserSessionId">The browser session identifier.</param>
+        /// <returns></returns>
+        public Interaction CreateInteraction( int interactionComponentId, string userAgent, string url, string ipAddress, Guid? browserSessionId )
+        {
+            var deviceOs = uaParser.ParseOS( userAgent ).ToString();
+            var deviceApplication = uaParser.ParseUserAgent( userAgent ).ToString();
+            var deviceClientType = InteractionDeviceType.GetClientType( userAgent );
+
+            var interaction = CreateInteraction( interactionComponentId, null, null, string.Empty, null, null, RockDateTime.Now, 
+                deviceApplication, deviceOs, deviceClientType, userAgent, ipAddress, browserSessionId );
+
+            if ( url.IsNotNullOrWhitespace() && url.IndexOf( "utm_", StringComparison.OrdinalIgnoreCase ) >= 0 )
+            {
+                var urlParams = System.Web.HttpUtility.ParseQueryString( url );
+                interaction.Source = urlParams.Get( "utm_source" ).Truncate( 25 );
+                interaction.Medium = urlParams.Get( "utm_medium" ).Truncate( 25 );
+                interaction.Campaign = urlParams.Get( "utm_campaign" ).Truncate( 50 );
+                interaction.Content = urlParams.Get( "utm_content" ).Truncate( 50 );
+                interaction.Term = urlParams.Get( "utm_term" ).Truncate( 50 );
+            }
 
             return interaction;
         }
