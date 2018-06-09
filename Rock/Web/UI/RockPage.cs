@@ -1434,27 +1434,8 @@ namespace Rock.Web.UI
             {
                 if ( _pageCache.Layout.Site.EnablePageViews )
                 {
-                    PageViewTransaction transaction = new PageViewTransaction();
-                    transaction.DateViewed = RockDateTime.Now;
-                    transaction.PageId = _pageCache.Id;
-                    transaction.SiteId = _pageCache.Layout.Site.Id;
-                    if ( CurrentPersonAlias != null )
-                    {
-                        transaction.PersonAliasId = CurrentPersonAlias.Id;
-                    }
-
-                    transaction.IPAddress = GetClientIpAddress();
-                    transaction.UserAgent = Request.UserAgent ?? "";
-                    transaction.Url = Request.Url.ToString();
-                    transaction.PageTitle = _pageCache.PageTitle;
-                    transaction.BrowserTitle = this.BrowserTitle;
-                    var sessionId = Session["RockSessionID"];
-                    if ( sessionId != null )
-                    {
-                        transaction.SessionId = sessionId.ToString();
-                    }
-
-                    RockQueue.TransactionQueue.Enqueue( transaction );
+                    var pageViewTransaction = new InteractionTransaction( CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE ), this.Site, this._pageCache );
+                    pageViewTransaction.Enqueue();
                 }
             }
         }
