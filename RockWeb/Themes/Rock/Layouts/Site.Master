@@ -127,24 +127,25 @@
             return scrollbarWidth;
         } // Static
 
-        var navElement = $('.navbar-side'),
+        var bodyElement = $('body'),
+            navElement = $('.navbar-side'),
             hoverDelay = 250,
             hideDelay = 50;
 
         Sys.Application.add_load(function () {
             $('.navbar-side > li').mouseenter(function () {
-                var $this = $(this);
+                const $this = $(this);
                 if ($this[0].navUnHoverTimeout !== undefined) {
                     clearTimeout($this[0].navUnHoverTimeout);
                     $this[0].navUnHoverTimeout = undefined;
                 } else if ($this[0].navHoverTimeout === undefined) {
                     if (navElement.find('li.open').length > 0) {
                         $this[0].navHoverTimeout = setTimeout(function () {
-                            console.log("Multi");
-                            navElement.find('li.open').removeClass('open');
                             $this.addClass('open');
-                            $('body').addClass('modal-open').css('padding-right', getScrollbarWidth());
-                            $('.navbar-fixed-top').css('right', getScrollbarWidth());
+                            if(!bodyElement.hasClass('modal-open')){
+                                bodyElement.addClass('modal-open').css('padding-right', getScrollbarWidth());
+                                $('.navbar-fixed-top').css('right', getScrollbarWidth());
+                            }
                             $this[0].navHoverTimeout = undefined;
                         }, 35);
                     } else {
@@ -159,17 +160,18 @@
             });
 
             $(".navbar-side > li").mouseleave(function () {
-                var $this = $(this);
+                const $this = $(this);
                 if ($this[0].navHoverTimeout !== undefined) {
                     clearTimeout($this[0].navHoverTimeout);
                     $this[0].navHoverTimeout = undefined;
                 } else if ($this[0].navUnHoverTimeout === undefined && navElement.find('li.open').length > 0) {
                     $this[0].navUnHoverTimeout = setTimeout(function () {
-                        $this.removeClass('open');
-                        if (navElement.find('li.open').length == 0) {
+                        console.log(navElement.find('li.open').length );
+                        if (navElement.find('li.open').length <= 1) {
                             $('body').removeClass('modal-open').css('padding-right', '');
                             $('.navbar-fixed-top').css('right', '');
                         }
+                        $this.removeClass('open');
                         $this[0].navUnHoverTimeout = undefined;
                     }, hideDelay);
                 }
