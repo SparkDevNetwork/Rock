@@ -86,6 +86,20 @@ namespace Rock.Cache
         [DataMember]
         public string ForeignKey { get; protected set; }
 
+        /// <summary>
+        /// The EntityType of the cached entity
+        /// </summary>
+        /// <value>
+        /// The entity type identifier.
+        /// </value>
+        public int CachedEntityTypeId
+        {
+            get
+            {
+                return CacheEntityType.Get<TT>().Id;
+            }
+        }
+
         #endregion
 
         #region Public Methods
@@ -194,7 +208,8 @@ namespace Rock.Cache
         /// <returns></returns>
         public static T Get( TT entity )
         {
-            if ( entity == null ) return default( T );
+            if ( entity == null )
+                return default( T );
 
             var value = new T();
             value.SetFromEntity( entity );
@@ -221,7 +236,8 @@ namespace Rock.Cache
         public static List<T> All( RockContext rockContext )
         {
             var cachedKeys = GetOrAddKeys( () => QueryDbForAllIds( rockContext ) );
-            if ( cachedKeys == null ) return new List<T>();
+            if ( cachedKeys == null )
+                return new List<T>();
 
             var allValues = new List<T>();
             foreach ( var key in cachedKeys.ToList() )
@@ -292,7 +308,8 @@ namespace Rock.Cache
             var service = new Service<TT>( rockContext );
             var entity = service.Get( id );
 
-            if ( entity == null ) return default( T );
+            if ( entity == null )
+                return default( T );
 
             var value = new T();
             value.SetFromEntity( entity );
@@ -335,7 +352,8 @@ namespace Rock.Cache
             var service = new Service<TT>( rockContext );
             var entity = service.Get( guid );
 
-            if ( entity == null ) return default( T );
+            if ( entity == null )
+                return default( T );
 
             var value = new T();
             value.SetFromEntity( entity );
