@@ -1269,6 +1269,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnTemplateSelectionNext_Click( object sender, EventArgs e )
         {
+            Rock.Model.CommunicationType communicationType = ( Rock.Model.CommunicationType ) hfMediumType.Value.AsInteger();
             CommunicationTemplate selectedTemplate = null;
             int? selectedTemplateId = hfSelectedCommunicationTemplateId.Value.AsIntegerOrNull();
             if ( selectedTemplateId.HasValue )
@@ -1276,7 +1277,8 @@ namespace RockWeb.Blocks.Communication
                 selectedTemplate = new CommunicationTemplateService( new RockContext() ).Get( selectedTemplateId.Value );
             }
 
-            if ( selectedTemplate == null || !selectedTemplate.SupportsEmailWizard() )
+            if ( selectedTemplate == null || 
+                ( ( communicationType == CommunicationType.Email  || communicationType == CommunicationType.RecipientPreference ) && !selectedTemplate.SupportsEmailWizard() ) )
             {
                 nbTemplateSelectionWarning.Text = "Please select a template.";
                 nbTemplateSelectionWarning.Visible = true;
@@ -1285,11 +1287,9 @@ namespace RockWeb.Blocks.Communication
             }
 
             nbTemplateSelectionWarning.Visible = false;
-
             pnlTemplateSelection.Visible = false;
 
             // The next page should be ShowEmailSummary since this is the Select Email Template Page, but just in case...
-            Rock.Model.CommunicationType communicationType = ( Rock.Model.CommunicationType ) hfMediumType.Value.AsInteger();
             if ( communicationType == CommunicationType.Email || communicationType == CommunicationType.RecipientPreference )
             {
                 ShowEmailSummary();

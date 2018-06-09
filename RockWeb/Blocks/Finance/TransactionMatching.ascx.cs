@@ -223,7 +223,7 @@ namespace RockWeb.Blocks.Finance
             var optionalAccountGuidList = ( this.GetUserPreference( keyPrefix + "optional-account-list" ) ?? string.Empty ).SplitDelimitedValues().Select( a => a.AsGuid() ).ToList();
 
             var accountQry = new FinancialAccountService( rockContext )
-                .Queryable()
+                .GetTree()
                 .Where( a => a.IsActive );
 
             // no accounts specified means "all Active"
@@ -256,7 +256,7 @@ namespace RockWeb.Blocks.Finance
                 accountQry = accountQry.Where( a => !a.CampusId.HasValue || a.CampusId.Value == campusId.Value );
             }
 
-            _visibleDisplayedAccountIds = new List<int>( accountQry.OrderBy(a=>a.Order).Select( a => a.Id ).ToList() );
+            _visibleDisplayedAccountIds = new List<int>( accountQry.Select( a => a.Id ).ToList() );
             _visibleOptionalAccountIds = new List<int>();
 
             // make the datasource all accounts, but only show the ones that are in _visibleAccountIds or have a non-zero amount

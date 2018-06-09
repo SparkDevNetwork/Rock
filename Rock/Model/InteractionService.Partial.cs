@@ -113,6 +113,7 @@ namespace Rock.Model
         /// <returns></returns>
         public Interaction CreateInteraction( int interactionComponentId, string userAgent, string url, string ipAddress, Guid? browserSessionId )
         {
+            userAgent = userAgent ?? string.Empty;
             var deviceOs = uaParser.ParseOS( userAgent ).ToString();
             var deviceApplication = uaParser.ParseUserAgent( userAgent ).ToString();
             var deviceClientType = InteractionDeviceType.GetClientType( userAgent );

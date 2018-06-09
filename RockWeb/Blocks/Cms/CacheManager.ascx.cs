@@ -337,7 +337,9 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void RedisEndPointAvailabilityCheck()
         {
-            if ( !SystemSettings.GetValue( Rock.SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER ).AsBooleanOrNull() ?? false )
+            bool redisEnabled = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER ).AsBooleanOrNull() ?? false;
+
+            if ( !redisEnabled  )
             {
                 spRedisStatus.Visible = false;
                 return;
