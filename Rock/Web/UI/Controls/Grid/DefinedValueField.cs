@@ -107,7 +107,7 @@ namespace Rock.Web.UI.Controls
         /// For multiple select defined values the object passed to FormatDataValue will be a CSV of Guid or Ids.
         /// Parses the list, gets the value for each Id/Guid and returns a CSV of DefinedValue.Values
         /// </summary>
-        /// <param name="dataValues">The data values.</param>
+        /// <param name="definedValueIdCsv">The defined value identifier CSV.</param>
         /// <returns></returns>
         private string GetDefinedValues( string definedValueIdCsv )
         {
