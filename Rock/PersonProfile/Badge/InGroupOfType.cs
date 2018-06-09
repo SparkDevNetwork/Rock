@@ -36,11 +36,11 @@ namespace Rock.PersonProfile.Badge
     [Description( "Shows badge if the individual is in a group of a specified type." )]
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "In Group Of Type" )]
-    
+
     [GroupTypeField("Group Type", "The type of group to use.", true)]
-    [TextField("Badge Color", "The color of the badge (#ffffff).", true, "#0ab4dd")]
+    [ColorField("Badge Color", "The color of the badge (#ffffff).", true, defaultValue: "#0ab4dd")]
     public class InGroupOfType : BadgeComponentModern
-    {        
+    {
         /// <summary>
         /// Renders the specified writer.
         /// </summary>
