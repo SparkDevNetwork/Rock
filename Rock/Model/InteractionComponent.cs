@@ -64,7 +64,7 @@ namespace Rock.Model
         public string ComponentSummary { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the entity that this interaction component is related to.
+        /// Gets or sets the Id of the entity that this interaction component is related to (determined by Channel.ComponentEntityType)
         /// For example:
         ///  if this is a Page View:
         ///     InteractionComponent.EntityId is the SiteId of the page that was viewed
