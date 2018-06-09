@@ -35,12 +35,8 @@ Guid - ContentChannelItem Guid" />
                         <div class="col-md-6">
                             <fieldset>
                                 <legend>Interactions</legend>
-
-                                <Rock:RockDropDownList ID="ddlInteractionChannel" runat="server" Label="Interaction Channel" Help="The Interaction Channel to log interactions to. Leave blank to not log interactions." />
                                 <Rock:RockCheckBox ID="cbLogInteractions" runat="server" Label="Log Interactions" />
-                                <Rock:RockTextBox ID="tbInteractionOperation" runat="server" Label="Interaction Operation" />
                                 <Rock:RockCheckBox ID="cbWriteInteractionOnlyIfIndividualLoggedIn" runat="server" Label="Write Interaction Only If Individual Logged In" Help="Set to true to only launch a workflow for logged in users, or set to false to launch for both logged in and anonymous users." />
-
                             </fieldset>
                         </div>
                         <div class="col-md-6">
@@ -49,7 +45,7 @@ Guid - ContentChannelItem Guid" />
 
                                 <Rock:WorkflowTypePicker ID="wtpWorkflowType" runat="server" Label="Workflow Type" Help="The workflow type to launch when the content is viewed." />
                                 <Rock:RockCheckBox ID="cbLaunchWorkflowOnlyIfIndividualLoggedIn" runat="server" Label="Launch Workflow Only If Individual Logged In" Help="Set to true to only launch a workflow for logged in users, or set to false to launch for both logged in and anonymous users." />
-                                <Rock:RockCheckBox ID="cbLaunchWorkflowOncePerPerson" runat="server" Label="Launch Workflow Once Per Person" />
+                                <Rock:RockDropDownList ID="ddlLaunchWorkflowCondition" runat="server" Label="Launch Workflow" />
                             </fieldset>
                         </div>
                     </div>

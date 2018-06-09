@@ -59,14 +59,12 @@ Guid - ContentChannelItem Guid
     [IntegerField( "Output Cache Duration", "Number of seconds to cache the resolved output. Only cache the output if you are not personalizing the output based on current user, current page, or any other merge field value.", required: false, key: "OutputCacheDuration", category: "CustomSetting" )]
     [BooleanField( "Set Page Title", "Determines if the block should set the page title with the channel name or content item.", category: "CustomSetting" )]
 
-    //[InteractionChannelField( "Interaction Channel", "The Interaction Channel to log interactions to. Leave blank to not log interactions.", category: "CustomSetting", required: false )]
     [BooleanField( "Log Interactions", category: "CustomSetting" )]
-    [TextField( "Interaction Operation", "", defaultValue: "View", category: "Interactions" )]
     [BooleanField( "Write Interaction Only If Individual Logged In", "Set to true to only write interactions for logged in users, or set to false to write interactions for both logged in and anonymous users.", category: "CustomSetting" )]
 
     [WorkflowTypeField( "Workflow Type", "The workflow type to launch when the content is viewed.", category: "CustomSetting" )]
     [BooleanField( "Launch Workflow Only If Individual Logged In", "Set to true to only launch a workflow for logged in users, or set to false to launch for both logged in and anonymous users.", category: "CustomSetting" )]
-    [BooleanField( "Launch Workflow Once Per Person", "This setting keeps the workflow from launching on subsequent views by the same person. For this to remain accurate the workflows of this type should not be deleted.", category: "CustomSetting" )]
+    [EnumField( "Launch Workflow Condition", "", typeof( LaunchWorkflowCondition ), defaultValue: "1", category: "CustomSetting" )]
 
     [TextField( "Meta Description Attribute", required: false, category: "CustomSetting" )]
     [TextField( "Open Graph Type", required: false, category: "CustomSetting" )]
@@ -82,9 +80,29 @@ Guid - ContentChannelItem Guid
         #region Fields
 
         /// <summary>
-        /// The output cache key
+        /// The output cache key prefix
         /// </summary>
-        private const string OUTPUT_CACHE_KEY = "Output";
+        private const string OUTPUT_CACHE_KEY_PREFIX = "Output_";
+
+        /// <summary>
+        /// The pagetitle cache key prefix
+        /// </summary>
+        private const string PAGETITLE_CACHE_KEY_PREFIX = "PageTitle_";
+
+        /// <summary>
+        /// The cache key to store a list of CacheKeys that have been used by this block
+        /// </summary>
+        private const string CACHEKEYS_CACHE_KEY = "CacheKeys";
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        private enum LaunchWorkflowCondition
+        {
+            Always = 0,
+            OncePerPersonPerContentChannelItem = 1,
+            OncePerPerson = 2
+        }
 
         #endregion
 
@@ -121,6 +139,12 @@ Guid - ContentChannelItem Guid
                 ddlContentChannel.Items.Add( new ListItem( contentChannel.Name, contentChannel.Guid.ToString() ) );
             }
 
+            ddlLaunchWorkflowCondition.Items.Clear();
+            foreach ( LaunchWorkflowCondition launchWorkflowCondition in Enum.GetValues( typeof( LaunchWorkflowCondition ) ) )
+            {
+                ddlLaunchWorkflowCondition.Items.Add( new ListItem( launchWorkflowCondition.ConvertToString( true ), launchWorkflowCondition.ConvertToInt().ToString() ) );
+            }
+
             var channelGuid = this.GetAttributeValue( "ContentChannel" ).AsGuidOrNull();
             ddlContentChannel.SetValue( channelGuid );
             UpdateSocialMediaDropdowns( channelGuid );
@@ -130,22 +154,7 @@ Guid - ContentChannelItem Guid
             nbOutputCacheDuration.Text = this.GetAttributeValue( "OutputCacheDuration" );
             cbSetPageTitle.Checked = this.GetAttributeValue( "SetPageTitle" ).AsBoolean();
 
-            // Interaction
-            /*
-            ddlInteractionChannel.Items.Clear();
-            ddlInteractionChannel.Items.Add( new ListItem() );
-            int? componentEntityTypeId = CacheEntityType.GetId<ContentChannelItem>();
-            foreach ( var interactionChannel in CacheInteractionChannel.All().Where( a => a.ComponentEntityTypeId == componentEntityTypeId ).OrderBy( a => a.Name ) )
-            {
-                ddlInteractionChannel.Items.Add( new ListItem( interactionChannel.Name, interactionChannel.Guid.ToString() ) );
-            }
-
-            ddlInteractionChannel.SetValue( this.GetAttributeValue( "InteractionChannel" ).AsGuidOrNull() );
-            */
-
-
             cbLogInteractions.Checked = this.GetAttributeValue( "LogInteractions" ).AsBoolean();
-            tbInteractionOperation.Text = this.GetAttributeValue( "InteractionOperation" );
             cbWriteInteractionOnlyIfIndividualLoggedIn.Checked = this.GetAttributeValue( "WriteInteractionOnlyIfIndividualLoggedIn" ).AsBoolean();
 
             var rockContext = new RockContext();
@@ -162,7 +171,7 @@ Guid - ContentChannelItem Guid
             }
 
             cbLaunchWorkflowOnlyIfIndividualLoggedIn.Checked = this.GetAttributeValue( "LaunchWorkflowOnlyIfIndividualLoggedIn" ).AsBoolean();
-            cbLaunchWorkflowOncePerPerson.Checked = this.GetAttributeValue( "LaunchWorkflowOncePerPerson" ).AsBoolean();
+            ddlLaunchWorkflowCondition.SetValue( this.GetAttributeValue( "LaunchWorkflowCondition" ) );
 
             // Social Media
             ddlMetaDescriptionAttribute.SetValue( this.GetAttributeValue( "MetaDescriptionAttribute" ) );
@@ -191,9 +200,7 @@ Guid - ContentChannelItem Guid
             this.SetAttributeValue( "LavaTemplate", ceLavaTemplate.Text );
             this.SetAttributeValue( "OutputCacheDuration", nbOutputCacheDuration.Text );
             this.SetAttributeValue( "SetPageTitle", cbSetPageTitle.Checked.ToString() );
-            //this.SetAttributeValue( "InteractionChannel", ddlInteractionChannel.SelectedValue );
             this.SetAttributeValue( "LogInteractions", cbLogInteractions.Checked.ToString() );
-            this.SetAttributeValue( "InteractionOperation", tbInteractionOperation.Text );
             this.SetAttributeValue( "WriteInteractionOnlyIfIndividualLoggedIn", cbWriteInteractionOnlyIfIndividualLoggedIn.Checked.ToString() );
             int? selectedWorkflowTypeId = wtpWorkflowType.SelectedValue.AsIntegerOrNull();
             Guid? selectedWorkflowTypeGuid = null;
@@ -204,7 +211,7 @@ Guid - ContentChannelItem Guid
 
             this.SetAttributeValue( "WorkflowType", selectedWorkflowTypeGuid.ToString() );
             this.SetAttributeValue( "LaunchWorkflowOnlyIfIndividualLoggedIn", cbLaunchWorkflowOnlyIfIndividualLoggedIn.Checked.ToString() );
-            this.SetAttributeValue( "LaunchWorkflowOncePerPerson", cbLaunchWorkflowOncePerPerson.Checked.ToString() );
+            this.SetAttributeValue( "LaunchWorkflowCondition", ddlLaunchWorkflowCondition.SelectedValue );
             this.SetAttributeValue( "MetaDescriptionAttribute", ddlMetaDescriptionAttribute.SelectedValue );
             this.SetAttributeValue( "OpenGraphType", ddlOpenGraphType.SelectedValue );
             this.SetAttributeValue( "OpenGraphTitleAttribute", ddlOpenGraphTitleAttribute.SelectedValue );
@@ -217,7 +224,16 @@ Guid - ContentChannelItem Guid
 
             SaveAttributeValues();
 
-            RemoveCacheItem( OUTPUT_CACHE_KEY );
+            var cacheKeys = GetCacheItem( CACHEKEYS_CACHE_KEY ) as HashSet<string>;
+            if ( cacheKeys != null )
+            {
+                foreach ( var cacheKey in cacheKeys )
+                {
+                    RemoveCacheItem( cacheKey );
+                }
+            }
+
+            RemoveCacheItem( CACHEKEYS_CACHE_KEY );
 
             mdSettings.Hide();
             pnlSettings.Visible = false;
@@ -253,11 +269,19 @@ Guid - ContentChannelItem Guid
             int? outputCacheDuration = GetAttributeValue( "OutputCacheDuration" ).AsIntegerOrNull();
 
             string outputContents = null;
+            string pageTitle = null;
+
+            var contentChannelItemParameterValue = GetContentChannelItemParameterValue();
+            string outputCacheKey = OUTPUT_CACHE_KEY_PREFIX + contentChannelItemParameterValue;
+            string pageTitleCacheKey = PAGETITLE_CACHE_KEY_PREFIX + contentChannelItemParameterValue;
 
             if ( outputCacheDuration.HasValue && outputCacheDuration.Value > 0 )
             {
-                outputContents = GetCacheItem( OUTPUT_CACHE_KEY ) as string;
+                outputContents = GetCacheItem( outputCacheKey ) as string;
+                pageTitle = GetCacheItem( pageTitleCacheKey ) as string;
             }
+
+            bool setPageTitle = GetAttributeValue( "SetPageTitle" ).AsBoolean();
 
             if ( outputContents == null )
             {
@@ -306,9 +330,31 @@ Guid - ContentChannelItem Guid
                 string lavaTemplate = this.GetAttributeValue( "LavaTemplate" );
                 string enabledLavaCommands = this.GetAttributeValue( "EnabledLavaCommands" );
                 outputContents = lavaTemplate.ResolveMergeFields( mergeFields, enabledLavaCommands );
+
+                if ( setPageTitle )
+                {
+                    pageTitle = contentChannelItem.Title;
+                }
+
+                if ( outputCacheDuration.HasValue && outputCacheDuration.Value > 0 )
+                {
+                    var cacheKeys = GetCacheItem( CACHEKEYS_CACHE_KEY ) as HashSet<string> ?? new HashSet<string>();
+                    cacheKeys.Add( outputCacheKey );
+                    cacheKeys.Add( pageTitleCacheKey );
+                    AddCacheItem( CACHEKEYS_CACHE_KEY, cacheKeys );
+                    AddCacheItem( outputCacheKey, outputContents, outputCacheDuration.Value );
+                    AddCacheItem( pageTitleCacheKey, pageTitle, outputCacheDuration.Value );
+                }
             }
 
             phContent.Controls.Add( new LiteralControl( outputContents ) );
+
+            if ( setPageTitle && pageTitle != null )
+            {
+                RockPage.PageTitle = pageTitle;
+                RockPage.BrowserTitle = string.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
+                RockPage.Header.Title = string.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
+            }
 
             LaunchWorkflow();
 
@@ -377,19 +423,6 @@ Guid - ContentChannelItem Guid
         /// </summary>
         private void LaunchInteraction()
         {
-            /*var interactionChannelGuid = this.GetAttributeValue( "InteractionChannel" ).AsGuidOrNull();
-
-            if ( !interactionChannelGuid.HasValue )
-            {
-                return;
-            }
-
-            var interactionChannel = CacheInteractionChannel.Get( interactionChannelGuid.Value );
-            if ( interactionChannel == null )
-            {
-                return;
-            }*/
-
             bool logInteractions = this.GetAttributeValue( "LogInteractions" ).AsBoolean();
             if ( !logInteractions )
             {
@@ -403,68 +436,16 @@ Guid - ContentChannelItem Guid
                 return;
             }
 
-            var rockContext = new RockContext();
             var contentChannelItem = GetContentChannelItem( GetContentChannelItemParameterValue() );
 
-            // lookup the interaction channel, and create it if it doesn't exist
-            int channelMediumTypeValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_CONTENTCHANNEL.AsGuid() ).Id;
-            var interactionChannelService = new InteractionChannelService( rockContext );
-            var interactionChannelId = interactionChannelService.Queryable()
-                .Where( a =>
-                    a.ChannelTypeMediumValueId == channelMediumTypeValueId &&
-                    a.ChannelEntityId == contentChannelItem.ContentChannelId )
-                .Select( a => ( int? ) a.Id )
-                .FirstOrDefault();
-            if ( interactionChannelId == null )
-            {
-                var interactionChannel = new InteractionChannel();
-                interactionChannel.Name = CacheContentChannel.Get( contentChannelItem.ContentChannelId ).Name;
-                interactionChannel.ChannelTypeMediumValueId = channelMediumTypeValueId;
-                interactionChannel.ChannelEntityId = contentChannelItem.ContentChannelId;
-                interactionChannel.ComponentEntityTypeId = CacheEntityType.Get<Rock.Model.ContentChannelItem>().Id;
-                interactionChannelService.Add( interactionChannel );
-                rockContext.SaveChanges();
-                interactionChannelId = interactionChannel.Id;
-            }
+            var interactionTransaction = new InteractionTransaction(
+                CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_CONTENTCHANNEL.AsGuid() ),
+                contentChannelItem.ContentChannel,
+                contentChannelItem );
 
+            interactionTransaction.InteractionSummary = contentChannelItem.Title;
 
-            // check that the contentChannelItem exists as a component
-            var interactionComponent = new InteractionComponentService( rockContext ).GetComponentByEntityId( interactionChannelId.Value, contentChannelItem.Id, contentChannelItem.Title );
-            rockContext.SaveChanges();
-
-
-            // Add the interaction
-            if ( interactionComponent != null )
-            {
-                var interactionService = new InteractionService( rockContext );
-                var userAgent = Request.UserAgent ?? "";
-                var interaction = interactionService.CreateInteraction( interactionComponent.Id, Request.UserAgent, Request.Url.ToString(), RockPage.GetClientIpAddress(), Session["RockSessionID"].ToString().AsGuidOrNull() );
-
-                var title = string.Empty;
-                if ( RockPage.BrowserTitle.IsNotNullOrWhitespace() )
-                {
-                    title = RockPage.BrowserTitle;
-                }
-                else
-                {
-                    title = RockPage.PageTitle;
-                }
-
-                // remove site name from browser title
-                if ( title.Contains( "|" ) )
-                {
-                    title = title.Substring( 0, title.LastIndexOf( '|' ) ).Trim();
-                }
-
-                interaction.EntityId = null;
-                interaction.Operation = "View";
-                interaction.InteractionSummary = this.RockPage.BrowserTitle;
-                interaction.InteractionData = Request.Url.ToString();
-                interaction.PersonAliasId = this.CurrentPersonAliasId;
-                interaction.InteractionDateTime = RockDateTime.Now;
-                interactionService.Add( interaction );
-                rockContext.SaveChanges();
-            }
+            interactionTransaction.Enqueue();
         }
 
         /// <summary>
@@ -494,77 +475,61 @@ Guid - ContentChannelItem Guid
                 return;
             }
 
-            bool launchWorkflowOncePerPerson = this.GetAttributeValue( "LaunchWorkflowOncePerPerson" ).AsBoolean();
+            var launchWorkflowCondition = this.GetAttributeValue( "LaunchWorkflowCondition" ).ConvertToEnum<LaunchWorkflowCondition>();
 
-            if ( launchWorkflowOncePerPerson && this.CurrentPerson == null )
+            if ( launchWorkflowCondition != LaunchWorkflowCondition.Always && this.CurrentPerson == null )
             {
                 // don't launch a workflow if LaunchWorkflowOnlyIfIndividualLoggedIn = true and nobody is logged in
                 return;
             }
 
-            var contentChannelItemParameterValue = this.GetContentChannelItemParameterValue();
-            var currentPersonAliasId = this.CurrentPersonAliasId;
+            var contentChannelItem = GetContentChannelItem( this.GetContentChannelItemParameterValue() );
 
-            // launch workflow in a thread instead of a WorkflowTransaction so that the launchWorkflowOncePerPerson logic will work correctly
-            System.Threading.Tasks.Task.Run( () =>
+            // use BlockUserPreference to store whether the Workflow was already launched depending on LaunchWorkflowCondition
+            string alreadyLaunchedKey = null;
+            if ( launchWorkflowCondition == LaunchWorkflowCondition.OncePerPersonPerContentChannelItem )
             {
-                ProcessWorkflow( workflowType, launchWorkflowOncePerPerson, contentChannelItemParameterValue, currentPersonAliasId );
-            } );
-        }
-
-        /// <summary>
-        /// Processes the workflow.
-        /// </summary>
-        /// <param name="workflowType">Type of the workflow.</param>
-        /// <param name="launchWorkflowOncePerPerson">if set to <c>true</c> [launch workflow once per person].</param>
-        /// <param name="contentChannelItemParameterValue">The content channel item parameter value.</param>
-        /// <param name="currentPersonAliasId">The current person alias identifier.</param>
-        private static void ProcessWorkflow( CacheWorkflowType workflowType, bool launchWorkflowOncePerPerson, string contentChannelItemParameterValue, int? currentPersonAliasId )
-        {
-            using ( var rockContext = new RockContext() )
+                alreadyLaunchedKey = string.Format( "WorkflowLaunched_{0}_{1}", workflowType.Id, contentChannelItem.Id );
+            }
+            else if ( launchWorkflowCondition == LaunchWorkflowCondition.OncePerPerson )
             {
-                Person currentPerson = null;
-                if ( currentPersonAliasId.HasValue )
+                alreadyLaunchedKey = string.Format( "WorkflowLaunched_{0}", workflowType.Id );
+            }
+
+            if ( alreadyLaunchedKey != null )
+            {
+                var alreadyLaunched = this.GetBlockUserPreference( alreadyLaunchedKey ).AsBooleanOrNull();
+                if ( alreadyLaunched == true )
                 {
-                    currentPerson = new PersonAliasService( rockContext ).GetSelect( currentPersonAliasId.Value, s => s.Person );
-                }
-
-                var workflowService = new WorkflowService( rockContext );
-                if ( launchWorkflowOncePerPerson && currentPersonAliasId.HasValue )
-                {
-                    int workflowTypeId = workflowType.Id;
-                    var alreadyLaunchedForPerson = workflowService.Queryable().Where( a => a.WorkflowTypeId == workflowTypeId && a.InitiatorPersonAliasId == currentPersonAliasId.Value ).Any();
-                    if ( alreadyLaunchedForPerson )
-                    {
-                        // Workflow of this WorkflowType was already launched for this person
-                        return;
-                    }
-                }
-
-                var contentChannelItem = GetContentChannelItem( contentChannelItemParameterValue );
-
-                var workflowAttributeValues = new Dictionary<string, string>();
-                workflowAttributeValues.Add( "ContentChannelItem", contentChannelItem.Guid.ToString() );
-
-                LaunchWorkflowTransaction launchWorkflowTransaction;
-                if ( currentPerson != null )
-                {
-                    workflowAttributeValues.Add( "Person", currentPerson.Guid.ToString() );
-                    launchWorkflowTransaction = new Rock.Transactions.LaunchWorkflowTransaction<Person>( workflowType.Id, null, currentPerson.Id );
+                    return;
                 }
                 else
                 {
-                    launchWorkflowTransaction = new Rock.Transactions.LaunchWorkflowTransaction( workflowType.Id, null );
+                    this.SetBlockUserPreference( alreadyLaunchedKey, true.ToString(), true );
                 }
-
-                if ( workflowAttributeValues != null )
-                {
-                    launchWorkflowTransaction.WorkflowAttributeValues = workflowAttributeValues;
-                }
-
-                launchWorkflowTransaction.InitiatorPersonAliasId = currentPersonAliasId;
-                launchWorkflowTransaction.Execute();
             }
+
+            var workflowAttributeValues = new Dictionary<string, string>();
+            workflowAttributeValues.Add( "ContentChannelItem", contentChannelItem.Guid.ToString() );
+
+            LaunchWorkflowTransaction launchWorkflowTransaction;
+            if ( this.CurrentPersonId.HasValue )
+            {
+                workflowAttributeValues.Add( "Person", this.CurrentPerson.Guid.ToString() );
+                launchWorkflowTransaction = new Rock.Transactions.LaunchWorkflowTransaction<Person>( workflowType.Id, null, this.CurrentPersonId.Value );
+            }
+            else
+            {
+                launchWorkflowTransaction = new Rock.Transactions.LaunchWorkflowTransaction( workflowType.Id, null );
+            }
+
+            if ( workflowAttributeValues != null )
+            {
+                launchWorkflowTransaction.WorkflowAttributeValues = workflowAttributeValues;
+            }
+
+            launchWorkflowTransaction.InitiatorPersonAliasId = this.CurrentPersonAliasId;
+            launchWorkflowTransaction.Enqueue();
         }
 
         /// <summary>
