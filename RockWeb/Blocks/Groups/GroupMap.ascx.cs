@@ -364,7 +364,7 @@ namespace RockWeb.Blocks.Groups
                 }}),
 
                 // Get Group Members
-                $.get( Rock.settings.get('baseUrl') + 'api/Groups/GetMapInfo/{0}/Members', function( mapItems ) {{
+                $.get( Rock.settings.get('baseUrl') + 'api/Groups/GetMapInfo/{0}/Members/{12}', function( mapItems ) {{
                     $.each(mapItems, function (i, mapItem) {{
                         var items = addMapItem(i, mapItem, '{5}');
                         for (var i = 0; i < items.length; i++) {{
@@ -643,7 +643,8 @@ namespace RockWeb.Blocks.Groups
                     longitude, // {8}
                     zoom, // {9}
                     cbShowAllGroups.Checked.ToTrueFalse(), // {10}
-                    gtpGroupType.SelectedGroupTypeIds.AsDelimited(",") // {11}
+                    gtpGroupType.SelectedGroupTypeIds.AsDelimited(","), // {11}
+                    GroupMemberStatus.Active // {12}
                 );
 
             ScriptManager.RegisterStartupScript( pnlMap, pnlMap.GetType(), "group-map-script", mapScript, false );
