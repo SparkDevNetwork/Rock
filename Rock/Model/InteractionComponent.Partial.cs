@@ -75,7 +75,7 @@ namespace Rock.Model
         /// <returns></returns>
         public InteractionComponent GetComponentByEntityId( Guid channelGuid, int entityId, string name )
         {
-            var channel = CacheContentChannel.Get( channelGuid );
+            var channel = CacheInteractionChannel.Get( channelGuid );
             if ( channel != null )
             {
                 return GetComponentByEntityId( channel.Id, entityId, name );
@@ -99,7 +99,7 @@ namespace Rock.Model
             var component = this.Queryable()
                 .FirstOrDefault( predicate );
 
-            if ( component != null )
+            if ( component == null )
             {
                 component.Name = name;
             }
@@ -111,8 +111,6 @@ namespace Rock.Model
                 component.Name = name;
                 this.Add( component );
             }
-
-            component.Name = name;
 
             return component;
         }
