@@ -51,6 +51,29 @@ namespace Rock
         }
 
         /// <summary>
+        /// Replaces the special characters from the string with the supplied string so that only alpha-numeric, '.', and '_' remain.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="replacementCharacters">The characters to replace special character(s) with. No restrictions or validation.</param>
+        /// <returns></returns>
+        public static string ReplaceSpecialCharacters( this string str, string replacementCharacters )
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach ( char c in str )
+            {
+                if ( ( c >= '0' && c <= '9' ) || ( c >= 'A' && c <= 'Z' ) || ( c >= 'a' && c <= 'z' ) || c == '.' || c == '_' )
+                {
+                    sb.Append( c );
+                }
+                else
+                {
+                    sb.Append( replacementCharacters );
+                }
+            }
+            return sb.ToString();
+        }
+
+        /// <summary>
         /// Removes all non alpha numeric characters from a string
         /// </summary>
         /// <param name="str">The string.</param>
