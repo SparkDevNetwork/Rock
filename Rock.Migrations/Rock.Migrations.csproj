@@ -265,6 +265,10 @@
     <Compile Include="Migrations\201806081810282_LandingPage.Designer.cs">
       <DependentUpon>201806081810282_LandingPage.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201806111901512_CalculatePersonDuplicatesTimeout.cs" />
+    <Compile Include="Migrations\201806111901512_CalculatePersonDuplicatesTimeout.Designer.cs">
+      <DependentUpon>201806111901512_CalculatePersonDuplicatesTimeout.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2992,6 +2996,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201806081810282_LandingPage.resx">
       <DependentUpon>201806081810282_LandingPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201806111901512_CalculatePersonDuplicatesTimeout.resx">
+      <DependentUpon>201806111901512_CalculatePersonDuplicatesTimeout.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.resx">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
