@@ -47,6 +47,11 @@ h4 {
 }
 
 .first-name, .last-name, .email-address {
-    width: 300px;
     margin-right: 25px;
+}
+
+@media screen and (min-width: 500px) { 
+    .first-name, .last-name, .email-address {
+        width: 300px;
+    }
 }

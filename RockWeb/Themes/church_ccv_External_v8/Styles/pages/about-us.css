@@ -12,6 +12,15 @@
    background-color: #ffffff;
 }
 
+/*When there are two sections of the same color back to back, pull the lower one up a pixel to prevent a single line gap*/
+#section-d-bg {
+    margin-top: -1px;
+}
+
+#section-e-bg {
+    display: none;
+}
+
 .storyCard {
    background-color: rgb(255, 255, 255);
    box-sizing: border-box;

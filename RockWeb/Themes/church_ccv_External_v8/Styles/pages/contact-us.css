@@ -10,6 +10,9 @@
 
 #section-a-bg {
     background-color: #f9f9f9;
+}
+
+#zone-sectiona {
     padding-top: 20px;
 }
 
@@ -38,7 +41,6 @@
     margin-top: 20px;
     background-color: #ffffff;
     padding: 20px;
-    width: 90%;
     margin: 0 auto;
 }
 

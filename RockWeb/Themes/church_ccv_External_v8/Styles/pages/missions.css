@@ -12,11 +12,15 @@
    background-color: #f9f9f9;
 }
 
+/*When there are two sections of the same color back to back, pull the lower one up a pixel to prevent a single line gap*/
 #section-b-bg {
+   margin-top: -1px;
    background-color: #f9f9f9;
 }
 
+/*When there are two sections of the same color back to back, pull the lower one up a pixel to prevent a single line gap*/
 #section-c-bg {
+    margin-top: -1px;
 	background-color: #f9f9f9;
 }
 
@@ -181,18 +185,6 @@
    }
 }
 
-.stay-in-the-know-info i {
-   display: none;
-}
-
-@media screen and (min-width: 992px) {
-   .stay-in-the-know-info i {
-      display: inline-block;
-      font-size: 160px;
-      color: #777777;
-   }
-}
-
 .stay-in-the-know-words {   
    display: flex;
    flex-direction: column;
@@ -201,9 +193,8 @@
 
 @media screen and (min-width: 992px) {
    .stay-in-the-know-words {   
-      margin-left: -100px;
       margin-top: -50px;
-       min-width: 300px;
+      min-width: 300px;
    }
 }
 

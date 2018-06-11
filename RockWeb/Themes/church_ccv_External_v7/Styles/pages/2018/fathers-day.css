@@ -1,0 +1,169 @@
+.control-label {
+    font-size: 12px;
+    font-weight: strong;
+    color: #ffffff;
+    text-transform: uppercase;
+}
+
+.form-control, input {
+    border: 0;
+    outline: 0;
+    background: transparent;
+    border-bottom: 2px solid lightgrey;
+    border-radius: 0px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.stay-in-the-know {
+    display: flex;
+    flex-direction: column;
+    background-color: #333333;
+    justify-content: center;
+    
+ }
+ 
+ @media screen and (min-width: 992px) {
+    .stay-in-the-know {
+       flex-direction: row;
+       justify-content: flex-start;
+       align-items: center;
+       min-height: 200px;
+       margin-bottom: 25px;
+    }
+ }
+ 
+ .stay-in-the-know-info {
+    padding-left: 20px;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    margin-right: 50px;
+    align-items: center;
+    width: 50%;
+ }
+ 
+ @media screen and (min-width: 992px) {
+    .stay-in-the-know-info {
+       padding-left: 20px;
+       width: 100%;
+    }
+ }
+ 
+ .stay-in-the-know-words {   
+    display: flex;
+    flex-direction: column;
+    min-width: 250px;
+ }
+ 
+ @media screen and (min-width: 992px) {
+    .stay-in-the-know-words {
+       margin-top: -50px;
+       min-width: 300px;
+    }
+ }
+ 
+ .stay-in-the-know-info h2 {
+    color: #ffffff;
+ }
+ 
+ .stay-in-the-know-info p {
+    color: #ffffff;
+ }
+ 
+ @media screen and (min-width: 992px) {
+    .first-name-field {
+       margin-right: 25px;
+    }
+
+    .email-field {
+        margin-right: 25px;
+    }
+ }
+ 
+ .first-name-field label, .last-name-field label, .email-field label, .phone-number-field input {
+    color: #ffff !important;
+ }
+ 
+ .first-name-field input, .last-name-field input, .email-field input, .phone-number-field input {
+    border-bottom: 2px solid #ffff !important;
+    color: #fff !important;
+ }
+
+ .phone-number-field .input-group-addon {
+    display: none;
+ }
+ 
+ .workflow-entry-panel {
+    background-color: #333333;
+    padding-top: 20px;
+    padding-left: 20px;
+    padding-right: 20px;
+ }
+ 
+ @media screen and (min-width: 992px) {
+    .workflow-entry-panel {
+       display: flex;
+       flex-direction: row;
+       flex-wrap: nowrap;
+    }
+ }
+ 
+ .workflow-entry-panel label {
+    color: #ffffff;
+ }
+ 
+ /* Hide the 'required' dot'*/
+ .workflow-entry-panel label:after {
+    display: none;
+ }
+ 
+ .alert-danger {
+    display: none !important;
+ }
+ 
+ .alert-success {
+    background-color: #777777;
+    color: #ffffff;
+    border-color: #777777;
+ }
+
+ .alert {
+     margin-left: 20px;
+     margin-right: 20px;
+ }
+ 
+ .actions a.btn.btn-primary {
+     width: 125px;
+     /*background-color: #41d0f4;*/
+     border: none;
+ }
+ 
+ @media screen and (min-width: 992px) {
+    .alert {
+        margin-right: 100px;
+     }
+     
+    .name-fields {
+       display: flex;
+       flex-direction: row;
+       flex-wrap: nowrap;
+    }
+
+    .info-fields {
+       display: flex;
+       flex-direction: row;
+       flex-wrap: nowrap;
+    }
+
+    .actions a.btn.btn-primary {
+        margin-top: -48px;
+    }
+ }
+ 
+ @media screen and (min-width: 992px) {
+    .actions {
+       margin-left: 25px;
+       margin-top: auto;
+    }
+ }

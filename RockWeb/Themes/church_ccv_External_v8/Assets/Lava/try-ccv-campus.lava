@@ -1,0 +1,30 @@
+<div id="visit-campus-container">
+     <div id="visit-campus-image">
+        <img class="img-responsive" src= "~~/Assets/Images/try-ccv-map2.png">
+    </div>
+    <div id="visit-campus-inner-container">
+        <div>
+            <h2> VISIT A CAMPUS</h2>
+        </div>
+        <div>
+            <p>Christ’s Church of the Valley is one church in many locations. Find the campus that’s nearest to you.</p>
+        </div>
+        
+            <a class="visit-campus-buttons" href="http://www.ccv.church/campuses/anthem/"><span>ANTHEM</span></a>
+
+            <a class="visit-campus-buttons" href="http://www.ccv.church/campuses/avondale/"><span>AVONDALE</span></a>
+
+            <a class="visit-campus-buttons" href="http://www.ccv.church/campuses/chandler/"><span>CHANDLER</span></a>
+
+            <a class="visit-campus-buttons" href="http://www.ccv.church/campuses/east-valley/"><span>EAST VALLEY</span></a>
+
+            <a class="visit-campus-buttons" href="http://www.ccv.church/campuses/midtown-phoenix/"><span>MIDTOWN PHOENIX</span></a>
+            
+            <a class="visit-campus-buttons" href="http://www.ccv.church/campuses/peoria/"><span>PEORIA</span></a>
+
+            <a class="visit-campus-buttons" href="http://www.ccv.church/campuses/scottsdale/"><span>SCOTTSDALE</span></a>
+
+            <a class="visit-campus-buttons" href="http://www.ccv.church/campuses/surprise/"><span>SURPRISE</span></a>
+
+    </div>
+</div>

@@ -1,0 +1,491 @@
+
+#subnavbar-bg {
+    display: none;
+}
+
+#section-h-bg {
+    background-color: rgb(248, 248, 244);
+}
+
+/*  
+ *  Declaring global variables
+ */
+
+ /* Spacer */
+#desktop-spacer-top {
+    padding-top: 856px;
+}
+
+h1 {
+    font-size: 61px;
+    color: rgb(255, 255, 255);
+}
+
+h2{ 
+    font-size: 41px;
+    line-height:1.0em;
+    color: rgb(255, 255, 255);
+}
+
+h3 {
+    font-size: 22px;
+    line-height:1.4;
+    color: rgb(255, 255, 255);
+    font-family:'Heebo';
+    text-transform: none;
+}
+
+p {
+    font-size: 16px;
+    font-family: 'heebo';
+    color: rgb(255, 255, 255);
+    line-height: 1.6;
+    padding: 2px;
+}
+
+.centerText {
+    text-align: center;
+    color: rgb(255, 255, 255);
+}
+
+.horizontalLine {
+    margin:0 auto;
+    width:200px;
+    border-bottom: 6px solid rgb(253, 253, 253);
+    text-align: center; 
+}
+
+.actionButton {
+    background-color: rgb(44, 44, 42);
+    border: 2px solid rgb(255, 255, 255);
+    padding: 10px 10px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    width: 300px;
+    margin: 4px 2px;
+    opacity: 0.9;
+    -webkit-transition-duration: 0.4s; /* Safari */
+    transition-duration: 0.2s;
+    cursor: pointer;
+}
+
+ .actionButton:hover {
+    background-color: rgb(2, 0, 0); 
+    color: white;
+} 
+
+.centerImage img {
+    margin:0 auto;
+    text-align: center; 
+    padding-top: 60px;
+}
+
+/* Mobile Styling for Global Variables */
+@media screen and (max-width: 500px) { 
+
+    h1 {
+        font-size: 29px;
+    }
+
+    h2 {
+        text-align: center;
+        font-size: 24px;
+    }
+
+    h3 {
+        padding-top: 40px; 
+        text-align: center;
+        font-size: 19px;
+    }
+
+    p {
+        font-size: 12px;
+        line-height: 1.6;
+        text-align: center;
+        padding: 2px;
+    }
+
+    .horizontalLine {
+        margin:0 auto;
+        width:100px;
+        border-bottom: 6px solid rgb(255, 255, 255);
+        text-align: center; 
+    }
+     
+    .actionButton {
+        background-color: rgb(44, 44, 42);
+        border: 1px solid rgb(255, 255, 255);
+        padding: 5px 5px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        width: 290px;
+        margin: 4px 2px;
+        opacity: 0.9;
+        -webkit-transition-duration: 0.4s; /* Safari */
+        transition-duration: 0.2s;
+        cursor: pointer;
+    }   
+
+    .actionButton:hover {
+        background-color: rgb(2, 0, 0); 
+        color: white;
+    } 
+
+    .centerImage img{
+        padding-top: 10px;
+    }
+
+    #desktop-spacer-top {
+       padding-top: 0px;
+    }
+}
+
+/*  
+ *  End Declaring global variables
+ */
+
+
+/*  
+ *  Page Background Section
+ */
+
+.page-background {
+    background-size: cover;
+}
+
+#desktop-feature-image {
+    display: initial;
+}
+
+#mobile-feature-image {
+    display: none;
+}
+
+/* Mobile Styling */
+@media screen and (max-width: 500px) { 
+    .page-background {
+        background-attachment: unset;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+        margin-left: -15px;
+        margin-right: -15px;
+    }
+
+    #desktop-feature-image {
+        display: none;
+    }
+
+    #mobile-feature-image {
+        display: initial;
+        
+    }
+}
+
+/*  
+ *  End Page Background Section
+ */
+
+/*  
+ *  Weekends At CCV Section. (Section A)
+ */
+
+#section-a-bg {
+    height: 900px;
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.WeekendAtCCV {
+    padding-top: 500px;
+}
+
+/* Mobile Styling */
+@media screen and (max-width: 500px) { 
+    
+    #section-a-bg {
+        height: 900px;
+        background-attachment: unset;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+    }
+
+    .WeekendAtCCV img {
+        margin: 0 auto;
+    }
+}
+
+/*  
+ *  End Weekends At CCV Section. (Section A)
+ */
+
+
+
+/*  
+ *  PRACTICAL AND RELEVANT TEACHING Section. (Section B)
+ */
+
+#section-b-bg {
+    height: 900px;
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.practicalsection {
+    padding-top: 450px;
+}
+
+/* Mobile Styling */
+@media screen and (max-width: 500px) { 
+    
+    #section-b-bg {
+        height: 600px;
+        background-attachment: unset;
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+    .practicalsection {
+        padding-top: 400px;
+    }
+}
+
+/*  
+ *  End PRACTICAL AND RELEVANT TEACHING Section. (Section B)
+ */
+
+/*  
+ *  CONTEMPORY WORSHIP Section. (Section C)
+ */
+#section-c-bg {
+    height: 900px;
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.contempworship {
+    padding-top: 450px;
+}
+
+/* Mobile Styling */
+@media screen and (max-width: 500px) { 
+    #section-c-bg {
+        height: 600px;
+        background-attachment: unset;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+    }
+    .contempworship {
+        padding-top: 450px;
+    }
+}
+
+/*  
+ *  End CONTEMPORY WORSHIP Section. (Section C)
+ */
+
+/*  
+ *  Food, Family and Community Section. (Section D)
+ */
+
+#section-d-bg {
+    height: 900px;
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.foodfamilycommunity {
+    padding-top: 500px;
+}
+
+/* Mobile Styling */
+@media screen and (max-width: 500px) { 
+    #section-d-bg {
+        height: 600px;
+        background-attachment: unset;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+    }
+
+    .foodfamilycommunity {
+        padding-top: 450px;
+    }
+}
+
+/*  
+ * End Food, Family and Community Section (Section D)
+ */
+
+/*  
+ * Section with two photos right next to each other. (Section D)
+ */
+
+#zone-sectione {
+    margin: unset; 
+    max-width: unset;
+    margin-left: -15px;
+    margin-right: -15px;
+    background-size: cover;
+}
+
+.leftpictureandrightpicture {
+    display: flex;
+    width: 100%;
+}
+
+.leftsidepicture {
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/try-ccv-welcome.jpg");
+    width: 50%;
+    height: 600px;
+    justify-content: center;
+    align-items: center;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.leftsidepicture img {
+    max-width: 250px;
+}
+
+.rightsidepicture {
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/try-ccv-cafe.jpg");
+    width: 50%;
+    height: 600px;
+    justify-content: center;
+    align-items: center;
+    background-repeat: no-repeat;
+}
+
+.rightsidepicture img {
+    max-width: 450px;
+}
+
+/* Mobile Styling */
+@media screen and (max-width: 500px) { 
+    .leftpictureandrightpicture {
+        flex-direction: column;
+    }
+
+    .leftsidepicture, .rightsidepicture {
+        width: 100%;
+    }
+}
+
+/*  
+ * End Section with two photos right next to each other. (Section E)
+ */
+
+/*  
+ * Try Us Out Section. (Section F)
+ */
+
+#section-f-bg {
+    height: 800px;
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.tryusout {
+    padding-top: 100px;
+}
+
+/* Mobile Styling */
+@media screen and (max-width: 500px) { 
+    #section-f-bg {
+        height: 900px;
+        background-attachment: unset;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+    }
+
+    .tryusout {
+        padding-top: 300px;
+    }
+}
+
+/*  
+ * End Try Us Out Section. (Section F)
+ */
+
+/*  
+ *  Visit A Campus Section. (Section G)
+ */
+
+#section-g-bg {
+  
+    /* background-repeat: no-repeat; */
+    width: 100%;
+    background-color: black;
+}
+
+ /* A div that contains all divs */
+#visit-campus-container {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+#visit-campus-inner-container {
+    margin-right: 180px;
+    margin-top: 40px;
+    margin-bottom: 40px;
+}
+
+#visit-campus-image {
+    width: 100%;
+    margin-left: -15px;
+    margin-right: 80px;
+}
+
+/* Styles and centers all the buttons that are part of the visit-campus-buttons class  */
+.visit-campus-buttons {
+    background-color: rgb(255, 255, 255); 
+    text-decoration: none;
+    display: inline-block;
+    cursor: pointer;
+    padding: 10px 20px;
+    border-radius: 10px;
+    border: 5px solid rgb(8, 8, 8);
+    display: flex;
+    justify-content: center;
+    min-width: 225px;
+}
+
+.visit-campus-buttons a {
+    color: rgb(150, 49, 35);
+    font-size: 18px;
+}
+
+/* Mobile Styling */
+@media screen and (max-width: 768px) { 
+    #visit-campus-image{
+        display: none;
+    }
+
+    #visit-campus-inner-container {
+        display: flex;
+        flex-direction: column;
+        margin-right: 0;
+    }
+}
+
+/*  
+ *  End Visit A Campus Section. (Section G)
+ */

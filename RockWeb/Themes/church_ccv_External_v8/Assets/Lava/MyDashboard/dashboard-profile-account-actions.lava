@@ -30,7 +30,17 @@
         {% else %}
             <a href="/dashboard/profile/spiritual-gifts-test">Take Spiritual Gifts Test</a>
         {% endif %}
-        <a href="/dashboard/profile/prayer-team">Prayer Team</a>
+
+        {% comment %}If the user is on the prayer team, or a Rock Admin, show the prayer team link {% endcomment %}
+        {% assign prayerTeamGroupMembers = CurrentPerson | Group:"35","All" %}
+        {% assign adminGroupMembers = CurrentPerson | Group:"2","All" %}
+
+        {% assign prayerTeamGroupMemberSize = prayerTeamGroupMembers | Size %}
+        {% assign adminGroupMemberSize = adminGroupMembers | Size %}
+
+        {% if prayerTeamGroupMemberSize > 0 or adminGroupMemberSize > 0 %}
+            <a href="/dashboard/profile/prayer-team">Prayer Team</a>
+        {% endif %}
 
         {% comment %} SQL to check if camp coach {% endcomment %}
         {% sql %}

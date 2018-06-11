@@ -1,0 +1,12 @@
+﻿{% assign item = Items | First %}
+
+{% if item %}
+    {% capture pageTitle %}{{ item.Title }} | CCV{% endcapture %}
+
+    {% if item.DetailImage_unformatted != '' %}
+        <img src="/GetImage.ashx?Guid={{ item.DetailImage_unformatted }}&width=2280" class="title-image img-responsive">
+        {{ item.Content }}
+    {% else %}
+      {{ item.Content }}
+    {% endif %}
+  {% endif %}

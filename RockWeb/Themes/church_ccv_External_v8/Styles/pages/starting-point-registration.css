@@ -39,7 +39,7 @@
 /* Override Theme.css */
 @media screen and (max-width: 800px) {
     #section-b-bg {
-        padding: 0px 15px;
+        padding: 10px 15px;
     }
     
     #zone-sectionb {

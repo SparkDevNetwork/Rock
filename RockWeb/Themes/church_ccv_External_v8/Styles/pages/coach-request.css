@@ -9,8 +9,8 @@
 }
 
 #section-a-bg {
-    background-color: #ffffff;
-    padding: 20px;
+    background-color: #f9f9f9;
+    padding: 20px 0px 20px 0px;
 }
 
 #section-b-bg {
@@ -21,29 +21,46 @@
     display: none;
 }
 
+h2 {
+    font-size: 3.26rem
+}
+
 h4 {
     color: #000000;
 }
 
+.workflow-entry-panel {
+    box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px; 
+    border-radius: 5px;
+    margin-top: 20px;
+    background-color: #ffffff;
+    padding: 20px;
+    margin: 0 auto;
+}
+
 .coaching-name-fields {
     display: flex;
-    justify-content: flex-start;
+    justify-content: space-between;
     margin-bottom: 25px;
     flex-wrap: wrap;
 }
 
 .coaching-info-text {
     color: black;
-    width: 50%;
 }
 
 .first-name, .last-name, .email-address, .phone-number {
     width: 300px;
-    margin-right: 25px;
 }
 
 .coaching-info-fields {
     display: flex;
-    justify-content: flex-start;
+    justify-content: space-between;
     flex-wrap: wrap;
+}
+
+@media screen and (min-width: 927px) {
+    .workflow-entry-panel {
+        width: 60%;
+    }
 }

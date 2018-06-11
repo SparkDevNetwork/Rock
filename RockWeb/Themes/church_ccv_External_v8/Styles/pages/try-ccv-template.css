@@ -1,0 +1,63 @@
+.page-background {
+    background-image: unset;
+}
+
+#section-a-bg {
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/try-ccv-life.jpg");
+}
+
+#section-b-bg {
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/try-ccv-ashley.jpg");
+}
+
+#section-c-bg {
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/try-ccv-worship2-mobile.jpg");
+}
+
+#section-d-bg {
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/try-ccv-food_02.jpg");
+}
+
+#section-f-bg {
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/try-ccv-ccvlive.jpg");
+}
+
+#section-g-bg {
+    background-image: none;
+}
+
+
+
+
+
+/* Desktop Styling */
+@media screen and (min-width: 501px) {   
+    .page-background {
+        background-image: url("/Themes/church_ccv_External_v8/Assets/Images/try-ccv-Joyride_Header_01.jpg");
+        background-size: cover;
+    }
+
+    #section-a-bg {
+        background-image: url("/Themes/church_ccv_External_v8/Assets/Images/try-ccv-life.jpg");
+    }
+
+    #section-b-bg  {
+        background-image: url("/Themes/church_ccv_External_v8/Assets/Images/try-ccv-ashley.jpg");
+    }
+
+    #section-c-bg  {
+        background-image: url("/Themes/church_ccv_External_v8/Assets/Images/try-ccv-worship2.jpg");
+    }
+
+    #section-d-bg  {
+        background-image: url("/Themes/church_ccv_External_v8/Assets/Images/try-ccv-food_02.jpg");
+    }
+
+    #section-f-bg  {
+        background-image: url("/Themes/church_ccv_External_v8/Assets/Images/try-ccv-ccvlive.jpg");
+    }
+
+    #section-g-bg  {
+        /* background-image: url("/Themes/church_ccv_External_v8/Assets/Images/try-ccv-map2.png"); */
+    }
+}

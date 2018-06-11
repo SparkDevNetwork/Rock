@@ -83,6 +83,10 @@
     }
 }
 
+.event-card .image img {
+    object-fit: cover;
+ }
+
 .prayer-request input,
 .prayer-request textarea {
     background-color: #eeeeee;
@@ -95,19 +99,24 @@
     color: #333333;
  }
 
- .prayer-request-info-override {
-    width: 500px;
- }
- 
- .info.prayer-request-info-override  {
-     max-width: unset;
- }
+ .prayer-request-override {
+    flex-direction: column;    
+}
 
- .prayer-request-video-override {
-     width: unset;
- }
+.info.prayer-request-info-override  {
+    max-width: unset;
+}
 
- .event-card .image img {
-    object-fit: cover;
- }
+ @media screen and (min-width: 900px) { 
+    .prayer-request-info-override {
+        width: 500px;
+    }
 
+    .prayer-request-override {
+        flex-direction: row;
+    }
+   
+    .prayer-request-video-override {
+        width: unset;
+    }
+}
