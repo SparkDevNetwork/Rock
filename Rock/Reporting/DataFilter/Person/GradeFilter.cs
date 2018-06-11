@@ -260,8 +260,8 @@ function() {{
         /// <returns></returns>
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
-            // GradeTransitionDate is stored as just MM/DD so it'll resolve to the current year
-            DateTime? gradeTransitionDate = GlobalAttributesCache.Read().GetValue( "GradeTransitionDate" ).AsDateTime();
+            // see if they have a grade transition date
+            bool hasGradeTransitionDate = GlobalAttributesCache.Read().GetValue( "GradeTransitionDate" ).MonthDayStringAsDateTime().HasValue;
 
             var values = selection.Split( '|' );
             ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
@@ -271,17 +271,9 @@ function() {{
             int? gradeOffset = gradeDefinedValue != null ? gradeDefinedValue.Value.AsIntegerOrNull() : null;
 
             var personGradeQuery = new PersonService( (RockContext)serviceInstance.Context ).Queryable();
+            int currentSchoolYear = RockDateTime.CurrentGraduationYear;
 
-            // if the next MM/DD of a graduation isn't until next year, treat next year as the current school year
-            int currentYearAdjustor = 0;
-            if ( gradeTransitionDate.HasValue && !( RockDateTime.Now < gradeTransitionDate ) )
-            {
-                currentYearAdjustor = 1;
-            }
-
-            int currentSchoolYear = RockDateTime.Now.AddYears( currentYearAdjustor ).Year;
-
-            if ( gradeTransitionDate.HasValue && gradeOffset.HasValue )
+            if ( hasGradeTransitionDate && gradeOffset.HasValue )
             {
                 /*
                  * example (assuming defined values are the stock values):
@@ -402,7 +394,7 @@ function() {{
             }
             else
             {
-                if ( !gradeTransitionDate.HasValue )
+                if ( !hasGradeTransitionDate )
                 {
                     if ( comparisonType == ComparisonType.IsBlank )
                     {

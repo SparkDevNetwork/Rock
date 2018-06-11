@@ -787,21 +787,20 @@ namespace Rock.Web.UI.Controls
             string chartClickScript = null;
             if ( ChartClick != null )
             {
-                string chartClickScriptFormat = @"
-                $('#{0}').find('.js-chart-placeholder').bind('plotclick', function (event, pos, item) {{
-                    
+                chartClickScript = $@"
+                $('#{this.ClientID}').find('.js-chart-placeholder').bind('plotclick', function (event, pos, item) {{
+                    var postbackArg;
                     if (item) {{
-                        __doPostBack('{1}', 'DateStamp=' + item.series.chartData[item.dataIndex].DateTimeStamp + ';YValue=' + item.series.chartData[item.dataIndex].YValue + ';SeriesId=' + item.series.chartData[item.dataIndex].SeriesId + ';MetricValueId=' + item.series.chartData[item.dataIndex].Id);
+                        postbackArg = 'DateStamp=' + item.series.chartData[item.dataIndex].DateTimeStamp + ';YValue=' + item.series.chartData[item.dataIndex].YValue + ';SeriesId=' + item.series.chartData[item.dataIndex].SeriesId + ';MetricValueId=' + item.series.chartData[item.dataIndex].Id;
                     }}
                     else
                     {{
                         // no point was clicked
-                        __doPostBack('{1}', 'DateStamp=;YValue=;SeriesId=');
+                        postbackArg =  'DateStamp=;YValue=;SeriesId=';
                     }}
-                }});
-";
 
-                chartClickScript = string.Format( chartClickScriptFormat, this.ClientID, _pnlChartPlaceholder.UniqueID );
+                    window.location = ""javascript:__doPostBack('{_pnlChartPlaceholder.UniqueID}', '"" +  postbackArg + ""')"";
+                }});";
             }
 
             return chartClickScript;

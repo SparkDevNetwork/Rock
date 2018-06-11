@@ -6,6 +6,7 @@
         <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Danger" Visible="true" />
 
         <asp:Panel ID="pnlBatchList" runat="server">
+            <asp:HiddenField ID="hfAction" runat="server" />
             <div class="panel panel-block">
                 <div class="panel-heading">
                     <h1 class="panel-title"><i class="fa fa-archive"></i>&nbsp;Batch List</h1>

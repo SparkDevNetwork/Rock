@@ -78,7 +78,7 @@
                             DataTextField="Name" DataValueField="Id" AutoPostBack="true" OnSelectedIndexChanged="ddlCalendarItem_SelectedIndexChanged"/>
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlCalendarItemOccurrence" runat="server" Label="Campus" Required="true" ValidationGroup="DlgPage3"
+                        <Rock:RockDropDownList ID="ddlCalendarItemOccurrence" runat="server" Label="Occurrence" Required="true" ValidationGroup="DlgPage3"
                             DataTextField="Name" DataValueField="Id"  />
                     </div>
                 </div>

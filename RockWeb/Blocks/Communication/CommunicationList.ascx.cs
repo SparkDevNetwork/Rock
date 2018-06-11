@@ -409,8 +409,29 @@ namespace RockWeb.Blocks.Communication
             }
 
             gCommunication.EntityTypeId = EntityTypeCache.Read<Rock.Model.Communication>().Id;
-            gCommunication.SetLinqDataSource( queryable );
-            gCommunication.DataBind();
+            nbBindError.Text = string.Empty;
+
+            try
+            {
+                gCommunication.SetLinqDataSource( queryable );
+                gCommunication.DataBind();
+            }
+            catch ( Exception e )
+            {
+                ExceptionLogService.LogException( e );
+
+                Exception sqlException = e;
+                while ( sqlException != null && !( sqlException is System.Data.SqlClient.SqlException ) )
+                {
+                    sqlException = sqlException.InnerException;
+                }
+
+                nbBindError.Text = string.Format( "<p>An error occurred trying to retrieve the communication history. Please try adjusting your filter settings and try again.</p><p>Error: {0}</p>",
+                    sqlException != null ? sqlException.Message : e.Message );
+
+                gCommunication.DataSource = new List<object>();
+                gCommunication.DataBind();
+            }
         }
 
         #endregion

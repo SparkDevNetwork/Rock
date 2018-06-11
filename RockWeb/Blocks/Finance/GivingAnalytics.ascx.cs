@@ -52,7 +52,6 @@ namespace RockWeb.Blocks.Finance
     {
         #region Fields
 
-        private RockContext _rockContext = null;
         private bool FilterIncludedInURL = false;
 
         private Dictionary<int, Dictionary<int, string>> _campusAccounts = null;
@@ -116,8 +115,6 @@ namespace RockWeb.Blocks.Finance
             lTotal.ID = "lTotal";
 
             dvpDataView.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Person ) ).Id;
-
-            _rockContext = new RockContext();
 
             pnlViewBy.Visible = !GetAttributeValue( "HideViewByOptions" ).AsBoolean();
         }
@@ -436,6 +433,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         public void LoadDropDowns()
         {
+            cblTransactionType.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE.AsGuid() ) );
             cblCurrencyTypes.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE.AsGuid() ) );
             cblTransactionSource.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE.AsGuid() ) );
         }
@@ -586,6 +584,7 @@ function(item) {
             this.SetUserPreference( keyPrefix + "SlidingDateRange", drpSlidingDateRange.DelimitedValues, false );
             this.SetUserPreference( keyPrefix + "GroupBy", hfGroupBy.Value, false );
             this.SetUserPreference( keyPrefix + "AmountRange", nreAmount.DelimitedValues, false );
+            this.SetUserPreference( keyPrefix + "TransactionTypeIds", cblTransactionType.SelectedValues.AsDelimited( "," ), false );
             this.SetUserPreference( keyPrefix + "CurrencyTypeIds", cblCurrencyTypes.SelectedValues.AsDelimited( "," ), false );
             this.SetUserPreference( keyPrefix + "SourceIds", cblTransactionSource.SelectedValues.AsDelimited( "," ), false );
 
@@ -665,6 +664,9 @@ function(item) {
 
             var currencyTypeIdList = GetSetting( keyPrefix, "CurrencyTypeIds" ).Split( ',' ).ToList();
             cblCurrencyTypes.SetValues( currencyTypeIdList );
+
+            var transactionTypeIdList = GetSetting( keyPrefix, "TransactionTypeIds" ).Split( ',' ).ToList();
+            cblTransactionType.SetValues( transactionTypeIdList );
 
             var sourceIdList = GetSetting( keyPrefix, "SourceIds" ).Split( ',' ).ToList();
             cblTransactionSource.SetValues( sourceIdList );
@@ -760,6 +762,9 @@ function(item) {
             var sourceIds = new List<int>();
             cblTransactionSource.SelectedValues.ForEach( i => sourceIds.Add( i.AsInteger() ) );
 
+            var transactionTypeIds = new List<int>();
+            cblTransactionType.SelectedValues.ForEach( i => transactionTypeIds.Add( i.AsInteger() ) );
+
             var accountIds = new List<int>();
             foreach ( var cblAccounts in phAccounts.Controls.OfType<RockCheckBoxList>() )
             {
@@ -787,7 +792,8 @@ function(item) {
                     dateRange.End,
                     accountIds,
                     currencyTypeIds,
-                    sourceIds );
+                    sourceIds,
+                    transactionTypeIds );
 
                 if ( ds != null )
                 {
@@ -888,7 +894,8 @@ function(item) {
                         nreAmount.UpperValue,
                         accountIds,
                         currencyTypeIds,
-                        sourceIds ).Tables[0];
+                        sourceIds,
+                        transactionTypeIds ).Tables[0];
 
                     foreach ( DataRow row in dtPersonSummary.Rows )
                     {
@@ -911,15 +918,16 @@ function(item) {
             {
                 qryTasks.Add( Task.Run( () =>
                 {
+                    var threadRockContext = new RockContext();
                     var ti = new TaskInfo { name = "Get DataView People", start = DateTime.Now };
                     taskInfos.Add( ti );
 
                     dataViewGivingIds = new List<string>();
-                    var dataView = new DataViewService( _rockContext ).Get( dataViewId.Value );
+                    var dataView = new DataViewService( threadRockContext ).Get( dataViewId.Value );
                     if ( dataView != null )
                     {
                         var errorMessages = new List<string>();
-                        var dvPersonService = new PersonService( _rockContext );
+                        var dvPersonService = new PersonService( threadRockContext );
                         ParameterExpression paramExpression = dvPersonService.ParameterExpression;
                         Expression whereExpression = dataView.GetExpression( dvPersonService, paramExpression, out errorMessages );
 
@@ -1064,6 +1072,9 @@ function(item) {
             var currencyTypeIds = new List<int>();
             cblCurrencyTypes.SelectedValues.ForEach( i => currencyTypeIds.Add( i.AsInteger() ) );
 
+            var transactionTypeIds = new List<int>();
+            cblTransactionType.SelectedValues.ForEach( i => transactionTypeIds.Add( i.AsInteger() ) );
+
             var sourceIds = new List<int>();
             cblTransactionSource.SelectedValues.ForEach( i => sourceIds.Add( i.AsInteger() ) );
 
@@ -1094,7 +1105,7 @@ function(item) {
                 taskInfos.Add( ti );
 
                 var dt = FinancialTransactionDetailService.GetGivingAnalyticsPersonSummary(
-                    start, end, minAmount, maxAmount, accountIds, currencyTypeIds, sourceIds )
+                    start, end, minAmount, maxAmount, accountIds, currencyTypeIds, sourceIds, transactionTypeIds )
                     .Tables[0];
 
                 foreach ( DataRow row in dt.Rows )
@@ -1148,7 +1159,7 @@ function(item) {
 
                     if ( !DBNull.Value.Equals( row["TotalAmount"] ) )
                     {
-                        personInfo.TotalAmount = (decimal)row["TotalAmount"];
+                        personInfo.TotalAmount = ( decimal ) row["TotalAmount"];
                     }
 
                     if ( !DBNull.Value.Equals( row["IsGivingLeader"] ) )
@@ -1166,8 +1177,6 @@ function(item) {
                         personInfo.IsChild = (bool)row["IsChild"];
                     }
 
-                    personInfo.AccountAmounts = new Dictionary<int, decimal>();
-
                     personInfoList.Add( personInfo );
                 }
 
@@ -1183,7 +1192,7 @@ function(item) {
                 taskInfos.Add( ti );
 
                 var dt = FinancialTransactionDetailService.GetGivingAnalyticsAccountTotals(
-                    start, end, accountIds, currencyTypeIds, sourceIds )
+                    start, end, accountIds, currencyTypeIds, sourceIds, transactionTypeIds )
                     .Tables[0];
                 foreach ( DataRow row in dt.Rows )
                 {
@@ -1244,20 +1253,23 @@ function(item) {
                     taskInfos.Add( ti );
 
                     dataViewPersonIds = new List<int>();
-                    var dataView = new DataViewService( _rockContext ).Get( dataViewId.Value );
-                    if ( dataView != null )
+                    using ( var threadRockContext = new RockContext() )
                     {
-                        var errorMessages = new List<string>();
-                        var dvPersonService = new PersonService( _rockContext );
-                        ParameterExpression paramExpression = dvPersonService.ParameterExpression;
-                        Expression whereExpression = dataView.GetExpression( dvPersonService, paramExpression, out errorMessages );
+                        var dataView = new DataViewService( threadRockContext ).Get( dataViewId.Value );
+                        if ( dataView != null )
+                        {
+                            var errorMessages = new List<string>();
+                            var dvPersonService = new PersonService( threadRockContext );
+                            ParameterExpression paramExpression = dvPersonService.ParameterExpression;
+                            Expression whereExpression = dataView.GetExpression( dvPersonService, paramExpression, out errorMessages );
 
-                        SortProperty sort = null;
-                        var dataViewPersonIdQry = dvPersonService
-                            .Queryable().AsNoTracking()
-                            .Where( paramExpression, whereExpression, sort )
-                            .Select( p => p.Id );
-                        dataViewPersonIds = dataViewPersonIdQry.ToList();
+                            SortProperty sort = null;
+                            var dataViewPersonIdQry = dvPersonService
+                                .Queryable().AsNoTracking()
+                                .Where( paramExpression, whereExpression, sort )
+                                .Select( p => p.Id );
+                            dataViewPersonIds = dataViewPersonIdQry.ToList();
+                        }
                     }
 
                     ti.end = DateTime.Now;
@@ -1328,23 +1340,26 @@ function(item) {
                 // Add columns for the selected account totals
                 if ( accountIds.Any() )
                 {
-                    var accounts = new FinancialAccountService( _rockContext )
-                        .Queryable().AsNoTracking()
-                        .Where( a => accountIds.Contains( a.Id ) )
-                        .ToList();
-
-                    foreach ( int accountId in accountIds )
+                    using ( var threadRockContext = new RockContext() )
                     {
-                        var account = accounts.FirstOrDefault( a => a.Id == accountId );
-                        if ( account != null )
+                        var accounts = new FinancialAccountService( threadRockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( a => accountIds.Contains( a.Id ) )
+                            .ToList();
+
+                        foreach ( int accountId in accountIds )
                         {
-                            gGiversGifts.Columns.Add(
-                                new GivingAnalyticsAccountField
-                                {
-                                    DataField = string.Format( "Account_{0}", account.Id ),
-                                    HeaderText = account.Name,
-                                    SortExpression = string.Format( "Account:{0}", account.Id ),
-                                } );
+                            var account = accounts.FirstOrDefault( a => a.Id == accountId );
+                            if ( account != null )
+                            {
+                                gGiversGifts.Columns.Add(
+                                    new GivingAnalyticsAccountField
+                                    {
+                                        DataField = string.Format( "Account_{0}", account.Id ),
+                                        HeaderText = account.Name,
+                                        SortExpression = string.Format( "Account:{0}", account.Id ),
+                                    } );
+                            }
                         }
                     }
                 }
@@ -1431,11 +1446,13 @@ function(item) {
                 personInfoList = personInfoList.Where( c => dataViewPersonIds.Contains( c.Id ) ).ToList();
             }
 
+            var rockContext = new RockContext();
+
             // if dataview was selected and it includes people not in the result set, 
             if ( dataViewId.HasValue && rblDataViewAction.SelectedValue == "All" && dataViewPersonIds.Any() )
             {
                 // Query for the names of each of these people
-                foreach ( var person in new PersonService( _rockContext )
+                foreach ( var person in new PersonService( rockContext )
                     .Queryable().AsNoTracking()
                     .Where( p => dataViewPersonIds.Contains( p.Id ) )
                     .Select( p => new
@@ -1539,15 +1556,15 @@ function(item) {
                     {
                         // Get the givingleaderids that gave any amount during the pattern's date range. These
                         // are needed so that we know who to exclude from the result set
-                        previousGivingIds = new FinancialTransactionDetailService( _rockContext )
+                        previousGivingIds = new FinancialTransactionDetailService( rockContext )
                             .Queryable().AsNoTracking()
                             .Where( d =>
                                 d.Transaction.TransactionDateTime.HasValue &&
                                 d.Transaction.TransactionDateTime.Value >= missedStart.Value &&
                                 d.Transaction.TransactionDateTime.Value < missedEnd.Value &&
-                                ( 
-                                    ( accountIds.Any() && accountIds.Contains( d.AccountId ) ) || 
-                                    ( !accountIds.Any() && d.Account.IsTaxDeductible ) 
+                                (
+                                    ( accountIds.Any() && accountIds.Contains( d.AccountId ) ) ||
+                                    ( !accountIds.Any() && d.Account.IsTaxDeductible )
                                 ) &&
                                 d.Amount != 0.0M )
                             .Select( d => d.Transaction.AuthorizedPersonAlias.Person.GivingId )
@@ -1743,6 +1760,11 @@ function(item) {
 
     public class PersonInfo
     {
+        public PersonInfo()
+        {
+            this.AccountAmounts = new Dictionary<int, decimal>();
+        }
+
         public int Id { get; set; }
         public Guid Guid { get; set; }
         public string NickName { get; set; }

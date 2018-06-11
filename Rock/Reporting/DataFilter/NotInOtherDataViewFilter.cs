@@ -30,7 +30,7 @@ namespace Rock.Reporting.DataFilter
     [Description( "Exclude entities that are in another dataview" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Not In Other Data View Filter" )]
-    public class NotInOtherDataViewFilter : OtherDataViewFilter
+    public class NotInOtherDataViewFilter : OtherDataViewFilter, IDataFilterWithOverrides
     {
         #region Public Methods
 
@@ -94,8 +94,23 @@ namespace Rock.Reporting.DataFilter
         /// <exception cref="System.Exception">Filter issue(s):  + errorMessages.AsDelimited( ;  )</exception>
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
+            return GetExpressionWithOverrides( entityType, serviceInstance, parameterExpression, null, selection );
+        }
+
+        /// <summary>
+        /// Gets the expression with overrides.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="serviceInstance">The service instance.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="dataViewFilterOverrides">The data view filter overrides.</param>
+        /// <param name="selection">The selection.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Exception">Filter issue(s): " + errorMessages.AsDelimited( "; " )</exception>
+        public new Expression GetExpressionWithOverrides( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, DataViewFilterOverrides dataViewFilterOverrides, string selection )
+        {
             // first get the 'IN other dataview expression' from the inherited from OtherDataViewFilter
-            var baseExpression = base.GetExpression( entityType, serviceInstance, parameterExpression, selection );
+            var baseExpression = base.GetExpressionWithOverrides( entityType, serviceInstance, parameterExpression, dataViewFilterOverrides, selection );
 
             if ( baseExpression != null )
             {

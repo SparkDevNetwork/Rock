@@ -211,7 +211,14 @@ namespace RockWeb.Blocks.Store
             }
             else
             {
-                if ( installedPackage.VersionId == latestVersion.Id )
+                if ( latestVersion == null )
+                {
+                    // No longer available
+                    lbInstall.Text = "Not available";
+                    lbInstall.Attributes.Add( "disabled", "disabled" );
+                    lbInstall.CssClass = "btn btn-default margin-b-md";
+                }
+                else if ( installedPackage.VersionId == latestVersion.Id )
                 {
                     // have the latest version installed
                     lbInstall.Text = "Installed";
@@ -239,7 +246,6 @@ namespace RockWeb.Blocks.Store
 
             if ( latestVersion != null )
             {
-
                 rptScreenshots.DataSource = latestVersion.Screenshots;
                 rptScreenshots.DataBind();
                 

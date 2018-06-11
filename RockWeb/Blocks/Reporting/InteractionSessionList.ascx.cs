@@ -26,6 +26,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Reporting
 {
@@ -72,15 +73,9 @@ namespace RockWeb.Blocks.Reporting
                 {% endif %}
 	        </header>
 	        <div class='panel-body'>
-		        {% assign interactionCount = 0 %}
 		        <ol>
 		        {% for interaction in session.Interactions %}
-			        {% assign interactionCount = interactionCount | Plus: 1 %}
-			        {% assign componentDetailPage = interaction.InteractionData %}
-			        {% if ComponentDetailPage != null and ComponentDetailPage != '' %}
-    			        {% assign componentDetailPage = ComponentDetailPage %}
-			        {% endif %}
-			        <li><a href = '{{ componentDetailPage }}?ComponentId={{ interaction.InteractionComponentId }}'>{{ interaction.InteractionComponent.Name }}</a></li>
+    			    <li><a href='{{ interaction.InteractionData }}'>{{ interaction.InteractionSummary }}</a></li>
 		        {% endfor %}				
 		        </ol>
 	        </div>
@@ -88,6 +83,7 @@ namespace RockWeb.Blocks.Reporting
     {% endfor %}
 {% endif %}" )]
     [IntegerField( "Session Count", "The number of sessions to show per page.", true, 20, "", 3 )]
+    [ContextAware( typeof( Person ) )]
     public partial class InteractionSessionList : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -95,8 +91,8 @@ namespace RockWeb.Blocks.Reporting
         private int? _channelId = null;
         private DateTime startDate = DateTime.MinValue;
         private DateTime endDate = DateTime.MaxValue;
-        private int? selectedPersonAlias = null;
         private int pageNumber = 0;
+        private int? _personId = null;
 
         #endregion
 
@@ -119,6 +115,9 @@ namespace RockWeb.Blocks.Reporting
             {
                 upnlContent.Visible = true;
             }
+
+            _personId = GetPersonId();
+            ppPerson.Visible = !_personId.HasValue;
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -155,16 +154,6 @@ namespace RockWeb.Blocks.Reporting
                         }
                     }
 
-                    if ( !string.IsNullOrWhiteSpace( PageParameter( "PersonAlias" ) ) )
-                    {
-                        selectedPersonAlias = PageParameter( "PersonAlias" ).AsIntegerOrNull();
-                        if ( selectedPersonAlias.HasValue )
-                        {
-                            var person = new PersonAliasService( new RockContext() ).GetPerson( selectedPersonAlias.Value );
-                            ppPerson.SetValue( person );
-                        }
-                    }
-
                     if ( !string.IsNullOrEmpty( PageParameter( "Page" ) ) )
                     {
                         pageNumber = PageParameter( "Page" ).AsInteger();
@@ -186,6 +175,8 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
+            _personId = GetPersonId();
+            ppPerson.Visible = !_personId.HasValue;
             ShowList();
         }
 
@@ -206,9 +197,9 @@ namespace RockWeb.Blocks.Reporting
                 endDate = drpDateFilter.UpperValue.Value;
             }
 
-            if ( ppPerson.PersonId.HasValue )
+            if ( ppPerson.PersonId.HasValue && ppPerson.Visible )
             {
-                selectedPersonAlias = ppPerson.PersonAliasId;
+                _personId = ppPerson.PersonId;
             }
 
             pageNumber = 0;
@@ -234,51 +225,85 @@ namespace RockWeb.Blocks.Reporting
                 var interactionChannel = new InteractionChannelService( rockContext ).Get( _channelId.Value );
                 if ( interactionChannel != null )
                 {
-                    var interactionQry = new InteractionService( rockContext )
+                    var interactionService = new InteractionService( rockContext );
+
+                    // Start the interaction qry to filter on those that belong to selected channel and have a valid person and session
+                    var interactionQry = interactionService
                         .Queryable().AsNoTracking()
                         .Where( a =>
                             a.InteractionComponent.ChannelId == _channelId.Value &&
                             a.PersonAliasId.HasValue &&
                             a.InteractionSessionId.HasValue );
 
+                    // Filter by start date
                     if ( startDate != DateTime.MinValue )
                     {
                         interactionQry = interactionQry.Where( s => s.InteractionDateTime > drpDateFilter.LowerValue );
                     }
 
+                    // Filter by end date
                     if ( endDate != DateTime.MaxValue )
                     {
                         interactionQry = interactionQry.Where( s => s.InteractionDateTime < drpDateFilter.UpperValue );
                     }
 
-                    if ( selectedPersonAlias.HasValue )
+                    // Filter by person
+                    if ( _personId.HasValue )
                     {
-                        interactionQry = interactionQry.Where( s => s.PersonAliasId == selectedPersonAlias );
+                        interactionQry = interactionQry.Where( s => s.PersonAlias.PersonId == _personId.Value );
                     }
 
+                    // Select minimal data to speed up query and group the interactions by the session id
                     var grpInteractions = interactionQry
-                        .GroupBy( s => new
+                        .Select( i => new
                         {
-                            s.InteractionSession
+                            i.Id,
+                            i.InteractionDateTime,
+                            i.InteractionSessionId
                         } )
+                        .GroupBy( s => s.InteractionSessionId.Value )
                         .Select( s => new WebSession
                         {
-                            PersonAlias = s.Where( a => a.PersonAliasId != null ).Select( a => a.PersonAlias ).FirstOrDefault(),
-                            InteractionSession = s.Key.InteractionSession,
+                            InteractionSessionId = s.Key,
                             StartDateTime = s.Min( x => x.InteractionDateTime ),
                             EndDateTime = s.Max( x => x.InteractionDateTime ),
-                            Interactions = s.ToList()
                         } );
 
+                    // Skip/Take only the sessions for the currently selected page number
                     var webSessions = grpInteractions.OrderByDescending( p => p.EndDateTime )
-                            .Skip( skipCount )
-                            .Take( sessionCount + 1 );
+                        .Skip( skipCount )
+                        .Take( sessionCount + 1 )
+                        .ToList();
+
+                    // Now that we know the sessions, requery for all of the interaction data just for these sessions
+                    var pageSessionIds = webSessions.Select( s => s.InteractionSessionId ).ToList();
+                    var currentPageInteractions = interactionQry
+                        .Where( i => pageSessionIds.Contains( i.InteractionSessionId.Value ) )
+                        .ToList();
+                    foreach ( var webSession in webSessions )
+                    {
+                        var sessionInteractions = currentPageInteractions
+                            .Where( i =>
+                                i.InteractionSessionId.Value == webSession.InteractionSessionId )
+                            .ToList();
+                        if ( sessionInteractions.Any() )
+                        {
+                            webSession.Interactions = sessionInteractions;
+
+                            var firstInteraction = sessionInteractions.First();
+                            if ( firstInteraction != null )
+                            {
+                                webSession.PersonAlias = firstInteraction.PersonAlias;
+                                webSession.InteractionSession = firstInteraction.InteractionSession;
+                            }
+                        }
+                    }
 
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                     mergeFields.Add( "ComponentDetailPage", LinkedPageRoute( "ComponentDetailPage" ) );
                     mergeFields.Add( "InteractionDetailPage", LinkedPageRoute( "InteractionDetailPage" ) );
                     mergeFields.Add( "InteractionChannel", interactionChannel );
-                    mergeFields.Add( "WebSessions", webSessions.ToList().Take( sessionCount ) );
+                    mergeFields.Add( "WebSessions", webSessions.Take( sessionCount ) );
 
                     lContent.Text = interactionChannel.SessionListTemplate.IsNotNullOrWhitespace() ?
                         interactionChannel.SessionListTemplate.ResolveMergeFields( mergeFields ) :
@@ -292,9 +317,9 @@ namespace RockWeb.Blocks.Reporting
                         queryStringNext.Add( "ChannelId", _channelId.ToString() );
                         queryStringNext.Add( "Page", ( pageNumber + 1 ).ToString() );
 
-                        if ( selectedPersonAlias.HasValue )
+                        if ( _personId.HasValue )
                         {
-                            queryStringNext.Add( "PersonAlias", selectedPersonAlias.Value.ToString() );
+                            queryStringNext.Add( "PersonId", _personId.Value.ToString() );
                         }
 
                         if ( startDate != DateTime.MinValue )
@@ -327,9 +352,9 @@ namespace RockWeb.Blocks.Reporting
                         queryStringPrev.Add( "ChannelId", _channelId.ToString() );
                         queryStringPrev.Add( "Page", ( pageNumber - 1 ).ToString() );
 
-                        if ( selectedPersonAlias.HasValue )
+                        if ( _personId.HasValue )
                         {
-                            queryStringPrev.Add( "PersonAlias", selectedPersonAlias.Value.ToString() );
+                            queryStringPrev.Add( "PersonId", _personId.Value.ToString() );
                         }
 
                         if ( startDate != DateTime.MinValue )
@@ -350,13 +375,49 @@ namespace RockWeb.Blocks.Reporting
             }
         }
 
+        /// <summary>
+        /// Get the person through query list or context.
+        /// </summary>
+        public int? GetPersonId()
+        {
+            int? personId = PageParameter( "PersonId" ).AsIntegerOrNull();
+            int? personAliasId = PageParameter( "PersonAliasId" ).AsIntegerOrNull();
+
+            if ( personAliasId.HasValue )
+            {
+                personId = new PersonAliasService( new RockContext() ).GetPersonId( personAliasId.Value );
+            }
+
+            if ( !personId.HasValue )
+            {
+                var person = ContextEntity<Person>();
+                if ( person != null )
+                {
+                    personId = person.Id;
+                }
+            }
+
+            return personId;
+        }
+
         #endregion
 
     }
 
+    /// <summary>
+    /// Helper class for binding sessions
+    /// </summary>
     [DotLiquid.LiquidType( "InteractionSession", "PersonAlias", "StartDateTime", "EndDateTime", "Interactions" )]
     public class WebSession
     {
+        /// <summary>
+        /// Gets or sets the interaction session identifier.
+        /// </summary>
+        /// <value>
+        /// The interaction session identifier.
+        /// </value>
+        public int InteractionSessionId { get; set; }
+
         /// <summary>
         /// Gets or sets the page view session.
         /// </summary>

@@ -76,6 +76,14 @@
                             Click="btnSelectNone_Click" />
                     </StackPanel>
 
+                    <StackPanel Margin="0,16,0,0">
+                        <CheckBox Name="cbShowInactive" 
+                          Content="Show Inactive Accounts"
+                          Style="{StaticResource checkboxStyle}"
+                          Checked="cbShowInactive_Checked"
+                          Unchecked="cbShowInactive_Checked"
+                          IsChecked="True" />
+                    </StackPanel>
 
                 </StackPanel>
 

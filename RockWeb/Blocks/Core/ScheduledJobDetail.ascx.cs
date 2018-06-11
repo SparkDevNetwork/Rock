@@ -167,6 +167,20 @@ namespace RockWeb.Blocks.Administration
 
             job.Class = ddlJobTypes.SelectedValue;
             job.LoadAttributes();
+            if ( tbDescription.Text.IsNullOrWhiteSpace() && tbName.Text.IsNullOrWhiteSpace() )
+            {
+                try
+                {
+                    Type selectedJobType = Rock.Reflection.FindType( typeof( Quartz.IJob ), job.Class );
+                    tbName.Text = Rock.Reflection.GetDisplayName( selectedJobType );
+                    tbDescription.Text = Rock.Reflection.GetDescription( selectedJobType );
+                }
+                catch
+                {
+                    // ignore if there is a problem getting the description from the selected job.class
+                }
+            }
+
             phAttributes.Controls.Clear();
             Rock.Attribute.Helper.AddEditControls( job, phAttributes, true, BlockValidationGroup );
         }

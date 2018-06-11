@@ -304,6 +304,11 @@ namespace Rock.SystemGuid
         public const string METRICS = "3AF9AD35-9F3E-4497-BFDE-60C6C1827653";
 
         /// <summary>
+        /// Month/Day field type
+        /// </summary>
+        public const string MONTH_DAY = "8BED8DD8-8167-4052-B807-A1E72C133611";
+
+        /// <summary>
         /// Multi-Select field type
         /// </summary>
         public const string MULTI_SELECT = "BD0D9B57-2A41-4490-89FF-F01DAB7D4904";

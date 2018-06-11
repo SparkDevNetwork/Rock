@@ -250,7 +250,6 @@
                                                     <asp:ListItem Text="Slight" Value="125%" />
                                                     <asp:ListItem Text="1 &frac12; spacing" Value="150%" />
                                                     <asp:ListItem Text="Double space" Value="200%" />
-                                                    <asp:ListItem />
                                                 </Rock:RockDropDownList>
                                             </div>
                                         </div>
@@ -586,7 +585,7 @@
                                     <!-- Code Properties -->
                                     <div class="propertypanel propertypanel-code" data-component="code" style="display: none;">
 						                <h4 class="propertypanel-title">HTML</h4>
-                                        <Rock:CodeEditor ID="codeEditor" CssClass="js-component-code-codeEditor" runat="server" Height="350" EditorTheme="Rock" EditorMode="Html" OnChangeScript="updateCodeComponent(this, contents);" />
+                                        <Rock:CodeEditor ID="codeEditor" CssClass="js-component-code-codeEditor" runat="server" Height="350" EditorTheme="Rock" EditorMode="Lava" OnChangeScript="updateCodeComponent(this, contents);" />
                                         <div class="alert alert-danger" id="component-code-codeEditor-error"  style="display:none"></div>
 						
 
@@ -776,20 +775,20 @@
                                     <div class="component component-section" data-content="<div class='dropzone'></div>" data-state="template">
 					                    <i class="rk rk-one-column"></i> <br /> One
 				                    </div>
-                                    <div class="component component-section" data-content="<table width='100%'><tr><td width='50%' valign='top'><div class='dropzone'></div></td><td width='50%' valign='top'><div class='dropzone'></div></td></tr></table>" data-state="template">
+                                    <div class="component component-section" data-content="<table class='row'width='100%' ><tr><td class='dropzone columns large-6 small-6 first' width='50%' valign='top'></td><td class='dropzone columns large-6 small-6 last' width='50%' valign='top'></td></tr></table>" data-state="template">
 					                    <i class="rk rk-two-column"></i> <br /> Two
 				                    </div>
-                                    <div class="component component-section" data-content="<table width='100%'><tr><td width='33%' valign='top'><div class='dropzone'></div></td><td width='34%' valign='top'><div class='dropzone'></div></td><td width='33%' valign='top'><div class='dropzone'></div></td></tr></table>" data-state="template">
+                                    <div class="component component-section" data-content="<table class='row'width='100%' ><tr><td class='dropzone columns large-4 small-4 first' width='33%' valign='top'></td><td class='dropzone columns large-4 small-4' width='34%' valign='top'></td><td class='dropzone columns large-4 small-4 last' width='33%' valign='top'></td></tr></table>" data-state="template">
 					                    <i class="rk rk-three-column"></i> <br /> Three
 				                    </div>
                                     <!--
-                                    <div class="component component-section" data-content="<table width='100%'><tr><td width='25%' valign='top'><div class='dropzone'></div></td><td width='25%' valign='top'><div class='dropzone'></div></td><td width='25%' valign='top'><div class='dropzone'></div></td><td width='25%' valign='top'><div class='dropzone'></div></td></tr></table>" data-state="template">
+                                    <div class="component component-section" data-content="<table class='row' width='100%'><tr><td class='dropzone' width='25%' valign='top'></td><td class='dropzone columns large-3 small-3' width='25%' valign='top'></td><td class='dropzone columns large-3 small-3' width='25%' valign='top'></td><td class='dropzone columns large-3 small-3' width='25%' valign='top'></td></tr></table>" data-state="template">
 					                    <i class="rk rk-four-column"></i> <br /> Four
 				                    </div> -->
-                                    <div class="component component-section" data-content="<table width='100%'><tr><td width='33%' valign='top'><div class='dropzone'></div></td><td width='67%' valign='top'><div class='dropzone'></div></td></tr></table>" data-state="template">
+                                    <div class="component component-section" data-content="<table class='row'width='100%' ><tr><td class='dropzone columns large-4 small-4 first' width='33%' valign='top'></td><td class='dropzone columns large-8 small-8 last' width='67%' valign='top'></td></tr></table>" data-state="template">
 					                    <i class="rk rk-left-column"></i> <br /> Left
 				                    </div>
-                                    <div class="component component-section" data-content="<table width='100%'><tr><td width='67%' valign='top'><div class='dropzone'></div></td><td width='33%' valign='top'><div class='dropzone'></div></td></tr></table>" data-state="template">
+                                    <div class="component component-section" data-content="<table class='row'width='100%' ><tr><td class='dropzone columns large-8 small-8 first' width='67%' valign='top'></td><td class='dropzone columns large-4 small-4 last' width='33%' valign='top'></td></tr></table>" data-state="template">
 					                    <i class="rk rk-right-column"></i> <br /> Right
 				                    </div>
                                 </div>
@@ -854,12 +853,15 @@
                                 
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <Rock:EmailBox ID="ebCCList" runat="server" Label="CC List" AllowMultiple="true" Help="Comma-delimited list of email addresses that will be copied on the email sent to every recipient. Lava can be used to access recipent data. <span class='tip tip-lava'></span>" />
-                            </div>
-                            <div class="col-md-6">
-                                <Rock:EmailBox ID="ebBCCList" runat="server" Label="BCC List" AllowMultiple="true" Help="Comma-delimited list of email addresses that will be blind copied on the email sent to every recipient. Lava can be used to access recipent data. <span class='tip tip-lava'></span>" />
+                        <div class="well">
+                            <p><strong>Note:</strong> Because Rock personalizes emails, CC and BCC recipients will receive on email per recipient.</p>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:EmailBox ID="ebCCList" runat="server" Label="CC List" AllowMultiple="true" Help="Comma-delimited list of email addresses that will be copied on the email sent to every recipient. Lava can be used to access recipent data. <span class='tip tip-lava'></span>" />
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:EmailBox ID="ebBCCList" runat="server" Label="BCC List" AllowMultiple="true" Help="Comma-delimited list of email addresses that will be blind copied on the email sent to every recipient. Lava can be used to access recipent data. <span class='tip tip-lava'></span>" />
+                                </div>
                             </div>
                         </div>
                     </asp:Panel>
@@ -1212,7 +1214,7 @@
                 jqueryLoaderScript.async = false;
                 jqueryLoaderScript.className = "js-emaileditor-addon";
                 jqueryLoaderScript.type = "text/javascript";
-                jqueryLoaderScript.src = '<%=RockPage.ResolveRockUrl("~/Scripts/jquery-1.12.4.min.js", true ) %>';
+                jqueryLoaderScript.src = '<%=System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" ) %>';
 
                 var dragulaLoaderScript = document.createElement("script");
                 dragulaLoaderScript.async = false;

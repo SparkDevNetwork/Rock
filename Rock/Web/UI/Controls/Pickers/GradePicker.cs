@@ -143,50 +143,41 @@ namespace Rock.Web.UI.Controls
         /// <returns></returns>
         public string GetJavascriptForYearPicker( YearPicker ypGraduationYear)
         {
-            DateTime gradeTransitionDate = GlobalAttributesCache.Read().GetValue( "GradeTransitionDate" ).AsDateTime() ?? new DateTime( RockDateTime.Now.Year, 6, 1 );
+            DateTime currentGraduationDate = RockDateTime.CurrentGraduationDate;
+            DateTime gradeTransitionDate = new DateTime( RockDateTime.Now.Year, currentGraduationDate.Month, currentGraduationDate.Day );
 
             // add a year if the next graduation mm/dd won't happen until next year
             int gradeOffsetRefactor = ( RockDateTime.Now < gradeTransitionDate ) ? 0 : 1;
 
-            string gradeSelectionScriptFormat = @"
-    $('#{0}').change(function(){{
+            string gradeSelectionScript = $@"
+    $('#{this.ClientID}').change(function(){{
         var selectedGradeOffsetValue = $(this).val();
         if ( selectedGradeOffsetValue == '') {{
-            $('#{1}').val('');
+            $('#{ypGraduationYear.ClientID}').val('');
         }} else {{
-            $('#{1}').val( {2} + ( {3} + parseInt( selectedGradeOffsetValue ) ) );
+            $('#{ypGraduationYear.ClientID}').val( {gradeTransitionDate.Year} + ( {gradeOffsetRefactor} + parseInt( selectedGradeOffsetValue ) ) );
         }} 
     }});
 
     $('#{1}').change(function(){{
         var selectedYearValue = $(this).val();
         if (selectedYearValue == '') {{
-            $('#{0}').val('');
+            $('#{this.ClientID}').val('');
         }} else {{
-            var gradeOffset = ( parseInt( selectedYearValue ) - {4} ) - {3};
+            var gradeOffset = ( parseInt( selectedYearValue ) - {RockDateTime.Now.Year} ) - {gradeOffsetRefactor};
             if (gradeOffset >= 0 ) {{
-                $('#{0}').val(gradeOffset.toString());
+                $('#{this.ClientID}').val(gradeOffset.toString());
 
                 // if there is a gap in gradeOffsets (grade is combined), keep trying if we haven't hit an actual offset yet
-                while (!$('#{0}').val() && gradeOffset <= {5}) {{
-                    $('#{0}').val(gradeOffset++);
+                while (!$('#{this.ClientID}').val() && gradeOffset <= {this.MaxGradeOffset}) {{
+                    $('#{this.ClientID}').val(gradeOffset++);
                 }}
             }} else {{
-                $('#{0}').val('');
+                $('#{this.ClientID}').val('');
             }}
         }}
     }});";
-            string script = string.Format(
-                gradeSelectionScriptFormat,
-                this.ClientID,     // {0}
-                ypGraduationYear.ClientID,       // {1}
-                gradeTransitionDate.Year,   // {2}
-                gradeOffsetRefactor,   // {3}
-                RockDateTime.Now.Year, // {4}
-                this.MaxGradeOffset // {5}
-                );
-
-            return script;
+            return gradeSelectionScript;
         }
 
         /// <summary>

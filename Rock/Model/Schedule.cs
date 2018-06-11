@@ -260,6 +260,16 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the first start date time.
+        /// </summary>
+        /// <value>
+        /// The first start date time.
+        /// </value>
+        [NotMapped]
+        [LavaInclude]
+        public virtual DateTime? FirstStartDateTime => GetFirstStartDateTime();
+
+        /// <summary>
         /// Gets the first start date time this week.
         /// </summary>
         /// <value>

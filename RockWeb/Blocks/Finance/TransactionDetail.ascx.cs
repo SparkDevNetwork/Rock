@@ -218,6 +218,12 @@ namespace RockWeb.Blocks.Finance
                         txn.FinancialPaymentDetail = new FinancialPaymentDetail();
                     }
 
+                    // it is possible that an existing transaction doesn't have a FinancialPaymentDetail (usually because it was imported), so create it if is doesn't exist
+                    if ( txn.FinancialPaymentDetail == null )
+                    {
+                        txn.FinancialPaymentDetail = new FinancialPaymentDetail();
+                    }
+
                     // Update the transaction's properties to match what is currently selected on the screen
                     // This allows the shown attributes to change during AutoPostBack events, based on any Qualifiers specified in the attributes
                     txn.FinancialPaymentDetail.CurrencyTypeValueId = ddlCurrencyType.SelectedValueAsInt();
@@ -290,7 +296,11 @@ namespace RockWeb.Blocks.Finance
             if ( txn != null )
             {
                 txn.LoadAttributes( rockContext );
-                txn.FinancialPaymentDetail.LoadAttributes(rockContext);
+                if ( txn.FinancialPaymentDetail != null )
+                {
+                    txn.FinancialPaymentDetail.LoadAttributes( rockContext );
+                }
+
                 ShowEditDetails( txn, rockContext );
             }
         }
@@ -313,7 +323,11 @@ namespace RockWeb.Blocks.Finance
                 if ( savedTxn != null )
                 {
                     savedTxn.LoadAttributes();
-                    savedTxn.FinancialPaymentDetail.LoadAttributes();
+                    if ( savedTxn.FinancialPaymentDetail != null )
+                    {
+                        savedTxn.FinancialPaymentDetail.LoadAttributes();
+                    }
+
                     ShowReadOnlyDetails( savedTxn );
                 }
             }
@@ -1095,34 +1109,51 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
-        /// Navigates to the next transaction in the list.
+        /// Navigates to the transaction in the list.
         /// </summary>
-        private void ShowNextButton( int transactionId, int? batchId )
+        private void ShowNavigationButton( int transactionId, int? batchId )
         {
             if ( batchId == null || ! batchId.HasValue || batchId == 0 )
             {
+                lbBack.Visible = false;
                 lbNext.Visible = false;
                 return;
             }
 
+            lbBack.Visible = true;
             lbNext.Visible = true;
             var rockContext = new RockContext();
             var financialTransactionService = new FinancialTransactionService( rockContext );
-            var qryTransactionsToMatch = financialTransactionService.Queryable()
-                .Where( a => a.BatchId == batchId );
+            var transactionsToMatch = financialTransactionService.Queryable()
+                .Where( a => a.BatchId == batchId )
+                .Select( a => a.Id )
+                .ToList();
 
-            var nextFinancialTransaction = qryTransactionsToMatch.Where( a => a.Id > transactionId ).Take( 1 ).FirstOrDefault();
+            var nextFinancialTransaction = transactionsToMatch.Where( a => a > transactionId ).Take( 1 ).FirstOrDefault();
+            var backFinancialTransaction = transactionsToMatch.Where( a => a < transactionId ).Take( 1 ).FirstOrDefault();
 
-            if ( nextFinancialTransaction != null )
+            if ( nextFinancialTransaction != default(int) )
             {
                 var qryParam = new Dictionary<string, string>();
                 qryParam.Add( "batchId", hfBatchId.Value );
-                qryParam.Add( "transactionId", nextFinancialTransaction.Id.ToStringSafe() );
+                qryParam.Add( "transactionId", nextFinancialTransaction.ToStringSafe() );
                 lbNext.NavigateUrl = new PageReference( CurrentPageReference.PageId, 0, qryParam ).BuildUrl();
             }
             else
             {
                 lbNext.AddCssClass( "disabled" );
+            }
+
+            if ( backFinancialTransaction != default(int) )
+            {
+                var qryParam = new Dictionary<string, string>();
+                qryParam.Add( "batchId", hfBatchId.Value );
+                qryParam.Add( "transactionId", backFinancialTransaction.ToStringSafe() );
+                lbBack.NavigateUrl = new PageReference( CurrentPageReference.PageId, 0, qryParam ).BuildUrl();
+            }
+            else
+            {
+                lbBack.AddCssClass( "disabled" );
             }
         }
 
@@ -1226,14 +1257,14 @@ namespace RockWeb.Blocks.Finance
 
             hfTransactionId.Value = txn.Id.ToString();
             hfBatchId.Value = batchId.HasValue ? batchId.Value.ToString() : string.Empty;
-            ShowNextButton( transactionId, batchId );
+            ShowNavigationButton( transactionId, batchId );
 
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
 
             lbEdit.Visible = editAllowed && batchEditAllowed;
-            lbRefund.Visible = refundAllowed && batchEditAllowed && txn.RefundDetails == null;
+            lbRefund.Visible = refundAllowed && txn.RefundDetails == null;
             lbAddTransaction.Visible = editAllowed && batch != null && batch.Status != BatchStatus.Closed;
 
             if ( !editAllowed )
@@ -1343,6 +1374,10 @@ namespace RockWeb.Blocks.Finance
                     }
 
                     detailsLeft.Add( "Payment Method", paymentMethodDetails.GetFormattedList( "{0}: {1}" ).AsDelimited( "<br/>" ) );
+                }
+                else
+                {
+                    detailsLeft.Add( "Payment Method", "<div class='alert alert-warning'>No Payment Information found. This could be due to transaction that was imported from external system.</div>" );
                 }
 
                 var registrationEntityType = EntityTypeCache.Read( typeof( Rock.Model.Registration ) );

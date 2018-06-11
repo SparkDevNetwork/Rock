@@ -31,6 +31,7 @@ using Rock.Web.Cache;
 
 namespace Rock.Model
 {
+
     /// <summary>
     /// Represents a communication in Rock (i.e. email, SMS message, etc.).
     /// </summary>
@@ -648,6 +649,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
+        [Obsolete( "This can return incorrect results if Recipients has been modified and not saved to the database. So don't use this." )]
         public int GetRecipientCount( RockContext rockContext )
         {
             var count = new CommunicationRecipientService( rockContext ).Queryable().Where( a => a.CommunicationId == this.Id ).Count();
@@ -666,7 +668,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns a queryable of the Recipients for this communication
+        /// Returns a queryable of the Recipients for this communication. Note that this will return the recipients that have been saved to the database. Any pending changes in the Recipients property are not included.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
@@ -895,6 +897,12 @@ namespace Rock.Model
         /// Push notification
         /// </summary>
         PushNotification = 3,
+
+        /// <summary>
+        /// Some other communication type
+        /// </summary>
+        [Obsolete("Not Supported")]
+        Other = 4
     }
 
     /// <summary>

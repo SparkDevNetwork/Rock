@@ -351,6 +351,9 @@
     <Compile Include="Attribute\AttributeCategoryFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeFieldAttribute.cs" />
     <Compile Include="Attribute\ComparisonFieldAttribute.cs" />
+    <Compile Include="Attribute\GenderFieldAttribute.cs" />
+    <Compile Include="Attribute\InteractionChannelFieldAttribute.cs" />
+    <Compile Include="Attribute\InteractionChannelsFieldAttribute.cs" />
     <Compile Include="Attribute\LabelFieldAttribute.cs" />
     <Compile Include="Attribute\LavaFieldAttribute.cs" />
     <Compile Include="Attribute\TimeZoneFieldAttribute.cs" />
@@ -548,6 +551,7 @@
     <Compile Include="Data\Udf\GetSpousePersonIdFromPersonIdStoreFunctionInjectionConvention.cs" />
     <Compile Include="Data\Udf\GetAddressStoreFunctionInjectionConvention.cs" />
     <Compile Include="Data\Udf\GetGeofencedGroupNamesStoreFunctionInjectionConvention.cs" />
+    <Compile Include="Data\IRockStoreModelConvention.cs" />
     <Compile Include="Data\Udf\RockUdfHelper.cs" />
     <Compile Include="Extension\Component.cs" />
     <Compile Include="Extension\ComponentDescription.cs" />
@@ -563,6 +567,9 @@
     <Compile Include="Field\IFieldType.cs" />
     <Compile Include="Field\ILinkableFieldType.cs" />
     <Compile Include="Field\SelectFromListFieldType.cs" />
+    <Compile Include="Field\Types\GenderFieldType.cs" />
+    <Compile Include="Field\Types\InteractionChannelsFieldType.cs" />
+    <Compile Include="Field\Types\MonthDayFieldType.cs" />
     <Compile Include="Field\Types\LabelFieldType.cs" />
     <Compile Include="Field\Types\TimeZoneFieldType.cs" />
     <Compile Include="Field\Types\GroupMemberFieldType.cs" />
@@ -699,10 +706,12 @@
     <Compile Include="Jobs\CommunicationQueueAlert.cs" />
     <Compile Include="Jobs\DatabaseMaintenance.cs" />
     <Compile Include="Jobs\IndexRockSite.cs" />
+    <Compile Include="Jobs\PostV74DataMigrations.cs" />
     <Compile Include="Jobs\MigrateCommunicationMediumData.cs" />
     <Compile Include="Jobs\MigrateInteractionsData.cs" />
     <Compile Include="Jobs\ProcessBIAnalytics.cs" />
     <Compile Include="Jobs\PbxCdrDownload.cs" />
+    <Compile Include="Jobs\DataAutomation.cs" />
     <Compile Include="Jobs\SendCreditCardExpirationNotices.cs" />
     <Compile Include="Jobs\IndexEntities.cs" />
     <Compile Include="Jobs\SendDataViewEmail.cs" />
@@ -806,6 +815,7 @@
     <Compile Include="Model\CommunicationAttachment.cs" />
     <Compile Include="Model\CodeGenerated\PageShortLinkService.cs" />
     <Compile Include="Model\CodeGenerated\PersonTokenService.cs" />
+    <Compile Include="Model\ContentChannelItemService.Partial.cs" />
     <Compile Include="Model\FinancialAccountService.Partial.cs" />
     <Compile Include="Data\IAnalyticsAddresses.cs" />
     <Compile Include="Model\InteractionComponent.Partial.cs" />
@@ -1181,15 +1191,34 @@
     <Compile Include="PersonProfile\Badge\Giving.cs" />
     <Compile Include="PersonProfile\Badge\GroupTypeAttendance.cs" />
     <Compile Include="PersonProfile\Badge\InDataView.cs" />
+    <Compile Include="PersonProfile\Badge\InteractionsInRange.cs" />
     <Compile Include="Plugin\HotFixes\038_LabelFieldType.cs" />
+    <Compile Include="Plugin\HotFixes\046_EnableSmartyStreetsIfNoActiveLocationSrv.cs" />
+    <Compile Include="Plugin\HotFixes\045_FamilyRegistration.cs" />
+    <Compile Include="Plugin\HotFixes\044_EnsureCommunicationMigration.cs" />
+    <Compile Include="Plugin\HotFixes\043_MoreMigrationRollupsForV7_3.cs" />
+    <Compile Include="Plugin\HotFixes\041_MigrationRollupsForV7_3.cs" />
     <Compile Include="Plugin\HotFixes\040_BusinessTransactionDetailLinks.cs" />
     <Compile Include="Plugin\HotFixes\039_MigrationRollupsForV7_2.cs" />
+    <Compile Include="Plugin\HotFixes\042_FixShortLinkUrlInteractionChannel.cs" />
+    <Compile Include="Plugin\HotFixes\048_InteractionSessionPerformance.cs" />
+    <Compile Include="Plugin\HotFixes\047_DataAutomation.cs" />
+    <Compile Include="Plugin\HotFixes\049_UpdateGivingAnalyticsAccounts.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <DependentUpon>HotFixMigrationResource.resx</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
+    <Compile Include="Plugin\HotFixes\050_MigrationRollupsForV7_4.cs" />
+    <Compile Include="Reporting\DataFilter\FinancialScheduledTransactionDetail\AccountFilter.cs" />
+    <Compile Include="Reporting\DataFilter\BenevolenceRequest\CampusActiveFilter.cs" />
+    <Compile Include="Reporting\DataFilter\BenevolenceRequest\CampusesActiveFilter.cs" />
+    <Compile Include="Reporting\DataFilter\BenevolenceRequest\CampusesFilter.cs" />
+    <Compile Include="Reporting\DataFilter\BenevolenceRequest\CampusFilter.cs" />
+    <Compile Include="Reporting\DataFilter\BenevolenceRequest\TotalBenevolenceFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\BenevolenceRequestDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\FinancialPledgeDataViewFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\FinancialScheduledTransactionDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\FinancialTransactionDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InRegistrationInstanceRegistrationTemplateFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InLocationGeofenceFilter.cs" />
@@ -1197,13 +1226,24 @@
     <Compile Include="Reporting\DataFilter\Person\PersonalDeviceDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\PostalCodeFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\HasNoteFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\PrayerRequestDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\UserLoginDataViewFilter.cs" />
+    <Compile Include="Reporting\DataFilter\PrayerRequest\CampusActiveFilter.cs" />
+    <Compile Include="Reporting\DataFilter\PrayerRequest\CampusesActiveFilter.cs" />
+    <Compile Include="Reporting\DataFilter\PrayerRequest\CampusesFilter.cs" />
+    <Compile Include="Reporting\DataFilter\PrayerRequest\CampusFilter.cs" />
+    <Compile Include="Reporting\DataFilter\PrayerRequest\ContainsPeopleFilter.cs" />
     <Compile Include="Reporting\DataFilter\UserLogin\LoginTypeFilter.cs" />
+    <Compile Include="Reporting\DataSelect\BenevolenceRequest\CampusSelect.cs" />
+    <Compile Include="Reporting\DataSelect\BenevolenceRequest\TotalBenevolenceSelect.cs" />
     <Compile Include="Reporting\DataSelect\FormattedFieldSelect.cs" />
     <Compile Include="Reporting\DataSelect\GroupMember\GroupLinkSelect.cs" />
     <Compile Include="Reporting\DataSelect\GroupMember\GroupAttributeSelect.cs" />
     <Compile Include="Reporting\DataSelect\Group\GroupFormattedFieldSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\PersonFormattedFieldSelect.cs" />
+    <Compile Include="Reporting\DataSelect\PrayerRequest\CampusSelect.cs" />
+    <Compile Include="Reporting\DataSelect\PrayerRequest\CategorySelect.cs" />
+    <Compile Include="Reporting\DataSelect\PrayerRequest\PersonLinkSelect.cs" />
     <Compile Include="Reporting\DataTransform\Person\FatherTransform.cs" />
     <Compile Include="Reporting\DataTransform\Person\GrandchildTransform.cs" />
     <Compile Include="Reporting\DataTransform\Person\GrandparentTransform.cs" />
@@ -1465,6 +1505,11 @@
     <Compile Include="Utility\FileUtilities.cs" />
     <Compile Include="Utility\FontAwesomeHelper.cs" />
     <Compile Include="Utility\IRockOwinStartup.cs" />
+    <Compile Include="Utility\Settings\DataAutomation\InactivatePeople.cs" />
+    <Compile Include="Utility\Settings\DataAutomation\InteractionItem.cs" />
+    <Compile Include="Utility\Settings\DataAutomation\MoveAdultChildren.cs" />
+    <Compile Include="Utility\Settings\DataAutomation\ReactivatePeople.cs" />
+    <Compile Include="Utility\Settings\DataAutomation\UpdateFamilyCampus.cs" />
     <Compile Include="Utility\TextToWorkflow.cs" />
     <Compile Include="Web\Cache\ContentChannelCache.cs" />
     <Compile Include="Web\Cache\LavaTemplateCache.cs" />
@@ -1479,7 +1524,12 @@
     <Compile Include="Web\Cache\WorkflowTypeCache.cs" />
     <Compile Include="Web\UI\Controls\AttributeMatrixEditor.cs" />
     <Compile Include="Web\UI\Controls\DynamicPlaceholder.cs" />
+    <Compile Include="Web\UI\Controls\Grid\EncryptedField.cs" />
+    <Compile Include="Web\UI\Controls\Grid\HtmlField.cs" />
     <Compile Include="Web\UI\Controls\Grid\LavaField.cs" />
+    <Compile Include="Web\UI\Controls\NumberBoxBase.cs" />
+    <Compile Include="Web\UI\Controls\PreRegistration\Children.cs" />
+    <Compile Include="Web\UI\Controls\PreRegistration\ChildRow.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DataViewsPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DatePartsPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\FieldTypePicker.cs" />
@@ -1488,6 +1538,7 @@
     <Compile Include="Web\UI\Controls\Pickers\LavaCommandsPicker.cs" />
     <Compile Include="Web\UI\Controls\SSNBox.cs" />
     <Compile Include="Web\UI\ICustomGridColumns.cs" />
+    <Compile Include="Web\UI\ICustomGridOptions.cs" />
     <Compile Include="Web\UI\RockHiddenFieldPageStatePersister.cs" />
     <Compile Include="Web\UI\Controls\Grid\LavaBoundField.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DefinedValuesPickerEnhanced.cs" />
@@ -1921,6 +1972,7 @@
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsByAge.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsByGrade.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsByGradeAndAge.cs" />
+    <Compile Include="Workflow\Action\CheckIn\FilterGroupsByGender.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsByLastName.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsBySpecialNeeds.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterLocationsBySchedule.cs" />
@@ -2043,6 +2095,48 @@
     </Content>
     <Content Include="Plugin\HotFixes\039_MigrationRollupsForV7_2_UpdateCheckInMergefieldDebugInfo.sql">
       <DependentUpon>039_MigrationRollupsForV7_2.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\041_MigrationRollupsForV7_3_UpdateWizardCommunicationDetailApprovers.sql">
+      <DependentUpon>041_MigrationRollupsForV7_3.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\043_MoreMigrationRollupsForV7_3_spCrm_PersonDuplicateFinder.sql">
+      <DependentUpon>043_MoreMigrationRollupsForV7_3.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\043_MoreMigrationRollupsForV7_3_ufnUtility_CsvToTable.sql">
+      <DependentUpon>043_MoreMigrationRollupsForV7_3.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\047_DataAutomation_FixBenevolenceCaseWorker.sql">
+      <DependentUpon>047_DataAutomation.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\047_DataAutomation_ShortLinkInteractionFix.sql">
+      <DependentUpon>047_DataAutomation.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\049_GivingAnalyticsAccounts_AccountTotals.sql">
+      <DependentUpon>049_UpdateGivingAnalyticsAccounts.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\049_GivingAnalyticsAccounts_PersonSummary.sql">
+      <DependentUpon>049_UpdateGivingAnalyticsAccounts.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\049_GivingAnalyticsAccounts_TransactionData.sql">
+      <DependentUpon>049_UpdateGivingAnalyticsAccounts.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\050_MigrationRollupsForV7_4_AddVimeoShortCode.sql">
+      <DependentUpon>050_MigrationRollupsForV7_4.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\050_MigrationRollupsForV7_4_FixAccordionShortCode.sql">
+      <DependentUpon>050_MigrationRollupsForV7_4.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\050_MigrationRollupsForV7_4_FixThankyouAndOngoingHyphenations.sql">
+      <DependentUpon>050_MigrationRollupsForV7_4.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\050_MigrationRollupsForV7_4_spAnalytics_ETL_Campus.sql">
+      <DependentUpon>050_MigrationRollupsForV7_4.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\050_MigrationRollupsForV7_4_spCrm_PersonDuplicateFinder.sql">
+      <DependentUpon>050_MigrationRollupsForV7_4.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\050_MigrationRollupsForV7_4_spCrm_PersonMerge.sql">
+      <DependentUpon>050_MigrationRollupsForV7_4.cs</DependentUpon>
     </Content>
     <Content Include="Scripts\jquery-1.12.4.intellisense.js" />
     <Content Include="Scripts\jquery-1.12.4.js" />

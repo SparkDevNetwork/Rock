@@ -291,15 +291,24 @@ namespace RockWeb.Blocks.Finance
                         var ddlGroupMember = phTableRows.ControlsOfTypeRecursive<RockDropDownList>().Where( a => a.ID == "ddlGroupMember_" + financialTransactionDetailId.ToString() ).FirstOrDefault() as RockDropDownList;
 
                         var groupMemberId = entityLookup.GetValueOrNull( financialTransactionDetailId );
+                        GroupMember groupMember = null;
                         if ( groupMemberId.HasValue )
                         {
-                            var groupMember = new GroupMemberService( rockContext ).Get( groupMemberId.Value );
-                            if ( groupMember != null )
-                            {
-                                ddlGroup.SetValue( groupMember.GroupId.ToString() );
-                                LoadGroupMembersDropDown( ddlGroup );
-                                ddlGroupMember.SetValue( groupMember.Id );
-                            }
+                            groupMember = new GroupMemberService( rockContext ).Get( groupMemberId.Value );
+                        }
+
+                        if ( groupMember != null )
+                        {
+                            ddlGroup.SetValue( groupMember.GroupId.ToString() );
+                            LoadGroupMembersDropDown( ddlGroup );
+                            ddlGroupMember.SetValue( groupMember.Id );
+                        }
+                        else
+                        {
+                            // if there is no groupMember, make sure the controls don't have anything selected
+                            ddlGroup.SetValue( (int?) null );
+                            ddlGroupMember.Items.Clear();
+                            ddlGroupMember.SetValue( ( int? ) null );
                         }
 
                         ddlGroupMember.Visible = ddlGroup.SelectedValue.AsIntegerOrNull().HasValue;
@@ -339,6 +348,11 @@ namespace RockWeb.Blocks.Finance
                         {
                             ddlGroup.SetValue( groupId );
                         }
+                        else
+                        {
+                            // if there is no value, make sure the controls don't have anything selected
+                            ddlGroup.SetValue( ( int? ) null );
+                        }
                     }
                 }
                 else if ( _transactionEntityType.Id == EntityTypeCache.GetId<DefinedValue>() )
@@ -356,6 +370,11 @@ namespace RockWeb.Blocks.Finance
                         if ( definedValueId.HasValue )
                         {
                             ddlDefinedValue.SetValue( definedValueId );
+                        }
+                        else
+                        {
+                            // if there is no value, make sure the controls don't have anything selected
+                            ddlDefinedValue.SetValue( ( int? ) null );
                         }
                     }
                 }
@@ -702,6 +721,7 @@ namespace RockWeb.Blocks.Finance
                     foreach ( var ddlGroupMember in phTableRows.ControlsOfTypeRecursive<RockDropDownList>().Where( a => a.ID.StartsWith( "ddlGroupMember_" ) ) )
                     {
                         int? financialTransactionDetailId = ddlGroupMember.ID.Replace( "ddlGroupMember_", string.Empty ).AsInteger();
+                        var dllGroup = phTableRows.ControlsOfTypeRecursive<RockDropDownList>().Where( a => a.ID == "ddlGroup_" + financialTransactionDetailId.Value.ToString() );
                         int? groupMemberId = ddlGroupMember.SelectedValue.AsIntegerOrNull();
                         AssignEntityToTransactionDetail( groupMemberId, financialTransactionDetailId );
                     }

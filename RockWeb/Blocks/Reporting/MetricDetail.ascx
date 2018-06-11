@@ -106,7 +106,7 @@
                                 <Rock:RockBoundField DataField="Label" HeaderText="Label" SortExpression="Label" />
                                 <Rock:RockBoundField DataField="EntityTypeName" HeaderText="Type" SortExpression="EntityTypeName" />
                                 <Rock:RockBoundField DataField="EntityTypeQualifier" HeaderText="" SortExpression="EntityTypeQualifier" />
-                                <Rock:BoolField DataField="IsRequired" HeaderText="Is Required" SortExpression="IsRequired" />
+                                <Rock:BoolField DataField="IsRequired" HeaderText="Is Required" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center" SortExpression="IsRequired" />
                                 <Rock:DeleteField OnClick="gMetricPartitions_Delete" />
                             </Columns>
                         </Rock:Grid>

@@ -173,6 +173,7 @@
                         <div class="pull-right">
                             <asp:LinkButton ID="lbRefund" runat="server" Text="Refund" AccessKey="r" ToolTip="Alt+r" CssClass="btn btn-default margin-r-sm" CausesValidation="false" OnClick="lbRefundTransaction_Click" />
                             <asp:LinkButton ID="lbAddTransaction" runat="server" Text="Add New Transaction" AccessKey="a" ToolTip="Alt+a" CssClass="btn btn-default margin-r-sm" CausesValidation="false" OnClick="lbAddTransaction_Click" />
+                            <asp:HyperLink ID="lbBack" runat="server" AccessKey="b" ToolTip="Alt+b" CssClass="btn btn-default margin-r-sm" OnClick="lbBack_Click" ><i class="fa fa-chevron-left"></i> Back</asp:HyperLink>
                             <asp:HyperLink ID="lbNext" runat="server" AccessKey="n" ToolTip="Alt+n" CssClass="btn btn-default margin-r-sm">Next <i class="fa fa-chevron-right"></i></asp:HyperLink>
                         </div>
                     </div>

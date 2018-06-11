@@ -136,6 +136,7 @@ namespace RockWeb.Blocks.Event
 
                     if ( contextCampus != null )
                     {
+                        // If an EventItemOccurrence's CampusId is null, then the occurrence is an 'All Campuses' event occurrence, so include those
                         qry = qry.Where( e => e.CampusId == contextCampus.Id || !e.CampusId.HasValue );
                     }
                 }
@@ -143,8 +144,11 @@ namespace RockWeb.Blocks.Event
                 {
                     if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "Campuses" ) ) )
                     {
-                        var selectedCampuses = Array.ConvertAll( GetAttributeValue( "Campuses" ).Split( ',' ), s => new Guid( s ) ).ToList();
-                        qry = qry.Where( e => selectedCampuses.Contains(e.Campus.Guid) || !e.CampusId.HasValue );
+                        var selectedCampusGuids = GetAttributeValue( "Campuses" ).Split( ',' ).AsGuidList();
+                        var selectedCampusIds = selectedCampusGuids.Select( a => CampusCache.Read( a ) ).Where( a => a != null ).Select( a => a.Id );
+
+                        // If an EventItemOccurrence's CampusId is null, then the occurrence is an 'All Campuses' event occurrence, so include those
+                        qry = qry.Where( e => e.CampusId == null || selectedCampusIds.Contains( e.CampusId.Value ) );
                     }
                 }
 

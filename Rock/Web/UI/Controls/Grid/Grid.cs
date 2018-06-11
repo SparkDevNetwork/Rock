@@ -95,6 +95,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [enable sticky headers].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable sticky headers]; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool EnableStickyHeaders
+        {
+            get { return this.ViewState["EnableStickyHeaders"] as bool? ?? false; }
+            set { ViewState["EnableStickyHeaders"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [show confirm delete dialog].
         /// </summary>
         /// <value>
@@ -706,24 +718,22 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.ShowConfirmDeleteDialog && this.Enabled && this.IsDeleteEnabled )
             {
-                string deleteButtonScriptFormat = @"
-   $('#{0} .grid-delete-button').not('.disabled').on( 'click', function (event) {{
-  return Rock.dialogs.confirmDelete(event, '{1}');
+                string deleteButtonScript = $@"
+$('#{this.ClientID} .grid-delete-button').not('.disabled').on( 'click', function (event) {{
+    return Rock.dialogs.confirmDelete(event, '{this.RowItemText}');
 }});";
-                string deleteButtonScript = string.Format( deleteButtonScriptFormat, this.ClientID, this.RowItemText );
                 ScriptManager.RegisterStartupScript( this, this.GetType(), "grid-delete-confirm-script-" + this.ClientID, deleteButtonScript, true );
             }
 
-            string clickScript = string.Format( "__doPostBack('{0}', 'RowSelected$' + dataRowIndexValue);", this.UniqueID );
-
-            string gridSelectCellScriptFormat = @"
-   $('#{0} .grid-select-cell').on( 'click', function (event) {{
-  if (!($(event.target).is('a') || $(event.target).parent().is('a'))) {{
-    var dataRowIndexValue = $(this).closest('tr').attr('data-row-index');
-    {1}
-  }}
+            string gridSelectCellScript = $@"
+$('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
+    if (!($(event.target).is('a') || $(event.target).parent().is('a'))) {{
+        var dataRowIndexValue = $(this).closest('tr').attr('data-row-index');
+        var postbackArg = 'RowSelected$' + dataRowIndexValue;
+        window.location = ""javascript:__doPostBack('{this.UniqueID}', '"" +  postbackArg + ""')"";
+    }}
 }});";
-            string gridSelectCellScript = string.Format( gridSelectCellScriptFormat, this.ClientID, clickScript );
+
             ScriptManager.RegisterStartupScript( this, this.GetType(), "grid-select-cell-script-" + this.ClientID, gridSelectCellScript, true );
 
             // render script for popovers
@@ -798,6 +808,15 @@ namespace Rock.Web.UI.Controls
 
             this.AddCssClass( "grid-table" );
             this.AddCssClass( "table" );
+
+            if ( this.EnableStickyHeaders )
+            {
+                // javascript hook for sticky headers
+                this.AddCssClass( "js-sticky-headers" );
+
+                // styling hook for sticky headers
+                this.AddCssClass( "sticky-headers" );
+            }
 
             if ( DisplayType == GridDisplayType.Light )
             {
@@ -1256,10 +1275,10 @@ namespace Rock.Web.UI.Controls
 
             if ( e.CommandName == "RowSelected" )
             {
-                int rowIndex = int.MinValue;
-                if ( int.TryParse( e.CommandArgument.ToString(), out rowIndex ) )
+                int? rowIndex = e.CommandArgument?.ToString().AsIntegerOrNull();
+                if ( rowIndex.HasValue )
                 {
-                    RowEventArgs a = new RowEventArgs( this.Rows[rowIndex] );
+                    RowEventArgs a = new RowEventArgs( this.Rows[rowIndex.Value] );
                     OnRowSelected( a );
                 }
             }
@@ -1417,7 +1436,7 @@ namespace Rock.Web.UI.Controls
 
                     if ( rockPage.Request != null && rockPage.Request.Url != null )
                     {
-                        communication.UrlReferrer = rockPage.Request.Url.AbsoluteUri;
+                        communication.UrlReferrer = rockPage.Request.Url.AbsoluteUri.TrimForMaxLength( communication, "UrlReferrer" );
                     }
 
                     communicationService.Add( communication );
@@ -1683,6 +1702,8 @@ namespace Rock.Web.UI.Controls
                 DataTable data = this.DataSourceAsDataTable;
                 columnCounter = 0;
 
+                var encryptedColumns = new List<int>();
+
                 // Set up the columns
                 foreach ( DataColumn column in data.Columns )
                 {
@@ -1694,6 +1715,12 @@ namespace Rock.Web.UI.Controls
 
                     // Set the initial column format
                     worksheet.Column( columnCounter ).Style.Numberformat.Format = ExcelHelper.DefaultColumnFormat( column.DataType );
+
+                    // Check to see if this is an encrypted column
+                    if ( gridField is EncryptedField )
+                    {
+                        encryptedColumns.Add( columnCounter - 1 );
+                    }
                 }
 
                 // print data
@@ -1703,7 +1730,9 @@ namespace Rock.Web.UI.Controls
 
                     for ( int i = 0; i < data.Columns.Count; i++ )
                     {
-                        var value = rowView.Row[i].ReverseCurrencyFormatting();
+                        var value = encryptedColumns.Contains( i ) ? Security.Encryption.DecryptString( rowView.Row[i].ToString() ) : rowView.Row[i];
+                        value = value.ReverseCurrencyFormatting();
+
                         int columnIndex = i + 1;
                         ExcelHelper.SetExcelValue( worksheet.Cells[rowCounter, columnIndex], value );
 
@@ -1911,6 +1940,11 @@ namespace Rock.Web.UI.Controls
                                 if ( dataField is LavaBoundField )
                                 {
                                     propValue = ( dataField as LavaBoundField ).GetFormattedDataValue( propValue );
+                                }
+
+                                if ( dataField is HtmlField )
+                                {
+                                    propValue = ( dataField as HtmlField ).FormatDataValue( propValue );
                                 }
 
                                 if ( propValue != null )
@@ -2810,8 +2844,6 @@ namespace Rock.Web.UI.Controls
             }
 
             int? entityTypeId = null;
-            string dataKeyColumn = this.DataKeyNames.FirstOrDefault() ?? "Id";
-            PropertyInfo idProp = dataSourceObjectType.GetProperty( dataKeyColumn );
 
             if ( this.EntityTypeId.HasValue )
             {
@@ -2839,6 +2871,18 @@ namespace Rock.Web.UI.Controls
                     }
                 }
             }
+
+            string entityIdColumn;
+            if ( entityTypeId.HasValue && entityTypeId.Value == EntityTypeCache.GetId<Rock.Model.Person>() )
+            {
+                entityIdColumn = this.PersonIdField ?? "Id";
+            }
+            else
+            {
+                entityIdColumn = this.DataKeyNames.FirstOrDefault() ?? "Id";
+            }
+
+            PropertyInfo idProp = dataSourceObjectType.GetProperty( entityIdColumn );
 
             // first try to get the SelectedKeys from the SelectField (if there is one)
             HashSet<int> selectedKeys = new HashSet<int>( this.SelectedKeys.Select( a => a as int? ).Where( a => a.HasValue ).Select( a => a.Value ).Distinct().ToList() );
@@ -3057,17 +3101,9 @@ namespace Rock.Web.UI.Controls
 
                 string dataKey = parms[0];
 
-                int oldIndex = 0;
-                if ( !int.TryParse( parms[1], out oldIndex ) )
-                {
-                    oldIndex = 0;
-                }
+                int oldIndex = parms[1].AsIntegerOrNull() ?? 0;
 
-                int newIndex = 0;
-                if ( !int.TryParse( parms[2], out newIndex ) )
-                {
-                    newIndex = 0;
-                }
+                int newIndex = parms[2].AsIntegerOrNull() ?? 0;
 
                 int pageFactor = this.PageIndex * this.PageSize;
                 oldIndex += pageFactor;

@@ -1297,6 +1297,9 @@ namespace RockWeb.Blocks.Groups
             wpGroupRequirements.Visible = canAdministrate;
             wpGroupMemberAttributes.Visible = canAdministrate;
 
+            // only Rock admins can alter if the group is a security role
+            cbIsSecurityRole.Visible = groupService.GroupHasMember( new Guid( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS ), CurrentUser.PersonId );
+
             var systemEmails = new SystemEmailService( rockContext ).Queryable().OrderBy( e => e.Title )
                 .Select( a => new
                 {
@@ -1599,7 +1602,7 @@ namespace RockWeb.Blocks.Groups
                 // check if we're over capacity and if so show warning
                 if ( group.GroupCapacity.HasValue )
                 {
-                    int activeGroupMemberCount = group.Members.Where( m => m.GroupMemberStatus == GroupMemberStatus.Active ).Count();
+                    int activeGroupMemberCount = group.ActiveMembers().Count();
                     if ( activeGroupMemberCount > group.GroupCapacity )
                     {
                         nbGroupCapacityMessage.Text = string.Format( "This group is over capacity by {0}.", "individual".ToQuantity( ( activeGroupMemberCount - group.GroupCapacity.Value ) ) );

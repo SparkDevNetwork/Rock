@@ -55,6 +55,7 @@
         <asp:Panel ID="pnlDetails" runat="server">
 
             <asp:HiddenField ID="hfRegistrationInstanceId" runat="server" />
+            <asp:HiddenField ID="hfRegistrationTemplateId" runat="server" />
 
             <div class="panel panel-block">
 

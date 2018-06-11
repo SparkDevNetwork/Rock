@@ -402,6 +402,10 @@ namespace Rock.Web.UI.Controls
             {
                 _cancelLink.InnerText = "OK";
             }
+            else
+            {
+                _cancelLink.InnerText = "Cancel";
+            }
 
             base.OnPreRender( e );
         }

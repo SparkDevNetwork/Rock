@@ -56,6 +56,7 @@ namespace RockWeb.Blocks.Groups
     [CustomRadioListField( "Auto Fill Form", "If set to FALSE then the form will not load the context of the logged in user (default: 'True'.)", "true^True,false^False", true, "true", "", 10 )]
     [TextField( "Register Button Alt Text", "Alternate text to use for the Register button (default is 'Register').", false, "", "", 11 )]
     [BooleanField( "Prevent Overcapacity Registrations", "When set to true, user cannot register for groups that are at capacity or whose default GroupTypeRole are at capacity. If only one spot is available, no spouses can be registered.", true, "", 12 )]
+
     public partial class GroupRegistration : RockBlock
     {
         #region Fields
@@ -195,10 +196,6 @@ namespace RockWeb.Blocks.Groups
                 GroupLocation homeLocation = null;
                 bool isMatch = false;
 
-                var changes = new List<string>();
-                var spouseChanges = new List<string>();
-                var familyChanges = new List<string>();
-
                 // Only use current person if the name entered matches the current person's name and autofill mode is true
                 if ( _autoFill )
                 {
@@ -242,7 +239,6 @@ namespace RockWeb.Blocks.Groups
                 else
                 {
                     // updating current existing person
-                    History.EvaluateChange( changes, "Email", person.Email, tbEmail.Text );
                     person.Email = tbEmail.Text;
 
                     // Get the current person's families
@@ -278,11 +274,11 @@ namespace RockWeb.Blocks.Groups
                 {
                     if ( !isMatch || !string.IsNullOrWhiteSpace( pnHome.Number ) )
                     {
-                        SetPhoneNumber( rockContext, person, pnHome, null, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid(), changes );
+                        SetPhoneNumber( rockContext, person, pnHome, null, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() );
                     }
                     if ( !isMatch || !string.IsNullOrWhiteSpace( pnHome.Number ) )
                     {
-                        SetPhoneNumber( rockContext, person, pnCell, cbSms, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid(), changes );
+                        SetPhoneNumber( rockContext, person, pnCell, cbSms, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
                     }
 
                     if ( !isMatch || !string.IsNullOrWhiteSpace( acAddress.Street1 ) )
@@ -316,8 +312,6 @@ namespace RockWeb.Blocks.Groups
                                 new GroupLocationService( rockContext ).Delete( homeLocation );
                             }
                         }
-
-                        History.EvaluateChange( familyChanges, "Home Location", oldLocation, newLocation );
                     }
 
                     // Check for the spouse
@@ -334,10 +328,7 @@ namespace RockWeb.Blocks.Groups
                             isSpouseMatch = false;
 
                             spouse.FirstName = tbSpouseFirstName.Text.FixCase();
-                            History.EvaluateChange( spouseChanges, "First Name", string.Empty, spouse.FirstName );
-
                             spouse.LastName = tbSpouseLastName.Text.FixCase();
-                            History.EvaluateChange( spouseChanges, "Last Name", string.Empty, spouse.LastName );
 
                             spouse.ConnectionStatusValueId = _dvcConnectionStatus.Id;
                             spouse.RecordStatusValueId = _dvcRecordStatus.Id;
@@ -356,35 +347,22 @@ namespace RockWeb.Blocks.Groups
                             person.MaritalStatusValueId = _married.Id;
                         }
 
-                        History.EvaluateChange( changes, "Email", person.Email, tbEmail.Text );
                         spouse.Email = tbSpouseEmail.Text;
 
                         if ( !isSpouseMatch || !string.IsNullOrWhiteSpace( pnHome.Number ) )
                         {
-                            SetPhoneNumber( rockContext, spouse, pnHome, null, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid(), spouseChanges );
+                            SetPhoneNumber( rockContext, spouse, pnHome, null, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() );
                         }
 
                         if ( !isSpouseMatch || !string.IsNullOrWhiteSpace( pnSpouseCell.Number ) )
                         {
-                            SetPhoneNumber( rockContext, spouse, pnSpouseCell, cbSpouseSms, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid(), spouseChanges );
+                            SetPhoneNumber( rockContext, spouse, pnSpouseCell, cbSpouseSms, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
                         }
                     }
                 }
 
                 // Save the person/spouse and change history 
                 rockContext.SaveChanges();
-                HistoryService.SaveChanges( rockContext, typeof( Person ),
-                    Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), person.Id, changes );
-                HistoryService.SaveChanges( rockContext, typeof( Person ),
-                    Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(), person.Id, familyChanges );
-                if ( spouse != null )
-                {
-
-                    HistoryService.SaveChanges( rockContext, typeof( Person ),
-                        Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), spouse.Id, spouseChanges );
-                    HistoryService.SaveChanges( rockContext, typeof( Person ),
-                        Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(), spouse.Id, familyChanges );
-                }
 
                 // Check to see if a workflow should be launched for each person
                 WorkflowTypeCache workflowType = null;
@@ -516,9 +494,7 @@ namespace RockWeb.Blocks.Groups
                     // If the group has a GroupCapacity, check how far we are from hitting that.
                     if ( _group.GroupCapacity.HasValue )
                     {
-                        openGroupSpots = _group.GroupCapacity.Value - _group.Members
-                            .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active )
-                            .Count();
+                        openGroupSpots = _group.GroupCapacity.Value - _group.ActiveMembers().Count();
                     }
 
                     // When someone registers for a group on the front-end website, they automatically get added with the group's default
@@ -630,8 +606,6 @@ namespace RockWeb.Blocks.Groups
 
             _autoFill = GetAttributeValue( "AutoFillForm" ).AsBoolean();
 
-            tbEmail.Required = _autoFill;
-
             string registerButtonText = GetAttributeValue( "RegisterButtonAltText" );
             if ( string.IsNullOrWhiteSpace( registerButtonText ) )
             {
@@ -729,8 +703,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="pnbNumber">The PNB number.</param>
         /// <param name="cbSms">The cb SMS.</param>
         /// <param name="phoneTypeGuid">The phone type unique identifier.</param>
-        /// <param name="changes">The changes.</param>
-        private void SetPhoneNumber( RockContext rockContext, Person person, PhoneNumberBox pnbNumber, RockCheckBox cbSms, Guid phoneTypeGuid, List<string> changes )
+        private void SetPhoneNumber( RockContext rockContext, Person person, PhoneNumberBox pnbNumber, RockCheckBox cbSms, Guid phoneTypeGuid )
         {
             var phoneType = DefinedValueCache.Read( phoneTypeGuid );
             if ( phoneType != null )
@@ -772,10 +745,6 @@ namespace RockWeb.Blocks.Groups
                             .ForEach( n => n.IsMessagingEnabled = false );
                     }
                 }
-
-                History.EvaluateChange( changes,
-                    string.Format( "{0} Phone", phoneType.Value ),
-                    oldPhoneNumber, phoneNumber.NumberFormattedWithCountryCode );
             }
         }
 

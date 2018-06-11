@@ -46,9 +46,15 @@
                             {
                                 // MetricValuePartitionEntityIds is not blank so get the seriesName from the getSeriesPartitionNameUrl
                                 if (getSeriesPartitionNameUrl) {
+                                    var metricValuePartitionEntityIdDataJSON = JSON.stringify(chartData[i].MetricValuePartitionEntityIds.split(','));
+
                                     $.ajax({
-                                        url: getSeriesPartitionNameUrl + chartData[i].MetricValuePartitionEntityIds,
-                                        async: false
+                                        type: 'POST',
+                                        url: getSeriesPartitionNameUrl,
+                                        data: metricValuePartitionEntityIdDataJSON,
+                                        async: false,
+                                        success: null,
+                                        contentType: 'application/json'
                                     })
                                     .done(function (data) {
                                         seriesName = data;
@@ -186,9 +192,15 @@
                         {
                             // MetricValuePartitionEntityIds is not blank so get the seriesName from the getSeriesPartitionNameUrl
                             if (getSeriesPartitionNameUrl) {
+                                var metricValuePartitionEntityIdDataJSON = JSON.stringify(chartData[i].MetricValuePartitionEntityIds.split(','));
+
                                 $.ajax({
-                                    url: getSeriesPartitionNameUrl + chartData[i].MetricValuePartitionEntityIds,
-                                    async: false
+                                    type: 'POST',
+                                    url: getSeriesPartitionNameUrl,
+                                    data: metricValuePartitionEntityIdDataJSON,
+                                    async: false,
+                                    success: null,
+                                    contentType: 'application/json'
                                 })
                                 .done(function (data) {
                                     seriesNameLookup[chartData[i].MetricValuePartitionEntityIds] = data;

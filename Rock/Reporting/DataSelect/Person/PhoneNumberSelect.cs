@@ -139,7 +139,13 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection )
         {
-            Guid? phoneNumberTypeValueGuid = selection.AsGuidOrNull();
+            string[] selectionValues = selection.Split( '|' );
+            Guid? phoneNumberTypeValueGuid = null;
+            if ( selectionValues.Length >= 1)
+            {
+                phoneNumberTypeValueGuid = selectionValues[0].AsGuidOrNull();
+            }
+
             if ( !phoneNumberTypeValueGuid.HasValue )
             {
                 phoneNumberTypeValueGuid = Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid();

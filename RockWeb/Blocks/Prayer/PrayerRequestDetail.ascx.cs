@@ -199,7 +199,13 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void lbCancel_Click( object sender, EventArgs e )
         {
-            NavigateToParentPage();
+            var queryParms = new Dictionary<string, string>();
+            if ( !string.IsNullOrWhiteSpace( PageParameter( "PersonId" ) ) )
+            {
+                queryParms.Add( "PersonId", PageParameter( "PersonId" ) );
+            }
+
+            NavigateToParentPage( queryParms );
         }
 
         /// <summary>
@@ -234,7 +240,13 @@ namespace RockWeb.Blocks.Prayer
 
                 prayerRequestService.Delete( prayerRequest );
                 rockContext.SaveChanges();
-                NavigateToParentPage();
+
+                var queryParms = new Dictionary<string, string>();
+                if ( !string.IsNullOrWhiteSpace( PageParameter( "PersonId" ) ) )
+                {
+                    queryParms.Add( "PersonId", PageParameter( "PersonId" ) );
+                }
+                NavigateToParentPage( queryParms );
             }
         }
 
@@ -255,11 +267,13 @@ namespace RockWeb.Blocks.Prayer
                         .Select( p => new
                         {
                             FirstName = p.NickName,
-                            LastName = p.LastName
+                            LastName = p.LastName,
+                            Email = p.Email
                         } ).FirstOrDefault();
 
                     tbFirstName.Text = requester.FirstName;
                     tbLastName.Text = requester.LastName;
+                    tbEmail.Text = requester.Email;
                 }
             }
         }
@@ -343,9 +357,19 @@ namespace RockWeb.Blocks.Prayer
             }
 
             descriptionList.Add( "Name", prayerRequest.FullName );
+            string email = null;
             if ( !string.IsNullOrWhiteSpace( prayerRequest.Email ) )
             {
-                descriptionList.Add( "Email", String.Format( "<a href='mailto:{0}'>{0}</a>", prayerRequest.Email ) );
+                email = prayerRequest.Email;
+            }
+            else if ( prayerRequest.RequestedByPersonAlias != null )
+            {
+                email = prayerRequest.RequestedByPersonAlias.Person.Email;
+            }
+
+            if ( !string.IsNullOrEmpty( email ) )
+            {
+                descriptionList.Add( "Email", String.Format( "<a href='mailto:{0}'>{0}</a>", email ) );
             }
             descriptionList.Add( "Campus", prayerRequest.Campus );
             descriptionList.Add( "Request", prayerRequest.Text.ScrubHtmlAndConvertCrLfToBr() );
@@ -406,6 +430,7 @@ namespace RockWeb.Blocks.Prayer
 
             tbFirstName.Text = prayerRequest.FirstName;
             tbLastName.Text = prayerRequest.LastName;
+            tbEmail.Text = prayerRequest.Email;
             dtbText.Text = prayerRequest.Text;
             dtbAnswer.Text = prayerRequest.Answer;
 
@@ -421,6 +446,7 @@ namespace RockWeb.Blocks.Prayer
                     ppRequestor.SetValue( requestor );
                     tbFirstName.Text = requestor.NickName;
                     tbLastName.Text = requestor.LastName;
+                    tbEmail.Text = requestor.Email;
                 }
                 else
                 {
@@ -618,6 +644,7 @@ namespace RockWeb.Blocks.Prayer
             prayerRequest.IsPublic = cbIsPublic.Checked;
             prayerRequest.FirstName = tbFirstName.Text;
             prayerRequest.LastName = tbLastName.Text;
+            prayerRequest.Email = tbEmail.Text;
             prayerRequest.Text = dtbText.Text.Trim();
             prayerRequest.Answer = dtbAnswer.Text.Trim();
 
