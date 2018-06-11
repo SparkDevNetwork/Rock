@@ -245,7 +245,7 @@ namespace Rock.Jobs
                         {
                             historyVerb = History.HistoryVerb.RemovedFromGroup;
                             historyChangeType = History.HistoryChangeType.Record;
-                            historyRecord.ValueName = removedFromGroupMatch.Groups[1].Value.Trim();
+                            historyRecord.ValueName = removedFromGroupMatch.Groups[1].Value.Trim().TrimEnd( new char[] { '.' } );
 
                             historyRecord.Summary = null;
                         }
