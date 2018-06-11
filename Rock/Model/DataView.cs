@@ -416,7 +416,10 @@ namespace Rock.Model
                 if ( filteredEntityType != null )
                 {
                     bool usePersistedValues = this.PersistedScheduleIntervalMinutes.HasValue && this.PersistedLastRefreshDateTime.HasValue;
-                    usePersistedValues = usePersistedValues && ( dataViewFilterOverrides?.UsePersistedValuesIfAvailable ?? true );
+                    if ( dataViewFilterOverrides != null )
+                    {
+                        usePersistedValues = usePersistedValues && !dataViewFilterOverrides.IgnoreDataViewPersistedValues.Contains( this.Id );
+                    }
 
                     // don't use persisted values if there are dataViewFilterOverrides
                     if ( usePersistedValues && dataViewFilterOverrides?.Any() == true )
@@ -475,8 +478,10 @@ namespace Rock.Model
             List<string> errorMessages;
             var dbContext = this.GetDbContext();
             
+            DataViewFilterOverrides dataViewFilterOverrides = new DataViewFilterOverrides();
+
             // set an override so that the Persisted Values aren't used when rebuilding the values from the DataView Query
-            DataViewFilterOverrides dataViewFilterOverrides = new DataViewFilterOverrides { UsePersistedValuesIfAvailable = false };
+            dataViewFilterOverrides.IgnoreDataViewPersistedValues.Add( this.Id );
 
             var qry = this.GetQuery( null, dbContext, dataViewFilterOverrides, databaseTimeoutSeconds, out errorMessages );
             if ( !errorMessages.Any() )
