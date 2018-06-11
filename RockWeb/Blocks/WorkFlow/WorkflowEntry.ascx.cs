@@ -819,6 +819,11 @@ namespace RockWeb.Blocks.WorkFlow
                         {
                             var cb = CurrentPageReference;
                             cb.Parameters.AddOrReplace( "WorkflowId", _workflow.Id.ToString() );
+                            foreach ( var key in cb.QueryString.AllKeys.Where( k => !k.Equals( "Command", StringComparison.OrdinalIgnoreCase ) ) )
+                            {
+                                cb.Parameters.AddOrIgnore( key, cb.QueryString[key] );
+                            }
+                            cb.QueryString = new System.Collections.Specialized.NameValueCollection();
                             Response.Redirect( cb.BuildUrl(), false );
                             Context.ApplicationInstance.CompleteRequest();
                         }

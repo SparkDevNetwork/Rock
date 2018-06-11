@@ -75,9 +75,13 @@ namespace Rock.Jobs
                 lastProcessedDate = new DateTime(2000, 1, 1); // if first run use 1/1/2000
             }
 
-            context.Result = provider.DownloadCdr( lastProcessedDate );
+            bool downloadSuccessful = false;
+            context.Result = provider.DownloadCdr( out downloadSuccessful, lastProcessedDate );
 
-            Rock.Web.SystemSettings.SetValue( lastProcessedKey, RockDateTime.Now.ToString() );
+            if ( downloadSuccessful )
+            {
+                Rock.Web.SystemSettings.SetValue( lastProcessedKey, RockDateTime.Now.ToString() );
+            }
 
         }
 

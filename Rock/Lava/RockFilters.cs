@@ -89,6 +89,19 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string WithFallback( object input, string successText, string fallbackText )
         {
+            return WithFallback( input, successText, fallbackText, "prepend" );
+        }
+
+        /// <summary>
+        /// Withes the fallback.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="successText">The success text.</param>
+        /// <param name="fallbackText">The fallback text.</param>
+        /// <param name="appendOrder">The append order.</param>
+        /// <returns></returns>
+        public static string WithFallback( object input, string successText, string fallbackText, string appendOrder )
+        {
             if ( input == null )
             {
                 return fallbackText;
@@ -97,13 +110,20 @@ namespace Rock.Lava
             {
                 var inputString = input.ToString();
 
-                if (string.IsNullOrWhiteSpace( inputString ) )
+                if ( string.IsNullOrWhiteSpace( inputString ) )
                 {
                     return fallbackText;
                 }
                 else
                 {
-                    return inputString + successText;
+                    if ( appendOrder == "append" )
+                    {
+                        return successText + inputString;
+                    }
+                    else
+                    {
+                        return inputString + successText;
+                    }
                 }
             }
         }
@@ -122,6 +142,12 @@ namespace Rock.Lava
             }
 
             var inputString = input.ToString();
+
+            if (inputString.Length <= length )
+            {
+                return inputString;
+            }
+
             return inputString.Right( length );
         }
 
@@ -740,6 +766,21 @@ namespace Rock.Lava
             length = length > ( input.Length - start ) ? ( input.Length - start ) : length;
 
             return input.Substring(start, length);
+        }
+
+        /// <summary>
+        /// Decrypts an encrypted string
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string Decrypt( string input )
+        {
+            if ( input == null )
+            {
+                return input;
+            }
+
+            return Rock.Security.Encryption.DecryptString( input );
         }
 
         /// <summary>
@@ -1918,16 +1959,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static List<Person> Parents( DotLiquid.Context context, object input )
         {
-            Person person = null;
-
-            if ( input is int )
-            {
-                person = new PersonService( new RockContext() ).Get( (int)input );
-            }
-            else if ( input is Person )
-            {
-                person = (Person)input;
-            }
+            Person person = GetPerson( input );
 
             if ( person != null )
             {
@@ -1947,16 +1979,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static List<Person> Children( DotLiquid.Context context, object input )
         {
-            Person person = null;
-
-            if ( input is int )
-            {
-                person = new PersonService( new RockContext() ).Get( (int)input );
-            }
-            else if ( input is Person )
-            {
-                person = (Person)input;
-            }
+            Person person = GetPerson( input );
 
             if ( person != null )
             {
@@ -1978,16 +2001,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string Address( DotLiquid.Context context, object input, string addressType, string qualifier = "" )
         {
-            Person person = null;
-
-            if ( input is int )
-            {
-                person = new PersonService( new RockContext() ).Get( (int)input );
-            }
-            else if ( input is Person )
-            {
-                person = (Person)input;
-            }
+            Person person = GetPerson( input );
 
             if ( person != null )
             {
@@ -2141,16 +2155,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static Person Spouse( DotLiquid.Context context, object input )
         {
-            Person person = null;
-
-            if ( input is int )
-            {
-                person = new PersonService( new RockContext() ).Get( (int)input );
-            }
-            else if ( input is Person )
-            {
-                person = (Person)input;
-            }
+            Person person = GetPerson( input );
 
             if ( person == null )
             {
@@ -2167,16 +2172,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static Person HeadOfHousehold( DotLiquid.Context context, object input )
         {
-            Person person = null;
-
-            if ( input is int )
-            {
-                person = new PersonService( new RockContext() ).Get( (int)input );
-            }
-            else if ( input is Person )
-            {
-                person = (Person)input;
-            }
+            Person person = GetPerson( input );
 
             if ( person == null )
             {
@@ -2198,16 +2194,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string FamilySalutation( DotLiquid.Context context, object input, bool includeChildren = false, bool includeInactive = true, bool useFormalNames = false, string finalfinalSeparator = "&", string separator = "," )
         {
-            Person person = null;
-
-            if ( input is int )
-            {
-                person = new PersonService( new RockContext() ).Get( (int)input );
-            }
-            else if ( input is Person )
-            {
-                person = (Person)input;
-            }
+            Person person = GetPerson( input );
 
             if ( person == null )
             {
@@ -2227,16 +2214,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string PhoneNumber( DotLiquid.Context context, object input, string phoneType = "Home", bool countryCode = false )
         {
-            Person person = null;
-
-            if ( input is int )
-            {
-                person = new PersonService( new RockContext() ).Get( (int)input );
-            }
-            else if ( input is Person )
-            {
-                person = (Person)input;
-            }
+            Person person = GetPerson( input );
 
 
             string phoneNumber = null;
@@ -2777,6 +2755,11 @@ namespace Rock.Lava
         {
             if ( input != null )
             {
+                if ( input is int )
+                {
+                    return new PersonService( new RockContext() ).Get( ( int ) input );
+                }
+
                 var person = input as Person;
                 if ( person != null )
                 {
@@ -3378,9 +3361,21 @@ namespace Rock.Lava
 
             if ( page != null )
             {
+                // attempt to correct breadcrumbs
+                if ( page.BreadCrumbs != null && page.BreadCrumbs.Count != 0 )
+                {
+                    var lastBookMark = page.BreadCrumbs.Last();
+
+                    if ( lastBookMark != null && lastBookMark.Name == page.PageTitle )
+                    {
+                        lastBookMark.Name = input;
+                    }
+                }
+
                 page.BrowserTitle = input;
                 page.PageTitle = input;
-                page.Header.Title = input;
+                page.Title = input;
+                page.Header.Title = input;                
             }
 
             return null;
@@ -4026,7 +4021,7 @@ namespace Rock.Lava
             }
             else
             {
-                return filterNotes.OrderBy(n => n.CreatedDateTime).Take( count.Value ).ToList();
+                return filterNotes.Take( count.Value ).ToList();
             }
         }
 

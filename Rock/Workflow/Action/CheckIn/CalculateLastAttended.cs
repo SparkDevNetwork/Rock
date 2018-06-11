@@ -111,7 +111,9 @@ namespace Rock.Workflow.Action.CheckIn
                             // that the person checked into on that date (if they somehow checked into multiple group/locations during same schedule, 
                             // only consider the the most recent group/location per schedule
                             var previousCheckins = new List<CheckinInfo>();
-                            if ( person.LastCheckIn.HasValue && person.LastCheckIn.Value.CompareTo( preSelectCutoff  ) >= 0 )
+                            if ( person.LastCheckIn.HasValue &&
+                                 preSelectCutoff.CompareTo( RockDateTime.Today ) < 0 &&
+                                 person.LastCheckIn.Value.CompareTo( preSelectCutoff  ) >= 0 )
                             {
                                 foreach ( var item in personAttendance
                                     .Where( a => a.StartDateTime.Date == person.LastCheckIn.Value.Date )

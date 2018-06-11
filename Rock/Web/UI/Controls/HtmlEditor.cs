@@ -499,7 +499,21 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return ViewState["StartInCodeEditorMode"] as bool? ?? false;
+                bool startInCodeEditorMode = ViewState["StartInCodeEditorMode"] as bool? ?? false;
+
+                if ( !startInCodeEditorMode )
+                {
+                    EnsureChildControls();
+                    if ( _ceEditor.Text.HasLavaCommandFields() )
+                    {
+                        // if there are lava commands {% %} in the text, force code editor mode
+                        startInCodeEditorMode = true;
+                    }
+                }
+
+                ViewState["StartInCodeEditorMode"] = startInCodeEditorMode;
+
+                return startInCodeEditorMode;
             }
 
             set
@@ -580,6 +594,7 @@ namespace Rock.Web.UI.Controls
 
             set
             {
+                _ceEditor.Text = value;
                 base.Text = value;
             }
         }
@@ -625,8 +640,14 @@ namespace Rock.Web.UI.Controls
             {
                 if ( this.StartInCodeEditorMode )
                 {
-                    _ceEditor.Text = this.Text;
-                    this.Text = "";
+                    if ( _ceEditor.Text != this.Text )
+                    {
+                        _ceEditor.Text = this.Text;
+                    }
+
+                    // in the case of when StartInCodeEditorMode = true, we can set base.Text to string.Empty to help prevent bad html and/or javascript from messing up things
+                    // However, if StartInCodeEditorMode = false, we can't do this because the WYSIWIG editor needs to know the base.Text value
+                    base.Text = string.Empty;
                 }
 
                 RockControlHelper.RenderControl( this, writer );

@@ -25,7 +25,6 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Newtonsoft.Json;
-using Humanizer;
 
 using Rock;
 using Rock.Attribute;
@@ -60,7 +59,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [BooleanField( "Require Campus", "Determines if a campus is required.", true, "", 13 )]
     [BooleanField( "Marital Status Confirmation", "When Family group type, should user be asked to confirm saving an adult without a marital status?", true, "", 14 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS, "Adult Marital Status", "When Family group type, the default marital status for adults in the family.", false, false, "", "", 15 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS, "Child Marital Status", "When Famiy group type, the marital status to use for children in the family.", false, false, Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_SINGLE, "", 16 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS, "Child Marital Status", "When Family group type, the marital status to use for children in the family.", false, false, Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_SINGLE, "", 16 )]
     [CustomDropdownListField( "Address", "Should an address be required for the family?", "REQUIRE^Require an address,HOMELESS^Require an address unless family is homeless,NOTREQUIRED^Don't require", false, "NOTREQUIRED", "", 17 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE, "Location Type", "The type of location that address should use", false, false, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", 18 )]
     [BooleanField( "Show Cell Phone Number First", "Should the cell phone number be listed first before home phone number?", false, "", 19 )]
@@ -962,17 +961,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 }
 
                 groupMember.Person.TitleValueId = row.TitleValueId;
-                groupMember.Person.FirstName = row.FirstName.Humanize( LetterCasing.Title );
+                groupMember.Person.FirstName = row.FirstName.FixCase();
                 if ( this.GetAttributeValue( "ShowNickName" ).AsBoolean() && !string.IsNullOrEmpty( row.NickName ) )
                 {
-                    groupMember.Person.NickName = row.NickName;
+                    groupMember.Person.NickName = row.NickName.FixCase();
                 }
                 else
                 {
                     groupMember.Person.NickName = groupMember.Person.FirstName;
                 }
-                groupMember.Person.MiddleName = row.MiddleName.Humanize( LetterCasing.Title );
-                groupMember.Person.LastName = row.LastName.Humanize( LetterCasing.Title );
+                groupMember.Person.MiddleName = row.MiddleName.FixCase();
+                groupMember.Person.LastName = row.LastName.FixCase();
                 groupMember.Person.SuffixValueId = row.SuffixValueId;
                 groupMember.Person.Gender = row.Gender;
 

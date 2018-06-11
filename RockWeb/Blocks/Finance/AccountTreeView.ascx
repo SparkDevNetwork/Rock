@@ -8,6 +8,7 @@
         <asp:HiddenField ID="hfSelectedAccountId" runat="server" />
         <asp:HiddenField ID="hfPageRouteTemplate" runat="server" />
         <asp:HiddenField ID="hfDetailPageUrl" runat="server" />
+        <asp:HiddenField ID="hfUsePublicName" runat="server" />
 
         <div class="treeview js-accounttreeview">
             <div class="treeview-actions rollover-container" id="divTreeviewActions" runat="server">
@@ -31,6 +32,7 @@
 
             <div class="js-config-panel" style="display: none" id="pnlConfigPanel" runat="server">
                 <Rock:Toggle ID="tglHideInactiveAccounts" runat="server" OnText="Active" OffText="All" Checked="true" ButtonSizeCssClass="btn-xs" OnCheckedChanged="tglHideInactiveAccounts_CheckedChanged" Label="Show" />
+                <asp:LinkButton ID="lbOrderTopLevelAccounts" runat="server" CssClass="btn btn-xs" Text="Order Top-Level Accounts" OnClick="lbOrderTopLevelAccounts_Click" />
             </div>
 
             <div class="treeview-scroll scroll-container scroll-container-horizontal">
@@ -66,6 +68,8 @@
                 var scrollIndicator = scrollbCategory.find('.track');
                 <%=hfSelectedAccountId.ClientID%>IScroll = new IScroll(scrollContainer[0], {
                     mouseWheel: false,
+                    eventPassthrough: true,
+                    preventDefault: false,
                     scrollX: true,
                     scrollY: false,
                     indicators: {
@@ -135,7 +139,7 @@
                     })
                     .rockTree({
                         restUrl: '<%=ResolveUrl( "~/api/FinancialAccounts/GetChildren/" ) %>',
-                        restParams: '/'+ ($('#<%=hfexcludeInactiveGroups.ClientID%>').val() || false),
+                        restParams: '/' + ($('#<%=hfexcludeInactiveGroups.ClientID%>').val() || false) + "/" + ($('#<%=hfUsePublicName.ClientID%>').val() || false),
                         multiSelect: false,
                         selectedIds: $selectedId.val() ? $selectedId.val().split(',') : null,
                         expandedIds: $expandedIds.val() ? $expandedIds.val().split(',') : null

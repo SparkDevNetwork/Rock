@@ -358,20 +358,31 @@ namespace RockWeb.Blocks.Event
                     ddlCalendarItemOccurrence.DataSource = new EventItemOccurrenceService( rockContext )
                         .Queryable().AsNoTracking()
                         .Where( c => c.EventItemId == eventItemId.Value )
+                        .ToList()
                         .Select( c => new
                         {
-                            Id = c.Id,
-                            Name = c.Campus != null ? c.Campus.Name : "All Campuses",
+                            c.Id,
+                            c.NextStartDateTime,
+                            Campus = c.Campus != null ? c.Campus.Name : "All Campuses",
                             Order = c.CampusId.HasValue ? 1 : 0
                         } )
+                        .Select( c => new
+                        {
+                            c.Id,
+                            c.NextStartDateTime,
+                            c.Campus,
+                            Name = c.NextStartDateTime.HasValue ? string.Format( "{0} - {1}", c.Campus, c.NextStartDateTime.Value.ToShortDateTimeString() ) : c.Campus,
+                            c.Order
+                        } )
                         .OrderBy( c => c.Order )
-                        .ThenBy( c => c.Name )
+                        .ThenBy( c => c.Campus )
+                        .ThenBy( c => c.NextStartDateTime ?? DateTime.MinValue )
                         .ToList();
                     ddlCalendarItemOccurrence.DataBind();
 
-                    if ( ddlCalendarItem.Items.Count > 0 )
+                    if ( ddlCalendarItemOccurrence.Items.Count > 0 )
                     {
-                        ddlCalendarItem.SelectedIndex = 0;
+                        ddlCalendarItemOccurrence.SelectedIndex = 0;
                     }
                 }
             }

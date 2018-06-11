@@ -43,6 +43,7 @@ namespace Rock.Jobs
         /// </summary>
         public SendCommunications()
         {
+
         }
 
         /// <summary>

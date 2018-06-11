@@ -410,7 +410,8 @@ namespace RockWeb.Blocks.Cms
             btnDeleteBlock.ID = string.Format( "btnDeleteBlock_{0}", block.Id );
             btnDeleteBlock.CommandName = "BlockId";
             btnDeleteBlock.CommandArgument = block.Id.ToString();
-            btnDeleteBlock.CssClass = "btn btn-xs btn-danger fa fa-times";
+            btnDeleteBlock.CssClass = "btn btn-xs btn-danger";
+            btnDeleteBlock.Text = "<i class='fa fa-times'></i>";
             btnDeleteBlock.ToolTip = "Delete Block";
             btnDeleteBlock.Click += btnDeleteBlock_Click;
             btnDeleteBlock.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Block.FriendlyTypeName );

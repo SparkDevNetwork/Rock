@@ -359,7 +359,7 @@ namespace Rock.SystemGuid
         /// Inactive record status reason of No Activity 
         /// </summary>
         public const string PERSON_RECORD_STATUS_REASON_NO_ACTIVITY = "64014FE6-943D-4ACF-8014-FED9F9169AE8";
-
+        
         #endregion
 
         #region Person Record Type

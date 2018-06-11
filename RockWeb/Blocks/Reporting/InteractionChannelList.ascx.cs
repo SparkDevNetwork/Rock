@@ -29,6 +29,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Reporting
@@ -59,6 +60,8 @@ namespace RockWeb.Blocks.Reporting
     </a>
 {% endif %}" )]
 
+    [InteractionChannelsField( "Interaction Channels", "Select interaction channel to limit the display. No selection will show all.", false,  "", "", order: 3 )]
+    [ContextAware( typeof( Person ) )]
     public partial class InteractionChannelList : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -182,6 +185,19 @@ namespace RockWeb.Blocks.Reporting
                     channelQry = channelQry.Where( a => a.ChannelTypeMediumValueId == channelMediumValueId.Value );
                 }
 
+                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "InteractionChannels" ) ) )
+                {
+                    var selectedChannelIds = Array.ConvertAll( GetAttributeValue( "InteractionChannels" ).Split( ',' ), s => new Guid( s ) ).ToList();
+                    channelQry = channelQry.Where( a => selectedChannelIds.Contains( a.Guid ) );
+                }
+
+                var personId = GetPersonId();
+                if ( personId.HasValue )
+                {
+                    var interactionQry = new InteractionService( rockContext ).Queryable();
+                    channelQry = channelQry.Where( a => interactionQry.Any( b => b.PersonAlias.PersonId == personId.Value && b.InteractionComponent.ChannelId == a.Id ) );
+                }
+
                 // Parse the default template so that it does not need to be parsed multiple times
                 var defaultTemplate = Template.Parse( GetAttributeValue( "DefaultTemplate" ) );
                 var options = new Rock.Lava.CommonMergeFieldsOptions();
@@ -217,6 +233,35 @@ namespace RockWeb.Blocks.Reporting
                 rptChannel.DataSource = channelItems;
                 rptChannel.DataBind();
             }
+        }
+
+        /// <summary>
+        /// Get the person alias through query list or context.
+        /// </summary>
+        private int? GetPersonId()
+        {
+            int? personId = PageParameter( "PersonId" ).AsIntegerOrNull();
+
+
+            if ( !personId.HasValue )
+            {
+                var person = ContextEntity<Person>();
+                if ( person != null )
+                {
+                    personId = person.Id;
+                }
+            }
+
+			if ( !personId.HasValue )
+			{
+	            int? personAliasId = PageParameter( "PersonAliasId" ).AsIntegerOrNull();
+	            if ( personAliasId.HasValue )
+	            {
+	                personId = new PersonAliasService( new RockContext() ).GetPersonId( personAliasId.Value );
+	            }
+			}
+			
+            return personId;
         }
 
         #endregion

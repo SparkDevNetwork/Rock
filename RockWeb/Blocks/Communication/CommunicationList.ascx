@@ -7,6 +7,8 @@
 <asp:UpdatePanel ID="upFinancial" runat="server">
     <ContentTemplate>
 
+        <Rock:NotificationBox ID="nbBindError" runat="server" NotificationBoxType="Warning" />
+
         <div class="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-comments-o"></i> Communication List</h1>

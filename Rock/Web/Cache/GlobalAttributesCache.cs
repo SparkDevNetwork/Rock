@@ -473,20 +473,12 @@ namespace Rock.Web.Cache
         /// <value>
         /// Returns current year if transition month/day has not passed, otherwise will return next year
         /// </value>
+        [Obsolete("Moved to RockDateTime.CurrentGraduationYear")]
         public int CurrentGraduationYear
         {
             get
             {
-                var formattedTransitionDate = GetValue( "GradeTransitionDate" ) + "/" + RockDateTime.Today.Year;
-                DateTime transitionDate;
-
-                // Check Date Validity
-                if ( !DateTime.TryParseExact( formattedTransitionDate, new[] { "MM/dd/yyyy", "M/dd/yyyy", "M/d/yyyy", "MM/d/yyyy" }, CultureInfo.InvariantCulture,
-                    DateTimeStyles.AllowWhiteSpaces, out transitionDate ) )
-                {
-                    transitionDate = new DateTime( RockDateTime.Today.Year, 6, 1 );
-                }
-                return RockDateTime.Now.Date < transitionDate ? transitionDate.Year : transitionDate.Year + 1;
+                return RockDateTime.CurrentGraduationYear;
             }
         }
         /// <summary>

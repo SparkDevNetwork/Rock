@@ -224,7 +224,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
-        public bool MenuDisplayChildPages { get; set; }
+        public bool MenuDisplayChildPages { get; set; } = true;
 
         /// <summary>
         /// Gets or sets a value indicating whether the Page Name is displayed in the breadcrumb.

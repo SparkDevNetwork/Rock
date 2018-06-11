@@ -189,7 +189,9 @@ namespace RockWeb.Blocks.Event
             if ( cpCampusPicker.SelectedCampusId.HasValue )
             {
                 int campusId = cpCampusPicker.SelectedCampusId.Value;
-                qry = qry.Where( a => a.CampusId == campusId );
+
+                // If an EventItemOccurrence's CampusId is null, then the occurrence is an 'All Campuses' event occurrence, so include those
+                qry = qry.Where( a => a.CampusId == null || a.CampusId == campusId );
             }
 
             // retrieve occurrences into a List so we can do additional filtering against the Calendar data

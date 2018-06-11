@@ -302,8 +302,16 @@ namespace RockWeb.Blocks.Administration
             {
                 page = new Rock.Model.Page { Id = 0, IsSystem = false, ParentPageId = parentPageId };
 
-                // fetch the ParentCategory (if there is one) so that security can check it
-                page.ParentPage = pageService.Get( parentPageId ?? 0 );
+                // fetch the ParentPage (if there is one) so that security can check it, and also default some stuff based on the ParentPage
+                if ( parentPageId.HasValue )
+                {
+                    page.ParentPage = pageService.Get( parentPageId.Value );
+                    if ( page.ParentPage != null )
+                    {
+                        page.AllowIndexing = page.ParentPage.AllowIndexing;
+                        page.LayoutId = page.ParentPage.LayoutId;
+                    }
+                }
             }
 
             hfPageId.Value = page.Id.ToString();
@@ -625,6 +633,16 @@ namespace RockWeb.Blocks.Administration
                 if ( parentPageId != 0 )
                 {
                     page.ParentPageId = parentPageId;
+
+                    if ( page.Id == 0 )
+                    {
+                        // newly added page, make sure the Order is correct
+                        Rock.Model.Page lastPage = pageService.GetByParentPageId( parentPageId ).OrderByDescending( b => b.Order ).FirstOrDefault();
+                        if ( lastPage != null )
+                        {
+                            page.Order = lastPage.Order + 1;
+                        }
+                    }
                 }
                 else
                 {

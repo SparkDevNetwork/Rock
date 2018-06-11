@@ -144,6 +144,7 @@ namespace Rock.Model
                 .Queryable()
                 .Where( a => a.Status == CommunicationRecipientStatus.Pending );
 
+
             return Queryable()
                 .Where( c =>
                     ( c.Status == CommunicationStatus.Approved || ( includePending && c.Status == CommunicationStatus.PendingApproval ) ) &&

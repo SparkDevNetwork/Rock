@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Rock.Apps.StatementGenerator</RootNamespace>
     <AssemblyName>StatementGenerator</AssemblyName>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
@@ -98,7 +98,7 @@
     </Compile>
     <Compile Include="ReportOptions.cs" />
     <Compile Include="RockConfig.cs" />
-    <Compile Include="RockExtensions\ObjectExtensions.cs" />
+    <Compile Include="RockExtensions\EnumExtensions.cs" />
     <Compile Include="RockExtensions\StringExtensions.cs" />
     <Compile Include="SelectPledgeAccountsPage.xaml.cs">
       <DependentUpon>SelectPledgeAccountsPage.xaml</DependentUpon>
@@ -213,6 +213,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\DotLiquid\DotLiquid.csproj">
+      <Project>{00edcb8d-ef33-459c-ad62-02876bd24dff}</Project>
+      <Name>DotLiquid</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\Rock.Client\Rock.Client.csproj">
       <Project>{6ea64bb9-9740-453a-939b-df43ad9ac164}</Project>
       <Name>Rock.Client</Name>
@@ -238,6 +242,7 @@
   <ItemGroup>
     <Resource Include="resources\statement-printer.ico" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.Groups
 
         private RockContext _rockContext = null;
         private Group _group = null;
-        private bool _canEdit = false;
+        private bool _canManageMembers = false;
         private bool _allowAdd = false;
         private bool _allowCampusFilter = false;
         private ScheduleOccurrence _occurrence = null;
@@ -84,10 +84,10 @@ namespace RockWeb.Blocks.Groups
                 .Queryable( "GroupType,Schedule" ).AsNoTracking()
                 .FirstOrDefault( g => g.Id == groupId );
 
-            if ( _group != null && _group.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+            if ( _group != null && ( _group.IsAuthorized( Authorization.MANAGE_MEMBERS, CurrentPerson ) || _group.IsAuthorized( Authorization.EDIT, CurrentPerson ) ) )
             {
                 lHeading.Text = _group.Name + " Attendance";
-                _canEdit = true;
+                _canManageMembers = true;
             }
 
             dpOccurrenceDate.AllowFutureDateSelection = !GetAttributeValue( "RestrictFutureOccurrenceDate").AsBoolean();
@@ -115,9 +115,9 @@ namespace RockWeb.Blocks.Groups
 
             if ( !Page.IsPostBack )
             {
-                pnlDetails.Visible = _canEdit;
+                pnlDetails.Visible = _canManageMembers;
 
-                if ( _canEdit )
+                if ( _canManageMembers )
                 {
                     if ( _allowCampusFilter )
                     {
@@ -392,6 +392,7 @@ namespace RockWeb.Blocks.Groups
 
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
             mergeFields.Add( "Group", this._group );
+            mergeFields.Add("AttendanceDate", this._occurrence.Date);
 
             var mergeTemplate = new MergeTemplateService( rockContext ).Get( this.GetAttributeValue( "AttendanceRosterTemplate" ).AsGuid() );
 

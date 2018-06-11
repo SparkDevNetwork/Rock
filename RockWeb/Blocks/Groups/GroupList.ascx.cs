@@ -187,6 +187,17 @@ namespace RockWeb.Blocks.Groups
                 {
                     e.Row.AddCssClass( "is-inactive" );
                 }
+
+                if ( groupInfo.IsSynced )
+                {
+                    var deleteField = gGroups.ColumnsOfType<DeleteField>().FirstOrDefault();
+                    if ( deleteField != null && deleteField.Visible )
+                    {
+                        TableCell cell = e.Row.Cells[gGroups.Columns.IndexOf( deleteField )];
+                        cell.Text = "<span class=\"btn btn-info btn-sm disabled\" ><i class=\"fa fa-exchange\"></i></span>";
+                        cell.ToolTip = "Managed by group sync";
+                    }
+                }
             }
         }
 
@@ -328,6 +339,12 @@ namespace RockWeb.Blocks.Groups
                     RegistrationRegistrantService registrantService = new RegistrationRegistrantService( rockContext );
                     GroupMember groupMember = group.Members.SingleOrDefault( a => a.PersonId == personContext.Id );
 
+                    if ( !( group.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) || group.IsAuthorized( Authorization.MANAGE_MEMBERS, this.CurrentPerson ) ) )
+                    {
+                        mdGridWarning.Show( "You are not authorized to delete members from this group", ModalAlertType.Information );
+                        return;
+                    }
+
                     if ( !groupMemberService.CanDelete( groupMember, out errorMessage ) )
                     {
                         mdGridWarning.Show( errorMessage, ModalAlertType.Information );
@@ -410,7 +427,8 @@ namespace RockWeb.Blocks.Groups
             var group = groupService.Get( ddlGroup.SelectedValue.AsInteger() );
             if ( group == null )
             {
-                nbMessage.Title = "Please select a Group";
+                nbModalDetailsMessage.Title = "Please select a Group";
+                nbModalDetailsMessage.Visible = true;
                 return;
             }
 
@@ -419,7 +437,8 @@ namespace RockWeb.Blocks.Groups
 
             if ( groupMemberService.Queryable().Any( a => a.PersonId == personContext.Id && a.GroupId == group.Id ) )
             {
-                nbMessage.Title = "Member already added to selected Group";
+                nbModalDetailsMessage.Title = "Member already added to selected Group";
+                nbModalDetailsMessage.Visible = true;
                 return;
             }
 
@@ -427,7 +446,16 @@ namespace RockWeb.Blocks.Groups
 
             if ( roleId == null )
             {
-                nbMessage.Title = "No default role for particular group is assigned";
+                nbModalDetailsMessage.Title = "No default role for particular group is assigned";
+                nbModalDetailsMessage.Visible = true;
+                return;
+            }
+
+            if ( !( group.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) || group.IsAuthorized( Authorization.MANAGE_MEMBERS, this.CurrentPerson ) ) )
+            {
+                // shouldn't happen because GroupList is limited to EDIT and MANAGE_MEMBERs, but just in case
+                nbModalDetailsMessage.Title = "You are not authorized to add members to this group";
+                nbModalDetailsMessage.Visible = true;
                 return;
             }
 
@@ -598,21 +626,22 @@ namespace RockWeb.Blocks.Groups
                         .AsEnumerable()
                         .Where( gm => gm.Group.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
                         .Select( m => new GroupListRowInfo
-                        {
-                            Id = m.Group.Id,
-                            Path = string.Empty,
-                            Name = m.Group.Name,
-                            GroupTypeName = m.Group.GroupType.Name,
-                            GroupOrder = m.Group.Order,
-                            GroupTypeOrder = m.Group.GroupType.Order,
-                            Description = m.Group.Description,
-                            IsSystem = m.Group.IsSystem,
-                            GroupRole = m.GroupMember.GroupRole.Name,
-                            DateAdded = m.GroupMember.DateTimeAdded ?? m.GroupMember.CreatedDateTime,
-                            IsActive = m.Group.IsActive && ( m.GroupMember.GroupMemberStatus == GroupMemberStatus.Active ),
-                            IsActiveOrder = ( m.Group.IsActive && ( m.GroupMember.GroupMemberStatus == GroupMemberStatus.Active ) ? 1 : 2 ),
-                            MemberCount = 0
-                        } )
+                            {
+                                Id = m.Group.Id,
+                                Path = string.Empty,
+                                Name = m.Group.Name,
+                                GroupTypeName = m.Group.GroupType.Name,
+                                GroupOrder = m.Group.Order,
+                                GroupTypeOrder = m.Group.GroupType.Order,
+                                Description = m.Group.Description,
+                                IsSystem = m.Group.IsSystem,
+                                GroupRole = m.GroupMember.GroupRole.Name,
+                                DateAdded = m.GroupMember.DateTimeAdded ?? m.GroupMember.CreatedDateTime,
+                                IsActive = m.Group.IsActive && ( m.GroupMember.GroupMemberStatus == GroupMemberStatus.Active ),
+                                IsActiveOrder = ( m.Group.IsActive && ( m.GroupMember.GroupMemberStatus == GroupMemberStatus.Active ) ? 1 : 2 ),
+                                IsSynced = m.Group.SyncDataViewId.HasValue,
+                                MemberCount = 0
+                            } )
                         .AsQueryable()
                         .Sort( sortProperty )
                         .ToList();
@@ -655,6 +684,7 @@ namespace RockWeb.Blocks.Groups
                         IsActiveOrder = g.IsActive ? 1 : 2,
                         GroupRole = string.Empty,
                         DateAdded = DateTime.MinValue,
+                        IsSynced = g.SyncDataViewId.HasValue,
                         MemberCount = g.Members.Count()
                     } )
                     .AsQueryable()
@@ -789,19 +819,17 @@ namespace RockWeb.Blocks.Groups
 
             #endregion
 
-            ddlGroup.DataSource = qryGroups
-                .Select( g => new
-                {
-                    Id = g.Id,
-                    Name = g.Name
-                } ).OrderBy( a => a.Name ).ToList();
+            // only show groups that the current person is authorized to add members to
+            var groupList = qryGroups.OrderBy( a => a.Name ).ToList()
+                .Where( a => a.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) || a.IsAuthorized( Rock.Security.Authorization.MANAGE_MEMBERS, this.CurrentPerson ) ).ToList();
+
+            ddlGroup.DataSource = groupList;
             ddlGroup.DataBind();
         }
 
         #endregion
 
-        [DotLiquid.LiquidType( "Id", "Path", "Name", "GroupTypeName", "GroupOrder", "GroupTypeOrder", "Description", "IsSystem", "GroupRole", "DateAdded", "IsActive", "IsActiveOrder", "MemberCount"  )]
-        private class GroupListRowInfo
+        private class GroupListRowInfo: DotLiquid.Drop
         {
             public int Id { get; set; }
             public string Path { get; set; }
@@ -815,6 +843,7 @@ namespace RockWeb.Blocks.Groups
             public DateTime? DateAdded { get; set; }
             public bool IsActive { get; set; }
             public int IsActiveOrder { get; set; }
+            public bool IsSynced { get; set; }
             public int MemberCount { get; set; }
         }
     }

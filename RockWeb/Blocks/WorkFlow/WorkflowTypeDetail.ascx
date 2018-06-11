@@ -212,7 +212,8 @@
                     },
                     update: function (event, ui) {
                         {
-                            __doPostBack('<%=upDetail.ClientID %>', 're-order-activity:' + ui.item.attr('data-key') + ';' + ui.item.index());
+                            var postbackArg = 're-order-activity:' + ui.item.attr('data-key') + ';' + ui.item.index();
+                            window.location = "javascript:__doPostBack('<%=upDetail.ClientID %>', '" +  postbackArg + "')";
                         }
                     }
                 });
@@ -230,7 +231,8 @@
                     },
                     update: function (event, ui) {
                         {
-                            __doPostBack('<%=upDetail.ClientID %>', 're-order-action:' + ui.item.attr('data-key') + ';' + ui.item.index());
+                            var postbackArg = 're-order-action:' + ui.item.attr('data-key') + ';' + ui.item.index();
+                            window.location = "javascript:__doPostBack('<%=upDetail.ClientID %>', '" +  postbackArg + "')";
                         }
                     }
                 });
@@ -248,7 +250,8 @@
                     },
                     update: function (event, ui) {
                         {
-                            __doPostBack('<%=upDetail.ClientID %>', 're-order-formfield:' + ui.item.attr('data-key') + ';' + ui.item.index());
+                            var postbackArg = 're-order-formfield:' + ui.item.attr('data-key') + ';' + ui.item.index();
+                            window.location = "javascript:__doPostBack('<%=upDetail.ClientID %>', '" +  postbackArg + "')";
                         }
                     }
                 });

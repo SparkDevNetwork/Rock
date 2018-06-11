@@ -883,7 +883,9 @@ namespace RockWeb.Blocks.Groups
             //    GroupTypeRole. If that role exists and has a MaxCount, check that we haven't met or exceeded it yet.
             if ( GetAttributeValue( "HideOvercapacityGroups" ).AsBoolean() )
             {
-                groupQry = groupQry.Where( g => g.GroupCapacity == null || g.Members.Count() < g.GroupCapacity );
+                groupQry = groupQry.Where(
+                    g => g.GroupCapacity == null ||
+                    g.Members.Where( m => m.GroupMemberStatus == GroupMemberStatus.Active ).Count() < g.GroupCapacity );
 
                 groupQry = groupQry.Where( g =>
                      g.GroupType == null ||
@@ -901,20 +903,29 @@ namespace RockWeb.Blocks.Groups
                 foreach ( var attribute in AttributeFilters )
                 {
                     var filterControl = phFilterControls.FindControl( "filter_" + attribute.Id.ToString() );
-                    if ( filterControl != null )
+                    if ( filterControl == null ) continue;
+
+                    var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
+                    var filterIsDefault = attribute.FieldType.Field.IsEqualToValue( filterValues, attribute.DefaultValue );
+                    var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
+                    if ( expression == null ) continue;
+
+                    var attributeValues = attributeValueService
+                        .Queryable()
+                        .Where( v => v.Attribute.Id == attribute.Id );
+
+                    var filteredAttributeValues = attributeValues.Where( parameterExpression, expression, null );
+
+                    if ( filterIsDefault )
                     {
-                        var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
-                        var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
-                        if ( expression != null )
-                        {
-                            var attributeValues = attributeValueService
-                                .Queryable()
-                                .Where( v => v.Attribute.Id == attribute.Id );
-
-                            attributeValues = attributeValues.Where( parameterExpression, expression, null );
-
-                            groupQry = groupQry.Where( w => attributeValues.Select( v => v.EntityId ).Contains( w.Id ) );
-                        }
+                        groupQry = groupQry.Where( w =>
+                             !attributeValues.Any( v => v.EntityId == w.Id ) ||
+                             filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Id ) );
+                    }
+                    else
+                    {
+                        groupQry = groupQry.Where( w =>
+                            filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Id ) );
                     }
                 }
             }

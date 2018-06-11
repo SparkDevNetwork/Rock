@@ -21,6 +21,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Debug\Rock.StatementGenerator.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -29,6 +30,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\Rock.StatementGenerator.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
@@ -60,6 +62,7 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Migrations\002_StatementGeneratorUpdateTemplates.cs" />
     <Compile Include="Migrations\001_StatementGenerator.cs" />
     <Compile Include="Migrations\MigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -76,6 +79,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="Migrations\002_StatementGeneratorUpdateTemplates_Alternate1.lava">
+      <DependentUpon>002_StatementGeneratorUpdateTemplates.cs</DependentUpon>
+    </None>
+    <None Include="Migrations\002_StatementGeneratorUpdateTemplates_Alternate2.lava">
+      <DependentUpon>002_StatementGeneratorUpdateTemplates.cs</DependentUpon>
+    </None>
     <None Include="Migrations\001_StatementGenerator_Alternate1.lava">
       <DependentUpon>001_StatementGenerator.cs</DependentUpon>
     </None>
@@ -84,6 +93,9 @@
     </None>
     <None Include="Migrations\001_StatementGenerator_RockDefault.lava">
       <DependentUpon>001_StatementGenerator.cs</DependentUpon>
+    </None>
+    <None Include="Migrations\002_StatementGeneratorUpdateTemplates_RockDefault.lava">
+      <DependentUpon>002_StatementGeneratorUpdateTemplates.cs</DependentUpon>
     </None>
     <None Include="packages.config" />
   </ItemGroup>

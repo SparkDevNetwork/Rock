@@ -160,6 +160,13 @@ namespace RockWeb
 
             string physicalRootFolder = context.Request.MapPath( rootFolder );
             string physicalContentFolderName = Path.Combine( physicalRootFolder, relativeFolderPath.TrimStart( new char[] { '/', '\\' } ) );
+
+            // Make sure the physicalContentFolderName doesn't have any special directory navigation indicators
+            if ( physicalContentFolderName != System.IO.Path.GetFullPath( physicalContentFolderName ) )
+            {
+                throw new Rock.Web.FileUploadException( "Unable to upload file", System.Net.HttpStatusCode.BadRequest );
+            }
+
             string physicalFilePath = Path.Combine( physicalContentFolderName, filename );
             var fileContent = GetFileContentStream( context, uploadedFile );
 

@@ -187,16 +187,36 @@ namespace Rock.Web.UI.Controls
             dateFormat = dateFormat.Replace( "M", "m" ).Replace( "m", "mm" ).Replace( "mmmm", "mm" );
             dateFormat = dateFormat.Replace( "d", "dd" ).Replace( "dddd", "dd" );
 
-            var script = string.Format( @"Rock.controls.datePicker.initialize({{ id: '{0}', startView: {1}, format: '{2}', todayHighlight: {3}, forceParse: {4}, {5} {6} }});", 
+            var script = string.Format( @"Rock.controls.datePicker.initialize({{ id: '{0}', startView: {1}, showOnFocus: {2}, format: '{3}', todayHighlight: {4}, forceParse: {5}, {6} {7} }});", 
                 this.ClientID,                                  // {0}
                 this.StartView.ConvertToInt(),                  // {1}
-                dateFormat,                                     // {2}
-                this.HighlightToday.ToString().ToLower(),       // {3}
-                this.ForceParse.ToString().ToLower(),           // {4}
-                ( this.AllowFutureDateSelection ) ? "" : "endDate: '" + RockDateTime.Today.ToString("o") + "',",  // {5}
-                ( this.AllowPastDateSelection ) ? "" : "startDate: '" + RockDateTime.Today.ToString("o") + "',"  // {6}
+                this.ShowOnFocus.ToString().ToLower(),          // {2}
+                dateFormat,                                     // {3}
+                this.HighlightToday.ToString().ToLower(),       // {4}
+                this.ForceParse.ToString().ToLower(),           // {5}
+                ( this.AllowFutureDateSelection ) ? "" : "endDate: '" + RockDateTime.Today.ToString("o") + "',",  // {6}
+                ( this.AllowPastDateSelection ) ? "" : "startDate: '" + RockDateTime.Today.ToString("o") + "',"  // {7}
             );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "date_picker-" + this.ClientID, script, true );
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating if picker selections (popup) should be shown as soon as control gets focus
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show on focus]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowOnFocus
+        {
+            get
+            {
+                return ViewState["ShowOnFocus"] as bool? ?? true;
+            }
+
+            set
+            {
+                ViewState["ShowOnFocus"] = value;
+            }
         }
 
         /// <summary>

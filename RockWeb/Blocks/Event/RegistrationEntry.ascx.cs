@@ -529,15 +529,21 @@ namespace RockWeb.Blocks.Event
             {
                 // make sure that a URL with navigation history parameters is really from a browser navigation and not a Link or Refresh
                 hfAllowNavigate.Value = true.ToTrueFalse();
-                if ( CurrentPanel != 1 )
+                try
                 {
-                    this.AddHistory( "event", string.Format( "{0},0,0", CurrentPanel ) );
+                    if ( CurrentPanel != 1 )
+                    {
+                        this.AddHistory( "event", string.Format( "{0},0,0", CurrentPanel ) );
+                    }
+                    else
+                    {
+                        this.AddHistory( "event", string.Format( "1,{0},{1}", CurrentRegistrantIndex, CurrentFormIndex ) );
+                    }
                 }
-                else
+                catch ( System.InvalidOperationException )
                 {
-                    this.AddHistory( "event", string.Format( "1,{0},{1}", CurrentRegistrantIndex, CurrentFormIndex ) );
+                    // Swallow this exception 
                 }
-
             }
 
             base.OnPreRender( e );
@@ -1889,16 +1895,7 @@ namespace RockWeb.Blocks.Event
                         var person = personService.Get( CurrentPerson.Id );
                         if ( person != null )
                         {
-                            var personChanges = new List<string>();
-                            History.EvaluateChange( personChanges, "Email", person.Email, registration.ConfirmationEmail );
                             person.Email = registration.ConfirmationEmail;
-
-                            HistoryService.SaveChanges(
-                                new RockContext(),
-                                typeof( Person ),
-                                Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                                person.Id,
-                                personChanges, true, CurrentPersonAliasId );
                         }
                     }
                 }
@@ -1996,7 +1993,6 @@ namespace RockWeb.Blocks.Event
                 {
                     var registrantChanges = new List<string>();
                     var personChanges = new List<string>();
-                    var familyChanges = new List<string>();
 
                     RegistrationRegistrant registrant = null;
                     Person person = null;
@@ -2189,6 +2185,14 @@ namespace RockWeb.Blocks.Event
                                 case RegistrationPersonFieldType.WorkPhone:
                                     {
                                         SavePhone( fieldValue, person, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid(), personChanges );
+                                        break;
+                                    }
+
+                                case RegistrationPersonFieldType.ConnectionStatus:
+                                    {
+                                        var newConnectionStatusId = fieldValue.ToString().AsIntegerOrNull() ?? dvcConnectionStatus.Id;
+                                        History.EvaluateChange( personChanges, "Connection Status", DefinedValueCache.GetName( person.ConnectionStatusValueId ), DefinedValueCache.GetName( newConnectionStatusId ) );
+                                        person.ConnectionStatusValueId = newConnectionStatusId;
                                         break;
                                     }
                             }
@@ -3616,7 +3620,7 @@ namespace RockWeb.Blocks.Event
         var qryString = this.contentWindow.location.search;
         if ( qryString && qryString != '' && qryString.startsWith('?token-id') ) {{ 
             $('#{8}').val(qryString);
-            {9};
+            window.location = ""javascript:{9}"";
         }} else {{
             if ( $('#{14}').val() == 'true' ) {{
                 $('#updateProgress').show();
@@ -3636,7 +3640,7 @@ namespace RockWeb.Blocks.Event
             var qryString = this.contentWindow.location.search;
             if ( qryString && qryString != '' && qryString.startsWith('?document_id') ) {{ 
                 $('#{19}').val(qryString);
-                {20};
+                window.location = ""javascript:{20}"";
             }}
         }}
         catch (e) {{
@@ -3839,7 +3843,7 @@ namespace RockWeb.Blocks.Event
                 // If the current form, is the last one, add any fee controls
                 if ( FormCount - 1 == CurrentFormIndex && !registrant.OnWaitList )
                 {
-                    foreach ( var fee in RegistrationTemplate.Fees )
+                    foreach ( var fee in RegistrationTemplate.Fees.OrderBy( o => o .Order ) )
                     {
                         var feeValues = new List<FeeInfo>();
                         if ( registrant != null && registrant.FeeValues.ContainsKey( fee.Id ) )
@@ -4119,6 +4123,25 @@ namespace RockWeb.Blocks.Event
                             }
                         }
 
+                        break;
+                    }
+
+                case RegistrationPersonFieldType.ConnectionStatus:
+                    {
+                        var ddlConnectionStatus = new RockDropDownList();
+                        ddlConnectionStatus.ID = "ddlConnectionStatus";
+                        ddlConnectionStatus.Label = "Connection Status";
+                        ddlConnectionStatus.Required = field.IsRequired;
+                        ddlConnectionStatus.ValidationGroup = BlockValidationGroup;
+                        ddlConnectionStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ), true );
+
+                        phRegistrantControls.Controls.Add( ddlConnectionStatus );
+
+                        if ( setValue && fieldValue != null )
+                        {
+                            var value = fieldValue.ToString().AsInteger();
+                            ddlConnectionStatus.SetValue( value );
+                        }
                         break;
                     }
             }
@@ -4441,6 +4464,12 @@ namespace RockWeb.Blocks.Event
                             return phoneNumber;
                         }
                         break;
+                    }
+
+                case RegistrationPersonFieldType.ConnectionStatus:
+                    {
+                        var ddlConnectionStatus = phRegistrantControls.FindControl( "ddlConnectionStatus" ) as RockDropDownList;
+                        return ddlConnectionStatus != null ? ddlConnectionStatus.SelectedValueAsInt() : null;
                     }
             }
 

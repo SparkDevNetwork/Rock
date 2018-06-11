@@ -659,7 +659,7 @@
                 var locationId = $('#<%=lpLocation.ClientID%> .js-item-id-value').val();
                 var locationName = $('#<%=lpLocation.ClientID%> .js-item-name-value').val();
                 $('#<%=hfLocationId.ClientID%>').val(locationId);
-                __doPostBack('<%=upSaveLocation.ClientID%>');
+                window.location = "javascript:__doPostBack('<%=upSaveLocation.ClientID%>')";
 
                 var map = $('#map_canvas').data().googleMap;
 
