@@ -62,7 +62,7 @@ namespace Rock.Web.UI.Controls
             {
                 // An input type of Number (or currency) will not render the value correctly if it contains a comma 
                 // ( or any other character besides numbers and decimals), so strip those characters out first
-                base.Text = value == null ? string.Empty : System.Text.RegularExpressions.Regex.Replace( value, @"[^0-9.]", "" );
+                base.Text = value == null ? string.Empty : System.Text.RegularExpressions.Regex.Replace( value, @"[^-0-9.]", "" );
             }
         }
 
