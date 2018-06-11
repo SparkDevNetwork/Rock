@@ -171,7 +171,8 @@ namespace Rock.Utility
                 .Replace( " ", "" )
                 .Replace( Environment.NewLine, "" )
                 .Replace( "\x0A", "" )
-                .ReplaceSpecialCharacters( "_" );
+                .ReplaceSpecialCharacters( "_" )
+                .TrimEnd( '_' );
 
             // First character cannot be a number but other ones can.
             if ( !char.IsLetter( tableTitle[0] ) )
