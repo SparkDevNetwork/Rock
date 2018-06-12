@@ -807,14 +807,26 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             tbGivingEnvelopeNumber.Text = ( (maxEnvelopeNumber ?? 0) + 1 ).ToString();
         }
 
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlMaritalStatus control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlMaritalStatus_SelectedIndexChanged( object sender, EventArgs e )
         {
             ShowAnniversaryDate();
         }
 
+        /// <summary>
+        /// Shows or hides the Anniversary DatePicker according to settings and business rules.
+        /// </summary>
         protected void ShowAnniversaryDate()
         {
-            if ( ddlMaritalStatus.SelectedValueAsInt() == CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED ).Id )
+            if ( GetAttributeValue( "HideAnniversaryDate" ).AsBoolean() == false)
+            {
+                dpAnniversaryDate.Visible = false;
+            }
+            else if ( ddlMaritalStatus.SelectedValueAsInt() == CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED ).Id )
             {
                 dpAnniversaryDate.Visible = true;
             }
