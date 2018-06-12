@@ -202,7 +202,7 @@ Guid - ContentChannelItem Guid
             this.SetAttributeValue( "SetPageTitle", cbSetPageTitle.Checked.ToString() );
             this.SetAttributeValue( "LogInteractions", cbLogInteractions.Checked.ToString() );
             this.SetAttributeValue( "WriteInteractionOnlyIfIndividualLoggedIn", cbWriteInteractionOnlyIfIndividualLoggedIn.Checked.ToString() );
-            int? selectedWorkflowTypeId = wtpWorkflowType.SelectedValue.AsIntegerOrNull();
+            int? selectedWorkflowTypeId = wtpWorkflowType.SelectedValueAsId();
             Guid? selectedWorkflowTypeGuid = null;
             if ( selectedWorkflowTypeId.HasValue )
             {
@@ -412,7 +412,15 @@ Guid - ContentChannelItem Guid
             }
             else
             {
-                contentChannelItemKey = this.PageParameters().Select( a => a.Value.ToString() ).FirstOrDefault();
+                if ( Request.QueryString.HasKeys() )
+                {
+                    contentChannelItemKey = this.PageParameter( Request.QueryString.Keys[0] );
+                }
+                else
+                {
+                    contentChannelItemKey = this.PageParameters().Select( a => a.Value.ToString() ).FirstOrDefault();
+                }
+                
             }
 
             return contentChannelItemKey;
