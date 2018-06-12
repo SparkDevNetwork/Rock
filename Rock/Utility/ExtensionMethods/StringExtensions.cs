@@ -164,6 +164,37 @@ namespace Rock
         }
 
         /// <summary>
+        /// Removes invalid, reserved, and unreccommended characters from strings that will be used in URLs.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static string RemoveInvalidReservedUrlChars( this string str )
+        {
+            return str.Replace( " ", "" )
+                .Replace( ";", "" )
+                .Replace( "/", "" )
+                .Replace( "?", "" )
+                .Replace( ":", "" )
+                .Replace( "@", "" )
+                .Replace( "=", "" )
+                .Replace( "&", "" )
+                .Replace( "<", "" )
+                .Replace( ">", "" )
+                .Replace( "#", "" )
+                .Replace( "%", "" )
+                .Replace( "\"", "" )
+                .Replace( "{", "" )
+                .Replace( "}", "" )
+                .Replace( "|", "" )
+                .Replace( "\\", "" )
+                .Replace( "^", "" )
+                .Replace( "[", "" )
+                .Replace( "]", "" )
+                .Replace( "`", "" )
+                .Replace( "'", "" );
+        }
+
+        /// <summary>
         /// Makes the Int64 hash code from the provided string.
         /// </summary>
         /// <param name="str">The string.</param>
