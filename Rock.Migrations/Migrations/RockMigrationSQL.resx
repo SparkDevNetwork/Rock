@@ -763,4 +763,7 @@
   <data name="_201806081810282_LandingPage" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201806081810282_landingpage.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
+  <data name="_201806111950515_ContentChannelViewDetail" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201806111950515_contentchannelviewdetail.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
 </root>
