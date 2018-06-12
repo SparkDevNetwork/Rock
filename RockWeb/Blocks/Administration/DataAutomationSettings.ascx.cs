@@ -58,6 +58,10 @@ namespace RockWeb.Blocks.Administration
 
         private MoveAdultChildren _adultChildrenSettings = new MoveAdultChildren();
 
+        private UpdatePersonConnectionStatus _updatePersonConnectionStatus = new UpdatePersonConnectionStatus();
+
+        private UpdateFamilyStatus _updateFamilyStatus = new UpdateFamilyStatus();
+
         private List<InteractionItem> _interactionChannelTypes = new List<InteractionItem>();
 
         private List<CacheCampus> _campuses = new List<CacheCampus>();
@@ -97,7 +101,7 @@ namespace RockWeb.Blocks.Administration
             }
             else
             {
-                GetRepeaterData();
+                GetIgnoreCampusChangesRepeaterData();
             }
         }
 
@@ -139,16 +143,16 @@ namespace RockWeb.Blocks.Administration
             int newId = _ignoreCampusChangeRows.Max( a => a.Id ) + 1;
             _ignoreCampusChangeRows.Add( new IgnoreCampusChangeRow { Id = newId } );
 
-            rIgnoreCampusChanges.DataSource = _ignoreCampusChangeRows;
-            rIgnoreCampusChanges.DataBind();
+            rptIgnoreCampusChanges.DataSource = _ignoreCampusChangeRows;
+            rptIgnoreCampusChanges.DataBind();
         }
 
         /// <summary>
-        /// Handles the ItemCommand event of the rIgnoreCampusChanges control.
+        /// Handles the ItemCommand event of the rptIgnoreCampusChanges control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
-        protected void rIgnoreCampusChanges_ItemCommand( object sender, RepeaterCommandEventArgs e )
+        protected void rptIgnoreCampusChanges_ItemCommand( object sender, RepeaterCommandEventArgs e )
         {
             if ( e.CommandName == "delete" )
             {
@@ -159,17 +163,17 @@ namespace RockWeb.Blocks.Administration
                     _ignoreCampusChangeRows.Remove( repeaterRow );
                 }
 
-                rIgnoreCampusChanges.DataSource = _ignoreCampusChangeRows;
-                rIgnoreCampusChanges.DataBind();
+                rptIgnoreCampusChanges.DataSource = _ignoreCampusChangeRows;
+                rptIgnoreCampusChanges.DataBind();
             }
         }
 
         /// <summary>
-        /// Handles the ItemDataBound event of the rIgnoreCampusChanges control.
+        /// Handles the ItemDataBound event of the rptIgnoreCampusChanges control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
-        protected void rIgnoreCampusChanges_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        protected void rptIgnoreCampusChanges_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
             var ignoreCampusChangeRow = e.Item.DataItem as IgnoreCampusChangeRow;
             CampusPicker fromCampus = e.Item.FindControl( "cpFromCampus" ) as CampusPicker;
@@ -260,6 +264,8 @@ namespace RockWeb.Blocks.Administration
             SetPanel( pwInactivatePeople, pnlInactivatePeople, "Inactivate People", cbInactivatePeople.Checked );
             SetPanel( pwUpdateCampus, pnlCampusUpdate, "Update Family Campus", cbCampusUpdate.Checked );
             SetPanel( pwAdultChildren, pnlAdultChildren, "Move Adult Children", cbAdultChildren.Checked );
+            SetPanel( pwUpdatePersonConnectionStatus, pnlUpdatePersonConnectionStatus, "Update Connection Status", cbUpdatePersonConnectionStatus.Checked );
+            SetPanel( pwUpdateFamilyStatus, pnlUpdateFamilyStatus, "Update Family Status", cbUpdateFamilyStatus.Checked );
         }
 
         /// <summary>
@@ -303,6 +309,8 @@ namespace RockWeb.Blocks.Administration
             _inactivateSettings = Rock.Web.SystemSettings.GetValue( SystemSetting.DATA_AUTOMATION_INACTIVATE_PEOPLE ).FromJsonOrNull<InactivatePeople>() ?? new InactivatePeople();
             _campusSettings = Rock.Web.SystemSettings.GetValue( SystemSetting.DATA_AUTOMATION_CAMPUS_UPDATE ).FromJsonOrNull<UpdateFamilyCampus>() ?? new UpdateFamilyCampus();
             _adultChildrenSettings = Rock.Web.SystemSettings.GetValue( SystemSetting.DATA_AUTOMATION_ADULT_CHILDREN ).FromJsonOrNull<MoveAdultChildren>() ?? new MoveAdultChildren();
+            _updatePersonConnectionStatus = Rock.Web.SystemSettings.GetValue( SystemSetting.DATA_AUTOMATION_UPDATE_PERSON_CONNECTION_STATUS ).FromJsonOrNull<UpdatePersonConnectionStatus>() ?? new UpdatePersonConnectionStatus();
+            _updateFamilyStatus = Rock.Web.SystemSettings.GetValue( SystemSetting.DATA_AUTOMATION_UPDATE_FAMILY_STATUS ).FromJsonOrNull<UpdateFamilyStatus>() ?? new UpdateFamilyStatus();
 
             // Set Data Automation Controls
 
@@ -369,6 +377,7 @@ namespace RockWeb.Blocks.Administration
             dvNotInDataView.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.Person ) ).Id;
             dvNotInDataView.SetValue( _inactivateSettings.NotInDataview );
             cbNoInteractions.Checked = _inactivateSettings.IsNoInteractionsEnabled;
+            nbRecordsOlderThan.Text = _inactivateSettings.RecordsOlderThan.ToStringSafe();
 
             var inactivateChannelTypes = interactionChannels.Select( c => new InteractionItem( c.Guid, c.Name ) ).ToList();
             if ( _inactivateSettings.NoInteractions != null )
@@ -417,8 +426,8 @@ namespace RockWeb.Blocks.Administration
                 _ignoreCampusChangeRows = new List<IgnoreCampusChangeRow>() { new IgnoreCampusChangeRow() { Id = 1 } };
             }
 
-            rIgnoreCampusChanges.DataSource = _ignoreCampusChangeRows;
-            rIgnoreCampusChanges.DataBind();
+            rptIgnoreCampusChanges.DataSource = _ignoreCampusChangeRows;
+            rptIgnoreCampusChanges.DataBind();
 
             // Adult Children
             cbAdultChildren.Checked = _adultChildrenSettings.IsEnabled;
@@ -430,6 +439,32 @@ namespace RockWeb.Blocks.Administration
             cbSamePhone.Checked = _adultChildrenSettings.UseSameHomePhone;
             wfWorkflows.SetValues( _adultChildrenSettings.WorkflowTypeIds );
             nbMaxRecords.Text = _adultChildrenSettings.MaximumRecords.ToString();
+
+            // Update Connection Status
+            cbUpdatePersonConnectionStatus.Checked = _updatePersonConnectionStatus.IsEnabled;
+            pnlUpdatePersonConnectionStatus.Enabled = _updatePersonConnectionStatus.IsEnabled;
+            var personConnectionStatusDataViewSettingsList = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ).DefinedValues
+                .Select( a => new PersonConnectionStatusDataView
+                {
+                    PersonConnectionStatusValue = a,
+                    DataViewId = _updatePersonConnectionStatus.ConnectionStatusValueIdDataviewIdMapping.GetValueOrNull(a.Id)
+                } ).ToList();
+
+            rptPersonConnectionStatusDataView.DataSource = personConnectionStatusDataViewSettingsList;
+            rptPersonConnectionStatusDataView.DataBind();
+
+            // Update Family Status
+            cbUpdateFamilyStatus.Checked = _updateFamilyStatus.IsEnabled;
+            pnlUpdateFamilyStatus.Enabled = _updateFamilyStatus.IsEnabled;
+            var groupStatusDataViewSettingsList = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.FAMILY_GROUP_STATUS.AsGuid() ).DefinedValues
+                .Select( a => new FamilyStatusDataView
+                {
+                    GroupStatusValue = a,
+                    DataViewId = _updateFamilyStatus.GroupStatusValueIdDataviewIdMapping.GetValueOrNull( a.Id )
+                } ).ToList();
+
+            rptFamilyStatusDataView.DataSource = groupStatusDataViewSettingsList;
+            rptFamilyStatusDataView.DataBind();
         }
 
         /// <summary>
@@ -517,6 +552,8 @@ namespace RockWeb.Blocks.Administration
 
             _inactivateSettings.IsNoInteractionsEnabled = cbNoInteractions.Checked;
 
+            _inactivateSettings.RecordsOlderThan = nbRecordsOlderThan.Text.AsInteger();
+
             foreach ( RepeaterItem rItem in rNoInteractions.Items )
             {
                 RockCheckBox isInterationTypeEnabled = rItem.FindControl( "cbInterationType" ) as RockCheckBox;
@@ -571,20 +608,42 @@ namespace RockWeb.Blocks.Administration
             _adultChildrenSettings.WorkflowTypeIds = wfWorkflows.SelectedValuesAsInt().ToList();
             _adultChildrenSettings.MaximumRecords = nbMaxRecords.Text.AsIntegerOrNull() ?? 200;
 
+            // Update Connection Status
+            _updatePersonConnectionStatus.IsEnabled = cbUpdatePersonConnectionStatus.Checked;
+            _updatePersonConnectionStatus.ConnectionStatusValueIdDataviewIdMapping.Clear();
+            foreach (var item in rptPersonConnectionStatusDataView.Items.OfType<RepeaterItem>())
+            {
+                HiddenField hfPersonConnectionStatusValueId = item.FindControl( "hfPersonConnectionStatusValueId" ) as HiddenField;
+                DataViewItemPicker dvpPersonConnectionStatusDataView = item.FindControl( "dvpPersonConnectionStatusDataView" ) as DataViewItemPicker;
+                _updatePersonConnectionStatus.ConnectionStatusValueIdDataviewIdMapping.AddOrReplace( hfPersonConnectionStatusValueId.Value.AsInteger(), dvpPersonConnectionStatusDataView.SelectedValueAsId() );
+            }
+
+            // Update Family Status
+            _updateFamilyStatus.IsEnabled = cbUpdateFamilyStatus.Checked;
+            _updateFamilyStatus.GroupStatusValueIdDataviewIdMapping.Clear();
+            foreach ( var item in rptFamilyStatusDataView.Items.OfType<RepeaterItem>() )
+            {
+                HiddenField hfGroupStatusValueId = item.FindControl( "hfGroupStatusValueId" ) as HiddenField;
+                DataViewItemPicker dvpGroupStatusDataView = item.FindControl( "dvpGroupStatusDataView" ) as DataViewItemPicker;
+                _updateFamilyStatus.GroupStatusValueIdDataviewIdMapping.AddOrReplace( hfGroupStatusValueId.Value.AsInteger(), dvpGroupStatusDataView.SelectedValueAsId() );
+            }
+
             Rock.Web.SystemSettings.SetValue( SystemSetting.DATA_AUTOMATION_REACTIVATE_PEOPLE, _reactivateSettings.ToJson() );
             Rock.Web.SystemSettings.SetValue( SystemSetting.DATA_AUTOMATION_INACTIVATE_PEOPLE, _inactivateSettings.ToJson() );
             Rock.Web.SystemSettings.SetValue( SystemSetting.DATA_AUTOMATION_CAMPUS_UPDATE, _campusSettings.ToJson() );
             Rock.Web.SystemSettings.SetValue( SystemSetting.DATA_AUTOMATION_ADULT_CHILDREN, _adultChildrenSettings.ToJson() );
+            Rock.Web.SystemSettings.SetValue( SystemSetting.DATA_AUTOMATION_UPDATE_PERSON_CONNECTION_STATUS, _updatePersonConnectionStatus.ToJson() );
+            Rock.Web.SystemSettings.SetValue( SystemSetting.DATA_AUTOMATION_UPDATE_FAMILY_STATUS, _updateFamilyStatus.ToJson() );
         }
 
         /// <summary>
-        /// Gets the repeater data.
+        /// Gets the ignore campus changes repeater data.
         /// </summary>
-        private void GetRepeaterData()
+        private void GetIgnoreCampusChangesRepeaterData()
         {
             _ignoreCampusChangeRows = new List<IgnoreCampusChangeRow>();
 
-            foreach ( RepeaterItem item in rIgnoreCampusChanges.Items )
+            foreach ( RepeaterItem item in rptIgnoreCampusChanges.Items )
             {
                 CampusPicker fromCampus = item.FindControl( "cpFromCampus" ) as CampusPicker;
                 CampusPicker toCampus = item.FindControl( "cpToCampus" ) as CampusPicker;
@@ -637,6 +696,96 @@ namespace RockWeb.Blocks.Administration
             /// The campus criteria.
             /// </value>
             public CampusCriteria? CampusCriteria { get; set; }
+        }
+
+        #endregion
+
+        #region Update Connection Status
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptPersonConnectionStatusDataView control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rptPersonConnectionStatusDataView_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            PersonConnectionStatusDataView personConnectionStatusDataView = e.Item.DataItem as PersonConnectionStatusDataView;
+            HiddenField hfPersonConnectionStatusValueId = e.Item.FindControl( "hfPersonConnectionStatusValueId" ) as HiddenField;
+            DataViewItemPicker dvpPersonConnectionStatusDataView = e.Item.FindControl( "dvpPersonConnectionStatusDataView" ) as DataViewItemPicker;
+            if ( personConnectionStatusDataView != null )
+            {
+                hfPersonConnectionStatusValueId.Value = personConnectionStatusDataView.PersonConnectionStatusValue.Id.ToString();
+                dvpPersonConnectionStatusDataView.EntityTypeId = CacheEntityType.GetId<Rock.Model.Person>();
+                dvpPersonConnectionStatusDataView.Label = personConnectionStatusDataView.PersonConnectionStatusValue.ToString();
+                dvpPersonConnectionStatusDataView.SetValue( personConnectionStatusDataView.DataViewId );
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private class PersonConnectionStatusDataView
+        {
+            /// <summary>
+            /// Gets or sets the connection status value.
+            /// </summary>
+            /// <value>
+            /// The connection status value.
+            /// </value>
+            public CacheDefinedValue PersonConnectionStatusValue { get; set; }
+
+            /// <summary>
+            /// Gets or sets the data view identifier.
+            /// </summary>
+            /// <value>
+            /// The data view identifier.
+            /// </value>
+            public int? DataViewId { get; set; }
+        }
+
+        #endregion
+
+        #region Update Family Status
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptFamilyStatusDataView control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rptFamilyStatusDataView_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            FamilyStatusDataView groupStatusDataView = e.Item.DataItem as FamilyStatusDataView;
+            HiddenField hfGroupStatusValueId = e.Item.FindControl( "hfGroupStatusValueId" ) as HiddenField;
+            DataViewItemPicker dvpGroupStatusDataView = e.Item.FindControl( "dvpGroupStatusDataView" ) as DataViewItemPicker;
+            if ( groupStatusDataView != null )
+            {
+                hfGroupStatusValueId.Value = groupStatusDataView.GroupStatusValue.Id.ToString();
+                dvpGroupStatusDataView.EntityTypeId = CacheEntityType.GetId<Rock.Model.Group>();
+                dvpGroupStatusDataView.Label = groupStatusDataView.GroupStatusValue.ToString();
+                dvpGroupStatusDataView.SetValue( groupStatusDataView.DataViewId );
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private class FamilyStatusDataView
+        {
+            /// <summary>
+            /// Gets or sets the group status value.
+            /// </summary>
+            /// <value>
+            /// The group status value.
+            /// </value>
+            public CacheDefinedValue GroupStatusValue { get; set; }
+
+            /// <summary>
+            /// Gets or sets the data view identifier.
+            /// </summary>
+            /// <value>
+            /// The data view identifier.
+            /// </value>
+            public int? DataViewId { get; set; }
         }
 
         #endregion

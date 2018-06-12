@@ -432,6 +432,15 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum NoteApprovalStatus
+    {
+        PendingApproval = 0x0,
+        Approved = 0x1,
+        Denied = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum NotificationClassification
     {
         Success = 0x0,

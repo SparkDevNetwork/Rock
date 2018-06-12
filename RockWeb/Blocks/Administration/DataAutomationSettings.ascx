@@ -142,7 +142,7 @@
                                     <Rock:RockCheckBox ID="cbIncludeDataView" runat="server" />
                                 </div>
                                 <div class="pull-left">
-                                    <Rock:DataViewPicker ID="dvIncludeDataView" runat="server" Label="The person is in the following data view" CssClass="input-width-xl" />
+                                    <Rock:DataViewItemPicker ID="dvIncludeDataView" runat="server" Label="The person is in the following data view" CssClass="input-width-xl" />
                                 </div>
                             </div>
 
@@ -151,7 +151,7 @@
                                     <Rock:RockCheckBox ID="cbExcludeDataView" runat="server" />
                                 </div>
                                 <div class="pull-left">
-                                    <Rock:DataViewPicker ID="dvExcludeDataView" runat="server" Label="Exclude any person in the following data view" CssClass="input-width-xl" />
+                                    <Rock:DataViewItemPicker ID="dvExcludeDataView" runat="server" Label="Exclude any person in the following data view" CssClass="input-width-xl" />
                                 </div>
                             </div>
 
@@ -173,6 +173,12 @@
                         <hr />
 
                         <asp:Panel ID="pnlInactivatePeople" runat="server" Enabled="false" CssClas="data-integrity-options">
+
+                            <div class="clearfix margin-b-lg">
+                                <div class="pull-left">
+                                    <Rock:NumberBox ID="nbRecordsOlderThan" runat="server" Label="The number of days that the records must be older to get considered for Inactivate process." AppendText="days" CssClass="input-width-md" Text="180" />
+                                </div>
+                            </div>
 
                             <div class="clearfix margin-b-lg">
                                 <div class="pull-left" style="width: 40px">
@@ -262,14 +268,14 @@
                                     <Rock:RockCheckBox ID="cbNotInDataView" runat="server" />
                                 </div>
                                 <div class="pull-left">
-                                    <Rock:DataViewPicker ID="dvNotInDataView" runat="server" Label="The person is not in the following data view" CssClass="input-width-xl" />
+                                    <Rock:DataViewItemPicker ID="dvNotInDataView" runat="server" Label="The person is not in the following data view" CssClass="input-width-xl" />
                                 </div>
                             </div>
                         </asp:Panel>
 
                     </Rock:PanelWidget>
 
-                    <Rock:PanelWidget ID="pwUpdateCampus" runat="server" Title="Upate Family Campus">
+                    <Rock:PanelWidget ID="pwUpdateCampus" runat="server" Title="Update Family Campus">
 
                         <Rock:RockCheckBox ID="cbCampusUpdate" runat="server" 
                             Label="Enable" Text="Enable the automatic updating of campus for families who currently have a different campus than what is determined by the following selected criteria."
@@ -313,7 +319,7 @@
                                 </div>
                                 <div class="pull-left">
                                     <Rock:RockControlWrapper ID="rcwIgnoreCampusChanges" runat="server" Label="Ignore any update that would change the campus">
-                                    <asp:Repeater ID="rIgnoreCampusChanges" runat="server" OnItemDataBound="rIgnoreCampusChanges_ItemDataBound" OnItemCommand="rIgnoreCampusChanges_ItemCommand">
+                                    <asp:Repeater ID="rptIgnoreCampusChanges" runat="server" OnItemDataBound="rptIgnoreCampusChanges_ItemDataBound" OnItemCommand="rptIgnoreCampusChanges_ItemCommand">
                                         <ItemTemplate>
                                             <asp:HiddenField ID="hfRowId" runat="server" Value='<%# Eval("Id") %>' />
                                             <div class="row margin-l-sm margin-b-sm form-inline">
@@ -324,7 +330,7 @@
                                                     <asp:ListItem Text="Giving" Value="1" />
                                                     <asp:ListItem Text="Attendance" Value="2" />
                                                 </Rock:RockDropDownList>
-                                                <asp:LinkButton ID="lbDelete" runat="server" CssClass="btn btn-xs btn-danger form-action-remove" CommandName="delete" CommandArgument='<%# Eval("Id") %>'><i class="fa fa-minus-circle"></i></asp:LinkButton>
+                                                <asp:LinkButton ID="lbDelete" runat="server" CssClass="btn btn-xs btn-danger form-action-remove" CommandName="delete" CommandArgument='<%# Eval("Id") %>'><i class="fa fa-times"></i></asp:LinkButton>
                                             </div>
                                         </ItemTemplate>
                                     </asp:Repeater>
@@ -346,7 +352,7 @@
 
                         <hr />
 
-                        <asp:Panel ID="pnlAdultChildren" runat="server" Enabled="false" CssClas="data-integrity-options">
+                        <asp:Panel ID="pnlAdultChildren" runat="server" Enabled="false" CssClass="data-integrity-options">
 
                             <Rock:NumberBox ID="nbAdultAge" runat="server" Label="The age a child should be considered an adult" AppendText="years" CssClass="input-width-md" />
                             <Rock:GroupRolePicker ID="rpParentRelationship" runat="server" Label="An optional known relationship that should be added between the new adult and their parent(s)" />
@@ -359,6 +365,44 @@
 
                         </asp:Panel>
 
+                    </Rock:PanelWidget>
+
+                    <Rock:PanelWidget ID="pwUpdatePersonConnectionStatus" runat="server" Title="Update Person Connection Status">
+                        <Rock:RockCheckBox ID="cbUpdatePersonConnectionStatus" runat="server" 
+                            Label="Enable" Text="Enable the automatic updating of connection status."
+                            AutoPostBack="true" OnCheckedChanged="cbDataAutomationEnabled_CheckedChanged" />
+
+                        <hr />
+
+                        <asp:Panel ID="pnlUpdatePersonConnectionStatus" runat="server" Enabled="false" CssClass="data-integrity-options">
+                            <Rock:RockControlWrapper ID="rcwPersonConnectionStatusDataView" runat="server" Label="Update Connection Status based on Data View">
+                                <asp:Repeater ID="rptPersonConnectionStatusDataView" runat="server" OnItemDataBound="rptPersonConnectionStatusDataView_ItemDataBound">
+                                    <ItemTemplate>
+                                        <asp:HiddenField ID="hfPersonConnectionStatusValueId" runat="server" />
+                                        <Rock:DataViewItemPicker ID="dvpPersonConnectionStatusDataView" runat="server" />
+                                    </ItemTemplate>
+                                </asp:Repeater>
+                              </Rock:RockControlWrapper>
+                        </asp:Panel>
+                    </Rock:PanelWidget>
+
+                    <Rock:PanelWidget ID="pwUpdateFamilyStatus" runat="server" Title="Update Family Status">
+                        <Rock:RockCheckBox ID="cbUpdateFamilyStatus" runat="server" 
+                            Label="Enable" Text="Enable the automatic updating of family status."
+                            AutoPostBack="true" OnCheckedChanged="cbDataAutomationEnabled_CheckedChanged" />
+
+                        <hr />
+
+                        <asp:Panel ID="pnlUpdateFamilyStatus" runat="server" Enabled="false" CssClass="data-integrity-options">
+                            <Rock:RockControlWrapper ID="rcwUpdateFamilyStatus" runat="server" Label="Update Family Status based on Data View">
+                                <asp:Repeater ID="rptFamilyStatusDataView" runat="server" OnItemDataBound="rptFamilyStatusDataView_ItemDataBound">
+                                    <ItemTemplate>
+                                        <asp:HiddenField ID="hfGroupStatusValueId" runat="server" />
+                                        <Rock:DataViewItemPicker ID="dvpGroupStatusDataView" runat="server" />
+                                    </ItemTemplate>
+                                </asp:Repeater>
+                              </Rock:RockControlWrapper>
+                        </asp:Panel>
                     </Rock:PanelWidget>
 
                 </fieldset>

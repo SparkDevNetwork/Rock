@@ -186,6 +186,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 ddlRecordStatus.Visible = false;
             }
 
+            dvpGroupStatus.DefinedTypeId = _groupType.GroupStatusDefinedTypeId;
+            dvpGroupStatus.DefinedTypeId = _groupType.GroupStatusDefinedTypeId;
+            if ( _groupType.GroupStatusDefinedType != null )
+            {
+                dvpGroupStatus.Label = _groupType.GroupStatusDefinedType.ToString();
+            }
+
+            dvpGroupStatus.Visible = _groupType.GroupStatusDefinedTypeId.HasValue;
+
             ddlNewPersonTitle.BindToDefinedType( CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_TITLE.AsGuid() ), true );
             ddlNewPersonSuffix.BindToDefinedType( CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid() ), true );
             ddlNewPersonMaritalStatus.BindToDefinedType( CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ), true );
@@ -326,6 +335,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             HasDeceasedMembers = true;
                         }
                     }
+
+                    dvpGroupStatus.SetValue( _group.StatusValueId );
 
                     // Get all the group members
                     GroupMembers = new List<GroupMemberInfo>();
@@ -495,6 +506,16 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             confirmExit.Enabled = true;
         }
 
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the dvpGroupStatus control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs" /> instance containing the event data.</param>
+        protected void dvpGroupStatus_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            confirmExit.Enabled = true;
+        }
+
         #region Group Member List Events
 
         /// <summary>
@@ -515,8 +536,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     if ( divPersonImage != null )
                     {
                         divPersonImage.Style.Add( "background-image", @String.Format( @"url({0})", Person.GetPersonPhotoUrl( groupMember.Id, groupMember.PhotoId, groupMember.Age, groupMember.Gender, null ) + "&width=65" ) );
-                        divPersonImage.Style.Add( "background-size", "cover" );
-                        divPersonImage.Style.Add( "background-position", "50%" );
                     }
 
                     var rblRole = e.Item.FindControl( "rblRole" ) as RadioButtonList;
@@ -1075,7 +1094,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 	                    _group = groupService.Get( _group.Id );
 	
 	                    _group.Name = tbGroupName.Text;
-                        _group.CampusId = cpCampus.SelectedValueAsInt(); ;
+                        _group.CampusId = cpCampus.SelectedValueAsInt();
+                        _group.StatusValueId = dvpGroupStatus.SelectedValueAsId();
 	
 	                    rockContext.SaveChanges();
 	

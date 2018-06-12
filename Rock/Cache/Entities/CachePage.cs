@@ -427,26 +427,31 @@ namespace Rock.Cache
         /// The page contexts.
         /// </value>
         [DataMember]
-        public Dictionary<string, string> PageContexts { get; private set; }
+        public Dictionary<string, string> PageContexts { get; private set; } = new Dictionary<string, string>();
 
         /// <summary>
         /// Helper class for PageRoute information
         /// </summary>
+		[Serializable]
+        [DataContract]
         public class PageRouteInfo
         {
             /// <summary>
             /// The id
             /// </summary>
+			[DataMember]
             public int Id { get; internal set; }
 
             /// <summary>
             /// The GUID
             /// </summary>
+            [DataMember]
             public Guid Guid { get; internal set; }
 
             /// <summary>
             /// The route
             /// </summary>
+            [DataMember]
             public string Route { get; internal set; }
         }
 
@@ -457,7 +462,7 @@ namespace Rock.Cache
         /// The page routes.
         /// </value>
         [DataMember]
-        public List<PageRouteInfo> PageRoutes { get; private set; }
+        public List<PageRouteInfo> PageRoutes { get; private set; } = new List<PageRouteInfo>();
 
         /// <summary>
         /// Gets the parent authority.

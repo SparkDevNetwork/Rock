@@ -85,8 +85,19 @@ namespace Rock.Cache
         /// <value>
         /// The field.
         /// </value>
-        [DataMember]
-        public Field.IFieldType Field { get; private set; }
+		[LavaInclude]
+        public Field.IFieldType Field
+        {
+            get
+            {
+                if ( _field == null )
+                {
+                    _field = Rock.Field.Helper.InstantiateFieldType( Assembly, Class );
+                }
+                return _field;
+            }
+        }
+        private Field.IFieldType _field = null;
 
         #endregion
 
@@ -108,8 +119,6 @@ namespace Rock.Cache
             Description = fieldType.Description;
             Assembly = fieldType.Assembly;
             Class = fieldType.Class;
-
-            Field = Rock.Field.Helper.InstantiateFieldType( fieldType.Assembly, fieldType.Class );
         }
 
         /// <summary>

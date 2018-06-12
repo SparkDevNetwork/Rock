@@ -25,7 +25,7 @@
 */
 
 ALTER PROCEDURE [dbo].[spCheckin_AttendanceAnalyticsQuery_AttendeeDates]
-	    @GroupIds varchar(max)
+	  @GroupIds varchar(max)
 	, @StartDate datetime = NULL
 	, @EndDate datetime = NULL
 	, @CampusIds varchar(max) = NULL
@@ -61,15 +61,16 @@ BEGIN
 	FROM (
 		SELECT 
 			[PersonAliasId],
-			[GroupId],
+			O.[GroupId],
 			[CampusId],
 			DATEADD( day, ( 6 - ( DATEDIFF( day, CONVERT( datetime, '19000101', 112 ), [StartDateTime] ) % 7 ) ), CONVERT( date, [StartDateTime] ) ) AS [SundayDate]
 		FROM [Attendance] A
-		INNER JOIN @GroupTbl [G] ON [G].[Id] = A.[GroupId]
+		INNER JOIN [AttendanceOccurrence] O ON O.[Id] = A.[OccurrenceId]
+		INNER JOIN @GroupTbl [G] ON [G].[Id] = O.[GroupId]
 		LEFT OUTER JOIN @CampusTbl [C] ON [C].[id] = [A].[CampusId]
-		LEFT OUTER JOIN @ScheduleTbl [S] ON [S].[id] = [A].[ScheduleId]
+		LEFT OUTER JOIN @ScheduleTbl [S] ON [S].[id] = [O].[ScheduleId]
         WHERE [StartDateTime] BETWEEN @StartDate AND @EndDate
-		AND [DidAttend] = 1
+		AND A.[DidAttend] = 1
 		AND ( 
 			( @CampusIds IS NULL OR [C].[Id] IS NOT NULL ) OR  
 			( @IncludeNullCampusIds = 1 AND A.[CampusId] IS NULL ) 

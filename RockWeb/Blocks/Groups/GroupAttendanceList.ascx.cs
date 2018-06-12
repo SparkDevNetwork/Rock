@@ -71,7 +71,7 @@ namespace RockWeb.Blocks.Groups
                 _canView = true;
 
                 rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
-                gOccurrences.DataKeyNames = new string[] { "Date", "ScheduleId", "LocationId" };
+                gOccurrences.DataKeyNames = new string[] { "Id", "OccurrenceDate", "ScheduleId", "LocationId" };
                 gOccurrences.Actions.AddClick += gOccurrences_Add;
                 gOccurrences.GridRebind += gOccurrences_GridRebind;
                 gOccurrences.RowDataBound += gOccurrences_RowDataBound;
@@ -209,10 +209,10 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
         protected void gOccurrences_RowDataBound( object sender, GridViewRowEventArgs e )
         {
-            if ( e.Row.RowType == System.Web.UI.WebControls.DataControlRowType.DataRow )
+            if ( e.Row.RowType == DataControlRowType.DataRow )
             {
-                var occurrence = e.Row.DataItem as ScheduleOccurrence;
-                if ( occurrence == null )
+                var occurrence = e.Row.DataItem as AttendanceListOccurrence;
+                if ( occurrence == null || occurrence.Id == 0 )
                 {
                     var deleteField = gOccurrences.Columns.OfType<DeleteField>().First();
                     var cell = e.Row.Cells[gOccurrences.GetColumnIndex( deleteField )];
@@ -232,29 +232,38 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gOccurrences_Edit( object sender, RowEventArgs e )
         {
-            // The iCalendar date format is returned as UTC kind date, so we need to manually format it instead of using 'o'
-            string occurrenceDate = ( (DateTime)e.RowKeyValues["Date"] ).ToString( "yyyy-MM-ddTHH:mm:ss" );
             var qryParams = new Dictionary<string, string> {
-                { "GroupId", _group.Id.ToString() },
-                { "Date", occurrenceDate },
+                { "GroupId", _group.Id.ToString() }
             };
 
-            var locationId = e.RowKeyValues["LocationId"] as int?;
-            if ( locationId.HasValue )
+            int? id = e.RowKeyValues["Id"].ToString().AsIntegerOrNull();
+            if ( id.HasValue  )
             {
-                qryParams.Add( "LocationId", locationId.Value.ToString() );
+                qryParams.Add( "OccurrenceId", id.Value.ToString() );
             }
 
-            var scheduleId = e.RowKeyValues["ScheduleId"] as int?;
-            if ( scheduleId.HasValue )
+            if ( !id.HasValue || id.Value == 0 )
             {
-                qryParams.Add( "ScheduleId", scheduleId.Value.ToString() );
-            }
+                string occurrenceDate = ( (DateTime)e.RowKeyValues["OccurrenceDate"] ).ToString( "yyyy-MM-ddTHH:mm:ss" );
+                qryParams.Add( "Date", occurrenceDate );
 
-            var groupTypeIds = PageParameter( "GroupTypeIds" );
-            if ( !string.IsNullOrWhiteSpace( groupTypeIds ) )
-            {
-                qryParams.Add( "GroupTypeIds", groupTypeIds );
+                var locationId = e.RowKeyValues["LocationId"] as int?;
+                if ( locationId.HasValue )
+                {
+                    qryParams.Add( "LocationId", locationId.Value.ToString() );
+                }
+
+                var scheduleId = e.RowKeyValues["ScheduleId"] as int?;
+                if ( scheduleId.HasValue )
+                {
+                    qryParams.Add( "ScheduleId", scheduleId.Value.ToString() );
+                }
+
+                var groupTypeIds = PageParameter( "GroupTypeIds" );
+                if ( !string.IsNullOrWhiteSpace( groupTypeIds ) )
+                {
+                    qryParams.Add( "GroupTypeIds", groupTypeIds );
+                }
             }
 
             NavigateToLinkedPage( "DetailPage", qryParams );
@@ -302,56 +311,32 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gOccurrences_Delete( object sender, RowEventArgs e )
         {
-            if ( _group != null )
+            var rockContext = new RockContext();
+            var occurenceService = new AttendanceOccurrenceService( rockContext );
+            var attendanceService = new AttendanceService( rockContext );
+            var occurrence = occurenceService.Get( e.RowKeyId );
+
+            if ( occurrence != null )
             {
-                var occurrenceDate = (DateTime)e.RowKeyValues["Date"];
-                DateTime startDate = occurrenceDate.Date;
-                DateTime endDate = occurrenceDate.Date.AddDays( 1 );
+                var locationId = occurrence.LocationId;
 
-                using ( var rockContext = new RockContext() )
+                string errorMessage;
+                if ( !occurenceService.CanDelete( occurrence, out errorMessage ) )
                 {
-                    var attendanceService = new AttendanceService( rockContext );
-                    var qry = attendanceService.Queryable()
-                        .Where( a =>
-                            a.GroupId == _group.Id &&
-                            a.StartDateTime >= startDate &&
-                            a.StartDateTime < endDate );
+                    mdGridWarning.Show( errorMessage, ModalAlertType.Alert );
+                    return;
+                }
 
-                    int? scheduleId = e.RowKeyValues["ScheduleId"] as int?;
-                    if ( scheduleId.HasValue )
-                    {
-                        qry = qry.Where( a =>
-                            a.ScheduleId.HasValue &&
-                            a.ScheduleId.Value == scheduleId.Value );
-                    }
-                    else
-                    {
-                        qry = qry.Where( a => !a.ScheduleId.HasValue );
-                    }
+                // Delete the attendees for this occurrence since it is not a cascading delete
+                var attendees = attendanceService.Queryable().Where( a => a.OccurrenceId == occurrence.Id );
+                rockContext.BulkDelete<Attendance>( attendees );
 
-                    int? locationId = e.RowKeyValues["LocationId"] as int?;
-                    if ( locationId.HasValue )
-                    {
-                        qry = qry.Where( a =>
-                            a.LocationId.HasValue &&
-                            a.LocationId.Value == locationId.Value );
-                    }
-                    else
-                    {
-                        qry = qry.Where( a => !a.LocationId.HasValue );
-                    }
+                occurenceService.Delete( occurrence );
+                rockContext.SaveChanges();
 
-                    foreach ( var attendance in qry )
-                    {
-                        attendanceService.Delete( attendance );
-                    }
-
-                    rockContext.SaveChanges();
-
-                    if ( locationId.HasValue )
-                    {
-                        Rock.CheckIn.KioskLocationAttendance.Remove( locationId.Value );
-                    }
+                if ( locationId.HasValue )
+                {
+                    Rock.CheckIn.KioskLocationAttendance.Remove( locationId.Value );
                 }
             }
 
@@ -515,22 +500,90 @@ namespace RockWeb.Blocks.Groups
                     scheduleIds.Add( ddlSchedule.SelectedValueAsInt() ?? 0 );
                 }
 
-                var qry = new ScheduleService( _rockContext )
-                    .GetGroupOccurrences( _group, fromDateTime, toDateTime, locationIds, scheduleIds, true, bddlCampus.SelectedValueAsInt() )
-                    .AsQueryable();
+                // Get all the occurrences for this group for the selected dates, location and schedule
+                var occurrences = new AttendanceOccurrenceService( _rockContext )
+                    .GetGroupOccurrences( _group, fromDateTime, toDateTime, locationIds, scheduleIds )
+                    .Select( o => new AttendanceListOccurrence( o ) )
+                    .ToList();
 
+                var locationService = new LocationService( _rockContext );
+
+                // Check to see if filtering by campus, and if so, only select those occurrences who's 
+                // location is associated with that campus (or not associated with any campus)
+                int? campusId = bddlCampus.SelectedValueAsInt();
+                if ( campusId.HasValue )
+                {
+                    // If campus filter is selected, load all the descendent locations for each campus into a dictionary
+                    var locCampus = new Dictionary<int, int>();
+                    foreach ( var campus in CacheCampus.All().Where( c => c.LocationId.HasValue ) )
+                    {
+                        locCampus.AddOrIgnore( campus.LocationId.Value, campus.Id );
+                        foreach ( var locId in locationService.GetAllDescendentIds( campus.LocationId.Value ) )
+                        {
+                            locCampus.AddOrIgnore( locId, campus.Id );
+                        }
+                    }
+
+                    // Using that dictionary, set the campus id for each occurrence
+                    foreach ( var occ in occurrences )
+                    {
+                        if ( occ.LocationId.HasValue && locCampus.ContainsKey( occ.LocationId.Value ) )
+                        {
+                            occ.CampusId = locCampus[occ.LocationId.Value];
+                        }
+                    }
+
+                    // Remove the occurrenced that are associated with another campus
+                    occurrences = occurrences
+                        .Where( o =>
+                            !o.CampusId.HasValue ||
+                            o.CampusId.Value == campusId.Value )
+                        .ToList();
+                }
+
+                // Update the Parent Location path 
+                foreach ( int parentLocationId in occurrences
+                    .Where( o => o.ParentLocationId.HasValue )
+                    .Select( o => o.ParentLocationId.Value )
+                    .Distinct() )
+                {
+                    string parentLocationPath = locationService.GetPath( parentLocationId );
+                    foreach ( var occ in occurrences
+                        .Where( o => 
+                            o.ParentLocationId.HasValue && 
+                            o.ParentLocationId.Value == parentLocationId ) )
+                    {
+                        occ.ParentLocationPath = parentLocationPath;
+                    }
+                }
+
+                // Sort the occurrences
                 SortProperty sortProperty = gOccurrences.SortProperty;
-                List<ScheduleOccurrence> occurrences = null;
+                List<AttendanceListOccurrence> sortedOccurrences = null;
                 if ( sortProperty != null )
                 {
-                    occurrences = qry.Sort( sortProperty ).ToList();
+                    if ( sortProperty.Property == "LocationPath,LocationName" )
+                    {
+                        if ( sortProperty.Direction == SortDirection.Ascending )
+                        {
+                            sortedOccurrences = occurrences.OrderBy( o => o.ParentLocationPath ).ThenBy( o => o.LocationName ).ToList();
+                        }
+                        else
+                        {
+                            sortedOccurrences = occurrences.OrderByDescending( o => o.ParentLocationPath ).ThenByDescending( o => o.LocationName ).ToList();
+                        }
+                    }
+                    else
+                    {
+                        sortedOccurrences = occurrences.AsQueryable().Sort( sortProperty ).ToList();
+                    }
                 }
                 else
                 {
-                    occurrences = qry.OrderByDescending( a => a.Date ).ThenByDescending( a => a.StartTime ).ToList();
+                    sortedOccurrences = occurrences.OrderByDescending( a => a.OccurrenceDate ).ThenByDescending( a => a.StartTime ).ToList();
                 }
 
-                gOccurrences.DataSource = occurrences;
+                gOccurrences.DataSource = sortedOccurrences;
                 gOccurrences.DataBind();
             }
         }
@@ -552,4 +605,41 @@ namespace RockWeb.Blocks.Groups
 
         #endregion
     }
+
+    public class AttendanceListOccurrence
+    {
+        public int Id { get; set; }
+        public DateTime OccurrenceDate { get; set; }
+        public int? LocationId { get; set; }
+        public string LocationName { get; set; }
+        public int? ParentLocationId { get; set; }
+        public string ParentLocationPath { get; set; }
+        public int? ScheduleId { get; set; }
+        public string ScheduleName { get; set; }
+        public TimeSpan StartTime { get; set; }
+        public int? CampusId { get; set; }
+        public bool AttendanceEntered { get; set; }
+        public bool DidNotOccur { get; set; }
+        public int DidAttendCount { get; set; }
+        public double AttendanceRate { get; set; }
+        public bool CanDelete { get; set; }
+
+        public AttendanceListOccurrence ( AttendanceOccurrence occurrence )
+        {
+            Id = occurrence.Id;
+            OccurrenceDate = occurrence.OccurrenceDate;
+            LocationId = occurrence.LocationId;
+            LocationName = occurrence.Location != null ? occurrence.Location.Name : string.Empty;
+            ParentLocationId = occurrence.Location != null ? occurrence.Location.ParentLocationId : (int?)null;
+            ScheduleId = occurrence.ScheduleId;
+            ScheduleName = occurrence.Schedule != null ? occurrence.Schedule.Name : string.Empty;
+            StartTime = occurrence.Schedule != null ? occurrence.Schedule.StartTimeOfDay : new TimeSpan();
+            AttendanceEntered = occurrence.AttendanceEntered;
+            DidNotOccur = occurrence.DidNotOccur ?? false;
+            DidAttendCount = occurrence.DidAttendCount;
+            AttendanceRate = occurrence.AttendanceRate;
+        }
+    }
+
+
 }

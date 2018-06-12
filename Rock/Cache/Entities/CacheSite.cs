@@ -381,6 +381,7 @@ namespace Rock.Cache
         /// <value>
         ///   <c>true</c> if [enable page views]; otherwise, <c>false</c>.
         /// </value>
+		[DataMember]
         public bool EnablePageViews { get; private set; }
 
         /// <summary>
@@ -463,6 +464,15 @@ namespace Rock.Cache
         public int? FavIconBinaryFileId { get; private set; }
 
         /// <summary>
+        /// Gets or sets the site logo binary file identifier.
+        /// </summary>
+        /// <value>
+        /// The favicon binary file identifier.
+        /// </value>
+        [DataMember]
+        public int? SiteLogoBinaryFileId { get; private set; }
+
+        /// <summary>
         /// Gets or sets the default domain URI.
         /// </summary>
         /// <value>
@@ -516,6 +526,7 @@ namespace Rock.Cache
             RequiresEncryption = site.RequiresEncryption;
             EnabledForShortening = site.EnabledForShortening;
             FavIconBinaryFileId = site.FavIconBinaryFileId;
+            SiteLogoBinaryFileId = site.SiteLogoBinaryFileId;
             DefaultDomainUri = site.DefaultDomainUri;
 
             foreach ( var domain in site.SiteDomains.Select( d => d.Domain ).ToList() )

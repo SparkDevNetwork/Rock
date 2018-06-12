@@ -12,7 +12,7 @@
                     <p class="vendor">{{ package.Vendor.Name }}</p>
                 </div>
 				
-                <div class="packagesummary-footer">
+                <div class="packagesummary-footer clearfix">
                     <div class="rating pull-left">
                         {{ package.Rating | RatingMarkup }}
                     </div>

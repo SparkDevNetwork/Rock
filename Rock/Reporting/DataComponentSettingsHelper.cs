@@ -95,7 +95,7 @@ namespace Rock.Reporting
         {
             var id = dataViewId.AsIntegerOrNull();
 
-            if (id == null)
+            if ( id == null || id == 0 )
             {
                 return null;
             }
@@ -104,7 +104,7 @@ namespace Rock.Reporting
 
             var dataView = dsService.Get( id.Value );
 
-            return dataView.Guid;
+            return dataView?.Guid;
         }
 
         /// <summary>
@@ -133,7 +133,7 @@ namespace Rock.Reporting
 
             var dataView = dsService.Get( dataViewGuid.Value );
 
-            return ( dataView != null ) ? (int?)dataView.Id : null;
+            return dataView?.Id;
         }
 
         /// <summary>

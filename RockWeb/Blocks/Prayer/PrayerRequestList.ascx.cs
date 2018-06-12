@@ -55,7 +55,7 @@ namespace RockWeb.Blocks.Prayer
         /// <summary>
         /// The prayer request key parameter used in the QueryString for detail page.
         /// </summary>
-        private static readonly string _PrayerRequestKeyParameter = "prayerRequestId";
+        private static readonly string _PrayerRequestKeyParameter = "PrayerRequestId";
 
         /// <summary>
         /// Holds whether or not the person can add, edit, and delete.

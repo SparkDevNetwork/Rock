@@ -47,6 +47,11 @@ namespace Rock.SystemGuid
         public const string BLOCK = "D89555CA-9AE4-4D62-8AF1-E5E463C1EF65";
 
         /// <summary>
+        /// The checkr provider
+        /// </summary>
+        public const string CHECKR_PROVIDER = "8D9DE88A-C649-47B2-BA5C-92A24F60AE61";
+
+        /// <summary>
         /// The content channel type
         /// </summary>
         public const string CONTENT_CHANNEL = "44484685-477E-4668-89A6-84F29739EB68";
@@ -163,6 +168,11 @@ namespace Rock.SystemGuid
         public const string GROUP_MEMBER = "49668B95-FEDC-43DD-8085-D2B0D6343C48";
 
         /// <summary>
+        /// The HTTP module component
+        /// </summary>
+        public const string HTTP_MODULE_COMPONENT = "EDE69F48-5E05-4260-B360-DA37DFD1AB83";
+
+        /// <summary>
         /// The guid for the Rock.Model.MetricCategory entity
         /// </summary>
         public const string METRICCATEGORY = "3D35C859-DF37-433F-A20A-0FFD0FCB9862";
@@ -196,6 +206,11 @@ namespace Rock.SystemGuid
         /// The guid for the Rock.Model.PersonSignal entity
         /// </summary>
         public const string PERSON_SIGNAL = "0FFF77A1-E92D-4A05-8B36-1D2B6D46660F";
+
+        /// <summary>
+        /// The protect my ministry provider
+        /// </summary>
+        public const string PROTECT_MY_MINISTRY_PROVIDER = "C16856F4-3C6B-4AFB-A0B8-88A303508206";
 
         /// <summary>
         /// The guid for the Rock.Model.RegistrationTemplate entity
@@ -238,18 +253,8 @@ namespace Rock.SystemGuid
         public const string WORKFLOW_TYPE = "C9F3C4A5-1526-474D-803F-D6C7A45CBBAE";
 
         /// <summary>
-        /// The protect my ministry provider
-        /// </summary>
-        public const string PROTECT_MY_MINISTRY_PROVIDER = "C16856F4-3C6B-4AFB-A0B8-88A303508206";
-
-        /// <summary>
         /// The guid for the Test Financial Gateway entity type
         /// </summary>
         public const string FINANCIAL_GATEWAY_TEST_GATEWAY = "C22B0247-7C9F-411B-A1F5-0051FCBAC199";
-
-        /// <summary>
-        /// The HTTP module component
-        /// </summary>
-        public const string HTTP_MODULE_COMPONENT = "EDE69F48-5E05-4260-B360-DA37DFD1AB83";
     }
 }

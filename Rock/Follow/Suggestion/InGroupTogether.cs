@@ -124,7 +124,7 @@ namespace Rock.Follow.Suggestion
                     // Start building query to get the people to follow from any group that contains a follower
                     var followed = groupMemberService
                         .Queryable().AsNoTracking()
-                        .Where( m => followedGroupIds.Contains( m.GroupId ) );
+                        .Where( m => followedGroupIds.Contains( m.GroupId ) && m.GroupMemberStatus == GroupMemberStatus.Active );
 
                     // If a specific role for the people being followed was specified, limit the query to only those with the selected role
                     Guid? followedRoleGuid = GetAttributeValue( followingSuggestionType, "FollowedGroupType" ).AsGuidOrNull();

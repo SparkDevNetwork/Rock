@@ -4374,7 +4374,17 @@ namespace RockWeb.Blocks.Event
                 data = data.Where( r => cblFeeOptions.SelectedValues.Contains( r.Option ) );
             }
 
-            gFees.DataSource = data.ToList();
+            SortProperty sortProperty = gFees.SortProperty;
+            if ( sortProperty != null )
+            {
+                data = data.AsQueryable().Sort( sortProperty ).ToList();
+            }
+            else
+            {
+                data = data.OrderByDescending( f => f.RegistrationDate ).ToList();
+            }
+
+            gFees.DataSource = data;
             gFees.DataBind();
         }
 
@@ -4490,6 +4500,18 @@ namespace RockWeb.Blocks.Event
             }
 
             var results = data.ToList();
+
+            SortProperty sortProperty = gDiscounts.SortProperty;
+            if ( sortProperty != null )
+            {
+                results = results.AsQueryable().Sort( sortProperty ).ToList();
+            }
+            else
+            {
+                results = results.OrderByDescending( d => d.RegistrationDate ).ToList();
+            }
+
+            
             gDiscounts.DataSource = results;
             gDiscounts.DataBind();
 
@@ -4505,10 +4527,10 @@ namespace RockWeb.Blocks.Event
 
         private void PopulateTotals( List<TemplateDiscountReport> report )
         {
-            lTotalTotalCost.Text = string.Format( CacheGlobalAttributes.Value( "CurrencySymbol" ) + "{0:0,0.00}", report.Sum( r => r.TotalCost ) );
-            lTotalDiscountQualifiedCost.Text = string.Format( CacheGlobalAttributes.Value( "CurrencySymbol" ) + "{0:0,0.00}", report.Sum( r => r.DiscountQualifiedCost ) );
-            lTotalDiscounts.Text = string.Format( CacheGlobalAttributes.Value( "CurrencySymbol" ) + "{0:0,0.00}", report.Sum( r => r.TotalDiscount ) );
-            lTotalRegistrationCost.Text = string.Format( CacheGlobalAttributes.Value( "CurrencySymbol" ) + "{0:0,0.00}", report.Sum( r => r.RegistrationCost ) );
+            lTotalTotalCost.Text = string.Format( CacheGlobalAttributes.Value( "CurrencySymbol" ) + "{0:#,##0.00}", report.Sum( r => r.TotalCost ) );
+            lTotalDiscountQualifiedCost.Text = string.Format( CacheGlobalAttributes.Value( "CurrencySymbol" ) + "{0:#,##0.00}", report.Sum( r => r.DiscountQualifiedCost ) );
+            lTotalDiscounts.Text = string.Format( CacheGlobalAttributes.Value( "CurrencySymbol" ) + "{0:#,##0.00}", report.Sum( r => r.TotalDiscount ) );
+            lTotalRegistrationCost.Text = string.Format( CacheGlobalAttributes.Value( "CurrencySymbol" ) + "{0:#,##0.00}", report.Sum( r => r.RegistrationCost ) );
             lTotalRegistrations.Text = report.Count().ToString();
             lTotalRegistrants.Text = report.Sum( r => r.RegistrantCount ).ToString();
         }

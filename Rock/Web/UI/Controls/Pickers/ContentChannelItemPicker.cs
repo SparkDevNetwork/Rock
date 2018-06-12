@@ -316,6 +316,7 @@ namespace Rock.Web.UI.Controls
             _ddlContentChannel = new RockDropDownList();
             _ddlContentChannel.ID = this.ID + "_ddlContentChannel";
             _ddlContentChannel.AutoPostBack = true;
+            _ddlContentChannel.EnhanceForLongLists = true;
             _ddlContentChannel.Label = "Content Channel";
             _ddlContentChannel.SelectedIndexChanged += _ddlContentChannel_SelectedIndexChanged;
             Controls.Add( _ddlContentChannel );

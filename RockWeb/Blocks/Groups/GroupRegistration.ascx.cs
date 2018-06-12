@@ -275,7 +275,7 @@ namespace RockWeb.Blocks.Groups
                     {
                         SetPhoneNumber( rockContext, person, pnHome, null, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() );
                     }
-                    if ( !isMatch || !string.IsNullOrWhiteSpace( pnHome.Number ) )
+                    if ( !isMatch || !string.IsNullOrWhiteSpace( pnCell.Number ) )
                     {
                         SetPhoneNumber( rockContext, person, pnCell, cbSms, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
                     }

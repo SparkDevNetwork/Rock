@@ -1057,7 +1057,8 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                 _table.Rows.Add( _actionFooterRow );
 
                 TableCell actionFooterCell = new TableCell();
-                actionFooterCell.ColumnSpan = this.Columns.Count + (this.CustomColumns?.Count ?? 0);
+                int visibleColumnCount = this.Columns.OfType<DataControlField>().Where( a => a.Visible ).Count() + ( this.CustomColumns?.Count ?? 0);
+                actionFooterCell.ColumnSpan = visibleColumnCount;
                 actionFooterCell.CssClass = "grid-actions";
                 _actionFooterRow.Cells.Add( actionFooterCell );
 
@@ -1075,7 +1076,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                 _table.Rows.AddAt( 0, _actionHeaderRow );
 
                 TableCell actionHeaderCell = new TableCell();
-                actionHeaderCell.ColumnSpan = this.Columns.Count + ( this.CustomColumns?.Count ?? 0 );
+                actionHeaderCell.ColumnSpan = visibleColumnCount;
                 actionHeaderCell.CssClass = "grid-actions";
                 _actionHeaderRow.Cells.Add( actionHeaderCell );
 
@@ -1683,13 +1684,13 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
             if ( !string.IsNullOrEmpty( this.ExportTitleName ) )
             {
                 // If we have a Export Title Name then use it
-                workSheetName = this.ExportTitleName;
+                workSheetName = this.ExportTitleName.ReplaceSpecialCharacters( "_" ).TrimEnd( '_' );
                 title = this.ExportTitleName;
             }
             else if ( !string.IsNullOrEmpty( this.Caption ) )
             {
                 // Then try the caption
-                workSheetName = this.Caption;
+                workSheetName = this.Caption.ReplaceSpecialCharacters( "_" ).TrimEnd( '_' );
                 title = this.Caption;
             }
             else
@@ -1699,7 +1700,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
 
                 if ( !string.IsNullOrEmpty( pageTitle ) )
                 {
-                    workSheetName = pageTitle;
+                    workSheetName = pageTitle.ReplaceSpecialCharacters( "_" ).TrimEnd( '_' );
                     title = pageTitle;
                 }
             }

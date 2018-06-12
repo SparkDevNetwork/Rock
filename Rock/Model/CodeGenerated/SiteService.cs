@@ -126,6 +126,7 @@ namespace Rock.Model
             target.RegistrationPageId = source.RegistrationPageId;
             target.RegistrationPageRouteId = source.RegistrationPageRouteId;
             target.RequiresEncryption = source.RequiresEncryption;
+            target.SiteLogoBinaryFileId = source.SiteLogoBinaryFileId;
             target.Theme = source.Theme;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

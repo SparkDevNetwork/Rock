@@ -99,15 +99,18 @@
 
                 $control.find('a.picker-label').click(function (e) {
                     e.preventDefault();
-                    $control.find('.picker-menu').first().toggle(function () {
+                    $(this).toggleClass("active");
+                    $control.find('.picker-menu').first().toggle(0, function () {
                         self.scrollToSelectedItem();
                     });
                 });
 
                 $control.find('.picker-cancel').click(function () {
-                    $(this).closest('.picker-menu').slideUp(function () {
+                    $(this).toggleClass("active");
+                    $(this).closest('.picker-menu').toggle(0, function () {
                         self.updateScrollbar();
                     });
+                    $(this).closest('a.picker-label').toggleClass("active");
                 });
 
                 // have the X appear on hover if something is selected
@@ -137,8 +140,9 @@
 
                     $spanNames.text(selectedNames.join(', '));
                     $spanNames.attr('title', $spanNames.text());
-
-                    $(this).closest('.picker-menu').slideUp(function () {
+                    
+                    $(this).closest('a.picker-label').toggleClass("active");
+                    $(this).closest('.picker-menu').toggle(0, function () {
                         self.updateScrollbar();
                     });
                     

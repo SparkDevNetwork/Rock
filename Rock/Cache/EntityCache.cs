@@ -86,6 +86,20 @@ namespace Rock.Cache
         [DataMember]
         public string ForeignKey { get; protected set; }
 
+        /// <summary>
+        /// The EntityType of the cached entity
+        /// </summary>
+        /// <value>
+        /// The entity type identifier.
+        /// </value>
+        public int CachedEntityTypeId
+        {
+            get
+            {
+                return CacheEntityType.Get<TT>().Id;
+            }
+        }
+
         #endregion
 
         #region Public Methods
@@ -121,7 +135,21 @@ namespace Rock.Cache
         /// <returns></returns>
         public static T Get( int id, RockContext rockContext )
         {
-            return id == 0 ? default(T) : GetOrAddExisting( id, () => QueryDb( id, rockContext ) );
+            if ( id == 0 )
+            {
+                return default( T );
+            }
+
+            return GetOrAddExisting( id, () =>
+            {
+                var result = QueryDb( id, rockContext );
+                if ( result != null )
+                {
+                    CacheIdFromGuid.UpdateCacheItem( result.Guid.ToString(), new CacheIdFromGuid( id ), TimeSpan.MaxValue );
+                }
+
+                return result;
+            } );
         }
 
         /// <summary>
@@ -153,14 +181,20 @@ namespace Rock.Cache
         /// <returns></returns>
         public static T Get( Guid guid, RockContext rockContext )
         {
-            // First check to see if there's an item in the All list 
-            var cachedEntity = All().FirstOrDefault( i => i.Guid.Equals( guid ) );
-            if ( cachedEntity != null ) return cachedEntity;
+            // see if the Id is stored in CacheIdFromGuid
+            int? idFromGuid = CacheIdFromGuid.GetId( guid );
+            T cachedEntity;
+            if ( idFromGuid.HasValue )
+            {
+                cachedEntity = Get( idFromGuid.Value, rockContext );
+                return cachedEntity;
+            }
 
             // If not, query the database for it, and then add to cache (if found)
             cachedEntity = QueryDb( guid, rockContext );
             if ( cachedEntity != null )
             {
+                CacheIdFromGuid.UpdateCacheItem( guid.ToString(), new CacheIdFromGuid( cachedEntity.Id ), TimeSpan.MaxValue );
                 UpdateCacheItem( cachedEntity.Id.ToString(), cachedEntity, TimeSpan.MaxValue );
             }
 
@@ -174,14 +208,16 @@ namespace Rock.Cache
         /// <returns></returns>
         public static T Get( TT entity )
         {
-            if ( entity == null ) return default( T );
+            if ( entity == null )
+                return default( T );
 
             var value = new T();
             value.SetFromEntity( entity );
+
+            CacheIdFromGuid.UpdateCacheItem( entity.Guid.ToString(), new CacheIdFromGuid( entity.Id ), TimeSpan.MaxValue );
             UpdateCacheItem( entity.Id.ToString(), value, TimeSpan.MaxValue );
 
             return value;
-
         }
 
         /// <summary>
@@ -190,7 +226,7 @@ namespace Rock.Cache
         /// <returns></returns>
         public static List<T> All()
         {
-            return All(null);
+            return All( null );
         }
 
         /// <summary>
@@ -199,11 +235,12 @@ namespace Rock.Cache
         /// <returns></returns>
         public static List<T> All( RockContext rockContext )
         {
-            var cachedKeys = GetOrAddKeys(() => QueryDbForAllIds(rockContext));
-            if ( cachedKeys == null) return new List<T>();
+            var cachedKeys = GetOrAddKeys( () => QueryDbForAllIds( rockContext ) );
+            if ( cachedKeys == null )
+                return new List<T>();
 
             var allValues = new List<T>();
-            foreach ( var key in cachedKeys )
+            foreach ( var key in cachedKeys.ToList() )
             {
                 var value = Get( key.AsInteger() );
                 if ( value != null )
@@ -271,7 +308,8 @@ namespace Rock.Cache
             var service = new Service<TT>( rockContext );
             var entity = service.Get( id );
 
-            if ( entity == null ) return default( T );
+            if ( entity == null )
+                return default( T );
 
             var value = new T();
             value.SetFromEntity( entity );
@@ -287,6 +325,11 @@ namespace Rock.Cache
         /// <returns></returns>
         private static T QueryDb( Guid guid, DbContext rockContext )
         {
+            if ( guid.IsEmpty() )
+            {
+                return default( T );
+            }
+
             if ( rockContext != null )
             {
                 return QueryDbWithContext( guid, rockContext );
@@ -309,7 +352,8 @@ namespace Rock.Cache
             var service = new Service<TT>( rockContext );
             var entity = service.Get( guid );
 
-            if ( entity == null ) return default( T );
+            if ( entity == null )
+                return default( T );
 
             var value = new T();
             value.SetFromEntity( entity );

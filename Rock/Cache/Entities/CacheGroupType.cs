@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
 
@@ -314,20 +315,7 @@ namespace Rock.Cache
         /// <value>
         /// The group type purpose value.
         /// </value>
-        public CacheDefinedValue GroupTypePurposeValue
-        {
-            get
-            {
-                if ( GroupTypePurposeValueId.HasValue && GroupTypePurposeValueId.Value != 0 )
-                {
-                    return CacheDefinedValue.Get( GroupTypePurposeValueId.Value );
-                }
-                else
-                {
-                    return null;
-                }
-            }
-        }
+        public CacheDefinedValue GroupTypePurposeValue => GroupTypePurposeValueId.HasValue ? CacheDefinedValue.Get( GroupTypePurposeValueId.Value ) : null;
 
         /// <summary>
         /// Gets or sets a value indicating whether to ignore person inactivated.
@@ -360,6 +348,15 @@ namespace Rock.Cache
         public bool EnableGroupHistory { get; private set; }
 
         /// <summary>
+        /// Gets or sets the DefinedType that Groups of this type will use for the Group.StatusValue
+        /// </summary>
+        /// <value>
+        /// The group status defined type identifier.
+        /// </value>
+        [DataMember]
+        public int? GroupStatusDefinedTypeId { get; private set; }
+
+        /// <summary>
         /// The color used to visually distinguish groups on lists.
         /// </summary>
         /// <value>
@@ -384,7 +381,37 @@ namespace Rock.Cache
         /// The roles.
         /// </value>
         [DataMember]
-        public List<GroupTypeRoleCache> Roles { get; private set; }
+        public List<GroupTypeRoleCache> Roles
+        {
+            get
+            {
+                if ( _roles == null )
+                {
+                    lock ( _obj )
+                    {
+                        if ( _roles == null )
+                        {
+                            using ( var rockContext = new RockContext() )
+                            {
+                                Roles = new List<GroupTypeRoleCache>();
+                                new GroupTypeRoleService( rockContext )
+                                    .Queryable().AsNoTracking()
+                                    .Where( r => r.GroupTypeId == Id )
+                                    .OrderBy( r => r.Order )
+                                    .ToList()
+                                    .ForEach( r => Roles.Add( new GroupTypeRoleCache( r ) ) );
+                            }
+                        }
+                    }
+                }
+                return _roles;
+            }
+            private set
+            {
+                _roles = value;
+            }
+        }
+        private List<GroupTypeRoleCache> _roles = null;
 
         /// <summary>
         /// Gets or sets the group schedule exclusions.
@@ -393,7 +420,38 @@ namespace Rock.Cache
         /// The group schedule exclusions.
         /// </value>
         [DataMember]
-        public List<DateRange> GroupScheduleExclusions { get; private set; }
+        public List<DateRange> GroupScheduleExclusions
+        {
+            get
+            {
+                if ( _groupScheduleExclusions == null )
+                {
+                    lock ( _obj )
+                    {
+                        if ( _groupScheduleExclusions == null )
+                        {
+                            using ( var rockContext = new RockContext() )
+                            {
+                                GroupScheduleExclusions = new List<DateRange>();
+                                new GroupScheduleExclusionService( rockContext )
+                                    .Queryable().AsNoTracking()
+                                    .Where( s => s.GroupTypeId == Id )
+                                    .OrderBy( s => s.StartDate )
+                                    .ToList()
+                                    .ForEach( s => GroupScheduleExclusions.Add( new DateRange( s.StartDate, s.EndDate ) ) );
+
+                            }
+                        }
+                    }
+                }
+                return _groupScheduleExclusions;
+            }
+            private set
+            {
+                _groupScheduleExclusions = value;
+            }
+        }
+        private List<DateRange> _groupScheduleExclusions;
 
         /// <summary>
         /// Gets the child group types.
@@ -407,15 +465,15 @@ namespace Rock.Cache
             {
                 var childGroupTypes = new List<CacheGroupType>();
 
-                if ( _childGroupTypeIds == null )
+                if ( ChildGroupTypeIds == null )
                 {
                     lock ( _obj )
                     {
-                        if ( _childGroupTypeIds == null )
+                        if ( ChildGroupTypeIds == null )
                         {
                             using ( var rockContext = new RockContext() )
                             {
-                                _childGroupTypeIds = new GroupTypeService( rockContext )
+                                ChildGroupTypeIds = new GroupTypeService( rockContext )
                                     .GetChildGroupTypes( Id )
                                     .Select( g => g.Id )
                                     .ToList();
@@ -425,9 +483,9 @@ namespace Rock.Cache
                 }
 
 
-                if ( _childGroupTypeIds == null ) return childGroupTypes;
+                if ( ChildGroupTypeIds == null ) return childGroupTypes;
 
-                foreach ( var id in _childGroupTypeIds )
+                foreach ( var id in ChildGroupTypeIds )
                 {
                     var groupType = Get( id );
                     if ( groupType != null )
@@ -439,7 +497,9 @@ namespace Rock.Cache
                 return childGroupTypes;
             }
         }
-        private List<int> _childGroupTypeIds;
+
+        [DataMember]
+        private List<int> ChildGroupTypeIds { get; set; }
 
         /// <summary>
         /// Gets the parent group types.
@@ -518,6 +578,14 @@ namespace Rock.Cache
             }
         }
 
+        /// <summary>
+        /// Gets or sets the DefinedType that Groups of this type will use for the Group.StatusValue
+        /// </summary>
+        /// <value>
+        /// The type of the group status defined.
+        /// </value>
+        public CacheDefinedType GroupStatusDefinedType => GroupStatusDefinedTypeId.HasValue ? CacheDefinedType.Get( this.GroupStatusDefinedTypeId.Value ) : null;
+
         #endregion
 
         #region Public Methods
@@ -564,22 +632,10 @@ namespace Rock.Cache
             EnableSpecificGroupRequirements = groupType.EnableSpecificGroupRequirements;
             AllowGroupSync = groupType.AllowGroupSync;
             AllowSpecificGroupMemberWorkflows = groupType.AllowSpecificGroupMemberWorkflows;
-
-            Roles = new List<GroupTypeRoleCache>();
-            groupType.Roles
-                .OrderBy( r => r.Order )
-                .ToList()
-                .ForEach( r => Roles.Add( new GroupTypeRoleCache( r ) ) );
-
-            GroupScheduleExclusions = new List<DateRange>();
-            groupType.GroupScheduleExclusions
-                .OrderBy( s => s.StartDate )
-                .ToList()
-                .ForEach( s => GroupScheduleExclusions.Add( new DateRange( s.StartDate, s.EndDate ) ) );
-
             EnableGroupHistory = groupType.EnableGroupHistory;
             GroupTypeColor = groupType.GroupTypeColor;
             ShowMaritalStatus = groupType.ShowMaritalStatus;
+            GroupStatusDefinedTypeId = groupType.GroupStatusDefinedTypeId;
         }
 
         /// <summary>
@@ -601,19 +657,13 @@ namespace Rock.Cache
         /// Gets the 'Family' Group Type.
         /// </summary>
         /// <returns></returns>
-        public static CacheGroupType GetFamilyGroupType()
-        {
-            return Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
-        }
+        public static CacheGroupType GetFamilyGroupType() => Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
 
         /// <summary>
         /// Gets the 'Security Role' Group Type.
         /// </summary>
         /// <returns></returns>
-        public static CacheGroupType GetSecurityRoleGroupType()
-        {
-            return Get( SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
-        }
+        public static CacheGroupType GetSecurityRoleGroupType() => Get( SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
 
         #endregion
     }
@@ -721,6 +771,11 @@ namespace Rock.Cache
         /// <param name="role">The role.</param>
         public GroupTypeRoleCache( GroupTypeRole role )
         {
+            if ( role == null )
+            {
+                return;
+            }
+
             Id = role.Id;
             Guid = role.Guid;
             Name = role.Name;

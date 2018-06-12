@@ -53,10 +53,11 @@ BEGIN
 	FROM
 	(
 		SELECT PA.[PersonId], ROW_NUMBER() OVER (PARTITION BY PA.[PersonId] ORDER BY A.[StartDateTime] DESC) AS PersonRowNumber,
-			A.[CampusId], A.[GroupId], G.[Name] AS [GroupName], A.[ScheduleId], A.[StartDateTime], A.[LocationId], R.[RoleName], L.[Name] AS [LocationName]
+			A.[CampusId], O.[GroupId], G.[Name] AS [GroupName], O.[ScheduleId], A.[StartDateTime], O.[LocationId], R.[RoleName], L.[Name] AS [LocationName]
 		FROM [Attendance] A
+		INNER JOIN [AttendanceOccurrence] O ON O.[Id] = A.[OccurrenceId]
 		INNER JOIN [PersonAlias] PA ON PA.[Id] = A.[PersonAliasId]
-		INNER JOIN [Group] G ON G.[Id] = A.[GroupId]
+		INNER JOIN [Group] G ON G.[Id] = O.[GroupId]
 		INNER JOIN @GroupTbl [G2] ON [G2].[Id] = G.[Id]
 		OUTER APPLY (
 			SELECT TOP 1 R.[Name] AS [RoleName]
@@ -69,9 +70,9 @@ BEGIN
 			ORDER BY R.[Order]
 		) R
 		LEFT OUTER JOIN [Location] L
-			ON L.[Id] = A.[LocationId]
+			ON L.[Id] = O.[LocationId]
 		LEFT OUTER JOIN @CampusTbl [C] ON [C].[id] = [A].[CampusId]
-		LEFT OUTER JOIN @ScheduleTbl [S] ON [S].[id] = [A].[ScheduleId]
+		LEFT OUTER JOIN @ScheduleTbl [S] ON [S].[id] = [O].[ScheduleId]
 		WHERE [StartDateTime] BETWEEN @StartDate AND @EndDate
 		AND [DidAttend] = 1
 		AND ( 

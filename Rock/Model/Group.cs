@@ -251,6 +251,16 @@ namespace Rock.Model
         [DataMember]
         public int? ArchivedByPersonAliasId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Group Status Id.  DefinedType depends on this group's <see cref="Rock.Model.GroupType.GroupStatusDefinedType"/>
+        /// </summary>
+        /// <value>
+        /// The status value identifier.
+        /// </value>
+        [DataMember]
+        [DefinedValue]
+        public int? StatusValueId { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -506,6 +516,15 @@ namespace Rock.Model
         /// </value>
         [NotMapped]
         public virtual History.HistoryChangeList HistoryChangeList { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> representing the Group's status. DefinedType depends on this group's <see cref="Rock.Model.GroupType.GroupTypePurposeValue"/>
+        /// </summary>
+        /// <value>
+        /// A <see cref="DefinedValue"/> object representing the Group's status.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue StatusValue { get; set; }
 
         #endregion
 
@@ -965,6 +984,7 @@ namespace Rock.Model
             this.HasOptional( p => p.Schedule ).WithMany().HasForeignKey( p => p.ScheduleId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.RequiredSignatureDocumentTemplate ).WithMany().HasForeignKey( p => p.RequiredSignatureDocumentTemplateId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ArchivedByPersonAlias ).WithMany().HasForeignKey( p => p.ArchivedByPersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.StatusValue ).WithMany().HasForeignKey( p => p.StatusValueId ).WillCascadeOnDelete( false );
 
             // Tell EF that we never want archived groups. 
             // This will prevent archived members from being included in any Groupqueries.

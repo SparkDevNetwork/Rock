@@ -63,6 +63,7 @@ namespace Rock.Field.Types
             var ddl = new RockDropDownList();
             controls.Add( ddl );
             ddl.AutoPostBack = true;
+            ddl.EnhanceForLongLists = true;
             ddl.SelectedIndexChanged += OnQualifierUpdated;
             ddl.Label = "Content Channel";
             ddl.Help = "Content Channel to select items from, if left blank any content channel's item can be selected.";

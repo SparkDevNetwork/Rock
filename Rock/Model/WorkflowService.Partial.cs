@@ -145,7 +145,7 @@ namespace Rock.Model
                 }
             } );
 
-            action.AddLogEntry( "Updated workflow to be persisted!" );
+            action.AddLogEntry( "Workflow has been persisted!" );
         }
     }
 }

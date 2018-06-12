@@ -251,7 +251,12 @@ namespace RockWeb.Blocks.CheckIn
                 // Check for existing attendance records.
                 //
                 attendance = attendanceService.Queryable()
-                    .Where( a => a.DidAttend == true && a.GroupId == group.Id && a.StartDateTime == dateTime.Value && a.LocationId == groupLocation.LocationId && a.ScheduleId == scheduleId )
+                    .Where( a => 
+                        a.DidAttend == true && 
+                        a.Occurrence.GroupId == group.Id && 
+                        a.Occurrence.OccurrenceDate == dateTime.Value && 
+                        a.Occurrence.LocationId == groupLocation.LocationId && 
+                        a.Occurrence.ScheduleId == scheduleId )
                     .OrderBy( a => a.PersonAlias.Person.LastName )
                     .ThenBy( a => a.PersonAlias.Person.FirstName );
 
@@ -299,12 +304,7 @@ namespace RockWeb.Blocks.CheckIn
             var dateTime = dpAttendanceDate.SelectedDate.Value;
             var groupLocation = new GroupLocationService( rockContext ).Get( ddlLocation.SelectedValue.AsInteger() );
 
-            //
-            // Check for existing attendance record.
-            //
-            var attendance = attendanceService.Queryable()
-                .Where( a => a.GroupId == group.Id && a.PersonAlias.PersonId == person.Id && a.StartDateTime == dateTime && a.LocationId == groupLocation.LocationId && a.ScheduleId == scheduleId )
-                .FirstOrDefault();
+            attendanceService.AddOrUpdate( person.PrimaryAliasId.Value, dateTime, group.Id, groupLocation.LocationId, scheduleId, group.CampusId );
 
             //
             // If the user is using the activate and save button then mark the
@@ -315,33 +315,12 @@ namespace RockWeb.Blocks.CheckIn
                 person.RecordStatusValueId = new DefinedValueService( rockContext ).Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
             }
 
-            //
-            // If not found then create a new one.
-            //
-            if ( attendance == null )
-            {
-                attendance = new Attendance();
-
-                attendance.GroupId = group.Id;
-                attendance.PersonAliasId = person.PrimaryAliasId;
-                attendance.StartDateTime = dateTime;
-                attendance.CampusId = group.CampusId;
-                attendance.LocationId = groupLocation.LocationId;
-                attendance.ScheduleId = scheduleId;
-
-                attendanceService.Add( attendance );
-            }
-
-            attendance.DidAttend = true;
             rockContext.SaveChanges();
 
             //
             // Flush the attendance cache.
             //
-            if ( attendance.LocationId.HasValue )
-            {
-                Rock.CheckIn.KioskLocationAttendance.Remove( attendance.LocationId.Value );
-            }
+            Rock.CheckIn.KioskLocationAttendance.Remove( groupLocation.LocationId );
 
             nbAttended.Text = string.Format( "{0} has been marked attended.", person.FullName );
 
@@ -412,9 +391,9 @@ namespace RockWeb.Blocks.CheckIn
             attendance.DidAttend = false;
             rockContext.SaveChanges();
 
-            if ( attendance.LocationId != null )
+            if ( attendance.Occurrence.LocationId != null )
             {
-                Rock.CheckIn.KioskLocationAttendance.Remove( attendance.LocationId.Value );
+                Rock.CheckIn.KioskLocationAttendance.Remove( attendance.Occurrence.LocationId.Value );
             }
 
             nbAttended.Text = string.Format( "{0} has been removed from attendance.", attendance.PersonAlias.Person.FullName );

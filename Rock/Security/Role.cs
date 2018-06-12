@@ -93,6 +93,18 @@ namespace Rock.Security
         #region Static Methods
 
         /// <summary>
+        /// Performs an implicit conversion from <see cref="Role"/> to <see cref="CacheRole"/>.
+        /// </summary>
+        /// <param name="c">The c.</param>
+        /// <returns>
+        /// The result of the conversion.
+        /// </returns>
+        public static implicit operator CacheRole( Role c )
+        {
+            return CacheRole.Get( c.Id );
+        }
+
+        /// <summary>
         /// Returns Role object from cache.  If role does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>
