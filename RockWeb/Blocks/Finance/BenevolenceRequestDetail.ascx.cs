@@ -579,7 +579,7 @@ namespace RockWeb.Blocks.Finance
                     lapAddress.Enabled = false;
 
                     // set the campus but not on page load (e will be null) unless from the person profile page (in which case BenevolenceRequestId in the query string will be 0)
-                    int? requestId = Request["BenevolenceRequestId"].AsIntegerOrNull();
+                    int? requestId = PageParameter( "BenevolenceRequestId" ).AsIntegerOrNull();
                     
                     if ( !cpCampus.SelectedCampusId.HasValue && ( e != null || (requestId.HasValue && requestId == 0 ) ) )
                     {
