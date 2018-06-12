@@ -99,7 +99,7 @@ namespace Rock.Model
             var component = this.Queryable()
                 .FirstOrDefault( predicate );
 
-            if ( component == null )
+            if ( component != null )
             {
                 component.Name = name;
             }
