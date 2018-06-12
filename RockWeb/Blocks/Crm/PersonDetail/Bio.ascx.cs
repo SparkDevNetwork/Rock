@@ -301,8 +301,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         protected void CreateActionMenu()
         {
             StringBuilder sbActions = new StringBuilder();
-            sbActions.Append( "<li role=\"separator\" class=\"divider\"></li>" );
-
+            
             // First list the actions manually entered as html in the block settting
             var actions = GetAttributeValue( "Actions" );
             if ( !string.IsNullOrWhiteSpace( actions ) )
@@ -316,10 +315,9 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     actions = string.Format( actions, Person.Id );
                 }
 
+                sbActions.Append( "<li role=\"separator\" class=\"divider\"></li>" );
                 sbActions.Append( actions );
             }
-
-            sbActions.Append( "<li role=\"separator\" class=\"divider\"></li>" );
 
             // Next list the workflow actions selected in the picker
             var workflowActions = GetAttributeValue( "WorkflowActions" );
@@ -345,6 +343,12 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 }
 
                 workflowTypes = workflowTypes.OrderBy( w => w.Name ).ToList();
+
+                if ( workflowTypes.Count() > 0 )
+                {
+                    sbActions.Append( "<li role=\"separator\" class=\"divider\"></li>" );
+                }
+
                 foreach ( var workflowType in workflowTypes )
                 {
                     string url = string.Format( "~/WorkflowEntry/{0}?PersonId={1}", workflowType.Id, Person.Id );
@@ -358,7 +362,6 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             }
 
             lActions.Text = sbActions.ToString();
-            ulActions.Visible = !string.IsNullOrWhiteSpace( lActions.Text );
         }
 
         /// <summary>
