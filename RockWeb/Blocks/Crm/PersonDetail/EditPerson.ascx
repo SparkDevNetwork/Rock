@@ -89,7 +89,7 @@
                                 </asp:Panel>
                                 <div class="form-row">
                                     <div class="col-sm-3">
-                                        <Rock:RockDropDownList ID="ddlMaritalStatus" runat="server" Label="Marital Status" />
+                                        <Rock:RockDropDownList ID="ddlMaritalStatus" runat="server" Label="Marital Status" AutoPostBack="true" OnSelectedIndexChanged="ddlMaritalStatus_SelectedIndexChanged" />
                                     </div>
                                     <div class="col-sm-3">
                                         <Rock:DatePicker ID="dpAnniversaryDate" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="AnniversaryDate" StartView="decade" />
