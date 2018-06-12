@@ -386,25 +386,28 @@ namespace RockWeb.Blocks.CheckIn
         private List<GroupType> GetSelectedGroupTypes()
         {
 
+
             if ( !_isGroupSpecific )
             {
                 var groupTypeGuids = this.GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().AsGuidList();
                 if ( groupTypeGuids.Any() )
                 {
-                    var groupTypes = new List<GroupType>();
-
                     var groupTypeService = new GroupTypeService( _rockContext );
-                    foreach( var guid in groupTypeGuids )
-                    {
-                        var groupTypeCache = CacheGroupType.Get( guid );
-                        if ( groupTypeCache != null )
+
+                    var groupTypes = groupTypeService
+                        .Queryable().AsNoTracking()
+                        .Where( t => groupTypeGuids.Contains( t.Guid ) )
+                        .OrderBy( t => t.Order )
+                        .ThenBy( t => t.Name )
+                        .ToList();
+
+                    foreach ( var groupType in groupTypes.ToList() )
+                    { 
+                        foreach ( var childGroupType in groupTypeService.GetAllAssociatedDescendentsOrdered( groupType.Id ) )
                         {
-                            foreach ( var groupType in groupTypeService.GetAllAssociatedDescendentsOrdered( groupTypeCache.Id ) )
+                            if ( !groupTypes.Any( t => t.Id == childGroupType.Id ) )
                             {
-                                if ( !groupTypes.Any( t => t.Id == groupType.Id ) )
-                                {
-                                    groupTypes.Add( groupType );
-                                }
+                                groupTypes.Add( childGroupType );
                             }
                         }
                     }
