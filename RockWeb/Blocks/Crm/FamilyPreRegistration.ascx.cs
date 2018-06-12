@@ -58,6 +58,7 @@ that is created/updated; 'RelatedChildren', which is a list of the children who 
 comma-delimited list of the person ids for each adult; 'ChildIds' which is a comma-delimited list of the person ids for each child; and 'PlannedVisitDate' which is 
 the value entered for the Planned Visit Date field if it was displayed.
 ", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, true, "", "", 9 )]
+    [BooleanField("Require Campus", "Require that a campus be selected", true, "", 10)]
 
     [CustomDropdownListField( "Suffix", "How should Suffix be displayed for adults?", "Hide,Optional", false, "Hide", "Adult Fields", 0, "AdultSuffix" )]
     [CustomDropdownListField( "Gender", "How should Gender be displayed for adults?", "Hide,Optional,Required", false, "Optional", "Adult Fields", 1, "AdultGender" )]
@@ -669,6 +670,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             {
                 cpCampus.Campuses = CacheCampus.All( false );
                 pnlCampus.Visible = true;
+                cpCampus.Required = GetAttributeValue("RequireCampus").AsBoolean();
             }
             else
             {
