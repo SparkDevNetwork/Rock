@@ -5066,7 +5066,9 @@
     <Content Include="Migrations\201806081810282_LandingPage.sql">
       <DependentUpon>201806081810282_LandingPage.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201806111950515_ContentChannelViewDetail.sql" />
+    <Content Include="Migrations\201806111950515_ContentChannelViewDetail.sql">
+      <DependentUpon>201806111950515_ContentChannelViewDetail.cs</DependentUpon>
+    </Content>
     <Content Include="Migrations\Version 7.0\Version 1.7.0\201707182207536_AttendanceAnalyticsQuery_NonAttendees.sql">
       <DependentUpon>201707182207536_PageShortLinks.cs</DependentUpon>
     </Content>
