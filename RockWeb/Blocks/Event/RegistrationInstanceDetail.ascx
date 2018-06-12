@@ -342,15 +342,15 @@
                             <Rock:Grid ID="gFees" runat="server" DisplayType="Full" AllowSorting="true" RowItemText="Fee" ExportSource="DataSource" >
                                 <Columns>
                                         <Rock:RockBoundField HeaderText ="Registration ID" DataField="RegistrationId" ExcelExportBehavior="AlwaysInclude" Visible="false" />
-                                        <Rock:DateField HeaderText ="Registration Date" DataField="RegistrationDate" />
-                                        <Rock:RockBoundField HeaderText ="Registered By" DataField="RegisteredByName" />
-                                        <Rock:RockBoundField HeaderText ="Registrant" DataField="RegistrantName" />
+                                        <Rock:DateField HeaderText ="Registration Date" DataField="RegistrationDate" SortExpression="RegistrationDate" />
+                                        <Rock:RockBoundField HeaderText ="Registered By" DataField="RegisteredByName" SortExpression="RegisteredByName" />
+                                        <Rock:RockBoundField HeaderText ="Registrant" DataField="RegistrantName" SortExpression="RegistrantName" />
                                         <Rock:RockBoundField HeaderText ="Registrant ID" DataField="RegistrantId" ExcelExportBehavior="AlwaysInclude" Visible="false" />
-		                                <Rock:RockBoundField HeaderText ="Fee Name" DataField="FeeName" />
-                                        <Rock:RockBoundField HeaderText ="Option" DataField="Option" />
-		                                <Rock:RockBoundField HeaderText ="Quanity" DataField="Quanity" />
-                                        <Rock:CurrencyField HeaderText ="Cost" DataField="Cost" />
-                                        <Rock:CurrencyField HeaderText ="Fee Total" DataField="FeeTotal"  />
+		                                <Rock:RockBoundField HeaderText ="Fee Name" DataField="FeeName" SortExpression="FeeName" />
+                                        <Rock:RockBoundField HeaderText ="Option" DataField="Option" SortExpression="Option" />
+		                                <Rock:RockBoundField HeaderText ="Quanity" DataField="Quanity" SortExpression="Quanity" />
+                                        <Rock:CurrencyField HeaderText ="Cost" DataField="Cost" SortExpression="Cost" />
+                                        <Rock:CurrencyField HeaderText ="Fee Total" DataField="FeeTotal" SortExpression="FeeTotal"  />
                                 </Columns>
                             </Rock:Grid>
                         </div>

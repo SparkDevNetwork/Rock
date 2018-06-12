@@ -4374,7 +4374,17 @@ namespace RockWeb.Blocks.Event
                 data = data.Where( r => cblFeeOptions.SelectedValues.Contains( r.Option ) );
             }
 
-            gFees.DataSource = data.ToList();
+            SortProperty sortProperty = gFees.SortProperty;
+            if ( sortProperty != null )
+            {
+                data = data.AsQueryable().Sort( sortProperty ).ToList();
+            }
+            else
+            {
+                data = data.OrderByDescending( f => f.RegistrationDate ).ToList();
+            }
+
+            gFees.DataSource = data;
             gFees.DataBind();
         }
 
@@ -4491,7 +4501,6 @@ namespace RockWeb.Blocks.Event
 
             var results = data.ToList();
 
-            // Sorting
             SortProperty sortProperty = gDiscounts.SortProperty;
             if ( sortProperty != null )
             {
