@@ -58,6 +58,14 @@ namespace Rock.Transactions
         public string WorkflowName { get; set; }
 
         /// <summary>
+        /// Gets or sets the initiator person alias identifier.
+        /// </summary>
+        /// <value>
+        /// The initiator person alias identifier.
+        /// </value>
+        public int? InitiatorPersonAliasId { get; set; }
+
+        /// <summary>
         /// Gets or sets the workflow attribute values.
         /// </summary>
         /// <value>
@@ -126,8 +134,9 @@ namespace Rock.Transactions
                 if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                 {
                     var workflow = Rock.Model.Workflow.Activate( workflowType, WorkflowName );
+                    workflow.InitiatorPersonAliasId = InitiatorPersonAliasId;
 
-                    foreach( var keyVal in WorkflowAttributeValues )
+                    foreach ( var keyVal in WorkflowAttributeValues )
                     {
                         workflow.SetAttributeValue( keyVal.Key, keyVal.Value );
                     }

@@ -1251,7 +1251,7 @@ namespace RockWeb.Blocks.Examples
                         break;
 
                     case "related":
-                        roleId = groupTypeRoles.Where( r => r.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_IMPLIED_RELATIONSHIPS_RELATED.AsGuid() )
+                        roleId = groupTypeRoles.Where( r => r.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_PEER_NETWORK_RELATED.AsGuid() )
                             .Select( r => r.Id ).FirstOrDefault();
                         break;
 
@@ -2497,7 +2497,7 @@ namespace RockWeb.Blocks.Examples
                 }
             }
 
-            CreateAttendance( family.Members, startingDate, endDate, pctAttendance, pctAttendedRegularService, scheduleId, altScheduleId, attendanceData );
+            CreateAttendance( family.Members, startingDate, endDate, pctAttendance, pctAttendedRegularService, scheduleId, altScheduleId, attendanceData, rockContext );
         }
 
         /// <summary>
@@ -2515,8 +2515,8 @@ namespace RockWeb.Blocks.Examples
         /// <param name="scheduleId">The schedule identifier.</param>
         /// <param name="altScheduleId">The alt schedule identifier.</param>
         /// <param name="attendanceData">The attendance data.</param>
-        private void CreateAttendance( ICollection<GroupMember> familyMembers, DateTime startingDate, DateTime endDate, 
-            int pctAttendance, int pctAttendedRegularService, int scheduleId, int altScheduleId, Dictionary<Guid, List<Attendance>> attendanceData )
+        private void CreateAttendance( ICollection<GroupMember> familyMembers, DateTime startingDate, DateTime endDate, int pctAttendance, 
+            int pctAttendedRegularService, int scheduleId, int altScheduleId, Dictionary<Guid, List<Attendance>> attendanceData, RockContext rockContext )
         {
             // foreach weekend between the starting and ending date...
             for ( DateTime date = startingDate; date <= endDate; date = date.AddDays( 7 ) )
@@ -2540,6 +2540,8 @@ namespace RockWeb.Blocks.Examples
 
                 DateTime dtTime = new DateTime( date.Year, date.Month, date.Day, time.Hour, time.Minute, time.Second );
                 DateTime checkinDateTime = dtTime.AddMinutes( Convert.ToDouble( plusMinus * minutes ) ).AddSeconds( randomSeconds );
+
+                var attendanceService = new AttendanceService( rockContext );
 
                 // foreach child in the family
                 foreach ( var member in familyMembers.Where( m => m.GroupRoleId == _childRoleId ) )
@@ -2565,18 +2567,8 @@ namespace RockWeb.Blocks.Examples
                         IssueDateTime = RockDateTime.Now,
                     };
 
-                    Attendance attendance = new Attendance()
-                    {
-                        ScheduleId = scheduleId,
-                        GroupId = item.GroupId,
-                        LocationId = item.LocationId,
-                        DeviceId = _kioskDeviceId,
-                        AttendanceCode = attendanceCode,
-                        StartDateTime = checkinDateTime,
-                        EndDateTime = null,
-                        DidAttend = true,
-                        CampusId = 1
-                    };
+                    var attendance = attendanceService.AddOrUpdate( member.Person.PrimaryAliasId, checkinDateTime, item.GroupId, item.LocationId, scheduleId, 1, _kioskDeviceId, null, null, null, null );
+                    attendance.AttendanceCode = attendanceCode;
 
                     if ( !attendanceData.Keys.Contains( member.Person.Guid ))
                     {

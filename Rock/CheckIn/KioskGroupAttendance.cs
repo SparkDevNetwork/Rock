@@ -16,12 +16,14 @@
 //
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 
 namespace Rock.CheckIn
 {
     /// <summary>
     /// Helper class for storing the current attendance for a given kiosk group
     /// </summary>
+    [DataContract]
     public class KioskGroupAttendance
     {
         /// <summary>
@@ -30,6 +32,7 @@ namespace Rock.CheckIn
         /// <value>
         /// The group id.
         /// </value>
+        [DataMember]
         public int GroupId { get; set; }
 
         /// <summary>
@@ -38,6 +41,7 @@ namespace Rock.CheckIn
         /// <value>
         /// The name of the group.
         /// </value>
+        [DataMember]
         public string GroupName { get; set; }
 
         /// <summary>
@@ -46,6 +50,7 @@ namespace Rock.CheckIn
         /// <value>
         /// The schedules.
         /// </value>
+        [DataMember]
         public List<KioskScheduleAttendance> Schedules { get; set; }
 
         /// <summary>

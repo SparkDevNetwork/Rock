@@ -299,9 +299,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     }
                     person.GraduationYear = graduationYear;
 
-                    person.AnniversaryDate = dpAnniversaryDate.SelectedDate;
-                    person.Gender = rblGender.SelectedValue.ConvertToEnum<Gender>();
                     person.MaritalStatusValueId = ddlMaritalStatus.SelectedValueAsInt();
+                    person.AnniversaryDate = person.MaritalStatusValueId == CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED ).Id ? dpAnniversaryDate.SelectedDate : null;
+                    person.Gender = rblGender.SelectedValue.ConvertToEnum<Gender>();
                     person.ConnectionStatusValueId = ddlConnectionStatus.SelectedValueAsInt();
 
                     var phoneNumberTypeIds = new List<int>();
@@ -618,6 +618,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             dpAnniversaryDate.SelectedDate = Person.AnniversaryDate;
             rblGender.SelectedValue = Person.Gender.ConvertToString( false );
             ddlMaritalStatus.SetValue( Person.MaritalStatusValueId );
+            ShowAnniversaryDate();
             ddlConnectionStatus.SetValue( Person.ConnectionStatusValueId );
             lConnectionStatusReadOnly.Text = Person.ConnectionStatusValueId.HasValue ? Person.ConnectionStatusValue.Value : string.Empty;
             
@@ -804,6 +805,35 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                     .Where( a => a.AttributeId == personGivingEnvelopeAttribute.Id && a.ValueAsNumeric.HasValue )
                                     .Max( a => (int?)a.ValueAsNumeric );
             tbGivingEnvelopeNumber.Text = ( (maxEnvelopeNumber ?? 0) + 1 ).ToString();
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlMaritalStatus control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlMaritalStatus_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            ShowAnniversaryDate();
+        }
+
+        /// <summary>
+        /// Shows or hides the Anniversary DatePicker according to settings and business rules.
+        /// </summary>
+        protected void ShowAnniversaryDate()
+        {
+            if ( GetAttributeValue( "HideAnniversaryDate" ).AsBoolean() == false)
+            {
+                dpAnniversaryDate.Visible = false;
+            }
+            else if ( ddlMaritalStatus.SelectedValueAsInt() == CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED ).Id )
+            {
+                dpAnniversaryDate.Visible = true;
+            }
+            else
+            {
+                dpAnniversaryDate.Visible = false;
+            }
         }
     }
 }

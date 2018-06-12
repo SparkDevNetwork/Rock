@@ -64,6 +64,16 @@ namespace Rock.SystemKey
         public const string DATA_AUTOMATION_ADULT_CHILDREN = "core_DataAutomationAdultChildren";
 
         /// <summary>
+        /// Settings for Updating Person Connection Status
+        /// </summary>
+        public const string DATA_AUTOMATION_UPDATE_PERSON_CONNECTION_STATUS = "core_DataAutomationUpdatePersonConnectionStatus";
+
+        /// <summary>
+        /// Settings for Updating Family Status
+        /// </summary>
+        public const string DATA_AUTOMATION_UPDATE_FAMILY_STATUS = "core_DataAutomationUpdateFamilyStatus";
+
+        /// <summary>
         /// The font awesome pro key
         /// </summary>
         public const string FONT_AWESOME_PRO_KEY = "core_FontAwesomeProKey";
@@ -72,5 +82,31 @@ namespace Rock.SystemKey
         /// Enable multi time zone support. Default is false
         /// </summary>
         public const string ENABLE_MULTI_TIME_ZONE_SUPPORT = "core_EnableMultiTimeZoneSupport";
+
+        /// <summary>
+        /// Enable a redis cache cluster
+        /// </summary>
+        public const string REDIS_ENABLE_CACHE_CLUSTER = "EnableRedisCacheCluster";
+
+        /// <summary>
+        /// The redis connection string
+        /// </summary>
+        public const string REDIS_CONNECTION_STRING = "RedisConnectionString";
+
+        /// <summary>
+        /// Comma seperated list of Redis endpoints (e.g. server.com:6379)
+        /// </summary>
+        public const string REDIS_ENDPOINT_LIST = "RedisEndpointList";
+
+        /// <summary>
+        /// The redis password
+        /// </summary>
+        public const string REDIS_PASSWORD = "RedisPassword";
+
+        /// <summary>
+        /// The redis database index number
+        /// </summary>
+        public const string REDIS_DATABASE_NUMBER = "RedisDatabaseNumber";
+
     }
 }

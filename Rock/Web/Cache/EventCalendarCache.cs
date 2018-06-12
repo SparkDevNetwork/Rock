@@ -151,6 +151,18 @@ namespace Rock.Web.Cache
         #region Static Methods
 
         /// <summary>
+        /// Performs an implicit conversion from <see cref="EventCalendarCache"/> to <see cref="CacheEventCalendar"/>.
+        /// </summary>
+        /// <param name="c">The c.</param>
+        /// <returns>
+        /// The result of the conversion.
+        /// </returns>
+        public static implicit operator CacheEventCalendar( EventCalendarCache c )
+        {
+            return CacheEventCalendar.Get( c.Id );
+        }
+
+        /// <summary>
         /// Returns EventCalendar object from cache.  If event calendar does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>

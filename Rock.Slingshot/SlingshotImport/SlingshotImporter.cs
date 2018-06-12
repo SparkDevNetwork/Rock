@@ -735,7 +735,6 @@ namespace Rock.Slingshot
                     noteType.Name = noteTypeName;
                     noteType.UserSelectable = true;
                     noteType.IconCssClass = string.Empty;
-                    noteType.CssClass = string.Empty;
                     noteTypeService.Add( noteType );
                     rockContext.SaveChanges();
 
@@ -1515,10 +1514,7 @@ namespace Rock.Slingshot
             var campusService = new CampusService( rockContext );
 
             // Flush the campuscache just in case it was updated in the Database without rock knowing about it
-            foreach ( var campuscache in CacheCampus.All() )
-            {
-                Rock.Cache.CacheCampus.Remove( campuscache.Id );
-            }
+            Rock.Cache.CacheCampus.Clear();
 
             // Rock has a Unique Constraint on Campus.Name so, make sure campus name is unique and rename it if a new campus happens to have the same name as an existing campus
             var usedCampusNames = CacheCampus.All().Select( a => a.Name ).ToList();
@@ -1544,9 +1540,10 @@ namespace Rock.Slingshot
                 campusToAdd.Guid = Guid.NewGuid();
                 campusService.Add( campusToAdd );
                 rockContext.SaveChanges();
-
-                Rock.Cache.CacheCampus.Remove( campusToAdd.Id );
             }
+
+            // Flush the campuscache to force to reload
+            Rock.Cache.CacheCampus.Clear();
         }
 
         /// <summary>

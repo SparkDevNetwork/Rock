@@ -503,7 +503,7 @@ namespace Rock.Web.UI.Controls
             _lbDelete.Controls.Add( iDelete );
             iDelete.AddCssClass( "fa fa-times" );
 
-            _lbDelete.CssClass = "btn btn-sm btn-danger pull-right";
+            _lbDelete.CssClass = "btn btn-square btn-danger pull-right";
             _lbDelete.Click += lbDelete_Click;
             _lbDelete.CausesValidation = false;
         }

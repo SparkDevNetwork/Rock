@@ -28,7 +28,7 @@ namespace Rock.Web.Cache
     /// Information about a NoteType that is cached by Rock. 
     /// </summary>
     [Serializable]
-    [Obsolete( "Use Rock.Cache.NoteTypeCache instead" )]
+    [Obsolete( "Use Rock.Cache.CacheNoteType instead" )]
     public class NoteTypeCache : CachedModel<NoteType>
     {
         #region constructors
@@ -185,6 +185,18 @@ namespace Rock.Web.Cache
         #endregion
 
         #region Static Methods
+
+        /// <summary>
+        /// Performs an implicit conversion from <see cref="NoteTypeCache"/> to <see cref="CacheNoteType"/>.
+        /// </summary>
+        /// <param name="c">The c.</param>
+        /// <returns>
+        /// The result of the conversion.
+        /// </returns>
+        public static implicit operator CacheNoteType( NoteTypeCache c )
+        {
+            return CacheNoteType.Get( c.Id );
+        }
 
         /// <summary>
         /// Returns NoteType object from cache.  If NoteType does not already exist in cache, it

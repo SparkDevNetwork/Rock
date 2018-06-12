@@ -182,7 +182,7 @@ namespace Rock.Field.Types
                 }
             }
 
-            return new DataViewPicker { ID = id, EntityTypeId = entityTypeId };
+            return new DataViewItemPicker { ID = id, EntityTypeId = entityTypeId };
         }
 
         /// <summary>
@@ -194,7 +194,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            var picker = control as DataViewPicker;
+            var picker = control as DataViewItemPicker;
 
             if ( picker != null )
             {
@@ -222,7 +222,7 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            var picker = control as DataViewPicker;
+            var picker = control as DataViewItemPicker;
 
             if ( picker != null )
             {

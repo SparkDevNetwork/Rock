@@ -43,7 +43,7 @@ namespace Rock.Model
             var personGroupMemberIdQuery = new GroupMemberService( rockContext ).AsNoFilter().Where( a => a.PersonId == personId ).Select( a => a.Id );
 
             // get all GroupMemberHistorical records for the Person
-            var groupMemberHistoricalQuery = this.Queryable().Where( a => personGroupMemberIdQuery.Contains( a.GroupMemberId ) );
+            var groupMemberHistoricalQuery = this.AsNoFilter().Where( a => personGroupMemberIdQuery.Contains( a.GroupMemberId ) );
 
             if ( startDateTime.HasValue )
             {
@@ -74,8 +74,9 @@ namespace Rock.Model
 
             // only fetch the groupMemberHistorical records where they were not archived and not Inactive (only fetch Active or Pending)
             // Also, IsArchive is redundant since they know the StartStop times of when when they were in the group
-            var groupMemberHistoricalByGroupList = groupMemberHistoricalQuery.Include(a => a.GroupMember)
+            var groupMemberHistoricalByGroupList = groupMemberHistoricalQuery
                 .Where( a => a.IsArchived == false && a.GroupMemberStatus != GroupMemberStatus.Inactive )
+                .Select(a => new { a.Group, GroupMemberHistorical = a, a.EffectiveDateTime, GroupMemberDateTimeAdded = a.GroupMember.DateTimeAdded } )
                 .GroupBy( a => a.Group ).ToList();
 
             var groupNameHistoryLookup = new GroupHistoricalService( rockContext ).Queryable()
@@ -92,7 +93,7 @@ namespace Rock.Model
                 .Select( a =>
                 {
                     var startStopHistoryList = a.OrderBy( x => x.EffectiveDateTime )
-                            .Select( x => new GroupMemberHistoricalSummary( a.Key, x, x.GroupMember.DateTimeAdded ) ).ToList();
+                            .Select( x => new GroupMemberHistoricalSummary( a.Key, x.GroupMemberHistorical, x.GroupMemberDateTimeAdded ) ).ToList();
 
                     var groupNameHistory = groupNameHistoryLookup.GetValueOrNull( a.Key.Id ).ToList();
 

@@ -181,6 +181,18 @@ namespace Rock.Web.Cache
         #region Static Methods
 
         /// <summary>
+        /// Performs an implicit conversion from <see cref="WorkflowActionFormAttributeCache"/> to <see cref="CacheWorkflowActionFormAttribute"/>.
+        /// </summary>
+        /// <param name="c">The c.</param>
+        /// <returns>
+        /// The result of the conversion.
+        /// </returns>
+        public static implicit operator CacheWorkflowActionFormAttribute( WorkflowActionFormAttributeCache c )
+        {
+            return CacheWorkflowActionFormAttribute.Get( c.Id );
+        }
+
+        /// <summary>
         /// Returns WorkflowActionFormAttribute object from cache.  If workflowActionFormAttribute does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>

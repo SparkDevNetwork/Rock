@@ -459,6 +459,13 @@ namespace RockWeb.Blocks.Cms
                     site.FavIconBinaryFileId = imgSiteIcon.BinaryFileId;
                 }
 
+                int? existingLogoId = null;
+                if ( site.SiteLogoBinaryFileId != imgSiteLogo.BinaryFileId )
+                {
+                    existingLogoId = site.SiteLogoBinaryFileId;
+                    site.SiteLogoBinaryFileId = imgSiteLogo.BinaryFileId;
+                }
+
                 var currentDomains = tbSiteDomains.Text.SplitDelimitedValues().ToList<string>();
                 site.SiteDomains = site.SiteDomains ?? new List<SiteDomain>();
 
@@ -505,6 +512,18 @@ namespace RockWeb.Blocks.Cms
                     {
                         BinaryFileService binaryFileService = new BinaryFileService( rockContext );
                         var binaryFile = binaryFileService.Get( existingIconId.Value );
+                        if ( binaryFile != null )
+                        {
+                            // marked the old images as IsTemporary so they will get cleaned up later
+                            binaryFile.IsTemporary = true;
+                            rockContext.SaveChanges();
+                        }
+                    }
+
+                    if ( existingLogoId.HasValue )
+                    {
+                        BinaryFileService binaryFileService = new BinaryFileService( rockContext );
+                        var binaryFile = binaryFileService.Get( existingLogoId.Value );
                         if ( binaryFile != null )
                         {
                             // marked the old images as IsTemporary so they will get cleaned up later
@@ -811,6 +830,7 @@ namespace RockWeb.Blocks.Cms
             ddlTheme.SetValue( site.Theme );
 
             imgSiteIcon.BinaryFileId = site.FavIconBinaryFileId;
+            imgSiteLogo.BinaryFileId = site.SiteLogoBinaryFileId;
 
             if ( site.DefaultPageRoute != null )
             {

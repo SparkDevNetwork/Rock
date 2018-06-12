@@ -169,7 +169,7 @@ namespace RockWeb.Blocks.Finance
                 hfBatchId.Value = this.GetBlockUserPreference( "BatchId" );
                 ddlBatch.SetValue( hfBatchId.Value );
                 hfDataViewId.Value = this.GetBlockUserPreference( "DataViewId" );
-                dvpDataView.SetValue( hfDataViewId.Value );
+                dvpDataView.SetValue( hfDataViewId.Value.AsIntegerOrNull() );
                 BindHtmlGrid( hfBatchId.Value.AsIntegerOrNull() , hfDataViewId.Value.AsIntegerOrNull() );
                 LoadEntityDropDowns();
             }
@@ -503,7 +503,7 @@ namespace RockWeb.Blocks.Finance
                     financialTransactionDetailQuery = financialTransactionDetailQuery.Where( a => a.Transaction.BatchId == batchId.Value );
                 }
 
-                if ( dataViewId.HasValue )
+                if ( dataViewId.HasValue && dataViewId > 0 )
                 {
                     var dataView = new DataViewService( rockContext ).Get( dataViewId.Value );
                     List<string> errorMessages;

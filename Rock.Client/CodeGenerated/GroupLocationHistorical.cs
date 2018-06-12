@@ -59,6 +59,9 @@ namespace Rock.Client
         public string GroupLocationTypeName { get; set; }
 
         /// <summary />
+        public int? GroupLocationTypeValueId { get; set; }
+
+        /// <summary />
         public int LocationId { get; set; }
 
         /// <summary />
@@ -113,6 +116,7 @@ namespace Rock.Client
             this.GroupId = source.GroupId;
             this.GroupLocationId = source.GroupLocationId;
             this.GroupLocationTypeName = source.GroupLocationTypeName;
+            this.GroupLocationTypeValueId = source.GroupLocationTypeValueId;
             this.LocationId = source.LocationId;
             this.LocationModifiedDateTime = source.LocationModifiedDateTime;
             this.LocationName = source.LocationName;
