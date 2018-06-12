@@ -1062,8 +1062,8 @@ namespace RockWeb.Blocks.Connection
 
 
             hfAddConnectionWorkflowGuid.Value = connectionWorkflowGuid.ToString();
-            UpdateTriggerQualifiers();
             ShowDialog( "ConnectionWorkflows", true );
+            UpdateTriggerQualifiers();
         }
 
         /// <summary>
