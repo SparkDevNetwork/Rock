@@ -375,15 +375,15 @@
                             <Rock:Grid ID="gDiscounts" runat="server" DisplayType="Full" AllowSorting="true" RowItemText="Discount" ExportSource="DataSource">
                                 <Columns>
                                     <Rock:RockBoundField HeaderText="Registration ID" DataField="RegistrationId" ExcelExportBehavior="AlwaysInclude" Visible="false" />
-                                    <Rock:RockBoundField HeaderText="Registered By" DataField="RegisteredByName" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left"/>
-                                    <Rock:DateField HeaderText="Registration Date" DataField="RegistrationDate" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left"/>
-                                    <Rock:RockBoundField HeaderText="Registrant Count" DataField="RegistrantCount" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right"/>
-                                    <Rock:RockBoundField HeaderText="Discount Code" DataField="DiscountCode" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left"/>
-                                    <Rock:RockBoundField HeaderText="Discount" DataField="Discount" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right"/>
-                                    <Rock:CurrencyField HeaderText="Total Cost" DataField="TotalCost" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right"/>
-                                    <Rock:CurrencyField HeaderText="Discount Qualified Cost" DataField="DiscountQualifiedCost" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right"/>
-                                    <Rock:CurrencyField HeaderText="Total Discount" DataField="TotalDiscount" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right"/>
-                                    <Rock:CurrencyField HeaderText="Registration Cost" DataField="RegistrationCost" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right"/>
+                                    <Rock:RockBoundField HeaderText="Registered By" DataField="RegisteredByName" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" SortExpression="RegisteredByName" />
+                                    <Rock:DateField HeaderText="Registration Date" DataField="RegistrationDate" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" SortExpression="RegistrationDate" />
+                                    <Rock:RockBoundField HeaderText="Registrant Count" DataField="RegistrantCount" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" SortExpression="RegistrantCount" />
+                                    <Rock:RockBoundField HeaderText="Discount Code" DataField="DiscountCode" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" SortExpression="DiscountCode" />
+                                    <Rock:RockBoundField HeaderText="Discount" DataField="Discount" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" SortExpression="Discount" />
+                                    <Rock:CurrencyField HeaderText="Total Cost" DataField="TotalCost" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" SortExpression="TotalCost" />
+                                    <Rock:CurrencyField HeaderText="Discount Qualified Cost" DataField="DiscountQualifiedCost" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" SortExpression="DiscountQualifiedCost" />
+                                    <Rock:CurrencyField HeaderText="Total Discount" DataField="TotalDiscount" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" SortExpression="TotalDiscount" />
+                                    <Rock:CurrencyField HeaderText="Registration Cost" DataField="RegistrationCost" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" SortExpression="RegistrationCost" />
                                 </Columns>
                             </Rock:Grid>
                         </div>

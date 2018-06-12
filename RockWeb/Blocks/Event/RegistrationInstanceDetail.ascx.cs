@@ -4490,6 +4490,19 @@ namespace RockWeb.Blocks.Event
             }
 
             var results = data.ToList();
+
+            // Sorting
+            SortProperty sortProperty = gDiscounts.SortProperty;
+            if ( sortProperty != null )
+            {
+                results = results.AsQueryable().Sort( sortProperty ).ToList();
+            }
+            else
+            {
+                results = results.OrderByDescending( d => d.RegistrationDate ).ToList();
+            }
+
+            
             gDiscounts.DataSource = results;
             gDiscounts.DataBind();
 
