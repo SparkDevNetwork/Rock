@@ -71,7 +71,11 @@
                                     <div class="col-xs-6">
                                         <Rock:NumberBox ID="nbMaxRegistrants" runat="server" Label="Maximum Registrants"
                                             Help="The maximum number of registrants that user is allowed to register" Visible="false" />
-                                        <Rock:RockDropDownList ID="ddlRegistrarOption" runat="server" Label="Registrar Options" />
+                                        <Rock:RockDropDownList ID="ddlRegistrarOption" runat="server" Label="Registrar Options">
+                                            <asp:ListItem Value="0" Text="Prompt For Registrar" />
+                                            <asp:ListItem Value="1" Text="Pre-fill First Registrant" />
+                                            <asp:ListItem Value="2" Text="Use First Registrant" />
+                                        </Rock:RockDropDownList>
                                     </div>
                                 </div>
                                 <Rock:RockRadioButtonList ID="rblRegistrantsInSameFamily" runat="server" Label="Registrants In Same Family" RepeatDirection="Horizontal" CssClass="js-same-family"
