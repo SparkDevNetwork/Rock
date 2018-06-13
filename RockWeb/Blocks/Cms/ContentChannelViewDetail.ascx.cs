@@ -93,7 +93,7 @@ Guid - ContentChannelItem Guid
         /// The cache key to store a list of CacheKeys that have been used by this block
         /// </summary>
         private const string CACHEKEYS_CACHE_KEY = "CacheKeys";
-        
+
         /// <summary>
         /// 
         /// </summary>
@@ -272,6 +272,12 @@ Guid - ContentChannelItem Guid
             string pageTitle = null;
 
             var contentChannelItemParameterValue = GetContentChannelItemParameterValue();
+            if ( string.IsNullOrEmpty( contentChannelItemParameterValue ) )
+            {
+                // No item specified, so don't show anything
+                return;
+            }
+
             string outputCacheKey = OUTPUT_CACHE_KEY_PREFIX + contentChannelItemParameterValue;
             string pageTitleCacheKey = PAGETITLE_CACHE_KEY_PREFIX + contentChannelItemParameterValue;
 
@@ -285,7 +291,7 @@ Guid - ContentChannelItem Guid
 
             if ( outputContents == null )
             {
-                ContentChannelItem contentChannelItem = GetContentChannelItem( GetContentChannelItemParameterValue() );
+                ContentChannelItem contentChannelItem = GetContentChannelItem( contentChannelItemParameterValue );
 
                 if ( contentChannelItem == null )
                 {
