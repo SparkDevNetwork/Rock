@@ -161,8 +161,7 @@ namespace RockWeb.Blocks.CheckIn.Config
 
                 groupTypeService.Delete( groupType );
                 rockContext.SaveChanges();
-
-                CacheGroupType.Remove( groupTypeId );
+                
                 Rock.CheckIn.KioskDevice.Clear();
             }
 
@@ -272,8 +271,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                     groupType = groupTypeService.Get( groupType.Id );
                     ShowReadonlyDetails( groupType );
                 }
-
-                CacheGroupType.Remove( groupType.Id );
+                
                 Rock.CheckIn.KioskDevice.Clear();
             }
         }

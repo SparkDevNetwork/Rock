@@ -570,17 +570,24 @@ namespace Rock.Cache
         /// <summary>
         /// Gets the by entity.
         /// </summary>
-        /// <param name="entityTypeid">The entity typeid.</param>
+        /// <param name="entityTypeId">The entity type identifier.</param>
         /// <returns></returns>
-        internal static List<EntityAttributes> GetByEntity( int? entityTypeid )
+        internal static List<EntityAttributes> GetByEntity( int? entityTypeId )
         {
             var allEntityAttributes = CacheEntityAttributes.Get();
             if ( allEntityAttributes != null )
             {
-                return allEntityAttributes.EntityAttributes
-                    .Where( a =>
-                        a.EntityTypeId.Equals( entityTypeid ) )
-                .ToList();
+                List<EntityAttributes> result;
+                if ( entityTypeId.HasValue )
+                {
+                    result = allEntityAttributes.EntityAttributesByEntityTypeId.GetValueOrNull( entityTypeId.Value ) ?? new List<EntityAttributes>();
+                }
+                else
+                {
+                    result = allEntityAttributes.EntityAttributes.Where( a => !a.EntityTypeId.HasValue ).ToList();
+                }
+
+                return result;
             }
 
             return new List<EntityAttributes>();

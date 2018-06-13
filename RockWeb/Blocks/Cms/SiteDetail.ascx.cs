@@ -371,8 +371,6 @@ namespace RockWeb.Blocks.Cms
                 siteService.Delete( site );
 
                 rockContext.SaveChanges();
-
-                CacheSite.Remove( site.Id );
             }
 
             NavigateToParentPage();
@@ -559,15 +557,7 @@ namespace RockWeb.Blocks.Cms
                 interactionChannelForSite.ComponentEntityTypeId = CacheEntityType.Get<Rock.Model.Page>().Id;
 
                 rockContext.SaveChanges();
-
-                foreach ( int pageId in pageService.GetBySiteId( site.Id )
-                    .Select( p => p.Id )
-                    .ToList() )
-                {
-                    CachePage.Remove( pageId );
-                }
-                CacheSite.Remove( site.Id );
-                CacheAttribute.RemoveEntityAttributes();
+                
 
                 // Create the default page is this is a new site
                 if ( !site.DefaultPageId.HasValue && newSite )
@@ -607,8 +597,6 @@ namespace RockWeb.Blocks.Cms
                         site.DefaultPageId = page.Id;
 
                         rockContext.SaveChanges();
-
-                        CacheSite.Remove( site.Id );
                     }
                 }
 
@@ -639,7 +627,6 @@ namespace RockWeb.Blocks.Cms
             {
                 attributeService.Delete( attr );
                 rockContext.SaveChanges();
-                Rock.Cache.CacheAttribute.Remove( attr.Id );
             }
 
             // Update the Attributes that were assigned in the UI

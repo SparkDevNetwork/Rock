@@ -104,8 +104,7 @@ namespace Rock.Web
             var rockContext = new Rock.Data.RockContext();
             var attributeService = new AttributeService( rockContext );
             var attribute = attributeService.GetSystemSetting( key );
-
-            bool isNew = false;
+            
             if ( attribute == null )
             {
                 attribute = new Rock.Model.Attribute();
@@ -116,7 +115,6 @@ namespace Rock.Web
                 attribute.Name = key.SplitCase();
                 attribute.DefaultValue = value;
                 attributeService.Add( attribute );
-                isNew = true;
             }
             else
             {
@@ -124,12 +122,6 @@ namespace Rock.Web
             }
 
             rockContext.SaveChanges();
-
-            CacheAttribute.Remove( attribute.Id );
-            if ( isNew )
-            {
-                CacheAttribute.RemoveEntityAttributes();
-            }
 
             var settings = Get();
             var attributeCache = settings.Attributes.FirstOrDefault( a => a.Key.Equals( key, StringComparison.OrdinalIgnoreCase ) );

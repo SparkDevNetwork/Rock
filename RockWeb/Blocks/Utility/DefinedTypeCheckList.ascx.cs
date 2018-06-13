@@ -101,7 +101,6 @@ $('.checklist-item label strong, .checklist-desc-toggle').on('click', function (
                                 {
                                     value.SetAttributeValue( attributeKey, cbValue.Checked.ToString() );
                                     value.SaveAttributeValues( rockContext );
-                                    CacheDefinedValue.Remove( value.Id );
                                 }
                             }
                         }

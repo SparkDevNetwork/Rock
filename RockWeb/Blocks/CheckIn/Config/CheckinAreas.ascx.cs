@@ -189,8 +189,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                     parentGroupType.ChildGroupTypes.Add( checkinArea );
 
                     rockContext.SaveChanges();
-
-                    CacheGroupType.Remove( parentGroupType.Id );
+                    
                     Rock.CheckIn.KioskDevice.Clear();
 
                     SelectArea( newGuid );
@@ -232,8 +231,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                     parentArea.ChildGroupTypes.Add( checkinArea );
 
                     rockContext.SaveChanges();
-
-                    CacheGroupType.Remove( parentArea.Id );
+                    
                     Rock.CheckIn.KioskDevice.Clear();
 
                     SelectArea( newGuid );
@@ -267,8 +265,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                     parentArea.Groups.Add( checkinGroup );
 
                     rockContext.SaveChanges();
-
-                    CacheGroupType.Remove( parentArea.Id );
+                    
                     Rock.CheckIn.KioskDevice.Clear();
 
                     SelectGroup( newGuid );
@@ -527,15 +524,11 @@ namespace RockWeb.Blocks.CheckIn.Config
                             rockContext.SaveChanges();
                             groupType.SaveAttributeValues( rockContext );
 
-                            bool AttributesUpdated = false;
-
                             // rebuild the CheckinLabel attributes from the UI (brute-force)
                             foreach ( var labelAttribute in CheckinArea.GetCheckinLabelAttributes( groupType.Attributes ) )
                             {
                                 var attribute = attributeService.Get( labelAttribute.Value.Guid );
-                                Rock.Cache.CacheAttribute.Remove( attribute.Id );
                                 attributeService.Delete( attribute );
-                                AttributesUpdated = true;
                             }
 
                             // Make sure default role is set
@@ -568,19 +561,11 @@ namespace RockWeb.Blocks.CheckIn.Config
                                 }
 
                                 attributeService.Add( attribute );
-                                AttributesUpdated = true;
-
                             }
 
                             rockContext.SaveChanges();
-
-                            CacheGroupType.Remove( groupType.Id );
+                            
                             Rock.CheckIn.KioskDevice.Clear();
-
-                            if ( AttributesUpdated )
-                            {
-                                CacheAttribute.RemoveEntityAttributes();
-                            }
 
                             nbSaveSuccess.Visible = true;
                             BuildRows();
@@ -682,7 +667,6 @@ namespace RockWeb.Blocks.CheckIn.Config
                         groupType.ChildGroupTypes.Clear();
                         groupTypeService.Delete( groupType );
                         rockContext.SaveChanges();
-                        CacheGroupType.Remove( id );
                         Rock.CheckIn.KioskDevice.Clear();
 
                     }
@@ -937,11 +921,6 @@ namespace RockWeb.Blocks.CheckIn.Config
                 }
 
                 rockContext.SaveChanges();
-            }
-
-            foreach ( int id in groupTypeIds )
-            {
-                CacheGroupType.Remove( id );
             }
 
             Rock.CheckIn.KioskDevice.Clear();

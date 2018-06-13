@@ -628,9 +628,6 @@ namespace RockWeb.Blocks.Groups
                 }
             } );
 
-            CacheGroupType.Remove( groupType.Id );
-            CacheAttribute.RemoveEntityAttributes();
-
             if ( triggersUpdated )
             {
                 GroupMemberWorkflowTriggerService.RemoveCachedTriggers();
@@ -1348,7 +1345,6 @@ namespace RockWeb.Blocks.Groups
 
                 attributeService.Delete( attr );
                 rockContext.SaveChanges();
-                Rock.Cache.CacheAttribute.Remove( attr.Id );
             }
 
             // Update the Attributes that were assigned in the UI

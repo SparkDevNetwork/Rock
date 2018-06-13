@@ -152,11 +152,6 @@ namespace Rock.Model
 
                 pageService.Add( newPage );
                 rockContext.SaveChanges();
-
-                if ( newPage.ParentPageId.HasValue )
-                {
-                    CachePage.Remove( newPage.ParentPageId.Value );
-                }
                 newPageGuid= newPage.Guid;
 
                 GenerateBlockAttributeValues( pageGuidDictionary, blockGuidDictionary, rockContext, currentPersonAliasId );

@@ -19,7 +19,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
+using Rock.Cache;
 using Rock.Data;
 
 namespace Rock.Model
@@ -31,7 +31,7 @@ namespace Rock.Model
     [NotAudited]
     [Table( "FieldType" )]
     [DataContract]
-    public partial class FieldType : Model<FieldType>
+    public partial class FieldType : Model<FieldType>, ICacheable
     {
 
         #region Entity Properties
@@ -105,6 +105,20 @@ namespace Rock.Model
         public override string ToString()
         {
             return Name;
+        }
+
+        #endregion
+
+        #region ICacheable
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            CacheFieldType.UpdateCachedEntity( this.Id, entityState, dbContext as RockContext );
         }
 
         #endregion

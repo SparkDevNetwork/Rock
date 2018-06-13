@@ -224,12 +224,6 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                     changedIds = definedValueService.Reorder( definedValues.ToList(), e.OldIndex, e.NewIndex );
                     rockContext.SaveChanges();
                 }
-
-                CacheDefinedType.Remove( definedType.Id );
-                foreach ( int id in changedIds )
-                {
-                    Rock.Cache.CacheDefinedValue.Remove( id );
-                }
             }
 
             BindPackageGrid();
@@ -267,9 +261,6 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
 
                     definedValueService.Delete( value );
                     rockContext.SaveChanges();
-
-                    CacheDefinedType.Remove( value.DefinedTypeId );
-                    CacheDefinedValue.Remove( value.Id );
                 }
 
                 BindPackageGrid();
@@ -325,9 +316,6 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                     definedValue.SetAttributeValue( "MVRJurisdiction", dvJurisdicationCodeGuid.HasValue ? dvJurisdicationCodeGuid.Value.ToString() : string.Empty );
                     definedValue.SetAttributeValue( "SendHomeStateMVR", cbSendStateMVR.Checked.ToString() );
                     definedValue.SaveAttributeValues( rockContext );
-
-                    CacheDefinedType.Remove( definedType.Id );
-                    CacheDefinedValue.Remove( definedValue.Id );
                 }
             }
 

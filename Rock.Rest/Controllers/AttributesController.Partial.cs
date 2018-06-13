@@ -32,7 +32,7 @@ namespace Rock.Rest.Controllers
     public partial class AttributesController
     {
         /// <summary>
-        /// Flushes an attributes from cache.
+        /// Flushes an attributes from cache. Usually no need to do this since attribute cache is managed automatically.
         /// </summary>
         [Authenticate, Secured]
         [HttpPut]
@@ -43,7 +43,7 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// Flushes all global attributes from cache.
+        /// Flushes all global attributes from cache. Usually no need to do this since global attribute cache is managed automatically.
         /// </summary>
         [Authenticate, Secured]
         [HttpPut]
@@ -73,7 +73,6 @@ namespace Rock.Rest.Controllers
             }
 
             var result = base.Post( value );
-            CacheAttribute.RemoveEntityAttributes();
 
             return result;
         }
@@ -86,8 +85,6 @@ namespace Rock.Rest.Controllers
         public override void Delete( int id )
         {
             base.Delete( id );
-            CacheAttribute.Remove( id );
-            CacheAttribute.RemoveEntityAttributes();
         }
 
         /// <summary>
@@ -99,8 +96,6 @@ namespace Rock.Rest.Controllers
         public override void Put( int id, [FromBody] Model.Attribute value )
         {
             base.Put( id, value );
-            CacheAttribute.Remove( id );
-            CacheAttribute.RemoveEntityAttributes();
         }
     }
 }

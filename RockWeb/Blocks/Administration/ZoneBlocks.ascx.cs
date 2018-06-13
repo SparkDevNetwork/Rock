@@ -224,12 +224,6 @@ namespace RockWeb.Blocks.Administration
                 var blocks = blockService.GetBySiteAndZone( _Page.SiteId, _ZoneName ).ToList();
                 blockService.Reorder( blocks, e.OldIndex, e.NewIndex );
                 rockContext.SaveChanges();
-
-                foreach ( var zoneBlock in blocks )
-                {
-                    // make sure the CacheBlock for all the re-ordered blocks get flushed so the new Order is updated
-                    Rock.Cache.CacheBlock.Remove( zoneBlock.Id );
-                }
             }
 
             Rock.Cache.CachePage.RemoveSiteBlocks( _Page.SiteId );
@@ -305,12 +299,6 @@ namespace RockWeb.Blocks.Administration
                 var blocks = blockService.GetByLayoutAndZone( _Page.LayoutId, _ZoneName ).ToList();
                 blockService.Reorder( blocks, e.OldIndex, e.NewIndex );
                 rockContext.SaveChanges();
-
-                foreach ( var zoneBlock in blocks )
-                {
-                    // make sure the CacheBlock for all the re-ordered blocks get flushed so the new Order is updated
-                    Rock.Cache.CacheBlock.Remove( zoneBlock.Id );
-                }
             }
 
             Rock.Cache.CachePage.RemoveLayoutBlocks( _Page.LayoutId );
@@ -386,12 +374,6 @@ namespace RockWeb.Blocks.Administration
                 var blocks = blockService.GetByPageAndZone( _Page.Id, _ZoneName ).ToList();
                 blockService.Reorder( blocks, e.OldIndex, e.NewIndex );
                 rockContext.SaveChanges();
-
-                foreach ( var zoneBlock in blocks )
-                {
-                    // make sure the CacheBlock for all the re-ordered blocks get flushed so the new Order is updated
-                    Rock.Cache.CacheBlock.Remove( zoneBlock.Id );
-                }
             }
 
             _Page.RemoveBlocks();

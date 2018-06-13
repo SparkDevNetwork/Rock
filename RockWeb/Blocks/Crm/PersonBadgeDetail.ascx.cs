@@ -176,8 +176,6 @@ namespace RockWeb.Blocks.Crm
                 personBadge.SaveAttributeValues( rockContext );
             } );
 
-            CachePersonBadge.Remove( personBadge.Id );
-
             NavigateToParentPage();
         }
 

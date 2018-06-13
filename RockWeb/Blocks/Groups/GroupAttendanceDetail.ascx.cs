@@ -451,12 +451,6 @@ namespace RockWeb.Blocks.Groups
             }
 
             rockContext.SaveChanges();
-
-            // If the group changed, and it was a security group, flush the security for the group
-            if ( _group.IsSecurityRole || _group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
-            {
-                Rock.Cache.CacheRole.Remove( _group.Id );
-            }
         }
 
         /// <summary>

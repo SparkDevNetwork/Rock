@@ -339,8 +339,6 @@ namespace RockWeb.Blocks.Core
 
                 block.SaveAttributeValues( rockContext );
 
-                Rock.Cache.CacheBlock.Remove( block.Id );
-
                 StringBuilder scriptBuilder = new StringBuilder();
 
                 if ( reloadPage )

@@ -19,6 +19,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+using Rock.Cache;
 using Rock.Data;
 
 namespace Rock.Model
@@ -30,7 +31,7 @@ namespace Rock.Model
     [NotAudited]
     [Table( "InteractionComponent" )]
     [DataContract]
-    public partial class InteractionComponent : Model<InteractionComponent>
+    public partial class InteractionComponent : Model<InteractionComponent>, ICacheable
     {
 
         #region Entity Properties
@@ -124,8 +125,6 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public override void PostSaveChanges( Data.DbContext dbContext )
         {
-            Cache.CacheInteractionComponent.Remove( this.Id );
-
             if ( this.SaveState == System.Data.Entity.EntityState.Added ||
                 this.SaveState == System.Data.Entity.EntityState.Deleted )
             {
@@ -144,6 +143,20 @@ namespace Rock.Model
             }
 
             base.PostSaveChanges( dbContext );
+        }
+
+        #endregion
+
+        #region ICacheable
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            CacheInteractionComponent.UpdateCachedEntity( this.Id, this.SaveState, dbContext as RockContext );
         }
 
         #endregion
