@@ -221,6 +221,26 @@ namespace Rock.Cache
         }
 
         /// <summary>
+        /// Adds, Removes, or Reloads the cached entity based on the entityState and database state
+        /// </summary>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="entityState">State of the entity. If unknown, use <see cref="EntityState.Detached" /></param>
+        /// <param name="rockContext">The rock context.</param>
+        public static void UpdateCachedEntity( int entityId, System.Data.Entity.EntityState entityState, RockContext rockContext )
+        {
+            if ( entityState != EntityState.Added )
+            {
+                Remove( entityId );
+            }
+
+            // unless we know for sure it was deleted, do a Get to update the cache (if the item still exists in the database)
+            if ( entityState != EntityState.Deleted )
+            {
+                Get( entityId, rockContext );
+            }
+        }
+
+        /// <summary>
         /// Gets all the instances of this type of model/entity that are currently in cache.
         /// </summary>
         /// <returns></returns>

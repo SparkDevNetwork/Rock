@@ -340,9 +340,9 @@ namespace RockWeb.Blocks.Core
                 var selectedAttributeGuids = BinaryFileAttributesState.Select( a => a.Guid );
                 foreach ( var attr in attributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
                 {
-                    Rock.Cache.CacheAttribute.Remove( attr.Id );
                     attributeService.Delete( attr );
                 }
+
                 rockContext.SaveChanges();
 
                 // add/update the BinaryFileAttributes that are assigned in the UI
@@ -355,8 +355,6 @@ namespace RockWeb.Blocks.Core
                 binaryFileType.SaveAttributeValues( rockContext );
 
             } );
-
-            CacheAttribute.RemoveEntityAttributes();
 
             NavigateToParentPage();
         }

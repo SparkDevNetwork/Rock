@@ -381,10 +381,6 @@ namespace RockWeb.Blocks.Cms
                 pageReference.Parameters.AddOrReplace( "contentChannelId", contentChannel.Id.ToString() );
                 Response.Redirect( pageReference.BuildUrl(), false );
             }
-
-            // flush cache
-            CacheContentChannel.Remove( contentChannel.Id );
-
         }
 
         /// <summary>
@@ -894,7 +890,6 @@ namespace RockWeb.Blocks.Cms
             var selectedAttributeGuids = attributes.Select( a => a.Guid );
             foreach ( var attr in existingAttributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
             {
-                Rock.Cache.CacheAttribute.Remove( attr.Id );
                 attributeService.Delete( attr );
             }
 
@@ -909,8 +904,6 @@ namespace RockWeb.Blocks.Cms
                 attr.Order = newOrder++;
                 Rock.Attribute.Helper.SaveAttributeEdits( attr, entityTypeId, qualifierColumn, qualifierValue, rockContext );
             }
-
-            CacheAttribute.RemoveEntityAttributes();
         }
 
         /// <summary>

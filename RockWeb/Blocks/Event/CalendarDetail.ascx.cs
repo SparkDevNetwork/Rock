@@ -943,7 +943,6 @@ namespace RockWeb.Blocks.Event
             {
                 attributeService.Delete( attr );
                 rockContext.SaveChanges();
-                CacheAttribute.Remove( attr.Id );
             }
 
             // Update the Attributes that were assigned in the UI
@@ -951,8 +950,6 @@ namespace RockWeb.Blocks.Event
             {
                 Helper.SaveAttributeEdits( attribute, entityTypeId, qualifierColumn, qualifierValue, rockContext );
             }
-
-            CacheAttribute.RemoveEntityAttributes();
         }
 
         #endregion

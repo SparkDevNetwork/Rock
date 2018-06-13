@@ -281,7 +281,6 @@ namespace RockWeb.Blocks.Core
 
             if ( categoryId != 0 )
             {
-                CacheCategory.Remove( categoryId );
                 category = service.Get( categoryId );
             }
 

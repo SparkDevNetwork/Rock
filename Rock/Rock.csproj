@@ -505,6 +505,7 @@
     <Compile Include="Cache\Entities\CacheWorkflowActionType.cs" />
     <Compile Include="Cache\Entities\CacheWorkflowActivityType.cs" />
     <Compile Include="Cache\Entities\CacheWorkflowType.cs" />
+    <Compile Include="Cache\ICacheable.cs" />
     <Compile Include="Cache\IItemCache.cs" />
     <Compile Include="Cache\NonEntities\CacheEntityNoteTypes.cs" />
     <Compile Include="Cache\NonEntities\CacheIdFromGuid.cs" />

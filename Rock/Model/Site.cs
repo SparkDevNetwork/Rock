@@ -24,6 +24,7 @@ using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
+using Rock.Cache;
 using Rock.Data;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.Crawler;
@@ -38,7 +39,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "Site" )]
     [DataContract]
-    public partial class Site : Model<Site>, IRockIndexable
+    public partial class Site : Model<Site>, IRockIndexable, ICacheable
     {
         #region Entity Properties
 
@@ -706,6 +707,30 @@ namespace Rock.Model
             get
             {
                 return false;
+            }
+        }
+
+        #endregion
+
+        #region ICacheable
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            CacheSite.UpdateCachedEntity( this.Id, entityState, dbContext as RockContext );
+
+            using ( var rockContext = new RockContext() )
+            {
+                foreach ( int pageId in new PageService( rockContext ).GetBySiteId( this.Id )
+                        .Select( p => p.Id )
+                        .ToList() )
+                {
+                    CachePage.UpdateCachedEntity( pageId, EntityState.Detached, dbContext as RockContext );
+                }
             }
         }
 

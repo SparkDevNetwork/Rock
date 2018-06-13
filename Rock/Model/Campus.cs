@@ -14,11 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+using Rock.Cache;
 using Rock.Data;
 
 namespace Rock.Model
@@ -30,7 +33,7 @@ namespace Rock.Model
     [Table( "Campus" )]
     [DataContract]
     [Analytics( false, true )]
-    public partial class Campus : Model<Campus>, IOrdered
+    public partial class Campus : Model<Campus>, IOrdered, ICacheable
     {
         #region Entity Properties
 
@@ -192,6 +195,19 @@ namespace Rock.Model
 
         #endregion
 
+        #region ICacheable
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            CacheCampus.UpdateCachedEntity( this.Id, entityState, dbContext as RockContext );
+        }
+
+        #endregion
     }
 
     #region Entity Configuration

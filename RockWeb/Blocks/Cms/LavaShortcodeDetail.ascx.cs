@@ -136,8 +136,6 @@ namespace RockWeb.Blocks.Core
             {
                 Template.RegisterShortcode<DynamicShortcodeInline>( lavaShortcode.TagName );
             }
-                        
-            CacheLavaShortcode.Remove( lavaShortcode.Id );
 
             NavigateToParentPage();
         }

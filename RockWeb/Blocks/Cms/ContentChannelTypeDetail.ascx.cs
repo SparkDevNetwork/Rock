@@ -694,7 +694,6 @@ namespace RockWeb.Blocks.Cms
             var selectedAttributeGuids = attributes.Select( a => a.Guid );
             foreach ( var attr in existingAttributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
             {
-                Rock.Cache.CacheAttribute.Remove( attr.Id );
                 attributeService.Delete( attr );
             }
 
@@ -705,8 +704,6 @@ namespace RockWeb.Blocks.Cms
             {
                 Rock.Attribute.Helper.SaveAttributeEdits( attr, entityTypeId, qualifierColumn, qualifierValue, rockContext );
             }
-
-            CacheAttribute.RemoveEntityAttributes();
         }
 
         /// <summary>

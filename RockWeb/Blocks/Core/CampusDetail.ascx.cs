@@ -178,8 +178,6 @@ namespace RockWeb.Blocks.Core
 
             } );
 
-            Rock.Cache.CacheCampus.Remove( campus.Id );
-
             NavigateToParentPage();
         }
 

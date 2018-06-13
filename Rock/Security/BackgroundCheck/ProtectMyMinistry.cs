@@ -364,7 +364,6 @@ Response XML ({2}):
                 {
                     var handledErrorMessages = new List<string>();
 
-                    bool createdNewAttribute = false;
                     if ( _HTTPStatusCode == HttpStatusCode.OK )
                     {
                         var xOrderXML = xResult.Elements( "OrderXML" ).FirstOrDefault();
@@ -376,7 +375,6 @@ Response XML ({2}):
                                 if ( SaveAttributeValue( workflow, "RequestStatus", xStatus.Value,
                                     CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT.AsGuid() ), newRockContext, null ) )
                                 {
-                                    createdNewAttribute = true;
                                 }
                             }
 
@@ -403,16 +401,10 @@ Response XML ({2}):
                         if ( SaveAttributeValue( workflow, "RequestMessage", handledErrorMessages.AsDelimited( Environment.NewLine ),
                             CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT.AsGuid() ), newRockContext, null ) )
                         {
-                            createdNewAttribute = true;
                         }
                     }
 
                     newRockContext.SaveChanges();
-
-                    if ( createdNewAttribute )
-                    {
-                        CacheAttribute.RemoveEntityAttributes();
-                    }
 
                     return true;
                 }
@@ -557,8 +549,6 @@ Response XML ({2}):
         /// <param name="saveResponse">if set to <c>true</c> [save response].</param>
         public static void SaveResults( XDocument xResult, Rock.Model.Workflow workflow, RockContext rockContext, bool saveResponse = true )
         {
-            bool createdNewAttribute = false;
-
             var newRockContext = new RockContext();
             var service = new BackgroundCheckService( newRockContext );
             var backgroundCheck = service.Queryable()
@@ -630,7 +620,6 @@ Response XML ({0}):
                                 CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT.AsGuid() ), rockContext,
                                 new Dictionary<string, string> { { "ispassword", "false" } } ) )
                             {
-                                createdNewAttribute = true;
                             }
 
                         }
@@ -643,7 +632,6 @@ Response XML ({0}):
                             if ( SaveAttributeValue( workflow, "ReportLink", reportLink,
                                 CacheFieldType.Get( Rock.SystemGuid.FieldType.URL_LINK.AsGuid() ), rockContext ) )
                             {
-                                createdNewAttribute = true;
                             }
 
                             // Save the report
@@ -654,7 +642,6 @@ Response XML ({0}):
                                     CacheFieldType.Get( Rock.SystemGuid.FieldType.BINARY_FILE.AsGuid() ), rockContext,
                                     new Dictionary<string, string> { { "binaryFileType", "" } } ) )
                                 {
-                                    createdNewAttribute = true;
                                 }
                             }
                         }
@@ -664,7 +651,6 @@ Response XML ({0}):
                             CacheFieldType.Get( Rock.SystemGuid.FieldType.SINGLE_SELECT.AsGuid() ), rockContext,
                             new Dictionary<string, string> { { "fieldtype", "ddl" }, { "values", "Pass,Fail,Review" } } ) )
                         {
-                            createdNewAttribute = true;
                         }
 
                         // Update the background check file
@@ -687,12 +673,6 @@ Response XML ({0}):
             }
 
             newRockContext.SaveChanges();
-
-            if ( createdNewAttribute )
-            {
-                CacheAttribute.RemoveEntityAttributes();
-            }
-
         }
 
         /// <summary>

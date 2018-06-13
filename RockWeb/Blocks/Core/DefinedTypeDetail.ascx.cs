@@ -189,7 +189,6 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
-                CacheDefinedType.Remove( definedTypeId );
                 definedType = typeService.Get( definedTypeId );
             }
 
@@ -511,7 +510,6 @@ namespace RockWeb.Blocks.Core
             foreach ( var attribute in attributes )
             {
                 attribute.Order = order++;
-                CacheAttribute.Remove( attribute.Id );
             }
             
             var movedItem = attributes.Where( a => a.Order == e.OldIndex ).FirstOrDefault();
@@ -562,12 +560,9 @@ namespace RockWeb.Blocks.Core
                     return;
                 }
 
-                CacheAttribute.Remove( attribute.Id );
                 attributeService.Delete( attribute );
                 rockContext.SaveChanges();
             }
-
-            CacheAttribute.RemoveEntityAttributes();
 
             BindDefinedTypeAttributesGrid();            
         }
@@ -600,8 +595,6 @@ namespace RockWeb.Blocks.Core
 
             pnlDetails.Visible = true;
             pnlDefinedTypeAttributes.Visible = false;
-
-            CacheAttribute.RemoveEntityAttributes();
 
             BindDefinedTypeAttributesGrid();
 

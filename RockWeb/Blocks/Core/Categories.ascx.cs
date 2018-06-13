@@ -283,8 +283,6 @@ namespace RockWeb.Blocks.Core
 
                     service.Delete( category );
                     rockContext.SaveChanges();
-
-                    CacheCategory.Remove( categoryId );
                 }
                 else
                 {
@@ -324,11 +322,6 @@ namespace RockWeb.Blocks.Core
             {
                 var changedIds = new CategoryService( rockContext ).Reorder( categories.ToList(), e.OldIndex, e.NewIndex );
                 rockContext.SaveChanges();
-
-                foreach ( int id in changedIds )
-                {
-                    CacheCategory.Remove( id );
-                }
             }
 
             BindGrid();
@@ -409,8 +402,6 @@ namespace RockWeb.Blocks.Core
                     rockContext.SaveChanges();
                     category.SaveAttributeValues( rockContext );
                 } );
-
-                CacheCategory.Remove( category.Id );
 
                 hfIdValue.Value = string.Empty;
                 mdDetails.Hide();

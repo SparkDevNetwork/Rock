@@ -293,8 +293,6 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                 service.Delete( workflowType );
 
                 rockContext.SaveChanges();
-
-                CacheWorkflowType.Remove( workflowType.Id );
             }
 
             // reload page
@@ -835,8 +833,6 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                     workflowActionType.SaveAttributeValues( rockContext );
                 }
             }
-
-            CacheWorkflowType.Remove( workflowType.Id );
 
             var qryParams = new Dictionary<string, string>();
             qryParams["workflowTypeId"] = workflowType.Id.ToString();
@@ -2000,7 +1996,6 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             {
                 attributeService.Delete( attr );
                 rockContext.SaveChanges();
-                Rock.Cache.CacheAttribute.Remove( attr.Id );
             }
 
             // Update the Attributes that were assigned in the UI
@@ -2008,8 +2003,6 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             {
                 Helper.SaveAttributeEdits( attribute, entityTypeId, qualifierColumn, qualifierValue, rockContext );
             }
-
-            CacheAttribute.RemoveEntityAttributes();
         }
 
         private void SetAttributeEditor( Guid attributeGuid )

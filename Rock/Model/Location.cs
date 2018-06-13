@@ -27,6 +27,7 @@ using System.Text;
 
 using Rock.Data;
 using Rock.Cache;
+using System.Data.Entity;
 
 namespace Rock.Model
 {
@@ -38,7 +39,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "Location" )]
     [DataContract]
-    public partial class Location : Model<Location>, IHasActiveFlag
+    public partial class Location : Model<Location>, IHasActiveFlag, ICacheable
     {
         #region Entity Properties
 
@@ -790,6 +791,27 @@ namespace Rock.Model
         public void SetDistance( double distance )
         {
             _distance = distance;
+        }
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            // CacheCampus has a CampusLocation that could get stale when Location changes, so refresh the CampusCache for this location's Campus
+            if ( this.CampusId.HasValue )
+            {
+                CacheCampus.UpdateCachedEntity( this.CampusId.Value, EntityState.Detached, dbContext as RockContext );
+            }
+
+            // and also refresh the CacheCampus for any Campus that uses this location
+            foreach ( var campus in CacheCampus.All()
+                .Where( c => c.LocationId == this.Id ) )
+            {
+                CacheCampus.UpdateCachedEntity( campus.Id, EntityState.Detached, dbContext as RockContext );
+            }
         }
 
         /// <summary>

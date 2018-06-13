@@ -98,8 +98,6 @@ namespace RockWeb.Blocks.Cms
 
                 blockService.Delete( block );
                 rockContext.SaveChanges();
-
-                CacheBlock.Remove( e.RowKeyId );
             }
 
             BindLayoutBlocksGrid();

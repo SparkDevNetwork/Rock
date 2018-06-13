@@ -544,8 +544,6 @@ namespace RockWeb.Blocks.Cms
 
             definedValueService.Add( definedValue );
             rockContext.SaveChanges();
-
-            Rock.Cache.CacheDefinedType.Remove( definedValue.DefinedTypeId );
         }
 
         /// <summary>
