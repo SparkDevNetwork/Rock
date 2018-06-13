@@ -109,6 +109,41 @@ Guid - ContentChannelItem Guid
         #region Base Control Methods
 
         /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
+        {
+            // Create a hidden button that will show the view if they cancel the Settings modal
+            Button btnTrigger = new Button();
+            btnTrigger.ClientIDMode = System.Web.UI.ClientIDMode.Static;
+            btnTrigger.ID = "rock-config-cancel-trigger";
+            btnTrigger.Click += btnTrigger_Click;
+            btnTrigger.Style[HtmlTextWriterStyle.Display] = "none";
+            pnlSettings.Controls.Add( btnTrigger );
+
+            AsyncPostBackTrigger trigger = new AsyncPostBackTrigger();
+            trigger.ControlID = "rock-config-cancel-trigger";
+            trigger.EventName = "Click";
+            upnlContent.Triggers.Add( trigger );
+
+            base.OnInit( e );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnTrigger control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void btnTrigger_Click( object sender, EventArgs e )
+        {
+            mdSettings.Hide();
+            pnlSettings.Visible = false;
+
+            ShowView();
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -262,6 +297,21 @@ Guid - ContentChannelItem Guid
         #region Methods
 
         /// <summary>
+        /// Shows the no data found.
+        /// </summary>
+        private void ShowNoDataFound()
+        {
+            if ( IsUserAuthorized( Rock.Security.Authorization.ADMINISTRATE ) )
+            {
+                nbAlert.Text = "404 - No Content. If you did not have Administrate permissions on this block, you would have gotten a real 404 page.";
+            }
+            else
+            {
+                this.Response.StatusCode = 404;
+            }
+        }
+
+        /// <summary>
         /// Shows the view.
         /// </summary>
         private void ShowView()
@@ -275,6 +325,7 @@ Guid - ContentChannelItem Guid
             if ( string.IsNullOrEmpty( contentChannelItemParameterValue ) )
             {
                 // No item specified, so don't show anything
+                ShowNoDataFound();
                 return;
             }
 
@@ -295,6 +346,7 @@ Guid - ContentChannelItem Guid
 
                 if ( contentChannelItem == null )
                 {
+                    ShowNoDataFound();
                     return;
                 }
 
@@ -307,6 +359,7 @@ Guid - ContentChannelItem Guid
                     {
                         if ( contentChannelItem.ContentChannelId != channel.Id )
                         {
+                            ShowNoDataFound();
                             return;
                         }
                     }

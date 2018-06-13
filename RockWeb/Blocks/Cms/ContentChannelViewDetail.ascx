@@ -1,19 +1,24 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ContentChannelViewDetail.ascx.cs" Inherits="RockWeb.Blocks.Cms.ContentChannelViewDetail" %>
 
+<script type="text/javascript">
+    function clearDialog() {
+        $('#rock-config-cancel-trigger').click();
+    }
+</script>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
         <%-- View Panel --%>
         <asp:Panel ID="pnlView" runat="server">
-            <Rock:NotificationBox ID="nbContentError" runat="server" Dismissable="true" Visible="false" />
+            <Rock:NotificationBox ID="nbAlert" runat="server" NotificationBoxType="Danger" />
             <asp:PlaceHolder ID="phContent" runat="server" />
             <asp:Literal ID="lDebug" runat="server" />
         </asp:Panel>
 
         <%-- Custom Block Settings --%>
         <asp:Panel ID="pnlSettings" runat="server" Visible="false">
-            <Rock:ModalDialog ID="mdSettings" runat="server" OnSaveClick="mdSettings_SaveClick">
+            <Rock:ModalDialog ID="mdSettings" runat="server" OnSaveClick="mdSettings_SaveClick" OnCancelScript="clearDialog();">
                 <Content>
                     <div class="row">
                         <div class="col-md-12">
