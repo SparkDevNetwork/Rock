@@ -583,7 +583,7 @@ namespace Rock.Cache
             {
                 var configurationOptions = StackExchange.Redis.ConfigurationOptions.Parse( socket );
                 configurationOptions.ConnectRetry = 1;
-                configurationOptions.ConnectTimeout = 1000;
+                configurationOptions.ConnectTimeout = 500;
 
                 if ( password.IsNotNullOrWhitespace() )
                 {
