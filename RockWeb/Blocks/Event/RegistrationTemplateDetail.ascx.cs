@@ -476,7 +476,7 @@ namespace RockWeb.Blocks.Event
 <strong>Prompt For Registrar</strong>
 Registrar information will be collected at the end.
 
-<strong>Prefill First Registrant</strong>
+<strong>Pre-fill First Registrant</strong>
 The first registrant's information will be used to complete the registrar information form but can be changed if needed.
 
 <strong>Use First Registrant</strong>
@@ -2382,8 +2382,6 @@ The first registrant's information will be used to complete the registrar inform
             {
                 ddlSignatureDocumentTemplate.Items.Add( new ListItem( documentType.Name, documentType.Id.ToString() ) );
             }
-
-            ddlRegistrarOption.BindToEnum<RegistrarOption>();
         }
 
         #endregion

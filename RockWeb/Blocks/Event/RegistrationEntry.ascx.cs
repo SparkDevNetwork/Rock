@@ -4986,12 +4986,12 @@ namespace RockWeb.Blocks.Event
                          RegistrationTemplate.RegistrarOption == RegistrarOption.UseFirstRegistrant )
                     {
                         pnlRegistrarInfo.Visible = false;
+                    }
 
-                        // set the registrar to be in the same family as the first registrant
-                        if ( RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Ask )
-                        {
-                            rblFamilyOptions.SetValue( firstRegistrant.FamilyGuid.ToString() );
-                        }
+                    // set the registrar to be in the same family as the first registrant
+                    if ( RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Ask )
+                    {
+                        rblRegistrarFamilyOptions.SetValue( firstRegistrant.FamilyGuid.ToString() );
                     }
                 }
                 // Check to see if this is an existing registration or information has already been entered
