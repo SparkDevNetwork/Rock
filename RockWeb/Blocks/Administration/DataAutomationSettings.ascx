@@ -7,7 +7,7 @@
             <div class="panel-heading">
                 <h1 class="panel-title">
                     <i class="fa fa-tachometer"></i>
-                    Data Integrity Settings
+                    Data Automation Settings
                 </h1>
             </div>
             <div class="panel-body">
