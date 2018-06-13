@@ -305,6 +305,10 @@
 
                         <asp:Panel ID="pnlScheduleTransactionInput" runat="server" CssClass="collapse schedule-transaction" ClientIDMode="Static">
 
+                            <span class="control-label">Amount</span><br />
+
+                            <asp:Label ID="lblScheduleTransactionAmount" runat="server" CssClass="details-item">$0.00</asp:Label>
+
                             <Rock:RockDropDownList ID="ddlScheduleFrequency" runat="server" ClientIDMode="Static" AutoPostBack="false" DataValueField="Id" DataTextField="Name" Label="Frequency" />
 
                             <div class="schedule-date">

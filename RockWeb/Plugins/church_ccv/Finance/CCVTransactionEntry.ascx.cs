@@ -239,7 +239,7 @@ TransactionAcountDetails: [
 
                             // Update success hyperlink
                             hlSuccessLink.Text = "Manage Automated Giving";
-                            hlSuccessLink.NavigateUrl = "/ManageAutomatedGiving";
+                            hlSuccessLink.NavigateUrl = "/dashboard/manage-automated-giving";
                         }                            
                     }                        
                 }
@@ -451,7 +451,11 @@ TransactionAcountDetails: [
                 {
                     ddlScheduleFrequency.Items.Clear();
 
-                    ddlScheduleFrequency.Items.Add( new ListItem( "--Select Frequency--", "-1" ) );
+                    // if more than one frequency add placeholder text
+                    if (supportedFrequencies.Count != 1)
+                    {
+                        ddlScheduleFrequency.Items.Add( new ListItem( "--Select Frequency--", "-1" ) );
+                    }
 
                     // add each frequency to the radio button list, except "One-Time"
                     foreach ( var frequency in supportedFrequencies )
@@ -524,26 +528,29 @@ TransactionAcountDetails: [
                         .ToList();
                 }
 
-                // Add select place holder
-                ddlSavedPaymentAccounts.Items.Add( new ListItem( "--Select Saved Account--", "-1" ) );
-
-                // Loop through the saved accounts and add them to the dropdown
-                // if they have a matching id in ccSavedAccountId's
-                foreach ( var savedAccount in savedAccounts )
+                // If saved credit card accounts exist, populate dropdownlist, set placeholder text, and enable panel
+                if ( ccSavedAccountIds.Count > 0 )
                 {
-                    if ( ccSavedAccountIds.Contains( savedAccount.Id))
+                    // If more than 1 saved credit card account set placeholder item
+                    if ( ccSavedAccountIds.Count != 1 )
                     {
-                        // Format account name
-                        string accountName = String.Format( "{0} ({1})", savedAccount.Name, savedAccount.FinancialPaymentDetail.AccountNumberMasked.Substring( savedAccount.FinancialPaymentDetail.AccountNumberMasked.Length - 8 ) );
-                        
-                        // add to dropdown
-                        ddlSavedPaymentAccounts.Items.Add( new ListItem( accountName, savedAccount.Id.ToString() ) );
+                        ddlSavedPaymentAccounts.Items.Add( new ListItem( "--Select Saved Account--", "-1" ) );
                     }
-                }
 
-                // Enabled saved payment accounts panel if they exist
-                if ( ddlSavedPaymentAccounts.Items.Count > 0 )
-                {
+                    // Loop through the saved accounts and add them to the dropdown
+                    // if they have a matching id in ccSavedAccountId's
+                    foreach ( var savedAccount in savedAccounts )
+                    {
+                        if ( ccSavedAccountIds.Contains( savedAccount.Id ) )
+                        {
+                            // Format account name
+                            string accountName = String.Format( "{0} ({1})", savedAccount.Name, savedAccount.FinancialPaymentDetail.AccountNumberMasked.Substring( savedAccount.FinancialPaymentDetail.AccountNumberMasked.Length - 8 ) );
+
+                            // add to dropdown
+                            ddlSavedPaymentAccounts.Items.Add( new ListItem( accountName, savedAccount.Id.ToString() ) );
+                        }
+                    }
+
                     // Saved payment accounts exist, enable Saved Payment panel 
                     btnSavedPayment.Visible = true;
 
@@ -603,22 +610,29 @@ TransactionAcountDetails: [
 
             ddlAccounts.Items.Clear();
 
-            // add placeholder
-            string placeholder = GetAttributeValue( "FundDropdownPlaceholder" );
-            
-            if (placeholder.IsNotNullOrWhitespace())
+            // populate dropdownlist if fund accounts exist
+            if ( accounts.Any() )
             {
-                ddlAccounts.Items.Add( new ListItem( placeholder, "-1" ) );
-            }
-            else
-            {
-                ddlAccounts.Items.Add( new ListItem( "--Select A Fund--", "-1" ) );
-            }
+                if ( accounts.Count != 1 )
+                {
+                    // add placeholder text
+                    string placeholder = GetAttributeValue( "FundDropdownPlaceholder" );
 
-            // add accounts to dropdown
-            foreach ( var account in accounts )
-            {
-                ddlAccounts.Items.Add( new ListItem( account.Name, account.AccountId.ToString() ) );
+                    if ( placeholder.IsNotNullOrWhitespace() )
+                    {
+                        ddlAccounts.Items.Add( new ListItem( placeholder, "-1" ) );
+                    }
+                    else
+                    {
+                        ddlAccounts.Items.Add( new ListItem( "--Select A Fund--", "-1" ) );
+                    }
+                }
+
+                // add accounts to dropdown
+                foreach ( var account in accounts )
+                {
+                    ddlAccounts.Items.Add( new ListItem( account.Name, account.AccountId.ToString() ) );
+                }
             }
         }
 
@@ -1190,6 +1204,9 @@ TransactionAcountDetails: [
                     lblAccountNumberTitle.Visible = false;
                 }
             }
+
+            // Update schedule transaction amount
+            lblScheduleTransactionAmount.Text = paymentInfo.Amount.ToString( "C" );
         }
 
         /// <summary>
