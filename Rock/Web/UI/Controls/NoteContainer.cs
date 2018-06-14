@@ -59,7 +59,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The note types.
         /// </value>
-        [Obsolete( "Use NoteTypeList instead" )]
+        [Obsolete( "Use SetNoteTypes instead" )]
         public List<Rock.Web.Cache.NoteTypeCache> NoteTypes
         {
             get
@@ -69,7 +69,7 @@ namespace Rock.Web.UI.Controls
 
             set
             {
-                NoteOptions.NoteTypes = value?.Select( a => CacheNoteType.Get( a.Id ) ).ToList();
+                NoteOptions.SetNoteTypes( value?.Select( a => CacheNoteType.Get( a.Id ) ).ToList() );
             }
         }
 
@@ -102,17 +102,9 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The note type list.
         /// </value>
-        public List<CacheNoteType> NoteTypeList
+        public void SetNoteTypes( List<CacheNoteType> noteTypeList )
         {
-            get
-            {
-                return NoteOptions?.NoteTypes;
-            }
-
-            set
-            {
-                NoteOptions.NoteTypes = value;
-            }
+            NoteOptions.SetNoteTypes( noteTypeList );
         }
 
         /// <summary>
@@ -483,6 +475,8 @@ namespace Rock.Web.UI.Controls
         {
             base.OnLoad( e );
 
+            EnsureChildControls();
+
             if ( this.NoteOptions != null )
             {
                 _noteEditor.EntityId = this.NoteOptions.EntityId;
@@ -543,7 +537,8 @@ namespace Rock.Web.UI.Controls
         {
             Controls.Clear();
 
-            _noteEditor = new NoteEditor( this.NoteOptions );
+            _noteEditor = new NoteEditor();
+            _noteEditor.SetNoteOptions( this.NoteOptions );
             _noteEditor.ID = this.ID + "_noteEditor";
             _noteEditor.CssClass = "note-new";
 
@@ -951,7 +946,7 @@ namespace Rock.Web.UI.Controls
                 return viewableNoteList;
             }
 
-            return null;
+            return new List<Note>();
         }
 
         /// <summary>
