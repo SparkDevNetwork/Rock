@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Rock.Cache;
@@ -44,21 +45,31 @@ namespace Rock.Web.UI.Controls
         private List<int> _noteTypeIds { get; set; } = new List<int>();
 
         /// <summary>
+        /// Sets the note types.
+        /// </summary>
+        /// <param name="noteTypeList">The note type list.</param>
+        public void SetNoteTypes( List<CacheNoteType> noteTypeList )
+        {
+            this.NoteTypes = noteTypeList.ToArray();
+        }
+
+        /// <summary>
         /// Gets or sets the note types.
         /// </summary>
         /// <value>
         /// The note types.
         /// </value>
-        public List<CacheNoteType> NoteTypes
+        public CacheNoteType[] NoteTypes
         {
             get
             {
-                return _noteTypeIds.Select( a => CacheNoteType.Get( a ) ).ToList();
+                return _noteTypeIds.Select( a => CacheNoteType.Get( a ) ).ToArray();
             }
 
             set
             {
                 _noteTypeIds = value.Select( a => a.Id ).ToList();
+                NoteTypesChange?.Invoke( this, new EventArgs() );
             }
         }
 
@@ -169,5 +180,10 @@ namespace Rock.Web.UI.Controls
         ///   <c>true</c> if [expand replies]; otherwise, <c>false</c>.
         /// </value>
         public bool ExpandReplies { get; set; }
+
+        /// <summary>
+        /// Occurs when [note types change].
+        /// </summary>
+        public event EventHandler NoteTypesChange;
     }
 }

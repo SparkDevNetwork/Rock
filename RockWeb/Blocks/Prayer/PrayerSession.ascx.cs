@@ -172,7 +172,7 @@ namespace RockWeb.Blocks.Prayer
                 var noteType = CacheNoteType.Get( NoteTypeId.Value );
                 if ( noteType != null )
                 {
-                    notesComments.NoteOptions.NoteTypes = new List<CacheNoteType> { noteType };
+                    notesComments.NoteOptions.NoteTypes = new CacheNoteType[] { noteType };
                 }
             }
 
