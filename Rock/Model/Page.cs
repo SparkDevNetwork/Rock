@@ -539,7 +539,7 @@ namespace Rock.Model
 
         #region ICacheable
 
-        private int? originalParentPageId;
+        private int? _originalParentPageId;
 
         /// <summary>
         /// Method that will be called on an entity immediately after the item is saved by context
@@ -551,7 +551,7 @@ namespace Rock.Model
         {
             if ( state == System.Data.Entity.EntityState.Modified || state == System.Data.Entity.EntityState.Deleted )
             {
-                originalParentPageId = entry.OriginalValues["ParentPageId"]?.ToString().AsIntegerOrNull();
+                _originalParentPageId = entry.OriginalValues["ParentPageId"]?.ToString().AsIntegerOrNull();
             }
 
             base.PreSaveChanges( dbContext, entry, state );
@@ -577,9 +577,9 @@ namespace Rock.Model
                 CachePage.UpdateCachedEntity( this.ParentPageId.Value, System.Data.Entity.EntityState.Detached, dbContext as RockContext );
             }
 
-            if ( originalParentPageId.HasValue && originalParentPageId != this.ParentPageId )
+            if ( _originalParentPageId.HasValue && _originalParentPageId != this.ParentPageId )
             {
-                CachePage.UpdateCachedEntity( originalParentPageId.Value, System.Data.Entity.EntityState.Detached, dbContext as RockContext );
+                CachePage.UpdateCachedEntity( _originalParentPageId.Value, System.Data.Entity.EntityState.Detached, dbContext as RockContext );
             }
         }
 

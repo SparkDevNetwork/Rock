@@ -967,9 +967,8 @@ namespace Rock.Model
 
         #region ICacheable
 
-        private int? originalGroupTypeId;
-        private bool? originalIsSecurityRole;
-        private EntityState saveState;
+        private int? _originalGroupTypeId;
+        private bool? _originalIsSecurityRole;
 
         /// <summary>
         /// Method that will be called on an entity immediately after the item is saved by context
@@ -979,9 +978,11 @@ namespace Rock.Model
         /// <param name="state">The state.</param>
         public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry, EntityState state )
         {
-            originalGroupTypeId = entry.OriginalValues["GroupTypeId"].ToString().AsIntegerOrNull();
-            originalIsSecurityRole = entry.OriginalValues["IsSecurityRole"].ToString().AsBooleanOrNull();
-            saveState = state;
+            if ( state == System.Data.Entity.EntityState.Modified || state == System.Data.Entity.EntityState.Deleted )
+            {
+                _originalGroupTypeId = entry.OriginalValues["GroupTypeId"]?.ToString().AsIntegerOrNull();
+                _originalIsSecurityRole = entry.OriginalValues["IsSecurityRole"]?.ToString().AsBooleanOrNull();
+            }
 
             base.PreSaveChanges( dbContext, entry, state );
         }
@@ -996,13 +997,13 @@ namespace Rock.Model
             // If the group changed, and it was a security group, flush the security for the group
             Guid? originalGroupTypeGuid = null;
             Guid groupTypeScheduleRole = Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid();
-            if ( originalGroupTypeId.HasValue && originalGroupTypeId != this.GroupTypeId )
+            if ( _originalGroupTypeId.HasValue && _originalGroupTypeId != this.GroupTypeId )
             {
-                originalGroupTypeGuid = CacheGroupType.Get( originalGroupTypeId.Value )?.Guid;
+                originalGroupTypeGuid = CacheGroupType.Get( _originalGroupTypeId.Value )?.Guid;
             }
 
             var groupTypeGuid = CacheGroupType.Get( this.GroupTypeId )?.Guid;
-            if ( this.IsSecurityRole || ( originalIsSecurityRole == true ) || ( groupTypeGuid == groupTypeScheduleRole ) || ( originalGroupTypeGuid == groupTypeScheduleRole ) )
+            if ( this.IsSecurityRole || ( _originalIsSecurityRole == true ) || ( groupTypeGuid == groupTypeScheduleRole ) || ( originalGroupTypeGuid == groupTypeScheduleRole ) )
             {
                 Rock.Cache.CacheRole.Remove( this.Id );
                 Rock.Cache.CacheRole.Get( this.Id );
