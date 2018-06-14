@@ -3145,19 +3145,21 @@ TransactionAccountDetails: [
         // Detect credit card type
         $('.credit-card').creditCardTypeDetector({{ 'credit_card_logos': '.card-logos' }});
 
-        //// Toggle credit card display if saved card option is available
-        $({21}).unbind('click').on('click', function () {{
+        if ( typeof {21} != 'undefined' ) {{
+            //// Toggle credit card display if saved card option is available
+            $({21}).unbind('click').on('click', function () {{
 
-            var radioDisplay = $({22}).css('display');
-            var selectedVal = $({21}).val();
+                var radioDisplay = $({22}).css('display');
+                var selectedVal = $({21}).val();
 
-            if ( selectedVal == 0 && radioDisplay == 'none') {{
-                $({22}).slideToggle();
-            }}
-            else if (selectedVal != 0 && radioDisplay != 'none') {{
-                $({22}).slideToggle();
-            }}
-        }});
+                if ( selectedVal == 0 && radioDisplay == 'none') {{
+                    $({22}).slideToggle();
+                }}
+                else if (selectedVal != 0 && radioDisplay != 'none') {{
+                    $({22}).slideToggle();
+                }}
+            }});
+        }}
 
         // Hide or show a div based on selection of checkbox
         $('input:checkbox.toggle-input').unbind('click').on('click', function () {{
@@ -3181,9 +3183,10 @@ TransactionAccountDetails: [
         }});
     }});
 
-    // sets the scroll position to the top of the page after partial postbacks
-    // without this the scroll position is the bottom of the page.
-    // setTimeout('window.scrollTo(0,0)',0);
+    // Scroll position. The script on the ascx page will try to keep the window scroll position after a postback.
+    // If that script is removed the page will jump to the bottom, that's good unless there is a lot of content in
+    // the footer. Delete the scrollTo function and uncomment the line below to force the scroll position to the top of the page.
+    //setTimeout('window.scrollTo(0,0)',0);
 
     // Posts the iframe (step 2)
     $('#aStep2Submit').on('click', function(e) {{
@@ -3247,6 +3250,7 @@ TransactionAccountDetails: [
                 var $form = $('#iframeStep2').contents().find('#Step2Form');
                 $form.attr('action', src );
                 $form.submit();
+                $('#updateProgress').hide();
             }}
         }}
     }});
@@ -3276,7 +3280,7 @@ TransactionAccountDetails: [
                 txtCardLastName.ClientID,       // {19}
                 txtCardName.ClientID,           // {20}
                 rblSavedAccount.ClientID,       // {21}
-                divNewPayment.ClientID          // {22}
+                divNewPayment.ClientID         // {22}
             );
 
             ScriptManager.RegisterStartupScript( upPayment, this.GetType(), "giving-profile", script, true );
