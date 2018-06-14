@@ -49,6 +49,9 @@ namespace Rock.Migrations
 
             // Run the attendance occurrence migration job if it exists.
             RunJob( SystemGuid.ServiceJob.MIGRATE_ATTENDANCE_OCCURRENCE, context );
+
+            // Run the family check-in identifier occurrence migration job if it exists.
+            RunJob( SystemGuid.ServiceJob.MIGRATE_FAMILY_CHECKIN_IDS, context );
         }
 
         private void RunJob( string JobGuid, Data.RockContext context )

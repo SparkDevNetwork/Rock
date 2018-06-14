@@ -206,7 +206,7 @@ namespace RockWeb.Blocks.CheckIn
             {
                 if ( !CurrentCheckInState.CheckIn.Families.Any() )
                 {
-                    maWarning.Show( string.Format( "<p>{0}</p>", GetAttributeValue( "NoMatchText" ) ), Rock.Web.UI.Controls.ModalAlertType.Warning );
+                    maWarning.Show( string.Format( "<p>{0}</p>", GetAttributeValue( "NoOptionCaption" ) ), Rock.Web.UI.Controls.ModalAlertType.Warning );
                 }
                 else
                 {

@@ -112,22 +112,52 @@ namespace Rock.Workflow.Action.CheckIn
                         }
                         else if ( checkInState.CheckIn.SearchType.Guid.Equals( SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_SCANNED_ID.AsGuid() ) )
                         {
-                            var entityIds = new List<int>();
+                            var personIds = new List<int>();
 
-                            var attributeValueService = new AttributeValueService( rockContext );
-                            var attr = CacheAttribute.Get( SystemGuid.Attribute.FAMILY_CHECKIN_IDENTIFIERS.AsGuid() );
-                            if ( attr != null )
+                            var dv = CacheDefinedValue.Get( SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() );
+                            if ( dv != null )
                             {
-                                entityIds = new AttributeValueService( rockContext )
-                                    .Queryable().AsNoTracking()
+                                var searchValueService = new PersonSearchKeyService( rockContext );
+                                var personAliases = searchValueService.Queryable().AsNoTracking()
                                     .Where( v =>
-                                        v.AttributeId == attr.Id &&
-                                        v.EntityId.HasValue &&
-                                        ( "|" + v.Value + "|" ).Contains( "|" + checkInState.CheckIn.SearchValue + "|" ) )
-                                    .Select( v => v.EntityId.Value )
-                                    .ToList();
+                                        v.SearchTypeValueId == dv.Id &&
+                                        v.SearchValue == checkInState.CheckIn.SearchValue )
+                                    .Select( v => v.PersonAlias );
+
+                                if ( personAliases.Any() )
+                                {
+                                    checkInState.CheckIn.CheckedInByPersonAliasId = personAliases.First().Id;
+                                    personIds = personAliases.Select( a => a.PersonId ).ToList();
+                                }
                             }
-                            familyMemberQry = familyMemberQry.Where( f => entityIds.Contains( f.GroupId ) );
+
+                            if ( personIds.Any() )
+                            {
+                                familyMemberQry = familyMemberQry.Where( f => personIds.Contains( f.PersonId ) );
+                            }
+                            else
+                            {
+                                // if there were no matches, try to find a family check-in identifier. V8 has a "run once" job that moves the family identifiers
+                                // to person search values, but in case the job has not yet completed, will still do the check for family ids.
+                                var entityIds = new List<int>();
+
+                                var attributeValueService = new AttributeValueService( rockContext );
+                                var attr = CacheAttribute.Get( "8F528431-A438-4488-8DC3-CA42E66C1B37".AsGuid() );
+                                if ( attr != null )
+                                {
+                                    entityIds = new AttributeValueService( rockContext )
+                                        .Queryable().AsNoTracking()
+                                        .Where( v =>
+                                            v.AttributeId == attr.Id &&
+                                            v.EntityId.HasValue &&
+                                            ( "|" + v.Value + "|" ).Contains( "|" + checkInState.CheckIn.SearchValue + "|" ) )
+                                        .Select( v => v.EntityId.Value )
+                                        .ToList();
+                                }
+
+                                familyMemberQry = familyMemberQry.Where( f => entityIds.Contains( f.GroupId ) );
+                            }
+
                         }
                         else if ( checkInState.CheckIn.SearchType.Guid.Equals( SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_FAMILY_ID.AsGuid() ) )
                         {
