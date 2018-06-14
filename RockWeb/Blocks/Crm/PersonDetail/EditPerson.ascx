@@ -148,6 +148,21 @@
                             </fieldset>
                         </div>
 
+                        <Rock:PanelWidget runat="server" ID="PanelWidget1" Title="Alternate Identifiers">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <Rock:RockControlWrapper ID="rcwAlternateIds" runat="server" Label="Alternate Identifiers" Help="Alternate Ids are used by things like check-in to allow easily checking in. This may include a barcode id or a fingerprint id for example.">
+                                        <Rock:Grid ID="gAlternateIds" runat="server" DisplayType="Light" DataKeyNames="Guid" RowItemText="Alternate Id" ShowConfirmDeleteDialog="false">
+                                            <Columns>
+                                                <Rock:RockBoundField DataField="SearchValue" HeaderText="Value"/>
+                                                <Rock:DeleteField OnClick="gAlternateIds_Delete" />
+                                            </Columns>
+                                        </Rock:Grid>
+                                    </Rock:RockControlWrapper>
+                                    <asp:CustomValidator ID="cvAlternateIds" runat="server" OnServerValidate="cvAlternateIds_ServerValidate" Display="None" />
+                                </div>
+                            </div>
+                        </Rock:PanelWidget>
 
                         <Rock:PanelWidget runat="server" ID="pwAdvanced" Title="Advanced Settings">
                             <div class="row">
@@ -176,7 +191,7 @@
                             <div class="row">
                                 <div class="col-md-12">
                                     <Rock:RockControlWrapper ID="rcwSearchKeys" runat="server" Label="Search Keys" Help="Search keys provide alternate ways to search for an individuals.">
-                                        <Rock:Grid ID="gSearchKeys" runat="server" DisplayType="Light" DataKeyNames="Guid" ShowConfirmDeleteDialog="false">
+                                        <Rock:Grid ID="gSearchKeys" runat="server" DisplayType="Light" DataKeyNames="Guid" RowItemText="Search Key" ShowConfirmDeleteDialog="false">
                                             <Columns>
                                                 <Rock:DefinedValueField DataField="SearchTypeValueId" HeaderText="Search Type" />
                                                 <Rock:RockBoundField DataField="SearchValue" HeaderText="Search Value" />
@@ -184,13 +199,19 @@
                                             </Columns>
                                         </Rock:Grid>
                                     </Rock:RockControlWrapper>
-                                    </div>
+                                </div>
                             </div>
                         </Rock:PanelWidget>
 
                         <Rock:ModalDialog runat="server" ID="mdPreviousName" Title="Add Previous Last Name" ValidationGroup="vgPreviousName" OnSaveClick="mdPreviousName_SaveClick">
                             <Content>
                                 <Rock:RockTextBox ID="tbPreviousLastName" runat="server" Required="true" ValidationGroup="vgPreviousName" autocomplete="off" />
+                            </Content>
+                        </Rock:ModalDialog>
+
+                        <Rock:ModalDialog runat="server" ID="mdAlternateId" Title="Add Alternate Identifier" ValidationGroup="vgAlternateId" OnSaveClick="mdAlternateId_SaveClick">
+                            <Content>
+                                <Rock:RockTextBox ID="tbAlternateId" runat="server" Label="Alternate Id" Required="true" ValidationGroup="vgAlternateId" autocomplete="off" />
                             </Content>
                         </Rock:ModalDialog>
 

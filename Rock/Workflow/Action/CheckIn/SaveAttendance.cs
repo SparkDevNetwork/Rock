@@ -119,6 +119,7 @@ namespace Rock.Workflow.Action.CheckIn
                                         attendance.DeviceId = checkInState.Kiosk.Device.Id;
                                         attendance.SearchTypeValueId = checkInState.CheckIn.SearchType.Id;
                                         attendance.SearchValue = checkInState.CheckIn.SearchValue;
+                                        attendance.CheckedInByPersonAliasId = checkInState.CheckIn.CheckedInByPersonAliasId;
                                         attendance.SearchResultGroupId = family.Group.Id;
                                         attendance.AttendanceCodeId = attendanceCode.Id;
                                         attendance.StartDateTime = startDateTime;

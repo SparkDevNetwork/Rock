@@ -380,8 +380,9 @@ namespace Rock.Cache
         /// <summary>
         /// Clears all cached items (MemoryCache, Authorizations, EntityAttributes, CacheSite, TriggerCache).
         /// </summary>
+        /// <param name="refreshWorkflowTriggers">if set to <c>true</c> [refresh workflow triggers].</param>
         /// <returns></returns>
-        public static List<string> ClearAllCachedItems()
+        public static List<string> ClearAllCachedItems( bool refreshWorkflowTriggers )
         {
             var msgs = new List<string>();
 
@@ -389,11 +390,24 @@ namespace Rock.Cache
             ClearAll();
             msgs.Add( "RockCacheManager has been cleared" );
 
-            // Clear workflow trigger cache
-            CacheWorkflowTriggers.Refresh();
-            ////msgs.Add( "TriggerCache has been cleared" );
+            if ( refreshWorkflowTriggers )
+            {
+                // Clear workflow trigger cache
+                CacheWorkflowTriggers.Refresh();
+                ////msgs.Add( "TriggerCache has been cleared" );
+            }
 
             return msgs;
+        }
+
+        /// <summary>
+        /// Clears all cached items (MemoryCache, Authorizations, EntityAttributes, CacheSite, TriggerCache)
+        /// and refreshes the workflow trigger cache.
+        /// </summary>
+        /// <returns></returns>
+        public static List<string> ClearAllCachedItems()
+        {
+            return ClearAllCachedItems( true );
         }
 
         /// <summary>

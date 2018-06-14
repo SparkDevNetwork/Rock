@@ -801,6 +801,7 @@
     <Compile Include="Jobs\CommunicationQueueAlert.cs" />
     <Compile Include="Jobs\DatabaseMaintenance.cs" />
     <Compile Include="Jobs\IndexRockSite.cs" />
+    <Compile Include="Jobs\MigrateFamilyAlternateId.cs" />
     <Compile Include="Jobs\MigrateAttendanceOccurrenceData.cs" />
     <Compile Include="Jobs\MigrateHistorySummaryData.cs" />
     <Compile Include="Jobs\PostV80DataMigrations.cs" />
