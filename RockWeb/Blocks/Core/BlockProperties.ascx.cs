@@ -111,8 +111,8 @@ namespace RockWeb.Blocks.Core
             {
                 int blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
                 Block _block = new BlockService( new RockContext() ).Get( blockId );
-
-                dialogPage.SubTitle = "Id: " + blockId;
+                dialogPage.Title = _block.BlockType.Name;
+                dialogPage.SubTitle = string.Format("{0} / Id: {1}", _block.BlockType.Category, blockId);
 
                 if ( _block.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
                 {

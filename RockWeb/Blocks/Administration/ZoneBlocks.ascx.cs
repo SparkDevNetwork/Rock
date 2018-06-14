@@ -583,7 +583,8 @@ namespace RockWeb.Blocks.Administration
                         b.Id,
                         b.Name,
                         BlockTypeName = b.BlockType.Name,
-                        BlockTypePath = b.BlockType.Path
+                        BlockTypePath = b.BlockType.Path,
+                        BlockTypeCategory = b.BlockType.Category
                     } )
                     .ToList();
                 gSiteBlocks.DataBind();
@@ -594,7 +595,8 @@ namespace RockWeb.Blocks.Administration
                         b.Id,
                         b.Name,
                         BlockTypeName = b.BlockType.Name,
-                        BlockTypePath = b.BlockType.Path
+                        BlockTypePath = b.BlockType.Path,
+                        BlockTypeCategory = b.BlockType.Category
                     } )
                     .ToList();
                 gLayoutBlocks.DataBind();
@@ -605,7 +607,8 @@ namespace RockWeb.Blocks.Administration
                     b.Id,
                     b.Name,
                     BlockTypeName = b.BlockType.Name,
-                    BlockTypePath = b.BlockType.Path
+                    BlockTypePath = b.BlockType.Path,
+                    BlockTypeCategory = b.BlockType.Category
                 } )
                 .ToList();
                 gPageBlocks.DataBind();
