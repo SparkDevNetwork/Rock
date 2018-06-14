@@ -20,9 +20,11 @@ using System.Net;
 using Newtonsoft.Json;
 using RestSharp;
 using RestSharp.Authenticators;
+using Rock.Cache;
 using Rock.Checkr.Constants;
-using Rock.Checkr.SystemKey;
+using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 
 namespace Rock.Checkr.CheckrApi
 {
@@ -30,14 +32,63 @@ namespace Rock.Checkr.CheckrApi
     {
         #region Utilities        
         /// <summary>
+        /// Gets the settings.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private static List<AttributeValue> GetSettings( RockContext rockContext )
+        {
+            var checkrEntityType = CacheEntityType.Get( typeof( Rock.Checkr.Checkr ) );
+            if ( checkrEntityType != null )
+            {
+                var service = new AttributeValueService( rockContext );
+                return service.Queryable( "Attribute" )
+                    .Where( v => v.Attribute.EntityTypeId == checkrEntityType.Id )
+                    .ToList();
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the setting value.
+        /// </summary>
+        /// <param name="values">The values.</param>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        private static string GetSettingValue( List<AttributeValue> values, string key, bool encryptedValue = false )
+        {
+            string value = values
+                .Where( v => v.AttributeKey == key )
+                .Select( v => v.Value )
+                .FirstOrDefault();
+            if ( encryptedValue && !string.IsNullOrWhiteSpace( value ) )
+            {
+                try { value = Encryption.DecryptString( value ); }
+                catch { }
+            }
+
+            return value;
+        }
+
+        /// <summary>
         /// Return a rest client.
         /// </summary>
         /// <param name="url">The URL.</param>
         /// <returns>The rest client.</returns>
         private static RestClient RestClient( string url )
         {
+            string token = null;
             var restClient = new RestClient( url );
-            string token = Rock.Web.SystemSettings.GetValue( SystemSetting.ACCESS_TOKEN );
+            using ( RockContext rockContext = new RockContext() )
+            {
+                var settings = GetSettings( rockContext );
+                if ( settings != null )
+                {
+                    token = GetSettingValue( settings, "AccessToken" );
+                }
+            }
+
             restClient.Authenticator = new HttpBasicAuthenticator( token, string.Empty );
             return restClient;
         }

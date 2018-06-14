@@ -24,6 +24,7 @@ using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Cache;
 using Rock.Security;
+using System.Linq;
 
 namespace Rock.Model
 {
@@ -33,7 +34,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "Attribute" )]
     [DataContract]
-    public partial class Attribute : Model<Attribute>, IOrdered
+    public partial class Attribute : Model<Attribute>, IOrdered, ICacheable
     {
 
         /// <summary>
@@ -370,6 +371,82 @@ namespace Rock.Model
         public override string ToString()
         {
             return this.Key;
+        }
+
+        #endregion
+
+        #region ICacheable
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            CacheAttribute.UpdateCachedEntity( this.Id, entityState, dbContext as RockContext );
+            CacheAttribute.RemoveEntityAttributes();
+
+            if ( ( !this.EntityTypeId.HasValue || this.EntityTypeId.Value == 0 ) && string.IsNullOrEmpty( this.EntityTypeQualifierColumn ) && string.IsNullOrEmpty( this.EntityTypeQualifierValue ) )
+            {
+                CacheGlobalAttributes.Remove();
+            }
+
+            if ( this.EntityTypeId.HasValue )
+            {
+                // Update BlockTypes/Blocks that reference this attribute
+                if ( this.EntityTypeId == CacheEntityType.GetId<Block>() )
+                {
+                    if ( this.EntityTypeQualifierColumn.Equals( "BlockTypeId", StringComparison.OrdinalIgnoreCase ) )
+                    {
+                        int? blockTypeId = this.EntityTypeQualifierValue.AsIntegerOrNull();
+                        if ( blockTypeId.HasValue )
+                        {
+                            CacheBlockType.UpdateCachedEntity( blockTypeId.Value, System.Data.Entity.EntityState.Detached, dbContext as RockContext );
+
+                            foreach ( var blockId in new BlockService( new RockContext() ).GetByBlockTypeId( blockTypeId.Value ).Select( a => a.Id ).ToList() )
+                            {
+                                CacheBlock.UpdateCachedEntity( blockId, System.Data.Entity.EntityState.Detached, dbContext as RockContext );
+                            }
+                        }
+                    }
+                }
+
+                // Update DefinedTypes/DefinedValues that reference this attribute
+                if ( this.EntityTypeId == CacheEntityType.GetId<DefinedValue>() )
+                {
+                    if ( this.EntityTypeQualifierColumn.Equals( "DefinedTypeId", StringComparison.OrdinalIgnoreCase ) )
+                    {
+                        int? definedTypeId = this.EntityTypeQualifierValue.AsIntegerOrNull();
+                        if ( definedTypeId.HasValue )
+                        {
+                            CacheDefinedType.UpdateCachedEntity( definedTypeId.Value, System.Data.Entity.EntityState.Detached, dbContext as RockContext );
+
+                            foreach ( var blockId in new DefinedValueService( new RockContext() ).GetByDefinedTypeId( definedTypeId.Value ).Select( a => a.Id ).ToList() )
+                            {
+                                CacheDefinedValue.UpdateCachedEntity( blockId, System.Data.Entity.EntityState.Detached, dbContext as RockContext );
+                            }
+                        }
+                    }
+                }
+
+                /*
+                attribute.EntityTypeQualifierColumn = "ActivityTypeId";
+                attribute.EntityTypeQualifierValue = action.Activity.ActivityTypeId.ToString();
+                
+                */
+                if ( this.EntityTypeId == CacheEntityType.GetId<WorkflowActivityType>() )
+                {
+                    if ( this.EntityTypeQualifierColumn.Equals( "ActivityTypeId", StringComparison.OrdinalIgnoreCase ) )
+                    {
+                        int? activityTypeId = this.EntityTypeQualifierValue.AsIntegerOrNull();
+                        if ( activityTypeId.HasValue )
+                        {
+                            CacheWorkflowActivityType.UpdateCachedEntity( activityTypeId.Value, System.Data.Entity.EntityState.Detached, dbContext as RockContext );
+                        }
+                    }
+                }
+            }
         }
 
         #endregion

@@ -154,12 +154,6 @@ namespace RockWeb.Blocks.Cms
                         rockContext.SaveChanges();
                     }
 
-                    foreach ( var zoneBlock in zoneBlocks )
-                    {
-                        // make sure the CacheBlock for all the re-ordered blocks get flushed so the new Order is updated
-                        CacheBlock.Remove( zoneBlock.Id );
-                    }
-
                     page.RemoveBlocks();
                     if ( block.LayoutId.HasValue )
                     {
@@ -489,21 +483,6 @@ namespace RockWeb.Blocks.Cms
                     blockService.Delete( block );
                     rockContext.SaveChanges();
 
-                    // flush all the cache stuff that involves the block
-                    Rock.Cache.CacheBlock.Remove( blockId.Value );
-
-                    if ( layoutId.HasValue )
-                    {
-                        Rock.Cache.CachePage.RemoveLayoutBlocks( layoutId.Value );
-                    }
-
-                    if ( pageId.HasValue )
-                    {
-                        Rock.Cache.CachePage.Remove( pageId.Value );
-                        var page = Rock.Cache.CachePage.Get( pageId.Value );
-                        page.RemoveBlocks();
-                    }
-
                     ShowDetailForZone( ddlZones.SelectedValue );
                 }
             }
@@ -698,16 +677,6 @@ namespace RockWeb.Blocks.Cms
                 }
 
                 rockContext.SaveChanges();
-
-                // flush all the cache stuff that involves the block and page
-                Rock.Cache.CacheBlock.Remove( block.Id );
-
-                Rock.Cache.CacheLayout.Remove( page.LayoutId );
-                Rock.Cache.CachePage.Remove( page.Id );
-
-                // re-read the pageCache
-                page = Rock.Cache.CachePage.Get( page.Id );
-                page.RemoveBlocks();
 
                 mdBlockMove.Hide();
                 ShowDetailForZone( ddlZones.SelectedValue );

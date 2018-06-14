@@ -162,8 +162,7 @@ namespace RockWeb.Blocks.Core
 
                     service.Delete( exclusion );
                     rockContext.SaveChanges();
-
-                    CacheCategory.Remove( categoryId );
+                    
                     Rock.CheckIn.KioskDevice.Clear();
                 }
                 else
@@ -234,8 +233,7 @@ namespace RockWeb.Blocks.Core
             if ( exclusion.IsValid )
             {
                 rockContext.SaveChanges();
-
-                CacheCategory.Remove( exclusion.CategoryId );
+                
                 Rock.CheckIn.KioskDevice.Clear();
 
                 hfIdValue.Value = string.Empty;

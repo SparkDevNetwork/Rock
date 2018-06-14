@@ -14,18 +14,19 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
+using Rock.Transactions;
 
-namespace Rock.Checkr.SystemKey
+namespace Rock
 {
-    /// <summary>
-    /// System file types.  
-    /// </summary>
-    public class SystemSetting
+    public static partial class ExtensionMethods
     {
         /// <summary>
-        /// Checkr Access Token
+        /// Adds the ITransaction to the Rock TransactionQueue
         /// </summary>
-        public const string ACCESS_TOKEN = "core_checkrAdmin_AccessToken";
+        /// <param name="transaction">The transaction.</param>
+        public static void Enqueue( this ITransaction transaction )
+        {
+            RockQueue.TransactionQueue.Enqueue( transaction );
+        }
     }
 }

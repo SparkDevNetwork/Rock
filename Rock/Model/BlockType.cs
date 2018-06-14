@@ -15,6 +15,7 @@
 // </copyright>
 //
 using Newtonsoft.Json;
+using Rock.Cache;
 using Rock.Data;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -32,7 +33,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "BlockType" )]
     [DataContract]
-    public partial class BlockType : Model<BlockType>
+    public partial class BlockType : Model<BlockType>, ICacheable
     {
         #region Entity Properties
 
@@ -143,6 +144,20 @@ namespace Rock.Model
         public override string ToString()
         {
             return this.Name;
+        }
+
+        #endregion
+
+        #region ICacheable
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            CacheBlockType.UpdateCachedEntity( this.Id, entityState, dbContext as RockContext );
         }
 
         #endregion

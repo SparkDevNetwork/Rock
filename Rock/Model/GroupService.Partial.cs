@@ -1113,7 +1113,6 @@ namespace Rock.Model
             {
                 AuthService authService = new AuthService( this.Context as RockContext );
 
-                Rock.Cache.CacheRole.Remove( group.Id );
                 foreach ( var auth in authService.Queryable().Where( a => a.GroupId == group.Id ).ToList() )
                 {
                     authService.Delete( auth );
@@ -1141,8 +1140,7 @@ namespace Rock.Model
             if ( removeFromAuthTables && isSecurityRoleGroup )
             {
                 AuthService authService = new AuthService( this.Context as RockContext );
-
-                Rock.Cache.CacheRole.Remove( group.Id );
+                
                 foreach ( var auth in authService.Queryable().Where( a => a.GroupId == group.Id ).ToList() )
                 {
                     authService.Delete( auth );

@@ -212,8 +212,7 @@ namespace RockWeb.Blocks.Reporting
                     page.BrowserTitle = tbName.Text;
                     page.Description = tbDesc.Text;
                     rockContext.SaveChanges();
-
-                    Rock.Cache.CachePage.Remove( page.Id );
+                    
                     pageCache = CachePage.Get( RockPage.PageId );
 
                     var breadCrumb = RockPage.BreadCrumbs.Where( c => c.Url == RockPage.PageReference.BuildUrl() ).FirstOrDefault();

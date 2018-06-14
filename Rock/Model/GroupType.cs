@@ -39,7 +39,7 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "GroupType" )]
     [DataContract]
-    public partial class GroupType : Model<GroupType>, IOrdered
+    public partial class GroupType : Model<GroupType>, IOrdered, ICacheable
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupType"/> class.
@@ -1056,6 +1056,29 @@ namespace Rock.Model
 
             IndexContainer.IndexDocuments( indexableGroups );
         }
+        #endregion
+
+        #region ICacheable
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            var parentGroupTypes = CacheGroupType.Get( this.Id, dbContext as RockContext )?.ParentGroupTypes;
+            if ( parentGroupTypes?.Any() == true )
+            {
+                foreach ( var parentGroupType in parentGroupTypes )
+                {
+                    CacheGroupType.UpdateCachedEntity( parentGroupType.Id, EntityState.Detached, dbContext as RockContext );
+                }
+            }
+
+            CacheGroupType.UpdateCachedEntity( this.Id, entityState, dbContext as RockContext );
+        }
+
         #endregion
     }
 

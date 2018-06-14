@@ -279,51 +279,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                         taglPersonTags.Visible = false;
                     }
 
-                    StringBuilder sbActions = new StringBuilder();
-                    var workflowActions = GetAttributeValue( "WorkflowActions" );
-                    if ( !string.IsNullOrWhiteSpace( workflowActions ) )
-                    {
-                        using ( var rockContext = new RockContext() )
-                        {
-                            var workflowTypeService = new WorkflowTypeService( rockContext );
-                            foreach ( string guidValue in workflowActions.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
-                            {
-                                Guid? guid = guidValue.AsGuidOrNull();
-                                if ( guid.HasValue )
-                                {
-                                    var workflowType = workflowTypeService.Get( guid.Value );
-                                    if ( workflowType != null && workflowType.IsActive && workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
-                                    {
-                                        string url = string.Format( "~/WorkflowEntry/{0}?PersonId={1}", workflowType.Id, Person.Id );
-                                        sbActions.AppendFormat(
-                                            "<li><a href='{0}'><i class='fa-fw {1}'></i> {2}</a></li>",
-                                            ResolveRockUrl( url ),
-                                            workflowType.IconCssClass,
-                                            workflowType.Name );
-                                        sbActions.AppendLine();
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    var actions = GetAttributeValue( "Actions" );
-                    if ( !string.IsNullOrWhiteSpace( actions ) )
-                    {
-                        string appRoot = ResolveRockUrl( "~/" );
-                        string themeRoot = ResolveRockUrl( "~~/" );
-                        actions = actions.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
-
-                        if ( actions.Contains( "{0}" ) )
-                        {
-                            actions = string.Format( actions, Person.Id );
-                        }
-
-                        sbActions.Append( actions );
-                    }
-
-                    lActions.Text = sbActions.ToString();
-                    ulActions.Visible = !string.IsNullOrWhiteSpace( lActions.Text );
+                    CreateActionMenu();
 
                     string customContent = GetAttributeValue( "CustomContent" );
                     if ( !string.IsNullOrWhiteSpace( customContent ) )
@@ -340,6 +296,72 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     pnlContent.Visible = false;
                 }
             }
+        }
+
+        protected void CreateActionMenu()
+        {
+            StringBuilder sbActions = new StringBuilder();
+            
+            // First list the actions manually entered as html in the block settting
+            var actions = GetAttributeValue( "Actions" );
+            if ( !string.IsNullOrWhiteSpace( actions ) )
+            {
+                string appRoot = ResolveRockUrl( "~/" );
+                string themeRoot = ResolveRockUrl( "~~/" );
+                actions = actions.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
+
+                if ( actions.Contains( "{0}" ) )
+                {
+                    actions = string.Format( actions, Person.Id );
+                }
+
+                sbActions.Append( "<li role=\"separator\" class=\"divider\"></li>" );
+                sbActions.Append( actions );
+            }
+
+            // Next list the workflow actions selected in the picker
+            var workflowActions = GetAttributeValue( "WorkflowActions" );
+            if ( !string.IsNullOrWhiteSpace( workflowActions ) )
+            {
+                List<WorkflowType> workflowTypes = new List<WorkflowType>();
+
+                using ( var rockContext = new RockContext() )
+                {
+                    var workflowTypeService = new WorkflowTypeService( rockContext );
+                    foreach ( string guidValue in workflowActions.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                    {
+                        Guid? guid = guidValue.AsGuidOrNull();
+                        if ( guid.HasValue )
+                        {
+                            var workflowType = workflowTypeService.Get( guid.Value );
+                            if ( workflowType != null && workflowType.IsActive && workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                            {
+                                workflowTypes.Add( workflowType );
+                            }
+                        }
+                    }
+                }
+
+                workflowTypes = workflowTypes.OrderBy( w => w.Name ).ToList();
+
+                if ( workflowTypes.Count() > 0 )
+                {
+                    sbActions.Append( "<li role=\"separator\" class=\"divider\"></li>" );
+                }
+
+                foreach ( var workflowType in workflowTypes )
+                {
+                    string url = string.Format( "~/WorkflowEntry/{0}?PersonId={1}", workflowType.Id, Person.Id );
+                    sbActions.AppendFormat(
+                        "<li><a href='{0}'><i class='fa-fw {1}'></i> {2}</a></li>",
+                        ResolveRockUrl( url ),
+                        workflowType.IconCssClass,
+                        workflowType.Name );
+                    sbActions.AppendLine();
+                }
+            }
+
+            lActions.Text = sbActions.ToString();
         }
 
         /// <summary>

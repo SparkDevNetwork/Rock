@@ -1844,13 +1844,20 @@ namespace Rock.Model
 
             if ( this.AnniversaryDate.HasValue )
             {
-                var dbPropertyEntry = entry.Property( "AnniversaryDate" );
-                if ( dbPropertyEntry != null && dbPropertyEntry.IsModified )
+                if ( this.MaritalStatusValueId != CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED ).Id )
                 {
-                    var spouse = this.GetSpouse( (RockContext)dbContext );
-                    if ( spouse != null && spouse.AnniversaryDate != this.AnniversaryDate )
+                    this.AnniversaryDate = null;
+                }
+                else
+                {
+                    var dbPropertyEntry = entry.Property( "AnniversaryDate" );
+                    if ( dbPropertyEntry != null && dbPropertyEntry.IsModified )
                     {
-                        spouse.AnniversaryDate = this.AnniversaryDate;
+                        var spouse = this.GetSpouse( ( RockContext ) dbContext );
+                        if ( spouse != null && spouse.AnniversaryDate != this.AnniversaryDate )
+                        {
+                            spouse.AnniversaryDate = this.AnniversaryDate;
+                        }
                     }
                 }
             }

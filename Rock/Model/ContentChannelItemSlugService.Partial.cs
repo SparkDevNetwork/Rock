@@ -117,26 +117,7 @@ namespace Rock.Model
             return slug
                 .ToLower()
                 .Replace( " ", "-" )
-                .Replace( ";", "" )
-                .Replace( "/", "" )
-                .Replace( "?", "" )
-                .Replace( ":", "" )
-                .Replace( "@", "" )
-                .Replace( "=", "" )
-                .Replace( "&", "" )
-                .Replace( "<", "" )
-                .Replace( ">", "" )
-                .Replace( "#", "" )
-                .Replace( "%", "" )
-                .Replace( "\"", "" )
-                .Replace( "{", "" )
-                .Replace( "}", "" )
-                .Replace( "|", "" )
-                .Replace( "\\", "" )
-                .Replace( "^", "" )
-                .Replace( "[", "" )
-                .Replace( "]", "" )
-                .Replace( "`", "" )
+                .RemoveInvalidReservedUrlChars()
                 .Left( 75 );
         }
     }

@@ -21,6 +21,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
+using Rock;
+
 /// <summary>
 /// MEF Directory Catalog that will handle outdated MEF Components
 /// </summary>
@@ -45,13 +47,15 @@ public class SafeDirectoryCatalog : ComposablePartCatalog
         string baseTypeAssemblyName = baseType.Assembly.GetName().Name;
 
         var loadedAssembliesDictionary = AppDomain.CurrentDomain.GetAssemblies().Where( a => !a.IsDynamic && !a.GlobalAssemblyCache && !string.IsNullOrWhiteSpace( a.Location ) )
-            .ToDictionary( k => new Uri( k.CodeBase ).LocalPath, v => v );
+            .DistinctBy(k => new Uri( k.CodeBase ).LocalPath )
+            .ToDictionary( k => new Uri( k.CodeBase ).LocalPath, v => v, StringComparer.OrdinalIgnoreCase );
 
         foreach ( var file in files )
         {
             try
             {
-                Assembly loadedAssembly = loadedAssembliesDictionary.Where( a => a.Key.Equals( file, StringComparison.OrdinalIgnoreCase ) ).Select( a => a.Value ).FirstOrDefault();
+                Assembly loadedAssembly = loadedAssembliesDictionary.GetValueOrNull( file );
+
                 AssemblyCatalog assemblyCatalog = null;
 
                 if ( loadedAssembly != null )

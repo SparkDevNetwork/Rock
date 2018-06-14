@@ -1650,8 +1650,6 @@ namespace Rock.Slingshot
             }
 
             rockContext.SaveChanges();
-
-            CacheAttribute.RemoveEntityAttributes();
         }
 
         /// <summary>
@@ -1753,8 +1751,6 @@ namespace Rock.Slingshot
             }
 
             rockContext.SaveChanges();
-
-            CacheDefinedType.Remove( definedTypeId );
         }
 
         /// <summary>
@@ -1954,11 +1950,6 @@ namespace Rock.Slingshot
             var definedValueService = new DefinedValueService( rockContext );
             definedValueService.AddRange( definedValuesToAdd );
             rockContext.SaveChanges();
-
-            foreach ( var definedTypeId in definedValuesToAdd.Select( a => a.DefinedTypeId ).Distinct().ToList() )
-            {
-                CacheDefinedType.Remove( definedTypeId );
-            }
         }
 
         /// <summary>

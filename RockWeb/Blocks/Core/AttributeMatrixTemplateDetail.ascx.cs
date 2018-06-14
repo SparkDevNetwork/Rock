@@ -191,7 +191,6 @@ namespace RockWeb.Blocks.Core
 
                     attributeService.Delete( attr );
                     rockContext.SaveChanges();
-                    Rock.Cache.CacheAttribute.Remove( attr.Id );
                 }
 
                 // Update the Attributes that were assigned in the UI
@@ -199,8 +198,6 @@ namespace RockWeb.Blocks.Core
                 {
                     Helper.SaveAttributeEdits( attributeState, entityTypeIdAttributeMatrix, "AttributeMatrixTemplateId", attributeMatrixTemplate.Id.ToString(), rockContext );
                 }
-
-                Rock.Cache.CacheAttribute.RemoveEntityAttributes();
             } );
 
             NavigateToParentPage();

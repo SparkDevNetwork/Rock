@@ -80,6 +80,7 @@
 
                                 <div class="row">
                                     <div class="col-md-12">
+                                        <div class="alert alert-info">Clicking save will cause the current cache to clear and the configurations to reload. This will cause Rock to be unavailable for several minutes</div>
                                         <Rock:RockCheckBox ID="cbEnabledEdit" runat="server" Text="Enable" />
                                         <Rock:ListItems ID="liEndPoints" runat="server" Help="List of Redis endpoints (e.g. server.com:6379) to connect to." Label="End Points"></Rock:ListItems>
                                         <Rock:RockTextBox ID="tbPassword" runat="server" TextMode="Password" Help="The password used to connect. The need for a password is dependent on your Redis server configuration." Label="Password" ></Rock:RockTextBox>

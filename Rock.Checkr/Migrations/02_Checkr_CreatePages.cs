@@ -34,12 +34,14 @@ namespace Rock.Migrations
         public void MakeCheckrDefaultWorkflowAction()
         {
             // Remove Checr background check workflow from bio
-            RockMigrationHelper.DeleteBlockAttributeValue( Block.BIO, SystemGuid.Attribute.BIO_WORKFLOWACTION, CheckrSystemGuid.CHECKR_WORKFLOW_TYPE );
+            RockMigrationHelper.DeleteBlockAttributeValue( Block.BIO, SystemGuid.Attribute.BIO_WORKFLOWACTION, WorkflowType.PROTECTMYMINISTRY );
 
             // Add PMM background check workflow to bio
-            RockMigrationHelper.AddBlockAttributeValue( Block.BIO, SystemGuid.Attribute.BIO_WORKFLOWACTION, WorkflowType.PROTECTMYMINISTRY, appendToExisting: true );
+            RockMigrationHelper.AddBlockAttributeValue( Block.BIO, SystemGuid.Attribute.BIO_WORKFLOWACTION, CheckrSystemGuid.CHECKR_WORKFLOW_TYPE, appendToExisting: true );
             // Sql( string.Format( "UPDATE [dbo].[WorkflowType] SET [Name] = '{0}' WHERE [Guid] = '{1}'", NEW_PMM_WORKFLOW_TYPE_NAME, PMM_WORKFLOW_TYPE ) );
             Sql( string.Format( "UPDATE [dbo].[WorkflowType] SET [Name] = '{0}' WHERE [Guid] = '{1}'", CheckrConstants.CHECKR_WORKFLOW_TYPE_NAME, CheckrSystemGuid.CHECKR_WORKFLOW_TYPE ) );
+            RockMigrationHelper.AddEntityAttribute( "Rock.Checkr.Checkr", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "", "", "Active", "", "Should Service be used?", 0, "", "0ac1596b-0143-4939-aacd-0b14f6f74322" );
+            RockMigrationHelper.AddAttributeValue( "0ac1596b-0143-4939-aacd-0b14f6f74322", 0, "True", "554468D0-A891-5281-4D08-FED46D756E28" );
         }
 
         /// <summary>
@@ -74,7 +76,7 @@ namespace Rock.Migrations
             RockMigrationHelper.AddBlockAttributeValue( CheckrSystemGuid.CHECKR_REQUESTLIST_WORKFLOWDETAILPAGE_ATTRIBUTE, "EBD0D19C-E73D-41AE-82D4-C89C21C35998", Rock.SystemGuid.Page.WORKFLOW_DETAIL );
 
             int count = (int)SqlScalar( "SELECT COUNT(Id) FROM [dbo].[BackgroundCheck]" );
-            if ( count != 0 )
+            if ( count == 0 )
             {
                 MakeCheckrDefaultWorkflowAction();
             }

@@ -70,10 +70,10 @@
     <Compile Include="CheckrApi\GetPackagesResponse.cs" />
     <Compile Include="Constants\CheckrConstants.cs" />
     <Compile Include="Constants\CheckrSystemGuid.cs" />
+    <Compile Include="Migrations\03_Checkr_CreateAttribute.cs" />
     <Compile Include="Migrations\02_Checkr_CreatePages.cs" />
     <Compile Include="Migrations\01_Checkr.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SystemKey\SystemSetting.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">

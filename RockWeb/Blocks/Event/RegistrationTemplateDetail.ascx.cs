@@ -1025,7 +1025,6 @@ namespace RockWeb.Blocks.Event
                     if ( canDeleteAttribute )
                     {
                         attributeService.Delete( attr );
-                        Rock.Cache.CacheAttribute.Remove( attr.Id );
                     }
                 }
 
@@ -1135,8 +1134,6 @@ namespace RockWeb.Blocks.Event
                 }
 
                 rockContext.SaveChanges();
-
-                CacheAttribute.RemoveEntityAttributes();
 
                 // If this is a new template, give the current user and the Registration Administrators role administrative 
                 // rights to this template, and staff, and staff like roles edit rights

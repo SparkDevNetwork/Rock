@@ -159,8 +159,6 @@ namespace RockWeb.Blocks.Crm
 
                 rockContext.SaveChanges();
 
-                CacheLayout.Remove( layout.Id );
-
                 Dictionary<string, string> qryParams = new Dictionary<string, string>();
                 qryParams["layoutId"] = layout.Id.ToString();
                 NavigateToPage( RockPage.Guid, qryParams );

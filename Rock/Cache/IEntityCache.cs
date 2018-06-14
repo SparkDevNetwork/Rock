@@ -70,5 +70,13 @@ namespace Rock.Cache
         /// </summary>
         /// <param name="entity">The entity.</param>
         void SetFromEntity( IEntity entity );
+
+        /// <summary>
+        /// The EntityType of the cached entity
+        /// </summary>
+        /// <value>
+        /// The entity type identifier.
+        /// </value>
+        int CachedEntityTypeId { get; }
     }
 }

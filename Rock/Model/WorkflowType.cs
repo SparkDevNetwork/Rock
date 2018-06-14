@@ -24,6 +24,7 @@ using System.Runtime.Serialization;
 
 using Rock.Security;
 using Rock.Data;
+using Rock.Cache;
 
 namespace Rock.Model
 {
@@ -39,7 +40,7 @@ namespace Rock.Model
     [RockDomain( "Workflow" )]
     [Table( "WorkflowType" )]
     [DataContract]
-    public partial class WorkflowType : Model<WorkflowType>, IOrdered, ICategorized, IHasActiveFlag
+    public partial class WorkflowType : Model<WorkflowType>, IOrdered, ICategorized, IHasActiveFlag, ICacheable
 
     {
 
@@ -323,6 +324,19 @@ namespace Rock.Model
 
         #endregion
 
+        #region ICacheable
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            CacheWorkflowType.UpdateCachedEntity( this.Id, entityState, dbContext as RockContext );
+        }
+
+        #endregion
     }
 
     #region Entity Configuration

@@ -35,7 +35,7 @@ namespace Rock.Model
     [Table( "AttributeValue" )]
     [DataContract]
     [JsonConverter( typeof( Rock.Utility.AttributeValueJsonConverter ) )]
-    public partial class AttributeValue : Model<AttributeValue>
+    public partial class AttributeValue : Model<AttributeValue>, ICacheable
     {
         #region Entity Properties
 
@@ -527,6 +527,34 @@ namespace Rock.Model
         public override string ToString()
         {
             return this.Value;
+        }
+
+        #endregion
+
+        #region ICacheable
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            CacheAttribute.UpdateCachedEntity( this.AttributeId, entityState, dbContext as RockContext );
+
+            CacheAttribute cacheAttribute = CacheAttribute.Get( this.AttributeId, dbContext as RockContext );
+            
+            if ( cacheAttribute.EntityTypeId == CacheEntityType.GetId<DefinedValue>() && this.EntityId.HasValue )
+            {
+                // Update DefinedValue Cache
+                CacheDefinedValue.UpdateCachedEntity( this.EntityId.Value, System.Data.Entity.EntityState.Detached, dbContext as RockContext );
+            }
+            
+            if ( ( !cacheAttribute.EntityTypeId.HasValue || cacheAttribute.EntityTypeId.Value == 0 ) && string.IsNullOrEmpty( cacheAttribute.EntityTypeQualifierColumn ) && string.IsNullOrEmpty( cacheAttribute.EntityTypeQualifierValue ) )
+            {
+                // Update GlobalAttributes if one of the values changed
+                CacheGlobalAttributes.Remove();
+            }
         }
 
         #endregion

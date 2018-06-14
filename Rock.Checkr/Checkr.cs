@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using Newtonsoft.Json;
+using Rock.Attribute;
 using Rock.Cache;
 using Rock.Checkr.CheckrApi;
 using Rock.Checkr.Constants;
@@ -36,6 +37,7 @@ namespace Rock.Checkr
     [Export( typeof( BackgroundCheckComponent ) )]
     [ExportMetadata( "ComponentName", "Checkr" )]
 
+    [EncryptedTextField( "Access Token", "Checkr Access Token", true, "", "", 0, null, true )]
     public class Checkr : BackgroundCheckComponent
     {
         #region BackgroundCheckComponent Implementation
@@ -120,7 +122,6 @@ namespace Rock.Checkr
                     newRockContext.SaveChanges();
 
                     UpdateWorkflowRequestStatus( workflow, newRockContext, "SUCCESS" );
-                    CacheAttribute.RemoveEntityAttributes();
                     return true;
                 }
             }
@@ -253,7 +254,6 @@ namespace Rock.Checkr
         /// <param name="rockContext">The rock context.</param>
         private static void UpdateWorkflow( int id, string recommendation, string documentId, string reportStatus, RockContext rockContext )
         {
-            bool createdNewAttribute = false;
             var workflowService = new WorkflowService( rockContext );
             var workflow = new WorkflowService( rockContext ).Get( id );
             if ( workflow != null && workflow.IsActive )
@@ -284,7 +284,6 @@ namespace Rock.Checkr
                         CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT.AsGuid() ), rockContext,
                         new Dictionary<string, string> { { "ispassword", "false" } } ) )
                     {
-                        createdNewAttribute = true;
                     }
 
                 }
@@ -296,7 +295,6 @@ namespace Rock.Checkr
                         CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT.AsGuid() ), rockContext,
                         new Dictionary<string, string> { { "ispassword", "false" } } ) )
                     {
-                        createdNewAttribute = true;
                     }
                 }
 
@@ -307,7 +305,6 @@ namespace Rock.Checkr
                     CacheFieldType.Get( Rock.SystemGuid.FieldType.SINGLE_SELECT.AsGuid() ), rockContext,
                     new Dictionary<string, string> { { "fieldtype", "ddl" }, { "values", "Pass,Fail,Review" } } ) )
                     {
-                        createdNewAttribute = true;
                     }
                 }
 
@@ -323,11 +320,6 @@ namespace Rock.Checkr
             }
 
             rockContext.SaveChanges();
-
-            if ( createdNewAttribute )
-            {
-                CacheAttribute.RemoveEntityAttributes();
-            }
         }
 
         /// <summary>
@@ -431,7 +423,6 @@ namespace Rock.Checkr
                 CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT.AsGuid() ), rockContext, null ) )
             {
                 rockContext.SaveChanges();
-                CacheAttribute.RemoveEntityAttributes();
             }
         }
 
@@ -567,12 +558,11 @@ namespace Rock.Checkr
                         definedValue.SetAttributeValue( "MVRJurisdiction", string.Empty );
                         definedValue.SetAttributeValue( "SendHomeStateMVR", "False" );
                         definedValue.SaveAttributeValues( rockContext );
-
-                        CacheDefinedValue.Remove( definedValue.Id );
                     }
                 }
             }
 
+            CacheDefinedValue.Clear();
             return true;
         }
 
