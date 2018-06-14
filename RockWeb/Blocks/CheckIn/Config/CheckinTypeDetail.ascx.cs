@@ -588,10 +588,18 @@ namespace RockWeb.Blocks.CheckIn.Config
 
         private void LoadDropdowns()
         {
+            ddlSearchType.Items.Clear();
+
             var searchTypes = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.CHECKIN_SEARCH_TYPE.AsGuid() );
             if ( searchTypes != null )
             {
-                ddlSearchType.BindToDefinedType( searchTypes );
+                foreach( var searchType in searchTypes.DefinedValues )
+                {
+                    if ( searchType.GetAttributeValue("UserSelectable").AsBooleanOrNull() ?? true ) 
+                    {
+                        ddlSearchType.Items.Add( new System.Web.UI.WebControls.ListItem( searchType.Value, searchType.Id.ToString() ) );
+                    }
+                }
             }
         }
 
