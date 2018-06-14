@@ -861,7 +861,9 @@ namespace Rock.Model
             var group = this.Group ?? new GroupService( new RockContext() ).GetNoTracking( this.GroupId );
             if ( group != null )
             {
-                if ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
+
+                var groupType = CacheGroupType.Get( group.GroupTypeId );
+                if ( group.IsSecurityRole || groupType?.Guid == Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() )
                 {
                     Rock.Cache.CacheRole.Remove( group.Id );
                     Rock.Security.Authorization.Clear();
