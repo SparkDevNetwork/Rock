@@ -102,11 +102,11 @@ namespace Rock.Cache
             // We need to get the settings from the DB instead of the cache or else we'll go into an infinite loop (which is bad).
             var attributeService = new Model.AttributeService( new Data.RockContext() );
             bool redisEnabled = attributeService.GetSystemSetting( SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER )?.DefaultValue.AsBoolean() ?? false;
+            bool disableBackplane = System.Configuration.ConfigurationManager.AppSettings["DisableRemoteCache"].AsBooleanOrNull() ?? false;
 
-            if ( redisEnabled == false )
+            if ( redisEnabled == false || disableBackplane )
             {
                 return new ConfigurationBuilder( "InProcess" )
-                //.WithSystemRuntimeCacheHandle( "inProcessCache" )
                 .WithDictionaryHandle()
                 .EnableStatistics()
                 .Build();
@@ -117,7 +117,6 @@ namespace Rock.Cache
 
             return new ConfigurationBuilder( "InProcess With Redis Backplane" )
                 .WithJsonSerializer()
-                //.WithSystemRuntimeCacheHandle( "inProcessCache" )
                 .WithDictionaryHandle()
                 .And
                 .WithRedisConfiguration( "redis", redisConfig =>
@@ -131,8 +130,8 @@ namespace Rock.Cache
                         redisConfig.WithEndpoint( info[0], info[1].AsIntegerOrNull() ?? 6379 );
                     }
                 } )
-                .WithMaxRetries( 1000 )
-                .WithRetryTimeout( 100 )
+                .WithMaxRetries( 100 )
+                .WithRetryTimeout( 10 )
                 .WithRedisBackplane( "redis" )
                 .WithRedisCacheHandle( "redis", true )
                 .EnableStatistics()

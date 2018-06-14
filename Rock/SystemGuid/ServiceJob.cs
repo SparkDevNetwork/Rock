@@ -32,5 +32,10 @@ namespace Rock.SystemGuid
         /// The Job for migrating attendance records to occurrence recors (in V8)
         /// </summary>
         public const string MIGRATE_ATTENDANCE_OCCURRENCE = "98A2DCA5-5E2E-482A-A7CA-15DAD5B4EA65";
+
+        /// <summary>
+        /// The Job for migrating family check-in identifiers to person alternate ids
+        /// </summary>
+        public const string MIGRATE_FAMILY_CHECKIN_IDS = "E782C667-EF07-4AD2-86B7-01C1935AAF5B";
     }
 }

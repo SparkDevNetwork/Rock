@@ -161,8 +161,7 @@ namespace RockWeb.Blocks.CheckIn.Config
 
                 groupTypeService.Delete( groupType );
                 rockContext.SaveChanges();
-
-                CacheGroupType.Remove( groupTypeId );
+                
                 Rock.CheckIn.KioskDevice.Clear();
             }
 
@@ -272,8 +271,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                     groupType = groupTypeService.Get( groupType.Id );
                     ShowReadonlyDetails( groupType );
                 }
-
-                CacheGroupType.Remove( groupType.Id );
+                
                 Rock.CheckIn.KioskDevice.Clear();
             }
         }
@@ -588,10 +586,18 @@ namespace RockWeb.Blocks.CheckIn.Config
 
         private void LoadDropdowns()
         {
+            ddlSearchType.Items.Clear();
+
             var searchTypes = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.CHECKIN_SEARCH_TYPE.AsGuid() );
             if ( searchTypes != null )
             {
-                ddlSearchType.BindToDefinedType( searchTypes );
+                foreach( var searchType in searchTypes.DefinedValues )
+                {
+                    if ( searchType.GetAttributeValue("UserSelectable").AsBooleanOrNull() ?? true ) 
+                    {
+                        ddlSearchType.Items.Add( new System.Web.UI.WebControls.ListItem( searchType.Value, searchType.Id.ToString() ) );
+                    }
+                }
             }
         }
 

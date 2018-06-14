@@ -279,7 +279,6 @@ namespace Rock.Model
                         oldEntityType.IsSecured = false;
                         oldEntityType.IsEntity = false;
                         oldEntityType.AssemblyName = null;
-                        CacheEntityType.Remove( oldEntityType.Id );
                     }
                 }
 
@@ -303,8 +302,8 @@ namespace Rock.Model
                         existingEntityType.IsSecured = entityType.IsSecured;
                         existingEntityType.FriendlyName = existingEntityType.FriendlyName ?? entityType.FriendlyName;
                         existingEntityType.AssemblyName = entityType.AssemblyName;
-                        CacheEntityType.Remove( existingEntityType.Id );
                     }
+
                     entityTypes.Remove( key );
                 }
 

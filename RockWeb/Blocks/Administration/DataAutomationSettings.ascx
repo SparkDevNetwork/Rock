@@ -7,7 +7,7 @@
             <div class="panel-heading">
                 <h1 class="panel-title">
                     <i class="fa fa-tachometer"></i>
-                    Data Integrity Settings
+                    Data Automation Settings
                 </h1>
             </div>
             <div class="panel-body">
@@ -173,6 +173,12 @@
                         <hr />
 
                         <asp:Panel ID="pnlInactivatePeople" runat="server" Enabled="false" CssClas="data-integrity-options">
+
+                            <div class="clearfix margin-b-lg">
+                                <div class="pull-left">
+                                    <Rock:NumberBox ID="nbRecordsOlderThan" runat="server" Label="The number of days that the records must be older to get considered for Inactivate process." AppendText="days" CssClass="input-width-md" Text="180" />
+                                </div>
+                            </div>
 
                             <div class="clearfix margin-b-lg">
                                 <div class="pull-left" style="width: 40px">

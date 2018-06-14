@@ -5055,5 +5055,34 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201805211735573_Homepage_Metrics_Down", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DECLARE
+        ///	@BinaryFileId int
+        ///	,@BinaryFileTypeIdDefault int = (SELECT TOP 1 Id from [BinaryFileType] where [Guid] = &apos;C1142570-8CD6-4A20-83B1-ACB47C1CD377&apos;)
+        ///	,@StorageEntityTypeIdDatabase int = (SELECT TOP 1 Id FROM [EntityType] WHERE [Guid] = &apos;0AA42802-04FD-4AEC-B011-FEB127FC85CD&apos;)
+        ///
+        ///-- Add RockSolidChurchLogo.svg
+        ///IF NOT EXISTS (SELECT * FROM [BinaryFile] WHERE [Guid] = &apos;E153E57F-08A4-4AEC-8A54-BF4211ACB127&apos; )
+        ///BEGIN
+        ///	INSERT INTO [BinaryFile] ([IsTemporary], [IsSystem], [BinaryFileTypeId], [FileName], [ [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201806081810282_LandingPage {
+            get {
+                return ResourceManager.GetString("_201806081810282_LandingPage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DECLARE @LaunchWorkflowConditionId int = ( SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = &apos;E5EFC23D-E030-496C-A9A4-D2BF4181CB49&apos; )
+        ///DECLARE @LaunchWorkflowOnlyIfIndividualLoggedInId int = ( SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = &apos;EB298724-07D5-42AF-B4BF-82420AF6A657&apos; )
+        ///DECLARE @WriteInteractionOnlyIfIndividualLoggedInId int = ( SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = &apos;63B254F7-E19C-48FD-A93F-AFEE19C1ED21&apos; )
+        ///DECLARE @LogInteractionsId int = ( SELECT TOP 1 [Id] FROM [Attribute] WHERE [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201806111950515_ContentChannelViewDetail {
+            get {
+                return ResourceManager.GetString("_201806111950515_ContentChannelViewDetail", resourceCulture);
+            }
+        }
     }
 }

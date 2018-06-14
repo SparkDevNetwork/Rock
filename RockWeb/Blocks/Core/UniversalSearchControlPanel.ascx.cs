@@ -210,9 +210,6 @@ namespace RockWeb.Blocks.Core
                 {
                     IndexContainer.DeleteIndex( entityType.IndexModelType );
                 }
-
-                // flush item from cache
-                CacheEntityType.Remove( entityType.Id );
             }
 
             mdEditEntityType.Hide();

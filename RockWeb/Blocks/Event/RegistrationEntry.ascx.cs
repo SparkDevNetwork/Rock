@@ -2846,11 +2846,6 @@ namespace RockWeb.Blocks.Event
                             }
                         }
                     }
-
-                    if ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
-                    {
-                        Rock.Cache.CacheRole.Remove( group.Id );
-                    }
                 }
             }
         }

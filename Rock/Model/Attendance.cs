@@ -95,6 +95,15 @@ namespace Rock.Model
         public string SearchValue { get; set; }
 
         /// <summary>
+        /// Gets or sets the person who was identified as the person doing the check-in.
+        /// </summary>
+        /// <value>
+        /// The person alias identifier of person doing check-in.
+        /// </value>
+        [DataMember]
+        public int? CheckedInByPersonAliasId { get; set; }
+
+        /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.Group"/> (family) that was selected after searching.
         /// </summary>
         /// <value>

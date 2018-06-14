@@ -45,8 +45,8 @@ namespace Rock.Jobs
         Regex MergedRegex = new Regex( "Merged <span class=['\"]field-value['\"]>(.*)<\\/span> with this record.", RegexOptions.Compiled );
 
         // Group Member history was written in the following format pre-v7.4
-        Regex AddedToGroupRegex = new Regex( "Added to (.*).", RegexOptions.Compiled );
-        Regex RemovedFromGroupRegex = new Regex( "Removed from (.*).", RegexOptions.Compiled );
+        Regex AddedToGroupRegex = new Regex( "Added to (.*)", RegexOptions.Compiled );
+        Regex RemovedFromGroupRegex = new Regex( "Removed from (.*)", RegexOptions.Compiled );
         Regex GroupMemberStatusChangeV6 = new Regex( "Group member status changed from (.*) to (.*)", RegexOptions.Compiled );
         Regex GroupRoleChangeV6 = new Regex( "Group role changed from (.*) to (.*)", RegexOptions.Compiled );
 
@@ -237,7 +237,7 @@ namespace Rock.Jobs
                         {
                             historyVerb = History.HistoryVerb.AddedToGroup;
                             historyChangeType = History.HistoryChangeType.Record;
-                            historyRecord.ValueName = addedToGroupMatch.Groups[1].Value.Trim();
+                            historyRecord.ValueName = addedToGroupMatch.Groups[1].Value.Trim().TrimEnd( new char[] { '.' } );
 
                             historyRecord.Summary = null;
                         }
@@ -245,7 +245,7 @@ namespace Rock.Jobs
                         {
                             historyVerb = History.HistoryVerb.RemovedFromGroup;
                             historyChangeType = History.HistoryChangeType.Record;
-                            historyRecord.ValueName = removedFromGroupMatch.Groups[1].Value.Trim();
+                            historyRecord.ValueName = removedFromGroupMatch.Groups[1].Value.Trim().TrimEnd( new char[] { '.' } );
 
                             historyRecord.Summary = null;
                         }

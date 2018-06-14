@@ -165,16 +165,6 @@ namespace RockWeb.Blocks.Administration
             var childPages = pageService.GetByParentPageId( _page.Id ).ToList();
             pageService.Reorder( childPages, e.OldIndex, e.NewIndex );
             rockContext.SaveChanges();
-
-            Rock.Cache.CachePage.Remove( _page.Id );
-
-            foreach ( var page in childPages )
-            {
-                // make sure the CachePage for all the re-ordered pages get flushed so the new Order is updated
-                Rock.Cache.CachePage.Remove( page.Id );
-            }
-
-            _page.RemoveChildPages();
             PageUpdated = true;
 
             BindGrid();
@@ -235,14 +225,8 @@ namespace RockWeb.Blocks.Administration
                 pageService.Delete( page );
 
                 rockContext.SaveChanges();
-
-                Rock.Cache.CachePage.Remove( page.Id );
+                
                 PageUpdated = true;
-
-                if ( _page != null )
-                {
-                    _page.RemoveChildPages();
-                }
             }
 
             BindGrid();
@@ -374,12 +358,10 @@ namespace RockWeb.Blocks.Administration
                 if ( page.IsValid )
                 {
                     rockContext.SaveChanges();
-
-                    CachePage.Remove( page.Id );
+                    
                     if ( _page != null )
                     {
                         Rock.Security.Authorization.CopyAuthorization( _page, page, rockContext );
-                        _page.RemoveChildPages();
                     }
 
                     BindGrid();

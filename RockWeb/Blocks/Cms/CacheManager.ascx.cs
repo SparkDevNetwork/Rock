@@ -108,6 +108,38 @@ namespace RockWeb.Blocks.Cms
             nbModalMessage.Visible = false;
         }
 
+        private bool RestartWebApplication()
+        {
+            bool Error = false;
+            try
+            {
+                // *** This requires full trust so this will fail
+                // *** in many scenarios
+                System.Web.HttpRuntime.UnloadAppDomain();
+            }
+            catch
+            {
+                Error = true;
+            }
+
+            if ( !Error )
+                return true;
+
+            // *** Couldn't unload with Runtime - let's try modifying web.config
+            string ConfigPath = System.Web.HttpContext.Current.Request.PhysicalApplicationPath + "\\web.config";
+
+            try
+            {
+                System.IO.File.SetLastWriteTimeUtc( ConfigPath, DateTime.UtcNow );
+            }
+            catch
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         #region Grid
 
         /// <summary>
@@ -323,6 +355,7 @@ namespace RockWeb.Blocks.Cms
             SystemSettings.SetValue( Rock.SystemKey.SystemSetting.REDIS_DATABASE_NUMBER, tbDatabaseNumber.Text );
 
             PopulateRedisView();
+            RestartWebApplication();
         }
 
         protected void btnCancelRedis_Click( object sender, EventArgs e )
@@ -337,7 +370,9 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void RedisEndPointAvailabilityCheck()
         {
-            if ( !SystemSettings.GetValue( Rock.SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER ).AsBooleanOrNull() ?? false )
+            bool redisEnabled = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER ).AsBooleanOrNull() ?? false;
+
+            if ( !redisEnabled  )
             {
                 spRedisStatus.Visible = false;
                 return;
@@ -542,8 +577,6 @@ namespace RockWeb.Blocks.Cms
 
             definedValueService.Add( definedValue );
             rockContext.SaveChanges();
-
-            Rock.Cache.CacheDefinedType.Remove( definedValue.DefinedTypeId );
         }
 
         /// <summary>

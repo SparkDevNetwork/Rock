@@ -159,9 +159,6 @@ namespace RockWeb.Blocks.Core
             if ( noteType.IsValid )
             {
                 rockContext.SaveChanges();
-
-                CacheNoteType.Remove( noteType.Id );
-                CacheNoteType.RemoveEntityNoteTypes();
             }
 
             NavigateToParentPage();

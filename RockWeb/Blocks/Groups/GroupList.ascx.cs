@@ -443,12 +443,6 @@ namespace RockWeb.Blocks.Groups
                     }
 
                     rockContext.SaveChanges();
-
-                    if ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
-                    {
-                        // person removed from SecurityRole, Flush
-                        Rock.Cache.CacheRole.Remove( group.Id );
-                    }
                 }
                 else
                 {
@@ -565,11 +559,6 @@ namespace RockWeb.Blocks.Groups
 
             groupMemberService.Add( groupMember );
             rockContext.SaveChanges();
-
-            if ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
-            {
-                Rock.Cache.CacheRole.Remove( group.Id );
-            }
 
             modalDetails.Hide();
             BindFilter();

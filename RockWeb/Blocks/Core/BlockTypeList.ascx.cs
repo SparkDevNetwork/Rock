@@ -142,7 +142,6 @@ namespace RockWeb.Blocks.Core
 
                 blockTypeService.Delete( blockType );
                 rockContext.SaveChanges();
-                Rock.Cache.CacheBlockType.Remove( blockType.Id );
             }
 
             BindGrid();

@@ -20,7 +20,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
+using Rock.Cache;
 using Rock.Data;
 
 namespace Rock.Model
@@ -32,7 +32,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "NoteType" )]
     [DataContract]
-    public partial class NoteType : Model<NoteType>, IOrdered
+    public partial class NoteType : Model<NoteType>, IOrdered, ICacheable
     {
 
         #region Entity Properties
@@ -274,6 +274,21 @@ namespace Rock.Model
         public override string ToString()
         {
             return this.Name;
+        }
+
+        #endregion
+
+        #region ICacheable
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            CacheNoteType.UpdateCachedEntity( this.Id, entityState, dbContext as RockContext );
+            CacheNoteType.RemoveEntityNoteTypes();
         }
 
         #endregion

@@ -574,6 +574,15 @@ validity of the request before completing this merge." :
                                 personSearchKeyService.Add( personSearchKey );
                                 rockContext.SaveChanges();
                             }
+
+                            var mergeSearchKeys = personService.GetPersonSearchKeys( p.Id ).Where( a => a.SearchTypeValueId == searchTypeValue.Id ).ToList();
+                            var duplicateKeys = mergeSearchKeys.Where( a => personSearchKeys.Any( b => b.SearchValue.ToLower() == a.SearchValue.ToLower() ) );
+
+                            if ( duplicateKeys.Any() )
+                            {
+                                personSearchKeyService.DeleteRange( duplicateKeys );
+                                rockContext.SaveChanges();
+                            }
                         }
 
                         // Delete merged person's family records and any families that would be empty after merge

@@ -172,7 +172,6 @@ namespace RockWeb.Blocks.Core
                 locationService.Delete( location );
                 rockContext.SaveChanges();
 
-                FlushCampus( locationId );
                 Rock.CheckIn.KioskDevice.Clear();
             }
 
@@ -207,7 +206,6 @@ namespace RockWeb.Blocks.Core
             if ( locationId != 0 )
             {
                 location = locationService.Get( locationId );
-                FlushCampus( locationId );
             }
 
             if ( location == null )
@@ -697,16 +695,6 @@ namespace RockWeb.Blocks.Core
             fieldsetViewDetails.Visible = !editable;
 
             this.HideSecondaryBlocks( editable );
-        }
-
-        // Flush any cached campus that uses location
-        private void FlushCampus( int locationId )
-        {
-            foreach ( var campus in CacheCampus.All()
-                .Where( c => c.LocationId == locationId ) )
-            {
-                CacheCampus.Remove( campus.Id );
-            }
         }
             
         #endregion

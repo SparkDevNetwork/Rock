@@ -378,6 +378,7 @@
     <Compile Include="Attribute\AttributeCategoryFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeFieldAttribute.cs" />
     <Compile Include="Attribute\CheckListFieldAttribute.cs" />
+    <Compile Include="Attribute\ColorFieldAttribute.cs" />
     <Compile Include="Attribute\ComparisonFieldAttribute.cs" />
     <Compile Include="Attribute\ContentChannelTypeFieldAttribute.cs" />
     <Compile Include="Attribute\ContentChannelItemFieldAttribute.cs" />
@@ -504,6 +505,7 @@
     <Compile Include="Cache\Entities\CacheWorkflowActionType.cs" />
     <Compile Include="Cache\Entities\CacheWorkflowActivityType.cs" />
     <Compile Include="Cache\Entities\CacheWorkflowType.cs" />
+    <Compile Include="Cache\ICacheable.cs" />
     <Compile Include="Cache\IItemCache.cs" />
     <Compile Include="Cache\NonEntities\CacheEntityNoteTypes.cs" />
     <Compile Include="Cache\NonEntities\CacheIdFromGuid.cs" />
@@ -799,6 +801,7 @@
     <Compile Include="Jobs\CommunicationQueueAlert.cs" />
     <Compile Include="Jobs\DatabaseMaintenance.cs" />
     <Compile Include="Jobs\IndexRockSite.cs" />
+    <Compile Include="Jobs\MigrateFamilyAlternateId.cs" />
     <Compile Include="Jobs\MigrateAttendanceOccurrenceData.cs" />
     <Compile Include="Jobs\MigrateHistorySummaryData.cs" />
     <Compile Include="Jobs\PostV80DataMigrations.cs" />
@@ -1383,6 +1386,7 @@
     <Compile Include="Reporting\DataSelect\GroupMember\GroupLinkSelect.cs" />
     <Compile Include="Reporting\DataSelect\GroupMember\GroupAttributeSelect.cs" />
     <Compile Include="Reporting\DataSelect\Group\GroupFormattedFieldSelect.cs" />
+    <Compile Include="Reporting\DataSelect\Group\ScheduleSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\PersonFormattedFieldSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\SignalSelect.cs" />
     <Compile Include="Reporting\DataSelect\PrayerRequest\CampusSelect.cs" />
@@ -1410,6 +1414,7 @@
     <Compile Include="Transactions\IndexEntityTransaction.cs" />
     <Compile Include="Transactions\BulkIndexEntityTypeTransaction.cs" />
     <Compile Include="Transactions\LaunchWorkflowsTransaction.cs" />
+    <Compile Include="Transactions\InteractionTransaction.cs" />
     <Compile Include="Transactions\ShortLinkTransaction.cs" />
     <Compile Include="Transactions\SendPaymentReceipts.cs" />
     <Compile Include="Transactions\SendPaymentReciepts.cs" />
@@ -1653,6 +1658,7 @@
     <Compile Include="Utility\ExcelHelper.cs" />
     <Compile Include="Utility\ExtensionMethods\AttributesExtensionsObsolete.cs" />
     <Compile Include="Utility\ExtensionMethods\DataTable.cs" />
+    <Compile Include="Utility\ExtensionMethods\IRockTransactionExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\QuartzExtensions.cs" />
     <Compile Include="Utility\FileUtilities.cs" />
     <Compile Include="Utility\FontAwesomeHelper.cs" />

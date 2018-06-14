@@ -20,12 +20,8 @@
                     <Columns>
                         <Rock:ReorderField />
                         <Rock:RockBoundField DataField="Name" HeaderText="Name" />
-                        <Rock:RockTemplateField HeaderText="Type" >
-                            <ItemTemplate>
-                                <%# Eval("BlockTypeName") %><br />
-                                <small><%# Eval("BlockTypePath") %></small>
-                            </ItemTemplate>
-                        </Rock:RockTemplateField>
+                        <Rock:RockBoundField DataField="BlockTypeName" HeaderText="Type" ColumnPriority="Tablet" />
+                        <Rock:RockBoundField DataField="BlockTypeCategory" HeaderText="Category" ColumnPriority="Tablet" />
                         <Rock:DeleteField OnClick="gPageBlocks_Delete" />
                     </Columns>
                 </Rock:Grid>
@@ -40,12 +36,8 @@
                     <Columns>
                         <Rock:ReorderField />
                         <Rock:RockBoundField DataField="Name" HeaderText="Name" />
-                        <Rock:RockTemplateField HeaderText="Type" >
-                            <ItemTemplate>
-                                <%# Eval("BlockTypeName") %><br />
-                                <small><%# Eval("BlockTypePath") %></small>
-                            </ItemTemplate>
-                        </Rock:RockTemplateField>
+                        <Rock:RockBoundField DataField="BlockTypeName" HeaderText="Type" ColumnPriority="Tablet" />
+                        <Rock:RockBoundField DataField="BlockTypeCategory" HeaderText="Category" ColumnPriority="Tablet" />
                         <Rock:DeleteField OnClick="gLayoutBlocks_Delete" />
                     </Columns>
                 </Rock:Grid>
@@ -60,12 +52,8 @@
                     <Columns>
                         <Rock:ReorderField />
                         <Rock:RockBoundField DataField="Name" HeaderText="Name" />
-                        <Rock:RockTemplateField HeaderText="Type" >
-                            <ItemTemplate>
-                                <%# Eval("BlockTypeName") %><br />
-                                <small><%# Eval("BlockTypePath") %></small>
-                            </ItemTemplate>
-                        </Rock:RockTemplateField>
+                        <Rock:RockBoundField DataField="BlockTypeName" HeaderText="Type" ColumnPriority="Tablet" />
+                        <Rock:RockBoundField DataField="BlockTypeCategory" HeaderText="Category" ColumnPriority="Tablet" />
                         <Rock:DeleteField OnClick="gSiteBlocks_Delete" />
                     </Columns>
                 </Rock:Grid>

@@ -112,7 +112,8 @@ namespace Rock.Model
                 , [DiscountQualifiedCost]
                 , [TotalDiscount]
                 , ([TotalCost] - [TotalDiscount]) AS [RegistrationCost]
-            FROM cte2";
+            FROM cte2
+            WHERE [TotalDiscount] > 0";
 
             var param = new System.Data.SqlClient.SqlParameter( "@RegistrationInstanceId", registrationInstanceId );
 

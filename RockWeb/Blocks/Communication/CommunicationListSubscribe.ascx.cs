@@ -256,11 +256,6 @@ namespace RockWeb.Blocks.Communication
                             groupMemberService.Add( groupMember );
                             rockContext.SaveChanges();
                             groupMember.SaveAttributeValue( "PreferredCommunicationMedium", rockContext );
-
-                            if ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
-                            {
-                                CacheRole.Remove( group.Id );
-                            }
                         }
                         else
                         {

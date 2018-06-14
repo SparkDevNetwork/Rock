@@ -45,7 +45,7 @@ namespace Rock.Model
 
     // Support Analytics Tables, but only for GroupType Family
     [Analytics( "GroupTypeId", "10", true, true )]
-    public partial class Group : Model<Group>, IOrdered, IHasActiveFlag, IRockIndexable
+    public partial class Group : Model<Group>, IOrdered, IHasActiveFlag, IRockIndexable, ICacheable
     {
         #region Entity Properties
 
@@ -963,6 +963,53 @@ namespace Rock.Model
         {
             return true;
         }
+        #endregion
+
+        #region ICacheable
+
+        private int? _originalGroupTypeId;
+        private bool? _originalIsSecurityRole;
+
+        /// <summary>
+        /// Method that will be called on an entity immediately after the item is saved by context
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="entry">The entry.</param>
+        /// <param name="state">The state.</param>
+        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry, EntityState state )
+        {
+            if ( state == System.Data.Entity.EntityState.Modified || state == System.Data.Entity.EntityState.Deleted )
+            {
+                _originalGroupTypeId = entry.OriginalValues["GroupTypeId"]?.ToString().AsIntegerOrNull();
+                _originalIsSecurityRole = entry.OriginalValues["IsSecurityRole"]?.ToString().AsBooleanOrNull();
+            }
+
+            base.PreSaveChanges( dbContext, entry, state );
+        }
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            // If the group changed, and it was a security group, flush the security for the group
+            Guid? originalGroupTypeGuid = null;
+            Guid groupTypeScheduleRole = Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid();
+            if ( _originalGroupTypeId.HasValue && _originalGroupTypeId != this.GroupTypeId )
+            {
+                originalGroupTypeGuid = CacheGroupType.Get( _originalGroupTypeId.Value )?.Guid;
+            }
+
+            var groupTypeGuid = CacheGroupType.Get( this.GroupTypeId )?.Guid;
+            if ( this.IsSecurityRole || ( _originalIsSecurityRole == true ) || ( groupTypeGuid == groupTypeScheduleRole ) || ( originalGroupTypeGuid == groupTypeScheduleRole ) )
+            {
+                Rock.Cache.CacheRole.Remove( this.Id );
+                Rock.Cache.CacheRole.Get( this.Id );
+            }
+        }
+
         #endregion
     }
 

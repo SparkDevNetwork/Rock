@@ -464,12 +464,15 @@ namespace Rock.Model
     /// <summary>
     /// DataViewFilterOverrides with a Dictionary of Filter Overrides where the Key is the DataViewFilter.Guid
     /// </summary>
+    [System.Diagnostics.DebuggerDisplay( "{DebuggerDisplay}" )]
     public class DataViewFilterOverrides : Dictionary<Guid, DataViewFilterOverride>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="DataViewFilterOverrides"/> class.
         /// </summary>
-        public DataViewFilterOverrides() : base() { }
+        public DataViewFilterOverrides() : base()
+        {
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DataViewFilterOverrides"/> class.
@@ -480,13 +483,12 @@ namespace Rock.Model
         { }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [use persisted values if available] (default true)
-        /// Set this to false to prevent the Query from using the PersistedValues instead of the normal filter
+        /// List of DataViewIds that should not use Persisted Values
         /// </summary>
         /// <value>
-        ///   <c>true</c> if [use persisted values if available]; otherwise, <c>false</c>.
+        /// The ignore data view persisted values.
         /// </value>
-        public bool UsePersistedValuesIfAvailable { get; set; } = true;
+        public HashSet<int> IgnoreDataViewPersistedValues { get; set; } = new HashSet<int>();
 
         /// <summary>
         /// Gets the override.
@@ -502,6 +504,20 @@ namespace Rock.Model
             else
             {
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the debugger display.
+        /// </summary>
+        /// <value>
+        /// The debugger display.
+        /// </value>
+        private string DebuggerDisplay
+        {
+            get
+            {
+                return $@"IgnoreDataViewPersistedValues for DataViewIds: {IgnoreDataViewPersistedValues.ToList().AsDelimited( "," )},DataViewFilterOverrides.Count:{this.Count}";
             }
         }
     }

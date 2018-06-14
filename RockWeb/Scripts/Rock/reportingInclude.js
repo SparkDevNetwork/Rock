@@ -141,6 +141,12 @@ $(document).ready(function () {
                     return title + ' is ' + selectedItems
                 },
 
+                // NOTE: this is specifically for the Rock.Reporting.DataFilter.OtherDataViewFilter (and similar) components
+                formatFilterForOtherDataViewFilter: function (title, $selectedContent) {
+                    var dataViewName = $('.js-dataview .js-item-name-value', $selectedContent).val();
+                    return title + ' ' + dataViewName;
+                },
+
                 //
                 formatFilterForSelectSingleField: function (title, $selectedContent) {
                     var selectedItems = '';

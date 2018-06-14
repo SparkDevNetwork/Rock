@@ -167,6 +167,7 @@ namespace RockWeb.Blocks.Cms
             Button btnTrigger = new Button();
             btnTrigger.ClientIDMode = System.Web.UI.ClientIDMode.Static;
             btnTrigger.ID = "rock-config-cancel-trigger";
+            btnTrigger.Style[HtmlTextWriterStyle.Display] = "none";
             btnTrigger.Click += btnTrigger_Click;
             pnlEditModal.Controls.Add( btnTrigger );
 

@@ -86,6 +86,20 @@ namespace Rock.Cache
         [DataMember]
         public string ForeignKey { get; protected set; }
 
+        /// <summary>
+        /// The EntityType of the cached entity
+        /// </summary>
+        /// <value>
+        /// The entity type identifier.
+        /// </value>
+        public int CachedEntityTypeId
+        {
+            get
+            {
+                return CacheEntityType.Get<TT>().Id;
+            }
+        }
+
         #endregion
 
         #region Public Methods
@@ -194,7 +208,8 @@ namespace Rock.Cache
         /// <returns></returns>
         public static T Get( TT entity )
         {
-            if ( entity == null ) return default( T );
+            if ( entity == null )
+                return default( T );
 
             var value = new T();
             value.SetFromEntity( entity );
@@ -203,6 +218,26 @@ namespace Rock.Cache
             UpdateCacheItem( entity.Id.ToString(), value, TimeSpan.MaxValue );
 
             return value;
+        }
+
+        /// <summary>
+        /// Adds, Removes, or Reloads the cached entity based on the entityState and database state
+        /// </summary>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="entityState">State of the entity. If unknown, use <see cref="EntityState.Detached" /></param>
+        /// <param name="rockContext">The rock context.</param>
+        public static void UpdateCachedEntity( int entityId, System.Data.Entity.EntityState entityState, RockContext rockContext )
+        {
+            if ( entityState != EntityState.Added )
+            {
+                Remove( entityId );
+            }
+
+            // unless we know for sure it was deleted, do a Get to update the cache (if the item still exists in the database)
+            if ( entityState != EntityState.Deleted )
+            {
+                Get( entityId, rockContext );
+            }
         }
 
         /// <summary>
@@ -221,7 +256,8 @@ namespace Rock.Cache
         public static List<T> All( RockContext rockContext )
         {
             var cachedKeys = GetOrAddKeys( () => QueryDbForAllIds( rockContext ) );
-            if ( cachedKeys == null ) return new List<T>();
+            if ( cachedKeys == null )
+                return new List<T>();
 
             var allValues = new List<T>();
             foreach ( var key in cachedKeys.ToList() )
@@ -292,7 +328,8 @@ namespace Rock.Cache
             var service = new Service<TT>( rockContext );
             var entity = service.Get( id );
 
-            if ( entity == null ) return default( T );
+            if ( entity == null )
+                return default( T );
 
             var value = new T();
             value.SetFromEntity( entity );
@@ -335,7 +372,8 @@ namespace Rock.Cache
             var service = new Service<TT>( rockContext );
             var entity = service.Get( guid );
 
-            if ( entity == null ) return default( T );
+            if ( entity == null )
+                return default( T );
 
             var value = new T();
             value.SetFromEntity( entity );

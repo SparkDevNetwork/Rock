@@ -66,12 +66,7 @@ namespace Rock.Web.UI
         /// <summary>
         /// Gets a dictionary of the current context items (models).
         /// </summary>
-        internal Dictionary<string, Rock.Data.KeyEntity> ModelContext
-        {
-            get { return _modelContext; }
-            set { _modelContext = value; }
-        }
-        private Dictionary<string, Data.KeyEntity> _modelContext;
+        internal Dictionary<string, Rock.Data.KeyEntity> ModelContext = new Dictionary<string, Data.KeyEntity>();
 
         #endregion
 
@@ -900,7 +895,6 @@ namespace Rock.Web.UI
                 {
                     // Set current models (context)
                     Page.Trace.Warn( "Checking for Context" );
-                    ModelContext = new Dictionary<string, Data.KeyEntity>();
                     try
                     {
                         char[] delim = new char[1] { ',' };
@@ -1440,27 +1434,8 @@ namespace Rock.Web.UI
             {
                 if ( _pageCache.Layout.Site.EnablePageViews )
                 {
-                    PageViewTransaction transaction = new PageViewTransaction();
-                    transaction.DateViewed = RockDateTime.Now;
-                    transaction.PageId = _pageCache.Id;
-                    transaction.SiteId = _pageCache.Layout.Site.Id;
-                    if ( CurrentPersonAlias != null )
-                    {
-                        transaction.PersonAliasId = CurrentPersonAlias.Id;
-                    }
-
-                    transaction.IPAddress = GetClientIpAddress();
-                    transaction.UserAgent = Request.UserAgent ?? "";
-                    transaction.Url = Request.Url.ToString();
-                    transaction.PageTitle = _pageCache.PageTitle;
-                    transaction.BrowserTitle = this.BrowserTitle;
-                    var sessionId = Session["RockSessionID"];
-                    if ( sessionId != null )
-                    {
-                        transaction.SessionId = sessionId.ToString();
-                    }
-
-                    RockQueue.TransactionQueue.Enqueue( transaction );
+                    var pageViewTransaction = new InteractionTransaction( CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE ), this.Site, this._pageCache );
+                    pageViewTransaction.Enqueue();
                 }
             }
         }

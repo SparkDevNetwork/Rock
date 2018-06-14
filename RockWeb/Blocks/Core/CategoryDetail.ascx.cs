@@ -187,8 +187,6 @@ namespace RockWeb.Blocks.Core
                 {
                     parentCategoryId = category.ParentCategoryId;
 
-                    CacheCategory.Remove( category.Id );
-
                     categoryService.Delete( category );
                     rockContext.SaveChanges();
 
@@ -281,7 +279,6 @@ namespace RockWeb.Blocks.Core
             }
 
             rockContext.SaveChanges();
-            CacheCategory.Remove( category.Id );
 
             var qryParams = new Dictionary<string, string>();
             qryParams["CategoryId"] = category.Id.ToString();

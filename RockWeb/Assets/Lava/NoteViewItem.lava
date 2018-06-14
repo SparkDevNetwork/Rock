@@ -93,7 +93,7 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
 
         <header class="meta">
             <div class="meta-figure">
-                {%- if NoteOptions.UsePersonIcon -%}
+                {%- if NoteOptions.UsePersonIcon and note.CreatedByPersonId -%}
                     <a href="/person/{{ note.CreatedByPersonId }}" class="avatar avatar-{{ avatarSize }}"><img src="{{ note.CreatedByPersonPhotoUrl }}" alt="{{ note.CreatedByPersonName }}"></a>
                 {%- else -%}
                     <div class="icon icon-{{ avatarSize }}" {%- if note.IsAlert or note.NoteType.FontColor != '' -%}style="{%- if note.IsAlert -%}color: var(--state-danger-text,#fcf2f1);{% else %}{{ fontStyle }}{% endif %}"{% endif %}><i class="{{ note.NoteType.IconCssClass | Default:'fa fa-comment' }}"></i></div>
@@ -107,7 +107,11 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
                         {%- endif -%}
                         {%- comment -%}Private notes always have a caption, so go by the person instead.{%- endcomment -%}
                         {%- if note.Caption == '' or note.IsPrivateNote -%}
-                        <a href="/person/{{ note.CreatedByPersonId }}">{{ note.CreatedByPersonName }}</a>
+                            {%- if note.CreatedByPersonId -%}
+                                <a href="/person/{{ note.CreatedByPersonId }}">{{ note.CreatedByPersonName }}</a>
+                            {%- else -%}
+                                {{ note.NoteType.Name }}
+                            {%- endif -%}
                         {% else %}
                         {{ note.Caption }}
                         {%- endif -%} 
@@ -153,7 +157,7 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
                     </a>
                 {%- endif -%}
 
-                {%- if note.NoteType.Name != 'Personal Note' -%}<span class="tag-flair">{%- if note.NoteType.BorderColor != '' -%}<span class="tag-color" style="background-color:{{ note.NoteType.BorderColor }}"></span>{%- endif -%}<span class="tag-label">{{ note.NoteType.Name }}</span></span>{%- endif -%}
+                {%- if note.NoteType.Name != 'Personal Note' and note.NoteType.Name != 'Prayer Comment' -%}<span class="tag-flair">{%- if note.NoteType.BorderColor != '' -%}<span class="tag-color" style="background-color:{{ note.NoteType.BorderColor }}"></span>{%- endif -%}<span class="tag-label">{{ note.NoteType.Name }}</span></span>{%- endif -%}
                 </div>
             </div>
             
