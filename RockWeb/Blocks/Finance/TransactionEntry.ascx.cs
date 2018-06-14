@@ -3145,15 +3145,17 @@ TransactionAccountDetails: [
         // Detect credit card type
         $('.credit-card').creditCardTypeDetector({{ 'credit_card_logos': '.card-logos' }});
 
-        // Toggle credit card display if saved card option is available
-        $('div.radio-content').prev('div.radio-list').find('input:radio').unbind('click').on('click', function () {{
-            $content = $(this).parents('div.radio-list:first').next('.radio-content');
-            var radioDisplay = $content.css('display');
-            if ($(this).val() == 0 && radioDisplay == 'none') {{
-                $content.slideToggle();
+        //// Toggle credit card display if saved card option is available
+        $({21}).unbind('click').on('click', function () {{
+
+            var radioDisplay = $({22}).css('display');
+            var selectedVal = $({21}).val();
+
+            if ( selectedVal == 0 && radioDisplay == 'none') {{
+                $({22}).slideToggle();
             }}
-            else if ($(this).val() != 0 && radioDisplay != 'none') {{
-                $content.slideToggle();
+            else if (selectedVal != 0 && radioDisplay != 'none') {{
+                $({22}).slideToggle();
             }}
         }});
 
@@ -3272,7 +3274,9 @@ TransactionAccountDetails: [
                 acBillingAddress.ClientID,      // {17}
                 txtCardFirstName.ClientID,      // {18}
                 txtCardLastName.ClientID,       // {19}
-                txtCardName.ClientID            // {20}
+                txtCardName.ClientID,           // {20}
+                rblSavedAccount.ClientID,       // {21}
+                divNewPayment.ClientID          // {22}
             );
 
             ScriptManager.RegisterStartupScript( upPayment, this.GetType(), "giving-profile", script, true );
