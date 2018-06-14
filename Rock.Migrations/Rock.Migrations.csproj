@@ -273,6 +273,10 @@
     <Compile Include="Migrations\201806111950515_ContentChannelViewDetail.Designer.cs">
       <DependentUpon>201806111950515_ContentChannelViewDetail.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201806131619035_AttendancedCheckedInBy.cs" />
+    <Compile Include="Migrations\201806131619035_AttendancedCheckedInBy.Designer.cs">
+      <DependentUpon>201806131619035_AttendancedCheckedInBy.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -3006,6 +3010,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201806111950515_ContentChannelViewDetail.resx">
       <DependentUpon>201806111950515_ContentChannelViewDetail.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201806131619035_AttendancedCheckedInBy.resx">
+      <DependentUpon>201806131619035_AttendancedCheckedInBy.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.resx">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
