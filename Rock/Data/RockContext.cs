@@ -1712,13 +1712,27 @@ namespace Rock.Data
 
                 foreach ( var entityType in entityTypeList )
                 {
-                    modelBuilder.RegisterEntityType( entityType );
+                    try
+                    {
+                        modelBuilder.RegisterEntityType( entityType );
+                    }
+                    catch ( Exception ex )
+                    {
+                        ExceptionLogService.LogException( new Exception( $"Exception occurred when Registering Entity Type {entityType} to RockContext", ex ), null );
+                    }
                 }
 
                 // add configurations that might be in plugin assemblies
                 foreach ( var assembly in entityTypeList.Select( a => a.Assembly ).Distinct() )
                 {
-                    modelBuilder.Configurations.AddFromAssembly( assembly );
+                    try
+                    {
+                        modelBuilder.Configurations.AddFromAssembly( assembly );
+                    }
+                    catch ( Exception ex )
+                    {
+                        ExceptionLogService.LogException( new Exception( $"Exception occurred when adding Plugin Entity Configurations from {assembly} to RockContext", ex ), null );
+                    }
                 }
             }
             catch ( Exception ex )
