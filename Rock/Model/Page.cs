@@ -539,10 +539,7 @@ namespace Rock.Model
 
         #region ICacheable
 
-        private int? originalSiteId;
-        private int? originalLayoutId;
         private int? originalParentPageId;
-        private System.Data.Entity.EntityState saveState;
 
         /// <summary>
         /// Method that will be called on an entity immediately after the item is saved by context
@@ -552,10 +549,10 @@ namespace Rock.Model
         /// <param name="state">The state.</param>
         public override void PreSaveChanges( Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry, System.Data.Entity.EntityState state )
         {
-            originalSiteId = entry.OriginalValues["SiteId"].ToString().AsIntegerOrNull();
-            originalLayoutId = entry.OriginalValues["LayoutId"].ToString().AsIntegerOrNull();
-            originalParentPageId = entry.OriginalValues["ParentPageId"].ToString().AsIntegerOrNull();
-            saveState = state;
+            if ( state == System.Data.Entity.EntityState.Modified || state == System.Data.Entity.EntityState.Deleted )
+            {
+                originalParentPageId = entry.OriginalValues["ParentPageId"]?.ToString().AsIntegerOrNull();
+            }
 
             base.PreSaveChanges( dbContext, entry, state );
         }
@@ -584,8 +581,6 @@ namespace Rock.Model
             {
                 CachePage.UpdateCachedEntity( originalParentPageId.Value, System.Data.Entity.EntityState.Detached, dbContext as RockContext );
             }
-
-            // TODO
         }
 
         #endregion

@@ -338,7 +338,6 @@ namespace Rock.Model
         private int? originalSiteId;
         private int? originalLayoutId;
         private int? originalPageId;
-        private EntityState saveState;
 
         /// <summary>
         /// Method that will be called on an entity immediately after the item is saved by context
@@ -348,10 +347,12 @@ namespace Rock.Model
         /// <param name="state">The state.</param>
         public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry, EntityState state )
         {
-            originalSiteId = entry.OriginalValues["SiteId"].ToString().AsIntegerOrNull();
-            originalLayoutId = entry.OriginalValues["LayoutId"].ToString().AsIntegerOrNull();
-            originalPageId = entry.OriginalValues["PageId"].ToString().AsIntegerOrNull();
-            saveState = state;
+            if ( state == System.Data.Entity.EntityState.Modified || state == System.Data.Entity.EntityState.Deleted )
+            {
+                originalSiteId = entry.OriginalValues["SiteId"]?.ToString().AsIntegerOrNull();
+                originalLayoutId = entry.OriginalValues["LayoutId"]?.ToString().AsIntegerOrNull();
+                originalPageId = entry.OriginalValues["PageId"]?.ToString().AsIntegerOrNull();
+            }
 
             base.PreSaveChanges( dbContext, entry, state );
         }
@@ -363,7 +364,7 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
         {
-            CacheBlock.UpdateCachedEntity( this.Id, saveState, dbContext as RockContext );
+            CacheBlock.UpdateCachedEntity( this.Id, entityState, dbContext as RockContext );
 
             var model = this;
 
@@ -384,7 +385,7 @@ namespace Rock.Model
             {
                 Rock.Cache.CachePage.RemoveLayoutBlocks( originalLayoutId.Value );
             }
-            else
+            else if ( originalPageId.HasValue )
             {
                 var page = Rock.Cache.CachePage.Get( originalPageId.Value );
                 page.RemoveBlocks();
