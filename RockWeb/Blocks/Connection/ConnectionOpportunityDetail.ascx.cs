@@ -1011,7 +1011,7 @@ namespace RockWeb.Blocks.Connection
                     {
                         var people = new GroupMemberService( rockContext )
                             .Queryable().AsNoTracking()
-                            .Where( m => 
+                            .Where( m =>
                                 groupIds.Contains( m.GroupId ) &&
                                 m.GroupMemberStatus == GroupMemberStatus.Active )
                             .Select( m => m.Person )
@@ -1251,7 +1251,7 @@ namespace RockWeb.Blocks.Connection
 
                 case ConnectionWorkflowTriggerType.StatusChanged:
                     {
-                        var statusList = new ConnectionStatusService( rockContext ).Queryable().Where( s => s.ConnectionTypeId == connectionTypeId || s.ConnectionTypeId == null ).ToList();
+                        var statusList = new ConnectionStatusService( rockContext ).Queryable().Where( s => s.ConnectionTypeId == connectionTypeId || s.ConnectionTypeId == null ).OrderBy( a => a.Name ).ToList();
                         ddlPrimaryQualifier.Label = "From";
                         ddlPrimaryQualifier.Visible = true;
                         ddlPrimaryQualifier.Items.Clear();
@@ -1276,6 +1276,7 @@ namespace RockWeb.Blocks.Connection
                         var activityList = new ConnectionActivityTypeService( rockContext )
                             .Queryable().AsNoTracking()
                             .Where( a => a.ConnectionTypeId == connectionTypeId )
+                            .OrderBy( a => a.Name )
                             .ToList();
                         ddlPrimaryQualifier.Label = "Activity Type";
                         ddlPrimaryQualifier.Visible = true;
@@ -1486,7 +1487,7 @@ namespace RockWeb.Blocks.Connection
 
             DefaultConnectors = new Dictionary<int, int>();
             foreach( var campus in connectionOpportunity.ConnectionOpportunityCampuses
-                .Where( c => 
+                .Where( c =>
                     c.DefaultConnectorPersonAlias != null &&
                     c.DefaultConnectorPersonAlias.Person != null ) )
             {

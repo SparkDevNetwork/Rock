@@ -237,6 +237,18 @@
     <Compile Include="Migrations\201805251707072_AddDefinedTypeColorSwatches.Designer.cs">
       <DependentUpon>201805251707072_AddDefinedTypeColorSwatches.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201805301747145_CacheTags.cs" />
+    <Compile Include="Migrations\201805301747145_CacheTags.Designer.cs">
+      <DependentUpon>201805301747145_CacheTags.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201805301858246_AddLogoToSite.cs" />
+    <Compile Include="Migrations\201805301858246_AddLogoToSite.Designer.cs">
+      <DependentUpon>201805301858246_AddLogoToSite.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201805302320038_Lucene.cs" />
+    <Compile Include="Migrations\201805302320038_Lucene.Designer.cs">
+      <DependentUpon>201805302320038_Lucene.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2944,6 +2956,15 @@
     <EmbeddedResource Include="Migrations\201805251707072_AddDefinedTypeColorSwatches.resx">
       <DependentUpon>201805251707072_AddDefinedTypeColorSwatches.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201805301747145_CacheTags.resx">
+      <DependentUpon>201805301747145_CacheTags.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201805301858246_AddLogoToSite.resx">
+      <DependentUpon>201805301858246_AddLogoToSite.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201805302320038_Lucene.resx">
+      <DependentUpon>201805302320038_Lucene.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.resx">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
     </EmbeddedResource>
@@ -4988,10 +5009,18 @@
     <Content Include="Migrations\201805171836577_Rollup_0517_spAnalytics_ETL_Attendance.sql">
       <DependentUpon>201805171836577_Rollup_0517.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201805211735573_Homepage_ContentChannel.sql" />
-    <Content Include="Migrations\201805211735573_Homepage_ContentChannel_Down.sql" />
-    <Content Include="Migrations\201805211735573_Homepage_Metrics.sql" />
-    <Content Include="Migrations\201805211735573_Homepage_Metrics_Down.sql" />
+    <Content Include="Migrations\201805211735573_Homepage_ContentChannel.sql">
+      <DependentUpon>201805211735573_Homepage.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201805211735573_Homepage_ContentChannel_Down.sql">
+      <DependentUpon>201805211735573_Homepage.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201805211735573_Homepage_Metrics.sql">
+      <DependentUpon>201805211735573_Homepage.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201805211735573_Homepage_Metrics_Down.sql">
+      <DependentUpon>201805211735573_Homepage.cs</DependentUpon>
+    </Content>
     <Content Include="Migrations\Version 7.0\Version 1.7.0\201707182207536_AttendanceAnalyticsQuery_NonAttendees.sql">
       <DependentUpon>201707182207536_PageShortLinks.cs</DependentUpon>
     </Content>

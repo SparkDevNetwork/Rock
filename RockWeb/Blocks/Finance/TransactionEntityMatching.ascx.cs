@@ -169,7 +169,7 @@ namespace RockWeb.Blocks.Finance
                 hfBatchId.Value = this.GetBlockUserPreference( "BatchId" );
                 ddlBatch.SetValue( hfBatchId.Value );
                 hfDataViewId.Value = this.GetBlockUserPreference( "DataViewId" );
-                dvpDataView.SetValue( hfDataViewId.Value );
+                dvpDataView.SetValue( hfDataViewId.Value.AsIntegerOrNull() );
                 BindHtmlGrid( hfBatchId.Value.AsIntegerOrNull() , hfDataViewId.Value.AsIntegerOrNull() );
                 LoadEntityDropDowns();
             }

@@ -494,7 +494,7 @@ namespace RockWeb.Blocks.Reporting
             report.Description = tbDescription.Text;
             report.CategoryId = cpCategory.SelectedValueAsInt();
             report.EntityTypeId = etpEntityType.SelectedEntityTypeId;
-            report.DataViewId = ddlDataView.SelectedValueAsInt();
+            report.DataViewId = dvpDataView.SelectedValueAsInt();
             report.FetchTop = nbFetchTop.Text.AsIntegerOrNull();
             report.QueryHint = tbQueryHint.Text;
 
@@ -776,8 +776,8 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="entityTypeId">The entity type identifier.</param>
         private void UpdateControlsForEntityType( int? entityTypeId )
         {
-            ddlDataView.EntityTypeId = entityTypeId;
-            ddlDataView.Enabled = entityTypeId.HasValue;
+            dvpDataView.EntityTypeId = entityTypeId;
+            dvpDataView.Enabled = entityTypeId.HasValue;
             btnAddField.Enabled = entityTypeId.HasValue;
         }
 
@@ -1094,7 +1094,7 @@ namespace RockWeb.Blocks.Reporting
             cpCategory.SetValue( report.CategoryId );
             etpEntityType.SelectedEntityTypeId = report.EntityTypeId;
             UpdateControlsForEntityType( etpEntityType.SelectedEntityTypeId );
-            ddlDataView.SetValue( report.DataViewId );
+            dvpDataView.SetValue( report.DataViewId );
             nbFetchTop.Text = report.FetchTop.ToString();
             tbQueryHint.Text = report.QueryHint;
 

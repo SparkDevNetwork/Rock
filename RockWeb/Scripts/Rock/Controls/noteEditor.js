@@ -90,10 +90,42 @@
             $noteEditor.parent().find('.js-noteviewitem').slideDown();
         });
 
+        $('.js-notecontainer .js-removenote').click(function (e) {
+            var $currentNote = $(this).closest('.js-noteviewitem');
+            var currentNoteId = $currentNote.attr('data-note-id');
+            var $noteContainer = $(this).closest('.js-notecontainer');
+            $noteContainer.find('.js-currentnoteid').val(currentNoteId);
+
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            var postbackJs = $noteContainer.find(".js-delete-postback").attr('href');
+            return Rock.dialogs.confirm('Are you sure you want to delete this note?', function () {
+                window.location = postbackJs;
+            });
+        });
+
         $('.js-expandreply').click(function (e) {
-            var $noteContainer = $(this).closest('.js-note');
-            var $noteEditor = $noteContainer.find('.js-childnotes');
-            $noteEditor.slideToggle();
+            var $noteContainer = $(this).closest('.js-notecontainer');
+            
+            var $currentNote = $(this).closest('.js-note');
+            var $childNotesContainer = $currentNote.find('.js-childnotes:first');
+            $childNotesContainer.slideToggle(function (x) {
+
+                // get a list of noteIds that have their child items visible, so that we can maintain that expansion after a postback
+                var expandedNoteIds = $(this).closest('.js-notecontainer').find('.js-noteviewitem:visible').map(function () {
+                    var $noteItem = $(this).closest('.js-note');
+                    var $childNotesExpanded = $noteItem.find('.js-childnotes:first').is(':visible');
+                    if ($childNotesExpanded) {
+                        return $(this).attr('data-note-id');
+                    }
+                    else {
+                        return null;
+                    }
+                }).get().join();
+
+                var $expandedNoteIdsHiddenField = $noteContainer.find('.js-expandednoteids');
+                $expandedNoteIdsHiddenField.val(expandedNoteIds);
+            });
         });
     });
 }(Sys));

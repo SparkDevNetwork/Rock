@@ -43,9 +43,9 @@ namespace Rock.Web.UI.Controls
         private NoteEditor _noteEditor;
         private LinkButton _lbShowMore;
         private HiddenFieldWithClass _hfCurrentNoteId;
+        private HiddenFieldWithClass _hfExpandedNoteIds;
         private ModalAlert _mdDeleteWarning;
-        private ModalDialog _mdConfirmDelete;
-        private Literal _lConfirmDeleteMsg;
+        private LinkButton _lbDeleteNote;
 
         #endregion
 
@@ -285,10 +285,6 @@ namespace Rock.Web.UI.Controls
 
                     switch ( action )
                     {
-                        case "DeleteNote":
-                            noteId = parameters.AsIntegerOrNull();
-                            DisplayDeleteNote( noteId );
-                            break;
                         case "ApproveNote":
                             noteId = parameters.AsIntegerOrNull();
                             ApproveNote( noteId, true );
@@ -296,6 +292,14 @@ namespace Rock.Web.UI.Controls
                         case "DenyApproveNote":
                             noteId = parameters.AsIntegerOrNull();
                             ApproveNote( noteId, false );
+                            break;
+                        case "WatchNote":
+                            noteId = parameters.AsIntegerOrNull();
+                            WatchNote( noteId, true );
+                            break;
+                        case "UnwatchNote":
+                            noteId = parameters.AsIntegerOrNull();
+                            WatchNote( noteId, false );
                             break;
                     }
                 }
@@ -324,15 +328,18 @@ namespace Rock.Web.UI.Controls
             _hfCurrentNoteId.CssClass = "js-currentnoteid";
             Controls.Add( _hfCurrentNoteId );
 
-            _mdConfirmDelete = new ModalDialog();
-            _mdConfirmDelete.ID = this.ID + "_mdConfirmDelete";
-            _mdConfirmDelete.Title = "Please Confirm";
-            _mdConfirmDelete.SaveButtonText = "Yes";
-            _mdConfirmDelete.SaveClick += _mdConfirmDelete_SaveClick;
-            Controls.Add( _mdConfirmDelete );
-            _lConfirmDeleteMsg = new Literal();
-            _lConfirmDeleteMsg.ID = this.ID + "_lConfirmDeleteMsg";
-            _mdConfirmDelete.Content.Controls.Add( _lConfirmDeleteMsg );
+            _hfExpandedNoteIds = new HiddenFieldWithClass();
+            _hfExpandedNoteIds.ID = this.ID + "_hfExpandedNoteIds";
+            _hfExpandedNoteIds.CssClass = "js-expandednoteids";
+            Controls.Add( _hfExpandedNoteIds );
+
+            // Create a hidden DeleteNote linkbutton that will hookup to the Lava'd Delete button
+            _lbDeleteNote = new LinkButton();
+            _lbDeleteNote.ID = this.ID + "_lbDeleteNote";
+            _lbDeleteNote.CssClass = "js-delete-postback";
+            _lbDeleteNote.Click += _lbDeleteNote_Click;
+            _lbDeleteNote.Style[HtmlTextWriterStyle.Display] = "none";
+            Controls.Add( _lbDeleteNote );
 
             _mdDeleteWarning = new ModalAlert();
             _mdDeleteWarning.ID = this.ID + "_mdDeleteWarning";
@@ -358,25 +365,13 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Handles the SaveClick event of the _mdConfirmDelete control.
+        /// Handles the Click event of the _lbDeleteNote control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void _mdConfirmDelete_SaveClick( object sender, EventArgs e )
+        private void _lbDeleteNote_Click( object sender, EventArgs e )
         {
-            _mdConfirmDelete.Hide();
             DeleteNote( _hfCurrentNoteId.Value.AsIntegerOrNull() );
-        }
-
-        /// <summary>
-        /// Displays the delete note.
-        /// </summary>
-        /// <param name="noteId">The note identifier.</param>
-        private void DisplayDeleteNote( int? noteId )
-        {
-            _lConfirmDeleteMsg.Text = "Are you sure you want to delete this note?";
-            _hfCurrentNoteId.Value = noteId.ToString();
-            _mdConfirmDelete.Show();
         }
 
         /// <summary>
@@ -400,9 +395,9 @@ namespace Rock.Web.UI.Controls
                     if ( note != null && note.IsAuthorized( Authorization.EDIT, currentPerson ) )
                     {
                         string errorMessage;
-                        if ( service.CanDelete( note, out errorMessage ) )
+                        if ( service.CanDeleteChildNotes(note, currentPerson, out errorMessage) && service.CanDelete( note, out errorMessage ) )
                         {
-                            service.Delete( note );
+                            service.Delete( note, true );
                             rockContext.SaveChanges();
                         }
                         else
@@ -448,6 +443,41 @@ namespace Rock.Web.UI.Controls
                         note.ApprovedByPersonAliasId = currentPerson?.PrimaryAliasId;
 
                         note.ApprovedDateTime = RockDateTime.Now;
+                        rockContext.SaveChanges();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Set the note as Watched or Unwatched by the current person
+        /// </summary>
+        /// <param name="noteId">The note identifier.</param>
+        /// <param name="watching">if set to <c>true</c> [watching].</param>
+        private void WatchNote( int? noteId, bool watching )
+        {
+            var rockPage = this.Page as RockPage;
+            if ( rockPage != null )
+            {
+                var currentPerson = rockPage.CurrentPerson;
+
+                var rockContext = new RockContext();
+                var noteService = new NoteService( rockContext );
+                var noteWatchService = new NoteWatchService( rockContext );
+
+                if ( noteId.HasValue )
+                {
+                    var note = noteService.Get( noteId.Value );
+                    if ( note != null && note.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                    {
+                        var noteWatch = noteWatchService.Queryable().Where( a => a.NoteId == noteId.Value && a.WatcherPersonAlias.PersonId == currentPerson.Id ).FirstOrDefault();
+                        if ( noteWatch == null )
+                        {
+                            noteWatch = new NoteWatch { NoteId = noteId.Value, WatcherPersonAliasId = rockPage.CurrentPersonAliasId };
+                            noteWatchService.Add( noteWatch );
+                        }
+
+                        noteWatch.IsWatching = watching;
                         rockContext.SaveChanges();
                     }
                 }
@@ -525,7 +555,8 @@ namespace Rock.Web.UI.Controls
                 }
 
                 _hfCurrentNoteId.RenderControl( writer );
-                _mdConfirmDelete.RenderControl( writer );
+                _hfExpandedNoteIds.RenderControl( writer );
+                _lbDeleteNote.RenderControl( writer );
                 _mdDeleteWarning.RenderControl( writer );
                 using ( var rockContext = new RockContext() )
                 {
@@ -541,6 +572,8 @@ namespace Rock.Web.UI.Controls
                     var noteMergeFields = LavaHelper.GetCommonMergeFields( rockBlock?.RockPage, currentPerson, new CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
                     noteMergeFields.Add( "NoteOptions", this.NoteOptions );
                     noteMergeFields.Add( "NoteList", viewableNoteList );
+                    List<int> expandedNoteIdList = _hfExpandedNoteIds.Value.SplitDelimitedValues().AsIntegerList();
+                    noteMergeFields.Add( "ExpandedNoteIds", expandedNoteIdList );
 
                     var noteTreeHtml = this.NoteOptions.NoteViewLavaTemplate.ResolveMergeFields( noteMergeFields ).ResolveClientIds( this.ParentUpdatePanel()?.ClientID );
                     writer.Write( noteTreeHtml );

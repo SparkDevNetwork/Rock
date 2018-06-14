@@ -2249,14 +2249,14 @@ Sys.Application.add_load(function () {
             // Add Zone Wrappers
             foreach ( KeyValuePair<string, KeyValuePair<string, Zone>> zoneControl in this.Zones )
             {
-                Control control = zoneControl.Value.Value;
+                var control = zoneControl.Value.Value;
                 Control parent = zoneControl.Value.Value.Parent;
 
                 HtmlGenericControl zoneWrapper = new HtmlGenericControl( "div" );
                 parent.Controls.AddAt( parent.Controls.IndexOf( control ), zoneWrapper );
                 zoneWrapper.ID = string.Format( "zone-{0}", zoneControl.Key.ToLower() );
                 zoneWrapper.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                zoneWrapper.Attributes.Add( "class", "zone-instance" + ( canConfigPage ? " can-configure" : "" ) );
+                zoneWrapper.Attributes.Add( "class", ("zone-instance" + ( canConfigPage ? " can-configure " : " " ) + control.CssClass).Trim() );
 
                 if ( canConfigPage )
                 {

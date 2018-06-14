@@ -37,8 +37,8 @@ namespace RockWeb.Blocks.Groups
     [Description( "Displays a timeline of history for a group" )]
 
     [CodeEditorField( "Timeline Lava Template", "The Lava Template to use when rendering the timeline view of the history.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false, @"{% include '~~/Assets/Lava/GroupHistoryTimeline.lava' %}", order: 1 )]
-    [LinkedPage( "Group History Grid Page", required: true, order: 2 )]
-    [LinkedPage( "Group Member History Page", required: true, order: 3 )]
+    [LinkedPage( "Group History Grid Page", defaultValue: Rock.SystemGuid.Page.GROUP_HISTORY_GRID, required: true, order: 2 )]
+    [LinkedPage( "Group Member History Page", defaultValue: Rock.SystemGuid.Page.GROUP_MEMBER_HISTORY, required: true, order: 3 )]
     public partial class GroupHistory : RockBlock, ICustomGridColumns
     {
         #region Base Control Methods
@@ -127,6 +127,8 @@ namespace RockWeb.Blocks.Groups
             int entityId;
             CacheEntityType primaryEntityType;
             CacheEntityType secondaryEntityType = null;
+
+            hlMemberHistory.NavigateUrl = LinkedPageUrl( "GroupMemberHistoryPage", new Dictionary<string, string> { { "GroupId", groupId.ToString() } } );
 
             primaryEntityType = CacheEntityType.Get<Rock.Model.Group>();
             entityId = groupId;

@@ -675,6 +675,8 @@ namespace Rock.Web.UI.Controls
                     if ( note.IsAuthorized( Authorization.APPROVE, currentPerson ) )
                     {
                         note.ApprovalStatus = NoteApprovalStatus.Approved;
+                        note.ApprovedByPersonAliasId = currentPerson?.PrimaryAliasId;
+                        note.ApprovedDateTime = RockDateTime.Now;
                     }
                     else
                     {

@@ -161,5 +161,13 @@ namespace Rock.Web.UI.Controls
         /// The note label.
         /// </value>
         public string NoteLabel { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [expand replies].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [expand replies]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ExpandReplies { get; set; }
     }
 }
