@@ -260,9 +260,9 @@ namespace RockWeb.Blocks.Reporting
                     bool filterIsConfigurable = _configurableDataFilterGuids.Contains( filter.Guid );
                     bool showCheckbox = _togglableDataFilterGuids.Contains( filter.Guid ) || !filterIsConfigurable;
                     var dataFilterPrePostHtmlConfig = _dataFiltersPrePostHtmlConfig.GetValueOrNull( filter.Guid ) ?? new DataFilterPrePostHtmlConfig();
-                    
+
                     filterControl.Visible = filterIsVisible;
-                    
+
                     parentControl.Controls.Add( filterControl );
 
                     filterControl.DataViewFilterGuid = filter.Guid;
@@ -781,7 +781,7 @@ namespace RockWeb.Blocks.Reporting
                 lFilterDetails.Text = new DescriptionList()
                     .Add( "Filter", filterInfo.TitlePath )
                     .Add( "Summary", filterInfo.Summary )
-                    .Add( "Parent DataView", filterInfo.FromOtherDataView )
+                    .Add( "Parent Data View", filterInfo.FromOtherDataView )
                     .Html;
             }
         }
@@ -791,7 +791,7 @@ namespace RockWeb.Blocks.Reporting
         #region Configuration Classes
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class DataFilterPrePostHtmlConfig
         {
@@ -822,6 +822,6 @@ namespace RockWeb.Blocks.Reporting
 
         #endregion Configuration Classes
 
-        
+
     }
 }
