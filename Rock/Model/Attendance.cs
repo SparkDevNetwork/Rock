@@ -287,7 +287,7 @@ namespace Rock.Model
                 }
 
                 // We'll check start time against timezone next, but don't even bother with that, if start date was more than 2 days ago
-                if ( StartDateTime < RockDateTime.Now.AddDays( 2 ) )
+                if ( StartDateTime < RockDateTime.Now.AddDays( -2 ) )
                 {
                     return false;
                 }
