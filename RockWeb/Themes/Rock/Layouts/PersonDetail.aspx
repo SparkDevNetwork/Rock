@@ -9,12 +9,12 @@
         base.OnLoad( e );
         Master.ShowPageTitle = false;
     }
-    
+
 </script>
 
 
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
-    
+
     <div class="personprofile">
 
         <div class="personprofilebar-bio">
@@ -44,7 +44,7 @@
                 <div class="col-md-12">
                     <Rock:Zone Name="Sub Navigation" runat="server" />
                 </div>
-            </div> 
+            </div>
 		</div>
 
         <div class="person-content">
@@ -86,5 +86,5 @@
         </div>
 
 	</div>
-    
+
 </asp:Content>

@@ -31,16 +31,16 @@
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
 
     <main class="container">
-                
+
         <!-- Start Content Area -->
-        
+
         <!-- Page Title -->
         <section id="secPageTitle" class="page-title" runat="server">
             <Rock:PageIcon ID="PageIcon" runat="server" /> <h1><Rock:PageTitle ID="PageTitle" runat="server" /></h1>
             <Rock:PageBreadCrumbs ID="PageBreadCrumbs" runat="server" />
             <Rock:PageDescription ID="PageDescription" runat="server" />
         </section>
-                    
+
         <!-- Ajax Error -->
         <div class="alert alert-danger ajax-error" style="display:none">
             <p><strong>Error</strong></p>

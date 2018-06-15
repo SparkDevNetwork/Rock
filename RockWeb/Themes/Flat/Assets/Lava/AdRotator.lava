@@ -6,7 +6,7 @@
         {% for item in Items -%}
           <li>
             <a href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}">{{ item | Attribute:'Image' }}</a>
-          </li>   
+          </li>
         {% endfor -%}
 
       </ul>
@@ -14,11 +14,11 @@
 
   <div class="slide-control">
     <ul>
-    
+
       {% for item in Items -%}
-        <li>{{ item.Title }}</li>   
+        <li>{{ item.Title }}</li>
       {% endfor -%}
-      
+
     </ul>
     <div class="tipper"></div>
   </div>
