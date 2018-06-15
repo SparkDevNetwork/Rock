@@ -54,14 +54,14 @@
 
                     <Rock:PanelWidget ID="pwDetails" runat="server" Title="Details" Expanded="true">
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <Rock:GroupTypePicker ID="gtpGroupType" runat="server" Label="Group Type" AutoPostBack="true" OnSelectedIndexChanged="gtpGroupType_SelectedIndexChanged" />
                                 <Rock:GroupRolePicker ID="rpGroupTypeRole" runat="server" Label="Group Member Role"
                                     Help="The group member role that new registrants should be added to group with." />
                                 <Rock:RockDropDownList ID="ddlGroupMemberStatus" runat="server" Label="Group Member Status" 
                                     Help="The group member status that new registrants should be added to group with."/>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-8">
                                 <div class="row">
                                     <div class="col-xs-6">
                                         <Rock:RockCheckBox ID="cbMultipleRegistrants" runat="server" Label="Allow Multiple Registrants" Text="Yes"
@@ -74,19 +74,28 @@
 
                                     </div>
                                 </div>
-                                <Rock:RockRadioButtonList ID="rblRegistrantsInSameFamily" runat="server" Label="Registrants In Same Family" RepeatDirection="Horizontal" CssClass="js-same-family"
-                                    Help="Typical relationship of registrants that user would register." />
-                                <div id="divCurrentFamilyMembers" runat="server" class="js-current-family-members" >
-                                    <Rock:RockCheckBox ID="cbShowCurrentFamilyMembers" runat="server" Label="Show Family Members" Text="Yes"
-                                        Help="If Registrants in Same Family option is set to 'Yes', should the person registering be able to select people from their family when registering (vs. having to enter the family member's information manually)?" />
+
+                                <div class="row">
+                                    <div class="col-xs-6">
+                                        <Rock:RockRadioButtonList ID="rblRegistrantsInSameFamily" runat="server" Label="Registrants In Same Family" RepeatDirection="Horizontal" CssClass="js-same-family"
+                                            Help="Typical relationship of registrants that user would register." />
+
+                                        <div id="divCurrentFamilyMembers" runat="server" class="js-current-family-members" >
+
+                                            <Rock:RockCheckBox ID="cbShowCurrentFamilyMembers" runat="server" Label="Show Family Members" Text="Yes"
+                                                Help="If Registrants in Same Family option is set to 'Yes', should the person registering be able to select people from their family when registering (vs. having to enter the family member's information manually)?" />
+                                        </div>
+
+                                        <Rock:RockCheckBox id="cbWaitListEnabled" runat="server" Label="Enable Wait List" Text="Yes" Help="Should a wait list be enabled when the maximum number of registrants is reached." />
+                                    </div>
+                                    <div class="col-xs-6">
+                                        <Rock:RockDropDownList ID="ddlRegistrarOption" runat="server" Label="Registrar Options">
+                                            <asp:ListItem Value="0" Text="Prompt For Registrar" />
+                                            <asp:ListItem Value="1" Text="Pre-fill First Registrant" />
+                                            <asp:ListItem Value="2" Text="Use First Registrant" />
+                                        </Rock:RockDropDownList>
+                                    </div>
                                 </div>
-                                
-                                <Rock:RockDropDownList ID="ddlRegistrarOption" runat="server" Label="Registrar Options">
-                                    <asp:ListItem Value="0" Text="Prompt For Registrar" />
-                                    <asp:ListItem Value="1" Text="Pre-fill First Registrant" />
-                                    <asp:ListItem Value="2" Text="Use First Registrant" />
-                                </Rock:RockDropDownList>
-                                <Rock:RockCheckBox id="cbWaitListEnabled" runat="server" Label="Enable Wait List" Text="Yes" Help="Should a wait list be enabled when the maximum number of registrants is reached." />
                             </div>
                         </div>
 
