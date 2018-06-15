@@ -4190,7 +4190,7 @@ namespace RockWeb.Blocks.Event
                         ddlGender.ValidationGroup = BlockValidationGroup;
                         ddlGender.BindToEnum<Gender>( false );
 
-                        // change the 'Unknow' value to be blank instead
+                        // change the 'Unknown' value to be blank instead
                         ddlGender.Items.FindByValue( "0" ).Text = string.Empty;
 
                         phRegistrantControls.Controls.Add( ddlGender );
