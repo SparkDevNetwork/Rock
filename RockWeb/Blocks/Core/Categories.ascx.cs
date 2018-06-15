@@ -84,6 +84,7 @@ namespace RockWeb.Blocks.Core
             gCategories.Actions.AddClick += gCategories_Add;
             gCategories.GridReorder += gCategories_GridReorder;
             gCategories.GridRebind += gCategories_GridRebind;
+            gCategories.RowDataBound += gCategories_RowDataBound;
 
             mdDetails.SaveClick += mdDetails_SaveClick;
             mdDetails.OnCancelScript = string.Format( "$('#{0}').val('');", hfIdValue.ClientID );
@@ -314,6 +315,40 @@ namespace RockWeb.Blocks.Core
             BindGrid();
         }
 
+        /// <summary>
+        /// Handles the RowDataBound event of the gCategories control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        private void gCategories_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType == DataControlRowType.DataRow )
+            {
+                //
+                // Disable the edit button if it is a system category.
+                //
+                if ( ( ( bool ) e.Row.DataItem.GetPropertyValue( "IsSystem" ) ) == true )
+                {
+                    int? idx = gCategories.GetColumnIndexByFieldType( typeof( EditField ) );
+
+                    if ( idx.HasValue )
+                    {
+                        var cell = e.Row.Cells[idx.Value];
+
+                        if ( cell.Controls.Count > 0 && cell.Controls[0] is LinkButton )
+                        {
+                            ( ( LinkButton ) cell.Controls[0] ).Enabled = false;
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the GridReorder event of the gCategories control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
         void gCategories_GridReorder( object sender, GridReorderEventArgs e )
         {
             var rockContext = new RockContext();
@@ -516,7 +551,8 @@ namespace RockWeb.Blocks.Core
                     ChildCount = c.ChildCategories.Count(),
                     EntityType = c.EntityType.Name,
                     EntityQualifierField = c.EntityTypeQualifierColumn,
-                    EntityQualifierValue = c.EntityTypeQualifierValue
+                    EntityQualifierValue = c.EntityTypeQualifierValue,
+                    IsSystem = c.IsSystem
                 } ).ToList();
 
             gCategories.EntityTypeId = CacheEntityType.Get<Rock.Model.Category>().Id;

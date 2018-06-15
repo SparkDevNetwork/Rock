@@ -59,9 +59,9 @@ namespace Rock.Jobs
             // get the job map
             JobDataMap dataMap = context.JobDetail.JobDataMap;
 
-            int maxRecords = Int32.Parse( dataMap.GetString( "MaxRecordsPerRun" ) );
-            int throttlePeriod = Int32.Parse( dataMap.GetString( "ThrottlePeriod" ) );
-            int retryPeriod = Int32.Parse( dataMap.GetString( "RetryPeriod" ) );
+            int maxRecords = dataMap.GetString( "MaxRecordsPerRun" ).AsIntegerOrNull() ?? 1000;
+            int throttlePeriod = dataMap.GetString( "ThrottlePeriod" ).AsIntegerOrNull() ?? 500;
+            int retryPeriod = dataMap.GetString( "RetryPeriod" ).AsIntegerOrNull() ?? 200;
 
             DateTime retryDate = DateTime.Now.Subtract(new TimeSpan(retryPeriod, 0, 0, 0));
 
