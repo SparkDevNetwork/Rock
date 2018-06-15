@@ -38,18 +38,18 @@ namespace RockWeb.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Public block for users to manage their accounts" )]
 
-    [BooleanField( "Disable Name Edit", "Whether the First and Last Names can be edited.", false, order: 0 )]
-    [BooleanField( "View Only", "Should people be prevented from editing thier profile or family records?", false, "", 1 )]
-    [BooleanField( "Show Family Members", "Whether family members are shown or not.", true, order: 2 )]
-    [GroupLocationTypeField( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Address Type",
-        "The type of address to be displayed / edited.", false, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", order: 3 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE, "Phone Numbers", "The types of phone numbers to display / edit.", true, true, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME, order: 4 )]
-    [BooleanField( "Show Communication Preference", "Show the communication preference and allow it to be edited", true, order: 5 )]
-    [LinkedPage( "Workflow Launch Page", "Page used to launch the workflow to make a profile change request", false, order: 6 )]
-    [TextField( "Request Changes Text", "The text to use for the request changes button (only displayed if there is a 'Workflow Launch Page' configured).", false, "Request Additional Changes", "", 7 )]
-    [AttributeField( Rock.SystemGuid.EntityType.GROUP, "GroupTypeId", Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Family Attributes", "The family attributes that should be displayed / edited.", false, true, order: 8 )]
-    [AttributeField( Rock.SystemGuid.EntityType.PERSON, "Person Attributes (adults)", "The person attributes that should be displayed / edited for adults.", false, true, order: 9 )]
-    [AttributeField( Rock.SystemGuid.EntityType.PERSON, "Person Attributes (children)", "The person attributes that should be displayed / edited for children.", false, true, order: 10 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, "Default Connection Status", "The connection status that should be set by default", false, false, "", "", order: 0 )]
+    [BooleanField( "Disable Name Edit", "Whether the First and Last Names can be edited.", false, order: 1 )]
+    [BooleanField( "View Only", "Should people be prevented from editing thier profile or family records?", false, "", 2 )]
+    [BooleanField( "Show Family Members", "Whether family members are shown or not.", true, order: 3 )]
+    [GroupLocationTypeField( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Address Type", "The type of address to be displayed / edited.", false, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", order: 4 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE, "Phone Numbers", "The types of phone numbers to display / edit.", true, true, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME, order: 5 )]
+    [BooleanField( "Show Communication Preference", "Show the communication preference and allow it to be edited", true, order: 6 )]
+    [LinkedPage( "Workflow Launch Page", "Page used to launch the workflow to make a profile change request", false, order: 7 )]
+    [TextField( "Request Changes Text", "The text to use for the request changes button (only displayed if there is a 'Workflow Launch Page' configured).", false, "Request Additional Changes", "", 8 )]
+    [AttributeField( Rock.SystemGuid.EntityType.GROUP, "GroupTypeId", Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Family Attributes", "The family attributes that should be displayed / edited.", false, true, order: 9 )]
+    [AttributeField( Rock.SystemGuid.EntityType.PERSON, "Person Attributes (adults)", "The person attributes that should be displayed / edited for adults.", false, true, order: 10 )]
+    [AttributeField( Rock.SystemGuid.EntityType.PERSON, "Person Attributes (children)", "The person attributes that should be displayed / edited for children.", false, true, order: 11 )]
     public partial class PublicProfileEdit : RockBlock
     {
         #region Properties
@@ -390,16 +390,20 @@ namespace RockWeb.Blocks.Cms
                                 groupMember.GroupRoleId = role.Id;
                             }
 
+                            var connectionStatusGuid = GetAttributeValue( "DefaultConnectionStatus" ).AsGuidOrNull();
+                            if ( connectionStatusGuid.HasValue )
+                            {
+                                groupMember.Person.ConnectionStatusValueId = CacheDefinedValue.Get( connectionStatusGuid.Value ).Id;
+                            }
+                            else
+                            {
+                                groupMember.Person.ConnectionStatusValueId = CurrentPerson.ConnectionStatusValueId;
+                            }
+
                             var headOfHousehold = GroupServiceExtensions.HeadOfHousehold( group.Members.AsQueryable() );
                             if ( headOfHousehold != null )
                             {
-                                CacheDefinedValue dvcConnectionStatus = CacheDefinedValue.Get( headOfHousehold.ConnectionStatusValueId ?? 0 );
                                 CacheDefinedValue dvcRecordStatus = CacheDefinedValue.Get( headOfHousehold.RecordStatusValueId ?? 0 );
-                                if ( dvcConnectionStatus != null )
-                                {
-                                    groupMember.Person.ConnectionStatusValueId = dvcConnectionStatus.Id;
-                                }
-
                                 if ( dvcRecordStatus != null )
                                 {
                                     groupMember.Person.RecordStatusValueId = dvcRecordStatus.Id;
