@@ -665,7 +665,7 @@ namespace Rock.Web.UI.Controls
                 attribute.AddControl( _phAttributes.Controls, "", this.ValidationGroup, false, true, attribute.IsRequired );
             }
 
-            _lbDelete.CssClass = "btn btn-xs btn-danger pull-right";
+            _lbDelete.CssClass = "btn btn-xs btn-square btn-danger pull-right";
             _lbDelete.Click += lbDelete_Click;
             _lbDelete.CausesValidation = false;
             _lbDelete.Text = "<i class='fa fa-times'></i>";
@@ -848,7 +848,7 @@ namespace Rock.Web.UI.Controls
     /// Helper Class for serializing child data in viewstate
     /// </summary>
     [Serializable]
-    public class PreRegistrationChild 
+    public class PreRegistrationChild
     {
         /// <summary>
         /// Gets or sets the identifier.
