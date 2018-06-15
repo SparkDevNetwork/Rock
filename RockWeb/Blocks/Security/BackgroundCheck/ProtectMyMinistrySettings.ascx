@@ -54,7 +54,7 @@
                     </div>
 
                     <Rock:NotificationBox ID="nbSSLWarning" runat="server" CssClass="clearfix" NotificationBoxType="Danger">
-                        <i class="fa fa-2x fa-exclamation-triangle pull-left margin-t-sm"></i>
+                        <i class="fa fa-2x fa-exclamation-triangle pull-left margin-v-sm margin-r-md"></i>
                         Your current configuration will cause Protect My Ministry to send results to your server over an
                         insecure connection. Please ensure that your server is configured for SSL and use a <code>https://</code>
                         URL to protect the data during transmission before using in production.
