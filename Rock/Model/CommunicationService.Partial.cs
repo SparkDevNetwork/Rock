@@ -182,6 +182,9 @@ namespace Rock.Model
                 .Queryable()
                 .Where( a => a.Status == CommunicationRecipientStatus.Pending );
 
+            // NOTE: If a Communication has a ListGroup, there might be recipients in the ListGroup that aren't added as Recipients yet. So, always include Communications that have a ListGroup even if there are currently no PendingRecipients.
+            // This means that Communications that have already been sent might get rechecked for an additional expirationDays if people are added to the group within that timeframe
+
             return Queryable()
                 .Where( c =>
                     ( c.Status == CommunicationStatus.Approved || ( includePending && c.Status == CommunicationStatus.PendingApproval ) ) &&

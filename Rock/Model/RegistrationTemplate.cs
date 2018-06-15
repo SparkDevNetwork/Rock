@@ -516,6 +516,15 @@ namespace Rock.Model
         [DataMember]
         public bool WaitListEnabled { get; set; }
 
+        /// <summary>
+        /// Gets or sets the registrar option.
+        /// </summary>
+        /// <value>
+        /// The registrar option.
+        /// </value>
+        [DataMember]
+        public RegistrarOption RegistrarOption { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -756,6 +765,27 @@ namespace Rock.Model
         /// Embed document in registration
         /// </summary>
         Embed = 1,
+    }
+
+    /// <summary>
+    /// How registrar information should be collected.
+    /// </summary>
+    public enum RegistrarOption
+    {
+        /// <summary>
+        /// Prompt for registrar
+        /// </summary>
+        PromptForRegistrar = 0,
+
+        /// <summary>
+        /// Prefill first registrant
+        /// </summary>
+        PrefillFirstRegistrant = 1,
+
+        /// <summary>
+        /// Use first reistrant
+        /// </summary>
+        UseFirstRegistrant = 2
     }
 
     #endregion

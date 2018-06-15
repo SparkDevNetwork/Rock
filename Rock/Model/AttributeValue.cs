@@ -547,7 +547,7 @@ namespace Rock.Model
             if ( cacheAttribute.EntityTypeId == CacheEntityType.GetId<DefinedValue>() && this.EntityId.HasValue )
             {
                 // Update DefinedValue Cache
-                CacheDefinedValue.UpdateCachedEntity( this.EntityId.Value, System.Data.Entity.EntityState.Detached, dbContext as RockContext );
+                CacheDefinedValue.Get( this.EntityId.Value )?.ReloadAttributeValues();
             }
             
             if ( ( !cacheAttribute.EntityTypeId.HasValue || cacheAttribute.EntityTypeId.Value == 0 ) && string.IsNullOrEmpty( cacheAttribute.EntityTypeQualifierColumn ) && string.IsNullOrEmpty( cacheAttribute.EntityTypeQualifierValue ) )
