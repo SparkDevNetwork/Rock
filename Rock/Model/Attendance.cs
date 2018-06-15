@@ -263,6 +263,61 @@ namespace Rock.Model
         [DataMember]
         public virtual DefinedValue Qualifier { get; set; }
 
+        /// <summary>
+        /// Gets a value indicating whether this attenance is currently checked in.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is currently checked in; otherwise, <c>false</c>.
+        /// </value>
+        [NotMapped]
+        public bool IsCurrentlyCheckedIn
+        {
+            get
+            {
+                // If the attendance does not have an occurrence schedule, then there's nothing to check.
+                if ( Occurrence == null || Occurrence.Schedule == null )
+                {
+                    return false;
+                }
+
+                // If person has checked-out, they are obviously not still checked in
+                if ( EndDateTime.HasValue )
+                {
+                    return false;
+                }
+
+                // We'll check start time against timezone next, but don't even bother with that, if start date was more than 2 days ago
+                if ( StartDateTime < RockDateTime.Now.AddDays( -2 ) )
+                {
+                    return false;
+                }
+
+                // Get the current time (and adjust for a campus timezone)
+                var currentDateTime = RockDateTime.Now;
+                if ( Campus != null )
+                {
+                    currentDateTime = Campus.CurrentDateTime;
+                }
+                else if ( CampusId.HasValue )
+                {
+                    var campus = Rock.Cache.CacheCampus.Get( CampusId.Value );
+                    if ( campus != null )
+                    {
+                        currentDateTime = campus.CurrentDateTime;
+                    }
+                }
+
+                // Now that we now the correct time, make sure that the attendance is for today and previous to current time
+                if ( StartDateTime < currentDateTime.Date || StartDateTime > currentDateTime )
+                {
+                    return false;
+                }
+
+                // Person is currently checked in, if the schedule for this attendance is still active
+                return Occurrence.Schedule.WasScheduleOrCheckInActive( currentDateTime );
+            }
+        }
+
         #endregion
 
         #region Obsolete Properties

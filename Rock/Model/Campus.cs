@@ -178,6 +178,31 @@ namespace Rock.Model
         [DataMember]
         public virtual PersonAlias LeaderPersonAlias { get; set; }
 
+        /// <summary>
+        /// Gets the current date time.
+        /// </summary>
+        /// <value>
+        /// The current date time.
+        /// </value>
+        [NotMapped]
+        public virtual DateTime CurrentDateTime
+        {
+            get
+            {
+                if ( TimeZoneId.IsNotNullOrWhitespace() )
+                {
+                    var campusTimeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById( TimeZoneId );
+                    if ( campusTimeZoneInfo != null )
+                    {
+                        return TimeZoneInfo.ConvertTime( DateTime.UtcNow, campusTimeZoneInfo );
+                    }
+                }
+
+                return RockDateTime.Now;
+            }
+        }
+
+
         #endregion
 
         #region Public Methods
