@@ -148,8 +148,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
                 if ( campus.Id.ToString() != CurrentCampusId || scheduleId != CurrentScheduleId || NavData == null )
                 {
-                    NavData = GetNavigationData( campus, scheduleId.AsIntegerOrNull() );
                     CurrentCampusId = campus.Id.ToString();
+                    NavData = GetNavigationData( campus, scheduleId.AsIntegerOrNull() );
                     CurrentScheduleId = scheduleId;
 
                     if ( Page.IsPostBack )
@@ -293,7 +293,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     if ( GetAttributeValue( "SearchByCode" ).AsBoolean() )
                     {
                         var dayStart = RockDateTime.Today;
-                        var now = RockDateTime.Now;
+                        var now = GetCampusTime();
                         var personIds = new AttendanceService( rockContext )
                             .Queryable().Where( a =>
                                 a.StartDateTime >= dayStart &&
@@ -869,7 +869,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
                     NavData = new NavigationData();
 
-                    var chartTimes = GetChartTimes();
+                    var chartTimes = GetChartTimes( campus );
 
                     // Get the group types
                     var parentGroupType = CacheGroupType.Get( groupTypeTemplateGuid.Value );
@@ -977,7 +977,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
                     // Get the attendance counts
                     var dayStart = RockDateTime.Today;
-                    var now = RockDateTime.Now;
+                    var now = GetCampusTime();
+
                     groupIds = NavData.Groups.Select( g => g.Id ).ToList();
 
                     var schedules = new List<Schedule>();
@@ -1091,10 +1092,22 @@ namespace RockWeb.Blocks.CheckIn.Manager
             return null;
         }
 
-        private List<DateTime> GetChartTimes()
+        private DateTime GetCampusTime()
+        {
+            int? campusId = CurrentCampusId.AsIntegerOrNull();
+            if ( !campusId.HasValue )
+            {
+                return RockDateTime.Now;
+            }
+
+            var cacheCampus = CacheCampus.Get( campusId.Value );
+            return cacheCampus != null ? cacheCampus.CurrentDateTime : RockDateTime.Now;
+        }
+
+        private List<DateTime> GetChartTimes( CacheCampus campus )
         {
             // Get the current minute
-            var rockNow = RockDateTime.Now;
+            var rockNow = campus != null ? campus.CurrentDateTime : RockDateTime.Now;
             var now = new DateTime( rockNow.Year, rockNow.Month, rockNow.Day, rockNow.Hour, rockNow.Minute, 0 );
 
             // Find the end mark
