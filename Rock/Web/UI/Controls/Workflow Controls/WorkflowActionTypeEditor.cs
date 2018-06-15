@@ -140,7 +140,7 @@ $('.workflow-action > header').click(function () {
     $('i.workflow-action-state', this).toggleClass('fa-chevron-up');
 });
 
-// fix so that the Remove button will fire its event, but not the parent event 
+// fix so that the Remove button will fire its event, but not the parent event
 $('.workflow-action a.js-action-delete').click(function (event) {
     event.stopImmediatePropagation();
     return Rock.dialogs.confirmDelete(event, 'Action Type', 'This will also delete all the actions of this type from any existing persisted workflows!');
@@ -168,7 +168,7 @@ $('.js-action-criteria-comparison').change( function (event) {
     }
 });
 
-// fix so that the Reorder button will fire its event, but not the parent event 
+// fix so that the Reorder button will fire its event, but not the parent event
 $('.workflow-action a.workflow-action-reorder').click(function (event) {
     event.stopImmediatePropagation();
 });
@@ -235,7 +235,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             EnsureChildControls();
             WorkflowActionType result = new WorkflowActionType();
             result.Guid = new Guid( _hfActionTypeGuid.Value );
-            
+
             result.CriteriaAttributeGuid = _ddlCriteriaAttribute.SelectedValueAsGuid();
             result.CriteriaComparisonType = _ddlCriteriaComparisonType.SelectedValueAsEnum<ComparisonType>();
             result.CriteriaValue = _tbddlCriteriaValue.SelectedValue;
@@ -294,7 +294,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             foreach ( var attribute in workflowTypeAttributes )
             {
                 var li = new ListItem( attribute.Value.Name, attribute.Key.ToString() );
-                li.Selected = value.CriteriaAttributeGuid.HasValue && value.CriteriaAttributeGuid.Value.ToString() == li.Value; 
+                li.Selected = value.CriteriaAttributeGuid.HasValue && value.CriteriaAttributeGuid.Value.ToString() == li.Value;
                 _ddlCriteriaAttribute.Items.Add( li );
 
                 _tbddlCriteriaValue.DropDownList.Items.Add( new ListItem( attribute.Value.Name, attribute.Key.ToString() ) );
@@ -361,7 +361,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             Controls.Add( _lbDeleteActionType );
             _lbDeleteActionType.CausesValidation = false;
             _lbDeleteActionType.ID = this.ID + "_lbDeleteActionType";
-            _lbDeleteActionType.CssClass = "btn btn-xs btn-danger js-action-delete";
+            _lbDeleteActionType.CssClass = "btn btn-xs btn-square btn-danger js-action-delete";
             _lbDeleteActionType.Click += lbDeleteActionType_Click;
 
             var iDelete = new HtmlGenericControl( "i" );
@@ -387,7 +387,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             _tbddlCriteriaValue = new RockTextOrDropDownList();
             Controls.Add( _tbddlCriteriaValue );
             _tbddlCriteriaValue.ID = this.ID + "_tbddlCriteriaValue";
-            _tbddlCriteriaValue.EnableViewState = false; 
+            _tbddlCriteriaValue.EnableViewState = false;
             _tbddlCriteriaValue.TextBox.Label = "Text Value";
             _tbddlCriteriaValue.DropDownList.Label = "Attribute Value";
 

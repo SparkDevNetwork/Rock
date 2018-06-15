@@ -636,7 +636,7 @@ namespace RockWeb.Blocks.Crm
                         }
                     }
                 }
-                
+
                 ProgressBarSteps = FormState.Count();
                 CurrentPageIndex = 0;
                 ShowPage();
@@ -744,7 +744,7 @@ namespace RockWeb.Blocks.Crm
         protected override void ShowSettings()
         {
             //NOTE: This isn't shown in a modal :(
-            
+
 
 
             cbDisplayProgressBar.Checked = GetAttributeValue( "DisplayProgressBar" ).AsBoolean();
@@ -1198,12 +1198,12 @@ $('.template-form > header').click(function () {
     $('i.template-form-state', this).toggleClass('fa-chevron-up');
 });
 
-// fix so that the Remove button will fire its event, but not the parent event 
+// fix so that the Remove button will fire its event, but not the parent event
 $('.template-form a.js-activity-delete').click(function (event) {
     event.stopImmediatePropagation();
 });
 
-// fix so that the Reorder button will fire its event, but not the parent event 
+// fix so that the Reorder button will fire its event, but not the parent event
 $('.template-form a.template-form-reorder').click(function (event) {
     event.stopImmediatePropagation();
 });
@@ -1285,7 +1285,7 @@ $('.template-form > .panel-body').on('validation-error', function() {
             Controls.Add( _lbDeleteForm );
             _lbDeleteForm.CausesValidation = false;
             _lbDeleteForm.ID = this.ID + "_lbDeleteForm";
-            _lbDeleteForm.CssClass = "btn btn-xs btn-danger js-activity-delete";
+            _lbDeleteForm.CssClass = "btn btn-xs btn-square btn-danger js-activity-delete";
             _lbDeleteForm.Click += lbDeleteForm_Click;
             _lbDeleteForm.Controls.Add( new LiteralControl { Text = "<i class='fa fa-times'></i>" } );
 
@@ -1561,7 +1561,7 @@ $('.template-form > .panel-body').on('validation-error', function() {
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class AttributeFormFieldEventArg : EventArgs
     {
