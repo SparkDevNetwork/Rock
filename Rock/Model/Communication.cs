@@ -700,32 +700,39 @@ namespace Rock.Model
 
             var emailMediumEntityType = CacheEntityType.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );
             var smsMediumEntityType = CacheEntityType.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() );
+            var preferredCommunicationTypeAttribute = CacheAttribute.Get( SystemGuid.Attribute.GROUPMEMBER_COMMUNICATION_LIST_PREFERRED_COMMUNICATION_MEDIUM.AsGuid() );
 
-            var personInCommunicationList = new GroupMemberService( rockContext )
+            var qryCommunicationListMembers = new GroupMemberService( rockContext )
                 .Queryable()
-                .Where( a => a.GroupId == ListGroupId.Value )
-                .ToList();
+                .Where( a => a.GroupId == ListGroupId.Value && a.GroupMemberStatus == GroupMemberStatus.Active );
+
+            // NOTE: If this is scheduled communication, don't include Members that were added after the scheduled FutureSendDateTime
+            if ( this.FutureSendDateTime.HasValue )
+            {
+                var memberAddedCutoffDate = this.FutureSendDateTime;
+                qryCommunicationListMembers = qryCommunicationListMembers.Where( a => ( a.DateTimeAdded.HasValue && a.DateTimeAdded.Value < memberAddedCutoffDate ) || ( a.CreatedDateTime.HasValue && a.CreatedDateTime.Value < memberAddedCutoffDate ) );
+            }
 
             var communicationRecipientService = new CommunicationRecipientService( rockContext );
 
-            var existingRecipients = GetRecipientsQry( rockContext ).ToList();
+            var recipientsQry = GetRecipientsQry( rockContext );
 
-            //Get all the List member which is not part of communiation recipents 
-            var newMemberInList = personInCommunicationList
-                .Where( a => 
-                    a.Person?.PrimaryAliasId != null && 
-                    existingRecipients.All( b => b.PersonAliasId != a.Person.PrimaryAliasId ) );
+            // Get all the List member which is not part of communication recipients yet
+            var newMemberInList = qryCommunicationListMembers
+                .Where( a => !recipientsQry.Any( r => r.PersonAlias.PersonId == a.PersonId ) )
+                .AsNoTracking()
+                .ToList();
 
             foreach ( var newMember in newMemberInList )
             {
                 var communicationRecipient = new CommunicationRecipient
-                    {
-                        PersonAliasId = newMember.Person.PrimaryAliasId.Value,
-                        Status = CommunicationRecipientStatus.Pending,
-                        CommunicationId = Id
-                    };
+                {
+                    PersonAliasId = newMember.Person.PrimaryAliasId.Value,
+                    Status = CommunicationRecipientStatus.Pending,
+                    CommunicationId = Id
+                };
 
-                switch (CommunicationType)
+                switch ( CommunicationType )
                 {
                     case CommunicationType.Email:
                         communicationRecipient.MediumEntityTypeId = emailMediumEntityType.Id;
@@ -736,13 +743,12 @@ namespace Rock.Model
                     case CommunicationType.RecipientPreference:
                         newMember.LoadAttributes();
 
-                        var preferredCommunicationTypeAttribute = CacheAttribute.Get( SystemGuid.Attribute.GROUPMEMBER_COMMUNICATION_LIST_PREFERRED_COMMUNICATION_MEDIUM.AsGuid() );
-                        if (preferredCommunicationTypeAttribute != null)
+                        if ( preferredCommunicationTypeAttribute != null )
                         {
-                            var recipientPreference = (CommunicationType?) newMember
-                                .GetAttributeValue(preferredCommunicationTypeAttribute.Key).AsIntegerOrNull();
+                            var recipientPreference = ( CommunicationType? ) newMember
+                                .GetAttributeValue( preferredCommunicationTypeAttribute.Key ).AsIntegerOrNull();
 
-                            switch (recipientPreference)
+                            switch ( recipientPreference )
                             {
                                 case CommunicationType.SMS:
                                     communicationRecipient.MediumEntityTypeId = smsMediumEntityType.Id;
@@ -765,10 +771,12 @@ namespace Rock.Model
                 communicationRecipientService.Add( communicationRecipient );
             }
 
-            //Get all pending communiation recipents that is no longer part of the group list member
-            var missingMemberInList = existingRecipients
-                .Where( a => 
-                    personInCommunicationList.All(b => b.Person.PrimaryAliasId != a.PersonAliasId) );
+            // Get all pending communiation recipents that is no longer part of the group list member
+            var missingMemberInList = recipientsQry.Where( a => a.Status == CommunicationRecipientStatus.Pending )
+                .Where( a => !qryCommunicationListMembers.Any( r => r.PersonId == a.PersonAlias.PersonId ) )
+                .AsNoTracking()
+                .ToList();
+
             foreach ( var missingMember in missingMemberInList )
             {
                 communicationRecipientService.Delete( missingMember );
@@ -833,11 +841,11 @@ namespace Rock.Model
         {
             if (communication == null || communication.Status != CommunicationStatus.Approved) return;
 
-            if (communication.ListGroupId.HasValue)
+            if ( communication.ListGroupId.HasValue )
             {
-                using (var rockContext = new RockContext())
+                using ( var rockContext = new RockContext() )
                 {
-                    communication.RefreshCommunicationRecipientList(rockContext);
+                    communication.RefreshCommunicationRecipientList( rockContext );
                 }
             }
 
