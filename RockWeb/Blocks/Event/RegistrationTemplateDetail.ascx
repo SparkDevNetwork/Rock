@@ -71,11 +71,7 @@
                                     <div class="col-xs-6">
                                         <Rock:NumberBox ID="nbMaxRegistrants" runat="server" Label="Maximum Registrants"
                                             Help="The maximum number of registrants that user is allowed to register" Visible="false" />
-                                        <Rock:RockDropDownList ID="ddlRegistrarOption" runat="server" Label="Registrar Options">
-                                            <asp:ListItem Value="0" Text="Prompt For Registrar" />
-                                            <asp:ListItem Value="1" Text="Pre-fill First Registrant" />
-                                            <asp:ListItem Value="2" Text="Use First Registrant" />
-                                        </Rock:RockDropDownList>
+
                                     </div>
                                 </div>
                                 <Rock:RockRadioButtonList ID="rblRegistrantsInSameFamily" runat="server" Label="Registrants In Same Family" RepeatDirection="Horizontal" CssClass="js-same-family"
@@ -85,7 +81,11 @@
                                         Help="If Registrants in Same Family option is set to 'Yes', should the person registering be able to select people from their family when registering (vs. having to enter the family member's information manually)?" />
                                 </div>
                                 
-
+                                <Rock:RockDropDownList ID="ddlRegistrarOption" runat="server" Label="Registrar Options">
+                                    <asp:ListItem Value="0" Text="Prompt For Registrar" />
+                                    <asp:ListItem Value="1" Text="Pre-fill First Registrant" />
+                                    <asp:ListItem Value="2" Text="Use First Registrant" />
+                                </Rock:RockDropDownList>
                                 <Rock:RockCheckBox id="cbWaitListEnabled" runat="server" Label="Enable Wait List" Text="Yes" Help="Should a wait list be enabled when the maximum number of registrants is reached." />
                             </div>
                         </div>
