@@ -52,16 +52,16 @@ namespace Rock.UniversalSearch.IndexComponents
     public class Lucene : IndexComponent
     {
         #region Private Fields
-        private static readonly LuceneVersion MatchVersion = LuceneVersion.LUCENE_48;
-        private static Dictionary<string, Index> Indexes = new Dictionary<string, Index>();
-        private static IndexWriterConfig indexWriterConfig = null;
-        private static IndexWriter writer = null;
-        private static DirectoryReader reader = null;
-        private static IndexSearcher indexSearcher = null;
+        private static readonly LuceneVersion _matchVersion = LuceneVersion.LUCENE_48;
+        private static Dictionary<string, Index> _indexes = new Dictionary<string, Index>();
+        private static IndexWriterConfig _indexWriterConfig = null;
+        private static IndexWriter _writer = null;
+        private static DirectoryReader _reader = null;
+        private static IndexSearcher _indexSearcher = null;
         private static FSDirectory _directory;
-        private static Timer timer = null;
-        private static readonly string path = Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "App_Data", "LuceneSearchIndex" );
-        private static readonly object lockWriter = new object();
+        private static Timer _timer = null;
+        private static readonly string _path = Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "App_Data", "LuceneSearchIndex" );
+        private static readonly object _lockWriter = new object();
         #endregion
 
         #region Internal Methods
@@ -84,34 +84,34 @@ namespace Rock.UniversalSearch.IndexComponents
         /// </summary>
         private void OpenWriter()
         {
-            lock ( lockWriter )
+            lock ( _lockWriter )
             {
-                if ( writer == null )
+                if ( _writer == null )
                 {
                     // path = System.Web.HttpContext.Current.Server.MapPath( "~/App_Data/LuceneSearchIndex" ); // Do not work with jobs
-                    indexWriterConfig = new IndexWriterConfig( MatchVersion, null ) // No default Analyzer. Have to explicitly specify it when using IndexReader/IndexWriter
+                    _indexWriterConfig = new IndexWriterConfig( _matchVersion, null ) // No default Analyzer. Have to explicitly specify it when using IndexReader/IndexWriter
                     {
                         OpenMode = OpenMode.CREATE_OR_APPEND
                     };
 
-                    indexWriterConfig.OpenMode = OpenMode.CREATE_OR_APPEND;
+                    _indexWriterConfig.OpenMode = OpenMode.CREATE_OR_APPEND;
                     if ( IndexWriter.IsLocked( directory ) )
                     {
                         IndexWriter.Unlock( directory );
                     }
 
-                    writer = new IndexWriter( directory, indexWriterConfig );
-                    writer.Flush( true, true );
-                    writer.Commit();
+                    _writer = new IndexWriter( directory, _indexWriterConfig );
+                    _writer.Flush( true, true );
+                    _writer.Commit();
                 }
 
-                if ( timer == null )
+                if ( _timer == null )
                 {
-                    timer = new Timer( new TimerCallback( CloseWriter ), null, 10000, 0 );
+                    _timer = new Timer( new TimerCallback( CloseWriter ), null, 10000, 0 );
                 }
                 else
                 {
-                    timer.Change( 10000, 0 );
+                    _timer.Change( 10000, 0 );
                 }
             }
         }
@@ -121,10 +121,10 @@ namespace Rock.UniversalSearch.IndexComponents
         /// </summary>
         private static void FlushWriter()
         {
-            if ( writer != null )
+            if ( _writer != null )
             {
-                writer.Flush( true, true );
-                writer.Commit();
+                _writer.Flush( true, true );
+                _writer.Commit();
             }
         }
 
@@ -134,14 +134,14 @@ namespace Rock.UniversalSearch.IndexComponents
         /// <param name="state">Timer state. Unused.</param>
         private void CloseWriter( object state )
         {
-            lock ( lockWriter )
+            lock ( _lockWriter )
             {
                 FlushWriter();
-                if ( writer != null )
+                if ( _writer != null )
                 {
                     try
                     {
-                        writer.Dispose( true );
+                        _writer.Dispose( true );
                     }
                     finally
                     {
@@ -150,7 +150,7 @@ namespace Rock.UniversalSearch.IndexComponents
                             IndexWriter.Unlock( directory );
                         }
 
-                        writer = null;
+                        _writer = null;
                     }
                 }
             }
@@ -161,20 +161,20 @@ namespace Rock.UniversalSearch.IndexComponents
         /// </summary>
         private void OpenReader()
         {
-            if ( reader == null )
+            if ( _reader == null )
             {
-                reader = DirectoryReader.Open( directory );
-                indexSearcher = new IndexSearcher( reader );
+                _reader = DirectoryReader.Open( directory );
+                _indexSearcher = new IndexSearcher( _reader );
             }
             else
             {
                 DirectoryReader newReader =
-                    DirectoryReader.OpenIfChanged( reader );
+                    DirectoryReader.OpenIfChanged( _reader );
                 if ( newReader != null )
                 {
-                    reader.Dispose();
-                    reader = newReader;
-                    indexSearcher = new IndexSearcher( reader );
+                    _reader.Dispose();
+                    _reader = newReader;
+                    _indexSearcher = new IndexSearcher( _reader );
                 }
             }
         }
@@ -191,7 +191,7 @@ namespace Rock.UniversalSearch.IndexComponents
             {
                 if ( _directory == null )
                 {
-                    _directory = FSDirectory.Open( new DirectoryInfo( path ) );
+                    _directory = FSDirectory.Open( new DirectoryInfo( _path ) );
                 }
 
                 return _directory;
@@ -212,12 +212,12 @@ namespace Rock.UniversalSearch.IndexComponents
             foreach ( var mappingType in entityTypes )
             {
                 string mappingTypeName = mappingType.Name.ToLower();
-                if ( !Indexes.ContainsKey( mappingTypeName ) )
+                if ( !_indexes.ContainsKey( mappingTypeName ) )
                 {
                     CreateIndex( mappingType );
                 }
 
-                var index = Indexes[mappingTypeName];
+                var index = _indexes[mappingTypeName];
 
                 foreach ( var typeMappingProperty in index.MappingProperties.Values )
                 {
@@ -241,7 +241,7 @@ namespace Rock.UniversalSearch.IndexComponents
         /// <returns>Index model</returns>
         private IndexModelBase LuceneDocToIndexModel( Query query, ScoreDoc hit )
         {
-            var doc = indexSearcher.Doc( hit.Doc );
+            var doc = _indexSearcher.Doc( hit.Doc );
 
             IndexModelBase document = new IndexModelBase();
 
@@ -264,7 +264,7 @@ namespace Rock.UniversalSearch.IndexComponents
                     }
                 }
 
-                Explanation explanation = indexSearcher.Explain( query, hit.Doc );
+                Explanation explanation = _indexSearcher.Explain( query, hit.Doc );
                 document["Explain"] = explanation.ToString();
                 document.Score = hit.Score;
 
@@ -300,7 +300,7 @@ namespace Rock.UniversalSearch.IndexComponents
         {
             get
             {
-                return path;
+                return _path;
 
             }
         }
@@ -320,11 +320,11 @@ namespace Rock.UniversalSearch.IndexComponents
             }
 
             OpenWriter();
-            lock ( lockWriter )
+            lock ( _lockWriter )
             {
-                if ( writer != null )
+                if ( _writer != null )
                 {
-                    writer.DeleteDocuments( new Term( "type", typeof( T ).Name.ToLower() ) );
+                    _writer.DeleteDocuments( new Term( "type", typeof( T ).Name.ToLower() ) );
                 }
             }
         }
@@ -344,11 +344,11 @@ namespace Rock.UniversalSearch.IndexComponents
 
             IndexModelBase docIndexModelBase = document as IndexModelBase;
             OpenWriter();
-            lock ( lockWriter )
+            lock ( _lockWriter )
             {
-                if ( writer != null )
+                if ( _writer != null )
                 {
-                    writer.DeleteDocuments( new Term( "index", LuceneID( document.GetType().Name.ToLower(), docIndexModelBase.Id ) ) );
+                    _writer.DeleteDocuments( new Term( "index", LuceneID( document.GetType().Name.ToLower(), docIndexModelBase.Id ) ) );
                 }
             }
         }
@@ -361,13 +361,13 @@ namespace Rock.UniversalSearch.IndexComponents
         public override void DeleteDocumentById( Type documentType, int id )
         {
             OpenWriter();
-            lock ( lockWriter )
+            lock ( _lockWriter )
             {
-                if ( writer != null )
+                if ( _writer != null )
                 {
-                    writer.DeleteDocuments( new Term( "index", LuceneID( documentType.Name.ToLower(), id ) ) );
-                    writer.Flush( true, true );
-                    writer.Commit();
+                    _writer.DeleteDocuments( new Term( "index", LuceneID( documentType.Name.ToLower(), id ) ) );
+                    _writer.Flush( true, true );
+                    _writer.Commit();
                 }
             }
         }
@@ -381,11 +381,11 @@ namespace Rock.UniversalSearch.IndexComponents
         public override void DeleteDocumentByProperty( Type documentType, string propertyName, object propertyValue )
         {
             OpenWriter();
-            lock ( lockWriter )
+            lock ( _lockWriter )
             {
-                if ( writer != null )
+                if ( _writer != null )
                 {
-                    writer.DeleteDocuments( new Term[] { new Term( "type", documentType.Name.ToLower() ), new Term( propertyName, propertyValue.ToStringSafe() ) } );
+                    _writer.DeleteDocuments( new Term[] { new Term( "type", documentType.Name.ToLower() ), new Term( propertyName, propertyValue.ToStringSafe() ) } );
                 }
             }
         }
@@ -397,11 +397,11 @@ namespace Rock.UniversalSearch.IndexComponents
         public override void DeleteIndex( Type documentType )
         {
             OpenWriter();
-            lock ( lockWriter )
+            lock ( _lockWriter )
             {
-                if ( writer != null )
+                if ( _writer != null )
                 {
-                    writer.DeleteDocuments( new Term( "type", documentType.Name.ToLower() ) );
+                    _writer.DeleteDocuments( new Term( "type", documentType.Name.ToLower() ) );
                 }
             }
         }
@@ -430,7 +430,7 @@ namespace Rock.UniversalSearch.IndexComponents
             OpenReader();
             string mappingType = documentType.Name.ToLower();
             var query = new TermQuery( new Term( "index", LuceneID( mappingType, id ) ) );
-            var docs = indexSearcher.Search( query, 1 );
+            var docs = _indexSearcher.Search( query, 1 );
 
             if ( docs.TotalHits >= 1 )
             {
@@ -520,7 +520,7 @@ namespace Rock.UniversalSearch.IndexComponents
 
             TopDocs topDocs = null;
             // Use the analyzer in fieldAnalyzers if that field is in that dictionary, otherwise use StandardAnalyzer.
-            PerFieldAnalyzerWrapper analyzer = new PerFieldAnalyzerWrapper( defaultAnalyzer: new StandardAnalyzer( MatchVersion ), fieldAnalyzers: combinedFieldAnalyzers );
+            PerFieldAnalyzerWrapper analyzer = new PerFieldAnalyzerWrapper( defaultAnalyzer: new StandardAnalyzer( _matchVersion ), fieldAnalyzers: combinedFieldAnalyzers );
 
             BooleanQuery fieldCriteriaQuery = new BooleanQuery();
 
@@ -674,12 +674,12 @@ namespace Rock.UniversalSearch.IndexComponents
             if ( from.HasValue )
             {
                 TopScoreDocCollector collector = TopScoreDocCollector.Create( returnSize * 10, true ); // Search for 10 pages with returnSize entries in each page
-                indexSearcher.Search( queryContainer, collector );
+                _indexSearcher.Search( queryContainer, collector );
                 topDocs = collector.GetTopDocs( from.Value, returnSize );
             }
             else
             {
-                topDocs = indexSearcher.Search( queryContainer, returnSize );
+                topDocs = _indexSearcher.Search( queryContainer, returnSize );
             }
 
             totalResultsAvailable = topDocs.TotalHits;
@@ -713,7 +713,7 @@ namespace Rock.UniversalSearch.IndexComponents
             object instance = Activator.CreateInstance( documentType );
 
             // Check if index already exists. If it exists, no need to create it again
-            if ( Indexes.ContainsKey( indexName ) )
+            if ( _indexes.ContainsKey( indexName ) )
             {
                 return;
             }
@@ -779,9 +779,9 @@ namespace Rock.UniversalSearch.IndexComponents
                         {
                             fieldAnalyzers[typeMappingProperty.Name] = Analyzer.NewAnonymous( createComponents: ( fieldName, reader ) =>
                             {
-                                var tokenizer = new StandardTokenizer( MatchVersion, reader );
+                                var tokenizer = new StandardTokenizer( _matchVersion, reader );
                                 var sbpff = new SnowballPorterFilterFactory( new Dictionary<string, string>() { { "language", "English" } } );
-                                TokenStream result = sbpff.Create( new StandardTokenizer( MatchVersion, reader ) );
+                                TokenStream result = sbpff.Create( new StandardTokenizer( _matchVersion, reader ) );
                                 return new TokenStreamComponents( tokenizer, result ); // https://github.com/apache/lucenenet/blob/master/src/Lucene.Net.Analysis.Common/Analysis/Snowball/SnowballAnalyzer.cs
                             } );
                         }
@@ -789,8 +789,8 @@ namespace Rock.UniversalSearch.IndexComponents
                         {
                             fieldAnalyzers[propertyName] = Analyzer.NewAnonymous( createComponents: ( fieldName, reader ) =>
                             {
-                                var tokenizer = new WhitespaceTokenizer( MatchVersion, reader );
-                                TokenStream result = new StandardFilter( MatchVersion, tokenizer );
+                                var tokenizer = new WhitespaceTokenizer( _matchVersion, reader );
+                                TokenStream result = new StandardFilter( _matchVersion, tokenizer );
                                 return new TokenStreamComponents( tokenizer, result );
                             } );
                         }
@@ -799,7 +799,7 @@ namespace Rock.UniversalSearch.IndexComponents
 
                 index.MappingProperties = typeMapping;
                 index.FieldAnalyzers = fieldAnalyzers;
-                Indexes[indexName] = index;
+                _indexes[indexName] = index;
             }
         }
 
@@ -823,12 +823,12 @@ namespace Rock.UniversalSearch.IndexComponents
                 mappingType = documentType.Name.ToLower();
             }
 
-            if ( !Indexes.ContainsKey( mappingType ) )
+            if ( !_indexes.ContainsKey( mappingType ) )
             {
                 CreateIndex( documentType );
             }
 
-            var index = Indexes[mappingType];
+            var index = _indexes[mappingType];
 
             Document doc = new Document();
             foreach ( var typeMappingProperty in index.MappingProperties.Values )
@@ -846,14 +846,14 @@ namespace Rock.UniversalSearch.IndexComponents
             doc.AddStoredField( "JSON", document.ToJson() ); // Stores all the properties as JSON to retreive object on lookup
 
             // Use the analyzer in fieldAnalyzers if that field is in that dictionary, otherwise use StandardAnalyzer.
-            PerFieldAnalyzerWrapper analyzer = new PerFieldAnalyzerWrapper( defaultAnalyzer: new StandardAnalyzer( MatchVersion ), fieldAnalyzers: index.FieldAnalyzers );
+            PerFieldAnalyzerWrapper analyzer = new PerFieldAnalyzerWrapper( defaultAnalyzer: new StandardAnalyzer( _matchVersion ), fieldAnalyzers: index.FieldAnalyzers );
 
             OpenWriter();
-            lock ( lockWriter )
+            lock ( _lockWriter )
             {
-                if ( writer != null )
+                if ( _writer != null )
                 {
-                    writer.UpdateDocument( new Term( "index", indexValue ), doc, analyzer ); // Must specify analyzer because the default analyzer that is specified in indexWriterConfig is null.
+                    _writer.UpdateDocument( new Term( "index", indexValue ), doc, analyzer ); // Must specify analyzer because the default analyzer that is specified in indexWriterConfig is null.
                 }
             }
         }
@@ -866,14 +866,14 @@ namespace Rock.UniversalSearch.IndexComponents
         #region Constructors and Destructors
         public static void Dispose()
         {
-            lock ( lockWriter )
+            lock ( _lockWriter )
             {
-                if ( writer != null )
+                if ( _writer != null )
                 {
                     try
                     {
                         FlushWriter();
-                        writer.Dispose();
+                        _writer.Dispose();
                     }
                     finally
                     {
@@ -882,13 +882,13 @@ namespace Rock.UniversalSearch.IndexComponents
                             IndexWriter.Unlock( directory );
                         }
 
-                        writer = null;
+                        _writer = null;
                     }
                 }
             }
 
-            reader?.Dispose();
-            reader = null;
+            _reader?.Dispose();
+            _reader = null;
         }
         #endregion
 

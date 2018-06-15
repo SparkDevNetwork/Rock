@@ -454,8 +454,6 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         /// </summary>
         public void ShowNew()
         {
-            hlActive.Visible = false;
-
             imgPromotion.ImageUrl = PROMOTION_IMAGE_URL;
             hlGetStarted.NavigateUrl = GET_STARTED_URL;
 
@@ -476,8 +474,6 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         /// <param name="settings">The settings.</param>
         public void ShowView( List<AttributeValue> settings )
         {
-            ShowHighlightLabels( settings );
-
             lUserName.Text = GetSettingValue( settings, "UserName" );
             lPassword.Text = "********";
 
@@ -517,8 +513,6 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         /// <param name="settings">The settings.</param>
         public void ShowEdit( List<AttributeValue> settings )
         {
-            ShowHighlightLabels( settings );
-
             tbUserName.Text = GetSettingValue( settings, "UserName" );
             tbPassword.Text = GetSettingValue( settings, "Password", true );
             urlWebHook.Text = GetSettingValue( settings, "ReturnURL" );
@@ -622,18 +616,6 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
 
                 ShowDialog( "Package" );
             }
-        }
-
-        /// <summary>
-        /// Shows the highlight labels.
-        /// </summary>
-        /// <param name="settings">The settings.</param>
-        public void ShowHighlightLabels( List<AttributeValue> settings )
-        {
-            bool active = GetSettingValue( settings, "Active" ).AsBoolean();
-            hlActive.LabelType = active ? LabelType.Success : LabelType.Danger;
-            hlActive.Text = active ? "Active" : "Inactive";
-            hlActive.Visible = true;
         }
 
         /// <summary>

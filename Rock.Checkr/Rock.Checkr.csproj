@@ -73,6 +73,7 @@
     <Compile Include="Migrations\03_Checkr_CreateAttribute.cs" />
     <Compile Include="Migrations\02_Checkr_CreatePages.cs" />
     <Compile Include="Migrations\01_Checkr.cs" />
+    <Compile Include="Migrations\04_CheckrActionActive.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

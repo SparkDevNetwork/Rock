@@ -13,10 +13,9 @@
 
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-shield"></i> Protect My Ministry</h1>
-                <div class="panel-labels">
-                    <Rock:HighlightLabel ID="hlActive" runat="server" />
+                <div class="pull-right">
+                    <asp:LinkButton ID="btnDefault" runat="server" CssClass="btn btn-default btn-xs" OnClick="btnDefault_Click">Enable As Default Background Check Provider</asp:LinkButton>
                 </div>
-
             </div>
 
             <div class="panel-body">
@@ -62,7 +61,6 @@
 
                     <div class="actions">
                         <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CssClass="btn btn-primary" OnClick="lbEdit_Click" />
-                        <asp:LinkButton ID="btnDefault" runat="server" CssClass="btn btn-primary" OnClick="btnDefault_Click">Enable As Default Background Check Provider</asp:LinkButton>
                     </div>
                 </div>
 
