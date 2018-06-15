@@ -610,6 +610,7 @@
     <Compile Include="Data\IMigration.cs" />
     <Compile Include="Data\IModel.cs" />
     <Compile Include="Data\IncludeForReportingAttribute.cs" />
+    <Compile Include="Data\IncludeAsEntityProperty.cs" />
     <Compile Include="Data\Interception\QueryHintDbCommandInterceptor.cs" />
     <Compile Include="Data\Interception\QueryHintScope.cs" />
     <Compile Include="Data\IHasActiveFlag.cs" />
