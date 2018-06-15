@@ -92,8 +92,6 @@ namespace RockWeb.Blocks.CheckIn
                         {
                             var attendanceService = new AttendanceService( rockContext );
 
-                            var now = RockDateTime.Now;
-
                             // Print the labels
                             foreach ( var family in CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ) )
                             {
@@ -103,6 +101,8 @@ namespace RockWeb.Blocks.CheckIn
                                         .Where( a => person.AttendanceIds.Contains( a.Id ) )
                                         .ToList() )
                                     {
+                                        var now = attendance.Campus != null ? attendance.Campus.CurrentDateTime : RockDateTime.Now;
+
                                         attendance.EndDateTime = now;
 
                                         if ( attendance.Occurrence.Group != null &&
