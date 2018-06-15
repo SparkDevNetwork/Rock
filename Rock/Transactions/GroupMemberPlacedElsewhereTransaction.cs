@@ -64,7 +64,10 @@ namespace Rock.Transactions
         public void Execute()
         {
             var rockContext = new RockContext();
-            LaunchWorkflow( rockContext, Trigger.WorkflowTypeId, Trigger.Name );
+            if ( Trigger.IsActive )
+            {
+                LaunchWorkflow( rockContext, Trigger.WorkflowTypeId, Trigger.Name );
+            }
         }
 
         /// <summary>
