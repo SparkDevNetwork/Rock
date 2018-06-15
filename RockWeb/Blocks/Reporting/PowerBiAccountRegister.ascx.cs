@@ -78,7 +78,7 @@ namespace RockWeb.Blocks.Reporting
                     pnlResponse.Visible = false;
 
                     var globalAttributes = CacheGlobalAttributes.Get();
-                    var externalUrl = globalAttributes.GetValue( "PublicApplicationRoot" );
+                    var externalUrl = globalAttributes.GetValue( "InternalApplicationRoot" );
 
                     if ( !externalUrl.EndsWith( @"/" ) )
                     {
