@@ -85,13 +85,26 @@ dotnet_naming_style.interfaces_start_with_i_symbols_style.required_prefix = I
 dotnet_naming_rule.interfaces_start_with_i.severity = warning
 
 
-# Member Variables Start with an Underscore (member_variables_start_with_underscore)
-dotnet_naming_rule.member_variables_start_with_underscore.symbols = member_variables_start_with_underscore_symbols
-dotnet_naming_symbols.member_variables_start_with_underscore_symbols.applicable_kinds = field
-dotnet_naming_symbols.member_variables_start_with_underscore_symbols.applicable_accessibilities = *
+# These rules should be renenabled when https://github.com/dotnet/roslyn/issues/24209 is closed, until then enums have enforced caps with these rules which is not corrct
 
-dotnet_naming_rule.member_variables_start_with_underscore.style = member_variables_start_with_underscore_style
-dotnet_naming_style.member_variables_start_with_underscore_style.capitalization = camel_case
-dotnet_naming_style.member_variables_start_with_underscore_style.required_prefix = _
+## Member Variables Start with an Underscore (member_variables_start_with_underscore)
+#dotnet_naming_rule.member_variables_start_with_underscore.symbols = member_variables_start_with_underscore_symbols
+#dotnet_naming_symbols.member_variables_start_with_underscore_symbols.applicable_kinds = field
+#dotnet_naming_symbols.member_variables_start_with_underscore_symbols.applicable_accessibilities = private, internal, protected
 
-dotnet_naming_rule.member_variables_start_with_underscore.severity = warning
+#dotnet_naming_rule.member_variables_start_with_underscore.style = member_variables_start_with_underscore_style
+#dotnet_naming_style.member_variables_start_with_underscore_style.capitalization = camel_case
+#dotnet_naming_style.member_variables_start_with_underscore_style.required_prefix = _
+
+#dotnet_naming_rule.member_variables_start_with_underscore.severity = warning
+
+## Const Member Variables are Upper Case (const-member_variables_are_caps)
+#dotnet_naming_rule.member_variables_are_caps.symbols = member_variables_are_caps_symbols
+#dotnet_naming_symbols.member_variables_are_caps_symbols.applicable_kinds = field
+#dotnet_naming_symbols.member_variables_are_caps_symbols.applicable_accessibilities = *
+#dotnet_naming_symbols.member_variables_are_caps_symbols.required_modifiers = const
+
+#dotnet_naming_rule.member_variables_are_caps.style = member_variables_are_caps_style
+#dotnet_naming_style.member_variables_are_caps_style.capitalization = all_upper
+
+#dotnet_naming_rule.member_variables_are_caps.severity = warning
