@@ -131,7 +131,7 @@ namespace Rock.Model
         public bool IsBulkCommunication { get; set; }
 
         /// <summary>
-        /// Gets or sets the datetime that communication was sent.
+        /// Gets or sets the datetime that communication was sent. This also indicates that communication shouldn't attempt to send again.
         /// </summary>
         /// <value>
         /// The send date time.
@@ -837,11 +837,14 @@ namespace Rock.Model
         /// Sends the specified communication.
         /// </summary>
         /// <param name="communication">The communication.</param>
-        public static void Send(Rock.Model.Communication communication)
+        public static void Send( Rock.Model.Communication communication )
         {
-            if (communication == null || communication.Status != CommunicationStatus.Approved) return;
+            if ( communication == null || communication.Status != CommunicationStatus.Approved )
+            {
+                return;
+            }
 
-            if ( communication.ListGroupId.HasValue )
+            if ( communication.ListGroupId.HasValue && !communication.SendDateTime.HasValue )
             {
                 using ( var rockContext = new RockContext() )
                 {
@@ -849,24 +852,17 @@ namespace Rock.Model
                 }
             }
 
-            foreach (var medium in communication.GetMediums())
+            foreach ( var medium in communication.GetMediums() )
             {
-                medium.Send(communication);
+                medium.Send( communication );
             }
 
-            using (var rockContext = new RockContext())
+            using ( var rockContext = new RockContext() )
             {
-                var dbCommunication = new CommunicationService(rockContext).Get(communication.Id);
+                var dbCommunication = new CommunicationService( rockContext ).Get( communication.Id );
 
-                var maxSendDateTime = dbCommunication.Recipients
-                    .Where(a => a.CommunicationId == communication.Id && a.SendDateTime.HasValue)
-                    .OrderByDescending(a => a.SendDateTime)
-                    .Select(a => a.SendDateTime)
-                    .FirstOrDefault();
-
-                if (!maxSendDateTime.HasValue) return;
-
-                dbCommunication.SendDateTime = maxSendDateTime;
+                // Set the SendDateTime of the Communication
+                dbCommunication.SendDateTime = RockDateTime.Now;
                 rockContext.SaveChanges();
             }
         }
