@@ -24,7 +24,7 @@ using System.Net.Mail;
 namespace Quartz.Job
 {
 	/// <summary>
-	/// A Job which sends an e-mail with the configured content to the configured
+	/// A Job which sends an email with the configured content to the configured
 	/// recipient.
 	/// </summary>
 	/// <author>James House</author>
@@ -35,22 +35,22 @@ namespace Quartz.Job
     	/// <summary> The host name of the smtp server. REQUIRED.</summary>
 		public const string PropertySmtpHost = "smtp_host";
 
-		/// <summary> The e-mail address to send the mail to. REQUIRED.</summary>
+		/// <summary> The email address to send the mail to. REQUIRED.</summary>
 		public const string PropertyRecipient = "recipient";
 
-		/// <summary> The e-mail address to cc the mail to. Optional.</summary>
+		/// <summary> The email address to cc the mail to. Optional.</summary>
 		public const string PropertyCcRecipient = "cc_recipient";
 
-		/// <summary> The e-mail address to claim the mail is from. REQUIRED.</summary>
+		/// <summary> The email address to claim the mail is from. REQUIRED.</summary>
 		public const string PropertySender = "sender";
 
-		/// <summary> The e-mail address the message should say to reply to. Optional.</summary>
+		/// <summary> The email address the message should say to reply to. Optional.</summary>
 		public const string PropertyReplyTo = "reply_to";
 
-		/// <summary> The subject to place on the e-mail. REQUIRED.</summary>
+		/// <summary> The subject to place on the email. REQUIRED.</summary>
 		public const string PropertySubject = "subject";
 
-		/// <summary> The e-mail message body. REQUIRED.</summary>
+		/// <summary> The email message body. REQUIRED.</summary>
 		public const string PropertyMessage = "message";
 
 		/// <summary>
