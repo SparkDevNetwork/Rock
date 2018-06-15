@@ -43,7 +43,7 @@ namespace Rock.Security.BackgroundCheck
     [UrlLinkField( "Return URL", "The Web Hook URL for Protect My Ministry to send results to (e.g. 'http://www.mysite.com/Webhooks/ProtectMyMinistry.ashx').", true, "", "", 4 )]
     public class ProtectMyMinistry : BackgroundCheckComponent
     {
-        private HttpStatusCode _HTTPStatusCode;
+        private HttpStatusCode _httpStatusCode;
 
         #region BackgroundCheckComponent Implementation
 
@@ -364,7 +364,7 @@ Response XML ({2}):
                 {
                     var handledErrorMessages = new List<string>();
 
-                    if ( _HTTPStatusCode == HttpStatusCode.OK )
+                    if ( _httpStatusCode == HttpStatusCode.OK )
                     {
                         var xOrderXML = xResult.Elements( "OrderXML" ).FirstOrDefault();
                         if ( xOrderXML != null )
@@ -393,7 +393,7 @@ Response XML ({2}):
                     }
                     else
                     {
-                        handledErrorMessages.Add( "Invalid HttpStatusCode: " + _HTTPStatusCode.ToString() );
+                        handledErrorMessages.Add( "Invalid HttpStatusCode: " + _httpStatusCode.ToString() );
                     }
 
                     if ( handledErrorMessages.Any() )
@@ -490,7 +490,7 @@ Response XML ({2}):
         /// <returns></returns>
         private XDocument GetResponse( Stream responseStream, string contentType, HttpStatusCode statusCode )
         {
-            _HTTPStatusCode = statusCode;
+            _httpStatusCode = statusCode;
 
             Stream receiveStream = responseStream;
             Encoding encode = System.Text.Encoding.GetEncoding( "utf-8" );

@@ -40,8 +40,6 @@ namespace Rock.Migrations
             RockMigrationHelper.AddBlockAttributeValue( Block.BIO, SystemGuid.Attribute.BIO_WORKFLOWACTION, CheckrSystemGuid.CHECKR_WORKFLOW_TYPE, appendToExisting: true );
             // Sql( string.Format( "UPDATE [dbo].[WorkflowType] SET [Name] = '{0}' WHERE [Guid] = '{1}'", NEW_PMM_WORKFLOW_TYPE_NAME, PMM_WORKFLOW_TYPE ) );
             Sql( string.Format( "UPDATE [dbo].[WorkflowType] SET [Name] = '{0}' WHERE [Guid] = '{1}'", CheckrConstants.CHECKR_WORKFLOW_TYPE_NAME, CheckrSystemGuid.CHECKR_WORKFLOW_TYPE ) );
-            RockMigrationHelper.AddEntityAttribute( "Rock.Checkr.Checkr", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "", "", "Active", "", "Should Service be used?", 0, "", "0ac1596b-0143-4939-aacd-0b14f6f74322" );
-            RockMigrationHelper.AddAttributeValue( "0ac1596b-0143-4939-aacd-0b14f6f74322", 0, "True", "554468D0-A891-5281-4D08-FED46D756E28" );
         }
 
         /// <summary>

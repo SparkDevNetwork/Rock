@@ -27,6 +27,7 @@ using Rock.Migrations;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Security.BackgroundCheck
 {
@@ -95,6 +96,8 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                 BackgroundCheckContainer.Instance.Refresh();
             }
 
+            btnUpdate_Click( null, null );
+
             pnlToken.Visible = false;
             pnlPackages.Visible = true;
             HideSecondaryBlocks( false );
@@ -121,8 +124,11 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                 }
             }
 
-            UpdatePackages();
-            modalUpdated.Show();
+            DisplayPackages();
+            if ( sender != null )
+            {
+                maUpdated.Show( "Update Packages Complete.", ModalAlertType.Information );
+            }
         }
 
         /// <summary>
@@ -183,9 +189,9 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         #region Internal Methods
 
         /// <summary>
-        /// Updates the packages.
+        /// Display the packages.
         /// </summary>
-        private void UpdatePackages()
+        private void DisplayPackages()
         {
             using ( var rockContext = new RockContext() )
             {
@@ -267,7 +273,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                 lViewColumnLeft.Text = new DescriptionList()
                     .Add( "Access Token", accessToken )
                     .Html;
-                UpdatePackages();
+                DisplayPackages();
             }
         }
 
