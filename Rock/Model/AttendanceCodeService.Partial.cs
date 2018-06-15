@@ -119,7 +119,7 @@ namespace Rock.Model
                             .OrderBy( c => c.Substring( alphaNumericLength + alphaLength ) ).LastOrDefault();
                     }
 
-                    while ( code.Length == 0 && noGood.Any( s => code.Contains( s ) ) || _todaysCodes.Contains( code ) )
+                    while ( code.Length == 0 || noGood.Any( s => code.Contains( s ) ) || _todaysCodes.Contains( code ) )
                     {
                         code = GenerateRandomCode( alphaNumericLength )
                                + GenerateRandomAlphaCode( alphaLength )
