@@ -59,7 +59,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// </value>
         public override string Section
         {
-            get { return "Group Attendance"; }
+            get { return "Attendance"; }
         }
 
         #endregion

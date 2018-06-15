@@ -29,7 +29,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Reporting.DataFilter.Person
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [Description( "Filter people on whether they have attended a group type a specific number of times" )]
     [Export( typeof( DataFilterComponent ) )]
@@ -57,7 +57,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// </value>
         public override string Section
         {
-            get { return "Group Attendance"; }
+            get { return "Attendance"; }
         }
 
         #endregion
@@ -80,7 +80,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// <summary>
         /// Formats the selection on the client-side.  When the filter is collapsed by the user, the Filterfield control
         /// will set the description of the filter to whatever is returned by this property.  If including script, the
-        /// controls parent container can be referenced through a '$content' variable that is set by the control before 
+        /// controls parent container can be referenced through a '$content' variable that is set by the control before
         /// referencing this property.
         /// </summary>
         /// <value>
@@ -213,7 +213,7 @@ namespace Rock.Reporting.DataFilter.Person
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             gtpGroupType.RenderControl( writer );
             writer.RenderEndTag();
-            
+
             writer.RenderEndTag();
 
             // Row 2
@@ -230,7 +230,7 @@ namespace Rock.Reporting.DataFilter.Person
             // Row 3
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            
+
             writer.AddAttribute( "class", "col-md-4" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             ddlIntegerCompare.RenderControl( writer );
@@ -289,7 +289,7 @@ namespace Rock.Reporting.DataFilter.Person
                 ddlIntegerCompare.SelectedValue = options[1];
                 tbAttendedCount.Text = options[2];
                 int? lastXWeeks = options[3].AsIntegerOrNull();
-                
+
                 if (lastXWeeks.HasValue)
                 {
                     //// selection was from when it just simply a LastXWeeks instead of Sliding Date Range
@@ -333,7 +333,7 @@ namespace Rock.Reporting.DataFilter.Person
             ComparisonType comparisonType = options[1].ConvertToEnum<ComparisonType>( ComparisonType.GreaterThanOrEqualTo );
             int? attended = options[2].AsIntegerOrNull();
             string slidingDelimitedValues;
-                
+
             if ( options[3].AsIntegerOrNull().HasValue )
             {
                 //// selection was from when it just simply a LastXWeeks instead of Sliding Date Range
