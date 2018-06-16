@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ using Rock.Security;
 using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Rock.Communication;
 
 namespace RockWeb.Blocks.Groups
 {
@@ -47,8 +48,48 @@ namespace RockWeb.Blocks.Groups
     [MergeTemplateField( "Attendance Roster Template", "", false, "", "", 6 )]
     [CodeEditorField( "Lava Template", "An optional lava template to appear next to each person in the list.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, false, "", "", 7 )]
     [BooleanField( "Restrict Future Occurrence Date", "Should user be prevented from selecting a future Occurrence date?", false, "", 8 )]
+    [BooleanField( "Show Notes", "Should the notes field be displayed?", true, "", 9 )]
+    [TextField( "Attendance Note Label", "The text to use to describe the notes", true, "Notes", "", 10 )]
+    [BooleanField( "Show Anonymous Count", "Should the anonymous count be displayed?", true, "", 11 )]
+    [EnumField( "Send Summary Email To", "", typeof( SendSummaryEmailType ), true, "0", "", 12 )]
+    [SystemEmailField( "Attendance Email", "The System Email to use to send the attendance", false, Rock.SystemGuid.SystemEmail.ATTENDANCE_NOTIFICATION, "", 13, "AttendanceEmailTemplate" )]
     public partial class GroupAttendanceDetail : RockBlock
     {
+        #region Fields
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private enum SendSummaryEmailType
+        {
+            /// <summary>
+            /// None
+            /// </summary>
+            None = 0,
+
+            /// <summary>
+            /// Group Leaders
+            /// </summary>
+            GroupLeaders = 1,
+
+            /// <summary>
+            /// All Group Members (note: all active group members)
+            /// </summary>
+            AllGroupMembers = 2,
+
+            /// <summary>
+            /// Parent Group Leaders
+            /// </summary>
+            ParentGroupLeaders = 3,
+
+            /// <summary>
+            /// Individual Entering Attendance
+            /// </summary>
+            IndividualEnteringAttendance = 4
+        }
+
+        #endregion
+
         #region Private Variables
         private RockContext _rockContext = null;
         private Group _group = null;
@@ -91,7 +132,7 @@ namespace RockWeb.Blocks.Groups
                 _canManageMembers = true;
             }
 
-            dpOccurrenceDate.AllowFutureDateSelection = !GetAttributeValue( "RestrictFutureOccurrenceDate").AsBoolean();
+            dpOccurrenceDate.AllowFutureDateSelection = !GetAttributeValue( "RestrictFutureOccurrenceDate" ).AsBoolean();
             _allowAdd = GetAttributeValue( "AllowAdd" ).AsBoolean();
 
             _allowCampusFilter = GetAttributeValue( "AllowCampusFilter" ).AsBoolean();
@@ -102,6 +143,9 @@ namespace RockWeb.Blocks.Groups
                 bddlCampus.DataBind();
                 bddlCampus.Items.Insert( 0, new ListItem( "All Campuses", "0" ) );
             }
+
+            dtNotes.Label = GetAttributeValue( "AttendanceNoteLabel" );
+            dtNotes.Visible = GetAttributeValue( "ShowNotes" ).AsBooleanOrNull() ?? true;
         }
 
         /// <summary>
@@ -123,7 +167,6 @@ namespace RockWeb.Blocks.Groups
             else
             {
                 _occurrence = GetOccurrence();
-
                 if ( !Page.IsPostBack )
                 {
                     if ( _allowCampusFilter )
@@ -184,6 +227,7 @@ namespace RockWeb.Blocks.Groups
             if ( _group != null && _occurrence != null )
             {
                 SaveAttendance();
+                EmailAttendanceSummary();
 
                 var qryParams = new Dictionary<string, string> { { "GroupId", _group.Id.ToString() } };
 
@@ -243,7 +287,7 @@ namespace RockWeb.Blocks.Groups
 
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
             mergeFields.Add( "Group", this._group );
-            mergeFields.Add("AttendanceDate", this._occurrence.OccurrenceDate);
+            mergeFields.Add( "AttendanceDate", this._occurrence.OccurrenceDate );
 
             var mergeTemplate = new MergeTemplateService( rockContext ).Get( this.GetAttributeValue( "AttendanceRosterTemplate" ).AsGuid() );
 
@@ -469,7 +513,8 @@ namespace RockWeb.Blocks.Groups
                 occurrence = occurrenceService.Get( occurrenceId.Value );
 
                 // If we have a valid occurrence return it now (the date,location,schedule cannot be changed for an existing occurrence)
-                if ( occurrence != null ) return occurrence;
+                if ( occurrence != null )
+                    return occurrence;
             }
 
             // Set occurrence values from query string
@@ -512,9 +557,9 @@ namespace RockWeb.Blocks.Groups
             }
 
             return null;
-        
+
         }
-        
+
         /// <summary>
         /// Binds the locations.
         /// </summary>
@@ -604,7 +649,7 @@ namespace RockWeb.Blocks.Groups
             {
                 nbNotice.Visible = false;
 
-                if ( PageParameter("OccurrenceId").AsIntegerOrNull().HasValue )
+                if ( PageParameter( "OccurrenceId" ).AsIntegerOrNull().HasValue )
                 {
                     lOccurrenceDate.Visible = true;
                     lOccurrenceDate.Text = _occurrence.OccurrenceDate.ToShortDateString();
@@ -621,7 +666,7 @@ namespace RockWeb.Blocks.Groups
                     }
                     ddlLocation.Visible = false;
 
-                    lSchedule.Visible = _occurrence.Schedule != null ;
+                    lSchedule.Visible = _occurrence.Schedule != null;
                     lSchedule.Text = _occurrence.Schedule != null ? _occurrence.Schedule.Name : string.Empty;
                     ddlSchedule.Visible = false;
                 }
@@ -676,14 +721,16 @@ namespace RockWeb.Blocks.Groups
                 // Load the attendance for the selected occurrence
                 if ( _occurrence.Id > 0 )
                 {
+                    dtNotes.Text = _occurrence.Notes;
+
                     cbDidNotMeet.Checked = _occurrence.DidNotOccur ?? false;
 
                     // Get the list of people who attended
                     attendedIds = new AttendanceService( _rockContext )
                         .Queryable().AsNoTracking()
-                        .Where( a => 
+                        .Where( a =>
                             a.OccurrenceId == _occurrence.Id &&
-                            a.DidAttend.HasValue && 
+                            a.DidAttend.HasValue &&
                             a.DidAttend.Value )
                         .Select( a => a.PersonAlias.PersonId )
                         .Distinct()
@@ -858,11 +905,11 @@ namespace RockWeb.Blocks.Groups
                         occurrence.LocationId = _occurrence.LocationId;
                         occurrence.ScheduleId = _occurrence.ScheduleId;
                         occurrence.OccurrenceDate = _occurrence.OccurrenceDate;
-
                         occurrenceService.Add( occurrence );
                     }
                 }
 
+                occurrence.Notes = GetAttributeValue( "ShowNotes" ).AsBoolean() ? dtNotes.Text : string.Empty;
                 occurrence.DidNotOccur = cbDidNotMeet.Checked;
 
                 var existingAttendees = occurrence.Attendees.ToList();
@@ -964,6 +1011,73 @@ namespace RockWeb.Blocks.Groups
                         }
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Method to email attendance summary.
+        /// </summary>
+        private void EmailAttendanceSummary()
+        {
+            try
+            {
+                var mergeObjects = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+                mergeObjects.Add( "Group", _group );
+                mergeObjects.Add( "AttendanceOccurrence", _occurrence );
+                mergeObjects.Add( "AttendanceNoteLabel", GetAttributeValue( "AttendanceNoteLabel" ) );
+
+                var notificationOption = GetAttributeValue( "SendSummaryEmailTo" ).ConvertToEnum<SendSummaryEmailType>( SendSummaryEmailType.None );
+
+                List<string> recipients = new List<string>();
+
+                switch ( notificationOption )
+                {
+                    case SendSummaryEmailType.GroupLeaders:
+                        {
+                            var leaders = new GroupMemberService( _rockContext ).Queryable( "Person" ).AsNoTracking()
+                                            .Where( m => m.GroupRole.IsLeader && m.GroupId == _group.Id );
+                            recipients.AddRange( leaders.Where( a => !string.IsNullOrEmpty( a.Person.Email ) ).Select( a => a.Person.Email ) );
+                        }
+                        break;
+                    case SendSummaryEmailType.AllGroupMembers:
+                        {
+                            var leaders = new GroupMemberService( _rockContext ).Queryable( "Person" ).AsNoTracking()
+                                            .Where( m => m.GroupId == _group.Id );
+                            recipients.AddRange( leaders.Where( a => !string.IsNullOrEmpty( a.Person.Email ) ).Select( a => a.Person.Email ) );
+                        }
+                        break;
+                    case SendSummaryEmailType.ParentGroupLeaders:
+                        {
+                            if ( _group.ParentGroupId.HasValue )
+                            {
+                                var parentLeaders = new GroupMemberService( _rockContext ).Queryable( "Person" ).AsNoTracking()
+                                                    .Where( m => m.GroupRole.IsLeader && m.GroupId == _group.ParentGroupId.Value );
+                                recipients.AddRange( parentLeaders.Where( a => !string.IsNullOrEmpty( a.Person.Email ) ).Select( a => a.Person.Email ) );
+                            }
+                        }
+                        break;
+                    case SendSummaryEmailType.IndividualEnteringAttendance:
+                        if ( !string.IsNullOrEmpty( this.CurrentPerson.Email ) )
+                        {
+                            recipients.Add( this.CurrentPerson.Email );
+                        }
+                        break;
+                    case SendSummaryEmailType.None:
+                    default:
+                        break;
+                }
+
+                foreach ( var recipient in recipients )
+                {
+                    var emailMessage = new RockEmailMessage( GetAttributeValue( "AttendanceEmailTemplate" ).AsGuid() );
+                    emailMessage.AddRecipient( new RecipientData( recipient, mergeObjects ) );
+                    emailMessage.CreateCommunicationRecord = false;
+                    emailMessage.Send();
+                }
+            }
+            catch ( SystemException ex )
+            {
+                ExceptionLogService.LogException( ex, Context, RockPage.PageId, RockPage.Site.Id, CurrentPersonAlias );
             }
         }
 
