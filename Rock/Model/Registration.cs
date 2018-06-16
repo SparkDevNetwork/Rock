@@ -421,6 +421,7 @@ Registration By: {0} Total Cost/Fees:{1}
                                     note.EntityId = registrantPerson.Id;
                                     note.Caption = string.Empty;
                                     note.Text = noteText.ToString();
+                                    note.CreatedByPersonAliasId = registrar.PrimaryAliasId;
                                     noteService.Add( note );
                                 }
 
