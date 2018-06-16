@@ -27,6 +27,11 @@ namespace Rock.SystemGuid
     public static class SystemEmail
     {
         /// <summary>
+        /// Gets the template guid for the Attendance email
+        /// </summary>
+        public const string ATTENDANCE_NOTIFICATION = "CA794BD8-25C5-46D9-B7C2-AD8190AC27E6";
+
+        /// <summary>
         /// Gets the template guid for the Exception Notification email
         /// </summary>
         public const string CONFIG_EXCEPTION_NOTIFICATION = "75CB0A4A-B1C5-4958-ADEB-8621BD231520";
