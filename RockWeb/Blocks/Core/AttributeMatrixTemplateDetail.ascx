@@ -49,10 +49,10 @@
                     <Rock:PanelWidget ID="pwAdvanced" runat="server" Title="Advanced" Expanded="false">
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:NumberBox ID="tbMinimumRows" runat="server" Label="Minimum Rows" />
+                                <Rock:NumberBox ID="tbMinimumRows" runat="server" MinimumValue="0" Label="Minimum Rows" />
                             </div>
                             <div class="col-md-6">
-                                <Rock:NumberBox ID="tbMaximumRows" runat="server" Label="Maximum Rows" />
+                                <Rock:NumberBox ID="tbMaximumRows" runat="server" MinimumValue="0" Label="Maximum Rows" />
                             </div>
                         </div>
 
