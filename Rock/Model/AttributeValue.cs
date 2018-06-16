@@ -534,22 +534,51 @@ namespace Rock.Model
         #region ICacheable
 
         /// <summary>
+        /// Updates the cached attribute value of the cache object associated with this entity
+        /// </summary>
+        /// <param name="attributeKey">The attribute key.</param>
+        /// <param name="value">The value.</param>
+        public void UpdateCachedAttributeValue( string attributeKey, string value )
+        {
+            // CacheAttributeValue doesn't have a CacheAttributeValues
+        }
+
+        private static HashSet<int> _cacheableEntityTypeIds = null;
+
+        /// <summary>
         /// Updates any Cache Objects that are associated with this entity
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
         {
-            CacheAttribute.UpdateCachedEntity( this.AttributeId, entityState, dbContext as RockContext );
-
             CacheAttribute cacheAttribute = CacheAttribute.Get( this.AttributeId, dbContext as RockContext );
-            
-            if ( cacheAttribute.EntityTypeId == CacheEntityType.GetId<DefinedValue>() && this.EntityId.HasValue )
+
+            if ( cacheAttribute == null )
             {
-                // Update DefinedValue Cache
-                CacheDefinedValue.Get( this.EntityId.Value )?.ReloadAttributeValues();
+                return;
             }
-            
+
+            if ( this.EntityId.HasValue && cacheAttribute.EntityTypeId.HasValue )
+            {
+                if ( _cacheableEntityTypeIds == null )
+                {
+                    _cacheableEntityTypeIds = new HashSet<int>( Reflection.FindTypes( typeof( Rock.Cache.IEntityCache ) ).Values.Select( a => a.BaseType.GenericTypeArguments[1] ).ToList().Select( a => Rock.Cache.CacheEntityType.Get( a ).Id ).ToList() );
+                }
+
+                bool hasEntityCache = _cacheableEntityTypeIds?.Contains( cacheAttribute.EntityTypeId.Value ) == true;
+
+                if ( hasEntityCache )
+                {
+                    var entity = new EntityTypeService( dbContext as RockContext ).GetEntityNoTracking( cacheAttribute.EntityTypeId.Value, this.EntityId.Value );
+                    if ( entity is ICacheable )
+                    {
+                        // just in case the AttributeValue was updated directly to the model without updating the Cached version first, make sure the CachedEntity's AttributeValue is updated
+                        ( entity as ICacheable )?.UpdateCachedAttributeValue( cacheAttribute.Key, this.Value );
+                    }
+                }
+            }
+
             if ( ( !cacheAttribute.EntityTypeId.HasValue || cacheAttribute.EntityTypeId.Value == 0 ) && string.IsNullOrEmpty( cacheAttribute.EntityTypeQualifierColumn ) && string.IsNullOrEmpty( cacheAttribute.EntityTypeQualifierValue ) )
             {
                 // Update GlobalAttributes if one of the values changed

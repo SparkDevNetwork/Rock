@@ -558,6 +558,16 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Updates the cached attribute value of the cache object associated with this entity
+        /// </summary>
+        /// <param name="attributeKey">The attribute key.</param>
+        /// <param name="value">The value.</param>
+        public void UpdateCachedAttributeValue( string attributeKey, string value )
+        {
+            CachePage.Get( this.Id )?.SetAttributeValue( attributeKey, value );
+        }
+
+        /// <summary>
         /// Updates any Cache Objects that are associated with this entity
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
