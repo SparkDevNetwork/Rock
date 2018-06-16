@@ -27,7 +27,7 @@ namespace Rock.Cache
     /// </summary>
     [Serializable]
     [DataContract]
-    public class CacheWorkflowActionFormAttribute : ModelCache<CacheWorkflowActionFormAttribute, WorkflowActionFormAttribute>, ICacheable
+    public class CacheWorkflowActionFormAttribute : ModelCache<CacheWorkflowActionFormAttribute, WorkflowActionFormAttribute>
     {
 
         #region Properties
@@ -153,20 +153,6 @@ namespace Rock.Cache
             HideLabel = workflowActionFormAttribute.HideLabel;
             PreHtml = workflowActionFormAttribute.PreHtml;
             PostHtml = workflowActionFormAttribute.PostHtml;
-        }
-
-        #endregion
-
-        #region ICacheable
-
-        /// <summary>
-        /// Updates any Cache Objects that are associated with this entity
-        /// </summary>
-        /// <param name="entityState">State of the entity.</param>
-        /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            CacheWorkflowActionFormAttribute.UpdateCachedEntity( this.Id, entityState, dbContext as RockContext );
         }
 
         #endregion

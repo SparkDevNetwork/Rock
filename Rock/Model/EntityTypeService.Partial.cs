@@ -22,6 +22,7 @@ using System.Reflection;
 using Rock;
 using Rock.Data;
 using Rock.Cache;
+using System.Data.Entity;
 
 namespace Rock.Model
 {
@@ -177,6 +178,23 @@ namespace Rock.Model
             if ( entityQry != null )
             {
                 return entityQry.Where( i => i.Id == entityId ).FirstOrDefault();
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets an Entity by type and entity Id, without loading the entity into EF ChangeTracking
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <returns></returns>
+        public IEntity GetEntityNoTracking( int entityTypeId, int entityId )
+        {
+            var entityQry = GetQueryable( entityTypeId );
+            if ( entityQry != null )
+            {
+                return entityQry.Where( i => i.Id == entityId ).AsNoTracking().FirstOrDefault();
             }
 
             return null;
