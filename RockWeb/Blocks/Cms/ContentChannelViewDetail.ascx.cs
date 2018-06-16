@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.Cms
 
     [ContentChannelField( "Content Channel", "Limits content channel items to a specific channel, or leave blank to leave unrestricted.", false, "", category: "CustomSetting" )]
     [TextField( "Content Channel Query Parameter", @"
-Specify the URL parameter to use to determine which Content Channel Item to show, or leave blank to use whatever the first parameter is. 
+Specify the URL parameter to use to determine which Content Channel Item to show, or leave blank to use whatever the first parameter is.
 The type of the value will determine how the content channel item will be determined as follows:
 
 Integer - ContentChannelItem Id
@@ -95,7 +95,7 @@ Guid - ContentChannelItem Guid
         private const string CACHEKEYS_CACHE_KEY = "CacheKeys";
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private enum LaunchWorkflowCondition
         {
@@ -218,7 +218,7 @@ Guid - ContentChannelItem Guid
             ddlTwitterTitleAttribute.SetValue( this.GetAttributeValue( "TwitterTitleAttribute" ) );
             ddlTwitterDescriptionAttribute.SetValue( this.GetAttributeValue( "TwitterDescriptionAttribute" ) );
             ddlTwitterImageAttribute.SetValue( this.GetAttributeValue( "TwitterImageAttribute" ) );
-            rblTwitterCard.SetValue( this.GetAttributeValue( "TwitterCard" ) );
+            ddlTwitterCard.SetValue( this.GetAttributeValue( "TwitterCard" ) );
 
             mdSettings.Show();
         }
@@ -255,7 +255,7 @@ Guid - ContentChannelItem Guid
             this.SetAttributeValue( "TwitterTitleAttribute", ddlTwitterTitleAttribute.SelectedValue );
             this.SetAttributeValue( "TwitterDescriptionAttribute", ddlTwitterDescriptionAttribute.SelectedValue );
             this.SetAttributeValue( "TwitterImageAttribute", ddlTwitterImageAttribute.SelectedValue );
-            this.SetAttributeValue( "TwitterCard", rblTwitterCard.SelectedValue );
+            this.SetAttributeValue( "TwitterCard", ddlTwitterCard.SelectedValue );
 
             SaveAttributeValues();
 
@@ -479,7 +479,7 @@ Guid - ContentChannelItem Guid
                 {
                     contentChannelItemKey = this.PageParameters().Select( a => a.Value.ToString() ).FirstOrDefault();
                 }
-                
+
             }
 
             return contentChannelItemKey;
