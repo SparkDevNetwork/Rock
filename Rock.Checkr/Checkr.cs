@@ -74,6 +74,7 @@ namespace Rock.Checkr
                 int? personAliasId;
                 if ( !GetPerson( rockContext, workflow, personAttribute, out person, out personAliasId, errorMessages ) )
                 {
+                    errorMessages.Add( "Unable to get Person." );
                     UpdateWorkflowRequestStatus( workflow, rockContext, "FAIL" );
                     return false;
                 }
@@ -81,6 +82,7 @@ namespace Rock.Checkr
                 string packageName;
                 if ( !GetPackageName( rockContext, workflow, requestTypeAttribute, out packageName, errorMessages ) )
                 {
+                    errorMessages.Add( "Unable to get Package." );
                     UpdateWorkflowRequestStatus( workflow, rockContext, "FAIL" );
                     return false;
                 }
@@ -88,12 +90,14 @@ namespace Rock.Checkr
                 string candidateId;
                 if ( !CreateCandidate( person, out candidateId, errorMessages ) )
                 {
+                    errorMessages.Add( "Unable to create candidate." );
                     UpdateWorkflowRequestStatus( workflow, rockContext, "FAIL" );
                     return false;
                 }
 
                 if ( !CreateInvitation( candidateId, packageName, errorMessages ) )
                 {
+                    errorMessages.Add( "Unable to create invitation." );
                     UpdateWorkflowRequestStatus( workflow, rockContext, "FAIL" );
                     return false;
                 }
@@ -320,6 +324,9 @@ namespace Rock.Checkr
             }
 
             rockContext.SaveChanges();
+
+            List<string> workflowErrors;
+            workflowService.Process( workflow, out workflowErrors );
         }
 
         /// <summary>
