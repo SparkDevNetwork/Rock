@@ -22,13 +22,55 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class HomepageMetricSchedule : Rock.Migrations.RockMigration
+    public partial class AttendanceNotesHomepageMetricsScheduleFix : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
         public override void Up()
         {
+            AddColumn("dbo.AttendanceOccurrence", "Notes", c => c.String());
+            AddColumn("dbo.AttendanceOccurrence", "AnonymousAttendanceCount", c => c.Int());
+
+            // MP: Job Notification System Email
+            RockMigrationHelper.UpdateSystemEmail( "System", "Attendance Notification", "", "", "", "", "", "{{ Group.Name }} Attendance Summary : {{ AttendanceOccurrence.OccurrenceDate | Date:'M/d/yyyy' }}", @"
+{{ 'Global' | Attribute:'EmailHeader' }}
+<p>Group Name: {{ Group.Name }}</p>
+<p>Attendance Date: {{ AttendanceOccurrence.OccurrenceDate | Date:'M/d/yyyy' }}</p>
+<p>Entered By: {{ CurrentPerson.FullName }}</p>
+{% if AttendanceOccurrence.Notes %}
+<p>{{ AttendanceNoteLabel }}: <br/> {{ AttendanceOccurrence.Notes }}</p>
+{% endif %}
+{% assign attendeesCount = AttendanceOccurrence.Attendees | Size %}
+{% if attendeesCount > 0 %}
+<table style=""border: 1px solid #c4c4c4; border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt; width: 100%; margin-bottom: 24px;"" cellspacing=""0"" cellpadding=""4"">
+<td colspan=""2"" bgcolor=""#a6a5a5"" align=""left"" style=""color: #ffffff; padding: 4px 8px; border: 1px solid #c4c4c4;"">
+<h4>Attendees:</h4>
+</td>
+{% endif %}
+{% for attendee in AttendanceOccurrence.Attendees %}
+    {% if attendee.DidAttend != null and attendee.DidAttend == true %}
+        {% assign attended = 'X' %}
+    {% else %}
+        {% assign attended = ' ' %}
+    {% endif %}
+        <tr style=""border: 1px solid #c4c4c4;"">
+            <td colspan=""2"" bgcolor=""#a6a5a5"" align=""left"" style=""color: #ffffff; padding: 4px 8px; border: 1px solid #c4c4c4;"">
+                <p>
+                   [{{ attended }}] {{ attendee.PersonAlias.Person.FullName }}
+                </p>
+            </td>
+        </tr>
+{% endfor %}
+{% if attendeesCount > 0 %}
+</table>
+&nbsp;
+{% endif %}
+
+<p>&nbsp;</p>
+{{ 'Global' | Attribute:'EmailFooter' }}
+", Rock.SystemGuid.SystemEmail.ATTENDANCE_NOTIFICATION );
+
             Sql( @"
 INSERT INTO [dbo].[Schedule]
     ([Name]
@@ -151,7 +193,8 @@ WHERE [Guid] = 'f0a24208-f8ac-4e04-8309-1a276885f6a6'" );
         /// </summary>
         public override void Down()
         {
-
+            DropColumn("dbo.AttendanceOccurrence", "AnonymousAttendanceCount");
+            DropColumn("dbo.AttendanceOccurrence", "Notes");
         }
     }
 }
