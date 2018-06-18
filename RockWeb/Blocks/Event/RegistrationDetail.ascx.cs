@@ -674,15 +674,15 @@ namespace RockWeb.Blocks.Event
 
                     if ( person != null )
                     {
-                        if ( string.IsNullOrWhiteSpace( ebConfirmationEmail.Text ) )
+                        if ( person.Email.IsNotNullOrWhitespace() )
                         {
                             ebConfirmationEmail.Text = person.Email;
                         }
-                        if ( string.IsNullOrWhiteSpace( tbFirstName.Text ) )
+                        if ( person.NickName.IsNotNullOrWhitespace() )
                         {
                             tbFirstName.Text = person.NickName;
                         }
-                        if ( string.IsNullOrWhiteSpace( tbLastName.Text ) )
+                        if ( person.LastName.IsNotNullOrWhitespace() )
                         {
                             tbLastName.Text = person.LastName;
                         }
