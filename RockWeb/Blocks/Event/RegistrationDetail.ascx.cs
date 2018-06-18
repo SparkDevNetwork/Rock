@@ -1049,6 +1049,8 @@ namespace RockWeb.Blocks.Event
                                     registrantChanges.AddChange( History.HistoryVerb.Modify, History.HistoryChangeType.Record, string.Format( "Registrant to existing person in {0} group", group.Name ) );
                                 }
 
+
+                                groupMember.GroupMemberStatus = RegistrationTemplateState.GroupMemberStatus;
                                 registrant.GroupMemberId = groupMember.Id;
                                 rockContext.SaveChanges();
 
