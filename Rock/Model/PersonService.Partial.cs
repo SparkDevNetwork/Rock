@@ -209,7 +209,7 @@ namespace Rock.Model
             }
 
             // OK we care, but are the emails the same already
-            if ( exactMatch.Email == email )
+            if ( string.Equals( exactMatch.Email, email, StringComparison.CurrentCultureIgnoreCase ) )
             {
                 return exactMatch;
             }
