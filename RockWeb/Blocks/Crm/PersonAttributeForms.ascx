@@ -6,6 +6,37 @@
     }
 </script>
 
+<script type="text/javascript">
+    Sys.Application.add_load(function () {
+        var fixHelper = function (e, ui) {
+            ui.children().each(function () {
+                $(this).width($(this).width());
+            });
+         return ui;
+        };
+
+        $('.form-list').sortable({
+            helper: fixHelper,
+            handle: '.form-reorder',
+            containment: 'parent',
+            tolerance: 'pointer',
+            start: function (event, ui) {
+                {
+                    var start_pos = ui.item.index();
+                    ui.item.data('start_pos', start_pos);
+                }
+            },
+            update: function (event, ui) {
+                {
+                    var postbackArg = 're-order-form:' + ui.item.attr('data-key') + ';' + ui.item.index();
+                    window.location = "javascript:__doPostBack('<%=upnlContent.ClientID %>', '" + postbackArg + "')";
+                }
+            }
+        });
+    });
+
+</script>
+
 <asp:UpdatePanel ID="upnlContent" runat="server" ChildrenAsTriggers="false" UpdateMode="Conditional">
     <ContentTemplate>
 
@@ -74,9 +105,9 @@
                                         <h3 class="panel-title">Forms</h3>
                                     </div>
                                     <div class="panel-body">
-
-                                        <asp:PlaceHolder ID="phForms" runat="server" />
-
+                                        <div class="form-list ui-sortable">
+                                            <asp:PlaceHolder ID="phForms" runat="server" />
+                                        </div>
                                         <div class="pull-right">
                                             <asp:LinkButton ID="lbAddForm" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbAddForm_Click" CausesValidation="false"><i class="fa fa-plus"></i> Add Form</asp:LinkButton>
                                         </div>
