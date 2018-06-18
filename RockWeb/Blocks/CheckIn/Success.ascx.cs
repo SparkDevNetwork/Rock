@@ -27,6 +27,7 @@ using System.Web.UI.HtmlControls;
 using Rock;
 using Rock.Attribute;
 using Rock.CheckIn;
+using Rock.Utility;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.CheckIn
@@ -135,80 +136,11 @@ namespace RockWeb.Blocks.CheckIn
 
                         if ( printFromServer.Any() )
                         {
-                            Socket socket = null;
-                            string currentIp = string.Empty;
+                            var messages = ZebraPrint.PrintLabels( printFromServer );
 
-                            foreach ( var label in printFromServer
-                                .OrderBy( l => l.PersonId )
-                                .ThenBy( l => l.Order ) )
+                            foreach ( var message in messages )
                             {
-                                var labelCache = KioskLabel.Get( label.FileGuid );
-                                if ( labelCache != null )
-                                {
-                                    if ( !string.IsNullOrWhiteSpace( label.PrinterAddress ) )
-                                    {
-                                        if ( label.PrinterAddress != currentIp )
-                                        {
-                                            if ( socket != null && socket.Connected )
-                                            {
-                                                socket.Shutdown( SocketShutdown.Both );
-                                                socket.Close();
-                                            }
-
-                                            currentIp = label.PrinterAddress;
-                                            int printerPort = 9100;
-                                            var printerIp = currentIp;
-
-                                            // If the user specified in 0.0.0.0:1234 syntax then pull our the IP and port numbers.
-                                            if ( printerIp.Contains( ":" ) )
-                                            {
-                                                var segments = printerIp.Split( ':' );
-
-                                                printerIp = segments[0];
-                                                printerPort = segments[1].AsInteger();
-                                            }
-
-                                            var printerEndpoint = new IPEndPoint( IPAddress.Parse( currentIp ), printerPort );
-
-                                            socket = new Socket( AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp );
-                                            IAsyncResult result = socket.BeginConnect( printerEndpoint, null, null );
-                                            bool success = result.AsyncWaitHandle.WaitOne( 5000, true );
-                                        }
-
-                                        string printContent = labelCache.FileContent;
-                                        foreach ( var mergeField in label.MergeFields )
-                                        {
-                                            if ( !string.IsNullOrWhiteSpace( mergeField.Value ) )
-                                            {
-                                                printContent = Regex.Replace( printContent, string.Format( @"(?<=\^FD){0}(?=\^FS)", mergeField.Key ), ZebraFormatString( mergeField.Value ) );
-                                            }
-                                            else
-                                            {
-                                                // Remove the box preceding merge field
-                                                printContent = Regex.Replace( printContent, string.Format( @"\^FO.*\^FS\s*(?=\^FT.*\^FD{0}\^FS)", mergeField.Key ), string.Empty );
-                                                // Remove the merge field
-                                                printContent = Regex.Replace( printContent, string.Format( @"\^FD{0}\^FS", mergeField.Key ), "^FD^FS" );
-                                            }
-                                        }
-
-                                        if ( socket.Connected )
-                                        {
-                                            var ns = new NetworkStream( socket );
-                                            byte[] toSend = System.Text.Encoding.ASCII.GetBytes( printContent );
-                                            ns.Write( toSend, 0, toSend.Length );
-                                        }
-                                        else
-                                        {
-                                            phResults.Controls.Add( new LiteralControl( "<br/>NOTE: Could not connect to printer!" ) );
-                                        }
-                                    }
-                                }
-                            }
-
-                            if ( socket != null && socket.Connected )
-                            {
-                                socket.Shutdown( SocketShutdown.Both );
-                                socket.Close();
+                                phResults.Controls.Add( new LiteralControl( string.Format( "<br/>{0}", message ) ) );
                             }
                         }
 
@@ -229,18 +161,6 @@ namespace RockWeb.Blocks.CheckIn
         protected void lbDone_Click( object sender, EventArgs e )
         {
             NavigateToHomePage();
-        }
-
-        private string ZebraFormatString( string input, bool isJson = false )
-        {
-            if ( isJson )
-            {
-                return input.Replace( "é", @"\\82" );  // fix acute e
-            }
-            else
-            {
-                return input.Replace( "é", @"\82" );  // fix acute e
-            }
         }
 
         /// <summary>
@@ -328,7 +248,7 @@ namespace RockWeb.Blocks.CheckIn
 			    }}
             );
 	    }}
-", ZebraFormatString( jsonObject, true ) );
+", jsonObject );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "addLabelScript", script, true );
         }
 
