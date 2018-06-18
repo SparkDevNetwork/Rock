@@ -281,13 +281,9 @@
     <Compile Include="Migrations\201806151052457_AddRegistrarOptionToRegistrationTemplate.Designer.cs">
       <DependentUpon>201806151052457_AddRegistrarOptionToRegistrationTemplate.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201806151814446_AddNotesToAttendanceOccurence.cs" />
-    <Compile Include="Migrations\201806151814446_AddNotesToAttendanceOccurence.Designer.cs">
-      <DependentUpon>201806151814446_AddNotesToAttendanceOccurence.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201806152348156_HomepageMetricSchedule.cs" />
-    <Compile Include="Migrations\201806152348156_HomepageMetricSchedule.Designer.cs">
-      <DependentUpon>201806152348156_HomepageMetricSchedule.cs</DependentUpon>
+    <Compile Include="Migrations\201806181856008_AttendanceNotesHomepageMetricsScheduleFix.cs" />
+    <Compile Include="Migrations\201806181856008_AttendanceNotesHomepageMetricsScheduleFix.Designer.cs">
+      <DependentUpon>201806181856008_AttendanceNotesHomepageMetricsScheduleFix.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -3029,11 +3025,8 @@
     <EmbeddedResource Include="Migrations\201806151052457_AddRegistrarOptionToRegistrationTemplate.resx">
       <DependentUpon>201806151052457_AddRegistrarOptionToRegistrationTemplate.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201806151814446_AddNotesToAttendanceOccurence.resx">
-      <DependentUpon>201806151814446_AddNotesToAttendanceOccurence.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201806152348156_HomepageMetricSchedule.resx">
-      <DependentUpon>201806152348156_HomepageMetricSchedule.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201806181856008_AttendanceNotesHomepageMetricsScheduleFix.resx">
+      <DependentUpon>201806181856008_AttendanceNotesHomepageMetricsScheduleFix.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.resx">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
