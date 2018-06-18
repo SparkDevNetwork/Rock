@@ -1,0 +1,79 @@
+.page-background {   
+    background-color: #EBEBEB;
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/ns-hero.jpg");
+}
+
+#ternavbar-bg {
+    display: none;
+}
+
+#section-a-bg {
+    padding-top: 20px;
+    padding-right: 0;
+    padding-left: 0;
+    padding-bottom: 20px;
+}
+
+#section-b-bg {
+    display: none;
+}
+
+#section-c-bg {
+    display: none;
+}
+
+.nextsteps-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 15px;
+    box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px; 
+    border-radius: 5px;
+    margin-bottom: 20px;
+    background-color: #ffffff;
+}
+
+.ns-section-desc {
+    margin-top: 15px;
+}
+
+.ns-image {
+    margin: 0 auto;
+}
+
+.ns-header {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    margin-bottom: 15px;
+}
+
+.ns-icon {
+    margin-right: 15px;
+}
+
+.ns-header h2 {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+@media screen and (min-width: 478px) {
+    .ns-image img {
+        max-width: 350px;
+    }
+}
+
+@media screen and (min-width: 1024px) {
+    .ns-section-desc {
+        margin-top: 0;
+    }
+
+    .nextsteps-container {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .ns-image {
+        margin-right: 15px;
+    }
+}

@@ -1,0 +1,32 @@
+.page-background {
+   background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/experience/experience-hero.jpg");
+}
+
+.main-feature {
+    height: 475px;
+    padding-top: 175px;
+}
+
+#section-b-bg {
+   background: url("/Themes/church_ccv_External_v8/Assets/Images/home/experience/experience-music-bg.jpg");
+}
+
+#section-d-bg {
+   background: url("/Themes/church_ccv_External_v8/Assets/Images/home/experience/experience-grass-bg.jpg");
+}
+
+#section-e-bg {
+   display: none;
+}
+
+.experience-video img {
+    border-radius: 5px;
+}
+
+/* Mobile Styling */
+@media screen and (max-width: 500px) {
+    .main-feature {
+        height: unset;
+        padding-top: 50px;
+    }
+}

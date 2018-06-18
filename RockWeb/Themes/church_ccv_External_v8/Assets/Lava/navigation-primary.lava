@@ -1,0 +1,52 @@
+{% comment %} 
+    {% include '~~/Assets/Lava/navigation-primary.lava' %} 
+{% endcomment %}
+
+{% assign urlSegs = 'Global' | Page:'Url' | Url:'segments' %}
+{% assign navSection = urlSegs[1] | Downcase %}
+{% assign navSection = navSection | Replace:'/', '' %}
+
+{% if Page.DisplayChildPages == 'true' and Page.Pages != empty %}
+
+    <ul class="navigation-primary-items">
+        {% for childPage in Page.Pages %}
+            {% assign activeClass = '' %}
+            {% assign childPageTitle = childPage.Title | Downcase %}
+            {% case navSection %}
+                {% when 'about-us' %}
+                    {% if childPageTitle == 'about us' %}
+                        {% assign activeClass = 'active' %}
+                    {% endif %}
+                {% when 'experience' %}
+                    {% if childPageTitle == 'experience' %}
+                        {% assign activeClass = 'active' %}
+                    {% endif %}
+                {% when 'ministries' %}
+                    {% if childPageTitle == 'ministries' %}
+                        {% assign activeClass = 'active' %}
+                    {% endif %}
+                {% when 'get-involved' %}
+                    {% if childPageTitle == 'get involved' %}
+                        {% assign activeClass = 'active' %}
+                    {% endif %}
+                {% when 'locationsv2' %}
+                    {% if childPageTitle == 'locations' %}
+                        {% assign activeClass = 'active' %}
+                    {% endif %}
+                {% when 'watchv2' %}
+                    {% if childPageTitle == 'watch' %}
+                        {% assign activeClass = 'active' %}
+                    {% endif %}
+                {% when 'givingv2' %}
+                    {% if childPageTitle == 'giving' %}
+                        {% assign activeClass = 'active' %}
+                    {% endif %}
+                {% else %}
+            {% endcase %}
+
+            <li class="navigation-primary-item {{ activeClass }}">
+                <a href="{{ childPage.Url }}">{{ childPage.Title }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+{% endif %}

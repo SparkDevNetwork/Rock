@@ -8095,6 +8095,72 @@ img.mfp-img {
 }
 
 @font-face {
+    font-family: 'ccv-special-icons';
+    src:
+      url('../Assets/Fonts/ccv-special-icons.ttf?tgh8kq') format('truetype'),
+      url('../Assets/Fonts/ccv-special-icons.woff?tgh8kq') format('woff'),
+      url('../Assets/Fonts/ccv-special-icons.svg?tgh8kq') format('svg');
+    font-weight: normal;
+    font-style: normal;
+  }
+  
+  .csi {
+    /* use !important to prevent issues with browser extensions that change fonts */
+    font-family: 'ccv-special-icons' !important;
+    speak: none;
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+  
+    /* Better Font Rendering =========== */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  .csi-special-needs:before {
+    content: "\e909";
+  }
+  .csi-slt:before {
+    content: "\e900";
+  }
+  .csi-scroll-down:before {
+    content: "\e901";
+  }
+  .csi-map-marker:before {
+    content: "\e902";
+  }
+  .csi-cog:before {
+    content: "\f013";
+  }
+  .csi-gear:before {
+    content: "\f013";
+  }
+  .csi-phone:before {
+    content: "\e903";
+  }
+  .csi-twitter:before {
+    content: "\e904";
+  }
+  .csi-group:before {
+    content: "\e905";
+  }
+  .csi-caret-down:before {
+    content: "\e906";
+  }
+  .csi-location-arrow:before {
+    content: "\f124";
+  }
+  .csi-instagram:before {
+    content: "\e907";
+  }
+  .csi-facebook:before {
+    content: "\e908";
+  }
+  
+
+@font-face {
     font-family: "ccv-icons";
     src: url('../../../Plugins/church_ccv/Badges/Assets/Fonts/ccv-icons.eot');
     src: url('../../../Plugins/church_ccv/Badges/Assets/Fonts/ccv-icons.eot?#iefix') format('embedded-opentype'),url('../../../Plugins/church_ccv/Badges/Assets/Fonts/ccv-icons.woff') format('woff'),url('../../../Plugins/church_ccv/Badges/Assets/Fonts/ccv-icons.ttf') format('truetype'),url('../../../Plugins/church_ccv/Badges/Assets/Fonts/ccv-icons.svg#ccv-icons') format('svg');
@@ -9978,19 +10044,6 @@ legend {
 	outline: 0;
 }
 
-.btn-primary {
-	font-weight: normal;
-	min-width: 100px;
-	font-family: akrobat;
-}
-
-.btn-default {
-	font-weight: 600;
-	min-width: 100px;
-	border-width: 1px;
-	font-family: akrobat;
-}
-
 .control-label {
 	 font-size: 12px;
 	 font-weight: normal;
@@ -10166,146 +10219,11 @@ html,body{
     height: 100%;
 }
 
-.main-feature {
-	padding-top: 165px;
-}
-
 /*Override caret down arrow with fa-angle-down*/
 .fa-caret-down:before {
     padding-left: 6px;
     font-size: 20px;
     content: "\f107";
-}
-
-/* style for dropdown menus in header*/
-.masthead-navitems .dropdown-menu {
-    background: rgba(0,0,0,0.9);
-    border-radius: 5px 5px;
-    padding: 0px;
-    font-size: 14px;
-}
-
-.masthead-navitems .dropdown-menu li a  {
-    color: #999999;
-    padding: 3px 5px;
-}
-
-/* sytle for login block*/
-.loginstatus {
-    color: #FFFFFF;
-    font-family: akrobat;
-    font-weight: bold;
-    font-size: 14px;
-    text-transform: uppercase;
-}
-
-.loginstatus li a {
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    padding-top: unset;
-    padding-bottom: unset;
-}
-
-.loginstatus .masthead-navitem {
-    padding: 10px;
-    font-size: 14px;
-}
-
-.loginstatus .dropdown-menu {
-    font-size: 14px;
-    background: rgba(0,0,0,0.9);
-    margin-top: 52px;
-}
-
-.loginstatus .dropdown-menu li a {
-    color: #999999;
-    padding: 3px 5px;
-}
-
-.loginstatus .dropdown-menu li a:hover, .masthead-navitems .dropdown-menu li a:hover {
-	background-color: #7A1315;
-}
-
-.loginstatus li a:hover {
-    transition: .25s;
-    background-color: rgba(255, 255, 255, .15);
-    border-radius: 4px;
-    cursor: pointer;
-    min-height: 45px;
-}
-
-.announcement-bar {
-    padding-top: 5px;
-    background-color: #212121;
-    color: #FFFFFF;
-    font-weight: normal;
-    font-family: Heebo;
-    text-align: center
-}
-
-.announcement-bar a {
-    color: #999999;
-}
-
-.announcement-bar span {
-    display: block;
-}
-
-@media screen and (min-width: 1024px) {
-    .announcement-bar {
-        padding: 10px 0px;
-        margin-bottom: 5px;
-        font-size: 20px;
-    }
-
-    .announcement-bar span {
-        display: inline-block;
-        margin: 0px 5px;
-    }
-}
-
-.btn-live {
-    display: inline;
-    color: #FFFFFF;
-    margin: 0px 10px;
-    padding: 2px 12px 2px 12px;
-    background-color: #741315;
-    border: none;
-}
-
-/* Formatting for select a day campus selector */
-.contextsetter-campus-event a {
-    color: #7A1315;
-    font-family: akrobat;
-    font-weight: bold;
-    font-size: 18px;
-    margin-top: 8px;
-}
-
-.contextsetter-campus-event .navbar-nav .dropdown-menu {
-    border-radius: 5px 5px;
-    padding: 0px;
-}
-
-.contextsetter-campus-event .navbar-nav .dropdown-menu a {
-    font-size: 18px;
-    color: #7A1315;
-    margin: 0px;
-
-}
-/* Set default hover color */
-.nav .open>a, .nav .open>a:hover, .nav .open>a:focus
-{
-	background-color: rgba( 0, 0, 0, 0 );
-}
-
-/* Select A Day campus selector override */
-.contextsetter-campus-event .navbar-nav .dropdown-menu>li>a:hover, 
-.contextsetter-campus-event .navbar-nav .dropdown-menu>li>a:focus
-{
-    background-color: #7A1315;
-    color: #FFFFFF;
 }
 
 /* Defines for the inVision screens */

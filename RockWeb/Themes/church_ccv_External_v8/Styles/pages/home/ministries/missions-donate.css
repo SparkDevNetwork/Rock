@@ -1,0 +1,33 @@
+/* important needed to override giving css (need to move giving block CSS into its own file so we dont have these conflicts, instead of being in giving page css file) */
+.page-background {
+    background-color: #EBEBEB !important;
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-image-missing.jpg") !important;
+}
+
+.main-feature {
+    height: 800px !important;
+    padding-top: 350px !important;
+}
+
+#ternavbar-bg {
+    display: flex;
+}
+
+#section-b-bg {
+	background-color: #F6F6F6;
+}
+
+.navigation-tertiary-items {
+    margin-left: -15%;
+}
+
+.navigation-tertiary-item {
+    padding: 10px 20px;
+}
+
+/* fix conflict with giving page */
+.navigation-tertiary-item.active {
+    background-color: unset;
+}
+
+

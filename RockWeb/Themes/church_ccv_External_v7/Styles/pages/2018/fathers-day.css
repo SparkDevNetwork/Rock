@@ -5,14 +5,17 @@
     text-transform: uppercase;
 }
 
-.form-control, input {
+.form-control, input, select.form-control {
     border: 0;
     outline: 0;
     background: transparent;
     border-bottom: 2px solid lightgrey;
     border-radius: 0px;
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
     font-weight: 600;
     color: #fff;
+    background-color: #333333;
 }
 
 .stay-in-the-know {
@@ -79,6 +82,10 @@
     .email-field {
         margin-right: 25px;
     }
+ }
+
+ .input-group.phone-number-box {
+     width: 100%;
  }
  
  .first-name-field label, .last-name-field label, .email-field label, .phone-number-field input {

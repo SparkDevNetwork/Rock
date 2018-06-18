@@ -1,0 +1,128 @@
+
+.page-background {   
+    background-color: #EBEBEB;
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-get-involved.jpg");
+}
+
+.main-feature {
+    height: 475px;
+    padding-top: 175px;
+}
+
+#section-a-bg {
+    background-color: #F9F9F9;
+    padding: 0 15px 0 15px;
+}
+
+#section-b-bg {
+    background-color: #F9F9F9;
+	background: url("/Themes/church_ccv_External_v8/Assets/Images/strip-get-involved-groups.jpg") no-repeat;
+	background-size: cover;
+}
+
+#section-c-bg {
+    background-color: #F9F9F9;
+}
+
+#section-d-bg {
+    background-color: #F9F9F9;
+    background: url("/Themes/church_ccv_External_v8/Assets/Images/get-involved-missions.jpg") no-repeat;
+	background-size: cover;
+}
+
+#section-e-bg {
+   display: none;
+}
+
+/* Events Section */
+.get-involved-events-row {
+    margin-top: 30px;
+}
+
+/* Mobile Styling */
+@media screen and (max-width: 500px) { 
+    .main-feature {
+        height: unset;
+        padding-top: 50px;
+    }
+    
+    .get-involved-events-row {
+        margin-top: 0;
+    }
+
+    .event-cards-header {
+        flex-direction: column;
+        align-items: flex-start;
+        margin-left: 0;
+    }
+
+    .event-card {
+        margin: 5px 0;
+    }
+}
+/* End Events Section */
+
+.flex-wrap {
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
+    align-items: center;
+}
+
+.group-video {
+    width: 100%;
+    margin-bottom: 25px;
+}
+
+@media screen and (min-width: 900px) { 
+    .flex-wrap {
+        flex-direction: row;
+    }
+
+    .group-info {
+        max-width: 40%;
+    }
+    
+    .group-video {
+        width: 60%;
+        margin-left: 25px;
+    }
+}
+
+.event-card .image img {
+    object-fit: cover;
+ }
+
+.prayer-request input,
+.prayer-request textarea {
+    background-color: #eeeeee;
+    border-bottom: unset;
+    border: unset;
+    color: #333333;
+}
+
+.prayer-request textarea::placeholder { 
+    color: #333333;
+ }
+
+ .prayer-request-override {
+    flex-direction: column;    
+}
+
+.info.prayer-request-info-override  {
+    max-width: unset;
+}
+
+ @media screen and (min-width: 900px) { 
+    .prayer-request-info-override {
+        width: 500px;
+    }
+
+    .prayer-request-override {
+        flex-direction: row;
+    }
+   
+    .prayer-request-video-override {
+        width: unset;
+    }
+}

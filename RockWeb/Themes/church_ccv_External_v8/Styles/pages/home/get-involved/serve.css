@@ -1,0 +1,87 @@
+.page-background {   
+    background-color: #EBEBEB;
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-image-missing.jpg");
+}
+
+#ternavbar-bg {
+    display: none;
+}
+
+#section-a-bg {
+   background-color: #ebebeb;
+   padding-top: 20px;
+   padding-bottom: 20px;
+}
+
+#section-b-bg {
+    background-color: #ebebeb;
+}
+
+#section-c-bg {
+	background-color: #f9f9f9;
+}
+
+#section-d-bg {
+   display: none;
+}
+
+#section-e-bg {
+   display: none;
+}
+
+.event-cards-row {
+   flex-wrap: wrap;
+   justify-content: left;
+   margin: 0 auto;
+}
+
+@media screen and (min-width: 1025px) {
+    .event-cards-row {
+        justify-content: center;
+    }
+}
+
+.event-card {
+   width: 350px;
+   height: 600px;
+   margin-bottom: 25px;
+   justify-content: flex-start;
+}
+
+@media screen and (min-width: 380px) {
+    .event-card {
+        height: 500px;
+    }
+}
+
+.event-card .image img {
+    object-fit: cover;
+ }
+
+ .stars-override {
+     height: 400px;
+ }
+
+ .stars-override .image img {
+     object-fit: contain;
+ }
+
+ .control-wrapper textarea {
+    background-color: #eeeeee;
+    border-bottom: unset;
+    border: 1px solid #dddddd;
+    color: #333333;
+}
+
+.area-of-interest {
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+.serving-sign-up {
+    padding: 20px;
+    box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px; 
+    border-radius: 5px;
+    background-color: #ffffff;
+    width: 86%;
+}

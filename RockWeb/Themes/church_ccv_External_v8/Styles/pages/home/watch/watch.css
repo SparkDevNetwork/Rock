@@ -1,0 +1,40 @@
+
+.page-background {
+    background-size: cover;
+    background-position: center top;
+    background-color: #000;
+    margin: auto;
+}
+
+.main-feature {
+    height: 475px;
+    padding-top: 175px;
+}
+
+/* Mobile Styling */
+@media screen and (max-width: 500px) {
+    .main-feature {
+        height: unset;
+        padding-top: 50px;
+    }
+}
+
+/* Override Theme.css */
+@media screen and (max-width: 800px) {
+    #section-a-bg {
+        padding-top: 75px;
+    }
+}
+
+.main-feature {
+    padding-top: 100px;
+}
+
+.masthead {
+    background-color: black;
+}
+
+#section-b-bg {
+	background-color: #ffffff;
+}
+

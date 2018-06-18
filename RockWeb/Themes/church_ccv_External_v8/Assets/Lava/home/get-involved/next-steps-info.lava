@@ -1,0 +1,164 @@
+<div class="container">
+    <div class="nextsteps-container">
+        <div class="ns-image">
+            <img class="img img-responsive" src="~~/Assets/Images/home/get-involved/ns-ad-starting-point.png"/>
+        </div>
+        <div class="ns-section-desc">
+            <div class="ns-header">
+                <div class="ns-icon">
+                    <img style="width: 50px;" src="~~/Assets/Images/home/get-involved/ns-icon-starting-point.png"/>
+                </div>
+                <h2>STARTING POINT</h2>
+            </div>
+            <p>Starting Point will give you a sneak peek into the basic beliefs and practices of CCV, equip you with the essentials of the Christian faith, 
+                and show you opportunities where you can get involved. This is your first step in getting connected with CCV and a prerequisite to becoming a member.
+            </p>
+            <p>
+                <a href="next-steps/starting-point" class="btn btn-default">Learn More</a>
+                <a href="next-steps/starting-point-kids" class="btn btn-default">Starting Point For Kids</a>
+            </p>
+        </div>
+    </div>
+
+    <div class="nextsteps-container">
+        <div class="ns-image">
+            <img class="img img-responsive" src="~~/Assets/Images/home/get-involved/ns-ad-baptism.png"/>
+        </div>
+        <div class="ns-section-desc">
+            <div class="ns-header">
+                <div class="ns-icon">
+                    <img style="width: 50px;" src="~~/Assets/Images/home/get-involved/ns-icon-baptism.png"/>
+                </div>
+                <h2>BAPTISM</h2>
+            </div>
+            <p>If you've made a commitment to Christ, it's time to take the next step and make your decision known. Baptism is the best way to express your faith and reflect your life change. 
+                Find out more about baptism through Starting Point, register online or contact your associate pastor.</p>
+            <p>
+                <a href="next-steps/baptism" class="btn btn-default">Learn More</a>
+            </p>
+        </div>
+    </div>
+
+    <div class="nextsteps-container">
+        <div class="ns-image">
+            <img class="img img-responsive" src="~~/Assets/Images/home/get-involved/ns-ad-worship.png"/>
+        </div>
+        <div class="ns-section-desc">
+            <div class="ns-header">
+                <div class="ns-icon">
+                    <img style="width: 50px;" src="~~/Assets/Images/home/get-involved/ns-icon-worship.png"/>
+                </div>
+                <h2>WORSHIP</h2>
+            </div>
+            <p>CCV is one church in many locations. Find the campus closest to home and join the family by attending regularly. Our exciting weekend programs for all ages are experiences you won't want to miss.
+            </p>
+            <p>
+                <a href="/locationsv2" class="btn btn-default">Locations & Times</a>
+                <a href="https://www.bible.com/reading-plans" class="btn btn-default">Bible Reading</a>
+            </p>
+        </div>
+    </div>
+
+    <div class="nextsteps-container">
+        <div class="ns-image">
+            <img class="img img-responsive" src="~~/Assets/Images/home/get-involved/ns-ad-connect.png"/>
+        </div>
+        <div class="ns-section-desc">
+            <div class="ns-header">
+                <div class="ns-icon">
+                    <img style="width: 50px;" src="~~/Assets/Images/home/get-involved/ns-icon-connect.png"/>
+                </div>
+                <h2>CONNECT</h2>
+            </div>
+            <p>
+                Life was not meant to be lived alone. Gather weekly with people to build a community and impact it for the better. At CCV, Groups are vital to our church. They provide a sense of connection and security as we all tackle life together. Our Groups draw out the relevance of Biblical principles discussed in the weekend services.
+            </p>
+            <p>
+                <a href="/get-involved/#ccv-groups-external" class="btn btn-default">Learn More</a>
+                <a href="/get-involved/next-steps/connect/group-search" class="btn btn-default">Find A Group</a>
+            </p>
+        </div>
+    </div>
+
+    <div class="nextsteps-container">
+        <div class="ns-image">
+            <img class="img img-responsive" src="~~/Assets/Images/home/get-involved/ns-ad-serve.png"/>
+        </div>
+        <div class="ns-section-desc">
+            <div class="ns-header">
+                <div class="ns-icon">
+                    <img style="width: 50px;" src="~~/Assets/Images/home/get-involved/ns-icon-serve.png"/>
+                </div>
+                <h2>SERVE</h2>
+            </div>
+            <p>
+                Serving others is one of the most effective ways to live out your faith. In a world focused on personal gain, there is perhaps no greater way to show others what a life devoted to Christ is about. Sign up today and experience first-hand the impact our volunteer teams have on our local, national and international ministry.
+            </p>
+            <p>
+                <a href="/get-involved/next-steps/serve" class="btn btn-default">Serve at CCV</a>
+                <a href="/about-us/missions" class="btn btn-default">Serve Globally</a>
+            </p>
+        </div>
+    </div>
+
+    <div class="nextsteps-container">
+        <div class="ns-image">
+            <img class="img img-responsive" src="~~/Assets/Images/home/get-involved/ns-ad-give.png"/>
+        </div>
+        <div class="ns-section-desc">
+            <div class="ns-header">
+                <div class="ns-icon">
+                    <img style="width: 50px;" src="~~/Assets/Images/home/get-involved/ns-icon-give.png"/>
+                </div>
+                <h2>GIVE</h2>
+            </div>
+            <p>
+                For Christians, tithing (a word meaning ‘tenth’) is the starting point. Tithing is giving the first 10% of our income back to the local church. If you call CCV your home, we encourage you to give generously, knowing that your money is being used to support the mission of Jesus Christ – both here in the Valley, and around the world.
+            </p>
+            <p>
+                <a href="/givev2" class="btn btn-default">Learn More</a>
+            </p>
+        </div>
+    </div>
+
+    <div class="nextsteps-container">
+        <div class="ns-image">
+            <img class="img img-responsive" src="~~/Assets/Images/home/get-involved/ns-ad-share.png"/>
+        </div>
+        <div class="ns-section-desc">
+            <div class="ns-header">
+                <div class="ns-icon">
+                    <img style="width: 50px;" src="~~/Assets/Images/home/get-involved/ns-icon-share.png"/>
+                </div>
+                <h2>SHARE</h2>
+            </div>
+            <p>
+                As Christians, we are called to share our story so that others might know the saving grace of Christ. We each have a story and we want to help you tell yours. Please share with us how God has changed your life. Your story just might be the catalyst that will lead someone else to Christ.
+            </p>
+            <p>
+                <a href="/get-involved/next-steps/share-story" class="btn btn-default">SHARE YOUR STORY</a>
+            </p>
+        </div>
+    </div>
+
+    <div class="nextsteps-container">
+        <div class="ns-image">
+            <img class="img img-responsive" src="~~/Assets/Images/home/get-involved/ns-ad-coach.png"/>
+        </div>
+        <div class="ns-section-desc">
+            <div class="ns-header">
+                <div class="ns-icon">
+                    <img style="width: 50px;" src="~~/Assets/Images/home/get-involved/ns-icon-coach.png"/>
+                </div>
+                <h2>COACH</h2>
+            </div>
+            <p>
+                CCV Coaches are trained individuals within the church whose sole responsibility is to help you determine your Next Steps at CCV.
+            </p>
+            <p>
+                <a href="/get-involved/next-steps/coach-request?Whattypeofcoaching=Request%20a%20Coach" class="btn btn-default">REQUEST A COACH</a>
+                <a href="/get-involved/next-steps/coach-request?Whattypeofcoaching=Become%20a%20Coach" class="btn btn-default">BECOME A COACH</a>
+            </p>
+        </div>
+    </div>
+</div>

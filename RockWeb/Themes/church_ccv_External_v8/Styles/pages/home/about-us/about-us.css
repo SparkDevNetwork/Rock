@@ -1,0 +1,36 @@
+
+.page-background { 
+   background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-about-us.jpg");
+   background-color: white;
+}
+
+.main-feature {
+    height: 475px;
+    padding-top: 175px;
+}
+
+#ternavbar-bg {
+    display: none;
+}
+
+#section-b-bg {
+   background: url("/Themes/church_ccv_External_v8/Assets/Images/home/about-us/about-us-our-history-bg.jpg");
+}
+
+#section-d-bg {
+    background: url("/Themes/church_ccv_External_v8/Assets/Images/home/about-us/about-us-leadership-bg.jpg") no-repeat;
+    background-size: contain;
+    background-color: #000000;
+}
+
+#section-e-bg {
+    display: none;
+}
+
+/* Mobile Styling */
+@media screen and (max-width: 500px) {
+    .main-feature {
+        height: unset;
+        padding-top: 50px;
+    }
+}

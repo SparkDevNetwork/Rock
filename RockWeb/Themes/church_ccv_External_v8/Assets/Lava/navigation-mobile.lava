@@ -1,0 +1,53 @@
+{% comment %} 
+    {% include '~~/Assets/Lava/navigation-mobile.lava' %} 
+{% endcomment %}
+
+<div class="navigation-mobile-title">
+    Menu<button class="mdi mdi-close navigation-mobile-close" type="button" onClick="toggleNavbar(false);"></button>
+</div>
+
+<ul class="navigation-mobile-items">
+    {% if CurrentPerson %}
+        <li>
+            <div class="dropdown">
+                <button class="dropdown-toggle navigation-mobile-item" type="button" data-toggle="dropdown" style="border: 0px;">Dashboard<b class="fa fa-caret-down"></b></button>
+                <ul class="dropdown-menu">
+                    <li><a class="navigation-mobile-item" href="/dashboardv2">Dashboard</a></li>
+                    <li><a class="navigation-mobile-item" href="/dashboard/profile">Profile</a></li>
+                    <li><a class="navigation-mobile-item" href="/dashboard/profile/manage-automated-giving">Manage Automated Giving</a></li>
+                    <li><a class="navigation-mobile-item" href="/dashboard/profile/manage-payment-accounts">Manage Payment Accounts</a></li>
+                    <li><a class="navigation-mobile-item" href="/dashboard/profile/giving-history">Giving History</a></li>
+                </ul>
+            <div>
+        </li>
+    {% endif %}
+
+    {% if Page.DisplayChildPages == 'true' and Page.Pages != empty %}
+        {% for childPage in Page.Pages %}
+            {% if childPage.Pages != empty and childPage.Title != 'Locations' %}
+                <li>
+                    <div class="dropdown">
+                        <button class="dropdown-toggle navigation-mobile-item" type="button" data-toggle="dropdown" style="border: 0px;">{{ childPage.Title }}<b class="fa fa-caret-down"></b></button>
+                        <ul class="dropdown-menu">
+                            <li><a class="navigation-mobile-item" href="{{ childPage.Url }}">{{ childPage.Title }}</a></li>
+                            {% for grandchildPage in childPage.Pages %}
+                                <li><a class="navigation-mobile-item" href="{{ grandchildPage.Url }}">{{ grandchildPage.Title }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </li>
+            {% else %}
+                <li><a class="navigation-mobile-item" href="{{ childPage.Url }}">{{ childPage.Title }}</a></li>
+            {% endif %}
+        {% endfor %}
+
+    {% endif %}
+
+    {% if CurrentPerson %}
+        <li><a class="navigation-mobile-item" onclick="logout();">Logout</a></li>
+    {% else %}
+        <li><a class="navigation-mobile-item" href="/registerv2">Register</a></li>
+        <li><a class="navigation-mobile-item" href="/login">Login</a></li>
+    {% endif %}
+</ul>
+

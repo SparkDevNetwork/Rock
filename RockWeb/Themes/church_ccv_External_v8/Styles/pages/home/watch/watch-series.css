@@ -1,0 +1,27 @@
+
+.page-background {
+    background-color: #000;
+}
+
+/* Override Theme.css */
+@media screen and (max-width: 1000px) {
+    .main-feature {
+        display: block;
+    }
+}
+
+.masthead {
+    background-color: black;
+}
+
+.main-feature {
+    padding-top: 100px;
+}
+
+#section-a-bg {
+	background-color: #f9f9f9;
+}
+
+#section-b-bg {
+	background-color: #ffffff;
+}

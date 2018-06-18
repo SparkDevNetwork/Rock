@@ -30,6 +30,7 @@
   <script src="<%# ResolveRockUrl("~/Scripts/jquery-1.12.4.min.js") %>"></script>
   <script src="<%# ResolveRockUrl("~~/Scripts/min/plugins.min.js", true) %>" ></script>
   <script src="<%# ResolveRockUrl("~~/Scripts/min/main.min.js", true) %>" ></script>
+  <script type="text/javascript" src="/Themes/church_ccv_External_v8/Scripts/ui-effect-navbar.js?v=2"></script>
 
   <!-- Set the viewport width to device width for mobile -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">

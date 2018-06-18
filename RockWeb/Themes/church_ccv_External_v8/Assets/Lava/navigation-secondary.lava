@@ -1,0 +1,56 @@
+{% comment %} 
+    {% include '~~/Assets/Lava/navigation-secondary.lava' %} 
+{% endcomment %}
+
+{% if Page.DisplayChildPages == 'true' and Page.Pages != empty %}
+
+    <div class="navigation-secondary-desktop">
+        <ul class="navigation-secondary-items">
+            {% for childPage in Page.Pages %}      
+                {% assign activeClass = '' %}
+                {% if childPage.Current == 'true' %}
+                    {% assign activeClass = 'active' %}
+                {% endif%}
+
+                {% comment %} Next Section is used for highlighting missions when on their sub pages {% endcomment %}
+                {% if childPage.Title == 'Missions' or childPage.Title == 'Next Steps' %}
+                    {% assign urlSegs = 'Global' | Page:'Url' | Url:'segments' %}
+                    {% assign urlSegsSize = urlSegs | Size %}
+                    {% assign navSection = '' %}
+                    {% if urlSegsSize > 2 %}
+                        {% assign navSection = urlSegs[2] | Downcase %}
+                        {% assign navSection = navSection | Replace:'/', '' %}
+                    {% endif %}
+                    {% if navSection == 'missions' or navSection == 'next-steps' %}
+                        {% assign activeClass = 'active' %}
+                    {% endif%}
+                {% endif %}
+
+                <li class="navigation-secondary-item {{ activeClass }}">
+                    <a href="{{ childPage.Url }}">{{ childPage.Title }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="navigation-secondary-mobile">
+        <div class="navigation-secondary-mobile-dropdown">
+            <button class="dropdown-toggle" type="button" data-toggle="dropdown" style="border: 0px;">Navigate<b class="fa fa-caret-down"></b></button>
+            <ul class="dropdown-menu">
+                {% for childPage in Page.Pages %}
+                    {% assign activeClass = '' %}
+                    
+                    {% if childPage.Current == 'true' %}
+                        {% assign activeClass = 'active' %}
+                    {% endif%}
+
+                    <li class="navigation-secondary-mobile-item {{ activeClass }}">
+                        <a href="{{ childPage.Url }}">{{ childPage.Title }}</a>
+                    </li>
+
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+{% endif %}

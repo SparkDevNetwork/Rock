@@ -1,0 +1,55 @@
+
+.page-background { 
+   background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-image-missing.jpg");
+   background-color: white;
+}
+
+#ternavbar-bg {
+    display: none;
+}
+
+#section-b-bg {
+   background-color: #ffffff;
+}
+
+#section-d-bg {
+    display: none;
+}
+
+#section-e-bg {
+    display: none;
+}
+
+.storyCard {
+   background-color: rgb(255, 255, 255);
+   box-sizing: border-box;
+   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+   box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px;
+   z-index: 1;
+   margin-bottom: 2em;
+   transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
+   border-radius: 5px;
+   padding: 20px;
+}
+
+@media only screen and (min-width: 1200px) {
+   .storyCard {
+      padding-left: 15px;
+      padding-right: 15px;
+   }
+}
+
+.beliefs {
+   min-height: 0px;
+}
+
+@media only screen and (min-width: 1200px) {
+   .beliefs {
+      min-height: 375px;
+      width: 30%;
+      
+      padding-left: 15px;
+      padding-right: 15px;
+      margin: 15px;
+   }
+}

@@ -1,0 +1,108 @@
+
+.page-background {   
+    background-color: #EBEBEB;
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-image-missing.jpg");
+}
+
+#section-b-bg {
+    background-color: #FFFFFF;
+}
+
+#section-d-bg {
+    background-color: #999999;
+}
+
+#section-e-bg {
+   display: none;
+}
+
+.open-positions-section {
+    text-align: center;
+}
+
+.culture-features {
+    display: flex;
+    flex-direction: column;
+}
+
+@media screen and (min-width: 992px) {
+    .culture-features {
+        flex-direction: row;
+    }
+
+    .feature {
+        padding: 15px;
+        max-width: 400px;
+    }
+}
+
+@media screen and (min-width: 1200px) {
+    .culture-features {
+        justify-content: flex-start;
+    }
+}
+
+.culture-images {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+
+    justify-content: center;
+}
+
+.culture-images .multi {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.culture-images img {
+    padding: 10px;
+    object-fit: cover;
+}
+
+@media screen and (max-width: 568px) {
+    .culture-images {
+        flex-direction: column;
+    }
+    .culture-images .multi {
+        flex-direction: column;
+    }
+
+    .culture-images img {
+        object-fit: contain;
+    }
+
+    .wide-img-only {
+        display: none;
+    }
+}
+
+.graphicSection {
+    padding-top: 50px;
+    padding-bottom: 50px;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    line-height: 2;
+    font-size: 16px;
+}
+
+#submit-resume-btn {
+    width: 128px;
+    height: 48px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+@media screen and (min-width: 992px) {
+    .graphicSection {
+        flex-direction: row;
+    }
+    
+    .graphicSection p {
+        width: 75%;
+    }
+}

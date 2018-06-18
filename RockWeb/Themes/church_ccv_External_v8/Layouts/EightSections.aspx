@@ -35,12 +35,10 @@
                 </div>
             </div>
 			
-            <div class="row" id="section-a-main-container">
+            <div class="row">
                 <div id="section-a-bg" class="col-md-12">
 						<Rock:Zone Name="Section A" runat="server" />
                 </div>
-                <!-- <div id="section-a-parallax" class="col-md-12">
-                    </div> -->
             </div>
 			
 			   <div class="row">
