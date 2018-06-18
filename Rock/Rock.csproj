@@ -1672,6 +1672,7 @@
     <Compile Include="Utility\Settings\DataAutomation\UpdatePersonConnectionStatus.cs" />
     <Compile Include="Utility\Settings\DataAutomation\UpdateFamilyCampus.cs" />
     <Compile Include="Utility\TextToWorkflow.cs" />
+    <Compile Include="Utility\ZebraPrint.cs" />
     <Compile Include="Web\Cache\AttributeCache.cs" />
     <Compile Include="Web\Cache\AttributeValueCache.cs" />
     <Compile Include="Web\Cache\BlockCache.cs" />
