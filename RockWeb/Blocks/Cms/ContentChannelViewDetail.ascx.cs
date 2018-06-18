@@ -57,6 +57,7 @@ Guid - ContentChannelItem Guid
 {{ Item.Content }}" )]
 
     [IntegerField( "Output Cache Duration", "Number of seconds to cache the resolved output. Only cache the output if you are not personalizing the output based on current user, current page, or any other merge field value.", required: false, key: "OutputCacheDuration", category: "CustomSetting" )]
+    [IntegerField( "Item Cache Duration", "Number of seconds to cache the content item specified by the parameter.", false, 3600, "CustomSetting", 0, "ItemCacheDuration" )]
     [BooleanField( "Set Page Title", "Determines if the block should set the page title with the channel name or content item.", category: "CustomSetting" )]
 
     [BooleanField( "Log Interactions", category: "CustomSetting" )]
@@ -83,6 +84,11 @@ Guid - ContentChannelItem Guid
         /// The output cache key prefix
         /// </summary>
         private const string OUTPUT_CACHE_KEY_PREFIX = "Output_";
+
+        /// <summary>
+        /// The item cache key prefix
+        /// </summary>
+        private const string ITEM_CACHE_KEY_PREFIX = "Item_";
 
         /// <summary>
         /// The pagetitle cache key prefix
@@ -187,6 +193,7 @@ Guid - ContentChannelItem Guid
             tbContentChannelQueryParameter.Text = this.GetAttributeValue( "ContentChannelQueryParameter" );
             ceLavaTemplate.Text = this.GetAttributeValue( "LavaTemplate" );
             nbOutputCacheDuration.Text = this.GetAttributeValue( "OutputCacheDuration" );
+            nbItemCacheDuration.Text = this.GetAttributeValue( "ItemCacheDuration" );
             cbSetPageTitle.Checked = this.GetAttributeValue( "SetPageTitle" ).AsBoolean();
 
             cbLogInteractions.Checked = this.GetAttributeValue( "LogInteractions" ).AsBoolean();
@@ -234,6 +241,7 @@ Guid - ContentChannelItem Guid
             this.SetAttributeValue( "ContentChannelQueryParameter", tbContentChannelQueryParameter.Text );
             this.SetAttributeValue( "LavaTemplate", ceLavaTemplate.Text );
             this.SetAttributeValue( "OutputCacheDuration", nbOutputCacheDuration.Text );
+            this.SetAttributeValue( "ItemCacheDuration", nbItemCacheDuration.Text );
             this.SetAttributeValue( "SetPageTitle", cbSetPageTitle.Checked.ToString() );
             this.SetAttributeValue( "LogInteractions", cbLogInteractions.Checked.ToString() );
             this.SetAttributeValue( "WriteInteractionOnlyIfIndividualLoggedIn", cbWriteInteractionOnlyIfIndividualLoggedIn.Checked.ToString() );
@@ -424,14 +432,27 @@ Guid - ContentChannelItem Guid
         /// Gets the content channel item using the first page parameter or ContentChannelQueryParameter
         /// </summary>
         /// <returns></returns>
-        private static ContentChannelItem GetContentChannelItem( string contentChannelItemKey )
+        private ContentChannelItem GetContentChannelItem( string contentChannelItemKey )
         {
+            int? itemCacheDuration = GetAttributeValue( "ItemCacheDuration" ).AsIntegerOrNull();
+            
             ContentChannelItem contentChannelItem = null;
 
             if ( string.IsNullOrEmpty( contentChannelItemKey ) )
             {
                 // nothing specified, so don't show anything
                 return null;
+            }
+
+            string itemCacheKey = ITEM_CACHE_KEY_PREFIX + contentChannelItemKey;
+
+            if ( itemCacheDuration.HasValue && itemCacheDuration.Value > 0 )
+            {
+                contentChannelItem = GetCacheItem( itemCacheKey ) as ContentChannelItem;
+                if ( contentChannelItem != null )
+                {
+                    return contentChannelItem;
+                }
             }
 
             // look up the ContentChannelItem from either the Id, Guid, or Slug depending on the datatype of the ContentChannelQueryParameter value
@@ -450,6 +471,14 @@ Guid - ContentChannelItem Guid
             else
             {
                 contentChannelItem = new ContentChannelItemService( rockContext ).Queryable().Where( a => a.ContentChannelItemSlugs.Any( s => s.Slug == contentChannelItemKey ) ).FirstOrDefault();
+            }
+
+            if ( contentChannelItem != null && itemCacheDuration.HasValue && itemCacheDuration.Value > 0 )
+            {
+                var cacheKeys = GetCacheItem( CACHEKEYS_CACHE_KEY ) as HashSet<string> ?? new HashSet<string>();
+                cacheKeys.Add( itemCacheKey );
+                AddCacheItem( CACHEKEYS_CACHE_KEY, cacheKeys );
+                AddCacheItem( itemCacheKey, contentChannelItem, itemCacheDuration.Value );
             }
 
             return contentChannelItem;
