@@ -208,22 +208,22 @@ namespace RockWeb.Blocks.Examples
         /// <summary>
         /// The marital status DefinedType
         /// </summary>
-        DefinedType _maritalStatusDefinedType = null;
+        CacheDefinedType _maritalStatusDefinedType = null;
 
         /// <summary>
         /// The small group topic DefinedType
         /// </summary>
-        DefinedType _smallGroupTopicDefinedType = null;
+        CacheDefinedType _smallGroupTopicDefinedType = null;
 
         /// <summary>
         /// The record status reason DefinedType
         /// </summary>
-        DefinedType _recordStatusReasonDefinedType = null;
+        CacheDefinedType _recordStatusReasonDefinedType = null;
 
         /// <summary>
         /// The suffix DefinedType
         /// </summary>
-        DefinedType _suffixDefinedType = null;
+        CacheDefinedType _suffixDefinedType = null;
 
         #endregion
 
@@ -470,11 +470,10 @@ namespace RockWeb.Blocks.Examples
             RockContext rockContext = new RockContext();
             rockContext.Configuration.AutoDetectChangesEnabled = false;
 
-            DefinedTypeService definedTypeService = new DefinedTypeService( rockContext );
-            _maritalStatusDefinedType = definedTypeService.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() );
-            _smallGroupTopicDefinedType = definedTypeService.Get( Rock.SystemGuid.DefinedType.SMALL_GROUP_TOPIC.AsGuid() );
-            _recordStatusReasonDefinedType = definedTypeService.Get( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON.AsGuid() );
-            _suffixDefinedType = definedTypeService.Get( Rock.SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid() );
+            _maritalStatusDefinedType = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() );
+            _smallGroupTopicDefinedType = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.SMALL_GROUP_TOPIC.AsGuid() );
+            _recordStatusReasonDefinedType = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON.AsGuid() );
+            _suffixDefinedType = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid() );
 
             var elemFamilies = xdoc.Element( "data" ).Element( "families" );
             var elemGroups = xdoc.Element( "data" ).Element( "groups" );
@@ -1604,12 +1603,12 @@ namespace RockWeb.Blocks.Examples
                 if ( elemGroup.Attribute( "studyTopic" ) != null )
                 {
                     var topic = elemGroup.Attribute( "studyTopic" ).Value;
-                    DefinedValue smallGroupTopicDefinedValue = _smallGroupTopicDefinedType.DefinedValues.FirstOrDefault( a => a.Value == topic );
+                    CacheDefinedValue smallGroupTopicDefinedValue = _smallGroupTopicDefinedType.DefinedValues.FirstOrDefault( a => a.Value == topic );
 
                     // add it as new if we didn't find it.
                     if ( smallGroupTopicDefinedValue == null )
                     {
-                        smallGroupTopicDefinedValue = AddDefinedTypeValue( topic, _smallGroupTopicDefinedType, rockContext );
+                        smallGroupTopicDefinedValue = AddDefinedTypeValue( topic, _smallGroupTopicDefinedType );
                     }
 
                     group.SetAttributeValue( "Topic", smallGroupTopicDefinedValue.Guid.ToString() );
@@ -1726,27 +1725,28 @@ namespace RockWeb.Blocks.Examples
         /// </summary>
         /// <param name="stringValue">the string value of the new defined value</param>
         /// <param name="definedType">a defined type to which the defined value will be added.</param>
-        /// <param name="rockContext"></param>
         /// <returns></returns>
-        private DefinedValue AddDefinedTypeValue( string stringValue, DefinedType definedType, RockContext rockContext )
+        private CacheDefinedValue AddDefinedTypeValue( string stringValue, CacheDefinedType definedType )
         {
-            DefinedValueService definedValueService = new DefinedValueService( rockContext );
-            DefinedTypeService definedTypeService = new DefinedTypeService( rockContext );
+            using ( var rockContext = new RockContext() )
+            {
+                DefinedValueService definedValueService = new DefinedValueService( rockContext );
 
-            DefinedValue definedValue = new DefinedValue {
-                Id = 0,
-                IsSystem = false,
-                Value = stringValue,
-                Description = string.Empty,
-                CreatedDateTime = RockDateTime.Now,
-                DefinedTypeId = definedType.Id
-            };
+                DefinedValue definedValue = new DefinedValue
+                {
+                    Id = 0,
+                    IsSystem = false,
+                    Value = stringValue,
+                    Description = string.Empty,
+                    CreatedDateTime = RockDateTime.Now,
+                    DefinedTypeId = definedType.Id
+                };
 
-            definedValueService.Add( definedValue );
-            rockContext.ChangeTracker.DetectChanges();
-            rockContext.SaveChanges( disablePrePostProcessing: true );
+                definedValueService.Add( definedValue );
+                rockContext.SaveChanges();
 
-            return definedValue;
+                return CacheDefinedValue.Get( definedValue.Id );
+            }
         }
 
         /// <summary>
@@ -2627,7 +2627,7 @@ namespace RockWeb.Blocks.Examples
                     person.FirstName = personElem.Attribute( "firstName" ).Value.Trim();
                     if ( personElem.Attribute( "suffix") != null )
                     {
-                        person.SuffixValueId = GetOrAddDefinedValueId( personElem.Attribute( "suffix" ).Value.Trim(), _suffixDefinedType, rockContext );
+                        person.SuffixValueId = GetOrAddDefinedValueId( personElem.Attribute( "suffix" ).Value.Trim(), _suffixDefinedType );
                     }
 
                     if ( personElem.Attribute( "nickName" ) != null )
@@ -2705,7 +2705,7 @@ namespace RockWeb.Blocks.Examples
 
                     if ( personElem.Attribute( "maritalStatus" ) != null )
                     {
-                        person.MaritalStatusValueId = GetOrAddDefinedValueId( personElem.Attribute( "maritalStatus" ).Value, _maritalStatusDefinedType, rockContext );
+                        person.MaritalStatusValueId = GetOrAddDefinedValueId( personElem.Attribute( "maritalStatus" ).Value, _maritalStatusDefinedType );
                     }
 
                     if ( personElem.Attribute( "anniversaryDate" ) != null )
@@ -2722,7 +2722,7 @@ namespace RockWeb.Blocks.Examples
                             person.RecordStatusValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() ).Id;
                             if ( personElem.Attribute( "recordStatusReason") != null )
                             {
-                                person.RecordStatusReasonValueId = GetOrAddDefinedValueId( personElem.Attribute( "recordStatusReason" ).Value.Trim(), _recordStatusReasonDefinedType, rockContext );
+                                person.RecordStatusReasonValueId = GetOrAddDefinedValueId( personElem.Attribute( "recordStatusReason" ).Value.Trim(), _recordStatusReasonDefinedType );
                                 if ( person.RecordStatusReasonValueId == CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED.AsGuid() ).Id )
                                 {
                                     person.IsDeceased = true;
@@ -2865,15 +2865,16 @@ namespace RockWeb.Blocks.Examples
         /// </summary>
         /// <param name="theValue">The value.</param>
         /// <param name="aDefinedType">a definedTypeCache.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns>the id of the defined value</returns>
-        private int GetOrAddDefinedValueId( string theValue, DefinedType aDefinedType, RockContext rockContext )
+        /// <returns>
+        /// the id of the defined value
+        /// </returns>
+        private int GetOrAddDefinedValueId( string theValue, CacheDefinedType aDefinedType )
         {
-            DefinedValue theDefinedValue = aDefinedType.DefinedValues.FirstOrDefault( a => String.Equals( a.Value, theValue, StringComparison.CurrentCultureIgnoreCase ) );
+            CacheDefinedValue theDefinedValue = aDefinedType.DefinedValues.FirstOrDefault( a => String.Equals( a.Value, theValue, StringComparison.CurrentCultureIgnoreCase ) );
             // add it as new if we didn't find it.
             if ( theDefinedValue == null )
             {
-                theDefinedValue = AddDefinedTypeValue( theValue, aDefinedType, rockContext );
+                theDefinedValue = AddDefinedTypeValue( theValue, aDefinedType );
             }
 
             return theDefinedValue.Id;
