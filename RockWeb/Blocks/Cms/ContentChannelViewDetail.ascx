@@ -94,6 +94,7 @@ Integer - ContentChannelItem Id
 String - ContentChannelItem Slug
 Guid - ContentChannelItem Guid" />
                         <Rock:NumberBox ID="nbOutputCacheDuration" runat="server" Label="Output Cache Duration" MinimumValue="0" CssClass="input-width-sm" Help="Number of seconds to cache the resolved output. Only cache the output if you are not personalizing the output based on current user, current page, or any other merge field value." />
+                        <Rock:NumberBox ID="nbItemCacheDuration" runat="server" Label="Item Cache Duration" MinimumValue="0" CssClass="input-width-sm" Help="Number of seconds to cache the content item specified by the parameter." />
                         <Rock:RockCheckBox ID="cbSetPageTitle" runat="server" Label="Set Page Title" Help="Determines if the block should set the page title with the channel name or content item." />
                     </Rock:PanelWidget>
                 </Content>
