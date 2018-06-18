@@ -410,20 +410,27 @@ namespace Rock.Model
         /// <summary>
         /// Adds the GroupMember to the Group. If a matching 'Archived' GroupMember is found with same role and person, it'll be recovered instead of adding a new record
         /// </summary>
-        /// <param name="item">The item.</param>
-        public override void Add( GroupMember item )
+        /// <param name="group">The group.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="groupRoleId">The group role identifier.</param>
+        /// <returns>
+        /// Either a new GroupMember or a restored GroupMember record
+        /// </returns>
+        public GroupMember AddOrRestoreGroupMember( Group group, int personId, int groupRoleId )
         {
             var rockContext = this.Context as RockContext;
             var groupService = new GroupService( rockContext );
-            var group = item.Group ?? groupService.GetNoTracking( item.GroupId );
             GroupMember archivedGroupMember;
-            if ( groupService.ExistsAsArchived( group, item.PersonId, item.GroupRoleId, out archivedGroupMember ) )
+            if ( groupService.ExistsAsArchived( group, personId, groupRoleId, out archivedGroupMember ) )
             {
                 this.Restore( archivedGroupMember );
+                return archivedGroupMember;
             }
             else
             {
-                base.Add( item );
+                var groupMember = new GroupMember { Group = group, GroupId = group.Id, PersonId = personId, GroupRoleId = groupRoleId };
+                base.Add( groupMember );
+                return groupMember;
             }
         }
 
