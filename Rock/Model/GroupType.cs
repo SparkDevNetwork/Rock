@@ -401,7 +401,9 @@ namespace Rock.Model
 	
 	
 	
-<p class='description'>{{ Group.Description }}</p>
+{% if Group.Description != '' -%}
+    <p class='description'>{{ Group.Description }}</p>
+{% endif -%}
 
 <div class=""row"">
    <div class=""col-md-6"">
