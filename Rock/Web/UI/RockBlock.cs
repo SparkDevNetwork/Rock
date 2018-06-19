@@ -46,9 +46,9 @@ namespace Rock.Web.UI
         /// The page cache.
         /// </value>
         [Obsolete("Use CachePage instead")]
-        internal protected CachePage PageCache
+        internal protected Rock.Web.Cache.PageCache PageCache
         {
-            get { return CachePage; }
+            get { return Rock.Web.Cache.PageCache.Read( CachePage.Id ); }
             private set { CachePage = value; }
         }
 
