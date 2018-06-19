@@ -14,7 +14,7 @@
                         <ContentTemplate>
 
                             <Rock:RockDropDownList ID="ddlSettingPowerBiAccount" runat="server" Label="Power BI Account" AutoPostBack="true" OnSelectedIndexChanged="ddlSettingPowerBiAccount_SelectedIndexChanged" />
-                            <Rock:RockDropDownList ID="ddlSettingPowerBiGroup" runat="server" Label="Power BI Group"  AutoPostBack="true" OnSelectedIndexChanged="ddlSettingPowerBiGroup_SelectedIndexChanged"/>
+                            <Rock:RockDropDownList ID="ddlSettingPowerBiGroup" runat="server" Label="Power BI Workspace"  AutoPostBack="true" OnSelectedIndexChanged="ddlSettingPowerBiGroup_SelectedIndexChanged"/>
                             <Rock:RockDropDownList ID="ddlSettingPowerBiReportUrl" runat="server" Label="Report" />
 
                         </ContentTemplate>
