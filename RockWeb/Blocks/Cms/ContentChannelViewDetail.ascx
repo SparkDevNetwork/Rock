@@ -41,8 +41,7 @@
                             <div class="col-md-6">
                                 <fieldset>
                                     <legend>Workflows</legend>
-
-                                    <Rock:WorkflowTypePicker ID="wtpWorkflowType" runat="server" Label="Workflow Type" Help="The workflow type to launch when the content is viewed." />
+                                    <Rock:WorkflowTypePicker ID="wtpWorkflowType" runat="server" Label="Workflow Type" Help="The workflow type to launch when the content is viewed." OnSelectItem="wtpWorkflowType_SelectItem" />
                                     <Rock:RockCheckBox ID="cbLaunchWorkflowOnlyIfIndividualLoggedIn" runat="server" Label="Launch Workflow Only If Individual Logged In" Help="Set to true to only launch a workflow for logged in users, or set to false to launch for both logged in and anonymous users." />
                                     <Rock:RockDropDownList ID="ddlLaunchWorkflowCondition" runat="server" Label="Launch Workflow" />
                                 </fieldset>
