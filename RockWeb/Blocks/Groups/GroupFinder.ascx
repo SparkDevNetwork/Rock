@@ -87,7 +87,10 @@
                                         <Rock:GroupTypePicker ID="gtpGeofenceGroupType" runat="server" Label="Geofence Group Type"
                                             Help="An optional group type that contains groups with geographic boundary (fence). If specified, user will be prompted for their address, and only groups that are located in the same geographic boundary ( as defined by one or more groups of this type ) will be displayed."
                                             ValidationGroup="GroupFinderSettings" />
-                                    </div>
+                                        <Rock:RockTextBox ID="tbDayOfWeekLabel" runat="server" Label="Day of Week Filter Label" Help="The text above the day of week filter" AutoPostBack="true" Required="true" ValidationGroup="GroupFinderSettings" />
+                                        <Rock:RockTextBox ID="tbTimeOfDayLabel" runat="server" Label="Time of Day Filter Label" Help="The text above the time of day filter" AutoPostBack="true" Required="true" ValidationGroup="GroupFinderSettings" />
+                                        <Rock:RockTextBox ID="tbCampusLabel" runat="server" Label="Campus Filter Label" Help="The text above the campus filter" AutoPostBack="true" Required="true" ValidationGroup="GroupFinderSettings" />
+                                     </div>
                                     <div class="col-md-6">
                                         <Rock:RockRadioButtonList ID="rblFilterDOW" runat="server" Label="Display Day of Week Filter" RepeatDirection="Horizontal"
                                             Help="Flag indicating if and how the Day of Week filter should be displayed to filter groups with 'Weekly' schedules." ValidationGroup="GroupFinderSettings">
