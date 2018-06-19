@@ -36,7 +36,6 @@
             </div>
 
             <script type="text/javascript">
-                $(document).ready(function () {
                     Sys.Application.add_load(function () {
                         iframe = document.getElementById('report-iframe');
                         if (!iframe) {
@@ -87,7 +86,6 @@
                             }
                         });
                     });
-                });
 
                 // post the auth token to the iFrame. 
                 function postActionLoadReport() {
