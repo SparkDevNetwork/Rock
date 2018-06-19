@@ -509,13 +509,13 @@
                         <Rock:SlidingDateRangePicker ID="sdrpGroupPlacementsDateRange" runat="server" Label="Registration Date Range" />
                         <Rock:RockTextBox ID="tbGroupPlacementsFirstName" runat="server" Label="First Name" />
                         <Rock:RockTextBox ID="tbGroupPlacementsLastName" runat="server" Label="Last Name" />
-                        <Rock:RockDropDownList ID="ddlGroupPlacementsInGroup" runat="server" Label="In Group"  />    
+                        <Rock:RockDropDownList ID="ddlGroupPlacementsInGroup" runat="server" Label="In Group"  />
                         <Rock:RockDropDownList ID="ddlGroupPlacementsSignedDocument" runat="server" Label="Signed Document" />
                         <asp:PlaceHolder ID="phGroupPlacementsFormFieldFilters" runat="server" />
                     </Rock:GridFilter>
                     <div class="panel-body">
                         <Rock:NotificationBox ID="nbPlacementNotifiction" runat="server" Visible="false" />
-                        <div class="row">
+                        <div class="row margin-t-md">
                             <div class="col-sm-6">
                                 <Rock:GroupPicker ID="gpGroupPlacementParentGroup" runat="server" Label="Parent Group"
                                     OnSelectItem="gpGroupPlacementParentGroup_SelectItem" />
