@@ -55,7 +55,7 @@
                             <div id="redisView" runat="server">
 
                                 <div id="redisEnabled" runat="server">
-                                    <div class="row"><div class="col-md-12"><Rock:RockCheckBox ID="cbEnabled" runat="server" Text="Enable" Enabled="false" /></div></div>
+                                    <div class="row"><div class="col-md-12"><Rock:RockCheckBox ID="cbEnabled" runat="server" Text="Enabled" Enabled="false" /></div></div>
                                     <br />
                                     <div class="row"><div class="col-md-12">End Points<br /><asp:Literal ID="lEndPointList" runat="server"></asp:Literal></div></div>
                                     <br />
