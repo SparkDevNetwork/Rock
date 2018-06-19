@@ -18,7 +18,7 @@ namespace Rock.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
-    
+
     /// <summary>
     ///
     /// </summary>
@@ -40,8 +40,9 @@ namespace Rock.Migrations
             ForgotUserName();
             UnattendedCheckInLogging();
             MySettingsNavFix();
+            HomepageIconsFix();
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
@@ -175,19 +176,19 @@ namespace Rock.Migrations
             RockMigrationHelper.AddBlockAttributeValue( "71D998C7-9F27-4B8A-937A-64C5EFC4783A", "47C56661-FB70-4703-9781-8651B8B49485", @"	{% assign videoLink = Item | Attribute:'VideoLink','RawValue' %}
 	{% assign videoEmbed = Item | Attribute:'VideoEmbed' %}
 	{% assign audioLink = Item | Attribute:'AudioLink','RawValue' %}
-	
+
 	<artcile class=""message-detail"">
-		
+
 		{% if videoEmbed != '' %}
 			{{ videoEmbed }}
 		{% endif %}
-		
+
 		<h1>{{ Item.Title }}</h1>
-	
+
 		<p>
 			<strong> {{ item | Attribute:'Speaker' }} - {{ Item.StartDateTime | Date:'M/d/yyyy' }}</strong>
 		</p>
-	
+
 		<div class=""row"">
 			<div class=""col-md-8"">
 				{{ Item.Content }}
@@ -197,15 +198,15 @@ namespace Rock.Migrations
 					<div class=""panel panel-default"">
 						<div class=""panel-heading"">Downloads &amp; Resources</div>
 						<div class=""list-group"">
-							
+
 							{% if videoLink != '' %}
 								<a href=""{{ videoLink }}"" class=""list-group-item""><i class=""fa fa-film""></i> Video Download</a>
 							{% endif %}
-							
+
 							{% if audioLink != '' %}
 								<a href=""{{ audioLink }}"" class=""list-group-item""><i class=""fa fa-volume-up""></i> Audio Download</a>
 							{% endif %}
-							
+
 						</div>
 					</div>
 				{% endif %}
@@ -244,46 +245,46 @@ namespace Rock.Migrations
 		background-position: center center;
 		background-repeat: no-repeat;
 	}
-	
+
 	@media (min-width: 992px) {
 		.series-banner {
 			height: 420px;
 		}
 	}
-	
+
 	.series-title{
 		margin-bottom: 4px;
 	}
-	
+
 	.series-dates {
 		opacity: .6;
 	}
-	
+
 	.messages-title {
 		font-size: 24px;
 	}
-	
+
 	.messages {
 		font-size: 18px;
 	}
 </style>
 
 {% if Item  %}
-	
+
 	<article class=""series-detail"">
 		{% assign seriesImageGuid = Item | Attribute:'SeriesImage','RawValue' %}
 		<div class=""series-banner"" style=""background-image: url('/GetImage.ashx?Guid={{ seriesImageGuid }}');"" ></div>
 
 		<h1 class=""series-title"">{{ Item.Title }}</h1>
 		<p class=""series-dates"">
-			<strong>{{ Item.StartDateTime | Date:'M/d/yyyy' }} 
+			<strong>{{ Item.StartDateTime | Date:'M/d/yyyy' }}
 				{% if Item.StartDateTime != Item.ExpireDateTime %}
 					- {{ Item.ExpireDateTime | Date:'M/d/yyyy' }}
 				{% endif %}
 			</strong>
 		</p>
 
-		
+
 		<script>function fbs_click() { u = location.href; t = document.title; window.open('http://www.facebook.com/sharer.php?u=' + encodeURIComponent(u) + '&t=' + encodeURIComponent(t), 'sharer', 'toolbar=0,status=0,width=626,height=436'); return false; }</script>
 		<script>function ics_click() { text = `{{ EventItemOccurrence.Schedule.iCalendarContent }}`.replace('END:VEVENT', 'SUMMARY: {{ Event.Name }}\r\nLOCATION: {{ EventItemOccurrence.Location }}\r\nEND:VEVENT'); var element = document.createElement('a'); element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text)); element.setAttribute('download', '{{ Event.Name }}.ics'); element.style.display = 'none'; document.body.appendChild(element); element.click(); document.body.removeChild(element); }</script>
 		<ul class=""socialsharing"">
@@ -303,11 +304,11 @@ namespace Rock.Migrations
 				</a>
 			</li>
 		</ul>
-		
+
 		<div class=""margin-t-lg"">
 			{{ Item.Content }}
 		</div>
-		
+
 		<h4 class=""messages-title margin-t-lg"">In This Series</h4>
 		<ol class=""messages"">
 			{% for message in Item.ChildItems %}
@@ -318,9 +319,9 @@ namespace Rock.Migrations
         </li>
 			{% endfor %}
 		</ol>
-		
+
 	</article>
-	
+
 {% else %}
 	<h1>Could not find series.</h1>
 {% endif %}" );
@@ -500,7 +501,7 @@ namespace Rock.Migrations
 
         {% if note.NoteType.ApprovalUrlTemplate != '' %}
 
-        | <a href=""{{ note.ApprovalUrl }}"">Note Approval</a> 
+        | <a href=""{{ note.ApprovalUrl }}"">Note Approval</a>
 
         {% endif %}
 
@@ -579,12 +580,12 @@ The following communications have been queued to send for longer than 2 hours...
         }
 
         /// <summary>
-        /// Remove email hyphenation 
+        /// Remove email hyphenation
         /// </summary>
         private void FixPendingGroupMembersNotificationEmail()
         {
             Sql( @"UPDATE [SystemEmail]
-SET [Body] = 
+SET [Body] =
 '{{ ''Global'' | Attribute:''EmailHeader'' }}
 
 <p>
@@ -592,8 +593,8 @@ SET [Body] =
 </p>
 
 <p>
-    We wanted to make you aware of additional individuals who have taken the next step to connect with 
-    group. The individuals'' names and contact information can be found below. Our 
+    We wanted to make you aware of additional individuals who have taken the next step to connect with
+    group. The individuals'' names and contact information can be found below. Our
     goal is to contact new members within 24-48 hours of receiving this email.
 </p>
 
@@ -654,7 +655,7 @@ AND[Body] =
     group.The individuals'' names and contact information can be found below. Our
     goal is to contact new members within 24 - 48 hours of receiving this e - mail.
   </ p >
-  
+
 
   < table cellpadding = ""25"" >
 {% for pendingIndividual in PendingIndividuals %}
@@ -733,5 +734,126 @@ AND[Body] =
                 SET[DisplayInNavWhen] = 2
                 WHERE[Guid] = 'CF54E680-2E02-4F16-B54B-A2F2D29CD932'" );
         }
+
+        /// <summary>
+        /// GJ: Fixed Icons on homepage
+        /// </summary>
+        private void HomepageIconsFix()
+        {
+            Sql( @"UPDATE [AttributeValue] SET [Value] = N'{% stylesheet id:''home-feature'' %}
+
+.feature-image {
+    width: 100%;
+    height: 450px;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}
+
+
+.communicationview h1 {
+    font-size: 28px;
+    margin-top: 12px;
+}
+
+.homepage-article .photo {
+    width: 100%;
+    height: 140px;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}
+
+.metric {
+    border: 1px solid #ccc;
+    padding: 12px;
+    margin-bottom: 12px;
+}
+
+.metric h5 {
+    font-size: 24px;
+    margin-top: 0;
+    margin-bottom: 0;
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.metric .value {
+    font-size: 48px;
+    font-weight: 800;
+    line-height: 1em;
+}
+
+.metric .value small{
+    display: block;
+    font-weight: 300;
+    font-size: 14px;
+    line-height: 1em;
+}
+
+.metric .icon {
+    float: right;
+    opacity: .3;
+    font-size: 65px;
+    border-radius: 0;
+    width: 85px;
+    height: 65px;
+}
+
+{% endstylesheet %}
+
+<div class=""communicationview"">
+    {% assign featureLink = Item | Attribute:''FeatureLink'' -%}
+
+    <div class=""feature"">
+
+        <div class=""feature-image"" style="" background-image: url(''/GetImage.ashx?Guid={{ Item | Attribute:''FeatureImage'',''RawValue'' }}&w=2400&h=2400'');""></div>
+        <h1 class=""feature-title"">{{ Item | Attribute:''FeatureTitle'' }}</h1>
+        <p>
+            {{ Item | Attribute:''FeatureText'' }}
+        </p>
+
+        {% if featureLink != empty -%}
+            <a class=""btn btn-xs btn-link"" href=""{{ featureLink }}"">More Info</a>
+        {% endif -%}
+    </div>
+
+    <hr class=""margin-v-lg"" />
+
+    <div class=""margin-b-lg"">
+        {{ Item | Attribute:''Articles'' }}
+    </div>
+
+    {% assign metricCount = Metrics | Size -%}
+
+    {% if metricCount > 0 -%}
+        <h1>Metrics</h1>
+
+        <div class=""row"">
+        {% for metric in Metrics -%}
+            <div class=""col-lg-4"">
+                <div class=""metric"">
+                    <h5>{{ metric.Title }}</h5>
+                    <span class=""date"">{{ metric.LastRunDateTime | Date:''sd'' }}</span>
+                    <i class=""icon {{ metric.IconCssClass  }}""></i>
+
+                    <div class=""value"">
+                        {{ metric.LastValue | AsInteger }}
+                        <small>{{ metric.UnitsLabel }}</small>
+                    </div>
+                </div>
+            </div>
+
+            {% cycle '''', '''', ''</div><div class=""row"">'' %}
+        {% endfor -%}
+        </div>
+    {% endif %}
+
+</div>' WHERE [Guid] = 'EEB490B4-A68E-4712-AD71-2239C844DBB0';" );
+        }
+
+
     }
 }
