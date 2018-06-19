@@ -163,6 +163,23 @@ Guid - ContentChannelItem Guid
             }
         }
 
+        /// <summary>
+        /// Shows or hides the workflow settings controls based on the selection in the workflowpicker.
+        /// </summary>
+        protected void ShowHideContorls()
+        {
+            if ( wtpWorkflowType.SelectedValue == "0" )
+            {
+                cbLaunchWorkflowOnlyIfIndividualLoggedIn.Visible = false;
+                ddlLaunchWorkflowCondition.Visible = false;
+            }
+            else
+            {
+                cbLaunchWorkflowOnlyIfIndividualLoggedIn.Visible = true;
+                ddlLaunchWorkflowCondition.Visible = true;
+            }
+        }
+
         #endregion Base Control Methods
 
         #region Settings
@@ -211,6 +228,8 @@ Guid - ContentChannelItem Guid
             {
                 wtpWorkflowType.SetValue( null );
             }
+
+            ShowHideContorls();
 
             cbLaunchWorkflowOnlyIfIndividualLoggedIn.Checked = this.GetAttributeValue( "LaunchWorkflowOnlyIfIndividualLoggedIn" ).AsBoolean();
             ddlLaunchWorkflowCondition.SetValue( this.GetAttributeValue( "LaunchWorkflowCondition" ) );
@@ -298,6 +317,16 @@ Guid - ContentChannelItem Guid
         {
             var channelGuid = ddlContentChannel.SelectedValue.AsGuidOrNull();
             UpdateSocialMediaDropdowns( channelGuid );
+        }
+
+        /// <summary>
+        /// Handles the SelectItem event of the wtpWorkflowType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void wtpWorkflowType_SelectItem( object sender, EventArgs e )
+        {
+            ShowHideContorls();
         }
 
         #endregion Events
