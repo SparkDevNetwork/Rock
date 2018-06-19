@@ -534,16 +534,14 @@ namespace Rock.Model
         #region ICacheable
 
         /// <summary>
-        /// Updates the cached attribute value of the cache object associated with this entity
+        /// Gets the cache object associated with this Entity
         /// </summary>
-        /// <param name="attributeKey">The attribute key.</param>
-        /// <param name="value">The value.</param>
-        public void UpdateCachedAttributeValue( string attributeKey, string value )
+        /// <returns></returns>
+        public IEntityCache GetCacheObject()
         {
-            // CacheAttributeValue doesn't have a CacheAttributeValues
+            // no cache entity associated with AttributeValue
+            return null;
         }
-
-        private static HashSet<int> _cacheableEntityTypeIds = null;
 
         /// <summary>
         /// Updates any Cache Objects that are associated with this entity
@@ -561,21 +559,11 @@ namespace Rock.Model
 
             if ( this.EntityId.HasValue && cacheAttribute.EntityTypeId.HasValue )
             {
-                if ( _cacheableEntityTypeIds == null )
-                {
-                    _cacheableEntityTypeIds = new HashSet<int>( Reflection.FindTypes( typeof( Rock.Cache.IEntityCache ) ).Values.Select( a => a.BaseType.GenericTypeArguments[1] ).ToList().Select( a => Rock.Cache.CacheEntityType.Get( a ).Id ).ToList() );
-                }
+                CacheEntityType entityType = CacheEntityType.Get( cacheAttribute.EntityTypeId.Value );
 
-                bool hasEntityCache = _cacheableEntityTypeIds?.Contains( cacheAttribute.EntityTypeId.Value ) == true;
-
-                if ( hasEntityCache )
+                if ( entityType?.HasEntityCache() == true )
                 {
-                    var entity = new EntityTypeService( dbContext as RockContext ).GetEntityNoTracking( cacheAttribute.EntityTypeId.Value, this.EntityId.Value );
-                    if ( entity is ICacheable )
-                    {
-                        // just in case the AttributeValue was updated directly to the model without updating the Cached version first, make sure the CachedEntity's AttributeValue is updated
-                        ( entity as ICacheable )?.UpdateCachedAttributeValue( cacheAttribute.Key, this.Value );
-                    }
+                    ( entityType.GetCachedItem( this.EntityId.Value ) as IModelCache )?.SetAttributeValue( cacheAttribute.Key, this.Value );
                 }
             }
 
