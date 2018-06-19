@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -105,7 +105,9 @@ namespace Rock.Migrations
 	
 	
 	
-<p class='description'>{{ Group.Description }}</p>
+{% if Group.Description != '' -%}
+    <p class='description'>{{ Group.Description }}</p>
+{% endif -%}
 
 <div class=""row"">
    <div class=""col-md-6"">
