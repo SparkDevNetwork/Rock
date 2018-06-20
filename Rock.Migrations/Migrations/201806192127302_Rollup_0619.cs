@@ -585,7 +585,7 @@ The following communications have been queued to send for longer than 2 hours...
         private void FixPendingGroupMembersNotificationEmail()
         {
             Sql( @"UPDATE [SystemEmail]
-SET [Body] =
+SET [Body] = 
 '{{ ''Global'' | Attribute:''EmailHeader'' }}
 
 <p>
@@ -593,114 +593,107 @@ SET [Body] =
 </p>
 
 <p>
-    We wanted to make you aware of additional individuals who have taken the next step to connect with
-    group. The individuals'' names and contact information can be found below. Our
+    We wanted to make you aware of additional individuals who have taken the next step to connect with 
+    group. The individuals'' names and contact information can be found below. Our 
     goal is to contact new members within 24-48 hours of receiving this email.
 </p>
 
 <table cellpadding=""25"">
 {% for pendingIndividual in PendingIndividuals %}
-    < tr >< td >
-        < strong >{ { pendingIndividual.FullName } }</ strong >< br />
-        {% -assign mobilePhone = pendingIndividual.PhoneNumbers | Where:''NumberTypeValueId'', 136 | Select:''NumberFormatted'' -%}
-            {% -assign homePhone = pendingIndividual.PhoneNumbers | Where:''NumberTypeValueId'', 13 | Select:''NumberFormatted'' -%}
-            {% -assign homeAddress = pendingIndividual | Address:''Home'' -%}
-
-            {% - if mobilePhone != empty -%}
-            Mobile Phone: { { mobilePhone } }< br />
-        {% -endif -%}
-
-            {% - if homePhone != empty -%}
-            Home Phone: { { homePhone } }< br />
-        {% -endif -%}
-
-            {% - if pendingIndividual.Email != empty -%}
-            { { pendingIndividual.Email } }< br />
-        {% -endif -%}
-
-
-        < p >
-        {% - if homeAddress != empty -%}
-            Home Address<br />
-            { { homeAddress } }
-            {% -endif -%}
-        </ p >
-
-
-    </ td ></ tr >
+    <tr><td>
+        <strong>{{ pendingIndividual.FullName }}</strong><br />
+        {%- assign mobilePhone = pendingIndividual.PhoneNumbers | Where:''NumberTypeValueId'', 136 | Select:''NumberFormatted'' -%}
+        {%- assign homePhone = pendingIndividual.PhoneNumbers | Where:''NumberTypeValueId'', 13 | Select:''NumberFormatted'' -%}
+        {%- assign homeAddress = pendingIndividual | Address:''Home'' -%}
+        
+        {%- if mobilePhone != empty -%}
+            Mobile Phone: {{ mobilePhone }}<br />
+        {%- endif -%}
+        
+        {%- if homePhone != empty -%}
+            Home Phone: {{ homePhone }}<br />
+        {%- endif -%}
+        
+        {%- if pendingIndividual.Email != empty -%}
+            {{ pendingIndividual.Email }}<br />
+        {%- endif -%}
+        
+        <p>
+        {%- if homeAddress != empty -%}
+            Home Address <br />
+            {{ homeAddress }}
+        {%- endif -%}
+        </p>
+        
+    </td></tr>
 {% endfor %}
-</ table >
+</table>
 
 
-< p >
+<p>
     Once you have connected with these individuals, please mark them as active.
-</ p >
+</p>
 
-< p >
-    Thank you for your ongoing commitment to { { ''Global'' | Attribute:''OrganizationName'' } }.
-</ p >
+<p>
+    Thank you for your ongoing commitment to {{ ''Global'' | Attribute:''OrganizationName'' }}.
+</p>
 
-{ { ''Global'' | Attribute:''EmailFooter'' } }
-            '
-WHERE[Guid] = '18521B26-1C7D-E287-487D-97D176CA4986'
-AND[Body] =
+{{ ''Global'' | Attribute:''EmailFooter'' }}'
+WHERE [Guid] = '18521B26-1C7D-E287-487D-97D176CA4986'
+AND [Body] = 
 '{{ ''Global'' | Attribute:''EmailHeader'' }}
 
-< p >
-    { { Person.NickName } },
-</ p >
+<p>
+    {{ Person.NickName }},
+</p>
 
-< p >
-    We wanted to make you aware of additional individuals who have taken the next step to connect with
-    group.The individuals'' names and contact information can be found below. Our
-    goal is to contact new members within 24 - 48 hours of receiving this e - mail.
-  </ p >
+<p>
+    We wanted to make you aware of additional individuals who have taken the next step to connect with 
+    group. The individuals'' names and contact information can be found below. Our 
+    goal is to contact new members within 24-48 hours of receiving this e-mail.
+</p>
 
-
-  < table cellpadding = ""25"" >
+<table cellpadding=""25"">
 {% for pendingIndividual in PendingIndividuals %}
-    < tr >< td >
-        < strong >{ { pendingIndividual.FullName } }</ strong >< br />
+    <tr><td>
+        <strong>{{ pendingIndividual.FullName }}</strong><br />
         {% assign mobilePhone = pendingIndividual.PhoneNumbers | Where:''NumberTypeValueId'', 136 | Select:''NumberFormatted'' %}
-            {% assign homePhone = pendingIndividual.PhoneNumbers | Where:''NumberTypeValueId'', 13 | Select:''NumberFormatted'' %}
-            {% assign homeAddress = pendingIndividual | Address:''Home'' %}
-
-            {% if mobilePhone != empty %}
-            Mobile Phone: { { mobilePhone } }< br />
+        {% assign homePhone = pendingIndividual.PhoneNumbers | Where:''NumberTypeValueId'', 13 | Select:''NumberFormatted'' %}
+        {% assign homeAddress = pendingIndividual | Address:''Home'' %}
+        
+        {% if mobilePhone != empty %}
+            Mobile Phone: {{ mobilePhone }}<br />
         {% endif %}
-
-            {% if homePhone != empty %}
-            Home Phone: { { homePhone } }< br />
+        
+        {% if homePhone != empty %}
+            Home Phone: {{ homePhone }}<br />
         {% endif %}
-
-            {% if pendingIndividual.Email != empty %}
-            { { pendingIndividual.Email } }< br />
+        
+        {% if pendingIndividual.Email != empty %}
+            {{ pendingIndividual.Email }}<br />
         {% endif %}
-
-
-        < p >
+        
+        <p>
         {% if homeAddress != empty %}
-            Home Address<br />
-            { { homeAddress } }
-            {% endif %}
-        </ p >
-
-
-    </ td ></ tr >
+            Home Address <br />
+            {{ homeAddress }}
+        {% endif %}
+        </p>
+        
+    </td></tr>
 {% endfor %}
-</ table >
+</table>
 
 
-< p >
+<p>
     Once you have connected with these individuals, please mark them as active.
-</ p >
+</p>
 
-< p >
-    Thank you for your ongoing commitment to { { ''Global'' | Attribute:''OrganizationName'' } }.
-</ p >
+<p>
+    Thank you for your ongoing commitment to {{ ''Global'' | Attribute:''OrganizationName'' }}.
+</p>
 
-{ { ''Global'' | Attribute:''EmailFooter'' } }
-            '" );
+{{ ''Global'' | Attribute:''EmailFooter'' }}'" );
         }
 
         /// <summary>
@@ -731,8 +724,8 @@ AND[Body] =
         private void MySettingsNavFix()
         {
             Sql( @"UPDATE[Page]
-                SET[DisplayInNavWhen] = 2
-                WHERE[Guid] = 'CF54E680-2E02-4F16-B54B-A2F2D29CD932'" );
+                SET [DisplayInNavWhen] = 2
+                WHERE [Guid] = 'CF54E680-2E02-4F16-B54B-A2F2D29CD932'" );
         }
 
         /// <summary>
