@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
+using Rock.Data;
 
 namespace Rock.Model
 {
@@ -95,7 +96,7 @@ namespace Rock.Model
         {
             lock ( _obj )
             {
-                using ( var rockContext = new Rock.Data.RockContext() )
+                using ( var rockContext = new RockContext() )
                 {
                     var service = new AttendanceCodeService( rockContext );
 
@@ -110,35 +111,28 @@ namespace Rock.Model
                             .ToList();
                     }
 
-                    // Find a good alphanumeric code prefix
-                    string alphaNumericCode = string.Empty;
-                    if ( alphaNumericLength > 0 || alphaLength > 0 )
+                    var code = string.Empty;
+                    var lastCode = string.Empty;
+                    if ( numericLength > 0 && !isRandomized )
                     {
-                        alphaNumericCode =
-                            ( alphaNumericLength > 0 ? GenerateRandomCode( alphaNumericLength ) : string.Empty ) +
-                            ( alphaLength > 0 ? GenerateRandomAlphaCode( alphaLength ) : string.Empty );
-                        while ( noGood.Any( s => alphaNumericCode.Contains( s ) ) || _todaysCodes.Contains( alphaNumericCode ) )
-                        {
-                            alphaNumericCode =
-                                ( alphaNumericLength > 0 ? GenerateRandomCode( alphaNumericLength ) : string.Empty ) +
-                                ( alphaLength > 0 ? GenerateRandomAlphaCode( alphaLength ) : string.Empty );
-                        }
+                        lastCode = _todaysCodes.Where( c => c.Length == alphaNumericLength + alphaLength + numericLength )
+                            .OrderBy( c => c.Substring( alphaNumericLength + alphaLength ) ).LastOrDefault();
                     }
 
-                    string numericCode = string.Empty;
-                    if ( numericLength > 0 )
+                    while ( code.Length == 0 || noGood.Any( s => code.Contains( s ) ) || _todaysCodes.Contains( code ) )
                     {
-                        int codeLen = alphaNumericLength + alphaLength + numericLength;
-                        var lastCode = _todaysCodes.Where( c => c.Length == codeLen ).OrderBy( c => c.Substring( alphaNumericLength + alphaLength ) ).LastOrDefault();
-                        numericCode = GetNextNumericCodeAsString( alphaNumericLength, alphaLength, numericLength, isRandomized, lastCode );
+                        code = GenerateRandomCode( alphaNumericLength )
+                               + GenerateRandomAlphaCode( alphaLength )
+                               + GetNextNumericCodeAsString( alphaNumericLength, alphaLength, numericLength, isRandomized, lastCode );
                     }
 
-                    string code = alphaNumericCode + numericCode;
                     _todaysCodes.Add( code );
 
-                    var attendanceCode = new AttendanceCode();
-                    attendanceCode.IssueDateTime = RockDateTime.Now;
-                    attendanceCode.Code = code;
+                    var attendanceCode = new AttendanceCode
+                    {
+                        IssueDateTime = RockDateTime.Now,
+                        Code = code
+                    };
                     service.Add( attendanceCode );
                     rockContext.SaveChanges();
 
@@ -158,40 +152,25 @@ namespace Rock.Model
         /// <returns></returns>
         public static string GetNextNumericCodeAsString( int alphaNumericLength, int alphaLength, int numericLength, bool isRandomized, string lastCode )
         {
-            // Find a good unique numeric code for today
-            string numericCode = string.Empty;
-
             if ( isRandomized )
             {
-                numericCode = GenerateRandomNumericCode( numericLength );
-                // #2877, use contains to prevent leading zeros bypassing a match for 666
-                while ( noGood.Any( s => numericCode.Contains( s ) ) || _todaysCodes.Any( c => c.EndsWith( numericCode ) ) )
-                {
-                    numericCode = GenerateRandomNumericCode( numericLength );
-                }
+                return GenerateRandomNumericCode( numericLength );
             }
-            else
+
+            if ( !string.IsNullOrEmpty( lastCode ) )
             {
-                if ( !string.IsNullOrEmpty( lastCode ) )
-                {
-                    var maxCode = lastCode.Substring( alphaNumericLength + alphaLength );
-                    int nextCode = maxCode.AsInteger() + 1;
+                var maxCode = lastCode.Substring( alphaNumericLength + alphaLength );
+                int nextCode = maxCode.AsInteger() + 1;
 
-                    // Let's just skip over this one...
-                    if ( nextCode.ToString().Contains( "666" ) )
-                    {
-                        nextCode += 1;
-                    }
-
-                    numericCode = nextCode.ToString( "D" + numericLength );
-                }
-                else
+                // Let's just skip over this one...
+                if ( nextCode.ToString().Contains( "666" ) )
                 {
-                    numericCode = 1.ToString( "D" + numericLength );
+                    nextCode += 1;
                 }
+
+                return nextCode.ToString( "D" + numericLength );
             }
-
-            return numericCode;
+            return 1.ToString( "D" + numericLength );
         }
 
         /// <summary>
