@@ -361,15 +361,12 @@ namespace Rock.Checkr
                     backgroundCheck.PackageName = packageName;
                 }
 
-                if ( documentId == string.Empty )
-                {
-                    backgroundCheck.RecordFound = false;
-                }
-                else if ( documentId != null )
+                if ( documentId.IsNotNullOrWhitespace() )
                 {
                     backgroundCheck.ResponseId = documentId;
-                    backgroundCheck.RecordFound = true;
                 }
+
+                backgroundCheck.RecordFound = status == "consider";
 
                 //rockContext.SqlLogging( true );
 
