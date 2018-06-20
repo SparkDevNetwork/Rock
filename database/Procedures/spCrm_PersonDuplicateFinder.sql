@@ -1,29 +1,27 @@
 /*
 <doc>
-	<summary>
- 		This stored procedure detects potential duplicate person records and stores the results in [PersonDuplicate]
-	</summary>
-	
-	<remarks>	
-		Uses the following constants:
-			* Group Type - Family: '790E3215-3B10-442B-AF69-616C0DCB998E'
+ <summary>
+   This stored procedure detects potential duplicate person records and stores the results in [PersonDuplicate]
+ </summary>
+ 
+ <remarks> 
+  Uses the following constants:
+   * Group Type - Family: '790E3215-3B10-442B-AF69-616C0DCB998E'
             * Location Type - Home: '8C52E53C-2A66-435A-AE6E-5EE307D9A0DC'
-            * Phone Type - Home: '407E7E45-7B2E-4FCD-9605-ECB1339F2453'
-            * Phone Type - Cell: 'AA8732FB-2CEA-4C76-8D6D-6AAA2C6A4303'
-	</remarks>
-	<code>
-		EXEC [dbo].[spCrm_PersonDuplicateFinder]
-	</code>
+            * Phone Type - Home: 'AA8732FB-2CEA-4C76-8D6D-6AAA2C6A4303'
+            * Phone Type - Cell: '407E7E45-7B2E-4FCD-9605-ECB1339F2453'
+ </remarks>
+ <code>
+  EXEC [dbo].[spCrm_PersonDuplicateFinder]
+ </code>
 </doc>
 */
 ALTER PROCEDURE [dbo].[spCrm_PersonDuplicateFinder]
 AS
 BEGIN
     
-	SET NOCOUNT ON
-
-	-- DECLARE @ms DATETIME = GETDATE()
-
+ SET NOCOUNT ON
+ -- DECLARE @ms DATETIME = GETDATE()
     -- Flags that enable the various compare functions
     DECLARE @compareByEmail BIT = 1
         ,@compareByPartialName BIT = 1
@@ -56,8 +54,8 @@ BEGIN
     -- Guids that this proc uses
     DECLARE @cGROUPTYPE_FAMILY_GUID UNIQUEIDENTIFIER = '790E3215-3B10-442B-AF69-616C0DCB998E'
         ,@cLOCATION_TYPE_HOME_GUID UNIQUEIDENTIFIER = '8C52E53C-2A66-435A-AE6E-5EE307D9A0DC'
-        ,@cHOME_PHONENUMBER_DEFINEDVALUE_GUID UNIQUEIDENTIFIER = '407E7E45-7B2E-4FCD-9605-ECB1339F2453'
-        ,@cCELL_PHONENUMBER_DEFINEDVALUE_GUID UNIQUEIDENTIFIER = 'AA8732FB-2CEA-4C76-8D6D-6AAA2C6A4303'
+        ,@cHOME_PHONENUMBER_DEFINEDVALUE_GUID UNIQUEIDENTIFIER = 'AA8732FB-2CEA-4C76-8D6D-6AAA2C6A4303'
+        ,@cCELL_PHONENUMBER_DEFINEDVALUE_GUID UNIQUEIDENTIFIER = '407E7E45-7B2E-4FCD-9605-ECB1339F2453'
     --
     -- Other Declarations
     DECLARE @processDateTime DATETIME = SYSDATETIME()
@@ -81,10 +79,8 @@ BEGIN
             FROM DefinedValue
             WHERE [Guid] = @cLOCATION_TYPE_HOME_GUID
             )
-
-	--PRINT'Declare Variables: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
-	--SET @ms = GETDATE()
-
+ --PRINT'Declare Variables: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+ --SET @ms = GETDATE()
     /*
     Populate Temporary Tables for each match criteria (Email, PartialName, PhoneNumber, Address)
     */
@@ -94,11 +90,10 @@ BEGIN
         ,PersonAliasId INT NOT NULL
         ,PRIMARY KEY CLUSTERED (Email, PersonAliasId)
         );
-
     INSERT INTO #PersonDuplicateByEmailTable (
         Email
         ,PersonAliasId
-    )
+        )
     SELECT [e].[Email] [Email]
         ,[pa].[Id] [PersonAliasId]
     FROM (
@@ -116,10 +111,8 @@ BEGIN
     JOIN [PersonAlias] [pa] ON [pa].[PersonId] = [p].[Id]
     WHERE [pa].[AliasPersonId] = [pa].[PersonId] -- limit to only the primary alias
         AND @compareByEmail = 1
-
-	--PRINT'Create Email Dups: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
-	--SET @ms = GETDATE()
-
+ --PRINT'Create Email Dups: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+ --SET @ms = GETDATE()
     -- Find Duplicates by looking at people with the exact same lastname and same first 2 chars of First/Nick name
     CREATE TABLE #PersonDuplicateByNameTable (
          First2 NVARCHAR(50) NOT NULL -- intentionally 50 vs 2 for performance reasons (sql server spends time on the length constraint if it's shorter than the source column)
@@ -127,7 +120,6 @@ BEGIN
         ,PersonAliasId INT NOT NULL
         ,PRIMARY KEY CLUSTERED (First2, LastName, PersonAliasId)
         );
-
     INSERT INTO #PersonDuplicateByNameTable (
          First2
         ,LastName
@@ -157,34 +149,31 @@ BEGIN
     JOIN [PersonAlias] [pa] ON [pa].[PersonId] = [p].[Id]
     WHERE [pa].[AliasPersonId] = [pa].[PersonId] -- limit to only the primary alias
         AND @compareByPartialName = 1
-
-	--PRINT'Create Name Dups: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
-	--SET @ms = GETDATE()
-
+ --PRINT'Create Name Dups: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+ --SET @ms = GETDATE()
     -- Find Duplicates by looking at people with the exact same phone number
     CREATE TABLE #PersonDuplicateByPhoneTable (
          Number NVARCHAR(20) NOT NULL
         ,Extension NVARCHAR(20) NOT NULL
         ,CountryCode NVARCHAR(3) NOT NULL
         ,NumberTypeValueId INT NOT NULL
-		,GroupId INT NOT NULL
+  ,GroupId INT NOT NULL
         ,PersonAliasId INT NOT NULL
         ,PRIMARY KEY CLUSTERED (Number, Extension, CountryCode, NumberTypeValueId, GroupId, PersonAliasId)
         );
-
     INSERT INTO #PersonDuplicateByPhoneTable (
         Number
         ,Extension
         ,CountryCode
         ,NumberTypeValueId
-		,GroupId
+  ,GroupId
         ,PersonAliasId
         )
     SELECT DISTINCT [m].[Number]
         ,isnull([m].[Extension], '')
         ,isnull([m].[CountryCode], '')
         ,[m].[NumberTypeValueId]
-		,[g].[Id]
+  ,[g].[Id]
         ,[pa].[Id] [PersonAliasId]
     FROM (
         SELECT DISTINCT [Number]
@@ -208,7 +197,7 @@ BEGIN
                 ,[pn].[Extension]
                 ,[pn].[CountryCode]
                 ,[pn].[NumberTypeValueId]
-                ,[p].[Gender]
+             ,[p].[Gender]
             ) [a]
         WHERE [a].[MatchCount] > 1
         ) [m]
@@ -220,25 +209,22 @@ BEGIN
     JOIN [GroupMember] [gm] ON [gm].[PersonId] = [pa].[PersonId]
     JOIN [Group] [g] ON [gm].[GroupId] = [g].[Id]
     WHERE [pa].[AliasPersonId] = [pa].[PersonId] -- limit to only the primary alias
-		AND [g].[GroupTypeId] = @cGROUPTYPE_FAMILY_ID
+  AND [g].[GroupTypeId] = @cGROUPTYPE_FAMILY_ID
         AND @compareByPhone = 1
-
-	--PRINT'Create Phone Dups: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
-	--SET @ms = GETDATE()
-
+ --PRINT'Create Phone Dups: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+ --SET @ms = GETDATE()
     -- Find Duplicates by looking at people with the exact same address (Location)
     CREATE TABLE #PersonDuplicateByAddressTable (
          LocationId INT NOT NULL
         ,GroupRoleId INT NOT NULL
-		,GroupId INT NOT NULL
+  ,GroupId INT NOT NULL
         ,PersonAliasId INT NOT NULL
         ,PRIMARY KEY CLUSTERED (LocationId, GroupRoleId, GroupId, PersonAliasId)
         );
-
     INSERT INTO #PersonDuplicateByAddressTable (
         LocationId
         ,GroupRoleId
-		,GroupId
+  ,GroupId
         ,PersonAliasId
         )
     -- from the locations that have multiple potential duplicate persons, select the person records (along with gender and family role) that are associated with that location
@@ -263,13 +249,13 @@ BEGIN
                     ELSE 0
                     END) [MaxNotMappedLocationId]
             ,[GroupRoleId]
-			,[GroupId]
+   ,[GroupId]
             ,[PersonAliasId]
         FROM (
             SELECT [m].[LocationId]
                 ,[gl].[IsMappedLocation]
                 ,[m].[GroupRoleId]
-				,[g].[id] [GroupId]
+    ,[g].[id] [GroupId]
                 ,[pa].[Id] [PersonAliasId]
             FROM (
                 SELECT [LocationId]
@@ -284,7 +270,7 @@ BEGIN
                     JOIN [Group] [g] ON [gm].[GroupId] = [g].[Id]
                     JOIN [GroupLocation] [gl] ON [gl].[GroupId] = [g].[id]
                     JOIN [Location] [l] ON [l].[Id] = [gl].[LocationId]
-					WHERE [g].[GroupTypeId] = @cGROUPTYPE_FAMILY_ID
+     WHERE [g].[GroupTypeId] = @cGROUPTYPE_FAMILY_ID
                     AND [gl].[GroupLocationTypeValueId] = @cLOCATION_TYPE_HOME_ID
                     GROUP BY [gl].[LocationID]
                         ,[gm].[GroupRoleId]
@@ -302,37 +288,30 @@ BEGIN
             ) [a]
         GROUP BY [PersonAliasId]
             ,[GroupRoleId]
-			,[GroupId]
+   ,[GroupId]
         ) a
-
-	--PRINT'Create Address Dups: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
-	--SET @ms = GETDATE()
-
+ --PRINT'Create Address Dups: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+ --SET @ms = GETDATE()
     -- get the original ConfidenceScore of the IgnoreUntilScoreChanges records so that we can un-ignore the ones that have a changed score
     DECLARE @IgnoreUntilScoreChangesTable TABLE (
         Id INT
         ,ConfidenceScore FLOAT
         );
-
     INSERT INTO @IgnoreUntilScoreChangesTable
     SELECT [Id]
         ,[ConfidenceScore]
     FROM [PersonDuplicate]
     WHERE [IgnoreUntilScoreChanges] = 1;
-
-	--PRINT'Create Ignore Score Changes: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
-	--SET @ms = GETDATE()
-
+ --PRINT'Create Ignore Score Changes: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+ --SET @ms = GETDATE()
     /* 
     Reset Scores for everybody. (We want to preserve each record's [IsConfirmedAsNotDuplicate] value)
     */
     UPDATE [PersonDuplicate]
     SET [Score] = 0
         ,[ScoreDetail] = '';
-
-	--PRINT'Reset Scores: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
-	--SET @ms = GETDATE()
-
+ --PRINT'Reset Scores: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+ --SET @ms = GETDATE()
     /*
     Merge Results of Matches into PersonDuplicate Table
     */
@@ -378,16 +357,14 @@ BEGIN
                 ,@processDateTime
                 ,NEWID()
                 );
-
-	--PRINT'Merge Email Matches: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
-	--SET @ms = GETDATE()
-
+ --PRINT'Merge Email Matches: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+ --SET @ms = GETDATE()
     -- Update PersonDuplicate table with results of partial name match
-	UPDATE [PD] SET 
-		 [Score] = [Score] + @cScoreWeightPartialName
+ UPDATE [PD] SET 
+   [Score] = [Score] + @cScoreWeightPartialName
         ,[ScoreDetail] += '|PartialName'
         ,[ModifiedDateTime] = @processDateTime
-	FROM (
+ FROM (
         SELECT [e1].[PersonAliasId] [PersonAliasId]
             ,[e2].[PersonAliasId] [DuplicatePersonAliasId]
             ,max([e1].[First2]) [First2]
@@ -399,10 +376,9 @@ BEGIN
         GROUP BY e1.PersonAliasId
             ,e2.PersonAliasId
         ) [NameDup]
-	INNER JOIN [PersonDuplicate] [pd]
-	    ON ([pd].PersonAliasId = [NameDup].PersonAliasId)
+ INNER JOIN [PersonDuplicate] [pd]
+     ON ([pd].PersonAliasId = [NameDup].PersonAliasId)
         AND ([pd].DuplicatePersonAliasId = [NameDup].DuplicatePersonAliasId)
-
     INSERT INTO [PersonDuplicate] (
         PersonAliasId
         ,DuplicatePersonAliasId
@@ -422,7 +398,7 @@ BEGIN
         ,@processDateTime
         ,@processDateTime
         ,NEWID()
-	FROM (
+ FROM (
         SELECT [e1].[PersonAliasId] [PersonAliasId]
             ,[e2].[PersonAliasId] [DuplicatePersonAliasId]
             ,max([e1].[First2]) [First2]
@@ -434,20 +410,17 @@ BEGIN
         GROUP BY e1.PersonAliasId
             ,e2.PersonAliasId
         ) [NameDup]
-	LEFT OUTER JOIN [PersonDuplicate] [pd]
-	    ON ([pd].PersonAliasId = [NameDup].PersonAliasId)
+ LEFT OUTER JOIN [PersonDuplicate] [pd]
+     ON ([pd].PersonAliasId = [NameDup].PersonAliasId)
         AND ([pd].DuplicatePersonAliasId = [NameDup].DuplicatePersonAliasId)
-	WHERE [pd].[id] IS NULL
-
-	--PRINT'Merge Name Matches: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
-	--SET @ms = GETDATE()
-
+ WHERE [pd].[id] IS NULL
+ --PRINT'Merge Name Matches: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+ --SET @ms = GETDATE()
     --  Update PersonDuplicate table with results of phonenumber match for each number type. 
     --  For example, if both the Cell and Home phone match, that should be a higher score 
     DECLARE @PhoneNumberTypeValueId INT
     DECLARE @PhoneNumberTypeScore INT
     DECLARE @PhoneNumberTypeText VARCHAR(50)
-
     DECLARE phoneNumberTypeCursor CURSOR FAST_FORWARD
     FOR
     SELECT [Id]
@@ -457,13 +430,10 @@ BEGIN
             ,@cCELL_PHONENUMBER_DEFINEDVALUE_ID
             )
     ORDER BY [Id]
-
     OPEN phoneNumberTypeCursor
-
     FETCH NEXT
     FROM phoneNumberTypeCursor
     INTO @PhoneNumberTypeValueId
-
     -- loop thru each of the phone number types (home, cell)
     WHILE @@FETCH_STATUS = 0
     BEGIN
@@ -477,7 +447,6 @@ BEGIN
             SET @PhoneNumberTypeScore = @cScoreWeightNonCellPhoneNumber
             SET @PhoneNumberTypeText = '|Phone'
         END
-
         MERGE [PersonDuplicate] AS TARGET
         USING (
             SELECT [e1].[PersonAliasId] [PersonAliasId]
@@ -491,7 +460,7 @@ BEGIN
                 AND [e1].[Extension] = [e2].[Extension]
                 AND [e1].[CountryCode] = [e2].[CountryCode]
                 AND [e1].[NumberTypeValueId] = [e2].[NumberTypeValueId]
-				AND [e1].[GroupId] <> [e2].[GroupId] -- Ignore people with duplicate phone number in same family
+    AND [e1].[GroupId] <> [e2].[GroupId] -- Ignore people with duplicate phone number in same family
                 AND [e1].[PersonAliasId] > [e2].[PersonAliasId] -- we only need the matched pair in there once (don't need both PersonA == PersonB and PersonB == PersonA)
             WHERE [e1].[NumberTypeValueId] = @PhoneNumberTypeValueId
             GROUP BY e1.PersonAliasId
@@ -527,19 +496,14 @@ BEGIN
                     ,@processDateTime
                     ,NEWID()
                     );
-
         FETCH NEXT
         FROM phoneNumberTypeCursor
         INTO @PhoneNumberTypeValueId
     END
-
     CLOSE phoneNumberTypeCursor
-
     DEALLOCATE phoneNumberTypeCursor
-
-	--PRINT'Merge Phone Matches: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
-	--SET @ms = GETDATE()
-
+ --PRINT'Merge Phone Matches: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+ --SET @ms = GETDATE()
     -- Update PersonDuplicate table with results of address (location) match
     MERGE [PersonDuplicate] AS TARGET
     USING (
@@ -585,10 +549,8 @@ BEGIN
                 ,@processDateTime
                 ,NEWID()
                 );
-
-	--PRINT'Merge Address Matches: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
-	--SET @ms = GETDATE()
-
+ --PRINT'Merge Address Matches: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+ --SET @ms = GETDATE()
     /* Calculate Capacities before we do the additional scores
     */
     -- set base capacity to include MaritalStatus and Gender, since everybody has values for those
@@ -602,10 +564,8 @@ BEGIN
                 THEN @cScoreWeightMaritalStatus
             ELSE 0
             END;
-
-	--PRINT'Update Base Capacity: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
-	--SET @ms = GETDATE()
-
+ --PRINT'Update Base Capacity: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+ --SET @ms = GETDATE()
     -- increment capacity values for Email, PartialName, Birthdate (do in one Update statement since these are all person fields)
     UPDATE [PersonDuplicate]
     SET [Capacity] += CASE 
@@ -645,19 +605,17 @@ BEGIN
                 THEN @cScoreWeightBirthdate
             ELSE 0
             END + CASE
-			-- add the Suffix Capacity
-			WHEN @compareBySuffix = 1
-				AND p.SuffixValueId IS NOT NULL
-				THEN @cScoreWeightSuffix
-			ELSE 0
-			END
+   -- add the Suffix Capacity
+   WHEN @compareBySuffix = 1
+    AND p.SuffixValueId IS NOT NULL
+    THEN @cScoreWeightSuffix
+   ELSE 0
+   END
     FROM PersonDuplicate pd
     JOIN PersonAlias pa ON pa.Id = pd.PersonAliasId
     JOIN Person p ON p.Id = pa.PersonId
-
-	--PRINT'Increment Capacity for Email, Name, Birthdate: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
-	--SET @ms = GETDATE()
-
+ --PRINT'Increment Capacity for Email, Name, Birthdate: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+ --SET @ms = GETDATE()
     ---- NOTE Phone Capacity is higher if BOTH Home and Cell Phone are available
     -- increment capacity values for Home Phone
     UPDATE [PersonDuplicate]
@@ -671,10 +629,8 @@ BEGIN
             WHERE NumberTypeValueId = @cHOME_PHONENUMBER_DEFINEDVALUE_ID
             )
         AND @compareByPhone = 1
-
-	--PRINT'Increment Capacity for Home Phone: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
-	--SET @ms = GETDATE()
-
+ --PRINT'Increment Capacity for Home Phone: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+ --SET @ms = GETDATE()
     -- increment capacity values for Cell Phone
     UPDATE [PersonDuplicate]
     SET [Capacity] += @cScoreWeightCellPhoneNumber
@@ -687,10 +643,8 @@ BEGIN
             WHERE NumberTypeValueId = @cCELL_PHONENUMBER_DEFINEDVALUE_ID
             )
         AND @compareByPhone = 1
-
-	--PRINT'Increment Capacity for Cell Phone: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
-	--SET @ms = GETDATE()
-
+ --PRINT'Increment Capacity for Cell Phone: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+ --SET @ms = GETDATE()
     -- increment capacity values for Address
     UPDATE [PersonDuplicate]
     SET [Capacity] += @cScoreWeightAddress
@@ -707,10 +661,8 @@ BEGIN
             WHERE [gl].[GroupLocationTypeValueId] = @cLOCATION_TYPE_HOME_ID
             )
         AND @compareByAddress = 1
-
-	--PRINT'Increment Capacity for Address: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
-	--SET @ms = GETDATE()
-
+ --PRINT'Increment Capacity for Address: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+ --SET @ms = GETDATE()
     -- increment capacity values for Campus
     UPDATE [PersonDuplicate]
     SET [Capacity] += @cScoreWeightCampus
@@ -725,14 +677,11 @@ BEGIN
                 AND g.CampusId IS NOT NULL
             )
         AND @compareByCampus = 1
-
-	--PRINT'Increment Capacity for Campus: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
-	--SET @ms = GETDATE()
-
+ --PRINT'Increment Capacity for Campus: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+ --SET @ms = GETDATE()
     /*
     Add additional scores to people that are already potential matches 
     */
-
     -- Increment the score on potential matches that have the same FirstName (or NickName)
     UPDATE pd
     SET [Score] = [Score] + @cScoreWeightFullFirstName
@@ -763,10 +712,8 @@ BEGIN
                 )
             )
         AND @compareByFullFirstName = 1
-
-	--PRINT'Update score for first name matches: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
-	--SET @ms = GETDATE()
-
+ --PRINT'Update score for first name matches: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+ --SET @ms = GETDATE()
     -- Increment the score on potential matches that have the same LastName
     UPDATE pd
     SET [Score] = [Score] + @cScoreWeightFullFirstName
@@ -779,10 +726,8 @@ BEGIN
     WHERE p1.LastName = p2.LastName
         AND isnull(p1.LastName, '') != ''
         AND @compareByFullLastName = 1
-
-	--PRINT'Update score for last name matches: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
-	--SET @ms = GETDATE()
-
+ --PRINT'Update score for last name matches: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+ --SET @ms = GETDATE()
     -- Increment the score on potential matches that have the same birthday
     UPDATE pd
     SET [Score] = [Score] + @cScoreWeightBirthdate
@@ -794,10 +739,8 @@ BEGIN
     INNER JOIN Person p2 ON p2.Id = pa2.PersonId
     WHERE p1.BirthDate = p2.BirthDate
         AND @compareByBirthDate = 1
-
-	--PRINT'Update score for birthday matches: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
-	--SET @ms = GETDATE()
-
+ --PRINT'Update score for birthday matches: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+ --SET @ms = GETDATE()
     -- Increment the score on potential matches that have the same gender
     UPDATE pd
     SET [Score] = [Score] + @cScoreWeightGender
@@ -809,10 +752,8 @@ BEGIN
     JOIN Person p2 ON p2.Id = pa2.PersonId
     WHERE p1.Gender = p2.Gender
         AND @compareByGender = 1
-
-	--PRINT'Update score for gender matches: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
-	--SET @ms = GETDATE()
-
+ --PRINT'Update score for gender matches: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+ --SET @ms = GETDATE()
     -- Increment the score on potential matches that have the same campus
     UPDATE pd
     SET [Score] = [Score] + @cScoreWeightCampus
@@ -832,10 +773,8 @@ BEGIN
         AND [g1].[GroupTypeId] = @cGROUPTYPE_FAMILY_ID
         AND [g2].[GroupTypeId] = @cGROUPTYPE_FAMILY_ID
         AND @compareByCampus = 1
-
-	--PRINT'Update score for campus matches: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
-	--SET @ms = GETDATE()
-
+ --PRINT'Update score for campus matches: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+ --SET @ms = GETDATE()
     -- Increment the score on potential matches that have the same marital status
     UPDATE pd
     SET [Score] = [Score] + @cScoreWeightMaritalStatus
@@ -845,13 +784,10 @@ BEGIN
     JOIN PersonAlias pa2 ON pa2.Id = pd.DuplicatePersonAliasId
     JOIN Person p1 ON p1.Id = pa1.PersonId
     JOIN Person p2 ON p2.Id = pa2.PersonId
-	WHERE (p1.MaritalStatusValueId is not null and p2.MaritalStatusValueId is not null) 
-    and (p1.MaritalStatusValueId = p2.MaritalStatusValueId)
+    WHERE p1.MaritalStatusValueId = p2.MaritalStatusValueId
         AND @compareByMaritalStatus = 1
-
-	--PRINT'Update score for marital status matches: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
-	--SET @ms = GETDATE()
-
+ --PRINT'Update score for marital status matches: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+ --SET @ms = GETDATE()
     -- Increment the score on potential matches that have the same suffix
     UPDATE pd
     SET [Score] = [Score] + @cScoreWeightSuffix
@@ -861,70 +797,53 @@ BEGIN
     INNER JOIN PersonAlias pa2 ON pa2.Id = pd.DuplicatePersonAliasId
     INNER JOIN Person p1 ON p1.Id = pa1.PersonId
     INNER JOIN Person p2 ON p2.Id = pa2.PersonId
-    WHERE (p1.SuffixValueId is not null and p2.SuffixValueId is not null) 
-	  AND (p1.SuffixValueId = p2.SuffixValueId)
+    WHERE p1.SuffixValueId = p2.SuffixValueId
         AND @compareBySuffix = 1
-
-	--PRINT'Update score for suffix matches: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
-	--SET @ms = GETDATE()
-
+ --PRINT'Update score for suffix matches: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+ --SET @ms = GETDATE()
     /* 
     Clean up records that no longer are duplicates 
     */
     DECLARE @staleCount INT;
-
     SELECT @staleCount = count(*)
     FROM [PersonDuplicate]
     WHERE [ModifiedDateTime] < @processDateTime
-
     IF (@staleCount != 0)
     BEGIN
         DELETE
         FROM [PersonDuplicate]
         WHERE [ModifiedDateTime] < @processDateTime
     END
-
-	--PRINT'Remove stale matches: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
-	--SET @ms = GETDATE()
-
+ --PRINT'Remove stale matches: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+ --SET @ms = GETDATE()
     UPDATE [PersonDuplicate]
     SET [TotalCapacity] = @TotalCapacity
-
-	--PRINT'Set Total Capacity: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
-	--SET @ms = GETDATE()
-
-	UPDATE [PersonDuplicate]
-	SET [ConfidenceScore] = sqrt (
-		( CASE WHEN [TotalCapacity] > 0 
-			THEN [Capacity] / ( [TotalCapacity] * 0.01 ) 
-			ELSE 0 END )
-		*
-		( CASE WHEN [Capacity] > 0 
-			THEN [Score] / ( [Capacity] * 0.01 ) 
-			ELSE 0 END )
-	)
-
+ --PRINT'Set Total Capacity: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+ --SET @ms = GETDATE()
+ UPDATE [PersonDuplicate]
+ SET [ConfidenceScore] = sqrt (
+  ( CASE WHEN [TotalCapacity] > 0 
+   THEN [Capacity] / ( [TotalCapacity] * 0.01 ) 
+   ELSE 0 END )
+  *
+  ( CASE WHEN [Capacity] > 0 
+   THEN [Score] / ( [Capacity] * 0.01 ) 
+   ELSE 0 END )
+ )
     UPDATE [PersonDuplicate]
     SET IgnoreUntilScoreChanges = 0
     FROM [PersonDuplicate] [pd]
     JOIN @IgnoreUntilScoreChangesTable [g] ON pd.Id = g.id
     WHERE pd.ConfidenceScore != g.ConfidenceScore;
-
-	--PRINT'Set Ignore changes: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
-	--SET @ms = GETDATE()
-
+ --PRINT'Set Ignore changes: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+ --SET @ms = GETDATE()
     /*
     Explicitly clean up temp tables before the proc exits (vs. have SQL Server do it for us after the proc is done)
     */
     DROP TABLE #PersonDuplicateByEmailTable;
-
     DROP TABLE #PersonDuplicateByNameTable;
-
     DROP TABLE #PersonDuplicateByPhoneTable;
-
     DROP TABLE #PersonDuplicateByAddressTable;
-
-	--PRINT'Drop temp tables: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
-	--SET @ms = GETDATE()
-
+ --PRINT'Drop temp tables: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+ --SET @ms = GETDATE()
 END
