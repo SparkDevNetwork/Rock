@@ -48,11 +48,9 @@
 
                         <br />
                         <Rock:PanelWidget ID="wpGroupSync" runat="server" Title="Redis Backplane Settings" Expanded="false" >
-                            
+                            <Rock:NotificationBox ID="nbRedisSettings" runat="server" Visible="false" Dismissable="true" />
+
                             <div id="redisView" runat="server">
-                                <div id="redisNotEnabled" runat="server" class="alert alert-info">
-                                    Redis is currently not enabled. Review documentation for more information on enabling the Redis backplane support.
-                                </div>
 
                                 <div id="redisEnabled" runat="server">
                                     <div class="row"><div class="col-md-12"><Rock:RockCheckBox ID="cbEnabled" runat="server" Text="Enable" Enabled="false" /></div></div>
@@ -80,7 +78,7 @@
 
                                 <div class="row">
                                     <div class="col-md-12">
-                                        <div class="alert alert-info">Clicking save will cause the current cache to clear and the configurations to reload. This will cause Rock to be unavailable for several minutes</div>
+                                        <%--<div class="alert alert-info">Clicking save will cause the current cache to clear and the configurations to reload. This will cause Rock to be unavailable for several minutes</div>--%>
                                         <Rock:RockCheckBox ID="cbEnabledEdit" runat="server" Text="Enable" />
                                         <Rock:ListItems ID="liEndPoints" runat="server" Help="List of Redis endpoints (e.g. server.com:6379) to connect to." Label="End Points"></Rock:ListItems>
                                         <Rock:RockTextBox ID="tbPassword" runat="server" TextMode="Password" Help="The password used to connect. The need for a password is dependent on your Redis server configuration." Label="Password" ></Rock:RockTextBox>
