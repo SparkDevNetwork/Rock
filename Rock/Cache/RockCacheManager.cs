@@ -103,7 +103,7 @@ namespace Rock.Cache
             var attributeService = new Model.AttributeService( new Data.RockContext() );
             bool redisEnabled = attributeService.GetSystemSetting( SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER )?.DefaultValue.AsBoolean() ?? false;
             bool disableBackplane = System.Configuration.ConfigurationManager.AppSettings["DisableRemoteCache"].AsBooleanOrNull() ?? false;
-
+            
             if ( redisEnabled == false || disableBackplane )
             {
                 return new ConfigurationBuilder( "InProcess" )
@@ -112,6 +112,7 @@ namespace Rock.Cache
                 .Build();
             }
 
+            string redisPassword = attributeService.GetSystemSetting( Rock.SystemKey.SystemSetting.REDIS_PASSWORD ).DefaultValue ?? string.Empty;
             string[] redisEndPointList = attributeService.GetSystemSetting( SystemKey.SystemSetting.REDIS_ENDPOINT_LIST ).DefaultValue.Split( ',' );
             int redisDbIndex = attributeService.GetSystemSetting( SystemKey.SystemSetting.REDIS_DATABASE_NUMBER ).DefaultValue.AsIntegerOrNull() ?? 0;
 
@@ -121,8 +122,12 @@ namespace Rock.Cache
                 .And
                 .WithRedisConfiguration( "redis", redisConfig =>
                 {
-                    redisConfig.WithAllowAdmin()
-                    .WithDatabase( redisDbIndex );
+                    redisConfig.WithAllowAdmin().WithDatabase( redisDbIndex );
+
+                    if( redisPassword.IsNotNullOrWhitespace() )
+                    {
+                        redisConfig.WithPassword( redisPassword );
+                    }
 
                     foreach ( var redisEndPoint in redisEndPointList )
                     {

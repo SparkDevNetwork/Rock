@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 
+using Humanizer;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -103,9 +105,14 @@ namespace RockWeb.Blocks.Cms
             nbMessage.Text = string.Empty;
             nbMessage.NotificationBoxType = NotificationBoxType.Info;
             nbMessage.Visible = false;
+
             nbModalMessage.Text = string.Empty;
             nbModalMessage.NotificationBoxType = NotificationBoxType.Info;
             nbModalMessage.Visible = false;
+
+            nbRedisSettings.Text = string.Empty;
+            nbRedisSettings.NotificationBoxType = NotificationBoxType.Info;
+            nbRedisSettings.Visible = false;
         }
 
         private bool RestartWebApplication()
@@ -261,12 +268,13 @@ namespace RockWeb.Blocks.Cms
             bool enabled = enabledSetting.IsNullOrWhiteSpace() || enabledSetting.ToLower() == "false" ? false : true;
             if(!enabled )
             {
-                redisNotEnabled.Visible = true;
+                //redisNotEnabled.Visible = true;
+                DisplayNotification( nbRedisSettings, "Redis is currently not enabled. Review documentation for more information on enabling Redis backplane support.", NotificationBoxType.Info );
                 redisEnabled.Visible = false;
                 return;
             }
 
-            redisNotEnabled.Visible = false;
+            //redisNotEnabled.Visible = false;
             redisEnabled.Visible = true;
 
             string redisPassword = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.REDIS_PASSWORD ) ?? string.Empty;
@@ -294,7 +302,7 @@ namespace RockWeb.Blocks.Cms
         {
             ClearAndHideRedisView();
             redisEdit.Visible = true;
-
+            DisplayNotification( nbRedisSettings, "After clicking save Rock will be unavailable for a few minutes while the current cache is cleared and the configurations are reloaded.", NotificationBoxType.Warning );
             RedisEndPointAvailabilityCheck();
 
             string enabled = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER );
@@ -341,14 +349,30 @@ namespace RockWeb.Blocks.Cms
         {
             string serverList = string.Empty;
             var keyValuePairs = JsonConvert.DeserializeObject<List<Rock.Web.UI.Controls.ListItems.KeyValuePair>>( liEndPoints.Value );
+            bool endPointsHaveAtLeastOneValue = false;
 
             foreach ( var keyValuePair in keyValuePairs )
             {
                 serverList += keyValuePair.Value + ",";
+                endPointsHaveAtLeastOneValue = keyValuePair.Value.Trim().IsNotNullOrWhitespace() ? true : endPointsHaveAtLeastOneValue;
             }
 
             serverList = serverList.TrimEnd( ',' );
 
+            if ( cbEnabledEdit.Checked )
+            {
+                if ( !endPointsHaveAtLeastOneValue )
+                {
+                    DisplayNotification( nbRedisSettings, "At least one Redis endpoint must be entered.", NotificationBoxType.Warning );
+                    return;
+                }
+                else if ( !IsRedisAvailable( serverList.Split( ',' ) ) )
+                {
+                    DisplayNotification( nbRedisSettings, "None of the Redis endpoints entered are available.", NotificationBoxType.Warning );
+                    return;
+                }
+            }
+            
             SystemSettings.SetValue( Rock.SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER, cbEnabledEdit.Checked.ToString() );
             SystemSettings.SetValue( Rock.SystemKey.SystemSetting.REDIS_ENDPOINT_LIST, serverList );
             SystemSettings.SetValue( Rock.SystemKey.SystemSetting.REDIS_PASSWORD, tbPassword.Text );
@@ -364,6 +388,24 @@ namespace RockWeb.Blocks.Cms
             PopulateRedisView();
         }
 
+        /// <summary>
+        /// returns true if at least one of the endpoints is available.
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if [is redis available]; otherwise, <c>false</c>.
+        /// </returns>
+        private bool IsRedisAvailable( string[] endPoints )
+        {
+            string redisPassword = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.REDIS_PASSWORD ) ?? string.Empty;
+            int endPointErrorCount = 0;
+            
+            foreach ( var endPoint in endPoints )
+            {
+                endPointErrorCount += RockCache.IsEndPointAvailable( endPoint, redisPassword ) == true ? 0 : 1;
+            }
+
+            return endPointErrorCount == endPoints.Length ? false : true;
+        }
 
         /// <summary>
         /// Checks the availibility of the configured Redis endpoints and updates the status label.
@@ -398,12 +440,12 @@ namespace RockWeb.Blocks.Cms
             else if ( endPointErrorCount < endPoints.Length )
             {
                 spRedisStatus.Attributes["class"] = "pull-right label label-warning";
-                spRedisStatus.InnerText = string.Format( "{0} of {1} Redis endpoint(s) cannot connect", endPointErrorCount, endPoints.Length );
+                spRedisStatus.InnerText = string.Format( "{0} of {1} Redis endpoints cannot connect", endPointErrorCount, endPoints.Length );
             }
             else
             {
                 spRedisStatus.Attributes["class"] = "pull-right label label-danger";
-                spRedisStatus.InnerText = string.Format( "All {0} endpoints cannot connect", endPoints.Length );
+                spRedisStatus.InnerText = string.Format( "All {0} {1} cannot connect", endPoints.Length, "endpoint".ToQuantity( endPoints.Length ) );
             }
         }
 
