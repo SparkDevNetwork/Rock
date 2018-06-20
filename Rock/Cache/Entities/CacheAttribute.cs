@@ -568,7 +568,7 @@ namespace Rock.Cache
 
 
         /// <summary>
-        /// Gets the by entity.
+        /// Gets a list of AttributeIds for the specified entityTypeId
         /// </summary>
         /// <param name="entityTypeId">The entity type identifier.</param>
         /// <returns></returns>
@@ -616,6 +616,16 @@ namespace Rock.Cache
         public static void RemoveEntityAttributes()
         {
             CacheEntityAttributes.Remove();
+        }
+
+        /// <summary>
+        /// Updates the <see cref="CacheEntityAttributes" /> based on the attribute and entityState
+        /// </summary>
+        /// <param name="attribute">The attribute.</param>
+        /// <param name="entityState">State of the entity.</param>
+        internal static void UpdateCacheEntityAttributes( Rock.Model.Attribute attribute, System.Data.Entity.EntityState entityState )
+        {
+            CacheEntityAttributes.UpdateCacheEntityAttributes( attribute, entityState );
         }
 
         #endregion

@@ -205,7 +205,16 @@ namespace Rock.Cache
                 foreach ( var id in AttributeIds.ToList() )
                 {
                     var attribute = CacheAttribute.Get( id );
-                    attributes.Add( attribute.Key, attribute );
+                    if ( attribute == null )
+                    {
+                        // this could happen if another thread deleted the attribute. If so, don't add it since it no longer exists
+                        // NOTE:this should only happen if another thread deleted the attribute at the same time that this object was trying to fetch it, and should correct itself
+                        System.Diagnostics.Debug.WriteLine( "!!!!!!!!!!Deleted CacheAttribute detected!!!!!. This is OK, but should be rare and only happen in a multi-threaded situation" );
+                    }
+                    else
+                    {
+                        attributes.Add( attribute.Key, attribute );
+                    }
                 }
 
                 return attributes;
@@ -324,12 +333,12 @@ namespace Rock.Cache
             }
         }
 
-        /// <summary>
-        /// Updates the cached attribute ids based on the attributeEntityState
+       /* /// <summary>
+        /// Updates the cached item and/or attributes based on attributeEntityState
         /// </summary>
         /// <param name="attributeId">The attribute identifier.</param>
         /// <param name="attributeEntityState">State of the attribute entity.</param>
-        public void UpdateCachedAttributeIds( int attributeId, System.Data.Entity.EntityState attributeEntityState)
+        public void UpdateCachedAttributes( int attributeId, System.Data.Entity.EntityState attributeEntityState)
         {
             var attributeIds = this.AttributeIds.ToList();
 
@@ -351,7 +360,7 @@ namespace Rock.Cache
             }
 
             this.AttributeIds = attributeIds;
-        }
+        }*/
 
         /// <summary>
         /// Reloads the attribute values.

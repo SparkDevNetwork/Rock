@@ -221,22 +221,28 @@ namespace Rock.Cache
         }
 
         /// <summary>
-        /// Adds, Removes, or Reloads the cached entity based on the entityState and database state
+        /// Removes or invalidates the CachedItem based on EntityState
         /// </summary>
         /// <param name="entityId">The entity identifier.</param>
         /// <param name="entityState">State of the entity. If unknown, use <see cref="EntityState.Detached" /></param>
-        /// <param name="rockContext">The rock context.</param>
-        public static void UpdateCachedEntity( int entityId, System.Data.Entity.EntityState entityState, RockContext rockContext )
+        public static void UpdateCachedEntity( int entityId, System.Data.Entity.EntityState entityState )
         {
-            if ( entityState != EntityState.Added )
+            // NOTE: Don't read the Item into the Cache here since it could be part of a transaction that could be rolled back.
+            // Reading it from the database here could also cause a deadlock depending on the database isolation level.
+            // Just remove it from Cache, and update the AllIds based on entityState
+
+            if ( entityState == EntityState.Deleted )
             {
                 Remove( entityId );
             }
-
-            // unless we know for sure it was deleted, do a Get to update the cache (if the item still exists in the database)
-            if ( entityState != EntityState.Deleted )
+            else if ( entityState == EntityState.Added )
             {
-                Get( entityId, rockContext );
+                // add this entity to All Ids, but don't fetch it into cache until somebody asks for it
+                AddToAllIds( entityId );
+            }
+            else
+            {
+                FlushItem( entityId );
             }
         }
 

@@ -147,7 +147,7 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
         {
-            CacheDefinedValue.UpdateCachedEntity( this.Id, entityState, dbContext as RockContext );
+            CacheDefinedValue.UpdateCachedEntity( this.Id, entityState );
             CacheDefinedType.Get( this.DefinedTypeId )?.ReloadDefinedValues();
         }
 
