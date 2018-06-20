@@ -94,11 +94,13 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this AttendanceOccurrence target, AttendanceOccurrence source )
         {
             target.Id = source.Id;
+            target.AnonymousAttendanceCount = source.AnonymousAttendanceCount;
             target.DidNotOccur = source.DidNotOccur;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.GroupId = source.GroupId;
             target.LocationId = source.LocationId;
+            target.Notes = source.Notes;
             target.OccurrenceDate = source.OccurrenceDate;
             target.ScheduleId = source.ScheduleId;
             target.CreatedDateTime = source.CreatedDateTime;
