@@ -579,16 +579,16 @@ namespace Rock.Model
                 oldPageCache.RemoveChildPages();
             }
 
-            CachePage.UpdateCachedEntity( this.Id, entityState, dbContext as RockContext );
+            CachePage.UpdateCachedEntity( this.Id, entityState );
 
             if ( this.ParentPageId.HasValue )
             {
-                CachePage.UpdateCachedEntity( this.ParentPageId.Value, System.Data.Entity.EntityState.Detached, dbContext as RockContext );
+                CachePage.UpdateCachedEntity( this.ParentPageId.Value, System.Data.Entity.EntityState.Detached );
             }
 
             if ( _originalParentPageId.HasValue && _originalParentPageId != this.ParentPageId )
             {
-                CachePage.UpdateCachedEntity( _originalParentPageId.Value, System.Data.Entity.EntityState.Detached, dbContext as RockContext );
+                CachePage.UpdateCachedEntity( _originalParentPageId.Value, System.Data.Entity.EntityState.Detached );
             }
         }
 
