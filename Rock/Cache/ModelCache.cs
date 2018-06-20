@@ -209,7 +209,7 @@ namespace Rock.Cache
                     {
                         // this could happen if another thread deleted the attribute. If so, don't add it since it no longer exists
                         // NOTE:this should only happen if another thread deleted the attribute at the same time that this object was trying to fetch it, and should correct itself
-                        System.Diagnostics.Debug.WriteLine( "!!!!!!!!!!Deleted CacheAttribute detected!!!!!. This is OK, but should be rare and only happen in a multi-threaded situation" );
+                        System.Diagnostics.Debug.WriteLine( "Deleted CacheAttribute detected. This is OK, but should be rare and only happen in a multi-threaded situation. If you see this message alot, something is wrong." );
                     }
                     else
                     {
