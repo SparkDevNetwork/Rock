@@ -531,15 +531,15 @@ namespace Rock.Migrations
         {
             Sql( @"UPDATE[HtmlContent]
 SET[Content] = '<a class=""navbar-brand"" href=""~/page/1"">
-{% - if CurrentPage.Layout.Site.SiteLogoBinaryFileId -%}
-    < img src = ""/GetImage.ashx?id={{ CurrentPage.Layout.Site.SiteLogoBinaryFileId }}"" alt = ""{{ ''Global'' | Attribute:''OrganizationName'' }}"" >
-{% - else -%}
-            { { ''Global'' | Attribute:''OrganizationName'' } }
-            {% -endif -%}
-</ a >
+{%- if CurrentPage.Layout.Site.SiteLogoBinaryFileId -%}
+    <img src=""/GetImage.ashx?id={{ CurrentPage.Layout.Site.SiteLogoBinaryFileId }}"" alt=""{{ ''Global'' | Attribute:''OrganizationName'' }}"">
+{%- else -%}
+            {{ ''Global'' | Attribute:''OrganizationName'' }}
+            {%- endif -%}
+</a>
 '
-WHERE[BlockId] = ( SELECT[ID] FROM[Block] WHERE[Guid] = 'CABFB331-8878-46BF-AAE0-65E28560AEBB')
-AND[Content] = '<a class=""navbar-brand"" href=""~/page/1"">{{ ''Global'' | Attribute:''OrganizationName'' }}</a>
+WHERE [BlockId] = ( SELECT [ID] FROM [Block] WHERE [Guid] = 'CABFB331-8878-46BF-AAE0-65E28560AEBB')
+AND [Content] = '<a class=""navbar-brand"" href=""~/page/1"">{{ ''Global'' | Attribute:''OrganizationName'' }}</a>
 '");
 
         }
