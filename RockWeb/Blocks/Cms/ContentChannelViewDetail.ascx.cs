@@ -58,6 +58,8 @@ Guid - ContentChannelItem Guid
 
     [IntegerField( "Output Cache Duration", "Number of seconds to cache the resolved output. Only cache the output if you are not personalizing the output based on current user, current page, or any other merge field value.", required: false, key: "OutputCacheDuration", category: "CustomSetting" )]
     [IntegerField( "Item Cache Duration", "Number of seconds to cache the content item specified by the parameter.", false, 3600, "CustomSetting", 0, "ItemCacheDuration" )]
+    [CustomCheckboxListField( "Cache Tags", "Cached tags are used to link cached content so that it can be expired as a group", listSource: "", required: false, key: "CacheTags", category: "CustomSetting" )]
+
     [BooleanField( "Set Page Title", "Determines if the block should set the page title with the channel name or content item.", category: "CustomSetting" )]
 
     [BooleanField( "Log Interactions", category: "CustomSetting" )]
@@ -211,6 +213,16 @@ Guid - ContentChannelItem Guid
             ceLavaTemplate.Text = this.GetAttributeValue( "LavaTemplate" );
             nbOutputCacheDuration.Text = this.GetAttributeValue( "OutputCacheDuration" );
             nbItemCacheDuration.Text = this.GetAttributeValue( "ItemCacheDuration" );
+
+            DefinedValueService definedValueService = new DefinedValueService( new RockContext() );
+            cblCacheTags.DataSource = definedValueService.GetByDefinedTypeGuid( Rock.SystemGuid.DefinedType.CACHE_TAGS.AsGuid() ).Select( v => v.Value ).ToList();
+            cblCacheTags.DataBind();
+            string[] selectedCacheTags = this.GetAttributeValue( "CacheTags" ).SplitDelimitedValues();
+            foreach( ListItem cacheTag in cblCacheTags.Items )
+            {
+                cacheTag.Selected = selectedCacheTags.Contains( cacheTag.Value );
+            }
+
             cbSetPageTitle.Checked = this.GetAttributeValue( "SetPageTitle" ).AsBoolean();
 
             cbLogInteractions.Checked = this.GetAttributeValue( "LogInteractions" ).AsBoolean();
@@ -261,6 +273,7 @@ Guid - ContentChannelItem Guid
             this.SetAttributeValue( "LavaTemplate", ceLavaTemplate.Text );
             this.SetAttributeValue( "OutputCacheDuration", nbOutputCacheDuration.Text );
             this.SetAttributeValue( "ItemCacheDuration", nbItemCacheDuration.Text );
+            this.SetAttributeValue( "CacheTags", cblCacheTags.SelectedValues.AsDelimited( "," ) );
             this.SetAttributeValue( "SetPageTitle", cbSetPageTitle.Checked.ToString() );
             this.SetAttributeValue( "LogInteractions", cbLogInteractions.Checked.ToString() );
             this.SetAttributeValue( "WriteInteractionOnlyIfIndividualLoggedIn", cbWriteInteractionOnlyIfIndividualLoggedIn.Checked.ToString() );
@@ -434,12 +447,17 @@ Guid - ContentChannelItem Guid
 
                 if ( outputCacheDuration.HasValue && outputCacheDuration.Value > 0 )
                 {
+                    string cacheTags = GetAttributeValue( "CacheTags" ) ?? string.Empty;
                     var cacheKeys = GetCacheItem( CACHEKEYS_CACHE_KEY ) as HashSet<string> ?? new HashSet<string>();
                     cacheKeys.Add( outputCacheKey );
                     cacheKeys.Add( pageTitleCacheKey );
-                    AddCacheItem( CACHEKEYS_CACHE_KEY, cacheKeys );
-                    AddCacheItem( outputCacheKey, outputContents, outputCacheDuration.Value );
-                    AddCacheItem( pageTitleCacheKey, pageTitle, outputCacheDuration.Value );
+                    AddCacheItem( CACHEKEYS_CACHE_KEY, cacheKeys, TimeSpan.MaxValue, cacheTags );
+                    AddCacheItem( outputCacheKey, outputContents, outputCacheDuration.Value, cacheTags );
+
+                    if ( pageTitle != null )
+                    {
+                        AddCacheItem( pageTitleCacheKey, pageTitle, outputCacheDuration.Value, cacheTags );
+                    }
                 }
             }
 
