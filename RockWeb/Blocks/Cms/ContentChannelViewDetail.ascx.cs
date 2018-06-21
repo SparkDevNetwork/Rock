@@ -225,8 +225,18 @@ Guid - ContentChannelItem Guid
 
             cbSetPageTitle.Checked = this.GetAttributeValue( "SetPageTitle" ).AsBoolean();
 
-            cbLogInteractions.Checked = this.GetAttributeValue( "LogInteractions" ).AsBoolean();
-            cbWriteInteractionOnlyIfIndividualLoggedIn.Checked = this.GetAttributeValue( "WriteInteractionOnlyIfIndividualLoggedIn" ).AsBoolean();
+            if ( this.GetAttributeValue( "LogInteractions" ).AsBoolean() )
+            {
+                cbLogInteractions.Checked = true;
+                cbWriteInteractionOnlyIfIndividualLoggedIn.Visible = true;
+                cbWriteInteractionOnlyIfIndividualLoggedIn.Checked = this.GetAttributeValue( "WriteInteractionOnlyIfIndividualLoggedIn" ).AsBoolean();
+            }
+            else
+            {
+                cbLogInteractions.Checked = false;
+                cbWriteInteractionOnlyIfIndividualLoggedIn.Visible = false;
+                cbWriteInteractionOnlyIfIndividualLoggedIn.Checked = false;
+            }
 
             var rockContext = new RockContext();
 
@@ -831,5 +841,25 @@ Guid - ContentChannelItem Guid
         }
 
         #endregion Methods
+
+        /// <summary>
+        /// Handles the CheckedChanged event of the cbLogInteractions control.
+        /// If log interactions is not enabled then don't allow write interaction setting.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void cbLogInteractions_CheckedChanged( object sender, EventArgs e )
+        {
+            if (cbLogInteractions.Checked)
+            {
+                cbWriteInteractionOnlyIfIndividualLoggedIn.Visible = true;
+                cbWriteInteractionOnlyIfIndividualLoggedIn.Checked = true;
+            }
+            else
+            {
+                cbWriteInteractionOnlyIfIndividualLoggedIn.Visible = false;
+                cbWriteInteractionOnlyIfIndividualLoggedIn.Checked = false;
+            }
+        }
     }
 }

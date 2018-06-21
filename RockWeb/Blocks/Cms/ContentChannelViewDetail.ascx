@@ -33,7 +33,7 @@
                             <div class="col-md-6">
                                 <fieldset>
                                     <legend>Interactions</legend>
-                                    <Rock:RockCheckBox ID="cbLogInteractions" runat="server" Label="Log Item Interaction" Help="Create an interaction for the current content channel item" />
+                                    <Rock:RockCheckBox ID="cbLogInteractions" runat="server" Label="Log Item Interaction" Help="Create an interaction for the current content channel item" OnCheckedChanged="cbLogInteractions_CheckedChanged" AutoPostBack="true" />
                                     <Rock:RockCheckBox ID="cbWriteInteractionOnlyIfIndividualLoggedIn" runat="server" Label="Write Interaction Only If Individual Logged In" Help="Set to true to only launch a workflow for logged in users, or set to false to launch for both logged in and anonymous users." />
                                 </fieldset>
                             </div>
