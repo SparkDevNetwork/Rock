@@ -102,6 +102,10 @@ namespace Rock.Jobs
                 {
                     foreach( Person person in resultSet )
                     {
+                        if ( !person.IsEmailActive || person.Email.IsNullOrWhiteSpace() || person.EmailPreference == EmailPreference.DoNotEmail )
+                        {
+                            continue;
+                        }
                         var mergeFields = Lava.LavaHelper.GetCommonMergeFields( null );
                         mergeFields.Add( "Person", person );
                         recipients.Add( new RecipientData( person.Email, mergeFields ) );
