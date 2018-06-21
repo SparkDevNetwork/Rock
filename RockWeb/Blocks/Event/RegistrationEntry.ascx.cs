@@ -1822,6 +1822,12 @@ namespace RockWeb.Blocks.Event
                 {
                     registration.SavePersonNotesAndHistory( registration.PersonAlias.Person, this.CurrentPersonAliasId, previousRegistrantPersonIds );
                 }
+                // This occurs when the registrar is logged in
+                else if ( registration.PersonAliasId.HasValue )
+                {
+                    var registrar = new PersonAliasService( rockContext ).Get( registration.PersonAliasId.Value );
+                    registration.SavePersonNotesAndHistory( registrar.Person, this.CurrentPersonAliasId, previousRegistrantPersonIds );
+                }
 
                 AddRegistrantsToGroup( rockContext, registration );
 
