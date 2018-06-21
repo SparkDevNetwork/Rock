@@ -115,6 +115,31 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "true" ),
+        Description( "Should the option to select the current page be displayed?" )
+        ]
+        public bool ShowSelectCurrentPage
+        {
+            get
+            {
+                if ( ViewState["ShowSelectCurrentPage"] != null )
+                {
+                    return ( bool ) ViewState["ShowSelectCurrentPage"];
+                }
+
+                // default to true
+                return true;
+            }
+
+            set
+            {
+                ViewState["ShowSelectCurrentPage"] = value;
+            }
+        }
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -420,14 +445,17 @@ namespace Rock.Web.UI.Controls
             _btnCancelPageRoute.ID = string.Format( "btnCancelPageRoute_{0}", this.ID );
             _btnCancelPageRoute.Text = "Cancel";
 
-            _btnSelectCurrentPage = new LinkButton();
-            _btnSelectCurrentPage.ID = this.ID + "_btnSelectCurrentPage";
-            _btnSelectCurrentPage.CssClass = "btn btn-xs btn-link pull-right";
-            _btnSelectCurrentPage.Text = "<i class='fa fa-file-o'></i>";
-            _btnSelectCurrentPage.ToolTip = "Select Current Page";
-            _btnSelectCurrentPage.CausesValidation = false;
-            _btnSelectCurrentPage.Click += _btnSelectCurrentPage_Click;
-            Controls.Add( _btnSelectCurrentPage );
+            if ( ShowSelectCurrentPage )
+            {
+                _btnSelectCurrentPage = new LinkButton();
+                _btnSelectCurrentPage.ID = this.ID + "_btnSelectCurrentPage";
+                _btnSelectCurrentPage.CssClass = "btn btn-xs btn-link pull-right";
+                _btnSelectCurrentPage.Text = "<i class='fa fa-file-o'></i>";
+                _btnSelectCurrentPage.ToolTip = "Select Current Page";
+                _btnSelectCurrentPage.CausesValidation = false;
+                _btnSelectCurrentPage.Click += _btnSelectCurrentPage_Click;
+                Controls.Add( _btnSelectCurrentPage );
+            }
 
             Controls.Add( _hfPageRouteId );
             Controls.Add( _rblSelectPageRoute );
@@ -477,7 +505,10 @@ namespace Rock.Web.UI.Controls
         {
             base.RenderCustomPickerActions( writer );
 
-            _btnSelectCurrentPage.RenderControl( writer );
+            if ( ShowSelectCurrentPage )
+            {
+                _btnSelectCurrentPage.RenderControl( writer );
+            }
         }
 
         /// <summary>
