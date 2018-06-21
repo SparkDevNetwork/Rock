@@ -123,6 +123,12 @@ namespace Rock.Jobs
                         var recipients = new List<RecipientData>();
                         var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
                         var person = transaction.AuthorizedPersonAlias.Person;
+
+                        if ( !person.IsEmailActive || person.Email.IsNullOrWhiteSpace() || person.EmailPreference == EmailPreference.DoNotEmail )
+                        {
+                            continue;
+                        }
+
                         mergeFields.Add( "Person", person );
                         mergeFields.Add( "Card", acctNum );
                         mergeFields.Add( "Expiring", expirationDate );
