@@ -443,7 +443,7 @@ Guid - ContentChannelItem Guid
                 }
             }
 
-            phContent.Controls.Add( new LiteralControl( outputContents ) );
+            lContentOutput.Text = outputContents;
 
             if ( setPageTitle && pageTitle != null )
             {
@@ -535,7 +535,14 @@ Guid - ContentChannelItem Guid
                 }
                 else
                 {
-                    contentChannelItemKey = this.PageParameters().Select( a => a.Value.ToString() ).FirstOrDefault();
+                    var currentRoute = ( ( System.Web.Routing.Route ) Page.RouteData.Route );
+
+                    // if this is the standard "page/{PageId" route, don't grab the Item from the route since it would just be the pageId
+                    if ( currentRoute == null || currentRoute.Url != "page/{PageId}" )
+                    {
+                        // if no specific Parameter was specified, and there was no QueryString, get whatever the last Parameter in the Route is
+                        contentChannelItemKey = this.PageParameters().Select( a => a.Value.ToString() ).LastOrDefault();
+                    }
                 }
 
             }
