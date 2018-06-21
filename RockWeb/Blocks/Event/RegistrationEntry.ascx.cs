@@ -1521,7 +1521,7 @@ namespace RockWeb.Blocks.Event
                 registrantPages += 2;
             }
 
-            this.ProgressBarSteps = (numHowMany.Value * registrantPages) + 2;
+            this.ProgressBarSteps = ( numHowMany.Value * registrantPages ) + 2;
 
             return true;
         }
@@ -2430,7 +2430,7 @@ namespace RockWeb.Blocks.Event
                             var oldFeeValue = string.Format( "'{0}' Fee (Quantity:{1:N0}, Cost:{2:C2}, Option:{3}",
                                     dbFee.RegistrationTemplateFee.Name, dbFee.Quantity, dbFee.Cost, dbFee.Option );
 
-                            registrantChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Fee").SetOldValue( oldFeeValue );
+                            registrantChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Fee" ).SetOldValue( oldFeeValue );
 
                             registrant.Fees.Remove( dbFee );
                             registrantFeeService.Delete( dbFee );
@@ -2470,7 +2470,7 @@ namespace RockWeb.Blocks.Event
 
                             if ( dbFee.Id <= 0 )
                             {
-                                registrantChanges.AddChange(History.HistoryVerb.Add, History.HistoryChangeType.Record, "Fee" ).SetNewValue( feeName );
+                                registrantChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Fee" ).SetNewValue( feeName );
                             }
 
                             History.EvaluateChange( registrantChanges, feeName + " Quantity", dbFee.Quantity, uiFeeOption.Quantity );
@@ -3022,7 +3022,7 @@ namespace RockWeb.Blocks.Event
                 }
 
                 var registrationChanges = new History.HistoryChangeList();
-                registrationChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Payment").SetNewValue( string.Format( "{0} payment", transaction.TotalAmount.FormatAsCurrency() ) );
+                registrationChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Payment" ).SetNewValue( string.Format( "{0} payment", transaction.TotalAmount.FormatAsCurrency() ) );
                 Task.Run( () =>
                     HistoryService.SaveChanges(
                         new RockContext(),
@@ -3633,7 +3633,7 @@ namespace RockWeb.Blocks.Event
             pnlRegistrant.Visible = CurrentPanel == 1;
 
             pnlSummaryAndPayment.Visible = CurrentPanel == 2 || CurrentPanel == 3;
-           
+
             pnlRegistrantsReview.Visible = CurrentPanel == 2;
             if ( currentPanel != 2 )
             {
@@ -3835,7 +3835,7 @@ namespace RockWeb.Blocks.Event
         $('#iframeRequiredDocument').attr('src', $('#{21}').val() );
     }}
 
-", 
+",
                 nbAmountPaid.ClientID,                 // {0}
                 hfTotalCost.ClientID,                   // {1}
                 hfMinimumDue.ClientID,                  // {2}
@@ -4028,7 +4028,7 @@ namespace RockWeb.Blocks.Event
                 // If the current form, is the last one, add any fee controls
                 if ( FormCount - 1 == CurrentFormIndex && !registrant.OnWaitList )
                 {
-                    foreach ( var fee in RegistrationTemplate.Fees.Where( f => f.IsActive == true ).OrderBy( o => o .Order ) )
+                    foreach ( var fee in RegistrationTemplate.Fees.Where( f => f.IsActive == true ).OrderBy( o => o.Order ) )
                     {
                         var feeValues = new List<FeeInfo>();
                         if ( registrant != null && registrant.FeeValues.ContainsKey( fee.Id ) )
@@ -4981,9 +4981,9 @@ namespace RockWeb.Blocks.Event
                     tbConfirmationEmail.Text = firstRegistrant.GetEmail( RegistrationTemplate );
 
                     // if we have all of the required info for the registrar then hide the panel
-                    if ( !string.IsNullOrWhiteSpace( tbYourFirstName.Text ) && 
+                    if ( !string.IsNullOrWhiteSpace( tbYourFirstName.Text ) &&
                          !string.IsNullOrWhiteSpace( tbYourLastName.Text ) &&
-                         !string.IsNullOrWhiteSpace( tbConfirmationEmail.Text ) && 
+                         !string.IsNullOrWhiteSpace( tbConfirmationEmail.Text ) &&
                          RegistrationTemplate.RegistrarOption == RegistrarOption.UseFirstRegistrant )
                     {
                         pnlRegistrarInfo.Visible = false;
