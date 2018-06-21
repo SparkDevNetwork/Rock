@@ -593,6 +593,11 @@ namespace Rock.Web.UI.Controls
                     {5}
                 }});
 
+                // make sure the editor is sized correctly (fixes an issue when editor is used in a modal)
+                setTimeout(function () {{
+                    ce_{0}.resize();
+                }}, 0);
+
                 {6}
 ";
 
