@@ -34,11 +34,11 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
     /// <summary>
-    /// Block for displaying the history of changes to a particular user.
+    /// (OBSOLETE) Block for displaying the history of changes to a particular user.
     /// </summary>
     [DisplayName( "Person History" )]
     [Category( "CRM > Person Detail" )]
-    [Description( "Block for displaying the history of changes to a particular user." )]
+    [Description( "NOTE: This block is obsolete. Use Core > HistoryLog instead." )]
     public partial class PersonHistory : PersonBlock
     {
 
