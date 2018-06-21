@@ -139,6 +139,7 @@ namespace RockWeb.Blocks.Core
                 // Cancelling on Add, and we know the parentCategoryId, so we are probably in treeview mode, so navigate to the current page
                 var qryParams = new Dictionary<string, string>();
                 qryParams["CategoryId"] = parentCategoryId.ToString();
+                qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
                 NavigateToPage( RockPage.Guid, qryParams );
             }
             else
@@ -282,6 +283,7 @@ namespace RockWeb.Blocks.Core
 
             var qryParams = new Dictionary<string, string>();
             qryParams["CategoryId"] = category.Id.ToString();
+            qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
             NavigateToPage( RockPage.Guid, qryParams );
         }
 
