@@ -24,7 +24,7 @@
                             <Rock:RockBoundField DataField="Category" SortExpression="Category" HeaderText="Category" />
                             <asp:HyperLinkField DataTextField="PersonName" DataNavigateUrlFields="CreatedByPersonId" SortExpression="PersonName" DataNavigateUrlFormatString="~/Person/{0}" HeaderText="Who" />
                             <Rock:RockLiteralField HeaderText="Did" SortExpression="Summary">
-                                <ItemTemplate><%# FormatSummary( (int)Eval("EntityTypeId"), (int)Eval( "EntityId" ), Eval( "Summary" ).ToString() ) %></ItemTemplate>
+                                <ItemTemplate><%# FormatSummary( (int)Eval("EntityTypeId"), (int)Eval( "EntityId" ), Eval( "Summary" ) as string ) %></ItemTemplate>
                             </Rock:RockLiteralField>
                             <Rock:RockTemplateField HeaderText="What">
                                 <ItemTemplate><%# FormatCaption( (int)Eval("CategoryId"), Eval( "Caption" ).ToString(), (int)Eval( "RelatedEntityId" ) ) %></ItemTemplate>
