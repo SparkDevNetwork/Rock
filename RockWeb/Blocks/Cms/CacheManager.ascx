@@ -18,10 +18,12 @@
             </div>
             <div class="panel-body">
                 
-                <asp:LinkButton ID="btnClearCache" runat="server" CssClass="btn btn-primary btn-xs pull-right" OnClick="btnClearCache_Click" CausesValidation="false">
+                <div class="clearfix">
+                    <asp:LinkButton ID="btnClearCache" runat="server" CssClass="btn btn-primary btn-xs pull-right margin-b-md" OnClick="btnClearCache_Click" CausesValidation="false">
                     <i class="fa fa-repeat"></i> Clear Cache
-                </asp:LinkButton>
-                
+                    </asp:LinkButton>
+                </div>
+
                 <Rock:NotificationBox ID="nbMessage" runat="server" Visible="false" Dismissable="true" />
 
                 <div class="row">
@@ -33,7 +35,7 @@
                                 <Rock:RockBoundField DataField="TagName" HeaderText="Tag Name" SortExpression="TagName" />
                                 <Rock:RockBoundField DataField="TagDescription" HeaderText="Description" SortExpression="TagDescription" TruncateLength="255" HtmlEncode="false" />
                                 <Rock:RockBoundField DataField="LinkedKeys" HeaderText="Linked Keys" SortExpression="LinkedKeys" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
-                                <Rock:LinkButtonField Text="<i class='fa fa-eraser'></i>" CssClass="btn btn-default btn-sm btn-square" OnClick="gCacheTagList_ClearCacheTag" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
+                                <Rock:LinkButtonField ToolTip="Flushes all items from cache that are tied to this tag." Text="<i class='fa fa-eraser'></i>" CssClass="btn btn-default btn-sm btn-square" OnClick="gCacheTagList_ClearCacheTag" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
                             </Columns>
                         </Rock:Grid>
                     </div>
