@@ -490,6 +490,9 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual bool DeleteRange( IEnumerable<T> items )
         {
+            if ( items == null )
+                return false;
+
             _objectSet.RemoveRange( items );
             return true;
         }
