@@ -19,7 +19,21 @@ _What will this pull request achieve and how will this fix the problem?_
 _How have you implemented your solution?_
 
 ## Tests
-_If your code is a new method or function (that doesn't need a mock database or SqlServerTypes library) and can be Xunit tested [see example](https://github.com/SparkDevNetwork/Rock/blob/develop/Rock.Tests/Rock/Lava/RockFiltersTests.cs) be sure your pull request includes the corresponding unit tests in the Rock.Tests project. In all cases *you* MUST test your code before submitting a pull request._
+>NOTE: _Tests are now required._
+
+1. _Your pull request MUST include corresponding tests in the Rock.Tests project._ 
+2. _Regardless of writing a test, *you* MUST always test your code before submitting a pull request._
+3. _Read item 0 from the [readme.txt](https://github.com/SparkDevNetwork/Rock/blob/develop/Rock.Tests/Readme.txt) in the Rock.Tests project._
+
+### Tests That Don't Require a Database
+_If your test doesn't require a database or SqlServerTypes library follow [this example](https://github.com/SparkDevNetwork/Rock/blob/develop/Rock.Tests/Rock/Utility/ExtensionMethods/StringExtensionsTests.cs) or one of the other similar test classes._
+
+### Tests That Require a Database
+_Read the entire [readme.txt](https://github.com/SparkDevNetwork/Rock/blob/develop/Rock.Tests/Readme.txt) in the Rock.Tests project._
+
+_Follow [this example](https://github.com/SparkDevNetwork/Rock/blob/develop/Rock.Tests/Rock/Model/AttendanceCodeTests.cs) but remove the "Skip" property from the [Fact] decoration during testing. You should use a stock database seeded with the official "Sample Data" loaded via [the block](https://github.com/SparkDevNetwork/Rock/blob/develop/RockWeb/Blocks/Examples/SampleData.ascx.cs) under Power Tools._
+
+_Once your tests pass, add the "Skip" property back into the [Fact] decoration (for now) before you commit it._
 
 ## Possible Implications
 _What could this change potentially impact? Are there any security considerations? Where could this potentially affect backwards compatibility?_
