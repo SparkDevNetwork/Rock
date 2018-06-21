@@ -289,6 +289,10 @@
     <Compile Include="Migrations\201806192127302_Rollup_0619.Designer.cs">
       <DependentUpon>201806192127302_Rollup_0619.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201806210058521_LandingPageContent.cs" />
+    <Compile Include="Migrations\201806210058521_LandingPageContent.Designer.cs">
+      <DependentUpon>201806210058521_LandingPageContent.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -3034,6 +3038,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201806192127302_Rollup_0619.resx">
       <DependentUpon>201806192127302_Rollup_0619.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201806210058521_LandingPageContent.resx">
+      <DependentUpon>201806210058521_LandingPageContent.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.resx">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
