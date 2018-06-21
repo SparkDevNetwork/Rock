@@ -647,6 +647,8 @@ namespace Rock.Attribute
                     {
                         var attributeValue = new CacheAttributeValue();
                         attributeValue.AttributeId = attribute.Id;
+                        attributeValue.EntityId = entity?.Id;
+
                         var attributeValueDefaults = entity.AttributeValueDefaults;
                         if ( attributeValueDefaults != null && attributeValueDefaults.ContainsKey( attribute.Key ) )
                         {
