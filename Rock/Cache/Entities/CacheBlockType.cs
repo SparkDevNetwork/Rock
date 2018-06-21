@@ -190,6 +190,7 @@ namespace Rock.Cache
         public void MarkInstancePropertiesVerified( bool verified )
         {
             IsInstancePropertiesVerified = verified;
+            UpdateCacheItem( this.Id.ToString(), this, TimeSpan.MaxValue );
         }
 
         /// <summary>
@@ -209,12 +210,12 @@ namespace Rock.Cache
 
         private void FileSystemWatcher_OnRenamed( object sender, RenamedEventArgs renamedEventArgs )
         {
-            Remove( Id );
+            FlushItem( Id );
         }
 
         private void FileSystemWatcher_OnChanged( object sender, FileSystemEventArgs fileSystemEventArgs )
         {
-            Remove( Id );
+            FlushItem( Id );
         }
 
         #endregion

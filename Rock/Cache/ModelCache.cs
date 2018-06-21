@@ -333,38 +333,10 @@ namespace Rock.Cache
             }
         }
 
-       /* /// <summary>
-        /// Updates the cached item and/or attributes based on attributeEntityState
-        /// </summary>
-        /// <param name="attributeId">The attribute identifier.</param>
-        /// <param name="attributeEntityState">State of the attribute entity.</param>
-        public void UpdateCachedAttributes( int attributeId, System.Data.Entity.EntityState attributeEntityState)
-        {
-            var attributeIds = this.AttributeIds.ToList();
-
-            if ( attributeEntityState != EntityState.Added )
-            {
-                if ( attributeIds.Contains( attributeId ) )
-                {
-                    attributeIds.Remove( attributeId );
-                }
-            }
-
-            // unless we know for sure it was deleted, do a Get to update the cache (if the item still exists in the database)
-            if ( attributeEntityState != EntityState.Deleted )
-            {
-                if ( !attributeIds.Contains( attributeId ) )
-                {
-                    attributeIds.Add( attributeId );
-                }
-            }
-
-            this.AttributeIds = attributeIds;
-        }*/
-
         /// <summary>
         /// Reloads the attribute values.
         /// </summary>
+        [Obsolete( "No longer needed. The Attributes will get reloaded automatically." )]
         public virtual void ReloadAttributeValues()
         {
             using ( var rockContext = new RockContext() )

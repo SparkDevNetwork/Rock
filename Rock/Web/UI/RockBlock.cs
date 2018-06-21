@@ -1364,10 +1364,10 @@ namespace Rock.Web.UI
         /// <summary>
         /// Creates and or updates any <see cref="Rock.Model.Block"/> <see cref="Rock.Model.Attribute">Attributes</see>.
         /// </summary>
-        internal bool CreateAttributes( RockContext rockContext )
+        internal static bool CreateAttributes( RockContext rockContext, Type blockCompiledType, int blockTypeId )
         {
             int? blockEntityTypeId = CacheEntityType.Get( typeof( Block ) ).Id;
-            return Rock.Attribute.Helper.UpdateAttributes( this.GetType(), blockEntityTypeId, "BlockTypeId", this.CacheBlock.BlockTypeId.ToString(), rockContext );
+            return Rock.Attribute.Helper.UpdateAttributes( blockCompiledType, blockEntityTypeId, "BlockTypeId", blockTypeId.ToString(), rockContext );
         }
 
         /// <summary>

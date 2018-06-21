@@ -1015,8 +1015,7 @@ namespace Rock.Model
             var groupTypeGuid = CacheGroupType.Get( this.GroupTypeId )?.Guid;
             if ( this.IsSecurityRole || ( _originalIsSecurityRole == true ) || ( groupTypeGuid == groupTypeScheduleRole ) || ( originalGroupTypeGuid == groupTypeScheduleRole ) )
             {
-                Rock.Cache.CacheRole.Remove( this.Id );
-                Rock.Cache.CacheRole.Get( this.Id );
+                Rock.Cache.CacheRole.FlushItem( this.Id );
             }
         }
 
