@@ -1,4 +1,6 @@
-﻿To get the tests that require a db context to work in the Rock.Tests project, you'll need to do the following:  
+We have two types of tests here. Test that require and don't require a database.  
+If your test doesn't require a database, just read item 0 below.
+To get tests that require a db context to work do the following:  
 
    0) If you don't see a Test Explorer tab next to your Solution Explorer, select the "Test" option 
       from the main VS menu. Then select Windows > Test Explorer. You should then see the tab. Once
@@ -28,5 +30,6 @@ When this is working properly, you can even do something like this to load a rea
     var ps = new PersonService( new Data.RockContext() );
     var person = ps.Get( 1 );
 
-Just remember you are responsible for the contents of the db.  Adding, deleting, cleaning up, etc. is
-up to you.
+You are responsible for the contents of the db. Your tests can ONLY assume a stock 
+seeded database has been loaded with the Sample Data. Adding new data, deleting, 
+cleaning up, etc. is up to you.
