@@ -347,11 +347,17 @@ namespace RockWeb.Blocks.Core
                     binaryFile.FileSize = uploadedBinaryFile.FileSize;
                     var memoryStream = new MemoryStream();
 
-                    // If this is a label file then we need to replace a string in the file that makes printing slower
+                    // If this is a label file then we need to cleanup some settings that most templates will use by default
                     if ( IsLabelFile() )
                     {
+                        // ^JUS will save changes to EEPROM, doing this for each label is not needed, slows printing dramatically, and shortens the printer's memory life.
+                        string label = uploadedBinaryFile.ContentsToString().Replace( "^JUS", string.Empty );
+
+                        // Use UTF-8 instead of ASCII
+                        label = label.Replace( "^CI0", "^CI28" );
+
                         var writer = new StreamWriter( memoryStream );
-                        writer.Write( uploadedBinaryFile.ContentsToString().Replace( "^JUS", string.Empty ) );
+                        writer.Write( label ); 
                         writer.Flush();
                     }
                     else
