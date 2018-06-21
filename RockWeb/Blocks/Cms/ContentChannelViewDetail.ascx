@@ -12,8 +12,7 @@
         <%-- View Panel --%>
         <asp:Panel ID="pnlView" runat="server">
             <Rock:NotificationBox ID="nbAlert" runat="server" NotificationBoxType="Danger" />
-            <asp:PlaceHolder ID="phContent" runat="server" />
-            <asp:Literal ID="lDebug" runat="server" />
+            <asp:Literal ID="lContentOutput" runat="server" />
         </asp:Panel>
 
         <%-- Custom Block Settings --%>
