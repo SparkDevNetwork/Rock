@@ -301,9 +301,9 @@ namespace Rock.Cache
         }
 
         /// <summary>
-        /// Gets the Rock Cached Item 
+        /// Gets the Rock Cached Item
         /// </summary>
-        /// <param name="itemId">The item identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
         /// <returns></returns>
         internal IEntityCache GetCachedItem( int entityId )
         {
