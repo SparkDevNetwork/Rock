@@ -21,7 +21,6 @@ namespace Rock.Checkr.Constants
     /// </summary>
     public static class CheckrConstants
     {
-        public static readonly string CHECKR_IMAGE_URL = "~/Assets/Images/Checkr.svg";
 
         /// <summary>
         /// The URL where the token for the account is retrieved
