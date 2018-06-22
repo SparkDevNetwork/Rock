@@ -115,6 +115,12 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [show select current page].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show select current page]; otherwise, <c>false</c>.
+        /// </value>
         [
         Bindable( true ),
         Category( "Behavior" ),
