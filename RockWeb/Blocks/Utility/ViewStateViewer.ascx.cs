@@ -102,7 +102,7 @@ namespace RockWeb.Blocks.Utility
             }
             catch ( Exception ) { }
 
-            hlblViewStateSize.Text = string.Format( "ViewState Size: {0}", viewStateSize.FormatAsSpecificMemorySize( ExtensionMethods.MemorySizeUnit.Byte ));//.FormatAsMemorySize() );
+            hlblViewStateSize.Text = string.Format( "ViewState Size: {0}", viewStateSize.FormatAsSpecificMemorySize( ExtensionMethods.MemorySizeUnit.Bytes ));//.FormatAsMemorySize() );
             ceViewState.Text = page.ViewStateValue;
         }
 
