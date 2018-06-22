@@ -301,6 +301,10 @@
     <Compile Include="Migrations\201806221612442_UpdateAttendanceSummary.Designer.cs">
       <DependentUpon>201806221612442_UpdateAttendanceSummary.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201806222017201_V8Installers.cs" />
+    <Compile Include="Migrations\201806222017201_V8Installers.Designer.cs">
+      <DependentUpon>201806222017201_V8Installers.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -3055,6 +3059,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201806221612442_UpdateAttendanceSummary.resx">
       <DependentUpon>201806221612442_UpdateAttendanceSummary.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201806222017201_V8Installers.resx">
+      <DependentUpon>201806222017201_V8Installers.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.resx">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
