@@ -769,7 +769,7 @@ namespace Rock.Model
 
                         dbContext.BulkUpdate( attendancesToNullSearchResultGroupId, a => new Attendance { SearchResultGroupId = null } );
 
-                        // since we can't can't put a CascadeDelete on both Attendance.Occurrence.GroupId and Attendance.OccurrenceId, manually delete all Attendance records associated with this GroupId
+                        // since we can't put a CascadeDelete on both Attendance.Occurrence.GroupId and Attendance.OccurrenceId, manually delete all Attendance records associated with this GroupId
                         var attendancesToDelete = attendanceService.Queryable()
                             .Where( a =>
                                 a.Occurrence.GroupId.HasValue &&
