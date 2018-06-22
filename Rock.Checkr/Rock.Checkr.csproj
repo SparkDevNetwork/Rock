@@ -56,6 +56,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
+      <Link>AssemblySharedInfo.cs</Link>
+    </Compile>
     <Compile Include="Checkr.cs" />
     <Compile Include="CheckrApi\CheckrApiUtility.cs" />
     <Compile Include="CheckrApi\CreateReportResponse.cs" />
