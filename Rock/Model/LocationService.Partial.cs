@@ -69,10 +69,24 @@ namespace Rock.Model
                 return null;
             }
 
-            // Try to find a location that matches the values exactly as entered
+            // Try to find a location that matches the values, this is not a case sensitive match
             var foundLocation = Search( new Location { Street1 = street1, Street2 = street2, City = city, State = state, PostalCode = postalCode, Country = country }, group );
             if (foundLocation != null)
             {
+                // Check for casing 
+                if (!String.Equals(street1, foundLocation.Street1) || !String.Equals( street2, foundLocation.Street2) || !String.Equals(city, foundLocation.City) || !String.Equals( state, foundLocation.State ) || !String.Equals( postalCode , foundLocation.PostalCode) || !String.Equals( country, foundLocation.Country) )
+                {
+                    var context = new RockContext();
+                    var location = new LocationService( context ).Get( foundLocation.Id);
+                    location.Street1 = street1;
+                    location.Street2 = street2;
+                    location.City = city;
+                    location.State = state;
+                    location.PostalCode = postalCode;
+                    location.Country = country;
+                    context.SaveChanges();
+                    return Get(location.Guid);
+                }
                 return foundLocation;
             }
 
