@@ -1,0 +1,212 @@
+{% comment %}
+    {% include '~~/Assets/Lava/dashboard/card-group.lava' %}
+{% endcomment %}
+
+{% comment %} Groups to Exclude {% endcomment %}
+{% assign excludeGroups = '1695044,1707541' %}
+
+{% comment %} 
+***** Admin ID's *****
+    50 - CCV Group Coach
+    51 - CCV Group Future Coach (assistant coach)
+    52 - CCV Group Admin
+    114 - Roster Guide
+    133 - Next Gen Group Coach
+    134 - Next Gen Group Co-Coach
+TODO: Add Other Group Type leader roles
+{% endcomment %}
+{% assign groupAdminIds = '50,51,52,114,133,134' %}
+
+{% comment %} 
+***** Coach ID's *****
+50 - CCV Group Coach
+114 - Roster Guide
+133 - Next Gen Group Coach
+{% endcomment %}
+{% assign groupCoachIds = '50,114,133' %}
+
+{% comment %} Used for show/hide the admin elements (IE contact, add person...) {% endcomment %}
+{% assign showAdminElements = false %}
+{% assign isCoach = false %}
+
+{% comment %} Check if user in any groups, if not display Call To Action Serving {% endcomment %}
+{% assign numberOfGroups = Groups | Size %}
+{% if numberOfGroups > 0 %}
+
+    {% comment %} Render {% endcomment %}
+    <div class="dashboard-card">
+        {% include '~~/Assets/Lava/dashboard/_group-card-header.lava' %}
+        <div class="content">
+            {% for group in Groups %}
+
+                {% comment %} Exclude Utility Groups {% endcomment %}
+                {% assign groupId = group.Group.Id | ToString %}
+                {% assign groupIndex = forloop.index %}
+                {% unless excludeGroups contains groupId %}
+                    
+                    {% comment %} Set showAdminElements {% endcomment %}
+                    {% for member in group.Group.Members %}
+                        {% comment %} Check if current person is admin {% endcomment %}
+                        {% if member.Person.Id == CurrentPerson.Id %}
+                            {% assign groupRoleId = member.GroupRoleId | ToString %}
+                            {% if groupAdminIds contains groupRoleId %}
+                                {% assign showAdminElements = true %}
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+
+                    {% comment %} Render Group Panel {% endcomment %}
+                    <div>
+                        {% comment %} Group Header {% endcomment %}
+                        <div class="group-header">
+                            <div class="group-name-row">
+                                {% comment %} Admin Header {% endcomment %}
+                                {% if showAdminElements == true %}    
+                                    {% if group.Group.GroupTypeId == 49 %}                            
+                                        <a href="/toolboxv2?GroupId={{ group.Group.Id }}" class="tooltip-access-toolbox">
+                                            <div class="group-name-row-content">
+                                                <span>{{ group.Group.Name }}</span>
+                                                <i class="mdi mdi-chevron-right group-header-icon"></i>
+                                            </div>
+                                        </a>
+                                    {% else %}
+                                        <h5>{{ group.Group.Name }}</h5>
+                                    {% endif %}
+                                {% else %}
+                                    <h5>{{ group.Group.Name }}</h5>
+                                {% endif %}
+                                <div class="group-name-row-buttons">
+                                    {% if showAdminElements == true %}
+                                        <a href="#" onclick="btnAddGroupMember({{ group.Group.Id }},{{ group.Group.GroupType.DefaultGroupRoleId }}); return false;">
+                                            <i class="mdi mdi-account-plus dashboard-title-icon tooltip-add-group-member"></i>
+                                        </a>
+                                        <a href="/page/1751?group={{ group.Group.Id }}">
+                                            <i class="mdi mdi-email dashboard-title-icon tooltip-email-group"></i>
+                                        </a>
+                                    {% endif %}                                    
+                                    <button type="button" data-toggle="collapse" data-target="#groupDetails{{ groupIndex }}" class="group-details-toggle">
+                                        <i id="groupDetailsToggle{{ groupIndex }}" class="mdi mdi-chevron-down group-header-icon tooltip-group-details"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="groupDetails{{ groupIndex }}" class="collapse">
+
+                            {% comment %} Show Coach Video if Admin and group is a CCV group {% endcomment %}
+                            {% if showAdminElements == true %}
+                                {% if group.Group.GroupTypeId == 49 %}
+                                    <div class="group-header">
+                                        <div class="coach-video-row">
+                                            <div class="coach-video">
+                                                <a href="//fast.wistia.net/embed/playlists/ukdxoyinc8?autoAdvance=false&media_0_0%5BautoPlay%5D=true&media_0_0%5BcontrolsVisibleOnLoad%5D=false&popover=true&version=v1&videoFoam=false&videoOptions%5BautoPlay%5D=false&videoOptions%5BinlineOptionsOnly%5D=true&videoOptions%5BplayerColor%5D=7A1315&videoOptions%5Bversion%5D=v1&videoOptions%5BvideoHeight%5D=720&videoOptions%5BvideoWidth%5D=1280&videoOptions%5BvolumeControl%5D=true" class="wistia-popover[height=720,playerColor=7A1315,width=1280]"><img src="//embed-ssl.wistia.com/deliveries/49d1624d91f5d9e4cd8bd1fcaec0561e83efa730.jpg?image_play_button=true&image_play_button_color=7A1315e0&image_crop_resized=70x50" alt="" /></a>
+                                                <script charset="ISO-8859-1" src="//fast.wistia.com/assets/external/popover-v1.js"></script>
+                                            </div>
+                                            <div class="coach-video-text">
+                                                <h5>Upcoming Coach Video</h5>
+                                                <div class="coach-video-text-seperator"></div>
+                                                <h5>Upcoming Coach Guide</h5>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+                                
+
+                        {% comment %} Render Group Members {% endcomment %}
+                        {% for member in group.Group.Members %}
+
+                            {% comment %} Check for Coach {% endcomment %}
+                            {% assign memberGroupRoleId = member.GroupRoleId | ToString %}
+                            {% if groupCoachIds contains memberGroupRoleId %}
+                                {% assign isCoach = true %}
+                            {% else %}
+                                {% assign isCoach = false %}
+                            {% endif %}
+
+                                    <div class="person-row-summary">
+                                        <div>
+                                            <img src="{{ member.Person.PhotoUrl }}" width="60" height="60" style="border-radius: 50%;">
+                                        </div>
+                                        <div class="person-info">
+                                            <div>
+                                                <h5>{{ member.Person.FullName }}</h5>
+                                            </div>
+                                        </div>
+                                        <div class="person-contact">
+                                            {% comment %} Show Contact buttons for everyone if coach, otherwise just show for coach {% endcomment %}
+                                            {% if isCoach == true or showAdminElements == true %}
+                                                {% assign cellPhone = member.Person | PhoneNumber:'Mobile', true %}
+                                                {% assign homePhone = member.Person | PhoneNumber:'Home' %}
+
+                                                {% if cellPhone %}
+                                                    <a href="tel:{{cellPhone}}">
+                                                        <i class="mdi mdi-phone dashboard-icon tooltip-phone-person"></i>
+                                                    </a>
+                                                {% elseif homePhone %}
+                                                    <a href="tel:{{homePhone}}">
+                                                        <i class="mdi mdi-phone dashboard-icon tooltip-phone-person"></i>
+                                                    </a>
+                                                {% endif %}
+                                                <a href="/page/1751?person={{ member.Person.Id }}">
+                                                    <i class="mdi mdi-email dashboard-icon tooltip-email-person"></i>
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+
+                        {% endfor %}
+                        </div>
+                        
+                        
+                    </div>
+                    <script>
+                        // Activate Popover Tooltips
+                        activatePopOver('.tooltip-add-group-member', 'Add Group Member');
+                        activatePopOver('.tooltip-email-group', 'Email Group');
+                        activatePopOver('.tooltip-access-toolbox', 'Access Group Toolbox');
+                        activatePopOver('.tooltip-email-person', 'Email');
+                        activatePopOver('.tooltip-phone-person', 'Call');
+                        activatePopOver('.tooltip-group-details', 'Group Details');
+                        activatePopOver('.tooltip-more-options', 'More Options');
+                        // on details collapse change toggle icon
+                        $('#groupDetails{{ groupIndex }}').on('shown.bs.collapse', function() {
+                            toggleChevron('#groupDetailsToggle{{ groupIndex }}');
+                        });
+                        $('#groupDetails{{ groupIndex }}').on('hidden.bs.collapse', function() {
+                            toggleChevron('#groupDetailsToggle{{ groupIndex }}');
+                        });
+                        // toggle chevron direction
+                        toggleChevron = function(element) {
+                            $(element).toggleClass('mdi-chevron-down mdi-chevron-up');
+                        }
+                    </script>
+                {% endunless %}
+            {% endfor %}
+ 
+        </div>
+    </div>
+{% else %}
+
+    {% comment %} Render Serve Call to Action {% endcomment %}
+    <div class="info-card">
+        <div class="info-card-image">
+            <img src="/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/ad-connect.png">
+            <img class="info-card-icon" src="/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/icon-connect.png"/>
+        </div>
+        <div class="header">
+            <h4>Connect</h4>
+            <h5>Life was not meant to be lived alone</h5>
+        </div>
+        <div class="content">
+            <p>At CCV, neighborhood groups are vital to our church. They provide a sense of connection and security as we all tackle life together.</p>
+        </div>
+        <div class="link">
+            <a href="/get-involved/next-steps/connect/group-search">
+                <div>
+                    <span>Find a group near you</span>
+                    <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path></svg>
+                </div>
+            </a>
+        </div>
+    </div>
+{% endif %}

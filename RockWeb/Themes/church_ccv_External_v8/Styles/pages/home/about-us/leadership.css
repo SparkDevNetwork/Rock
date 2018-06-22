@@ -1,10 +1,15 @@
 .page-background {
-    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-leadership.jpg");
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/about-us/hero-about-us-leadership.jpg");
     background-color: #FFFFFF;
 }
 
 #ternavbar-bg {
     display: none;
+}
+
+#h3 {
+    padding-top: 90px;
+    padding-left: 50px;
 }
 
 #section-a-bg {
@@ -33,6 +38,12 @@
 
 /* Mobile Styling */
 @media screen and (max-width: 500px) {
+    #h3 {
+        padding-top: 0px;
+        padding-left: 0px;
+        font-size: 27px;
+        text-align: center;
+    }
     .leaders {
         padding-top: 0;
     }

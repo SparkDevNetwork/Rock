@@ -1,7 +1,7 @@
 
 .page-background {   
     background-color: #EBEBEB;
-    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-get-involved.jpg");
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/hero-get-involved.jpg");
 }
 
 .main-feature {
@@ -16,22 +16,12 @@
 
 #section-b-bg {
     background-color: #F9F9F9;
-	background: url("/Themes/church_ccv_External_v8/Assets/Images/strip-get-involved-groups.jpg") no-repeat;
+	background: url("/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/background-get-involved-giving.jpg") no-repeat;
 	background-size: cover;
 }
 
 #section-c-bg {
     background-color: #F9F9F9;
-}
-
-#section-d-bg {
-    background-color: #F9F9F9;
-    background: url("/Themes/church_ccv_External_v8/Assets/Images/get-involved-missions.jpg") no-repeat;
-	background-size: cover;
-}
-
-#section-e-bg {
-   display: none;
 }
 
 /* Events Section */

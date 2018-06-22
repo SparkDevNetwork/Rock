@@ -1,6 +1,6 @@
 .page-background {
     background-color :#000 !important;
-    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-home.jpg") !important;
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/hero-home.jpg") !important;
     background-size: unset;
 }
 
@@ -362,7 +362,7 @@
 }
 
 .kids {
-    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home-kids-info.jpg");
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ad-home-kids.jpg");
     width: 50%;
     height: 600px;
     display: flex;
@@ -376,7 +376,7 @@
 }
 
 .students {
-    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home-students-info.jpg");
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ad-home-students.jpg");
     width: 50%;
     height: 600px;
     display: flex;
@@ -413,13 +413,16 @@
 /* Events Section */
 
 .dashboard-events-row {
+    margin: 0 50px;
     margin-top: 30px;
 }
 
 /* Mobile Styling */
 @media screen and (max-width: 500px) { 
     .dashboard-events-row {
+        margin: 0 5px;
         margin-top: 0;
+        margin-bottom: 10px;
     }
 
     .event-cards-header {
@@ -429,7 +432,7 @@
     }
 
     .event-card {
-        margin: 5px 0;
+        margin: 5px;
     }
 }
 

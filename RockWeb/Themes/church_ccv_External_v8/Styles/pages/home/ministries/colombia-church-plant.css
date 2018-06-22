@@ -1,0 +1,90 @@
+
+.page-background {   
+    background-color: #EBEBEB;
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-image-missing.jpg");
+}
+
+#ternavbar-bg {
+  display: flex;
+}
+
+#section-a-bg {
+   background-color: #f9f9f9;
+   padding: 20px;
+}
+
+#section-b-bg {
+   display: none;
+}
+
+#section-c-bg {
+	display: none;
+}
+
+.header {
+  color: white;
+}
+
+.info-header {
+   color: #889165;
+}
+
+.lead-info {
+   font-size: 1.25em;
+}
+
+@media screen and (min-width: 1200px) {
+   .padding-wrapper {
+      margin-left: 125px;
+      margin-right: 125px;
+   }
+}
+
+.static-church-info {
+   display: flex; 
+   flex-direction: column; 
+   margin-top:50px;
+}
+
+.pastor-bio {
+   display: flex;
+   flex-direction: column;
+}
+
+.pastor-img {
+   height: 100%; 
+   align-self: left;
+   object-fit: contain;
+}
+
+@media screen and (min-width: 490px) {
+   .static-church-info {
+      flex-direction: row; 
+      flex-wrap: nowrap; 
+      justify-content: space-around; 
+   }
+
+   .pastor-img {
+      align-self: center;
+   }
+
+   .pastor-bio {
+      margin-left:25px;
+   }
+}
+
+.previous-button {
+   background-color: #889165;
+   color: white;
+}
+
+.latest-update-button {
+   background-color: white;
+   color:  #889165;
+   border-color: #889165;
+   border-width: 1px;
+}
+
+p {
+   color: #505050;
+}

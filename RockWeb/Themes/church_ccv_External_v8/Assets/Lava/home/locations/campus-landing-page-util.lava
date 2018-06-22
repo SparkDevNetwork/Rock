@@ -1,5 +1,5 @@
 {% comment %}
-{% include '~~/Assets/Lava/campus-landing-page-util.lava' %} 
+{% include '~~/Assets/Lava/home/locations/campus-landing-page-util.lava' %} 
 {% endcomment %}
 
 {% comment %}

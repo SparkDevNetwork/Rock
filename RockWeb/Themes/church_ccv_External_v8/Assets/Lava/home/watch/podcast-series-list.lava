@@ -1,0 +1,33 @@
+{% assign isFirstPage = false %}
+{% if PageParameter.PageNum == 0 or PageParameter.PageNum == null %}
+  {% assign isFirstPage = true %}
+{% endif %}
+
+<div id="previous-series" class="messages">
+    <div class="messages-list">
+
+        {% for Series in SeriesList.Children %}		
+            <div class="series">
+                <a href="{{ LinkedPages.SeriesDetailPage }}?SeriesId={{ Series.Id }}">
+                    <img class="" src="/GetImage.ashx?guid={{ Series.Attributes.Image_31_20 }}" alt="{{ Series.Name }}">
+                    <p>WATCH NOW</p>
+                </a>
+            </div>
+        {% endfor %}
+
+    </div>
+
+    {% assign currentPage = PageParameter.PageNum | Default: '0' %}
+    {% assign nextPage = currentPage | Plus: '1' %}
+    {% assign prevPage = currentPage | Minus: '1' %}
+
+    <nav>
+        <ul class="watch pager">
+            {% unless isFirstPage %}
+                <li class="previous"><a class="btn btn-primary" href="?PageNum={{ prevPage }}">Newer</a></li>
+            {% endunless %}
+                <li class="next"><a class="btn btn-primary" href="?PageNum={{ nextPage }}">Older</i></a></li>
+        </ul>
+    </nav>
+</div>
+

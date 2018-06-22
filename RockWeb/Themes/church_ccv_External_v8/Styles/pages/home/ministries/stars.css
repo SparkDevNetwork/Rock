@@ -1,40 +1,33 @@
 .page-background {   
     background-color: #EBEBEB;
-    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-image-missing.jpg");
-}
-
-#ternavbar-bg {
-    display: none;
-}
-
-#section-a-bg {
-   background: url("/Themes/church_ccv_External_v8/Assets/Images/kids-stars.jpg") no-repeat;
-   background-size: cover;
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/hero-stars.jpg");
 }
 
 #section-b-bg {
-   display: none;
+    display: none;
 }
 
-.sn-times-wrapper {
-   display: flex;
-   flex-wrap: wrap;
-   max-width: 400px;
+#section-c-bg {
+    background-color: #f9f9f9;
 }
 
-.sn-times-header-wrapper {
-   margin-top: 15px;
-   display: flex;
-   justify-content: space-evenly;
-   align-items: center;
+#section-d-bg {
+    background-color: #f9f9f9;
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/background-stars-soccer.jpg");
 }
 
-.sn-service-times {
-   color: #777;
+#section-e-bg {
+    background-color: #f9f9f9;
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/background-stars-football.jpg");
 }
 
+#section-f-bg {
+    background-color: #f9f9f9;
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/background-stars-basketball.jpg");
+}
+ 
 @media screen and (min-width: 992px) {
-   .sn-times-header-wrapper {
-      margin-top: 0px;
-   }
+    .sn-times-header-wrapper {
+        margin-top: 0px;
+    }
 }

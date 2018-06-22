@@ -1,14 +1,14 @@
 /* Start Standard Layout Styling */
-.main-feature {
-    height: 800px;
-    padding-top: 350px;
-}
-
 .page-background {   
    margin: auto;
    background-repeat: no-repeat;
    background-attachment: fixed;
    background-position: center top;
+}
+
+.main-feature {
+    height: 720px;
+    padding-top: 350px;
 }
 
 #subnavbar-bg {
@@ -55,6 +55,20 @@
     max-width: 200px;
 	border-width: 1px;
 	font-family: akrobat;
+}
+
+/* Mobile styling for general buttons */
+@media screen and (max-width: 500px) {
+    .btn {
+        width: 100%;
+        max-width: unset;
+    }
+}
+
+/* Fix button widths in WYSIWG editor */
+.note-btn {
+    min-width: unset;
+    max-width: unset;
 }
 
 /* Nextstep Common Styling */
@@ -183,7 +197,7 @@
 .masthead-brand .logo {
     display: block;
     float: left;
-    background-image: url(../assets/logo.svg);
+    background-image: url(../assets/images/logos/logo.svg);
     background-repeat: no-repeat;
     background-position: left center;
     margin-left: 5px;
@@ -446,7 +460,7 @@
 
 .navigation-secondary-item {
     list-style-type: none;
-    padding: 20px 10px;
+    padding: 21.5px 10px;
 }
 
 .navigation-secondary-items :first-child {
@@ -651,21 +665,13 @@
 /*End "Wistia Style" video thumbnail */
 
 .infoSection {
-    min-height: 600px;
+    min-height: 502px;
     display: flex;
 }
 
 .graphicSection {
-    min-height: 600px;
+    min-height: 712px;
     display: flex;
-}
-
-@media screen and (min-width: 768px) {
-    .graphicSection {
-        min-height: 800px;
-        height: 800px;
-        display: flex;
-    }
 }
 
 .graphicSection h1,
@@ -674,6 +680,12 @@
 .graphicSection h5,
 .graphicSection p {
    color: white;
+}
+
+@media screen and (max-width: 500px) {
+    .graphicSection, .infoSection {
+        min-height: unset;
+    }
 }
 
 .section-video {
@@ -770,6 +782,7 @@
     flex-direction: column;
     justify-content: space-between;
     margin: 5px 15px;
+    max-width: 375px;
     height: 400px;
     box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px; 
     border-radius: 5px;

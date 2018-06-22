@@ -1,0 +1,8 @@
+
+{% assign contentChannelChurchName = "Centro de Restauracion Principe de Paz" %}
+{% assign displayChurchName = "Centro de Restauracion Principe de Paz" %}
+{% assign churchLocation = "Belen de Bajira - Mutata, Antioquia" %}
+{% assign pastorName = "Marcos Martinez Coaba" %}
+{% assign pastorDetail = "Pastor Marcos and wife Edith have been living in the region of Belén de Bajirá, Antioquia for more than 30 years. They have 6 children: two boys and four girls.  Marcos and Edith have been pastors for 3 years and have the privilege of leading people of all ages. Marcos feels called to be a Christian leader because of his community's great need for God." %}
+{% assign pastorImg = "~~/Assets/Images/home/ministries/colombia-church-plant/pastors/SCO-Marcos.png" %}
+{% assign campusSponsor = "Scottsdale" %}

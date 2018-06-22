@@ -1,150 +1,76 @@
 .page-background { 
-   background-image: url("/Themes/church_ccv_External_v8/Assets/Images/students-hero.jpg");
-   background-color: white;
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/hero-students.jpg");
+    background-color: white;
 }
-
+ 
 #ternavbar-bg {
     display: none;
 }
 
-#section-a-bg {
-   background: url("/Themes/church_ccv_External_v8/Assets/Images/students-top.jpg") no-repeat;
-   background-size: cover;
-}
-
 #section-b-bg {
-   background-color: #f9f9f9;
+    background-color: #FFFFFF;
 }
 
-#section-c-bg {
-	background: url("/Themes/church_ccv_External_v8/Assets/Images/kids-stars.jpg") no-repeat;
-   background-size: cover;
+.students-service-times {
+    display: flex;
+    flex-direction: column;
 }
 
-#section-d-bg {
-	display: none;
+.students-service-times .dropdown {
+    background-color: #7A1315;
+    border-radius: 10px;
+    transition: unset;
+    height: 36px;
+    min-width: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 35px;
 }
 
-#section-e-bg {
-	display: none;
-}
-
-.small-video-thumb-dark {
-   background-color: #1F1F1F;
-   border-radius: 5px;
-   display: flex;
-   align-items: center;
-}
-
-.students-service-times-header {
-   display: flex;
-   flex-wrap: nowrap;
-   align-items: center;
-   margin-bottom: 15px;
-}
-
-.students-service-times-header h2 {
-    font-size: 46px;
-    margin: 0;
-}
-
-.students-service-detail,
-.students-service-detail-dark {
-   display: flex;
-   flex-wrap: nowrap;
-   justify-content: flex-start;
-}
-
-.students-service-detail-label {
-   margin-right: 35px;
-   min-width: 50px;
-   font-weight: 900;
-}
-
-.students-service-detail-dark a {
-   color: #FFFFFF;
-}
-
-.graphicSection p {
-   line-height: 2.0;
-}
-
-.contextsetter-campus-hs, .contextsetter-campus-jr {
-   border-radius: 25px;
-   margin-left: 20px;
-}
-
-.contextsetter-campus-hs a, .contextsetter-campus-jr a {
-    padding-top: 2px !important;
-    padding-bottom: 2px !important;
-}
-
-.contextsetter-campus-hs {
-    border: 2px solid #FFFFFF;
-}
-
-.contextsetter-campus-hs .contextsetter-campus a {
+.students-service-times .dropdown a {
     color: #FFFFFF;
+    padding-top: unset;
+    padding-bottom: unset;
+    display: flex;
+    align-items: center;
 }
 
-.contextsetter-campus-hs .contextsetter-campus .dropdown-menu a {
-    color: #333;
-}
-
-.contextsetter-campus-jr {
-    border: 2px solid #7A1315;
-}
-
-/* Mobile Styling */
-@media screen and (max-width: 500px) {
-    .small-video-thumb-dark {
-        flex-direction: column;
-    }
-
-    .students-service-times-header {
-        flex-direction: column;
-    }
-
-    .students-service-times-header h2 {
-        margin-bottom: 10px;
-    }
-
-    .students-service-detail, .students-service-detail-dark {
-        flex-direction: column;
-    }
-
-    .graphicSection {
-        padding-top: 50px;
-        padding-bottom: 50px;
-    }
-}
-
-
-/* override default/bootstrap dropdown styling */
-.nav>li>a:hover, .nav>li>a:focus {
+.students-service-times .dropdown a:hover {
     background-color: transparent;
 }
 
-.contextsetter-campus:hover {
-    color: transparent;
-    background: unset;
-    transition: unset;
-    border-radius: unset;
-    cursor: unset;
+.students-service-times .dropdown .dropdown-menu {
+    width: 100%;
 }
 
-.dropdown-menu {
-    left: 10px;
+.students-service-times .dropdown .dropdown-menu a {
+    color: #333;
 }
 
-@media screen and (max-width: 767px) {
-    .navbar-nav .open .dropdown-menu {
-        position: absolute;
-        float: left;
-        background-color: #fff;
-        border: 1px solid rgba(0,0,0,.15);
-        box-shadow: 0 6px 12px rgba(0,0,0,0.175);
-    }
+.dropdown-toggle.navbar-link b {
+    margin-left: 15px;
 }
 
-/* End override */
+
+.students-service-detail {
+    display: flex;
+    margin: 5px 0;
+}
+
+.students-service-detail-label {
+    min-width: 100px;
+    color: #838383;
+    font-size: 16px;
+    line-height: 18px;
+    font-weight: bold;
+}
+
+/* override margins so that title is even with campus selector */
+.right-content h2, .right-content p {
+    margin: 0 0 20px 0;
+}
+
+.right-content p {
+    color: #535353;
+}

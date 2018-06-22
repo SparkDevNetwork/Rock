@@ -1,0 +1,45 @@
+{% comment %}
+    {% include '~~/Assets/Lava/dashboard/card-giving.lava' %}
+{% endcomment %}
+
+
+    <div class="giving-panel">
+        <div class="giving-title-row">
+            <h3>GIVING</h3>
+            <div class="giving-title-links">
+                <a href="/givingv2/now">Give Now</a>
+                <a href="/dashboard/recurring-giving">Recurring Giving</a>
+                <a href="/dashboard/payment-accounts">Payment Accounts</a>
+                <a href="/dashboard/giving-history">Giving History</a>
+            </div>
+            <div class="giving-title-links-mobile">
+                <button class="dropdown-toggle" type="button" data-toggle="dropdown" style="border: 0px;">Navigate<b class="fa fa-caret-down"></b></button>
+                <ul class="dropdown-menu">
+                    <li class="navigation-secondary-mobile-item">
+                        <a href="/givingv2/now">Give Now</a>
+                    </li>
+                    <li class="navigation-secondary-mobile-item">
+                        <a href="/dashboard/recurring-giving">Recurring Giving</a>
+                    </li>
+                    <li class="navigation-secondary-mobile-item">
+                        <a href="/dashboard/payment-accounts">Payment Accounts</a>
+                    </li>
+                    <li class="navigation-secondary-mobile-item">
+                        <a href="/dashboard/giving-history">Giving History</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="giving-content-row">
+            <div class="giving-content-info">
+                <img class="img-responsive" src="/Themes/church_ccv_External_v8/Assets/Images/dashboard/ad-dashboard-giving.jpg" />
+                <p>Tiramisu pie ice cream jelly beans wafer chocolate cake powder. Pudding tiramisu halvah ice cream sweet roll sweet wafer dessert tiramisu. Bonbon candy canes biscuit gingerbread dragée lollipop.</p>
+            </div>
+            <div class="giving-content-links">
+                <h5>LEARN HOW YOUR GIVING MAKES AN IMPACT</h5>
+                <a href="https://www.ccvannualreport.church/" target="_blank">
+                    <img src="/GetImage.ashx?guid=fbc8c5b0-72c4-41ed-9e35-9e8fb919b244" alt="Annual Report" />
+                </a>
+            </div>
+        </div>
+    </div>

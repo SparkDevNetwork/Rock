@@ -1,5 +1,5 @@
 {% comment %}
-{% include '~~/Assets/Lava/Header/Register.lava' %}
+{% include '~~/Assets/Lava/header/register.lava' %}
 {% endcomment %}
 
 {% unless CurrentPerson %}

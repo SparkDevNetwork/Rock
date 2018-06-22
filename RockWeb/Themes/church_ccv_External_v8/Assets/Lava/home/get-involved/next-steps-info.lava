@@ -1,12 +1,12 @@
 <div class="container">
     <div class="nextsteps-container">
         <div class="ns-image">
-            <img class="img img-responsive" src="~~/Assets/Images/home/get-involved/ns-ad-starting-point.png"/>
+            <img class="img img-responsive" src="~~/Assets/Images/home/get-involved/ad-starting-point.png"/>
         </div>
         <div class="ns-section-desc">
             <div class="ns-header">
                 <div class="ns-icon">
-                    <img style="width: 50px;" src="~~/Assets/Images/home/get-involved/ns-icon-starting-point.png"/>
+                    <img src="~~/Assets/Images/home/get-involved/icon-starting-point.png"/>
                 </div>
                 <h2>STARTING POINT</h2>
             </div>
@@ -22,12 +22,12 @@
 
     <div class="nextsteps-container">
         <div class="ns-image">
-            <img class="img img-responsive" src="~~/Assets/Images/home/get-involved/ns-ad-baptism.png"/>
+            <img class="img img-responsive" src="~~/Assets/Images/home/get-involved/ad-baptism.png"/>
         </div>
         <div class="ns-section-desc">
             <div class="ns-header">
-                <div class="ns-icon">
-                    <img style="width: 50px;" src="~~/Assets/Images/home/get-involved/ns-icon-baptism.png"/>
+                <div class="ns-icon" style="background-color: #2bc0dc">
+                    <img src="~~/Assets/Images/home/get-involved/icon-baptism.png"/>
                 </div>
                 <h2>BAPTISM</h2>
             </div>
@@ -41,12 +41,12 @@
 
     <div class="nextsteps-container">
         <div class="ns-image">
-            <img class="img img-responsive" src="~~/Assets/Images/home/get-involved/ns-ad-worship.png"/>
+            <img class="img img-responsive" src="~~/Assets/Images/home/get-involved/ad-worship.png"/>
         </div>
         <div class="ns-section-desc">
             <div class="ns-header">
                 <div class="ns-icon">
-                    <img style="width: 50px;" src="~~/Assets/Images/home/get-involved/ns-icon-worship.png"/>
+                    <img src="~~/Assets/Images/home/get-involved/icon-worship.png"/>
                 </div>
                 <h2>WORSHIP</h2>
             </div>
@@ -61,12 +61,12 @@
 
     <div class="nextsteps-container">
         <div class="ns-image">
-            <img class="img img-responsive" src="~~/Assets/Images/home/get-involved/ns-ad-connect.png"/>
+            <img class="img img-responsive" src="~~/Assets/Images/home/get-involved/ad-connect.png"/>
         </div>
         <div class="ns-section-desc">
             <div class="ns-header">
                 <div class="ns-icon">
-                    <img style="width: 50px;" src="~~/Assets/Images/home/get-involved/ns-icon-connect.png"/>
+                    <img src="~~/Assets/Images/home/get-involved/icon-connect.png"/>
                 </div>
                 <h2>CONNECT</h2>
             </div>
@@ -74,7 +74,7 @@
                 Life was not meant to be lived alone. Gather weekly with people to build a community and impact it for the better. At CCV, Groups are vital to our church. They provide a sense of connection and security as we all tackle life together. Our Groups draw out the relevance of Biblical principles discussed in the weekend services.
             </p>
             <p>
-                <a href="/get-involved/#ccv-groups-external" class="btn btn-default">Learn More</a>
+                <a href="/get-involved/next-steps/connect" class="btn btn-default">Learn More</a>
                 <a href="/get-involved/next-steps/connect/group-search" class="btn btn-default">Find A Group</a>
             </p>
         </div>
@@ -82,12 +82,12 @@
 
     <div class="nextsteps-container">
         <div class="ns-image">
-            <img class="img img-responsive" src="~~/Assets/Images/home/get-involved/ns-ad-serve.png"/>
+            <img class="img img-responsive" src="~~/Assets/Images/home/get-involved/ad-serve.png"/>
         </div>
         <div class="ns-section-desc">
             <div class="ns-header">
                 <div class="ns-icon">
-                    <img style="width: 50px;" src="~~/Assets/Images/home/get-involved/ns-icon-serve.png"/>
+                    <img src="~~/Assets/Images/home/get-involved/icon-serve.png"/>
                 </div>
                 <h2>SERVE</h2>
             </div>
@@ -96,19 +96,19 @@
             </p>
             <p>
                 <a href="/get-involved/next-steps/serve" class="btn btn-default">Serve at CCV</a>
-                <a href="/about-us/missions" class="btn btn-default">Serve Globally</a>
+                <a href="/ministries/missions" class="btn btn-default">Serve Globally</a>
             </p>
         </div>
     </div>
 
     <div class="nextsteps-container">
         <div class="ns-image">
-            <img class="img img-responsive" src="~~/Assets/Images/home/get-involved/ns-ad-give.png"/>
+            <img class="img img-responsive" src="~~/Assets/Images/home/get-involved/ad-give.png"/>
         </div>
         <div class="ns-section-desc">
             <div class="ns-header">
                 <div class="ns-icon">
-                    <img style="width: 50px;" src="~~/Assets/Images/home/get-involved/ns-icon-give.png"/>
+                    <img src="~~/Assets/Images/home/get-involved/icon-give.png"/>
                 </div>
                 <h2>GIVE</h2>
             </div>
@@ -116,19 +116,19 @@
                 For Christians, tithing (a word meaning ‘tenth’) is the starting point. Tithing is giving the first 10% of our income back to the local church. If you call CCV your home, we encourage you to give generously, knowing that your money is being used to support the mission of Jesus Christ – both here in the Valley, and around the world.
             </p>
             <p>
-                <a href="/givev2" class="btn btn-default">Learn More</a>
+                <a href="/get-involved/giving" class="btn btn-default">Learn More</a>
             </p>
         </div>
     </div>
 
     <div class="nextsteps-container">
         <div class="ns-image">
-            <img class="img img-responsive" src="~~/Assets/Images/home/get-involved/ns-ad-share.png"/>
+            <img class="img img-responsive" src="~~/Assets/Images/home/get-involved/ad-share.png"/>
         </div>
         <div class="ns-section-desc">
             <div class="ns-header">
                 <div class="ns-icon">
-                    <img style="width: 50px;" src="~~/Assets/Images/home/get-involved/ns-icon-share.png"/>
+                    <img src="~~/Assets/Images/home/get-involved/icon-share.png"/>
                 </div>
                 <h2>SHARE</h2>
             </div>
@@ -143,12 +143,12 @@
 
     <div class="nextsteps-container">
         <div class="ns-image">
-            <img class="img img-responsive" src="~~/Assets/Images/home/get-involved/ns-ad-coach.png"/>
+            <img class="img img-responsive" src="~~/Assets/Images/home/get-involved/ad-coach.png"/>
         </div>
         <div class="ns-section-desc">
             <div class="ns-header">
                 <div class="ns-icon">
-                    <img style="width: 50px;" src="~~/Assets/Images/home/get-involved/ns-icon-coach.png"/>
+                    <img src="~~/Assets/Images/home/get-involved/icon-coach.png"/>
                 </div>
                 <h2>COACH</h2>
             </div>

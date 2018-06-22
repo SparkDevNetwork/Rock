@@ -1,0 +1,8 @@
+
+{% assign contentChannelChurchName = "Dios Con Nosotros" %}
+{% assign displayChurchName = "Dios Con Nosotros" %}
+{% assign churchLocation = "El Reten - Magdalena" %}
+{% assign pastorName = "Edilberto Enrique Castilla Contrera" %}
+{% assign pastorDetail = "Pastor Edilberto was born in El Reten, Magdalena in 1958. He is married and has three children. He accepted the Lord 13 years ago and has been working in ministry for the last five years. Edilberto is full of vision for his church and looks forward to seeing the community come to know Christ." %}
+{% assign pastorImg = "~~/Assets/Images/home/ministries/colombia-church-plant/pastors/SUR-Edilberto.png" %}
+{% assign campusSponsor = "Surprise" %}

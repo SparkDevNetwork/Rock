@@ -9,7 +9,7 @@
          };
       
       function handleOnLoad() {
-         $(".page-background").css('background-image', 'url(/Themes/church_ccv_External_v8/Assets/Images/campus-landing/background-images/{{campus.ShortCode | Downcase }}-background-image.jpg');
+         $(".page-background").css('background-image', 'url(/Themes/church_ccv_External_v8/Assets/Images/home/locations/campus-landing/background-images/background-{{campus.ShortCode | Downcase }}.jpg');
       }
 </script>
 

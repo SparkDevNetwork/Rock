@@ -1,35 +1,51 @@
 .page-background {   
     background-color: #EBEBEB;
-    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-image-missing.jpg");
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/hero-special-needs.jpg");
 }
 
-#ternavbar-bg {
-    display: none;
+#section-c-bg {
+    background-color: #FFFFFF;
 }
 
-#section-a-bg {
-	background-color: #EBEBEB;
+.special-needs-service-times {
+    display: flex;
+    flex-direction: column;
 }
 
-#section-b-bg {
-   display: none;
+.special-needs-service-times .dropdown {
+    background-color: rgb(122, 19, 21);
+    border-radius: 10px;
+    transition: unset;
+    height: 36px;
+    min-width: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.sn-times-wrapper {
-   display: flex;
-   flex-wrap: wrap;
-   max-width: 400px;
+.special-needs-service-times .dropdown a {
+    color: #FFFFFF;
+    padding-top: unset;
+    padding-bottom: unset;
+    display: flex;
+    align-items: center;
 }
 
-.sn-times-header-wrapper {
-   margin-top: 15px;
-   display: flex;
-   justify-content: space-evenly;
-   align-items: center;
+.special-needs-service-times .dropdown a:hover {
+    background-color: transparent;
 }
 
-.sn-service-times {
-   color: #777;
+.special-needs-service-times .dropdown .dropdown-menu {
+    width: 100%;
+}
+
+.special-needs-service-times .dropdown .dropdown-menu a {
+    color: #333;
+}
+
+.students-service-detail {
+    display: flex;
+    margin: 5px 0;
 }
 
 @media screen and (min-width: 992px) {

@@ -2,7 +2,7 @@
 
 <h3>NOT SURE WHERE TO GO?</h3>
 <p>Use this map to find things like the kids building or where to get an iced latte before service.</p>
-<img class="info-tile" src="~~/Assets/Images/campus-landing/campus-maps/{{campus.ShortCode | Downcase}}-map.jpg" width="100%"/>
+<img class="info-tile" src="~~/Assets/Images/home/locations/campus-landing/campus-maps/map-{{campus.ShortCode | Downcase}}.jpg" width="100%"/>
 
 <div class="info-tile mt-25"> 
     <div class="directions-info">
@@ -18,12 +18,12 @@
         <p>Our attendees come in everything from shorts and flip flops to dresses and slacks - so come in whatever you're comfortable wearing!</p>
     </div>
     <div class="clothing-icons">
-        <img src="~~/Assets/Images/campus-landing/casual-wear/tshirt.svg"/>
-        <img src="~~/Assets/Images/campus-landing/casual-wear/shorts.svg"/>
-        <img src="~~/Assets/Images/campus-landing/casual-wear/sandals.svg"/>
-        <img src="~~/Assets/Images/campus-landing/casual-wear/dress.svg"/>
-        <img src="~~/Assets/Images/campus-landing/casual-wear/button-down-shirt.svg"/>
-        <img src="~~/Assets/Images/campus-landing/casual-wear/pants.svg"/>
+        <img src="~~/Assets/Images/home/locations/campus-landing/casual-wear/tshirt.svg"/>
+        <img src="~~/Assets/Images/home/locations/campus-landing/casual-wear/shorts.svg"/>
+        <img src="~~/Assets/Images/home/locations/campus-landing/casual-wear/sandals.svg"/>
+        <img src="~~/Assets/Images/home/locations/campus-landing/casual-wear/dress.svg"/>
+        <img src="~~/Assets/Images/home/locations/campus-landing/casual-wear/button-down-shirt.svg"/>
+        <img src="~~/Assets/Images/home/locations/campus-landing/casual-wear/pants.svg"/>
     </div>
 </div>
 

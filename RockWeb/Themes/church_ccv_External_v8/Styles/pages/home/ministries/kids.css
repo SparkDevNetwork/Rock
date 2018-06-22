@@ -1,23 +1,11 @@
 /* Kids Page */
 .page-background {   
     background-color: #EBEBEB;
-    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/experience/kids-hero.jpg");
-}
-
-#ternavbar-bg {
-    display: none;
-}
-
-#section-a-bg {
-    background-color: #ebebeb;
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/hero-kids.jpg");
 }
 
 #section-b-bg {
     background-color: #f9f9f9;
-}
-
-#section-c-bg {
-	background-color: #ebebeb;
 }
 
 #section-d-bg {
@@ -28,10 +16,19 @@
    display: none;
 }
 
+.title img {
+    max-width: 300px;
+    margin-bottom: 25px;
+}
+
 /* Helps keep the four graphics in a 2x2 layout */
 .img-row {
     display: flex;
     flex-wrap: nowrap;
+}
+
+.kid-image {
+    padding: 5px;
 }
 
 /*Styling for the bottom icon section with kid bullet points*/

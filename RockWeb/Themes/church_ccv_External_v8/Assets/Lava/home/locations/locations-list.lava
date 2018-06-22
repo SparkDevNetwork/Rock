@@ -34,7 +34,7 @@
                 {% assign campusNameUrl = campus.Name | Replace:' ', '-' | Downcase %}
 
                 <div class="link pull-right">
-                    <a href="our-campuses/{{ campusNameUrl }}">
+                    <a href="locationsv2/{{ campusNameUrl }}">
                         <div>
                             <span>Learn More</span>
                             <i class="mdi mdi-chevron-right event-card-navigation-icon"></i>

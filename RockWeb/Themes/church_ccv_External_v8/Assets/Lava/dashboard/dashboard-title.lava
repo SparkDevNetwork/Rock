@@ -1,0 +1,41 @@
+{% comment %} 
+    {% include '~~/Assets/Lava/dashboard/dashboard-title.lava' %} 
+{% endcomment %}
+
+{% comment %} Dashboard Default Content File {% endcomment %}
+{% include '~~/Assets/Lava/dashboard/_dashboard-content.lava' %}
+
+<div class="title-container">
+    <h1 id="titleGreeting" class="title-greeting"></h1>
+    <p id="titleMessage" class="title-message"></p>
+</div>
+
+<script>
+    // convert current time to number for comparing (getMinutes does not return the leading zero (which breaks calculation below) so used work around to include it for first 9 minutes of hour)
+    var currentTime = new Date();
+    var leadingZero = currentTime.getMinutes() < 10  ? '0' : '';
+    var time = parseInt((currentTime.getHours() + leadingZero  + currentTime.getMinutes()), 10);
+
+    // set default greeting, message, and background
+    var titleGreeting = "Hello, ";
+    var titleMessage = "Hope your day is going great! Thanks for making God and faith a priority.";
+
+    // set context based on time
+    if ( time >= 0600 && time <= 1159 ) {
+        titleGreeting = "{{ morningGreeting }}";
+        titleMessage = "{{ morningMessage }}";
+    } else if ( time >= 1200 && time <= 1759 ) {
+        titleGreeting = "{{ afternoonGreeting }}";
+        titleMessage = "{{ afternoonMessage }}";
+    } else if ( time >= 1800 && time <= 2259 ) {
+        titleGreeting = "{{ eveningGreeting }}";
+        titleMessage = "{{ eveningMessage }}";
+    } else if ( (time >= 2300 && time <= 2359) || (time >= 0 && time <= 0559) ) {
+        titleGreeting = "{{ nightGreeting }}";
+        titleMessage = "{{ nightMessage }}";
+    }
+
+    // apply content
+    $("#titleGreeting").html(titleGreeting + "{{ CurrentPerson.NickName }}");
+    $("#titleMessage").html(titleMessage);
+</script>

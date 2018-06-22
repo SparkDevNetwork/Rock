@@ -1,0 +1,8 @@
+
+{% assign contentChannelChurchName = "Biblica Koinonia" %}
+{% assign displayChurchName = "Biblica Koinonia" %}
+{% assign churchLocation = "Sevilla - Zona Bananera, Magdalena" %}
+{% assign pastorName = "Rafael Robles Angarita" %}
+{% assign pastorDetail = "Pastor Rafael became a Christian in 1983. Before becoming the pastor of Biblica Koinonia, Rafael was a missionary. He led ministries in Aguachica and Chimichagua but felt called to Sevilla, Zona Bananera in 2007 to do his ministry work. Through Rafael's leadership, he has helped to connect roughly 130 people of various ages and backgrounds in a small group ministry." %}
+{% assign pastorImg = "~~/Assets/Images/home/ministries/colombia-church-plant/pastors/PEO-Rafael.png" %}
+{% assign campusSponsor = "Peoria" %}

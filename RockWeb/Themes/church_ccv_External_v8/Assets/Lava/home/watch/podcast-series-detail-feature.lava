@@ -1,0 +1,15 @@
+{% assign Series = PodcastSeries %}
+
+{% capture ogImage %}http://my.ccv.church/GetImage.ashx?guid={{ Series.Attributes.HeaderImage }}{% endcapture %}
+
+{{ 'photo' | AddMetaTagToHead: 'property', 'twitter:card' }}
+{{ '@ccvonline' | AddMetaTagToHead: 'property', 'twitter:site' }}
+
+{{ Series.Name | SetPageTitle }}
+{{ Series.Name | AddMetaTagToHead: 'property', 'og:title' }}
+{{ Series.Description | AddMetaTagToHead: 'property', 'og:description' }}
+{{ ogImage | AddMetaTagToHead: 'property', 'og:image' }}
+
+{% if Series.Attributes.HeaderImage != empty %}
+    <header class="bigblock-flexbg bigblock-flexbg-md" style="background-image: url('/GetImage.ashx?guid={{ Series.Attributes.HeaderImage }}');"></header>
+{% endif %}

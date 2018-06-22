@@ -1,0 +1,29 @@
+
+{% assign SpecialNeedsTimes = Context.Campus | Attribute: 'SpecialNeedsServiceTimes' | Split: ", " %}
+
+{% if Context.Campus == null %}
+   {% assign selectCampusBtnClasses = 'btn btn-default' %}
+   {% include '~~/Assets/Lava/SelectACampus.lava' %}
+{% endif %}
+
+{% if SpecialNeedsTime != empty  %}
+<div class="special-needs-details">
+    <div class="special-needs-service-times">
+    <br />
+        <h3>SERVICE TIMES</h3>
+        {% for time in SpecialNeedsTimes %}
+            {{ time }} <br />
+        {% endfor %}  
+    </div>
+    <div class="special-needs-features">
+        <h3>FEATURES</h3>
+        <ul>
+            <li>Weekend Programs</li>
+            <li>Summer Camps</li>
+            <li>Parent Groups</li>
+            <li>Sports Programs</li>
+        </ul>
+    
+    </div>
+</div>
+{% endif %}

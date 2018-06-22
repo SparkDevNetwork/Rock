@@ -1,5 +1,5 @@
 {% comment %} 
-{% include '~~/Assets/Lava/Header/announcement-bar.lava' %}
+{% include '~~/Assets/Lava/header/announcement-bar.lava' %}
 {% endcomment %}
 
 {% assign ccvLive = 'Global' | Attribute:'CCVLive' %}

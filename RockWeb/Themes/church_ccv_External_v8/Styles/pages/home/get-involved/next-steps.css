@@ -1,6 +1,6 @@
 .page-background {   
     background-color: #EBEBEB;
-    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/ns-hero.jpg");
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/hero-next-steps.jpg");
 }
 
 #ternavbar-bg {
@@ -50,6 +50,13 @@
 
 .ns-icon {
     margin-right: 15px;
+    background-color: #7A1315;
+    border-radius: 50%;
+}
+
+.ns-icon img {
+    width: 50px;
+    height: 50px;
 }
 
 .ns-header h2 {

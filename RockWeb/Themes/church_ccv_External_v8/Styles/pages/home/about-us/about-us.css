@@ -1,6 +1,6 @@
 
 .page-background { 
-   background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-about-us.jpg");
+   background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/about-us/hero-about-us.jpg");
    background-color: white;
 }
 
@@ -14,11 +14,11 @@
 }
 
 #section-b-bg {
-   background: url("/Themes/church_ccv_External_v8/Assets/Images/home/about-us/about-us-our-history-bg.jpg");
+   background: url("/Themes/church_ccv_External_v8/Assets/Images/home/about-us/background-about-us-our-history.jpg");
 }
 
 #section-d-bg {
-    background: url("/Themes/church_ccv_External_v8/Assets/Images/home/about-us/about-us-leadership-bg.jpg") no-repeat;
+    background: url("/Themes/church_ccv_External_v8/Assets/Images/home/about-us/background-about-us-leadership.jpg") no-repeat;
     background-size: contain;
     background-color: #000000;
 }

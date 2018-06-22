@@ -41,7 +41,7 @@
                         {% endif %}
                         
                         {% assign times = campus.ServiceTimes %}
-                        {% include '~~/Assets/Lava/ServiceTimes/Grid.lava' %}
+                        {% include '~~/Assets/Lava/service-times/grid.lava' %}
                     </div>
 
                     <div class="kids-students-times">

@@ -1,0 +1,91 @@
+<div class="container">
+    <h3 style="margin-left: 15px;">Serving Opportunities</h3>
+
+    <div class="event-cards-row">
+        <div class="event-card">
+            <div class="image">
+                <img src="https://my.ccv.church/GetImage.ashx?id=783200&amp;width=720&amp;height=405&amp;mode=crop">
+            </div>
+            <div class="header">
+                <h4>Administration</h4>
+            </div>
+            <div class="content">
+                <p>Volunteers can use their specific gifts and talents in many ways at CCV. Each week there are several volunteers needed in many behind-the-scenes areas of CCV to provide an experience of excellence for all those that come to our campuses. The administration opportunities include working with our Adult Ministries, Business Services, Pastoral Care, IT, Safety &amp; Security, and other teams during the week and on weekends to complete various tasks and projects.</p>
+            </div>
+        </div>
+
+        <div class="event-card">
+            <div class="image">
+                <img src="https://my.ccv.church/GetImage.ashx?id=867647&amp;width=720&amp;height=405&amp;mode=crop">
+            </div>
+            <div class="header">
+                <h4>Food Services</h4>
+            </div>
+            <div class="content">
+                <p>Do you enjoy serving others? Volunteers are needed to prep, organize and serve food and beverage to the thousands of attendees at the CCV campuses each week. There are weekday and weekend opportunities with our cafés, coffee shops, and grills. No matter your level of experience, there are serving opportunities available.</p>
+            </div>
+        </div>
+
+        <div class="event-card">
+            <div class="image">
+                <img src="https://my.ccv.church/GetImage.ashx?id=867647&amp;width=720&amp;height=405&amp;mode=crop">
+            </div>
+            <div class="header">
+                <h4>Guest Services</h4>
+            </div>
+            <div class="content">
+                <p>Each weekend there is a need for volunteers to help people feel welcome at our CCV campuses. From the moment they drive onto the campus until they leave, CCV strives to ensure people feel welcome and that they belong. If hospitality is your gift there are volunteer opportunities before, during and after all of our services.</p>
+            </div>
+        </div>
+
+        <div class="event-card">
+            <div class="image">
+                <img src="https://my.ccv.church/GetImage.ashx?id=783218&amp;width=720&amp;height=405&amp;mode=crop">
+            </div>
+            <div class="header">
+                <h4>Kids</h4>
+            </div>
+            <div class="content">
+                <p>The CCV Kids areas are designed to be a fun and high-energy environment where children from birth through 6th grade learn bible essentials and receive a foundation of love for Christ. There are many volunteer opportunities that range from up-front teaching to behind-the-scenes production to provide the best environment to learn and grow their foundation in Christ. Weekend opportunities available during all services.</p>
+            </div>
+        </div>
+
+        <div class="event-card">
+            <div class="image">
+                <img src="https://my.ccv.church/GetImage.ashx?id=783222&amp;width=720&amp;height=405&amp;mode=crop">
+            </div>
+            <div class="header">
+                <h4>Production</h4>
+            </div>
+            <div class="content">
+                <p>Volunteers use their skills to produce the elements of lighting, audio, video, stage props, projection, camera operation and stage management for each weekend service. If you are creative and thrive in a high-energy, face-paced environment, then production is the perfect serving opportunity for you.</p>
+            </div>
+        </div>
+
+        <div class="event-card">
+            <div class="image">
+                <img src="https://my.ccv.church/GetImage.ashx?id=783224&amp;width=720&amp;height=405&amp;mode=crop">
+            </div>
+            <div class="header">
+                <h4>Students</h4>
+            </div>
+            <div class="content">
+                <p>The CCV Students ministry exists to create an authentic environment for 7th-12th graders to connect with God in a powerful way. There are several volunteer opportunities including coaching students, guest services, production and worship. CCV Students is an area where you can use your gifts and talents to help create Christ centered difference makers.</p>
+            </div>
+        </div>
+
+        <div class="event-card stars-override">
+            <div class="image">
+                <img style="padding: 5px;" width="175px" src="~~/Assets/Images/logos/logo-stars-black.svg">
+            </div>
+            <div class="header">
+                <h4>STARS Youth Sports</h4>
+            </div>
+            <div class="content">
+                <p>We also offer opportunities to serve with our STARS Youth Sports.</p>
+                <br/>
+                <a class="btn btn-primary" href="/stars-serve">Learn More</a>
+            </div>
+        </div>
+    </div>
+</div>

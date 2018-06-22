@@ -4,6 +4,6 @@
    <div id="our-campuses-map" class="our-campuses-map">Loading...</div>
 </div>
 
-{% include '~~/Assets/Lava/ScriptCampusLocations.lava' %}
+{% include '~~/Assets/Lava/home/locations/script-campus-locations.lava' %}
 
 <script src="~~/Scripts/min/our-campuses-map.min.js?v=4"></script>

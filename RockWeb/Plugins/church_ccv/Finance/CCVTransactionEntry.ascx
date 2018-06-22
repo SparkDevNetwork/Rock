@@ -1,6 +1,6 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="CCVTransactionEntry.ascx.cs" Inherits="RockWeb.Plugins.church_ccv.Finance.CCVTransactionEntry" %>
 
-<link rel="stylesheet" href="/Themes/church_ccv_External_v8/Styles/pages/giving.css">
+<link rel="stylesheet" href="/Themes/church_ccv_External_v8/Styles/pages/home/get-involved/giving.css">
 
 <asp:UpdatePanel ID="upPayment" runat="server">
     <ContentTemplate>

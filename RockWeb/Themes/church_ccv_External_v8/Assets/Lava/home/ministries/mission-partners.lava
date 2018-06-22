@@ -1,0 +1,19 @@
+
+<div class="event-cards-row missions-partners">
+   {% for item in Items %}
+      <div class="event-card missions-partners-card-override" >
+         {% assign imageGuid = item | Attribute:'Image', 'RawValue' %}
+         {% assign appRoot = 'Global' | Attribute:'PublicApplicationRoot' %}
+         <div class="image" style="background: url('{{appRoot}}GetImage.ashx?Guid={{imageGuid}}&mode=crop') center center no-repeat;"></div>
+
+         <div class="header">
+            <h4>{{ item.Title | Truncate: 30 }}</h4>
+         </div>
+
+         <div class="content">
+            <p>{{ item.Content }}</p>
+         </div>
+         
+      </div>
+   {% endfor %}
+</div>

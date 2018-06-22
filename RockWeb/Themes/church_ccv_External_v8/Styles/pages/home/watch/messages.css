@@ -1,0 +1,67 @@
+.page-background { 
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-image-missing.jpg");
+    background-color: white;
+}
+
+#zone-sectiona {
+    margin: 0 15%;
+}
+
+.messages {
+    display: flex;
+    flex-direction: column;
+}
+
+.messages-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    padding-top: 15px;
+}
+
+.series {
+    padding: 10px;
+    width: 30%;
+}
+
+.series img {
+    width: 100%;
+}
+
+.series p {
+    text-align: center;
+    background-color: #7A1315;
+    color: #FFFFFF;
+    padding: 10px 0;
+}
+
+/* override bootstrap */
+.pager li>a {
+    background-color: #7A1315;
+    border-width: 0;
+    border: unset;
+    display: flex;
+}
+
+.pager li>a:hover, .pager li>a:focus {
+    background-color: #7A1315;
+}
+
+.btn-primary {
+    min-width: 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.btn-primary i {
+    font-size: 20px;
+}
+
+.previous a {
+    margin-right: 10px;
+}
+
+.next a {
+    margin-left: 10px;
+}
