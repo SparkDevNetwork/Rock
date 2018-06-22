@@ -37,7 +37,7 @@ namespace Rock.Cache
     /// <seealso cref="Rock.Lava.ILiquidizable" />
     [Serializable]
     [DataContract]
-    public abstract class ModelCache<T, TT> : EntityCache<T, TT>, ISecured, IHasAttributes, Lava.ILiquidizable, IModelCache where T : IEntityCache, new()
+    public abstract class ModelCache<T, TT> : EntityCache<T, TT>, ISecured, IHasAttributes, Lava.ILiquidizable where T : IEntityCache, new()
         where TT : Model<TT>, new()
     {
 
