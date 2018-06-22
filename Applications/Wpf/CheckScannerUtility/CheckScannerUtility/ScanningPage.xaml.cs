@@ -536,7 +536,7 @@ namespace Rock.Apps.CheckScannerUtility
                     string otherData = null;
                     if ( remainingMicrParts.Any() )
                     {
-                        checkNumber = remainingMicrParts.Last();
+                        checkNumber = remainingMicrParts.OrderBy( p => p.Length ).Last();
                         
                         // throw any remaining data into 'otherData' (a reject symbol could be in the other data)
                         remainingMicr = remainingMicr.Replace( (char)RangerE13BMicrSymbols.E13B_OnUsSymbol, ' ' );
