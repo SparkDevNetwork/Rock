@@ -764,8 +764,9 @@ $(document).ready(function() {
                         items = new List<ContentChannelItem>();
 
                         var qry = service
-                            .Queryable( "ContentChannel,ContentChannelType" )
-                            .AsNoTracking()
+                            .Queryable()
+                            .Include(a => a.ContentChannel)
+                            .Include(a => a.ContentChannelType)
                             .Where( i => i.ContentChannelId == contentChannel.Id );
 
                         int? itemId = PageParameter( "Item" ).AsIntegerOrNull();
