@@ -33,7 +33,7 @@ namespace Rock.Lava.Blocks
 {
     /// <summary>
     /// Sql stores the result of provided SQL query into a variable.
-    /// 
+    ///
     /// {% sql results %}
     /// SELECT [FirstName], [LastName] FROM [Person]
     /// {% endsql %}
@@ -237,7 +237,7 @@ namespace Rock.Lava.Blocks
             var parms = new Dictionary<string, string>();
             parms.Add( "cacheduration", "0" );
 
-            var markupItems = Regex.Matches( resolvedMarkup, "(.*?:'[^']+')" )
+            var markupItems = Regex.Matches( resolvedMarkup, "(.*?:'[^']*')" )
                 .Cast<Match>()
                 .Select( m => m.Value )
                 .ToList();

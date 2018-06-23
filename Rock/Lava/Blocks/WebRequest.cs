@@ -220,7 +220,7 @@ namespace Rock.Lava.Blocks
             parms.Add( "body", "" );
             parms.Add( "requesttype", "text/plain" );
 
-            var markupItems = Regex.Matches( resolvedMarkup, "(.*?:'[^']+')" )
+            var markupItems = Regex.Matches( resolvedMarkup, "(.*?:'[^']*)" )
                 .Cast<Match>()
                 .Select( m => m.Value )
                 .ToList();

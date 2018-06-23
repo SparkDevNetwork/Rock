@@ -33,7 +33,7 @@ namespace Rock.Lava.Blocks
 {
     /// <summary>
     /// Sql stores the result of provided SQL query into a variable.
-    /// 
+    ///
     /// {% sql results %}
     /// SELECT [FirstName], [LastName] FROM [Person]
     /// {% endsql %}
@@ -146,7 +146,7 @@ namespace Rock.Lava.Blocks
                         }
                     }
                     else
-                    { 
+                    {
                         page.Header.Controls.Add( new System.Web.UI.LiteralControl( $"{Environment.NewLine}<script src='{url}' type='text/javascript'></script>{Environment.NewLine}" ) );
                     }
                 }
@@ -217,7 +217,7 @@ namespace Rock.Lava.Blocks
             parms.Add( "disableanonymousfunction", "false" );
             parms.Add( "url", string.Empty );
 
-            var markupItems = Regex.Matches( resolvedMarkup, "(.*?:'[^']+')" )
+            var markupItems = Regex.Matches( resolvedMarkup, "(.*?:'[^']*')" )
                 .Cast<Match>()
                 .Select( m => m.Value )
                 .ToList();

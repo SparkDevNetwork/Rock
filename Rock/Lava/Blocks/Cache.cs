@@ -32,7 +32,7 @@ namespace Rock.Lava.Blocks
 {
     /// <summary>
     /// Cache allows you to cache the results of a Lava template.
-    /// 
+    ///
     /// {% cache key:'my-content' %}
     ///     My Lava is now fast!
     /// {% endcache %}
@@ -194,7 +194,7 @@ namespace Rock.Lava.Blocks
                 return;
             }
 
-            // Cached value not available so render the template and cache it  
+            // Cached value not available so render the template and cache it
             var lavaResults = MergeLava( _blockMarkup.ToString(), context );
 
             var cacheDuration = parms["duration"].AsInteger();
@@ -322,7 +322,7 @@ namespace Rock.Lava.Blocks
             parms.Add( "duration", "3600" );
             parms.Add( "maxcachesize", "200000" );
 
-            var markupItems = Regex.Matches( markup, "(.*?:'[^']+')" )
+            var markupItems = Regex.Matches( markup, "(.*?:'[^']*')" )
                 .Cast<Match>()
                 .Select( m => m.Value )
                 .ToList();

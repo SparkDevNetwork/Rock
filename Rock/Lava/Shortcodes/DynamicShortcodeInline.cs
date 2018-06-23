@@ -31,7 +31,7 @@ using System;
 namespace Rock.Lava.Shortcodes
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class DynamicShortcodeInline : RockLavaShortcodeBase
     {
@@ -145,7 +145,7 @@ namespace Rock.Lava.Shortcodes
                 }
             }
 
-            var markupItems = Regex.Matches( resolvedMarkup, "(.*?:'[^']+')" )
+            var markupItems = Regex.Matches( resolvedMarkup, "(.*?:'[^']*')" )
                 .Cast<Match>()
                 .Select( m => m.Value )
                 .ToList();
