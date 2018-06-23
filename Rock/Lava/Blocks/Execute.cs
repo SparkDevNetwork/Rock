@@ -30,7 +30,7 @@ using Microsoft.CSharp;
 namespace Rock.Lava.Blocks
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <seealso cref="DotLiquid.Block" />
     public class Execute : RockLavaBlockBase
@@ -176,7 +176,7 @@ namespace Rock.Lava.Blocks
         {
             var parms = new Dictionary<string, string>();
 
-            var markupItems = Regex.Matches( markup, "(.*?:'[^']+')" )
+            var markupItems = Regex.Matches( markup, "(.*?:'[^']*')" )
                 .Cast<Match>()
                 .Select( m => m.Value )
                 .ToList();

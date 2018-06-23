@@ -39,7 +39,7 @@ using Rock.Security;
 namespace Rock.Lava.Blocks
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <seealso cref="DotLiquid.Block" />
     public class RockEntity : RockLavaBlockBase
@@ -570,7 +570,7 @@ namespace Rock.Lava.Blocks
             var parms = new Dictionary<string, string>();
             parms.Add( "iterator", string.Format( "{0}Items", _entityName ) );
 
-            var markupItems = Regex.Matches( resolvedMarkup, "(.*?:'[^']+')" )
+            var markupItems = Regex.Matches( resolvedMarkup, "(.*?:'[^']*')" )
                 .Cast<Match>()
                 .Select( m => m.Value )
                 .ToList();
