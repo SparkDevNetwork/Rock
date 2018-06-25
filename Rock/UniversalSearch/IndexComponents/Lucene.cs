@@ -191,6 +191,7 @@ namespace Rock.UniversalSearch.IndexComponents
             {
                 if ( _directory == null )
                 {
+                    System.IO.Directory.CreateDirectory( _path );
                     _directory = FSDirectory.Open( new DirectoryInfo( _path ) );
                 }
 
