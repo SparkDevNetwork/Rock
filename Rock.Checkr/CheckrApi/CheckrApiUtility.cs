@@ -158,7 +158,7 @@ namespace Rock.Checkr.CheckrApi
 
             if ( restResponse.StatusCode == HttpStatusCode.Unauthorized )
             {
-                errorMessages.Add( "Failed to authorize Checkr Account. Check Checkr Access Token in 'System Settings', 'Checkr' " );
+                errorMessages.Add( "Failed to authorize Checkr. Please confirm your access token." );
                 return false;
             }
 
@@ -202,7 +202,7 @@ namespace Rock.Checkr.CheckrApi
 
             if ( restResponse.StatusCode == HttpStatusCode.Unauthorized )
             {
-                errorMessages.Add( "Failed to authorize Checkr Account. Check Checkr Access Token in 'System Settings', 'Checkr' " );
+                errorMessages.Add( "Invalid Checkr access token. To Re-authenticate go to Admin Tools > System Settings > Checkr. Click edit to change your access token." );
                 return false;
             }
 
@@ -244,7 +244,7 @@ namespace Rock.Checkr.CheckrApi
 
             if ( restResponse.StatusCode == HttpStatusCode.Unauthorized )
             {
-                errorMessages.Add( "Failed to authorize Checkr Account. Check Checkr Access Token in 'System Settings', 'Checkr' " );
+                errorMessages.Add( "Invalid Checkr access token. To Re-authenticate go to Admin Tools > System Settings > Checkr. Click edit to change your access token." );
                 return false;
             }
 
@@ -280,7 +280,7 @@ namespace Rock.Checkr.CheckrApi
 
             if ( restResponse.StatusCode == HttpStatusCode.Unauthorized )
             {
-                errorMessages.Add( "Failed to authorize Checkr Account. Check Checkr Access Token in 'System Settings', 'Checkr' " );
+                errorMessages.Add( "Invalid Checkr access token. To Re-authenticate go to Admin Tools > System Settings > Checkr. Click edit to change your access token." );
                 return false;
             }
 
@@ -316,7 +316,7 @@ namespace Rock.Checkr.CheckrApi
 
             if ( restResponse.StatusCode == HttpStatusCode.Unauthorized )
             {
-                errorMessages.Add( "Failed to authorize Checkr Account. Check Checkr Access Token in 'System Settings', 'Checkr' " );
+                errorMessages.Add( "Invalid Checkr access token. To Re-authenticate go to Admin Tools > System Settings > Checkr. Click edit to change your access token." );
                 return false;
             }
 
