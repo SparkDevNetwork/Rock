@@ -30,7 +30,3 @@ RockWeb/App_Data/PackageStaging
 .localhistory/
 
 Packages/*
-
-# javascript deps
-node_modules
-*.map
