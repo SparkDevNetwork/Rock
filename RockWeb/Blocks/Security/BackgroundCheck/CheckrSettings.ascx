@@ -44,19 +44,12 @@
                         <div class="col-md-12">
                             <div class="row">
                                 <div class="col-md-6">
-                                    <Rock:Lava ID="lava1" runat="server">
-                                    <img src="{{ '~/Assets/Images/Checkr.svg' | ResolveRockUrl }}" style="max-width: 35%;margin:0 auto 16px;display:block;">
-                                    <p><a href="https://checkr.com" target="_blank">Checkr</a> provides modern and compliant background checks for use with Rock. With your <a href="https://rockrms.com/checkrauth?organization={{ 'Global' | Attribute:'OrganizationName' | EscapeDataString }}" target="_blank">Checkr token from RockRMS.com</a> you’ll be able to initiate background checks using Checkr’s scalable, cost-effective, and rapid screening solutions.</p>
-                                    <a href="https://rockrms.com/checkrauth?organization={{ 'Global' | Attribute:'OrganizationName' | EscapeDataString }}" class="btn btn-primary btn-block" target="_blank">Connect to Checkr</a>
-                                    </Rock:Lava>
-                                </div>
-                                <div class="col-md-3">
                                     <asp:Literal ID="lViewColumnLeft" runat="server" />
                                     <div class="actions">
                                         <asp:LinkButton ID="btnEdit" runat="server" CssClass="btn btn-primary" OnClick="btnEdit_Click">Edit</asp:LinkButton>
                                     </div>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-6">
                                     <Rock:RockLiteral ID="lPackages" runat="server" Label="Enabled Background Check Types" />
                                     <div class="actions">
                                         <asp:LinkButton ID="btnUpdate" runat="server" CssClass="btn btn-default btn-xs" OnClick="btnUpdate_Click"><i class="fa fa-sync"></i> Update Packages</asp:LinkButton>
