@@ -58,10 +58,6 @@
     <Reference Include="CacheManager.SystemRuntimeCaching, Version=1.1.2.0, Culture=neutral, PublicKeyToken=5b450b4fb65c4cdb, processorArchitecture=MSIL">
       <HintPath>..\packages\CacheManager.SystemRuntimeCaching.1.1.2\lib\net45\CacheManager.SystemRuntimeCaching.dll</HintPath>
     </Reference>
-    <Reference Include="ClearScript, Version=5.4.8.0, Culture=neutral, PublicKeyToken=935d0c957da47c73, processorArchitecture=MSIL">
-      <HintPath>..\packages\JavaScriptEngineSwitcher.V8.2.2.0\lib\net45\ClearScript.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="CommonMark, Version=0.1.0.0, Culture=neutral, PublicKeyToken=001ef8810438905d, processorArchitecture=MSIL">
       <HintPath>..\packages\CommonMark.NET.0.13.2\lib\net45\CommonMark.dll</HintPath>
       <Private>True</Private>
@@ -120,22 +116,6 @@
     </Reference>
     <Reference Include="ImageResizer, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\ImageResizer.4.0.5\lib\net45\ImageResizer.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="JavaScriptEngineSwitcher.Core, Version=2.2.0.0, Culture=neutral, PublicKeyToken=c608b2a8cc9e4472, processorArchitecture=MSIL">
-      <HintPath>..\packages\JavaScriptEngineSwitcher.Core.2.2.0\lib\net45\JavaScriptEngineSwitcher.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="JavaScriptEngineSwitcher.Msie, Version=2.2.0.0, Culture=neutral, PublicKeyToken=c608b2a8cc9e4472, processorArchitecture=MSIL">
-      <HintPath>..\packages\JavaScriptEngineSwitcher.Msie.2.2.0\lib\net45\JavaScriptEngineSwitcher.Msie.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="JavaScriptEngineSwitcher.V8, Version=2.2.0.0, Culture=neutral, PublicKeyToken=c608b2a8cc9e4472, processorArchitecture=MSIL">
-      <HintPath>..\packages\JavaScriptEngineSwitcher.V8.2.2.0\lib\net45\JavaScriptEngineSwitcher.V8.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="JSPool, Version=2.0.0.0, Culture=neutral, PublicKeyToken=2fc7775f73072640, processorArchitecture=MSIL">
-      <HintPath>..\packages\JSPool.2.0.0\lib\net451\JSPool.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Lucene.Net, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -206,10 +186,6 @@
       <HintPath>..\packages\CS-Script.bin.3.13.2.0\lib\net45\Mono.CSharp.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="MsieJavaScriptEngine, Version=2.1.0.0, Culture=neutral, PublicKeyToken=a3a2846a37ac0d3e, processorArchitecture=MSIL">
-      <HintPath>..\packages\MsieJavaScriptEngine.2.1.0\lib\net45\MsieJavaScriptEngine.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="Nest">
       <HintPath>..\packages\NEST.2.4.3\lib\net45\Nest.dll</HintPath>
       <Private>True</Private>
@@ -235,18 +211,6 @@
     </Reference>
     <Reference Include="Quartz">
       <HintPath>..\libs\Quartz\Quartz.dll</HintPath>
-    </Reference>
-    <Reference Include="React.Core, Version=3.0.0.0, Culture=neutral, PublicKeyToken=9aed67b161f7db78, processorArchitecture=MSIL">
-      <HintPath>..\packages\React.Core.3.0.0\lib\net40\React.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="React.Web, Version=3.0.0.0, Culture=neutral, PublicKeyToken=9aed67b161f7db78, processorArchitecture=MSIL">
-      <HintPath>..\packages\React.Web.3.0.0\lib\net40\React.Web.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="React.Web.Mvc4, Version=3.0.0.0, Culture=neutral, PublicKeyToken=9aed67b161f7db78, processorArchitecture=MSIL">
-      <HintPath>..\packages\React.Web.Mvc4.3.0.0\lib\net40\React.Web.Mvc4.dll</HintPath>
-      <Private>True</Private>
     </Reference>
     <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\RestSharp.105.2.3\lib\net452\RestSharp.dll</HintPath>
@@ -295,10 +259,6 @@
     <Reference Include="System.ServiceModel.Web" />
     <Reference Include="System.Web" />
     <Reference Include="System.Web.Extensions" />
-    <Reference Include="System.Web.Helpers, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.WebPages.2.0.20710.0\lib\net40\System.Web.Helpers.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System.Web.Http, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.WebApi.Core.5.2.3\lib\net45\System.Web.Http.dll</HintPath>
       <Private>True</Private>
@@ -307,28 +267,8 @@
       <HintPath>..\packages\Microsoft.AspNet.WebApi.WebHost.5.2.3\lib\net45\System.Web.Http.WebHost.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="System.Web.Mvc, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.Mvc.4.0.20710.0\lib\net40\System.Web.Mvc.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System.Web.Optimization, Version=1.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.Web.Optimization.1.1.3\lib\net40\System.Web.Optimization.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Web.Razor, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.Razor.2.0.20710.0\lib\net40\System.Web.Razor.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Web.WebPages, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.WebPages.2.0.20710.0\lib\net40\System.Web.WebPages.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Web.WebPages.Deployment, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.WebPages.2.0.20710.0\lib\net40\System.Web.WebPages.Deployment.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Web.WebPages.Razor, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.WebPages.2.0.20710.0\lib\net40\System.Web.WebPages.Razor.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Xml.Linq" />
@@ -345,19 +285,10 @@
       <HintPath>..\packages\UAParser.2.1.0.0\lib\net40-Client\UAParser.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="VroomJs, Version=1.2.3.0, Culture=neutral, PublicKeyToken=e7c52e67fcb0044f, processorArchitecture=MSIL">
-      <HintPath>..\packages\VroomJs.1.2.3\lib\net45\VroomJs.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="WebActivatorEx, Version=2.0.0.0, Culture=neutral, PublicKeyToken=7b26dc2a43f6a0d4, processorArchitecture=MSIL">
-      <HintPath>..\packages\WebActivatorEx.2.1.0\lib\net40\WebActivatorEx.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="WebGrease, Version=1.5.2.14234, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\WebGrease.1.5.2\lib\WebGrease.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="WindowsBase" />
     <Reference Include="Z.EntityFramework.Plus.EF6, Version=1.7.11.0, Culture=neutral, PublicKeyToken=59b66d028979105b, processorArchitecture=MSIL">
       <HintPath>..\packages\Z.EntityFramework.Plus.EF6.1.7.11\lib\net45\Z.EntityFramework.Plus.EF6.dll</HintPath>
     </Reference>
@@ -1746,9 +1677,6 @@
     <Compile Include="Web\UI\RockHiddenFieldPageStatePersister.cs" />
     <Compile Include="Web\UI\Controls\Grid\LavaBoundField.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DefinedValuesPickerEnhanced.cs" />
-    <Compile Include="Web\UI\ReactBlock.cs">
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
     <Compile Include="Web\UI\Controls\Pickers\RegistrationTemplatePicker.cs" />
     <Compile Include="Web\UI\Controls\RockListBox.cs" />
     <Compile Include="Web\UI\IDynamicAttributesBlock.cs" />
@@ -2389,6 +2317,33 @@
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>REM delete build artifacts from stuff that is no longer part of Rock (InteractivePreGeneratedViews and React)
+if Exist $(SolutionDir)\RockWeb\Bin\ru-ru\JavaScriptEngineSwitcher.Core.resources.dll del $(SolutionDir)\RockWeb\Bin\ru-ru\JavaScriptEngineSwitcher.Core.resources.dll
+if Exist $(SolutionDir)\RockWeb\Bin\ru-ru\JavaScriptEngineSwitcher.V8.resources.dll del $(SolutionDir)\RockWeb\Bin\ru-ru\JavaScriptEngineSwitcher.V8.resources.dll
+if Exist $(SolutionDir)\RockWeb\Bin\ru-ru\MsieJavaScriptEngine.resources.dll del $(SolutionDir)\RockWeb\Bin\ru-ru\MsieJavaScriptEngine.resources.dll
+if Exist $(SolutionDir)\RockWeb\Bin\InteractivePreGeneratedViews.dll del $(SolutionDir)\RockWeb\Bin\InteractivePreGeneratedViews.dll
+if Exist $(SolutionDir)\RockWeb\Bin\JavaScriptEngineSwitcher.Core.dll del $(SolutionDir)\RockWeb\Bin\JavaScriptEngineSwitcher.Core.dll
+if Exist $(SolutionDir)\RockWeb\Bin\JavaScriptEngineSwitcher.Msie.dll del $(SolutionDir)\RockWeb\Bin\JavaScriptEngineSwitcher.Msie.dll
+if Exist $(SolutionDir)\RockWeb\Bin\JavaScriptEngineSwitcher.V8.dll del $(SolutionDir)\RockWeb\Bin\JavaScriptEngineSwitcher.V8.dll
+if Exist $(SolutionDir)\RockWeb\Bin\JSPool.dll del $(SolutionDir)\RockWeb\Bin\JSPool.dll
+if Exist $(SolutionDir)\RockWeb\Bin\MsieJavaScriptEngine.dll del $(SolutionDir)\RockWeb\Bin\MsieJavaScriptEngine.dll
+if Exist $(SolutionDir)\RockWeb\Bin\React.Core.dll del $(SolutionDir)\RockWeb\Bin\React.Core.dll
+if Exist $(SolutionDir)\RockWeb\Bin\React.Web.dll del $(SolutionDir)\RockWeb\Bin\React.Web.dll
+if Exist $(SolutionDir)\RockWeb\Bin\React.Web.Mvc4.dll del $(SolutionDir)\RockWeb\Bin\React.Web.Mvc4.dll
+if Exist $(SolutionDir)\RockWeb\Bin\System.Web.Helpers.dll del $(SolutionDir)\RockWeb\Bin\System.Web.Helpers.dll
+if Exist $(SolutionDir)\RockWeb\Bin\System.Web.Mvc.dll del $(SolutionDir)\RockWeb\Bin\System.Web.Mvc.dll
+if Exist $(SolutionDir)\RockWeb\Bin\System.Web.Razor.dll del $(SolutionDir)\RockWeb\Bin\System.Web.Razor.dll
+if Exist $(SolutionDir)\RockWeb\Bin\System.Web.WebPages.Deployment.dll del $(SolutionDir)\RockWeb\Bin\System.Web.WebPages.Deployment.dll
+if Exist $(SolutionDir)\RockWeb\Bin\System.Web.WebPages.dll del $(SolutionDir)\RockWeb\Bin\System.Web.WebPages.dll
+if Exist $(SolutionDir)\RockWeb\Bin\System.Web.WebPages.Razor.dll del $(SolutionDir)\RockWeb\Bin\System.Web.WebPages.Razor.dll
+if Exist $(SolutionDir)\RockWeb\Bin\VroomJs.dll del $(SolutionDir)\RockWeb\Bin\VroomJs.dll
+if Exist $(SolutionDir)\RockWeb\Bin\WebActivatorEx.dll del $(SolutionDir)\RockWeb\Bin\WebActivatorEx.dll
+
+
+
+</PreBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
