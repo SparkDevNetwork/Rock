@@ -23,6 +23,7 @@ using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Cache;
 using Rock.Web.UI.Controls;
+using System.Web;
 
 namespace Rock.Field.Types
 {
@@ -174,8 +175,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string[] values = value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
-            
+            var values = value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).ToArray();
+            values = values.Select( s => HttpUtility.UrlDecode( s ) ).ToArray();
+
             if ( configurationValues != null && configurationValues.ContainsKey( "definedtype" ) )
             {
                 for( int i = 0; i < values.Length; i++)
