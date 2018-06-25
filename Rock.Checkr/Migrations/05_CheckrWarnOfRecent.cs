@@ -14,53 +14,36 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Checkr.Constants;
+using Rock.Plugin;
+using Rock.SystemGuid;
+
 namespace Rock.Migrations
 {
-    using System;
-    using System.Data.Entity.Migrations;
-    
-    /// <summary>
-    ///
-    /// </summary>
-    public partial class BackgroundCheckWarnOfRecent : Rock.Migrations.RockMigration
+    [MigrationNumber( 5, "1.8.0" )]
+    class Checkr_WarnOfRecent : Migration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
         public override void Up()
         {
-            //System.Diagnostics.Debugger.Launch();
-            //System.Diagnostics.Debugger.Break();
-
-            Sql( @"UPDATE[WorkflowActionForm]
-SET[Header] = '{% assign WarnOfRecent = Workflow | Attribute:''WarnOfRecent'' %}<h1>Background Request Details</h1>
-< p >
-    { { CurrentPerson.NickName}
-            }, please complete the form below to start the background
-request process.
-</ p >
-{% if WarnOfRecent == ''Yes'' %}
-    < div class=''alert alert-warning''>
-        Notice: It''s been less than a year since this person''s last background check was processed.
-        Please make sure you want to continue with this request!
-    </div>
-{% endif %}
-<hr />'
-WHERE        (Guid = '328b74e5-6058-4c4e-9ef8-ec10985f18a8') AND 
-                         (Header = '<h1>Background Request Details</h1>
+            Sql( @"UPDATE [WorkflowActionForm]
+SET [Header] = '{% assign WarnOfRecent = Workflow | Attribute:''WarnOfRecent'' %}<h1>Background Request Details</h1>
 <p>
     {{CurrentPerson.NickName}}, please complete the form below to start the background
     request process.
 </p>
-{% if Workflow | Attribute:''WarnOfRecent'' == ''Yes'' %}
+{% if WarnOfRecent == ''Yes'' %}
     <div class=''alert alert-warning''>
         Notice: It''s been less than a year since this person''s last background check was processed.
         Please make sure you want to continue with this request!
     </div>
 {% endif %}
-<hr />')" );
+<hr />'
+WHERE [Guid] = '644D005C-CC28-4050-994C-C6E53A930F69'" );
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
