@@ -34,6 +34,10 @@ namespace Rock.Web.UI.Controls
         public override void RenderBaseControl( HtmlTextWriter writer )
         {
             this.Attributes["pattern"] = "[0-9]*";
+            int minValue = MinimumValue.AsIntegerOrNull() ?? int.MinValue;
+            int maxValue = MaximumValue.AsIntegerOrNull() ?? int.MaxValue;
+            this.Attributes["min"] = minValue.ToString();
+            this.Attributes["max"] = maxValue.ToString();
             base.RenderBaseControl( writer );
         }
     }
