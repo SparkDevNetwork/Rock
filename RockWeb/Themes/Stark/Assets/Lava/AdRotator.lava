@@ -2,7 +2,7 @@
   <!-- Wrapper for slides -->
   <div class="carousel-inner">
     {%- for item in Items -%}
-        {%- if LinkedPages.DetailPage contains '{Slug}' -%}
+        {%- if LinkedPages.DetailPage contains '{Slug}' and item.PrimarySlug != '' -%}
           {%- assign itemLink = LinkedPages.DetailPage | Replace:'{Slug}',item.PrimarySlug | Prepend:'/' -%}
         {%- else -%}
           {%- capture itemLink -%}{{ LinkedPages.DetailPage }}?Item={{ item.Id }}{%- endcapture -%}
