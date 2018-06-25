@@ -11,10 +11,12 @@ REQUIRED VARIABLES
 
 {% assign Message = PodcastMessage %}
 
-<div class="embed-responsive embed-responsive-16by9 margin-b-md">
-    {% if fullService %}
-        <iframe src="{{ Message.Attributes.3rdPartyFullVideoUrl }}" width="500" height="281" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
-    {% else %}
-        <iframe src="{{ Message.Attributes.3rdPartyMessageVideoUrl }}" width="500" height="281" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
-    {% endif %}
+<div class="message-video">
+    <div class="embed-responsive embed-responsive-16by9">
+        {% if fullService %}
+            <iframe src="{{ Message.Attributes.3rdPartyFullVideoUrl }}" width="500" height="281" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+        {% else %}
+            <iframe src="{{ Message.Attributes.3rdPartyMessageVideoUrl }}" width="500" height="281" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+        {% endif %}
+    </div>
 </div>

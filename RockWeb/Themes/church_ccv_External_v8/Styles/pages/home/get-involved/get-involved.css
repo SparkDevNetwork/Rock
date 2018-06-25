@@ -24,33 +24,13 @@
     background-color: #F9F9F9;
 }
 
-/* Events Section */
-.get-involved-events-row {
-    margin-top: 30px;
-}
-
 /* Mobile Styling */
-@media screen and (max-width: 500px) { 
+@media screen and (max-width: 500px) {
     .main-feature {
         height: unset;
-        padding-top: 50px;
-    }
-    
-    .get-involved-events-row {
-        margin-top: 0;
-    }
-
-    .event-cards-header {
-        flex-direction: column;
-        align-items: flex-start;
-        margin-left: 0;
-    }
-
-    .event-card {
-        margin: 5px 0;
+        padding-top: 60px;
     }
 }
-/* End Events Section */
 
 .flex-wrap {
     display: flex;

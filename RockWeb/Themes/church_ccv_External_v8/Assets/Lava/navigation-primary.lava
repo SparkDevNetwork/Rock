@@ -37,10 +37,6 @@
                     {% if childPageTitle == 'watch' %}
                         {% assign activeClass = 'active' %}
                     {% endif %}
-                {% when 'givingv2' %}
-                    {% if childPageTitle == 'giving' %}
-                        {% assign activeClass = 'active' %}
-                    {% endif %}
                 {% else %}
             {% endcase %}
 

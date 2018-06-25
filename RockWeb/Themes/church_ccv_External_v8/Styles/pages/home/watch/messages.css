@@ -35,6 +35,29 @@
     padding: 10px 0;
 }
 
+/* Mobile Styling */
+@media screen and (max-width: 500px) {
+    #zone-feature, #zone-sectiona {
+        margin: 0 10px;
+    }
+
+    .messages-list {
+        flex-direction: column;
+        padding-top: 0;
+    }
+
+    .series {
+        padding: 10px 0;
+        width: 100%;
+    }
+
+    .btn-primary {
+        width: 100px;
+        min-width: unset;
+    }
+
+}
+
 /* override bootstrap */
 .pager li>a {
     background-color: #7A1315;

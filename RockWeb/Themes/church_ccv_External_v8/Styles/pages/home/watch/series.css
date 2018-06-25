@@ -3,23 +3,38 @@
     background-color: #000;
 }
 
-#zone-sectiona, #zone-feature {
-    margin: 0 15%;
-}
-
-/* Override Theme.css */
-@media screen and (max-width: 1000px) {
-    .main-feature {
-        display: block;
-    }
-}
-
 .main-feature {
     padding-top: 125px;
+}
+
+.series {
+    padding: 20px;
+    background-color: #ffffff;
+    box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px; 
+    border-radius: 5px;
+    margin: 30px 0;
 }
 
 .series p {
     margin: 20px 0;
 }
+
+/* Mobile Styling */
+@media screen and (max-width: 500px){
+    .main-feature {
+        padding-top: 60px;
+    }
+
+    #zone-feature, #zone-sectiona {
+        margin: 10px 0;
+    }
+
+    .series {
+        margin: 0;
+    }
+}
+
+
+
 
 

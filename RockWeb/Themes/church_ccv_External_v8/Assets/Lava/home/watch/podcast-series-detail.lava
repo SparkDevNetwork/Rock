@@ -1,18 +1,20 @@
 {% assign Series = PodcastSeries %}
-{% assign currentDate = 'Now' | Date:'MMddyyyy' %}
+{% assign currentDate = 'Now' | Date:'yyyyMMdd' %}
 
 <div id="series-details" class="series">
-  <p>{{ Series.Description }}</p>
-  <p class="">{{ Series.Attributes.ExtraDetails }}</p>
-  <br/>
-  <h4>Messages in this Series</h4>
-  <ol class="messages">
+    <div class="series-description">
+        <p>{{ Series.Description }}</p>
+        <p class="">{{ Series.Attributes.ExtraDetails }}</p>
+        <br/>
+    </div>
+    <h4>Messages in this Series</h4>
+    <ol class="messages">
     {% for Message in Series.Messages reversed %}
-      {% assign messageActiveDate = '' %}
-      {% assign messageActiveDate = Message.Date | Date:'MMddyyyy' %}
-      {% if messageActiveDate != empty and messageActiveDate <= currentDate %}
+        {% assign messageActiveDate = '' %}
+        {% assign messageActiveDate = Message.Date | Date:'yyyyMMdd' %}
+        {% if messageActiveDate != empty and messageActiveDate <= currentDate %}
         <li><a href="{{ LinkedPages.MessageDetailPage }}?MessageId={{ Message.Id }}">{{ Message.Name }}</a></li>
-      {% endif %}
+        {% endif %}
     {% endfor %}
-  </ol>
+    </ol>
 </div>

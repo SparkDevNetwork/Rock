@@ -64,6 +64,10 @@
     background-color: #000;
 }
 
+#section-a-bg {
+    display: none;
+}
+
 #ternavbar-bg {
     display: none;
 }
@@ -93,7 +97,7 @@
 .cta-cards {
     display: flex;
     justify-content: space-around;
-    /* margin: 0 -30px; */
+    margin-bottom: 100px;
 }
 
 .cta-card {
@@ -102,7 +106,6 @@
     width: 30%;
     min-height: 210px;
     background-color: rgba(0,0,0,.7);
-    /* margin: 0 15px; */
     padding: 30px;
 }
 
@@ -406,41 +409,13 @@
     .students img {
         width: 90%;
     }
+
+    .kids-students .btn {
+        width: 85%
+    }
 }
 
 /* End Kids / Studetns Section */
-
-/* Events Section */
-
-.dashboard-events-row {
-    margin: 0 50px;
-    margin-top: 30px;
-}
-
-/* Mobile Styling */
-@media screen and (max-width: 500px) { 
-    .dashboard-events-row {
-        margin: 0 5px;
-        margin-top: 0;
-        margin-bottom: 10px;
-    }
-
-    .event-cards-header {
-        flex-direction: column;
-        align-items: flex-start;
-        margin-left: 0;
-    }
-
-    .event-card {
-        margin: 5px;
-    }
-}
-
-.event-card .image img {
-    object-fit: cover;
- }
-
-/* End Events Section */
 
 .btn.btn-primary:focus {
     outline: none;

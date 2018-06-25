@@ -1,0 +1,96 @@
+
+.page-background {
+    background-color: #000;
+}
+
+.main-feature {
+    padding-top: 90px;
+}
+
+.message-video {
+    width: 90%;
+    margin: 0 auto;
+}
+
+.message-card {
+    padding: 20px;
+    background-color: #ffffff;
+    box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px; 
+    border-radius: 5px;
+    margin: 30px 0;
+    display: flex;
+    justify-content: space-between;
+}
+
+.message-buttons-mobile {
+    display: none;
+}
+
+.message-details {
+    display: flex;
+    flex-direction: column;
+    width: 50%;
+}
+
+.message-details h1 {
+    margin: 0;
+}
+
+.message-details-title ul {
+    margin: 20px 0;
+}
+
+.message-other-messages {
+    margin-top: 30px;
+}
+
+.message-sidebar {
+    width: 40%;
+}
+
+.message-sidebar .btn-group {
+    margin-bottom: 30px;
+}
+
+/* Mobile Styling */
+@media screen and (max-width: 500px) {
+    .main-feature {
+        padding-top: 60px;
+    }
+
+    #zone-feature, #zone-sectiona {
+        margin: 10px 0px;
+    }
+
+    .message-video {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .message-card {
+        flex-direction: column;
+        margin: 0;
+    }
+
+    .message-buttons-mobile {
+        display: table;
+        margin-bottom: 20px;
+    }
+
+    .message-buttons-desktop {
+        display: none;
+    }
+
+    .message-details {
+        width: 100%;
+    }
+
+    .message-other-messages {
+        margin-top: unset;
+    }
+
+    .message-sidebar {
+        width: 100%;
+        margin-top: 10px;
+    }
+}

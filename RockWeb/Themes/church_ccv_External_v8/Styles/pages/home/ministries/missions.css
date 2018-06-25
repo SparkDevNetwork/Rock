@@ -1,301 +1,89 @@
 
 .page-background {   
     background-color: #EBEBEB;
-    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/missions/hero-missions.jpg");
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/hero-missions.jpg");
 }
 
 #ternavbar-bg {
     display: flex;
 }
 
-#section-a-bg {
-   background-color: #f9f9f9;
-}
-
-/*When there are two sections of the same color back to back, pull the lower one up a pixel to prevent a single line gap*/
 #section-b-bg {
-   margin-top: -1px;
-   background-color: #f9f9f9;
-    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/missions/strip-bg-colombia.jpg");
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/background-missions-colombia.jpg");
 }
 
-/*When there are two sections of the same color back to back, pull the lower one up a pixel to prevent a single line gap*/
-#section-c-bg {
-    margin-top: -1px;
-	background-color: #f9f9f9;
-}
-
-#section-d-bg {
-   background-color: #f9f9f9;
-}
-
-#section-e-bg {
-   
-}
-
-.event-cards-header.mission-stories {
-	padding:2rem 0;
-}
-
-.event-cards-row.mission-stories {
-	justify-content: right;
-}
-
-.navigation-tertiary-items {
-    margin-left: -15%;
+#section-c-bg, #section-e-bg {
+	background-color: #FFFFFF;
 }
 
 .navigation-tertiary-item {
-    padding: 10px 20px;
+    padding: 10px 30px;
+}
+
+.mission-stories {
+    margin-bottom: 10px;
+}
+
+.events-row {
+    margin-top: unset;
 }
 
 .event-cards-row {
-   flex-wrap: wrap;
-   justify-content: center;
+    justify-content: space-between;
 }
 
-@media screen and (min-width: 992px) {
-   .event-cards-row {
-      justify-content: flex-end;
-      /*width: 95%;*/
-      margin: 0 auto;
-   }
-}
-
-.missions-partners-cards-row-override {
-   justify-content: center;
-}
-
-@media screen and (min-width: 605px) {
-   .missions-partners-cards-row-override {
-      justify-content: flex-start;
-   }
-}
-
-@media screen and (min-width: 1150px) {
-   .missions-partners-cards-row-override {
-      justify-content: space-between;
-   }
+.event-cards-header {
+    margin-left: 0;
 }
 
 .event-card {
-   width: 30%;
-   height: 400px;
-   margin-bottom: 25px;
+    height: unset;
+    margin: 10px 10px;
 }
 
-.event-card:last-child {
-	margin-right:0;
+.event-card:first-of-type {
+    margin-left: 0;
 }
 
-.event-card .image img {
-   object-fit: cover;
+.event-card:last-of-type {
+    margin-right: 0;
 }
 
-.image.missions-partners-image-override img {
-   height: auto;
-   width: 200px;
-   margin: 0 auto;
-}
-
-.missions-partners-override {
-   flex-direction: row; 
-   justify-content: center; 
-   align-items: center; 
-   height: 250px;
-   width: 250px;
-}
-
-.event-card.missions-story-card-override .image img {
-   object-fit: cover;
-}
-
-.event-card.missions-story-card-override .read-more a {
-   font-weight: 900;
-   display: flex;
-}
-
-.missions-event-header-override h4 {
-   width: 95%;
-   white-space: nowrap;
-   overflow: hidden;
-   text-overflow: ellipsis;
-   margin: 0;
-   padding-bottom: 5px;
-}
-
-@media screen and (min-width: 768px) {
-   .mission-trips-header {
-      display: flex;
-      flex-wrap: nowrap;
-      justify-content: space-between;
-      align-items: center;
-   }
-}
-
-.mission-trips-header a {
-   margin-top: 7px;
-}
-
-@media screen and (max-width: 800px) {
-    .colombia-header {
-        padding-left: 20px;
-        padding-right: 20px;
+/* Mobile Styling */
+@media screen and (max-width: 500px) {
+/* temporarily disable 3rd nav in mobile until we decide on design. */
+    #ternavbar-bg {
+        display: none;
     }
 
-    .mission-trips-header {
-        padding-left: 20px;
-        padding-right: 20px;
+    .events-row {
+        padding: 20px 0;
+    }
+
+    .event-card {
+        margin: 10px 0;
+    }
+
+    .event-cards-header {
+        flex-direction: column;
+    }
+
+    .mission-stories .nav-buttons {
+        width: 100%;
+    }
+
+    .event-cards-row {
+        flex-direction: column;
     }
 }
 
-.missions-stories-header {
-   display: flex;
-   flex-wrap: nowrap;
-   justify-content: space-between;
-   width: 100%;
-}
 
-.missions-stories-header .nav-buttons {
-   display: flex;
-   justify-content: flex-end;
-}
 
-.missions-stories-header .nav-button {
-   color: #7A1315; 
-   font-size: 24px; 
-   transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms; 
-   background-color: unset;
-   border-width: unset;
-   border-style: unset;
-   border-color: unset;
-   border-image: unset;
-}
 
-.stay-in-the-know {
-   display: flex;
-   flex-direction: column;
-   background-color: #333333;
-   justify-content: center;
-}
 
-@media screen and (min-width: 992px) {
-   .stay-in-the-know {
-      flex-direction: row;
-      justify-content: flex-start;
-      align-items: center;
-      min-height: 200px;
-      margin-bottom: 25px;
-   }
-}
 
-.stay-in-the-know-info {
-   padding-left: 10px;
-   height: 100%;
-   display: flex;
-   flex-direction: row;
-   margin-right: 50px;
-   align-items: center;
-   width: 50%;
-}
 
-@media screen and (min-width: 992px) {
-   .stay-in-the-know-info {
-      padding-left: 20px;
-      width: 100%;
-   }
-}
 
-.stay-in-the-know-words {   
-   display: flex;
-   flex-direction: column;
-    min-width: 250px;
-}
 
-@media screen and (min-width: 992px) {
-   .stay-in-the-know-words {   
-      margin-top: -50px;
-      min-width: 300px;
-   }
-}
 
-.stay-in-the-know-info h2 {
-   color: #ffffff;
-}
 
-.stay-in-the-know-info p {
-   color: #ffffff;
-}
-
-@media screen and (min-width: 992px) {
-   .first-name-field {
-      margin-right: 25px;
-   }
-}
-
-.first-name-field label, .last-name-field label, .email-field label {
-   color: #777777 !important;
-}
-
-.first-name-field input, .last-name-field input, .email-field input {
-   border-bottom: 2px solid #999999 !important;
-   color: #999999 !important;
-}
-
-.workflow-entry-panel {
-   background-color: #333333;
-   padding-top: 20px;
-   padding-left: 20px;
-   padding-right: 20px;
-}
-
-@media screen and (min-width: 992px) {
-   .workflow-entry-panel {
-      display: flex;
-      flex-direction: row;
-      flex-wrap: nowrap;
-   }
-}
-
-.workflow-entry-panel label {
-   color: #ffffff;
-}
-
-/* Hide the 'required' dot'*/
-.workflow-entry-panel label:after {
-   display: none;
-}
-
-.alert {
-    margin-left: 20px;
-    margin-right: 20px;
-}
-
-.alert-danger {
-   display: none !important;
-}
-
-.alert-success {
-   background-color: #777777;
-   color: #ffffff;
-   border-color: #777777;
-}
-
-@media screen and (min-width: 992px) {
-    .alert {
-        margin-right: 100px;
-     }
-
-   .name-fields {
-      display: flex;
-      flex-direction: row;
-      flex-wrap: nowrap;
-   }
-}
-
-@media screen and (min-width: 992px) {
-   .actions {
-      margin-left: 25px;
-      margin-top: auto;
-   }
-}

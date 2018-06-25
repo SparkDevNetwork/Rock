@@ -1,0 +1,61 @@
+{% comment %} 
+    {% include '~~/Assets/Lava/home/locations/navigation-campuses.lava' %} 
+{% endcomment %}
+
+<div class="navigation-secondary-desktop">
+    <ul class="navigation-secondary-items">
+        {% for campus in Campuses %}
+            {% if campus.IsActive == true %}
+                {% assign campusUrlSegment = campus.Name | Downcase | Replace:' ', '-' %}
+
+                {% assign navSection = '' %}
+                {% assign urlSegs = 'Global' | Page:'Url' | Url:'segments' %}
+                {% assign urlSegsSize = urlSegs | Size %}
+                {% if urlSegsSize > 2 %}
+                    {% assign navSection = urlSegs[2] | Downcase %}
+                    {% assign navSection = navSection | Replace:'/', '' %}
+                {% endif %}
+
+                {% assign activeClass = '' %}
+                {% if navSection == campusUrlSegment %}
+                    {% assign activeClass = 'active' %}
+                {% endif %}
+
+                <li class="navigation-secondary-item {{ activeClass }}">
+                    <a href="/locationsv2/{{ campusUrlSegment }}">{{ campus.Name }}</a>
+                </li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+</div>
+
+<div class="navigation-secondary-mobile">
+    <div class="navigation-secondary-mobile-dropdown">
+        <button class="dropdown-toggle" type="button" data-toggle="dropdown" style="border: 0px;">Navigate<b class="fa fa-caret-down"></b></button>
+        <ul class="dropdown-menu">
+            {% for campus in Campuses %}
+                {% if campus.IsActive == true %}
+                    {% assign campusUrlSegment = campus.Name | Downcase | Replace:' ', '-' %}
+
+                    {% assign navSection = '' %}
+                    {% assign urlSegs = 'Global' | Page:'Url' | Url:'segments' %}
+                    {% assign urlSegsSize = urlSegs | Size %}
+                    {% if urlSegsSize > 2 %}
+                        {% assign navSection = urlSegs[2] | Downcase %}
+                        {% assign navSection = navSection | Replace:'/', '' %}
+                    {% endif %}
+
+                    {% assign activeClass = '' %}
+                    {% if navSection == campusUrlSegment %}
+                        {% assign activeClass = 'active' %}
+                    {% endif %}
+
+                    <li class="navigation-secondary-mobile-item {{ activeClass }}">
+                        <a href="/locationsv2/{{ campusUrlSegment }}">{{ campus.Name }}</a>
+                    </li>
+                {% endif %}
+
+            {% endfor %}
+        </ul>
+    </div>
+</div>

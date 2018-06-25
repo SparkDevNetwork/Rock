@@ -16,43 +16,6 @@
     flex-direction: column;
 }
 
-.students-service-times .dropdown {
-    background-color: #7A1315;
-    border-radius: 10px;
-    transition: unset;
-    height: 36px;
-    min-width: 200px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 35px;
-}
-
-.students-service-times .dropdown a {
-    color: #FFFFFF;
-    padding-top: unset;
-    padding-bottom: unset;
-    display: flex;
-    align-items: center;
-}
-
-.students-service-times .dropdown a:hover {
-    background-color: transparent;
-}
-
-.students-service-times .dropdown .dropdown-menu {
-    width: 100%;
-}
-
-.students-service-times .dropdown .dropdown-menu a {
-    color: #333;
-}
-
-.dropdown-toggle.navbar-link b {
-    margin-left: 15px;
-}
-
-
 .students-service-detail {
     display: flex;
     margin: 5px 0;
@@ -64,6 +27,10 @@
     font-size: 16px;
     line-height: 18px;
     font-weight: bold;
+}
+
+.contextsetter-campus .dropdown {
+    margin-bottom: 35px;
 }
 
 /* override margins so that title is even with campus selector */

@@ -1,36 +1,20 @@
 
 .page-background {   
     background-color: #EBEBEB;
-    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/missions/hero-missions.jpg");
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/hero-missions.jpg");
 }
 
 #ternavbar-bg {
     display: flex;
 }
 
-#section-a-bg {
-   background-color: #f9f9f9;
-}
-
 /*When there are two sections of the same color back to back, pull the lower one up a pixel to prevent a single line gap*/
 #section-b-bg {
-   margin-top: -1px;
-   background-color: #f9f9f9;
-    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/missions/strip-bg-colombia.jpg");
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/background-missions-colombia.jpg");
 }
 
-/*When there are two sections of the same color back to back, pull the lower one up a pixel to prevent a single line gap*/
-#section-c-bg {
-    margin-top: -1px;
-	background-color: #f9f9f9;
-}
-
-#section-d-bg {
-   background-color: #f9f9f9;
-}
-
-#section-e-bg {
-   
+#section-c-bg, #section-e-bg {
+	background-color: #FFFFFF;
 }
 
 .event-cards-header.mission-stories {
@@ -57,7 +41,6 @@
 @media screen and (min-width: 992px) {
    .event-cards-row {
       justify-content: flex-end;
-      /*width: 95%;*/
       margin: 0 auto;
    }
 }

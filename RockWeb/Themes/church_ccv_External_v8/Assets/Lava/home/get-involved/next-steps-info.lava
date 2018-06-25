@@ -26,7 +26,7 @@
         </div>
         <div class="ns-section-desc">
             <div class="ns-header">
-                <div class="ns-icon" style="background-color: #2bc0dc">
+                <div class="ns-icon">
                     <img src="~~/Assets/Images/home/get-involved/icon-baptism.png"/>
                 </div>
                 <h2>BAPTISM</h2>
@@ -74,7 +74,6 @@
                 Life was not meant to be lived alone. Gather weekly with people to build a community and impact it for the better. At CCV, Groups are vital to our church. They provide a sense of connection and security as we all tackle life together. Our Groups draw out the relevance of Biblical principles discussed in the weekend services.
             </p>
             <p>
-                <a href="/get-involved/next-steps/connect" class="btn btn-default">Learn More</a>
                 <a href="/get-involved/next-steps/connect/group-search" class="btn btn-default">Find A Group</a>
             </p>
         </div>

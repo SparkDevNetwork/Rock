@@ -27,21 +27,22 @@
                     {% endif %}
                     
                     {% assign times = campus.ServiceTimes %}
-                    {% include '~~/Assets/Lava/ServiceTimes/Grid.lava' %}
+                    {% include '~~/Assets/Lava/service-times/grid.lava' %}
                 </div>
 
-                
-                {% assign campusNameUrl = campus.Name | Replace:' ', '-' | Downcase %}
-
-                <div class="link pull-right">
-                    <a href="locationsv2/{{ campusNameUrl }}">
-                        <div>
-                            <span>Learn More</span>
-                            <i class="mdi mdi-chevron-right event-card-navigation-icon"></i>
-                        </div>
-                    </a>
+                <div class="link">
+                    <a class="btn btn-primary" href="/locationsv2/{{ campus.Name | Downcase | Replace: ' ', '-' }}">Learn More</a>
                 </div>
             </div>
         {% endif %}
   {% endfor %}
+</div>
+
+<div class="icon-details">
+    <div class="icon-desc">
+        <p><span class="csi csi-slt"></span> Sign language available</p>
+    </div>
+    <div class="icon-desc">
+        <p><span class="csi csi-special-needs"></span> Special Needs</p>
+    </div>
 </div>

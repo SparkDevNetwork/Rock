@@ -963,6 +963,7 @@
         margin-top: -8px;
         margin-left: 12px;
         text-align: center;
+        display: flex;
     }
 
         #cms-admin-footer .button-bar a {

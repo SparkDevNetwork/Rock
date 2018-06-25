@@ -4,6 +4,10 @@
    background-color: white;
 }
 
+#subnavbar-bg {
+    display: none;
+}
+
 .main-feature {
     height: 475px;
     padding-top: 175px;
@@ -16,18 +20,16 @@
 
 #zone-sectiona {
    max-width: 100%;
+   margin: unset;
+}
+
+#zone-sectionb {
+    max-width: 1280px;
+    margin: 0 auto;
 }
 
 #section-b-bg {
    background-color: #ffffff;
-}
-
-/* Mobile Styling */
-@media screen and (max-width: 500px) {
-    .main-feature {
-        height: unset;
-        padding-top: 50px;
-    }
 }
 
 .our-campuses-map-window {
@@ -41,12 +43,6 @@
 .event-cards-row {
    flex-wrap: wrap;
    justify-content: center;
-}
-
-@media screen and (min-width: 992px) {
-   .event-cards-row {
-      justify-content: left;
-   }
 }
 
 .event-card {
@@ -65,13 +61,18 @@
 }
 
 .event-card .link {
-   margin-top: auto;
+   margin: auto 20px 20px 10px;
+}
+
+.event-card .link a {
+    height: unset;
+    line-height: unset;
+    color: #FFFFFF;
 }
 
 .event-card .location-contact {
     display: flex;
-    flex-direction: column;
-    
+    flex-direction: column;   
 }
 
 @media screen and (min-width: 362px) {
@@ -83,4 +84,37 @@
 
 .event-card .content.service-times {
     color: #777777;
+}
+
+.icon-details {
+    display: flex;
+    justify-content: space-between;
+    margin-left: 50px;
+    max-width: 300px;
+    width: 300px;
+}
+
+/* Mobile Styling */
+@media screen and (max-width: 500px) {
+    .main-feature {
+        height: unset;
+        padding-top: 50px;
+    }
+
+    .event-cards-row {
+        margin-bottom: 0;
+    }
+
+    .event-card .link {
+        align-self: stretch;
+        margin: auto 10px 10px 10px;
+    }
+
+    .icon-details {
+        justify-content: flex-start;
+        max-width: unset;
+        width: unset;
+        margin-left: unset;
+        flex-direction: column;
+    }
 }

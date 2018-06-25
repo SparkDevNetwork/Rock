@@ -261,6 +261,8 @@
 
     // Render active share icon and update relative popover and modal content
     renderShare = function(data) {
+        
+
         if (data.SharedStory) {
             // Story shared
             statusValue = 'You’ve shared with us how God has changed your life; don’t stop there, share your story with others too. It just might be the encouragement that leads someone else to Christ.'; 

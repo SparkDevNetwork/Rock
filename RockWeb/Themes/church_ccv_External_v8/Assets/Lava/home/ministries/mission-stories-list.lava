@@ -11,9 +11,9 @@
 
 {% comment %} Render Header {% endcomment %}
 <div class="event-cards-header mission-stories">
-    <h3>{{ eventHeaderText | Default: 'Events' }}</h3>
+    <h2>{{ eventHeaderText | Default: 'Events' }}</h2>
     <div class="nav-buttons">
-        <button type="button" class="btn btn-primary">VIEW ALL</button>
+        <a class="btn btn-primary" href="/ministries/missions/stories/">VIEW ALL</a>
     </div>
 </div>
 
@@ -45,10 +45,10 @@
                     <img src="/GetImage.ashx?Guid={{imageGuid}}&width=350&mode=crop"/>
                 </div>
                 <div class="header">
-                    <h4>{{ item.Title | Truncate: 30 }}</h4>
+                    <h4>{{ item.Title }}</h4>
                 </div>
                 <div class="content">
-                    <p>{{ item | Attribute:'Summary' | Truncate: 250 }}</p>
+                    <p>{{ item | Attribute:'Summary' | Truncate: 200 }}</p>
                 </div>
                 <div class="link pull-right">
                     <a href="{{ item | Attribute: 'ExternalLink' | Default: defaultLink }}">

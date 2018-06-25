@@ -2,38 +2,31 @@
     background-color: #EBEBEB;
 }
 
-#subnavbar-bg {
-    display: none;
-}
-
-#section-a-bg {
-   background-color: #f9f9f9;
-}
-
-#section-b-bg {
-    background-color: #f9f9f9;
-}
-
 #section-c-bg {
 	display: none;
 }
 
+@media screen and (max-width: 500px){
+    #zone-feature, #zone-sectiona, #zone-sectionb {
+        margin: 0 10px;
+    }
+}
+
+/* Feature Section */
+
 .campus-header {
     font-size: 64px;
     text-align: center;
+    color: #FFFFFF;
+    margin: 0;
+    margin-bottom: 20px;
 }
 
 .campus-leader {
     display: flex;
-    flex-wrap: nowrap;
     align-items: center;
-    flex-direction: column;
-}
-
-@media screen and (min-width: 528px){
-    .campus-leader {
-        flex-direction: row;
-    }
+    justify-content: center;
+    flex-wrap: wrap;
 }
 
 .campus-leader-details {
@@ -42,46 +35,66 @@
     margin-left: 25px;
 }
 
+.campus-leader-details h4, .campus-leader-details p {
+    color: #FFFFFF;
+}
+
+@media screen and (max-width: 500px){
+    .campus-leader {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .campus-leader-details {
+        margin-left: 0;
+    }
+}
+
+/* Campus Info Section */
+
+.campus-info {
+    display: flex;
+    justify-content: space-between;
+    margin: 30px 0;
+}
+
+.campus-info-content {
+    margin-right: 150px;
+    width: 100%;
+}
+
 .campus-info-card {
     padding: 20px;
     background-color: #ffffff;
     box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px; 
     border-radius: 5px;
-    width: 100%;
+    width: 65%;
 }
 
-.address {
+.address, .phone {
     display: flex;
     padding-bottom: 20px;
 }
 
 .campus-info-icon {
-    font-size: 16pt;
+    font-size: 21px;
     padding-right: 15px;
     margin-top: 5px;
 }
 
-.address p {
-    line-height: unset;
+.address p, .phone a {
     margin: unset;
-    font-size: 14pt;
-}
-
-.phone a {
-    font-size: 14pt;
+    font-size: 18px;
+    line-height: 20px;
 }
 
 .service-times {
-    margin-top: 25px;
     color: #777777;
+    padding-bottom: 20px;
 }
 
 .service-times strong {
     font-weight: 900;
-}
-
-.kids-students-times {
-    margin-top: 25px;
 }
 
 .time-entry {
@@ -90,31 +103,36 @@
     align-items: center;
     color: #777777;
 
-    border-bottom-width: 1px;
-    border-bottom-style: solid;
-    border-bottom-color: #dddddd;
-    padding-top: 5px;
-    padding-bottom: 5px;
+    border-bottom: 1px solid #dddddd;
+    padding: 5px 0;
 }
 
-.time-entry {
-    margin: 10px 0 10px 0;
-}
-
-.time-entry-details {
-    text-align: right;
-}
-.time-entry-details p {
-    margin: 0
+.time-entry-last {
+    border-bottom: unset;
 }
 
 .time-entry-label {
     font-weight: 900;
 }
 
-.time-entry-last {
-    border-bottom: unset;
+.time-entry-details {
+    text-align: right;
 }
+
+@media screen and (max-width: 500px){
+    .campus-info {
+        flex-direction: column;
+        margin: 0;
+    }
+
+    .campus-info-card {
+        width: 100%;
+        text-align: start;
+    }
+
+}
+
+/* Campus Tiles Section */
 
 .info-tile {
     background-color: #ffffff;
@@ -124,29 +142,10 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap;
-}
-
-@media screen and (min-width: 528px){
-    .directions-info {
-        max-width: 60%;
-    }
 }
 
 .clothing-info {
-    display: flex;
-    flex-direction: column;
-}
-
-@media screen and (min-width: 528px){
-    .clothing-info {
-        max-width: 40%;
-    }
-}
-
-.clothing-icons {
-    display: flex;
-    flex-wrap: wrap;
+    width: 40%;
 }
 
 .clothing-icons img {
@@ -156,45 +155,53 @@
 .info-tile-group {
     display: flex;
     justify-content: space-between;
-    flex-direction: column;
-    flex-wrap: wrap;
     margin-bottom: 50px;
 }
 
-@media screen and (min-width: 528px){
+.parking-info, .attendance-info {
+    width: 49%;
+}
+
+@media screen and (max-width: 500px){
+    .campus-visit h3 {
+        margin-top: 0;
+    }
+
+    .info-tile {
+        flex-direction: column;
+    }
+
+    .info-tile.map {
+        padding: 0;
+    }
+
     .info-tile-group {
-        flex-direction: row;
+        flex-direction: column;
     }
-}
 
-.parking-info {
-    flex-direction: column;
-    align-items: flex-start;
-    margin-bottom: 25px;
-}
-
-@media screen and (min-width: 528px){
-    .parking-info {
-        width: 49%;
+    .clothing-info {
+        width: 100%;
     }
-}
 
-.parking-info ul {
-    color: #777777;
-}
+    .clothing-icons {
+        display: flex;
+        flex-wrap: wrap;
+        flex-direction: row-reverse;
+        justify-content: space-between;
+        align-items: center;
+    }
 
-.parking-info li {
-    margin-bottom: 5px;
-}
+    .clothing-icons img {
+        margin-left: 0;
+        min-width: 80px;
+    }
 
-.attendance-info {
-    flex-direction: column;
-    align-items: flex-start;
-    margin-bottom: 25px;
-}
+    .parking-info, .attendance-info {
+        width: 100%;
+        margin-bottom: 25px;
+    }
 
-@media screen and (min-width: 528px){
-    .attendance-info {
-        width: 49%;
+    .info-tile-group {
+        margin-bottom: 0;
     }
 }

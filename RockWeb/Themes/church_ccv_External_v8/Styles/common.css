@@ -25,15 +25,24 @@
 	background-color: #EBEBEB;
 }
 
-#zone-feature, #zone-subnavbar, #zone-tertiarynavbar, #zone-sectiona, #zone-sectionb, #zone-sectionc, #zone-sectiond, #zone-sectione, #zone-sectionf, #zone-sectiong, #zone-sectionh   {
+#zone-subnavbar, #zone-tertiarynavbar {
     max-width: 1280px;
     margin: 0 auto;
+}
+
+#zone-feature, #zone-sectiona, #zone-sectionb, #zone-sectionc, #zone-sectiond, #zone-sectione, #zone-sectionf, #zone-sectiong, #zone-sectionh   {
+    max-width: 1280px;
+    margin: 0 15%;
  }
 
 /* Standard Layout Mobile Styling */
 @media screen and (max-width: 500px) {
     .main-feature {
         height: unset;
+    }
+
+    #zone-feature, #zone-sectiona, #zone-sectionb, #zone-sectionc, #zone-sectiond, #zone-sectione, #zone-sectionf, #zone-sectiong, #zone-sectionh   {
+        margin: 0;
     }
 
     #section-a-bg {
@@ -696,6 +705,7 @@
 
 /*Use when you have layouts that have text on one side of the screen and a video on the other*/
 .left-and-right-container {
+    width: 100%;
     display: flex;
     flex-direction: column;
     padding-bottom: 25px;
@@ -723,6 +733,7 @@
         display: flex;
         flex-direction: row;
         justify-content: space-between;
+        align-items: center;
     }
 }
 
@@ -749,11 +760,21 @@
 }
 
 /*  Start Event Card Styling */
+.events-row {
+    margin-top: 20px;
+}
+
 .event-cards-header {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     margin-left: 15px;
 }
+
+.event-cards-header h3 {
+    margin: 0;
+}
+
 /* Nav buttons */
 .event-cards-header .nav-buttons {
     display: flex;
@@ -769,6 +790,10 @@
     border-style: unset;
     border-color: unset;
     border-image: unset;
+}
+
+.event-campus-setter {
+    float: right;
 }
 
 /* Wrappers used to fix clipping when hiding row overflow */
@@ -800,6 +825,7 @@
 .event-card .image img {
     width: 100%;
     height: 200px;
+    object-fit: cover;
 }
 
 .event-header-row {
@@ -812,22 +838,6 @@
 .event-cards-row {
     display: flex;
     margin-bottom: 25px;
-}
-
-.event-campus-setter .nav a {
-    color: #7A1315;
-    font-family: akrobat;
-    font-weight: bold;
-    font-size: 18px;
-    margin-top: 2px;
-}
-
-.event-campus-setter .navbar-nav .open .dropdown-menu {
-    position: absolute;
-    right: 15px;
-    background-color: #FFFFFF;
-    top: unset;
-    left: unset;
 }
 
 .event-card .header {
@@ -903,15 +913,27 @@
 
 /* Mobile Styling Event Card */
 @media screen and (max-width: 500px){
+    .events-row {
+        margin: 0 5px;
+        margin-top: 0;
+    }
+
+    .event-cards-row {
+        margin: unset;
+    }
+
+    .event-card {
+        margin: 0;
+    }
+
     .event-cards-header h3 {
         font-size: 24px;
     }
 
-    .contextsetter {
-        margin: 0;
+    .event-campus-setter {
+        float: unset;
+        padding: 10px 0;
     }
-
-
 }
 
 /* End Event Card Styling */
@@ -919,33 +941,59 @@
 
 
 /* Start Campus Selector Styling */
-.contextsetter-campus-event a {
-    color: #7A1315;
-    font-family: akrobat;
-    font-weight: bold;
-    font-size: 18px;
-    margin-top: 8px;
+.contextsetter-campus .dropdown {
+    background-color: #7A1315;
+    border-radius: 10px;
+    transition: unset;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
 }
 
-.contextsetter-campus-event .navbar-nav .dropdown-menu {
-    border-radius: 5px 5px;
-    padding: 0px;
+.contextsetter-campus .dropdown a {
+    color: #FFFFFF;
+    padding-top: unset;
+    padding-bottom: unset;
+    display: flex;
+    align-items: center;
 }
 
-.contextsetter-campus-event .navbar-nav .dropdown-menu a {
-    font-size: 18px;
-    color: #7A1315;
-    margin: 0px;
-
+.contextsetter-campus .dropdown .dropdown-menu a {
+    color: #333;
 }
 
-/* Select A Day campus selector override */
-.contextsetter-campus-event .navbar-nav .dropdown-menu>li>a:hover, 
-.contextsetter-campus-event .navbar-nav .dropdown-menu>li>a:focus
-{
+/* override bootstrap */
+.contextsetter-campus .dropdown .dropdown-menu {
+    width: 100%;
+    position: absolute;
+    float: left;
+    background-color: #FFFFFF;
+    border: 1px solid rgba(0,0,0,0.15);
+    box-shadow: no0 6px 12px rgba(0,0,0,0.175)ne;
+}
+
+.contextsetter-campus .dropdown-toggle.navbar-link b {
+    margin-left: 15px;
+}
+
+.contextsetter-campus .dropdown a:hover {
     background-color: #7A1315;
     color: #FFFFFF;
 }
+
+/* Mobile Styling */
+@media screen and (max-width: 500px) {
+    .contextsetter-campus .dropdown {
+        margin-right: 0;
+    }
+
+    .contextsetter {
+        margin: 0;
+    }
+}
+
 /* End Campus Selector Styling */
 
 

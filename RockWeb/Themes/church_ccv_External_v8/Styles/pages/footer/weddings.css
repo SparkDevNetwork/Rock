@@ -3,10 +3,6 @@
     background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-image-missing.jpg");
 }
 
-#zone-sectiona, #zone-feature {
-    margin: 0 15%;
-}
-
 .weddings {
     margin-top: 40px;
 }
@@ -21,7 +17,8 @@
 
 .weddings-header {
     display: flex;
-    align-items: flex-end;
+    align-items: center;
+    margin-bottom: 25px;
 }
 
 .weddings-header .event-campus-setter {
@@ -89,11 +86,13 @@
     
     .weddings-header {
         justify-content: space-between;
-        align-items: flex-start;
+        flex-direction: column;
+        width: 100%;
     }
 
     .weddings-header .event-campus-setter {
         margin-left: 0;
+        width: 100%;
     }
 
     .weddings-header .navbar-nav>li>a {

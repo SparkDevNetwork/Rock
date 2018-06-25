@@ -1,49 +1,51 @@
 {% include '~~/Assets/Lava/home/locations/campus-landing-page-util.lava' %}
 
-<h3>NOT SURE WHERE TO GO?</h3>
-<p>Use this map to find things like the kids building or where to get an iced latte before service.</p>
-<img class="info-tile" src="~~/Assets/Images/home/locations/campus-landing/campus-maps/map-{{campus.ShortCode | Downcase}}.jpg" width="100%"/>
+<div class="campus-visit">
+    <h3>NOT SURE WHERE TO GO?</h3>
+    <p>Use this map to find things like the kids building or where to get an iced latte before service.</p>
+    <img class="info-tile map" src="~~/Assets/Images/home/locations/campus-landing/campus-maps/map-{{campus.ShortCode | Downcase}}.jpg" width="100%"/>
 
-<div class="info-tile mt-25"> 
-    <div class="directions-info">
-        <h3>NEED DIRECTIONS?</h3>
-        <p>{{campus.Directions}}</p>
+    <div class="info-tile mt-25"> 
+        <div class="directions-info">
+            <h3>NEED DIRECTIONS?</h3>
+            <p>{{campus.Directions}}</p>
+        </div>
+        <a target="_blank" href="https://maps.google.com/?q={{campus.Location.Street1 | Replace: ' ', '+'}}+{{campus.Location.City | Replace: ' ', '+'}}+{{campus.Location.State | Replace: ' ', '+'}}+{{campus.Location.PostalCode | Replace: ' ', '+'}}" class="btn btn-primary" style="padding: 10px;">GET DETAILED DIRECTIONS</a>
     </div>
-    <a target="_blank" href="https://maps.google.com/?q={{campus.Location.Street1 | Replace: ' ', '+'}}+{{campus.Location.City | Replace: ' ', '+'}}+{{campus.Location.State | Replace: ' ', '+'}}+{{campus.Location.PostalCode | Replace: ' ', '+'}}" class="btn btn-primary" style="padding: 10px;">GET DETAILED DIRECTIONS</a>
-</div>
 
-<div class="info-tile mt-25"> 
-    <div class="clothing-info">
-        <h3>WHAT DO I WEAR?</h3>
-        <p>Our attendees come in everything from shorts and flip flops to dresses and slacks - so come in whatever you're comfortable wearing!</p>
-    </div>
-    <div class="clothing-icons">
-        <img src="~~/Assets/Images/home/locations/campus-landing/casual-wear/tshirt.svg"/>
-        <img src="~~/Assets/Images/home/locations/campus-landing/casual-wear/shorts.svg"/>
-        <img src="~~/Assets/Images/home/locations/campus-landing/casual-wear/sandals.svg"/>
-        <img src="~~/Assets/Images/home/locations/campus-landing/casual-wear/dress.svg"/>
-        <img src="~~/Assets/Images/home/locations/campus-landing/casual-wear/button-down-shirt.svg"/>
-        <img src="~~/Assets/Images/home/locations/campus-landing/casual-wear/pants.svg"/>
-    </div>
-</div>
-
-<div class="info-tile-group mt-25">
-    <div class="info-tile parking-info">
-        <div>
-            <h3>WHERE DO I PARK?</h3>
-            {% assign parkingSteps = campus.ParkingDirections | Split:'*' %}
-            <ul>
-                {% for step in parkingSteps %}
-                <li>{{step}}</li>
-                {% endfor %}
-            </ul>
+    <div class="info-tile mt-25"> 
+        <div class="clothing-info">
+            <h3>WHAT DO I WEAR?</h3>
+            <p>Our attendees come in everything from shorts and flip flops to dresses and slacks - so come in whatever you're comfortable wearing!</p>
+        </div>
+        <div class="clothing-icons">
+            <img src="~~/Assets/Images/home/locations/campus-landing/casual-wear/tshirt.svg"/>
+            <img src="~~/Assets/Images/home/locations/campus-landing/casual-wear/shorts.svg"/>
+            <img src="~~/Assets/Images/home/locations/campus-landing/casual-wear/sandals.svg"/>
+            <img src="~~/Assets/Images/home/locations/campus-landing/casual-wear/dress.svg"/>
+            <img src="~~/Assets/Images/home/locations/campus-landing/casual-wear/button-down-shirt.svg"/>
+            <img src="~~/Assets/Images/home/locations/campus-landing/casual-wear/pants.svg"/>
         </div>
     </div>
-    <div class="info-tile attendance-info">
-        <div>
-            <h1>{{campus.AveragePerServiceAttendance}}</h1>
-            <h5>AVG ATTENDANCE</h5>
-            <p>per service</p>
+
+    <div class="info-tile-group mt-25">
+        <div class="info-tile parking-info">
+            <div>
+                <h3>WHERE DO I PARK?</h3>
+                {% assign parkingSteps = campus.ParkingDirections | Split:'*' %}
+                <ul>
+                    {% for step in parkingSteps %}
+                    <li>{{step}}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        <div class="info-tile attendance-info">
+            <div>
+                <h1>{{campus.AveragePerServiceAttendance}}</h1>
+                <h5>AVG ATTENDANCE</h5>
+                <p>per service</p>
+            </div>
         </div>
     </div>
 </div>

@@ -1,7 +1,7 @@
 /* important needed to override giving css (need to move giving block CSS into its own file so we dont have these conflicts, instead of being in giving page css file) */
 .page-background {   
     background-color: #EBEBEB !important;
-    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/missions/hero-missions.jpg") !important;
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/hero-missions.jpg") !important;
 }
 
 .main-feature {
@@ -17,17 +17,42 @@
 	background-color: #F6F6F6;
 }
 
-.navigation-tertiary-items {
-    margin-left: -15%;
-}
-
 .navigation-tertiary-item {
-    padding: 10px 20px;
+    padding: 10px 30px;
 }
 
 /* fix conflict with giving page */
 .navigation-tertiary-item.active {
     background-color: unset;
 }
+
+.navigation-tertiary-items {
+    width: unset !important;
+}
+
+@media screen and (max-width: 500px) {
+    #subnavbar-bg {
+        display: flex !important;
+    }
+
+    .comment-wrapper {
+        margin-top: unset !important;
+    }
+}
+
+/* End conflict fixes */
+
+/* Mobile Styling */
+@media screen and (max-width: 500px) {
+    /* temporarily disable 3rd nav in mobile until we decide on design. */
+    #ternavbar-bg {
+        display: none !important;
+    }
+
+    .main-feature {
+        height: unset !important;
+        padding-top: 50px !important;
+    }
+}    
 
 
