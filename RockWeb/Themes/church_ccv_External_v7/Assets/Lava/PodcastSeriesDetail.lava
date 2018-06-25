@@ -1,5 +1,5 @@
 {% assign Series = PodcastSeries %}
-{% assign currentDate = 'Now' | Date:'MMddyyyy' %}
+{% assign currentDate = 'Now' | Date:'yyyyMMdd' %}
 
 {% capture ogImage %}http://my.ccv.church/GetImage.ashx?guid={{ Series.Attributes.HeaderImage }}{% endcapture %}
 
@@ -35,7 +35,7 @@
   <ol class="watch-msglist">
     {% for Message in Series.Messages reversed %}
       {% assign messageActiveDate = '' %}
-      {% assign messageActiveDate = Message.Date | Date:'MMddyyyy' %}
+      {% assign messageActiveDate = Message.Date | Date:'yyyyMMdd' %}
       {% if messageActiveDate != empty and messageActiveDate <= currentDate %}
         <li><a href="{{ LinkedPages.MessageDetailPage }}?MessageId={{ Message.Id }}">{{ Message.Name }}</a></li>
       {% endif %}

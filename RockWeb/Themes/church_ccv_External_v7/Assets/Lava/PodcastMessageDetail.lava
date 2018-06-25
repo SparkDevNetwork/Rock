@@ -11,7 +11,7 @@ REQUIRED VARIABLES
 
 {% assign Series = PodcastSeries %}
 {% assign Message = PodcastMessage %}
-{% assign currentDate = 'Now' | Date:'MMddyyyy' %}
+{% assign currentDate = 'Now' | Date:'yyyyMMdd' %}
 
 {% capture pageTitle %}{{ Series.Name }}: {{ Message.Name }}{% endcapture %}
 
@@ -82,7 +82,7 @@ REQUIRED VARIABLES
     <ol>
       {% for otherMessage in Series.Messages reversed %}
         {% assign otherMessageActiveDate = '' %}
-        {% assign otherMessageActiveDate = otherMessage.Date | Date:'MMddyyyy' %}
+        {% assign otherMessageActiveDate = otherMessage.Date | Date:'yyyyMMdd' %}
         {% if otherMessageActiveDate != empty and otherMessageActiveDate <= currentDate %}
           <li><a href="?MessageId={{ otherMessage.Id }}">{{ otherMessage.Name }}</a></li>
         {% endif %}

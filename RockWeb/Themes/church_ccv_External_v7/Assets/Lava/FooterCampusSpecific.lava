@@ -42,7 +42,9 @@
         {% assign useLightIcon = true %}
         {% assign times = Context.Campus.ServiceTimes %}
         {% include '~~/Assets/Lava/ServiceTimes/Main.lava' %}
-
+        <br/>
+        <span class="csi csi-slt"></span> Sign language available<br/> 
+        <span class="csi csi-special-needs"></span> Special Needs
       </div>
       <div class="social social-dark social-fade margin-b-md">
         <a href="http://twitter.com/ccvonline" data-toggle="tooltip" data-placement="top" title="CCV on Twitter">

@@ -19,6 +19,9 @@
       {% assign useLightIcon = true %}
       {% assign times = campus.ServiceTimes %}
       {% include '~~/Assets/Lava/ServiceTimes/TwoLines.lava' %}
+      <br/>
+      <span class="csi csi-slt"></span> Sign language available<br/>
+      <span class="csi csi-special-needs"></span> Special Needs
     </div>
   </div>
 
