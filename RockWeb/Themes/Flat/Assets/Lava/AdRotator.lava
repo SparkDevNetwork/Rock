@@ -3,11 +3,16 @@
     <div class="flexslider">
       <ul class="slides">
 
-        {% for item in Items -%}
+        {%- for item in Items -%}
+          {%- if LinkedPages.DetailPage contains '{Slug}' and item.PrimarySlug != '' -%}
+            {%- assign itemLink = LinkedPages.DetailPage | Replace:'{Slug}',item.PrimarySlug | Prepend:'/' -%}
+          {%- else -%}
+            {%- capture itemLink -%}{{ LinkedPages.DetailPage }}?Item={{ item.Id }}{%- endcapture -%}
+          {%- endif -%}
           <li>
-            <a href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}">{{ item | Attribute:'Image' }}</a>
+            <a href="{{ itemLink }}">{{ item | Attribute:'Image' }}</a>
           </li>
-        {% endfor -%}
+        {%- endfor -%}
 
       </ul>
     </div>
