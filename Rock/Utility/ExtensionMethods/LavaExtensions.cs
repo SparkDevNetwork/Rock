@@ -575,6 +575,7 @@ namespace Rock
             }
             catch ( Exception ex )
             {
+                ExceptionLogService.LogException( ex );
                 return "Error resolving Lava merge fields: " + ex.Message;
             }
         }
@@ -680,6 +681,7 @@ namespace Rock
                 }
                 else
                 {
+                    ExceptionLogService.LogException( ex );
                     return "Error resolving Lava merge fields: " + ex.Message;
                 }
             }
