@@ -256,6 +256,16 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the system setting value.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public string GetSystemSettingValue(string key)
+        {
+            return this.GetByEntityTypeQualifier( null, Attribute.SYSTEM_SETTING_QUALIFIER, string.Empty, true ).Where( t => t.Key == key ).Select( a => a.DefaultValue ).FirstOrDefault();
+        }
+
+        /// <summary>
         /// Gets the Guid for the Attribute that has the specified Id
         /// </summary>
         /// <param name="id">The identifier.</param>
