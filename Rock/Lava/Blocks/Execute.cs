@@ -171,7 +171,6 @@ namespace Rock.Lava.Blocks
         /// </summary>
         /// <param name="markup">The markup.</param>
         /// <returns></returns>
-        /// <exception cref="System.Exception">No parameters were found in your command. The syntax for a parameter is parmName:'' (note that you must use single quotes).</exception>
         private Dictionary<string, string> ParseMarkup( string markup )
         {
             var parms = new Dictionary<string, string>();
