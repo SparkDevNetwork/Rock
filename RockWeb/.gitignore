@@ -2,7 +2,8 @@
 /bin/*.dll
 /bin/*.pdb
 /bin/*.xml
-/bin/roslyn/*.*
+/bin/roslyn/*.dll
+/bin/roslyn/*.exe
 
 /*.suo
 /*.user
