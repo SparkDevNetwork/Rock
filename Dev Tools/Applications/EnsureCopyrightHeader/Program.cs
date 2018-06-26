@@ -30,6 +30,7 @@ namespace EnsureCopyrightHeader
             int updatedFileCount = 0;
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "RockWeb\\" );
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Checkr\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Mailgun\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Mandrill\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Migrations\\" );
@@ -43,7 +44,7 @@ namespace EnsureCopyrightHeader
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Slingshot.Model\\" );
             //updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Tests\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Version\\" );
-
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.WebStartup\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "RockJobSchedulerService\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Applications\\" );
 
