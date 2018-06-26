@@ -2,8 +2,11 @@
 /bin/*.dll
 /bin/*.pdb
 /bin/*.xml
-/bin/roslyn/*.dll
-/bin/roslyn/*.exe
+
+# Make sure all the roslyn files are stored in source control. 
+# The don't restore consistently when switching branches, and we probably want them in source control anyways
+!/bin/roslyn/*.dll
+!/bin/roslyn/*.exe
 
 /*.suo
 /*.user
