@@ -56,6 +56,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
+      <Link>AssemblySharedInfo.cs</Link>
+    </Compile>
     <Compile Include="Checkr.cs" />
     <Compile Include="CheckrApi\CheckrApiUtility.cs" />
     <Compile Include="CheckrApi\CreateReportResponse.cs" />
@@ -74,6 +77,7 @@
     <Compile Include="Migrations\03_Checkr_CreateAttribute.cs" />
     <Compile Include="Migrations\02_Checkr_CreatePages.cs" />
     <Compile Include="Migrations\01_Checkr.cs" />
+    <Compile Include="Migrations\05_CheckrWarnOfRecent.cs" />
     <Compile Include="Migrations\04_CheckrActionActive.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
