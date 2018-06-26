@@ -30,7 +30,7 @@
                                     </Rock:Lava>
                                 </div>
                                 <div class="col-md-5 col-md-offset-1 col-sm-6">
-                                    <Rock:RockTextBox ID="tbAccessToken" runat="server" Label="Checkr Access Token" Required="false" RequiredErrorMessage="A Checkr Access Token is Required" Help="The Checkr Access Token is generated when a Checkr Account is created on the Rock website." />
+                                    <Rock:RockTextBox ID="tbAccessToken" runat="server" Label="Checkr Access Token" Required="true" RequiredErrorMessage="A Checkr Access Token is Required" Help="The Checkr Access Token is generated when a Checkr Account is created on the Rock website." />
                                         <div class="actions">
                                             <asp:LinkButton ID="btnSave" runat="server" CssClass="btn btn-primary" OnClick="btnSave_Click">Save</asp:LinkButton>
                                         </div>

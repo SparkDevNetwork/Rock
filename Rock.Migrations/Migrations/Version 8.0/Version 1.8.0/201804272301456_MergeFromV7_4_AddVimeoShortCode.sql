@@ -1,4 +1,6 @@
-﻿INSERT INTO [LavaShortCode]
+﻿IF ( SELECT COUNT(*) FROM [LavaShortCode] WHERE [Guid] = 'EA1335B7-158F-464F-8994-98C53D4E47FF' ) = 0
+BEGIN
+INSERT INTO [LavaShortCode]
 	([Name], [Description], [Documentation], [IsSystem], [IsActive], [TagName], [Markup], [TagType], [EnabledLavaCommands], [Parameters], [Guid])
 	VALUES
 	('Vimeo','Creates a responsive Vimeo embed from just a simple video id.','<p>Embedding a Vimeo video is easy, right? Well what if you want it to be responsive (adjust with the size of the window)? Or what about 
@@ -88,4 +90,4 @@ Vimeo video. There are also a couple of options for you to add:</p>
 <div id=''{{ wrapperId }}'' style=''width:{{ width }};''>
     <div class=''embed-container''><iframe src=''{{ url }}'' frameborder=''0'' webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe></div>
 </div>',1,'','id^|width^100%|autoplay^false|loop^false|color^|title^false|byline^false|portrait^false','EA1335B7-158F-464F-8994-98C53D4E47FF')
- 
+ END

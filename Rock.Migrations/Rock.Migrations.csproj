@@ -69,6 +69,14 @@
     <Compile Include="HotFixMigrations\004_FixBaptismBadge.cs" />
     <Compile Include="HotFixMigrations\005_ValueAsNumeric.cs" />
     <Compile Include="HotFixMigrations\006_StatementProcs.cs" />
+    <Compile Include="Migrations\201806251757250_BackgroundCheckWarnOfRecent.cs" />
+    <Compile Include="Migrations\201806251757250_BackgroundCheckWarnOfRecent.Designer.cs">
+      <DependentUpon>201806251757250_BackgroundCheckWarnOfRecent.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201806252044512_UpdateHomepageMetrics.cs" />
+    <Compile Include="Migrations\201806252044512_UpdateHomepageMetrics.Designer.cs">
+      <DependentUpon>201806252044512_UpdateHomepageMetrics.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 8.0\Version 1.8.0\201801162056008_V8Features.cs" />
     <Compile Include="Migrations\Version 8.0\Version 1.8.0\201801162056008_V8Features.Designer.cs">
       <DependentUpon>201801162056008_V8Features.cs</DependentUpon>
@@ -2886,6 +2894,12 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Migrations\201806251757250_BackgroundCheckWarnOfRecent.resx">
+      <DependentUpon>201806251757250_BackgroundCheckWarnOfRecent.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201806252044512_UpdateHomepageMetrics.resx">
+      <DependentUpon>201806252044512_UpdateHomepageMetrics.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201801162056008_V8Features.resx">
       <DependentUpon>201801162056008_V8Features.cs</DependentUpon>
     </EmbeddedResource>

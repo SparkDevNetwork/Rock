@@ -161,6 +161,7 @@ namespace RockWeb.Blocks.Cms
             }
             catch ( Exception ex )
             {
+                LogException( ex );
                 StringBuilder errorMessage = new StringBuilder();
                 errorMessage.Append( "<div class='alert alert-warning'>" );
                 errorMessage.Append( "An error has occurred while generating the page menu. Error details:" );
