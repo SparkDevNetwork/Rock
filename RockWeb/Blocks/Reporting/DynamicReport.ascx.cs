@@ -354,6 +354,10 @@ namespace RockWeb.Blocks.Reporting
                         {
                             defaultFilterLabel = ( component as Rock.Reporting.DataFilter.PropertyFilter ).GetSelectionLabel( reportEntityTypeModel, filter.Selection );
                         }
+                        else if ( component is Rock.Reporting.DataFilter.EntityFieldFilter )
+                        {
+                            defaultFilterLabel = ( component as Rock.Reporting.DataFilter.EntityFieldFilter ).GetSelectedFieldName( filter.Selection );
+                        }
                         else
                         {
                             defaultFilterLabel = component.GetTitle( reportEntityTypeModel );
@@ -500,6 +504,12 @@ namespace RockWeb.Blocks.Reporting
             {
                 nbConfigurationWarning.Visible = true;
                 nbConfigurationWarning.Text = string.Format( "The {0} report does not have a dataview", report );
+                pnlView.Visible = false;
+            }
+            else if ( report.DataView?.EntityTypeId != report.EntityTypeId )
+            {
+                nbConfigurationWarning.Visible = true;
+                nbConfigurationWarning.Text = string.Format( "The {0} report's EntityType doesn't match the dataview's EntityType", report );
                 pnlView.Visible = false;
             }
             else
