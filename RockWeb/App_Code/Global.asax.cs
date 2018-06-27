@@ -140,9 +140,12 @@ namespace RockWeb
 
                 // Indicate to always log to file during initialization.
                 ExceptionLogService.AlwaysLogToFile = true;
-
-                // Clear all cache
-                RockCache.ClearAllCachedItems( false );
+                
+                if ( !File.Exists( Server.MapPath( "~/App_Data/Run.Migration" ) ) )
+                {
+                    // Clear all cache
+                    RockCache.ClearAllCachedItems( false );
+                }
 
                 // Get a db context
                 using ( var rockContext = new RockContext() )

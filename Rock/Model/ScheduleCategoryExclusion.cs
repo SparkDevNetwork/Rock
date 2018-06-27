@@ -110,7 +110,7 @@ namespace Rock.Model
         public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
         {
             // Update CacheCategory ScheduleExclusions
-            CacheCategory.UpdateCachedEntity( this.CategoryId, entityState, dbContext as RockContext );
+            CacheCategory.UpdateCachedEntity( this.CategoryId, entityState );
         }
 
         #endregion

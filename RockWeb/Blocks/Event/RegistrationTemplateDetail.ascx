@@ -69,7 +69,7 @@
                                             AutoPostBack="true" OnCheckedChanged="cbMultipleRegistrants_CheckedChanged" />
                                     </div>
                                     <div class="col-xs-6">
-                                        <Rock:NumberBox ID="nbMaxRegistrants" runat="server" Label="Maximum Registrants"
+                                        <Rock:NumberBox MinimumValue="1" ID="nbMaxRegistrants" runat="server" Label="Maximum Registrants"
                                             Help="The maximum number of registrants that user is allowed to register" Visible="false" />
 
                                     </div>

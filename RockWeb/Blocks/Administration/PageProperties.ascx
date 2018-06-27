@@ -43,7 +43,7 @@
                             <asp:Panel ID="pnlBasicProperty" runat="server" Visible="true">
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <Rock:PagePicker ID="ppParentPage" runat="server" Label="Parent Page" Required="false" />
+                                        <Rock:PagePicker ID="ppParentPage" runat="server" Label="Parent Page" Required="false" ShowSelectCurrentPage="false" />
                                         <Rock:DataTextBox ID="tbPageName" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="InternalName" Required="true"
                                             Help="The internal page name to use when administering this page" />
                                         <Rock:DataTextBox ID="tbPageTitle" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="PageTitle"

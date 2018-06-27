@@ -452,12 +452,12 @@ namespace RockWeb.Blocks.Event
                                 }
 
                                 // Record this to the Person's and Registrants Notes and History...
-                                reloadedRegistrant.Registration.SavePersonNotesAndHistory( reloadedRegistrant.Registration.PersonAlias.Person, this.CurrentPersonAliasId, previousRegistrantPersonIds );
 
                                 reloadedRegistrant.GroupMemberId = groupMember.Id;
-                                newRockContext.SaveChanges();
                             }
                         }
+                        reloadedRegistrant.Registration.SavePersonNotesAndHistory( reloadedRegistrant.Registration.PersonAlias.Person, this.CurrentPersonAliasId, previousRegistrantPersonIds );
+                        newRockContext.SaveChanges();
                     }
                 }
 

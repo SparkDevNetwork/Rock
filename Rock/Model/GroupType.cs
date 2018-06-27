@@ -1083,11 +1083,11 @@ namespace Rock.Model
             {
                 foreach ( var parentGroupType in parentGroupTypes )
                 {
-                    CacheGroupType.UpdateCachedEntity( parentGroupType.Id, EntityState.Detached, dbContext as RockContext );
+                    CacheGroupType.UpdateCachedEntity( parentGroupType.Id, EntityState.Detached );
                 }
             }
 
-            CacheGroupType.UpdateCachedEntity( this.Id, entityState, dbContext as RockContext );
+            CacheGroupType.UpdateCachedEntity( this.Id, entityState );
         }
 
         #endregion

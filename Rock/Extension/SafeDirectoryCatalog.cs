@@ -37,11 +37,13 @@ public class SafeDirectoryCatalog : ComposablePartCatalog
     /// <param name="baseType">Type of the base.</param>
     public SafeDirectoryCatalog( string directory, Type baseType )
     {
+        // blacklist of files that would never have Rock MEF components
+        string[] ignoredFileStart = { "Lucene.", "Microsoft.", "msvcr100.", "System." };
+
         // get all *.dll in the current and subdirectories, except for *.resources.dll and the sql server type library files 
         var files = Directory.EnumerateFiles( directory, "*.dll", SearchOption.AllDirectories )
                         .Where( a => !a.EndsWith( ".resources.dll", StringComparison.OrdinalIgnoreCase )
-                                    && !a.EndsWith( "msvcr100.dll", StringComparison.OrdinalIgnoreCase )
-                                    && !a.EndsWith( "SqlServerSpatial110.dll", StringComparison.OrdinalIgnoreCase ) );
+                                    &&  !ignoredFileStart.Any( i => Path.GetFileName(a).StartsWith(i, StringComparison.OrdinalIgnoreCase) ));
 
         _catalog = new AggregateCatalog();
         string baseTypeAssemblyName = baseType.Assembly.GetName().Name;

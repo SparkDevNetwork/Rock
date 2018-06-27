@@ -372,7 +372,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     LinkButton lbLocationSettings = e.Item.FindControl( "lbLocationSettings" ) as LinkButton;
                     if ( lbLocationSettings != null )
                     {
-                        if ( UserCanAdministrate )
+                        if ( UserCanEdit )
                         {
                             lbLocationSettings.Visible = true;
                             lbLocationSettings.CommandArgument = loc.Id.ToString();

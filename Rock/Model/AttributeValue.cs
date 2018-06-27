@@ -563,7 +563,7 @@ namespace Rock.Model
 
                 if ( entityType?.HasEntityCache() == true )
                 {
-                    ( entityType.GetCachedItem( this.EntityId.Value ) as IModelCache )?.SetAttributeValue( cacheAttribute.Key, this.Value );
+                    entityType.FlushCachedItem( this.EntityId.Value );
                 }
             }
 

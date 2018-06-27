@@ -64,6 +64,7 @@ namespace Rock.Web.UI.Controls
 
                 writer.AddAttribute("data-toggle", "tooltip");
                 writer.AddAttribute("data-placement", "bottom");
+                writer.AddAttribute("data-container", "body");
                 writer.AddAttribute("data-html", "true");
                 writer.AddAttribute("title", this.Text.ConvertCrLfToHtmlBr().Trim() );
                 writer.RenderBeginTag( HtmlTextWriterTag.A );

@@ -183,11 +183,11 @@ namespace Rock.Model
             {
                 foreach ( var cachedDefinedValue in cachedDefinedValues )
                 {
-                    CacheDefinedValue.UpdateCachedEntity( cachedDefinedValue.Id, System.Data.Entity.EntityState.Detached, dbContext as RockContext );
+                    CacheDefinedValue.UpdateCachedEntity( cachedDefinedValue.Id, System.Data.Entity.EntityState.Detached );
                 }
             }
 
-            CacheDefinedType.UpdateCachedEntity( this.Id, entityState, dbContext as RockContext );
+            CacheDefinedType.UpdateCachedEntity( this.Id, entityState );
         }
 
         #endregion

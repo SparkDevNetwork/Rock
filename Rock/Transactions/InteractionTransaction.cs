@@ -117,13 +117,52 @@ namespace Rock.Transactions
         /// </summary>
         private void Initialize()
         {
-            var rockPage = HttpContext.Current.Handler as RockPage;
-            var request = HttpContext.Current.Request;
+            RockPage rockPage;
 
-            _browserSessionId = rockPage.Session["RockSessionID"].ToString().AsGuidOrNull();
+            try
+            {
+                rockPage = HttpContext.Current.Handler as RockPage;
+            }
+            catch
+            {
+                rockPage = null;
+            }
+
+            HttpRequest request = null;
+            try
+            {
+                if ( rockPage != null )
+                {
+                    request = rockPage.Request;
+                }
+                else if ( HttpContext.Current != null )
+                {
+                    request = HttpContext.Current.Request;
+                }
+            }
+            catch
+            {
+                // intentionally ignore exception (.Request will throw an exception instead of simply returning null if it isn't available)
+            }
+
+            if ( rockPage == null || request == null )
+            {
+                _logInteraction = false;
+                return;
+            }
+
+            _browserSessionId = rockPage.Session["RockSessionID"]?.ToString().AsGuidOrNull();
             _userAgent = request.UserAgent;
             _url = request.Url.ToString();
-            _ipAddress = RockPage.GetClientIpAddress();
+            try
+            {
+                _ipAddress = RockPage.GetClientIpAddress();
+            }
+            catch
+            {
+                _ipAddress = "";
+            }
+
             _currentPersonAliasId = rockPage.CurrentPersonAliasId;
 
             var title = string.Empty;
@@ -137,7 +176,7 @@ namespace Rock.Transactions
             }
 
             // remove site name from browser title
-            if ( title.Contains( "|" ) )
+            if ( title?.Contains( "|" ) == true)
             {
                 title = title.Substring( 0, title.LastIndexOf( '|' ) ).Trim();
             }

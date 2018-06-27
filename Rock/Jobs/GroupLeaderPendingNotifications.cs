@@ -151,7 +151,7 @@ namespace Rock.Jobs
                         var appRoot = CacheGlobalAttributes.Get().GetValue( "PublicApplicationRoot", rockContext );
 
                         var recipients = new List<RecipientData>();
-                        foreach ( var leader in groupLeaders.Where( l => l.Person != null && l.Person.Email != "" ) )
+                        foreach ( var leader in groupLeaders.Where( l => l.Person != null && l.Person.Email != "" && l.Person.IsEmailActive && l.Person.EmailPreference != EmailPreference.DoNotEmail ) )
                         {
                             // create merge object
                             var mergeFields = new Dictionary<string, object>();

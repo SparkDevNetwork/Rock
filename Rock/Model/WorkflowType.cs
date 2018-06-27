@@ -342,7 +342,7 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
         {
-            CacheWorkflowType.UpdateCachedEntity( this.Id, entityState, dbContext as RockContext );
+            CacheWorkflowType.UpdateCachedEntity( this.Id, entityState );
         }
 
         #endregion

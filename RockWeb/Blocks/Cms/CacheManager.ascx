@@ -18,10 +18,12 @@
             </div>
             <div class="panel-body">
                 
-                <asp:LinkButton ID="btnClearCache" runat="server" CssClass="btn btn-primary btn-xs pull-right" OnClick="btnClearCache_Click" CausesValidation="false">
+                <div class="clearfix">
+                    <asp:LinkButton ID="btnClearCache" runat="server" CssClass="btn btn-primary btn-xs pull-right margin-b-md" OnClick="btnClearCache_Click" CausesValidation="false">
                     <i class="fa fa-repeat"></i> Clear Cache
-                </asp:LinkButton>
-                
+                    </asp:LinkButton>
+                </div>
+
                 <Rock:NotificationBox ID="nbMessage" runat="server" Visible="false" Dismissable="true" />
 
                 <div class="row">
@@ -33,7 +35,7 @@
                                 <Rock:RockBoundField DataField="TagName" HeaderText="Tag Name" SortExpression="TagName" />
                                 <Rock:RockBoundField DataField="TagDescription" HeaderText="Description" SortExpression="TagDescription" TruncateLength="255" HtmlEncode="false" />
                                 <Rock:RockBoundField DataField="LinkedKeys" HeaderText="Linked Keys" SortExpression="LinkedKeys" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
-                                <Rock:LinkButtonField Text="<i class='fa fa-eraser'></i>" CssClass="btn btn-default btn-sm btn-square" OnClick="gCacheTagList_ClearCacheTag" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
+                                <Rock:LinkButtonField ToolTip="Flushes all items from cache that are tied to this tag." Text="<i class='fa fa-eraser'></i>" CssClass="btn btn-default btn-sm btn-square" OnClick="gCacheTagList_ClearCacheTag" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
                             </Columns>
                         </Rock:Grid>
                     </div>
@@ -48,14 +50,12 @@
 
                         <br />
                         <Rock:PanelWidget ID="wpGroupSync" runat="server" Title="Redis Backplane Settings" Expanded="false" >
-                            
+                            <Rock:NotificationBox ID="nbRedisSettings" runat="server" Visible="false" Dismissable="true" />
+
                             <div id="redisView" runat="server">
-                                <div id="redisNotEnabled" runat="server" class="alert alert-info">
-                                    Redis is currently not enabled. Review documentation for more information on enabling the Redis backplane support.
-                                </div>
 
                                 <div id="redisEnabled" runat="server">
-                                    <div class="row"><div class="col-md-12"><Rock:RockCheckBox ID="cbEnabled" runat="server" Text="Enable" Enabled="false" /></div></div>
+                                    <div class="row"><div class="col-md-12"><Rock:RockCheckBox ID="cbEnabled" runat="server" Text="Enabled" Enabled="false" /></div></div>
                                     <br />
                                     <div class="row"><div class="col-md-12">End Points<br /><asp:Literal ID="lEndPointList" runat="server"></asp:Literal></div></div>
                                     <br />
@@ -80,7 +80,7 @@
 
                                 <div class="row">
                                     <div class="col-md-12">
-                                        <div class="alert alert-info">Clicking save will cause the current cache to clear and the configurations to reload. This will cause Rock to be unavailable for several minutes</div>
+                                        <%--<div class="alert alert-info">Clicking save will cause the current cache to clear and the configurations to reload. This will cause Rock to be unavailable for several minutes</div>--%>
                                         <Rock:RockCheckBox ID="cbEnabledEdit" runat="server" Text="Enable" />
                                         <Rock:ListItems ID="liEndPoints" runat="server" Help="List of Redis endpoints (e.g. server.com:6379) to connect to." Label="End Points"></Rock:ListItems>
                                         <Rock:RockTextBox ID="tbPassword" runat="server" TextMode="Password" Help="The password used to connect. The need for a password is dependent on your Redis server configuration." Label="Password" ></Rock:RockTextBox>

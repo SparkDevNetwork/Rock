@@ -467,7 +467,8 @@ namespace Rock.Web.UI.Controls
         private void BindNoteTypes()
         {
             EnsureChildControls();
-            var editableNoteTypes = this.NoteOptions.GetEditableNoteTypes( ( this.Page as RockPage )?.CurrentPerson );
+            var rockPage = ( this.Page as RockPage ) ?? System.Web.HttpContext.Current.Handler as RockPage;
+            var editableNoteTypes = this.NoteOptions.GetEditableNoteTypes( rockPage?.CurrentPerson );
             _ddlNoteType.DataSource = editableNoteTypes;
             _ddlNoteType.DataBind();
             _ddlNoteType.Visible = editableNoteTypes.Count() > 1;
