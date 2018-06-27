@@ -175,7 +175,7 @@
                                             <asp:LinkButton ID="btnGenerateEnvelopeNumber" runat="server" Text="Generate Envelope #" CssClass="btn btn-default margin-l-sm" OnClick="btnGenerateEnvelopeNumber_Click" />
                                         </Rock:RockControlWrapper>
                                     </asp:Panel>
-                                    <Rock:RockCheckBox ID="cbLockAsChild" runat="server" Label="Lock as Child" Text="Yes" Help="By default individuals will be considered an adult with they are over 18 or are marked as an adult in a family. This setting will override this logic and lock the individual as a child."/>
+                                    <Rock:RockCheckBox ID="cbLockAsChild" runat="server" Label="Lock as Child" Text="Yes" Help="By default individuals will be considered an adult when they are over 18 or are marked as an adult in a family. This setting will override this logic and lock the individual as a child."/>
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:RockControlWrapper ID="rcwPreviousNames" runat="server" Label="Previous Last Names">
@@ -190,7 +190,7 @@
                             </div>
                             <div class="row">
                                 <div class="col-md-12">
-                                    <Rock:RockControlWrapper ID="rcwSearchKeys" runat="server" Label="Search Keys" Help="Search keys provide alternate ways to search for an individuals.">
+                                    <Rock:RockControlWrapper ID="rcwSearchKeys" runat="server" Label="Search Keys" Help="Search keys provide alternate ways to search for an individual.">
                                         <Rock:Grid ID="gSearchKeys" runat="server" DisplayType="Light" DataKeyNames="Guid" RowItemText="Search Key" ShowConfirmDeleteDialog="false">
                                             <Columns>
                                                 <Rock:DefinedValueField DataField="SearchTypeValueId" HeaderText="Search Type" />
