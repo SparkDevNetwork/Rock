@@ -136,6 +136,11 @@ namespace Rock.Cache
         /// <returns></returns>
         public CacheDefinedValue GetDefinedValueFromValue( string value )
         {
+            if ( string.IsNullOrEmpty( value ) )
+            {
+                return null;
+            }
+
             if ( _definedValueIdsByValue == null )
             {
                 // create case-insensitive dictionary 
@@ -226,6 +231,7 @@ namespace Rock.Cache
 
             // set definedValueIds to null so it load them all at once on demand
             _definedValueIds = null;
+            _definedValueIdsByValue = null;
         }
 
         /// <summary>
