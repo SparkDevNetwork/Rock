@@ -458,12 +458,30 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                 var newChildIds = new List<int>();
                 var newRelationships = new Dictionary<int, List<int>>();
 
+                // Reload the primary family
+                primaryFamily = groupService.Get( primaryFamily.Id );
+
                 // Loop through each of the children
                 var newFamilyIds = new Dictionary<string, int>();
                 foreach ( var child in Children )
                 {
                     // Save the child's person information
                     Person person = personService.Get( child.Guid );
+
+                    // If person was not found, Look for existing person in same family with same name and birthdate
+                    if ( person == null && child.BirthDate.HasValue )
+                    {
+                        person = primaryFamily.Members
+                            .Where( m =>
+                                ( m.Person.NickName == child.NickName || m.Person.FirstName == child.NickName ) &&
+                                m.Person.LastName == child.LastName &&
+                                m.Person.BirthDate.HasValue &&
+                                m.Person.BirthDate.Value == child.BirthDate.Value )
+                            .Select( m => m.Person )
+                            .FirstOrDefault();
+                    }
+
+                    // Otherwise create a new person
                     if ( person == null )
                     {
                         person = new Person();
@@ -482,15 +500,30 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                         person.LastName = child.LastName;
                     }
 
-                    person.SuffixValueId = child.SuffixValueId;
-                    person.Gender = child.Gender;
-                    person.SetBirthDate( child.BirthDate );
-                    person.GradeOffset = child.GradeOffset;
+                    if ( child.SuffixValueId.HasValue )
+                    {
+                        person.SuffixValueId = child.SuffixValueId;
+                    }
+
+                    if ( child.Gender != Gender.Unknown )
+                    {
+                        person.Gender = child.Gender;
+                    }
+
+                    if ( child.BirthDate.HasValue )
+                    {
+                        person.SetBirthDate( child.BirthDate );
+                    }
+
+                    if ( child.GradeOffset.HasValue )
+                    {
+                        person.GradeOffset = child.GradeOffset;
+                    }
 
                     _rockContext.SaveChanges();
 
                     // Save the mobile phone number
-                    if ( showChildMobilePhone )
+                    if ( showChildMobilePhone && child.MobilePhoneNumber.IsNotNullOrWhitespace() )
                     {
                         SavePhoneNumber( person.Id, child.MobilePhoneNumber, child.MobileCountryCode );
                     }
@@ -499,7 +532,10 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                     person.LoadAttributes();
                     foreach( var keyVal in child.AttributeValues )
                     {
-                        person.SetAttributeValue( keyVal.Key, keyVal.Value );
+                        if ( keyVal.Value.IsNotNullOrWhitespace() )
+                        {
+                            person.SetAttributeValue( keyVal.Key, keyVal.Value );
+                        }
                     }
                     person.SaveAttributeValues( _rockContext );
 
