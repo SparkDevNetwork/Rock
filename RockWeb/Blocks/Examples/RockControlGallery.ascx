@@ -88,7 +88,7 @@ Sys.Application.add_load(function () {
                     </div>
 
                     <h2 runat="server">Horizontal Forms</h2>
-                    <p>While Rock uses a similar approach to Bootstrap, we've made horizontal forms a bit easier to help facilitate their use when creating forms in workflows and event
+                    <p>While Rock uses a similar approach to Bootstrap, we’ve made horizontal forms a bit easier to help facilitate their use when creating forms in workflows and event
                         registrations. Below is the syntax for declaring a horizontal form.
                     </p>
                     <div runat="server" class="r-example">
@@ -688,7 +688,7 @@ Sys.Application.add_load(function () {
                     <a id="Notificationbox"></a>
                     <h2 runat="server">Rock:Notificationbox</h2>
                     <p>
-                        This creates a <a href="http://getbootstrap.com/components/#alerts">Bootstrap alert</a>.  We've added the ability to have Details that can be shown.
+                        This creates a <a href="http://getbootstrap.com/components/#alerts">Bootstrap alert</a>.  We’ve added the ability to have Details that can be shown.
                     </p>
 
                     <div runat="server" class="r-example">
@@ -720,7 +720,7 @@ Sys.Application.add_load(function () {
                     <h2 runat="server">Rock:HighlightLabel</h2>
                     <p>
                         This creates a <a href="http://getbootstrap.com/components/#labels">Bootstrap Label</a>
-                        but we've added a few additional custom <code>LabelType</code> options to control the color.
+                        but we’ve added a few additional custom <code>LabelType</code> options to control the color.
                     </p>
                     <div runat="server" class="r-example">
                         <Rock:HighlightLabel ID="hlblExample1" runat="server" LabelType="Default" Text="Default" ToolTip="More information is here." />

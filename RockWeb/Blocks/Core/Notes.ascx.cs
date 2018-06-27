@@ -52,6 +52,7 @@ namespace RockWeb.Blocks.Core
     [BooleanField( "Display Note Type Heading", "Should each note's Note Type be displayed as a heading above each note?", false, "", 13 )]
     [BooleanField( "Expand Replies", "Should replies to automatically expanded?", false, "", 14 )]
     [CodeEditorField( "Note View Lava Template", "The Lava Template to use when rendering the readonly view of all the notes.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false, @"{% include '~~/Assets/Lava/NoteViewList.lava' %}", order: 15 )]
+    //[BooleanField("Delete Me too")]
     public partial class Notes : RockBlock, ISecondaryBlock
     {
         #region Base Control Methods
@@ -104,7 +105,7 @@ namespace RockWeb.Blocks.Core
                     NoteOptions noteOptions = new NoteOptions()
                     {
                         EntityId = contextEntity.Id,
-                        NoteTypes = noteTypes,
+                        NoteTypes = noteTypes.ToArray(),
                         NoteLabel = GetAttributeValue( "NoteTerm" ),
                         DisplayType = GetAttributeValue( "DisplayType" ) == "Light" ? NoteDisplayType.Light : NoteDisplayType.Full,
                         ShowAlertCheckBox = GetAttributeValue( "ShowAlertCheckbox" ).AsBoolean(),

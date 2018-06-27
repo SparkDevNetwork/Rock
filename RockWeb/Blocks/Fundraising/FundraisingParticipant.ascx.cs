@@ -527,7 +527,7 @@ namespace RockWeb.Blocks.Fundraising
             var noteType = CacheNoteType.Get( this.GetAttributeValue( "NoteType" ).AsGuid() );
             if ( noteType != null )
             {
-                notesCommentsTimeline.NoteOptions.NoteTypes = new List<CacheNoteType> { noteType };
+                notesCommentsTimeline.NoteOptions.SetNoteTypes( new List<CacheNoteType> { noteType } );
             }
 
             notesCommentsTimeline.NoteOptions.EntityId = groupMember.Id;

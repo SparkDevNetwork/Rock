@@ -434,7 +434,6 @@ namespace RockWeb.Blocks.Groups
                 bool isSecurityRoleGroup = group.IsActive && ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) );
                 if ( isSecurityRoleGroup )
                 {
-                    Rock.Cache.CacheRole.Remove( group.Id );
                     foreach ( var auth in authService.Queryable().Where( a => a.GroupId == group.Id ).ToList() )
                     {
                         authService.Delete( auth );
@@ -827,8 +826,6 @@ namespace RockWeb.Blocks.Groups
                 var selectedAttributeGuids = GroupMemberAttributesState.Select( a => a.Guid );
                 foreach ( var attr in attributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
                 {
-                    Rock.Cache.CacheAttribute.Remove( attr.Id );
-
                     attributeService.Delete( attr );
                 }
 
@@ -863,7 +860,6 @@ namespace RockWeb.Blocks.Groups
                 if ( !isNowSecurityRole )
                 {
                     // if this group was a SecurityRole, but no longer is, flush
-                    Rock.Cache.CacheRole.Remove( group.Id );
                     Rock.Security.Authorization.Clear();
                 }
             }
@@ -875,8 +871,6 @@ namespace RockWeb.Blocks.Groups
                     Rock.Security.Authorization.Clear();
                 }
             }
-
-            CacheAttribute.RemoveEntityAttributes();
 
             if ( triggersUpdated )
             {

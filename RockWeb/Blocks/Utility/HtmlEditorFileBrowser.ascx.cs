@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.Utility
             fuprFileUpload.RootFolder = GetRootFolderPath();
 
             string submitScriptFormat = @"
-    // include the selected folder in the post to ~/FileUploader.ashx    
+    // include the selected folder in the post to ~/FileUploader.ashx
     var selectedFolderPath = $('#{0}').val();
     data.formData = {{ folderPath: selectedFolderPath }};
 ";
@@ -59,7 +59,7 @@ namespace RockWeb.Blocks.Utility
             fuprFileUpload.SubmitFunctionClientScript = string.Format( submitScriptFormat, hfSelectedFolder.ClientID );
 
             string doneScriptFormat = @"
-    // reselect the node to refresh the list of files    
+    // reselect the node to refresh the list of files
     var selectedFolderPath = $('#{0}').val();
     var foldersTree = $('.js-folder-treeview .treeview').data('rockTree');
     foldersTree.$el.trigger('rockTree:selected', selectedFolderPath);
@@ -95,7 +95,7 @@ namespace RockWeb.Blocks.Utility
                 pnlModalHeader.Visible = PageParameter( "ModalMode" ).AsBoolean();
                 pnlModalFooterActions.Visible = PageParameter( "ModalMode" ).AsBoolean();
                 lTitle.Text = PageParameter( "Title" );
-                
+
                 BuildFolderTreeView();
             }
 
@@ -175,7 +175,7 @@ namespace RockWeb.Blocks.Utility
         /// <returns></returns>
         private string GetRootFolderPath()
         {
-            //// the rootFolder param is encrypted to help prevent the web user from specifying a folder 
+            //// the rootFolder param is encrypted to help prevent the web user from specifying a folder
             //// and must be provided to help prevent directly browsing to this page and getting access to the filesystem
             //// we'll return Http 400 if someone is attempting to get to this page directly without a valid (encrypted) rootFolder specified
             string rootFolderEncrypted = PageParameter( "rootFolder" );
@@ -196,7 +196,7 @@ namespace RockWeb.Blocks.Utility
             }
             else
             {
-                // respond with BadRequest if they did not specify rootFolder 
+                // respond with BadRequest if they did not specify rootFolder
                 Response.StatusCode = 400;
                 Response.End();
                 return null;
@@ -338,10 +338,10 @@ namespace RockWeb.Blocks.Utility
 <li class='js-rocklist-item rocklist-item' data-id='{0}'>
     <div class='rollover-container'>
         <div class='rollover-item actions'>
-            <a title='delete' class='btn btn-xs btn-danger js-delete-file action'>
+            <a title='delete' class='btn btn-xs btn-square btn-danger js-delete-file action'>
                 <i class='fa fa-times'></i>
-            </a> 
-            <a href='{3}' target='_blank' title='download' class='btn btn-xs btn-default js-download-file action'>
+            </a>
+            <a href='{3}' target='_blank' title='download' class='btn btn-xs btn-square btn-default js-download-file action'>
                 <i class='fa fa-download'></i>
             </a>
         </div>
@@ -361,7 +361,7 @@ namespace RockWeb.Blocks.Utility
                     // put the file timestamp as part of the url to that changed files are loaded from the server instead of the browser cache
                     var fileDateTime = File.GetLastWriteTimeUtc( filePath );
                     imageUrl += "&timeStamp=" + fileDateTime.Ticks.ToString();
-                    
+
                     string nameHtml = string.Format(
                         nameHtmlFormat,
                         HttpUtility.HtmlEncode( relativeFilePath ),

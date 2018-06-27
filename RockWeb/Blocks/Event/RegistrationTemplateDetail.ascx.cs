@@ -471,6 +471,18 @@ namespace RockWeb.Blocks.Event
             
             btnSecurity.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.RegistrationTemplate ) ).Id;
 
+            ddlRegistrarOption.Help = @"How should the registrar's information be collected?
+
+<strong>Prompt For Registrar</strong>
+Registrar information will be collected at the end.
+
+<strong>Pre-fill First Registrant</strong>
+The first registrant's information will be used to complete the registrar information form but can be changed if needed.
+
+<strong>Use First Registrant</strong>
+The first registrant's information will be used to complete the registrar information form and the form will not be displayed.  (If the first registrant's name and email is not provided the registrar information form will still display.)
+";
+
             string deleteScript = @"
     $('a.js-delete-template').click(function( e ){
         e.preventDefault();
@@ -804,6 +816,7 @@ namespace RockWeb.Blocks.Event
             registrationTemplate.RequiredSignatureDocumentTemplateId = ddlSignatureDocumentTemplate.SelectedValueAsInt();
             registrationTemplate.SignatureDocumentAction = cbDisplayInLine.Checked ? SignatureDocumentAction.Embed : SignatureDocumentAction.Email;
             registrationTemplate.WaitListEnabled = cbWaitListEnabled.Checked;
+            registrationTemplate.RegistrarOption = ddlRegistrarOption.SelectedValueAsEnum<RegistrarOption>();
 
             registrationTemplate.RegistrationWorkflowTypeId = wtpRegistrationWorkflow.SelectedValueAsInt();
             registrationTemplate.Notify = notify;
@@ -1025,7 +1038,6 @@ namespace RockWeb.Blocks.Event
                     if ( canDeleteAttribute )
                     {
                         attributeService.Delete( attr );
-                        Rock.Cache.CacheAttribute.Remove( attr.Id );
                     }
                 }
 
@@ -1135,8 +1147,6 @@ namespace RockWeb.Blocks.Event
                 }
 
                 rockContext.SaveChanges();
-
-                CacheAttribute.RemoveEntityAttributes();
 
                 // If this is a new template, give the current user and the Registration Administrators role administrative 
                 // rights to this template, and staff, and staff like roles edit rights
@@ -2159,6 +2169,7 @@ namespace RockWeb.Blocks.Event
             ddlSignatureDocumentTemplate.SetValue( registrationTemplate.RequiredSignatureDocumentTemplateId );
             cbDisplayInLine.Checked = registrationTemplate.SignatureDocumentAction == SignatureDocumentAction.Embed;
             wtpRegistrationWorkflow.SetValue( registrationTemplate.RegistrationWorkflowTypeId );
+            ddlRegistrarOption.SetValue( registrationTemplate.RegistrarOption.ConvertToInt() );
 
             foreach ( ListItem li in cblNotify.Items )
             {

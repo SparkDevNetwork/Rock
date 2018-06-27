@@ -158,6 +158,18 @@ namespace Rock.Web.Cache
         #region Static Methods
 
         /// <summary>
+        /// Performs an implicit conversion from <see cref="LayoutCache"/> to <see cref="CacheLayout"/>.
+        /// </summary>
+        /// <param name="c">The c.</param>
+        /// <returns>
+        /// The result of the conversion.
+        /// </returns>
+        public static implicit operator CacheLayout( LayoutCache c )
+        {
+            return CacheLayout.Get( c.Id );
+        }
+
+        /// <summary>
         /// Returns Layout object from cache.  If Layout does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>

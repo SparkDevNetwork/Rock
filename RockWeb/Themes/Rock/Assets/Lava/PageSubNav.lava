@@ -1,6 +1,6 @@
 
 <section class="nav-sub">
-  
+
 {%- if Page.DisplayChildPages == 'true' and Page.Pages != empty -%}
     <ul class="nav nav-pills nav-stacked nav-categories">
         {%- for childPage in Page.Pages -%}

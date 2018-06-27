@@ -132,7 +132,7 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
 
                 string lblAddControlId = subTargetList.Last();
-                var lblAdd = _gCheckinLabels.Actions.FindControl( lblAddControlId );
+                var lblAdd = _gCheckinLabels.Actions.FindControl( lblAddControlId ) as LinkButton;
                 if ( lblAdd != null )
                 {
                     AddCheckinLabel_Click( this, new EventArgs() );

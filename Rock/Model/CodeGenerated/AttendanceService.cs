@@ -90,6 +90,7 @@ namespace Rock.Model
             target.Id = source.Id;
             target.AttendanceCodeId = source.AttendanceCodeId;
             target.CampusId = source.CampusId;
+            target.CheckedInByPersonAliasId = source.CheckedInByPersonAliasId;
             target.DeviceId = source.DeviceId;
             target.DidAttend = source.DidAttend;
             target.EndDateTime = source.EndDateTime;

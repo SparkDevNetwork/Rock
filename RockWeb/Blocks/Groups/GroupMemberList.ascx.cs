@@ -547,14 +547,6 @@ namespace RockWeb.Blocks.Groups
                 }
 
                 rockContext.SaveChanges();
-
-                Group group = new GroupService( rockContext ).Get( groupId );
-                if ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
-                {
-                    // person removed from SecurityRole, Flush
-                    Rock.Cache.CacheRole.Remove( group.Id );
-                }
-                
             }
 
             BindGroupMembersGrid();

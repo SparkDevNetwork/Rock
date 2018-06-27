@@ -2846,11 +2846,6 @@ namespace RockWeb.Blocks.Event
                             }
                         }
                     }
-
-                    if ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
-                    {
-                        Rock.Cache.CacheRole.Remove( group.Id );
-                    }
                 }
             }
         }
@@ -3622,7 +3617,9 @@ namespace RockWeb.Blocks.Event
             if ( CurrentPanel == 2 )
             {
                 AutoApplyDiscounts();
-            }               
+            }
+
+            pnlRegistrarInfo.Visible = CurrentPanel == 2;
 
             CreateDynamicControls( true );
 
@@ -3630,8 +3627,7 @@ namespace RockWeb.Blocks.Event
             pnlRegistrant.Visible = CurrentPanel == 1;
 
             pnlSummaryAndPayment.Visible = CurrentPanel == 2 || CurrentPanel == 3;
-
-            pnlRegistrarInfo.Visible = CurrentPanel == 2;
+           
             pnlRegistrantsReview.Visible = CurrentPanel == 2;
             if ( currentPanel != 2 )
             {
@@ -4194,7 +4190,7 @@ namespace RockWeb.Blocks.Event
                         ddlGender.ValidationGroup = BlockValidationGroup;
                         ddlGender.BindToEnum<Gender>( false );
 
-                        // change the 'Unknow' value to be blank instead
+                        // change the 'Unknown' value to be blank instead
                         ddlGender.Items.FindByValue( "0" ).Text = string.Empty;
 
                         phRegistrantControls.Controls.Add( ddlGender );
@@ -4968,8 +4964,33 @@ namespace RockWeb.Blocks.Event
             {
                 lbSummaryNext.Text = "Finish";
 
+                // check to see if the registrar info should be auto filled by the first registrant
+                if ( RegistrationTemplate.RegistrarOption == RegistrarOption.UseFirstRegistrant ||
+                     RegistrationTemplate.RegistrarOption == RegistrarOption.PrefillFirstRegistrant )
+                {
+                    var firstRegistrant = RegistrationState.Registrants.FirstOrDefault();
+
+                    tbYourFirstName.Text = firstRegistrant.GetFirstName( RegistrationTemplate );
+                    tbYourLastName.Text = firstRegistrant.GetLastName( RegistrationTemplate );
+                    tbConfirmationEmail.Text = firstRegistrant.GetEmail( RegistrationTemplate );
+
+                    // if we have all of the required info for the registrar then hide the panel
+                    if ( !string.IsNullOrWhiteSpace( tbYourFirstName.Text ) && 
+                         !string.IsNullOrWhiteSpace( tbYourLastName.Text ) &&
+                         !string.IsNullOrWhiteSpace( tbConfirmationEmail.Text ) && 
+                         RegistrationTemplate.RegistrarOption == RegistrarOption.UseFirstRegistrant )
+                    {
+                        pnlRegistrarInfo.Visible = false;
+                    }
+
+                    // set the registrar to be in the same family as the first registrant
+                    if ( RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Ask )
+                    {
+                        rblRegistrarFamilyOptions.SetValue( firstRegistrant.FamilyGuid.ToString() );
+                    }
+                }
                 // Check to see if this is an existing registration or information has already been entered
-                if ( RegistrationState.RegistrationId.HasValue ||
+                else if ( RegistrationState.RegistrationId.HasValue ||
                     !string.IsNullOrWhiteSpace( RegistrationState.FirstName ) ||
                     !string.IsNullOrWhiteSpace( RegistrationState.LastName ) ||
                     !string.IsNullOrWhiteSpace( RegistrationState.ConfirmationEmail ) )

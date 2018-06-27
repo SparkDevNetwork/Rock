@@ -173,6 +173,29 @@ namespace Rock.Cache
             }
         }
 
+        /// <summary>
+        /// Gets the current date time.
+        /// </summary>
+        /// <value>
+        /// The current date time.
+        /// </value>
+        public DateTime CurrentDateTime
+        {
+            get
+            {
+                if ( TimeZoneId.IsNotNullOrWhitespace() )
+                {
+                    var campusTimeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById( TimeZoneId );
+                    if ( campusTimeZoneInfo != null )
+                    {
+                        return TimeZoneInfo.ConvertTime( DateTime.UtcNow, campusTimeZoneInfo );
+                    }
+                }
+
+                return RockDateTime.Now;
+            }
+        }
+
         #endregion
 
         #region Public Methods
@@ -236,6 +259,8 @@ namespace Rock.Cache
         /// <summary>
         /// Special class for adding service times as available liquid fields
         /// </summary>
+		[Serializable]
+        [DataContract]
         [DotLiquid.LiquidType( "Day", "Time" )]
         public class ServiceTime
         {
@@ -245,6 +270,7 @@ namespace Rock.Cache
             /// <value>
             /// The day.
             /// </value>
+            [DataMember]
             public string Day { get; internal set; }
 
             /// <summary>
@@ -253,12 +279,15 @@ namespace Rock.Cache
             /// <value>
             /// The time.
             /// </value>
+            [DataMember]
             public string Time { get; internal set; }
         }
 
         /// <summary>
         /// Special class for adding location info as available liquid fields
         /// </summary>
+        [Serializable]
+        [DataContract]
         [DotLiquid.LiquidType( "Street1", "Street2", "City", "State", "PostalCode", "Country", "Latitude", "Longitude", "ImageUrl" )]
         public class CampusLocation
         {
@@ -268,6 +297,7 @@ namespace Rock.Cache
             /// <value>
             /// The street1.
             /// </value>
+			[DataMember]
             public string Street1 { get; private set; }
 
             /// <summary>
@@ -276,6 +306,7 @@ namespace Rock.Cache
             /// <value>
             /// The street2.
             /// </value>
+            [DataMember]
             public string Street2 { get; private set; }
 
             /// <summary>
@@ -284,6 +315,7 @@ namespace Rock.Cache
             /// <value>
             /// The city.
             /// </value>
+            [DataMember]
             public string City { get; private set; }
 
             /// <summary>
@@ -292,6 +324,7 @@ namespace Rock.Cache
             /// <value>
             /// The state.
             /// </value>
+            [DataMember]
             public string State { get; private set; }
 
             /// <summary>
@@ -300,6 +333,7 @@ namespace Rock.Cache
             /// <value>
             /// The postal code.
             /// </value>
+            [DataMember]
             public string PostalCode { get; private set; }
 
             /// <summary>
@@ -308,6 +342,7 @@ namespace Rock.Cache
             /// <value>
             /// The country.
             /// </value>
+            [DataMember]
             public string Country { get; private set; }
 
             /// <summary>
@@ -316,6 +351,7 @@ namespace Rock.Cache
             /// <value>
             /// The latitude.
             /// </value>
+            [DataMember]
             public double? Latitude { get; private set; }
 
             /// <summary>
@@ -324,6 +360,7 @@ namespace Rock.Cache
             /// <value>
             /// The longitude.
             /// </value>
+            [DataMember]
             public double? Longitude { get; private set; }
 
             /// <summary>
@@ -332,6 +369,7 @@ namespace Rock.Cache
             /// <value>
             /// The image url.
             /// </value>
+            [DataMember]
             public string ImageUrl { get; private set; }
 
             /// <summary>

@@ -194,10 +194,8 @@ namespace RockWeb.Blocks.Crm
                                     switch ( nameValue[0] )
                                     {
                                         case "re-order-form":
-                                            {
-                                                SortForms( guid, newIndex + 1 );
-                                                break;
-                                            }
+                                            SortForms( guid, newIndex );
+                                            break;
                                     }
                                 }
                             }
@@ -636,7 +634,7 @@ namespace RockWeb.Blocks.Crm
                         }
                     }
                 }
-                
+
                 ProgressBarSteps = FormState.Count();
                 CurrentPageIndex = 0;
                 ShowPage();
@@ -744,7 +742,7 @@ namespace RockWeb.Blocks.Crm
         protected override void ShowSettings()
         {
             //NOTE: This isn't shown in a modal :(
-            
+
 
 
             cbDisplayProgressBar.Checked = GetAttributeValue( "DisplayProgressBar" ).AsBoolean();
@@ -1112,6 +1110,7 @@ namespace RockWeb.Blocks.Crm
             {
                 return ViewState["ValidationGroup"] as string;
             }
+
             set
             {
                 ViewState["ValidationGroup"] = value;
@@ -1198,12 +1197,12 @@ $('.template-form > header').click(function () {
     $('i.template-form-state', this).toggleClass('fa-chevron-up');
 });
 
-// fix so that the Remove button will fire its event, but not the parent event 
+// fix so that the Remove button will fire its event, but not the parent event
 $('.template-form a.js-activity-delete').click(function (event) {
     event.stopImmediatePropagation();
 });
 
-// fix so that the Reorder button will fire its event, but not the parent event 
+// fix so that the Reorder button will fire its event, but not the parent event
 $('.template-form a.template-form-reorder').click(function (event) {
     event.stopImmediatePropagation();
 });
@@ -1220,6 +1219,7 @@ $('.template-form > .panel-body').on('validation-error', function() {
 
     return false;
 });
+
 ";
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "PersonAttributeFormEditorScript", script, true );
@@ -1285,7 +1285,7 @@ $('.template-form > .panel-body').on('validation-error', function() {
             Controls.Add( _lbDeleteForm );
             _lbDeleteForm.CausesValidation = false;
             _lbDeleteForm.ID = this.ID + "_lbDeleteForm";
-            _lbDeleteForm.CssClass = "btn btn-xs btn-danger js-activity-delete";
+            _lbDeleteForm.CssClass = "btn btn-xs btn-square btn-danger js-activity-delete";
             _lbDeleteForm.Click += lbDeleteForm_Click;
             _lbDeleteForm.Controls.Add( new LiteralControl { Text = "<i class='fa fa-times'></i>" } );
 
@@ -1395,8 +1395,7 @@ $('.template-form > .panel-body').on('validation-error', function() {
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.WriteLine( "<a class='btn btn-xs btn-link form-reorder'><i class='fa fa-bars'></i></a>" );
-            writer.WriteLine( string.Format( "<a class='btn btn-xs btn-link'><i class='form-state fa {0}'></i></a>",
-                Expanded ? "fa fa-chevron-up" : "fa fa-chevron-down" ) );
+            writer.WriteLine( string.Format( "<a class='btn btn-xs btn-link'><i class='form-state fa {0}'></i></a>", Expanded ? "fa fa-chevron-up" : "fa fa-chevron-down" ) );
 
             _lbDeleteForm.RenderControl( writer );
 
@@ -1411,6 +1410,7 @@ $('.template-form > .panel-body').on('validation-error', function() {
                 // hide details if the activity and actions are valid
                 writer.AddStyleAttribute( "display", "none" );
             }
+
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-body" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
@@ -1527,7 +1527,6 @@ $('.template-form > .panel-body').on('validation-error', function() {
             }
         }
 
-
         /// <summary>
         /// Occurs when [delete activity type click].
         /// </summary>
@@ -1557,11 +1556,10 @@ $('.template-form > .panel-body').on('validation-error', function() {
         /// Occurs when [delete field click].
         /// </summary>
         public event EventHandler<AttributeFormFieldEventArg> DeleteFieldClick;
-
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class AttributeFormFieldEventArg : EventArgs
     {
@@ -1658,11 +1656,17 @@ $('.template-form > .panel-body').on('validation-error', function() {
     public partial class AttributeFormField : IOrdered
     {
         public Guid Guid { get; set; }
+
         public int? AttributeId { get; set; }
+
         public bool ShowCurrentValue { get; set; }
+
         public bool IsRequired { get; set; }
+
         public int Order { get; set; }
+
         public string PreText { get; set; }
+
         public string PostText { get; set; }
 
         [Newtonsoft.Json.JsonIgnore]

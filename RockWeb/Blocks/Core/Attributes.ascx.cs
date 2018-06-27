@@ -363,8 +363,6 @@ namespace RockWeb.Blocks.Core
             var attribute = attributeService.Get( e.RowKeyId );
             if ( attribute != null )
             {
-                CacheAttribute.Remove( attribute.Id );
-
                 if ( ( !_entityTypeId.HasValue || _entityTypeId.Value == 0 ) &&
                      _entityQualifierColumn == string.Empty &&
                      _entityQualifierValue == string.Empty &&
@@ -378,8 +376,6 @@ namespace RockWeb.Blocks.Core
 
                 rockContext.SaveChanges();
             }
-
-            CacheAttribute.RemoveEntityAttributes();
 
             BindGrid();
         }
@@ -488,15 +484,6 @@ namespace RockWeb.Blocks.Core
 
             rockContext.SaveChanges();
 
-            foreach ( int id in updatedAttributeIds )
-            {
-                CacheAttribute.Remove( id );
-            }
-
-            CacheGlobalAttributes.Remove();
-            CacheAttribute.RemoveEntityAttributes();
-
-
             BindGrid();
         }
 
@@ -535,8 +522,6 @@ namespace RockWeb.Blocks.Core
             {
                 return;
             }
-
-            CacheAttribute.RemoveEntityAttributes();
 
             HideDialog();
 
@@ -579,19 +564,6 @@ namespace RockWeb.Blocks.Core
                     attributeValue.Value = fieldType.Field.GetEditValue( attribute.GetControl( phEditControls.Controls[0] ), attribute.QualifierValues );
 
                     rockContext.SaveChanges();
-
-                    CacheAttribute.Remove( attributeId );
-
-                    if ( ( !_entityTypeId.HasValue || _entityTypeId.Value == 0 ) &&
-                         _entityQualifierColumn == string.Empty && 
-                         _entityQualifierValue == string.Empty && 
-                         ( !_entityId.HasValue || _entityId.Value == 0 ) 
-                    )
-                    {
-                        CacheGlobalAttributes.Remove();
-                    }
-
-                    CacheAttribute.RemoveEntityAttributes();
                 }
 
                 hfIdValues.Value = string.Empty;

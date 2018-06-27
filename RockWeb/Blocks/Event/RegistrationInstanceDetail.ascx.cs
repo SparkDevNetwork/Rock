@@ -62,6 +62,7 @@ namespace RockWeb.Blocks.Event
         private bool _instanceHasCost = false;
         private Dictionary<int, Location> _homeAddresses = new Dictionary<int, Location>();
         private List<int> _waitListOrder = null;
+        private bool _isExporting = false;
         
         #endregion
 
@@ -1236,22 +1237,33 @@ namespace RockWeb.Blocks.Event
                 // add addresses if exporting
                 if (_homeAddresses.Count > 0 )
                 {
-                    var lStreet1 = e.Row.FindControl( "lStreet1" ) as Literal;
-                    var lStreet2 = e.Row.FindControl( "lStreet2" ) as Literal;
-                    var lCity = e.Row.FindControl( "lCity" ) as Literal;
-                    var lState = e.Row.FindControl( "lState" ) as Literal;
-                    var lPostalCode = e.Row.FindControl( "lPostalCode" ) as Literal;
-                    var lCountry = e.Row.FindControl( "lCountry" ) as Literal;
-
                     var location = _homeAddresses[registrant.PersonId.Value];
-                    if (location != null )
+                    if ( _isExporting )
                     {
-                        lStreet1.Text = location.Street1;
-                        lStreet2.Text = location.Street2;
-                        lCity.Text = location.City;
-                        lState.Text = location.State;
-                        lPostalCode.Text = location.PostalCode;
-                        lCountry.Text = location.Country;
+                        var lStreet1 = e.Row.FindControl( "lStreet1" ) as Literal;
+                        var lStreet2 = e.Row.FindControl( "lStreet2" ) as Literal;
+                        var lCity = e.Row.FindControl( "lCity" ) as Literal;
+                        var lState = e.Row.FindControl( "lState" ) as Literal;
+                        var lPostalCode = e.Row.FindControl( "lPostalCode" ) as Literal;
+                        var lCountry = e.Row.FindControl( "lCountry" ) as Literal;
+
+                        if ( location != null )
+                        {
+                            lStreet1.Text = location.Street1;
+                            lStreet2.Text = location.Street2;
+                            lCity.Text = location.City;
+                            lState.Text = location.State;
+                            lPostalCode.Text = location.PostalCode;
+                            lCountry.Text = location.Country;
+                        }
+                    }
+                    else
+                    {
+                        var addressField = e.Row.FindControl( "lRegistrantsAddress" ) as Literal ?? e.Row.FindControl( "lGroupPlacementsAddress" ) as Literal;
+                        if ( addressField != null )
+                        {
+                            addressField.Text = location != null && location.FormattedAddress.IsNotNullOrWhitespace() ? location.FormattedAddress : string.Empty;
+                        }
                     }
                 }
             }
@@ -2178,6 +2190,13 @@ namespace RockWeb.Blocks.Event
                         }
                     }
                 }
+
+                var lAddress = e.Row.FindControl( "lWaitlistAddress" ) as Literal;
+                if ( lAddress != null && _homeAddresses.Count() > 0 )
+                {
+                    var location = _homeAddresses[registrant.PersonId.Value];
+                    lAddress.Text = location != null && location.FormattedAddress.IsNotNullOrWhitespace() ? location.FormattedAddress : string.Empty;
+                }
             }
         }
 
@@ -2996,6 +3015,7 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void BindRegistrantsGrid( bool isExporting = false )
         {
+            _isExporting = isExporting;
             int? instanceId = hfRegistrationInstanceId.Value.AsIntegerOrNull();
             if ( instanceId.HasValue )
             {
@@ -3091,7 +3111,7 @@ namespace RockWeb.Blocks.Event
                     var personAttributesIds = new List<int>();
                     var groupMemberAttributesIds = new List<int>();
 
-                    if ( isExporting )
+                    if ( isExporting || RegistrantFields != null && RegistrantFields.Any(f => f.PersonFieldType != null && f.PersonFieldType == RegistrationPersonFieldType.Address) )
                     {
                         // get list of home addresses
                         var personIds = qry.Select( r => r.PersonAlias.PersonId ).ToList();
@@ -4057,6 +4077,24 @@ namespace RockWeb.Blocks.Event
                                 gWaitList.Columns.Add( phoneNumbersField3 );
 
                                 break;
+                            case RegistrationPersonFieldType.Address:
+                                var addressField = new RockLiteralField();
+                                addressField.ID = "lRegistrantsAddress";
+                                addressField.HeaderText = "Address";
+                                // There are specific Street1, Street2, City, etc. fields included instead
+                                addressField.ExcelExportBehavior = ExcelExportBehavior.NeverInclude;
+                                gRegistrants.Columns.Add( addressField );
+
+                                var addressField2 = new RockLiteralField();
+                                addressField2.ID = "lGroupPlacementsAddress";
+                                addressField2.HeaderText = "Address";
+                                gGroupPlacements.Columns.Add( addressField2 );
+
+                                var addressField3 = new RockLiteralField();
+                                addressField3.ID = "lWaitlistAddress";
+                                addressField3.HeaderText = "Address";
+                                gWaitList.Columns.Add( addressField3 );
+                                break;
                         }
                     }
                     else if ( field.Attribute != null )
@@ -4374,7 +4412,17 @@ namespace RockWeb.Blocks.Event
                 data = data.Where( r => cblFeeOptions.SelectedValues.Contains( r.Option ) );
             }
 
-            gFees.DataSource = data.ToList();
+            SortProperty sortProperty = gFees.SortProperty;
+            if ( sortProperty != null )
+            {
+                data = data.AsQueryable().Sort( sortProperty ).ToList();
+            }
+            else
+            {
+                data = data.OrderByDescending( f => f.RegistrationDate ).ToList();
+            }
+
+            gFees.DataSource = data;
             gFees.DataBind();
         }
 
@@ -4490,6 +4538,18 @@ namespace RockWeb.Blocks.Event
             }
 
             var results = data.ToList();
+
+            SortProperty sortProperty = gDiscounts.SortProperty;
+            if ( sortProperty != null )
+            {
+                results = results.AsQueryable().Sort( sortProperty ).ToList();
+            }
+            else
+            {
+                results = results.OrderByDescending( d => d.RegistrationDate ).ToList();
+            }
+
+            
             gDiscounts.DataSource = results;
             gDiscounts.DataBind();
 
@@ -4505,10 +4565,10 @@ namespace RockWeb.Blocks.Event
 
         private void PopulateTotals( List<TemplateDiscountReport> report )
         {
-            lTotalTotalCost.Text = string.Format( CacheGlobalAttributes.Value( "CurrencySymbol" ) + "{0:0,0.00}", report.Sum( r => r.TotalCost ) );
-            lTotalDiscountQualifiedCost.Text = string.Format( CacheGlobalAttributes.Value( "CurrencySymbol" ) + "{0:0,0.00}", report.Sum( r => r.DiscountQualifiedCost ) );
-            lTotalDiscounts.Text = string.Format( CacheGlobalAttributes.Value( "CurrencySymbol" ) + "{0:0,0.00}", report.Sum( r => r.TotalDiscount ) );
-            lTotalRegistrationCost.Text = string.Format( CacheGlobalAttributes.Value( "CurrencySymbol" ) + "{0:0,0.00}", report.Sum( r => r.RegistrationCost ) );
+            lTotalTotalCost.Text = string.Format( CacheGlobalAttributes.Value( "CurrencySymbol" ) + "{0:#,##0.00}", report.Sum( r => r.TotalCost ) );
+            lTotalDiscountQualifiedCost.Text = string.Format( CacheGlobalAttributes.Value( "CurrencySymbol" ) + "{0:#,##0.00}", report.Sum( r => r.DiscountQualifiedCost ) );
+            lTotalDiscounts.Text = string.Format( CacheGlobalAttributes.Value( "CurrencySymbol" ) + "{0:#,##0.00}", report.Sum( r => r.TotalDiscount ) );
+            lTotalRegistrationCost.Text = string.Format( CacheGlobalAttributes.Value( "CurrencySymbol" ) + "{0:#,##0.00}", report.Sum( r => r.RegistrationCost ) );
             lTotalRegistrations.Text = report.Count().ToString();
             lTotalRegistrants.Text = report.Sum( r => r.RegistrantCount ).ToString();
         }
@@ -4554,6 +4614,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="isExporting">if set to <c>true</c> [is exporting].</param>
         private void BindWaitListGrid( bool isExporting = false )
         {
+            _isExporting = isExporting;
             int? instanceId = hfRegistrationInstanceId.Value.AsIntegerOrNull();
             if ( instanceId.HasValue )
             {
@@ -4608,6 +4669,12 @@ namespace RockWeb.Blocks.Event
                         string rlname = tbWaitListLastName.Text;
                         qry = qry.Where( r =>
                             r.PersonAlias.Person.LastName.StartsWith( rlname ) );
+                    }
+
+                    if ( isExporting || RegistrantFields != null && RegistrantFields.Any( f => f.PersonFieldType != null && f.PersonFieldType == RegistrationPersonFieldType.Address ))
+                    {
+                        var personIds = qry.Select( r => r.PersonAlias.PersonId ).ToList();
+                        _homeAddresses = Person.GetHomeLocations( personIds );
                     }
 
                     bool preloadCampusValues = false;
@@ -5139,6 +5206,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="isExporting">if set to <c>true</c> [is exporting].</param>
         private void BindGroupPlacementGrid( bool isExporting = false )
         {
+            _isExporting = isExporting;
             int? parentGroupId = gpGroupPlacementParentGroup.SelectedValueAsInt();
             int? instanceId = hfRegistrationInstanceId.Value.AsIntegerOrNull();
             if ( instanceId.HasValue )
@@ -5201,6 +5269,12 @@ namespace RockWeb.Blocks.Event
                         string rlname = tbGroupPlacementsLastName.Text;
                         qry = qry.Where( r =>
                             r.PersonAlias.Person.LastName.StartsWith( rlname ) );
+                    }
+
+                    if ( isExporting || RegistrantFields != null && RegistrantFields.Any( f => f.PersonFieldType == RegistrationPersonFieldType.Address ) )
+                    {
+                        var personIds = qry.Select( r => r.PersonAlias.PersonId ).ToList();
+                        _homeAddresses = Person.GetHomeLocations( personIds );
                     }
 
                     bool preloadCampusValues = false;

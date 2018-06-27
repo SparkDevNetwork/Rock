@@ -37,7 +37,7 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "GroupMember" )]
     [DataContract]
-    public partial class GroupMember : Model<GroupMember>
+    public partial class GroupMember : Model<GroupMember>, ICacheable
     {
         #region Entity Properties
 
@@ -845,6 +845,39 @@ namespace Rock.Model
             }
 
             return null;
+        }
+
+        #endregion
+
+        #region ICacheable
+
+        /// <summary>
+        /// Gets the cache object associated with this Entity
+        /// </summary>
+        /// <returns></returns>
+        public IEntityCache GetCacheObject()
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            var group = this.Group ?? new GroupService( new RockContext() ).GetNoTracking( this.GroupId );
+            if ( group != null )
+            {
+
+                var groupType = CacheGroupType.Get( group.GroupTypeId );
+                if ( group.IsSecurityRole || groupType?.Guid == Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() )
+                {
+                    Rock.Cache.CacheRole.Remove( group.Id );
+                    Rock.Security.Authorization.Clear();
+                }
+            }
         }
 
         #endregion

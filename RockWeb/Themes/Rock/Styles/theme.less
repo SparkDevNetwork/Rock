@@ -511,6 +511,10 @@ td.grid-actions {
   }
 }
 
+td.grid-select-field {
+  width: auto;
+}
+
 .grid-actions {
   .btn {
     padding: 5px 7px;
@@ -592,7 +596,7 @@ td.grid-actions {
     background-size: 45px;
     border-bottom: 1px solid lighten(@navbarside-background-color, 10%);
 
-    &::after {
+    &.no-logo::after {
       position: absolute;
       top: 0;
       right: 0;
@@ -608,6 +612,12 @@ td.grid-actions {
     &:hover {
       background-color: @navbarside-background-color;
       background-color: var(--navbarside-background-color);
+    }
+
+    .logo {
+      width: 47px;
+      height: 47px;
+      margin: 10px;
     }
 
     @media (min-width: @screen-sm-min) {
@@ -1265,6 +1275,11 @@ body.navbar-side-close {
   }
 }
 
+// Entity Attributes Picker
+.entity-type-picker .control-wrapper {
+  width: 270px;
+}
+
 /*#endregion */
 
 /*#region
@@ -1410,6 +1425,10 @@ body.navbar-side-close {
   }
 }
 
+.schedule-builder .checkbox {
+  display: inline;
+  padding-right: (@custom-control-indicator-size / 2);
+}
 
 .note-editor.note-frame {
   margin-bottom: 0;

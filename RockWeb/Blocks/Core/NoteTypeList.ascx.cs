@@ -179,9 +179,6 @@ namespace RockWeb.Blocks.Core
 
                         service.Delete( noteType );
                         rockContext.SaveChanges();
-
-                        CacheNoteType.Remove( noteTypeId );
-                        CacheNoteType.RemoveEntityNoteTypes();
                     }
                     else
                     {
@@ -250,8 +247,6 @@ namespace RockWeb.Blocks.Core
             {
                 new NoteTypeService( rockContext ).Reorder( noteTypes, e.OldIndex, e.NewIndex );
                 rockContext.SaveChanges();
-
-                noteTypes.ForEach( t => CacheNoteType.Remove( t.Id ) );
             }
 
             BindGrid();

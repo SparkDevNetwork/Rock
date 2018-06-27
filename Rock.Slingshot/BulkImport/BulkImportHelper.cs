@@ -756,7 +756,7 @@ namespace Rock.Slingshot
             }
 
             var updatedGroupTypes = groupTypeRolesToInsert.Select( a => a.GroupTypeId.Value ).Distinct().ToList();
-            updatedGroupTypes.ForEach( id => CacheGroupType.Remove( id ) );
+            updatedGroupTypes.ForEach( id => CacheGroupType.UpdateCachedEntity( id, EntityState.Detached, rockContext ) );
 
             if ( groupTypeRolesToInsert.Any() )
             {
@@ -910,7 +910,7 @@ WHERE gta.GroupTypeId IS NULL" );
             // make sure grouptype caches get updated in case 'allowed group types' changed
             foreach ( var groupTypeId in groupTypeGroupLookup.Keys )
             {
-                CacheGroupType.Remove( groupTypeId );
+                CacheGroupType.UpdateCachedEntity( groupTypeId, EntityState.Detached, rockContext );
             }
 
             stopwatchTotal.Stop();
@@ -1049,7 +1049,7 @@ WHERE gta.GroupTypeId IS NULL" );
                 nextNewFamilyForeignId = Math.Max( nextNewFamilyForeignId, personImports.Where( a => a.FamilyForeignId.HasValue ).Max( a => a.FamilyForeignId.Value ) );
             }
 
-            // Just In Case, ensure Entity Attributes are flushed (they might be stale if they were added thru REST)
+            // Just In Case, ensure Entity Attributes are flushed (they might be stale if they were added directly via SQL)
             CacheAttribute.RemoveEntityAttributes();
 
             var entityTypeIdPerson = CacheEntityType.Get<Person>().Id;

@@ -178,8 +178,6 @@ namespace RockWeb.Blocks.Groups
 
                 groupTypeService.Delete( groupType );
                 rockContext.SaveChanges();
-
-                CacheGroupType.Remove( groupTypeId );
             }
 
             BindGrid();

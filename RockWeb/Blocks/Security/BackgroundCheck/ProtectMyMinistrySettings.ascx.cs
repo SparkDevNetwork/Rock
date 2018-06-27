@@ -224,12 +224,6 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                     changedIds = definedValueService.Reorder( definedValues.ToList(), e.OldIndex, e.NewIndex );
                     rockContext.SaveChanges();
                 }
-
-                CacheDefinedType.Remove( definedType.Id );
-                foreach ( int id in changedIds )
-                {
-                    Rock.Cache.CacheDefinedValue.Remove( id );
-                }
             }
 
             BindPackageGrid();
@@ -267,9 +261,6 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
 
                     definedValueService.Delete( value );
                     rockContext.SaveChanges();
-
-                    CacheDefinedType.Remove( value.DefinedTypeId );
-                    CacheDefinedValue.Remove( value.Id );
                 }
 
                 BindPackageGrid();
@@ -325,9 +316,6 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                     definedValue.SetAttributeValue( "MVRJurisdiction", dvJurisdicationCodeGuid.HasValue ? dvJurisdicationCodeGuid.Value.ToString() : string.Empty );
                     definedValue.SetAttributeValue( "SendHomeStateMVR", cbSendStateMVR.Checked.ToString() );
                     definedValue.SaveAttributeValues( rockContext );
-
-                    CacheDefinedType.Remove( definedType.Id );
-                    CacheDefinedValue.Remove( definedValue.Id );
                 }
             }
 
@@ -466,8 +454,6 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         /// </summary>
         public void ShowNew()
         {
-            hlActive.Visible = false;
-
             imgPromotion.ImageUrl = PROMOTION_IMAGE_URL;
             hlGetStarted.NavigateUrl = GET_STARTED_URL;
 
@@ -488,8 +474,6 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         /// <param name="settings">The settings.</param>
         public void ShowView( List<AttributeValue> settings )
         {
-            ShowHighlightLabels( settings );
-
             lUserName.Text = GetSettingValue( settings, "UserName" );
             lPassword.Text = "********";
 
@@ -529,8 +513,6 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         /// <param name="settings">The settings.</param>
         public void ShowEdit( List<AttributeValue> settings )
         {
-            ShowHighlightLabels( settings );
-
             tbUserName.Text = GetSettingValue( settings, "UserName" );
             tbPassword.Text = GetSettingValue( settings, "Password", true );
             urlWebHook.Text = GetSettingValue( settings, "ReturnURL" );
@@ -634,18 +616,6 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
 
                 ShowDialog( "Package" );
             }
-        }
-
-        /// <summary>
-        /// Shows the highlight labels.
-        /// </summary>
-        /// <param name="settings">The settings.</param>
-        public void ShowHighlightLabels( List<AttributeValue> settings )
-        {
-            bool active = GetSettingValue( settings, "Active" ).AsBoolean();
-            hlActive.LabelType = active ? LabelType.Success : LabelType.Danger;
-            hlActive.Text = active ? "Active" : "Inactive";
-            hlActive.Visible = true;
         }
 
         /// <summary>

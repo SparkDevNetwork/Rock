@@ -462,7 +462,7 @@ namespace RockWeb.Blocks.CheckIn
             }
 
             // clear out any existing schedule columns and add the ones that match the current filter setting
-            var scheduleList = scheduleQry.ToList().OrderBy( a => a.ToString() ).ToList();
+            var scheduleList = scheduleQry.ToList().OrderBy( a => a.Name ).ToList();
 
             var checkBoxEditableFields = gGroupLocationSchedule.Columns.OfType<CheckBoxEditableField>().ToList();
             foreach ( var field in checkBoxEditableFields )

@@ -281,6 +281,11 @@ TransactionAccountDetails: [
         // The URL for the Step-2 Iframe Url
         protected string Step2IFrameUrl { get; set; }
 
+        protected bool DisplayPhone
+        {
+            get {return ViewState["DisplayPhone"].ToString().AsBoolean(); }
+            set { ViewState["DisplayPhone"] = value; }
+        }
         #endregion
 
         #region Base Control Methods
@@ -1305,11 +1310,11 @@ TransactionAccountDetails: [
             tdEmailConfirm.Visible = displayEmail;
             tdEmailReceipt.Visible = displayEmail;
 
-            bool displayPhone = GetAttributeValue( "DisplayPhone" ).AsBoolean();
-            pnbPhone.Visible = displayPhone;
-            pnbBusinessContactPhone.Visible = displayPhone;
-            tdPhoneConfirm.Visible = displayPhone;
-            tdPhoneReceipt.Visible = displayPhone;
+            DisplayPhone = GetAttributeValue( "DisplayPhone" ).AsBoolean();
+            pnbPhone.Visible = DisplayPhone;
+            pnbBusinessContactPhone.Visible = DisplayPhone;
+            tdPhoneConfirm.Visible = DisplayPhone;
+            tdPhoneReceipt.Visible = DisplayPhone;
 
             var person = GetPerson( false );
             ShowPersonal( person );
@@ -1562,21 +1567,29 @@ TransactionAccountDetails: [
                 var rockContext = new RockContext();
                 var personService = new PersonService( rockContext );
 
-                if ( GetAttributeValue( "DisplayPhone" ).AsBoolean() )
+                if ( DisplayPhone )
                 {
                     var phoneNumber = personService.GetPhoneNumber( person, CacheDefinedValue.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ) ) );
 
                     // If person did not have a home phone number, read the cell phone number (which would then
                     // get saved as a home number also if they don't change it, which is ok ).
-                    if ( phoneNumber == null || string.IsNullOrWhiteSpace( phoneNumber.Number ) )
+                    if ( phoneNumber == null || string.IsNullOrWhiteSpace( phoneNumber.Number ) || phoneNumber.IsUnlisted )
                     {
                         phoneNumber = personService.GetPhoneNumber( person, CacheDefinedValue.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) ) );
                     }
 
                     if ( phoneNumber != null )
                     {
-                        pnbPhone.CountryCode = phoneNumber.CountryCode;
-                        pnbPhone.Number = phoneNumber.ToString();
+                        if ( !phoneNumber.IsUnlisted )
+                        {
+
+                            pnbPhone.CountryCode = phoneNumber.CountryCode;
+                            pnbPhone.Number = phoneNumber.ToString();
+                        }
+                        else
+                        {
+                            DisplayPhone = false;
+                        }
                     }
                     else
                     {
@@ -1736,7 +1749,7 @@ TransactionAccountDetails: [
             {
                 person.Email = txtEmail.Text;
 
-                if ( GetAttributeValue( "DisplayPhone" ).AsBooleanOrNull() ?? false )
+                if ( DisplayPhone )
                 {
                     var numberTypeId = CacheDefinedValue.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ) ).Id;
                     var phone = person.PhoneNumbers.FirstOrDefault( p => p.NumberTypeValueId == numberTypeId );
@@ -1832,7 +1845,7 @@ TransactionAccountDetails: [
             {
                 person.Email = txtBusinessContactEmail.Text;
 
-                if ( GetAttributeValue( "DisplayPhone" ).AsBooleanOrNull() ?? false )
+                if ( DisplayPhone )
                 {
                     var numberTypeId = CacheDefinedValue.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK ) ).Id;
                     var phone = person.PhoneNumbers.FirstOrDefault( p => p.NumberTypeValueId == numberTypeId );
@@ -1986,7 +1999,7 @@ TransactionAccountDetails: [
                 business.LastName = txtBusinessName.Text;
                 business.Email = txtEmail.Text;
 
-                if ( GetAttributeValue( "DisplayPhone" ).AsBooleanOrNull() ?? false )
+                if ( DisplayPhone )
                 {
                     var numberTypeId = CacheDefinedValue.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK ) ).Id;
                     var phone = business.PhoneNumbers.FirstOrDefault( p => p.NumberTypeValueId == numberTypeId );
@@ -2144,9 +2157,8 @@ TransactionAccountDetails: [
             {
                 errorMessages.Add( "Make sure to enter a valid address.  An address is required for us to process this transaction" );
             }
-
-            bool displayPhone = GetAttributeValue( "DisplayPhone" ).AsBoolean();
-            if ( displayPhone && string.IsNullOrWhiteSpace( pnbPhone.Number ) )
+            
+            if ( DisplayPhone && string.IsNullOrWhiteSpace( pnbPhone.Number ) )
             {
                 errorMessages.Add( "Make sure to enter a valid phone number.  A phone number is required for us to process this transaction" );
             }
@@ -2163,7 +2175,7 @@ TransactionAccountDetails: [
                 {
                     errorMessages.Add( "Make sure to enter both a first and last name for Business Contact" );
                 }
-                if ( displayPhone && string.IsNullOrWhiteSpace( pnbBusinessContactPhone.Number ) )
+                if ( DisplayPhone && string.IsNullOrWhiteSpace( pnbBusinessContactPhone.Number ) )
                 {
                     errorMessages.Add( "Make sure to enter a valid Business Contact phone number." );
                 }
@@ -3145,17 +3157,21 @@ TransactionAccountDetails: [
         // Detect credit card type
         $('.credit-card').creditCardTypeDetector({{ 'credit_card_logos': '.card-logos' }});
 
-        // Toggle credit card display if saved card option is available
-        $('div.radio-content').prev('div.radio-list').find('input:radio').unbind('click').on('click', function () {{
-            $content = $(this).parents('div.radio-list:first').next('.radio-content');
-            var radioDisplay = $content.css('display');
-            if ($(this).val() == 0 && radioDisplay == 'none') {{
-                $content.slideToggle();
-            }}
-            else if ($(this).val() != 0 && radioDisplay != 'none') {{
-                $content.slideToggle();
-            }}
-        }});
+        if ( typeof {21} != 'undefined' ) {{
+            //// Toggle credit card display if saved card option is available
+            $({21}).unbind('click').on('click', function () {{
+
+                var radioDisplay = $({22}).css('display');
+                var selectedVal = $({21}).val();
+
+                if ( selectedVal == 0 && radioDisplay == 'none') {{
+                    $({22}).slideToggle();
+                }}
+                else if (selectedVal != 0 && radioDisplay != 'none') {{
+                    $({22}).slideToggle();
+                }}
+            }});
+        }}
 
         // Hide or show a div based on selection of checkbox
         $('input:checkbox.toggle-input').unbind('click').on('click', function () {{
@@ -3179,9 +3195,10 @@ TransactionAccountDetails: [
         }});
     }});
 
-    // sets the scroll position to the top of the page after partial postbacks
-    // without this the scroll position is the bottom of the page.
-    // setTimeout('window.scrollTo(0,0)',0);
+    // Scroll position. The script on the ascx page will try to keep the window scroll position after a postback.
+    // If that script is removed the page will jump to the bottom, that's good unless there is a lot of content in
+    // the footer. Delete the scrollTo function and uncomment the line below to force the scroll position to the top of the page.
+    //setTimeout('window.scrollTo(0,0)',0);
 
     // Posts the iframe (step 2)
     $('#aStep2Submit').on('click', function(e) {{
@@ -3245,6 +3262,7 @@ TransactionAccountDetails: [
                 var $form = $('#iframeStep2').contents().find('#Step2Form');
                 $form.attr('action', src );
                 $form.submit();
+                $('#updateProgress').hide();
             }}
         }}
     }});
@@ -3272,7 +3290,9 @@ TransactionAccountDetails: [
                 acBillingAddress.ClientID,      // {17}
                 txtCardFirstName.ClientID,      // {18}
                 txtCardLastName.ClientID,       // {19}
-                txtCardName.ClientID            // {20}
+                txtCardName.ClientID,           // {20}
+                rblSavedAccount.ClientID,       // {21}
+                divNewPayment.ClientID         // {22}
             );
 
             ScriptManager.RegisterStartupScript( upPayment, this.GetType(), "giving-profile", script, true );

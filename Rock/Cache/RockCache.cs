@@ -107,6 +107,29 @@ namespace Rock.Cache
 
         #endregion
 
+        #region Public Static Properties
+
+        /// <summary>
+        /// Gets an indicator of whether cache manager is configured in a way that items will be serialized (i.e. if using Redis)
+        /// </summary>
+        /// <value>
+        /// Flag indicating if cache items are serialized
+        /// </value>
+        public static bool IsCacheSerialized
+        {
+            get
+            {
+                if ( Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER ).IsNullOrWhiteSpace() ? false : true )
+                {
+                    return true;
+                }
+
+                return true; //false;
+            }
+        }
+
+        #endregion
+
         #region Public Static Methods
 
         /// <summary>
@@ -278,9 +301,19 @@ namespace Rock.Cache
 
             if ( cacheTags.IsNotNullOrWhitespace() )
             {
-                var cacheTagList = cacheTags.Split( ',' );
+                // trim the results since the tag name could come from lava and not from a prevalidated value stored in DefinedValue.
+                var cacheTagList = cacheTags.Split( ',' ).Select( t => t.Trim() );
                 foreach ( var cacheTag in cacheTagList )
                 {
+                    // Don't save the tag if it is not valid.
+                    int cacheTagDefinedTypeId = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.CACHE_TAGS ).Id;
+                    Rock.Model.DefinedValueService definedValueService = new Rock.Model.DefinedValueService( new Rock.Data.RockContext() );
+                    var validCacheTags = definedValueService.Queryable().Where( v => v.DefinedTypeId == cacheTagDefinedTypeId && v.Value == cacheTag ).ToList();
+                    if ( validCacheTags.Count == 0 )
+                    {
+                        return;
+                    }
+
                     var value = RockCacheManager<List<string>>.Instance.Cache.Get( cacheTag, CACHE_TAG_REGION_NAME ) ?? new List<string>();
                     if ( value.FirstOrDefault( v => v.Contains( key ) ) == null )
                     {
@@ -330,7 +363,7 @@ namespace Rock.Cache
         /// <summary>
         /// Removes all items from cache for comma seperated list of cache tags
         /// </summary>
-        /// <param name="cacheTag">The cache tag.</param>
+        /// <param name="cacheTags">The cache tags.</param>
         public static void RemoveForTags( string cacheTags )
         {
             var cacheTagList = cacheTags.Split( ',' );
@@ -347,8 +380,9 @@ namespace Rock.Cache
         /// <summary>
         /// Clears all cached items (MemoryCache, Authorizations, EntityAttributes, CacheSite, TriggerCache).
         /// </summary>
+        /// <param name="refreshWorkflowTriggers">if set to <c>true</c> [refresh workflow triggers].</param>
         /// <returns></returns>
-        public static List<string> ClearAllCachedItems()
+        public static List<string> ClearAllCachedItems( bool refreshWorkflowTriggers )
         {
             var msgs = new List<string>();
 
@@ -356,11 +390,24 @@ namespace Rock.Cache
             ClearAll();
             msgs.Add( "RockCacheManager has been cleared" );
 
-            // Clear workflow trigger cache
-            CacheWorkflowTriggers.Refresh();
-            ////msgs.Add( "TriggerCache has been cleared" );
+            if ( refreshWorkflowTriggers )
+            {
+                // Clear workflow trigger cache
+                CacheWorkflowTriggers.Refresh();
+                ////msgs.Add( "TriggerCache has been cleared" );
+            }
 
             return msgs;
+        }
+
+        /// <summary>
+        /// Clears all cached items (MemoryCache, Authorizations, EntityAttributes, CacheSite, TriggerCache)
+        /// and refreshes the workflow trigger cache.
+        /// </summary>
+        /// <returns></returns>
+        public static List<string> ClearAllCachedItems()
+        {
+            return ClearAllCachedItems( true );
         }
 
         /// <summary>
@@ -509,7 +556,7 @@ namespace Rock.Cache
             {
                 return RockCacheManager<List<string>>.Instance.GetStatistics();
             }
-            else if ( cacheTypeName == "System.Int32")
+            else if ( cacheTypeName == "System.Int32" )
             {
                 return RockCacheManager<int?>.Instance.GetStatistics();
             }
@@ -536,6 +583,35 @@ namespace Rock.Cache
             return GetStatForSystemType( cacheTypeName );
         }
 
+        /// <summary>
+        /// Determines whether the end point is available.
+        /// </summary>
+        /// <param name="socket">The socket.</param>
+        /// <param name="password">The password.</param>
+        /// <returns>
+        ///   <c>true</c> if [is end point available] [the specified socket]; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsEndPointAvailable( string socket, string password )
+        {
+            try
+            {
+                var configurationOptions = StackExchange.Redis.ConfigurationOptions.Parse( socket );
+                configurationOptions.ConnectRetry = 1;
+                configurationOptions.ConnectTimeout = 500;
+
+                if ( password.IsNotNullOrWhitespace() )
+                {
+                    configurationOptions.Password = password;
+                }
+                
+                var redisConnection = StackExchange.Redis.ConnectionMultiplexer.Connect( configurationOptions );
+                return redisConnection.IsConnected;
+            }
+            catch(Exception)
+            {
+                return false;
+            }
+        }
         #endregion
     }
 }

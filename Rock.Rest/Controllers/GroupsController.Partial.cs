@@ -682,12 +682,13 @@ namespace Rock.Rest.Controllers
         /// Gets the member map information.
         /// </summary>
         /// <param name="groupId">The group identifier.</param>
+        /// <param name="groupMemberStatus">The group member status.</param>
         /// <returns></returns>
         /// <exception cref="System.Web.Http.HttpResponseException">
         /// </exception>
         [Authenticate, Secured]
-        [System.Web.Http.Route( "api/Groups/GetMapInfo/{groupId}/Members" )]
-        public IQueryable<MapItem> GetMemberMapInfo( int groupId )
+        [System.Web.Http.Route( "api/Groups/GetMapInfo/{groupId}/Members/{groupMemberStatus?}" )]
+        public IQueryable<MapItem> GetMemberMapInfo( int groupId, GroupMemberStatus? groupMemberStatus = null )
         {
             // Enable proxy creation since security is being checked and need to navigate parent authorities
             SetProxyCreation( true );
@@ -705,7 +706,14 @@ namespace Rock.Rest.Controllers
                     var mapItems = new List<MapItem>();
 
                     Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
-                    var memberIds = group.Members.Select( m => m.PersonId ).Distinct().ToList();
+                    var members = group.Members;
+
+                    if ( groupMemberStatus.HasValue )
+                    {
+                        members = members.Where(a=>a.GroupMemberStatus == groupMemberStatus.Value).ToList();
+                    }
+
+                    var memberIds = members.Select( m => m.PersonId ).Distinct().ToList();
                     var families = ( (GroupService)Service ).Queryable( "GroupLocations.Location" )
                         .Where( g =>
                             g.GroupType.Guid == familyGuid &&

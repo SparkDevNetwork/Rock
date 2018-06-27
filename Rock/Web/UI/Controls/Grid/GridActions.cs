@@ -53,6 +53,7 @@ namespace Rock.Web.UI.Controls
         #region Controls
 
         private List<Control> _customActions;
+        private Panel _pnlCustomActions;
         private LinkButton _lbPersonMerge;
         private LinkButton _lbBulkUpdate;
         private LinkButton _lbCommunicate;
@@ -263,11 +264,15 @@ namespace Rock.Web.UI.Controls
         {
             Controls.Clear();
 
+            _pnlCustomActions = new Panel();
+
+            Controls.Add( _pnlCustomActions );
+
             if ( _customActions != null )
             {
                 foreach ( Control control in _customActions )
                 {
-                    Controls.Add( control );
+                    _pnlCustomActions.Controls.Add( control );
                 }
             }
 
@@ -393,6 +398,26 @@ namespace Rock.Web.UI.Controls
             if (this.TagKey != HtmlTextWriterTag.Unknown)
             {
                 base.RenderEndTag(writer);
+            }
+        }
+
+        /// <summary>
+        /// Renders the control.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        /// <param name="renderAsMirrored">if set to <c>true</c> [render as mirrored].</param>
+        public void RenderControl( HtmlTextWriter writer, bool renderAsMirrored )
+        {
+            if ( renderAsMirrored )
+            {
+                // Custom Actions usually don't work when mirrored, especially if they are Inputs such as DropDownLists, etc, so don't render them in the mirrored copy
+                _pnlCustomActions.Visible = false;
+                RenderControl( writer );
+                _pnlCustomActions.Visible = true;
+            }
+            else
+            {
+                RenderControl( writer );
             }
         }
 

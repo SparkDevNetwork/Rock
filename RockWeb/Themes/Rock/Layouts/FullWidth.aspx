@@ -38,8 +38,8 @@
             <Rock:PageBreadCrumbs ID="PageBreadCrumbs" runat="server" />
             <Rock:PageDescription ID="PageDescription" runat="server" />
         </section>
-        
-        <section id="page-content"> 
+
+        <section id="page-content">
 
             <!-- Ajax Error -->
             <div class="alert alert-danger ajax-error" style="display:none">

@@ -50,6 +50,15 @@ namespace Rock.Cache
         [DataMember]
         public List<EntityAttributes> EntityAttributes { get; set; }
 
+        /// <summary>
+        /// Gets or sets the entity attributes by entity type identifier.
+        /// </summary>
+        /// <value>
+        /// The entity attributes by entity type identifier.
+        /// </value>
+        [DataMember]
+        public Dictionary<int, List<EntityAttributes>> EntityAttributesByEntityTypeId { get; set; }
+
         #region Public Methods
 
         /// <summary>
@@ -172,9 +181,13 @@ namespace Rock.Cache
                 } )
                 .ToList();
 
-            var value = new CacheEntityAttributes { EntityAttributes = entityAttributes };
-            return value;
+            var value = new CacheEntityAttributes
+            {
+                EntityAttributes = entityAttributes,
+                EntityAttributesByEntityTypeId = entityAttributes.Where(a => a.EntityTypeId.HasValue).GroupBy( g => g.EntityTypeId.Value ).ToDictionary( k => k.Key, v => v.ToList() ?? new List<EntityAttributes>() )
+            };
 
+            return value;
         }
 
         #endregion
@@ -194,6 +207,7 @@ namespace Rock.Cache
         /// <value>
         /// The entity type id.
         /// </value>
+		[DataMember]
         public int? EntityTypeId { get; set; }
 
         /// <summary>
@@ -202,6 +216,7 @@ namespace Rock.Cache
         /// <value>
         /// The entity type qualifier column.
         /// </value>
+        [DataMember]
         public string EntityTypeQualifierColumn { get; set; }
 
         /// <summary>
@@ -210,6 +225,7 @@ namespace Rock.Cache
         /// <value>
         /// The entity type qualifier value.
         /// </value>
+        [DataMember]
         public string EntityTypeQualifierValue { get; set; }
 
         /// <summary>
@@ -218,6 +234,7 @@ namespace Rock.Cache
         /// <value>
         /// The attribute ids.
         /// </value>
+        [DataMember]
         public List<int> AttributeIds { get; set; }
     }
 }

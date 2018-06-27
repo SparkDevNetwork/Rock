@@ -126,8 +126,6 @@ namespace RockWeb.Blocks.Crm
                     return;
                 }
 
-                CachePersonBadge.Remove( personBadge.Id );
-
                 personBadgeService.Delete( personBadge );
                 rockContext.SaveChanges();
             }
@@ -143,13 +141,7 @@ namespace RockWeb.Blocks.Crm
             service.Reorder( personBadges.ToList(), e.OldIndex, e.NewIndex );
             rockContext.SaveChanges();
 
-            foreach ( var personBadge in personBadges )
-            {
-                CachePersonBadge.Remove( personBadge.Id );
-            }
-
             BindGrid();
-
         }
         
         /// <summary>

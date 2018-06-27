@@ -63,6 +63,17 @@ namespace Rock.Web.UI.Controls
         public NoteOptions NoteOptions { get; private set; }
 
         /// <summary>
+        /// Sets the note options.
+        /// </summary>
+        /// <param name="noteOptions">The note options.</param>
+        public void SetNoteOptions( NoteOptions noteOptions )
+        {
+            this.NoteOptions = noteOptions;
+            this.BindNoteTypes();
+            this.NoteOptions.NoteTypesChange += NoteOptions_NoteTypesChange;
+        }
+
+        /// <summary>
         /// Sets the note.
         /// </summary>
         /// <value>
@@ -357,15 +368,29 @@ namespace Rock.Web.UI.Controls
 
         #endregion
 
-        #region Constructor
+        #region Events
+        
+        /// <summary>
+        /// Handles the NoteTypesChange event of the NoteOptions control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void NoteOptions_NoteTypesChange( object sender, EventArgs e )
+        {
+            BindNoteTypes();
+        }
+
+        #endregion
+
+        #region Base Control Methods
+        
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="NoteEditor"/> class.
+        /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
-        /// <param name="noteOptions">The note options.</param>
-        public NoteEditor( NoteOptions noteOptions )
+        protected override void CreateChildControls()
         {
-            this.NoteOptions = noteOptions;
+            base.CreateChildControls();
 
             _tbNote = new RockTextBox();
             _hfNoteId = new HiddenFieldWithClass();
@@ -379,42 +404,6 @@ namespace Rock.Web.UI.Controls
             _dtCreateDate = new DateTimePicker();
             _hfParentNoteId = new HiddenFieldWithClass();
             _mdEditWarning = new ModalAlert();
-        }
-
-        #endregion
-
-        #region Base Control Methods
-
-        /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
-        /// </summary>
-        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnLoad( EventArgs e )
-        {
-            base.OnLoad( e );
-
-            if ( Page.IsPostBack )
-            {
-                if ( CanEdit && _ddlNoteType.Visible )
-                {
-                    NoteTypeId = _ddlNoteType.SelectedValueAsInt();
-                }
-            }
-            else
-            {
-                var editableNoteTypes = this.NoteOptions.GetEditableNoteTypes( ( this.Page as RockPage )?.CurrentPerson );
-                _ddlNoteType.DataSource = editableNoteTypes;
-                _ddlNoteType.DataBind();
-                _ddlNoteType.Visible = editableNoteTypes.Count() > 1;
-            }
-        }
-
-        /// <summary>
-        /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
-        /// </summary>
-        protected override void CreateChildControls()
-        {
-            base.CreateChildControls();
 
             _hfNoteId.ID = this.ID + "_hfNoteId";
             _hfNoteId.CssClass = "js-noteid";
@@ -470,6 +459,18 @@ namespace Rock.Web.UI.Controls
             _dtCreateDate.ID = this.ID + "_tbCreateDate";
             _dtCreateDate.Label = "Note Created Date";
             Controls.Add( _dtCreateDate );
+        }
+
+        /// <summary>
+        /// Binds the note types.
+        /// </summary>
+        private void BindNoteTypes()
+        {
+            EnsureChildControls();
+            var editableNoteTypes = this.NoteOptions.GetEditableNoteTypes( ( this.Page as RockPage )?.CurrentPerson );
+            _ddlNoteType.DataSource = editableNoteTypes;
+            _ddlNoteType.DataBind();
+            _ddlNoteType.Visible = editableNoteTypes.Count() > 1;
         }
 
         /// <summary>

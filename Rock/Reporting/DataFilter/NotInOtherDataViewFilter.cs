@@ -55,9 +55,8 @@ namespace Rock.Reporting.DataFilter
         /// </value>
         public override string GetClientFormatSelection( Type entityType )
         {
-            return "'Not Included in ' + " +
-                "'\\'' + $('select:first', $content).find(':selected').text() + '\\' ' + " +
-                "'Data View'";
+            var title = "Not Included In Data View:";
+            return $@"Rock.reporting.formatFilterForOtherDataViewFilter('{title}', $content)";
         }
 
         /// <summary>
@@ -69,8 +68,9 @@ namespace Rock.Reporting.DataFilter
         public override string FormatSelection( Type entityType, string selection )
         {
             string s = "Not In Another Data View";
+            var selectionConfig = SelectionConfig.Parse( selection );
 
-            int? dataviewId = selection.AsIntegerOrNull();
+            int? dataviewId = selectionConfig.DataViewId;
             if ( dataviewId.HasValue )
             {
                 var dataView = new DataViewService( new RockContext() ).Get( dataviewId.Value );

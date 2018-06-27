@@ -33,9 +33,9 @@ using Rock.Web.Utilities;
 namespace Rock.Reporting.DataFilter.Person
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
-    /// 
+    ///
     [Description( "select people that are represented in the Personal Device entries returned by a specified Data View" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person In Personal Device Filter" )]
@@ -144,7 +144,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// <summary>
         /// Formats the selection on the client-side.  When the filter is collapsed by the user, the Filterfield control
         /// will set the description of the filter to whatever is returned by this property.  If including script, the
-        /// controls parent container can be referenced through a '$content' variable that is set by the control before 
+        /// controls parent container can be referenced through a '$content' variable that is set by the control before
         /// referencing this property.
         /// </summary>
         /// <value>
@@ -171,7 +171,7 @@ function() {
         {
             var settings = new FilterSettings( selection );
 
-            string result = "In Personal Device DataView";
+            string result = "In Personal Device Data View";
 
             if ( !settings.IsValid )
             {
@@ -182,7 +182,7 @@ function() {
             {
                 var dataView = new DataViewService( context ).Get( settings.DataViewGuid.GetValueOrDefault() );
 
-                result = string.Format( "In Personal Device DataView filter: {0}",
+                result = string.Format( "In Personal Device Data View filter: {0}",
                                         ( dataView != null ? dataView.ToString() : string.Empty ) );
             }
 
@@ -200,7 +200,7 @@ function() {
             // Define Control: Person Device Data View Picker
             var dvpDataView = new DataViewItemPicker();
             dvpDataView.ID = filterControl.GetChildControlInstanceName( _CtlDataView );
-            dvpDataView.Label = "In Personal Device DataView";
+            dvpDataView.Label = "In Personal Device Data View";
             dvpDataView.Help = "A Personal Device Data View that provides the set of possible people with personal devices.";
 
             filterControl.Controls.Add( dvpDataView );

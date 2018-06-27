@@ -22,12 +22,12 @@ using System.Web.UI;
 using Rock;
 using Rock.Cache;
 using Rock.Checkr.Constants;
-using Rock.Checkr.SystemKey;
 using Rock.Data;
 using Rock.Migrations;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Security.BackgroundCheck
 {
@@ -37,9 +37,6 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
 
     public partial class CheckrSettings : Rock.Web.UI.RockBlock
     {
-        private const string GET_STARTED_URL = "http://www.rockrms.com/Redirect/PMMSignup";
-        private const string PROMOTION_IMAGE_URL = "https://rockrms.blob.core.windows.net/resources/pmm-integration/pmm-integration-banner.png";
-
         #region Control Methods
 
         /// <summary>
@@ -75,6 +72,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
+            nbNotification.Visible = false;
             pnlToken.Visible = true;
             imgCheckrImage.Visible = false;
             pnlPackages.Visible = false;
@@ -88,7 +86,18 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            Rock.Web.SystemSettings.SetValue( SystemSetting.ACCESS_TOKEN, tbAccessToken.Text );
+            using ( var rockContext = new RockContext() )
+            {
+                var settings = GetSettings( rockContext );
+                SetSettingValue( rockContext, settings, "AccessToken", tbAccessToken.Text );
+
+                rockContext.SaveChanges();
+
+                BackgroundCheckContainer.Instance.Refresh();
+            }
+
+            btnUpdate_Click( null, null );
+
             pnlToken.Visible = false;
             pnlPackages.Visible = true;
             HideSecondaryBlocks( false );
@@ -102,6 +111,8 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnUpdate_Click( object sender, EventArgs e )
         {
+            nbNotification.Visible = false;
+
             List<string> errorMessages = new List<string>();
             if ( !Rock.Checkr.Checkr.UpdatePackages( errorMessages ) )
             {
@@ -113,8 +124,11 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                 }
             }
 
-            UpdatePackages();
-            modalUpdated.Show();
+            DisplayPackages();
+            if ( sender != null )
+            {
+                maUpdated.Show( "Update Packages Complete.", ModalAlertType.Information );
+            }
         }
 
         /// <summary>
@@ -175,9 +189,9 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         #region Internal Methods
 
         /// <summary>
-        /// Updates the packages.
+        /// Display the packages.
         /// </summary>
-        private void UpdatePackages()
+        private void DisplayPackages()
         {
             using ( var rockContext = new RockContext() )
             {
@@ -226,7 +240,17 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         private void ShowDetail()
         {
             imgCheckrImage.ImageUrl = CheckrConstants.CHECKR_IMAGE_URL;
-            string accessToken = Rock.Web.SystemSettings.GetValue( SystemSetting.ACCESS_TOKEN );
+            string accessToken = null;
+            using ( RockContext rockContext = new RockContext() )
+            {
+                var settings = GetSettings( rockContext );
+                if ( settings != null )
+                {
+
+                    accessToken = GetSettingValue( settings, "AccessToken" );//Rock.Web.SystemSettings.GetValue( SystemSetting.ACCESS_TOKEN );
+                }
+            }
+
             if ( accessToken.IsNullOrWhiteSpace() )
             {
                 pnlToken.Visible = true;
@@ -249,7 +273,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                 lViewColumnLeft.Text = new DescriptionList()
                     .Add( "Access Token", accessToken )
                     .Html;
-                UpdatePackages();
+                DisplayPackages();
             }
         }
 

@@ -248,7 +248,7 @@ namespace RockWeb.Blocks.WorkFlow
             {
                 var entityType = CacheEntityType.Get( typeof( Rock.Model.Workflow ) );
                 var noteTypes = CacheNoteType.GetByEntity( entityType.Id, string.Empty, string.Empty );
-                ncWorkflowNotes.NoteOptions.NoteTypes = noteTypes;
+                ncWorkflowNotes.NoteOptions.SetNoteTypes( noteTypes );
             }
 
             if ( _workflowType == null )
@@ -654,7 +654,7 @@ namespace RockWeb.Blocks.WorkFlow
                     }
 
                     var buttonMergeFields = new Dictionary<string, object>();
-                    buttonMergeFields.Add( "ButtonText", details[0].EscapeQuotes() );
+                    buttonMergeFields.Add( "ButtonText", details[0].EncodeHtml() );
                     buttonMergeFields.Add( "ButtonClick",
                             string.Format( "if ( Page_ClientValidate('{0}') ) {{ $(this).button('loading'); return true; }} else {{ return false; }}",
                             BlockValidationGroup ) );

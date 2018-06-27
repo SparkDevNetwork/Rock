@@ -143,6 +143,7 @@ namespace Rock.Web.UI.Controls
                         if ( this.ItemStyle.HorizontalAlign != HorizontalAlign.Center )
                         {
                             this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
+                            this.HeaderStyle.HorizontalAlign = HorizontalAlign.Center;
                         }
 
                         var boolValue = rawValue.AsBoolean();

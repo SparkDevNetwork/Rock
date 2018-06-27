@@ -16,16 +16,17 @@
 //
 using System;
 
-namespace Rock.Checkr.SystemKey
+namespace Rock.Data
 {
+
     /// <summary>
-    /// System file types.  
+    /// An entity property that is defined in an interface is considered a virtual property.
+    /// Put this attribute on entity properties that are defined in an interface
+    /// to prevent it from being filtered out with properties marked as virtual in the class.
     /// </summary>
-    public class SystemSetting
+    /// <seealso cref="System.Attribute" />
+    [AttributeUsage( AttributeTargets.Property )]
+    public class IncludeAsEntityProperty : System.Attribute
     {
-        /// <summary>
-        /// Checkr Access Token
-        /// </summary>
-        public const string ACCESS_TOKEN = "core_checkrAdmin_AccessToken";
     }
 }

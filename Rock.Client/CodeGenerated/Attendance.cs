@@ -41,6 +41,9 @@ namespace Rock.Client
         public int? CampusId { get; set; }
 
         /// <summary />
+        public int? CheckedInByPersonAliasId { get; set; }
+
+        /// <summary />
         public int? DeviceId { get; set; }
 
         /// <summary />
@@ -125,6 +128,7 @@ namespace Rock.Client
             this.Id = source.Id;
             this.AttendanceCodeId = source.AttendanceCodeId;
             this.CampusId = source.CampusId;
+            this.CheckedInByPersonAliasId = source.CheckedInByPersonAliasId;
             this.DeviceId = source.DeviceId;
             this.DidAttend = source.DidAttend;
             this.EndDateTime = source.EndDateTime;

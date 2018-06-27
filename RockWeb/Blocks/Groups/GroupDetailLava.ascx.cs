@@ -466,12 +466,6 @@ namespace RockWeb.Blocks.Groups
                 groupMember.SaveAttributeValues( rockContext );
             } );
 
-            Group group = new GroupService( rockContext ).Get( groupMember.GroupId );
-            if ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
-            {
-                Rock.Cache.CacheRole.Remove( group.Id );
-            }
-
             pnlEditGroupMember.Visible = false;
             pnlGroupView.Visible = true;
             DisplayViewGroup();

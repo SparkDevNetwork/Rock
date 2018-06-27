@@ -99,25 +99,43 @@ namespace Rock.Cache
         /// <returns></returns>
         private static ICacheManagerConfiguration GetCacheConfig()
         {
-            // Configure Cache
-            var config = new ConfigurationBuilder( "InProcess With Redis Backplane" )
-                //.WithSystemRuntimeCacheHandle( "inProcessCache" )
+            // We need to get the settings from the DB instead of the cache or else we'll go into an infinite loop (which is bad).
+            var attributeService = new Model.AttributeService( new Data.RockContext() );
+            bool redisEnabled = attributeService.GetSystemSetting( SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER )?.DefaultValue.AsBoolean() ?? false;
+            bool disableBackplane = System.Configuration.ConfigurationManager.AppSettings["DisableRemoteCache"].AsBooleanOrNull() ?? false;
+
+            if ( redisEnabled == false || disableBackplane )
+            {
+                return new ConfigurationBuilder( "InProcess" )
                 .WithDictionaryHandle()
-                //.And
-                //.WithRedisConfiguration( "redis", redisConfig =>
-                //{
-                //    redisConfig.WithAllowAdmin()
-                //        .WithDatabase( 0 )
-                //        .WithEndpoint( "localhost", 6379 );
-                //} )
-                //.WithMaxRetries( 1000 )
-                //.WithRetryTimeout( 100 )
-                //.WithRedisBackplane( "redis" )
-                //.WithRedisCacheHandle( "redis", true )
                 .EnableStatistics()
                 .Build();
+            }
 
-            return config;
+            string[] redisEndPointList = attributeService.GetSystemSetting( SystemKey.SystemSetting.REDIS_ENDPOINT_LIST ).DefaultValue.Split( ',' );
+            int redisDbIndex = attributeService.GetSystemSetting( SystemKey.SystemSetting.REDIS_DATABASE_NUMBER ).DefaultValue.AsIntegerOrNull() ?? 0;
+
+            return new ConfigurationBuilder( "InProcess With Redis Backplane" )
+                .WithJsonSerializer()
+                .WithDictionaryHandle()
+                .And
+                .WithRedisConfiguration( "redis", redisConfig =>
+                {
+                    redisConfig.WithAllowAdmin()
+                    .WithDatabase( redisDbIndex );
+
+                    foreach ( var redisEndPoint in redisEndPointList )
+                    {
+                        string[] info = redisEndPoint.Split( ':' );
+                        redisConfig.WithEndpoint( info[0], info[1].AsIntegerOrNull() ?? 6379 );
+                    }
+                } )
+                .WithMaxRetries( 100 )
+                .WithRetryTimeout( 10 )
+                .WithRedisBackplane( "redis" )
+                .WithRedisCacheHandle( "redis", true )
+                .EnableStatistics()
+                .Build();
         }
 
         /// <summary>

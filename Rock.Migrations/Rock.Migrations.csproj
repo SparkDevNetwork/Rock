@@ -257,6 +257,38 @@
     <Compile Include="Migrations\201806012358276_Rollup_0601.Designer.cs">
       <DependentUpon>201806012358276_Rollup_0601.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201806061732498_HomepageUpdates.cs" />
+    <Compile Include="Migrations\201806061732498_HomepageUpdates.Designer.cs">
+      <DependentUpon>201806061732498_HomepageUpdates.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201806081810282_LandingPage.cs" />
+    <Compile Include="Migrations\201806081810282_LandingPage.Designer.cs">
+      <DependentUpon>201806081810282_LandingPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201806111901512_CalculatePersonDuplicatesTimeout.cs" />
+    <Compile Include="Migrations\201806111901512_CalculatePersonDuplicatesTimeout.Designer.cs">
+      <DependentUpon>201806111901512_CalculatePersonDuplicatesTimeout.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201806111950515_ContentChannelViewDetail.cs" />
+    <Compile Include="Migrations\201806111950515_ContentChannelViewDetail.Designer.cs">
+      <DependentUpon>201806111950515_ContentChannelViewDetail.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201806131619035_AttendancedCheckedInBy.cs" />
+    <Compile Include="Migrations\201806131619035_AttendancedCheckedInBy.Designer.cs">
+      <DependentUpon>201806131619035_AttendancedCheckedInBy.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201806151052457_AddRegistrarOptionToRegistrationTemplate.cs" />
+    <Compile Include="Migrations\201806151052457_AddRegistrarOptionToRegistrationTemplate.Designer.cs">
+      <DependentUpon>201806151052457_AddRegistrarOptionToRegistrationTemplate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201806181856008_AttendanceNotesHomepageMetricsScheduleFix.cs" />
+    <Compile Include="Migrations\201806181856008_AttendanceNotesHomepageMetricsScheduleFix.Designer.cs">
+      <DependentUpon>201806181856008_AttendanceNotesHomepageMetricsScheduleFix.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201806192127302_Rollup_0619.cs" />
+    <Compile Include="Migrations\201806192127302_Rollup_0619.Designer.cs">
+      <DependentUpon>201806192127302_Rollup_0619.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2979,6 +3011,30 @@
     <EmbeddedResource Include="Migrations\201806012358276_Rollup_0601.resx">
       <DependentUpon>201806012358276_Rollup_0601.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201806061732498_HomepageUpdates.resx">
+      <DependentUpon>201806061732498_HomepageUpdates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201806081810282_LandingPage.resx">
+      <DependentUpon>201806081810282_LandingPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201806111901512_CalculatePersonDuplicatesTimeout.resx">
+      <DependentUpon>201806111901512_CalculatePersonDuplicatesTimeout.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201806111950515_ContentChannelViewDetail.resx">
+      <DependentUpon>201806111950515_ContentChannelViewDetail.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201806131619035_AttendancedCheckedInBy.resx">
+      <DependentUpon>201806131619035_AttendancedCheckedInBy.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201806151052457_AddRegistrarOptionToRegistrationTemplate.resx">
+      <DependentUpon>201806151052457_AddRegistrarOptionToRegistrationTemplate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201806181856008_AttendanceNotesHomepageMetricsScheduleFix.resx">
+      <DependentUpon>201806181856008_AttendanceNotesHomepageMetricsScheduleFix.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201806192127302_Rollup_0619.resx">
+      <DependentUpon>201806192127302_Rollup_0619.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.resx">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
     </EmbeddedResource>
@@ -5034,6 +5090,12 @@
     </Content>
     <Content Include="Migrations\201805211735573_Homepage_Metrics_Down.sql">
       <DependentUpon>201805211735573_Homepage.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201806081810282_LandingPage.sql">
+      <DependentUpon>201806081810282_LandingPage.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201806111950515_ContentChannelViewDetail.sql">
+      <DependentUpon>201806111950515_ContentChannelViewDetail.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 7.0\Version 1.7.0\201707182207536_AttendanceAnalyticsQuery_NonAttendees.sql">
       <DependentUpon>201707182207536_PageShortLinks.cs</DependentUpon>

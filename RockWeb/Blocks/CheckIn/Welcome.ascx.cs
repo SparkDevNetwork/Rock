@@ -206,7 +206,7 @@ namespace RockWeb.Blocks.CheckIn
             {
                 if ( !CurrentCheckInState.CheckIn.Families.Any() )
                 {
-                    maWarning.Show( string.Format( "<p>{0}</p>", GetAttributeValue( "NoMatchText" ) ), Rock.Web.UI.Controls.ModalAlertType.Warning );
+                    maWarning.Show( string.Format( "<p>{0}</p>", GetAttributeValue( "NoOptionCaption" ) ), Rock.Web.UI.Controls.ModalAlertType.Warning );
                 }
                 else
                 {
@@ -258,7 +258,7 @@ namespace RockWeb.Blocks.CheckIn
             else if ( !CurrentCheckInState.Kiosk.HasLocations( CurrentCheckInState.ConfiguredGroupTypes ) )
             {
                 DateTime activeAt = CurrentCheckInState.Kiosk.FilteredGroupTypes( CurrentCheckInState.ConfiguredGroupTypes ).Select( g => g.NextActiveTime ).Min();
-                lblActiveWhen.Text = activeAt.ToString( "o" );
+                lblActiveWhen.Text = activeAt.ToString( "o" ).Left( 27 );   // strip the timezone offset off of the string, so that countdown is displayed relative to kiosk's local time.
                 pnlNotActiveYet.Visible = true;
             }
             else if ( !CurrentCheckInState.Kiosk.HasActiveLocations( CurrentCheckInState.ConfiguredGroupTypes ) )

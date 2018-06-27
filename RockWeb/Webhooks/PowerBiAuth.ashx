@@ -94,6 +94,7 @@ public class PowerBiAuth : IHttpHandler, IReadOnlySessionState
             }
             else
             {
+                context.Response.Write( "Unable to retrieve Power BI account values from earlier. Your Rock session may have been reset." );
                 return;
             }
 
@@ -132,6 +133,10 @@ public class PowerBiAuth : IHttpHandler, IReadOnlySessionState
             {
                 context.Response.Write( string.Format( "An exception occurred: {0}", ex.Message ) );
             }
+        }
+        else
+        {
+                context.Response.Write( "If you were redirected here from Power BI something has gone wrong. Otherwise, this webhook is working." );
         }
     }
 

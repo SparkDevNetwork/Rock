@@ -486,6 +486,15 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum RegistrarOption
+    {
+        PromptForRegistrar = 0x0,
+        PrefillFirstRegistrant = 0x1,
+        UseFirstRegistrant = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum RegistrationCostSummaryType
     {
         Cost = 0x0,

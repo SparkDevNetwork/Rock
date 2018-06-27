@@ -174,8 +174,6 @@ namespace Rock.Workflow.Action
                 {
                     new AttributeService( newRockContext ).Add( attribute );
                     newRockContext.SaveChanges();
-                    CacheAttribute.RemoveEntityAttributes();
-                    CacheWorkflowActivityType.Remove( action.Activity.ActivityTypeId );
                 }
 
                 action.Activity.Attributes.Add( AttrKey, CacheAttribute.Get( attribute ) );
@@ -227,8 +225,6 @@ namespace Rock.Workflow.Action
                 {
                     new AttributeService( newRockContext ).Add( attribute );
                     newRockContext.SaveChanges();
-                    CacheAttribute.RemoveEntityAttributes();
-                    CacheWorkflowActivityType.Remove( action.Activity.ActivityTypeId );
                 }
 
                 action.Activity.Attributes.Add( AttrKey, CacheAttribute.Get( attribute ) );

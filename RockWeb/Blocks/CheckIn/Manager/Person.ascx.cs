@@ -328,17 +328,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         .Queryable().AsNoTracking()
                         .Where( s => s.CheckInStartOffsetMinutes.HasValue )
                         .ToList();
-                    
-                    var scheduleIds = schedules.Select( s => s.Id ).ToList();
 
-                    var activeScheduleIds = new List<int>();
-                    foreach ( var schedule in schedules )
-                    {
-                        if ( schedule.IsScheduleOrCheckInActive )
-                        {
-                            activeScheduleIds.Add( schedule.Id );
-                        }
-                    }
+                    var scheduleIds = schedules.Select( s => s.Id ).ToList();
 
                     int? personAliasId = person.PrimaryAliasId;
                     if ( !personAliasId.HasValue )
@@ -362,6 +353,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         .ToList()                                                             // Run query to get recent most 20 checkins
                         .OrderByDescending( a => a.Occurrence.OccurrenceDate )                // Then sort again by startdatetime and schedule start (which is not avail to sql query )
                         .ThenByDescending( a => a.Occurrence.Schedule.StartTimeOfDay )
+                        .ToList()
                         .Select( a => new AttendanceInfo
                         {
                             Id = a.Id,
@@ -371,9 +363,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                             LocationId = a.Occurrence.LocationId.Value,
                             Location = a.Occurrence.Location.Name,
                             Schedule = a.Occurrence.Schedule.Name,
-                            IsActive =
-                                a.StartDateTime > DateTime.Today &&
-                                activeScheduleIds.Contains( a.Occurrence.ScheduleId.Value ),
+                            IsActive = a.IsCurrentlyCheckedIn,
                             Code = a.AttendanceCode != null ? a.AttendanceCode.Code : ""
                         } ).ToList();
 

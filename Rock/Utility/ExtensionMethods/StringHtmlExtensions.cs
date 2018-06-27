@@ -211,7 +211,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Moves the CSS inline using PreMailer.Net, which moves any stylesheets to inline style attributes, for maximum compatibility with E-mail clients
+        /// Moves the CSS inline using PreMailer.Net, which moves any stylesheets to inline style attributes, for maximum compatibility with email clients
         /// </summary>
         /// <param name="html">The HTML.</param>
         /// <returns></returns>
