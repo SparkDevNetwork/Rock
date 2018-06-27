@@ -65,6 +65,10 @@ namespace Rock.UniversalSearch.IndexComponents
                 if ( _client == null )
                 {
                     ConnectToServer();
+                    if ( _client == null )
+                    {
+                        return false;
+                    }
                 }
 
                 return (_client.Ping().IsValid);

@@ -33,6 +33,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.Cache;
 using Rock.Web.UI;
+using Rock.Utility;
 
 namespace RockWeb.Blocks.CheckIn.Config
 {
@@ -73,7 +74,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                         if ( binaryFile != null )
                         {
                             lTitle.Text = binaryFile.FileName;
-                            ceLabel.Text = binaryFile.ContentsToString().Replace( REMOVE_ZPL_CODE, string.Empty);
+                            ceLabel.Text = binaryFile.ContentsToString().Replace( REMOVE_ZPL_CODE, string.Empty );
                             SetLabelSize( ceLabel.Text );
                         }
                     }
@@ -198,34 +199,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                 var device = new DeviceService( rockContext ).Get( ddlDevice.SelectedValueAsInt() ?? 0 );
                 if ( device != null )
                 {
-                    string currentIp = device.IPAddress;
-                    int printerPort = 9100;
-                    var printerIp = currentIp;
-
-                    // If the user specified in 0.0.0.0:1234 syntax then pull our the IP and port numbers.
-                    if ( printerIp.Contains( ":" ) )
-                    {
-                        var segments = printerIp.Split( ':' );
-
-                        printerIp = segments[0];
-                        printerPort = segments[1].AsInteger();
-                    }
-
-                    var printerEndpoint = new IPEndPoint( IPAddress.Parse( currentIp ), printerPort );
-
-                    var socket = new Socket( AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp );
-                    IAsyncResult result = socket.BeginConnect( printerEndpoint, null, null );
-                    bool success = result.AsyncWaitHandle.WaitOne( 5000, true );
-
-                    if ( socket.Connected )
-                    {
-                        var ns = new NetworkStream( socket );
-                        byte[] toSend = System.Text.Encoding.ASCII.GetBytes( ceLabel.Text );
-                        ns.Write( toSend, 0, toSend.Length );
-
-                        socket.Shutdown( SocketShutdown.Both );
-                        socket.Close();
-                    }
+                    ZebraPrint.PrintLabel( device.IPAddress, ceLabel.Text );
                 }
             }
         }
@@ -294,5 +268,5 @@ namespace RockWeb.Blocks.CheckIn.Config
         }
 
         #endregion
-        }
     }
+}

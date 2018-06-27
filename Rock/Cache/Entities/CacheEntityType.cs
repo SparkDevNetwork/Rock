@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using Rock.Data;
@@ -282,7 +283,59 @@ namespace Rock.Cache
 
         #endregion
 
+        #region Cache Related Methods
+
+        private static Dictionary<int, Type> _cacheableEntityTypeIds = null;
+        private System.Reflection.MethodInfo _cachedItemMethod = null;
+
+        /// <summary>
+        /// Determines whether there is an IEntityCache associated with this EntityType
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if [has entity cache]; otherwise, <c>false</c>.
+        /// </returns>
+        public bool HasEntityCache()
+        {
+            return GetEntityCacheType() != null;
+        }
+
+        /// <summary>
+        /// Gets the Rock Cached Item 
+        /// </summary>
+        /// <param name="itemId">The item identifier.</param>
+        /// <returns></returns>
+        public IEntityCache GetCachedItem( int entityId )
+        {
+            _cachedItemMethod = _cachedItemMethod ?? GetEntityCacheType()?.GetMethod( "Get", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.FlattenHierarchy, null, new Type[] { typeof( Int32 ) }, null );
+
+            return _cachedItemMethod?.Invoke( null, new object[] { entityId } ) as IEntityCache;
+        }
+
+        #endregion Cache Related Methods
+
         #region Methods
+
+        /// <summary>
+        /// Gets the type of the entity cache associated with this EntityType (if applicable)
+        /// </summary>
+        /// <returns></returns>
+        public Type GetEntityCacheType()
+        {
+            if ( _cacheableEntityTypeIds == null )
+            {
+                _cacheableEntityTypeIds = Reflection.FindTypes( typeof( Rock.Cache.IEntityCache ) ).Values
+                    .Select( a => new
+                    {
+                        CacheTypeType = a.BaseType.GenericTypeArguments[0],
+                        EntityTypeType = a.BaseType.GenericTypeArguments[1]
+                    } )
+                    .ToDictionary( k => Rock.Cache.CacheEntityType.Get( k.EntityTypeType ).Id, v => v.CacheTypeType );
+            }
+
+            var entityCacheType = _cacheableEntityTypeIds?.GetValueOrNull( this.Id );
+
+            return entityCacheType;
+        }
 
         /// <summary>
         /// Gets the type of the entity.

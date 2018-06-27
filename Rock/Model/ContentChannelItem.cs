@@ -197,7 +197,7 @@ namespace Rock.Model
         {
             get
             {
-                return ContentChannelItemSlugs.Where( a => a.IsPrimary ).Select( a => a.Slug ).FirstOrDefault( );
+                return ContentChannelItemSlugs.Select( a => a.Slug ).FirstOrDefault( );
             }
         }
 

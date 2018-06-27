@@ -157,8 +157,6 @@ namespace RockWeb.Blocks.Cms
                 pageService.Delete( page );
 
                 rockContext.SaveChanges();
-
-                CachePage.Remove( page.Id );
             }
 
             BindPagesGrid();

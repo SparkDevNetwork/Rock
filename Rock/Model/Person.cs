@@ -1844,13 +1844,20 @@ namespace Rock.Model
 
             if ( this.AnniversaryDate.HasValue )
             {
-                var dbPropertyEntry = entry.Property( "AnniversaryDate" );
-                if ( dbPropertyEntry != null && dbPropertyEntry.IsModified )
+                if ( this.MaritalStatusValueId != CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED ).Id )
                 {
-                    var spouse = this.GetSpouse( (RockContext)dbContext );
-                    if ( spouse != null && spouse.AnniversaryDate != this.AnniversaryDate )
+                    this.AnniversaryDate = null;
+                }
+                else
+                {
+                    var dbPropertyEntry = entry.Property( "AnniversaryDate" );
+                    if ( dbPropertyEntry != null && dbPropertyEntry.IsModified )
                     {
-                        spouse.AnniversaryDate = this.AnniversaryDate;
+                        var spouse = this.GetSpouse( ( RockContext ) dbContext );
+                        if ( spouse != null && spouse.AnniversaryDate != this.AnniversaryDate )
+                        {
+                            spouse.AnniversaryDate = this.AnniversaryDate;
+                        }
                     }
                 }
             }
@@ -2342,14 +2349,7 @@ namespace Rock.Model
                 else if ( age.HasValue && age.Value < 18 )
                 {
                     // it's a child
-                    if ( gender == Model.Gender.Female )
-                    {
-                        virtualPath = "~/Assets/Images/person-no-photo-child-female.svg?";
-                    }
-                    else
-                    {
-                        virtualPath = "~/Assets/Images/person-no-photo-child-male.svg?";
-                    }
+                    virtualPath = $"~/{GetPhotoPath( gender, false )}";
                 }
                 else
                 {
@@ -2371,26 +2371,12 @@ namespace Rock.Model
                     if ( familyRoleGuid.HasValue && familyRoleGuid == familyRoleChildGuid )
                     {
                         // it's a child
-                        if ( gender == Model.Gender.Female )
-                        {
-                            virtualPath = "~/Assets/Images/person-no-photo-child-female.svg?";
-                        }
-                        else
-                        {
-                            virtualPath = "~/Assets/Images/person-no-photo-child-male.svg?";
-                        }
+                        virtualPath = $"~/{GetPhotoPath( gender, false )}";
                     }
                     else
                     {
                         // it's an adult
-                        if ( gender == Model.Gender.Female )
-                        {
-                            virtualPath = "~/Assets/Images/person-no-photo-female.svg?";
-                        }
-                        else
-                        {
-                            virtualPath = "~/Assets/Images/person-no-photo-male.svg?";
-                        }
+                        virtualPath = $"~/{GetPhotoPath( gender, true )}";
                     }
                 }
             }
@@ -2483,14 +2469,7 @@ namespace Rock.Model
                 else if ( age.HasValue && age.Value < 18 )
                 {
                     // it's a child
-                    if ( gender == Model.Gender.Female )
-                    {
-                        virtualPath = "~/Assets/Images/person-no-photo-child-female.svg?";
-                    }
-                    else
-                    {
-                        virtualPath = "~/Assets/Images/person-no-photo-child-male.svg?";
-                    }
+                    virtualPath = $"~/{GetPhotoPath( gender, false )}";
                 }
                 else
                 {
@@ -2507,26 +2486,13 @@ namespace Rock.Model
                     if ( ageClassification.HasValue && ageClassification == AgeClassification.Child )
                     {
                         // it's a child
-                        if ( gender == Model.Gender.Female )
-                        {
-                            virtualPath = "~/Assets/Images/person-no-photo-child-female.svg?";
-                        }
-                        else
-                        {
-                            virtualPath = "~/Assets/Images/person-no-photo-child-male.svg?";
-                        }
+                        virtualPath = $"~/{GetPhotoPath( gender, false )}";
                     }
                     else
                     {
                         // it's an adult
-                        if ( gender == Model.Gender.Female )
-                        {
-                            virtualPath = "~/Assets/Images/person-no-photo-female.svg?";
-                        }
-                        else
-                        {
-                            virtualPath = "~/Assets/Images/person-no-photo-male.svg?";
-                        }
+                        virtualPath = $"~/{GetPhotoPath( gender, true )}";
+
                     }
                 }
             }
@@ -2538,6 +2504,50 @@ namespace Rock.Model
             else
             {
                 return VirtualPathUtility.ToAbsolute( virtualPath );
+            }
+        }
+
+        /// <summary>
+        /// Gets the photo path based on the gender and adult/child status.
+        /// </summary>
+        /// <param name="gender">The gender.</param>
+        /// <param name="isAdult">if set to <c>true</c> is adult.</param>
+        /// <returns></returns>
+        private static string GetPhotoPath(Gender gender, bool isAdult )
+        {
+            if ( isAdult )
+            {
+                switch ( gender )
+                {
+                    case Gender.Female:
+                        {
+                            return "Assets/Images/person-no-photo-female.svg?";
+                        }
+                    case Gender.Male:
+                        {
+                            return "Assets/Images/person-no-photo-male.svg?";
+                        }
+                    default:
+                        {
+                            return "Assets/Images/person-no-photo-unknown.svg?";
+                        }
+                }
+            }
+
+            switch ( gender )
+            {
+                case Gender.Female:
+                    {
+                        return "Assets/Images/person-no-photo-child-female.svg?";
+                    }
+                case Gender.Male:
+                    {
+                        return "Assets/Images/person-no-photo-child-male.svg?";
+                    }
+                default:
+                    {
+                        return "Assets/Images/person-no-photo-child-unknown.svg?";
+                    }
             }
         }
 
@@ -2688,14 +2698,7 @@ namespace Rock.Model
                 else if ( age.HasValue && age.Value < 18 )
                 {
                     // it's a child
-                    if ( gender == Model.Gender.Female )
-                    {
-                        photoUrl.Append( "Assets/Images/person-no-photo-child-female.svg?" );
-                    }
-                    else
-                    {
-                        photoUrl.Append( "Assets/Images/person-no-photo-child-male.svg?" );
-                    }
+                    photoUrl.Append( GetPhotoPath( gender, false ) );
                 }
                 else
                 {
@@ -2717,26 +2720,12 @@ namespace Rock.Model
                     if ( familyRoleGuid.HasValue && familyRoleGuid == familyRoleChildGuid )
                     {
                         // it's a child
-                        if ( gender == Model.Gender.Female )
-                        {
-                            photoUrl.Append( "Assets/Images/person-no-photo-child-female.svg?");
-                        }
-                        else
-                        {
-                            photoUrl.Append( "Assets/Images/person-no-photo-child-male.svg?" );
-                        }
+                        photoUrl.Append( GetPhotoPath( gender, false ) );
                     }
                     else
                     {
                         // it's an adult
-                        if ( gender == Model.Gender.Female )
-                        {
-                            photoUrl.Append( "Assets/Images/person-no-photo-female.svg?" );
-                        }
-                        else
-                        {
-                            photoUrl.Append( "Assets/Images/person-no-photo-male.svg?" );
-                        }
+                        photoUrl.Append( GetPhotoPath( gender, true ) );
                     }
                 }
 
@@ -2841,14 +2830,7 @@ namespace Rock.Model
                 else if ( age.HasValue && age.Value < 18 )
                 {
                     // it's a child
-                    if ( gender == Model.Gender.Female )
-                    {
-                        photoUrl.Append( "Assets/Images/person-no-photo-child-female.svg?" );
-                    }
-                    else
-                    {
-                        photoUrl.Append( "Assets/Images/person-no-photo-child-male.svg?" );
-                    }
+                    photoUrl.Append( GetPhotoPath( gender, false ) );
                 }
                 else
                 {
@@ -2865,26 +2847,12 @@ namespace Rock.Model
                     if ( ageClassification.HasValue && ageClassification == AgeClassification.Child )
                     {
                         // it's a child
-                        if ( gender == Model.Gender.Female )
-                        {
-                            photoUrl.Append( "Assets/Images/person-no-photo-child-female.svg?" );
-                        }
-                        else
-                        {
-                            photoUrl.Append( "Assets/Images/person-no-photo-child-male.svg?" );
-                        }
+                        photoUrl.Append( GetPhotoPath( gender, false ) );
                     }
                     else
                     {
                         // it's an adult
-                        if ( gender == Model.Gender.Female )
-                        {
-                            photoUrl.Append( "Assets/Images/person-no-photo-female.svg?" );
-                        }
-                        else
-                        {
-                            photoUrl.Append( "Assets/Images/person-no-photo-male.svg?" );
-                        }
+                        photoUrl.Append( GetPhotoPath( gender, true ) );
                     }
                 }
 

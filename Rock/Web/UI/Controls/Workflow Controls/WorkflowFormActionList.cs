@@ -169,7 +169,7 @@ namespace Rock.Web.UI.Controls
             _hfValue.RenderControl( writer );
 
             StringBuilder valueHtml = new StringBuilder();
-            valueHtml.Append( @"<div class=""row"">" );
+            valueHtml.Append( @"<div class=""form-row"">" );
             valueHtml.Append( @"<div class=""col-sm-2""><input class=""form-action-key form-control js-form-action-input"" type=""text"" placeholder=""Action""></input></div>" );
             valueHtml.Append( @"<div class=""col-sm-2""><select class=""form-action-button form-control js-form-action-input"">" );
             var definedType = Rock.Cache.CacheDefinedType.Get( Rock.SystemGuid.DefinedType.BUTTON_HTML.AsGuid() );

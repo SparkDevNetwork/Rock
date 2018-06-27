@@ -512,8 +512,7 @@ namespace RockWeb.Blocks.Finance
 
                 if ( batchesSelected.Any() )
                 {
-                    var newStatus = ddlAction.SelectedValue == "OPEN" ? BatchStatus.Open : BatchStatus.Closed;
-
+                    var newStatus = hfAction.Value == "OPEN" ? BatchStatus.Open : BatchStatus.Closed;
                     var rockContext = new RockContext();
                     var batchService = new FinancialBatchService( rockContext );
                     var batchesToUpdate = batchService.Queryable()

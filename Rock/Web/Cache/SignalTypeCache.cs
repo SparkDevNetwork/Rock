@@ -141,6 +141,18 @@ namespace Rock.Web.Cache
         #region Static Methods
 
         /// <summary>
+        /// Performs an implicit conversion from <see cref="SignalTypeCache"/> to <see cref="CacheSignalType"/>.
+        /// </summary>
+        /// <param name="c">The c.</param>
+        /// <returns>
+        /// The result of the conversion.
+        /// </returns>
+        public static implicit operator CacheSignalType( SignalTypeCache c )
+        {
+            return CacheSignalType.Get( c.Id );
+        }
+
+        /// <summary>
         /// Returns SignalType object from cache.  If SignalType does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>

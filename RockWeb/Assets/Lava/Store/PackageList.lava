@@ -1,6 +1,6 @@
 <div class="row">
 {% for package in Packages %}
-	
+
 	<div class="col-sm-3 col-xs-6">
 		<div class="packagesummary">
             <a href="{{ LinkedPages.DetailPage }}?PackageId={{ package.Id }}">
@@ -11,8 +11,8 @@
                     <h2>{{ package.Name }}</h2>
                     <p class="vendor">{{ package.Vendor.Name }}</p>
                 </div>
-				
-                <div class="packagesummary-footer">
+
+                <div class="packagesummary-footer clearfix">
                     <div class="rating pull-left">
                         {{ package.Rating | RatingMarkup }}
                     </div>

@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public int? AnonymousAttendanceCount { get; set; }
+
+        /// <summary />
         public bool? DidNotOccur { get; set; }
 
         /// <summary />
@@ -53,6 +56,9 @@ namespace Rock.Client
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
+        /// <summary />
+        public string Notes { get; set; }
 
         /// <summary />
         public DateTime OccurrenceDate { get; set; }
@@ -93,12 +99,14 @@ namespace Rock.Client
         public void CopyPropertiesFrom( AttendanceOccurrence source )
         {
             this.Id = source.Id;
+            this.AnonymousAttendanceCount = source.AnonymousAttendanceCount;
             this.DidNotOccur = source.DidNotOccur;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.GroupId = source.GroupId;
             this.LocationId = source.LocationId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
+            this.Notes = source.Notes;
             this.OccurrenceDate = source.OccurrenceDate;
             this.ScheduleId = source.ScheduleId;
             this.CreatedDateTime = source.CreatedDateTime;

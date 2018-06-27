@@ -219,9 +219,6 @@ namespace RockWeb.Blocks.Cms
 
                     service.Delete( definedValue );
                     rockContext.SaveChanges();
-
-                    CacheDefinedType.Remove( definedValue.DefinedTypeId );
-                    CacheDefinedValue.Remove( definedValue.Id );
                 }
             }
 
@@ -241,14 +238,7 @@ namespace RockWeb.Blocks.Cms
                 var definedValues = service.Queryable().Where( a => a.DefinedTypeId == _definedType.Id ).OrderBy( a => a.Order ).ThenBy( a => a.Value );
                 var changedIds = service.Reorder( definedValues.ToList(), e.OldIndex, e.NewIndex );
                 rockContext.SaveChanges();
-
-                foreach ( int id in changedIds )
-                {
-                    Rock.Cache.CacheDefinedValue.Remove( id );
-                }
             }
-
-            CacheDefinedType.Remove( _definedType.Id );
 
             BindGrid();
         }
@@ -351,9 +341,6 @@ namespace RockWeb.Blocks.Cms
                     definedValue.SaveAttributeValues( rockContext );
 
                 } );
-
-                Rock.Cache.CacheDefinedType.Remove( definedValue.DefinedTypeId );
-                Rock.Cache.CacheDefinedValue.Remove( definedValue.Id );
             }
 
             HideDialog();
@@ -492,12 +479,6 @@ namespace RockWeb.Blocks.Cms
                                 attribute.AttributeQualifiers.Add( qualifier2 );
 
                                 rockContext.SaveChanges();
-
-                                CacheDefinedType.Remove( definedType.Id );
-                                foreach( var dv in definedType.DefinedValues )
-                                {
-                                    CacheDefinedValue.Remove( dv.Id );
-                                }
                             }
                         }
 

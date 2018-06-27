@@ -29,7 +29,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Reporting.DataFilter.Person
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [Description( "Filter people on whether they have attended the selected group(s) a specified number of times" )]
     [Export( typeof( DataFilterComponent ) )]
@@ -57,7 +57,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// </value>
         public override string Section
         {
-            get { return "Group Attendance"; }
+            get { return "Attendance"; }
         }
 
         #endregion
@@ -80,7 +80,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// <summary>
         /// Formats the selection on the client-side.  When the filter is collapsed by the user, the Filterfield control
         /// will set the description of the filter to whatever is returned by this property.  If including script, the
-        /// controls parent container can be referenced through a '$content' variable that is set by the control before 
+        /// controls parent container can be referenced through a '$content' variable that is set by the control before
         /// referencing this property.
         /// </summary>
         /// <value>

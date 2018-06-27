@@ -111,8 +111,6 @@ namespace RockWeb.Blocks.Cms
 
                 layoutService.Delete( layout );
                 rockContext.SaveChanges();
-
-                CacheLayout.Remove( e.RowKeyId );
             }
 
             BindLayoutsGrid();

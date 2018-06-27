@@ -1475,6 +1475,149 @@ namespace Rock.Lava
             }
         }
 
+        /// <summary>
+        /// Sets the time to midnight on the date provided.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static DateTime? ToMidnight( object input )
+        {
+            if (input == null )
+            {
+                return null;
+            }
+
+            if ( input is DateTime )
+            {
+                return ( ( DateTime ) input ).Date;
+            }
+
+            if (input.ToString() == "Now" )
+            {
+                return RockDateTime.Now.Date;
+            }
+            else
+            {
+                DateTime date;
+
+                if (DateTime.TryParse( input.ToString(), out date ) )
+                {
+                    return date.Date;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Nexts the day of the week.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="sDayOfWeek">The s day of week.</param>
+        /// <param name="includeCurrentDay">if set to <c>true</c> [include current day].</param>
+        /// <param name="numberOfWeeks">The number of weeks.</param>
+        /// <returns></returns>
+        public static DateTime? NextDayOfTheWeek( object input, string sDayOfWeek, bool includeCurrentDay = false, int numberOfWeeks = 1 )
+        {
+            DateTime date;
+            DayOfWeek dayOfWeek;
+
+            if ( input == null )
+            {
+                return null;
+            }
+
+            // Get the date value
+            if ( input is DateTime )
+            {
+                date = ( DateTime ) input;
+            }
+            else
+            {
+                if ( input.ToString() == "Now" )
+                {
+                    date = RockDateTime.Now;
+                }
+                else
+                {
+                    DateTime.TryParse( input.ToString(), out date );
+                }
+            }
+
+            if ( date == null )
+            {
+                return null;
+            }
+
+            // Get the day of week value
+            if ( !Enum.TryParse( sDayOfWeek, out dayOfWeek ) )
+            {
+                return null;
+            }
+
+            // Calculate the offset
+            int daysUntilWeekDay;
+
+            if ( includeCurrentDay )
+            {
+                daysUntilWeekDay = ( (int) dayOfWeek - (int) date.DayOfWeek + 7 ) % 7;
+            }
+            else
+            {
+                daysUntilWeekDay = ( ( ( (int) dayOfWeek - 1 ) - (int) date.DayOfWeek + 7 ) % 7 ) + 1;
+            }
+
+            return date.AddDays( daysUntilWeekDay * numberOfWeeks );
+        }
+
+        /// <summary>
+        /// Days until a given date.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static int? DaysUntil( object input )
+        {
+            DateTime date;
+
+            if ( input == null )
+            {
+                return null;
+            }
+
+            if ( input is DateTime )
+            {
+                date = ( DateTime ) input;
+            }
+            else
+            {
+                DateTime.TryParse( input.ToString(), out date );
+            }
+
+            if ( date == null )
+            {
+                return null;
+            }
+
+            return ( date - RockDateTime.Now ).Days;
+        }
+
+        /// <summary>
+        /// Days the since a given date.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static int? DaysSince( object input )
+        {
+            var days = DaysUntil( input );
+
+            if ( days.HasValue )
+            {
+                return days.Value * -1;
+            }
+
+            return null;
+        }
+
         #endregion
 
         #region Number Filters

@@ -56,6 +56,10 @@ namespace RockWeb.Blocks.Groups
     // Filter Settings
     [GroupTypeField( "Group Type", "", true, "", "CustomSetting" )]
     [GroupTypeField( "Geofenced Group Type", "", false, "", "CustomSetting" )]
+
+    [TextField( "CampusLabel", "", true, "Campuses", "CustomSetting" )]
+    [TextField( "TimeOfDayLabel", "", true, "Time of Day", "CustomSetting" )]
+    [TextField( "DayOfWeekLabel", "", true, "Day of Week", "CustomSetting" )]
     [TextField( "ScheduleFilters", "", false, "", "CustomSetting" )]
     [BooleanField( "Display Campus Filter", "", false, "CustomSetting" )]
     [BooleanField( "Enable Campus Context", "", false, "CustomSetting" )]
@@ -288,6 +292,10 @@ namespace RockWeb.Blocks.Groups
             SetAttributeValue( "GroupType", GetGroupTypeGuid( gtpGroupType.SelectedGroupTypeId ) );
             SetAttributeValue( "GeofencedGroupType", GetGroupTypeGuid( gtpGeofenceGroupType.SelectedGroupTypeId ) );
 
+            SetAttributeValue( "DayOfWeekLabel", tbDayOfWeekLabel.Text);
+            SetAttributeValue( "TimeOfDayLabel", tbTimeOfDayLabel.Text );
+            SetAttributeValue( "CampusLabel", tbCampusLabel.Text );
+
             var schFilters = new List<string>();
             if ( rblFilterDOW.Visible )
             {
@@ -430,6 +438,10 @@ namespace RockWeb.Blocks.Groups
 
             BindGroupType( gtpGroupType, groupTypes, "GroupType" );
             BindGroupType( gtpGeofenceGroupType, groupTypes, "GeofencedGroupType" );
+            string av = GetAttributeValue( "CampusLabel" );
+            tbCampusLabel.Text = GetAttributeValue( "CampusLabel" );
+            tbDayOfWeekLabel.Text = GetAttributeValue( "DayOfWeekLabel" );
+            tbTimeOfDayLabel.Text = GetAttributeValue( "TimeOfDayLabel" );
 
             var scheduleFilters = GetAttributeValue( "ScheduleFilters" ).SplitDelimitedValues( false ).ToList();
             if ( scheduleFilters.Contains("Day") )
@@ -665,26 +677,31 @@ namespace RockWeb.Blocks.Groups
             {
                 var dowsFilterControl = new RockCheckBoxList();
                 dowsFilterControl.ID = "filter_dows";
-                dowsFilterControl.Label = "Day of Week";
+                dowsFilterControl.Label = GetAttributeValue( "DayOfWeekLabel" );
                 dowsFilterControl.BindToEnum<DayOfWeek>();
                 dowsFilterControl.RepeatDirection = RepeatDirection.Horizontal;
+                
                 AddFilterControl( dowsFilterControl, "Days of Week", "The day of week that group meets on." );
             }
 
             if ( scheduleFilters.Contains( "Day" ) )
             {
                 var control = CacheFieldType.Get( Rock.SystemGuid.FieldType.DAY_OF_WEEK ).Field.FilterControl( null, "filter_dow", false, Rock.Reporting.FilterMode.SimpleFilter );
-                AddFilterControl( control, "Day of Week", "The day of week that group meets on." );
+                string dayOfWeekLabel = GetAttributeValue( "DayOfWeekLabel" );
+                AddFilterControl( control, dayOfWeekLabel, "The day of week that group meets on." );
             }
 
             if ( scheduleFilters.Contains( "Time" ) )
             {
                 var control = CacheFieldType.Get( Rock.SystemGuid.FieldType.TIME ).Field.FilterControl( null, "filter_time", false, Rock.Reporting.FilterMode.SimpleFilter );
-                AddFilterControl( control, "Time of Day", "The time of day that group meets." );
+                string timeOfDayLabel = GetAttributeValue( "TimeOfDayLabel" );
+                AddFilterControl( control, timeOfDayLabel, "The time of day that group meets." );
             }
             
             if ( GetAttributeValue( "DisplayCampusFilter" ).AsBoolean() )
             {
+
+                cblCampus.Label = GetAttributeValue( "CampusLabel" );
                 cblCampus.Visible = true;
                 cblCampus.DataSource = CacheCampus.All().Where( c => c.IsActive == true );
                 cblCampus.DataBind();

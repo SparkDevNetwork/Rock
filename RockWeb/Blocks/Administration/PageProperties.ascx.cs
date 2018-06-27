@@ -646,18 +646,6 @@ namespace RockWeb.Blocks.Administration
                 }
 
                 int parentPageId = ppParentPage.SelectedValueAsInt() ?? 0;
-                if ( page.ParentPageId != parentPageId )
-                {
-                    if ( page.ParentPageId.HasValue )
-                    {
-                        CachePage.Remove( page.ParentPageId.Value );
-                    }
-
-                    if ( parentPageId != 0 )
-                    {
-                        CachePage.Remove( parentPageId );
-                    }
-                }
 
                 page.InternalName = tbPageName.Text;
                 page.PageTitle = tbPageTitle.Text;
@@ -809,8 +797,6 @@ namespace RockWeb.Blocks.Administration
                             rockContext.SaveChanges();
                         }
                     }
-
-                    Rock.Cache.CachePage.Remove( page.Id );
 
                     string script = "if (typeof window.parent.Rock.controls.modal.close === 'function') window.parent.Rock.controls.modal.close('PAGE_UPDATED');";
                     ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", script, true );
@@ -1073,8 +1059,6 @@ namespace RockWeb.Blocks.Administration
                 pageService.Delete( page );
 
                 rockContext.SaveChanges();
-
-                Rock.Cache.CachePage.Remove( page.Id );
 
                 // reload page, selecting the deleted page's parent
                 var qryParams = new Dictionary<string, string>();

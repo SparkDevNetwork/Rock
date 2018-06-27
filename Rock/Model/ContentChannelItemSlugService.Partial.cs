@@ -107,7 +107,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Replace space with dash
-        /// Remove unsafe and reserved characters ; / ? : @ = & < > # % " { } | \ ^ [ ] `
+        /// Remove unsafe and reserved characters ; / ? : @ = &amp; &gt; &lt; # % " { } | \ ^ [ ] `
         /// Limit to 75 characters.
         /// </summary>
         /// <param name="slug">The slug.</param>
@@ -117,26 +117,7 @@ namespace Rock.Model
             return slug
                 .ToLower()
                 .Replace( " ", "-" )
-                .Replace( ";", "" )
-                .Replace( "/", "" )
-                .Replace( "?", "" )
-                .Replace( ":", "" )
-                .Replace( "@", "" )
-                .Replace( "=", "" )
-                .Replace( "&", "" )
-                .Replace( "<", "" )
-                .Replace( ">", "" )
-                .Replace( "#", "" )
-                .Replace( "%", "" )
-                .Replace( "\"", "" )
-                .Replace( "{", "" )
-                .Replace( "}", "" )
-                .Replace( "|", "" )
-                .Replace( "\\", "" )
-                .Replace( "^", "" )
-                .Replace( "[", "" )
-                .Replace( "]", "" )
-                .Replace( "`", "" )
+                .RemoveInvalidReservedUrlChars()
                 .Left( 75 );
         }
     }

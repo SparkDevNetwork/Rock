@@ -7,9 +7,13 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
+        <Rock:ModalAlert ID="maUpdated" runat="server" />
         <asp:Panel ID="pnlWrapper" runat="server" CssClass="panel panel-block">        
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-file-check"></i> Checkr Background Checks</h1>
+                <h1 class="panel-title"><i class="fa fa-shield"></i> Checkr Background Checks</h1>
+                <div class="pull-right">
+                    <asp:LinkButton ID="btnDefault" runat="server" CssClass="btn btn-default btn-xs" OnClick="btnDefault_Click">Enable As Default Background Check Provider</asp:LinkButton>
+                </div>
             </div>
             <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
             <Rock:NotificationBox ID="nbNotification" runat="server" Title="Please Correct the Following" NotificationBoxType="Danger" Visible="false" />
@@ -40,22 +44,17 @@
                                     <asp:Literal ID="lViewColumnLeft" runat="server" />
                                     <div class="actions">
                                         <asp:LinkButton ID="btnEdit" runat="server" CssClass="btn btn-primary" OnClick="btnEdit_Click">Edit</asp:LinkButton>
-                                        <asp:LinkButton ID="btnDefault" runat="server" CssClass="btn btn-primary" OnClick="btnDefault_Click">Enable As Default Background Check Provider</asp:LinkButton>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:RockLiteral ID="lPackages" runat="server" Label="Enabled Background Check Types" />
                                     <div class="actions">
-                                        <asp:LinkButton ID="btnUpdate" runat="server" CssClass="btn btn-primary btn-xs" OnClick="btnUpdate_Click"><i class="fa fa-sync"></i> Update Packages</asp:LinkButton>
+                                        <asp:LinkButton ID="btnUpdate" runat="server" CssClass="btn btn-default btn-xs" OnClick="btnUpdate_Click"><i class="fa fa-sync"></i> Update Packages</asp:LinkButton>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <Rock:ModalDialog ID="modalUpdated" runat="server" Title="Update Finished">
-                        <Content>
-                        </Content>
-                    </Rock:ModalDialog>
                 </asp:Panel>
             </div>        
         </asp:Panel>        

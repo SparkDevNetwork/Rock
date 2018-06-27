@@ -40,6 +40,7 @@ namespace Rock.Cache
         /// <value>
         /// The entity note types.
         /// </value>
+		[DataMember]
         public List<EntityNoteTypes> EntityNoteTypes { get; set; }
 
         /// <summary>

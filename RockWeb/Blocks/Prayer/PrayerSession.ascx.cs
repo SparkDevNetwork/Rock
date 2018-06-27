@@ -34,7 +34,7 @@ namespace RockWeb.Blocks.Prayer
     [Category( "Prayer" )]
     [Description( "Allows a user to start a session to pray for active, approved prayer requests." )]
 
-    [CodeEditorField( "Welcome Introduction Text", "Some text (or HTML) to display on the first step.", CodeEditorMode.Html, height: 100, required: false, defaultValue: "<h2>Let's get ready to pray...</h2>", order: 1 )]
+    [CodeEditorField( "Welcome Introduction Text", "Some text (or HTML) to display on the first step.", CodeEditorMode.Html, height: 100, required: false, defaultValue: "<h2>Let’s get ready to pray...</h2>", order: 1 )]
     [CategoryField( "Category", "A top level category. This controls which categories are shown when starting a prayer session.", false, "Rock.Model.PrayerRequest", "", "", false, "", "Filtering", 2, "CategoryGuid" )]
     [BooleanField( "Enable Prayer Team Flagging", "If enabled, members of the prayer team can flag a prayer request if they feel the request is inappropriate and needs review by an administrator.", false, "Flagging", 3, "EnableCommunityFlagging" )]
     [IntegerField( "Flag Limit", "The number of flags a prayer request has to get from the prayer team before it is automatically unapproved.", false, 1, "Flagging", 4 )]
@@ -54,17 +54,17 @@ namespace RockWeb.Blocks.Prayer
     </div>
     <div class='col-md-6 text-right'>
       {% if PrayerRequest.EnteredDateTime  %}
-          Date Entered: {{  PrayerRequest.EnteredDateTime | Date:'M/d/yyyy'  }}          
+          Date Entered: {{  PrayerRequest.EnteredDateTime | Date:'M/d/yyyy'  }}
       {% endif %}
     </div>
 </div>
-                                                
+
 {{ PrayerRequest.Text | NewlineToBr }}
 
 <div class='attributes margin-t-md'>
 {% for prayerRequestAttribute in PrayerRequest.AttributeValues %}
     {% if prayerRequestAttribute.Value != '' %}
-    <strong>{{ prayerRequestAttribute.AttributeName }}</strong> 
+    <strong>{{ prayerRequestAttribute.AttributeName }}</strong>
     <p>{{ prayerRequestAttribute.ValueFormatted }}</p>
     {% endif %}
 {% endfor %}
@@ -72,7 +72,7 @@ namespace RockWeb.Blocks.Prayer
 
 {% if PrayerRequest.Answer %}
 <div class='margin-t-lg'>
-    <strong>Update</strong> 
+    <strong>Update</strong>
     <br />
     {{ PrayerRequest.Answer | Escape | NewlineToBr }}
 </div>
@@ -172,7 +172,7 @@ namespace RockWeb.Blocks.Prayer
                 var noteType = CacheNoteType.Get( NoteTypeId.Value );
                 if ( noteType != null )
                 {
-                    notesComments.NoteOptions.NoteTypes = new List<CacheNoteType> { noteType };
+                    notesComments.NoteOptions.NoteTypes = new CacheNoteType[] { noteType };
                 }
             }
 
@@ -401,7 +401,7 @@ namespace RockWeb.Blocks.Prayer
         }
 
         /// <summary>
-        /// Binds the 'active' categories for the given top-level category GUID to the list for 
+        /// Binds the 'active' categories for the given top-level category GUID to the list for
         /// the user to choose.
         /// </summary>
         /// <param name="categoryGuid">the guid string of a top-level prayer category</param>

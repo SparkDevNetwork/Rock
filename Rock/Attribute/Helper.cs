@@ -24,7 +24,6 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
-using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Cache;
@@ -156,11 +155,6 @@ namespace Rock.Attribute
                 catch ( Exception ex )
                 {
                     ExceptionLogService.LogException( new Exception( "Could not delete one or more old attributes.", ex ), null );
-                }
-
-                if ( attributesUpdated || attributesDeleted )
-                {
-                    CacheAttribute.RemoveEntityAttributes();
                 }
             }
 
@@ -316,10 +310,6 @@ namespace Rock.Attribute
                 if ( attribute.Id == 0 )
                 {
                     attributeService.Add( attribute );
-                }
-                else
-                {
-                    CacheAttribute.Remove( attribute.Id );
                 }
 
                 rockContext.SaveChanges();
@@ -523,58 +513,65 @@ namespace Rock.Attribute
         /// <param name="rockContext">The rock context.</param>
         public static void LoadAttributes( Rock.Data.IHasAttributes entity, RockContext rockContext )
         {
-            if ( entity != null )
+            if ( entity == null )
             {
-                Dictionary<string, PropertyInfo> properties = new Dictionary<string, PropertyInfo>();
+                return;
+            }
 
-                Type entityType = entity.GetType();
-                if ( entityType.IsDynamicProxyType() )
-                {
-                    entityType = entityType.BaseType;
-                }
+            Type entityType = entity.GetType();
+            if ( entityType.IsDynamicProxyType() )
+            {
+                entityType = entityType.BaseType;
+            }
 
+            var attributes = new List<Rock.Cache.CacheAttribute>();
+            
+            var entityTypeCache = Rock.Cache.CacheEntityType.Get( entityType );
+
+            List<Rock.Cache.CacheAttribute> allAttributes = null;
+            List<int> altEntityIds = null;
+
+            //
+            // If this entity can provide inherited attribute information then
+            // load that data now. If they don't provide any then generate empty lists.
+            //
+            if ( entity is Rock.Data.IHasInheritedAttributes )
+            {
                 rockContext = rockContext ?? new RockContext();
+                allAttributes = ( ( Rock.Data.IHasInheritedAttributes ) entity ).GetInheritedAttributes( rockContext );
+                altEntityIds = ( ( Rock.Data.IHasInheritedAttributes ) entity ).GetAlternateEntityIds( rockContext );
+            }
 
-                var attributes = new List<Rock.Cache.CacheAttribute>();
-                var attributeValueService = new Rock.Model.AttributeValueService( rockContext );
-                var entityTypeCache = Rock.Cache.CacheEntityType.Get( entityType );
+            allAttributes = allAttributes ?? new List<Rock.Cache.CacheAttribute>();
+            altEntityIds = altEntityIds ?? new List<int>();
 
-                List<Rock.Cache.CacheAttribute> allAttributes = null;
-                List<int> altEntityIds = null;
-
-                //
-                // If this entity can provide inherited attribute information then
-                // load that data now. If they don't provide any then generate empty lists.
-                //
-                if ( entity is Rock.Data.IHasInheritedAttributes )
+            //
+            // Get all the attributes that apply to this entity type and this entity's
+            // properties match any attribute qualifiers.
+            //
+            if ( entityTypeCache != null )
+            {
+                int entityTypeId = entityTypeCache.Id;
+                var entityAttributesList = CacheAttribute.GetByEntity( entityTypeCache.Id );
+                if ( entityAttributesList.Any() )
                 {
-                    allAttributes = ( ( Rock.Data.IHasInheritedAttributes ) entity ).GetInheritedAttributes( rockContext );
-                    altEntityIds = ( ( Rock.Data.IHasInheritedAttributes ) entity ).GetAlternateEntityIds( rockContext );
-                }
+                    var entityTypeQualifierColumnPropertyNames = entityAttributesList.Select( a => a.EntityTypeQualifierColumn ).Distinct().Where(a => !string.IsNullOrWhiteSpace(a)).ToList();
+                    Dictionary<string, object> propertyValues = new Dictionary<string, object>( StringComparer.OrdinalIgnoreCase );
+                    foreach( var propertyName in entityTypeQualifierColumnPropertyNames )
+                    {
+                        PropertyInfo propertyInfo = entityType.GetProperty(propertyName) ?? entityType.GetProperties().Where( a => a.Name.Equals( propertyName, StringComparison.OrdinalIgnoreCase ) ).FirstOrDefault();
+                        if ( propertyInfo != null )
+                        {
+                            propertyValues.AddOrIgnore( propertyName, propertyInfo.GetValue( entity, null ) );
+                        }
+                    }
 
-                allAttributes = allAttributes ?? new List<Rock.Cache.CacheAttribute>();
-                altEntityIds = altEntityIds ?? new List<int>();
-
-                //
-                // Generate a list of all this entities properties for quick reference while
-                // loading the attributes.
-                //
-                foreach ( PropertyInfo propertyInfo in entityType.GetProperties() )
-                    properties.Add( propertyInfo.Name.ToLower(), propertyInfo );
-
-                //
-                // Get all the attributes that apply to this entity type and this entity's
-                // properties match any attribute qualifiers.
-                //
-                if ( entityTypeCache != null )
-                {
-                    int entityTypeId = entityTypeCache.Id;
-                    foreach ( var entityAttributes in CacheAttribute.GetByEntity( entityTypeCache.Id ) )
+                    foreach ( var entityAttributes in entityAttributesList )
                     {
                         if ( string.IsNullOrEmpty( entityAttributes.EntityTypeQualifierColumn ) ||
-                            ( properties.ContainsKey( entityAttributes.EntityTypeQualifierColumn.ToLower() ) &&
+                            ( propertyValues.ContainsKey( entityAttributes.EntityTypeQualifierColumn ) &&
                             ( string.IsNullOrEmpty( entityAttributes.EntityTypeQualifierValue ) ||
-                            ( properties[entityAttributes.EntityTypeQualifierColumn.ToLower()].GetValue( entity, null ) ?? "" ).ToString() == entityAttributes.EntityTypeQualifierValue ) ) )
+                            ( propertyValues[entityAttributes.EntityTypeQualifierColumn] ?? "" ).ToString() == entityAttributes.EntityTypeQualifierValue ) ) )
                         {
                             foreach ( int attributeId in entityAttributes.AttributeIds )
                             {
@@ -583,95 +580,98 @@ namespace Rock.Attribute
                         }
                     }
                 }
-
-                //
-                // Append these attributes to our inherited attributes, in order.
-                //
-                foreach ( var attribute in attributes.OrderBy( a => a.Order ) )
-                {
-                    allAttributes.Add( attribute );
-                }
-
-                var attributeValues = new Dictionary<string, CacheAttributeValue>();
-
-                if ( allAttributes.Any() )
-                {
-                    foreach ( var attribute in allAttributes )
-                    {
-                        // Add a placeholder for this item's value for each attribute
-                        attributeValues.AddOrIgnore( attribute.Key, null );
-                    }
-
-                    // If loading attributes for a saved item, read the item's value(s) for each attribute 
-                    if ( !entityTypeCache.IsEntity || entity.Id != 0 )
-                    {
-                        List<int> attributeIds = allAttributes.Select( a => a.Id ).ToList();
-                        IQueryable<AttributeValue> attributeValueQuery;
-
-                        if ( altEntityIds.Any() )
-                        {
-                            attributeValueQuery = attributeValueService.Queryable().AsNoTracking()
-                                .Where( v =>
-                                    v.EntityId.HasValue &&
-                                    ( v.EntityId.Value == entity.Id || altEntityIds.Contains( v.EntityId.Value ) ) );
-                        }
-                        else
-                        {
-                            attributeValueQuery = attributeValueService.Queryable().AsNoTracking()
-                                .Where( v => v.EntityId.HasValue && v.EntityId.Value == entity.Id );
-                        }
-
-                        if ( attributeIds.Count != 1 )
-                        {
-                            attributeValueQuery = attributeValueQuery.Where( v => attributeIds.Contains( v.AttributeId ) );
-                        }
-                        else
-                        {
-                            int attributeId = attributeIds[0];
-                            attributeValueQuery = attributeValueQuery.Where( v => v.AttributeId == attributeId );
-                        }
-
-                        foreach ( var attributeValue in attributeValueQuery )
-                        {
-                            var attributeKey = CacheAttribute.Get( attributeValue.AttributeId ).Key;
-                            attributeValues[attributeKey] = new CacheAttributeValue( attributeValue );
-                        }
-                    }
-
-                    // Look for any attributes that don't have a value and create a default value entry
-                    foreach ( var attribute in allAttributes )
-                    {
-                        if ( attributeValues[attribute.Key] == null )
-                        {
-                            var attributeValue = new CacheAttributeValue();
-                            attributeValue.AttributeId = attribute.Id;
-                            var attributeValueDefaults = entity.AttributeValueDefaults;
-                            if ( attributeValueDefaults != null && attributeValueDefaults.ContainsKey( attribute.Key ) )
-                            {
-                                attributeValue.Value = attributeValueDefaults[attribute.Key];
-                            }
-                            else
-                            {
-                                attributeValue.Value = attribute.DefaultValue;
-                            }
-                            attributeValues[attribute.Key] = attributeValue;
-                        }
-                        else
-                        {
-                            if ( !String.IsNullOrWhiteSpace( attribute.DefaultValue ) &&
-                                String.IsNullOrWhiteSpace( attributeValues[attribute.Key].Value ) )
-                            {
-                                attributeValues[attribute.Key].Value = attribute.DefaultValue;
-                            }
-                        }
-                    }
-                }
-
-                entity.Attributes = new Dictionary<string, Cache.CacheAttribute>();
-                allAttributes.ForEach( a => entity.Attributes.AddOrIgnore( a.Key, a ) );
-
-                entity.AttributeValues = attributeValues;
             }
+
+            //
+            // Append these attributes to our inherited attributes, in order.
+            //
+            foreach ( var attribute in attributes.OrderBy( a => a.Order ) )
+            {
+                allAttributes.Add( attribute );
+            }
+
+            var attributeValues = new Dictionary<string, CacheAttributeValue>();
+
+            if ( allAttributes.Any() )
+            {
+                rockContext = rockContext ?? new RockContext();
+                var attributeValueService = new Rock.Model.AttributeValueService( rockContext );
+
+                foreach ( var attribute in allAttributes )
+                {
+                    // Add a placeholder for this item's value for each attribute
+                    attributeValues.AddOrIgnore( attribute.Key, null );
+                }
+
+                // If loading attributes for a saved item, read the item's value(s) for each attribute 
+                if ( !entityTypeCache.IsEntity || entity.Id != 0 )
+                {
+                    List<int> attributeIds = allAttributes.Select( a => a.Id ).ToList();
+                    IQueryable<AttributeValue> attributeValueQuery;
+
+                    if ( altEntityIds.Any() )
+                    {
+                        attributeValueQuery = attributeValueService.Queryable().AsNoTracking()
+                            .Where( v =>
+                                v.EntityId.HasValue &&
+                                ( v.EntityId.Value == entity.Id || altEntityIds.Contains( v.EntityId.Value ) ) );
+                    }
+                    else
+                    {
+                        attributeValueQuery = attributeValueService.Queryable().AsNoTracking()
+                            .Where( v => v.EntityId.HasValue && v.EntityId.Value == entity.Id );
+                    }
+
+                    if ( attributeIds.Count != 1 )
+                    {
+                        attributeValueQuery = attributeValueQuery.Where( v => attributeIds.Contains( v.AttributeId ) );
+                    }
+                    else
+                    {
+                        int attributeId = attributeIds[0];
+                        attributeValueQuery = attributeValueQuery.Where( v => v.AttributeId == attributeId );
+                    }
+
+                    foreach ( var attributeValue in attributeValueQuery )
+                    {
+                        var attributeKey = CacheAttribute.Get( attributeValue.AttributeId ).Key;
+                        attributeValues[attributeKey] = new CacheAttributeValue( attributeValue );
+                    }
+                }
+
+                // Look for any attributes that don't have a value and create a default value entry
+                foreach ( var attribute in allAttributes )
+                {
+                    if ( attributeValues[attribute.Key] == null )
+                    {
+                        var attributeValue = new CacheAttributeValue();
+                        attributeValue.AttributeId = attribute.Id;
+                        var attributeValueDefaults = entity.AttributeValueDefaults;
+                        if ( attributeValueDefaults != null && attributeValueDefaults.ContainsKey( attribute.Key ) )
+                        {
+                            attributeValue.Value = attributeValueDefaults[attribute.Key];
+                        }
+                        else
+                        {
+                            attributeValue.Value = attribute.DefaultValue;
+                        }
+                        attributeValues[attribute.Key] = attributeValue;
+                    }
+                    else
+                    {
+                        if ( !String.IsNullOrWhiteSpace( attribute.DefaultValue ) &&
+                            String.IsNullOrWhiteSpace( attributeValues[attribute.Key].Value ) )
+                        {
+                            attributeValues[attribute.Key].Value = attribute.DefaultValue;
+                        }
+                    }
+                }
+            }
+
+            entity.Attributes = new Dictionary<string, Cache.CacheAttribute>();
+            allAttributes.ForEach( a => entity.Attributes.AddOrIgnore( a.Key, a ) );
+
+            entity.AttributeValues = attributeValues;
         }
 
         /// <summary>
@@ -907,7 +907,6 @@ namespace Rock.Attribute
             {
                 attributeService.Delete( attr );
                 rockContext.SaveChanges();
-                CacheAttribute.Remove( attr.Id );
             }
 
             // Update the Attributes that were assigned in the UI
@@ -915,8 +914,6 @@ namespace Rock.Attribute
             {
                 Helper.SaveAttributeEdits( attribute, entityTypeId, entityTypeQualifierColumn, entityTypeQualifierValue, rockContext );
             }
-
-            CacheAttribute.RemoveEntityAttributes();
         }
 
         /// <summary>
@@ -996,17 +993,6 @@ namespace Rock.Attribute
             attribute.EntityTypeQualifierValue = entityTypeQualifierValue;
 
             rockContext.SaveChanges();
-
-            if ( attribute != null )
-            {
-                CacheAttribute.Remove( attribute.Id );
-
-                // If this is a global attribute, flush all global attributes
-                if ( ( !entityTypeId.HasValue || entityTypeId.Value == 0 )&& entityTypeQualifierColumn == string.Empty && entityTypeQualifierValue == string.Empty )
-                {
-                    CacheGlobalAttributes.Remove();
-                }
-            }
 
             return attribute;
         }

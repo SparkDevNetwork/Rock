@@ -34,7 +34,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "Category" )]
     [DataContract]
-    public partial class Category : Model<Category>, IOrdered
+    public partial class Category : Model<Category>, IOrdered, ICacheable
     {
 
         #region Entity Properties
@@ -275,6 +275,32 @@ namespace Rock.Model
 
         #endregion
 
+        #region ICacheable
+
+        #region ICacheable
+
+        /// <summary>
+        /// Gets the cache object associated with this Entity
+        /// </summary>
+        /// <returns></returns>
+        public IEntityCache GetCacheObject()
+        {
+            return CacheCategory.Get( this.Id );
+        }
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            CacheCategory.UpdateCachedEntity( this.Id, entityState, dbContext as RockContext );
+        }
+
+        #endregion
+
+        #endregion
     }
 
     #region Entity Configuration

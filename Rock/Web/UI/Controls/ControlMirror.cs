@@ -51,7 +51,7 @@ namespace Rock.Web.UI.Controls
             {
                 Control c = Parent.FindControl( ControlID );
 
-                if (c != null )
+                if ( c != null )
                 {
                     c.RenderControl( writer );
                     return;
@@ -60,7 +60,16 @@ namespace Rock.Web.UI.Controls
 
             if ( ControlToMirror != null )
             {
-                ControlToMirror.RenderControl( writer );
+                if ( ControlToMirror is GridActions )
+                {
+                    // if we are Mirroring a GridActions (we probably are), let it know that ControlMirror is rendering it
+                    ( ControlToMirror as GridActions ).RenderControl( writer, true );
+                }
+                else
+                {
+                    ControlToMirror.RenderControl( writer );
+                }
+
                 return;
             }
 

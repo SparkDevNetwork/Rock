@@ -18,7 +18,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
+using Rock.Cache;
 using Rock.Data;
 
 namespace Rock.Model
@@ -30,7 +30,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "DefinedValue" )]
     [DataContract]
-    public partial class DefinedValue : Model<DefinedValue>, IOrdered
+    public partial class DefinedValue : Model<DefinedValue>, IOrdered, ICacheable
     {
 
         #region Entity Properties
@@ -125,6 +125,30 @@ namespace Rock.Model
         public override string ToString()
         {
             return this.Value;
+        }
+
+        #endregion
+
+        #region ICacheable
+
+        /// <summary>
+        /// Gets the cache object associated with this Entity
+        /// </summary>
+        /// <returns></returns>
+        public IEntityCache GetCacheObject()
+        {
+            return CacheDefinedValue.Get( this.Id );
+        }
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            CacheDefinedValue.UpdateCachedEntity( this.Id, entityState, dbContext as RockContext );
+            CacheDefinedType.Get( this.DefinedTypeId )?.ReloadDefinedValues();
         }
 
         #endregion

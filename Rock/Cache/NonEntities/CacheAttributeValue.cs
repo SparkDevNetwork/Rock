@@ -14,6 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Runtime.Serialization;
+
 using Rock.Data;
 using Rock.Model;
 
@@ -22,6 +25,8 @@ namespace Rock.Cache
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
+    [DataContract]
     [DotLiquid.LiquidType( "AttributeId", "EntityId", "Value", "ValueFormatted", "AttributeName", "AttributeKey", "AttributeIsGridColumn" )]
     public class CacheAttributeValue
     {
@@ -55,6 +60,7 @@ namespace Rock.Cache
         /// <value>
         /// The attribute identifier.
         /// </value>
+        [DataMember]
         public int AttributeId { get; set; }
 
         /// <summary>
@@ -63,6 +69,7 @@ namespace Rock.Cache
         /// <value>
         /// The entity identifier.
         /// </value>
+        [DataMember]
         public int? EntityId { get; set; }
 
         /// <summary>
@@ -71,6 +78,7 @@ namespace Rock.Cache
         /// <value>
         /// The value.
         /// </value>
+        [DataMember]
         public string Value { get; set; }
 
         /// <summary>

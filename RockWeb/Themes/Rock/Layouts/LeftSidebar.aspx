@@ -29,17 +29,17 @@
 </script>
 
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
-                
+
     <!-- Start Content Area -->
-        
+
     <!-- Page Title -->
     <section id="secPageTitle" class="page-title" runat="server">
         <h1 class="title"><Rock:PageIcon ID="PageIcon" runat="server" /> <Rock:PageTitle ID="PageTitle" runat="server" /></h1>
         <Rock:PageBreadCrumbs ID="PageBreadCrumbs" runat="server" />
         <Rock:PageDescription ID="PageDescription" runat="server" />
     </section>
-        
-    <section id="page-content">            
+
+    <section id="page-content">
         <!-- Ajax Error -->
         <div class="alert alert-danger ajax-error" style="display:none">
             <p><strong>Error</strong></p>

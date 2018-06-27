@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -51,6 +51,29 @@ namespace Rock
         }
 
         /// <summary>
+        /// Replaces the special characters from the string with the supplied string so that only alpha-numeric, '.', and '_' remain.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="replacementCharacters">The characters to replace special character(s) with. No restrictions or validation.</param>
+        /// <returns></returns>
+        public static string ReplaceSpecialCharacters( this string str, string replacementCharacters )
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach ( char c in str )
+            {
+                if ( ( c >= '0' && c <= '9' ) || ( c >= 'A' && c <= 'Z' ) || ( c >= 'a' && c <= 'z' ) || c == '.' || c == '_' )
+                {
+                    sb.Append( c );
+                }
+                else
+                {
+                    sb.Append( replacementCharacters );
+                }
+            }
+            return sb.ToString();
+        }
+
+        /// <summary>
         /// Removes all non alpha numeric characters from a string
         /// </summary>
         /// <param name="str">The string.</param>
@@ -65,6 +88,7 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
+        [System.Diagnostics.DebuggerStepThrough()]
         public static bool IsNotNullOrWhitespace( this string str )
         {
             return !string.IsNullOrWhiteSpace( str );
@@ -75,6 +99,7 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
+        [System.Diagnostics.DebuggerStepThrough()]
         public static bool IsNullOrWhiteSpace( this string str )
         {
             return string.IsNullOrWhiteSpace( str );
@@ -138,6 +163,37 @@ namespace Rock
             Uri uriResult;
             return Uri.TryCreate( str, UriKind.Absolute, out uriResult )
                 && ( uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps );
+        }
+
+        /// <summary>
+        /// Removes invalid, reserved, and unreccommended characters from strings that will be used in URLs.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static string RemoveInvalidReservedUrlChars( this string str )
+        {
+            return str.Replace( " ", "" )
+                .Replace( ";", "" )
+                .Replace( "/", "" )
+                .Replace( "?", "" )
+                .Replace( ":", "" )
+                .Replace( "@", "" )
+                .Replace( "=", "" )
+                .Replace( "&", "" )
+                .Replace( "<", "" )
+                .Replace( ">", "" )
+                .Replace( "#", "" )
+                .Replace( "%", "" )
+                .Replace( "\"", "" )
+                .Replace( "{", "" )
+                .Replace( "}", "" )
+                .Replace( "|", "" )
+                .Replace( "\\", "" )
+                .Replace( "^", "" )
+                .Replace( "[", "" )
+                .Replace( "]", "" )
+                .Replace( "`", "" )
+                .Replace( "'", "" );
         }
 
         /// <summary>

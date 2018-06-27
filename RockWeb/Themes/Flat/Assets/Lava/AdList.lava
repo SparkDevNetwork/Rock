@@ -1,5 +1,5 @@
 ﻿<div class="announcement-list">
-  
+
   {% for item in Items -%}
 
     <div class="announcement">

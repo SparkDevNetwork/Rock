@@ -98,6 +98,24 @@ namespace Rock.Model
         [Column( TypeName = "Date" )]
         public DateTime SundayDate { get; set; }
 
+        /// <summary>
+        /// Gets or sets the notes.
+        /// </summary>
+        /// <value>
+        /// The notes.
+        /// </value>
+        [DataMember]
+        public string Notes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number anonymous attendance.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the number anonymous attendance.
+        /// </value>
+        [DataMember]
+        public int? AnonymousAttendanceCount { get; set; }
+
         #endregion
 
         #region Virtual Properties

@@ -56,10 +56,12 @@ namespace RockWeb.Blocks.Communication
     [BooleanField( "Allow CC/Bcc", "Allow CC and Bcc addresses to be entered for email communications?", false, "", 7, "AllowCcBcc" )]
     [BooleanField( "Show Attachment Uploader", "Should the attachment uploader be shown for email communications.", true, "", 8 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM, "Allowed SMS Numbers", "Set the allowed FROM numbers to appear when in SMS mode (if none are selected all numbers will be included). ", false, true, "", "", 9 )]
+    [BooleanField( "Simple Communications Are Bulk", "Should simple mode communications be sent as a bulk communication?" , true, order: 10, key:"IsBulk")]
 
     [TextField( "Document Root Folder", "The folder to use as the root when browsing or uploading documents.", false, "~/Content", "", 0, Category = "HTML Editor Settings" )]
     [TextField( "Image Root Folder", "The folder to use as the root when browsing or uploading images.", false, "~/Content", "", 1, Category = "HTML Editor Settings" )]
     [BooleanField( "User Specific Folders", "Should the root folders be specific to current user?", false, "", 2, Category = "HTML Editor Settings" )]
+
     public partial class CommunicationEntry : RockBlock
     {
 
@@ -857,6 +859,11 @@ namespace RockWeb.Blocks.Communication
             }
 
             cbBulk.Checked = communication.IsBulkCommunication;
+
+            if ( !_fullMode )
+            {
+                cbBulk.Checked = GetAttributeValue( "IsBulk" ).AsBoolean();
+            }
 
             MediumControl control = LoadMediumControl( true );
             InitializeControl( control );

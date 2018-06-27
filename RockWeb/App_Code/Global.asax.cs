@@ -142,9 +142,7 @@ namespace RockWeb
                 ExceptionLogService.AlwaysLogToFile = true;
 
                 // Clear all cache
-                RockCache.ClearAllCachedItems();
-
-                var runMigrationFile = new FileInfo( Server.MapPath( "~/App_Data/Run.Migration" ) );
+                RockCache.ClearAllCachedItems( false );
 
                 // Get a db context
                 using ( var rockContext = new RockContext() )

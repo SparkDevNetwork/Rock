@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Web;
 
 using Rock.Data;
@@ -33,6 +34,7 @@ namespace Rock.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
+    [DataContract]
     public class CacheGlobalAttributes : ItemCache<CacheGlobalAttributes>
     {
         #region Contants
@@ -80,6 +82,7 @@ namespace Rock.Cache
         /// <value>
         /// The attributes.
         /// </value>
+		[DataMember]
         public List<CacheAttribute> Attributes
         {
             get
@@ -137,7 +140,8 @@ namespace Rock.Cache
         /// <value>
         /// The attribute values.
         /// </value>
-        private ConcurrentDictionary<string, string> AttributeValues { get; set; }
+        [DataMember]
+        private ConcurrentDictionary<string, string> AttributeValues { get; set; } = new ConcurrentDictionary<string, string>();
 
         /// <summary>
         /// Gets or sets the attribute values formatted.
@@ -145,7 +149,8 @@ namespace Rock.Cache
         /// <value>
         /// The attribute values formatted.
         /// </value>
-        private ConcurrentDictionary<string, string> AttributeValuesFormatted { get; set; }
+        [DataMember]
+        private ConcurrentDictionary<string, string> AttributeValuesFormatted { get; set; } = new ConcurrentDictionary<string, string>();
 
         #endregion
 
@@ -170,13 +175,14 @@ namespace Rock.Cache
         public string GetValue( string key, RockContext rockContext )
         {
             string value;
+
             if ( AttributeValues.TryGetValue( key, out value ) )
             {
                 return value;
             }
 
             var attributeCache = Attributes.FirstOrDefault( a => a.Key.Equals( key, StringComparison.OrdinalIgnoreCase ) );
-            if (attributeCache == null) return string.Empty;
+            if ( attributeCache == null ) return string.Empty;
 
             if ( rockContext != null )
             {
@@ -534,7 +540,7 @@ namespace Rock.Cache
                     using ( var rockContext = new RockContext() )
                     {
                         var location = new LocationService( rockContext ).Get( locGuid.Value );
-                        if (location == null) return string.Empty;
+                        if ( location == null ) return string.Empty;
 
                         appSettings[ORG_LOC_STATE] = location.State;
                         appSettings[ORG_LOC_COUNTRY] = location.Country;

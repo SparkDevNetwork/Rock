@@ -112,7 +112,7 @@
                                 <Rock:DateTimePicker ID="dtpStart" runat="server" Label="Start" Required="true" />
                                 </div>
                                 <div class="col-sm-6">
-                                <Rock:DatePicker ID="dpExpire" runat="server" Label="Expire" Required="true" Visible="false" />
+                                <Rock:DatePicker ID="dpExpire" runat="server" Label="Expire" Required="false" Visible="false" />
                                 <Rock:DateTimePicker ID="dtpExpire" runat="server" Label="Expire" />
                                 </div>
                             </div>

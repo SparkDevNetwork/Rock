@@ -172,6 +172,15 @@ namespace Rock.Cache
         }
         private List<int> _definedValueIds;
 
+        /// <summary>
+        /// Reloads the defined values.
+        /// </summary>
+        public void ReloadDefinedValues()
+        {
+            // set definedValueIds to null so it load them all at once on demand
+            _definedValueIds = null;
+        }
+
         #endregion
 
         #region Public Methods
@@ -185,7 +194,8 @@ namespace Rock.Cache
             base.SetFromEntity( entity );
 
             var definedType = entity as DefinedType;
-            if ( definedType == null ) return;
+            if ( definedType == null )
+                return;
 
             IsSystem = definedType.IsSystem;
             FieldTypeId = definedType.FieldTypeId;

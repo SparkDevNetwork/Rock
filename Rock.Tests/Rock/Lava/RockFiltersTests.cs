@@ -801,6 +801,76 @@ namespace Rock.Tests.Rock.Lava
             DateTimeAssert.AreEqual( output, DateTime.Parse( "5/15/2018 3:00 PM" ) );
         }
 
+        /// <summary>
+        /// Tests the next day of the week using the simplest format.
+        /// </summary>
+        [Fact]
+        public void NextDayOfTheWeek_NextWeekdate()
+        {
+            var output = RockFilters.NextDayOfTheWeek( "5/1/2018 3:00 PM", "Tuesday" );
+            DateTimeAssert.AreEqual( output, DateTime.Parse( "5/8/2018 3:00 PM" ) );
+        }
+
+        /// <summary>
+        /// Tests the next day of the week including the current day.
+        /// </summary>
+        [Fact]
+        public void NextDayOfTheWeek_NextWeekdateIncludeCurrentDay()
+        {
+            var output = RockFilters.NextDayOfTheWeek( "5/1/2018 3:00 PM", "Tuesday", true );
+            DateTimeAssert.AreEqual( output, DateTime.Parse( "5/1/2018 3:00 PM" ) );
+        }
+
+        /// <summary>
+        /// Tests the next day of the week in two weeks.
+        /// </summary>
+        [Fact]
+        public void NextDayOfTheWeek_NextWeekdateTwoWeeks()
+        {
+            var output = RockFilters.NextDayOfTheWeek( "5/1/2018 3:00 PM", "Tuesday", false, 2 );
+            DateTimeAssert.AreEqual( output, DateTime.Parse( "5/15/2018 3:00 PM" ) );
+        }
+
+        /// <summary>
+        /// Tests the next day of the week in minus one week.
+        /// </summary>
+        [Fact]
+        public void NextDayOfTheWeek_NextWeekdateBackOneWeek()
+        {
+            var output = RockFilters.NextDayOfTheWeek( "5/1/2018 3:00 PM", "Tuesday", false, -1 );
+            DateTimeAssert.AreEqual( output, DateTime.Parse( "4/24/2018 3:00 PM" ) );
+        }
+
+        /// <summary>
+        /// Tests the To Midnight using a string.
+        /// </summary>
+        [Fact]
+        public void ToMidnight_TextString()
+        {
+            var output = RockFilters.ToMidnight( "5/1/2018 3:00 PM" );
+            DateTimeAssert.AreEqual( output, DateTime.Parse( "5/1/2018 12:00 AM" ) );
+        }
+
+        /// <summary>
+        /// Tests the To Midnight using a string of "Now".
+        /// </summary>
+        [Fact]
+        public void ToMidnight_Now()
+        {
+            var output = RockFilters.ToMidnight( "Now" );
+            DateTimeAssert.AreEqual( output, RockDateTime.Now.Date );
+        }
+
+        /// <summary>
+        /// Tests the To Midnight using a datetime.
+        /// </summary>
+        [Fact]
+        public void ToMidnight_DateTime()
+        {
+            var output = RockFilters.ToMidnight( RockDateTime.Now );
+            DateTimeAssert.AreEqual( output, RockDateTime.Now.Date );
+        }
+
         #region DatesFromICal
 
         /// <summary>

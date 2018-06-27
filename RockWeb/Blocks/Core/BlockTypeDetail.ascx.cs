@@ -121,7 +121,6 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
-                CacheBlockType.Remove( blockTypeId );
                 blockType = blockTypeService.Get( blockTypeId );
             }
 
@@ -425,7 +424,6 @@ namespace RockWeb.Blocks.Core
             foreach ( var attribute in attributes )
             {
                 attribute.Order = order++;
-                CacheAttribute.Remove( attribute.Id );
             }
 
             var movedItem = attributes.Where( a => a.Order == e.OldIndex ).FirstOrDefault();
@@ -475,31 +473,12 @@ namespace RockWeb.Blocks.Core
                     mdGridWarningAttributes.Show( errorMessage, ModalAlertType.Information );
                     return;
                 }
-
-                CacheAttribute.Remove( attribute.Id );
+                
                 attributeService.Delete( attribute );
                 rockContext.SaveChanges();
             }
 
-            FlushBlockTypeAttributes();
-
             BindBlockTypeAttributesGrid();
-        }
-
-        /// <summary>
-        /// Flushes the block type attributes.
-        /// </summary>
-        private void FlushBlockTypeAttributes()
-        {
-            // Flush BlockType, Block and Entity Attributes
-            CacheAttribute.RemoveEntityAttributes();
-
-            CacheBlockType.Remove( hfBlockTypeId.Value.AsInteger() );
-            var blockTypeCache = CacheBlockType.Get( hfBlockTypeId.Value.AsInteger() );
-            foreach ( var blockId in new BlockService( new RockContext() ).GetByBlockTypeId( hfBlockTypeId.Value.AsInteger() ).Select( a => a.Id ).ToList() )
-            {
-                CacheBlock.Remove( blockId );
-            }
         }
 
         /// <summary>
@@ -520,8 +499,6 @@ namespace RockWeb.Blocks.Core
 
             pnlDetails.Visible = true;
             pnlBlockTypeAttributesEdit.Visible = false;
-
-            FlushBlockTypeAttributes();
 
             BindBlockTypeAttributesGrid();
             this.HideSecondaryBlocks( false );

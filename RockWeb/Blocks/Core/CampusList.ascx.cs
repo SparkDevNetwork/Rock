@@ -159,8 +159,6 @@ namespace RockWeb.Blocks.Core
                     return;
                 }
 
-                CacheCampus.Remove( campus.Id );
-
                 campusService.Delete( campus );
                 rockContext.SaveChanges();
             }
@@ -192,8 +190,6 @@ namespace RockWeb.Blocks.Core
             {
                 new CampusService( rockContext ).Reorder( campuses, e.OldIndex, e.NewIndex );
                 rockContext.SaveChanges();
-
-                campuses.ForEach( t => CacheCampus.Remove( t.Id ) );
             }
 
             BindGrid();

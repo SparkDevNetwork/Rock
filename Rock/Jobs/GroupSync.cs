@@ -235,12 +235,6 @@ namespace Rock.Jobs
 
                             // Increment the Groups Synced Counter
                             groupsSynced++;
-
-                            // If the group changed, and it was a security group, flush the security for the group
-                            if ( hasSyncChanged && ( sync.Group.IsSecurityRole || sync.Group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) ) )
-                            {
-                                Rock.Cache.CacheRole.Remove( sync.GroupId );
-                            }
                         }
                     }
                 }

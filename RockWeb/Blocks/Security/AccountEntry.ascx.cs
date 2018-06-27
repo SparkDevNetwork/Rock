@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.Security
     [TextField( "Found Duplicate Caption", "", false, "There are already one or more people in our system that have the same email address and last name as you do.  Are any of these people you?", "Captions", 1 )]
     [TextField( "Existing Account Caption", "", false, "{0}, you already have an existing account.  Would you like us to email you the username?", "Captions", 2 )]
     [TextField( "Sent Login Caption", "", false, "Your username has been emailed to you.  If you've forgotten your password, the email includes a link to reset your password.", "Captions", 3 )]
-    [TextField( "Confirm Caption", "", false, "Because you've selected an existing person, we need to have you confirm the email address you entered belongs to you. We've sent you an email that contains a link for confirming.  Please click the link in your email to continue.", "Captions", 4 )]
+    [TextField( "Confirm Caption", "", false, "Because you've selected an existing person, we need to have you confirm the email address you entered belongs to you. We’ve sent you an email that contains a link for confirming.  Please click the link in your email to continue.", "Captions", 4 )]
     [TextField( "Success Caption", "", false, "{0}, Your account has been created", "Captions", 5 )]
     [LinkedPage( "Confirmation Page", "Page for user to confirm their account (if blank will use 'ConfirmAccount' page route)", false, "", "Pages", 6 )]
     [LinkedPage( "Login Page", "Page to navigate to when user elects to login (if blank will use 'Login' page route)", false, "", "Pages", 7 )]
