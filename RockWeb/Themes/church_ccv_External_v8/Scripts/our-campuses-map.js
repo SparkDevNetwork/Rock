@@ -34,8 +34,7 @@ CCV.showMapCampusModal = function() {
         position: google.maps.ControlPosition.TOP_RIGHT
       },
       streetViewControl: false,
-      mapTypeControl: false,
-      gestureHandling: 'greedy'
+      mapTypeControl: false
     }
     window.campusModalMap.mapOptions = options;
 
