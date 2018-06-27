@@ -194,7 +194,7 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
         {
-            CacheLayout.UpdateCachedEntity( this.Id, entityState, dbContext as RockContext );
+            CacheLayout.UpdateCachedEntity( this.Id, entityState );
         }
 
         #endregion

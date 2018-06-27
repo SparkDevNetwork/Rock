@@ -477,6 +477,7 @@ namespace Rock.Attribute
                         {
                             var attributeValue = new Rock.Web.Cache.AttributeValueCache();
                             attributeValue.AttributeId = attribute.Id;
+                            attributeValue.EntityId = entity?.Id;
                             var attributeValueDefaults = entity.AttributeValueDefaults;
                             if ( attributeValueDefaults != null && attributeValueDefaults.ContainsKey( attribute.Key ) )
                             {
@@ -646,6 +647,8 @@ namespace Rock.Attribute
                     {
                         var attributeValue = new CacheAttributeValue();
                         attributeValue.AttributeId = attribute.Id;
+                        attributeValue.EntityId = entity?.Id;
+
                         var attributeValueDefaults = entity.AttributeValueDefaults;
                         if ( attributeValueDefaults != null && attributeValueDefaults.ContainsKey( attribute.Key ) )
                         {
@@ -917,7 +920,7 @@ namespace Rock.Attribute
         }
 
         /// <summary>
-        /// Saves any attribute edits made to an attribute. Note: any attributes will be flushed from the cache. Be sure to either reload the cache or the individual attribute when you are done.
+        /// Saves any attribute edits made to an attribute.
         /// </summary>
         /// <param name="newAttribute">The new attribute.</param>
         /// <param name="entityTypeId">The entity type identifier.</param>

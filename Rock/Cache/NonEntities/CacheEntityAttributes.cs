@@ -26,7 +26,7 @@ using Rock.Model;
 namespace Rock.Cache
 {
     /// <summary>
-    /// Collection of all entity attribute Ids
+    /// Collection of all entity attribute Ids for each EntityType
     /// </summary>
     [Serializable]
     [DataContract]
@@ -80,63 +80,6 @@ namespace Rock.Cache
             return GetOrAddExisting( KEY, () => QueryDb( rockContext ) );
         }
 
-        ///// <summary>
-        ///// Refreshes the entity.
-        ///// </summary>
-        ///// <param name="entityTypeId">The entity type identifier.</param>
-        ///// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
-        ///// <param name="entityTypeQualifierValue">The entity type qualifier value.</param>
-        //public static void RefreshEntity( int? entityTypeId, string entityTypeQualifierColumn, string entityTypeQualifierValue )
-        //{
-        //    var value = Get();
-        //    if ( value == null ) return;
-
-        //    var attributeQry = new AttributeService( new RockContext() )
-        //        .Queryable().AsNoTracking();
-
-        //    attributeQry = entityTypeId.HasValue ?
-        //        attributeQry.Where( a => a.EntityTypeId.HasValue && a.EntityTypeId.Value == entityTypeId.Value ) :
-        //        attributeQry.Where( a => !a.EntityTypeId.HasValue );
-
-        //    attributeQry = attributeQry
-        //        .Where( a => 
-        //            a.EntityTypeQualifierColumn == entityTypeQualifierColumn &&
-        //            a.EntityTypeQualifierValue == entityTypeQualifierValue );
-
-        //    var attributeIds = attributeQry.Select(v => v.Id).ToList();
-
-        //    var entityAttributes = value.EntityAttributes
-        //        .FirstOrDefault(a =>
-        //            (a.EntityTypeId ?? 0) == (entityTypeId ?? 0) &&
-        //            a.EntityTypeQualifierColumn == entityTypeQualifierColumn &&
-        //            a.EntityTypeQualifierValue == entityTypeQualifierValue);
-
-        //    if ( attributeIds.Any( ) )
-        //    {
-        //        if (entityAttributes == null)
-        //        {
-        //            entityAttributes = new EntityAttributes
-        //            {
-        //                EntityTypeId = entityTypeId,
-        //                EntityTypeQualifierColumn = entityTypeQualifierColumn,
-        //                EntityTypeQualifierValue = entityTypeQualifierValue
-        //            };
-        //            value.EntityAttributes.Add( entityAttributes );
-        //        }
-
-        //        entityAttributes.AttributeIds = attributeIds;
-        //    }
-        //    else
-        //    {
-        //        if (entityAttributes != null)
-        //        {
-        //            value.EntityAttributes.Remove(entityAttributes);
-        //        }
-        //    }
-
-        //    UpdateCacheItem( KEY, value, TimeSpan.MaxValue );
-        //}
-
         /// <summary>
         /// Removes this instance.
         /// </summary>
@@ -184,14 +127,94 @@ namespace Rock.Cache
             var value = new CacheEntityAttributes
             {
                 EntityAttributes = entityAttributes,
-                EntityAttributesByEntityTypeId = entityAttributes.Where(a => a.EntityTypeId.HasValue).GroupBy( g => g.EntityTypeId.Value ).ToDictionary( k => k.Key, v => v.ToList() ?? new List<EntityAttributes>() )
+                EntityAttributesByEntityTypeId = entityAttributes.Where( a => a.EntityTypeId.HasValue ).GroupBy( g => g.EntityTypeId.Value ).ToDictionary( k => k.Key, v => v.ToList() ?? new List<EntityAttributes>() )
             };
 
             return value;
         }
 
-        #endregion
+        /// <summary>
+        /// Updates the <see cref="CacheEntityAttributes"/> based on the attribute and entityState
+        /// </summary>
+        /// <param name="attribute">The attribute.</param>
+        /// <param name="entityState">State of the entity.</param>
+        internal static void UpdateCacheEntityAttributes( Rock.Model.Attribute attribute, System.Data.Entity.EntityState entityState )
+        {
+            var entityAttributesList = CacheEntityAttributes.Get().EntityAttributes.ToList();
+            if ( entityAttributesList == null || attribute == null )
+            {
+                return;
+            }
 
+            bool listUpdated = false;
+
+            if ( entityState == EntityState.Deleted )
+            {
+                foreach ( var entityAttributesItem in entityAttributesList.Where( a => a.AttributeIds.Contains( attribute.Id ) ) )
+                {
+                    entityAttributesItem.AttributeIds.Remove( attribute.Id );
+                    listUpdated = true;
+                }
+            }
+
+            if ( attribute?.EntityTypeId.HasValue == true )
+            {
+                if ( entityState == EntityState.Modified )
+                {
+                    foreach ( var entityAttributesItem in entityAttributesList.Where( a => a.AttributeIds.Contains( attribute.Id ) ) )
+                    {
+                        if ( entityAttributesItem.EntityTypeId != attribute.EntityTypeId || entityAttributesItem.EntityTypeQualifierColumn != attribute.EntityTypeQualifierColumn || entityAttributesItem.EntityTypeQualifierValue != attribute.EntityTypeQualifierValue )
+                        {
+                            entityAttributesItem.AttributeIds.Remove( attribute.Id );
+                            listUpdated = true;
+                        }
+                    }
+                }
+
+                if ( entityState == EntityState.Added || entityState == EntityState.Modified )
+                {
+                    var entityTypeEntityAttributesList = entityAttributesList.Where( a =>
+                        a.EntityTypeId == attribute.EntityTypeId.Value
+                        && a.EntityTypeQualifierColumn == attribute.EntityTypeQualifierColumn
+                        && a.EntityTypeQualifierValue == attribute.EntityTypeQualifierValue );
+
+                    if ( entityTypeEntityAttributesList.Any() )
+                    {
+                        foreach ( var entityAttributes in entityTypeEntityAttributesList )
+                        {
+                            if ( !entityAttributes.AttributeIds.Contains( attribute.Id ) )
+                            {
+                                entityAttributes.AttributeIds.Add( attribute.Id );
+                                listUpdated = true;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        entityAttributesList.Add( new EntityAttributes()
+                        {
+                            EntityTypeId = attribute.EntityTypeId,
+                            EntityTypeQualifierColumn = attribute.EntityTypeQualifierColumn,
+                            EntityTypeQualifierValue = attribute.EntityTypeQualifierValue,
+                            AttributeIds = new List<int>( new int[] { attribute.Id } )
+                        } );
+
+                        listUpdated = true;
+                    }
+                }
+            }
+
+            if ( listUpdated )
+            {
+                var cache = CacheEntityAttributes.Get();
+                cache.EntityAttributes = entityAttributesList;
+                cache.EntityAttributesByEntityTypeId = entityAttributesList.Where( a => a.EntityTypeId.HasValue ).GroupBy( g => g.EntityTypeId.Value ).ToDictionary( k => k.Key, v => v.ToList() ?? new List<EntityAttributes>() );
+                CacheEntityAttributes.UpdateCacheItem( KEY, cache, TimeSpan.MaxValue );
+            }
+
+        }
+
+        #endregion
     }
 
     /// <summary>

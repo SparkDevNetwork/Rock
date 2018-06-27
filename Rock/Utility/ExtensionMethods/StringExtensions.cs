@@ -340,11 +340,11 @@ namespace Rock
         /// Adds Quotes around the specified string and escapes any quotes that are already in the string.
         /// </summary>
         /// <param name="str">The string.</param>
-        /// <param name="QuoteChar">The quote character.</param>
+        /// <param name="quoteChar">The quote character.</param>
         /// <returns></returns>
-        public static string Quoted( this string str, string QuoteChar = "'" )
+        public static string Quoted( this string str, string quoteChar = "'" )
         {
-            var result = QuoteChar + str.EscapeQuotes() + QuoteChar;
+            var result = quoteChar + str.EscapeQuotes() + quoteChar;
             return result;
         }
 
@@ -426,14 +426,14 @@ namespace Rock
         /// <summary>
         /// Replaces the last occurrence of a given string with a new value
         /// </summary>
-        /// <param name="Source">The string.</param>
-        /// <param name="Find">The search parameter.</param>
-        /// <param name="Replace">The replacement parameter.</param>
+        /// <param name="source">The string.</param>
+        /// <param name="find">The search parameter.</param>
+        /// <param name="replace">The replacement parameter.</param>
         /// <returns></returns>
-        public static string ReplaceLastOccurrence( this string Source, string Find, string Replace )
+        public static string ReplaceLastOccurrence( this string source, string find, string replace )
         {
-            int Place = Source.LastIndexOf( Find );
-            return Place > 0 ? Source.Remove( Place, Find.Length ).Insert( Place, Replace ) : Source;
+            int Place = source.LastIndexOf( find );
+            return Place > 0 ? source.Remove( Place, find.Length ).Insert( Place, replace ) : source;
         }
 
         /// <summary>

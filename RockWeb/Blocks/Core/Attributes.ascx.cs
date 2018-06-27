@@ -628,6 +628,11 @@ namespace RockWeb.Blocks.Core
             cpCategoriesFilter.SetValues( selectedIDs );
         }
 
+        /// <summary>
+        /// Gets the data.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
         private IQueryable<Rock.Model.Attribute> GetData( RockContext rockContext )
         {
             IQueryable<Rock.Model.Attribute> query = null;
@@ -637,11 +642,18 @@ namespace RockWeb.Blocks.Core
             {
                 if ( _entityTypeId == default( int ) )
                 {
+                    // entity type not configured in block or in filter, so get Global Attributes
                     query = attributeService.GetByEntityTypeId( null, true );
+                }
+                else if ( _isEntityTypeConfigured )
+                {
+                    // entity type is configured in block, so get by the entityType and qualifiers specified in the block settings
+                    query = attributeService.GetByEntityTypeQualifier( _entityTypeId, _entityQualifierColumn, _entityQualifierValue, true );
                 }
                 else
                 {
-                    query = attributeService.GetByEntityTypeQualifier( _entityTypeId, _entityQualifierColumn, _entityQualifierValue, true );
+                    // entity type is selected in the filter, so get all the attributes for that entityType. (There is no userfilter for qualifiers, so don't filter by those)
+                    query = attributeService.GetByEntityTypeId( _entityTypeId, true );
                 }
             }
 

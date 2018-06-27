@@ -157,6 +157,7 @@ namespace Rock.Jobs
                                     historyRecord.RelatedEntityTypeId = attributeEntityTypeId;
                                     historyRecord.RelatedEntityId = eraAttributeId;
                                     historyRecord.CategoryId = personAnalyticsCategoryId;
+                                    historyRecord.SourceOfChange = "Calculate Family Analytics Job";
                                 }
 
                                 updateContext.SaveChanges();
@@ -219,9 +220,11 @@ namespace Rock.Jobs
                                 historyRecord.CreatedByPersonAliasId = person.PrimaryAliasId;
                                 historyRecord.Caption = "eRA";
                                 historyRecord.Verb = "ENTERED";
+                                historyRecord.ChangeType = History.HistoryChangeType.Attribute.ConvertToString();
                                 historyRecord.RelatedEntityTypeId = attributeEntityTypeId;
                                 historyRecord.RelatedEntityId = eraAttributeId;
                                 historyRecord.CategoryId = personAnalyticsCategoryId;
+                                historyRecord.SourceOfChange = "Calculate Family Analytics Job";
                             }
 
                             updateContext.SaveChanges();

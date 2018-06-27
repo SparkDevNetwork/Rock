@@ -416,8 +416,8 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
         {
-            CacheAttribute.UpdateCachedEntity( this.Id, entityState, dbContext as RockContext );
-            CacheAttribute.RemoveEntityAttributes();
+            CacheAttribute.UpdateCachedEntity( this.Id, entityState );
+            CacheAttribute.UpdateCacheEntityAttributes( this, entityState );
 
             int? entityTypeId;
             string entityTypeQualifierColumn;
@@ -443,13 +443,6 @@ namespace Rock.Model
 
             if ( entityTypeId.HasValue )
             {
-                CacheEntityType entityType = CacheEntityType.Get( entityTypeId.Value );
-
-                if ( entityType?.HasEntityCache() == true )
-                {
-
-                }
-                
                 if ( entityTypeId == CacheEntityType.GetId<Block>() )
                 {
                     // Update BlockTypes/Blocks that reference this attribute
@@ -458,11 +451,11 @@ namespace Rock.Model
                         int? blockTypeId = entityTypeQualifierValue.AsIntegerOrNull();
                         if ( blockTypeId.HasValue )
                         {
-                            CacheBlockType.Get( blockTypeId.Value )?.UpdateCachedAttributeIds( this.Id, entityState );
+                            CacheBlockType.FlushItem( blockTypeId.Value );
 
                             foreach ( var blockId in new BlockService( dbContext as RockContext ).GetByBlockTypeId( blockTypeId.Value ).Select( a => a.Id ).ToList() )
                             {
-                                CacheBlock.Get( blockId )?.UpdateCachedAttributeIds( this.Id, entityState );
+                                CacheBlock.FlushItem( blockId );
                             }
                         }
                     }
@@ -475,11 +468,11 @@ namespace Rock.Model
                         int? definedTypeId = entityTypeQualifierValue.AsIntegerOrNull();
                         if ( definedTypeId.HasValue )
                         {
-                            CacheDefinedType.Get( definedTypeId.Value )?.UpdateCachedAttributeIds( this.Id, entityState );
+                            CacheDefinedType.FlushItem( definedTypeId.Value );
 
                             foreach ( var definedValueId in new DefinedValueService( dbContext as RockContext ).GetByDefinedTypeId( definedTypeId.Value ).Select( a => a.Id ).ToList() )
                             {
-                                CacheDefinedValue.Get( definedValueId )?.UpdateCachedAttributeIds( this.Id, entityState );
+                                CacheDefinedValue.FlushItem( definedValueId );
                             }
                         }
                     }
@@ -491,7 +484,7 @@ namespace Rock.Model
                         int? activityTypeId = entityTypeQualifierValue.AsIntegerOrNull();
                         if ( activityTypeId.HasValue )
                         {
-                            CacheWorkflowActivityType.Get( activityTypeId.Value )?.UpdateCachedAttributeIds( this.Id, entityState );
+                            CacheWorkflowActivityType.FlushItem( activityTypeId.Value );
                         }
                     }
                 }
@@ -502,7 +495,7 @@ namespace Rock.Model
                         int? groupTypeId = entityTypeQualifierValue.AsIntegerOrNull();
                         if ( groupTypeId.HasValue )
                         {
-                            CacheGroupType.Get( groupTypeId.Value )?.UpdateCachedAttributeIds( this.Id, entityState );
+                            CacheGroupType.FlushItem( groupTypeId.Value );
                         }
                     }
                 }

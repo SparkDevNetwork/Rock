@@ -730,7 +730,7 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
         {
-            CacheSite.UpdateCachedEntity( this.Id, entityState, dbContext as RockContext );
+            CacheSite.UpdateCachedEntity( this.Id, entityState );
 
             using ( var rockContext = new RockContext() )
             {
@@ -738,7 +738,7 @@ namespace Rock.Model
                         .Select( p => p.Id )
                         .ToList() )
                 {
-                    CachePage.UpdateCachedEntity( pageId, EntityState.Detached, dbContext as RockContext );
+                    CachePage.UpdateCachedEntity( pageId, EntityState.Detached );
                 }
             }
         }

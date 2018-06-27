@@ -30,7 +30,7 @@
                                     </div>
                                 </itemtemplate>
                             </Rock:RockTemplateFieldUnselected>
-                            <Rock:RockBoundField DataField="CreatedDateTime" HeaderText="Created" SortExpression="CreatedDateTime" />
+                            <Rock:DateTimeField DataField="Person.Photo.CreatedDateTime" HeaderText="Created" SortExpression="CreatedDateTime"   />
                             <Rock:RockBoundField DataField="Person.FullName" HeaderText="Name" SortExpression="Person.FullName" />
                             <Rock:RockBoundField DataField="Person.Gender" HeaderText="Gender" SortExpression="Person.Gender" />
                             <Rock:RockBoundField DataField="Person.Email" HeaderText="Email" SortExpression="Person.Email" />

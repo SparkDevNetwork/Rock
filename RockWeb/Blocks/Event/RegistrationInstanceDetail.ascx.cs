@@ -1521,6 +1521,11 @@ namespace RockWeb.Blocks.Event
                     break;
 
                 case "DiscountCode":
+                    // If that discount code is not in the list, don't show it anymore.
+                    if ( ddlDiscountCode.Items.FindByText( e.Value ) == null )
+                    {
+                        e.Value = string.Empty;
+                    }
                     break;
 
                 case "DiscountCodeSearch":
@@ -4582,7 +4587,7 @@ namespace RockWeb.Blocks.Event
             }
             
             var discountService = new RegistrationTemplateDiscountService( new RockContext() );
-            var discountCodes = discountService.GetDiscountsForRegistrationInstance( instanceId ).ToList();
+            var discountCodes = discountService.GetDiscountsForRegistrationInstance( instanceId ).AsNoTracking().OrderBy( d => d.Code ).ToList();
 
             ddlDiscountCode.Items.Clear();
             ddlDiscountCode.Items.Add( new ListItem() );

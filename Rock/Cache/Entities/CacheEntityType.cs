@@ -286,7 +286,8 @@ namespace Rock.Cache
         #region Cache Related Methods
 
         private static Dictionary<int, Type> _cacheableEntityTypeIds = null;
-        private System.Reflection.MethodInfo _cachedItemMethod = null;
+        private System.Reflection.MethodInfo _cachedItemGetMethod = null;
+        private System.Reflection.MethodInfo _cachedItemFlushItemMethod = null;
 
         /// <summary>
         /// Determines whether there is an IEntityCache associated with this EntityType
@@ -300,15 +301,26 @@ namespace Rock.Cache
         }
 
         /// <summary>
-        /// Gets the Rock Cached Item 
+        /// Gets the Rock Cached Item
         /// </summary>
-        /// <param name="itemId">The item identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
         /// <returns></returns>
-        public IEntityCache GetCachedItem( int entityId )
+        internal IEntityCache GetCachedItem( int entityId )
         {
-            _cachedItemMethod = _cachedItemMethod ?? GetEntityCacheType()?.GetMethod( "Get", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.FlattenHierarchy, null, new Type[] { typeof( Int32 ) }, null );
+            _cachedItemGetMethod = _cachedItemGetMethod ?? GetEntityCacheType()?.GetMethod( "Get", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.FlattenHierarchy, null, new Type[] { typeof( Int32 ) }, null );
 
-            return _cachedItemMethod?.Invoke( null, new object[] { entityId } ) as IEntityCache;
+            return _cachedItemGetMethod?.Invoke( null, new object[] { entityId } ) as IEntityCache;
+        }
+
+        /// <summary>
+        /// Flushes the cached item.
+        /// </summary>
+        /// <param name="entityId">The entity identifier.</param>
+        internal void FlushCachedItem( int entityId )
+        {
+            _cachedItemFlushItemMethod = _cachedItemFlushItemMethod ?? GetEntityCacheType()?.GetMethod( "FlushItem", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.FlattenHierarchy, null, new Type[] { typeof( Int32 ) }, null );
+
+            _cachedItemFlushItemMethod?.Invoke( null, new object[] { entityId } );
         }
 
         #endregion Cache Related Methods

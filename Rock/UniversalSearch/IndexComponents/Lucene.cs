@@ -20,7 +20,6 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using Lucene.Net.Analysis;
 using Lucene.Net.Analysis.Core;
@@ -95,12 +94,12 @@ namespace Rock.UniversalSearch.IndexComponents
                     };
 
                     _indexWriterConfig.OpenMode = OpenMode.CREATE_OR_APPEND;
-                    if ( IndexWriter.IsLocked( directory ) )
+                    if ( IndexWriter.IsLocked( Directory ) )
                     {
-                        IndexWriter.Unlock( directory );
+                        IndexWriter.Unlock( Directory );
                     }
 
-                    _writer = new IndexWriter( directory, _indexWriterConfig );
+                    _writer = new IndexWriter( Directory, _indexWriterConfig );
                     _writer.Flush( true, true );
                     _writer.Commit();
                 }
@@ -145,9 +144,9 @@ namespace Rock.UniversalSearch.IndexComponents
                     }
                     finally
                     {
-                        if ( IndexWriter.IsLocked( directory ) )
+                        if ( IndexWriter.IsLocked( Directory ) )
                         {
-                            IndexWriter.Unlock( directory );
+                            IndexWriter.Unlock( Directory );
                         }
 
                         _writer = null;
@@ -163,7 +162,7 @@ namespace Rock.UniversalSearch.IndexComponents
         {
             if ( _reader == null )
             {
-                _reader = DirectoryReader.Open( directory );
+                _reader = DirectoryReader.Open( Directory );
                 _indexSearcher = new IndexSearcher( _reader );
             }
             else
@@ -185,12 +184,17 @@ namespace Rock.UniversalSearch.IndexComponents
         /// <value>
         /// The Lucene directory.
         /// </value>
-        private static FSDirectory directory
+        private static FSDirectory Directory
         {
             get
             {
                 if ( _directory == null )
                 {
+                    if ( !System.IO.Directory.Exists( _path ) )
+                    {
+                        System.IO.Directory.CreateDirectory( _path );
+                    }
+
                     _directory = FSDirectory.Open( new DirectoryInfo( _path ) );
                 }
 
@@ -877,9 +881,9 @@ namespace Rock.UniversalSearch.IndexComponents
                     }
                     finally
                     {
-                        if ( IndexWriter.IsLocked( directory ) )
+                        if ( IndexWriter.IsLocked( Directory ) )
                         {
-                            IndexWriter.Unlock( directory );
+                            IndexWriter.Unlock( Directory );
                         }
 
                         _writer = null;

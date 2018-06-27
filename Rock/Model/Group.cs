@@ -762,12 +762,21 @@ namespace Rock.Model
 
                         // manually set any attendance search group ids to null
                         var attendanceService = new AttendanceService( rockContext );
-                        foreach ( var attendance in attendanceService.Queryable()
+                        var attendancesToNullSearchResultGroupId = attendanceService.Queryable()
                             .Where( a =>
                                 a.SearchResultGroupId.HasValue &&
-                                a.SearchResultGroupId.Value == this.Id ) )
+                                a.SearchResultGroupId.Value == this.Id );
+
+                        dbContext.BulkUpdate( attendancesToNullSearchResultGroupId, a => new Attendance { SearchResultGroupId = null } );
+
+                        // since we can't put a CascadeDelete on both Attendance.Occurrence.GroupId and Attendance.OccurrenceId, manually delete all Attendance records associated with this GroupId
+                        var attendancesToDelete = attendanceService.Queryable()
+                            .Where( a =>
+                                a.Occurrence.GroupId.HasValue &&
+                                a.Occurrence.GroupId.Value == this.Id );
+                        if ( attendancesToDelete.Any() )
                         {
-                            attendance.SearchResultGroupId = null;
+                            dbContext.BulkDelete( attendancesToDelete );
                         }
 
                         break;
@@ -1015,8 +1024,7 @@ namespace Rock.Model
             var groupTypeGuid = CacheGroupType.Get( this.GroupTypeId )?.Guid;
             if ( this.IsSecurityRole || ( _originalIsSecurityRole == true ) || ( groupTypeGuid == groupTypeScheduleRole ) || ( originalGroupTypeGuid == groupTypeScheduleRole ) )
             {
-                Rock.Cache.CacheRole.Remove( this.Id );
-                Rock.Cache.CacheRole.Get( this.Id );
+                Rock.Cache.CacheRole.FlushItem( this.Id );
             }
         }
 

@@ -84,8 +84,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         .Where( t => t.ConnectionOpportunities.Any( o => o.IsActive == true ) )
                         .Where( t => t.ConnectionOpportunities
                         .Any( o => o.ConnectionRequests
-                            .Any( r => r.ConnectionState == ConnectionState.Active ||
-                                ( r.ConnectionState == ConnectionState.FutureFollowUp && r.FollowupDate.HasValue && r.FollowupDate.Value <= _midnightTomorrow && r.PersonAlias.PersonId == Person.Id ) ) ) );
+                            .Any( r => r.PersonAlias.PersonId == Person.Id && (r.ConnectionState == ConnectionState.Active ||
+                                ( r.ConnectionState == ConnectionState.FutureFollowUp && r.FollowupDate.HasValue && r.FollowupDate.Value <= _midnightTomorrow ) ) ) ));
                 }
                 else
                 {

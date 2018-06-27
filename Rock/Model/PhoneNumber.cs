@@ -213,8 +213,32 @@ namespace Rock.Model
                 Number = PhoneNumber.CleanNumber( NumberFormatted );
             }
 
-            var rockContext = (RockContext)dbContext;
-            int personId = PersonId;
+			// Check for duplicate
+			if ( entry.State == System.Data.Entity.EntityState.Added || entry.State == System.Data.Entity.EntityState.Modified )
+			{
+				var rockContext = ( RockContext ) dbContext;
+				var phoneNumberService = new PhoneNumberService( rockContext );
+				var duplicates = phoneNumberService.Queryable().Where( pn => pn.PersonId == PersonId && pn.Number == Number && pn.CountryCode == CountryCode );
+				if ( duplicates.Any() )
+				{
+					var highestOrderedDuplicate = duplicates.Where( p => p.NumberTypeValue != null ).OrderBy(p => p.NumberTypeValue.Order).FirstOrDefault();
+					if ( NumberTypeValueId.HasValue && highestOrderedDuplicate != null && highestOrderedDuplicate.NumberTypeValue != null )
+					{
+                        // Ensure that we preserve the PhoneNumber with the highest preference phone type
+						var numberType = CacheDefinedValue.Get( NumberTypeValueId.Value, rockContext );
+						if ( highestOrderedDuplicate.NumberTypeValue.Order < numberType.Order )
+						{
+							entry.State = entry.State == System.Data.Entity.EntityState.Added ? System.Data.Entity.EntityState.Detached : System.Data.Entity.EntityState.Deleted;
+						}
+						else
+						{
+							phoneNumberService.DeleteRange( duplicates);
+						}
+					}
+				}
+			}
+
+			int personId = PersonId;
             PersonHistoryChanges = new Dictionary<int, History.HistoryChangeList> { { personId, new History.HistoryChangeList() } };
 
             switch ( entry.State )
