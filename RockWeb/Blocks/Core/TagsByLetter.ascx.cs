@@ -290,7 +290,7 @@ namespace RockWeb.Blocks.Core
             if ( tags.Count() == 0 )
             {
                 tagOutput.Clear();
-                tagOutput.Append("<div class='alert alert-info'><h4>Note</h4>No personal tags exist.</div>");
+                tagOutput.Append($"<div class='alert alert-info'><h4>Note</h4>No {TagCloudTab} tags exist.</div>");
             }
 
             lTagList.Text = tagOutput.ToString();
