@@ -15,6 +15,8 @@
 // </copyright>
 //
 using System.Collections.Generic;
+using System.Linq;
+using Rock.Cache;
 
 namespace Rock.Utility.Settings.DataAutomation
 {
@@ -33,7 +35,13 @@ namespace Rock.Utility.Settings.DataAutomation
             UseSameHomeAddress = true;
             UseSameHomePhone = true;
             MaximumRecords = 200;
-            WorkflowTypeIds = new List<int>();
+            var knownRelGroupType = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
+            if ( knownRelGroupType != null )
+            {
+                SiblingRelationshipId = knownRelGroupType.Roles.Where( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_SIBLING.AsGuid() ).Select( a => a.Id ).FirstOrDefault();
+                ParentRelationshipId = knownRelGroupType.Roles.Where( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_PARENT.AsGuid() ).Select( a => a.Id ).FirstOrDefault();
+            }
+           WorkflowTypeIds = new List<int>();
         }
 
         /// <summary>
