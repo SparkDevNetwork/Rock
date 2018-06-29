@@ -165,7 +165,7 @@ namespace RockWeb.Blocks.Groups
                     gGroupMembers.ExportFilename = _group.Name;
                     gGroupMembers.ExportSource = ExcelExportSource.DataSource;
 
-                    // we'll have custom javascript (see GroupMemberList.ascx ) do this instead 
+                    // we'll have custom javascript (see GroupMemberList.ascx ) do this instead
                     gGroupMembers.ShowConfirmDeleteDialog = false;
 
                     // make sure they have Auth to edit the block OR edit to the Group
@@ -180,7 +180,7 @@ namespace RockWeb.Blocks.Groups
                         .Any();
                 }
             }
-            
+
             // Show the sync icon if group member sync is set up for this group.
             if ( _group != null && _group.GroupSyncs != null && _group.GroupSyncs.Count() > 0 )
             {
@@ -513,7 +513,7 @@ namespace RockWeb.Blocks.Groups
         {
             RockContext rockContext = new RockContext();
             GroupMemberService groupMemberService = new GroupMemberService( rockContext );
-            
+
             GroupMemberHistoricalService groupMemberHistoricalService = new GroupMemberHistoricalService( rockContext );
             GroupMember groupMember = groupMemberService.Get( e.RowKeyId );
             if ( groupMember != null )
@@ -538,7 +538,7 @@ namespace RockWeb.Blocks.Groups
 
                 if ( archive )
                 {
-                    // NOTE: Delete will AutoArchive, but since we know that we need to archive, we can call .Archive directly 
+                    // NOTE: Delete will AutoArchive, but since we know that we need to archive, we can call .Archive directly
                     groupMemberService.Archive( groupMember, this.CurrentPersonAliasId, true );
                 }
                 else
@@ -614,11 +614,11 @@ namespace RockWeb.Blocks.Groups
 
             BindAttributes();
             AddDynamicControls();
-            
+
             tbFirstName.Text = rFilter.GetUserPreference( "First Name" );
             tbLastName.Text = rFilter.GetUserPreference( "Last Name" );
             cpCampusFilter.SelectedCampusId = rFilter.GetUserPreference( "Campus" ).AsIntegerOrNull();
-            
+
             string genderValue = rFilter.GetUserPreference( "Gender" );
             if ( !string.IsNullOrWhiteSpace( genderValue ) )
             {
@@ -649,7 +649,7 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         private void BindAttributes()
         {
-            // Parse the attribute filters 
+            // Parse the attribute filters
             AvailableAttributes = new List<CacheAttribute>();
             if ( _group != null )
             {
@@ -1256,7 +1256,7 @@ namespace RockWeb.Blocks.Groups
                         NickName = m.Person.NickName,
                         LastName = m.Person.LastName,
                         Name =
-                        isExporting ? m.Person.LastName + ", " + m.Person.NickName : string.Format( photoFormat, m.PersonId, m.Person.PhotoUrl, ResolveUrl( "~/Assets/Images/person-no-photo-male.svg" ) )
+                        isExporting ? m.Person.LastName + ", " + m.Person.NickName : string.Format( photoFormat, m.PersonId, m.Person.PhotoUrl, ResolveUrl( "~/Assets/Images/person-no-photo-unknown.svg" ) )
                                     + m.Person.NickName + " " + m.Person.LastName
                             + ( !string.IsNullOrWhiteSpace( m.Person.TopSignalColor ) ? " " + m.Person.GetSignalMarkup() : string.Empty )
                             + ( ( hasGroupRequirements && groupMemberIdsThatLackGroupRequirements.Contains( m.Id ) )
@@ -1390,7 +1390,7 @@ namespace RockWeb.Blocks.Groups
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <seealso cref="DotLiquid.Drop" />
     public class GroupMemberDataRow : DotLiquid.Drop
