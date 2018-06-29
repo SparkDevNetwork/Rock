@@ -1171,21 +1171,22 @@ Registration By: {0} Total Cost/Fees:{1}
         /// <param name="registrant">The registrant.</param>
         /// <param name="person">The person.</param>
         /// <param name="family">The family.</param>
-        /// <param name="Field">The field.</param>
+        /// <param name="field">The field.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         public object GetRegistrantValue( RegistrationRegistrant registrant, Person person, Group family,
-            RegistrationTemplateFormField Field, RockContext rockContext )
+            RegistrationTemplateFormField field, RockContext rockContext )
         {
-            if ( Field.FieldSource == RegistrationFieldSource.PersonField )
+            if ( field.FieldSource == RegistrationFieldSource.PersonField )
             {
                 if ( person != null )
                 {
                     CacheDefinedValue dvPhone = null;
 
-                    switch ( Field.PersonFieldType )
+                    switch ( field.PersonFieldType )
                     {
                         case RegistrationPersonFieldType.FirstName: return person.NickName;
+                        case RegistrationPersonFieldType.MiddleName: return person.MiddleName;
                         case RegistrationPersonFieldType.LastName: return person.LastName;
                         case RegistrationPersonFieldType.Campus:
                             {
@@ -1209,6 +1210,7 @@ Registration By: {0} Total Cost/Fees:{1}
                         case RegistrationPersonFieldType.Grade: return person.GraduationYear;
                         case RegistrationPersonFieldType.Gender: return person.Gender;
                         case RegistrationPersonFieldType.MaritalStatus: return person.MaritalStatusValueId;
+                        case RegistrationPersonFieldType.AnniversaryDate: return person.AnniversaryDate;
                         case RegistrationPersonFieldType.MobilePhone:
                             {
                                 dvPhone = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
@@ -1239,10 +1241,10 @@ Registration By: {0} Total Cost/Fees:{1}
             }
             else
             {
-                var attribute = CacheAttribute.Get( Field.AttributeId ?? 0 );
+                var attribute = CacheAttribute.Get( field.AttributeId ?? 0 );
                 if ( attribute != null )
                 {
-                    switch ( Field.FieldSource )
+                    switch ( field.FieldSource )
                     {
                         case RegistrationFieldSource.PersonAttribute:
                             {
