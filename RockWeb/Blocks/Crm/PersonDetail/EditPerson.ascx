@@ -127,7 +127,7 @@
 
                                 <div class="row">
                                     <div class="col-sm-6">
-                                        <Rock:DataTextBox ID="tbEmail" PrependText="<i class='fa fa-envelope'></i>" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="Email" autocomplete="off" />
+                                        <Rock:EmailBox ID="tbEmail" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="Email" />
                                     </div>
                                     <div class="col-sm-3">
                                         <Rock:RockCheckBox ID="cbIsEmailActive" runat="server" Label="Email Status" Text="Is Active" />
