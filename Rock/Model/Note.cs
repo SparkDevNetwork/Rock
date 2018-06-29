@@ -252,6 +252,15 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets or sets the note attachments.
+        /// </summary>
+        /// <value>
+        /// The note attachments.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<NoteAttachment> Attachments { get; set; } = new Collection<NoteAttachment>();
+
+        /// <summary>
         /// Gets the created by person photo URL.
         /// </summary>
         /// <value>
