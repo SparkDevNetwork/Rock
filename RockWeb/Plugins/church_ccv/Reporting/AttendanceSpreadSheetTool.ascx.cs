@@ -418,7 +418,7 @@ namespace RockWeb.Plugins.church_ccv.Reporting
                 // add all the advertised schedules first
                 foreach ( var serviceTime in campusServiceTimes )
                 {
-                    var serviceTimeFriendlyText = string.Format( "{0} at {1}", serviceTime.Day, serviceTime.Time ).Replace( "*", "" ).Trim();
+                    var serviceTimeFriendlyText = string.Format( "{0} at {1}", serviceTime.Day, serviceTime.Time ).Replace( "*", "" ).Replace("%", "" ).Trim();
                     var schedule = scheduleList.FirstOrDefault( a => a.FriendlyScheduleText.StartsWith( serviceTimeFriendlyText, StringComparison.OrdinalIgnoreCase ) );
                     if ( schedule != null && selectedScheduleIds.Contains( schedule.Id ) )
                     {
@@ -500,7 +500,7 @@ namespace RockWeb.Plugins.church_ccv.Reporting
                 // add all the advertised schedules first
                 foreach ( var serviceTime in campusServiceTimes )
                 {
-                    var serviceTimeFriendlyText = string.Format( "{0} at {1}", serviceTime.Day, serviceTime.Time ).Replace( "*", "" ).Trim();
+                    var serviceTimeFriendlyText = string.Format( "{0} at {1}", serviceTime.Day, serviceTime.Time ).Replace( "*", "" ).Replace( "%", "" ).Trim();
                     var schedule = scheduleList.FirstOrDefault( a => a.FriendlyScheduleText.StartsWith( serviceTimeFriendlyText, StringComparison.OrdinalIgnoreCase ) );
                     if ( schedule != null && selectedScheduleIds.Contains( schedule.Id ) )
                     {

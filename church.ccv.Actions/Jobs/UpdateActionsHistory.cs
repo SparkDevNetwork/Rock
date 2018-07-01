@@ -15,10 +15,15 @@
 // </copyright>
 //
 using Quartz;
+using Rock;
+using Rock.Attribute;
 using Rock.Data;
 
 namespace church.ccv.Actions
 {
+    // This job is normally completed in 13 minutes, but over weeks and weeks it slows down big time. For some reason SQL uses a really slow
+    // execution plan for two of the actions, and I just don't have time to debug it right now.
+    [IntegerField( "Command Timeout", "Maximum amount of time (in seconds) to wait for the SQL Query to complete.", true, 7200, "General", 1, "CommandTimeout")]
     [DisallowConcurrentExecution]
     public class UpdateActionsHistory : IJob
     {
@@ -42,8 +47,13 @@ namespace church.ccv.Actions
         {
             using ( RockContext rockContext = new RockContext() )
             {
-                // This job typically completes in under 3 minutes, but give it an hour since the SQL db is on another server in production
-                rockContext.Database.CommandTimeout = 3600;
+                JobDataMap dataMap = context.JobDetail.JobDataMap;
+                int? commandTimeout = dataMap.GetString( "CommandTimeout").AsIntegerOrNull();
+                
+                if( commandTimeout != null )
+                {
+                    rockContext.Database.CommandTimeout = commandTimeout.Value;
+                }
 
                 // Simply run the stored procedure.
                 // This will insert a row per-campus per-region with total numbers for how many people

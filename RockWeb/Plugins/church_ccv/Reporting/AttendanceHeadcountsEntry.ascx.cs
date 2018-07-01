@@ -191,7 +191,7 @@ namespace RockWeb.Plugins.church_ccv.Reporting
             // add all the advertised schedules
             foreach ( var serviceTime in campusServiceTimes )
             {
-                var serviceTimeFriendlyText = string.Format( "{0} at {1}", serviceTime.Day, serviceTime.Time ).Replace( "*", "" ).Trim();
+                var serviceTimeFriendlyText = string.Format( "{0} at {1}", serviceTime.Day, serviceTime.Time ).Replace( "*", "" ).Replace("%", "").Trim();
                 var scheduleLookup = scheduleLookupList.FirstOrDefault( a => a.FriendlyScheduleText.StartsWith( serviceTimeFriendlyText, StringComparison.OrdinalIgnoreCase ) );
                 if ( scheduleLookup != null && selectedScheduleIds.Contains( scheduleLookup.Id ) )
                 {
