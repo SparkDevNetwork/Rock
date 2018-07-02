@@ -4,13 +4,12 @@
    background-color: white;
 }
 
-.main-feature {
-    height: 475px;
-    padding-top: 175px;
-}
-
-#ternavbar-bg {
-    display: none;
+/* use the expanded main feature only for tablet and larger */
+@media screen and (min-width: 501px) {
+    .main-feature {
+        height: 475px;
+        padding-top: 175px;
+    }
 }
 
 #section-b-bg {
@@ -25,12 +24,4 @@
 
 #section-e-bg {
     display: none;
-}
-
-/* Mobile Styling */
-@media screen and (max-width: 500px) {
-    .main-feature {
-        height: unset;
-        padding-top: 50px;
-    }
 }

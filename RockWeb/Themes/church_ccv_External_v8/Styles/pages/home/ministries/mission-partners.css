@@ -1,84 +1,47 @@
 .page-background {
-   background-color: #EBEBEB;
-   background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/missions/hero-missions-partners.jpg");
-}
-
-#ternavbar-bg {
-    display: flex;
-}
-
-#section-a-bg {
-	background-color: #F6F6F6;
-}
-
-#section-b-bg {
-	display: none;
-}
-
-.navigation-tertiary-items {
-    margin-left: -15%;
-}
-
-.navigation-tertiary-item {
-    padding: 10px 20px;
-}
-
-.event-cards-row {
-   flex-wrap: wrap;
-   justify-content: center;
-}
-
-@media screen and (min-width: 992px) {
-   .event-cards-row {
-      justify-content: center;
-   }
-}
-
-.event-card {
-   width: 370px;
-   height: 450px;
-}
-
-.missions-partners-card-override {
-   padding-bottom: 25px;
-   height: auto;
-   margin-bottom: 25px;
-   box-shadow: none;
-   border: none;
-   background-color: transparent;
-   z-index: 1;
-   justify-content:normal;
-   position:relative;
-}
-
-.event-card.missions-partners-card-override .image {
- 	position: relative;
-	width: 100%;
-	height: 180px;
-	background-size: cover;
-	border-radius: 5px;
-}
-.event-card.missions-partners-card-override .header {
-	position:absolute;
-	top: 0px;
-	left: 0px;
-}
-.event-card.missions-partners-card-override .header h4 {
-	color:#fff;
-	font-size:4rem;
-}
-.event-card.missions-partners-card-override .image:before{
-	content: '';
-	position: absolute;
-	top: 0;
-	right: 0;
-	bottom: 0;
-	left: 0;
-	background-image: linear-gradient(to right,#000,transparent);
-	opacity: .8;
-	border-radius:5px;
-}
-.event-card.missions-partners-card-override .content {
-	padding:1rem 0;
-	height:auto;
-}
+	background-color: #EBEBEB;
+	background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/hero-missions-partners.jpg");
+ }
+ 
+ #ternavbar-bg {
+	 display: flex;
+ }
+ 
+ .navigation-tertiary-items {
+	 margin-left: -15%;
+ }
+ 
+ .navigation-tertiary-item {
+	 padding: 10px 20px;
+ }
+ 
+ .event-cards-row {
+	flex-wrap: wrap;
+	justify-content: space-between;
+ }
+ 
+ @media screen and (min-width: 992px) {
+	.event-cards-row {
+	   justify-content: left;
+	}
+ }
+ 
+ .event-card {
+	width: 30%;
+	height: 450px;
+ }
+ 
+ .missions-partners-card-override {
+	padding-bottom: 25px;
+	height: 500px;
+	margin-bottom: 25px;
+ }
+ 
+ .event-card.missions-partners-card-override .image img {
+	object-fit: cover;
+ }
+ 
+ .event-card.missions-partners-card-override .read-more a {
+	font-weight: 900;
+	display: flex;
+ }

@@ -3,375 +3,244 @@
     background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/hero-events.jpg");
 }
 
-#section-a-bg {
-	background-color: #F6F6F6;
-}
-
-#section-b-bg {
-    display: none;
-}
-
-#zone-sectiona {
-    background-color: #FFFFFF;
-    box-shadow: 0px 0px 10px #E5E5E5;
-    border-radius: 5px;
-    max-width: 1280px;
-    margin: 0 auto;
-}
-
-/* Formatting for the event calendar page */
-.event-page-wrapper {
-   display: flex;
-   flex-direction: row;
-}
-
-.event-page-wrapper .event-calendar {
-   margin-left: 30px;
-}
-
-@media screen and (min-width: 769px) {
-    .event-page-wrapper {
-        width: 100%;
-     }
-
-    .event-page-wrapper .event-calendar {
-        width: 100%;
-     }
-}
-
-@media screen and (max-width: 800px) {
-    .event-page-wrapper .event-calendar {
-        margin-left: 15px;
-     }
-}
-
-.event-page-wrapper .event-calendar .header {
-   display: flex;
-   justify-content: flex-start;
-   position: relative;
-   margin-bottom: 25px;
-}
-
-.event-page-wrapper .event-calendar .header h2 {
-   flex: 0 1 auto;
-   position: absolute;
-   left: 50%;
-   top: 50%;
-   transform: translateX( -50% ) translateY( -100% );
-   font-size: 2.28rem;
-}
-
-.event-page-wrapper .event-calendar .header .prev-arrow,
-.event-page-wrapper .event-calendar .header .next-arrow { 
-   flex: 0 1 auto;
-   color: #7a1315;   
-}
-
-.event-page-wrapper .event-calendar .header .prev-arrow {
-   transform: scale(2) translateY( 20% ) rotateZ(-90deg) scaleY(-1);
-   margin-right: auto;
-   margin-left: 12%;
-}
-
-.event-page-wrapper .event-calendar .header .next-arrow {
-   transform: scale(2) translateY( 20% ) rotateZ(-90deg);
-   margin-left: auto;
-   margin-right: 12%;
-}
-
-.event-page-wrapper .event-calendar .header .prev-arrow:hover,
-.event-page-wrapper .event-calendar .header .next-arrow:hover {
-   cursor: pointer;
-}
-
-.event-page-wrapper .event-calendar .event-item {
-   display: flex;
-   flex-direction: row;
-   flex-wrap: wrap;
-   margin-top: 15px;
-   margin-bottom: 15px;
-   min-width: 115%;
-}
-.event-page-wrapper .event-calendar .event-item .date {
-   background-color: #7a1315;
-   color: #fff;
-   margin-right: 10px;
-   width: 15%;
-   max-width: 75px;
-   height: width;
-   align-items: center;
-   border-radius: 6px;
-}
-
-.event-page-wrapper .event-calendar .event-item .date p {
-   position: relative;
-   top: 50%;
-   transform: translateY(-50%); 
-   text-align: center;
-   color: #fff;
-   font-family: akrobat;
-   font-weight: regular;
-   font-size: 24px;
-}
-
-.event-page-wrapper .event-calendar .event-item .details {
-   background-color: #e9e9ea;
-   border-radius: 6px;
-   display: flex;
-   flex-direction: row;
-   flex-wrap: wrap;
-   align-items: center;
-   min-width: 72%;
-}
-
-@media screen and (max-width: 800px) {
-    .event-page-wrapper .event-calendar .event-item .details {
-        min-width: 65%;
-    }        
-}
-
-.event-page-wrapper .event-calendar .event-item .details .info h4{
-   font-family: akrobat;
-   font-weight: 900;
-   margin-bottom: 0px;
-   margin-left: 10px;
-   text-overflow: ellipsis;
-   overflow: hidden;
-   white-space: nowrap;
-   max-width: 150px;
-   font-size: 2.00rem;
-}
-
-.event-page-wrapper .event-calendar .event-item .details .info p {
-   font-family: akrobat;
-   font-size: 16px;
-   margin-bottom: 1.14rem;
-   margin-left: 10px;
-}
-
-.event-page-wrapper .event-calendar .event-item .details .arrow {
-   margin-left: auto;
-   margin-right: 15px;
-}
-
-.event-page-wrapper .event-calendar .event-item .details .arrow b {
-   transform: scale(2) translateY( 20% ) rotateZ(-90deg);
-   padding: 0px;
-   margin: 0px;
-   color: #848484;
-}
-
-.event-page-wrapper .event-calendar .event-item .details:hover,
-.event-page-wrapper .event-calendar .event-item .details:hover p {
-   background-color: #999;
-   cursor: pointer;
-   color: #fff;
-}
-
-.event-page-wrapper .event-calendar .event-item .details:hover b {
-   color: #7a1315;
-}
-
-.selected, .selected p {
-   background-color: #999 !important;
-   color: #fff !important;
-}
-
-.selected .arrow b {
-   color: #7a1315 !important;
-}
-
-/* ---- overrides for each event's header text --- */
-@media screen and (min-width: 414px) {
-   .event-page-wrapper .event-calendar .event-item .details .info h4{
-      max-width: 250px;
-   }
-}
-
-@media screen and (min-width: 568px) {
-   .event-page-wrapper .event-calendar .event-item .details .info h4{
-      max-width: 350px;
-   }
-}
-
-/* ---- Overrides for desktop size ---- */
-@media screen and (min-width: 1000px) {
-   .event-page-wrapper {
-      padding: 0;
-      align-items: stretch;
-      width: auto;
-   }
-   
-   .event-page-wrapper .event-calendar {
-      width: 50%;
-      padding-left: 30px;
-      /* margin: 0 auto; */
-   }
-   
-   .event-page-wrapper .event-calendar .header {
-      margin-top: 15px;
-      margin-bottom: 50px;
-      margin-left: auto;
-      width: auto;
-   }
-   
-   .event-page-wrapper .event-calendar .header h2 {
-      font-size: 3.56rem;
-   }
-      
-   .event-page-wrapper .event-calendar .event-item .date {
-      width: 75px;
-      height: 75px;
-   }
-   
-   .event-page-wrapper .event-calendar .event-item .details {
-      width: 70%;
-   }
-   
-   .event-page-wrapper .event-calendar .event-item .details .info h4 {
-      max-width: 250px;
-   }
-}
-
-
-@media screen and (min-width: 1080px) {
-    .event-page-wrapper .event-calendar .event-item .details .info h4 {
-      max-width: 350px;
-    }
-}
-/* ---- Overrides for desktop size ---- */
-
-/* Formatting for the event details page */
-.event-detail-wrapper {
-   display: flex;
-   flex-direction: row;
-   flex-wrap: wrap;
-}
-
-.event-detail-body {
-   padding-right: 25px;
-}
-
-.event-detail-card {
-   display: flex;
-   flex-direction: column;
-   border-width: 0px; 
-   border-color: #000; 
-   border-style: solid;
-   border-radius: 6px;
-   box-shadow: 0px 0px 10px #bbb;
-   padding: 25px;
-   margin-top: 1.78rem;
-   margin-bottom: 25px;
-   margin-left: 10px;
-   height: auto;
-   width: auto;
-   max-width: 450px;
-}
-
-@media screen and (max-width: 999px ){
-    .event-detail-card {
-        margin: 0px 10px;
-        width: 85%;
-    }
-}
-
-@media screen and (min-width: 1000px) {
-   .event-detail-card {
-      height: 100%;
-      width: 500px;
-   }
-   .event-detail-body {
-      width: 50%;
-   }
-}
-
-.event-detail-card h6 {
-	color: #7A1315;
-	font-family: akrobat;
-	font-weight: 900;
-   text-transform: uppercase;
-   font-size: 16px;
-   margin: 0px;
-   width: 50%;
-}
-
-.event-detail-card img {
-   border-radius: 6px;
-   width: 100%;
-    max-width: 100%;
-    height: auto;
-}
-
-.event-detail-card .info {
-   display: flex;
-   flex-direction: column;
-   
-   background-color: #f5f5f5;
-   border-radius: 6px;
-   padding: 15px;
-   margin-top: 15px;
-}
-
-.event-detail-card .info .item {
-   display: flex;
-   flex-direction: row;
-   align-items: top;
-   margin-top: 5px;
-   margin-bottom: 5px;
-}
-
-.event-detail-card .info .item .text {
-	color: #707270;
-	font-family: heebo;
-	font-weight: normal;
-   font-size: 12px;  
-   width: 80%;
-}
-
-
-/* New tweaks */
-.events-flex {
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    margin-left: 15px;
-    margin-top: 20px;
-}
-
-.events-card {
+.event-calendar-card {
     box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px;
     transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
     border-radius: 5px;
     background-color: #FFFFFF;
     margin: 0 auto;
-    margin-bottom: 20px;
+    padding: 20px;
+}
+
+.contextsetter-campus .dropdown {
+    margin-right: 0;
+}
+
+.event-calendar-header h2 {
+    margin: 0;
+}
+
+.event-calendar {
+    display: flex;
     margin-top: 20px;
 }
 
-.events-title {
-    font-size: 60px;
-    font-weight: 900;
-    font-family: akrobat;
+/* Mobile Styling */
+@media screen and (max-width: 500px) {
+    .event-calendar {
+        margin-top: 0;
+    }
+}
+
+.calendar-left {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin: 0 30px 20px 0;
+}
+
+.calendar-header h2 {
+    margin: 0;
+}
+
+.mdi-chevron-left, .mdi-chevron-right {
+    font-size: 36px;
+    color: #7A1315;
+}
+
+.calendar-header .mdi-chevron-left, .calendar-header .mdi-chevron-right {
+    color: #7A1315;
+}
+
+.event-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 10px 30px 10px 0;
+}
+
+.item-date {
+    width: 75px;
+    height: 75px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #7A1315;
+    border-radius: 6px;
+    margin-right: 10px;
+}
+
+.item-date p {
     color: #FFFFFF;
-    text-align: center;
+    margin: 0;
+    font-family: akrobat;
+    font-weight: regular;
+    font-size: 24px;
 }
 
-.events-subtitle {
-    text-align: center; 
-    color: #FFFFFF; 
-    font-size: 18px; 
-    font-family: heebo; 
+.item-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex: 1;
+    background-color: #e9e9ea;
+    border-radius: 6px;
+    padding: 0 10px;
+    height: 75px;
+}
+
+.item-info h4 {
+    font-family: akrobat;
+    font-weight: 900;
+    font-size: 20px;
+    margin: 0;
+    margin-bottom: 5px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: 500px;
+}
+
+.item-info p {
+    font-family: akrobat;
+    font-size: 16px;
+    line-height: 18px;
+    margin: 0;
+}
+
+.item-arrow {
+    color: #848484;
+}
+
+.selected, .item-details:hover  {
+    background-color: #999;
+    cursor: pointer;
+}
+
+.selected p, .item-details:hover p {
+    color: #FFFFFF;
+}
+
+.selected .item-arrow, .item-details:hover .item-arrow  {
+    color: #7A1315;
+}
+
+.calendar-right {
+    flex: .6;
+}
+
+.event-detail-card {
+    display: flex;
+    flex-direction: column;
+    border-radius: 6px;
+    box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px;
+    padding: 25px;
+}
+
+.event-detail-card-info {
+    display: flex;
+    flex-direction: column;
+    background-color: #f5f5f5;
+    border-radius: 6px;
+    padding: 15px;
+    margin: 15px 0;
+}
+
+.info-row {
+    display: flex;
+    margin: 10px 0;
+}
+
+.info-row h6 {
+    font-family: akrobat;
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: 16px;
+    flex: .3;
+}
+
+.info-row .info-text {
+    color: #707270;
+    font-family: heebo;
     font-weight: normal;
+    font-size: 12px;
+    flex: .8;
 }
 
-/* Override Theme.css */
-@media screen and (max-width: 800px) {
-    #section-a-bg {
-        padding: 40px 0px;
+.calendar-right .btn, .event-detail-card-reg .btn {
+    max-width: unset;
+    width: 100%;
+}
+
+.registration-closed p {
+    margin-top: 10px;
+}
+
+/* Mobile Styling */
+@media screen and (max-width: 500px) {
+    .calendar-left {
+        flex: unset;
     }
 
-    .desktop-spacer-top {
-        display: none;
+    .calendar-header {
+        margin: 0 0 20px 0;
+    }
+
+    .calendar-header h2 {
+        font-size: 30px;
+        text-align: center;
+    }
+
+    .event-item {
+        margin: 10px 0;
+    }
+
+    .item-date {
+        width: 50px;
+        height: 60px;
+    }
+
+    .item-details {
+        height: 60px;
+        padding: 0 0 0 10px;
+    }
+
+    .item-info h4 {
+        max-width: 140px;
+    }
+
+    .event-detail-card {
+        box-shadow: unset;
+        padding: 0;
+    }
+
+    .info-row {
+        flex-direction: column;    
+    }
+}
+
+/* Mobile Styling */
+@media screen and (max-width: 1024px) {
+    .event-calendar-card {
+        margin: 0 auto;
+    }
+
+    .calendar-left {
+        flex: unset;
+    }
+
+    .event-item {
+        margin: 10px 0;
+    }
+
+    /* override standard tablet layout */
+    #section-a-bg {
+        padding-bottom: 20px;
     }
 }

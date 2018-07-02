@@ -7,20 +7,16 @@
     background-attachment: fixed;
 }
 
-#zone-sectiona {
-    margin: auto;
-}
-
-#zone-sectionb {
-    margin: auto;
-}
-
 #ternavbar-bg {
     display: flex;
 }
 
 .navigation-tertiary-items {
     width: 1150px;
+}
+
+#section-b-bg, #section-d-bg {
+    background-color: #FFFFFF;
 }
 
 .give-title h1 {
@@ -43,10 +39,6 @@
 .giving-icon {
     color: #7A1315;
     font-size: 24px;
-}
-
-#desktopspacer {
-    padding-top: 100px;
 }
 
 /* Mobile Styling */
@@ -74,13 +66,7 @@
     .give-title p {
         display: none;
     }
-
-    #desktopspacer {
-        display: none;
-    }
 }
-
-
 
 .giving-content {
     display: Flex;
@@ -294,10 +280,6 @@
 
 /* Mobile Styling */
 @media screen and (max-width: 500px) {
-    #subnavbar-bg {
-        display: none;
-    }
-
     .giving-info {
         flex-direction: column-reverse;
         margin-top: 0;
@@ -375,7 +357,7 @@
 .transaction-card {
     display: flex;
     flex-direction: column;
-    margin: 20px auto;
+    margin: 0 auto;
     width: 50%;
     box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px;
     transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
@@ -394,17 +376,20 @@
     min-height: 400px;
 }
 
+/* Tablet Styling */
+@media screen and (max-width: 768px) {
+    .transaction-card {
+        width: 100%;
+        margin: 0;
+    }
+}
+
 /* Mobile Styling */
 @media screen and (max-width: 500px) {
-    #section-a-bg {
-        padding: 1px;
-    }
-
     .transaction-card {
-        padding-top: 0;
         padding-bottom: 0;
-        margin: 10px auto;
-        width: 90%;
+        margin: 0 auto;
+        width: 100%;
         min-height: 350px;
     }
 }
@@ -573,22 +558,7 @@
 }
 
 /* Give */
-#section-a-bg {
-    /* background-color: #EBEBEB; */
-    background-color: #f9f9f9;
-}
 
-#section-b-bg {
-    background-color: #EBEBEB;
-}
-
-#section-c-bg {
-	background-color: #f9f9f9;
-}
-
-#section-e-bg {
-	display: none;
-}
 /* Mobile Styling */
 @media screen and (max-width: 500px) {
     .panel-amount {
@@ -689,6 +659,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    min-width: unset;
 }
 
 #rblAccountType label {
@@ -751,7 +722,7 @@
 
 .panel-creditcard {
     display: flex;
-    width: 120%;
+    width: 140%;
     margin-top: -10px
 }
 
@@ -1054,6 +1025,7 @@
     height: 50px;
     font-size: 20px;
     padding: 0 20px;
+    min-width: 100px;
 }
 
 /* Mobile Styling */
@@ -1110,7 +1082,7 @@
     display: flex;
     flex-direction: column;
     margin-top: 40px;
-    min-width: 300px;
+    min-width: 400px;
 }
 
 .details-label {
@@ -1332,6 +1304,11 @@ input:checked + .slider:before {
 #btnSaveScheduleTransaction { 
     margin-top: 20px;
     float: right;
+}
+
+.success-form .btn {
+	max-width:unset;
+	width: 100%;
 }
 
 /* Mobile Styling */

@@ -1,44 +1,44 @@
 {% comment %}YOU MUST SET THE ID VIA {% assign eventDetailsCardId = value %} BEFORE INCLUDING {% endcomment %}
 {% comment %}YOU MUST SET THE DISPLAY PROPERTY VIA {% assign eventDetailCardDisplayStyle = 'none' %} BEFORE INCLUDING {% endcomment %}
 <div id="event-details-card-{{eventDetailsCardId}}" class="event-detail-card" style="visibility: hidden; display: {{eventDetailCardDisplayStyle}};">
-    
-    <img id="event-detail-card-img" src="" style="object-fit: cover; max-width: 400px; max-height: 400px;" class="img-responsive"></img>
+
+    <img id="event-detail-card-img" src="" class="img-responsive"></img>
    
-   <h4 id="event-detail-card-name"></h4>
-   <p id="event-detail-card-summary"></p>
-   <a id="event-detail-card-learnmore-btn" href="{{ detailUrl }}" class="btn btn-primary btn-block margin-t-md">Learn More</a>
-   
-   <div class="info">
-      <div id="event-detail-card-contact" class="item">
-         <h6>Contact: </h6>
-         
-         <div id="event-detail-card-contact-text" class="text">
-          </div>
-      </div>
-      
-      {% if EventItemOccurrence.Campus != null and EventItemOccurrence.Location != '' %}
-         <div class="item">
+    <h4 id="event-detail-card-name"></h4>
+    <p id="event-detail-card-summary"></p>
+    <a id="event-detail-card-learnmore-btn" href="{{ detailUrl }}" class="btn btn-primary">Learn More</a>
+
+    <div class="event-detail-card-info">
+        <div id="event-detail-card-contact" class="info-row">
+            <h6>Contact: </h6>
+            
+            <div id="event-detail-card-contact-text" class="info-text">
+            </div>
+        </div>
+        
+        {% if EventItemOccurrence.Campus != null and EventItemOccurrence.Location != '' %}
+            <div class="info-row">
             <h6>Location:</h6>
             
-            <p class="text">
-               {% if EventItemOccurrence.Campus != null %}
-                  {{EventItemOccurrence.Campus.Name}} Campus <br/>
-               {% endif %}
-               {% if EventItemOccurrence.Location != '' %}
-                  {{ EventItemOccurrence.Location }}
-               {% endif %}
+            <p class="info-text">
+                {% if EventItemOccurrence.Campus != null %}
+                    {{EventItemOccurrence.Campus.Name}} Campus <br/>
+                {% endif %}
+                {% if EventItemOccurrence.Location != '' %}
+                    {{ EventItemOccurrence.Location }}
+                {% endif %}
             </p>
-         </div>
-      {% endif %}
-      
-      <div id="event-detail-card-note" class="item">
-         <h6>Notes:</h6>
-         
-         <div id="event-detail-card-note-text" class="text">
-         </div>
-      </div>            
-   </div>
+            </div>
+        {% endif %}
+        
+        <div id="event-detail-card-note" class="info-row">
+            <h6>Notes:</h6>
+            
+            <div id="event-detail-card-note-text" class="info-text">
+            </div>
+        </div>            
+    </div>
    
-   <div id="event-detail-card-reg">
+    <div id="event-detail-card-reg">
    </div>
 </div>

@@ -1,16 +1,40 @@
 
 .page-background { 
-    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-image-missing.jpg");
-    background-color: white;
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/watch/hero-watch.jpg");
 }
 
-.main-feature {
-    height: 475px;
-    padding-top: 175px;
+/* use the expanded main feature only for tablet and larger */
+@media screen and (min-width: 501px) {
+    .main-feature {
+        height: 475px;
+        padding-top: 175px;
+    }
 }
 
+#section-b-bg {
+    background: url("/Themes/church_ccv_External_v8/Assets/Images/home/watch/background-watch-ccvlive.jpg");
+ }
 
+ .ccv-live-countdown {
+     display: flex;
+     align-items: center;
+ }
 
+ .lead-text {
+     font-size: 16px;
+     width: 25%;
+     margin: 0 5px 0 0;
+     display: none;
+ }
 
+ @media screen and (max-width: 1503px) { 
+    .lead-text {
+        font-size: 14px;
+    }
+ }
 
-
+ @media screen and (max-width: 1024px) { 
+    .lead-text {
+        font-size: 12px;
+    }
+ }

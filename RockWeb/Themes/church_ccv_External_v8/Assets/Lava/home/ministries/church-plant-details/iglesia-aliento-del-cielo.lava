@@ -1,0 +1,8 @@
+
+{% assign contentChannelChurchName = "Iglesia Aliento del Cielo" %}
+{% assign displayChurchName = "Iglesia Aliento del Cielo" %}
+{% assign churchLocation = "Palmar de Varela - Atlantico" %}
+{% assign pastorName = "Juan Carlos Rivera Herrera" %}
+{% assign pastorDetail = "Pastor Juan Carlos and his wife have two children. He and his family are grateful to live very close to the church, allowing them the opportunity to better support the community they serve. Juan has been in church leadership for the last three years but continues to grow in his leadership and knowledge by training with the Biblical Institute." %}
+{% assign pastorImg = "~~/Assets/Images/home/ministries/colombia-church-plant/pastors/EAV-Juan.png" %}
+{% assign campusSponsor = "East Valley" %}

@@ -5,6 +5,7 @@
 
 .main-feature {
     padding-top: 90px;
+    padding-bottom: 25px;
 }
 
 .message-video {
@@ -52,14 +53,20 @@
     margin-bottom: 30px;
 }
 
+/* Tablet Styling */
+@media screen and (max-width: 768px) {
+    #section-a-bg {
+        padding-bottom: 20px;
+    }
+
+    .message-card {
+        margin: 0;
+    }
+}
 /* Mobile Styling */
 @media screen and (max-width: 500px) {
     .main-feature {
         padding-top: 60px;
-    }
-
-    #zone-feature, #zone-sectiona {
-        margin: 10px 0px;
     }
 
     .message-video {
@@ -69,7 +76,6 @@
 
     .message-card {
         flex-direction: column;
-        margin: 0;
     }
 
     .message-buttons-mobile {

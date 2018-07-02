@@ -2,12 +2,8 @@
     background-color: #616161;
 }
 
-#subnavbar-bg, #section-a-bg, #zone-sectiona {
-    background-color: #FFFFFF;
-}
-
 .privacy-policy {
-    margin: 40px 0;
+    margin: 0;
 }
 
 .privacy-policy h2 {
@@ -30,10 +26,6 @@
 
 /* Mobile Styling */
 @media screen and (max-width: 500px) {
-    #section-a-bg {
-        padding: 20px;
-    }
-
     .privacy-policy {
         margin: 0;
     }

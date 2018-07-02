@@ -2,8 +2,14 @@
     background-color: #EBEBEB;
 }
 
-#section-c-bg {
-	display: none;
+#section-a-bg {
+    background-color: #FFFFFF;
+}
+
+@media screen and (max-width: 768px) {
+    .infoSection {
+        min-height: unset;
+    }
 }
 
 @media screen and (max-width: 500px){
@@ -12,7 +18,7 @@
     }
 }
 
-/* Feature Section */
+/* Campus Leader Section */
 
 .campus-header {
     font-size: 64px;
@@ -35,8 +41,8 @@
     margin-left: 25px;
 }
 
-.campus-leader-details h4, .campus-leader-details p {
-    color: #FFFFFF;
+.campus-leader-email {
+    color: #7A1315;
 }
 
 @media screen and (max-width: 500px){
@@ -119,6 +125,12 @@
     text-align: right;
 }
 
+@media screen and (max-width: 768px) {
+    .campus-info {
+        padding: 20px 0;
+    }
+}
+
 @media screen and (max-width: 500px){
     .campus-info {
         flex-direction: column;
@@ -162,6 +174,42 @@
     width: 49%;
 }
 
+/* Tablet Styling */
+@media screen and (max-width: 768px){
+    /* padding fix */
+    #section-a-bg {
+        padding-bottom: 1px;
+    }
+
+    .campus-info {
+        margin: 0;
+    }
+
+    .campus-info-content {
+        margin-right: 50px;
+        width: 100%;
+    }
+    
+    .campus-visit h3 {
+        margin: 0;
+    }
+
+    .info-tile-group {
+        margin-bottom: 0;
+        padding-bottom: 25px;
+    }
+
+    .directions-info {
+        margin-right: 100px;
+    }
+
+    .clothing-info {
+        width: 80%;
+        margin-right: 75px;
+    }
+}
+
+/* Mobile Styling */
 @media screen and (max-width: 500px){
     .campus-visit h3 {
         margin-top: 0;
@@ -179,8 +227,13 @@
         flex-direction: column;
     }
 
+    .directions-info {
+        margin-right: 0;
+    }
+
     .clothing-info {
         width: 100%;
+        margin-right: 0;
     }
 
     .clothing-icons {
@@ -205,3 +258,5 @@
         margin-bottom: 0;
     }
 }
+
+

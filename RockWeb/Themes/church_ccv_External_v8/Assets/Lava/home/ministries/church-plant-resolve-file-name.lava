@@ -1,0 +1,8 @@
+
+{% comment %}
+{% include '~~/Assets/Lava/home/ministries/church-plant-resolve-file-name.lava' %}
+This will convert the page parameter church name into the appropriate lava file for the church.
+{% endcomment %}
+
+{% assign link = PageParameter.ChurchName | Prepend:'~~/Assets/Lava/home/ministries/church-plant-details/' %}
+{% assign churchDetailsLavaFile = link | Append:'.lava' %}

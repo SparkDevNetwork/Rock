@@ -1,5 +1,5 @@
 @import url(//fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800);
-@import url('https://fonts.googleapis.com/css?family=Heebo');
+@import url('https://fonts.googleapis.com/css?family=Heebo:300,400');
 
 .jcrop-holder {
     direction: ltr;
@@ -9046,7 +9046,6 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     position: relative;
-    margin-bottom: 30px;
     overflow: hidden;
     border-radius: 6px;
 }
@@ -9071,7 +9070,7 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 }
 
 .hoverthumb-overlaytitle {
-    font-size: 46px;
+    font-size: 40px;
     font-weight: 900;
     margin: 0;
 }
@@ -10088,11 +10087,6 @@ legend {
 	background: #ffffff;
 }
 
-#subnavbar-bg {
-	background-color: #FFFFFF;
-	z-index: 998;
-}
-
 .subnavbar {
     margin: 0px;
     background: #FFFFFF;
@@ -10136,7 +10130,8 @@ h1 a, h2 a, h3 a, h4 a, h5 a, h6 a {
 h1 {
   font-size: 4.2rem;
   line-height: 110%;
-  margin: 2.1rem 0 1.68rem 0;
+  margin: 0;
+  padding: 2.1rem 0 1.68rem 0;
   font-family: akrobat;
   color: #7A1315;
   text-transform: uppercase;
@@ -10145,7 +10140,8 @@ h1 {
 h2 {
   font-size: 3.56rem;
   line-height: 110%;
-  margin: 1.78rem 0 1.424rem 0;
+  margin: 0;
+  padding: 1.78rem 0 1.424rem 0;
   font-family: akrobat;
   color: #7A1315;
   text-transform: uppercase;
@@ -10154,7 +10150,8 @@ h2 {
 h3 {
   font-size: 2.92rem;
   line-height: 110%;
-  margin: 1.46rem 0 1.168rem 0;
+  margin: 0;
+  padding: 1.46rem 0 1.168rem 0;
   font-family: akrobat;
   color: #7A1315;
   text-transform: uppercase;
@@ -10163,7 +10160,8 @@ h3 {
 h4 {
   font-size: 2.28rem;
   line-height: 110%;
-  margin: 1.14rem 0 0.912rem 0;
+  margin: 0;
+  padding: 1.14rem 0 0.912rem 0;
   font-family: akrobat;
   color: #7A1315;
   text-transform: uppercase;
@@ -10172,7 +10170,8 @@ h4 {
 h5 {
   font-size: 1.64rem;
   line-height: 110%;
-  margin: 0.82rem 0 0.656rem 0;
+  margin: 0;
+  padding: 0.82rem 0 0.656rem 0;
   font-family: akrobat;
   color: #7A1315;
   text-transform: uppercase;
@@ -10181,7 +10180,8 @@ h5 {
 h6 {
   font-size: 1rem;
   line-height: 110%;
-  margin: 0.5rem 0 0.4rem 0;
+  margin: 0;
+  padding: 0.5rem 0 0.4rem 0;
   font-family: akrobat;
   color: #7A1315;
   text-transform: uppercase;
@@ -10747,13 +10747,6 @@ html,body{
         margin-left: 30px;
         padding: 0;
     }
-}
-
-.selectaday-flex {
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    margin-left: 15px;
 }
 
 /* SSO Login page*/

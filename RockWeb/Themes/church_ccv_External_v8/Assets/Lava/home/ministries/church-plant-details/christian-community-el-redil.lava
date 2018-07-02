@@ -1,0 +1,8 @@
+
+{% assign contentChannelChurchName = "Christian Community El Redil" %}
+{% assign displayChurchName = "Christian Community El Redil" %}
+{% assign churchLocation = "Arjona - Bolivar" %}
+{% assign pastorName = "Raul Moreno" %}
+{% assign pastorDetail = "Pastor Raul and his wife, Nayibis, have been married for 24 years. They have 3 children: Lucas Samuel, 21, Cessia, 19, and Elias David, 15. He has held various positions in church leadership, including working with students and directing the evangelism ministry. It is Raul and Nayibis' desire to help people in extreme poverty. They have a heart for children exposed to gangs, drug addiction, sex trafficking, and child abuse. Their love for the community is so deep, that Raul and Nayibis donated their own land to build the Church." %}
+{% assign pastorImg = "~~/Assets/Images/home/ministries/colombia-church-plant/pastors/CHD-Raul.png" %}
+{% assign campusSponsor = "Chandler" %}

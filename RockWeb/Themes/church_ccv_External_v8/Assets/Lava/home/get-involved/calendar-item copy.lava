@@ -1,0 +1,108 @@
+<div class="events-detail-header">
+        <a href="/get-involved/events" class="btn btn-primary">Return to Events</a>
+        <h1>{{Event.Name}}</h1>
+</div>
+
+<div class="events-detail">
+    <div class="events-detail-info">
+        {{Event.Description}}
+    </div>
+
+    <div class="events-detail-card">
+        {% if Event.Photo.Guid %}
+            <img src="/GetImage.ashx?Guid={{ Event.Photo.Guid }}" class="img-responsive"></img>
+        {% endif %}
+        
+        <div class="event-info">
+            {% assign linkage = EventItemOccurrence.Linkages | First %}
+            
+            {% if EventItemOccurrence.ContactEmail != '' or EventItemOccurrence.ContactPhone != '' %}
+                <div class="info-row">
+                    <h6>Contact: </h6>
+                    
+                    <div class="info-text">
+                        {% if EventItemOccurrence.ContactEmail != '' %}
+                            {{ EventItemOccurrence.ContactEmail }} <br/>
+                        {% endif %}
+                        
+                        {% if EventItemOccurrence.ContactPhone != '' %}
+                            {{ EventItemOccurrence.ContactPhone }}
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+
+            {% if EventItemOccurrence.Campus != null and EventItemOccurrence.Location != '' %}
+                <div class="info-row">
+                    <h6>Location:</h6>
+                    
+                    <div class="info-text">
+                        {% if EventItemOccurrence.Campus != null %}
+                            {{EventItemOccurrence.Campus.Name}} Campus <br/>
+                        {% endif %}
+
+                        {% if EventItemOccurrence.Location != '' %}
+                            {{ EventItemOccurrence.Location }}
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+
+            
+            {% assign scheduledDates = EventItemOccurrence.Schedule.iCalendarContent | DatesFromICal:'all' %}
+            {% assign numScheduledDates = scheduledDates | Size %}
+            {% if numScheduledDates > 0 %}
+                <div class="info-row">
+                    <h6>When:</h6>
+                    
+                    <div class="info-text">
+                        <ul class="list-unstyled">
+                            {% for scheduledDate in scheduledDates %}
+                                <li>{{  scheduledDate | Date:'dddd, MMMM d, yyyy @ h:mm tt' }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            {% endif %}
+            
+            {% if EventItemOccurrence.Note != '' %}
+                <div class="info-row">
+                    <h6>Notes:</h6>
+                    
+                    <div class="info-text">
+                        {{ EventItemOccurrence.Note }}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+         
+        {% if linkage.RegistrationInstanceId > 0 ) %}
+
+            {% assign daysTillStartDate = 'Now' | DateDiff:linkage.RegistrationInstance.StartDateTime,'m' %}
+            {% assign daysTillEndDate = 'Now' | DateDiff:linkage.RegistrationInstance.EndDateTime,'m' %}
+            {% assign showRegistration = true %}
+            {% assign registrationMessgae = '' %}
+
+            {% if daysTillStartDate and daysTillStartDate > 0 %}
+                {% assign showRegistration = false %}
+                {% capture registrationMessage %}<p>Registration opens on {{ linkage.RegistrationInstance.StartDateTime | Date:'dddd, MMMM d, yyyy' }}</p>{% endcapture %}
+            {% endif %}
+
+            {% if daysTillEndDate and daysTillEndDate < 0 %}
+                {% assign showRegistration = false %}
+                {% capture registrationMessage %}<p>Registration closed on {{ linkage.RegistrationInstance.EndDateTime | Date:'dddd, MMMM d, yyyy' }}</p>{% endcapture %}
+            {% endif %}
+
+            {% if showRegistration == true %}
+                {% if linkage.RegistrationInstance.RegistrationTemplate.FinancialGatewayId == 4 %}
+                    <a href="https://my.ccv.church/StarsRegistration?RegistrationInstanceId={{ linkage.RegistrationInstanceId }}&EventOccurrenceID={{ EventItemOccurrence.Id }}" class="btn btn-primary">Register Now</a>
+                {% else %}
+                    <a href="{{ RegistrationPage }}?RegistrationInstanceId={{ linkage.RegistrationInstanceId }}&EventOccurrenceID={{ EventItemOccurrence.Id }}" class="btn btn-primary">Register Now</a>
+                {% endif %}
+            {% else %}
+                <div class="btn btn-primary" disabled>Registration Closed</div><br/><span class="registration-closed">{{ registrationMessage }}</span></div>
+            {% endif %}
+
+        {% endif %}
+    </div>
+</div>

@@ -1,0 +1,130 @@
+
+#ternavbar-bg {
+    display: flex;
+}
+
+.navigation-tertiary-item {
+    padding: 10px 30px;
+}
+
+.campuses-cards-row {
+    width: 590px;
+}
+
+.prev {
+    display: none;
+}
+
+.next {
+    display: none;
+}
+
+.navigation-tertiary-mobile {
+    display: none;
+}
+
+/* IPhone 6/7/8 PLUS. (414 x 736) Mobile Styling */
+@media screen and (max-width: 750px) {
+    .navigation-tertiary-items-slick {
+        width: 345px;
+        /* border: 1px solid black; */
+        margin-left: -15px;
+        margin-right: -15px; 
+        padding-left: 0%;
+    }
+    .next {
+        color: lightgrey;
+        font-size: 20px;
+        margin-left: 280px;
+        position: absolute;
+        right: 10px;
+        top: 5px;
+      }
+      
+      .prev{
+        color: lightgrey;
+        font-size: 20px;
+        margin-right: 0px;
+        position: absolute;
+        left: 10px;
+        padding-top: 5px;
+      }
+
+      .navigation-tertiary-mobile {
+        display: unset;
+    }
+
+    .navigation-tertiary-desktop {
+        display: none;
+    }
+
+    .navigation-tertiary-item {
+        padding: 5px;
+    }    
+}
+
+/* IPhone 6/7/8. (375 x 667) Mobile Styling */
+@media screen and (max-width: 380px) {
+    .navigation-tertiary-items-slick {
+        width: 320px;
+        /* border: 1px solid black; */
+        margin-left: -15px;
+        margin-right: -15px; 
+        padding-left: 0%;
+    }
+
+    .next {
+        color: lightgrey;
+        font-size: 20px;
+        margin-left: 280px;
+        position: absolute;
+        right: 10px;
+        top: 5px;
+      }
+      
+      .prev{
+        color: lightgrey;
+        font-size: 20px;
+        margin-right: 0px;
+        position: absolute;
+        left: 10px;
+        padding-top: 5px;
+      }
+      
+    .hoverthumb img {
+        height: 220px;
+    }
+}
+
+/* IPhone 5/SE. (320 x 568) Mobile Styling */
+@media screen and (max-width: 320px) {
+    .navigation-tertiary-items-slick{
+        width: 250px;
+        /* border: 1px solid black; */
+        margin-left: -15px;
+        margin-right: -15px; 
+        padding-left: 0%;
+
+    }
+    .next {
+        color: lightgrey;
+        font-size: 20px;
+        margin-left: 280px;
+        position: absolute;
+        right: 10px;
+        top: 5px;
+      }
+      
+      .prev{
+        color: lightgrey;
+        font-size: 20px;
+        margin-right: 0px;
+        position: absolute;
+        left: 10px;
+        padding-top: 5px;
+      }
+
+      .hoverthumb img {
+          height: 250px;
+      }
+}

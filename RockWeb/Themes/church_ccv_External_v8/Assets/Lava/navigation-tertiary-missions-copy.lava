@@ -1,0 +1,78 @@
+{% comment %} 
+    {% include '~~/Assets/Lava/navigation-tertiary.lava' %} 
+{% endcomment %}
+<div class="prev"> < </div>
+{% if Page.DisplayChildPages == 'true' and Page.Pages != empty %}
+    <div class="contain"> 
+
+    
+    <ul class="campuses-cards-row" >   
+        {% for childPage in Page.Pages %}
+                <li class="navigation-tertiary-item{% if childPage.Current == 'true' %} active{% endif%}">
+                    <a href="{{ childPage.Url }}">{{ childPage.Title }}</a>
+                </li>
+        {% endfor %}
+                 
+
+    </ul>
+     <div class="next"> > </div>
+    {% comment %} <div class="next"> > </div> {% endcomment %}
+    </div>
+{% endif %}
+
+<script>
+
+var item_length = 0;
+
+$(document).ready(function() {
+        var slider = $('.campuses-cards-row').slick({
+        centerMode: false,
+        centerPadding: '200px',
+        infinite: false,
+        slidesToShow: 2,
+        arrows: false,
+        variableWidth: true,
+        cssEase: 'linear',
+        edgeFriction: .0,
+        responsive: [
+            {
+            breakpoint: 768,
+                settings: {
+                    arrows: true,
+                    centerPadding: '40px',
+                    slidesToShow: 2,
+                    swipeToSlide: true,
+                    prevArrow: $('.prev'),
+                    nextArrow: $('.next'),
+                   
+                }
+            },
+            {
+            breakpoint: 350,
+                settings: {
+                    arrows: true,
+                    centerPadding: '40px',
+                    slidesToScroll: 3,     
+                    swipeToSlide: true,
+                    slidesToShow: 1,
+                    prevArrow: $('.prev'),
+                    nextArrow: $('.next'),
+                   
+                }
+            }
+        ]
+    });
+   /* slider.on('afterChange', function(event, slick, currentSlide) {
+        if( slick.slideCount === currentSlide + 1) {
+                slick.paused = true;
+        }
+    });
+
+
+     
+
+
+    */
+});
+
+</script>

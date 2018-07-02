@@ -1,0 +1,111 @@
+<div class="main-container">
+    <div class="life-training-container">
+        <div class="ls-image">
+                <img class="img img-responsive" src="/Themes/church_ccv_External_v8/Assets/Images/home/ministries/feature-adults-lifetraining-marriage.jpg"/>
+        </div>
+        <div class="ls-section-desc">
+            <div class="ls-header">
+                
+                <h2>MARRIAGE</h2>
+            </div>
+            <p>Whether you are dating, engaged, or married, CCV is passionate about helping couples build and sustain healthy relationships.  
+            We want to provide you with practical tools based on God’s Word to help your relationship truly succeed.
+            </p>
+            <div class="btn-row">
+                <a href="next-steps/starting-point" class="btn btn-default">Learn More</a>
+                <a href="next-steps/starting-point" class="btn btn-default">Talk to Someone</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="life-training-container">
+        <div class="ls-image">
+                <img class="img img-responsive" src="/Themes/church_ccv_External_v8/Assets/Images/home/ministries/feature-adults-lifetraining-marriage.jpg"/>
+        </div>
+        <div class="ls-section-desc">
+            <div class="ls-header">
+               
+                <h2>FINANCE</h2>
+            </div>
+            <p>Bacon ipsum dolor amet alcatra sirloin pork loin, brisket meatloaf ribeye venison. Capicola jerky leberkas, pork belly cupim pork biltong shoulder doner alcatra. Meatloaf spare ribs frankfurter landjaeger picanha pancetta. </p>
+            <div class="btn-row">
+                <a href="training/financial" class="btn btn-default">Learn More</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="life-training-container">
+        <div class="ls-image">
+                <img class="img img-responsive" src="/Themes/church_ccv_External_v8/Assets/Images/home/ministries/feature-adults-lifetraining-marriage.jpg"/>
+        </div>
+        <div class="ls-section-desc">
+            <div class="ls-header">
+                
+                <h2>PARENTING</h2>
+            </div>
+            <p>As a parent, you are the biggest influence on your children in every area of life.  We want to provide you with Biblical principles and resources to instill integrity and character into the hearts of your children to raise them to be Christ-centered, difference makers.
+            </p>
+            <div class="btn-row">
+                <a href="next-steps/starting-point" class="btn btn-default">Learn More</a>
+                <a href="next-steps/starting-point" class="btn btn-default">Learn More</a>
+                <a href="next-steps/starting-point" class="btn btn-default">Talk to Someone</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="life-training-container">
+        <div class="ls-image">
+                <img class="img img-responsive" src="/Themes/church_ccv_External_v8/Assets/Images/home/ministries/feature-adults-lifetraining-marriage.jpg"/>
+        </div>
+        <div class="ls-section-desc">
+            <div class="ls-header">
+                
+                <h2>PAIN / GRIEF</h2>
+            </div>
+            <p>
+                Life can be overwhelming when faced with death, loss, and suffering, but we know there is hope through Christ. We want to provide you with the support and resources you need to find hope and healing.            </p>
+            <div class="btn-row">
+                <a href="next-steps/starting-point" class="btn btn-default">Learn More</a>
+                <a href="next-steps/starting-point" class="btn btn-default">Talk to Someone</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="life-training-container">
+        <div class="ls-image">
+                <img class="img img-responsive" src="/Themes/church_ccv_External_v8/Assets/Images/home/ministries/feature-adults-lifetraining-marriage.jpg"/>
+        </div>
+        <div class="ls-section-desc">
+            <div class="ls-header">
+                
+                <h2>TRAUMA & ABUSE</h2>
+            </div>
+            <p>
+                If you’ve experienced a traumatic event or crisis, it can be difficult to know where to turn for healing and restoration. We want to help you get the help you need to move past the pain and find healing in Christ.            </p>
+            <div class="btn-row">
+               <a href="next-steps/starting-point" class="btn btn-default">Learn More</a>
+                <a href="next-steps/starting-point" class="btn btn-default">Talk to Someone</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="life-training-container">
+        <div class="ls-image">
+                <img class="img img-responsive" src="/Themes/church_ccv_External_v8/Assets/Images/home/ministries/feature-adults-lifetraining-marriage.jpg"/>
+        </div>
+        <div class="ls-section-desc">
+            <div class="ls-header">
+                
+                <h2>ADDICTION</h2>
+            </div>
+            <p>
+                We believe you can find victory over sin and find restoration in areas once marked by failure and defeat.  We want to provide you with the support and resources you need to find lasting freedom in Christ.            </p>
+            <div class="btn-row">
+                <a href="next-steps/starting-point" class="btn btn-default">Learn More</a>
+                <a href="next-steps/starting-point" class="btn btn-default">Talk to Someone</a>
+            </div>
+        </div>
+    </div>
+
+    </div>
+</div>

@@ -1,8 +1,8 @@
-<div class="container">
-    <h3 style="margin-left: 15px;">Serving Opportunities</h3>
+<div>
+    <h3>Serving Opportunities</h3>
 
-    <div class="event-cards-row">
-        <div class="event-card">
+    <div class="serve-cards-row">
+        <div class="serve-card">
             <div class="image">
                 <img src="https://my.ccv.church/GetImage.ashx?id=783200&amp;width=720&amp;height=405&amp;mode=crop">
             </div>
@@ -10,11 +10,11 @@
                 <h4>Administration</h4>
             </div>
             <div class="content">
-                <p>Volunteers can use their specific gifts and talents in many ways at CCV. Each week there are several volunteers needed in many behind-the-scenes areas of CCV to provide an experience of excellence for all those that come to our campuses. The administration opportunities include working with our Adult Ministries, Business Services, Pastoral Care, IT, Safety &amp; Security, and other teams during the week and on weekends to complete various tasks and projects.</p>
+                <p>Volunteers can use their specific gifts and talents in many ways at CCV. Each week there are needs in many behind-the-scenes areas to provide an experience of excellence for all those that come to our campuses. Opportunities include working with our Adult Ministries, Business Services, Pastoral Care, IT, Safety &amp; Security, and other teams during the week and on weekends to complete various tasks and projects.</p>
             </div>
         </div>
 
-        <div class="event-card">
+        <div class="serve-card">
             <div class="image">
                 <img src="https://my.ccv.church/GetImage.ashx?id=867647&amp;width=720&amp;height=405&amp;mode=crop">
             </div>
@@ -26,9 +26,9 @@
             </div>
         </div>
 
-        <div class="event-card">
+        <div class="serve-card">
             <div class="image">
-                <img src="https://my.ccv.church/GetImage.ashx?id=867647&amp;width=720&amp;height=405&amp;mode=crop">
+                <img src="https://my.ccv.church/GetImage.ashx?id=783210&amp;width=720&amp;height=405&amp;mode=crop">
             </div>
             <div class="header">
                 <h4>Guest Services</h4>
@@ -38,7 +38,7 @@
             </div>
         </div>
 
-        <div class="event-card">
+        <div class="serve-card">
             <div class="image">
                 <img src="https://my.ccv.church/GetImage.ashx?id=783218&amp;width=720&amp;height=405&amp;mode=crop">
             </div>
@@ -50,7 +50,7 @@
             </div>
         </div>
 
-        <div class="event-card">
+        <div class="serve-card">
             <div class="image">
                 <img src="https://my.ccv.church/GetImage.ashx?id=783222&amp;width=720&amp;height=405&amp;mode=crop">
             </div>
@@ -62,7 +62,7 @@
             </div>
         </div>
 
-        <div class="event-card">
+        <div class="serve-card">
             <div class="image">
                 <img src="https://my.ccv.church/GetImage.ashx?id=783224&amp;width=720&amp;height=405&amp;mode=crop">
             </div>
@@ -74,7 +74,7 @@
             </div>
         </div>
 
-        <div class="event-card stars-override">
+        <div class="serve-card stars-override">
             <div class="image">
                 <img style="padding: 5px;" width="175px" src="~~/Assets/Images/logos/logo-stars-black.svg">
             </div>

@@ -1,0 +1,357 @@
+/* Toolbox Card */
+.toolbox-row {
+    display: flex;
+}
+
+.toolbox-card {
+    display: flex;
+    justify-content: space-between;
+}
+
+.toolbox-card-outer-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+  
+.toolbox-card p {
+    line-height: 1.5;
+}
+
+.toolbox-card {
+    color: rgba(0, 0, 0, 0.87);
+    background-color: #ffffff;
+    transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.12);
+    border-radius: 5px;
+    z-index: 1;
+}
+
+.toolbox-card .header h4 {
+    font-size: 26px;
+    line-height: 31px;
+    margin: 14px 30px 20px 30px;
+}
+
+.toolbox-card-content {
+    margin: 20px 30px;
+}
+
+.toolbox-card-content h3 {
+    font-size: 26px;
+    line-height: 31px;
+}
+
+.current-series-video {
+    padding: 25px;
+}
+
+.subnav {
+    display: flex;
+    padding: 0px 30px 18px 15px;
+    flex-wrap: wrap;
+}
+
+.subnav > div {
+    text-decoration: none;
+    text-transform: uppercase;
+    color: #707270;
+    padding: 0 15px;
+    font-family: akrobat;
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 17px;
+}
+
+.subnav > div:hover {
+    cursor: pointer;
+    color: #7a1315;
+}
+
+.subnav-div-selected {
+    color: #7a1315 !important;
+}
+  
+.group-info-banner {
+    display: flex;
+    flex-wrap: nowrap;
+    background-color: #eeeeee;
+    padding: 14px 5px 10px 5px;
+}
+
+.group-info-banner > div {
+    text-decoration: none;
+
+    padding: 0 25px 0 25px;
+    color: #707270;
+
+    font-family: heebo;
+    font-size: 14px;
+    font-weight: normal;
+    line-height: 26px;
+}
+
+.group-info-banner > div > span {
+    padding-left: 10px;
+}
+
+.latest-series-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+@media screen and (min-width: 650px) {
+    .latest-series-info {
+    flex-direction: row;
+    }
+}
+
+.latest-series-info-element {
+    display: flex;
+    flex-direction: column;
+}
+
+.latest-series-info-element:last-child {
+    margin-right: 50px;
+}
+
+.latest-series-info-element > div > p {
+    font-size: 12px;
+    line-height: 18px;
+    color: #707270;
+    margin-bottom: 0;
+
+}
+
+.latest-series-info-element > div > h5 {
+    font-family: heebo;
+    font-size: 18px;
+    line-height: 27px;
+    color: #010001;
+    font-weight: normal;
+    margin-top: 6px;
+}
+
+.latest-series-title {
+    background-color: #EEEEEE;
+}
+
+.latest-series-title > div > p {
+    font-family: heebo;
+    font-size: 18px;
+    line-height: 36px;
+    font-weight: normal;
+    color: #707270;
+    margin: 12px 0 12px 5px;
+}
+
+.discussion-guide a {
+    text-decoration: none;
+}
+
+.discussion-guide > div > a > h5 {
+    font-family: akrobat;
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 22px;
+    color: #7A1315;
+}
+
+.previous-weeks {
+    margin: 20px 30px 20px 30px;
+}
+
+.toolbox-past-messages {
+    display: flex;
+    flex-direction: column;
+}
+
+@media screen and (min-width: 650px) {
+    .toolbox-past-messages {
+        display: flex;
+        flex-wrap: wrap;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+}
+
+.toolbox-video-card {
+    color: rgba(0, 0, 0, 0.87);
+    background-color: #ffffff;
+    transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.12);
+    border-radius: 5px;
+    z-index: 1;
+    width: 30%;
+    display: flex;
+    flex-direction: column;
+}
+
+.toolbox-video-card img {
+    border-radius: 5px 5px 0 0;
+}
+
+.toolbox-video-card > div > p {
+    margin: 16px;
+    font-family: heebo;
+    font-weight: normal;
+    color: #707270;
+}
+
+.discussion-guide-icon {
+    font-size: 18px; 
+    padding-right: 14px; 
+    color: #424242; 
+}
+/* Group Details */
+.group-picture img {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.group-heading {
+    border-bottom: 1px solid #EEEEEE;
+    margin-bottom: 0;
+    padding-bottom: 18px;
+}
+
+/* End Toolbox Card */
+  
+/* Toolbox Group Member Card */
+
+.toolbox-group-members-card {
+    margin: 0;
+    margin-top: 20px;
+    height: 670px;
+    max-height: 670px;
+}
+
+.toolbox-group-members-card .title a {
+    color: #424242;
+}
+
+.toolbox-group-members-card .title a:hover {
+    text-decoration: none;
+}
+
+.toolbox-group-members-card .content {
+    height: 625px;
+    padding-bottom: 20px;
+}
+
+.person-row {
+    display: flex;
+    flex-direction: column;
+}
+
+.toolbox-group-members-card .person-contact {
+    margin-left: 20px;
+}
+
+.person-row-details {
+    display: flex;
+    flex-direction: column;
+    margin-left: 110px;
+}
+
+@media screen and (max-width: 500px) {
+    .person-row-details {
+        margin-left: 60px;
+    }
+}
+
+.person-row-details p {
+    margin: 0;
+    line-height: 26px;
+    font-family: heebo;
+    font-size: 14px;
+    color: #707270;
+}
+
+.person-row-details a {
+    color: #8f3839;
+}
+
+.person-row-details a:hover {
+    text-decoration: none;
+}
+
+.person-details-toggle {
+    background-color: unset;
+    border: unset;
+    padding: unset;
+}
+
+.person-row-details .person-details-additional-child {
+    margin-left: 34px;
+}
+
+.person-row-details .person-details-additional-address {
+    margin-left: 58px;
+}
+
+/* Group Member Badges Styling */
+.person-badges img {
+    width: 24px;
+    height: 24px;
+    margin-bottom: 10px;
+}
+
+
+
+
+/* Flash class and keyframe animation */
+.nextstep-loading {
+    -webkit-animation: flash linear 1s infinite;
+    animation: flash linear 1s infinite;
+}
+    @-webkit-keyframes flash {
+        0% { opacity: 1; } 
+        50% { opacity: .1; } 
+        100% { opacity: 1; }
+    }
+    @keyframes flash {
+        0% { opacity: 1; } 
+        50% { opacity: .1; } 
+        100% { opacity: 1; }
+    }
+
+/* Fix Blue Box around calling href bug */
+.person-details-toggle:focus {
+    outline:none!important
+}
+
+/* End Toolbox Group Member Card */
+
+/* Toolbox Associate Pastor Card */
+
+.associate-pastor-card {
+    background-color: #ffffff;
+    transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.12);
+    border-radius: 5px;
+    margin: 40px 0 0 0;
+    height: 230px;
+}
+
+.associate-pastor-card .title h3 {
+    font-size: 26px;
+    margin: 14px 0 14px 15px;
+}
+
+.associate-pastor-card .group-header h5 {
+    font-size: 18px;
+}
+
+.associate-pastor-card .person-row-summary img {
+    margin: 25px 10px 25px 10px;
+}
+
+
+/* End Toolbox Associate Pastor Card */

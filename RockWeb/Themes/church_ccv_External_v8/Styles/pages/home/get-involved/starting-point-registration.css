@@ -1,31 +1,6 @@
 .page-background {
-    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/startingpoint-hero.jpg");
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-image-missing.jpg");
     background-color: #ffffff;
-}
-
-#section-a-bg {
-	background-color: #F6F6F6;
-}
-
-#zone-sectiona {
-    max-width: 1024px;
-    margin: 0 auto;
-    padding: 0px 30px;
-    text-align: center;
-}
-
-#section-b-bg {
-	background-color: #F6F6F6;
-}
-
-#zone-sectionb {
-    background-color: #FFFFFF;
-    box-shadow: 0px 0px 10px #E5E5E5;
-    border-radius: 5px;
-    max-width: 1024px;
-    margin: 0 auto;
-    padding: 30px 30px;
-    margin-bottom: 20px;
 }
 
 .reg-info h1 {
@@ -34,15 +9,4 @@
     font-family: akrobat;
     color: #7A1315;
     text-align: center;
-}
-
-/* Override Theme.css */
-@media screen and (max-width: 800px) {
-    #section-b-bg {
-        padding: 10px 15px;
-    }
-    
-    #zone-sectionb {
-        padding: 10px 30px;
-    }
 }

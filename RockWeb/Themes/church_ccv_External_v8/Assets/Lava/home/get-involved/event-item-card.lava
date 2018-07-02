@@ -10,6 +10,7 @@
 {% endunless %}
 
 {% comment %} Render Header {% endcomment %}
+
 <div class="event-cards-header">
     <h3>{{ eventHeaderText | Default: 'Events' }}</h3>
     <div class="nav-buttons">
@@ -46,7 +47,7 @@
                     <img src="/GetImage.ashx?Guid={{imageGuid}}&width=350&mode=crop"/>
                 </div>
                 <div class="header">
-                    <h4>{{ item.Title | Truncate: 30 }}</h4>
+                    <h4>{{ item.Title | Truncate: 26 }}</h4>
                 </div>
                 <div class="content">
                     <p>{{ item | Attribute:'SummaryText' | Truncate: 250 }}</p>
@@ -63,6 +64,7 @@
         {% endif %}
     {% endfor %}
 </div>
+
 
 <script>
 $(document).ready(function(){

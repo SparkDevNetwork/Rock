@@ -51,22 +51,23 @@ ul {
     margin: 5px 0;
 }
 
-/* temp hide ter nav */
-@media screen and (max-width: 500px) {
-    #ternavbar-bg {
-        display: none;
+/* Tablet Styling */
+@media screen and (max-width: 768px) {
+    .left-and-right-container .btn-row {
+        flex-direction: row;
+        align-items: center;
     }
 }
 
-
 /* Mobile Styling */
 @media screen and (max-width: 500px) {
-    .app-icon {
-        width: 60%
+    .app-icon-google {
+        width: 170px;
     }
 
-    .app-icon-google {
-        width: 70%;
+    .left-and-right-container .btn-row {
+        flex-direction: column;
+        align-items: center;
     }
 }
     

@@ -5,16 +5,42 @@
     background-size: unset;
 }
 
+/* Common Standard Layout Overrides for Dashboard */
 #subnavbar-bg, #ternavbar-bg {
     display: none;
 }
 
-/* Dashboard Title */
-.title {
-    width: 80%;
-    margin: 0 auto;
+/* override to fix centering issue */
+#zone-feature {
+    max-width: unset;
 }
 
+/* Padding override */
+h2 {
+    padding: 0 0 20px 0;
+}
+
+@media screen and (max-width: 1024px){
+    .main-feature {
+        height: 440px;
+        padding-top: 80px;
+    }
+}
+
+@media screen and (max-width: 768px){
+    .main-feature {
+        height: 440px;
+    }
+}
+
+@media screen and (max-width: 500px){
+    .main-feature {
+        height: 240px;
+        padding-top: 50px;
+    }
+}
+
+/* Dashboard Title */
 .title h3 {
     padding-top: unset;
     color: #7A1315;
@@ -38,6 +64,13 @@
     font-weight: normal;
 }
 
+.back-button .btn {
+    min-width: 100px;
+    max-width: 100px;
+    margin-bottom: 20px;
+    margin-right: 20px;
+}
+
 .print-button {
     display: flex;
     justify-content: space-between;
@@ -46,15 +79,21 @@
     margin: 0 auto;
 }
 
-#btnPrint {
-    height: 50px;
+/* Mobile Styling Dashboard Title */
+@media screen and (max-width: 1024px) {
+    .title-container {
+        height: 130px;
+    }
+
+    .title-greeting {
+        font-size: 45px;
+    }
 }
 
-
-/* Mobile Styling Dashboard Title */
 @media screen and (max-width: 500px){
     .title-container {
         margin-top: -10px;
+        height: unset;
     }
 
     .title-greeting {
@@ -80,7 +119,7 @@
 
     #btnPrint {
         width: 100px;
-        margin: 10px auto 0 auto;
+        /*margin: 10px auto 0 auto; - JHM 7-1: Removing, because I believe this was only used on the Baptism Photo / Cert page and isn't needed.*/ 
     }
 
     .title h2, .print-button h2  {
@@ -94,13 +133,13 @@
 
 /* NextSteps Nav */
 .next-steps-nav {
-    height: 210px;
+    height: 190px;
 }
 
 .outer-circle {
     bottom: 0;
-    left: 35%;
-    height: 210px;
+    left: 0;
+    height: 190px;
     padding: 42px; /* 42px = 30px*1.4 (30px = half the width of a link with img, 1.4 = sqrt(2)) */
     margin: 0 auto;
 }
@@ -133,30 +172,29 @@
 }
 
 /* Degree rotations for outer circle steps icons */
-.deg188 { transform: rotate(188deg) translate(175px) rotate(-188deg) }
-.deg209-5 { transform: rotate(209.5deg) translate(160px) rotate(-209.5deg); }
-.deg233 { transform: rotate(233deg) translate(155px) rotate(-233deg); }
-.deg257-5 { transform: rotate(257.5deg) translate(150px) rotate(-257.5deg); }
-.deg282-5 { transform: rotate(282.5deg) translate(150px) rotate(-282.5deg); }
-.deg307 { transform: rotate(307deg) translate(155px) rotate(-307deg); }
-.deg330-5 { transform: rotate(330.5deg) translate(160px) rotate(-330.5deg); }
-.deg352 { transform: rotate(352deg) translate(175px) rotate(-352deg); }
+.deg180 { transform: rotate(180deg) translate(153px) rotate(-180deg) }
+.deg206 { transform: rotate(206deg) translate(134px) rotate(-206deg) }
+.deg237 { transform: rotate(237deg) translate(122px) rotate(-237deg) }
+.deg270-5 { transform: rotate(270.5deg) translate(120px) rotate(-270.5deg) }
+.deg303-5 { transform: rotate(303.5deg) translate(122px) rotate(-303.5deg) }
+.deg334 { transform: rotate(334deg) translate(134px) rotate(-334deg) }
+.deg360 { transform: rotate(360deg) translate(154px) rotate(-360deg) }
 
 .inner-circle {
-    background-color: #EBEBEB;
+    background-color: #f3f3f3;
     position: relative;
     width: 200px;
     height: 210px;
     border-radius: 50%;
     margin: 0 auto;
-    margin-top: -80px;
+    margin-top: -60px;
 }
 
 .inner-circle-text {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-top: 20px;
+    padding-top: 13px;
 }
 
 .inner-circle-text i {
@@ -175,7 +213,7 @@
 /* Mobile styling next steps nav */
 @media screen and (max-width: 500px){
     .next-steps-nav {
-        height: 150px;
+        height: 125px;
         margin-left: -25px;
         margin-right: -25px;
     }
@@ -201,20 +239,23 @@
     }
 
     /* Degree rotations for outer circle steps icons */
-    .deg188 { transform: rotate(188deg) translate(130px) rotate(-188deg) }
-    .deg209-5 { transform: rotate(209.5deg) translate(120px) rotate(-209.5deg); }
-    .deg233 { transform: rotate(233deg) translate(115px) rotate(-233deg); }
-    .deg257-5 { transform: rotate(257.5deg) translate(110px) rotate(-257.5deg); }
-    .deg282-5 { transform: rotate(282.5deg) translate(110px) rotate(-282.5deg); }
-    .deg307 { transform: rotate(307deg) translate(115px) rotate(-307deg); }
-    .deg330-5 { transform: rotate(330.5deg) translate(120px) rotate(-330.5deg); }
-    .deg352 { transform: rotate(352deg) translate(130px) rotate(-352deg); }
+    .deg180 { transform: rotate(180deg) translate(109px) rotate(-180deg) }
+    .deg206 { transform: rotate(206deg) translate(94px) rotate(-206deg) }
+    .deg237 { transform: rotate(237deg) translate(85px) rotate(-237deg) }
+    .deg270-5 { transform: rotate(270.5deg) translate(85px) rotate(-270.5deg) }
+    .deg303-5 { transform: rotate(303.5deg) translate(85px) rotate(-303.5deg) }
+    .deg334 { transform: rotate(334deg) translate(94px) rotate(-334deg) }
+    .deg360 { transform: rotate(360deg) translate(109px) rotate(-360deg) }
 
     .inner-circle {
         width: 130px;
         height: 130px;
         margin: 0 auto;
-        top: -80%;
+        top: -90%;
+    }
+
+    .inner-circle-text {
+        padding-top: 0;
     }
 
     .inner-circle-text svg {
@@ -271,7 +312,6 @@
 
 .nextstep-modal-content {
     width: 340px;
-    /* height: 330px; */
     background-color: #FFFFFF;
 }
 
@@ -408,9 +448,7 @@
 
 .dashboard-row {
     display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    margin: 0 50px;
+    justify-content: center;
 }
 
 .dashboard-card {
@@ -419,13 +457,22 @@
     border-radius: 5px;
     border: unset;
     border-width: unset;
-    width: 375px;
+    min-width: 350px;
+    width: 370px;
     height: 450px; 
     max-height: 450px; 
     background-color: #FFFFFF; 
     z-index: 1; 
     overflow: hidden;
-    margin: 20px 0; 
+    margin: 0 10px;
+}
+
+.dashboard-card:first-of-type {
+    margin-left: 0;
+}
+
+.dashboard-card:last-of-type {
+    margin-right: 0;
 }
 
 /* Card Title Section */
@@ -568,25 +615,29 @@
     font-weight: bold;
 }
 
-/* Dashboard Card Mobile Styling */
-/* iPad */
-@media screen and (max-width: 768px) {
+/* Dashboard Card Responsive Styling */
+/* Trigger single column as soon as 3 cards wont fit the screen */
+@media screen and (max-width: 1130px) {
     .dashboard-row {
-        margin: 0 10px;
-        justify-content: space-around;
+        flex-direction: column;
+        align-items: center;
     }
 
     .dashboard-card {
-        width: 350px;
+        margin: 0;
+        margin-bottom: 20px;
+    }
+
+    .dashboard-card:last-of-type {
+        margin-bottom: 0;
     }
 }
 
 /* Phones */
-@media screen and (max-width: 500px) {
-    .dashboard-row {
-        margin: 0 auto;
-        width: 90%;
-        flex-direction: column;
+@media screen and (max-width: 375px) {
+    .dashboard-card {
+        width: 100%;
+        min-width: unset;
     }
 }
 
@@ -594,22 +645,34 @@
 
 /* Dashboard Events Scroller */
 .dashboard-events-row {
-    margin: 0 35px;
-    margin-bottom: 20px;
+    margin: 30px 0;
+}
+
+/* overrides */
+.contextsetter {
+    margin-right: 0;
+}
+
+.contextsetter-campus .dropdown {
+    margin-right: 0;
+}
+
+.event-cards-header {
+    margin-left: 0;
 }
 
 .event-cards-row {
-    margin: unset;
+    margin: 0 -15px;
 }
 
 .event-card .image img {
     object-fit: cover;
- }
+}
 
- /* Mobile Styling Dashboard Card */
+/* Mobile Styling Events Scroller */
 @media screen and (max-width: 500px){
-    .dashboard-card {
-        width: 90%;
+    .dashboard-events-row {
+        max-width: 370px;
         margin: 20px auto;
     }
 
@@ -624,9 +687,8 @@
         text-align: center;
     }
 
-    .dashboard-events-row {
-        margin: 0 auto;
-        width: 90%;
+    .event-cards-row {
+        margin: 0;
     }
 
     .event-cards-header h3 {
@@ -902,547 +964,6 @@
 
 /* End Call To Action Info Card */
 
-/* Start Baptism Dashboard (Photo / Certificate) */
-
-.baptism-print-button {
-    display: flex;
-    justify-content: space-evenly;
-    margin-top: 30px;
-}
-
-.baptism-dashboard-container {
-    margin: 30px;
-    display: flex;
-    justify-content: space-around;
-}
-
-.baptism-dashboard-image, .baptism-dashboard-photo {
-    flex-shrink: 0;
-    position: relative;
-}
-
-.baptism-dashboard-image img {
-    width: 1024px;
-}
-
-.baptism-certificate-name-container {
-    position: absolute;
-    top: 300px;
-    left: 0;
-    width: 1024px;
-    display: flex;
-}
-
-.baptism-certificate-name {
-    font-size: 36px;
-    font-weight: bold;
-    font-family: akrobat;
-    margin: 0 auto;
-}
-
-.baptism-certificate-date-container {
-    position: absolute;
-    width: 290px;
-    top: 574px;
-    left: 680px;
-    display: flex;
-}
-
-.baptism-certificate-date {
-    font-size: 18px;
-    font-family: akrobat;
-    color: #707270;
-    margin: 0 auto;
-}
-
-/* Fix Blue Box around calling href bug */
-.baptism-print-button :focus {
-    outline:none!important
-}
-
-/* iPad Styling */
-@media screen and (max-width: 768px) {
-    #section-a-bg {
-        padding: 20px 0;
-    }
-
-    .baptism-print-button {
-        margin-top: 10px;
-    }
-
-    .baptism-dashboard-image {
-        width: 100%;
-    }
-
-    .baptism-dashboard-image img {
-        width: 700px;
-        margin: 0 auto;
-    }
-
-    .baptism-certificate-name-container {
-        top: 190px;
-        left: 0;
-        width: 700px;
-    }
-    
-    .baptism-certificate-date-container {
-        width: 100px;
-        top: 385px;
-        left: 510px;
-    }
-}
-
-/* Mobile Styling */
-@media screen and (max-width: 500px) {
-    .baptism-print-button {
-        margin-top: 10px;
-    }
-
-    #btnPrint {
-        height: 40px;
-        margin: 0;
-    }
-
-    .baptism-dashboard-container {
-        margin: 15px;
-    }
-
-    .baptism-dashboard-photo {
-        width: 100%;
-    }
-
-    .baptism-dashboard-image {
-        width: 80%;
-    }
-
-    .baptism-dashboard-image img {
-        width: 280px;
-        margin: 0 auto;
-    }
-
-    .baptism-certificate-name-container {
-        top: 70px;
-        left: 0;
-        width: 280px;
-    }
-    
-    .baptism-certificate-name {
-        font-size: 20px;
-    }
-    
-    .baptism-certificate-date-container {
-        width: 100px;
-        top: 148px;
-        left: 175px;
-    }
-    
-    .baptism-certificate-date {
-        font-size: 12px;
-    }
-}
-
-/* Mobile iphone SE Styling */
-@media screen and (max-width: 320px) {
-    .baptism-dashboard-image {
-        width: 100%;
-    }
-}
-
-/* End Baptism Dashboard */
-
-/* Toolbox Card */
-.toolbox-card-outer-wrapper {
-    display: flex;
-    flex-direction: column;
-}
-  
-.toolbox-card p {
-    line-height: 1.5;
-}
-
-.toolbox-card {
-    color: rgba(0, 0, 0, 0.87);
-    background-color: #ffffff;
-    transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
-    box-sizing: border-box;
-    -webkit-tap-highlight-color: rgba(0,0,0,0);
-    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.12);
-    border-radius: 5px;
-    z-index: 1;
-    margin: 20px 20px 25px 20px;
-}
-
-.toolbox-card .header h4 {
-    font-size: 26px;
-    line-height: 31px;
-    margin: 14px 30px 20px 30px;
-}
-
-.toolbox-card-content {
-    margin: 20px 30px;
-}
-
-.toolbox-card-content h3 {
-    font-size: 26px;
-    line-height: 31px;
-}
-
-.current-series-video {
-    padding: 25px;
-}
-
-.subnav {
-    display: flex;
-    padding: 0px 30px 18px 15px;
-    flex-wrap: wrap;
-}
-
-.subnav > div {
-    text-decoration: none;
-    text-transform: uppercase;
-    color: #707270;
-    padding: 0 15px;
-    font-family: akrobat;
-    font-size: 14px;
-    font-weight: bold;
-    line-height: 17px;
-}
-
-.subnav > div:hover {
-    cursor: pointer;
-    color: #7a1315;
-}
-
-.subnav-div-selected {
-    color: #7a1315 !important;
-}
-  
-.group-info-banner {
-    display: flex;
-    flex-wrap: nowrap;
-    background-color: #eeeeee;
-    padding: 14px 5px 10px 5px;
-}
-
-.group-info-banner > div {
-    text-decoration: none;
-
-    padding: 0 25px 0 25px;
-    color: #707270;
-
-    font-family: heebo;
-    font-size: 14px;
-    font-weight: normal;
-    line-height: 26px;
-}
-
-.group-info-banner > div > span {
-    padding-left: 10px;
-}
-
-.latest-series-info {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
-@media screen and (min-width: 650px) {
-    .latest-series-info {
-    flex-direction: row;
-    }
-}
-
-.latest-series-info-element {
-    display: flex;
-    flex-direction: column;
-}
-
-.latest-series-info-element:last-child {
-    margin-right: 50px;
-}
-
-.latest-series-info-element > div > p {
-    font-size: 12px;
-    line-height: 18px;
-    color: #707270;
-    margin-bottom: 0;
-
-}
-
-.latest-series-info-element > div > h5 {
-    font-family: heebo;
-    font-size: 18px;
-    line-height: 27px;
-    color: #010001;
-    font-weight: normal;
-    margin-top: 6px;
-}
-
-.latest-series-title {
-    background-color: #EEEEEE;
-}
-
-.latest-series-title > div > p {
-    font-family: heebo;
-    font-size: 18px;
-    line-height: 36px;
-    font-weight: normal;
-    color: #707270;
-    margin: 12px 0 12px 5px;
-}
-
-.discussion-guide a {
-    text-decoration: none;
-}
-
-.discussion-guide > div > a > h5 {
-    font-family: akrobat;
-    font-size: 18px;
-    font-weight: bold;
-    line-height: 22px;
-    color: #7A1315;
-}
-
-.previous-weeks {
-    margin: 20px 30px 20px 30px;
-}
-
-.toolbox-past-messages {
-    display: flex;
-    flex-direction: column;
-}
-
-@media screen and (min-width: 650px) {
-    .toolbox-past-messages {
-        display: flex;
-        flex-wrap: wrap;
-        flex-direction: row;
-        justify-content: space-between;
-    }
-}
-
-.toolbox-video-card {
-    color: rgba(0, 0, 0, 0.87);
-    background-color: #ffffff;
-    transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
-    box-sizing: border-box;
-    -webkit-tap-highlight-color: rgba(0,0,0,0);
-    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.12);
-    border-radius: 5px;
-    z-index: 1;
-    width: 30%;
-    display: flex;
-    flex-direction: column;
-}
-
-.toolbox-video-card img {
-    border-radius: 5px 5px 0 0;
-}
-
-.toolbox-video-card > div > p {
-    margin: 16px;
-    font-family: heebo;
-    font-weight: normal;
-    color: #707270;
-}
-
-.discussion-guide-icon {
-    font-size: 18px; 
-    padding-right: 14px; 
-    color: #424242; 
-}
-/* Group Details */
-.group-picture img {
-    max-width: 100%;
-    max-height: 100%;
-}
-
-.group-heading {
-    border-bottom: 1px solid #EEEEEE;
-    margin-bottom: 0;
-    padding-bottom: 18px;
-}
-
-/* End Toolbox Card */
-  
-/* Toolbox Group Member Card */
-
-.toolbox-group-members-card {
-    margin: 0;
-    margin-top: 20px;
-    height: 670px;
-    max-height: 670px;
-}
-
-.toolbox-group-members-card .title a {
-    color: #424242;
-}
-
-.toolbox-group-members-card .title a:hover {
-    text-decoration: none;
-}
-
-.toolbox-group-members-card .content {
-    height: 625px;
-    padding-bottom: 20px;
-}
-
-.person-row {
-    display: flex;
-    flex-direction: column;
-}
-
-.toolbox-group-members-card .person-contact {
-    margin-left: 20px;
-}
-
-.person-row-details {
-    display: flex;
-    flex-direction: column;
-    margin-left: 110px;
-}
-
-@media screen and (max-width: 500px) {
-    .person-row-details {
-        margin-left: 60px;
-    }
-}
-
-.person-row-details p {
-    margin: 0;
-    line-height: 26px;
-    font-family: heebo;
-    font-size: 14px;
-    color: #707270;
-}
-
-.person-row-details a {
-    color: #8f3839;
-}
-
-.person-row-details a:hover {
-    text-decoration: none;
-}
-
-.person-details-toggle {
-    background-color: unset;
-    border: unset;
-    padding: unset;
-}
-
-.person-row-details .person-details-additional-child {
-    margin-left: 34px;
-}
-
-.person-row-details .person-details-additional-address {
-    margin-left: 58px;
-}
-
-/* Group Member Badges Styling */
-.person-badges img {
-    width: 24px;
-    height: 24px;
-    margin-bottom: 10px;
-}
-
-
-
-
-/* Flash class and keyframe animation */
-.nextstep-loading {
-    -webkit-animation: flash linear 1s infinite;
-    animation: flash linear 1s infinite;
-}
-    @-webkit-keyframes flash {
-        0% { opacity: 1; } 
-        50% { opacity: .1; } 
-        100% { opacity: 1; }
-    }
-    @keyframes flash {
-        0% { opacity: 1; } 
-        50% { opacity: .1; } 
-        100% { opacity: 1; }
-    }
-
-/* Fix Blue Box around calling href bug */
-.person-details-toggle:focus {
-    outline:none!important
-}
-
-/* End Toolbox Group Member Card */
-
-/* Toolbox Associate Pastor Card */
-
-.associate-pastor-card {
-    background-color: #ffffff;
-    transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
-    box-sizing: border-box;
-    -webkit-tap-highlight-color: rgba(0,0,0,0);
-    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.12);
-    border-radius: 5px;
-    margin: 40px 0 0 0;
-    height: 230px;
-}
-
-.associate-pastor-card .title h3 {
-    font-size: 26px;
-    margin: 14px 0 14px 15px;
-}
-
-.associate-pastor-card .group-header h5 {
-    font-size: 18px;
-}
-
-.associate-pastor-card .person-row-summary img {
-    margin: 25px 10px 25px 10px;
-}
-
-
-/* End Toolbox Associate Pastor Card */
-
-/* Dashboard Communication Page */
-.communication-card {
-    background-color: #ffffff;
-    transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
-    box-sizing: border-box;
-    -webkit-tap-highlight-color: rgba(0,0,0,0);
-    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.12);
-    border-radius: 5px;
-    margin: 40px 20px 20px 20px;
-    padding: 20px 30px 20px 30px; 
-}
-
-.communication-card .recipients .list-unstyled {
-    display: flex;
-    flex-wrap: wrap;
-}
-
-.recipients .recipient {
-    min-width: 25%;
-    width: unset;
-}
-
-/* Undo hard coded communication styling */
-.communication-card .well {
-    padding: unset;
-    margin-bottom: unset;
-    min-height: unset;
-}
-
-/* Mobile Device Styling */
-@media screen and (max-width: 500px) {
-    .communication-card .recipients .list-unstyled {
-        flex-direction: column;
-    }
-
-    /* Hide WYSIWYG buttons (they look hideous) */
-    .note-toolbar.panel-heading {
-        visibility: hidden;
-    }
-}
-
-
-/* End Dashboard Communication Page */
 
 /* Dashboard Giving Panel */
 .giving-panel {
@@ -1455,7 +976,6 @@
     border: unset;
     border-width: unset;
     background-color: #FFFFFF; 
-    margin: 20px 0; 
 }
 
 .giving-title-row {
@@ -1534,9 +1054,9 @@
 }
 
 @media screen and (max-width: 500px) {
-    .giving-panel {
-        width: 90%;
-        margin: 20px auto;
+    .dashboard-giving-row {
+        max-width: 370px;
+        margin: 0 auto;
     }
 
     .giving-title-row, .giving-content-row, .giving-content-info, .giving-content-links  {
@@ -1647,10 +1167,6 @@
 }
 
 @media screen and (max-width: 500px) {
-    #section-a-bg {
-        padding: 5px 0;
-    }
-
     .giving-history-card, .manage-payment-account-card, .manage-automated-giving-card, .manage-scheduled-transactions {
         margin: 0 auto;
     }
@@ -1725,110 +1241,7 @@
 
 /* End Dashboard Giving */
 
-/* My Profile */
-.profile {
-    display: flex;
-    padding: 20px 0;
-}
-
-.profile-card {
-    box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px;
-    transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
-    border-radius: 5px;
-    background-color: #FFFFFF;
-    padding: 20px;
-    margin-right: 15px;
-    width: 80%;
-}
-
-.profile-card hr {
-    display: none;
-}
-
-.profile-card .pull-right a {
-    margin-right: 15px;
-}
-
-.profile-sidebar {
-    display: flex;
-    flex-direction: column;
-}
-
-.account-actions, .recent-registrations {
-    margin: 0 5px;
-    min-width: 300px;
-    height: unset;
-    max-height: unset;
-}
-
-.recent-registrations {
-    margin-top: 20px;
-}
-
-.profile-sidebar .title h3 {
-    font-size: 26px;
-    margin: 14px 0 14px 15px;
-}
-
-.profile-sidebar .header {
-    min-height: 40px;
-    background-color: #EEEEEE;
-    border-bottom: 1px solid #ddd;
-}
-
-.links {
-    display: flex;
-    flex-direction: column;
-    padding: 20px;
-}
-
-.balance-due {
-    color: red;
-}
-
-.recent-registrations {
-    margin-top: 20px;
-}
-
-@media screen and (max-width: 768px) {
-    .profile {
-        padding: 20px 10px;
-    }
-
-    .profile-card .col-md-1 .photo {
-        width: 15%;
-    }
-}
-
-
-@media screen and (max-width: 500px) {
-    .profile {
-        flex-direction: column;
-    }
-
-    .profile-card, .account-actions, .recent-registrations {
-        width: 90%;
-        margin: 0 auto;
-        min-width: unset;
-        margin-bottom: 15px;
-    }
-
-    .account-actions .title, .recent-registrations .title {
-        margin: 0 auto;
-    }
-
-    .form-control.input-width-sm {
-        width: 60px;
-        padding: 0
-    }
-
-    .form-group.rock-radio-button-list {
-        margin-left: 0;
-    }
-}
-
-/* End My Profile */
-  
+ 
 /* Change Password Styling */
 .change-password-title {
     width: 60%;
@@ -1867,15 +1280,3 @@
 
 /* End Change Password Styling */
 
-/* Prayer Team Styling */
-.prayer-team-card {
-    box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px;
-    transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
-    border-radius: 5px;
-    background-color: #FFFFFF;
-    margin: 25px auto 70px auto;
-    padding: 20px;
-    width: 80%;
-}
-
-/* End Prayer Team */

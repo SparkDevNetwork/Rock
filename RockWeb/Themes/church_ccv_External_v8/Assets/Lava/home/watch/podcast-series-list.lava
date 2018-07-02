@@ -24,9 +24,9 @@
     <nav>
         <ul class="watch pager">
             {% unless isFirstPage %}
-                <li class="previous"><a class="btn btn-primary" href="?PageNum={{ prevPage }}">Newer</a></li>
+                <li class="watch-previous"><a class="btn btn-primary" href="?PageNum={{ prevPage }}">Newer</a></li>
             {% endunless %}
-                <li class="next"><a class="btn btn-primary" href="?PageNum={{ nextPage }}">Older</i></a></li>
+                <li class="watch-next"><a class="btn btn-primary" href="?PageNum={{ nextPage }}">Older</i></a></li>
         </ul>
     </nav>
 </div>

@@ -34,7 +34,7 @@ TODO: Add Other Group Type leader roles
 {% if numberOfGroups > 0 %}
 
     {% comment %} Render {% endcomment %}
-    <div class="dashboard-card">
+    <div>
         {% include '~~/Assets/Lava/dashboard/_group-card-header.lava' %}
         <div class="content">
             {% for group in Groups %}
@@ -190,8 +190,8 @@ TODO: Add Other Group Type leader roles
     {% comment %} Render Serve Call to Action {% endcomment %}
     <div class="info-card">
         <div class="info-card-image">
-            <img src="/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/ad-connect.png">
-            <img class="info-card-icon" src="/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/icon-connect.png"/>
+            <img src="~~/Assets/Images/home/get-involved/ad-connect.png">
+            <img class="info-card-icon" src="~~/Assets/Images/home/get-involved/icon-connect.png"/>
         </div>
         <div class="header">
             <h4>Connect</h4>

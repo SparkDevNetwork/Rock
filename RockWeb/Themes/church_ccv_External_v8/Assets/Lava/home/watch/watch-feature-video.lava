@@ -1,0 +1,46 @@
+
+{% comment %} It's possible the newest podcast entry doesn't have an active video yet. So we'll iterate until we find the first valid one, and start there. {% endcomment %}
+{% assign firstSeriesIndex = 0 %}
+{% assign firstMessageIndex = 0 %}
+{% assign foundValidItem = false %}
+
+{% for series in SeriesList.Children %}
+   
+   {% for message in series.Messages %}
+   
+      {% if message.Attributes.3rdPartyFullVideoUrl != '' %}
+         {% assign foundValidItem = true %}
+         {% break %}
+      {% endif %}
+
+      {% assign firstMessageIndex = firstMessageIndex | Plus: 1 %}
+
+   {% endfor %}
+
+   {% if foundValidItem == true %}
+      {% break %}
+   {% endif %}
+
+   {% assign firstMessageIndex = 0 %}
+   {% assign firstSeriesIndex = firstSeriesIndex | Plus: 1 %}
+{% endfor %}
+
+{% for series in SeriesList.Children offset:firstSeriesIndex %}
+   {% assign firstSeries = series %}
+   {% break %}
+{% endfor %}
+
+{% for message in firstSeries.Messages offset:firstMessageIndex %}
+   {% assign firstMessage = message %}
+   {% break %}
+{% endfor %}
+{% comment %} End get first valid message {% endcomment %}
+
+<script src="https://fast.wistia.com/embed/medias/dtlhmi1m9x.jsonp" async></script><script src="https://fast.wistia.com/assets/external/E-v1.js" async></script><div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;"><div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;"><span class="wistia_embed wistia_async_dtlhmi1m9x popover=true popoverAnimateThumbnail=true videoFoam=true" style="display:inline-block;height:100%;width:100%">&nbsp;</span></div></div>
+
+
+<a href="{{ firstMessage.Attributes.3rdPartyFullVideoUrl }}" data-lity>
+    <div class="videoThumbnail experience-video">
+        <img class="img-full" src="/GetImage.ashx?guid={{ firstSeries.Attributes.Image_16_9 }}" alt="{{ firstMessage.Name }}">
+    </div>
+</a>

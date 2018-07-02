@@ -1,127 +1,151 @@
 .page-background {
    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/hero-leadership-institute.jpg");
-   background-color: #FFFFFF;
 }
 
-#ternavbar-bg {
-    display: none;
-}
-
-#section-a-bg,#section-c-bg,#section-e-bg {
-	background-color: #f9f9f9;
-}
-
-#section-b-bg,#section-d-bg {
-	background-color: #ffffff;
-}
-
-.leadership-institute-card {
-    box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px;
-    transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
-    border-radius: 5px;
+#section-b-bg, #section-d-bg, #section-f-bg {
     background-color: #FFFFFF;
-    padding: 20px;
-    margin: 0 auto;
-    margin-bottom: 20px;
-    margin-top: 20px;
 }
 
-.program-features-container {
-   display: flex;
-   justify-content: space-between;
-   width: 100%;
-   flex-wrap: wrap;
+.program-features {
+    flex-direction: column;
+    justify-content: center;
 }
 
-.program-features-row {
-   display: flex;
-   justify-content: center;
-   flex-wrap: wrap;
-   width: 1200px;
+.program-features-items {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
 }
-
-@media screen and (min-width: 975px){
-   .program-features-row {
-      justify-content: space-between;
-   }
-}
-
 
 .program-features-item {
-   display: flex;
-   padding-bottom: 25px;
-   width: 450px;
+    display: flex;
+    width: 45%;
 }
 
-.infoSection hr {
-   border-top: 1px solid #eee;
-   margin-top: 30px;
-   margin-bottom: 20px;
+.program-features-item img {
+    width: 40px;
+    height: 40px;
+    margin-right: 10px;
 }
 
-.li-testimonials-wrapper {
-   margin-top: 50px;
-   margin-bottom: 50px;
-   display: flex;
-   align-items: center;
-   justify-content: center;
+
+
+.li-testimonials {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .li-logo {
-   display: inline-block;
-}
-
-@media screen and (max-width: 815px){
-   .li-logo {
-      display: none;
-   }
+    min-width: 200px;
+    max-width: 200px;
+    min-height: 200px;
+    max-height: 200px;
+    margin-right: 20px;
 }
 
 .testimonials-content {
-   margin-left: 25px;
+    display: flex;
+    flex-direction: column;
+    max-width: 650px;
 }
 
 .testimonials-header {
-   display: flex;
-   flex-wrap: nowrap;
-   width: 100%;
-   justify-content: space-between;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-.testimonials-header .nav-buttons {
-   display: flex;
-   justify-content: flex-end;
+.nav-button {
+    -webkit-appearance: unset;
+    background-color: unset;
+    border-color: unset;
+    border-style: unset;
+    border-width: unset;
+    padding: 0;
 }
 
-.testimonials-header .nav-button {
-   color: #7A1315; 
-   font-size: 24px; 
-   transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms; 
-   background-color: unset;
-   border-width: unset;
-   border-style: unset;
-   border-color: unset;
-   border-image: unset;
+.nav-button i {
+    font-size: 32px;
+    color: #7A1315;
 }
 
-.testimonials {
-   width: 400px;
-   align-self: center;
+.testimonials-item p {
+    text-align: justify;
 }
 
-@media screen and (min-width: 975px){
-   .testimonials {
-      width: 600px;
-   }
+.li-faq {
+    display: flex;
+    flex-direction: column;
+    padding: 20px 0;
 }
 
-@media screen and (min-width: 1200px){
-   .testimonials {
-      width: 800px;
-   }
+.li-faq-item p, .li-faq-item ul {
+    width: 95%;
+    margin: 0 auto;
 }
 
-.testimonials .citation {
-   color: #777;
-   font-weight: 900;
+/* Tablet Landscape Styling */
+@media screen and (max-width: 1024px) {
+    .li-testimonials {
+        flex-direction: column;
+        justify-content: space-around;
+        padding-top: 25px;
+    }
 }
+
+/* Tablet Portrait Styling */
+@media screen and (max-width: 768px) {
+    .testimonials-content {
+        width: 100%;
+    }
+
+    .li-logo {
+        min-width: 150px;
+        max-width: 150px;
+        min-height: 150px;
+        max-height: 150px;
+        margin-right: 0;
+    }
+}
+
+/* Mobile Styling */
+@media screen and (max-width: 500px) {
+    .left h2 {
+        margin: 0;
+    }
+    .program-features-item {
+        width: 100%;
+        padding: 10px 0;
+        align-items: center;
+    }
+
+    .program-features-item img {
+        margin-right: 20px;
+    }
+
+    .li-testimonials {
+        flex-direction: column;
+        padding-top: 25px;
+    }
+
+    .testimonials-content {
+        width: 100%;
+    }
+
+    .li-faq {
+        flex-wrap: unset;
+        flex-direction: column;
+        height: unset;
+    }
+
+    .li-faq-item {
+        width: 100%;
+    }
+}
+
+
+
+
+

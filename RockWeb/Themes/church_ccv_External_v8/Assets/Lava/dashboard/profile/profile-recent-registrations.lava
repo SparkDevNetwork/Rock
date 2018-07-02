@@ -2,7 +2,7 @@
     {% include '~~/Assets/Lava/dashboard/profile/profile-recent-registrations.lava' %}  
 {% endcomment %}
 
-<div class="dashboard-card recent-registrations">
+<div class="sidebar-card recent-registrations">
     <div class="title">
         <h3>Recent Registrations</h3>
     </div>

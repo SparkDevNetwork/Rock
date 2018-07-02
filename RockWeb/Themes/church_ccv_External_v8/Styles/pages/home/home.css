@@ -4,6 +4,10 @@
     background-size: unset;
 }
 
+#subnavbar-bg {
+    display: none;
+}
+
 .main-feature {
     padding-top: 175px;
 }
@@ -155,7 +159,7 @@
     }
 
     .cta-card {
-        width: 85%;
+        width: 100%;
         align-self: center;
         margin-bottom: 10px;
         min-height: 250px;
@@ -349,14 +353,20 @@
     }
 }
 
+/* Tablet Styling */
+@media screen and (max-width: 768px) { 
+    .about-church {
+        margin: 0;
+        padding: 20px 0;
+    }
+}
+
 /* End About Church Section */
 
 /* Kids / Students Section */
 #zone-sectiond {
-    margin: unset;
+    margin: 0 -15px;
     max-width: unset;
-    margin-left: -15px;
-    margin-right: -15px;
 }
 
 .kids-students {
@@ -365,7 +375,7 @@
 }
 
 .kids {
-    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ad-home-kids.jpg");
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/background-small-home-kids.jpg");
     width: 50%;
     height: 600px;
     display: flex;
@@ -379,7 +389,7 @@
 }
 
 .students {
-    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ad-home-students.jpg");
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/background-small-home-students.jpg");
     width: 50%;
     height: 600px;
     display: flex;
@@ -394,6 +404,21 @@
 
 .kids-students .btn {
     margin-top: 30px;
+}
+
+/* Tablet Styling */
+@media screen and (max-width: 768px) { 
+    .kids-students {
+        flex-direction: column
+    }
+
+    .kids, .students {
+        width: 100%;
+    }
+
+    .kids-students .btn {
+        width: 95%;
+    }
 }
 
 /* Mobile Styling */
@@ -414,6 +439,7 @@
         width: 85%
     }
 }
+
 
 /* End Kids / Studetns Section */
 

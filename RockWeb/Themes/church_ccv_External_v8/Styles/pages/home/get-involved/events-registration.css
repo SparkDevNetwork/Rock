@@ -1,0 +1,15 @@
+.page-background {   
+    background-color: #EBEBEB;
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/hero-events.jpg");
+}
+
+/* Mobile Styling */
+@media screen and (max-width: 500px) {
+    .form-control {
+        padding: 0;
+    }
+
+    .birthday-picker .control-wrapper .form-control-group select {
+        width: 25%;
+    }
+}

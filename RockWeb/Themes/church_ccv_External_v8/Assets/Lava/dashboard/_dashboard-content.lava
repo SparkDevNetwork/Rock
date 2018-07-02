@@ -25,7 +25,10 @@
 {% comment %} End Time Context Content {% endcomment %}
 
 
-{% comment %} Default Content For Steps Modals, Popovers, and Badges {% endcomment %}
+{% comment %} 
+    Default Content For Steps Modals, Popovers, and Badges 
+    (Starting Point was moved from Next Steps Nav. Leaving content incase they change their minds. Remove in future if still not used.)    
+{% endcomment %}
 
     {% capture stepsContentJSON %}
     [
@@ -35,7 +38,7 @@
             {
                 "Title": "Starting Point",
                 "Icon": "/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/icon-starting-point.png",
-                "Image": "/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/ad-starting-point.png",
+                "Image": "~~/Assets/Images/home/get-involved/feature-next-steps-starting-point.jpg",
                 "Content": "Dive deeper into the Christian faith and learn what CCV is all about. Take your first step in getting connected with CCV by attending our Starting Point class.",
                 "Buttons": [
                     {
@@ -52,7 +55,7 @@
             {
                 "Title": "Baptism",
                 "Icon": "/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/icon-baptism.png",
-                "Image": "/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/ad-baptism.png",
+                "Image": "~~/Assets/Images/home/get-involved/feature-next-steps-baptism.jpg",
                 "Content": "If you've made a commitment to Christ, baptism is the best way to express your faith and reflect your life change.",
                 "Buttons": [
                     {
@@ -69,7 +72,7 @@
             {
                 "Title": "Worship",
                 "Icon": "/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/icon-worship.png",
-                "Image": "/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/ad-worship.png",
+                "Image": "~~/Assets/Images/home/get-involved/feature-next-steps-worship.jpg",
                 "Content": "CCV is one church in many locations. Find the campus closest to home and join the family by attending regularly. Our exciting weekend programs for all ages are experiences you won't want to miss.",
                 "Buttons": [
                     {
@@ -86,7 +89,7 @@
             {
                 "Title": "Connect",
                 "Icon": "/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/icon-connect.png",
-                "Image": "/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/ad-connect.png",
+                "Image": "~~/Assets/Images/home/get-involved/feature-next-steps-connect.jpg",
                 "Content": "Life was not meant to be lived alone. Gather weekly with others to build a community and impact it for the better.",
                 "Buttons": [
                     {
@@ -103,7 +106,7 @@
             {
                 "Title": "Serve",
                 "Icon": "/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/icon-serve.png",
-                "Image": "/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/ad-serve.png",
+                "Image": "~~/Assets/Images/home/get-involved/feature-next-steps-serve.jpg",
                 "Content": "Serving others is a great way to live out your faith and get involved in the CCV community. Experience first-hand the impact you can make!",
                 "Buttons": [
                     {
@@ -120,7 +123,7 @@
             {
                 "Title": "Give",
                 "Icon": "/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/icon-give.png",
-                "Image": "/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/ad-give.png",
+                "Image": "~~/Assets/Images/home/get-involved/feature-next-steps-give.jpg",
                 "Content": "If you call CCV your home, we encourage you to give generously knowing that your money is being used to support the mission of Jesus Christ, both here in the Valley and around the world.",
                 "Buttons": [
                     {
@@ -137,7 +140,7 @@
             {
                 "Title": "Share",
                 "Icon": "/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/icon-share.png",
-                "Image": "/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/ad-share.png",
+                "Image": "~~/Assets/Images/home/get-involved/feature-next-steps-share.jpg",
                 "Content": "We each have a story, and we want to help you tell yours. Your story just might be the catalyst that will lead someone else to Christ.",
                 "Buttons": [
                     {
@@ -154,7 +157,7 @@
             {
                 "Title": "Coach",
                 "Icon": "/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/icon-coach.png",
-                "Image": "/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/ad-coach.png",
+                "Image": "~~/Assets/Images/home/get-involved/feature-next-steps-coach.jpg",
                 "Content": "CCV Coaches are trained individuals within the church whose sole responsibility is to help you determine your Next Steps at CCV.",
                 "Buttons": [
                     {

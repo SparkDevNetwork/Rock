@@ -12,17 +12,19 @@
 }
 
 #subnavbar-bg {
-	background-color: #7A1315;
+    background-color: #7A1315;
+    z-index: 998;
 }
 
 /* By default hide the tertiary navbar */
 #ternavbar-bg {
     display: none;
-	background-color: #FFFFFF;
+    background-color: #FFFFFF;
+    z-index: 998;
 }
 
-#section-a-bg, #section-b-bg, #section-c-bg, #section-d-bg, #section-e-bg, #section-f-bg, #section-g-bg, #section-h-bg {
-	background-color: #EBEBEB;
+#section-a-bg, #section-b-bg, #section-c-bg, #section-d-bg, #section-e-bg, #section-f-bg, #section-g-bg, #section-h-bg, #single-section-bg {
+    background-color: #f3f3f3;  
 }
 
 #zone-subnavbar, #zone-tertiarynavbar {
@@ -30,24 +32,76 @@
     margin: 0 auto;
 }
 
-#zone-feature, #zone-sectiona, #zone-sectionb, #zone-sectionc, #zone-sectiond, #zone-sectione, #zone-sectionf, #zone-sectiong, #zone-sectionh   {
+#single-section-bg {
+    padding: 20px 15px;
+}
+
+#zone-feature, #zone-sectiona, #zone-sectionb, #zone-sectionc, #zone-sectiond, #zone-sectione, #zone-sectionf, #zone-sectiong, #zone-sectionh, #zone-singlesection   {
     max-width: 1280px;
     margin: 0 15%;
- }
+}
 
-/* Standard Layout Mobile Styling */
-@media screen and (max-width: 500px) {
+/* Standard Layout Small Laptop Styling */
+@media screen and (max-width: 1280px) {
+
+    #zone-feature, #zone-sectiona, #zone-sectionb, #zone-sectionc, #zone-sectiond, #zone-sectione, #zone-sectionf, #zone-sectiong, #zone-sectionh, #zone-singlesection   {
+        margin: 0 5%;
+    }
+}
+
+/* Standard Layout Landscape Tablet Styling */
+@media screen and (max-width: 1024px) {
     .main-feature {
         height: unset;
+        padding-top: 100px;
+    }
+
+    #zone-feature, #zone-sectiona, #zone-sectionb, #zone-sectionc, #zone-sectiond, #zone-sectione, #zone-sectionf, #zone-sectiong, #zone-sectionh, #zone-singlesection   {
+        margin: 0 5%;
+    }
+}
+
+ /* Standard Layout Portrait Tablet Styling */
+@media screen and (max-width: 768px) {
+    .main-feature {
+        height: unset;
+        padding-top: 100px;
+    }
+
+    #zone-feature, #zone-sectiona, #zone-sectionb, #zone-sectionc, #zone-sectiond, #zone-sectione, #zone-sectionf, #zone-sectiong, #zone-sectionh, #zone-singlesection   {
+        margin: 0;
+    }
+}
+
+/* Standard Layout Mobile and Tablet Styling */
+@media screen and (max-width: 500px) {
+    .main-feature {
+        height: 240px;
+        padding-top: 90px;
     }
 
     #zone-feature, #zone-sectiona, #zone-sectionb, #zone-sectionc, #zone-sectiond, #zone-sectione, #zone-sectionf, #zone-sectiong, #zone-sectionh   {
-        margin: 0;
+        margin: 0 5%;
     }
 
-    #section-a-bg {
-        padding: 20px;
+    #section-a-bg, #section-b-bg, #section-c-bg, #section-d-bg, #section-e-bg, #section-f-bg, #section-g-bg, #section-h-bg {
+        padding: 0;
     }
+}
+
+/* Used for single section pages that have one huge card with data on it (Pre-marital, contact us, etc.)*/
+.background-card {
+    box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px;
+    transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
+    border-radius: 5px;
+    background-color: #FFFFFF;
+    margin: 0 auto;
+    padding: 30px;
+}
+
+/* Override Bootstrap 'section' Styling */
+.panel {
+    margin-bottom: unset;
 }
 
 /* General button styling */
@@ -66,11 +120,16 @@
 	font-family: akrobat;
 }
 
-/* Mobile styling for general buttons */
-@media screen and (max-width: 500px) {
+.prev-arrow:hover, .next-arrow:hover {
+    cursor: pointer;
+}
+
+/* Tablet / Mobile styling for general buttons */
+@media screen and (max-width: 768px) {
     .btn {
         width: 100%;
         max-width: unset;
+        margin: 5px 0;
     }
 }
 
@@ -82,12 +141,12 @@
 
 /* Nextstep Common Styling */
 .nextstep-icon-inactive {
-    background-color: #7A1315;
+    background-color: #707270;
     border-radius: 50%;
 }
 
 .nextstep-icon-active {
-    background: linear-gradient(rgb(208, 221, 41), rgb(139, 179, 63));
+    background-color: #7A1315;
     border-radius: 50%;
 }
 
@@ -213,7 +272,7 @@
     height: 35px;
     width: 225px;
     margin-left: 15px;
-    margin-top: 12px;
+    margin-top: 10px;
 }
 
 .header-navigation {
@@ -375,6 +434,7 @@
 @media (max-width: 1100px) {
    .navbar-toggle {
        display: inline-block;
+       margin-top: 0;
    }
 
    .collapse {
@@ -386,6 +446,10 @@
    }
 }
 
+.navbar-toggle i {
+    font-size: 24px;
+}
+
 .masthead-fullmenu {
     background-color: #FFFFFF;
     position: fixed;
@@ -394,7 +458,7 @@
     top: 0;
     bottom: 0;
 	right: 0;
-    width: 66%;
+    width: 75%;
 	-webkit-transition-duration: 600ms;
     transition-duration: 600ms;
 	overflow-y: auto;
@@ -428,6 +492,7 @@
     display: flex;
     flex-direction: column;
     padding: 15px 35px 15px 20px;
+    font-size: 18px;
 }
 
 .navigation-mobile-item {
@@ -435,6 +500,7 @@
     padding: 15px 10px;
     text-transform: uppercase;
     background-color: transparent;
+    font-size: 18px;
 }
 
 .dropdown-toggle.navigation-mobile-item {
@@ -469,7 +535,7 @@
 
 .navigation-secondary-item {
     list-style-type: none;
-    padding: 21.5px 10px;
+    padding: 17.5px 10px;
 }
 
 .navigation-secondary-items :first-child {
@@ -532,19 +598,18 @@
 /* End Navigation-Secondary */
 
 /* Start Navigation-Tertiary Styling */
+
 .navigation-tertiary-items {
     display: flex;
-    margin-bottom: unset;
     margin: 0;
+    align-items: center;
+    -webkit-padding-start: 0;
 }
 
 .navigation-tertiary-item {
+    padding: 10px 15px;
     list-style-type: none;
-    padding: 10px 10px;
-}
-
-.navigation-tertiary-items :first-child {
-    padding-left: 0;
+    text-align: center;
 }
 
 .navigation-tertiary-item a {
@@ -562,11 +627,126 @@
     color: #7A1315;
 }
 
-/* Navigation-Tertiary Mobile Styling */
-@media (max-width: 1100px) {
-    #ternavbar-bg {
+.navigation-tertiary-items-slick {
+    width: 590px;
+    margin-bottom: 0;
+}
+
+.prev {
+    display: none;
+}
+
+.next {
+    display: none;
+}
+
+.navigation-tertiary-mobile {
+    display: none;
+}
+
+/* IPhone 6/7/8 PLUS. (414 x 736) Mobile Styling */
+@media screen and (max-width: 750px) {
+    .navigation-tertiary-items-slick {
+        width: 345px;
+        /* border: 1px solid black; */
+        margin-left: -15px;
+        margin-right: -15px; 
+        padding-left: 0%;
+    }
+    .next {
+        color: lightgrey;
+        font-size: 20px;
+        margin-left: 280px;
+        position: absolute;
+        right: 10px;
+        top: 0px;
+      }
+      
+      .prev{
+        color: lightgrey;
+        font-size: 20px;
+        margin-right: 0px;
+        position: absolute;
+        left: 10px;
+        padding-top: 0px;
+      }
+
+      .navigation-tertiary-mobile {
+        display: unset;
+    }
+
+    .navigation-tertiary-desktop {
         display: none;
     }
+
+    .navigation-tertiary-item {
+        padding: 5px;
+    }    
+}
+
+/* IPhone 6/7/8. (375 x 667) Mobile Styling */
+@media screen and (max-width: 380px) {
+    .navigation-tertiary-items-slick {
+        width: 320px;
+        /* border: 1px solid black; */
+        margin-left: -15px;
+        margin-right: -15px; 
+        padding-left: 0%;
+    }
+
+    .next {
+        color: lightgrey;
+        font-size: 20px;
+        margin-left: 280px;
+        position: absolute;
+        right: 10px;
+        top: 0px;
+      }
+      
+      .prev{
+        color: lightgrey;
+        font-size: 20px;
+        margin-right: 0px;
+        position: absolute;
+        left: 10px;
+        padding-top: 0px;
+      }
+      
+    .hoverthumb img {
+        height: 220px;
+    }
+}
+
+/* IPhone 5/SE. (320 x 568) Mobile Styling */
+@media screen and (max-width: 320px) {
+    .navigation-tertiary-items-slick{
+        width: 250px;
+        /* border: 1px solid black; */
+        margin-left: -15px;
+        margin-right: -15px; 
+        padding-left: 0%;
+
+    }
+    .next {
+        color: lightgrey;
+        font-size: 20px;
+        margin-left: 280px;
+        position: absolute;
+        right: 10px;
+        top: 1px;
+      }
+      
+      .prev{
+        color: lightgrey;
+        font-size: 20px;
+        margin-right: 0px;
+        position: absolute;
+        left: 10px;
+      }
+
+      .hoverthumb img {
+          height: 250px;
+      }
 }
 
 /* End Navigation-Tertiary */
@@ -594,14 +774,11 @@
     font-family: heebo;
     font-weight: normal;
     -webkit-font-smoothing: antialiased;
+    max-width: 565px;
+    margin: 0 auto;
 }
 
 @media screen and (max-width: 500px) {
-    .main-feature {
-        height: unset;
-        padding-top: 60px;
-    }
-
     .title h3 {
         padding-top: 0;
         font-size: 36px;
@@ -618,10 +795,6 @@
         margin: 0 auto;
         width: 250px;
     }
-
-    .desktop-spacer-top {
-        display: none;
-    }
 }
 
 /* End Feature Styling */
@@ -635,7 +808,7 @@
 .videoThumbnail {
    position:relative;
    display: inline-block;
-   margin: 30px;
+   font-size: 70px;
 }
 
 /*Render the red background overlay*/
@@ -659,6 +832,13 @@
    background-color: rgba(122,19,21,.4);
 }
 
+/* Mobile Styling */
+@media screen and (max-width: 500px) { 
+    .videoThumbnail {
+        font-size: 24px;
+    }
+}
+
 /*Render the white play icon*/
 .videoThumbnail:after {
    position:absolute;
@@ -671,6 +851,8 @@
    font-size: 1.2em;
    color: white;
 }
+
+
 /*End "Wistia Style" video thumbnail */
 
 .infoSection {
@@ -691,17 +873,25 @@
    color: white;
 }
 
+.section-video {
+    padding-top: 50px;
+    padding-bottom: 50px;
+    width: 100%;
+}
+
+@media screen and (max-width: 768px) {
+    .section-video {
+        padding-top: 20px;
+        padding-bottom: 20px;
+    }
+}
+
 @media screen and (max-width: 500px) {
     .graphicSection, .infoSection {
         min-height: unset;
     }
 }
 
-.section-video {
-    padding-top: 50px;
-    padding-bottom: 50px;
-    width: 100%;
-}
 
 /*Use when you have layouts that have text on one side of the screen and a video on the other*/
 .left-and-right-container {
@@ -716,25 +906,8 @@
     margin-top: 25px;
 }
 
-.left-and-right-container .btn-row {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
-@media only screen and (max-width: 1023px) {
-    .left-and-right-container .btn-row a {
-        margin-top: 25px;
-    }
-}
-
-@media only screen and (min-width: 1024px) {
-    .left-and-right-container .btn-row {
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-    }
+.left-and-right-container .rounded-edge-img {
+    border-radius: 5px;
 }
 
 @media only screen and (min-width: 768px) {
@@ -759,9 +932,41 @@
     }
 }
 
+@media screen and (max-width: 768px) {
+    .left-and-right-container {
+        padding: 20px 0;
+    }
+}
+
+/* Left and Right Container Button Row */
+.left-and-right-container .btn-row {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+@media only screen and (min-width: 768px) {
+    .left-and-right-container .btn-row {
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+    }
+
+    .left-and-right-container .btn-row a:first-of-type {
+        margin-right: 15px;
+    }
+
+    .left-and-right-container .btn-row a {
+        min-width: unset;
+        width: 200px;
+        max-width: 200px;
+    }
+}
+
 /*  Start Event Card Styling */
 .events-row {
-    margin-top: 20px;
+    margin: 20px auto 0 auto;
+    max-width: 1145px;
 }
 
 .event-cards-header {
@@ -773,6 +978,7 @@
 
 .event-cards-header h3 {
     margin: 0;
+    padding: 0;
 }
 
 /* Nav buttons */
@@ -914,16 +1120,16 @@
 /* Mobile Styling Event Card */
 @media screen and (max-width: 500px){
     .events-row {
-        margin: 0 5px;
+        padding: 5px;
         margin-top: 0;
     }
 
     .event-cards-row {
-        margin: unset;
+        margin-bottom: 0;
     }
 
     .event-card {
-        margin: 0;
+        margin: 5px 0;
     }
 
     .event-cards-header h3 {
@@ -936,11 +1142,24 @@
     }
 }
 
+/* Tablet Styling Event Card */
+@media screen and (max-width: 768px){
+    .events-row {
+        padding: 5px;
+        margin-top: 0;
+    }
+}
+
 /* End Event Card Styling */
 
-
-
 /* Start Campus Selector Styling */
+.selectaday-flex {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
 .contextsetter-campus .dropdown {
     background-color: #7A1315;
     border-radius: 10px;
@@ -1142,3 +1361,21 @@
         align-items: center;
     }
 }
+
+
+
+
+
+/* Bootstrap / Rock / Theme.css overrides */
+.form-control, input {
+    padding: 0;
+}
+
+
+@media screen and (max-width: 768px) {
+    .form-horizontal .form-group {
+        margin-right: -15px;
+    }
+}
+
+/* End bootstrap / rock / theme.css overrides */

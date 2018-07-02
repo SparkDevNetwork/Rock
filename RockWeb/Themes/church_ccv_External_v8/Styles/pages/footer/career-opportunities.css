@@ -1,6 +1,5 @@
 
 .page-background {   
-    background-color: #EBEBEB;
     background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-image-missing.jpg");
 }
 
@@ -10,14 +9,6 @@
 
 #section-b-bg {
     background-color: #FFFFFF;
-}
-
-#section-d-bg {
-    background-color: #999999;
-}
-
-#section-e-bg {
-   display: none;
 }
 
 .open-positions-section {
@@ -82,16 +73,6 @@
     }
 }
 
-.graphicSection {
-    padding-top: 50px;
-    padding-bottom: 50px;
-    display: flex;
-    align-items: center;
-    flex-direction: column;
-    line-height: 2;
-    font-size: 16px;
-}
-
 #submit-resume-btn {
     width: 128px;
     height: 48px;
@@ -99,14 +80,4 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-}
-
-@media screen and (min-width: 992px) {
-    .graphicSection {
-        flex-direction: row;
-    }
-    
-    .graphicSection p {
-        width: 75%;
-    }
 }

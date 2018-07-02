@@ -1,0 +1,45 @@
+.page-background {   
+    background-color: #EBEBEB;
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/missions/hero-missions-stories.jpg");
+}
+
+#ternavbar-bg {
+    display: flex;
+}
+
+img {
+    width: 100%;
+ }
+ 
+ 
+ h2 {
+     color: black;
+     font-weight: bold;
+     font-size: 30px;
+ }
+ 
+.container-sm {
+    max-width: 75%;
+}
+
+.inner-container {
+    width: 100%;
+}
+
+.learn-more-button a{
+    display: none;
+}
+
+.item-content p {
+    display: block;
+}
+/* Mobile Styling */
+@media screen and (max-width: 1000px) {
+    .inner-container {
+        width: 100%;
+    }
+
+    .container-sm {
+        margin-top: -20px;
+    }
+}

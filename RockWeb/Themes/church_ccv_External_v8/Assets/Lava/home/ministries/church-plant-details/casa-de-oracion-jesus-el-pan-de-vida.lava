@@ -1,0 +1,8 @@
+
+{% assign contentChannelChurchName = "Casa de Oracion Jesus el Pan de Vida" %}
+{% assign displayChurchName = "Casa de Oracion Jesus el Pan de Vida" %}
+{% assign churchLocation = "Palmira - Puebloviejo, Magdalena" %}
+{% assign pastorName = "Fernando Antonio Ariza Ayala" %}
+{% assign pastorDetail = "Pastor Fernando and his wife Julesis are overseeing the church at Palmira. Fernando began following Christ 20 years ago where he first felt called to serve the local church. After completing leadership and ministry training, he began working with young people. That opportunity then led him to become his church's small group director. His dedication to serve the people around him has allowed Fernando to become the lead pastor of the church in La Isla." %}
+{% assign pastorImg = "~~/Assets/Images/home/ministries/colombia-church-plant/pastors/AVD-Fernando.png" %}
+{% assign campusSponsor = "Avondale" %}

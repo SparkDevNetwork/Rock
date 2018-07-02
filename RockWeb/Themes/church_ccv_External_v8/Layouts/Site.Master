@@ -27,10 +27,12 @@
   <title></title>
 
   <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js") %>" ></script>
-  <script src="<%# ResolveRockUrl("~/Scripts/jquery-1.12.4.min.js") %>"></script>
+  <script src="<%# ResolveRockUrl("~/Scripts/jquery-1.12.4.min.js") %>" ></script>
   <script src="<%# ResolveRockUrl("~~/Scripts/min/plugins.min.js", true) %>" ></script>
   <script src="<%# ResolveRockUrl("~~/Scripts/min/main.min.js", true) %>" ></script>
   <script type="text/javascript" src="/Themes/church_ccv_External_v8/Scripts/ui-effect-navbar.js?v=2"></script>
+  <script type="text/javascript" src="/Themes/church_ccv_External_v8/Scripts/ui-effect-subnavbar.js?v=2"></script>
+  <script type="text/javascript" src="/Themes/church_ccv_External_v8/Scripts/Vendor/slick/slick.min.js"></script>
 
   <!-- Set the viewport width to device width for mobile -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -42,6 +44,7 @@
   <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>"/>
   <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/common.css", true) %>"/>
   <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/Vendor/materialdesignicons.min.css", true) %>"/>
+  <link rel="stylesheet" type="text/css" href="/Themes/church_ccv_External_v8/Scripts/Vendor/slick/slick.css"/>
 
   <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 

@@ -1,0 +1,19 @@
+{% comment %}
+{% include '~~/Assets/Lava/home/ministries/church-plant-header.lava' %}
+{% endcomment %}
+{% include '~~/Assets/Lava/home/ministries/church-plant-resolve-file-name.lava' %}
+{% include churchDetailsLavaFile %}
+
+<div class="church-plant-title">
+    <img class="img-responsive" src="/Themes/church_ccv_external_v8/Assets/Images/logos/logo-colombia-small.png">
+    <div class="title-info">
+        <h1>{{ displayChurchName }}</h1>
+
+            {% comment %}Try to get the campus that's sponsoring this church. It's possible there isnt' one.{% endcomment %}
+        {% if campusSponsor != null and campusSponsor != '' %}
+            <h4>Sponsored by</h4>
+            <h2>{{ campusSponsor }} Campus</h2>
+        {% endif %}
+    </div>
+
+</div>

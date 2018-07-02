@@ -8,14 +8,13 @@
 {% comment %} Render nav icons for next steps modals {% endcomment %}
 <div class="next-steps-nav">
     <div class="outer-circle">
-        <a href="#" class="outer-circle-link hidden deg188" data-toggle="modal" data-target="#modalStartingPoint"><img id="startingPoint" class="nextstep-icon-inactive" src='~~/Assets/Images/home/get-involved/icon-starting-point.png'></a>
-        <a href="#" class="outer-circle-link hidden deg209-5" data-toggle="modal" data-target="#modalBaptism"><img id="baptism" class="nextstep-icon-inactive" src='~~/Assets/Images/home/get-involved/icon-baptism.png'></a>
-        <a href="#" class="outer-circle-link hidden deg233" data-toggle="modal" data-target="#modalWorship"><img id="worship" class="nextstep-icon-inactive" src='~~/Assets/Images/home/get-involved/icon-worship.png'></a>
-        <a href="#" class="outer-circle-link hidden deg257-5" data-toggle="modal" data-target="#modalConnect"><img id="connect" class="nextstep-icon-inactive" src='~~/Assets/Images/home/get-involved/icon-connect.png'></a>
-        <a href="#" class="outer-circle-link hidden deg282-5" data-toggle="modal" data-target="#modalServe"><img id="serve" class="nextstep-icon-inactive" src='~~/Assets/Images/home/get-involved/icon-serve.png'></a>
-        <a href="#" class="outer-circle-link hidden deg307" data-toggle="modal" data-target="#modalGive"><img id="give" class="nextstep-icon-inactive" src='~~/Assets/Images/home/get-involved/icon-give.png'></a>
-        <a href="#" class="outer-circle-link hidden deg330-5" data-toggle="modal" data-target="#modalShare"><img id="share" class="nextstep-icon-inactive" src='~~/Assets/Images/home/get-involved/icon-share.png'></a>
-        <a href="#" class="outer-circle-link hidden deg352" data-toggle="modal" data-target="#modalCoach"><img id="coach" class="nextstep-icon-inactive" src='~~/Assets/Images/home/get-involved/icon-coach.png'></a>
+        <a href="#" class="outer-circle-link hidden deg180" data-toggle="modal" data-target="#modalBaptism"><img id="baptism" class="nextstep-icon-inactive" src='~~/Assets/Images/home/get-involved/icon-baptism.png'></a>
+        <a href="#" class="outer-circle-link hidden deg206" data-toggle="modal" data-target="#modalWorship"><img id="worship" class="nextstep-icon-inactive" src='~~/Assets/Images/home/get-involved/icon-worship.png'></a>
+        <a href="#" class="outer-circle-link hidden deg237" data-toggle="modal" data-target="#modalConnect"><img id="connect" class="nextstep-icon-inactive" src='~~/Assets/Images/home/get-involved/icon-connect.png'></a>
+        <a href="#" class="outer-circle-link hidden deg270-5" data-toggle="modal" data-target="#modalServe"><img id="serve" class="nextstep-icon-inactive" src='~~/Assets/Images/home/get-involved/icon-serve.png'></a>
+        <a href="#" class="outer-circle-link hidden deg303-5" data-toggle="modal" data-target="#modalGive"><img id="give" class="nextstep-icon-inactive" src='~~/Assets/Images/home/get-involved/icon-give.png'></a>
+        <a href="#" class="outer-circle-link hidden deg334" data-toggle="modal" data-target="#modalShare"><img id="share" class="nextstep-icon-inactive" src='~~/Assets/Images/home/get-involved/icon-share.png'></a>
+        <a href="#" class="outer-circle-link hidden deg360" data-toggle="modal" data-target="#modalCoach"><img id="coach" class="nextstep-icon-inactive" src='~~/Assets/Images/home/get-involved/icon-coach.png'></a>
     </div>
     <div class="inner-circle">
         <a href="#" onClick="toggleNextStepsMenu(); return false;">
@@ -67,40 +66,6 @@
             });
         }
 
-    }
-
-    // Render active starting point icon and update relative popover and modal content
-    renderStartingPoint = function(data) {
-        switch (data.Status) {
-            case 0: {
-                // has not attended starting point
-                statusValue = 'You have not taken Starting Point.'; 
-                break;
-            }
-            case 1: {
-                // attended starting point
-                statusValue = `Congratulations! You completed this step on ${data.DateFormatted}.`;
-
-                // Update modal content
-                $('#modalContentStartingPoint').html(statusValue);
-
-                // change color of icon
-                toggleActiveIcon('#startingPoint');
-                break;
-            }
-            case 2: { 
-                // registered for starting point
-                statusValue = `Registered to take Starting Point on ${data.DateFormatted}.`;
-                
-                // update modal content
-                $('#modalContentStartingPoint').html(statusValue);
-                break;
-            }
-            default: 
-                break;
-        }
-
-        activatePopOver('#startingPoint', statusValue);
     }
 
     // Render active baptism icon and update relative popover and modal content
@@ -349,18 +314,8 @@
                             }
                         }
                     }
-                })
-            }
-            
-            // If current person query api for starting point step
-            var currentPersonId = '{{ CurrentPerson.Id }}';
-            if (currentPersonId !== '') {
-                $.getJSON('/api/CCV/Badges/TakenStartingPoint/'+currentPersonId, function(data){
-                    // process response
-                    renderStartingPoint(data);
-                })
+                });
             }
         }
-
-    })
+    });
 </script>

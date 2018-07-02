@@ -1,38 +1,13 @@
 .page-background {   
-    background-color: #EBEBEB;
     background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-image-missing.jpg");
 }
-
-#ternavbar-bg {
-    display: none;
-}
-
-#section-a-bg {
-    background-color: #ffffff;
-    padding: 15px;
-}
-
-#section-b-bg {
-    display: none;
-}
-
-#section-c-bg {
-    display: none;
-}
-
-h4 {
-    color: #000000;
-}
-
-.share-story-container {
-    padding-top: 20px;
-}
-
+ 
 .control-wrapper textarea {
     background-color: #eeeeee;
     border-bottom: unset;
     border: 1px solid #777777;
     color: #333333;
+    /* width: 75%; */
 }
 
 .control-wrapper textarea::placeholder { 
@@ -41,17 +16,34 @@ h4 {
 
  .story-name-fields {
     display: flex;
-    justify-content: flex-start;
-    margin-bottom: 25px;
+    justify-content: space-between;
     flex-wrap: wrap;
+    width: 50%;
 }
 
-.first-name, .last-name, .email-address {
-    margin-right: 25px;
+.first-name, .last-name {
+    width: 47%;
 }
 
-@media screen and (min-width: 500px) { 
+.email-address {
+    width: 50%;
+}
+
+.email-box {
+    margin-bottom: 0;
+}
+
+.form-control {
+    padding: 0;
+}
+
+@media screen and (max-width: 500px) { 
+    .story-name-fields {
+        width: 100%;
+    }
+
     .first-name, .last-name, .email-address {
-        width: 300px;
+        width: 100%;
+        margin-right: 0;
     }
 }

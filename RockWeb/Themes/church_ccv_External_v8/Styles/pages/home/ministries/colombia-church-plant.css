@@ -1,90 +1,121 @@
 
 .page-background {   
     background-color: #EBEBEB;
-    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-image-missing.jpg");
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/hero-church-plant-colombia.jpg");
+}
+
+.main-feature {
+    padding-top: 300px;
 }
 
 #ternavbar-bg {
-  display: flex;
+    display: flex;
 }
 
-#section-a-bg {
-   background-color: #f9f9f9;
-   padding: 20px;
+#section-a-bg, #section-b-bg, #section-c-bg {
+    padding: 20px;
 }
 
-#section-b-bg {
-   display: none;
+#section-b-bg, #section-c-bg {
+    background-color: #FFFFFF;
 }
 
-#section-c-bg {
-	display: none;
+.church-plant-title {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
 }
 
-.header {
-  color: white;
+.title-info {
+    max-width: 45%;
 }
 
-.info-header {
-   color: #889165;
+.title-info h1, .title-info h2, .title-info h4 {
+    font-family: akrobat;
+    color: #FFFFFF;
+    text-align: center;
 }
 
-.lead-info {
-   font-size: 1.25em;
+.title-info h1 {
+    font-size: 60px;
 }
 
-@media screen and (min-width: 1200px) {
-   .padding-wrapper {
-      margin-left: 125px;
-      margin-right: 125px;
-   }
+
+/* Mobile Styling page / title */
+@media screen and (max-width: 500px) {
+    .main-feature {
+        padding-top: 60px;
+    }
+
+    .church-plant-title {
+        flex-direction: column;
+    }
+
+    .title-info {
+        max-width: 100%;
+    }
+
+    .title-info h1 {
+        font-size: 36px;
+    }
+
 }
 
-.static-church-info {
-   display: flex; 
-   flex-direction: column; 
-   margin-top:50px;
+/* Church info Styling */
+.left {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-.pastor-bio {
-   display: flex;
-   flex-direction: column;
+.pastor-image-mobile {
+    display: none;
 }
 
-.pastor-img {
-   height: 100%; 
-   align-self: left;
-   object-fit: contain;
+.right h4, h3 {
+    margin: 0;
 }
 
-@media screen and (min-width: 490px) {
-   .static-church-info {
-      flex-direction: row; 
-      flex-wrap: nowrap; 
-      justify-content: space-around; 
-   }
-
-   .pastor-img {
-      align-self: center;
-   }
-
-   .pastor-bio {
-      margin-left:25px;
-   }
+.right p {
+    margin: 20px 0;
 }
 
-.previous-button {
-   background-color: #889165;
-   color: white;
+/* Mobile Styling */
+@media screen and (max-width: 500px) {
+    .pastor-image-desktop {
+        display: none;
+    }
+
+    .pastor-image-mobile {
+        display: flex;
+        width: 90%;
+        margin: 0 auto;
+        padding-bottom: 20px;
+    }
+
+    .left-and-right-container {
+        padding-bottom: 0;
+    }
+
+    .left-and-right-container .right {
+        margin-top: 0;
+    }
 }
 
-.latest-update-button {
-   background-color: white;
-   color:  #889165;
-   border-color: #889165;
-   border-width: 1px;
+/* End Church info */
+
+/* Church Update styling */
+.church-update {
+    padding-bottom: 20px;
 }
 
-p {
-   color: #505050;
+.update-info-header {
+    padding: 20px 0;
 }
+
+.previous-updates {
+    padding-bottom: 20px;
+}
+
+/* End Church update */
+

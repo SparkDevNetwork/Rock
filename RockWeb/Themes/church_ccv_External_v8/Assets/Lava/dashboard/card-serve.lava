@@ -11,7 +11,7 @@
 {% if numberOfGroups > 0 %}
 
     {% comment %} Render Serving Teams {% endcomment %}
-    <div class="dashboard-card">
+    <div>
         <div class="title">
             <h4>Serve</h4>
             <div>
@@ -78,7 +78,7 @@
 
     {% comment %} Render Serve Call to Action {% endcomment %}
     <div class="info-card">
-        <img src="/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/ad-serve.png">
+        <img src="~~/Assets/Images/home/get-involved/ad-serve.png">
         <div class="header">
             <h4>Serve</h4>
             <h5>Serving is a great way to get involved</h5>

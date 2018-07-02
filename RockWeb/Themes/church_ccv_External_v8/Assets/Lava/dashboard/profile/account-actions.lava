@@ -2,7 +2,7 @@
     {% include '~~/Assets/Lava/MyDashboard/dashboard-profile-account-actions.lava' %}  
 {% endcomment %}
 
-<div class="dashboard-card account-actions">
+<div class="sidebar-card account-actions">
     <div class="title">
         <h3>Account Actions</h3>
     </div>

@@ -5,6 +5,7 @@
 
 .main-feature {
     padding-top: 125px;
+    padding-bottom: 25px;
 }
 
 .series {
@@ -19,18 +20,21 @@
     margin: 20px 0;
 }
 
-/* Mobile Styling */
-@media screen and (max-width: 500px){
-    .main-feature {
-        padding-top: 60px;
-    }
-
-    #zone-feature, #zone-sectiona {
-        margin: 10px 0;
+/* Tablet Styling */
+@media screen and (max-width: 768px){
+    #section-a-bg {
+        padding-bottom: 20px;
     }
 
     .series {
         margin: 0;
+    }
+}
+
+/* Mobile Styling */
+@media screen and (max-width: 500px){
+    .main-feature {
+        padding-top: 60px;
     }
 }
 

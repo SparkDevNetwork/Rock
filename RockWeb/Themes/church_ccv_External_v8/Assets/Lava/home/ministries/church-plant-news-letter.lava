@@ -1,0 +1,59 @@
+{% comment %}
+    {% include '~~/Assets/Lava/home/ministries/church-plant-newsLetter.lava' %}
+    For use with block type Content Channel View
+{% endcomment %}
+{% include '~~/Assets/Lava/home/ministries/church-plant-resolve-file-name.lava' %}
+{% include churchDetailsLavaFile %}
+
+{% assign churchUpdatesList = Items | Where:'ChurchName', contentChannelChurchName %}
+{% assign numChurchUpdates = churchUpdatesList | Size %}
+
+{% comment %}
+    Make sure there are entries FOR the church specified
+{% endcomment %}
+{% if numChurchUpdates > 0 %}
+	
+    {% comment %}
+        See if there's an item ID for the channel. If not, use the latest.
+    {% endcomment %}
+    {% assign filteredItems = churchUpdatesList | Where:'Id', PageParameter.ContentId %}
+
+    {% assign count = filteredItems | Size %}
+    {% if count > 0 %}
+        {% assign viewedItem = filteredItems | First %}
+    {% else %}
+        {% assign viewedItem = churchUpdatesList | First %}
+    {% endif %} 
+
+    <div class="church-update">
+        <h3 class="update-info-header">Update for {{ viewedItem.StartDateTime | Date:'M/d/yyyy' }}</h3>
+        <p>{{ viewedItem.Content }}</p>
+        
+        <h3 class="update-info-header">Prayer Requests</h3>
+        <p>{{ viewedItem.PrayerRequests }}</p>
+
+        {% if viewedItem.Image1 != '' %}
+            <img class="church-plant-image img-responsive" src="{{ viewedItem | Attribute: 'Image1', 'Url' }}">
+        {% endif %}
+
+        {% if viewedItem.Image2 != '' %}
+            <img class="church-plant-image img-responsive" src="{{ viewedItem | Attribute: 'Image2', 'Url' }}">
+        {% endif %}
+
+        {% if viewedItem.Image3 != '' %}
+            <img class="church-plant-image img-responsive" src="{{ viewedItem | Attribute: 'Image3', 'Url' }}">
+        {% endif %}
+
+        {% if viewedItem.Image4 != '' %}
+            <img class="church-plant-image img-responsive" src="{{ viewedItem | Attribute: 'Image4', 'Url' }}">
+        {% endif %}
+
+        {% if viewedItem.Image5 != '' %}
+            <img class="church-plant-image img-responsive" src="{{ viewedItem | Attribute: 'Image5', 'Url' }}">
+        {% endif %}
+    </div>
+
+{% else %}
+	No Church Found
+{% endif %}
+

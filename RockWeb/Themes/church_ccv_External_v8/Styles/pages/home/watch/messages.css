@@ -3,10 +3,6 @@
     background-color: white;
 }
 
-#zone-sectiona {
-    margin: 0 15%;
-}
-
 .messages {
     display: flex;
     flex-direction: column;
@@ -20,8 +16,7 @@
 }
 
 .series {
-    padding: 10px;
-    width: 30%;
+    width: 32%;
 }
 
 .series img {
@@ -35,12 +30,23 @@
     padding: 10px 0;
 }
 
-/* Mobile Styling */
-@media screen and (max-width: 500px) {
-    #zone-feature, #zone-sectiona {
-        margin: 0 10px;
+/* Tablet Styling */
+@media screen and (max-width: 768px) {
+    .messages-list {
+        padding-top: 0;
     }
 
+    .btn {
+        width: unset;
+    }
+
+    .pager {
+        margin: 0 0 10px 0;
+    }
+}
+
+/* Mobile Styling */
+@media screen and (max-width: 500px) {
     .messages-list {
         flex-direction: column;
         padding-top: 0;
@@ -55,8 +61,8 @@
         width: 100px;
         min-width: unset;
     }
-
 }
+
 
 /* override bootstrap */
 .pager li>a {
@@ -81,10 +87,10 @@
     font-size: 20px;
 }
 
-.previous a {
-    margin-right: 10px;
+.watch-previous a {
+    float: left;
 }
 
-.next a {
-    margin-left: 10px;
+.watch-next a {
+    float: right;
 }

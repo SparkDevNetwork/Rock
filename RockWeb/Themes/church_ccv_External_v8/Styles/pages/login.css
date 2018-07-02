@@ -4,6 +4,10 @@
     background-color: #000;
 }
 
+.main-feature {
+    display:none;
+}
+
 .title {
     margin-top: 30px;
 }
@@ -103,7 +107,7 @@
     }
 
     #section-a-bg {
-        padding: 0;
+        padding: 80px 0 0;
     }
 
     .login-card {

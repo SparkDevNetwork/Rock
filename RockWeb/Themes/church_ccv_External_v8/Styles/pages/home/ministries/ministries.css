@@ -3,9 +3,12 @@
     background-color: #7A1315;
 }
 
-.main-feature {
-    height: 475px;
-    padding-top: 175px;
+/* use the expanded main feature only for tablet and larger */
+@media screen and (min-width: 501px) {
+    .main-feature {
+        height: 475px;
+        padding-top: 175px;
+    }
 }
 
 #section-a-bg {
@@ -30,12 +33,4 @@
 
 #section-f-bg {
     background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/background-ministries-stars.jpg");
-}
-
-/* Mobile Styling */
-@media screen and (max-width: 500px) {
-    .main-feature {
-        height: unset;
-        padding-top: 50px;
-    }
 }

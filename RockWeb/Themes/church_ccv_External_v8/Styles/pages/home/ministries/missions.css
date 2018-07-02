@@ -4,21 +4,18 @@
     background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/hero-missions.jpg");
 }
 
-#ternavbar-bg {
-    display: flex;
-}
-
 #section-b-bg {
     background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/background-missions-colombia.jpg");
+}
+
+#ternavbar-bg {
+    display: flex;
 }
 
 #section-c-bg, #section-e-bg {
 	background-color: #FFFFFF;
 }
 
-.navigation-tertiary-item {
-    padding: 10px 30px;
-}
 
 .mission-stories {
     margin-bottom: 10px;
@@ -51,11 +48,6 @@
 
 /* Mobile Styling */
 @media screen and (max-width: 500px) {
-/* temporarily disable 3rd nav in mobile until we decide on design. */
-    #ternavbar-bg {
-        display: none;
-    }
-
     .events-row {
         padding: 20px 0;
     }

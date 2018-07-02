@@ -10,7 +10,8 @@
 
     {% comment %} Check for a photo {% endcomment %}
     {% if person | Attribute:'BaptismPhoto' %}
-        <div class="baptism-print-button">
+        <div class="back-button">
+            <a class="btn btn-primary" href="/dashboard/profile">Back</a>
             <input type='button' id='btnPrint' class="btn btn-primary" value='Print'>
         </div>
         <div id="divBaptismDashboard" class="baptism-dashboard-container">
@@ -34,7 +35,8 @@
     {% comment %} Check if baptized by CCV {% endcomment %}
     {% assign ccvBaptized = person | Attribute:'BaptizedHere' %}
     {% if ccvBaptized == 'Yes' %}
-        <div class="baptism-print-button">
+        <div class="back-button">
+            <a class="btn btn-primary" href="/dashboard/profile">Back</a>
             <input type='button' id='btnPrint' class="btn btn-primary" value='Print'>
         </div>
         <div id="divBaptismDashboard" class="baptism-dashboard-container">
@@ -49,6 +51,9 @@
             </div>
         </div>
     {% else %}
+        <div class="back-button">
+            <a class="btn btn-primary" href="/dashboard/profile">Back</a>
+        </div>
         <div class="baptism-dashboard-container">
             No Baptism Certificate.
         </div>

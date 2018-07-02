@@ -1,23 +1,6 @@
 
 .page-background {   
-    background-color: #EBEBEB;
     background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-image-missing.jpg");
-}
-
-#section-a-bg {
-    background-color: #f9f9f9;
-}
-
-#zone-sectiona {
-    padding-top: 20px;
-}
-
-#section-b-bg {
-    display: none;
-}
-
-#section-c-bg {
-    display: none;
 }
 
 .control-wrapper textarea {
@@ -48,25 +31,12 @@
 }
 
 .first-name, .last-name, .email-address, .phone-number {
-    width: 300px;
+    width: 45%;
 }
 
-@media screen and (min-width: 927px) {
-    .workflow-entry-panel {
-        width: 75%;
-    }
-
-    .last-name, .phone-number {
-        margin-left: 25px;
-    }
-}
-
-@media screen and (min-width: 1149px) {
-    .workflow-entry-panel {
-        width: 60%;
-    }
-
-    .name-fields, .info-fields {
-        justify-content: space-between;
+/* Mobile Styling */
+@media screen and (max-width: 500px) {
+    .first-name, .last-name, .email-address, .phone-number {
+        width: 100%;
     }
 }

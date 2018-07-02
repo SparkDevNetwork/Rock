@@ -1,0 +1,119 @@
+
+.baptism-dashboard-container {
+    display: flex;
+    justify-content: space-around;
+}
+
+.baptism-dashboard-image, .baptism-dashboard-photo {
+    position: relative;
+}
+
+.baptism-dashboard-image img {
+    width: 1024px;
+}
+
+.baptism-certificate-name-container {
+    position: absolute;
+    top: 300px;
+    left: 0;
+    width: 1024px;
+    display: flex;
+}
+
+.baptism-certificate-name {
+    font-size: 36px;
+    font-weight: bold;
+    font-family: akrobat;
+    margin: 0 auto;
+}
+
+.baptism-certificate-date-container {
+    position: absolute;
+    width: 290px;
+    top: 574px;
+    left: 680px;
+    display: flex;
+}
+
+.baptism-certificate-date {
+    font-size: 18px;
+    font-family: akrobat;
+    color: #707270;
+    margin: 0 auto;
+}
+
+/* Fix Blue Box around calling href bug */
+.back-button :focus {
+    outline:none!important
+}
+
+/* iPad Styling */
+@media screen and (max-width: 768px) {
+    .baptism-dashboard-image {
+        width: 100%;
+    }
+
+    .baptism-dashboard-image img {
+        width: 700px;
+        margin: 0 auto;
+    }
+
+    .baptism-certificate-name-container {
+        top: 190px;
+        left: 0;
+        width: 700px;
+    }
+    
+    .baptism-certificate-date-container {
+        width: 100px;
+        top: 385px;
+        left: 510px;
+    }
+}
+
+/* Mobile Styling */
+@media screen and (max-width: 500px) {
+    .baptism-dashboard-container {
+        margin: 15px;
+    }
+
+    .baptism-dashboard-photo {
+        width: 100%;
+    }
+
+    .baptism-dashboard-image {
+        width: 80%;
+    }
+
+    .baptism-dashboard-image img {
+        width: 280px;
+        margin: 0 auto;
+    }
+
+    .baptism-certificate-name-container {
+        top: 70px;
+        left: 0;
+        width: 280px;
+    }
+    
+    .baptism-certificate-name {
+        font-size: 20px;
+    }
+    
+    .baptism-certificate-date-container {
+        width: 100px;
+        top: 148px;
+        left: 175px;
+    }
+    
+    .baptism-certificate-date {
+        font-size: 12px;
+    }
+}
+
+/* Mobile iphone SE Styling */
+@media screen and (max-width: 320px) {
+    .baptism-dashboard-image {
+        width: 100%;
+    }
+}

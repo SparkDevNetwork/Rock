@@ -1,0 +1,172 @@
+{% comment %}
+    {% assign countdownTargetTime = time %}
+    {% assign countdownCompleteButtonUrl = "https://live.ccv.church" %}
+    {% assign countdownCompleteButtonText = "Watch CCV Live" %}
+    
+    {% include 'util-countdown-timer.lava' %}
+
+    // Note - the target time should be a full epoch date in milliseconds
+    Then call: startTimer( countdownTargetDateMS );
+{% endcomment %}
+<style>
+    .countdown-timer {
+        display: none;
+        justify-content: space-between;
+        width: 100%;
+        align-items: center;
+    }
+
+    .countdown-complete {
+        display: none;
+        width: 100%;
+        justify-content: center;
+    }
+
+    .time {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    p.time-digit {
+        font-size: 48px;
+        margin: 15px 5px 0 0;
+        line-height: .9
+    }
+
+    p.time-label {
+        font-size: 16px;
+    }
+
+    .spacer {
+        border-left: 1px solid white;
+        height: 64px;
+    }
+
+    /* Tablet size layout */
+    @media screen and (max-width: 1024px) {
+        p.time-digit {
+            font-size: 36px;
+        }
+
+        p.time-label {
+            font-size: 12px;
+        }
+
+        .spacer {
+            height: 48px;
+        }   
+    }
+
+    /* Mobile size layout */
+    @media screen and (max-width: 500px) {
+        p.time-digit {
+            font-size: 24px;
+        }
+
+        p.time-label {
+            font-size: 8px;
+        }
+
+        .spacer {
+            height: 32px;
+        }   
+    }
+    
+</style>
+
+<div class="countdown-timer">
+    <div class="spacer">|</div>
+
+    <div class="time">
+        <p class="time-digit days">00</p>
+        <p class="time-label">days</p>
+    </div>
+    
+    <div class="spacer">|</div>
+    
+    <div class="time">
+        <p class="time-digit hours">00</p>
+        <p class="time-label">hours</p>
+    </div>
+    
+    <div class="spacer">|</div>
+    
+    <div class="time">
+        <p class="time-digit minutes">00</p>
+        <p class="time-label">minutes</p>
+    </div>
+    
+    <div class="spacer">|</div>
+
+    <div class="time">
+        <p class="time-digit seconds">00</p>
+        <p class="time-label">seconds</p>
+    </div>
+
+    <div class="spacer">|</div>
+</div>
+
+<div class="countdown-complete">
+    <a href={{countdownCompleteButtonUrl}} class="btn btn-primary">{{ countdownCompleteButtonText }}</a>
+</div>
+
+<script>
+     function showCountdownTimer() {
+         $(".countdown-timer").css("display","flex");
+         $(".countdown-complete").css("display", "none");
+     }
+
+     function showCountdownCompletion() {
+         $(".countdown-timer").css("display","none");
+         $(".countdown-complete").css("display", "flex");
+     }
+
+     function startTimer( countdownTargetDateMS ) {
+         x = setInterval( function() { tickTimer( countdownTargetDateMS ); }, 1000);
+     }
+     
+     // countdownTargetDateMS should be a full epoch date in milliseconds
+     function tickTimer( countdownTargetDateMS ) {
+        
+        var nowDateMS = new Date().getTime();
+        
+        // get the delta from now to the target time (all in milliseconds)
+        var deltaTime = countdownTargetDateMS - nowDateMS;
+
+        // calc needed values to break out the time parts
+        var dayInMilliseconds = (1000 * 60 * 60 * 24);
+        var hourInMilliseconds = (1000 * 60 * 60);
+        var minutesInMilliseconds = (1000 * 60);
+
+        var days = Math.floor( deltaTime / dayInMilliseconds );
+        var hours = Math.floor( deltaTime % dayInMilliseconds / hourInMilliseconds );
+        var minutes = Math.floor( deltaTime % hourInMilliseconds / minutesInMilliseconds );
+        var seconds = Math.floor( deltaTime % minutesInMilliseconds / 1000 );
+
+        // update the actual markup, and there're always two digits
+        $(".days").text( addLeadingZero( days ) ); 
+        $(".hours").text( addLeadingZero( hours ) );
+        $(".minutes").text( addLeadingZero( minutes ) );
+        $(".seconds").text( addLeadingZero ( seconds ) );
+
+        if( (days + hours + minutes + seconds) > 0 )
+        {
+            showCountdownTimer();
+        }
+        else {
+            showCountdownCompletion();
+            
+            clearInterval( x );
+        }
+     }
+
+     function addLeadingZero( value ) {
+         if( value < 10 ) { 
+             return "0" + value 
+         };
+
+         return value;
+     }
+</script>

@@ -1,4 +1,74 @@
-<div class="container infoSection">
+<div class="header-title">
+    <h2>OUR CULTURE</h2>
+    <p>Bacon ipsum dolor amet frankfurter kevin jowl t-bone, tongue pastrami shank turkey.   </p>
+</div>
+<div class="infoSections">
+    <a id="culture"></a>
+    <div class="culture-features">
+        <div class="feature">
+            <h4>403B</h4>
+            <p>We care about your future. We have an awesome 403b Investment Plan available to all full-time employees over age 18 with no waiting period, no vesting, and CCV matches up to 5% of your earnings.    </p>
+        </div>
+        <div class="feature">
+            <h4>WELLNESS BENEFITS</h4>
+            <p>Your health is important to us. We offer excellent medical, dental and vision plans that rival the top employers in the valley.  </p>
+        </div>
+    </div>
+    <div class="culture-features">
+        <div class="feature">
+            <h4>LEADERSHIP DEVELOPMENT</h4>
+            <p>When you get better, we get better. We have a development team that will create growth plans specific to you which includes dollars to invest in your training and development.</p>
+        </div>
+        <div class="feature">
+            <h4>TECHNOLOGY RICH</h4>
+            <p>You’ll have the tools you need to do your job with excellence. Just like we use technology in our efforts to reach people for Christ, you’ll be well equipped for your role.</p>
+        </div>
+    </div>
+    <div class="culture-features">
+        <div class="feature">
+            <h4>TEAM EVENTS & RETREATS</h4>
+            <p>Teamwork is one of our Core Values. Teams take time together away from the office to learn, get to know each other better, celebrate a job well done, and share ideas for what’s ahead.</p>
+        </div>
+        <div class="feature">
+            <h4>EMPLOYEE DISCOUNTS</h4>
+            <p>Ministry is serious business, so we like to include a few perks where we can. Employees enjoy discounted food, sports, and summer camp rates for your entire family.</p>
+        </div>
+    </div>
+</div>
+{% comment %} 
+<div class="infoSection-mobile">
+    <a id="culture"></a>
+    <div class="culture-features">
+        <div class="feature">
+            <h4>403B</h4>
+            <p>We care about your future. We have an awesome 403b Investment Plan available to all full-time employees over age 18 with no waiting period, no vesting, and CCV matches up to 5% of your earnings.    </p>
+        </div>
+        <div class="feature">
+            <h4>LEADERSHIP DEVELOPMENT</h4>
+            <p>When you get better, we get better. We have a development team that will create growth plans specific to you which includes dollars to invest in your training and development.</p>
+        </div>
+        <div class="feature">
+            <h4>TEAM EVENTS & RETREATS</h4>
+            <p>Teamwork is one of our Core Values. Teams take time together away from the office to learn, get to know each other better, celebrate a job well done, and share ideas for what’s ahead.</p>
+        </div>
+    </div>
+    <div class="culture-features">
+        <div class="feature">
+            <h4>WELLNESS BENEFITS</h4>
+            <p>Your health is important to us. We offer excellent medical, dental and vision plans that rival the top employers in the valley.  </p>
+        </div>
+        <h4>EMPLOYEE DISCOUNTS</h4>
+            <p>Ministry is serious business, so we like to include a few perks where we can. Employees enjoy discounted food, sports, and summer camp rates for your entire family.</p>
+        <div class="feature">
+            <h4>TECHNOLOGY RICH</h4>
+            <p>You’ll have the tools you need to do your job with excellence. Just like we use technology in our efforts to reach people for Christ, you’ll be well equipped for your role.</p>
+        </div>
+    </div>
+</div> {% endcomment %}
+
+
+
+{% comment %} <div class="container infoSection">
     <a id="culture"></a>
     <div>
       <h2>OUR CULTURE</h2>
@@ -44,4 +114,4 @@
 
         <img class="wide-img-only" src="~~/Assets/Images/career-opportunities-3.jpg"/>
     </div>
-</div>
+</div> {% endcomment %}

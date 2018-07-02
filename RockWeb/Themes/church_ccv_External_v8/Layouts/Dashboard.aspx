@@ -40,18 +40,13 @@
 						<Rock:Zone Name="Tertiary Navbar" runat="server" />
                 </div>
             </div>
-			
+
             <div class="row">
-                <div id="section-a-bg" class="col-md-12">
-						<Rock:Zone Name="Section A" runat="server" />
+                <div id="single-section-bg" class="col-md-12">
+                    <Rock:Zone Name="Single Section" runat="server" />
                 </div>
             </div>
 			
-			<div class="row">
-                <div id="section-b-bg" class="col-md-12">
-						<Rock:Zone Name="Section B" runat="server" />
-                </div>
-            </div>
             <!-- End Content Area -->
 
         </div>

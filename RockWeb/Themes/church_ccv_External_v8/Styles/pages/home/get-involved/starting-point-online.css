@@ -4,23 +4,6 @@
     background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-image-missing.jpg");
 }
 
-#subnavbar-bg {
-    display: none;
-}
-
-#section-a-bg {
-    background-color: #ffffff;
-    padding: 20px;
-}
-
-#section-b-bg {
-    display: none;
-}
-
-#section-c-bg {
-    display: none;
-}
-
 h4 {
     color: #000000;
 }

@@ -1,0 +1,32 @@
+{% comment %}
+{% include '~~/Assets/Lava/home/ministries/church-plant-news-letter-previous.lava' %}
+For use with block type Content Channel View
+{% endcomment %}
+{% include '~~/Assets/Lava/home/ministries/church-plant-resolve-file-name.lava' %}
+{% include churchDetailsLavaFile %}
+
+{% assign churchUpdatesList = Items | Where:'ChurchName', contentChannelChurchName %}
+{% assign numChurchUpdates = churchUpdatesList | Size %}
+
+{% if numChurchUpdates > 1 %}
+    <div class="previous-updates">
+        <h3 class="info-header">Previous Updates</h3>
+        {% comment %}
+            If they're not viewing the most recent item, display a link to it.
+        {% endcomment %}
+
+        <div class="btn-row">
+            {% assign newestItem = churchUpdatesList | First %}
+            {% if PageParameter.ContentId != null and newestItem.Id != PageParameter.ContentId %}
+                <a href="/ministries/missions/colombia/church-plant?ChurchName={{PageParameter.ChurchName}}&amp;ContentId={{ newestItem.Id }}" class="btn btn-primary">Latest News</span></a>
+            {% endif %}
+
+            {% comment %}
+            Display the most recent 3 items behind the latest
+            {% endcomment %}
+            {% for item in churchUpdatesList offset:1 limit:3 %}
+                <a href="/ministries/missions/colombia/church-plant?ChurchName={{PageParameter.ChurchName}}&amp;ContentId={{ item.Id }}" class="btn btn-primary">{{ item.StartDateTime | Date:'M/d/yyyy' }}</span></a>
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}

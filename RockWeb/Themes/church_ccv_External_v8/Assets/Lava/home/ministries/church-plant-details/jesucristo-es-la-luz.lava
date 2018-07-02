@@ -1,0 +1,8 @@
+
+{% assign contentChannelChurchName = "Jesucristo es La Luz" %}
+{% assign displayChurchName = "Jesucristo es La Luz" %}
+{% assign churchLocation = "La Luz - Barranquilla, Atlantico" %}
+{% assign pastorName = "Jean Year Perea Orozco" %}
+{% assign pastorDetail = "Pastor Jean is grateful to live very close to the church plant, allowing him to make a greater impact in the community he serves. He has been working in ministry full-time for the past five years and is thrilled for the new opportunities that await this campus. Jean is excited to fulfill this mission in the La Luz community that has been a vision for the Barrio La Luz area for the last 12 years." %}
+{% assign pastorImg = "~~/Assets/Images/home/ministries/colombia-church-plant/pastors/ATH-Jean.png" %}
+{% assign campusSponsor = "Anthem" %}

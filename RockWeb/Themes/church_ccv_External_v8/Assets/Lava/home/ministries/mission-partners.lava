@@ -1,4 +1,4 @@
-
+{% comment %} 
 <div class="event-cards-row missions-partners">
    {% for item in Items %}
       <div class="event-card missions-partners-card-override" >
@@ -13,7 +13,48 @@
          <div class="content">
             <p>{{ item.Content }}</p>
          </div>
+
+          {% assign webUrl = item | Attribute: 'Website', 'RawValue' %}
+         
+         <div class="read-more link pull-right">
+            {% if webUrl != '' %}
+               <a href="{{webUrl}}">Visit Site <i class="mdi mdi-chevron-right"></i></a>
+            {% else %}
+               <a style="visibility: hidden;" href="{{webUrl}}">Visit Site <i class="mdi mdi-chevron-right"></i></a>
+            {% endif %}
+         </div>
          
       </div>
+   {% endfor %}
+</div> {% endcomment %}
+
+
+
+<div class="event-cards-row missions-partners">
+   {% for item in Items %}
+      <div class="event-card missions-partners-card-override" >
+         <div class="image">
+            {% assign imageGuid = item | Attribute:'Image', 'RawValue' %}
+            {% assign appRoot = 'Global' | Attribute:'PublicApplicationRoot' %}
+            <img src="{{appRoot}}GetImage.ashx?Guid={{imageGuid}}&width=350&mode=crop"/>
+         </div>
+         <div class="header">
+            <h4>{{ item.Title | Truncate: 30 }}</h4>
+         </div>
+         <div class="content">
+            <p>{{ item.Content | Truncate: 250 }}</p>
+         </div>
+
+         {% assign webUrl = item | Attribute: 'Website', 'RawValue' %}
+         
+         <div class="read-more link pull-right">
+            {% if webUrl != '' %}
+               <a href="{{webUrl}}">Visit Site <i class="mdi mdi-chevron-right"></i></a>
+            {% else %}
+               <a style="visibility: hidden;" href="{{webUrl}}">Visit Site <i class="mdi mdi-chevron-right"></i></a>
+            {% endif %}
+         </div>
+         
+    </div>
    {% endfor %}
 </div>

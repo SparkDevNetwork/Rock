@@ -8,26 +8,25 @@
 }
 
 #section-c-bg {
-    background-color: #f9f9f9;
+    background-color: #FFFFFF;
 }
 
 #section-d-bg {
-    background-color: #f9f9f9;
     background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/background-stars-soccer.jpg");
 }
 
 #section-e-bg {
-    background-color: #f9f9f9;
     background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/background-stars-football.jpg");
 }
 
 #section-f-bg {
-    background-color: #f9f9f9;
     background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/background-stars-basketball.jpg");
 }
- 
-@media screen and (min-width: 992px) {
-    .sn-times-header-wrapper {
-        margin-top: 0px;
+
+/* Override Standard Layout Tablet Styling (fixes graphic section padding issues) */
+@media screen and (max-width: 1024px) {
+    #section-a-bg {
+        padding-top: 25px;
     }
 }
+ 

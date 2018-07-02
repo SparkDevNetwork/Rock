@@ -13,13 +13,15 @@
     display: flex;
 }
 
-#section-b-bg {
-	background-color: #F6F6F6;
+#section-a-bg {
+    background-color: #EBEBEB !important;
 }
 
-.navigation-tertiary-item {
-    padding: 10px 30px;
+.disclaimer {
+    width: 50%;
+    margin: 0 auto;
 }
+
 
 /* fix conflict with giving page */
 .navigation-tertiary-item.active {
@@ -41,6 +43,15 @@
 }
 
 /* End conflict fixes */
+
+/* Tablet Styling */
+@media screen and (max-width: 768px) {
+    .disclaimer {
+        padding-top: 20px;
+        width: 100%;
+        padding-bottom: 1px;
+    }
+}
 
 /* Mobile Styling */
 @media screen and (max-width: 500px) {

@@ -1,0 +1,8 @@
+
+{% assign contentChannelChurchName = "Iglesia de lo Alto" %}
+{% assign displayChurchName = "Iglesia de lo Alto" %}
+{% assign churchLocation = "Campeche - Baranoa, Atlantico" %}
+{% assign pastorName = "Juan Espana Jimenez" %}
+{% assign pastorDetail = "Pastor Juan and his wife, Mery Arrieta, have been married for 15 years. He has two children Diana, 25 years old, and Luis, 26 years old. They also have three grandchildren: Ariana, Mariana, and Megan. They are very excited to see how God will impact this community through their church." %}
+{% assign pastorImg = "~~/Assets/Images/home/ministries/colombia-church-plant/pastors/MID-Juan.png" %}
+{% assign campusSponsor = "Midtown Phoenix" %}

@@ -2,10 +2,35 @@
     background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/hero-adults.jpg");
 }
 
+#ternavbar-bg {
+    display: flex;
+}
+
 #section-b-bg {
     background-color: #F9F9F9;
 }
 
 .title img {
     width: 350px;
+}
+
+.navigation-tertiary-items {
+    padding-left: 150px;
+}
+
+#zone-tertiarynavbar {
+    margin: 0;  
+}
+
+@media screen and (max-width: 927px) { 
+    .navigation-tertiary-items-slick {
+        padding-left: 50px;
+    }
+}
+
+/* Mobile Styling */
+@media screen and (max-width: 500px) {
+    .title img {
+        width: 250px;
+    }
 }

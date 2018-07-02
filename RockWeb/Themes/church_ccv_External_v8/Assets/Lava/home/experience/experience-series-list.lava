@@ -38,7 +38,7 @@
 
 
 <a href="{{ firstMessage.Attributes.3rdPartyFullVideoUrl }}" data-lity>
-    <div class="videoThumbnail experience-video" style="font-size:5em;">
+    <div class="videoThumbnail experience-video">
         <img class="img-full" src="/GetImage.ashx?guid={{ firstSeries.Attributes.Image_16_9 }}" alt="{{ firstMessage.Name }}">
     </div>
 </a>

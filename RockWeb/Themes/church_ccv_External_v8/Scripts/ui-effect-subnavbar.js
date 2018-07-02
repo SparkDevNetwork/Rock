@@ -1,179 +1,151 @@
 //<script type="text/javascript" src="/Themes/church_ccv_External_v8/Scripts/ui-effect-subnavbar.js"></script>
 
-//This will be true / false depending on the page width.
-var subNavbarEnabled = true; 
+//var subNavbarCanSnap = true;
+var pageHasSubNav = false; // Used to know if any of this snapping code should run on the page or not.
+var firstSectionTopPadding = ""; // Used for maintaining the first section's padding as the Subnav bar Snaps and Unsnaps
 
-// adds on "onload" hook to the window.onload function chain
-var oldonload = window.onload;
-window.onload = (typeof window.onload != 'function') ?
-  handleOnLoad : function() { 
-   oldonload(); handleOnLoad();
-};
+// since we don't know what function will execute first (ready, scroll, etc.) we use this to do initial setup
+var initialSetupDone = false;
+function tryHandleInitialSetup( ) {
+    if( initialSetupDone == false ) {
+        initialSetupDone = true;
 
-function handleOnLoad() {   
-   // setup a callback for when the media query triggers
-   const mq = window.matchMedia( "(min-width: 800px)" );
-   mq.addListener( subNavbarQueryTriggered );
-   
-   subNavbarQueryTriggered( mq );
+        // does this page have subNav?
+        var subNavElement = $("#subnavbar-bg");
+        if( subNavElement.length > 0 && subNavElement.css("display") != "none" ) {
+            pageHasSubNav = true;
+        
+            // We store the initial padding of the first section so that we can adjust it as the
+            // subNavbar snaps.
+            // NOTE - If we ever have variable heights defined in common.css, this would need to be updated
+            // to handle window width changes, which could result in another media query that has a different padding defined.
+            var firstSection = getFirstSectionElement( );
+            firstSectionTopPadding = parseInt( firstSection.css("padding-top"), 10 );
+
+            // setup a callback for when the media query triggers
+            /*const mq = window.matchMedia( "(min-width: 1101px)" );
+            mq.addListener( subNavbarQueryTriggered );
+            subNavbarQueryTriggered( mq );*/
+        }
+    }
 }
 
-function subNavbarQueryTriggered( mediaQuery ) {
+$( document ).ready( function() { tryHandleInitialSetup(); } );
+
+/*function subNavbarQueryTriggered( mediaQuery ) {
 	
-   // we want to know if the browser is within our "desktop size" media query.
-   // if so, enable the navbar fade effect. If not, we'll turn it off
-	if( mediaQuery.matches ) {
-		toggleSubNavbar( true );
+    // are we at desktop size?
+    if( mediaQuery.matches ) {
+
+        toggleSubNavbarCanSnap( true );
 	}
 	else {
-		toggleSubNavbar( false );
+        toggleSubNavbarCanSnap( false );
 	}
-}
+}*/
 
-function toggleSubNavbar( enabled ) {
-   subNavbarEnabled = enabled;
-   
-   // if we're turning the navbar off, we need to cleanup
-   // any adjustments made while it was on.
-   if( subNavbarEnabled == false ) {
-      resetSubNavbarPos( );
-   }
-}
+/*function toggleSubNavbarCanSnap( enabled ) {
 
-$(document).scroll( function() {
+    subNavbarCanSnap = enabled;
+        
+    if ( subNavbarCanSnap == false ) {
+        // if we're turning the navbar off, we need to cleanup
+        // any adjustments made while it was on.
+        resetSubNavbarPos( );
+    }
+}*/
+
+$(window).scroll( function() {
    
-   updateSubNavbarForScroll( );
+    tryHandleInitialSetup( );
+
+    if ( pageHasSubNav ) {
+        updateSubNavbarSnap( );
+    }
 });
 
 $(window).resize(function() {
    
-   updateSubNavbarForScroll();
-});
+    tryHandleInitialSetup( );
 
-function updateSubNavbarForScroll( )
-{
-	if( subNavbarEnabled ) {
-      
-      updateSubNavbarSnap( );
-	
-      updateSubNavbarLinks( );
-	}
-}
+    if ( pageHasSubNav ) {
+        updateSubNavbarSnap( );
+    }
+});
 
 // "Snaps" the sub navbar to underneath the primary navbar when scrolling the page
 function updateSubNavbarSnap( ) {
    
-	// get the origin position of the subNavbar. This lets us know if we've scrolled beyond it or not,
-	// and thus whether to snap it to the top or not.
-	// Its origin is always below the "main-feature" section, so just get the bottom of that section.
-	var mainFeature = document.getElementsByClassName("main-feature");
-	var subNavbarOriginPos = mainFeature[0].offsetHeight;
-	
-	// get the "section A" element, which is where the body content starts
-	var sectionA = document.getElementById("section-a-bg");
-	
-	// seed the navbar starting position on first update (since we don't have OnLoad() access)
-	var subNavbar = document.getElementById("subnavbar-bg");
-	
-	
-	// if the top navbar has clipped the sub navbar, we've gone far enough to snap
-	var topNavbar = document.getElementById("masthead");	
-	if( window.pageYOffset + topNavbar.offsetHeight >= subNavbarOriginPos ) {
-		// snap the sub navbar to underneath the top navbar
-		subNavbar.style.top = topNavbar.offsetHeight + "px";
-		subNavbar.style.position = "fixed";
-		subNavbar.style.width = "100%";
-		
-		// add the sub navbars height to the page so the page doesn't jump
-		sectionA.style.paddingTop = subNavbar.offsetHeight + "px";
-	}
-	else {
-		resetSubNavbarPos( );
-	}
+    //if( subNavbarCanSnap ) {
+        // get the origin position of the subNavbar. This lets us know if we've scrolled beyond it or not,
+        // and thus whether to snap it to the top or not.
+        // Its origin is always below the "main-feature" section, so just get the bottom of that section.
+        var mainFeature = $(".main-feature");
+        var subNavbarOriginPos = mainFeature.outerHeight();
+        
+        var firstSection = getFirstSectionElement( );
+        
+        // if the top navbar has clipped the sub navbar, we've gone far enough to snap
+        var topNavbar = $("#masthead");	
+        if( $(window).scrollTop() + topNavbar.outerHeight() >= subNavbarOriginPos ) {
+
+            var subNavbar = $("#subnavbar-bg");
+
+            // snap the sub navbar to underneath the top navbar
+            subNavbar.css("top", topNavbar.outerHeight() + "px" );
+            subNavbar.css("position", "fixed" );
+            subNavbar.css("width", "100%" );
+
+            // is there a tertiary navbar we need to snap as well? 
+            var terOuterHeight = 0; //store its outer height as a variable assumed to be 0, that way we can do the math below with no conditional
+            var terNavbar = $("#ternavbar-bg");
+            if( terNavbar.css("display") != "none" ) {
+
+                var topPos = topNavbar.outerHeight() + subNavbar.outerHeight() + "px";
+
+                terNavbar.css("top", topPos );
+                terNavbar.css("position", "fixed" );
+                terNavbar.css("width", "100%" );
+
+                terOuterHeight = terNavbar.outerHeight();
+            }
+            
+            // add the sub navbars height to the page so the page doesn't jump
+            firstSection.css("padding-top", firstSectionTopPadding + subNavbar.outerHeight() + terOuterHeight + "px" );
+        }
+        else {
+            resetSubNavbarPos( );
+        }
+    //}
 }
 
 function resetSubNavbarPos( ) {
-   
-   // clear all styling to effectively put things like they were when the page loaded.
-   var subNavbar = document.getElementById("subnavbar-bg");
-   subNavbar.style.top = "";
-   subNavbar.style.position = "";
-   subNavbar.style.width = "";
-   
-   var sectionA = document.getElementById("section-a-bg");
-   sectionA.style.paddingTop = "";	
+    
+    // see if there's a tertiary navbar we need to unsnap
+    var terNavbar = $("#ternavbar-bg");
+    if( terNavbar.css("display") != "none" ) {
+        terNavbar.css("top", "" );
+        terNavbar.css("position", "" );
+        terNavbar.css("width", "" );
+    }
+
+    // clear all styling to effectively put things like they were when the page loaded.
+    var subNavbar = $("#subnavbar-bg");
+    subNavbar.css("top", "" );
+    subNavbar.css("position", "" );
+    subNavbar.css("width", "" );
+    
+    var firstSection = getFirstSectionElement( );
+    firstSection.css("padding-top", firstSectionTopPadding + "px" );
 }
 
-// "Highlights" the appropriate sub navbar link based on where the user has scrolled in the page
-// To make this work:
-// Ensure the items in the subnavbar have the following ID naming convention:
-// subnav-ID-NAME (ex: subnav-the-details)
-// The actual anchor should have the same ID, but without "subnav" prefixed.
-var subnavIdList = [];
-function updateSubNavbarLinks( ) {
-	// seed the list array if we haven't yet (since we don't have OnLoad() access)
-	if( subnavIdList.length == 0 ) {
-		// first get all subnav links
-		var navLinks = $("#subnavbar ul li").children();
-		
-		for( var i = 0; i < navLinks.length; i++ ) {
-			// get the anchor element
-			var aElem = navLinks[ i ];
-			
-			// get the ID each element links to
-			var idVal = $(aElem).attr("href");
-			subnavIdList.push( idVal );
-		}
-	}
-	
-	// clear the color of each element
-	for( var i = 0; i < subnavIdList.length; i++ ) {
-		
-		var navAnchor = $(subnavIdList[i]);
-		
-		var subnavAnchorElem = $("#subnav-" + navAnchor[0].id);
-		subnavAnchorElem.removeClass( "subnavbar-anchor-active" );
-	}
-	
-	// get the scroll position of the window
-	var scrollOffset = $(window).scrollTop();
-	
-	var nearestDist = 9999;
-	var nearestElem = null;
-		
-	for( var i = 0; i < subnavIdList.length; i++ ) {
-		var navAnchor = $(subnavIdList[i]);
-		
-		// get the delta from the scroll position to each element
-		var deltaPos = Math.abs( scrollOffset - navAnchor.offset().top );
-		if( deltaPos < nearestDist )
-		{
-			nearestDist = deltaPos;
-			nearestElem = navAnchor;
-		}
-	}
-	
-	// now color the link associated with this nav anchor
-	var subnavAnchorElem = $("#subnav-" + nearestElem[0].id);
-	subnavAnchorElem.addClass( "subnavbar-anchor-active");
-}
+function getFirstSectionElement( ) {
+    
+    // get the first section element, which is either "section-a-bg", or for single section pages, "single-section-bg"
+    var firstSection = $("#section-a-bg");
+    if( firstSection.length == 0 ) {
+        firstSection = $("#single-section-bg");
+    }
 
-function onSubnavLinkClick( anchorLink ) {
-
-    // find the anchor on the page
-    var anchor = $(anchorLink);
-
-    // grab the top navbar and the sub navbar
-    var topNavbar = document.getElementById("masthead");
-    var subNavbar = document.getElementById("subnavbar-bg");
-
-    var anchorPos = anchor.offset().top;
-    var offsetAmount = (topNavbar.offsetHeight + subNavbar.offsetHeight)
-
-    var scrollYPos = anchorPos - offsetAmount;
-
-    // scroll to the anchor, but then factor in the height of nav bar and SUB navbar, so that they don't obstruct the start of this section.
-    $('html, body').animate({
-        scrollTop: scrollYPos
-    }, 200);
+    return firstSection;
 }
