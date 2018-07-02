@@ -34,7 +34,7 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
 
 {%- assign canReply = note.NoteType.AllowsReplies -%}
 {%- if canReply and note.NoteType.MaxReplyDepth -%}
-  {%- if noteReplyDepth > note.NoteType.MaxReplyDepth -%}
+  {%- if noteReplyDepth >= note.NoteType.MaxReplyDepth -%}
     {%- assign canReply = false -%}
   {%- endif -%}
 {%- endif -%}
@@ -54,7 +54,7 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
             Pending Approval
         {%- endif -%}
     {%- endcapture -%}
-    
+
     {%- capture approvalActionsHtml -%}
         {%- if canApprove -%}
         <div class="pull-right">
@@ -79,10 +79,10 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
 
 <li class="note js-note {{ noteClass }}">
     <article class="note-view-item js-noteviewitem {{ wrapperClass }}" {{ wrapperStyle }} data-note-id="{{ note.Id }}" data-notetype-id="{{ note.NoteTypeId }}" id="{{ note.NoteAnchorId }}">
-        {% if note.IsAlert %} 
+        {% if note.IsAlert %}
         <hgroup class="flag">
             Alert: {{ note.NoteType.Name }}
-        </hgroup> 
+        </hgroup>
         {% endif %}
         {%- if approvalStatusHtml != '' -%}
             <hgroup class="flag clearfix {% if note.ApprovalStatus == 'PendingApproval' %}warning{% endif %}{{- -}}">
@@ -114,14 +114,14 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
                             {%- endif -%}
                         {% else %}
                         {{ note.Caption }}
-                        {%- endif -%} 
+                        {%- endif -%}
                     </p>
 
                     {%- assign canEdit = note | HasRightsTo:'Edit' -%}
                     {%- if canEdit or canReply or allowsWatching -%}
                     <div class="dropdown">
                         <button id="{{ note.Id }}-options" class="btn btn-link btn-overflow" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-h"></i></button>
-                        <ul class="dropdown-menu" id="{{ note.Id }}-optionsmenu" aria-labelledby="{{ note.Id }}-options"> 
+                        <ul class="dropdown-menu" id="{{ note.Id }}-optionsmenu" aria-labelledby="{{ note.Id }}-options">
                             {%- if canReply and note.ApprovalStatus != "Denied" -%}
                                 <li><button type="button" class="dropdown-item btn-link js-replynote">Reply</button></li>
                             {%- endif -%}
@@ -132,7 +132,7 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
                                 <li>
                                     {%- if note.IsCurrentPersonWatching -%}
                                     <a class="button unwatch-note" href="#" onclick="{{ note.Id | Postback:'UnwatchNote' }}">Unwatch</a>
-                                    {%- else -%}  
+                                    {%- else -%}
                                     <a class="button watch-note" href="#" onclick="{{ note.Id | Postback:'WatchNote' }}">Watch</a>
                                     {%- endif -%}
                                 </li>
@@ -162,14 +162,14 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
                 {%- endunless -%}
                 </div>
             </div>
-            
+
         </header>
         <div class="note-content">
             {{ noteText }}
         </div>
         <footer class="note-footer">
             {% comment %} <ul class="note-footer-actions-list list-horizontal">
-                
+
             </ul> {% endcomment %}
             <ul class="note-footer-meta-list list-horizontal">
                 {%- if viewableChildNotesCount > 0 -%}
