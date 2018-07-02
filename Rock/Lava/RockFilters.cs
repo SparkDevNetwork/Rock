@@ -119,7 +119,7 @@ namespace Rock.Lava
                 }
                 else
                 {
-                    if ( appendOrder == "append" )
+                    if ( appendOrder == "prepend" )
                     {
                         return successText + inputString;
                     }
