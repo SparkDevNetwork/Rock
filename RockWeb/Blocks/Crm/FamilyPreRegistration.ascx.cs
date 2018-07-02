@@ -42,7 +42,7 @@ namespace RockWeb.Blocks.Crm
 
     [BooleanField( "Show Campus", "Should the campus field be displayed?", true, "", 0 )]
     [CampusField( "Default Campus", "An optional campus to use by default when adding a new family.", false, "", "", 1 )]
-    [CustomDropdownListField( "Planned Visit Date", "How should the Planned Visit Date field be displayed (this value is only used when starting a workflow)?", "Hide,Optional,Required", false, "Optional", "", 2 )]
+    [CustomDropdownListField( "Planned Visit Date", "How should the Planned Visit Date field be displayed (this value is only used when starting a workflow)?", HIDE_OPTIONAL_REQUIRED, false, "Optional", "", 2 )]
     [AttributeField( Rock.SystemGuid.EntityType.GROUP, "GroupTypeId", Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Family Attributes", "The Family attributes that should be displayed", false, true, "", "", 3 )]
     [BooleanField( "Allow Updates", "If the person visiting this block is logged in, should the block be used to update their family? If not, a new family will always be created unless 'Auto Match' is enabled and the information entered matches an existing person.", false, "", 4 )]
     [BooleanField( "Auto Match", "Should this block attempt to match people to to current records in the database.", true, "", 5)]
@@ -60,20 +60,20 @@ the value entered for the Planned Visit Date field if it was displayed.
 ", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, true, "", "", 9 )]
     [BooleanField("Require Campus", "Require that a campus be selected", true, "", 10)]
 
-    [CustomDropdownListField( "Suffix", "How should Suffix be displayed for adults?", "Hide,Optional", false, "Hide", "Adult Fields", 0, "AdultSuffix" )]
-    [CustomDropdownListField( "Gender", "How should Gender be displayed for adults?", "Hide,Optional,Required", false, "Optional", "Adult Fields", 1, "AdultGender" )]
-    [CustomDropdownListField( "Birth Date", "How should Gender be displayed for adults?", "Hide,Optional,Required", false, "Optional", "Adult Fields", 2, "AdultBirthdate" )]
-    [CustomDropdownListField( "Marital Status", "How should Marital Status be displayed for adults?", "Hide,Optional,Required", false, "Required", "Adult Fields", 3, "AdultMaritalStatus" )]
-    [CustomDropdownListField( "Email", "How should Email be displayed for adults?", "Hide,Optional,Required", false, "Required", "Adult Fields", 4, "AdultEmail" )]
-    [CustomDropdownListField( "Mobile Phone", "How should Mobile Phone be displayed for adults?", "Hide,Optional,Required", false, "Required", "Adult Fields", 5, "AdultMobilePhone" )]
-    [AttributeCategoryField( "Attribute Categories", "The adult Attribute Categories to display attributes from", true, "Rock.Model.Person", false, "", "Adult Fields", 6, "AdultAttributeCategories" )]
+    [CustomDropdownListField( "Suffix", "How should Suffix be displayed for adults?", HIDE_OPTIONAL, false, "Hide", "Adult Fields", 0, ADULT_SUFFIX_KEY )]
+    [CustomDropdownListField( "Gender", "How should Gender be displayed for adults?", HIDE_OPTIONAL_REQUIRED, false, "Optional", "Adult Fields", 1, ADULT_GENDER_KEY )]
+    [CustomDropdownListField( "Birth Date", "How should Birth Date be displayed for adults?", HIDE_OPTIONAL_REQUIRED, false, "Optional", "Adult Fields", 2, ADULT_BIRTHDATE_KEY )]
+    [CustomDropdownListField( "Marital Status", "How should Marital Status be displayed for adults?", HIDE_OPTIONAL_REQUIRED, false, "Required", "Adult Fields", 3, ADULT_MARTIAL_STATUS_KEY )]
+    [CustomDropdownListField( "Email", "How should Email be displayed for adults?", HIDE_OPTIONAL_REQUIRED, false, "Required", "Adult Fields", 4, ADULT_EMAIL_KEY )]
+    [CustomDropdownListField( "Mobile Phone", "How should Mobile Phone be displayed for adults?", HIDE_OPTIONAL_REQUIRED, false, "Required", "Adult Fields", 5, ADULT_MOBILE_KEY )]
+    [AttributeCategoryField( "Attribute Categories", "The adult Attribute Categories to display attributes from", true, "Rock.Model.Person", false, "", "Adult Fields", 6, ADULT_CATEGORIES_KEY )]
 
-    [CustomDropdownListField( "Suffix", "How should Suffix be displayed for children?", "Hide,Optional", false, "Hide", "Child Fields", 0, "ChildSuffix" )]
-    [CustomDropdownListField( "Gender", "How should Gender be displayed for children?", "Hide,Optional,Required", false, "Optional", "Child Fields", 1, "ChildGender" )]
-    [CustomDropdownListField( "Birth Date", "How should Gender be displayed for children?", "Hide,Optional,Required", false, "Required", "Child Fields", 2, "ChildBirthdate" )]
-    [CustomDropdownListField( "Grade", "How should Grade be displayed for children?", "Hide,Optional,Required", false, "Optional", "Child Fields", 3, "ChildGrade" )]
-    [CustomDropdownListField( "Mobile Phone", "How should Mobile Phone be displayed for children?", "Hide,Optional,Required", false, "Hide", "Child Fields", 4, "ChildMobilePhone" )]
-    [AttributeCategoryField( "Attribute Categories", "The children Attribute Categories to display attributes from.", true, "Rock.Model.Person", false, "", "Child Fields", 5, "ChildAttributeCategories" )]
+    [CustomDropdownListField( "Suffix", "How should Suffix be displayed for children?", HIDE_OPTIONAL, false, "Hide", "Child Fields", 0, CHILD_SUFFIX_KEY )]
+    [CustomDropdownListField( "Gender", "How should Gender be displayed for children?", HIDE_OPTIONAL_REQUIRED, false, "Optional", "Child Fields", 1, CHILD_GENDER_KEY )]
+    [CustomDropdownListField( "Birth Date", "How should Birth Date be displayed for children?", HIDE_OPTIONAL_REQUIRED, false, "Required", "Child Fields", 2, CHILD_BIRTHDATE_KEY )]
+    [CustomDropdownListField( "Grade", "How should Grade be displayed for children?", HIDE_OPTIONAL_REQUIRED, false, "Optional", "Child Fields", 3, CHILD_GRADE_KEY )]
+    [CustomDropdownListField( "Mobile Phone", "How should Mobile Phone be displayed for children?", HIDE_OPTIONAL_REQUIRED, false, "Hide", "Child Fields", 4, CHILD_MOBILE_KEY )]
+    [AttributeCategoryField( "Attribute Categories", "The children Attribute Categories to display attributes from.", true, "Rock.Model.Person", false, "", "Child Fields", 5, CHILD_CATEGORIES_KEY )]
 
     [CustomEnhancedListField( "Known Relationship Types", "The known relationship types that should be displayed as the possible ways that a child can be related to the adult(s).", @"
 SELECT 
@@ -111,6 +111,24 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
 
     public partial class FamilyPreRegistration : RockBlock
     {
+        private const string ADULT_SUFFIX_KEY = "AdultSuffix";
+        private const string ADULT_GENDER_KEY = "AdultGender";
+        private const string ADULT_BIRTHDATE_KEY = "AdultBirthdate";
+        private const string ADULT_MARTIAL_STATUS_KEY = "AdultMaritalStatus";
+        private const string ADULT_EMAIL_KEY = "AdultEmail";
+        private const string ADULT_MOBILE_KEY = "AdultMobilePhone";
+        private const string ADULT_CATEGORIES_KEY = "AdultAttributeCategories";
+
+        private const string CHILD_SUFFIX_KEY = "ChildSuffix";
+        private const string CHILD_GENDER_KEY = "ChildGender";
+        private const string CHILD_BIRTHDATE_KEY = "ChildBirthdate";
+        private const string CHILD_GRADE_KEY = "ChildGrade";
+        private const string CHILD_MOBILE_KEY = "ChildMobilePhone";
+        private const string CHILD_CATEGORIES_KEY = "ChildAttributeCategories";
+
+        private const string HIDE_OPTIONAL_REQUIRED = "Hide,Optional,Required";
+        private const string HIDE_OPTIONAL = "Hide,Optional";
+
         #region Fields
 
         private RockContext _rockContext = null;
@@ -307,7 +325,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                 // ...and some block settings
                 var familyRelationships = GetAttributeValue( "FamilyRelationships" ).SplitDelimitedValues().AsIntegerList();
                 var canCheckinRelationships = GetAttributeValue( "CanCheckinRelationships" ).SplitDelimitedValues().AsIntegerList();
-                var showChildMobilePhone = GetAttributeValue( "ChildMobilePhone" ) != "Hide";
+                var showChildMobilePhone = GetAttributeValue( CHILD_MOBILE_KEY ) != "Hide";
 
                 // ...and some service objects
                 var personService = new PersonService( _rockContext );
@@ -720,7 +738,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             pnlVisit.Visible = pnlCampus.Visible || pnlPlannedDate.Visible;
 
             // Adult Suffix
-            bool isRequired = SetControl( "AdultSuffix", pnlSuffix1, pnlSuffix2 );
+            bool isRequired = SetControl( ADULT_SUFFIX_KEY, pnlSuffix1, pnlSuffix2 );
             dvpSuffix1.Required = isRequired;
             dvpSuffix2.Required = isRequired;
             var suffixDt = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid() );
@@ -728,19 +746,19 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             dvpSuffix2.BindToDefinedType( suffixDt, true );
 
             // Adult Gender
-            isRequired = SetControl( "AdultGender", pnlGender1, pnlGender2 );
+            isRequired = SetControl( ADULT_GENDER_KEY, pnlGender1, pnlGender2 );
             ddlGender1.Required = isRequired;
             ddlGender2.Required = isRequired;
             ddlGender1.BindToEnum<Gender>( true, new Gender[] { Gender.Unknown } );
             ddlGender2.BindToEnum<Gender>( true, new Gender[] { Gender.Unknown } );
 
             // Adult Birthdate
-            isRequired = SetControl( "AdultBirthDate", pnlBirthDate1, pnlBirthDate2 );
+            isRequired = SetControl( ADULT_BIRTHDATE_KEY, pnlBirthDate1, pnlBirthDate2 );
             dpBirthDate1.Required = isRequired;
             dpBirthDate2.Required = isRequired;
 
             // Adult Marital Status
-            isRequired = SetControl( "AdultMaritalStatus", pnlMaritalStatus1, pnlMaritalStatus2 );
+            isRequired = SetControl( ADULT_MARTIAL_STATUS_KEY, pnlMaritalStatus1, pnlMaritalStatus2 );
             dvpMaritalStatus1.Required = isRequired;
             dvpMaritalStatus2.Required = isRequired;
             var MaritalStatusDt = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() );
@@ -748,12 +766,12 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             dvpMaritalStatus2.BindToDefinedType( MaritalStatusDt, true );
 
             // Adult Email
-            isRequired = SetControl( "AdultEmail", pnlEmail1, pnlEmail2 );
+            isRequired = SetControl( ADULT_EMAIL_KEY, pnlEmail1, pnlEmail2 );
             tbEmail1.Required = isRequired;
             tbEmail2.Required = isRequired;
 
             // Adult Mobile Phone
-            isRequired = SetControl( "AdultMobilePhone", pnlMobilePhone1, pnlMobilePhone2 );
+            isRequired = SetControl( ADULT_MOBILE_KEY, pnlMobilePhone1, pnlMobilePhone2 );
             pnMobilePhone1.Required = isRequired;
             pnMobilePhone2.Required = isRequired;
 
@@ -980,7 +998,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             phAttributes1.Controls.Clear();
             phAttributes2.Controls.Clear();
 
-            var attributeList = GetCategoryAttributeList( "AdultAttributeCategories" );
+            var attributeList = GetCategoryAttributeList( ADULT_CATEGORIES_KEY );
 
             if ( adult1 != null )
             {
@@ -1082,17 +1100,17 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
         {
             prChildren.ClearRows();
 
-            var showSuffix = GetAttributeValue( "ChildSuffix" ) != "Hide";
-            var showGender = GetAttributeValue( "ChildGender" ) != "Hide";
-            var requireGender = GetAttributeValue( "ChildGender" ) == "Required";
-            var showBirthDate = GetAttributeValue( "ChildBirthdate" ) != "Hide";
-            var requireBirthDate = GetAttributeValue( "ChildBirthdate" ) == "Required";
-            var showGrade = GetAttributeValue( "ChildGrade" ) != "Hide";
-            var requireGrade = GetAttributeValue( "ChildGrade" ) == "Required";
-            var showMobilePhone = GetAttributeValue( "ChildMobilePhone" ) != "Hide";
-            var requireMobilePhone = GetAttributeValue( "ChildMobilePhone" ) == "Required";
+            var showSuffix = GetAttributeValue( CHILD_SUFFIX_KEY ) != "Hide";
+            var showGender = GetAttributeValue( CHILD_GENDER_KEY ) != "Hide";
+            var requireGender = GetAttributeValue( CHILD_GENDER_KEY ) == "Required";
+            var showBirthDate = GetAttributeValue( CHILD_BIRTHDATE_KEY ) != "Hide";
+            var requireBirthDate = GetAttributeValue( CHILD_BIRTHDATE_KEY ) == "Required";
+            var showGrade = GetAttributeValue( CHILD_GRADE_KEY ) != "Hide";
+            var requireGrade = GetAttributeValue( CHILD_GRADE_KEY ) == "Required";
+            var showMobilePhone = GetAttributeValue( CHILD_MOBILE_KEY ) != "Hide";
+            var requireMobilePhone = GetAttributeValue( CHILD_MOBILE_KEY ) == "Required";
 
-            var attributeList = GetCategoryAttributeList( "ChildAttributeCategories" );
+            var attributeList = GetCategoryAttributeList( CHILD_CATEGORIES_KEY );
 
             foreach ( var child in Children )
             {
@@ -1160,12 +1178,12 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             var recordStatusValue = CacheDefinedValue.Get( GetAttributeValue( "RecordStatus" ).AsGuid() ) ?? CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
             var connectionStatusValue = CacheDefinedValue.Get( GetAttributeValue( "ConnectionStatus" ).AsGuid() ) ?? CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR.AsGuid() );
 
-            var showSuffix = GetAttributeValue( "AdultSuffix" ) != "Hide";
-            var showGender = GetAttributeValue( "AdultGender" ) != "Hide";
-            var showBirthDate = GetAttributeValue( "AdultBirthdate" ) != "Hide";
+            var showSuffix = GetAttributeValue( ADULT_SUFFIX_KEY ) != "Hide";
+            var showGender = GetAttributeValue( ADULT_GENDER_KEY ) != "Hide";
+            var showBirthDate = GetAttributeValue( ADULT_BIRTHDATE_KEY ) != "Hide";
             var showMaritalStatus = GetAttributeValue( "AdultMaritalStatus" ) != "Hide";
-            var showEmail = GetAttributeValue( "AdultEmail" ) != "Hide";
-            var showMobilePhone = GetAttributeValue( "AdultMobilePhone" ) != "Hide";
+            var showEmail = GetAttributeValue( ADULT_EMAIL_KEY ) != "Hide";
+            var showMobilePhone = GetAttributeValue( ADULT_MOBILE_KEY ) != "Hide";
             bool autoMatch = GetAttributeValue( "AutoMatch" ).AsBoolean();
 
             var personService = new PersonService( _rockContext );
@@ -1329,7 +1347,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
 
                 child.RelationshipType = childRow.RelationshipType;
 
-                var attributeKeys = GetCategoryAttributeList( "ChildAttributeCategories" ).Select( a => a.Key ).ToList();
+                var attributeKeys = GetCategoryAttributeList( CHILD_CATEGORIES_KEY ).Select( a => a.Key ).ToList();
                 child.AttributeValues = person.AttributeValues
                     .Where( a => attributeKeys.Contains( a.Key ) )
                     .ToDictionary( v => v.Key, v => v.Value.Value );
@@ -1410,9 +1428,9 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             }
 
             ValidateRequiredField( "AdultGender", "Gender is required for each adult.", ddlGender1.SelectedValueAsEnumOrNull<Gender>() != null, ddlGender2.SelectedValueAsEnumOrNull<Gender>() != null, errorMessages );
-            ValidateRequiredField( "AdultBirthdate", "Birthdate is required for each adult.", dpBirthDate1.SelectedDate != null, dpBirthDate2.SelectedDate != null, errorMessages );
-            ValidateRequiredField( "AdultEmail", "Email is required for each adult.", tbEmail1.Text.IsNotNullOrWhitespace(), tbEmail2.Text.IsNotNullOrWhitespace(), errorMessages );
-            ValidateRequiredField( "AdultMobilePhone", "Mobile Phone is required for each adult.", PhoneNumber.CleanNumber( pnMobilePhone1.Number ).IsNotNullOrWhitespace(), PhoneNumber.CleanNumber( pnMobilePhone2.Number ).IsNotNullOrWhitespace(), errorMessages );
+            ValidateRequiredField( ADULT_BIRTHDATE_KEY, "Birthdate is required for each adult.", dpBirthDate1.SelectedDate != null, dpBirthDate2.SelectedDate != null, errorMessages );
+            ValidateRequiredField( ADULT_EMAIL_KEY, "Email is required for each adult.", tbEmail1.Text.IsNotNullOrWhitespace(), tbEmail2.Text.IsNotNullOrWhitespace(), errorMessages );
+            ValidateRequiredField( ADULT_MOBILE_KEY, "Mobile Phone is required for each adult.", PhoneNumber.CleanNumber( pnMobilePhone1.Number ).IsNotNullOrWhitespace(), PhoneNumber.CleanNumber( pnMobilePhone2.Number ).IsNotNullOrWhitespace(), errorMessages );
 
             if ( errorMessages.Any() )
             {
