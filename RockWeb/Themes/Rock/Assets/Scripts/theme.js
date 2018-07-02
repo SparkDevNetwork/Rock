@@ -13,8 +13,8 @@ function BindNavEvents() {
     var bodyElement = $('body'),
     topNavElement = $('.navbar-fixed-top'),
     navElement = $('.navbar-side'),
-    hoverDelay = 250,
-    hideDelay = 100;
+    hoverDelay = 200,
+    hideDelay = 150;
 
     $('.navbar-side > li').mouseenter(function() {
       const $this = $(this);
