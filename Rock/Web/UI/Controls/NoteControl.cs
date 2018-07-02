@@ -136,7 +136,7 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public int? NoteTypeId
         {
-            get 
+            get
             {
                 int? noteTypeId = ViewState["NoteTypeId"] as int?;
                 if ( !noteTypeId.HasValue && NoteTypes.Any() )
@@ -145,7 +145,7 @@ namespace Rock.Web.UI.Controls
                 }
                 return noteTypeId ?? 0;
             }
-            set 
+            set
             {
                 ViewState["NoteTypeId"] = value;
 
@@ -159,8 +159,8 @@ namespace Rock.Web.UI.Controls
                     _ddlNoteType.SelectedIndex = -1;
                 }
             }
-        }        
-        
+        }
+
         /// <summary>
         /// Gets or sets the note id.
         /// </summary>
@@ -293,11 +293,11 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string Label
         {
-            get 
+            get
             {
                 return ViewState["Label"] as string ?? "Note";
             }
-            set 
+            set
             {
                 ViewState["Label"] = value;
                 if (value != null)
@@ -306,7 +306,7 @@ namespace Rock.Web.UI.Controls
                 }
             }
         }
-        
+
         /// <summary>
         /// Gets or sets the text.
         /// </summary>
@@ -638,7 +638,7 @@ namespace Rock.Web.UI.Controls
             {
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "note" );
             }
-            
+
             if ( this.NoteId.HasValue )
             {
                 writer.AddAttribute( "rel", this.NoteId.Value.ToStringSafe() );
@@ -661,7 +661,7 @@ namespace Rock.Web.UI.Controls
                 writer.Write( Person.GetPersonPhotoImageTag( CreatedByPersonId, CreatedByPhotoId, null, CreatedByGender, null, 50, 50) );
             }
 
-            writer.AddAttribute(HtmlTextWriterAttribute.Class, "noteentry-control");
+            writer.AddAttribute(HtmlTextWriterAttribute.Class, "noteentry-control focus-within");
             writer.RenderBeginTag(HtmlTextWriterTag.Div);
             _ddlNoteType.RenderControl( writer );
             _tbNote.RenderControl( writer );
@@ -711,7 +711,7 @@ namespace Rock.Web.UI.Controls
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-footer" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            
+
             _lbSaveNote.Text = "Save " + Label;
             _lbSaveNote.RenderControl( writer );
 
@@ -755,7 +755,7 @@ namespace Rock.Web.UI.Controls
 
                 // convert any http, etc text into clickable links (do this before applying Markdown)
                 renderedText = renderedText.Linkify();
-                
+
                 // convert any markdown into HTML, and convert into crlf into <br />
                 renderedText = renderedText.ConvertMarkdownToHtml( true );
 
