@@ -165,8 +165,9 @@ namespace RockWeb.Blocks.Core
             noteType.AllowsReplies = cbAllowsReplies.Checked;
             noteType.MaxReplyDepth = nbMaxReplyDepth.Text.AsIntegerOrNull();
 
-            noteType.AllowsAttachments = cbAllowsAttachments.Checked;
-            noteType.BinaryFileTypeId = noteType.AllowsAttachments ? bftpAttachmentType.SelectedValueAsId() : null;
+            // TODO: Enable these once full attachment support in the UI is supported.
+            //noteType.AllowsAttachments = cbAllowsAttachments.Checked;
+            //noteType.BinaryFileTypeId = noteType.AllowsAttachments ? bftpAttachmentType.SelectedValueAsId() : null;
 
             noteType.ApprovalUrlTemplate = ceApprovalUrlTemplate.Text;
 
@@ -261,7 +262,7 @@ namespace RockWeb.Blocks.Core
 
             cbAllowsAttachments.Checked = noteType.AllowsAttachments;
             bftpAttachmentType.SetValue( noteType.BinaryFileTypeId );
-            bftpAttachmentType.Visible = cbAllowsAttachments.Checked;
+            // TODO: bftpAttachmentType.Visible = cbAllowsAttachments.Checked;
 
             cbAllowsReplies.Checked = noteType.AllowsReplies;
             nbMaxReplyDepth.Text = noteType.MaxReplyDepth.ToString();

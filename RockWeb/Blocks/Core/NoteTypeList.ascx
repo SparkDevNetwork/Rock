@@ -28,7 +28,7 @@
                                 <Rock:BoolField DataField="RequiresApprovals" HeaderText="Requires Approvals" ColumnPriority="Desktop" />
                                 <Rock:BoolField DataField="AllowsWatching" HeaderText="Allows Watching" ColumnPriority="DesktopLarge" />
                                 <Rock:BoolField DataField="AllowsReplies" HeaderText="Allows Replies" ColumnPriority="DesktopLarge" />
-                                <Rock:BoolField DataField="AllowsAttachments" HeaderText="Allows Attachments" ColumnPriority="DesktopLarge" />
+                                <Rock:BoolField DataField="AllowsAttachments" HeaderText="Allows Attachments" ColumnPriority="DesktopLarge" Visible="false" />
                                 <Rock:BoolField DataField="IsSystem" HeaderText="System" />
                                 <Rock:SecurityField />
                                 <Rock:DeleteField OnClick="gNoteTypes_Delete" />
