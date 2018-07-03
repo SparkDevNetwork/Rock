@@ -85,7 +85,7 @@
 
     <div class="checkin-footer">   
         <div class="checkin-actions">
-            <asp:LinkButton CssClass="btn btn-default" ID="lbBack" runat="server" OnClick="lbBack_Click" Text="Back" />
+            <asp:LinkButton CssClass="btn btn-default btn-back" ID="lbBack" runat="server" OnClick="lbBack_Click" Text="Back" />
         </div>
     </div>
 
