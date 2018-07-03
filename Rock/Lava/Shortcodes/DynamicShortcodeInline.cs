@@ -69,7 +69,7 @@ namespace Rock.Lava.Shortcodes
         {
             _markup = markup;
             _tagName = tagName;
-            _shortcode = CacheLavaShortcode.Get( _tagName );
+            _shortcode = CacheLavaShortcode.All().Where( c => c.TagName == tagName ).FirstOrDefault();
 
             base.Initialize( tagName, markup, tokens );
         }
