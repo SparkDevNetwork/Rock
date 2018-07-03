@@ -122,6 +122,17 @@ namespace RockWeb.Blocks.Cms
                 tglStatus.Checked = GetUserPreference( STATUS_FILTER_SETTING ).AsBoolean();
 
                 SelectedChannelId = PageParameter( "contentChannelId" ).AsIntegerOrNull();
+
+                if ( !SelectedChannelId.HasValue )
+                {
+                    var selectedChannelGuid = PageParameter( "contentChannelGuid" ).AsGuidOrNull();
+
+                    if ( selectedChannelGuid.HasValue )
+                    {
+                        SelectedChannelId = CacheContentChannel.Get( selectedChannelGuid.Value ).Id;
+                    }
+                }
+
                 if ( !SelectedChannelId.HasValue )
                 {
                     SelectedChannelId = GetUserPreference( SELECTED_CHANNEL_SETTING ).AsIntegerOrNull();
@@ -336,6 +347,7 @@ namespace RockWeb.Blocks.Cms
             var rockContext = new RockContext();
             var contentItemService = new ContentChannelItemService( rockContext );
             var contentItemAssociationService = new ContentChannelItemAssociationService( rockContext );
+            var contentItemSlugService = new ContentChannelItemSlugService( rockContext );
 
             var contentItem = contentItemService.Get( e.RowKeyId );
             if ( contentItem != null )
@@ -351,6 +363,7 @@ namespace RockWeb.Blocks.Cms
                 {
                     contentItemAssociationService.DeleteRange( contentItem.ChildItems );
                     contentItemAssociationService.DeleteRange( contentItem.ParentItems );
+                    contentItemSlugService.DeleteRange( contentItem.ContentChannelItemSlugs );
                     contentItemService.Delete( contentItem );
                     rockContext.SaveChanges();
                 } );

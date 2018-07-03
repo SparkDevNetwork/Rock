@@ -367,7 +367,7 @@ namespace Rock.Reporting.DataSelect.Person
 
                 if ( combineGiving )
                 {
-                    var personAmount = new AnalyticsSourcePersonHistoricalService( context ).Queryable()
+                    var personAmount = new AnalyticsDimPersonCurrentService( context ).Queryable()
                         .Join( financialTransactionQry, p => p.GivingId, f => f.GivingId, ( p, f ) => new
                         {
                             p.PersonId,
@@ -381,7 +381,7 @@ namespace Rock.Reporting.DataSelect.Person
                 }
                 else
                 {
-                    var personAmount = new AnalyticsSourcePersonHistoricalService( context ).Queryable()
+                    var personAmount = new AnalyticsDimPersonCurrentService( context ).Queryable()
                         .Join( financialTransactionQry, p => p.Id, f => f.AuthorizedPersonKey, ( p, f ) => new
                         {
                             p.PersonId,

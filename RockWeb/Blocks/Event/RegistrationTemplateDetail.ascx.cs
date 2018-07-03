@@ -1008,7 +1008,7 @@ namespace RockWeb.Blocks.Event
                 var selectedAttributeGuids = attributesUI.Select( a => a.Guid );
 
                 // Delete the registration attributes that were removed from the UI
-                var attributesDB = attributeService.Get( entityTypeId, qualifierColumn, qualifierValue );
+                var attributesDB = attributeService.GetByEntityTypeQualifier( entityTypeId, qualifierColumn, qualifierValue, true );
                 foreach ( var attr in attributesDB.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ).ToList() )
                 {
                     var canDeleteAttribute = true;

@@ -239,15 +239,20 @@ namespace Rock.Web.UI.Controls
             _ddlNotificationSystemEmail.ID = this.ID + "_ddlNotificationSystemEmail";
             Controls.Add( _ddlNotificationSystemEmail );
 
-            Guid? systemEmails = Rock.SystemGuid.Category.SYSTEM_EMAIL_WORKFLOW.AsGuid();
-            if ( systemEmails.HasValue )
+            var systemEmailCategory = CacheCategory.Get( Rock.SystemGuid.Category.SYSTEM_EMAIL_WORKFLOW.AsGuid() );
+            if ( systemEmailCategory != null )
             {
-                _ddlNotificationSystemEmail.DataSource = new SystemEmailService( new RockContext() ).Queryable()
-                    .Where( e => e.Category.Guid.Equals( systemEmails.Value ) )
-                    .OrderBy( e => e.Title )
-                    .ToList();
-                _ddlNotificationSystemEmail.DataBind();
+                using ( var rockContext = new RockContext() )
+                {
+                    _ddlNotificationSystemEmail.DataSource = new SystemEmailService( rockContext ).Queryable()
+                        .Where( e => e.CategoryId == systemEmailCategory.Id )
+                        .OrderBy( e => e.Title )
+                        .Select( a => new { a.Id, a.Title } )
+                        .ToList();
+                    _ddlNotificationSystemEmail.DataBind();
+                }
             }
+
             _ddlNotificationSystemEmail.Items.Insert( 0, new ListItem( "None", "0" ) );
 
             _cbIncludeActions = new RockCheckBox();

@@ -27,6 +27,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+
 using Rock.Security;
 using Rock.Web;
 using Rock.Cache;
@@ -56,7 +57,7 @@ The URL to redirect user to when they have completed the registration. The merge
 that is created/updated; 'RelatedChildren', which is a list of the children who have a relationship with the family, but are not in the family; 'ParentIds' which is a
 comma-delimited list of the person ids for each adult; 'ChildIds' which is a comma-delimited list of the person ids for each child; and 'PlannedVisitDate' which is 
 the value entered for the Planned Visit Date field if it was displayed.
-", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, "", "", 9 )]
+", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, true, "", "", 9 )]
 
     [CustomDropdownListField( "Suffix", "How should Suffix be displayed for adults?", "Hide,Optional", false, "Hide", "Adult Fields", 0, "AdultSuffix" )]
     [CustomDropdownListField( "Gender", "How should Gender be displayed for adults?", "Hide,Optional,Required", false, "Optional", "Adult Fields", 1, "AdultGender" )]
@@ -378,13 +379,15 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                     var currentFamilyMember = primaryFamily.Members.FirstOrDefault( m => m.PersonId == id );
                     if ( currentFamilyMember == null )
                     {
-                        currentFamilyMember = new GroupMember();
-                        groupMemberService.Add( currentFamilyMember );
+                        currentFamilyMember = new GroupMember
+                        {
+                            GroupId = primaryFamily.Id,
+                            PersonId = id,
+                            GroupRoleId = adultRoleId,
+                            GroupMemberStatus = GroupMemberStatus.Active
+                        };
 
-                        currentFamilyMember.GroupId = primaryFamily.Id;
-                        currentFamilyMember.PersonId = id;
-                        currentFamilyMember.GroupRoleId = adultRoleId;
-                        currentFamilyMember.GroupMemberStatus = GroupMemberStatus.Active;
+                        groupMemberService.Add( currentFamilyMember );
 
                         _rockContext.SaveChanges();
                     }
@@ -1313,7 +1316,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                 var category = CacheCategory.Get( categoryGuid );
                 if ( category != null )
                 {
-                    foreach ( var attribute in new AttributeService( _rockContext ).GetByCategoryId( category.Id ) )
+                    foreach ( var attribute in new AttributeService( _rockContext ).GetByCategoryId( category.Id, false ) )
                     {
                         if ( attribute.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                         {

@@ -424,7 +424,8 @@ Registration By: {0} Total Cost/Fees:{1}
                                     noteService.Add( note );
                                 }
 
-                                var changes = new List<string> { "Registered for" };
+                                var changes = new History.HistoryChangeList();
+                                changes.AddChange( History.HistoryVerb.Registered, History.HistoryChangeType.Record, null );
                                 HistoryService.SaveChanges(
                                     rockContext,
                                     typeof( Person ),
@@ -464,7 +465,8 @@ Registration By: {0} Total Cost/Fees:{1}
                             note.Text = string.Format( "Registered {0} for {1}", namesText, registrationInstance.Name );
                             noteService.Add( note );
 
-                            var changes = new List<string> { string.Format( "Registered {0} for", namesText ) };
+                            var changes = new History.HistoryChangeList();
+                            changes.AddChange( History.HistoryVerb.Registered, History.HistoryChangeType.Record, namesText );
 
                             HistoryService.SaveChanges(
                                 rockContext,

@@ -381,23 +381,23 @@ namespace Rock.Reporting.DataFilter.Person
             if ( dateRange.Start.HasValue )
             {
                 var startDate = dateRange.Start.Value;
-                attendanceQry = attendanceQry.Where( a => a.StartDateTime >= startDate );
+                attendanceQry = attendanceQry.Where( a => a.Occurrence.OccurrenceDate >= startDate );
             }
 
             if ( dateRange.End.HasValue )
             {
                 var endDate = dateRange.End.Value;
-                attendanceQry = attendanceQry.Where( a => a.StartDateTime < endDate );
+                attendanceQry = attendanceQry.Where( a => a.Occurrence.OccurrenceDate < endDate );
             }
 
             if ( groupTypeIds.Count == 1 )
             {
                 int groupTypeId = groupTypeIds[0];
-                attendanceQry = attendanceQry.Where( a => a.Group.GroupTypeId == groupTypeId );
+                attendanceQry = attendanceQry.Where( a => a.Occurrence.Group.GroupTypeId == groupTypeId );
             }
             else if ( groupTypeIds.Count > 1 )
             {
-                attendanceQry = attendanceQry.Where( a => groupTypeIds.Contains( a.Group.GroupTypeId ) );
+                attendanceQry = attendanceQry.Where( a => groupTypeIds.Contains( a.Occurrence.Group.GroupTypeId ) );
             }
             else
             {

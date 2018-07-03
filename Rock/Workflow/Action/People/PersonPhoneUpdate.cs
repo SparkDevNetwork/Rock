@@ -193,7 +193,8 @@ namespace Rock.Workflow.Action
             {
                 if ( oldValue != phoneNumber.NumberFormattedWithCountryCode )
                 {
-                    var changes = new List<string> { string.Format( "<em>(Phone was updated by the '{0}' workflow)</em>", action.ActionTypeCache.ActivityType.WorkflowType.Name ) };
+                    var changes = new History.HistoryChangeList();
+                    changes.AddChange( History.HistoryVerb.Modify, History.HistoryChangeType.Record, "Phone" ).SetSourceOfChange( $"{action.ActionTypeCache.ActivityType.WorkflowType.Name} workflow" );
                     HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), personId.Value, changes, false );
                 }
 

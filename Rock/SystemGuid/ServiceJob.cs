@@ -27,5 +27,10 @@ namespace Rock.SystemGuid
         /// Gets the Job Pulse guid
         /// </summary>
         public const string JOB_PULSE = "CB24FF2A-5AD3-4976-883F-DAF4EFC1D7C7";
+
+        /// <summary>
+        /// The Job for migrating attendance records to occurrence recors (in V8)
+        /// </summary>
+        public const string MIGRATE_ATTENDANCE_OCCURRENCE = "98A2DCA5-5E2E-482A-A7CA-15DAD5B4EA65";
     }
 }

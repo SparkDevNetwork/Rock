@@ -178,7 +178,7 @@ namespace RockWeb.Blocks.Core
                 // Get the existing attributes for this entity type and qualifier value
                 var attributeService = new AttributeService( rockContext );
                 var regFieldService = new RegistrationTemplateFormFieldService( rockContext );
-                var attributes = attributeService.Get( entityTypeIdAttributeMatrix, "AttributeMatrixTemplateId", attributeMatrixTemplate.Id.ToString() );
+                var attributes = attributeService.GetByEntityTypeQualifier( entityTypeIdAttributeMatrix, "AttributeMatrixTemplateId", attributeMatrixTemplate.Id.ToString(), true );
 
                 // Delete any of those attributes that were removed in the UI
                 var selectedAttributeGuids = AttributesState.Select( a => a.Guid );
@@ -258,7 +258,7 @@ namespace RockWeb.Blocks.Core
             ceFormattedLava.Text = attributeMatrixTemplate.FormattedLava;
 
             var attributeService = new AttributeService( rockContext );
-            AttributesState = attributeService.Get( new AttributeMatrixItem().TypeId, "AttributeMatrixTemplateId", attributeMatrixTemplate.Id.ToString() ).AsQueryable()
+            AttributesState = attributeService.GetByEntityTypeQualifier( new AttributeMatrixItem().TypeId, "AttributeMatrixTemplateId", attributeMatrixTemplate.Id.ToString(), true ).AsQueryable()
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
                 .ToList();

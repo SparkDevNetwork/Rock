@@ -219,14 +219,16 @@ namespace Rock.Web.UI.Controls
 
                 writer.Write( "<header>" );
 
-                writer.RenderBeginTag( HtmlTextWriterTag.H3 );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-link btn-xs" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Button );
                 writer.Write( "Filter Options" );
-                writer.RenderEndTag();
 
                 _hfVisible.RenderControl( writer );
 
-                writer.AddAttribute( "class", visible ? "fa fa-chevron-up toggle-filter" : "fa fa-chevron-down toggle-filter" );
+                writer.AddAttribute( "class", visible ? "btn-icon fa fa-chevron-up toggle-filter" : "btn-icon fa fa-chevron-down toggle-filter" );
                 writer.RenderBeginTag( HtmlTextWriterTag.I );
+                writer.RenderEndTag();
+
                 writer.RenderEndTag();
 
                 writer.Write( "</header>" );

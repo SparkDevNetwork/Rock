@@ -55,12 +55,8 @@ namespace Rock.Model
             // ignoring ContentChannelItemAssociation,ChildContentChannelItemId 
             
             // ignoring ContentChannelItemAssociation,ContentChannelItemId 
- 
-            if ( new Service<ContentChannelItemSlug>( Context ).Queryable().Any( a => a.ContentChannelItemId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", ContentChannelItem.FriendlyTypeName, ContentChannelItemSlug.FriendlyTypeName );
-                return false;
-            }  
+            
+            // ignoring ContentChannelItemSlug,ContentChannelItemId 
             return true;
         }
     }

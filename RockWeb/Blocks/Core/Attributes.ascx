@@ -19,9 +19,18 @@
                 </div>
                 <div class="panel-body">
                     <asp:Panel ID="pnlGrid" runat="server" CssClass="grid grid-panel">
-                            <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue">
+                            <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue" OnClearFilterClick="rFilter_ClearFilterClick">
                             <Rock:CategoryPicker ID="cpCategoriesFilter" runat="server" Label="Categories" AllowMultiSelect="true" />
-                            <Rock:RockCheckBox ID="cbAnalyticsEnabled" runat="server" Label="Show only attributes with Analytics Enabled" />
+                            <Rock:RockDropDownList ID="ddlActiveFilter" runat="server" Label="Active Status">
+                                <asp:ListItem Text="[All]" Value="" />
+                                <asp:ListItem Text="Active" Value="true" />
+                                <asp:ListItem Text="Inactive" Value="false" />
+                            </Rock:RockDropDownList>
+                            <Rock:RockDropDownList ID="ddlAnalyticsEnabled" runat="server" Label="Analytics Enabled">
+                                <asp:ListItem Text="[All]" Value="" />
+                                <asp:ListItem Text="Yes" Value="true" />
+                                <asp:ListItem Text="No" Value="false" />
+                            </Rock:RockDropDownList>
                         </Rock:GridFilter>
                             <Rock:Grid ID="rGrid" runat="server" RowItemText="setting" TooltipField="Description" OnRowSelected="rGrid_RowSelected">
                             <Columns>

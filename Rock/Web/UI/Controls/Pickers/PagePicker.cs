@@ -143,7 +143,7 @@ namespace Rock.Web.UI.Controls
             string scriptFormat = @"
 
                 $('#{0}').click(function () {{
-                    $('#page-route-picker_{3}').find('.js-page-route-picker-menu').toggle(function () {{
+                    $('#page-route-picker_{3}').find('.js-page-route-picker-menu').toggle(0, function () {{
                         Rock.dialogs.updateModalScrollBar('page-route-picker_{3}');
                     }});
                 }});

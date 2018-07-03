@@ -14,6 +14,7 @@
 @import "_variables.less";
 @import "_variable-overrides.less";
 @import "_root.less";
+
 /*
   Rock Theme Styles
   1. HTML Overrides
@@ -22,7 +23,6 @@
   4. Theme Styling
   5. Components
 */
-
 
 /*#region
 // 1. HTML Overrides         */
@@ -63,14 +63,13 @@ input[type="text"],
 textarea,
 .form-control {
   box-shadow: none;
-  transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+  transition: @input-focus-transition;
 
   &:focus {
-    border: 1px solid @brand-primary;
-    box-shadow: 0 0 0 3px rgba(red(@brand-primary), green(@brand-primary), blue(@brand-primary), .6);
+    border: 1px solid @input-border-focus;
+    box-shadow: @input-focus-box-shadow;
   }
 }
-
 
 // text selection color
 ::selection {
@@ -90,6 +89,154 @@ textarea,
 // 2. Bootstrap Overrides    */
 // -------------------------
 
+.well {
+  .box-shadow(none)
+}
+
+.toggle-container {
+  .btn-group {
+    vertical-align: top;
+  }
+}
+
+.btn-square {
+  &.btn-xs {
+    width: 25px;
+    height: 25px;
+    padding: 0;
+  }
+
+  &.btn-sm {
+    width: 33px;
+    height: 33px;
+    padding: 5px 8px;
+  }
+
+  i.fa {
+    width: auto;
+    line-height: @line-height-base;
+    text-align: center;
+  }
+}
+
+.nav-tabs {
+  border-bottom: 1px solid @nav-tabs-border-color;
+
+  > li {
+    padding: 0;
+    margin: 0 0 -1px 0;
+
+    // Actual tabs (as links)
+    > a {
+      padding: 2px 24px 17px;
+      margin-right: 0;
+      line-height: @line-height-base;
+      color: @gray-dark;
+      border: 0;
+      transition: color 300ms ease-in-out;
+      &::after {
+        position: absolute;
+        right: 24px;
+        bottom:0;
+        left: 24px;
+        height:0;
+        content: " ";
+        opacity:0;
+        transition: height 300ms ease-in-out, opacity 300ms ease-in-out;
+      }
+
+      &:hover,
+      &:focus {
+        color: @gray-dark;
+        background-color: transparent;
+        border: 0;
+        &::after {
+          height: 4px;
+          background-color: @gray;
+          opacity: 1;
+        }
+      }
+    }
+
+
+    // Active state, and its :hover to override normal :hover
+    &.active > a {
+      font-weight: bold;
+      color: @gray-dark;
+      &,
+      &:hover,
+      &:focus {
+        background-color: transparent;
+        border: 0;
+      }
+      &::after {
+        height: 4px;
+        background-color: @brand-primary;
+        opacity: 1;
+      }
+    }
+  }
+
+  > li:first-child > a {
+    padding-left: 0;
+    &::after {
+      left: 0;
+    }
+  }
+}
+
+.tooltip {
+  &.top {
+    margin-bottom: 1px;
+    .tooltip-arrow {
+      bottom: 1px;
+      border-width: 0 1px 1px 0;
+    }
+  }
+
+  &.bottom {
+    margin-top: 1px;
+    .tooltip-arrow {
+      top: 1px;
+      border-width: 1px 0 0 1px;
+    }
+  }
+}
+
+
+.tooltip-arrow {
+  width: 10px;
+  height: 10px;
+  background: #fff;
+  border: 1px solid @ui-4;
+  transform: rotate(45deg);
+}
+
+.tooltip-inner {
+  .box-shadow(@shadow-overlay);
+  padding: (@padding-base-horizontal / 2);
+  text-align: left;
+  border: 1px solid @ui-4;
+}
+
+.close {
+  opacity: .5;
+  &:focus,
+  &:hover {
+    opacity: .75;
+  }
+}
+
+@media (max-width: @screen-sm-max) {
+  .form-well {
+    padding: @panel-body-padding;
+    margin: 0 -(@panel-body-padding);
+    background: #fff;
+    border: 0;
+    .box-shadow(none);
+  }
+}
+
 .alert {
   border-width: 0;
   border-top-width: 3px;
@@ -100,10 +247,6 @@ textarea,
   box-shadow: none;
 }
 
-.input-group-addon,
-.form-control {
-  height: 38px;
-}
 .has-error .form-control,
 .has-error .input-group-addon {
   box-shadow: 0;
@@ -130,49 +273,97 @@ textarea,
   border-radius: 0; // labels always have curves
 }
 
+.grid-filter {
+  padding: 0;
+  border: 0;
+
+  .btn-link {
+    z-index: 100;
+    margin: 5px 0 0 7px;
+    color: @ui-5;
+    text-decoration: none;
+    background: #fff;
+  }
+
+  .grid-filter-entry {
+    h4 { display: none; }
+
+    padding-top: 37px;
+  }
+
+  .grid-filter-overview {
+    padding: 37px 16px 8px;
+  }
+}
+
 .grid .table > tbody > tr > td,
 .grid .table > tbody > tr > th,
 .grid .table > thead > tr > td,
 .grid .table > thead > tr > th {
-  padding: 18px 12px;
+  padding: 18px 17px 18px 12px;
   border-width: @table-column-border-width;
   border-top-width: 1px;
+}
+
+.grid .table > thead > tr > td,
+.grid .table > thead > tr > th {
+  padding: 18px 0 18px 12px;
+  vertical-align: middle;
+  &:last-child {
+    border-right: 1px solid @table-border-color;
+  }
+}
+
+.grid .table > thead > tr.grid-header-bold > th {
+  padding: 18px 17px 18px 12px;
 }
 
 .grid .table > tbody > tr > td {
   &.grid-columnreorder {
     padding-top: 18px;
   }
+  &.grid-row-header {
+    font-weight: bold;
+    border-right: 1px solid @table-border-color;
+  }
+
+  &.grid-columncommand {
+    width: 30px;
+    min-width: 0;
+    padding: 0;
+    vertical-align: middle;
+  }
+
+  &:last-child {
+    border-right: 1px solid @table-border-color;
+  }
 }
 
 .grid .table > tfoot {
-  border-top: 1px solid @table-border-color;
+  border-top: 1px solid @ui-4;
   > tr > td,
   > tr > th {
     color: @text-color;
     background: @panel-bg;
+    border-top: 1px solid @ui-4;
   }
 }
 
-.grid .table > tbody > tr > td.grid-columncommand {
-  padding-top: 14px;
-  padding-bottom: 0;
-}
 
-.grid-columncommand .btn {
-  width: 33px;
-  padding: 5px 10px 5px 7px;
-}
-
-.grid-columncommand .btn.fa-clone {
-  width: 33px;
-  padding: 8px 8px 8px 7px;
+.grid-columncommand {
+  .btn {
+    width: 33px;
+    padding: 5px 7px;
+    &.fa-clone {
+      width: 33px;
+      padding: 8px 8px 8px 7px;
+    }
+  }
 }
 
 .btn.active,
 .btn:active { // removes the shadow from the toggles
-  -webkit-box-shadow: none;
-  box-shadow: none;
+  .box-shadow(none);
 }
 
 .control-label {
@@ -184,6 +375,17 @@ textarea,
 /*#region
 // 3. Rock Overrides         */
 // -------------------------
+
+.rollover-item {
+  > a {
+    color: @gray;
+
+    &:hover,
+    &:focus {
+      color: @link-color;
+    }
+  }
+}
 
 .modal {
   .box-shadow(0 12px 24px 0 rgba(0, 0, 0, 0.1));
@@ -236,14 +438,25 @@ textarea,
 }
 
 .panel {
+  .box-shadow(@shadow-raised);
+
+  .panel-title {
+    i {
+      margin-right: 3px;
+      color: @gray;
+    }
+  }
+}
+
+.group-member-list .panel,
+.panel-widget,
+.panel-drawer {
   .box-shadow(none);
 }
 
-.panel-block {
 
+.panel-block {
   > .panel-heading {
-    padding: 15px;
-    font-size: 1.125em;
     border-bottom: 1px solid @panel-border;
   }
 }
@@ -271,22 +484,15 @@ textarea,
 td.grid-actions {
   padding: 0 !important;
   font-size: 1em;
-
-  a.btn {
-    opacity: .7;
-
-    &:hover {
-      opacity: 1;
-    }
-  }
+  background-color: #fff;
 }
 
 .grid-select-field {
-  width: 80px;
+  width: @custom-control-indicator-size;
 
   .checkbox:last-child,
   .radio:last-child {
-    margin-left: 8px;
+    margin: 0;
   }
 
   .checkbox input[type="checkbox"] + span.label-text::before,
@@ -297,9 +503,20 @@ td.grid-actions {
 
 .grid-actions {
   .btn {
+    padding: 5px 7px;
     font-size: 1.125em;
+    color: @ui-5;
     background-color: transparent;
     border: 0;
+    transition: color 250ms;
+
+    &:hover{
+      color: @link-color;
+    }
+  }
+
+  .btn-add:hover {
+    color: @brand-success;
   }
 }
 
@@ -375,8 +592,7 @@ td.grid-actions {
       background-image: url("../../../Assets/Images/rock-logo-circle-white.svg");
       background-repeat: no-repeat;
       background-position: center center;
-      background-size: calc(@navbarside-width * .525);
-      opacity: .7;
+      background-size: (@navbarside-width * .525);
     }
 
     &:hover {
@@ -389,8 +605,17 @@ td.grid-actions {
     }
   }
 
+  .navbar-nav.contextsetter, .contextsetter {
+    margin: 14px;
+    background-color: @btn-default-bg;
+    border: 1px solid @btn-default-border;
+    a {
+      color: @btn-default-color;
+    }
+  }
+
   // Bookmarks
-  // 
+  //
   // .bookmarks {
   //   margin: 0;
 
@@ -443,7 +668,7 @@ td.grid-actions {
     }
 
     .twitter-typeahead {
-      margin-right: 80px
+      margin-right: 80px;
     }
 
     .smartsearch-type {
@@ -454,7 +679,7 @@ td.grid-actions {
     }
 
     input.searchinput {
-      padding: 15px 0 15px 30px;
+      padding: 15px 0 15px 34px;
       color: @navbartop-color;
     }
 
@@ -472,11 +697,11 @@ td.grid-actions {
     }
 
     .tt-suggestion p {
-      padding: 13px 15px 13px 10px;
+      padding: 10px 15px 10px 10px;
     }
 
     .tt-hint {
-      padding: 14.5px 4px 4px 30px;
+      padding: 14.5px 4px 4px 34px;
       color: @navbartop-color;
       opacity: .5;
     }
@@ -549,7 +774,7 @@ td.grid-actions {
           background-color: @brand-color;
           background-color: var(--brand-color);
 
-          &>li>a{
+          & > li > a{
             color: @navbartop-color;
             color: var(--navbartop-color);
           }
@@ -603,8 +828,9 @@ td.grid-actions {
 #content-wrapper {
   position: relative;
 
-  @media (min-width: @screen-sm-min) {
-    margin-left: @navbarside-width;
+  > .row {
+    margin-right: 0;
+    margin-left: 0;
   }
 }
 
@@ -688,6 +914,14 @@ td.grid-actions {
         background-color: @navbarside-sub-bg;
       }
 
+      &.current {
+        border-right: 3px solid transparent;
+        border-left: 3px solid @brand-color;
+        > i {
+          color: #fff;
+        }
+      }
+
       .nav-childpages {
         position: fixed;
         top: 0;
@@ -696,8 +930,8 @@ td.grid-actions {
         display: none;
         width: 280px;
         height: 100%;
-        padding: 9px 20px;
-        padding-bottom: 72px;
+        padding: 0 @padding-base-horizontal 72px;
+        overflow-x: hidden;
         overflow-y: auto;
         text-align: left;
         background-color: @navbarside-sub-bg;
@@ -705,10 +939,21 @@ td.grid-actions {
         li {
 
           a {
-            padding: 6px;
-            margin: 1px -6px;
-            line-height: 1.1em;
+            padding: 0 0 0 4px;
+            line-height: 2.5;
             color: @navbarside-color;
+
+            &::before {
+              display: inline-block;
+              width: 0;
+              height: 8px;
+              margin-right: 0;
+              margin-bottom: 1px;
+              content: " ";
+              background: @brand-color;
+              -webkit-transition: all 100ms ease-in-out;
+              transition: all 100ms ease-in-out;
+            }
 
             &:focus {
               color: @nav-sub-text-rollover-color;
@@ -716,40 +961,65 @@ td.grid-actions {
             }
 
             &:hover {
-              color: @navbarside-color;
-              background-color: darken(@navbarside-sub-bg, 7%);
+              color: #fff;
+              background-color: @navbarside-sub-bg;
+
+              &::before {
+                width: 8px;
+                padding-left: 8px;
+                margin-right: 12px;
+              }
+            }
+          }
+
+          &.current {
+            a {
+              font-weight: 600;
+              color: #fff;
+              &::before {
+                width: 8px;
+                padding-left: 8px;
+                margin-right: 12px;
+              }
+            }
+          }
+
+          &.title {
+            padding: 24px 20px 27px;
+            margin: 0 -20px;
+            font-size: 28px;
+            font-weight: @font-weight-light;
+            line-height: 1;
+            color: @navbarside-color;
+          }
+
+          &.header {
+            padding-top: 11px;
+            padding-left: 5px !important;
+            margin-top: 24px;
+            margin-bottom: (@line-height-computed / 2);
+            font-size: 11px;
+            font-weight: 600;
+            line-height: 1;
+            color: rgba(167,174,181,.6);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-top: 1px solid rgba(167,174,181,.6);
+
+            &:nth-child(2) {
+              margin-top: 0;
             }
           }
         }
 
-        li.title {
-          padding: 9px 20px;
-          margin: -9px -20px 0;
-          margin-bottom: 24px;
-          font-size: 1.5em;
-          font-weight: @font-weight-light;
-          color: @navbarside-color;
-          background-color: lighten(@navbarside-sub-bg, 15%);
-        }
 
-        li.header {
-          padding-bottom: 2px;
-          margin-top: 32px;
-          margin-bottom: 4px;
-          font-weight: @font-weight-semibold;
-          font-weight: 400;
-          color: darken(@navbarside-color, 20%);
-          border-bottom: 1px solid darken(@navbarside-color, 20%);
-        }
 
-        li.header:first-child {
-          margin-top: 0;
-        }
+
         &::-webkit-scrollbar {
           width: 10px;
           background-color: transparent;
         }
-  
+
         &::-webkit-scrollbar-thumb {
           width: 10px;
           background-color: rgba(0,0,0, .2);
@@ -808,17 +1078,13 @@ body.navbar-side-close {
 
   #page-content {
     min-height: 600px;
-    padding: 15px;
-
-    @media (min-width: @screen-md-min) {
-      padding: 0;
-    }
   }
 
   .page-title {
     padding: 20px 15px;
     background-color: @pagetitle-background;
     background-color: var(--pagetitle-background);
+    border-bottom: 1px solid @gray-lighter;
 
     .title {
       margin: 0;
@@ -831,9 +1097,9 @@ body.navbar-side-close {
     }
 
     .breadcrumb {
-      padding: 4px 0 0;
+      padding: 0;
       margin: 0;
-      font-size: .875em;
+      font-size: 12px;
 
       a:hover {
         text-decoration: underline;
@@ -843,12 +1109,15 @@ body.navbar-side-close {
         display: none;
       }
 
-      > li+li:before {
-        padding: 0 6px 0 7px;
+      > li + li::before {
+        padding: 0 5;
+        font-family: FontAwesome;
+        font-size:80%;
+        font-weight: 600;
+        content: @fa-var-chevron-right;
       }
     }
   }
-
 
 
   @media (min-width: @screen-md-min) {
@@ -856,7 +1125,7 @@ body.navbar-side-close {
 
     .page-title {
       padding: 20px 35px;
-      margin: -35px -35px 15px -35px;
+      margin: -35px -35px 35px -35px;
     }
   }
 }
@@ -872,11 +1141,27 @@ body.navbar-side-close {
   }
 }
 
+.person-content {
+  .panel {
+    .box-shadow(none);
+  }
+}
+
 // splash screen
 #splash {
   #content {
-    width: 85%;
+    max-width: 380px;
     margin: 70px auto 0;
+    @media (max-width: @screen-xs-max) {
+      max-width: 100%;
+      padding: 0 @padding-base-horizontal;
+    }
+
+    .btn {
+      display: block;
+      width: 100%;
+      margin: 18px 0 0;
+    }
   }
 
   #logo {
@@ -951,15 +1236,6 @@ body.navbar-side-close {
   }
 }
 
-// family edit
-.editgroup-list li.member .radio .label-text::before {
-  width: 16px;
-  height: 16px;
-  padding-left: 1px;
-  font-size: 8px;
-  line-height: 12px;
-}
-
 /*#endregion */
 
 /*#region
@@ -982,15 +1258,30 @@ body.navbar-side-close {
   display: block;
   min-height: 19px;
   padding-left: 28px;  // Not sure if needed
+  margin: 7px 16px 7px 0 !important;
 
   label { // Override forms.less
     padding-left: 0;
   }
 }
 
+// Fix to Show Checkbox in Summernote Modals
+.modal-body > .checkbox label input[type="checkbox"] {
+  z-index: 0;
+  opacity: 1;
+}
+
 .radio-inline,
 .checkbox-inline {
+  padding-right: 16px;
   padding-left: 30px;
+  margin-left: 0;
+}
+
+.radio-inline:first-child,
+.checkbox-inline:first-child,
+.radio-inline+.radio-inline {
+  margin-left: 0;
 }
 
 .radio,
@@ -1091,7 +1382,6 @@ body.navbar-side-close {
 }
 
 
-
 .note-editor.note-frame {
   margin-bottom: 0;
   border: 0;
@@ -1106,12 +1396,12 @@ body.navbar-side-close {
 
 .note-btn {
   padding: 5px 10px 7px;
-  background:#fff;
+  background: #fff;
   border: 0;
 
   &:hover,
   &:focus {
-    background:#fff;
+    background: #fff;
   }
 
   &:active,
@@ -1131,7 +1421,7 @@ body.navbar-side-close {
 //   font-size: 14px
 // }
 
-.note-editor .note-toolbar>.btn-group {
+.note-editor .note-toolbar > .btn-group {
   margin-top: 0;
 }
 
@@ -1158,7 +1448,47 @@ body.navbar-side-close {
 //   color: #555
 // }
 
+// .panel-body .actions {
+//   border-top: 2px solid #3d70b2;
+//   padding: 16px 16px 0 16px;
+//   margin: 0 -24px;
+// }
 
+// .fade {
+//   animation-name: css-1, css-11;
+//   animation-duration: .167s;
+//   animation-timing-function: cubic-bezier(.1, .25, .75, .9);
+//   animation-fill-mode: both;
+// }
+
+.picker-menu {
+  animation-name: css-1, css-13;
+  animation-duration: .367s;
+  animation-timing-function: cubic-bezier(.1, .9, .2, 1);
+  animation-fill-mode: both;
+}
+
+@keyframes css-1 {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes css-13 {
+
+  0% {
+    transform: translate3d(0, -10px, 0);
+  }
+
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+
+}
 
 /*#endregion */
 // @import "_print.less";

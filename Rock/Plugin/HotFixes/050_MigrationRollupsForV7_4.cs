@@ -228,7 +228,7 @@ WHERE [Key] = 'GradeTransitionDate'
                 WHERE [Guid] = '4B6452EF-6FEA-4A66-9FB9-1A7CCE82E7A4'" );
         }
 
-        public void FixFamilyPreregistrationTitle()
+        private void FixFamilyPreregistrationTitle()
         {
             Sql( @"
     UPDATE [Page] SET 

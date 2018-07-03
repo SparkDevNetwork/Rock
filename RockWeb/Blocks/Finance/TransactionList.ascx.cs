@@ -741,12 +741,15 @@ namespace RockWeb.Blocks.Finance
                         transaction.AuthorizedPersonAlias.Person.FullName :
                         string.Format( "Transaction: {0}", transaction.Id );
 
+                    var changes = new History.HistoryChangeList();
+                    changes.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Transaction" );
+
                     HistoryService.SaveChanges(
                         rockContext,
                         typeof( FinancialBatch ),
                         Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(),
                         transaction.BatchId.Value,
-                        new List<string> { "Deleted transaction" },
+                        changes,
                         caption,
                         typeof( FinancialTransaction ),
                         transaction.Id,
@@ -803,7 +806,7 @@ namespace RockWeb.Blocks.Finance
                                 newBatchControlAmount += txn.TotalAmount;
                             }
 
-                            var oldBatchChanges = new List<string>();
+                            var oldBatchChanges = new History.HistoryChangeList();
                             History.EvaluateChange( oldBatchChanges, "Control Amount", oldBatch.ControlAmount.FormatAsCurrency(), oldBatchControlAmount.FormatAsCurrency() );
                             oldBatch.ControlAmount = oldBatchControlAmount;
 
@@ -816,7 +819,7 @@ namespace RockWeb.Blocks.Finance
                                 false
                             );
 
-                            var newBatchChanges = new List<string>();
+                            var newBatchChanges = new History.HistoryChangeList();
                             History.EvaluateChange( newBatchChanges, "Control Amount", newBatch.ControlAmount.FormatAsCurrency(), newBatchControlAmount.FormatAsCurrency() );
                             newBatch.ControlAmount = newBatchControlAmount;
 
@@ -963,11 +966,18 @@ namespace RockWeb.Blocks.Finance
 
                                 if ( acctAction == "MOVE" )
                                 {
+                                    var moveChanges = new History.HistoryChangeList();
+                                    moveChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Acct/Routing information" );
                                     HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON.AsGuid(), _person.Id,
-                                        new List<string> { "Deleted Acct/Routing information" }, true, CurrentPersonAliasId );
+                                        moveChanges, true, CurrentPersonAliasId );
                                 }
+
+                                var accountChanges = new History.HistoryChangeList();
+                                accountChanges.AddChange(History.HistoryVerb.Add, History.HistoryChangeType.Record, "Acct/Routing information" );
+
+
                                 HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON.AsGuid(), personId.Value,
-                                    new List<string> { "Added Acct/Routing information" }, true, CurrentPersonAliasId );
+                                    accountChanges, true, CurrentPersonAliasId );
 
                                 RockPage.UpdateBlocks( "~/Blocks/Crm/PersonDetail/BankAccountList.ascx" );
                             }
@@ -1251,13 +1261,13 @@ namespace RockWeb.Blocks.Finance
         {
             if ( hfTransactionViewMode.Value == "Transactions" )
             {
-                btnTransactionDetails.CssClass = "btn btn-xs btn-default";
+                btnTransactionDetails.CssClass = "btn btn-xs btn-outline-primary";
                 btnTransactions.CssClass = "btn btn-xs btn-primary";
             }
             else
             {
                 btnTransactionDetails.CssClass = "btn btn-xs btn-primary";
-                btnTransactions.CssClass = "btn btn-xs btn-default";
+                btnTransactions.CssClass = "btn btn-xs btn-outline-primary";
             }
 
             _currencyTypes = new Dictionary<int, string>();

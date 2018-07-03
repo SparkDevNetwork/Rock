@@ -580,6 +580,34 @@ namespace Rock.Model
         [DataMember]
         public bool AllowSpecificGroupMemberWorkflows { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether group history should be enabled for groups of this type
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable group history]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool EnableGroupHistory { get; set; } = false;
+
+        /// <summary>
+        /// The color used to visually distinguish groups on lists.
+        /// </summary>
+        /// <value>
+        /// The group type color.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string GroupTypeColor { get; set; }
+
+        /// <summary>
+        /// Gets or sets the DefinedType that Groups of this type will use for the Group.StatusValue
+        /// </summary>
+        /// <value>
+        /// The group status defined type identifier.
+        /// </value>
+        [DataMember]
+        public int? GroupStatusDefinedTypeId { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -752,6 +780,14 @@ namespace Rock.Model
             set { _groupsRequirements = value; }
         }
         private ICollection<GroupRequirement> _groupsRequirements;
+
+        /// <summary>
+        /// Gets or sets the DefinedType that Groups of this type will use for the Group.StatusValue
+        /// </summary>
+        /// <value>
+        /// The type of the group status defined.
+        /// </value>
+        public DefinedType GroupStatusDefinedType { get; set; }
 
         /// <summary>
         /// A dictionary of actions that this class supports and the description of each.
@@ -1037,6 +1073,7 @@ namespace Rock.Model
         {
             this.HasMany( p => p.ChildGroupTypes ).WithMany( c => c.ParentGroupTypes ).Map( m => { m.MapLeftKey( "GroupTypeId" ); m.MapRightKey( "ChildGroupTypeId" ); m.ToTable( "GroupTypeAssociation" ); } );
             this.HasOptional( p => p.DefaultGroupRole ).WithMany().HasForeignKey( p => p.DefaultGroupRoleId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.GroupStatusDefinedType ).WithMany().HasForeignKey( p => p.GroupStatusDefinedTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.InheritedGroupType ).WithMany().HasForeignKey( p => p.InheritedGroupTypeId ).WillCascadeOnDelete( false );
         }
     }

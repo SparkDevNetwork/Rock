@@ -46,6 +46,21 @@ namespace Rock.Migrations
                 var analyticsEndDate = new DateTime( RockDateTime.Today.AddYears( 101 ).Year, 1, 1 ).AddDays( -1 );
                 Rock.Model.AnalyticsSourceDate.GenerateAnalyticsSourceDateData( 1, false, analyticsStartDate, analyticsEndDate );
             }
+
+            // Run the attendance occurrence migration job if it exists.
+            RunJob( SystemGuid.ServiceJob.MIGRATE_ATTENDANCE_OCCURRENCE, context );
+        }
+
+        private void RunJob( string JobGuid, Data.RockContext context )
+        {
+            // Check to see if there is a valid service job
+            var job = new Model.ServiceJobService( context ).Get( JobGuid.AsGuid() );
+            if ( job != null )
+            {
+                // Run the job on another thread
+                var transaction = new Transactions.RunJobNowTransaction( job.Id );
+                System.Threading.Tasks.Task.Run( () => transaction.Execute() );
+            }
         }
     }
 }

@@ -56,6 +56,8 @@ namespace Rock.Lava
     /// </summary>
     public static class RockFilters
     {
+        static Random _randomNumberGenerator = new Random();
+
         #region String Filters
 
 
@@ -932,11 +934,27 @@ namespace Rock.Lava
                 format = " " + format;
             }
 
-            DateTime date;
+            var inputDateTime = input.ToString().AsDateTime();
 
-            return DateTime.TryParse( input.ToString(), out date )
-                ? Liquid.UseRubyDateFormat ? date.ToStrFTime( format ).Trim() : date.ToString( format ).Trim()
-                : input.ToString().Trim();
+            // Check for invalid date
+            if (! inputDateTime.HasValue )
+            {
+                return input.ToString().Trim();
+            }
+
+            // Consider special 'Standard Date' format
+            if ( format == "sd" )
+            {
+                return inputDateTime.Value.ToShortDateString();
+            }
+
+            // Consider special 'Standard Time' format
+            if ( format == "st" )
+            {
+                return inputDateTime.Value.ToShortTimeString();
+            }
+
+            return Liquid.UseRubyDateFormat ? inputDateTime.Value.ToStrFTime( format ).Trim() : inputDateTime.Value.ToString( format ).Trim();
         }
 
         /// <summary>
@@ -2676,8 +2694,12 @@ namespace Rock.Lava
             if ( person != null && numericalGroupTypeId.HasValue )
             {
                 return new AttendanceService( GetRockContext( context ) ).Queryable()
-                    .Where( a => a.Group.GroupTypeId == numericalGroupTypeId && a.PersonAlias.PersonId == person.Id && a.DidAttend == true )
-                    .Select( a => a.Group ).Distinct().ToList();
+                    .Where( a => 
+                        a.Occurrence.Group != null && 
+                        a.Occurrence.Group.GroupTypeId == numericalGroupTypeId && 
+                        a.PersonAlias.PersonId == person.Id && 
+                        a.DidAttend == true )
+                    .Select( a => a.Occurrence.Group ).Distinct().ToList();
             }
 
             return new List<Model.Group>();
@@ -2698,8 +2720,13 @@ namespace Rock.Lava
             if ( person != null && numericalGroupTypeId.HasValue )
             {
                 var attendance = new AttendanceService( GetRockContext( context ) ).Queryable( "Group" )
-                    .Where( a => a.Group.GroupTypeId == numericalGroupTypeId && a.PersonAlias.PersonId == person.Id && a.DidAttend == true )
-                    .OrderByDescending( a => a.StartDateTime ).FirstOrDefault();
+                    .Where( a => 
+                        a.Occurrence.Group != null &&
+                        a.Occurrence.Group.GroupTypeId == numericalGroupTypeId && 
+                        a.PersonAlias.PersonId == person.Id && 
+                        a.DidAttend == true )
+                    .OrderByDescending( a => a.StartDateTime )
+                    .FirstOrDefault();
 
                 return attendance;
             }
@@ -3742,8 +3769,7 @@ namespace Rock.Lava
             {
                 return null;
             }
-
-            return input.ToString().AsIntegerOrNull();
+            return (int?)input.ToString().AsDecimalOrNull();
         }
 
         /// <summary>
@@ -3907,18 +3933,36 @@ namespace Rock.Lava
             }
 
             var inputList = input as IList;
-            Random rng = new Random();
             int n = inputList.Count;
             while ( n > 1 )
             {
                 n--;
-                int k = rng.Next( n + 1 );
+                int k = _randomNumberGenerator.Next( n + 1 );
                 var value = inputList[k];
                 inputList[k] = inputList[n];
                 inputList[n] = value;
             }
 
             return inputList;
+        }
+
+        /// <summary>
+        /// Determines whether [contains] [the specified input].
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="containValue">The contain value.</param>
+        /// <returns>
+        ///   <c>true</c> if [contains] [the specified input]; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool Contains( object input, object containValue)
+        {
+            var inputList = ( input as IList );
+            if ( inputList != null )
+            {
+                return inputList.Contains( containValue );
+            }
+
+            return false;
         }
 
         /// <summary>

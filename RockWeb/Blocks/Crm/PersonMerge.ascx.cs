@@ -331,6 +331,10 @@ validity of the request before completing this merge." :
                 {
                     e.Row.AddCssClass( "grid-section-header" );
                 }
+                else
+                {
+                    e.Row.Cells[1].AddCssClass("grid-row-header");
+                }
             }
             else if ( e.Row.RowType == DataControlRowType.Header )
             {
@@ -382,11 +386,12 @@ validity of the request before completing this merge." :
                         primaryPersonId = primaryPerson.Id;
 
                         // Write a history record about the merge
-                        var changes = new List<string>();
+                        var changes = new History.HistoryChangeList();
                         foreach ( var p in MergeData.People.Where( p => p.Id != primaryPerson.Id ) )
                         {
-                            changes.Add( string.Format( "Merged <span class='field-value'>{0} [ID: {1}]</span> with this record.", p.FullName, p.Id ) );
+                            changes.AddChange( History.HistoryVerb.Merge, History.HistoryChangeType.Record, string.Format("{0} [ID: {1}]", p.FullName, p.Id) );
                         }
+
                         HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), primaryPerson.Id, changes );
 
                         // Photo Id

@@ -127,7 +127,7 @@ Path: {2}",
                     var blockControl = this.Page.LoadControl( blockTypeCache.Path ) as RockBlock;
                     int? blockEntityTypeId = CacheEntityType.Get( typeof( Block ) ).Id;
                     Rock.Attribute.Helper.UpdateAttributes( blockControl.GetType(), blockEntityTypeId, "BlockTypeId", blockType.Id.ToString(), rockContext );
-                    blockTypeCache.IsInstancePropertiesVerified = true;
+                    blockTypeCache.MarkInstancePropertiesVerified( true );
                     System.Diagnostics.Debug.WriteLine( string.Format( "[{1}ms] BlockType {0}", blockTypeCache.Path, stopwatch.Elapsed.TotalMilliseconds ) );
                 }
 

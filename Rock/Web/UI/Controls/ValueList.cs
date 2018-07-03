@@ -455,7 +455,7 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "actions" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            var addButtonCssClass = "btn btn-action btn-xs value-list-add";
+            var addButtonCssClass = "btn btn-action btn-xs btn-square value-list-add";
             if ( !this.Enabled )
             {
                 addButtonCssClass += " aspNetDisabled disabled";

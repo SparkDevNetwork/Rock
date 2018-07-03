@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 
 using Quartz;
@@ -18,17 +19,21 @@ namespace Rock.Jobs
     [DisallowConcurrentExecution]
     [DisplayName( "Data Migrations for v8.0" )]
     [Description( "This job will take care of any data migrations that need to occur after updating to v80. After all the operations are done, this job will delete itself." )]
-    class PostV80DataMigrations : IJob
+    public class PostV80DataMigrations : IJob
     {
         /// <summary>
-        /// Executes the specified context.
+        /// Executes the specified context. When updating large data sets SQL will burn a lot of time updating the indexes. If performing multiple inserts/updates
+        /// consider dropping the related indexes first and re-creating them once the opoeration is complete.
+        /// Put all index creation method calls at the end of this method.
         /// </summary>
         /// <param name="context">The context.</param>
         /// <exception cref="NotImplementedException"></exception>
         public void Execute( IJobExecutionContext context )
         {
-            CreateIndexInteractionsForeignKey();
             UpdateInteractionSummaryForPageViews();
+            UpdateSlugForContentChannelItems();
+            // Keep these two last.
+            CreateIndexInteractionsForeignKey();
             DeleteJob( context.GetJobId() );
         }
 
@@ -60,6 +65,7 @@ namespace Rock.Jobs
         {
             using ( RockContext rockContext = new RockContext() )
             {
+                rockContext.Database.CommandTimeout = 7200;
                 rockContext.Database.ExecuteSqlCommand( @"IF NOT EXISTS( SELECT * FROM sys.indexes WHERE name = 'IX_ForeignKey' AND object_id = OBJECT_ID( N'[dbo].[Interaction]' ) ) 
                     BEGIN
                     CREATE NONCLUSTERED INDEX [IX_ForeignKey]
@@ -99,31 +105,57 @@ namespace Rock.Jobs
         {
             using ( RockContext rockContext = new RockContext() )
             {
-                string sqlQuery = @"DECLARE @ChannelMediumValueId INT;
-                                    SELECT 
-	                                    @ChannelMediumValueId = [Id]
-                                    FROM 
-	                                    [DefinedValue]
-                                    WHERE [Guid]='{0}'
-                                    UPDATE 
-	                                    A
-                                    SET
-	                                    A.[InteractionSummary] = B.[Name]
-                                    FROM
-	                                    [Interaction] A INNER JOIN 
-	                                    [InteractionComponent] B 
-                                    ON
-	                                    A.[InteractionComponentId] = B.[Id]
-                                    WHERE
-	                                    B.[ChannelId]  IN (SELECT
-							                                    [Id]
-						                                    FROM
-							                                    [InteractionChannel]
-						                                    WHERE 
-							                                    [ChannelTypeMediumValueId]=@ChannelMediumValueId)";
+                rockContext.Database.CommandTimeout = 7200;
+                string sqlQuery = $@"DECLARE @ChannelMediumValueId INT = (SELECT [Id] FROM [DefinedValue] WHERE [Guid]='{SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE}')
 
-                rockContext.Database.ExecuteSqlCommand( string.Format(sqlQuery, SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE ) );
+                    UPDATE [Interaction]
+                    SET [Interaction].[InteractionSummary] = [InteractionComponent].[Name]
+                    FROM [Interaction]
+                    INNER JOIN [InteractionComponent] ON [Interaction].[InteractionComponentId] = [InteractionComponent].[Id]
+                    WHERE [InteractionComponent].[ChannelId] IN (SELECT [Id] FROM [InteractionChannel] WHERE [ChannelTypeMediumValueId] = @ChannelMediumValueId)";
+
+                rockContext.Database.ExecuteSqlCommand( sqlQuery );
             }
+        }
+
+        /// <summary>
+        /// Inserts the slug for Content Channel Items.
+        /// </summary>
+        public static void UpdateSlugForContentChannelItems()
+        {
+            int recordsToProcess = 1000;
+            bool isProcess = true;
+
+            do
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var contentChannelItems = new ContentChannelItemService( rockContext )
+                                        .Queryable()
+                                        .AsNoTracking()
+                                        .Where( a => !a.ContentChannelItemSlugs.Any() )
+                                        .Take( recordsToProcess )
+                                        .Select( a => new
+                                        {
+                                            a.Id,
+                                            a.Title
+                                        } ).ToList();
+
+                    var slugService = new ContentChannelItemSlugService( rockContext );
+                    if ( contentChannelItems.Any() )
+                    {
+                        foreach ( var item in contentChannelItems )
+                        {
+                            slugService.SaveSlug( item.Id, item.Title, null );
+                        }
+                    }
+                    else
+                    {
+                        isProcess = false;
+                    }
+                }
+            }
+            while ( isProcess );
         }
     }
 }

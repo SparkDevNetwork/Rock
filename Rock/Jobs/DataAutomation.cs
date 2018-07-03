@@ -35,7 +35,7 @@ namespace Rock.Jobs
     [DisallowConcurrentExecution]
     public class DataAutomation : IJob
     {
-        HttpContext _httpContext = null;
+        private HttpContext _httpContext = null;
 
         #region Constructor
 
@@ -66,12 +66,16 @@ namespace Rock.Jobs
             string updateFamilyCampusResult = UpdateFamilyCampus( context );
             string moveAdultChildrenResult = MoveAdultChildren( context );
             string genderAutofill = GenderAutoFill( context );
+            string updatePersonConnectionStatus = UpdatePersonConnectionStatus( context );
+            string updateFamilyStatus = UpdateFamilyStatus( context );
 
             context.UpdateLastStatusMessage( $@"Reactivate People: {reactivateResult}
 Inactivate People: {inactivateResult}
 Update Family Campus: {updateFamilyCampusResult}
 Move Adult Children: {moveAdultChildrenResult}
 Gender Autofill: {genderAutofill}
+Update Connection Status: {updatePersonConnectionStatus}
+Update Family Status: {updateFamilyStatus}
 " );
         }
 
@@ -87,7 +91,7 @@ Gender Autofill: {genderAutofill}
             context.UpdateLastStatusMessage( $"Processing Gender Autofill" );
 
             decimal? autofillConfidence = Web.SystemSettings.GetValue( SystemSetting.GENDER_AUTO_FILL_CONFIDENCE ).AsDecimalOrNull();
-            if ( autofillConfidence == null || autofillConfidence == 0)
+            if ( autofillConfidence == null || autofillConfidence == 0 )
             {
                 return "Not Enabled";
             }
@@ -99,9 +103,9 @@ Gender Autofill: {genderAutofill}
             List<int> persons = new PersonService( new RockContext() )
                 .Queryable()
                 .Where( p => p.Gender == Gender.Unknown )
-                .Select( p => p.Id)
+                .Select( p => p.Id )
                 .ToList();
-            
+
             foreach ( int personId in persons )
             {
                 Person person = null;
@@ -136,7 +140,7 @@ Gender Autofill: {genderAutofill}
                                     .ToList();
                             }
 
-                            //Adults = Change based on the confidence unless they are in a family as an adult where there is another adult with the same gender
+                            // Adults = Change based on the confidence unless they are in a family as an adult where there is another adult with the same gender
                             if ( metaFirstNameGenderLookup.FemalePercent >= autofillConfidence && !otherAdults.Any( a => a.Gender == Gender.Female ) )
                             {
                                 person.Gender = Gender.Female;
@@ -161,17 +165,26 @@ Gender Autofill: {genderAutofill}
                     recordsWithError += 1;
                 }
             }
-            
 
             return $"{recordsProcessed:N0} people were processed; {recordsUpdated:N0} genders were updated; {recordsWithError:N0} records logged an exception";
         }
 
-
         #region Reactivate People
 
+        /// <summary>
+        /// Reactivates the people.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <returns></returns>
+        /// <exception cref="Exception">
+        /// Could not determine the 'Family' group type.
+        /// or
+        /// Could not determine the 'Active' record status value.
+        /// or
+        /// Could not determine the 'Inactive' record status value.
+        /// </exception>
         private string ReactivatePeople( IJobExecutionContext context )
         {
-
             try
             {
                 context.UpdateLastStatusMessage( $"Processing person reactivate." );
@@ -278,7 +291,6 @@ Gender Autofill: {genderAutofill}
                             !excludePersonIdQry.Contains( p.Id ) );
                     }
 
-
                     // Run the query
                     personIds = personQry.Select( p => p.Id ).ToList();
                 }
@@ -298,6 +310,7 @@ Gender Autofill: {genderAutofill}
                         {
                             context.UpdateLastStatusMessage( $"Processing person reactivate: Activated {recordsUpdated:N0} of {totalRecords:N0} person records." );
                         }
+
                         recordsProcessed++;
 
                         // Reactivate the person
@@ -323,7 +336,6 @@ Gender Autofill: {genderAutofill}
 
                 // Format the result message
                 return $"{recordsProcessed:N0} people were processed; {recordsUpdated:N0} were activated.";
-
             }
             catch ( Exception ex )
             {
@@ -338,6 +350,20 @@ Gender Autofill: {genderAutofill}
 
         #region Inactivate People
 
+        /// <summary>
+        /// Inactivates the people.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <returns></returns>
+        /// <exception cref="Exception">
+        /// Could not determine the 'Family' group type.
+        /// or
+        /// Could not determine the 'Active' record status value.
+        /// or
+        /// Could not determine the 'Inactive' record status value.
+        /// or
+        /// Could not determine the 'No Activity' record status reason value.
+        /// </exception>
         private string InactivatePeople( IJobExecutionContext context )
         {
             try
@@ -377,6 +403,7 @@ Gender Autofill: {genderAutofill}
                 {
                     throw new Exception( "Could not determine the 'No Activity' record status reason value." );
                 }
+
                 var personIds = new List<int>();
                 using ( var rockContext = new RockContext() )
                 {
@@ -446,6 +473,7 @@ Gender Autofill: {genderAutofill}
                     {
                         context.UpdateLastStatusMessage( $"Processing person inactivate: Inactivated {recordsUpdated:N0} of {totalRecords:N0} person records." );
                     }
+
                     recordsProcessed++;
 
                     // Inactivate the person
@@ -474,7 +502,6 @@ Gender Autofill: {genderAutofill}
 
                 // Format the result message
                 return $"{recordsProcessed:N0} people were processed; {recordsUpdated:N0} were inactivated.";
-
             }
             catch ( Exception ex )
             {
@@ -488,6 +515,12 @@ Gender Autofill: {genderAutofill}
 
         #region Update Family Campus 
 
+        /// <summary>
+        /// Updates the family campus.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <returns></returns>
+        /// <exception cref="Exception">Could not determine the 'Family' group type.</exception>
         private string UpdateFamilyCampus( IJobExecutionContext context )
         {
             try
@@ -535,7 +568,7 @@ Gender Autofill: {genderAutofill}
                                 m.CreatedDateTime >= startPeriod &&
                                 m.EntityTypeId == personEntityTypeId &&
                                 m.RelatedEntityId.HasValue &&
-                                m.Summary.Contains( "<span class='field-name'>Campus</span>" ) )
+                                m.ValueName == "Campus" )
                             .Select( a => a.RelatedEntityId.Value )
                             .ToList()
                             .Distinct();
@@ -584,7 +617,6 @@ Gender Autofill: {genderAutofill}
                             } )
                             .ToList();
                     }
-
                 }
 
                 // Counters for displaying results
@@ -602,6 +634,7 @@ Gender Autofill: {genderAutofill}
                         {
                             context.UpdateLastStatusMessage( $"Processing campus updates: {recordsProcessed:N0} of {totalRecords:N0} families processed; campus has been updated for {recordsUpdated:N0} of them." );
                         }
+
                         recordsProcessed++;
 
                         // Using a new rockcontext for each one (to improve performance)
@@ -773,7 +806,6 @@ Gender Autofill: {genderAutofill}
 
                 // Format the result message
                 return $"{recordsProcessed:N0} families were processed; campus was updated for {recordsUpdated:N0} of them.";
-
             }
             catch ( Exception ex )
             {
@@ -787,6 +819,16 @@ Gender Autofill: {genderAutofill}
 
         #region Move Adult Children 
 
+        /// <summary>
+        /// Moves the adult children.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <returns></returns>
+        /// <exception cref="Exception">
+        /// Could not determine the 'Family' group type.
+        /// or
+        /// Could not determine the 'Adult' and 'Child' roles.
+        /// </exception>
         private string MoveAdultChildren( IJobExecutionContext context )
         {
             try
@@ -812,6 +854,7 @@ Gender Autofill: {genderAutofill}
                 {
                     throw new Exception( "Could not determine the 'Family' group type." );
                 }
+
                 var childRole = familyGroupType.Roles.FirstOrDefault( r => r.Guid == SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() );
                 var adultRole = familyGroupType.Roles.FirstOrDefault( r => r.Guid == SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() );
                 if ( childRole == null || adultRole == null )
@@ -860,6 +903,7 @@ Gender Autofill: {genderAutofill}
                         {
                             context.UpdateLastStatusMessage( $"Processing Adult Children: {recordsProcessed:N0} of {totalRecords:N0} children processed; {recordsUpdated:N0} have been moved to their own family." );
                         }
+
                         recordsProcessed++;
 
                         // Using a new rockcontext for each one (to improve performance)
@@ -937,7 +981,7 @@ Gender Autofill: {genderAutofill}
                                     }
 
                                     // Save role change to history
-                                    var memberChanges = new List<string>();
+                                    var memberChanges = new History.HistoryChangeList();
                                     History.EvaluateChange( memberChanges, "Role", string.Empty, adultRole.Name );
                                     HistoryService.SaveChanges( rockContext, typeof( Person ), familyChangesGuid, personId, memberChanges, newFamily.Name, typeof( Group ), newFamily.Id, false );
                                 }
@@ -960,7 +1004,7 @@ Gender Autofill: {genderAutofill}
                             // If user configured the job to copy home address and this person's family does not have any home addresses, copy them from the primary family
                             if ( settings.UseSameHomeAddress && !newFamily.GroupLocations.Any( l => l.GroupLocationTypeValue != null && l.GroupLocationTypeValue.Guid == homeAddressGuid ) )
                             {
-                                var familyChanges = new List<string>();
+                                var familyChanges = new History.HistoryChangeList();
 
                                 foreach ( var groupLocation in primaryFamily.GroupLocations.Where( l => l.GroupLocationTypeValue != null && l.GroupLocationTypeValue.Guid == homeAddressGuid ) )
                                 {
@@ -981,7 +1025,6 @@ Gender Autofill: {genderAutofill}
                             // If user configured the job to copy home phone and this person does not have a home phone, copy the first home phone number from another adult in original family(s)
                             if ( settings.UseSameHomePhone && !person.PhoneNumbers.Any( p => p.NumberTypeValue != null && p.NumberTypeValue.Guid == homePhoneGuid ) )
                             {
-
                                 // First look for adults in primary family
                                 var homePhone = primaryFamily.Members
                                     .Where( m =>
@@ -1090,10 +1133,141 @@ Gender Autofill: {genderAutofill}
             }
         }
 
-        #endregion
+        #endregion Move Adult Children
+
+        #region Update Person Connection Status
+
+        /// <summary>
+        /// Updates the person connection status.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <returns></returns>
+        private string UpdatePersonConnectionStatus( IJobExecutionContext context )
+        {
+            var settings = Rock.Web.SystemSettings.GetValue( SystemSetting.DATA_AUTOMATION_UPDATE_PERSON_CONNECTION_STATUS ).FromJsonOrNull<Utility.Settings.DataAutomation.UpdatePersonConnectionStatus>();
+            if ( settings == null || !settings.IsEnabled )
+            {
+                return "Not Enabled";
+            }
+
+            int recordsUpdated = 0;
+
+            context.UpdateLastStatusMessage( $"Processing Connection Status Update" );
+
+            foreach ( var connectionStatusDataviewMapping in settings.ConnectionStatusValueIdDataviewIdMapping.Where( a => a.Value.HasValue ) )
+            {
+                int connectionStatusValueId = connectionStatusDataviewMapping.Key;
+                int dataViewId = connectionStatusDataviewMapping.Value.Value;
+                using ( var dataViewRockContext = new RockContext() )
+                {
+                    var dataView = new DataViewService( dataViewRockContext ).Get( dataViewId );
+                    if ( dataView != null )
+                    {
+                        List<string> errorMessages = new List<string>();
+                        var qryPersonsInDataView = dataView.GetQuery( null, dataViewRockContext, null, out errorMessages ) as IQueryable<Person>;
+                        if ( qryPersonsInDataView != null)
+                        {
+                            var personsToUpdate = qryPersonsInDataView.Where( a => a.ConnectionStatusValueId != connectionStatusValueId ).AsNoTracking().ToList();
+                            int totalToUpdate = personsToUpdate.Count();
+                            foreach( var person in personsToUpdate )
+                            {
+                                using ( var updateRockContext = new RockContext() )
+                                {
+                                    // Attach the person to the updateRockContext so that it'll be tracked/saved using updateRockContext 
+                                    updateRockContext.People.Attach( person );
+                                    
+                                    recordsUpdated++;
+                                    person.ConnectionStatusValueId = connectionStatusValueId;
+                                    updateRockContext.SaveChanges();
+
+                                    if ( recordsUpdated % 100 == 0 )
+                                    {
+                                        context.UpdateLastStatusMessage( $"Processing Connection Status Update: {recordsUpdated:N0} of {totalToUpdate:N0}" );
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Format the result message
+            return $"{recordsUpdated:N0} person records were updated with new connection status.";
+        }
+
+        #endregion  Update Person Connection Status
+
+        #region Update Family Status
+
+        /// <summary>
+        /// Updates the family status.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <returns></returns>
+        private string UpdateFamilyStatus( IJobExecutionContext context )
+        {
+            var settings = Rock.Web.SystemSettings.GetValue( SystemSetting.DATA_AUTOMATION_UPDATE_FAMILY_STATUS ).FromJsonOrNull<Utility.Settings.DataAutomation.UpdateFamilyStatus>();
+            if ( settings == null || !settings.IsEnabled )
+            {
+                return "Not Enabled";
+            }
+
+            int recordsUpdated = 0;
+
+            context.UpdateLastStatusMessage( $"Processing Family Status Update" );
+
+            foreach ( var groupStatusDataviewMapping in settings.GroupStatusValueIdDataviewIdMapping.Where( a => a.Value.HasValue ) )
+            {
+                int groupStatusValueId = groupStatusDataviewMapping.Key;
+                int dataViewId = groupStatusDataviewMapping.Value.Value;
+                using ( var dataViewRockContext = new RockContext() )
+                {
+                    var dataView = new DataViewService( dataViewRockContext ).Get( dataViewId );
+                    if ( dataView != null )
+                    {
+                        List<string> errorMessages = new List<string>();
+                        var qryGroupsInDataView = dataView.GetQuery( null, dataViewRockContext, null, out errorMessages ) as IQueryable<Group>;
+                        if ( qryGroupsInDataView != null )
+                        {
+                            var groupsToUpdate = qryGroupsInDataView.Where( a => a.StatusValueId != groupStatusValueId ).AsNoTracking().ToList();
+                            int totalToUpdate = groupsToUpdate.Count();
+                            foreach ( var group in groupsToUpdate )
+                            {
+                                using ( var updateRockContext = new RockContext() )
+                                {
+                                    // Attach the group to the updateRockContext so that it'll be tracked/saved using updateRockContext 
+                                    updateRockContext.Groups.Attach( group );
+                                    
+                                    recordsUpdated++;
+                                    group.StatusValueId = groupStatusValueId;
+                                    updateRockContext.SaveChanges();
+
+                                    if ( recordsUpdated % 100 == 0 )
+                                    {
+                                        context.UpdateLastStatusMessage( $"Processing Family Status Update: {recordsUpdated:N0} of {totalToUpdate:N0}" );
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Format the result message
+            return $"{recordsUpdated:N0} families were updated with new status.";
+        }
+
+        #endregion  Update Family Status
 
         #region Helper Methods
 
+        /// <summary>
+        /// Gets the people who contributed.
+        /// </summary>
+        /// <param name="enabled">if set to <c>true</c> [enabled].</param>
+        /// <param name="periodInDays">The period in days.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
         private List<int> GetPeopleWhoContributed( bool enabled, int periodInDays, RockContext rockContext )
         {
             if ( enabled )
@@ -1114,9 +1288,17 @@ Gender Autofill: {genderAutofill}
                         .ToList();
                 }
             }
+
             return new List<int>();
         }
 
+        /// <summary>
+        /// Gets the people who attended service group.
+        /// </summary>
+        /// <param name="enabled">if set to <c>true</c> [enabled].</param>
+        /// <param name="periodInDays">The period in days.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
         private List<int> GetPeopleWhoAttendedServiceGroup( bool enabled, int periodInDays, RockContext rockContext )
         {
             if ( enabled )
@@ -1126,9 +1308,9 @@ Gender Autofill: {genderAutofill}
                 return new AttendanceService( rockContext )
                     .Queryable().AsNoTracking()
                     .Where( a =>
-                        a.Group != null &&
-                        a.Group.GroupType != null &&
-                        a.Group.GroupType.AttendanceCountsAsWeekendService &&
+                        a.Occurrence.Group != null &&
+                        a.Occurrence.Group.GroupType != null &&
+                        a.Occurrence.Group.GroupType.AttendanceCountsAsWeekendService &&
                         a.StartDateTime >= startDate &&
                         a.DidAttend.HasValue &&
                         a.DidAttend.Value == true &&
@@ -1141,6 +1323,15 @@ Gender Autofill: {genderAutofill}
             return new List<int>();
         }
 
+        /// <summary>
+        /// Gets the type of the people who attended group.
+        /// </summary>
+        /// <param name="enabled">if set to <c>true</c> [enabled].</param>
+        /// <param name="includeGroupTypeIds">The include group type ids.</param>
+        /// <param name="excludeGroupTypeIds">The exclude group type ids.</param>
+        /// <param name="periodInDays">The period in days.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
         private List<int> GetPeopleWhoAttendedGroupType( bool enabled, List<int> includeGroupTypeIds, List<int> excludeGroupTypeIds, int periodInDays, RockContext rockContext )
         {
             if ( enabled )
@@ -1150,7 +1341,7 @@ Gender Autofill: {genderAutofill}
                 var qry = new AttendanceService( rockContext )
                     .Queryable().AsNoTracking()
                     .Where( a =>
-                        a.Group != null &&
+                        a.Occurrence.Group != null &&
                         a.StartDateTime >= startDate &&
                         a.DidAttend.HasValue &&
                         a.DidAttend.Value == true &&
@@ -1158,12 +1349,12 @@ Gender Autofill: {genderAutofill}
 
                 if ( includeGroupTypeIds != null && includeGroupTypeIds.Any() )
                 {
-                    qry = qry.Where( t => includeGroupTypeIds.Contains( t.Group.GroupTypeId ) );
+                    qry = qry.Where( t => includeGroupTypeIds.Contains( t.Occurrence.Group.GroupTypeId ) );
                 }
 
                 if ( excludeGroupTypeIds != null && excludeGroupTypeIds.Any() )
                 {
-                    qry = qry.Where( t => !excludeGroupTypeIds.Contains( t.Group.GroupTypeId ) );
+                    qry = qry.Where( t => !excludeGroupTypeIds.Contains( t.Occurrence.Group.GroupTypeId ) );
                 }
 
                 return qry
@@ -1175,6 +1366,13 @@ Gender Autofill: {genderAutofill}
             return new List<int>();
         }
 
+        /// <summary>
+        /// Gets the people who submitted prayer request.
+        /// </summary>
+        /// <param name="enabled">if set to <c>true</c> [enabled].</param>
+        /// <param name="periodInDays">The period in days.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
         private List<int> GetPeopleWhoSubmittedPrayerRequest( bool enabled, int periodInDays, RockContext rockContext )
         {
             if ( enabled )
@@ -1194,6 +1392,15 @@ Gender Autofill: {genderAutofill}
             return new List<int>();
         }
 
+        /// <summary>
+        /// Gets the people with person attribut updates.
+        /// </summary>
+        /// <param name="enabled">if set to <c>true</c> [enabled].</param>
+        /// <param name="includeAttributeIds">The include attribute ids.</param>
+        /// <param name="excludeAttributeIds">The exclude attribute ids.</param>
+        /// <param name="periodInDays">The period in days.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
         private List<int> GetPeopleWithPersonAttributUpdates( bool enabled, List<int> includeAttributeIds, List<int> excludeAttributeIds, int periodInDays, RockContext rockContext )
         {
             if ( enabled )
@@ -1229,6 +1436,13 @@ Gender Autofill: {genderAutofill}
             return new List<int>();
         }
 
+        /// <summary>
+        /// Gets the people with interactions.
+        /// </summary>
+        /// <param name="enabled">if set to <c>true</c> [enabled].</param>
+        /// <param name="interactionItems">The interaction items.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
         private List<int> GetPeopleWithInteractions( bool enabled, List<Utility.Settings.DataAutomation.InteractionItem> interactionItems, RockContext rockContext )
         {
             if ( enabled && interactionItems != null && interactionItems.Any() )
@@ -1256,6 +1470,13 @@ Gender Autofill: {genderAutofill}
             return new List<int>();
         }
 
+        /// <summary>
+        /// Gets the people in data view query.
+        /// </summary>
+        /// <param name="enabled">if set to <c>true</c> [enabled].</param>
+        /// <param name="dataviewId">The dataview identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
         private IQueryable<int> GetPeopleInDataViewQuery( bool enabled, int? dataviewId, RockContext rockContext )
         {
             if ( enabled && dataviewId.HasValue )
@@ -1275,6 +1496,12 @@ Gender Autofill: {genderAutofill}
             return null;
         }
 
+        /// <summary>
+        /// Creates the entity set identifier query.
+        /// </summary>
+        /// <param name="ids">The ids.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
         private IQueryable<int> CreateEntitySetIdQuery( List<int> ids, RockContext rockContext )
         {
             var entitySet = new EntitySet();
@@ -1306,7 +1533,7 @@ Gender Autofill: {genderAutofill}
                 .Select( i => i.EntityId );
         }
 
-        #endregion
+        #endregion Helper Methods
 
         #region Helper Classes
 
@@ -1334,5 +1561,4 @@ Gender Autofill: {genderAutofill}
 
         #endregion
     }
-
 }

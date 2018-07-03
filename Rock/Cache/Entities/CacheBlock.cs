@@ -41,7 +41,7 @@ namespace Rock.Cache
         ///   <c>true</c> if this instance is system; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsSystem { get; set; }
+        public bool IsSystem { get; private set; }
 
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.Page"/> that this Block is implemented on. This property will only be populated
@@ -53,7 +53,7 @@ namespace Rock.Cache
         /// as part of a <see cref="Rock.Model.Layout"/> or <see cref="Rock.Model.Site"/>.
         /// </value>
         [DataMember]
-        public int? PageId { get; set; }
+        public int? PageId { get; private set; }
 
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.Layout"/> that this Block is implemented on. This property will only be populated
@@ -65,7 +65,7 @@ namespace Rock.Cache
         /// as part of a <see cref="Rock.Model.Page"/> or <see cref="Rock.Model.Site"/>.
         /// </value>
         [DataMember]
-        public int? LayoutId { get; set; }
+        public int? LayoutId { get; private set; }
 
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.Site"/> that this Block is implemented on. This property will only be populated
@@ -77,7 +77,7 @@ namespace Rock.Cache
         /// as part of a <see cref="Rock.Model.Page"/> or <see cref="Rock.Model.Layout"/> .
         /// </value>
         [DataMember]
-        public int? SiteId { get; set; }
+        public int? SiteId { get; private set; }
 
         /// <summary>
         /// Gets or sets the block type id.
@@ -86,7 +86,7 @@ namespace Rock.Cache
         /// The block type id.
         /// </value>
         [DataMember]
-        public int BlockTypeId { get; set; }
+        public int BlockTypeId { get; private set; }
 
         /// <summary>
         /// Gets or sets the zone.
@@ -95,7 +95,7 @@ namespace Rock.Cache
         /// The zone.
         /// </value>
         [DataMember]
-        public string Zone { get; set; }
+        public string Zone { get; private set; }
 
         /// <summary>
         /// Gets or sets the order.
@@ -104,7 +104,7 @@ namespace Rock.Cache
         /// The order.
         /// </value>
         [DataMember]
-        public int Order { get; set; }
+        public int Order { get; private set; }
 
         /// <summary>
         /// Gets or sets the name.
@@ -113,7 +113,7 @@ namespace Rock.Cache
         /// The name.
         /// </value>
         [DataMember]
-        public string Name { get; set; }
+        public string Name { get; private set; }
 
         /// <summary>
         /// Gets or sets the CSS class.
@@ -122,7 +122,7 @@ namespace Rock.Cache
         /// The CSS class.
         /// </value>
         [DataMember]
-        public string CssClass { get; set; }
+        public string CssClass { get; private set; }
 
         /// <summary>
         /// Gets or sets the pre HTML.
@@ -131,7 +131,7 @@ namespace Rock.Cache
         /// The pre HTML.
         /// </value>
         [DataMember]
-        public string PreHtml { get; set; }
+        public string PreHtml { get; private set; }
 
         /// <summary>
         /// Gets or sets the post HTML.
@@ -140,7 +140,7 @@ namespace Rock.Cache
         /// The post HTML.
         /// </value>
         [DataMember]
-        public string PostHtml { get; set; }
+        public string PostHtml { get; private set; }
 
         /// <summary>
         /// Gets or sets the duration of the output cache.
@@ -149,7 +149,7 @@ namespace Rock.Cache
         /// The duration of the output cache.
         /// </value>
         [DataMember]
-        public int OutputCacheDuration { get; set; }
+        public int OutputCacheDuration { get; private set; }
 
         /// <summary>
         /// Gets or sets the Page that this Block is implemented on. This 

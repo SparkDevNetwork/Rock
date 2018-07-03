@@ -25,6 +25,8 @@ using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Storage;
 using Rock.Cache;
+using System.Drawing;
+using ImageResizer;
 
 namespace Rock.Model
 {
@@ -360,7 +362,69 @@ namespace Rock.Model
             {
                 if ( BinaryFileType == null && BinaryFileTypeId.HasValue )
                 {
-                    BinaryFileType = new BinaryFileTypeService( (RockContext)dbContext ).Get( BinaryFileTypeId.Value );
+                    BinaryFileType = new BinaryFileTypeService( ( RockContext ) dbContext ).Get( BinaryFileTypeId.Value );
+                }
+
+                if ( this.MimeType.StartsWith( "image/" ) )
+                {
+                    try
+                    {
+                        using ( Bitmap bm = new Bitmap( this.ContentStream ) )
+                        {
+                            if ( bm != null )
+                            {
+                                this.Width = bm.Width;
+                                this.Height = bm.Height;
+                            }
+                        }
+                        ContentStream.Seek( 0, SeekOrigin.Begin );
+
+                        if ( !IsTemporary )
+                        {
+                            if ( BinaryFileType.MaxHeight.HasValue && BinaryFileType.MaxWidth.HasValue )
+                            {
+                                ResizeSettings settings = new ResizeSettings();
+                                MemoryStream resizedStream = new MemoryStream();
+                                if ( BinaryFileType.MaxWidth.Value < Width || BinaryFileType.MaxHeight < Height )
+                                {
+                                    settings.Add( "mode", "max" );
+                                    if ( BinaryFileType.MaxHeight < Height && BinaryFileType.MaxWidth < Width )
+                                    {
+                                        if ( BinaryFileType.MaxHeight >= BinaryFileType.MaxWidth )
+                                        {
+                                            settings.Add( "height", BinaryFileType.MaxHeight.Value.ToString() );
+                                        }
+                                        if ( BinaryFileType.MaxHeight <= BinaryFileType.MaxWidth )
+                                        {
+                                            settings.Add( "width", BinaryFileType.MaxWidth.Value.ToString() );
+                                        }
+                                    }
+                                    else if ( BinaryFileType.MaxHeight < Height )
+                                    {
+
+                                        settings.Add( "height", BinaryFileType.MaxHeight.Value.ToString() );
+                                    }
+                                    else
+                                    {
+                                        settings.Add( "width", BinaryFileType.MaxWidth.Value.ToString() );
+
+                                    }
+                                    ImageBuilder.Current.Build( this.ContentStream, resizedStream, settings );
+                                    ContentStream = resizedStream;
+
+                                    using ( Bitmap bm = new Bitmap( this.ContentStream ) )
+                                    {
+                                        if ( bm != null )
+                                        {
+                                            this.Width = bm.Width;
+                                            this.Height = bm.Height;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    catch ( Exception ) { } // if the file is an invalid photo keep moving
                 }
 
                 if ( entry.State == System.Data.Entity.EntityState.Added )

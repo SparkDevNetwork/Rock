@@ -362,22 +362,23 @@ namespace Rock.Plugin.HotFixes {
                 return ResourceManager.GetString("_050_MigrationRollupsForV7_4_spAnalytics_ETL_Campus", resourceCulture);
             }
         }
-        
+
         /// <summary>
-        ///   Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[spCrm_PersonDuplicateFinder]&apos;) AND type in (N&apos;P&apos;, N&apos;PC&apos;))
-        ///DROP PROCEDURE [dbo].[spCrm_PersonDuplicateFinder]
-        ///GO
-        ////*
-        ///&lt;doc&gt;
+        /// Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[spCrm_PersonDuplicateFinder]') AND type in (N'P', N'PC'))
+        /// DROP PROCEDURE [dbo].[spCrm_PersonDuplicateFinder]
+        /// GO
+        /// &lt;doc&gt;
         /// &lt;summary&gt;
-        ///   This stored procedure detects potential duplicate person records and stores the results in [PersonDuplicate]
+        /// This stored procedure detects potential duplicate person records and stores the results in [PersonDuplicate]
         /// &lt;/summary&gt;
-        /// 
-        /// &lt;remarks&gt; 
-        ///  Uses the following constants:
-        ///   * Group Type - Family: &apos;790E3215-3B10-442B-AF69-616C0DCB998E&apos;
-        ///            * Location Type - Home: &apos;8C52E53C-2A66-435A-AE [rest of string was truncated]&quot;;.
+        /// &lt;remarks&gt;
+        /// Uses the following constants:
+        /// * Group Type - Family: '790E3215-3B10-442B-AF69-616C0DCB998E'
+        /// * Location Type - Home: '8C52E53C-2A66-435A-AE [rest of string was truncated]";.
         /// </summary>
+        /// <value>
+        /// The 050 migration rollups for v7 4 sp CRM person duplicate finder.
+        /// </value>
         public static string _050_MigrationRollupsForV7_4_spCrm_PersonDuplicateFinder {
             get {
                 return ResourceManager.GetString("_050_MigrationRollupsForV7_4_spCrm_PersonDuplicateFinder", resourceCulture);

@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 
@@ -40,7 +41,7 @@ namespace Rock.Cache
         ///   <c>true</c> if this instance is system; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsSystem { get; set; }
+        public bool IsSystem { get; private set; }
 
         /// <summary>
         /// Gets or sets the name.
@@ -49,7 +50,7 @@ namespace Rock.Cache
         /// The name.
         /// </value>
         [DataMember]
-        public string Name { get; set; }
+        public string Name { get; private set; }
 
         /// <summary>
         /// Gets or sets the description.
@@ -58,7 +59,7 @@ namespace Rock.Cache
         /// The description.
         /// </value>
         [DataMember]
-        public string Description { get; set; }
+        public string Description { get; private set; }
 
         /// <summary>
         /// Gets or sets the assembly.
@@ -67,7 +68,7 @@ namespace Rock.Cache
         /// The assembly.
         /// </value>
         [DataMember]
-        public string Assembly { get; set; }
+        public string Assembly { get; private set; }
 
         /// <summary>
         /// Gets or sets the class.
@@ -76,7 +77,7 @@ namespace Rock.Cache
         /// The class.
         /// </value>
         [DataMember]
-        public string Class { get; set; }
+        public string Class { get; private set; }
 
         /// <summary>
         /// Gets the field.
@@ -125,6 +126,27 @@ namespace Rock.Cache
         #endregion
 
         #region Static Methods
+
+        /// <summary>
+        /// Gets all the instances of this type of model/entity that are currently in cache.
+        /// </summary>
+        /// <returns></returns>
+        public new static List<CacheFieldType> All()
+        {
+            // use 'new' to override the base All since we want to sort field types
+            return ModelCache<CacheFieldType, FieldType>.All().OrderBy( a => a.Name ).ToList();
+        }
+
+        /// <summary>
+        /// Gets all the instances of this type of model/entity that are currently in cache.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public new static List<CacheFieldType> All( RockContext rockContext )
+        {
+            // use 'new' to override the base All since we want to sort field types
+            return ModelCache<CacheFieldType, FieldType>.All( rockContext ).OrderBy( a => a.Name ).ToList();
+        }
 
         /// <summary>
         /// Gets this instance.

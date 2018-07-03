@@ -13,6 +13,10 @@ namespace Rock.Web.UI.Controls
 {
     // Inspired by: https://weblog.west-wind.com/posts/2017/Sep/13/A-Literal-Markdown-Control-for-ASPNET-WebForms
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="System.Web.UI.WebControls.Literal" />
     [DefaultProperty( "Text" )]
     [ToolboxData( "<{0}:Lava runat=server></{0}:Lava>" )]
     public class Lava : System.Web.UI.WebControls.Literal

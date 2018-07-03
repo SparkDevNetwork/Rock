@@ -40,7 +40,7 @@ namespace Rock.Cache
         /// The name.
         /// </value>
         [DataMember]
-        public string Name { get; set; }
+        public string Name { get; private set; }
 
         /// <summary>
         /// Gets or sets the entity identifier.
@@ -49,7 +49,7 @@ namespace Rock.Cache
         /// The entity identifier.
         /// </value>
         [DataMember]
-        public int? EntityId { get; set; }
+        public int? EntityId { get; private set; }
 
         /// <summary>
         /// Gets or sets the channel identifier.
@@ -58,7 +58,7 @@ namespace Rock.Cache
         /// The channel identifier.
         /// </value>
         [DataMember]
-        public int ChannelId { get; set; }
+        public int ChannelId { get; private set; }
 
         /// <summary>
         /// Gets the interaction channel.

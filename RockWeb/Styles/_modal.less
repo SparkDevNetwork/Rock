@@ -9,7 +9,7 @@
 // -------------------------
 
 // import as less files so they are concatenated properly
-@import "./bootstrap-modal/_bootstrap-modal-bs3patch";
+@import "./bootstrap-modal/_bootstrap-modal-bs3patch.less";
 @import (less) "./bootstrap-modal/bootstrap-modal.css";
 
 
@@ -22,6 +22,7 @@
   color: @modal-body-text-color;
   background-color: @modal-body-bg;
   border: 0;
+  .box-shadow(@shadow-modal);
 
   .modal-header {
     min-height: 34px;

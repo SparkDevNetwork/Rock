@@ -537,6 +537,8 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
                 qryParams["CategoryId"] = parentCategoryId.ToString();
             }
 
+            qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
+
             NavigateToPage( RockPage.Guid, qryParams );
         }
 

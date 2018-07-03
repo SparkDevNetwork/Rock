@@ -38,7 +38,8 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Displays the details of the given business." )]
 
-    [LinkedPage( "Person Profile Page", "The page used to view the details of a business contact" )]
+    [LinkedPage( "Person Profile Page", "The page used to view the details of a business contact", order: 0 )]
+    [LinkedPage( "Communication Page", "The communication page to use for when the business email address is clicked. Leave this blank to use the default.", false, "", "", 1 )]
     public partial class BusinessDetail : Rock.Web.UI.RockBlock, IDetailBlock
     {
         #region Base Control Methods
@@ -201,9 +202,9 @@ namespace RockWeb.Blocks.Finance
                 var knownRelationshipOwner = UpdateGroupMember( business.Id, knownRelationshipGroupType, "Known Relationship", null, knownRelationshipOwnerRoleId, rockContext );
 
                 // Add/Update Implied Relationship Group Type
-                var impliedRelationshipGroupType = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_IMPLIED_RELATIONSHIPS.AsGuid() );
+                var impliedRelationshipGroupType = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_PEER_NETWORK.AsGuid() );
                 int impliedRelationshipOwnerRoleId = impliedRelationshipGroupType.Roles
-                    .Where( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_IMPLIED_RELATIONSHIPS_OWNER.AsGuid() ) )
+                    .Where( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_PEER_NETWORK_OWNER.AsGuid() ) )
                     .Select( r => r.Id )
                     .FirstOrDefault();
                 var impliedRelationshipOwner = UpdateGroupMember( business.Id, impliedRelationshipGroupType, "Implied Relationship", null, impliedRelationshipOwnerRoleId, rockContext );
@@ -586,9 +587,20 @@ namespace RockWeb.Blocks.Finance
                     }
                 }
 
-                lDetailsRight.Text = detailsRight
-                    .Add( "Email Address", business.Email )
-                    .Html;
+                var communicationLinkedPageValue = this.GetAttributeValue( "CommunicationPage" );
+                Rock.Web.PageReference communicationPageReference;
+                if ( communicationLinkedPageValue.IsNotNullOrWhitespace() )
+                {
+                    communicationPageReference = new Rock.Web.PageReference( communicationLinkedPageValue );
+                }
+                else
+                {
+                    communicationPageReference = null;
+                }
+
+                detailsRight.Add( "Email Address", business.GetEmailTag( ResolveRockUrl( "/" ), communicationPageReference ) );
+
+                lDetailsRight.Text = detailsRight.Html;
             }
         }
 

@@ -10,14 +10,14 @@
             <div class="panel-body">
                 <Rock:NotificationBox ID="nbSuccess" runat="server" NotificationBoxType="Success" />
                 <Rock:NotificationBox ID="nbWarning" runat="server" NotificationBoxType="Warning" />
-                <Rock:NotificationBox ID="nbError" runat="server" NotificationBoxType="Danger" />
+                <Rock:NotificationBox ID="nbError" runat="server" NotificationBoxType="Validation" />
 
                 <Rock:PersonPicker ID="ppSource" runat="server" IncludeBusinesses="true" Label="Person or Business" Help="Select the person or business that you want to convert." OnSelectPerson="ppSource_SelectPerson" />
 
                 <asp:Panel ID="pnlToPerson" runat="server" Visible="false">
                     <asp:ValidationSummary ID="vsToPerson" runat="server" CssClass="alert alert-validation" ValidationGroup="ConvertToPerson" />
 
-                    <Rock:NotificationBox ID="nbToPerson" runat="server" NotificationBoxType="Warning">The selected record will be converted to a Person with the values entered below.</Rock:NotificationBox>
+                    <Rock:NotificationBox ID="nbToPerson" runat="server" NotificationBoxType="Info">This business will be converted to a person using the following details.</Rock:NotificationBox>
 
                     <div class="row">
                         <div class="col-md-6">
@@ -32,7 +32,7 @@
                     </div>
                     
                     <div class="actions">
-                        <asp:LinkButton ID="lbPersonSave" runat="server" Text="Save" CssClass="btn btn-primary" ValidationGroup="ConvertToPerson" OnClick="lbToPersonSave_Click" />
+                        <asp:LinkButton ID="lbPersonSave" runat="server" Text="Convert" CssClass="btn btn-primary" ValidationGroup="ConvertToPerson" OnClick="lbToPersonSave_Click" />
                         <asp:LinkButton ID="lbPersonCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="lbPersonCancel_Click" />
                     </div>
                 </asp:Panel>
@@ -40,7 +40,7 @@
                 <asp:Panel ID="pnlToBusiness" runat="server" Visible="false">
                     <asp:ValidationSummary ID="vsToBusiness" runat="server" CssClass="alert alert-validation" ValidationGroup="ConvertToBusiness" />
 
-                    <Rock:NotificationBox ID="nbToBusiness" runat="server" NotificationBoxType="Warning">The selected record will be converted to a Business with the values entered below.</Rock:NotificationBox>
+                    <Rock:NotificationBox ID="nbToBusiness" runat="server" NotificationBoxType="Info">This person will be converted to a Business with the following name.</Rock:NotificationBox>
 
                     <div class="row">
                         <div class="col-sm-6">
@@ -49,7 +49,7 @@
                     </div>
 
                     <div class="actions">
-                        <asp:LinkButton ID="lbBusinessSave" runat="server" Text="Save" CssClass="btn btn-primary" ValidationGroup="ConvertToBusiness" OnClick="lbToBusinessSave_Click" />
+                        <asp:LinkButton ID="lbBusinessSave" runat="server" Text="Convert" CssClass="btn btn-primary" ValidationGroup="ConvertToBusiness" OnClick="lbToBusinessSave_Click" />
                         <asp:LinkButton ID="lbBusinessCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="lbBusinessCancel_Click" />
                     </div>
                 </asp:Panel>

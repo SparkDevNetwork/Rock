@@ -38,6 +38,12 @@ namespace Rock.Client
         public bool? AllowGuests { get; set; }
 
         /// <summary />
+        public int? ArchivedByPersonAliasId { get; set; }
+
+        /// <summary />
+        public DateTime? ArchivedDateTime { get; set; }
+
+        /// <summary />
         public int? CampusId { get; set; }
 
         /// <summary />
@@ -56,7 +62,13 @@ namespace Rock.Client
         public int GroupTypeId { get; set; }
 
         /// <summary />
+        public DateTime? InactiveDateTime { get; set; }
+
+        /// <summary />
         public bool IsActive { get; set; }
+
+        /// <summary />
+        public bool IsArchived { get; set; }
 
         /// <summary />
         public bool IsPublic { get; set; }
@@ -86,6 +98,9 @@ namespace Rock.Client
 
         /// <summary />
         public int? ScheduleId { get; set; }
+
+        /// <summary />
+        public int? StatusValueId { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -121,13 +136,17 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.AllowGuests = source.AllowGuests;
+            this.ArchivedByPersonAliasId = source.ArchivedByPersonAliasId;
+            this.ArchivedDateTime = source.ArchivedDateTime;
             this.CampusId = source.CampusId;
             this.Description = source.Description;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.GroupCapacity = source.GroupCapacity;
             this.GroupTypeId = source.GroupTypeId;
+            this.InactiveDateTime = source.InactiveDateTime;
             this.IsActive = source.IsActive;
+            this.IsArchived = source.IsArchived;
             this.IsPublic = source.IsPublic;
             this.IsSecurityRole = source.IsSecurityRole;
             this.IsSystem = source.IsSystem;
@@ -137,6 +156,7 @@ namespace Rock.Client
             this.ParentGroupId = source.ParentGroupId;
             this.RequiredSignatureDocumentTemplateId = source.RequiredSignatureDocumentTemplateId;
             this.ScheduleId = source.ScheduleId;
+            this.StatusValueId = source.StatusValueId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -152,6 +172,9 @@ namespace Rock.Client
     /// </summary>
     public partial class Group : GroupEntity
     {
+        /// <summary />
+        public PersonAlias ArchivedByPersonAlias { get; set; }
+
         /// <summary />
         public Campus Campus { get; set; }
 
@@ -175,6 +198,9 @@ namespace Rock.Client
 
         /// <summary />
         public Schedule Schedule { get; set; }
+
+        /// <summary />
+        public DefinedValue StatusValue { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

@@ -45,7 +45,7 @@ namespace Rock.Cache
         ///   <c>true</c> if this instance is system; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsSystem { get; set; }
+        public bool IsSystem { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether this instance is common.
@@ -63,7 +63,7 @@ namespace Rock.Cache
         /// The path.
         /// </value>
         [DataMember]
-        public string Path { get; set; }
+        public string Path { get; private set; }
 
         /// <summary>
         /// Gets or sets the name.
@@ -72,7 +72,7 @@ namespace Rock.Cache
         /// The name.
         /// </value>
         [DataMember]
-        public string Name { get; set; }
+        public string Name { get; private set; }
 
         /// <summary>
         /// Gets or sets the description.
@@ -81,7 +81,7 @@ namespace Rock.Cache
         /// The description.
         /// </value>
         [DataMember]
-        public string Description { get; set; }
+        public string Description { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether the  attributes have been
@@ -91,7 +91,7 @@ namespace Rock.Cache
         /// <c>true</c> if attributes have already been verified; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsInstancePropertiesVerified { get; set; }
+        public bool IsInstancePropertiesVerified { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [checked security actions].
@@ -100,7 +100,7 @@ namespace Rock.Cache
         ///   <c>true</c> if [checked security actions]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool CheckedSecurityActions { get; set; }
+        public bool CheckedSecurityActions { get; private set; }
 
         /// <summary>
         /// Gets or sets the security actions.
@@ -109,7 +109,7 @@ namespace Rock.Cache
         /// The security actions.
         /// </value>
         [DataMember]
-        public ConcurrentDictionary<string, string> SecurityActions { get; set; }
+        public ConcurrentDictionary<string, string> SecurityActions { get; private set; }
 
         #endregion
 
@@ -182,6 +182,14 @@ namespace Rock.Cache
 
             // Begin watching.
             watcher.EnableRaisingEvents = true;
+        }
+
+        /// <summary>
+        /// Updates the Is Instance Properties Verified flag
+        /// </summary>
+        public void MarkInstancePropertiesVerified( bool verified )
+        {
+            IsInstancePropertiesVerified = verified;
         }
 
         /// <summary>

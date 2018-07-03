@@ -57,6 +57,7 @@ namespace RockWeb.Blocks.Groups
     [LinkedPage( "Fundraising Progress Page", "The page to display fundraising progress for all its members.", false, "", "", 12 )]
     [BooleanField( "Show Location Addresses", "Determines if the location address should be shown when viewing the group details.", true, order: 13 )]
     [BooleanField( "Prevent Selecting Inactive Campus", "Should inactive campuses be excluded from the campus field when editing a group?.", false, "", 14 )]
+    [LinkedPage( "Group History Page", "The page to display group history.", false, "", "", 15 )]
 
     public partial class GroupDetail : RockBlock, IDetailBlock
     {
@@ -370,6 +371,37 @@ namespace RockWeb.Blocks.Groups
         }
 
         /// <summary>
+        /// Handles the Click event of the btnArchive control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing thmuch the samee event data.</param>
+        protected void btnArchive_Click( object sender, EventArgs e )
+        {
+            int? parentGroupId = null;
+            RockContext rockContext = new RockContext();
+
+            GroupService groupService = new GroupService( rockContext );
+            AuthService authService = new AuthService( rockContext );
+            Group group = groupService.Get( hfGroupId.Value.AsInteger() );
+
+            if ( group != null )
+            {
+                if ( !group.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
+                {
+                    mdDeleteWarning.Show( "You are not authorized to archive this group.", ModalAlertType.Information );
+                    return;
+                }
+
+                parentGroupId = group.ParentGroupId;
+                groupService.Archive( group, this.CurrentPersonAliasId, true );
+                
+                rockContext.SaveChanges();
+            }
+
+            NavigateAfterDeleteOrArchive( parentGroupId );
+        }
+
+        /// <summary>
         /// Handles the Click event of the btnDelete control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -424,6 +456,7 @@ namespace RockWeb.Blocks.Groups
                     }
                 }
 
+                // NOTE: groupService.Delete will automatically Archive instead Delete if this Group has GroupHistory enabled, but since this block has UI logic for Archive vs Delete, we can do a direct Archive in btnArchive_Click
                 groupService.Delete( group );
 
                 rockContext.SaveChanges();
@@ -434,6 +467,15 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
+            NavigateAfterDeleteOrArchive( parentGroupId );
+        }
+
+        /// <summary>
+        /// Navigates after a group is deleted or archived
+        /// </summary>
+        /// <param name="parentGroupId">The parent group identifier.</param>
+        private void NavigateAfterDeleteOrArchive( int? parentGroupId )
+        {
             // reload page, selecting the deleted group's parent
             var qryParams = new Dictionary<string, string>();
             if ( parentGroupId != null )
@@ -618,6 +660,7 @@ namespace RockWeb.Blocks.Groups
             group.CampusId = cpCampus.SelectedCampusId;
             group.GroupTypeId = CurrentGroupTypeId;
             group.ParentGroupId = gpParentGroup.SelectedValueAsInt();
+            group.StatusValueId = dvpGroupStatus.SelectedValueAsId();
             group.GroupCapacity = nbGroupCapacity.Text.AsIntegerOrNull();
             group.RequiredSignatureDocumentTemplateId = ddlSignatureDocumentTemplate.SelectedValueAsInt();
             group.IsSecurityRole = cbIsSecurityRole.Checked;
@@ -666,6 +709,8 @@ namespace RockWeb.Blocks.Groups
                     group.Schedule.WeeklyDayOfWeek = dowWeekly.SelectedDayOfWeek;
                     group.Schedule.WeeklyTimeOfDay = timeWeekly.SelectedTime;
                 }
+
+                group.Schedule.Name = group.Schedule.ToString();
             }
             else
             {
@@ -675,8 +720,9 @@ namespace RockWeb.Blocks.Groups
                     var schedule = scheduleService.Get( oldScheduleId.Value );
                     if ( schedule != null && string.IsNullOrEmpty( schedule.Name ) )
                     {
-                        // Make sure this is the only group trying to use this schedule.
-                        if ( !groupService.Queryable().Where( g => g.ScheduleId == schedule.Id && g.Id != group.Id ).Any() )
+                        // Make sure this is the only thing using this schedule.
+                        string errorMessage;
+                        if ( scheduleService.CanDelete(schedule, out errorMessage ) )
                         {
                             scheduleService.Delete( schedule );
                         }
@@ -775,7 +821,7 @@ namespace RockWeb.Blocks.Groups
                 string qualifierValue = group.Id.ToString();
 
                 // Get the existing attributes for this entity type and qualifier value
-                var attributes = attributeService.Get( entityTypeId, qualifierColumn, qualifierValue );
+                var attributes = attributeService.GetByEntityTypeQualifier( entityTypeId, qualifierColumn, qualifierValue, true );
 
                 // Delete any of those attributes that were removed in the UI
                 var selectedAttributeGuids = GroupMemberAttributesState.Select( a => a.Guid );
@@ -944,7 +990,7 @@ namespace RockWeb.Blocks.Groups
                     string qualifierValue = group.Id.ToString();
                     
                     // Get the existing attributes for this entity type and qualifier value
-                    var attributes = attributeService.Get( entityTypeId, qualifierColumn, qualifierValue );
+                    var attributes = attributeService.GetByEntityTypeQualifier( entityTypeId, qualifierColumn, qualifierValue, true );
 
                     foreach ( var attribute in attributes )
                     {
@@ -1240,12 +1286,12 @@ namespace RockWeb.Blocks.Groups
             {
                 btnEdit.Visible = false;
                 btnDelete.Visible = false;
+                btnArchive.Visible = false;
                 ShowReadonlyDetails( group );
             }
             else
             {
                 btnEdit.Visible = true;
-                btnDelete.Visible = !group.IsSystem;
                 if ( group.Id > 0 )
                 {
                     ShowReadonlyDetails( group );
@@ -1275,6 +1321,8 @@ namespace RockWeb.Blocks.Groups
                 hlInactive.Visible = true;
                 hlIsPrivate.Visible = true;
             }
+
+            hlArchived.Visible = group.IsArchived;
 
             if ( group.IsActive )
             {
@@ -1328,6 +1376,7 @@ namespace RockWeb.Blocks.Groups
 
             ddlSignatureDocumentTemplate.SetValue( group.RequiredSignatureDocumentTemplateId );
             gpParentGroup.SetValue( group.ParentGroup ?? groupService.Get( group.ParentGroupId ?? 0 ) );
+            
 
             // hide sync and requirements panel if no admin access
             bool canAdministrate = group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
@@ -1396,6 +1445,15 @@ namespace RockWeb.Blocks.Groups
             SetScheduleControls( groupTypeCache, group );
             ShowGroupTypeEditDetails( groupTypeCache, group, true );
 
+            dvpGroupStatus.DefinedTypeId = groupTypeCache.GroupStatusDefinedTypeId;
+            if ( groupTypeCache.GroupStatusDefinedType != null )
+            {
+                dvpGroupStatus.Label = groupTypeCache.GroupStatusDefinedType.ToString();
+            }
+
+            dvpGroupStatus.Visible = groupTypeCache.GroupStatusDefinedTypeId.HasValue;
+            dvpGroupStatus.SetValue( group.StatusValueId );
+
             // if this block's attribute limit group to SecurityRoleGroups, don't let them edit the SecurityRole checkbox value
             if ( GetAttributeValue( "LimittoSecurityRoleGroups" ).AsBoolean() )
             {
@@ -1404,7 +1462,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             string qualifierValue = group.Id.ToString();
-            GroupMemberAttributesState = attributeService.GetByEntityTypeId( new GroupMember().TypeId ).AsQueryable()
+            GroupMemberAttributesState = attributeService.GetByEntityTypeId( new GroupMember().TypeId, true ).AsQueryable()
                     .Where( a =>
                         a.EntityTypeQualifierColumn.Equals( "GroupId", StringComparison.OrdinalIgnoreCase ) &&
                         a.EntityTypeQualifierValue.Equals( qualifierValue ) )
@@ -1559,16 +1617,43 @@ namespace RockWeb.Blocks.Groups
         /// <param name="group">The group.</param>
         private void ShowReadonlyDetails( Group group )
         {
+            btnDelete.Visible = !group.IsSystem;
+            btnArchive.Visible = false;
+
+            var rockContext = new RockContext();
+            CacheGroupType groupType = CacheGroupType.Get( group.GroupTypeId );
+
+            // if History is enabled (and this isn't an IsSystem group), additional logic for if the Archive or Delete button is visible
+            if ( !group.IsSystem )
+            {
+                if ( !group.IsArchived )
+                {
+                    if ( groupType != null && groupType.EnableGroupHistory )
+                    {
+                        bool hasGroupHistory = new GroupHistoricalService( rockContext ).Queryable().Any( a => a.GroupId == group.Id );
+                        if ( hasGroupHistory )
+                        {
+                            // if the group has GroupHistory enabled, and has group history snapshots, prompt to archive instead of delete
+                            btnDelete.Visible = false;
+                            btnArchive.Visible = true;
+                        }
+                    }
+                }
+                else
+                {
+                    btnDelete.Visible = false;
+                }
+            }
+
             SetHighlightLabelVisibility( group, true );
             SetEditMode( false );
-            var rockContext = new RockContext();
 
             string groupIconHtml = string.Empty;
-            if ( group.GroupType != null )
+            if ( groupType != null )
             {
-                groupIconHtml = !string.IsNullOrWhiteSpace( group.GroupType.IconCssClass ) ?
-                    string.Format( "<i class='{0}' ></i>", group.GroupType.IconCssClass ) : string.Empty;
-                hlType.Text = group.GroupType.Name;
+                groupIconHtml = !string.IsNullOrWhiteSpace( groupType.IconCssClass ) ?
+                    string.Format( "<i class='{0}' ></i>", groupType.IconCssClass ) : string.Empty;
+                hlType.Text = groupType.Name;
             }
 
             hfGroupId.SetValue( group.Id );
@@ -1590,7 +1675,7 @@ namespace RockWeb.Blocks.Groups
             var pageParams = new Dictionary<string, string>();
             pageParams.Add( "GroupId", group.Id.ToString() );
 
-            hlAttendance.Visible = group.GroupType != null && group.GroupType.TakesAttendance;
+            hlAttendance.Visible = groupType != null && groupType.TakesAttendance;
             hlAttendance.NavigateUrl = LinkedPageUrl( "AttendancePage", pageParams );
 
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
@@ -1621,9 +1706,23 @@ namespace RockWeb.Blocks.Groups
                 hlMap.Visible = false;
             }
 
-            string template = group.GroupType.GroupViewLavaTemplate;
+            string groupHistoryUrl = LinkedPageUrl( "GroupHistoryPage", pageParams );
+            mergeFields.Add( "GroupHistoryUrl", groupHistoryUrl );
+            if ( groupHistoryUrl.IsNotNullOrWhitespace() )
+            {
+                hlGroupHistory.Visible = groupType != null && groupType.EnableGroupHistory;
+                hlGroupHistory.NavigateUrl = groupHistoryUrl;
+            }
+            else
+            {
+                hlGroupHistory.Visible = false;
+            }
 
-            lContent.Text = template.ResolveMergeFields( mergeFields ).ResolveClientIds( upnlGroupDetail.ClientID );
+            if ( groupType != null )
+            {
+                string template = groupType.GroupViewLavaTemplate;
+                lContent.Text = template.ResolveMergeFields( mergeFields ).ResolveClientIds( upnlGroupDetail.ClientID );
+            }
 
             string fundraisingProgressUrl = LinkedPageUrl( "FundraisingProgressPage", pageParams );
             var groupTypeIdFundraising = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FUNDRAISINGOPPORTUNITY.AsGuid() ).Id;
@@ -1885,7 +1984,7 @@ namespace RockWeb.Blocks.Groups
                 {
                     string qualifierValue = inheritedGroupType.Id.ToString();
 
-                    foreach ( var attribute in attributeService.GetByEntityTypeId( new GroupMember().TypeId ).AsQueryable()
+                    foreach ( var attribute in attributeService.GetByEntityTypeId( new GroupMember().TypeId, false ).AsQueryable()
                         .Where( a =>
                             a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) &&
                             a.EntityTypeQualifierValue.Equals( qualifierValue ) )

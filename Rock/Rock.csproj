@@ -361,6 +361,7 @@
     <Compile Include="Attribute\ComparisonFieldAttribute.cs" />
     <Compile Include="Attribute\ContentChannelTypeFieldAttribute.cs" />
     <Compile Include="Attribute\ContentChannelItemFieldAttribute.cs" />
+    <Compile Include="Attribute\BackgroundCheckFieldAttribute.cs" />
     <Compile Include="Attribute\GenderFieldAttribute.cs" />
     <Compile Include="Attribute\InteractionChannelFieldAttribute.cs" />
     <Compile Include="Attribute\InteractionChannelsFieldAttribute.cs" />
@@ -485,6 +486,7 @@
     <Compile Include="Cache\Entities\CacheWorkflowType.cs" />
     <Compile Include="Cache\IItemCache.cs" />
     <Compile Include="Cache\NonEntities\CacheEntityNoteTypes.cs" />
+    <Compile Include="Cache\NonEntities\CacheIdFromGuid.cs" />
     <Compile Include="Cache\NonEntities\CacheWorkflowTriggers.cs" />
     <Compile Include="Cache\RockCache.cs" />
     <Compile Include="Cache\IRockCacheManager.cs" />
@@ -579,6 +581,7 @@
     <Compile Include="Data\IFeed.cs" />
     <Compile Include="Data\IgnoreCanDelete.cs" />
     <Compile Include="Data\IgnoreModelErrorsAttribute.cs" />
+    <Compile Include="Data\IHistoricalTracking.cs" />
     <Compile Include="Data\IHasAttributes.cs" />
     <Compile Include="Data\IHasAttributesWrapper.cs" />
     <Compile Include="Data\IHasInheritedAttributes.cs" />
@@ -631,6 +634,7 @@
     <Compile Include="Field\Types\CheckListFieldType.cs" />
     <Compile Include="Field\Types\ContentChannelTypeFieldType.cs" />
     <Compile Include="Field\Types\ContentChannelItemFieldType.cs" />
+    <Compile Include="Field\Types\BackgroundCheckFieldType.cs" />
     <Compile Include="Field\Types\MonthDayFieldType.cs" />
     <Compile Include="Field\Types\GenderFieldType.cs" />
     <Compile Include="Field\Types\InteractionChannelsFieldType.cs" />
@@ -775,6 +779,8 @@
     <Compile Include="Jobs\CommunicationQueueAlert.cs" />
     <Compile Include="Jobs\DatabaseMaintenance.cs" />
     <Compile Include="Jobs\IndexRockSite.cs" />
+    <Compile Include="Jobs\MigrateAttendanceOccurrenceData.cs" />
+    <Compile Include="Jobs\MigrateHistorySummaryData.cs" />
     <Compile Include="Jobs\PostV80DataMigrations.cs" />
     <Compile Include="Jobs\ProcessNcoaResults.cs">
       <SubType>ASPXCodeBehind</SubType>
@@ -785,6 +791,7 @@
     <Compile Include="Jobs\ProcessBIAnalytics.cs" />
     <Compile Include="Jobs\PbxCdrDownload.cs" />
     <Compile Include="Jobs\DataAutomation.cs" />
+    <Compile Include="Jobs\ProcessGroupHistory.cs" />
     <Compile Include="Jobs\SendCreditCardExpirationNotices.cs" />
     <Compile Include="Jobs\IndexEntities.cs" />
     <Compile Include="Jobs\SendDataViewEmail.cs" />
@@ -821,6 +828,8 @@
     <Compile Include="Lava\Blocks\RockLavaBlockBase.cs" />
     <Compile Include="Lava\Blocks\Search.cs" />
     <Compile Include="Lava\Blocks\Javascript.cs" />
+    <Compile Include="Lava\Blocks\Cache.cs" />
+    <Compile Include="Lava\Blocks\TagList.cs" />
     <Compile Include="Lava\Blocks\Stylesheet.cs" />
     <Compile Include="Lava\Blocks\WebRequest.cs" />
     <Compile Include="Lava\Blocks\Sql.cs" />
@@ -859,11 +868,14 @@
     <Compile Include="Model\AnalyticsSourcePersonHistorical.cs" />
     <Compile Include="Model\AnalyticsFactFinancialTransaction.cs" />
     <Compile Include="Model\AnalyticsSourceFinancialTransaction.cs" />
+    <Compile Include="Model\AttendanceOccurrence.cs" />
     <Compile Include="Model\Attendance.cs" />
     <Compile Include="Model\AttendanceCode.cs" />
+    <Compile Include="Model\AttendanceOccurrenceService.Partial.cs" />
     <Compile Include="Model\AttributeMatrix.cs" />
     <Compile Include="Model\AttributeMatrixItem.cs" />
     <Compile Include="Model\AttributeMatrixTemplate.cs" />
+    <Compile Include="Model\AttributeValueHistorical.cs" />
     <Compile Include="Model\CodeGenerated\AnalyticsDimCampusService.cs" />
     <Compile Include="Model\CodeGenerated\AnalyticsDimFamilyCurrentService.cs" />
     <Compile Include="Model\CodeGenerated\AnalyticsDimFamilyHeadOfHouseholdService.cs" />
@@ -873,8 +885,14 @@
     <Compile Include="Model\CodeGenerated\AnalyticsSourceCampusService.cs" />
     <Compile Include="Model\CodeGenerated\AnalyticsSourceFamilyHistoricalService.cs" />
     <Compile Include="Model\AttributeMatrixTemplateService.partial.cs" />
+    <Compile Include="Model\CodeGenerated\AttendanceOccurrenceService.cs" />
+    <Compile Include="Model\CodeGenerated\AttributeValueHistoricalService.cs" />
     <Compile Include="Model\CodeGenerated\CommunicationAttachmentService.cs" />
     <Compile Include="Model\CodeGenerated\CommunicationTemplateAttachmentService.cs" />
+    <Compile Include="Model\CodeGenerated\GroupHistoricalService.cs" />
+    <Compile Include="Model\CodeGenerated\GroupLocationHistoricalScheduleService.cs" />
+    <Compile Include="Model\CodeGenerated\GroupLocationHistoricalService.cs" />
+    <Compile Include="Model\CodeGenerated\GroupMemberHistoricalService.cs" />
     <Compile Include="Model\CodeGenerated\ContentChannelItemSlugService.cs" />
     <Compile Include="Model\CodeGenerated\GroupSyncService.cs" />
     <Compile Include="Model\CodeGenerated\LavaShortcodeService.cs" />
@@ -901,7 +919,12 @@
     <Compile Include="Model\ContentChannelItemService.Partial.cs" />
     <Compile Include="Model\FinancialAccountService.Partial.cs" />
     <Compile Include="Data\IAnalyticsAddresses.cs" />
+    <Compile Include="Model\GroupLocationHistoricalSchedule.cs" />
+    <Compile Include="Model\GroupLocationHistorical.cs" />
+    <Compile Include="Model\GroupMemberHistorical.cs" />
+    <Compile Include="Model\GroupHistorical.cs" />
     <Compile Include="Model\GroupSync.cs" />
+    <Compile Include="Model\GroupMemberHistoricalService.Partial.cs" />
     <Compile Include="Model\InteractionComponent.Partial.cs" />
     <Compile Include="Model\InteractionService.Partial.cs" />
     <Compile Include="Model\MetaFirstNameGenderLookup.cs" />
@@ -1350,8 +1373,10 @@
     <Compile Include="Reporting\DataFilter\Person\InRegistrationInstanceFilter.cs" />
     <Compile Include="Security\Role.cs" />
     <Compile Include="SqlServerTypes\Loader.cs" />
+    <Compile Include="SystemGuid\Block.cs" />
     <Compile Include="SystemGuid\Communication.cs" />
     <Compile Include="SystemGuid\InteractionChannel.cs" />
+    <Compile Include="SystemGuid\WorkflowType.cs" />
     <Compile Include="SystemKey\SystemSetting.cs" />
     <Compile Include="SystemKey\UserPreference.cs" />
     <Compile Include="Transactions\DeleteIndexEntityTransaction.cs" />
@@ -1608,6 +1633,8 @@
     <Compile Include="Utility\Settings\DataAutomation\InteractionItem.cs" />
     <Compile Include="Utility\Settings\DataAutomation\MoveAdultChildren.cs" />
     <Compile Include="Utility\Settings\DataAutomation\ReactivatePeople.cs" />
+    <Compile Include="Utility\Settings\DataAutomation\UpdateFamilyStatus.cs" />
+    <Compile Include="Utility\Settings\DataAutomation\UpdatePersonConnectionStatus.cs" />
     <Compile Include="Utility\Settings\DataAutomation\UpdateFamilyCampus.cs" />
     <Compile Include="Utility\TextToWorkflow.cs" />
     <Compile Include="Web\Cache\AttributeCache.cs" />
@@ -1671,6 +1698,7 @@
     <Compile Include="Web\UI\Controls\Pickers\GroupMemberPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\GroupMembersPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\LavaCommandsPicker.cs" />
+    <Compile Include="Web\UI\Controls\BackgroundCheckDocument.cs" />
     <Compile Include="Web\UI\Controls\SSNBox.cs" />
     <Compile Include="Web\UI\ICustomGridColumns.cs" />
     <Compile Include="Web\UI\ICustomGridOptions.cs" />

@@ -259,24 +259,6 @@ namespace RockWeb
                 binaryFile.MimeType = _mimeTypeRemap[binaryFile.MimeType];
             }
 
-
-
-            if ( binaryFile.MimeType.StartsWith( "image/" ) )
-            {
-                try
-                {
-                    using ( Bitmap bm = new Bitmap( uploadedFile.InputStream ) )
-                    {
-                        if ( bm != null )
-                        {
-                            binaryFile.Width = bm.Width;
-                            binaryFile.Height = bm.Height;
-                        }
-                    }
-                }
-                catch ( Exception ) { } // if the file is an invalid photo keep moving
-            }
-
             binaryFile.ContentStream = GetFileContentStream( context, uploadedFile );
             rockContext.SaveChanges();
 
