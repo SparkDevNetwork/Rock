@@ -192,18 +192,15 @@ namespace Plugins.church_ccv.Groups
 
             foreach ( var groupMember in qry.ToList() )
             {
-                if ( groupMember.Group.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                groups.Add( new GroupInvolvementSummary
                 {
-                    groups.Add( new GroupInvolvementSummary
-                    {
-                        Group = groupMember.Group,
-                        Role = groupMember.GroupRole.Name,
-                        IsLeader = groupMember.GroupRole.IsLeader,
-                        CanView = groupMember.GroupRole.CanView,
-                        CanEdit = groupMember.GroupRole.CanEdit,
-                        GroupType = groupMember.Group.GroupType.Name
-                    } );
-                }
+                    Group = groupMember.Group,
+                    Role = groupMember.GroupRole.Name,
+                    IsLeader = groupMember.GroupRole.IsLeader,
+                    CanView = groupMember.GroupRole.CanView,
+                    CanEdit = groupMember.GroupRole.CanEdit,
+                    GroupType = groupMember.Group.GroupType.Name
+                } );
             }
 
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
@@ -219,22 +216,24 @@ namespace Plugins.church_ccv.Groups
                 var datamartPersonService = new Service<DatamartPerson>( rockContext );
                 var personService = new Service<Person>( rockContext );
 
-                // get current persons datamart data
+                // get current persons datamart data (verify that there IS a datamartPerson. If they are added to the system AND a group before the datamart runs, this could be null)
                 var qryDatamartPerson = datamartPersonService.Queryable().Where( a => a.PersonId == CurrentPersonId ).FirstOrDefault();
-
-                // Add associate pastor object if exists in datamart
-                int neighborhoodPastorId = qryDatamartPerson.NeighborhoodPastorId ?? 0;
-                if ( neighborhoodPastorId > 0 )
+                if( qryDatamartPerson != null )
                 {
-                    datamartSummary.AssociatePastor = personService.Get( neighborhoodPastorId );
+                    // Add associate pastor object if exists in datamart
+                    int neighborhoodPastorId = qryDatamartPerson.NeighborhoodPastorId ?? 0;
+                    if ( neighborhoodPastorId > 0 )
+                    {
+                        datamartSummary.AssociatePastor = personService.Get( neighborhoodPastorId );
+                    }
+
+                    // Add region info if exists in datamart
+                    //(purposesly didnt add as a group object for performance, can always look up group with lava)
+                    datamartSummary.RegionName = qryDatamartPerson.NeighborhoodName;
+                    datamartSummary.RegionId = qryDatamartPerson.NeighborhoodId ?? 0;
+
+                    mergeFields.Add( "DatamartSummary", datamartSummary );
                 }
-
-                // Add region info if exists in datamart
-                //(purposesly didnt add as a group object for performance, can always look up group with lava)
-                datamartSummary.RegionName = qryDatamartPerson.NeighborhoodName;
-                datamartSummary.RegionId = qryDatamartPerson.NeighborhoodId ?? 0;
-
-                mergeFields.Add( "DatamartSummary", datamartSummary );
             }
 
             string template = GetAttributeValue( "LavaTemplate" );
