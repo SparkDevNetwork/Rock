@@ -1,120 +1,56 @@
-﻿/* Register Page Styling */
-
-.page-background, #section-a-bg, #section-b-bg, #subnavbar-bg, #masthead {   
-    background-color: #000;
+﻿.main-feature {
+    background-color: black;
 }
 
-.main-feature {
-    height:0;
-    padding:0;
-}
-
-.title {
-    margin-top: 30px;
-}
-
-.title h3 {
-    font-size: 60px;
-    font-weight: 900;
-    font-family: akrobat;
-    color: #FFFFFF;
-    text-align: center;
-    padding-top: 80px;
-}
-
-.title p {
-    text-align: center;
-    color: #FFFFFF;
-    font-size: 18px;
-    font-family: heebo;
-    font-weight: normal;
-}
-
-.desktop-spacer-top {
-    padding-top: 25px;
-}
-
-.desktop-spacer {
-    padding-top: 125px;
-}
-
-.register-card {
-    box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px;
-    transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
-    border-radius: 5px;
-    margin: 40px auto 70px auto;
-    padding: 20px;
-    width: 80%;
-}
-
-.register-card legend {
+#subnavbar-bg { 
     display: none;
 }
 
-.register-card input {
-    /*background-color: #424242;
-    border-bottom: unset;
-    border: unset;*/
-    color: #999999;
-}
-
-.register-card .email-box {
-    margin-bottom: unset;
-}
-
-.register-card .btn-primary {
-    background-color: #7A1315;
-    border: 1px solid #7A1315;
-}
-
-.register-card select {
-    /*background-color: #424242;
-    border-bottom: unset;
-    border: unset;*/
-    color: #999999;
-    width: 100px;
-}
-
-.form-control.input-width-sm {
-    width: 70px;
-    padding: 0;
-}
-
-.register-card .btn:focus {
-    outline: none;
-}
-
-/* Mobile Device Styling */
-@media screen and (max-width: 500px) {
-    .title {
-        margin-top: 0;
+@media screen and (min-width: 501px) {
+    .main-feature {
+        padding-top: 125px;
+        height: 350px;
     }
 
-    .title h3 {
-        padding-top: 0;
-        margin: 0;
-        font-size: 30px;
+    .background-card {
+        padding-top: 75px;
+        padding-bottom: 75px;
     }
+}
 
-    .title p {
-        font-size: 14px;
-    }
+.grid {
+    display: block;
+}
+    
+.grid-mobile {
+    display: none;
+}
 
-    .desktop-spacer-top, .desktop-spacer {
+@media screen and (max-width: 1024px) {
+    .grid {
         display: none;
     }
-
-    #section-a-bg {
-        padding: 80px 0 0;
+    
+    .grid-mobile {
+        display: block;
+        margin-bottom: 25px;
     }
-
-    .register-card {
-        margin: 0 auto 30px auto;
-        width: 100%;
+    
+    .mobile-duplicates-item {
+        display: flex;
     }
-
-    /* This fixes a width display issue in mobile view */
-    #section-b-bg {
-        display: none;
+    
+    .mobile-duplicates-item .person-info {
+        margin-left: 15px;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .mobile-duplicates-item .person-info .bday {
+        margin-left: 15px;
+    }
+    
+    .not-me {
+        margin-left: 0;
     }
 }
