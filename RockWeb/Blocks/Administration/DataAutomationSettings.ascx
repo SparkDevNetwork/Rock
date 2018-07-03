@@ -353,7 +353,7 @@
                         <hr />
 
                         <asp:Panel ID="pnlAdultChildren" runat="server" Enabled="false" CssClass="data-integrity-options">
-
+                            <Rock:RockCheckBox ID="cbisMoveGraduated" runat="server" Label="Should children only be moved if they have graduated?" Text="Yes" />
                             <Rock:NumberBox ID="nbAdultAge" runat="server" Label="The age a child should be considered an adult" AppendText="years" CssClass="input-width-md" />
                             <Rock:GroupRolePicker ID="rpParentRelationship" runat="server" Label="An optional known relationship that should be added between the new adult and their parent(s)" />
                             <Rock:GroupRolePicker ID="rpSiblingRelationship" runat="server" Label="An optional known relationship that should be added between the new adult and their sibling(s)" />
