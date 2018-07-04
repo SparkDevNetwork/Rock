@@ -69,7 +69,7 @@ namespace Rock.Model
         /// <value>
         /// The first name.
         /// </value>
-        [MaxLength(50)]
+        [MaxLength( 50 )]
         [DataMember]
         public string FirstName { get; set; }
 
@@ -197,7 +197,7 @@ namespace Rock.Model
         [NotMapped]
         public virtual int? PersonId
         {
-            get { return PersonAlias != null ? PersonAlias.PersonId : (int?)null; }
+            get { return PersonAlias != null ? PersonAlias.PersonId : ( int? ) null; }
         }
 
         /// <summary>
@@ -318,7 +318,7 @@ namespace Rock.Model
         public string GetSummary( RegistrationInstance registrationInstance = null )
         {
             var result = new StringBuilder();
-            result.Append("Event registration payment");
+            result.Append( "Event registration payment" );
 
             var instance = registrationInstance ?? RegistrationInstance;
             if ( instance != null )
@@ -331,7 +331,7 @@ namespace Rock.Model
             }
 
             string registrationPerson = PersonAlias != null && PersonAlias.Person != null ?
-                PersonAlias.Person.FullName : 
+                PersonAlias.Person.FullName :
                 string.Format( "{0} {1}", FirstName, LastName );
             result.AppendFormat( @".
 Registration By: {0} Total Cost/Fees:{1}
@@ -340,9 +340,9 @@ Registration By: {0} Total Cost/Fees:{1}
             var registrantPersons = new List<string>();
             if ( Registrants != null )
             {
-                foreach( var registrant in Registrants.Where( r => r.PersonAlias != null && r.PersonAlias.Person != null ) )
+                foreach ( var registrant in Registrants.Where( r => r.PersonAlias != null && r.PersonAlias.Person != null ) )
                 {
-                    registrantPersons.Add( string.Format( "{0} Cost/Fees:{1}", 
+                    registrantPersons.Add( string.Format( "{0} Cost/Fees:{1}",
                         registrant.PersonAlias.Person.FullName,
                         registrant.DiscountedCost( DiscountPercentage, DiscountAmount ).FormatAsCurrency() ) );
                 }
@@ -359,6 +359,11 @@ Registration By: {0} Total Cost/Fees:{1}
         /// <param name="currentPersonAliasId">The current person alias identifier.</param>
         /// <param name="previousRegistrantPersonIds">The person ids that have already registered prior to this registration</param>
         public void SavePersonNotesAndHistory( Person registrationPerson, int? currentPersonAliasId, List<int> previousRegistrantPersonIds )
+        {
+            SavePersonNotesAndHistory( registrationPerson.FirstName, registrationPerson.LastName, currentPersonAliasId, previousRegistrantPersonIds );
+        }
+
+        public void SavePersonNotesAndHistory( string registrationPersonFirstName, string registrationPersonLastName, int? currentPersonAliasId, List<int> previousRegistrantPersonIds )
         {
             // Setup Note settings
             Registration registration = this;
@@ -404,9 +409,9 @@ Registration By: {0} Total Cost/Fees:{1}
                                     registrantNames.Add( registrantPerson.FullName );
                                 }
 
-                                if ( registrar != null && ( registrationPerson.FirstName != registrar.NickName || registrationPerson.LastName != registrar.LastName ) )
+                                if ( registrar != null && ( registrationPersonFirstName != registrar.NickName || registrationPersonLastName != registrar.LastName ) )
                                 {
-                                    registrarFullName = string.Format( " by {0}", registrationPerson.FirstName + " " + registrationPerson.LastName );
+                                    registrarFullName = string.Format( " by {0}", registrationPersonFirstName + " " + registrationPersonLastName );
                                 }
 
                                 noteText.Append( registrarFullName );
@@ -421,7 +426,14 @@ Registration By: {0} Total Cost/Fees:{1}
                                     note.EntityId = registrantPerson.Id;
                                     note.Caption = string.Empty;
                                     note.Text = noteText.ToString();
-                                    note.CreatedByPersonAliasId = registrar.PrimaryAliasId;
+                                    if ( registrar == null )
+                                    {
+                                        note.CreatedByPersonAliasId = currentPersonAliasId;
+                                    }
+                                    else
+                                    {
+                                        note.CreatedByPersonAliasId = registrar.PrimaryAliasId;
+                                    }
                                     noteService.Add( note );
                                 }
 
