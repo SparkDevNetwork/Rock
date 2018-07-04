@@ -790,9 +790,10 @@ namespace Rock.Model
         /// <param name="changes">The changes.</param>
         /// <param name="commitSave">if set to <c>true</c> [commit save].</param>
         /// <param name="modifiedByPersonAliasId">The modified by person alias identifier.</param>
-        public static void SaveChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, History.HistoryChangeList changes, bool commitSave = true, int? modifiedByPersonAliasId = null )
+        /// <param name="sourceOfChange">The source of change.</param>
+        public static void SaveChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, History.HistoryChangeList changes, bool commitSave = true, int? modifiedByPersonAliasId = null, string sourceOfChange = null )
         {
-            SaveChanges( rockContext, modelType, categoryGuid, entityId, changes, null, null, null, commitSave, modifiedByPersonAliasId );
+            SaveChanges( rockContext, modelType, categoryGuid, entityId, changes, null, null, null, commitSave, modifiedByPersonAliasId, sourceOfChange );
         }
 
         /// <summary>
@@ -834,10 +835,12 @@ namespace Rock.Model
         /// <param name="relatedEntityId">The related entity identifier.</param>
         /// <param name="commitSave">if set to <c>true</c> [commit save].</param>
         /// <param name="modifiedByPersonAliasId">The modified by person alias identifier.</param>
-        public static void SaveChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, History.HistoryChangeList changes, string caption, Type relatedModelType, int? relatedEntityId, bool commitSave = true, int? modifiedByPersonAliasId = null )
+        /// <param name="sourceOfChange">The source of change.</param>
+        public static void SaveChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, History.HistoryChangeList changes, string caption, Type relatedModelType, int? relatedEntityId, bool commitSave = true, int? modifiedByPersonAliasId = null, string sourceOfCharge = null )
         {
             if ( changes.Any() )
             {
+                changes.ForEach( a => a.SourceOfChange = sourceOfCharge );
                 AddChanges( rockContext, modelType, categoryGuid, entityId, changes, caption, relatedModelType, relatedEntityId, modifiedByPersonAliasId );
                 if ( commitSave )
                 {
