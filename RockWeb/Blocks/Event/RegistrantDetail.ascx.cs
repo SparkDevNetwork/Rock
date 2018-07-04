@@ -456,9 +456,9 @@ namespace RockWeb.Blocks.Event
                                 reloadedRegistrant.GroupMemberId = groupMember.Id;
                             }
                         }
-                        if (reloadedRegistrant.Registration.PersonAlias != null && reloadedRegistrant.Registration.PersonAlias.Person != null)
+                        if (reloadedRegistrant.Registration.FirstName.IsNotNullOrWhitespace() && reloadedRegistrant.Registration.LastName.IsNotNullOrWhitespace())
                         {
-                            reloadedRegistrant.Registration.SavePersonNotesAndHistory( reloadedRegistrant.Registration.PersonAlias.Person, this.CurrentPersonAliasId, previousRegistrantPersonIds );
+                            reloadedRegistrant.Registration.SavePersonNotesAndHistory( reloadedRegistrant.Registration.FirstName, reloadedRegistrant.Registration.LastName, this.CurrentPersonAliasId, previousRegistrantPersonIds );
                         }
                         newRockContext.SaveChanges();
                     }
