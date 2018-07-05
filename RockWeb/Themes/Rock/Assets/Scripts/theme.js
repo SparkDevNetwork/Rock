@@ -26,7 +26,6 @@ function BindNavEvents() {
             $('.navbar-side > li').removeClass('open');
             $this.addClass('open');
             $this[0].navHoverTimeout = undefined;
-          //}, 0);
         } else {
           $this[0].navHoverTimeout = setTimeout(function() {
             $this.addClass('open');
@@ -47,7 +46,6 @@ function BindNavEvents() {
         $this[0].navHoverTimeout = undefined;
       } else if ($this[0].navUnHoverTimeout === undefined) {
         $this[0].navUnHoverTimeout = setTimeout(function() {
-          // $('.navbar-side > li').removeClass('open');
           $this.removeClass('open');
           if (navElement.find('li.open').length <= 1) {
             $('body')
