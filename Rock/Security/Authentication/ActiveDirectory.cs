@@ -20,7 +20,6 @@ using System.ComponentModel.Composition;
 using System.DirectoryServices.AccountManagement;
 
 using Rock.Attribute;
-using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Security.Authentication
@@ -67,11 +66,6 @@ namespace Rock.Security.Authentication
         /// <returns></returns>
         public override bool Authenticate( UserLogin user, string password )
         {
-            var rockContext = new RockContext();
-            var userLoginService = new UserLoginService( rockContext );
-            // reget user as entity is being tracked by a different context
-            user = userLoginService.Get( user.Id );
-
             string username = user.UserName;
             if ( !String.IsNullOrWhiteSpace( GetAttributeValue( "Domain" ) ) )
             {
@@ -79,22 +73,10 @@ namespace Rock.Security.Authentication
             }
 
             var context = new PrincipalContext( ContextType.Domain, GetAttributeValue( "Server" ) );
-            bool success = false;
             using ( context )
             {
-                success = context.ValidateCredentials( user.UserName, password );
+                return context.ValidateCredentials( user.UserName, password );
             }
-            if (!success)
-            {
-                userLoginService.UpdateFailureCount( user );
-            }
-            else
-            {
-                userLoginService.ResetFailureCount( user );
-            }
-
-            rockContext.SaveChanges();
-            return success;
         }
 
         /// <summary>
