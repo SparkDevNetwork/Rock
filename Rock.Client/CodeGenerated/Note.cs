@@ -161,9 +161,6 @@ namespace Rock.Client
     public partial class Note : NoteEntity
     {
         /// <summary />
-        public ICollection<NoteAttachment> Attachments { get; set; }
-
-        /// <summary />
         public ICollection<Note> ChildNotes { get; set; }
 
         /// <summary />
