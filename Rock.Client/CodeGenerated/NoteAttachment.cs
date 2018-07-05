@@ -27,36 +27,15 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for Note that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for NoteAttachment that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class NoteEntity
+    public partial class NoteAttachmentEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public bool ApprovalsSent { get; set; }
-
-        /// <summary />
-        public Rock.Client.Enums.NoteApprovalStatus ApprovalStatus { get; set; }
-
-        /// <summary />
-        public int? ApprovedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public DateTime? ApprovedDateTime { get; set; }
-
-        /// <summary />
-        public string Caption { get; set; }
-
-        /// <summary />
-        public int? EditedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public DateTime? EditedDateTime { get; set; }
-
-        /// <summary />
-        public int? EntityId { get; set; }
+        public int BinaryFileId { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -64,34 +43,13 @@ namespace Rock.Client
         /// <summary />
         public string ForeignKey { get; set; }
 
-        /// <summary />
-        public bool? IsAlert { get; set; }
-
-        /// <summary />
-        public bool IsPrivateNote { get; set; }
-
-        /// <summary />
-        public bool IsSystem { get; set; }
-
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
-        public int NoteTypeId { get; set; }
-
-        /// <summary />
-        public string NoteUrl { get; set; }
-
-        /// <summary />
-        public bool NotificationsSent { get; set; }
-
-        /// <summary />
-        public int? ParentNoteId { get; set; }
-
-        /// <summary />
-        public string Text { get; set; }
+        public int NoteId { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -120,31 +78,17 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source Note object
+        /// Copies the base properties from a source NoteAttachment object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( Note source )
+        public void CopyPropertiesFrom( NoteAttachment source )
         {
             this.Id = source.Id;
-            this.ApprovalsSent = source.ApprovalsSent;
-            this.ApprovalStatus = source.ApprovalStatus;
-            this.ApprovedByPersonAliasId = source.ApprovedByPersonAliasId;
-            this.ApprovedDateTime = source.ApprovedDateTime;
-            this.Caption = source.Caption;
-            this.EditedByPersonAliasId = source.EditedByPersonAliasId;
-            this.EditedDateTime = source.EditedDateTime;
-            this.EntityId = source.EntityId;
+            this.BinaryFileId = source.BinaryFileId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.IsAlert = source.IsAlert;
-            this.IsPrivateNote = source.IsPrivateNote;
-            this.IsSystem = source.IsSystem;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
-            this.NoteTypeId = source.NoteTypeId;
-            this.NoteUrl = source.NoteUrl;
-            this.NotificationsSent = source.NotificationsSent;
-            this.ParentNoteId = source.ParentNoteId;
-            this.Text = source.Text;
+            this.NoteId = source.NoteId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -156,25 +100,10 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for Note that includes all the fields that are available for GETs. Use this for GETs (use NoteEntity for POST/PUTs)
+    /// Client model for NoteAttachment that includes all the fields that are available for GETs. Use this for GETs (use NoteAttachmentEntity for POST/PUTs)
     /// </summary>
-    public partial class Note : NoteEntity
+    public partial class NoteAttachment : NoteAttachmentEntity
     {
-        /// <summary />
-        public ICollection<NoteAttachment> Attachments { get; set; }
-
-        /// <summary />
-        public ICollection<Note> ChildNotes { get; set; }
-
-        /// <summary />
-        public PersonAlias EditedByPersonAlias { get; set; }
-
-        /// <summary />
-        public NoteType NoteType { get; set; }
-
-        /// <summary />
-        public Note ParentNote { get; set; }
-
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>
