@@ -1195,14 +1195,6 @@ namespace Rock.Data
         public DbSet<Note> Notes { get; set; }
 
         /// <summary>
-        /// Gets or sets the note attachments.
-        /// </summary>
-        /// <value>
-        /// The note attachments.
-        /// </value>
-        public DbSet<NoteAttachment> NoteAttachments { get; set; }
-
-        /// <summary>
         /// Gets or sets the note types.
         /// </summary>
         /// <value>
