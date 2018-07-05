@@ -148,7 +148,7 @@ namespace Rock.Model
         public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
         {
             CacheDefinedValue.UpdateCachedEntity( this.Id, entityState );
-            CacheDefinedType.Get( this.DefinedTypeId )?.ReloadDefinedValues();
+            CacheDefinedType.Get( this.DefinedTypeId, (RockContext)dbContext )?.ReloadDefinedValues();
         }
 
         #endregion

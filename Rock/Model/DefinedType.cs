@@ -178,7 +178,7 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
         {
-            var cachedDefinedValues = CacheDefinedType.Get( this.Id )?.DefinedValues;
+            var cachedDefinedValues = CacheDefinedType.Get( this.Id, (RockContext)dbContext )?.DefinedValues;
             if ( cachedDefinedValues?.Any() == true )
             {
                 foreach ( var cachedDefinedValue in cachedDefinedValues )

@@ -1018,10 +1018,10 @@ namespace Rock.Model
             Guid groupTypeScheduleRole = Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid();
             if ( _originalGroupTypeId.HasValue && _originalGroupTypeId != this.GroupTypeId )
             {
-                originalGroupTypeGuid = CacheGroupType.Get( _originalGroupTypeId.Value )?.Guid;
+                originalGroupTypeGuid = CacheGroupType.Get( _originalGroupTypeId.Value, (RockContext)dbContext )?.Guid;
             }
 
-            var groupTypeGuid = CacheGroupType.Get( this.GroupTypeId )?.Guid;
+            var groupTypeGuid = CacheGroupType.Get( this.GroupTypeId, (RockContext)dbContext )?.Guid;
             if ( this.IsSecurityRole || ( _originalIsSecurityRole == true ) || ( groupTypeGuid == groupTypeScheduleRole ) || ( originalGroupTypeGuid == groupTypeScheduleRole ) )
             {
                 Rock.Cache.CacheRole.FlushItem( this.Id );
