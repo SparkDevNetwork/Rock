@@ -38,14 +38,15 @@ namespace Rock.Rest.Controllers
         {
             bool valid = false;
 
-            var userLoginService = new UserLoginService( new Rock.Data.RockContext() );
+            var rockContext = new Rock.Data.RockContext();
+            var userLoginService = new UserLoginService( rockContext );
             var userLogin = userLoginService.GetByUserName( loginParameters.Username );
             if ( userLogin != null && userLogin.EntityType != null) 
             {
                 var component = AuthenticationContainer.GetComponent(userLogin.EntityType.Name);
                 if ( component != null && component.IsActive)
                 {
-                    if ( component.Authenticate( userLogin, loginParameters.Password ) )
+                    if ( (userLogin.IsConfirmed ?? true) && !(userLogin.IsLockedOut ?? false ) && component.Authenticate( userLogin, loginParameters.Password ) )
                     {
                         valid = true;
                         Rock.Security.Authorization.SetAuthCookie( loginParameters.Username, loginParameters.Persisted, false );
@@ -55,7 +56,14 @@ namespace Rock.Rest.Controllers
 
             if ( !valid )
             {
+                userLoginService.UpdateFailureCount( userLogin );
+                rockContext.SaveChanges();
                 throw new HttpResponseException( HttpStatusCode.Unauthorized );
+            }
+            else
+            {
+                userLoginService.ResetFailureCount( userLogin );
+                rockContext.SaveChanges();
             }
         }
 
