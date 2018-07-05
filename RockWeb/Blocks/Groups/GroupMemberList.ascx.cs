@@ -296,10 +296,10 @@ namespace RockWeb.Blocks.Groups
 
                         if ( !_deleteFieldColumnIndex.HasValue )
                         {
-                            _deleteFieldColumnIndex = gGroupMembers.GetColumnIndex( _deleteField );
+                            _deleteFieldColumnIndex = gGroupMembers.GetColumnIndex( gGroupMembers.Columns.OfType<DeleteField>().First() );
                         }
 
-                        if ( _deleteFieldColumnIndex.HasValue )
+                        if ( _deleteFieldColumnIndex.HasValue && _deleteFieldColumnIndex > -1 )
                         {
                             deleteButton = e.Row.Cells[_deleteFieldColumnIndex.Value].ControlsOfTypeRecursive<LinkButton>().FirstOrDefault();
                         }
@@ -624,6 +624,10 @@ namespace RockWeb.Blocks.Groups
             {
                 cblGenderFilter.SetValues( genderValue.Split( ';' ).ToList() );
             }
+            else
+            {
+                cblGenderFilter.ClearSelection();
+            }
 
             string roleValue = rFilter.GetUserPreference( "Role" );
             if ( !string.IsNullOrWhiteSpace( roleValue ) )
@@ -682,12 +686,9 @@ namespace RockWeb.Blocks.Groups
             // Clear the filter controls
             phAttributeFilters.Controls.Clear();
 
-            // Remove attribute columns
-            foreach ( var column in gGroupMembers.Columns.OfType<AttributeField>().ToList() )
-            {
-                gGroupMembers.Columns.Remove( column );
-            }
-
+            // Clear dynamic controls so we can re-add them
+            RemoveAttributeAndButtonColumns();
+            
             if ( AvailableAttributes != null )
             {
                 foreach ( var attribute in AvailableAttributes )
@@ -733,18 +734,46 @@ namespace RockWeb.Blocks.Groups
                         boundField.DataField = attribute.Key;
                         boundField.AttributeId = attribute.Id;
                         boundField.HeaderText = attribute.Name;
-
-                        var attributeCache = Rock.Cache.CacheAttribute.Get( attribute.Id );
-                        if ( attributeCache != null )
-                        {
-                            boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
-                        }
+                        boundField.ItemStyle.HorizontalAlign = HorizontalAlign.Left;
 
                         gGroupMembers.Columns.Add( boundField );
                     }
                 }
             }
 
+            AddRowButtonsToEnd();
+        }
+
+        private void RemoveAttributeAndButtonColumns()
+        {
+            // Remove added button columns
+            DataControlField buttonColumn = gGroupMembers.Columns.OfType<DeleteField>().FirstOrDefault( c => c.ItemStyle.CssClass == "grid-columncommand" );
+            if ( buttonColumn != null )
+            {
+                gGroupMembers.Columns.Remove( buttonColumn );
+            }
+
+            buttonColumn = gGroupMembers.Columns.OfType<HyperLinkField>().FirstOrDefault( c => c.ItemStyle.CssClass == "grid-columncommand" );
+            if ( buttonColumn != null )
+            {
+                gGroupMembers.Columns.Remove( buttonColumn );
+            }
+
+            buttonColumn = gGroupMembers.Columns.OfType<LinkButtonField>().FirstOrDefault( c => c.ItemStyle.CssClass == "grid-columncommand" );
+            if ( buttonColumn != null )
+            {
+                gGroupMembers.Columns.Remove( buttonColumn );
+            }
+
+            // Remove attribute columns
+            foreach ( var column in gGroupMembers.Columns.OfType<AttributeField>().ToList() )
+            {
+                gGroupMembers.Columns.Remove( column );
+            }
+        }
+
+        private void AddRowButtonsToEnd()
+        {
             // Add Place Elsewhere column if the group or group type has any Place Elsewhere member triggers
             if ( _group != null && _group.GroupType != null )
             {
@@ -762,8 +791,9 @@ namespace RockWeb.Blocks.Groups
 
             // Add delete column
             _deleteField = new DeleteField();
-            gGroupMembers.Columns.Add( _deleteField );
             _deleteField.Click += DeleteOrArchiveGroupMember_Click;
+            gGroupMembers.Columns.Add( _deleteField );
+            
         }
 
         /// <summary>
