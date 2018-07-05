@@ -243,45 +243,40 @@ Thank you for logging in, however, we need to confirm the email associated with 
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected void btnLogin_Click( object sender, EventArgs e )
         {
-            if ( !Page.IsValid )
+            if ( Page.IsValid )
             {
-                DisplayNoAccountText();
-                return;
+                var rockContext = new RockContext();
+                var userLoginService = new UserLoginService( rockContext );
+                var userLogin = userLoginService.GetByUserName( tbUserName.Text );
+                if ( userLogin != null && userLogin.EntityType != null )
+                {
+                    var component = AuthenticationContainer.GetComponent( userLogin.EntityType.Name );
+                    if ( component != null && component.IsActive && !component.RequiresRemoteAuthentication )
+                    {
+                        if ( component.Authenticate( userLogin, tbPassword.Text ) )
+                        {
+                            CheckUser( userLogin, Request.QueryString["returnurl"], cbRememberMe.Checked );
+                            return;
+                        }
+                    }
+                }
             }
 
-            var rockContext = new RockContext();
-            var userLoginService = new UserLoginService( rockContext );
-            var userLogin = userLoginService.GetByUserName( tbUserName.Text );
-            // Don't leak whether the password or username is wrong
-            if ( userLogin == null || userLogin.EntityType == null )
+            string helpUrl = string.Empty;
+
+            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "HelpPage" ) ) )
             {
-                DisplayNoAccountText();
-                return;
+                helpUrl = LinkedPageUrl( "HelpPage" );
+            }
+            else
+            {
+                helpUrl = ResolveRockUrl( "~/ForgotUserName" );
             }
 
-            var component = AuthenticationContainer.GetComponent( userLogin.EntityType.Name );
-            if ( component == null || !component.IsActive || component.RequiresRemoteAuthentication )
-            {
-                // TODO: Improve this text
-                DisplayError( "Something appears to have gone wrong during login" );
-                return;
-            }
-
-            if ( userLogin.IsLockedOut ?? false )
-            {
-                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( RockPage, CurrentPerson );
-                DisplayLockedOut( mergeFields );
-                return;
-            }
-            else if ( !component.Authenticate( userLogin, tbPassword.Text ) )
-            {
-                DisplayNoAccountText();
-                return;
-            }
-
-            CheckUser( userLogin, Request.QueryString["returnurl"], cbRememberMe.Checked );
+            var mergeFieldsNoAccount = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+            mergeFieldsNoAccount.Add( "HelpPage", helpUrl );
+            DisplayError( GetAttributeValue( "NoAccountText" ).ResolveMergeFields( mergeFieldsNoAccount ) );
         }
-
 
         /// <summary>
         /// Checks if a username is locked out or needs confirmation, and handles those events
@@ -306,25 +301,31 @@ Thank you for logging in, however, we need to confirm the email associated with 
         {
             if ( userLogin != null )
             {
-                if ( !( userLogin.IsConfirmed ?? true ))
+                if ( ( userLogin.IsConfirmed ?? true ) && !( userLogin.IsLockedOut ?? false ) )
+                {
+                    LoginUser( userLogin.UserName, returnUrl, rememberMe );
+                }
+                else
                 {
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( RockPage, CurrentPerson );
-                    SendConfirmation( userLogin );
 
-                    lConfirmCaption.Text = GetAttributeValue( "ConfirmCaption" ).ResolveMergeFields( mergeFields );
+                    if ( userLogin.IsLockedOut ?? false )
+                    {
+                        lLockedOutCaption.Text = GetAttributeValue( "LockedOutCaption" ).ResolveMergeFields( mergeFields );
 
-                    pnlLogin.Visible = false;
-                    pnlConfirmation.Visible = true;
-                    return;
+                        pnlLogin.Visible = false;
+                        pnlLockedOut.Visible = true;
+                    }
+                    else
+                    {
+                        SendConfirmation( userLogin );
+
+                        lConfirmCaption.Text = GetAttributeValue( "ConfirmCaption" ).ResolveMergeFields( mergeFields );
+
+                        pnlLogin.Visible = false;
+                        pnlConfirmation.Visible = true;
+                    }
                 }
-
-                if ( userLogin.IsLockedOut ?? false )
-                {
-                    DisplayLockedOut( Rock.Lava.LavaHelper.GetCommonMergeFields( RockPage, CurrentPerson ) );
-                    return;
-                }
-                
-                LoginUser( userLogin.UserName, returnUrl, rememberMe );
             }
         }
 
@@ -421,40 +422,6 @@ Thank you for logging in, however, we need to confirm the email associated with 
         #endregion
 
         #region Methods
-
-
-        /// <summary>
-        /// Displays generic error text. Use for authentication failure.
-        /// </summary>
-        private void DisplayNoAccountText()
-        {
-            string helpUrl = string.Empty;
-
-            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "HelpPage" ) ) )
-            {
-                helpUrl = LinkedPageUrl( "HelpPage" );
-            }
-            else
-            {
-                helpUrl = ResolveRockUrl( "~/ForgotUserName" );
-            }
-
-            var mergeFieldsNoAccount = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-            mergeFieldsNoAccount.Add( "HelpPage", helpUrl );
-            DisplayError( GetAttributeValue( "NoAccountText" ).ResolveMergeFields( mergeFieldsNoAccount ) );
-        }
-
-        /// <summary>
-        /// Displays the locked out error.
-        /// </summary>
-        /// <param name="mergeFields">The merge fields.</param>
-        private void DisplayLockedOut( Dictionary<string, object> mergeFields )
-        {
-            lLockedOutCaption.Text = GetAttributeValue( "LockedOutCaption" ).ResolveMergeFields( mergeFields );
-
-            pnlLogin.Visible = false;
-            pnlLockedOut.Visible = true;
-        }
 
         /// <summary>
         /// Displays the error.

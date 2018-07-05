@@ -86,36 +86,40 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Updates the <see cref="Rock.Model.UserLogin"/> failed password attempt count following a failed authentication.
+        /// Updates the <see cref="Rock.Model.UserLogin"/> failed password attempt count.
         /// </summary>
         /// <param name="user">The <see cref="Rock.Model.UserLogin"/> to update the failure count on.</param>
-        public void UpdateFailureCount( UserLogin user )
+        private void UpdateFailureCount( UserLogin user )
         {
+            int passwordAttemptWindow = 0;
             int maxInvalidPasswordAttempts = int.MaxValue;
 
             var globalAttributes = CacheGlobalAttributes.Get();
+            if ( !Int32.TryParse( globalAttributes.GetValue( "PasswordAttemptWindow" ), out passwordAttemptWindow ) )
+                passwordAttemptWindow = 0;
             if ( !Int32.TryParse( globalAttributes.GetValue( "MaxInvalidPasswordAttempts" ), out maxInvalidPasswordAttempts ) )
                 maxInvalidPasswordAttempts = int.MaxValue;
 
+            DateTime firstAttempt = user.FailedPasswordAttemptWindowStartDateTime ?? DateTime.MinValue;
             int attempts = user.FailedPasswordAttemptCount ?? 0;
-            attempts++;
 
-            user.FailedPasswordAttemptCount = attempts; 
-            if ( attempts >= maxInvalidPasswordAttempts )
+            TimeSpan window = new TimeSpan( 0, passwordAttemptWindow, 0 );
+            if ( RockDateTime.Now.CompareTo( firstAttempt.Add( window ) ) < 0 )
             {
-                user.IsLockedOut = true;
-                user.LastLockedOutDateTime = RockDateTime.Now;
-            }
-        }
+                attempts++;
+                if ( attempts >= maxInvalidPasswordAttempts )
+                {
+                    user.IsLockedOut = true;
+                    user.LastLockedOutDateTime = RockDateTime.Now;
+                }
 
-        /// <summary>
-        /// Resets the failure count following a succesful authentication.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        public void ResetFailureCount(UserLogin user)
-        {
-            user.FailedPasswordAttemptCount = 0;
-            user.FailedPasswordAttemptWindowStartDateTime = null;
+                user.FailedPasswordAttemptCount = attempts;
+            }
+            else
+            {
+                user.FailedPasswordAttemptCount = 1;
+                user.FailedPasswordAttemptWindowStartDateTime = RockDateTime.Now;
+            }
         }
 
         /// <summary>
