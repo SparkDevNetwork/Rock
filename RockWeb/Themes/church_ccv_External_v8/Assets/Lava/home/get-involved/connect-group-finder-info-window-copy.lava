@@ -1,0 +1,77 @@
+<div class="group-name-and-schedule">
+		<h4 class='margin-t-none'>{{ Group.Name }}<br>
+			<small>{{ Group.Schedule.FriendlyScheduleText }}</small>
+		</h4>
+</div>
+{% for member in Group.Members %}
+  {% if member.GroupRole.Name == 'Coach' %}
+    {% assign groupLeader = member %}
+  {% endif %}
+{% endfor %}
+
+<div class="clearfix">
+	{% comment %}
+		Direct lookup of the picture attributes won't work for anonymous users, because Group View permissions are set to "Deny" for anonymous.
+		So, we need to iterate over attributes to find the picture.
+	{% endcomment %}
+	
+	{% assign familyPictureGuid = "" %}
+	{% assign groupPictureGuid = "" %}
+	
+	{% for attribute in Group.AttributeValues %}
+		{% if attribute.AttributeName == "Family Picture" %}
+			{% assign familyPictureGuid = attribute.Value %}
+		{% endif %}
+	{% endfor %}
+	
+	{% comment %} 
+		This is purely for backwards compatibility. Will not be needed after Young Adult groups are moved into regular groups.
+	{% endcomment %}
+	{% if familyPictureGuid == "" %}
+		{% for attribute in Group.AttributeValues %}
+			{% if attribute.AttributeName == "Group Picture" %}
+				{% assign groupPictureGuid = attribute.Value %}
+			{% endif %}
+		{% endfor %}
+	{% endif %}
+	
+	{% capture rootUrl %}
+		{{ 'Global' | Attribute:'PublicApplicationRoot','Url'  }}
+	{% endcapture %}
+
+  {% if familyPictureGuid != "" %}
+    <img class="pull-left margin-r-sm margin-b-sm" src="{{ rootUrl }}GetImage.ashx?guid={{ familyPictureGuid }}&height=180&width=180&mode=crop&scale=both" height="60" width="60"/>
+  {% elseif groupPictureGuid != "" %}
+		<img class="pull-left margin-r-sm margin-b-sm" src="{{ rootUrl }}GetImage.ashx?guid={{ groupPictureGuid }}&height=180&width=180&mode=crop&scale=both" height="60" width="60"/>
+  {% endif %}
+
+  {% comment %} <div class='margin-b-sm'>
+    {% for attribute in Group.AttributeValues %}
+      {% if attribute.Value != empty %}
+        {% if attribute.AttributeName != "Family Picture" and attribute.AttributeName != "Group Picture" %}
+		  <strong>{{ attribute.AttributeName }}:</strong>
+		  {{ attribute.ValueFormatted }}
+		  <br/>
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+  </div> {% endcomment %}
+
+  <div class='location-of-group'>
+    {% if Location.FormattedHtmlAddress && Location.FormattedHtmlAddress != '' %}
+      <p>{{ Location.FormattedHtmlAddress }}</p>
+    {% endif %}
+  </div>
+</div>
+
+{% comment %} {% if LinkedPages.GroupDetailPage and LinkedPages.GroupDetailPage != '' %}
+  <a class='btn btn-xs btn-action margin-r-sm' href='{{ LinkedPages.GroupDetailPage }}?GroupId={{ Group.Id }}'>View {{ Group.GroupType.GroupTerm }}</a>
+{% endif %} {% endcomment %}
+
+{% if LinkedPages.RegisterPage and LinkedPages.RegisterPage != '' %}
+  {% if LinkedPages.RegisterPage contains '?' %}
+    <a class='btn btn-xs btn-action' href='{{ LinkedPages.RegisterPage }}&GroupId={{ Group.Id }}'>Register</a>
+  {% else %}
+    <a class='btn btn-xs btn-action' href='{{ LinkedPages.RegisterPage }}?GroupId={{ Group.Id }}'>Register</a>
+  {% endif %}
+{% endif %}

@@ -2,11 +2,13 @@
 <div class="title">
     <h4>Group</h4>
     <div>
-        <button class="dropdown-toggle" type="button" data-toggle="dropdown">
-            <i class="mdi mdi-dots-vertical dashboard-title-icon tooltip-more-options"></i>
-        </button>
-        <ul class="dropdown-menu panel-dropdown-menu">
-            <li><a href="/page/1751?person={{ DatamartSummary.AssociatePastor.Id }}">Contact Associate Pastor<br /><h5>{{ DatamartSummary.AssociatePastor.FullName }}</h5></a></li>
-        </ul>
+        {% if DatamartSummary.AssociatePastor.Id != '' %}
+            <button class="dropdown-toggle" type="button" data-toggle="dropdown">
+                <i class="mdi mdi-dots-vertical dashboard-title-icon tooltip-more-options"></i>
+            </button>
+            <ul class="dropdown-menu panel-dropdown-menu">
+                <li><a href="/page/1751?person={{ DatamartSummary.AssociatePastor.Id }}">Contact Associate Pastor<br /><h5>{{ DatamartSummary.AssociatePastor.FullName }}</h5></a></li>
+            </ul>
+        {% endif %}
     </div>   
 </div>

@@ -19,6 +19,10 @@
     width: unset;
 }
 
+.note-editable {
+    height: 300px !important;
+}
+
 /* Undo hard coded communication styling */
 .communication-card .well {
     padding: unset;
@@ -27,14 +31,24 @@
 }
 
 /* Mobile Device Styling */
+@media screen and (max-width: 768px) {
+    /* Hide WYSIWYG buttons (they look hideous) */
+    .note-toolbar.panel-heading {
+        display: none;
+    }
+}
 @media screen and (max-width: 500px) {
     .communication-card .recipients .list-unstyled {
         flex-direction: column;
     }
 
-    /* Hide WYSIWYG buttons (they look hideous) */
-    .note-toolbar.panel-heading {
-        visibility: hidden;
+    .communication-card {
+        padding: 20px;
+    }
+
+
+    .note-editable {
+        height: 150px !important;
     }
 }
 

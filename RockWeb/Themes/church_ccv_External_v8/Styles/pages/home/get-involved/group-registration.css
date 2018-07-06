@@ -1,7 +1,7 @@
 
 .page-background {
     background-color: #EBEBEB;
-    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-image-missing.jpg");
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/hero-connect.jpg");
 }
 
 .group-title h1 {
@@ -11,4 +11,24 @@
     color: #7A1315;
     text-align: center;
     padding-bottom: 25px;
+}
+
+/* use the expanded main feature only for tablet and larger */
+@media screen and (min-width: 501px) {
+    .main-feature {
+        height: 350px;
+        padding-top: 125px;
+    }
+}
+
+/* use the expanded main feature only for tablet and larger */
+@media screen and (max-width: 500px) {
+    .group-title h1 {
+        font-size: 30px;
+        font-weight: 900;
+        font-family: akrobat;
+        color: #7A1315;
+        text-align: center;
+        padding-bottom: 25px;
+    }
 }

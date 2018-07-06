@@ -8,6 +8,10 @@
     padding-bottom: 25px;
 }
 
+.series-header-image {
+    min-height: 450px;
+}
+
 .series {
     padding: 20px;
     background-color: #ffffff;
@@ -27,6 +31,12 @@
     }
 
     .series {
+        background-color: unset;
+        box-shadow: unset;
+        border-radius: unset;
+    }
+
+    .series {
         margin: 0;
     }
 }
@@ -35,6 +45,10 @@
 @media screen and (max-width: 500px){
     .main-feature {
         padding-top: 60px;
+    }
+    
+    .series-header-image {
+        min-height: 165px;
     }
 }
 

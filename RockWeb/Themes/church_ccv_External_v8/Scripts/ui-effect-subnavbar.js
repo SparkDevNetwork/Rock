@@ -2,11 +2,10 @@
 
 //var subNavbarCanSnap = true;
 var pageHasSubNav = false; // Used to know if any of this snapping code should run on the page or not.
-var firstSectionTopPadding = ""; // Used for maintaining the first section's padding as the Subnav bar Snaps and Unsnaps
+var firstSectionTopMargin = ""; // Used for maintaining the first section's margin as the Subnav bar Snaps and Unsnaps
 
-// since we don't know what function will execute first (ready, scroll, etc.) we use this to do initial setup
 var initialSetupDone = false;
-function tryHandleInitialSetup( ) {
+function handleInitialSetup( ) {
     if( initialSetupDone == false ) {
         initialSetupDone = true;
 
@@ -15,12 +14,12 @@ function tryHandleInitialSetup( ) {
         if( subNavElement.length > 0 && subNavElement.css("display") != "none" ) {
             pageHasSubNav = true;
         
-            // We store the initial padding of the first section so that we can adjust it as the
+            // We store the initial margin of the first section so that we can adjust it as the
             // subNavbar snaps.
             // NOTE - If we ever have variable heights defined in common.css, this would need to be updated
-            // to handle window width changes, which could result in another media query that has a different padding defined.
+            // to handle window width changes, which could result in another media query that has a different margin defined.
             var firstSection = getFirstSectionElement( );
-            firstSectionTopPadding = parseInt( firstSection.css("padding-top"), 10 );
+            firstSectionTopMargin = parseInt( firstSection.css("margin-top"), 10 );
 
             // setup a callback for when the media query triggers
             /*const mq = window.matchMedia( "(min-width: 1101px)" );
@@ -30,7 +29,8 @@ function tryHandleInitialSetup( ) {
     }
 }
 
-$( document ).ready( function() { tryHandleInitialSetup(); } );
+// We'll wait for the window to be 100% loaded before we configure subNav.
+$( window ).on( "load", function() { handleInitialSetup(); if ( pageHasSubNav ) { updateSubNavbarSnap( ); } })
 
 /*function subNavbarQueryTriggered( mediaQuery ) {
 	
@@ -57,8 +57,6 @@ $( document ).ready( function() { tryHandleInitialSetup(); } );
 
 $(window).scroll( function() {
    
-    tryHandleInitialSetup( );
-
     if ( pageHasSubNav ) {
         updateSubNavbarSnap( );
     }
@@ -66,8 +64,6 @@ $(window).scroll( function() {
 
 $(window).resize(function() {
    
-    tryHandleInitialSetup( );
-
     if ( pageHasSubNav ) {
         updateSubNavbarSnap( );
     }
@@ -111,7 +107,7 @@ function updateSubNavbarSnap( ) {
             }
             
             // add the sub navbars height to the page so the page doesn't jump
-            firstSection.css("padding-top", firstSectionTopPadding + subNavbar.outerHeight() + terOuterHeight + "px" );
+            firstSection.css("margin-top", firstSectionTopMargin + subNavbar.outerHeight() + terOuterHeight + "px" );
         }
         else {
             resetSubNavbarPos( );
@@ -136,7 +132,7 @@ function resetSubNavbarPos( ) {
     subNavbar.css("width", "" );
     
     var firstSection = getFirstSectionElement( );
-    firstSection.css("padding-top", firstSectionTopPadding + "px" );
+    firstSection.css("margin-top", firstSectionTopMargin + "px" );
 }
 
 function getFirstSectionElement( ) {

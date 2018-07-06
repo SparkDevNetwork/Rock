@@ -16,7 +16,7 @@
 
         <div class="serve-card">
             <div class="image">
-                <img src="https://my.ccv.church/GetImage.ashx?id=867647&amp;width=720&amp;height=405&amp;mode=crop">
+                <img src="https://my.ccv.church/GetImage.ashx?id=1113091&amp;width=720&amp;height=405&amp;mode=crop">
             </div>
             <div class="header">
                 <h4>Food Services</h4>
@@ -28,7 +28,7 @@
 
         <div class="serve-card">
             <div class="image">
-                <img src="https://my.ccv.church/GetImage.ashx?id=783210&amp;width=720&amp;height=405&amp;mode=crop">
+                <img src="https://my.ccv.church/GetImage.ashx?id=1113093&amp;width=720&amp;height=405&amp;mode=crop">
             </div>
             <div class="header">
                 <h4>Guest Services</h4>
@@ -40,7 +40,7 @@
 
         <div class="serve-card">
             <div class="image">
-                <img src="https://my.ccv.church/GetImage.ashx?id=783218&amp;width=720&amp;height=405&amp;mode=crop">
+                <img src="https://my.ccv.church/GetImage.ashx?id=1113094&amp;width=720&amp;height=405&amp;mode=crop">
             </div>
             <div class="header">
                 <h4>Kids</h4>
@@ -52,7 +52,7 @@
 
         <div class="serve-card">
             <div class="image">
-                <img src="https://my.ccv.church/GetImage.ashx?id=783222&amp;width=720&amp;height=405&amp;mode=crop">
+                <img src="https://my.ccv.church/GetImage.ashx?id=1113095&amp;width=720&amp;height=405&amp;mode=crop">
             </div>
             <div class="header">
                 <h4>Production</h4>
@@ -64,7 +64,7 @@
 
         <div class="serve-card">
             <div class="image">
-                <img src="https://my.ccv.church/GetImage.ashx?id=783224&amp;width=720&amp;height=405&amp;mode=crop">
+                <img src="https://my.ccv.church/GetImage.ashx?id=1113098&amp;width=720&amp;height=405&amp;mode=crop">
             </div>
             <div class="header">
                 <h4>Students</h4>
@@ -76,7 +76,7 @@
 
         <div class="serve-card stars-override">
             <div class="image">
-                <img style="padding: 5px;" width="175px" src="~~/Assets/Images/logos/logo-stars-black.svg">
+                <img src="https://my.ccv.church/GetImage.ashx?id=1113099&amp;width=720&amp;height=405&amp;mode=crop">
             </div>
             <div class="header">
                 <h4>STARS Youth Sports</h4>
@@ -89,3 +89,4 @@
         </div>
     </div>
 </div>
+

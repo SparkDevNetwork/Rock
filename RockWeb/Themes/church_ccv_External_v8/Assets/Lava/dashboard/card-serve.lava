@@ -37,6 +37,7 @@
                             <h5>{{ group.Group.Name }}</h4>
                         </div>
                         {% for member in group.Group.Members %}
+
                             {% if member.GroupRoleId == 20 %}
 
                                 {% comment %} Render Group Leader Info {% endcomment %}

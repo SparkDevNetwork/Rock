@@ -1,0 +1,147 @@
+
+
+{% comment %} content for cards {% endcomment %}
+{% include '~~/Assets/Lava/dashboard/_dashboard-content.lava' %}
+{% comment %} Assign steps content to object {% endcomment %}
+
+<div id="loadingCard" class="loading-card">
+    <div class="loading-card-image">
+        <img src="/Themes/church_ccv_External_v8/Assets/Images/logos/logo-ccv-transparent.png" class="img-responsive">
+    </div>
+</div>
+
+<div id="infoCard" class="info-card hidden">
+    <div class="info-card-image">
+        <img id="infoCardImage" src="/Themes/church_ccv_External_v8/Assets/Images/dashboard/feature-dashboard-next-step-connect.jpg">
+    </div>
+    <div class="header">
+        <h4 id="infoCardHeader">Header</h4>
+        <h5 id="infoCardSubHeader">Sub Header</h5>
+    </div>
+    <div class="content">
+        <p id="infoCardContent">Content</p>
+    </div>
+    <div class="link">
+        <a id="infoCardLink" href="/get-involved/next-steps/connect/group-search">
+            <div>
+                <span id="infoCardLinkText">Link Text</span>
+                <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path></svg>
+            </div>
+        </a>
+    </div>
+</div>
+
+<script>
+
+displayNextStepCard = function(incompleteSteps) {
+    if (incompleteSteps.length > 0) {
+        var stepsJSON = JSON.parse(`{{ stepsContentJSON }}`);
+
+        var displayStepIndex = incompleteSteps[Math.floor(Math.random() * incompleteSteps.length)];
+
+        $('#infoCardImage').attr('src', stepsJSON[displayStepIndex].Content.CardImage)
+        $('#infoCardHeader').html(stepsJSON[displayStepIndex].Content.Title);
+        $('#infoCardSubHeader').html(stepsJSON[displayStepIndex].Content.Title);
+        $('#infoCardContent').html(stepsJSON[displayStepIndex].Content.Content);
+        $('#infoCardLink').attr('href', stepsJSON[displayStepIndex].Content.Buttons[0].Link );
+        $('#infoCardLinkText').html(stepsJSON[displayStepIndex].Content.Buttons[0].Label );
+
+        $('#loadingCard').toggleClass('hidden');
+        $('#infoCard').toggleClass('hidden')
+    }
+}
+
+// Get Steps data from api
+Sys.Application.add_load(function(sender, args){
+    // check if post back
+    if (!args.get_isPartialLoad()){
+        var incompleteSteps = [];
+
+        // check for current person before calling api's
+        var currentPersonId = '{{ CurrentPerson.Id }}';
+        if (currentPersonId !== '') {
+            $.getJSON('/api/CCV/Badges/TakenStartingPoint/'+currentPersonId, function(data){
+                // 0 = step not completed
+                if (data.Status === 0) {
+                    // 0 = Starting Point index in JSON
+                    incompleteSteps.push(0)
+                }
+
+                // check for person guid
+                var currentPersonGuid = '{{ CurrentPerson.Guid }}';
+                if (currentPersonGuid !== '') {
+                    $.getJSON('/api/CCV/Badges/StepsBar/'+currentPersonGuid, function(data){
+                        for (var key in data) {
+                            if (data.hasOwnProperty(key)) {
+                                var keyData = data[key];
+                                // Process response
+                                switch (key) {
+                                    case 'BaptismResult': {
+                                        // 0 = not baptised
+                                        if (keyData.BaptismStatus === 0) {
+                                            // 1 = Baptism index in JSON
+                                            incompleteSteps.push(1);
+                                        }
+                                        break;
+                                    };
+                                    case 'IsWorshipper': {
+                                        if (!keyData) {
+                                            // 2 = Worship index in JSON
+                                            incompleteSteps.push(2);
+                                        }
+                                        break;
+                                    };   
+                                    case 'ConnectionResult': {
+                                        // 1 = not connected
+                                        if (keyData.ConnectionStatus === 1) {
+                                            // 3 = Connected index in JSON
+                                            incompleteSteps.push(3);
+                                        }
+                                        break;
+                                    };
+                                    case 'IsTithing': {
+                                        if (!keyData) {
+                                            // 5 = Tithing index in JSON
+                                            incompleteSteps.push(5);
+                                        }
+                                        break;
+                                    };   
+                                    case 'ServingResult': {
+                                        // 0 = Not Serving
+                                        if (keyData.ServingStatus === 0) {
+                                            // 4 = Serving index in JSON
+                                            incompleteSteps.push(4);                                            
+                                        }
+                                        break;
+                                    };  
+                                    case 'CoachingResult': {
+                                        if (!keyData.IsCoaching) {
+                                            // 7 = Coaching index in JSON
+                                            incompleteSteps.push(7);                                              
+                                        }
+                                        break;
+                                    };  
+                                    case 'SharedStoryResult': {
+                                        if (!keyData.SharedStory) {
+                                            // 6 = Share index in JSON
+                                            incompleteSteps.push(6);                                              
+                                        }
+                                        break;
+                                    };                           
+                                    default:
+                                        break;
+                                }
+                            }
+                        }
+
+                        displayNextStepCard(incompleteSteps);
+                    });
+                }            
+            });
+        }
+
+    }
+});
+
+
+</script>

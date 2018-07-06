@@ -2,11 +2,6 @@
 {% capture HighSchoolLocations %}{{ Context.Campus | Attribute: 'HighSchoolLocations' }}{% endcapture%}
 {% capture HighSchoolTime %}{{ Context.Campus | Attribute: 'HighSchoolTime' }}{% endcapture%}
 
-{% if Context.Campus == null %}
-   {% assign selectCampusBtnClasses = 'btn btn-default' %}
-   {% include '~~/Assets/Lava/SelectACampus.lava' %}
-{% endif %}
-
 {% if JrHighContact != empty and JrHighLocations != empty and JrHighTime != empty  %}
 <div class="students-service-detail">
    <p class="students-service-detail-label">Who</p>

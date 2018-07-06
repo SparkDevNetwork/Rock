@@ -1,6 +1,6 @@
 .page-background {   
     background-color: #EBEBEB;
-    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/missions/hero-missions-stories.jpg");
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/hero-missions-stories.jpg");
 }
 
 #ternavbar-bg {
@@ -19,7 +19,7 @@ img {
  }
  
 .container-sm {
-    max-width: 75%;
+    max-width: 100%;
 }
 
 .inner-container {

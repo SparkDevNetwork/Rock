@@ -1,0 +1,100 @@
+﻿{% comment %}
+{% assign eventHeaderText = "Custom Text" %} - You can assign custom header text, though not required
+{% assign filterByCampus = true %}
+{% include '~~/Assets/Lava/event-item-card.lava' %}
+{% endcomment %}
+
+{% comment %} Assign defaults {% endcomment %}
+{% unless filterByCampus %}
+    {% assign filterByCampus = false %}
+{% endunless %}
+
+{% comment %} Render Header {% endcomment %}
+
+<div class="event-cards-header">
+    <h3>{{ eventHeaderText | Default: 'Events' }}</h3>
+    <div class="nav-buttons">
+        <button type="button" class="nav-button nav-prev"><i class="mdi mdi-chevron-left event-card-navigation-icon"></i></button>
+        <button type="button" class="nav-button nav-next"><i class="mdi mdi-chevron-right event-card-navigation-icon"></i></button>
+    </div>
+</div>
+
+{% comment %} Render Content {% endcomment %}
+<div class="event-cards-row">
+    {% for item in Items %}
+
+        {% assign showItem = false %}
+        {% if filterByCampus %}
+            {% comment %} Filter by selected campus {% endcomment %}
+            {% assign itemCampusesRaw = item | Attribute: 'Campuses' %}
+            {% if itemCampusesRaw == empty %}
+            {% assign showItem = true %}
+            {% elseif itemCampusesRaw contains Context.Campus.Name %}
+            {% assign showItem = true %}        
+            {% endif %}
+        {% else %}
+            {% comment %} Dont filter by campus {% endcomment %}
+            {% assign showItem = true %}
+        {% endif %}
+
+        {% if showItem %}
+            {% comment %} Create default link in case custom link wasnt specified {% endcomment %}
+            {% capture defaultLink %}{{ LinkedPages.DetailPage }}?Item={{ item.Id }}{% endcapture %}
+
+            <div class="event-card">
+                <div class="image">
+                    {% assign imageGuid = item | Attribute:'Image', 'RawValue' %}
+                    <img src="/GetImage.ashx?Guid={{imageGuid}}&width=350&mode=crop"/>
+                </div>
+                <div class="header">
+                    <h4>{{ item.Title | Truncate: 26 }}</h4>
+                </div>
+                <div class="content">
+                    <p>{{ item | Attribute:'SummaryText' | Truncate: 250 }}</p>
+                </div>
+                <div class="link pull-right">
+                    <a href="{{ item | Attribute: 'ExternalLink' | Default: defaultLink }}">
+                        <div>
+                            <span>{{ item | Attribute: 'CallToAction' | Default: 'Learn More' }}</span>
+                            <i class="mdi mdi-chevron-right event-card-navigation-icon"></i>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    {% endfor %}
+</div>
+
+
+<script>
+$(document).ready(function(){
+  $('.event-cards-row').slick({
+      slidesToShow: 3,
+      slidesToScroll: 3,
+      arrows: false,
+      responsive: [
+        {
+          breakpoint: 1024,
+          settings: {
+            slidesToShow: 2,
+            slidesToScroll: 2
+          }
+        },
+        {
+          breakpoint: 730,
+          settings: {
+            slidesToShow: 1,
+            slidesToScroll: 1
+          }
+        }
+      ]
+  });
+});
+$('.nav-prev').click(function(){
+  $('.event-cards-row').slick('slickPrev');
+})
+
+$('.nav-next').click(function(){
+  $('.event-cards-row').slick('slickNext');
+})
+</script>

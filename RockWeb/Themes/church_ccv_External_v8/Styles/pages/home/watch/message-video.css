@@ -9,7 +9,7 @@
 }
 
 .message-video {
-    width: 90%;
+    width: 80%;
     margin: 0 auto;
 }
 
@@ -55,6 +55,11 @@
 
 /* Tablet Styling */
 @media screen and (max-width: 768px) {
+    .message-video {
+        width: 75%;
+    }
+    
+
     #section-a-bg {
         padding-bottom: 20px;
     }
@@ -65,17 +70,19 @@
 }
 /* Mobile Styling */
 @media screen and (max-width: 500px) {
+    #zone-feature {
+        margin: 0
+    }
+
     .main-feature {
         padding-top: 60px;
     }
 
-    .message-video {
-        width: 100%;
-        margin-bottom: 10px;
-    }
-
     .message-card {
         flex-direction: column;
+        background-color: unset;
+        box-shadow: unset; 
+        border-radius: unset;
     }
 
     .message-buttons-mobile {
@@ -98,5 +105,19 @@
     .message-sidebar {
         width: 100%;
         margin-top: 10px;
+    }
+}
+
+/* dont hate me */
+@media screen and (max-width: 375px) {
+    .message-video {
+        width: 85%;
+    }
+}
+
+/* Small phones */
+@media screen and (max-width: 320px) {
+    .message-video {
+        width: 100%;
     }
 }

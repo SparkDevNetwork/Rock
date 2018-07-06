@@ -1,0 +1,87 @@
+.page-background {   
+    background-color: #EBEBEB;
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/hero-life-training.jpg");
+}
+
+#ternavbar-bg {
+    display: flex;
+}
+
+.life-training-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 15px;
+    box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px; 
+    border-radius: 5px;
+    margin-bottom: 20px;
+    background-color: #ffffff;
+}
+
+#zone-tertiarynavbar {
+    margin: 0;  
+}
+
+.navigation-tertiary-items {
+    padding-left: 150px;
+}
+
+.navigation-tertiary-items-slick {
+    padding-left: 50px;
+}
+
+.ls-section-desc {
+    margin-top: 15px;
+    width: 100%;
+}
+
+.ls-image {
+    margin: 0 auto;
+}
+
+.ls-header {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    margin-bottom: 15px;
+}
+
+.ls-icon {
+    margin-right: 15px;
+    background-color: #7A1315;
+    border-radius: 50%;
+}
+
+.ls-icon img {
+    width: 50px;
+    height: 50px;
+}
+
+.ls-header h2 {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+@media screen and (min-width: 501px) {
+    .navigation-tertiary-items-slick {
+        padding-left: 50px;
+    }
+    .ls-image img {
+        max-width: 350px;
+    }
+}
+
+@media screen and (min-width: 1024px) {
+    .ls-section-desc {
+        margin-top: 0;
+    }
+
+    .life-training-container {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .ls-image img{
+        margin-right: 15px;
+    }
+}

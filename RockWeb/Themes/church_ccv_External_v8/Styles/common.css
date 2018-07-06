@@ -7,8 +7,8 @@
 }
 
 .main-feature {
-    height: 720px;
-    padding-top: 350px;
+    height: 620px;
+    padding-top: 250px;
 }
 
 #subnavbar-bg {
@@ -871,6 +871,14 @@
 .graphicSection h5,
 .graphicSection p {
    color: white;
+}
+
+.graphicSection.darkText h1,
+.graphicSection.darkText  h2,
+.graphicSection.darkText  h4,
+.graphicSection.darkText  h5,
+.graphicSection.darkText  p {
+   color: black;
 }
 
 .section-video {

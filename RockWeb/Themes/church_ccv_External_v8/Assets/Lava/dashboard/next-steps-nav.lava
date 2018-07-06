@@ -27,6 +27,10 @@
 </div>
 
 <script>
+    // global varibables
+    var apiStartingPointResponse = '';
+    var apiStepsResponse = '';
+
     $( document ).ready(function() {
         // hidden is used to prevent steps icons from displaying in front of dashboard cards on load
         $('.outer-circle-link').toggleClass('hidden');
@@ -73,7 +77,7 @@
         switch (data.BaptismStatus) {
             case 0: {
                 // is not baptised
-                statusValue = 'You are not baptized.'; 
+                statusValue = 'You are not baptized.';
                 break;
             }
             case 1: {
@@ -153,7 +157,7 @@
             }
             case 1: {
                 // not in a group
-                statusValue = 'You are not connected to a CCV group.'; 
+                statusValue = 'You are not connected to a CCV group.';
                 break;
             }
             case 2: { 
@@ -176,7 +180,7 @@
         switch (data.ServingStatus) {
             case 0: {
                 // Not serving
-                statusValue = 'You are not serving.'; 
+                statusValue = 'You are not serving.';
                 break;
             }
             case 1: {
@@ -226,8 +230,6 @@
 
     // Render active share icon and update relative popover and modal content
     renderShare = function(data) {
-        
-
         if (data.SharedStory) {
             // Story shared
             statusValue = 'You’ve shared with us how God has changed your life; don’t stop there, share your story with others too. It just might be the encouragement that leads someone else to Christ.'; 
@@ -315,6 +317,18 @@
                         }
                     }
                 });
+            }
+
+            // If current person query api for starting point step
+            var currentPersonId = '{{ CurrentPerson.Id }}';
+            if (currentPersonId !== '') {
+
+                    $.getJSON('/api/CCV/Badges/TakenStartingPoint/'+currentPersonId, function(data){
+                        apiStartingPointResponse = data;
+                    });
+                
+                
+
             }
         }
     });

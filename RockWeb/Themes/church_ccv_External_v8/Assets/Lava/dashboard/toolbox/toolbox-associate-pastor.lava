@@ -28,7 +28,7 @@
 {% comment %} Render Associate Pastor Card {% endcomment %}
 <div class="dashboard-card associate-pastor-card">
     <div class="title">
-        <h3>Associate Pastor</h3>
+        <h4>Associate Pastor</h4>
     </div>
     <div class="group-header">
         <h5>{{ associatePastorCampus | Property:'Name' }}</h5>

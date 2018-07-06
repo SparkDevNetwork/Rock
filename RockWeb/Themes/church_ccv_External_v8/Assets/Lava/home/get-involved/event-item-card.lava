@@ -67,34 +67,34 @@
 
 
 <script>
-$(document).ready(function(){
-  $('.event-cards-row').slick({
-      slidesToShow: 3,
-      slidesToScroll: 3,
-      arrows: false,
-      responsive: [
-        {
-          breakpoint: 1024,
-          settings: {
-            slidesToShow: 2,
-            slidesToScroll: 2
-          }
-        },
-        {
-          breakpoint: 730,
-          settings: {
-            slidesToShow: 1,
-            slidesToScroll: 1
-          }
-        }
-      ]
-  });
-});
-$('.nav-prev').click(function(){
-  $('.event-cards-row').slick('slickPrev');
-})
+    $(document).ready(function(){
+        $('.event-cards-row').slick({
+            slidesToShow: 3,
+            slidesToScroll: 3,
+            arrows: false,
+            responsive: [
+                {
+                    breakpoint: 1024,
+                    settings: {
+                        slidesToShow: 2,
+                        slidesToScroll: 2
+                    }
+                },
+                {
+                    breakpoint: 730,
+                    settings: {
+                        slidesToShow: 1,
+                        slidesToScroll: 1
+                    } 
+                }
+            ]
+        });
+    });
+    $('.nav-prev').click(function(){
+        $('.event-cards-row').slick('slickPrev');
+    })
 
-$('.nav-next').click(function(){
-  $('.event-cards-row').slick('slickNext');
-})
+    $('.nav-next').click(function(){
+        $('.event-cards-row').slick('slickNext');
+    })
 </script>

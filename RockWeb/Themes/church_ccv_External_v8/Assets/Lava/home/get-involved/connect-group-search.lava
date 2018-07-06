@@ -1,0 +1,86 @@
+
+<div class="neighborhood-groups-card">
+    <div class="title">
+        <h4>Neighborhood Groups</h4>
+    </div>
+
+    <div class="content">
+        <div>
+            {% for group in Groups %}
+                {% assign personIndex = forloop.index %}
+                
+                <a type="button" data-toggle="collapse" data-target="#personDetails{{ personIndex }}" class="person-details-toggle">
+                    <div class="person-row">
+                        
+                            
+                                <div class="profile-picture">
+                                    {% assign familyPicture = group | Attribute: 'FamilyPicture', 'RawValue' %}
+                                    {% if familyPicture != empty %}
+                                            <img class="pull-left margin-r-sm margin-b-sm" src="/GetImage.ashx?guid={{ familyPicture }}"/>
+                                    {% else %}
+                                            <img class="pull-left margin-r-sm margin-b-sm" src="/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/icon-connect.png"/>
+                                    {% endif %}
+                                </div>
+                                <div class="person-info">
+                                    <div>
+                                        <h5>{{ group.Name }} </h5> <p>{{ group.Schedule.FriendlyScheduleText }}</p>
+                                    </div>
+                                </div>
+                        
+                      
+                </a> 
+                    <div id="personDetails{{ personIndex }}" class="collapse">
+                        <div class="details-container">
+                            <div class="person-row-details">
+                                {% assign groupAddr = group.GroupLocations | First %}
+                                <h5>Address</h5>
+                                <p>{{ groupAddr.Location.FormattedHtmlAddress }}</p> 
+                                {% comment %} <a class="btn btn-primary" href="get-involved/next-steps/connect/group-search/group-registration?GroupId=1202626">Register</a> {% endcomment %}
+                                {% comment %} <a class='btn btn-xs btn-action margin-r-sm' href='{{ LinkedPages.GroupDetailPage }}?GroupId={{ group.Id }}'>View {{ Group.GroupType.GroupTerm }}</a> {% endcomment %}
+                                {% if LinkedPages.RegisterPage and LinkedPages.RegisterPage != '' %}
+                                    {% if LinkedPages.RegisterPage contains '?' %}
+                                        <a class="btn btn-primary" href='{{ LinkedPages.RegisterPage }}&GroupId={{ group.Id }}'>Register</a>
+                                    {% else %}
+                                        <a class="btn btn-primary" href='{{ LinkedPages.RegisterPage }}?GroupId={{ group.Id }}'>Register</a>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                            <div class="details-right-card">
+                                {% for attribute in group.AttributeValues %}
+                                    {% if attribute.Value != empty %}
+                                        {% if attribute.AttributeName != "Family Picture" and attribute.AttributeName != "Group Picture" %}
+                                            {% if attribute.AttributeName == "Group Description" %}
+                                                <h5>Description</h5>
+                                                {{ attribute.ValueFormatted }}
+                                            {% else %}
+                                                {{ attribute.ValueFormatted }}
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+            </div>
+
+            <script>
+                // on details collapse change toggle icon
+                $('#personDetails{{ personIndex }}').on('shown.bs.collapse', function() {
+                    toggleChevron('#personDetailsToggle{{ personIndex }}');
+                });
+                $('#personDetails{{ personIndex }}').on('hidden.bs.collapse', function() {
+                    toggleChevron('#personDetailsToggle{{ personIndex }}');
+                });
+
+                toggleChevron = function(element) {
+                    $(element).toggleClass('mdi-chevron-down mdi-chevron-up');
+                }
+
+                activatePopOver('.tooltip-person-details', 'Person Details');
+            </script>        
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+

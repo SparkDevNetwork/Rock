@@ -11,5 +11,5 @@
 {{ ogImage | AddMetaTagToHead: 'property', 'og:image' }}
 
 {% if Series.Attributes.HeaderImage != empty %}
-    <header class="bigblock-flexbg bigblock-flexbg-md" style="background-image: url('/GetImage.ashx?guid={{ Series.Attributes.HeaderImage }}');"></header>
+    <header class="bigblock-flexbg bigblock-flexbg-md series-header-image" style="background-image: url('/GetImage.ashx?guid={{ Series.Attributes.HeaderImage }}');"></header>
 {% endif %}

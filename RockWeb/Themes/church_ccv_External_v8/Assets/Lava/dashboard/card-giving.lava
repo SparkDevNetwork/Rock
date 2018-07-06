@@ -1,5 +1,7 @@
 {% comment %}
     {% include '~~/Assets/Lava/dashboard/card-giving.lava' %}
+
+    {% assign givingContentText = "Use this in the block settings to set the content text" %}
 {% endcomment %}
 
 
@@ -7,7 +9,7 @@
         <div class="giving-title-row">
             <h3>GIVING</h3>
             <div class="giving-title-links">
-                <a href="/givingv2/now">Give Now</a>
+                <a href="/get-involved/giving/now">Give Now</a>
                 <a href="/dashboard/recurring-giving">Recurring Giving</a>
                 <a href="/dashboard/payment-accounts">Payment Accounts</a>
                 <a href="/dashboard/giving-history">Giving History</a>
@@ -16,7 +18,7 @@
                 <button class="dropdown-toggle" type="button" data-toggle="dropdown" style="border: 0px;">Navigate<b class="fa fa-caret-down"></b></button>
                 <ul class="dropdown-menu">
                     <li class="navigation-secondary-mobile-item">
-                        <a href="/givingv2/now">Give Now</a>
+                        <a href="/get-involved/giving/now">Give Now</a>
                     </li>
                     <li class="navigation-secondary-mobile-item">
                         <a href="/dashboard/recurring-giving">Recurring Giving</a>
@@ -32,8 +34,8 @@
         </div>
         <div class="giving-content-row">
             <div class="giving-content-info">
-                <img class="img-responsive" src="~~/Assets/Images/dashboard/ad-dashboard-giving.jpg" />
-                <p>Tiramisu pie ice cream jelly beans wafer chocolate cake powder. Pudding tiramisu halvah ice cream sweet roll sweet wafer dessert tiramisu. Bonbon candy canes biscuit gingerbread dragée lollipop.</p>
+                <img class="img-responsive" src="~~/Assets/Images/dashboard/feature-dashboard-giving.jpg" />
+                <p>{{ givingContentText }}</p>
             </div>
             <div class="giving-content-links">
                 <h5>LEARN HOW YOUR GIVING MAKES AN IMPACT</h5>

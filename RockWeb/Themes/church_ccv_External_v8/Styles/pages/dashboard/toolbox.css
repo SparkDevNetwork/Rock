@@ -6,7 +6,6 @@
 
 .toolbox-card {
     display: flex;
-    /* justify-content: space-between; */
     flex-direction: column;
     flex-grow: 1;
     margin-right: 20px;
@@ -36,36 +35,42 @@
 .toolbox-card-content h3 {
     font-size: 26px;
     line-height: 31px;
-    margin: 0 0 40px 0;
+    margin: 0 0 20px 0;
+    padding: 0;
 }
 
 .current-series-video {
     padding: 25px;
 }
 
-.subnav {
+/* by default, dont show mobile nav */
+.toolbox-subnav-mobile {
+    display: none;
+}
+
+.toolbox-subnav-desktop {
     display: flex;
     padding: 0px 30px 18px 15px;
     flex-wrap: wrap;
 }
 
-.subnav > div {
+.toolbox-subnav-desktop > div {
     text-decoration: none;
     text-transform: uppercase;
     color: #707270;
     padding: 0 15px;
-    font-family: akrobat;
+    font-family: Heebo;
     font-size: 14px;
-    font-weight: bold;
+    font-weight: 900;
     line-height: 17px;
 }
 
-.subnav > div:hover {
+.toolbox-subnav-desktop > div:hover {
     cursor: pointer;
     color: #7a1315;
 }
 
-.subnav-div-selected {
+.toolbox-subnav-div-selected {
     color: #7a1315 !important;
 }
 
@@ -100,6 +105,7 @@
 .latest-series-info-element {
     display: flex;
     flex-direction: column;
+    align-items: center;
 }
 
 .latest-series-info-element:last-child {
@@ -123,17 +129,31 @@
     margin-top: 6px;
 }
 
-.latest-series-title {
-    background-color: #EEEEEE;
+.latest-series-video {
+    margin: 0 -30px;
 }
 
-.latest-series-title > div > p {
+.latest-series-title {
+    background-color: #EEEEEE;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    margin: 0 -30px;
+}
+
+.latest-series-title p {
+    padding: 0;
+    margin: 0;
     font-family: heebo;
     font-size: 18px;
     line-height: 36px;
     font-weight: normal;
     color: #707270;
-    margin: 12px 0 12px 5px;
+}
+
+.latest-series-title h5 {
+    padding: 0;
 }
 
 .discussion-guide a {
@@ -184,10 +204,19 @@
 
 .discussion-guide-icon {
     font-size: 18px; 
-    padding-right: 14px; 
+    padding: 0 16px;
     color: #424242; 
 }
+
+.past-message-info-dash-mobile {
+    display: none;
+}
+
 /* Group Details */
+.group-picture {
+    margin: 0 -30px;
+}
+
 .group-picture img {
     max-width: 100%;
     max-height: 100%;
@@ -195,13 +224,47 @@
 
 .group-heading {
     border-bottom: 1px solid #EEEEEE;
-    margin-bottom: 0;
-    padding-bottom: 18px;
+}
+
+.toolbox-card-content.group-details-panel .group-heading {
+    margin: 0 -30px;
+    padding: 20px 30px;
+}
+
+.group-details {
+    display: flex;
+    justify-content: space-between;
+    margin: 0 -30px;
+    padding: 0 30px;
+}
+
+.group-details-left {
+    flex: .5;
+    margin-right: 20px;
+}
+
+.group-details-right {
+    flex: 1;
+}
+
+.group-leaders {
+    padding: 20px; 
+    background-color: #EEEEEE;
+    margin-bottom: 20px;
+}
+
+.group-map {
+    height: 200px;
+    margin-top: 20px;
+}
+
+.group-schedule .btn {
+    float: right;
 }
 
 /* Mobile Styling */
-/* iPad */
-@media screen and (max-width: 768px) {
+/* Small Laptop */
+@media screen and (max-width: 1024px) {
     .toolbox-row {
         flex-direction: column;
     }
@@ -211,12 +274,234 @@
         margin-bottom: 20px;
     }
 
-    .toolbox-sidebar {
+}
+
+/* Phone */
+@media screen and (max-width: 500px) {    
+    .toolbox-subnav-desktop {
+        display: none;
+    }
+
+    .toolbox-subnav-mobile {
+        display: flex;
+        align-items: center;
+    }
+    
+    .toolbox-subnav-mobile-items {
+        max-width: 100%;
+        margin: 0 auto 10px 0;
+        font-size: 16px;
+        font-family: akrobat;
+        font-weight: bold;
+        line-height: 18px;
+        text-transform: uppercase;
+        text-decoration: none;
+        color: #707270;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .toolbox-subnav-mobile-items .subnav-item {
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .toolbox-subnav-mobile-items .subnav-item {
+        visibility: hidden;
+    }
+
+    .toolbox-subnav-mobile-items.slick-initialized .subnav-item {
+        visibility: unset;
+    }
+
+    .subnav-item {
+        padding: 0 10px;
+        white-space: nowrap;
+    }
+
+    .subnav-item:focus {
+        outline: none;
+        border: none;
+    }
+
+    .nav-arrow {
+        font-size: 24px;
+        color: #707270;
+    }
+
+    .nav-next {
+        padding-left: 10px;
+    }
+
+    .toolbox-card-content.training-center-panel, .toolbox-card-content.resource-panel {
+        margin: 0 0 20px 0;
+    }
+
+    .toolbox-card-content.baptisms-panel, .toolbox-card-content.group-details-panel {
+        margin: 0 20px 20px 20px;
+    }
+
+    .toolbox-card .header h4 {
+        margin: 20px;
+        padding: 0;
+    }
+    
+    .group-info-banner {
+        flex-direction: column;
+        padding: 20px;
+    }
+
+    .group-info-banner > div {
+        padding: 0;
+        line-height: 14px;
+        font-size: 12px;
+    }
+
+    .group-info-banner > div > span {
+        font-size: 14px;
+        line-height: 16px;
+    }
+
+    .group-info-banner > div:nth-child(2) {
+        padding: 5px 0;
+    }
+
+    .toolbox-card-content {
+        margin: 0;
+    }
+
+    .toolbox-card-content .item-row {
+        margin: 0 20px 20px 20px;
+    }
+
+    .toolbox-card-content h3 {
+        margin: 0;
+    }
+
+    .toolbox-card-content.latest-series-content h3 {
+        margin: 10px 20px;
+    }
+
+    .latest-series-info {
+        flex-direction: column;
+        margin: 0 20px 20px 20px;
+    }
+
+    .latest-series-video {
+        margin: 0;
+    }
+
+    .latest-series-info-element {
         flex-direction: row;
+    }
+
+    .latest-series-info-element:nth-child(2) {
+        padding: 5px 0;
+    }
+
+    .latest-series-info-element > div > h5 {
+        margin: 0 0 0 10px;
+        padding: 0;
+        font-size: 14px;
+        line-height: 16px;
+    }
+
+    .latest-series-title {
+        padding: 10px 0;
+        margin: 0;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .latest-series-title a {
+        align-self: center;
+        padding-top: 10px;
+    }
+
+    .latest-series-title p {
+        margin: 0 20px;
+        font-size: 16px;
+    }
+
+    .discussion-guide {
+        margin: 10px 20px;
+        text-align: center;
+    }
+
+    .previous-weeks {
+        margin: 0;
+    }
+
+    .previous-weeks h3 {
+        margin: 0 20px;
+    }
+
+    .toolbox-past-messages {
+        flex-direction: column;
+    }
+
+    .toolbox-video-card {
+        width: 100%;
+        box-shadow: unset;
+        border-radius: unset;
+    }
+
+    .toolbox-video-card > div > p {
+        margin: 0;
+    }
+
+    .past-message-video img {
+        border-radius: 0;
+    }
+
+    .past-message-info {
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+        align-items: center;
+        padding: 10px 20px;
+        background-color: #EEEEEE;
+    }
+
+    .past-message-info-dash-desktop {
+        display: none;
+    }
+
+    .past-message-info-dash-mobile {
+        display: block;
+        padding: 0 10px;
+    }
+
+    .group-heading {
+        margin: 0 10px;
+    }
+
+    .toolbox-card-content.group-details-panel .group-heading {
+        margin: 20px 0 10px 0;
+        border-bottom: unset;
+        padding: 0;
+    }
+
+    .group-details {
+        flex-direction: column;
+        margin: 0 -20px;
+    }
+
+    .group-details-left, .group-details-right {
+        flex: 1;
+        margin-right: 0;
+    }
+
+    .group-leaders, .group-map {
+        margin: 0 -30px;
+    }
+
+    .group-leaders {
+        padding: 20px 30px;
     }
 }
 
-/* End iPad */
 
 /* End Toolbox Card */
 
@@ -227,20 +512,52 @@
 }
 
 /* Toolbox Sidebar Mobile styling */
-@media screen and (max-width: 768px) {
+/* Small Laptop */
+@media screen and (max-width: 1024px) {
     .toolbox-sidebar {
         flex-direction: row;
+        justify-content: space-evenly;
+    }
+
+    .dashboard-card {
+        width: 370px;
+    }
+}
+/* Tablet */
+@media screen and (max-width: 768px) {
+    .toolbox-sidebar {
+        align-items: center;
+        flex-direction: column;
+    }
+
+    .dashboard-card {
+        width: 360px;
+    }
+
+    .dashboard-card.associate-pastor-card {
+        margin-top: 20px;
+    }
+
+}
+
+/* Phone */
+@media screen and (max-width: 500px) {
+    .dashboard-card, .toolbox-group-members-card, .toolbox-associate-pastor-card {
+        width: 100%;
+    }
+
+    .dashboard-card.associate-pastor-card {
+        margin-top: 0;
     }
 }
 
 /* End Toolbox Sidebar */
 
 /* Toolbox Group Member Card */
-
 .toolbox-group-members-card {
     margin: 0;
-    height: 670px;
-    max-height: 670px;
+    height: 690px;
+    max-height: 690px;
 }
 
 .toolbox-group-members-card .title a {
@@ -319,14 +636,26 @@
     margin-left: 58px;
 }
 
+.btn-link, .btn-link:hover {
+    background-color: #7A1315;
+    color: #FFFFFF;
+    border-radius: 4px;
+    font-weight: normal;
+    text-decoration: none;
+}
+
+.btn-link:hover {
+    background-color: #4e0c0d;
+    border-color: #4e0c0d;
+}
+
+
 /* Group Member Badges Styling */
 .person-badges img {
     width: 24px;
     height: 24px;
     margin-bottom: 10px;
 }
-
-
 
 
 /* Flash class and keyframe animation */
@@ -350,6 +679,44 @@
     outline:none!important
 }
 
+/* Mobile Styling */
+/* Phone */
+@media screen and (max-width: 500px) {
+    .toolbox-group-members-card {
+        margin-bottom: 20px;
+    }
+
+    .person-row-summary {
+        padding: 0 10px;
+    }
+
+    .person-row-summary img {
+        margin: 10px 0;
+    }
+
+    .person-row-details {
+        margin: 0 auto;
+        width: 60%;
+    }
+
+    .group-picture {
+        margin: 0 -20px;
+    }
+}
+
+/* smaller phones */
+@media screen and (max-width: 400px) {
+    .person-row-details {
+        width: 65%;
+    }
+}
+
+/* smallest phones...dont hate me... */
+@media screen and (max-width: 320px) {
+    .person-row-details {
+        width: 75%;
+    }
+}
 /* End Toolbox Group Member Card */
 
 /* Toolbox Associate Pastor Card */
@@ -362,7 +729,7 @@
     box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.12);
     border-radius: 5px;
     margin: 40px 0 0 0;
-    height: 230px;
+    height: 250px;
 }
 
 .associate-pastor-card .title h3 {
@@ -378,5 +745,12 @@
     margin: 25px 10px 25px 10px;
 }
 
+/* Toolbox Sidebar Mobile styling */
+/* Small Laptop */
+@media screen and (max-width: 1024px) {
+    .associate-pastor-card {
+        margin: 0;
+    }
+}
 
 /* End Toolbox Associate Pastor Card */

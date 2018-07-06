@@ -246,7 +246,7 @@ p {
 }
 
 .sectionA {
-    padding-top: 300px;
+    padding-top: var(--section-a-padding-top-desktop); /* 300px; */
 }
 
 
@@ -265,6 +265,11 @@ p {
 
     .sectionA img {
         margin: 0 auto;
+    }
+
+    .sectionA {
+        padding-top: var(--section-a-padding-top-mobile); /* 300px; */
+        /* padding-top: 300px; */
     }
 }
 

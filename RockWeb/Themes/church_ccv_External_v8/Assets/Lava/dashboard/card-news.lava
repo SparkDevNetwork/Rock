@@ -7,14 +7,6 @@
 <div>
     <div class="title">
         <h4>News</h4>
-        <div>
-            <button class="dropdown-toggle" type="button" data-toggle="dropdown">
-                <i class="mdi mdi-dots-vertical dashboard-title-icon tooltip-more-options"></i>
-            </button>
-            <ul class="dropdown-menu panel-dropdown-menu">
-                <li><a href="/get-involved/events">Upcoming Events</a></li>
-            </ul>
-        </div>  
     </div>
     <div class="content">
         

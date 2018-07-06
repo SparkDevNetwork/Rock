@@ -1,123 +1,20 @@
-﻿/* Forgot Account Page Styling */
-
-.page-background, #section-a-bg, #section-b-bg, #subnavbar-bg, #masthead {   
-    background-color: #000;
+﻿.main-feature {
+    background-color: black;
 }
 
-.main-feature {
-    height:0;
-    padding:0;
-}
-
-.title {
-    margin-top: 30px;
-}
-
-.title h3 {
-    font-size: 60px;
-    font-weight: 900;
-    font-family: akrobat;
-    color: #FFFFFF;
-    text-align: center;
-    padding-top: 80px;
-}
-
-.title p {
-    text-align: center;
-    color: #FFFFFF;
-    font-size: 18px;
-    font-family: heebo;
-    font-weight: normal;
-}
-
-.desktop-spacer-top {
-    padding-top: 50px;
-}
-
-.desktop-spacer {
-    padding-top: 200px;
-}
-
-.forgot-account-card {
-    box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px;
-    transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
-    border-radius: 5px;
-    margin: 40px auto 70px auto;
-    padding: 20px;
-    width: 80%;
-}
-
-.forgot-account-card input {
-    /*background-color: #424242;
-    border-bottom: unset;
-    border: unset;*/
-    color: #999999;
-}
-
-.forgot-account-card .form-group.rock-text-box, .forgot-account-card .actions, .forgot-account-card .alert.alert-warning, .forgot-account-card .alert.alert-success.success {
-    width: 60%;
-    margin: 0 auto;
-}
-
-.forgot-account-card .alert.alert-warning {
-    margin-top: 10px;
-}
-
-.forgot-account-card .btn-primary {
-    background-color: #7A1315;
-    border: 1px solid #7A1315;
-    width: 150px;
-}
-
-.forgot-account-card .alert.alert-info {
+#subnavbar-bg { 
     display: none;
 }
 
-.forgot-account-card .btn:focus {
-    outline: none;
-}
-
-/* Mobile Device Styling */
-@media screen and (max-width: 500px) {
-    .title {
-        margin-top: 0;
+/* Register Page Styling */
+@media screen and (min-width: 501px) {
+    .main-feature {
+        padding-top: 125px;
+        height: 350px;
     }
 
-    .title h3 {
-        padding-top: 0;
-        margin: 0;
-        font-size: 30px;
-    }
-
-    .title p {
-        font-size: 14px;
-    }
-
-    .desktop-spacer-top {
-        display: none;
-    }
-
-    .desktop-spacer {
+    .background-card {
         padding-top: 100px;
-    }
-
-    #section-a-bg {
-        padding: 80px 0 0;
-    }
-
-    .forgot-account-card {
-        margin: 0 auto 30px auto;
-        width: 100%;
-    }
-
-    .forgot-account-card .form-group.rock-text-box, .forgot-account-card .actions, .forgot-account-card .alert.alert-warning {
-        width: 100%;
-    }
-
-
-
-    /* This fixes a width display issue in mobile view */
-    #section-b-bg {
-        display: none;
+        padding-bottom: 100px;
     }
 }

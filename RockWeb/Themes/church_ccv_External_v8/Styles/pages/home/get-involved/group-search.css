@@ -1,3 +1,220 @@
 .page-background {
-    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-image-missing.jpg");
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/hero-connect.jpg");
 }
+
+
+.neighborhood-groups-card { /* .dashboard-card */
+    background-color: #ffffff;
+    transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.12);
+    border-radius: 5px;
+    margin: 40px 0 0 0;
+}
+
+.neighborhood-groups-card .title h3 {
+    font-size: 26px;
+    margin: 14px 0 14px 15px;
+}
+
+.neighborhood-groups-card .title h4 {
+    padding-left: 10px;
+}
+.neighborhood-groups-card .person-row-summary img {
+    /* margin: 25px 10px 25px 10px; */
+    background-color: #f3f3f3;
+}
+
+.neighborhood-groups-card .content {
+    overflow-y: auto; 
+    height: 405px;
+    display: flex; 
+    flex-direction: column;
+    padding-bottom: 20px;
+}
+
+.neighborhood-groups-card .content .header {
+    text-align: center; 
+    background-color: rgb(230, 230, 230);
+    border-bottom: 1px solid #ddd; 
+}
+
+.neighborhood-groups-card .content .team-header {
+    text-align: center; 
+    background-color: rgb(240, 240, 240);
+    border-bottom: 1px solid #ddd; 
+}
+
+.neighborhood-groups-card .content .team-header h5 {
+    font-size: 18px; 
+    margin: 0px 0px .05rem; 
+    padding: 10px 15px;
+}
+
+.dashboard-icon {
+    color: #424242; 
+    font-size: 24px;
+    margin: 0 10px;
+}
+
+.profile-picture img {
+    width: 100px;
+    height: 100px;
+    margin-left: 5px;
+    margin-top: 5px;
+}
+
+.group-name-and-schedule h4{
+    font-size: 15px;
+}
+
+.location-of-group p{
+    font-size: 12px;
+}
+
+.person-row {
+    display: flex;
+    flex-direction: column;
+    background-color: #f3f3f3;
+    border-radius: 15px;
+    border: 1px solid #F3F3FA;
+    margin-bottom: 10px;
+}
+
+ /* .person-contact {
+    margin-left: 20px;
+} */
+
+.person-info {
+    /* display: flex; 
+    flex-direction: column;  */
+    /* width: 80%;  */
+    white-space: normal;
+}
+
+.person-row-summary {
+    padding: 0 20px; 
+    /* display: flex;  */
+    align-items: center;
+   
+}
+
+.person-row-details {
+    display: flex;
+    flex-direction: column;
+    margin-left: 30px;
+}
+
+.person-row-details p {
+    margin: 0;
+    line-height: 26px;
+    font-family: heebo;
+    font-size: 14px;
+    color: #707270;
+}
+
+.person-row-details a {
+    color: white;
+    margin-bottom: 30px;
+}
+
+.person-row-details a:hover {
+    text-decoration: none;
+}
+
+.person-details-toggle {
+    background-color: unset;
+    border: unset;
+    padding: unset;
+    text-decoration: unset;
+}
+
+.details-container{
+    display: flex;
+    background-color: #FFFFFF;
+}
+
+.details-right-card {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.person-row-details .person-details-additional-child {
+    margin-left: 34px;
+}
+
+.person-row-details .person-details-additional-address {
+    margin-left: 58px;
+}
+
+.btn-link, .btn-link:hover {
+    background-color: #7A1315;
+    color: #FFFFFF;
+    border-radius: 4px;
+    font-weight: normal;
+    text-decoration: none;
+}
+
+.btn-link:hover {
+    background-color: #4e0c0d;
+    border-color: #4e0c0d;
+}
+
+
+/* Fix Blue Box around calling href bug 
+.person-details-toggle:focus {
+    outline:none!important
+}
+*/
+
+/* Phone */
+@media screen and (max-width: 500px) {
+    .person-row-summary {
+        padding: 0 10px;
+    }
+
+    .profile-picture img {
+        height: 100px;
+        width: 100px;
+        margin-left: 5px;
+        margin-top: 5px;
+    }
+
+    .person-row-summary img {
+        margin: 10px 0;
+    }
+
+    .person-row-details {
+        margin-left: 10px;
+        margin-right: 10px;
+    }
+
+    .group-picture {
+        margin: 0 -20px;
+    }
+
+    .details-container {
+        flex-direction: column-reverse;
+    }
+
+    .neighborhood-groups-card { /* .dashboard-card */
+        margin-left: -15px;
+        margin-right: -15px;
+    
+    }
+    
+}
+
+/* smaller phones */
+@media screen and (max-width: 400px) {
+    
+}
+
+/* smallest phones...dont hate me... */
+@media screen and (max-width: 320px) {
+    .person-row-details {
+        width: 75%;
+    }
+}
+

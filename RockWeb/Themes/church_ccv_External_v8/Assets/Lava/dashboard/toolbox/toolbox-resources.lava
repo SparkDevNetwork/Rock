@@ -1,469 +1,459 @@
-<h3 class="page-header">Changed</h3>
-<p></p>
-<p>
-  <a class="btn btn-default" href="/GetFile.ashx?guid=3f3882ef-d0a6-4765-862c-3fd274e793ae">Digital Booklet</a>
-</p>
-
 <script charset="ISO-8859-1" src="//fast.wistia.com/assets/external/E-v1.js" async></script>
 
-<button type="button" class="btn btn-primary" onClick="toggleTrailerButton(this)" data-toggle="collapse" data-target="#changed-trailers">View Videos +</button>
-<br/>
-<br/>
-<br/>
+<div class="item-row">
+    <h3 class="page-header">Changed</h3>
+    <p></p>
+    <p>
+        <a class="btn btn-default" href="/GetFile.ashx?guid=3f3882ef-d0a6-4765-862c-3fd274e793ae">Digital Booklet</a>
+    </p>
+
+    <button type="button" class="btn btn-primary" onClick="toggleTrailerButton(this)" data-toggle="collapse" data-target="#changed-trailers">View Videos +</button>
+</div>
 <div id="changed-trailers" class="collapse">
-  <div class="row">
-    <div class="col-sm-4 margin-b-md">
-      <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-          <span class="wistia_embed wistia_async_h7d9sb5gw3 popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+    <div class="row">
+        <div class="col-sm-4 margin-b-md">
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                    <span class="wistia_embed wistia_async_h7d9sb5gw3 popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                </div>
+            </div>
+            <h5 class="margin-h-sm">Trailer</h5>
         </div>
-      </div>
-      <h5 class="margin-h-sm">Trailer</h5>
-    </div>
-    <div class="col-sm-4 margin-b-md">
-      <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-          <span class="wistia_embed wistia_async_wqofi9ys1k popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+        <div class="col-sm-4 margin-b-md">
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                    <span class="wistia_embed wistia_async_wqofi9ys1k popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                </div>
+            </div>
+            <h5 class="margin-h-sm">Session 1</h5>
         </div>
-      </div>
-      <h5 class="margin-h-sm">Session 1</h5>
-    </div>
-    <div class="col-sm-4 margin-b-md">
-      <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-          <span class="wistia_embed wistia_async_no5gll1nfk popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+        <div class="col-sm-4 margin-b-md">
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                    <span class="wistia_embed wistia_async_no5gll1nfk popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                </div>
+            </div>
+            <h5 class="margin-h-sm">Session 2</h5>
         </div>
-      </div>
-      <h5 class="margin-h-sm">Session 2</h5>
-    </div>
-    <div class="col-sm-4 margin-b-md">
-      <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-          <span class="wistia_embed wistia_async_uq1l2caknl popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+        <div class="col-sm-4 margin-b-md">
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                    <span class="wistia_embed wistia_async_uq1l2caknl popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                </div>
+            </div>
+            <h5 class="margin-h-sm">Session 3</h5>
         </div>
-      </div>
-      <h5 class="margin-h-sm">Session 3</h5>
-    </div>
-    <div class="col-sm-4 margin-b-md">
-      <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-          <span class="wistia_embed wistia_async_yocdocz3o2 popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+        <div class="col-sm-4 margin-b-md">
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                    <span class="wistia_embed wistia_async_yocdocz3o2 popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                </div>
+            </div>
+            <h5 class="margin-h-sm">Session 4</h5>
         </div>
-      </div>
-      <h5 class="margin-h-sm">Session 4</h5>
     </div>
-  </div>
 </div>
 
-<h3 class="page-header"> Financial Peace University (FPU)</h3>
-<p>This 9 week-class on money management will walk your group through the topics of budgeting, dumping debt, planning for the future, and much more. Join together and experience this life-changing class. FPU Participant Kits are available for purchase at $93 per couple. Click the button below to place your order.</p>
-<p>
-  <a class="btn btn-default" href="/page/1434">Order FPU Kit for Group</a>
-  <a class="btn btn-default" href="/Content/ccv.church/2018/FPU-Playbook_v8.pdf">Coach Guide</a>
-</p>
+<div class="item-row">
+    <h3 class="page-header"> Financial Peace University (FPU)</h3>
+    <p>This 9 week-class on money management will walk your group through the topics of budgeting, dumping debt, planning for the future, and much more. Join together and experience this life-changing class. FPU Participant Kits are available for purchase at $93 per couple. Click the button below to place your order.</p>
+    <p>
+        <a class="btn btn-default" href="/page/1434">Order FPU Kit for Group</a>
+        <a class="btn btn-default" href="/Content/ccv.church/2018/FPU-Playbook_v8.pdf">Coach Guide</a>
+    </p>
 
-<script charset="ISO-8859-1" src="//fast.wistia.com/assets/external/E-v1.js" async></script>
-
-<button type="button" class="btn btn-primary" onClick="toggleTrailerButton(this)" data-toggle="collapse" data-target="#fpu-trailers">View Videos +</button>
-<br/>
-<br/>
-<br/>
+    <button type="button" class="btn btn-primary" onClick="toggleTrailerButton(this)" data-toggle="collapse" data-target="#fpu-trailers">View Videos +</button>
+</div>
 <div id="fpu-trailers" class="collapse">
-  <div class="row">
-      <div class="col-sm-4 margin-b-md">
-        <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-            <span class="wistia_embed wistia_async_7mtiasaurc popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+    <div class="row">
+        <div class="col-sm-4 margin-b-md">
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                    <span class="wistia_embed wistia_async_7mtiasaurc popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                </div>
+            </div>
+            <h5 class="margin-h-sm">Trailer</h5>
         </div>
-        </div>
-        <h5 class="margin-h-sm">Trailer</h5>
-      </div>
-  </div>
+    </div>
 </div>
-  
-<h3 class="page-header">Rock Solid Finances</h3>
-<p>These videos, created specifically for neighborhood groups, will help your group gain a solid financial foundation. Free participant guides are available for this series. Click the button below to place your order.</p>
-<p>
-  <a class="btn btn-default" href="/page/1434">Order Booklets for Group</a>
-  <a class="btn btn-default" href="/Content/ccv.church/Neighborhoods/Toolbox/2016/RSF-Booklet-Answers.pdf">Booklet PDF (With Answers)</a>
-  <a class="btn btn-default" href="/Content/ccv.church/Neighborhoods/Toolbox/2016/RSF-Booklet.pdf">Booklet PDF</a>
-  <a class="btn btn-default" href="/content/ccv.church/Neighborhoods/Toolbox/2017/OutstandingDebts.xlsx">Outstanding Debt Form</a>
-  <a class="btn btn-default" href="/content/ccv.church/Neighborhoods/Toolbox/2017/SimpleBudget.xlsx">Simple Budget Form</a>
-</p>
 
-<script charset="ISO-8859-1" src="//fast.wistia.com/assets/external/E-v1.js" async></script>
+<div class="item-row">
+    <h3 class="page-header">Rock Solid Finances</h3>
+    <p>These videos, created specifically for neighborhood groups, will help your group gain a solid financial foundation. Free participant guides are available for this series. Click the button below to place your order.</p>
+    <p>
+        <a class="btn btn-default" href="/page/1434">Order Booklets for Group</a>
+        <a class="btn btn-default" href="/Content/ccv.church/Neighborhoods/Toolbox/2016/RSF-Booklet-Answers.pdf">Booklet PDF (With Answers)</a>
+        <a class="btn btn-default" href="/Content/ccv.church/Neighborhoods/Toolbox/2016/RSF-Booklet.pdf">Booklet PDF</a>
+        <a class="btn btn-default" href="/content/ccv.church/Neighborhoods/Toolbox/2017/OutstandingDebts.xlsx">Outstanding Debt Form</a>
+        <a class="btn btn-default" href="/content/ccv.church/Neighborhoods/Toolbox/2017/SimpleBudget.xlsx">Simple Budget Form</a>
+    </p>
 
-<button type="button" class="btn btn-primary" onClick="toggleTrailerButton(this)" data-toggle="collapse" data-target="#rocksolid-trailers">View Videos +</button>
-<br/>
-<br/>
-<br/>
+    <button type="button" class="btn btn-primary" onClick="toggleTrailerButton(this)" data-toggle="collapse" data-target="#rocksolid-trailers">View Videos +</button>
+</div>
+
 <div id="rocksolid-trailers" class="collapse">
-  <div class="row">
-    <div class="col-sm-4 margin-b-md">
-      <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-          <span class="wistia_embed wistia_async_x5uhcbwq81 popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+    <div class="row">
+        <div class="col-sm-4 margin-b-md">
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                    <span class="wistia_embed wistia_async_x5uhcbwq81 popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                </div>
+            </div>
+            <h5 class="margin-h-sm">Trailer</h5>
         </div>
-      </div>
-      <h5 class="margin-h-sm">Trailer</h5>
-    </div>
-    <div class="col-sm-4 margin-b-md">
-      <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-          <span class="wistia_embed wistia_async_jnw3jjbn3o popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+        <div class="col-sm-4 margin-b-md">
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                    <span class="wistia_embed wistia_async_jnw3jjbn3o popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                </div>
+            </div>
+            <h5 class="margin-h-sm">Wk 1: Rock Solid Finances</h5>
         </div>
-      </div>
-      <h5 class="margin-h-sm">Wk 1: Rock Solid Finances</h5>
-    </div>
-    <div class="col-sm-4 margin-b-md">
-      <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-          <span class="wistia_embed wistia_async_k39i6lbm6t popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+        <div class="col-sm-4 margin-b-md">
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                    <span class="wistia_embed wistia_async_k39i6lbm6t popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                </div>
+            </div>
+            <h5 class="margin-h-sm">Wk 2: Rock Solid Finances</h5>
         </div>
-      </div>
-      <h5 class="margin-h-sm">Wk 2: Rock Solid Finances</h5>
-    </div>
-    <div class="col-sm-4 margin-b-md">
-      <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-          <span class="wistia_embed wistia_async_6q20scixbf popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+        <div class="col-sm-4 margin-b-md">
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                    <span class="wistia_embed wistia_async_6q20scixbf popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                </div>
+            </div>
+            <h5 class="margin-h-sm">Wk 3: Rock Solid Finances</h5>
         </div>
-      </div>
-      <h5 class="margin-h-sm">Wk 3: Rock Solid Finances</h5>
-    </div>
-    <div class="col-sm-4 margin-b-md">
-      <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-          <span class="wistia_embed wistia_async_05amo6acxo popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+        <div class="col-sm-4 margin-b-md">
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                    <span class="wistia_embed wistia_async_05amo6acxo popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                </div>
+            </div>
+            <h5 class="margin-h-sm">Wk 4: Rock Solid Finances</h5>
         </div>
-      </div>
-      <h5 class="margin-h-sm">Wk 4: Rock Solid Finances</h5>
-    </div>
-    <div class="col-sm-4 margin-b-md">
-      <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-          <span class="wistia_embed wistia_async_e3k5fqlc0x popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+        <div class="col-sm-4 margin-b-md">
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                    <span class="wistia_embed wistia_async_e3k5fqlc0x popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                </div>
+            </div>
+            <h5 class="margin-h-sm">Wk 5: Rock Solid Finances</h5>
         </div>
-      </div>
-      <h5 class="margin-h-sm">Wk 5: Rock Solid Finances</h5>
-    </div>
-      <div class="col-sm-4 margin-b-md">
-      <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-          <span class="wistia_embed wistia_async_kywomfkvgm popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+        <div class="col-sm-4 margin-b-md">
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                    <span class="wistia_embed wistia_async_kywomfkvgm popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                </div>
+            </div>
+            <h5 class="margin-h-sm">Wk 6: Rock Solid Finances</h5>
         </div>
-      </div>
-      <h5 class="margin-h-sm">Wk 6: Rock Solid Finances</h5>
     </div>
-  </div>
 </div>
-  
-<h3 class="page-header">Share Your Story</h3>
-<p>This 4 session series will provide practical tips on how to tell others about Jesus and invite people to CCV. Free participant guides are available for this series. Click the button below to place your order.</p>
-<p>
-  <a class="btn btn-default" href="/page/1434">Order Booklets for Group</a>
-  <a class="btn btn-default" href="/Content/ccv.church/Neighborhoods/Toolbox/2016/Share Your Story Coach Guide.pdf">Facilitator's Guide</a>
-  <a class="btn btn-default" href="/Content/ccv.church/Neighborhoods/Toolbox/2016/Share Your Story Booklet.pdf">Booklet PDF</a>
-</p>
 
-<button type="button" class="btn btn-primary" onClick="toggleTrailerButton(this)" data-toggle="collapse" data-target="#sharestory-trailers">View Videos +</button>
-<br/>
-<br/>
-<br/>
+<div class="item-row">
+    <h3 class="page-header">Share Your Story</h3>
+    <p>This 4 session series will provide practical tips on how to tell others about Jesus and invite people to CCV. Free participant guides are available for this series. Click the button below to place your order.</p>
+    <p>
+        <a class="btn btn-default" href="/page/1434">Order Booklets for Group</a>
+        <a class="btn btn-default" href="/Content/ccv.church/Neighborhoods/Toolbox/2016/Share Your Story Coach Guide.pdf">Facilitator's Guide</a>
+        <a class="btn btn-default" href="/Content/ccv.church/Neighborhoods/Toolbox/2016/Share Your Story Booklet.pdf">Booklet PDF</a>
+    </p>
+
+    <button type="button" class="btn btn-primary" onClick="toggleTrailerButton(this)" data-toggle="collapse" data-target="#sharestory-trailers">View Videos +</button>
+</div>
 <div id="sharestory-trailers" class="collapse">
-  <div class="row">
-    <div class="col-sm-4 margin-b-md">
-      <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-          <span class="wistia_embed wistia_async_p5z9269gxz popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+    <div class="row">
+        <div class="col-sm-4 margin-b-md">
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                    <span class="wistia_embed wistia_async_p5z9269gxz popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                </div>
+            </div>
+            <h5 class="margin-h-sm">Facilitator's training</h5>
         </div>
-      </div>
-      <h5 class="margin-h-sm">Facilitator's training</h5>
-    </div>
-    <div class="col-sm-4 margin-b-md">
-      <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-          <span class="wistia_embed wistia_async_edmqpbtz4d popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+        <div class="col-sm-4 margin-b-md">
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                    <span class="wistia_embed wistia_async_edmqpbtz4d popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                </div>
+            </div>
+            <h5 class="margin-h-sm">Promo Video</h5>
         </div>
-      </div>
-      <h5 class="margin-h-sm">Promo Video</h5>
-    </div>
-    <div class="col-sm-4 margin-b-md">
-      <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-          <span class="wistia_embed wistia_async_qgecz0ij63 popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+        <div class="col-sm-4 margin-b-md">
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                    <span class="wistia_embed wistia_async_qgecz0ij63 popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                </div>
+            </div>
+            <h5 class="margin-h-sm">Session 1</h5>
         </div>
-      </div>
-      <h5 class="margin-h-sm">Session 1</h5>
-    </div>
-    <div class="col-sm-4 margin-b-md">
-      <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-          <span class="wistia_embed wistia_async_1zq55ip5od popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+        <div class="col-sm-4 margin-b-md">
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                    <span class="wistia_embed wistia_async_1zq55ip5od popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                </div>
+            </div>
+            <h5 class="margin-h-sm">Session 2</h5>
         </div>
-      </div>
-      <h5 class="margin-h-sm">Session 2</h5>
-    </div>
-    <div class="col-sm-4 margin-b-md">
-      <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-          <span class="wistia_embed wistia_async_wa7q0nkw2l popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+        <div class="col-sm-4 margin-b-md">
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                    <span class="wistia_embed wistia_async_wa7q0nkw2l popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                </div>
+            </div>
+            <h5 class="margin-h-sm">Session 3</h5>
         </div>
-      </div>
-      <h5 class="margin-h-sm">Session 3</h5>
-    </div>
-    <div class="col-sm-4 margin-b-md">
-      <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-          <span class="wistia_embed wistia_async_o8s97828bo popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+        <div class="col-sm-4 margin-b-md">
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                    <span class="wistia_embed wistia_async_o8s97828bo popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                </div>
+            </div>
+            <h5 class="margin-h-sm">Session 4</h5>
         </div>
-      </div>
-      <h5 class="margin-h-sm">Session 4</h5>
     </div>
-  </div>
 </div>
-  
-<h3 class="page-header">Foundations</h3>
-<p>Foundations is an online, video-based course on the basics of faith and ministry</p>
-<p>
-  <a class="btn btn-default" href="/Content/ccv.church/Neighborhoods/Toolbox/2016/Foundations Session 1 Guide.pdf">Week 1 Guide</a>
-  <a class="btn btn-default" href="/Content/ccv.church/Neighborhoods/Toolbox/2016/Foundations Session 2 Guide.pdf">Week 2 Guide</a>
-  <a class="btn btn-default" href="/Content/ccv.church/Neighborhoods/Toolbox/2016/Foundations Session 3 Guide.pdf">Week 3 Guide</a>
-  <a class="btn btn-default" href="/Content/ccv.church/Neighborhoods/Toolbox/2016/Foundations Session 4 Guide.pdf">Week 4 Guide</a>
-</p>
 
-<button type="button" class="btn btn-primary" onClick="toggleTrailerButton(this)" data-toggle="collapse" data-target="#foundations-trailers">View Videos +</button>
-<br/>
-<br/>
-<br/>
+<div class="item-row">
+    <h3 class="page-header">Foundations</h3>
+    <p>Foundations is an online, video-based course on the basics of faith and ministry</p>
+    <p>
+        <a class="btn btn-default" href="/Content/ccv.church/Neighborhoods/Toolbox/2016/Foundations Session 1 Guide.pdf">Week 1 Guide</a>
+        <a class="btn btn-default" href="/Content/ccv.church/Neighborhoods/Toolbox/2016/Foundations Session 2 Guide.pdf">Week 2 Guide</a>
+        <a class="btn btn-default" href="/Content/ccv.church/Neighborhoods/Toolbox/2016/Foundations Session 3 Guide.pdf">Week 3 Guide</a>
+        <a class="btn btn-default" href="/Content/ccv.church/Neighborhoods/Toolbox/2016/Foundations Session 4 Guide.pdf">Week 4 Guide</a>
+    </p>
+
+    <button type="button" class="btn btn-primary" onClick="toggleTrailerButton(this)" data-toggle="collapse" data-target="#foundations-trailers">View Videos +</button>
+</div>
 <div id="foundations-trailers" class="collapse">
-  <div class="row">
-    <div class="col-sm-4 margin-b-md">
-      <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-          <span class="wistia_embed wistia_async_kh17nhf9rb popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+    <div class="row">
+        <div class="col-sm-4 margin-b-md">
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                    <span class="wistia_embed wistia_async_kh17nhf9rb popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                </div>
+            </div>
+            <h5 class="margin-h-sm">1. The Bible</h5>
         </div>
-      </div>
-      <h5 class="margin-h-sm">1. The Bible</h5>
-    </div>
-    <div class="col-sm-4 margin-b-md">
-      <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-          <span class="wistia_embed wistia_async_sr40oyhidc popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+        <div class="col-sm-4 margin-b-md">
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                    <span class="wistia_embed wistia_async_sr40oyhidc popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                </div>
+            </div>
+            <h5 class="margin-h-sm">2. Using The Bible </h5>
         </div>
-      </div>
-      <h5 class="margin-h-sm">2. Using The Bible </h5>
-    </div>
-    <div class="col-sm-4 margin-b-md">
-      <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-          <span class="wistia_embed wistia_async_p1p393fd9z popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+        <div class="col-sm-4 margin-b-md">
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                    <span class="wistia_embed wistia_async_p1p393fd9z popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                </div>
+            </div>
+            <h5 class="margin-h-sm">3. Being a Christian</h5>
         </div>
-      </div>
-      <h5 class="margin-h-sm">3. Being a Christian</h5>
-    </div>
-    <div class="col-sm-4 margin-b-md">
-      <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-          <span class="wistia_embed wistia_async_6te0hfmf02 popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+        <div class="col-sm-4 margin-b-md">
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                    <span class="wistia_embed wistia_async_6te0hfmf02 popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                </div>
+            </div>
+            <h5 class="margin-h-sm">4. Following Jesus</h5>
         </div>
-      </div>
-      <h5 class="margin-h-sm">4. Following Jesus</h5>
     </div>
-  </div>
 </div>
   
-<h3 class="page-header">Intentional Parenting</h3>
-<p>As parents we all start out with the best intentions, but at some point we move from DREAMS to DUCT TAPE and hope that each day everything will just stick together. With expert advice from Doug and Cathy Fields, you can move from Quick-Fix Parenting to Intentional Parenting.</p>
-<p><strong>Participant's guides for this series are available for purchase with debit/credit card at your campus information centers on the weekend. Cost = $15 per book.</strong></p>
-<p>
-  <a class="btn btn-default" href="/Content/ccv.church/Neighborhoods/Toolbox/2017/Intentional_Parenting_Overview.pdf">Overview Guide</a>
-  <a class="btn btn-default" href="/Content/ccv.church/Neighborhoods/Toolbox/2017/Intentional_Parenting_Session_1.pdf">Session 1 Guide</a>
-  <a class="btn btn-default" href="/Content/ccv.church/Neighborhoods/Toolbox/2017/Intentional_Parenting_Session_2.pdf">Session 2 Guide</a>
-  <a class="btn btn-default" href="/Content/ccv.church/Neighborhoods/Toolbox/2017/Intentional_Parenting_Session_3.pdf">Session 3 Guide</a>
-  <a class="btn btn-default" href="/Content/ccv.church/Neighborhoods/Toolbox/2017/Intentional_Parenting_Session_4.pdf">Session 4 Guide</a>
-  <a class="btn btn-default" href="/Content/ccv.church/Neighborhoods/Toolbox/2017/Intentional_Parenting_Session_5.pdf">Session 5 Guide</a>
-</p>
-<button type="button" class="btn btn-primary" onClick="toggleTrailerButton(this)" data-toggle="collapse" data-target="#parenting-trailers">View Videos +</button>
-<br/>
-<br/>
-<br/>
+<div class="item-row">
+    <h3 class="page-header">Intentional Parenting</h3>
+    <p>As parents we all start out with the best intentions, but at some point we move from DREAMS to DUCT TAPE and hope that each day everything will just stick together. With expert advice from Doug and Cathy Fields, you can move from Quick-Fix Parenting to Intentional Parenting.</p>
+    <p><strong>Participant's guides for this series are available for purchase with debit/credit card at your campus information centers on the weekend. Cost = $15 per book.</strong></p>
+    <p>
+        <a class="btn btn-default" href="/Content/ccv.church/Neighborhoods/Toolbox/2017/Intentional_Parenting_Overview.pdf">Overview Guide</a>
+        <a class="btn btn-default" href="/Content/ccv.church/Neighborhoods/Toolbox/2017/Intentional_Parenting_Session_1.pdf">Session 1 Guide</a>
+        <a class="btn btn-default" href="/Content/ccv.church/Neighborhoods/Toolbox/2017/Intentional_Parenting_Session_2.pdf">Session 2 Guide</a>
+        <a class="btn btn-default" href="/Content/ccv.church/Neighborhoods/Toolbox/2017/Intentional_Parenting_Session_3.pdf">Session 3 Guide</a>
+        <a class="btn btn-default" href="/Content/ccv.church/Neighborhoods/Toolbox/2017/Intentional_Parenting_Session_4.pdf">Session 4 Guide</a>
+        <a class="btn btn-default" href="/Content/ccv.church/Neighborhoods/Toolbox/2017/Intentional_Parenting_Session_5.pdf">Session 5 Guide</a>
+    </p>
+    <button type="button" class="btn btn-primary" onClick="toggleTrailerButton(this)" data-toggle="collapse" data-target="#parenting-trailers">View Videos +</button>
+</div>
 <div id="parenting-trailers" class="collapse">
-  <div class="row">
-    <div class="col-sm-4 margin-b-md">
-      <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-          <span class="wistia_embed wistia_async_kwn2j8w710 popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+    <div class="row">
+        <div class="col-sm-4 margin-b-md">
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                    <span class="wistia_embed wistia_async_kwn2j8w710 popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                </div>
+            </div>
+            <h5 class="margin-h-sm">Intentional Parenting Trailer</h5>
         </div>
-      </div>
-      <h5 class="margin-h-sm">Intentional Parenting Trailer</h5>
-    </div>
-    <div class="col-sm-4 margin-b-md">
-      <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-          <span class="wistia_embed wistia_async_g0ty1t5m6e popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+        <div class="col-sm-4 margin-b-md">
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                    <span class="wistia_embed wistia_async_g0ty1t5m6e popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                </div>
+            </div>
+            <h5 class="margin-h-sm">Session 1 - Part 1</h5>
         </div>
-      </div>
-      <h5 class="margin-h-sm">Session 1 - Part 1</h5>
-    </div>
-    <div class="col-sm-4 margin-b-md">
-      <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-          <span class="wistia_embed wistia_async_7fy8vxy6tg popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+        <div class="col-sm-4 margin-b-md">
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                    <span class="wistia_embed wistia_async_7fy8vxy6tg popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                </div>
+            </div>
+            <h5 class="margin-h-sm">Session 1 - Part 2</h5>
         </div>
-      </div>
-      <h5 class="margin-h-sm">Session 1 - Part 2</h5>
-    </div>
-    <div class="col-sm-4 margin-b-md">
-      <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-          <span class="wistia_embed wistia_async_q4ipbdx73a popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+        <div class="col-sm-4 margin-b-md">
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                    <span class="wistia_embed wistia_async_q4ipbdx73a popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                </div>
+            </div>
+            <h5 class="margin-h-sm">Session 2 - Part 1</h5>
         </div>
-      </div>
-      <h5 class="margin-h-sm">Session 2 - Part 1</h5>
-    </div>
-    <div class="col-sm-4 margin-b-md">
-      <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-          <span class="wistia_embed wistia_async_fzjxrcintr popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+        <div class="col-sm-4 margin-b-md">
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                    <span class="wistia_embed wistia_async_fzjxrcintr popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                </div>
+            </div>
+            <h5 class="margin-h-sm">Session 2 - Part 2</h5>
         </div>
-      </div>
-      <h5 class="margin-h-sm">Session 2 - Part 2</h5>
-    </div>
-    <div class="col-sm-4 margin-b-md">
-      <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-          <span class="wistia_embed wistia_async_toyifsmqow popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+        <div class="col-sm-4 margin-b-md">
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                    <span class="wistia_embed wistia_async_toyifsmqow popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                </div>
+            </div>
+            <h5 class="margin-h-sm">Session 3 - Part 1</h5>
         </div>
-      </div>
-      <h5 class="margin-h-sm">Session 3 - Part 1</h5>
-    </div>
-    <div class="col-sm-4 margin-b-md">
-      <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-          <span class="wistia_embed wistia_async_wccg8smtzs popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+        <div class="col-sm-4 margin-b-md">
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                    <span class="wistia_embed wistia_async_wccg8smtzs popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                </div>
+            </div>
+            <h5 class="margin-h-sm">Session 3 - Part 2</h5>
         </div>
-      </div>
-      <h5 class="margin-h-sm">Session 3 - Part 2</h5>
-    </div>
-    <div class="col-sm-4 margin-b-md">
-      <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-          <span class="wistia_embed wistia_async_fozzkfew3q popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+        <div class="col-sm-4 margin-b-md">
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                    <span class="wistia_embed wistia_async_fozzkfew3q popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                </div>
+            </div>
+            <h5 class="margin-h-sm">Session 4 - Part 1</h5>
         </div>
-      </div>
-      <h5 class="margin-h-sm">Session 4 - Part 1</h5>
-    </div>
-    <div class="col-sm-4 margin-b-md">
-      <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-          <span class="wistia_embed wistia_async_ek7gvo6w1d popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+        <div class="col-sm-4 margin-b-md">
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                    <span class="wistia_embed wistia_async_ek7gvo6w1d popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                </div>
+            </div>
+            <h5 class="margin-h-sm">Session 4 - Part 2</h5>
         </div>
-      </div>
-      <h5 class="margin-h-sm">Session 4 - Part 2</h5>
-    </div>
-    <div class="col-sm-4 margin-b-md">
-      <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-          <span class="wistia_embed wistia_async_71psbt1i74 popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+        <div class="col-sm-4 margin-b-md">
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                    <span class="wistia_embed wistia_async_71psbt1i74 popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                </div>
+            </div>
+            <h5 class="margin-h-sm">Session 5 - Part 1</h5>
         </div>
-      </div>
-      <h5 class="margin-h-sm">Session 5 - Part 1</h5>
-    </div>
-    <div class="col-sm-4 margin-b-md">
-      <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-          <span class="wistia_embed wistia_async_h8kll5t6ku popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+        <div class="col-sm-4 margin-b-md">
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                    <span class="wistia_embed wistia_async_h8kll5t6ku popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                </div>
+            </div>
+            <h5 class="margin-h-sm">Session 5 - Part 2</h5>
         </div>
-      </div>
-      <h5 class="margin-h-sm">Session 5 - Part 2</h5>
     </div>
-  </div>
 </div>
-  
-<h3 class="page-header">Renovate</h3>
-<p>Have you ever attempted a renovation? You start motivated and often end the first day with a massive mess on your hands. So, if renovation is difficult, why do we attempt it? Over the course of eight sessions, this study will introduce you to the possibility of a personal renovation, exploring the foundation and blueprints of God’s original design for us.</p>
-<p><strong>Participant's guides for this series are available for purchase with debit/credit card at your campus information centers on the weekend. Cost = $10 per book. Please contact your Associate Pastor before beginning this series.</strong></p>
 
-<button type="button" class="btn btn-primary" onClick="toggleTrailerButton(this)" data-toggle="collapse" data-target="#renovate-trailers">View Videos +</button>
-<br/>
-<br/>
-<br/>
+<div class="item-row"> 
+    <h3 class="page-header">Renovate</h3>
+    <p>Have you ever attempted a renovation? You start motivated and often end the first day with a massive mess on your hands. So, if renovation is difficult, why do we attempt it? Over the course of eight sessions, this study will introduce you to the possibility of a personal renovation, exploring the foundation and blueprints of God’s original design for us.</p>
+    <p><strong>Participant's guides for this series are available for purchase with debit/credit card at your campus information centers on the weekend. Cost = $10 per book. Please contact your Associate Pastor before beginning this series.</strong></p>
+
+    <button type="button" class="btn btn-primary" onClick="toggleTrailerButton(this)" data-toggle="collapse" data-target="#renovate-trailers">View Videos +</button>
+</div>
 <div id="renovate-trailers" class="collapse">
-  <div class="row">
-  <div class="col-sm-4 margin-b-md">
-      <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-          <span class="wistia_embed wistia_async_433bq69dfp popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+    <div class="row">
+        <div class="col-sm-4 margin-b-md">
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                    <span class="wistia_embed wistia_async_433bq69dfp popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                </div>
+            </div>
+            <h5 class="margin-h-sm">Coach Video</h5>
         </div>
-      </div>
-      <h5 class="margin-h-sm">Coach Video</h5>
-    </div>
-    <div class="col-sm-4 margin-b-md">
-      <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-          <span class="wistia_embed wistia_async_63jxcc1ipk popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+        <div class="col-sm-4 margin-b-md">
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                    <span class="wistia_embed wistia_async_63jxcc1ipk popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                </div>
+            </div>
+            <h5 class="margin-h-sm">Session 1</h5>
         </div>
-      </div>
-      <h5 class="margin-h-sm">Session 1</h5>
-    </div>
-    <div class="col-sm-4 margin-b-md">
-      <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-          <span class="wistia_embed wistia_async_mlenbuq1vk popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+        <div class="col-sm-4 margin-b-md">
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                    <span class="wistia_embed wistia_async_mlenbuq1vk popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                </div>
+            </div>
+            <h5 class="margin-h-sm">Session 2</h5>
         </div>
-      </div>
-      <h5 class="margin-h-sm">Session 2</h5>
-    </div>
-    <div class="col-sm-4 margin-b-md">
-      <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-          <span class="wistia_embed wistia_async_ubvlv278rn popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+        <div class="col-sm-4 margin-b-md">
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                    <span class="wistia_embed wistia_async_ubvlv278rn popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                </div>
+            </div>
+            <h5 class="margin-h-sm">Session 3</h5>
         </div>
-      </div>
-      <h5 class="margin-h-sm">Session 3</h5>
-    </div>
-    <div class="col-sm-4 margin-b-md">
-      <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-          <span class="wistia_embed wistia_async_qozwt5qg3f popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+        <div class="col-sm-4 margin-b-md">
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                    <span class="wistia_embed wistia_async_qozwt5qg3f popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                </div>
+            </div>
+            <h5 class="margin-h-sm">Session 4</h5>
         </div>
-      </div>
-      <h5 class="margin-h-sm">Session 4</h5>
-    </div>
-    <div class="col-sm-4 margin-b-md">
-      <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-          <span class="wistia_embed wistia_async_tufcmi9ml9 popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+        <div class="col-sm-4 margin-b-md">
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                    <span class="wistia_embed wistia_async_tufcmi9ml9 popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                </div>
+            </div>
+            <h5 class="margin-h-sm">Session 5</h5>
         </div>
-      </div>
-      <h5 class="margin-h-sm">Session 5</h5>
-    </div>
-    <div class="col-sm-4 margin-b-md">
-      <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-          <span class="wistia_embed wistia_async_66wudv4tdu popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+        <div class="col-sm-4 margin-b-md">
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                    <span class="wistia_embed wistia_async_66wudv4tdu popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                </div>
+            </div>
+            <h5 class="margin-h-sm">Session 6</h5>
         </div>
-      </div>
-      <h5 class="margin-h-sm">Session 6</h5>
-    </div>
-    <div class="col-sm-4 margin-b-md">
-      <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-          <span class="wistia_embed wistia_async_nw2nihvi5k popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+        <div class="col-sm-4 margin-b-md">
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                    <span class="wistia_embed wistia_async_nw2nihvi5k popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                </div>
+            </div>
+            <h5 class="margin-h-sm">Session 7</h5>
         </div>
-      </div>
-      <h5 class="margin-h-sm">Session 7</h5>
-    </div>
-    <div class="col-sm-4 margin-b-md">
-      <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-          <span class="wistia_embed wistia_async_eoeviyr591 popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+        <div class="col-sm-4 margin-b-md">
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                    <span class="wistia_embed wistia_async_eoeviyr591 popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                </div>
+            </div>
+            <h5 class="margin-h-sm">Session 8</h5>
         </div>
-      </div>
-      <h5 class="margin-h-sm">Session 8</h5>
     </div>
-  </div>
 </div>
 
 <script>

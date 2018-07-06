@@ -15,6 +15,18 @@
     max-width: unset;
 }
 
+/* Hacks to align margins. */
+#zone-singlesection {
+    margin: 0 auto;
+}
+
+@media screen and (max-width: 1280px) {
+    #zone-singlesection {
+        margin: 0 auto;
+    }
+}
+/* end hacks */
+
 /* Padding override */
 h2 {
     padding: 0 0 20px 0;
@@ -37,6 +49,24 @@ h2 {
     .main-feature {
         height: 240px;
         padding-top: 50px;
+    }
+
+    #single-section-bg {
+        padding: 20px 21px;
+    }
+}
+
+.dashboard {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 1155px;
+    margin: 0 auto;
+}
+
+@media screen and (max-width: 1190px) {
+    .dashboard {
+        width: unset;
     }
 }
 
@@ -445,7 +475,6 @@ h2 {
 /* End Next Steps Nav */
 
 /* Dashboard Card */
-
 .dashboard-row {
     display: flex;
     justify-content: center;
@@ -506,7 +535,7 @@ h2 {
 .panel-dropdown-menu {
     top: unset;
     left: inherit;
-    width: 220px;
+    right: 20%;    
 }
 
 /* Card Content Section */
@@ -617,7 +646,7 @@ h2 {
 
 /* Dashboard Card Responsive Styling */
 /* Trigger single column as soon as 3 cards wont fit the screen */
-@media screen and (max-width: 1130px) {
+@media screen and (max-width: 1190px) {
     .dashboard-row {
         flex-direction: column;
         align-items: center;
@@ -633,11 +662,70 @@ h2 {
     }
 }
 
+/* stupid panel hacks...not happy but need to move on for now */
+@media screen and (max-width: 1700px) {
+    .panel-dropdown-menu {
+        right: 17%;    
+    }
+}
+
+@media screen and (max-width: 1575px) {
+    .panel-dropdown-menu {
+        right: 14%;    
+    }
+}
+
+@media screen and (max-width: 1425px) {
+    .panel-dropdown-menu {
+        right: 10%;    
+    }
+}
+
+@media screen and (max-width: 1275px) {
+    .panel-dropdown-menu {
+        right: 5%;    
+    }
+}
+
+@media screen and (max-width: 1190px) {
+    .panel-dropdown-menu {
+        right: 35%;    
+    }
+}
+
+@media screen and (max-width: 1024px) {
+    .panel-dropdown-menu {
+        right: 32%;    
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .panel-dropdown-menu {
+        right: 26%;    
+    }
+}
+
 /* Phones */
+@media screen and (max-width: 500px) {
+    .dashboard-card {
+        min-width: unset;
+    }
+
+    .dashboard-card .title {
+        margin: 0 auto;
+    }
+
+    .panel-dropdown-menu {
+        left: unset;
+        right: 21px;
+        width: auto;
+        text-align: center;
+    }
+}
+
 @media screen and (max-width: 375px) {
     .dashboard-card {
         width: 100%;
-        min-width: unset;
     }
 }
 
@@ -645,16 +733,24 @@ h2 {
 
 /* Dashboard Events Scroller */
 .dashboard-events-row {
-    margin: 30px 0;
+    margin: 20px 0;
 }
 
 /* overrides */
+.navbar-nav {
+    margin: 0;
+}
+
 .contextsetter {
     margin-right: 0;
 }
 
 .contextsetter-campus .dropdown {
     margin-right: 0;
+}
+
+.event-card {
+    height: 450px;
 }
 
 .event-cards-header {
@@ -665,39 +761,25 @@ h2 {
     margin: 0 -15px;
 }
 
-.event-card .image img {
-    object-fit: cover;
-}
-
 /* Mobile Styling Events Scroller */
 @media screen and (max-width: 500px){
-    .dashboard-events-row {
-        max-width: 370px;
-        margin: 20px auto;
+    .event-card {
+        margin: 5px 15px;
+        max-width: 375px;
+        min-width: 330px;
+    }
+}
+
+/* Smaller Phones */
+@media screen and (max-width: 350px){
+    .event-card {
+        min-width: unset;
+        max-width: 280px;
     }
 
-    .dashboard-card .title {
-        margin: 0 auto;
+    .event-card .header h4 {
+        font-size: 22px;
     }
-
-    .panel-dropdown-menu {
-        left: unset;
-        right: 15px;
-        width: auto;
-        text-align: center;
-    }
-
-    .event-cards-row {
-        margin: 0;
-    }
-
-    .event-cards-header h3 {
-        margin: 0;
-    }
-
-    .dashboard-events-row .event-cards-header {
-        width: 100%;
-    }    
 }
 
 /* End Dashboard Card */
@@ -707,7 +789,6 @@ h2 {
     background-color: #EEEEEE;
     padding: 13px 20px 13px 30px;
     border-bottom: 1px solid #ddd; 
-    /* margin-bottom: 10px; */
 }
 
 .group-name-row {
@@ -820,7 +901,6 @@ h2 {
 }
 
 /* Mobile Styling Group Card */
-
 @media screen and (max-width: 500px){
     .group-header {
         padding: 15px 10px;
@@ -858,6 +938,19 @@ h2 {
 /* End Group Card */
 
 /* Call To Action Info Card */
+.loading-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 370px;
+    height: 450px; 
+    max-height: 450px;
+}
+
+.loading-card-image {
+    width: 50%;
+}
 
 .info-card {
     display: flex;
@@ -867,13 +960,12 @@ h2 {
     border-radius: 5px;
     border: unset;
     border-width: unset;
-    width: 375px;
+    width: 100%;
     height: 450px; 
     max-height: 450px; 
     background-color: #FFFFFF; 
     z-index: 1; 
     overflow: hidden;
-    margin: 20px 0; 
 }
 
 .info-card-image {
@@ -1238,7 +1330,6 @@ h2 {
     }
 }
 
-
 /* End Dashboard Giving */
 
  
@@ -1279,4 +1370,3 @@ h2 {
 }
 
 /* End Change Password Styling */
-

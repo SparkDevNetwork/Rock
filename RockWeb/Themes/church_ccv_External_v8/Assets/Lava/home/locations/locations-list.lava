@@ -5,7 +5,7 @@
         {% if campus.IsActive == 'True' %}
             <div class="event-card our-campuses-card-override">
                 <div class="image">
-                    {% assign imageGuid = campus | Attribute:'CoverPhoto', 'RawValue' %}
+                    {% assign imageGuid = campus | Attribute:'FeatureImage', 'RawValue' %}
                     <img src="{{appRoot}}GetImage.ashx?Guid={{imageGuid}}&width=350&mode=crop"/>
                 </div>
                 <div class="header">

@@ -1,0 +1,121 @@
+{% comment %} 
+    
+{% endcomment %}
+
+{% comment %} {% if Page.DisplayChildPages == 'true' and Page.Pages != empty %}
+
+<div class="navigation-tertiary-desktop">
+    <ul class="navigation-tertiary-items">
+            {% for childPage in Page.Pages %}
+                <li class="navigation-tertiary-item{% if childPage.Current == 'true' %} active{% endif%}">
+                    <a href="{{ childPage.Url }}">{{ childPage.Title }}</a>
+                </li>
+            {% endfor %}
+    </ul>
+</div>
+
+
+    <div class="navigation-tertiary-mobile"> 
+    <div class="prev"> < </div>
+        <ul class="navigation-tertiary-items-slick" >   
+            {% for childPage in Page.Pages %}
+                    <li class="navigation-tertiary-item{% if childPage.Current == 'true' %} active{% endif%}">
+                        <a href="{{ childPage.Url }}">{{ childPage.Title }}</a>
+                    </li>
+            {% endfor %}
+        </ul>
+        <div class="next"> > </div>
+    </div>
+{% endif %} {% endcomment %}
+
+<div class="book-container">
+ <div class="prev"> < </div>
+      <h2>Book Recommendations</h2>
+      <div class="books">
+            <div class="book">
+                <a href="https://www.amazon.com/dp/1595555277?tag=amz-mkt-chr-us-20&ascsubtag=1ba00-01000-org00-mac00-other-nomod-us000-pcomp-feature-scomp&ref=bit_scomp_ask_sav0">
+                    <div class="book-cover"><img class="img-responsive" src="~~/Assets/Images/home/ministries/feature-financial-resources-book1.jpg"> </div>
+                    <h4 class="book-title">Total Money Makeover</h4>
+                    <div class="author">David Ramsey</div>
+                    {% comment %} <div class="view-on">View on</div> <img class="amazon" src=""> {% endcomment %}
+                </a>
+            </div>
+            <div class="book">
+                <a href="https://www.amazon.com/Smart-Money-Kids-Raising-Generation/dp/1937077632/ref=sr_1_1?s=books&ie=UTF8&qid=1518023682&sr=1-1&keywords=Smart+Money+Smart+Kid+-+Dave+Ramsey&dpID=51PzsNgYJfL&preST=_SY291_BO1,204,203,200_QL40_&dpSrc=srch">
+                    <div class="book-cover"><img class="img-responsive" src="~~/Assets/Images/home/ministries/feature-financial-resources-book2.jpg"> </div>
+                    <h4 class="book-title">Smart Money Smart Kid</h4>
+                    <div class="author">David Ramsey</div>
+                 </a>
+            </div>
+            <div class="book">
+                    <a href="https://www.amazon.com/Abundant-Experiencing-Incredible-Journey-Generosity/dp/0997226137/ref=sr_1_1?s=books&ie=UTF8&qid=1518025061&sr=1-1&keywords=Abundant+-+Todd+Harper&dpID=41m%252BTKblpyL&preST=_SY291_BO1,204,203,200_QL40_&dpSrc=srch">
+                    <div class="book-cover"><img class="img-responsive" src="~~/Assets/Images/home/ministries/feature-financial-resources-book3.jpg"> </div>
+                        <h4 class="book-title">Abundant</h4>
+                        <div class="author">Todd Harper</div>
+                    </a>
+            </div>
+            <div class="book">
+                    <a href="https://www.amazon.com/Blessed-Life-Unlocking-Rewards-Generous/dp/076421876X/ref=sr_1_1?s=books&ie=UTF8&qid=1518025035&sr=1-1&keywords=The+Blessed+Life+-+Robert+Morris&dpID=41jeajBet1L&preST=_SY291_BO1,204,203,200_QL40_&dpSrc=srch">
+                    <div class="book-cover"><img class="img-responsive" src="~~/Assets/Images/home/ministries/feature-financial-resources-book4.jpg"> </div>
+                        <h4 class="book-title">The Blessed Life</h4>
+                        <div class="author">Robert Morris</div>
+                    </a>
+            </div>
+             <div class="book">
+                    <a href="https://www.amazon.com/Treasure-Principle-Unlocking-Secret-LifeChange/dp/1590525086/ref=sr_1_1?s=books&ie=UTF8&qid=1518025078&sr=1-1&keywords=The+Treasure+Principle+-+Randy+Alcorn&dpID=61FqWY95I3L&preST=_SY291_BO1,204,203,200_QL40_&dpSrc=srch">
+                    <div class="book-cover"><img class="img-responsive" src="~~/Assets/Images/home/ministries/feature-financial-resources-book5.jpg"> </div>
+                        <h4 class="book-title">The Treasure Principle</h4>
+                        <div class="author">Randy Alcorn</div>
+                  </a>
+                </div>
+        </div>
+        <div class="next"> > </div>
+</div>
+
+<script>
+
+var item_length = 0;
+
+$(document).ready(function() {
+        var slider = $('.books').slick({
+        centerMode: false,
+        centerPadding: '200px',
+        infinite: false,
+        slidesToShow: 2,
+        arrows: true,
+        variableWidth: true,
+        cssEase: 'linear',
+        prevArrow: $('.prev'),
+        nextArrow: $('.next'),
+        edgeFriction: .0,
+        responsive: [
+            {
+            breakpoint: 768,
+                settings: {
+                    arrows: true,
+                    centerPadding: '40px',
+                    slidesToShow: 1,
+                    swipeToSlide: true,
+                    prevArrow: $('.prev'),
+                    nextArrow: $('.next'),
+                   
+                }
+            },
+            {
+            breakpoint: 350,
+                settings: {
+                    arrows: true,
+                    centerPadding: '40px',
+                    slidesToScroll: 3,     
+                    swipeToSlide: true,
+                    slidesToShow: 1,
+                    prevArrow: $('.prev'),
+                    nextArrow: $('.next'),
+                   
+                }
+            }
+        ]
+    });
+});
+
+</script>

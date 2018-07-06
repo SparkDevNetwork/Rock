@@ -1,0 +1,263 @@
+.page-background {   
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/hero-financial-resources.jpg");
+}
+
+#ternavbar-bg {
+    display: flex;
+}
+
+#zone-tertiarynavbar {
+    margin: 0;
+}
+
+.navigation-tertiary-items {
+    padding-left: 150px;
+}
+
+/* Start Navigation-Tertiary Styling */
+
+.books {
+    display: flex;
+}
+
+.book {
+    padding: 10px 15px;
+    list-style-type: none;
+    text-align: center;
+}
+
+.book a {
+    color: #7d7d7d;
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 16px;
+    text-decoration: none;
+    text-transform: uppercase;
+}
+
+.book.active a {
+    color: #7A1315;
+}
+
+.book img {
+    height: 300px;
+    width: 245px;
+}
+.background-card {
+    text-align: center;
+    list-style-type: none;
+}
+
+.resource-links {
+    list-style-type: none;
+}
+
+.next {
+    color:  #7A1315;
+    font-size: 40px;
+    position: absolute;
+    right: 10px;
+    top: 1360px;
+    display: block;
+  }
+  
+  .prev{
+    color:  #7A1315;
+    font-size: 40px;
+    position: absolute;
+    left: 10px;
+    top: 1360px;
+    display: block;
+  }
+
+  .navigation-tertiary-desktop {
+    display: none;
+}
+
+/* Laptop (1 x 856) Styling */
+@media screen and (min-width: 1260px) {
+    .next {
+        margin-right: 300px;
+        top: 1360px;
+      }
+      
+      .prev{
+        margin-left: 250px;
+        top: 1360px;
+      }
+
+    .book {
+        width: 295px;
+    }
+}
+
+/* Laptop (1024 x 856) Styling */
+@media screen and (min-width: 1025px) {
+    .next {
+        margin-right: 30px;
+        top: 1360px;
+      }
+      
+      .prev{
+        margin-left: 25px;
+        top: 1360px;
+      }
+
+    .book {
+        width: 295px;
+    }
+}
+
+/* Laptop (1024 x 856) Styling */
+@media screen and (max-width: 1024px) {
+    .navigation-tertiary-items-slick {
+        width: 345px;
+        padding-left: 50px;
+    }
+    .next {
+
+        margin-right: 40px;
+        top: 1340px;
+      }
+      
+      .prev{
+        margin-left: 30px;
+        top: 1340px;
+      }
+
+    .book {
+        width: 195px;
+    }
+
+    .book-container {
+        width: 87%;
+        margin-left: 30px;
+    }
+    
+    .book img {
+        height: 200px;
+    }
+
+    .book {
+        padding: 5px;
+    }
+    
+    .book-title {
+        font-size: 18px;
+    }
+    .slick-slide {
+        padding-left: 30px;
+    }
+
+    .navigation-tertiary-mobile {
+        display: none;
+    }
+
+}
+/* End Navigation-Tertiary */
+
+/* Tablet. (768 x 856) Styling */
+@media screen and (max-width: 768px) {
+    .navigation-tertiary-items-slick {
+        width: 345px;
+        padding-left: 0%;
+    }
+
+    .next {
+        margin-left: 280px;
+        margin-right: 0px;
+        top: 1370px;
+      }
+      
+      .prev{
+        margin-right: 0px;
+        margin-left: 0px;
+        top: 1370px;
+      }
+
+    .book {
+        width: 195px;
+    }
+    
+    .book-container {
+        width: 85%;
+        margin-left: 30px;
+    }
+
+    .navigation-tertiary-mobile {
+        display: none;
+    }
+}
+
+/* IPhone 6/7/8 PLUS. (425 x 856) Styling */
+@media screen and (max-width: 425px) {
+    .navigation-tertiary-items-slick {
+        width: 345px;
+    }
+
+    
+
+    .navigation-tertiary-mobile {
+        display: none;
+    }
+
+    .book-container h2 {
+        font-size: 30px;
+    }
+
+    .book-container {
+        width: 85%;
+    }
+}
+
+/* IPhone 6/7/8. (375 x 667) Mobile Styling */
+@media screen and (max-width: 375px) {
+    .navigation-tertiary-items-slick {
+        width: 335px;
+    }
+
+    .next {
+        right: 10px;
+        top: 1440px;
+      }
+      
+      .prev{
+        left: 10px;
+        top: 1440px;
+      }
+
+    .navigation-tertiary-mobile {
+        display: none;
+    }
+
+    .book-container h2 {
+        font-size: 30px;
+    }
+
+}
+
+/* IPhone 6/7/8. (320 x 667) Styling */
+@media screen and (max-width: 320px) {
+    .navigation-tertiary-items-slick {
+        width: 345px;
+    }
+
+    .next {
+        right: 10px;
+        top: 1640px;
+      }
+      
+      .prev{
+        left: 10px;
+        top: 1640px;
+      }
+
+    .navigation-tertiary-mobile {
+        display: none;
+    }
+
+    .book-container {
+        width: 80%;
+        margin-left: 30px;
+    }
+}

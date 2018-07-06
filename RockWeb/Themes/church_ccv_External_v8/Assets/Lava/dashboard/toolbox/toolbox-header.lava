@@ -1,50 +1,52 @@
 
 <script>
-// adds on "onload" hook to the window.onload function chain
-var oldonload = window.onload;
-window.onload = (typeof window.onload != 'function') ?
-  handleOnLoad : function() { 
-   oldonload(); handleOnLoad(); 
-   };
+    // adds on "onload" hook to the window.onload function chain
+    var oldonload = window.onload;
+    window.onload = (typeof window.onload != 'function') ?
+        handleOnLoad : function() { 
+            oldonload(); handleOnLoad(); 
+        };
 
-var gCurrentLink;
-var gCurrentPanel;
+    var gCurrentLink;
+    var gCurrentPanel;
 
-function handleOnLoad() {
-   // default to the dashboard panel
-   gCurrentLink = $("#dashboard-button")[0];
-   gCurrentPanel = $("#dashboard-panel")[0];
-   
-   togglePanel( gCurrentLink, gCurrentPanel, true );
-}
+    function handleOnLoad() {
+        // default to the dashboard panel
+        gCurrentLink = $("#dashboard-button")[0];
+        gCurrentPanel = $("#dashboard-panel")[0];
+        
+        togglePanel( gCurrentLink, gCurrentPanel, true );
+    }
 
-function togglePanel(panelLink, panelObj, enabled) {
-   if( enabled ) {
-      panelLink.classList.add('subnav-div-selected');
-      panelObj.style.display="block";
-   }
-   else {
-      panelLink.classList.remove('subnav-div-selected');
-      panelObj.style.display="none";
-   }
-}
+    function togglePanel(panelLink, panelObj, enabled) {
+        if( enabled ) {
+            panelLink.classList.add('toolbox-subnav-div-selected');
+            panelObj.style.display="block";
+        }
+        else {
+            panelLink.classList.remove('toolbox-subnav-div-selected');
+            panelObj.style.display="none";
+        }
+    }
          
-function linkClicked(linkElement, sectionName, showInfoBanner = true) {
-   
-   // turn off existing panel
-   togglePanel( gCurrentLink, gCurrentPanel, false );
-   
-   var targetPanel = $("#" + sectionName + "-panel")[0];
-   gCurrentPanel = targetPanel;
-   gCurrentLink = linkElement;
-   
-   togglePanel( gCurrentLink, gCurrentPanel, true );
+    function linkClicked(linkElement, sectionName, showInfoBanner = true) {
+        // remove styling from default mobile panel - Jered better way?
+        $('#dashboard-mobile-button').removeClass('toolbox-subnav-div-selected');
 
-   $(".group-info-banner")[0].style.display = showInfoBanner == true ? "flex" : "none";
-}
+        // turn off existing panel
+        togglePanel( gCurrentLink, gCurrentPanel, false );
+        
+        var targetPanel = $("#" + sectionName + "-panel")[0];
+        gCurrentPanel = targetPanel;
+        gCurrentLink = linkElement;
+        
+        togglePanel( gCurrentLink, gCurrentPanel, true );
 
-function tryToggleInfoBanner( sectionName ) {
-}
+        $(".group-info-banner")[0].style.display = showInfoBanner == true ? "flex" : "none";
+    }
+
+    function tryToggleInfoBanner( sectionName ) {
+    }
 </script>
 
 {% comment %}Force conversion from string to int {% endcomment %}
@@ -52,28 +54,60 @@ function tryToggleInfoBanner( sectionName ) {
 
 {% assign groupMembers = CurrentPerson | Groups: "49" %}
 
-{% for groupMember in groupMembers %}
-   {% if groupMember.Group.Id == groupId %}
-      {% assign group = groupMember.Group %}
-   {% endif %}
-{% endfor %}
+    {% for groupMember in groupMembers %}
+        {% if groupMember.Group.Id == groupId %}
+            {% assign group = groupMember.Group %}
+        {% endif %}
+    {% endfor %}
 
-<div class="header">
-   <h4>{{ group.Name }}</h4>
-</div>
+    <div class="header">
+        <h4>{{ group.Name }}</h4>
+    </div>
 
-<div class="subnav">
-   <div id="dashboard-button" onClick="linkClicked(this, 'dashboard')">Dashboard</div>
-   <div id="training-center-button" onClick="linkClicked(this, 'training-center')">Training Center</div>
-   <div id="resources-button" onClick="linkClicked(this, 'resources')">Resources</div>
-   <div id="baptisms-button" onClick="linkClicked(this, 'baptisms')">Baptisms</div>
-   <div id="group-details-button" onClick="linkClicked(this, 'group-details', false)">Group Details</div>
-</div>
+    <div class="toolbox-subnav-desktop">
+        <div id="dashboard-button" onClick="linkClicked(this, 'dashboard')">Dashboard</div>
+        <div id="training-center-button" onClick="linkClicked(this, 'training-center')">Training Center</div>
+        <div id="resources-button" onClick="linkClicked(this, 'resources')">Resources</div>
+        <div id="baptisms-button" onClick="linkClicked(this, 'baptisms')">Baptisms</div>
+        <div id="group-details-button" onClick="linkClicked(this, 'group-details', false)">Group Details</div>
+    </div>
 
-<div class="group-info-banner">
-   <div>Meets <span style="color: black;">{{ group.Schedule.FriendlyScheduleText }} </span></div>
-   <div>Members <span style="color: black;">{{ group.Members | Size }} </span></div>
-   <div>Started <span style="color: black;">{{ group.CreatedDateTime | Date:'yyyy'}} </span></div>
-</div>
+    <div class="toolbox-subnav-mobile">
+        <div class="toolbox-subnav-mobile-items">
+            <div id="dashboard-mobile-button" onClick="linkClicked(this, 'dashboard')" class="subnav-item toolbox-subnav-div-selected">Dashboard</div>
+            <div id="training-center-mobile-button" onClick="linkClicked(this, 'training-center')" class="subnav-item">Training Center</div>
+            <div id="resources-mobile-button" onClick="linkClicked(this, 'resources')" class="subnav-item">Resources</div>
+            <div id="baptisms-mobile-button" onClick="linkClicked(this, 'baptisms')" class="subnav-item">Baptisms</div>
+            <div id="group-details-button" onClick="linkClicked(this, 'group-details', false)" class="subnav-item">Group Details</div>
+        </div>
+    </div>
+
+    <div class="group-info-banner">
+        <div>Meets <span style="color: black;">{{ group.Schedule.FriendlyScheduleText }} </span></div>
+        <div>Members <span style="color: black;">{{ group.Members | Size }} </span></div>
+        <div>Started <span style="color: black;">{{ group.CreatedDateTime | Date:'yyyy'}} </span></div>
+    </div>
+<script>
+    $(document).ready(function(){
+        $('.toolbox-subnav-mobile-items').slick({
+            infinite: false,
+            slidesToShow: 2,
+            swipeToSlide: true,    
+            arrows: true,
+            variableWidth: true,
+            prevArrow: '<div class="nav-prev nav-arrow"><i class="mdi mdi-chevron-left"></i></div>',
+            nextArrow: '<div class="nav-next nav-arrow"><i class="mdi mdi-chevron-right"></i></div>'
+
+        });
+    });
+    
+    $('.nav-prev').click(function(){
+        $('.toolbox-subnav-mobile-items').slick('slickPrev');
+    });
+
+    $('.nav-next').click(function(){
+        $('.toolbox-subnav-mobile-items').slick('slickNext');
+    });
+</script>
 
    

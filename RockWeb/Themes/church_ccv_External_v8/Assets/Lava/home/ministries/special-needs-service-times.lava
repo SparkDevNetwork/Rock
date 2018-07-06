@@ -1,11 +1,6 @@
 
 {% assign SpecialNeedsTimes = Context.Campus | Attribute: 'SpecialNeedsServiceTimes' | Split: ", " %}
 
-{% if Context.Campus == null %}
-   {% assign selectCampusBtnClasses = 'btn btn-default' %}
-   {% include '~~/Assets/Lava/SelectACampus.lava' %}
-{% endif %}
-
 {% if SpecialNeedsTime != empty  %}
 <div class="special-needs-details">
     <div class="special-needs-service-times">

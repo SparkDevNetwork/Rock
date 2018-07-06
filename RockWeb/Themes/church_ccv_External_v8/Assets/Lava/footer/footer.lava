@@ -16,7 +16,8 @@
 
     <div class="footer-links">
         <div class="footer-links-section">
-            {% comment %} Future section, left to keep proper spacing. {% endcomment %}
+            <h5>Resources</h5>
+            <a href="/ministries/adults/life-training">Life Training</a>
         </div>
         <div class="footer-links-section">
             <h5>Reach out</h5>

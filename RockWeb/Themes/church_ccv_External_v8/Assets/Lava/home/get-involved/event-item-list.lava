@@ -154,7 +154,8 @@
                                         contactEmail: '{{ eventOccurrenceSummary.EventItemOccurrence.ContactEmail }}',
                                         contactPhone: '{{ eventOccurrenceSummary.EventItemOccurrence.ContactPhone }}',
                                         note: '{{ eventOccurrenceSummary.EventItemOccurrence.Note | Escape }}',
-                                        regInfo: ''
+                                        regInfo: '',
+                                        location: '{{ eventOccurrenceSummary.EventItemOccurrence.Location }}'
                                     };
                                     gEvents[{{ eventOccurrenceSummary.EventItemOccurrence.Id }}] = eventItem;
                                     
@@ -473,16 +474,4 @@
             }
         }
     </script>
-{% else %}
-    <p class="hidden-xs">&nbsp;</p>
-    <p class="hidden-xs">&nbsp;</p>
-    <p class="hidden-xs">&nbsp;</p>
-    <div class="text-center">
-        <p class="lead">Select a campus to view upcoming events.</p>
-        {% assign selectCampusBtnClasses = 'btn btn-primary btn-lg' %}
-        {% assign selectCampusBtnShowDescription = false %}
-        {% include '~~/Assets/Lava/select-a-campus.lava' %}
-    </div>
-    <p class="hidden-xs">&nbsp;</p>
-    <p class="hidden-xs">&nbsp;</p>
 {% endif %}

@@ -262,7 +262,7 @@
 
                     <asp:Label runat="server" ID="lblSuccessMessage" CssClass="success-message">
                         Thank you for your generous contribution.<br />
-                        Your support is helping actively achieve our mission.<br />
+                        Your support is helping to actively achieve our mission.<br />
                         We are so grateful for your commitment.
                     </asp:Label>
 

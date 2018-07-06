@@ -42,7 +42,8 @@
     max-width: 200px;
     min-height: 200px;
     max-height: 200px;
-    margin-right: 20px;
+    margin-right: 100px;
+    margin-left: 40px;
 }
 
 .testimonials-content {
@@ -107,6 +108,7 @@
         min-height: 150px;
         max-height: 150px;
         margin-right: 0;
+        margin-left: 0;
     }
 }
 

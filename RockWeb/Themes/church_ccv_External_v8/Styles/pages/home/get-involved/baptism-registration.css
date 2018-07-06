@@ -1,7 +1,16 @@
 .page-background {
-    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-image-missing.jpg");
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/hero-baptism-registration.jpg");
     background-color: #ffffff;
 }
+
+/* use the expanded main feature only for tablet and larger */
+@media screen and (min-width: 501px) {
+    .main-feature {
+        height: 350px;
+        padding-top: 125px;
+    }
+}
+
 
 .reg-info h1 {
     font-size: 60px;

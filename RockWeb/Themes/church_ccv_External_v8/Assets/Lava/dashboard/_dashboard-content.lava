@@ -46,7 +46,8 @@
                         "Link": "/get-involved/next-steps/starting-point",
                         "Class": "btn-primary"
                     }
-                ]
+                ],
+                "CardImage": "/Themes/church_ccv_External_v8/Assets/Images/dashboard/feature-dashboard-next-step-starting-point.jpg"
             }
         },
         {
@@ -63,7 +64,8 @@
                         "Link": "/get-involved/next-steps/baptism",
                         "Class": "btn-primary"
                     }
-                ]
+                ],
+                "CardImage": "/Themes/church_ccv_External_v8/Assets/Images/dashboard/feature-dashboard-next-step-baptism.jpg"
             }
         },
         {
@@ -77,10 +79,11 @@
                 "Buttons": [
                     {
                         "Label": "Locations & Times",
-                        "Link": "/our-campuses",
+                        "Link": "/locationsv2",
                         "Class": "btn-primary"
                     }
-                ]
+                ],
+                "CardImage": "/Themes/church_ccv_External_v8/Assets/Images/dashboard/feature-dashboard-next-step-worship.jpg"
             }
         },
         {
@@ -97,7 +100,8 @@
                         "Link": "/get-involved/next-steps/connect/group-search",
                         "Class": "btn-primary"
                     }
-                ]
+                ],
+                "CardImage": "/Themes/church_ccv_External_v8/Assets/Images/dashboard/feature-dashboard-next-step-connect.jpg"
             }
         },
         {
@@ -114,7 +118,8 @@
                         "Link": "/get-involved/next-steps/serve",
                         "Class": "btn-primary"
                     }
-                ]
+                ],
+                "CardImage": "/Themes/church_ccv_External_v8/Assets/Images/dashboard/feature-dashboard-next-step-serve.jpg"
             }
         },
         {
@@ -128,10 +133,11 @@
                 "Buttons": [
                     {
                         "Label": "Learn More",
-                        "Link": "/giveV2",
+                        "Link": "/get-involved/giving",
                         "Class": "btn-primary"
                     }
-                ]
+                ],
+                "CardImage": "/Themes/church_ccv_External_v8/Assets/Images/dashboard/feature-dashboard-next-step-give.jpg"
             }
         },
         {
@@ -148,7 +154,8 @@
                         "Link": "/get-involved/next-steps/share-story",
                         "Class": "btn-primary"
                     }
-                ]
+                ],
+                "CardImage": "/Themes/church_ccv_External_v8/Assets/Images/dashboard/feature-dashboard-next-step-share.jpg"
             }
         },
         {
@@ -170,7 +177,8 @@
                         "Link": "/get-involved/next-steps/coach-request?Whattypeofcoaching=Become%20a%20Coach",
                         "Class": "btn-primary"
                     }
-                ]
+                ],
+                "CardImage": "/Themes/church_ccv_External_v8/Assets/Images/dashboard/feature-dashboard-next-step-coach.jpg"
             }
         }
     ]

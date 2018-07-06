@@ -1,7 +1,7 @@
 /* important needed to override giving css (need to move giving block CSS into its own file so we dont have these conflicts, instead of being in giving page css file) */
 .page-background {   
     background-color: #EBEBEB !important;
-    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/hero-missions.jpg") !important;
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/hero-missions-donate.jpg") !important;
 }
 
 .main-feature {

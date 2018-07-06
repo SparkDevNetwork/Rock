@@ -190,8 +190,7 @@ TODO: Add Other Group Type leader roles
     {% comment %} Render Serve Call to Action {% endcomment %}
     <div class="info-card">
         <div class="info-card-image">
-            <img src="~~/Assets/Images/home/get-involved/ad-connect.png">
-            <img class="info-card-icon" src="~~/Assets/Images/home/get-involved/icon-connect.png"/>
+            <img src="/Themes/church_ccv_External_v8/Assets/Images/dashboard/feature-dashboard-next-step-connect.jpg">
         </div>
         <div class="header">
             <h4>Connect</h4>
