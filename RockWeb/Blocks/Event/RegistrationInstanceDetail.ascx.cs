@@ -4187,8 +4187,8 @@ namespace RockWeb.Blocks.Event
                                 break;
 
                             case RegistrationPersonFieldType.MobilePhone:
+                                // Per discussion this should not have "Phone" appended to the end if it's missing.
                                 var mobileLabel = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Value;
-                                mobileLabel = mobileLabel.Trim().EndsWith( "Phone" ) ? mobileLabel : mobileLabel + " Phone";
 
                                 var tbRegistrantsMobilePhoneFilter = new RockTextBox();
                                 tbRegistrantsMobilePhoneFilter.ID = "tbRegistrantsMobilePhoneFilter";
@@ -4236,8 +4236,8 @@ namespace RockWeb.Blocks.Event
                                 break;
 
                             case RegistrationPersonFieldType.HomePhone:
+                                // Per discussion this should not have "Phone" appended to the end if it's missing.
                                 var homePhoneLabel = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ).Value;
-                                homePhoneLabel = homePhoneLabel.Trim().EndsWith( "Phone" ) ? homePhoneLabel : homePhoneLabel + " Phone";
 
                                 var tbRegistrantsHomePhoneFilter = new RockTextBox();
                                 tbRegistrantsHomePhoneFilter.ID = "tbRegistrantsHomePhoneFilter";
