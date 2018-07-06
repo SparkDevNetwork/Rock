@@ -144,6 +144,13 @@ namespace RockWeb
 
             string scrubedFileName = ScrubFileName( untrustedFileName );
 
+            if( string.IsNullOrWhiteSpace( scrubedFileName ) )
+            {
+                throw new Rock.Web.FileUploadException( "Invalid File Name", System.Net.HttpStatusCode.BadRequest );
+            }
+
+            /* Scrub the folder path */
+            string scrubedFolderPath = ScrubFileName( untrustedFolderPath );
 
             /* Determine the root upload folder */
 
@@ -168,7 +175,11 @@ namespace RockWeb
             string trustedPhysicalRootFolder = Path.GetFullPath( context.Request.MapPath( trustedRootFolder ) );
 
             // Treat rooted folder paths as relative
-            string untrustedRelativeFolderPath = untrustedFolderPath.TrimStart( Path.GetPathRoot( untrustedFolderPath ).ToCharArray() );
+            string untrustedRelativeFolderPath = "";
+            if ( !string.IsNullOrWhiteSpace( scrubedFolderPath ) )
+            {
+                untrustedRelativeFolderPath = scrubedFolderPath.TrimStart( Path.GetPathRoot( scrubedFolderPath ).ToCharArray() );
+            }
 
             // Get the absolute path for our untrusted folder.
             string untrustedPhysicalFolderPath = Path.GetFullPath( Path.Combine( trustedPhysicalRootFolder, untrustedRelativeFolderPath ) );
@@ -336,17 +347,32 @@ namespace RockWeb
         }
 
         /// <summary>
-        /// Scrubs a filename to make sure it doen't have any directories or bad characters
+        /// Scrubs a filename to make sure it doesn't have any directories or invalid characters
         /// </summary>
         /// <param name="untrustedFileName">The filename.</param>
         /// <returns>A scrubed filename.</returns>
         public string ScrubFileName(string untrustedFileName )
         {
+            // Scrub invalid path characters
+            untrustedFileName = ScrubFilePath( untrustedFileName );
+
             // Get the base filename
             string baseFileName = Path.GetFileName( untrustedFileName );
 
-            // Scrub invalid characters
+            // Scrub invalid file characters
             return Regex.Replace( baseFileName, "[" + Regex.Escape( Path.GetInvalidFileNameChars().ToString() ) + "]", string.Empty, RegexOptions.CultureInvariant );
         }
+
+        /// <summary>
+        /// Scrubs a file path to make sure it doesn't have any invalid characters
+        /// </summary>
+        /// <param name="untrustedFilePath">The file path.</param>
+        /// <returns>A scrubed file path.</returns>
+        public string ScrubFilePath( string untrustedFilePath )
+        {
+            // Scrub invalid path characters
+            return Regex.Replace( untrustedFilePath, "[" + Regex.Escape( Path.GetInvalidPathChars().ToString() ) + "]", string.Empty, RegexOptions.CultureInvariant );
+        }
+
     }
 }
