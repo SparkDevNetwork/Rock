@@ -6,9 +6,9 @@
 .neighborhood-groups-card { /* .dashboard-card */
     background-color: #ffffff;
     transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
-    box-sizing: border-box;
+    /* box-sizing: border-box; */
     -webkit-tap-highlight-color: rgba(0,0,0,0);
-    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.12);
+    /* box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.12); */
     border-radius: 5px;
     margin: 40px 0 0 0;
 }
@@ -27,8 +27,7 @@
 }
 
 .neighborhood-groups-card .content {
-    overflow-y: auto; 
-    height: 405px;
+    height: auto;
     display: flex; 
     flex-direction: column;
     padding-bottom: 20px;
@@ -80,11 +79,16 @@
     border-radius: 15px;
     border: 1px solid #F3F3FA;
     margin-bottom: 10px;
+    cursor: pointer;
 }
 
- /* .person-contact {
-    margin-left: 20px;
-} */
+.person-row:hover { 
+    background-color: rgba(172, 171, 171, 0.692);
+}
+
+.person-details-toggle, .person-details-toggle:hover, .person-details-toggle:active, .person-details-toggle:visited, .person-details-toggle:focus {
+    text-decoration:none;
+}
 
 .person-info {
     /* display: flex; 
@@ -127,12 +131,14 @@
     background-color: unset;
     border: unset;
     padding: unset;
-    text-decoration: unset;
+
 }
 
 .details-container{
     display: flex;
     background-color: #FFFFFF;
+    padding-top: 10px;
+    padding-bottom: 10px;
 }
 
 .details-right-card {
@@ -148,7 +154,7 @@
     margin-left: 58px;
 }
 
-.btn-link, .btn-link:hover {
+/* .btn-link, .btn-link:hover {
     background-color: #7A1315;
     color: #FFFFFF;
     border-radius: 4px;
@@ -159,7 +165,7 @@
 .btn-link:hover {
     background-color: #4e0c0d;
     border-color: #4e0c0d;
-}
+} */
 
 
 /* Fix Blue Box around calling href bug 

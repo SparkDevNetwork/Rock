@@ -22,9 +22,9 @@
                                     {% endif %}
                                 </div>
                                 <div class="person-info">
-                                    <div>
+                                  
                                         <h5>{{ group.Name }} </h5> <p>{{ group.Schedule.FriendlyScheduleText }}</p>
-                                    </div>
+                                    
                                 </div>
                         
                       
@@ -35,6 +35,7 @@
                                 {% assign groupAddr = group.GroupLocations | First %}
                                 <h5>Address</h5>
                                 <p>{{ groupAddr.Location.FormattedHtmlAddress }}</p> 
+                                {% comment %} <p>Distance: {{ groupAddr.Location.GeoFence }}</p>  {% endcomment %}
                                 {% comment %} <a class="btn btn-primary" href="get-involved/next-steps/connect/group-search/group-registration?GroupId=1202626">Register</a> {% endcomment %}
                                 {% comment %} <a class='btn btn-xs btn-action margin-r-sm' href='{{ LinkedPages.GroupDetailPage }}?GroupId={{ group.Id }}'>View {{ Group.GroupType.GroupTerm }}</a> {% endcomment %}
                                 {% if LinkedPages.RegisterPage and LinkedPages.RegisterPage != '' %}
@@ -53,7 +54,7 @@
                                                 <h5>Description</h5>
                                                 {{ attribute.ValueFormatted }}
                                             {% else %}
-                                                {{ attribute.ValueFormatted }}
+                                              
                                             {% endif %}
                                         {% endif %}
                                     {% endif %}

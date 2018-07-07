@@ -3,7 +3,11 @@
 {% endcomment %}
 
 <div class="navigation-mobile-title">
-    Menu<button class="mdi mdi-close navigation-mobile-close" type="button" onClick="toggleNavbar(false);"></button>
+    <div class="navigation-mobile-title-search-wrapper">
+        Menu
+        <!--<a class="navigation-mobile-magnify mdi mdi-magnify" href="/searchv2"></a>-->
+    </div>
+    <button class="mdi mdi-close navigation-mobile-close" type="button" onClick="toggleNavbar(false);"></button>
 </div>
 
 <ul class="navigation-mobile-items">
@@ -50,4 +54,29 @@
         <li><a class="navigation-mobile-item" href="/login">Login</a></li>
     {% endif %}
 </ul>
+
+<script>
+    function logout() {
+        
+        var pageId = `{{ 'Global' | Page:'Id' }}`;
+
+        $.ajax({
+            url: "/api/RockAuth/Logout?currPageId=" + pageId,
+            type: "GET",
+            xhrFields: {
+                withCredentials: true
+            }
+        }).done(function (returnData) {
+
+            // if true is returned, we're not allowed to view this page anonymously, so redirect them.
+            if (returnData == "True") {
+                var uri = window.location.protocol + "//" + window.location.host + "/home";
+                location.replace(uri);
+            }
+            else {
+                location.reload();
+            }
+        });
+    }
+</script>
 

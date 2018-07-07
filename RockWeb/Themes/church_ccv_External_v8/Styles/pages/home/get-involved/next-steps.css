@@ -7,6 +7,14 @@
     display: none;
 }
 
+#section-a-bg {
+    background-color: #FFFFFF;
+}
+
+.next-steps-section {
+    padding: 20px 0;   
+}
+
 .nextsteps-container {
     display: flex;
     flex-direction: column;

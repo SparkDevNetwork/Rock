@@ -46,9 +46,9 @@
                             </div>
                             <div class="person-info">
                                 <div>
-                                    <h5>{{ member.Person.FullName }}</h5>
+                                  <a href="/page/1925?GroupMemberId={{ member.Id }}&AdminPersonId={{ CurrentPerson.Id }}"> <h5>{{ member.Person.FullName }}</h5> </a> 
                                 </div>
-                            </div>
+                            </div> 
                             <div class="person-contact">
                                 {% assign cellPhone = member.Person | PhoneNumber:'Mobile' %}
                                 {% assign homePhone = member.Person | PhoneNumber:'Main/Home' %}

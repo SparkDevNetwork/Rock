@@ -4,11 +4,6 @@
     background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/hero-missions-donate.jpg") !important;
 }
 
-.main-feature {
-    height: 720px !important;
-    padding-top: 350px !important;
-}
-
 #ternavbar-bg {
     display: flex;
 }
@@ -18,6 +13,7 @@
 }
 
 .disclaimer {
+    padding-top: 20px;
     width: 50%;
     margin: 0 auto;
 }
@@ -47,9 +43,7 @@
 /* Tablet Styling */
 @media screen and (max-width: 768px) {
     .disclaimer {
-        padding-top: 20px;
         width: 100%;
-        padding-bottom: 1px;
     }
 }
 

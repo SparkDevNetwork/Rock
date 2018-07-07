@@ -362,6 +362,22 @@
     outline: 0;
 }
 
+/* Styling for the 'Search' magnifying glass on the navigation primary bar. */
+.navigation-primary-items-search-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.search-item {
+    margin-left: 15px;
+    padding: 10px;
+}
+
+.search-item:hover {
+    text-decoration: none;
+}
+/**/
+
 .loginstatus {
     color: #FFFFFF;
     font-family: akrobat;
@@ -488,6 +504,16 @@
     outline: none;
 }
 
+.navigation-mobile-title-search-wrapper {
+    display: flex;
+}
+
+.navigation-mobile-magnify,.navigation-mobile-magnify:hover {
+    margin-left: 25px;
+    color: #FFFFFF;
+    text-decoration: none;
+}
+
 .navigation-mobile-items {
     display: flex;
     flex-direction: column;
@@ -543,7 +569,7 @@
 }
 
 .navigation-secondary-item a {
-    color: #9c9c9c;
+    color: #FFFFFF;
     font-family: akrobat;
     font-size: 14px;
     font-weight: bold;
@@ -554,7 +580,7 @@
 }
 
 .navigation-secondary-item.active a {
-    color: #FFFFFF;
+    color: #9c9c9c;
 }
 
 /* Navigation-Secondary Mobile Styling */
