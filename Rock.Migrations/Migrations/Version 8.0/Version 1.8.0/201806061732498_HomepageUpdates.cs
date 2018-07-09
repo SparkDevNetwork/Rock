@@ -35,11 +35,25 @@ namespace Rock.Migrations
 
             // Check if default "Welcome to Rock" is on the page. If it exists, remove it
             Sql(
-@"IF EXISTS ( SELECT [Id] FROM [dbo].[HtmlContent] WHERE ([Guid] = '7ef64acf-a66e-4086-900b-6832ec65cc9c') AND ([Content] LIKE N'%Administrators, add your organization&#39;s welcome message here.</p>%'))
-BEGIN
-    DELETE FROM [dbo].[Block] WHERE [Guid] = '5f0dbb84-bfef-43ed-9e51-e245dc85b7b5'
-    DELETE FROM [dbo].[HtmlContent] WHERE [Guid] = '7ef64acf-a66e-4086-900b-6832ec65cc9c'
-END" );
+                @"DECLARE @WelcomeBlockId INT = (SELECT [Id] FROM [dbo].[Block] WHERE [Guid] = '5F0DBB84-BFEF-43ED-9E51-E245DC85B7B5')
+
+                -- If versioning was or is enabled then we don't want to delete. The three HtmlContent GUIDs here were inserted by migrations.
+                IF ((SELECT COUNT(*)
+	                FROM [dbo].[HtmlContent]
+	                WHERE [BlockId] = @WelcomeBlockId 
+		                AND [Guid] NOT IN ('F76B1C2C-BAF1-45E1-844C-459417FEFC69', 'B89605CF-C111-4A1B-9228-29A78EA9DA25', '7EF64ACF-A66E-4086-900B-6832EC65CC9C')) = 0)
+                BEGIN
+	                -- If the welcome page content has never been altered then we want to delete it
+	                IF EXISTS ( SELECT [Id]
+                        FROM [dbo].[HtmlContent]
+                        WHERE ([Guid] = '7EF64ACF-A66E-4086-900B-6832EC65CC9C') AND ([Content] LIKE N'%Administrators, add your organization&#39;s welcome message here.</p>%'))
+	                BEGIN
+		                DELETE FROM [dbo].[Block] WHERE [Guid] = '5F0DBB84-BFEF-43ED-9E51-E245DC85B7B5'
+		                DELETE FROM [dbo].[HtmlContent] WHERE [Guid] = '7EF64ACF-A66E-4086-900B-6832EC65CC9C'
+		                DELETE FROM [dbo].[HtmlContent] WHERE [Guid] = 'F76B1C2C-BAF1-45E1-844C-459417FEFC69'
+		                DELETE FROM [dbo].[HtmlContent] WHERE [Guid] = 'B89605CF-C111-4A1B-9228-29A78EA9DA25'
+	                END
+                END" );
         }
         /// <summary>
         /// Operations to be performed during the downgrade process.
