@@ -888,7 +888,7 @@ namespace RockWeb.Blocks.Crm
         /// <param name="individualsList">The individuals list.</param>
         protected void WorkerTask( object individualsList )
         {
-            const int batchSize = 1;
+            const int batchSize = 50;
 
             var individuals = ( List<Individual> ) individualsList;
 
