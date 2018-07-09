@@ -59,6 +59,7 @@ namespace RockWeb.Blocks.Event
     [SystemEmailField( "Confirm Account Template", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, "", 7 )]
     [TextField( "Family Term", "The term to use for specifying which household or family a person is a member of.", true, "immediate family", "", 8 )]
     [BooleanField( "Force Email Update", "Force the email to be updated on the person's record.", false, "", 9 )]
+    [BooleanField( "Show Field Descriptions", "Show the field description as help text", defaultValue: false, order: 10, key: "ShowFieldDescriptions" )]
 
     public partial class RegistrationEntry : RockBlock
     {
@@ -4326,7 +4327,8 @@ namespace RockWeb.Blocks.Event
                     value = fieldValue.ToString();
                 }
 
-                attribute.AddControl( phRegistrantControls.Controls, value, BlockValidationGroup, setValue, true, field.IsRequired, null, string.Empty );
+                string helpText = GetAttributeValue( "ShowFieldDescriptions" ).AsBoolean() ? field.Attribute.Description : string.Empty;
+                attribute.AddControl( phRegistrantControls.Controls, value, BlockValidationGroup, setValue, true, field.IsRequired, null, helpText );
             }
         }
 
