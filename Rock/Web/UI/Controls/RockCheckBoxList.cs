@@ -344,13 +344,21 @@ namespace Rock.Web.UI.Controls
             // make sure we are dealing with a postback for this control by seeing if the hidden field is included
             if ( postDataKey == _hfCheckListBoxId.UniqueID )
             {
+                bool hasChanged = false;
+
                 // Hack to get the selected items on postback.  
                 for ( int i = 0; i < this.Items.Count; i++ )
                 {
-                    this.Items[i].Selected = ( postCollection[string.Format( "{0}${1}", this.UniqueID, i )] != null );
+                    bool newCheckState = ( postCollection[string.Format( "{0}${1}", this.UniqueID, i )] != null );
+
+                    if ( this.Items[i].Selected != newCheckState )
+                    {
+                        this.Items[i].Selected = newCheckState;
+                        hasChanged = true;
+                    }
                 }
 
-                return false;
+                return hasChanged;
             }
             else
             {
