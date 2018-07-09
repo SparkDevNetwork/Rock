@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 
+using Rock.Cache;
 using Rock.Data;
 using Rock.Model;
 
@@ -29,6 +30,7 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
+    [Obsolete( "Use Rock.Cache.CacheLavaShortcode instead" )]
     public class LavaShortcodeCache : CachedModel<LavaShortcode>
     {
         #region Constructors
@@ -37,9 +39,9 @@ namespace Rock.Web.Cache
         {
         }
 
-        private LavaShortcodeCache( LavaShortcode shortcode )
+        private LavaShortcodeCache( CacheLavaShortcode cacheShortcode )
         {
-            CopyFromModel( shortcode );
+            CopyFromNewCache( cacheShortcode );
         }
 
         #endregion
@@ -134,24 +136,46 @@ namespace Rock.Web.Cache
         /// Copies from model.
         /// </summary>
         /// <param name="model">The model.</param>
-        public override void CopyFromModel( Data.IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
             base.CopyFromModel( model );
 
-            if ( model is LavaShortcode )
-            {
-                var shortcode = ( LavaShortcode ) model;
-                this.IsSystem = shortcode.IsSystem;
-                this.Name = shortcode.Name;
-                this.Description = shortcode.Description;
-                this.IsActive = shortcode.IsActive;
-                this.Documentation = shortcode.Documentation;
-                this.TagName = shortcode.TagName;
-                this.Markup = shortcode.Markup;
-                this.TagType = shortcode.TagType;
-                this.Parameters = shortcode.Parameters;
-                this.EnabledLavaCommands = shortcode.EnabledLavaCommands;
-            }
+            if ( !( model is LavaShortcode ) ) return;
+
+            var shortcode = (LavaShortcode)model;
+            IsSystem = shortcode.IsSystem;
+            Name = shortcode.Name;
+            Description = shortcode.Description;
+            IsActive = shortcode.IsActive;
+            Documentation = shortcode.Documentation;
+            TagName = shortcode.TagName;
+            Markup = shortcode.Markup;
+            TagType = shortcode.TagType;
+            Parameters = shortcode.Parameters;
+            EnabledLavaCommands = shortcode.EnabledLavaCommands;
+        }
+
+        /// <summary>
+        /// Copies properties from a new cached entity
+        /// </summary>
+        /// <param name="cacheEntity">The cache entity.</param>
+        protected sealed override void CopyFromNewCache( IEntityCache cacheEntity )
+        {
+            base.CopyFromNewCache( cacheEntity );
+
+            if ( !( cacheEntity is CacheLavaShortcode ) ) return;
+
+            var shortcode = (CacheLavaShortcode)cacheEntity;
+            IsSystem = shortcode.IsSystem;
+            Name = shortcode.Name;
+            Description = shortcode.Description;
+            IsActive = shortcode.IsActive;
+            Documentation = shortcode.Documentation;
+            TagName = shortcode.TagName;
+            Markup = shortcode.Markup;
+            TagType = shortcode.TagType;
+            Parameters = shortcode.Parameters;
+            EnabledLavaCommands = shortcode.EnabledLavaCommands;
         }
 
         /// <summary>
@@ -162,22 +186,13 @@ namespace Rock.Web.Cache
         /// </returns>
         public override string ToString()
         {
-            return this.Name;
+            return Name;
         }
 
         #endregion
 
         #region Static Methods
 
-        /// <summary>
-        /// Gets the cache key for the selected lava shortcode id.
-        /// </summary>
-        /// <param name="id">The lava shortcode id.</param>
-        /// <returns></returns>
-        private static string CacheKey( int id )
-        {
-            return string.Format( "Rock:LavaShortcode:{0}", id );
-        }
 
         /// <summary>
         /// Returns lava shortcode object from cache.  If lava shortcode does not already exist in cache, it
@@ -188,35 +203,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static LavaShortcodeCache Read( int id, RockContext rockContext = null )
         {
-            return GetOrAddExisting( LavaShortcodeCache.CacheKey( id ), 
-                () => LoadById( id, rockContext ) );
-        }
-
-        private static LavaShortcodeCache LoadById( int id, RockContext rockContext )
-        {
-            if ( rockContext != null )
-            {
-                return LoadById2( id, rockContext );
-            }
-
-            using ( var rockContext2 = new RockContext() )
-            {
-                return LoadById2( id, rockContext2 );
-            }
-        }
-
-        private static LavaShortcodeCache LoadById2( int id, RockContext rockContext )
-        {
-            var lavaShortcodeService = new LavaShortcodeService( rockContext );
-            var shortcodeModel = lavaShortcodeService
-                .Queryable().AsNoTracking()
-                .FirstOrDefault( c => c.Id == id );
-            if ( shortcodeModel != null )
-            {
-                return new LavaShortcodeCache( shortcodeModel );
-            }
-
-            return null;
+            return new LavaShortcodeCache( CacheLavaShortcode.Get( id, rockContext ) );
         }
 
         /// <summary>
@@ -227,33 +214,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static LavaShortcodeCache Read( Guid guid, RockContext rockContext = null )
         {
-            int id = GetOrAddExisting( guid.ToString(),
-                () => LoadByGuid( guid, rockContext ) );
-
-            return Read( id, rockContext );
-        }
-
-        private static int LoadByGuid( Guid guid, RockContext rockContext )
-        {
-            if ( rockContext != null )
-            {
-                return LoadByGuid2( guid, rockContext );
-            }
-
-            using ( var rockContext2 = new RockContext() )
-            {
-                return LoadByGuid2( guid, rockContext2 );
-            }
-        }
-
-        private static int LoadByGuid2( Guid guid, RockContext rockContext )
-        {
-            var lavaShortcodeService = new LavaShortcodeService( rockContext );
-            return lavaShortcodeService
-                .Queryable().AsNoTracking()
-                .Where( c => c.Guid.Equals( guid ))
-                .Select( c => c.Id )
-                .FirstOrDefault();
+            return new LavaShortcodeCache( CacheLavaShortcode.Get( guid, rockContext ) );
         }
 
         /// <summary>
@@ -264,9 +225,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static LavaShortcodeCache Read( string tagName, RockContext rockContext = null )
         {
-            int id = GetOrAddExisting( tagName,
-                () => LoadByTagName( tagName, rockContext ) );
-
+            var id = LoadByTagName( tagName, rockContext );
             return Read( id, rockContext );
         }
 
@@ -300,17 +259,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static LavaShortcodeCache Read( LavaShortcode shortcodeModel )
         {
-            return GetOrAddExisting( LavaShortcodeCache.CacheKey( shortcodeModel.Id ),
-                () => LoadByModel( shortcodeModel ) );
-        }
-
-        private static LavaShortcodeCache LoadByModel( LavaShortcode shortcodeModel )
-        {
-            if ( shortcodeModel != null )
-            {
-                return new LavaShortcodeCache( shortcodeModel );
-            }
-            return null;
+            return new LavaShortcodeCache( CacheLavaShortcode.Get( shortcodeModel ) );
         }
 
         /// <summary>
@@ -329,35 +278,17 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static List<LavaShortcodeCache> All( bool includeInactive )
         {
-            List<LavaShortcodeCache> shortcodes = new List<LavaShortcodeCache>();
-            var shortcodeIds = GetOrAddExisting( "Rock:LavaShortcode:All", () => LoadAll() );
-            if ( shortcodeIds != null )
-            {
-                foreach ( int shortcodeId in shortcodeIds )
-                {
-                    var shortcodeCache = LavaShortcodeCache.Read( shortcodeId );
-                    if ( shortcodeCache != null )
-                    {
-                        if ( includeInactive || shortcodeCache.IsActive )
-                        {
-                            shortcodes.Add( shortcodeCache );
-                        }
-                    }
-                }
-            }
-            return shortcodes;
-        }
+            var lavaShortcodes = new List<LavaShortcodeCache>();
 
-        private static List<int> LoadAll()
-        {
-            using ( var rockContext = new RockContext() )
+            var cacheLavaShortcodes = includeInactive ? CacheLavaShortcode.All() : CacheLavaShortcode.AllActive();
+            if ( cacheLavaShortcodes == null ) return lavaShortcodes;
+
+            foreach ( var cacheLavaShortcode in cacheLavaShortcodes )
             {
-                return new LavaShortcodeService( rockContext )
-                    .Queryable().AsNoTracking()
-                    .OrderBy( c => c.Name )
-                    .Select( c => c.Id )
-                    .ToList();
+                lavaShortcodes.Add( new LavaShortcodeCache( cacheLavaShortcode ) );
             }
+
+            return lavaShortcodes;
         }
 
         /// <summary>
@@ -366,11 +297,7 @@ namespace Rock.Web.Cache
         /// <param name="id"></param>
         public static void Flush( int id )
         {
-            FlushCache( LavaShortcodeCache.CacheKey( id ) );
-            FlushCache( "Rock:LavaShortcode:All" );
-
-            // some of the cached lavatemplates might have a reference to this shortcode, so flush them all just in case
-            LavaTemplateCache.Flush(); 
+            CacheLavaShortcode.Remove( id );
         }
 
         #endregion

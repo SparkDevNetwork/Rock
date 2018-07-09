@@ -28,7 +28,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Crm
@@ -175,7 +175,7 @@ validity of the request before completing this merge." :
                     if ( entitySet != null )
                     {
                         tbEntitySetNote.Text = entitySet.Note;
-                        var definedValuePurpose = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.ENTITY_SET_PURPOSE_PERSON_MERGE_REQUEST.AsGuid() );
+                        var definedValuePurpose = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.ENTITY_SET_PURPOSE_PERSON_MERGE_REQUEST.AsGuid() );
                         if ( definedValuePurpose != null )
                         {
                             nbNotAuthorized.Visible = false;
@@ -331,6 +331,10 @@ validity of the request before completing this merge." :
                 {
                     e.Row.AddCssClass( "grid-section-header" );
                 }
+                else
+                {
+                    e.Row.Cells[1].AddCssClass("grid-row-header");
+                }
             }
             else if ( e.Row.RowType == DataControlRowType.Header )
             {
@@ -382,11 +386,12 @@ validity of the request before completing this merge." :
                         primaryPersonId = primaryPerson.Id;
 
                         // Write a history record about the merge
-                        var changes = new List<string>();
+                        var changes = new History.HistoryChangeList();
                         foreach ( var p in MergeData.People.Where( p => p.Id != primaryPerson.Id ) )
                         {
-                            changes.Add( string.Format( "Merged <span class='field-value'>{0} [ID: {1}]</span> with this record.", p.FullName, p.Id ) );
+                            changes.AddChange( History.HistoryVerb.Merge, History.HistoryChangeType.Record, string.Format("{0} [ID: {1}]", p.FullName, p.Id) );
                         }
+
                         HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), primaryPerson.Id, changes );
 
                         // Photo Id
@@ -418,7 +423,7 @@ validity of the request before completing this merge." :
                                                         .Min( a => a.CreatedDateTime );
 
                         // Update phone numbers
-                        var phoneTypes = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid() ).DefinedValues;
+                        var phoneTypes = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid() ).DefinedValues;
                         foreach ( var phoneType in phoneTypes )
                         {
                             var phoneNumber = primaryPerson.PhoneNumbers.Where( p => p.NumberTypeValueId == phoneType.Id ).FirstOrDefault();
@@ -606,8 +611,8 @@ validity of the request before completing this merge." :
                                 Group group = new GroupService( rockContext ).Get( groupMember.GroupId );
                                 if ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
                                 {
-                                    Rock.Security.Role.Flush( group.Id );
-                                    Rock.Security.Authorization.Flush();
+                                    Rock.Cache.CacheRole.Remove( group.Id );
+                                    Rock.Security.Authorization.Clear();
                                 }
                             }
                         }
@@ -966,7 +971,7 @@ validity of the request before completing this merge." :
                 AddPerson( person );
             }
 
-            var phoneTypes = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid() ).DefinedValues;
+            var phoneTypes = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid() ).DefinedValues;
             foreach ( var person in people )
             {
                 AddProperty( "PhoneNumbers", "Phone Numbers", 0, string.Empty );

@@ -27,7 +27,7 @@ using Newtonsoft.Json;
 
 using Rock.Data;
 using Rock.Communication;
-using Rock.Web.Cache;
+using Rock.Cache;
 using System.Data.Entity;
 
 namespace Rock.Model
@@ -693,76 +693,82 @@ namespace Rock.Model
         /// <returns></returns>
         public void RefreshCommunicationRecipientList( RockContext rockContext )
         {
-            if ( !this.ListGroupId.HasValue )
+            if ( !ListGroupId.HasValue )
             {
                 return;
             }
 
-            var emailMediumEntityType = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );
-            var smsMediumEntityType = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() );
+            var emailMediumEntityType = CacheEntityType.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );
+            var smsMediumEntityType = CacheEntityType.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() );
 
             var personInCommunicationList = new GroupMemberService( rockContext )
                 .Queryable()
-                .Where( a => a.GroupId == this.ListGroupId )
+                .Where( a => a.GroupId == ListGroupId.Value )
                 .ToList();
 
             var communicationRecipientService = new CommunicationRecipientService( rockContext );
 
-            var existingRecipients = GetRecipientsQry( rockContext )
-                                .ToList();
+            var existingRecipients = GetRecipientsQry( rockContext ).ToList();
 
             //Get all the List member which is not part of communiation recipents 
-            var newMemberInList = personInCommunicationList.Where( a => !existingRecipients.Any( b => b.PersonAliasId == a.Person.PrimaryAliasId ) );
+            var newMemberInList = personInCommunicationList
+                .Where( a => 
+                    a.Person?.PrimaryAliasId != null && 
+                    existingRecipients.All( b => b.PersonAliasId != a.Person.PrimaryAliasId ) );
 
             foreach ( var newMember in newMemberInList )
             {
-                var communicationRecipient = new CommunicationRecipient();
-                communicationRecipient.PersonAliasId = newMember.Person.PrimaryAliasId.Value;
-                communicationRecipient.Status = CommunicationRecipientStatus.Pending;
-                communicationRecipient.CommunicationId = this.Id;
-
-                if ( this.CommunicationType == CommunicationType.Email )
-                {
-                    communicationRecipient.MediumEntityTypeId = emailMediumEntityType.Id;
-                }
-                else if ( this.CommunicationType == CommunicationType.SMS )
-                {
-                    communicationRecipient.MediumEntityTypeId = smsMediumEntityType.Id;
-                }
-                else if ( this.CommunicationType == CommunicationType.RecipientPreference )
-                {
-                    newMember.LoadAttributes();
-
-                    var preferredCommunicationTypeAttribute = AttributeCache.Read( Rock.SystemGuid.Attribute.GROUPMEMBER_COMMUNICATION_LIST_PREFERRED_COMMUNICATION_MEDIUM.AsGuid() );
-
-                    CommunicationType? recipientPreference = ( CommunicationType? ) preferredCommunicationTypeAttribute.DefaultValue.AsIntegerOrNull();
-
-                    recipientPreference = ( CommunicationType? ) newMember.GetAttributeValue( preferredCommunicationTypeAttribute.Key ).AsIntegerOrNull();
-
-                    if ( recipientPreference == CommunicationType.SMS )
+                var communicationRecipient = new CommunicationRecipient
                     {
+                        PersonAliasId = newMember.Person.PrimaryAliasId.Value,
+                        Status = CommunicationRecipientStatus.Pending,
+                        CommunicationId = Id
+                    };
+
+                switch (CommunicationType)
+                {
+                    case CommunicationType.Email:
+                        communicationRecipient.MediumEntityTypeId = emailMediumEntityType.Id;
+                        break;
+                    case CommunicationType.SMS:
                         communicationRecipient.MediumEntityTypeId = smsMediumEntityType.Id;
-                    }
-                    else if ( recipientPreference == CommunicationType.Email )
-                    {
-                        communicationRecipient.MediumEntityTypeId = emailMediumEntityType.Id;
-                    }
-                    else
-                    {
-                        communicationRecipient.MediumEntityTypeId = emailMediumEntityType.Id;
-                    }
-                }
-                else
-                {
-                    throw new Exception( "Unexpected CommunicationType: " + this.CommunicationType.ConvertToString() );
+                        break;
+                    case CommunicationType.RecipientPreference:
+                        newMember.LoadAttributes();
+
+                        var preferredCommunicationTypeAttribute = CacheAttribute.Get( SystemGuid.Attribute.GROUPMEMBER_COMMUNICATION_LIST_PREFERRED_COMMUNICATION_MEDIUM.AsGuid() );
+                        if (preferredCommunicationTypeAttribute != null)
+                        {
+                            var recipientPreference = (CommunicationType?) newMember
+                                .GetAttributeValue(preferredCommunicationTypeAttribute.Key).AsIntegerOrNull();
+
+                            switch (recipientPreference)
+                            {
+                                case CommunicationType.SMS:
+                                    communicationRecipient.MediumEntityTypeId = smsMediumEntityType.Id;
+                                    break;
+                                case CommunicationType.Email:
+                                    communicationRecipient.MediumEntityTypeId = emailMediumEntityType.Id;
+                                    break;
+                                default:
+                                    communicationRecipient.MediumEntityTypeId = emailMediumEntityType.Id;
+                                    break;
+                            }
+                        }
+
+                        break;
+
+                    default:
+                        throw new Exception( "Unexpected CommunicationType: " + CommunicationType.ConvertToString() );
                 }
 
                 communicationRecipientService.Add( communicationRecipient );
             }
 
             //Get all pending communiation recipents that is no longer part of the group list member
-            var missingMemberInList = existingRecipients.Where( a => !personInCommunicationList.Any( b => b.Person.PrimaryAliasId == a.PersonAliasId ) );
-
+            var missingMemberInList = existingRecipients
+                .Where( a => 
+                    personInCommunicationList.All(b => b.Person.PrimaryAliasId != a.PersonAliasId) );
             foreach ( var missingMember in missingMemberInList )
             {
                 communicationRecipientService.Delete( missingMember );
@@ -770,6 +776,7 @@ namespace Rock.Model
 
             rockContext.SaveChanges();
         }
+
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
@@ -822,35 +829,37 @@ namespace Rock.Model
         /// Sends the specified communication.
         /// </summary>
         /// <param name="communication">The communication.</param>
-        public static void Send( Rock.Model.Communication communication )
+        public static void Send(Rock.Model.Communication communication)
         {
-            if ( communication != null && communication.Status == CommunicationStatus.Approved )
+            if (communication == null || communication.Status != CommunicationStatus.Approved) return;
+
+            if (communication.ListGroupId.HasValue)
             {
-                using ( RockContext rockContext = new RockContext() )
+                using (var rockContext = new RockContext())
                 {
-                    communication.RefreshCommunicationRecipientList( rockContext );
+                    communication.RefreshCommunicationRecipientList(rockContext);
                 }
+            }
 
-                foreach ( var medium in communication.GetMediums() )
-                {
-                    medium.Send( communication );
-                }
+            foreach (var medium in communication.GetMediums())
+            {
+                medium.Send(communication);
+            }
 
-                using ( RockContext rockContext = new RockContext() )
-                {
-                    var dbCommunication = new CommunicationService( rockContext ).Get( communication.Id );
+            using (var rockContext = new RockContext())
+            {
+                var dbCommunication = new CommunicationService(rockContext).Get(communication.Id);
 
-                    var maxSendDateTime = dbCommunication.Recipients
-                                        .Where( a => a.CommunicationId == communication.Id && a.SendDateTime.HasValue )
-                                        .OrderByDescending( a => a.SendDateTime )
-                                        .Select( a => a.SendDateTime )
-                                        .FirstOrDefault();
-                    if ( maxSendDateTime.HasValue )
-                    {
-                        dbCommunication.SendDateTime = maxSendDateTime;
-                        rockContext.SaveChanges();
-                    }
-                }
+                var maxSendDateTime = dbCommunication.Recipients
+                    .Where(a => a.CommunicationId == communication.Id && a.SendDateTime.HasValue)
+                    .OrderByDescending(a => a.SendDateTime)
+                    .Select(a => a.SendDateTime)
+                    .FirstOrDefault();
+
+                if (!maxSendDateTime.HasValue) return;
+
+                dbCommunication.SendDateTime = maxSendDateTime;
+                rockContext.SaveChanges();
             }
         }
 

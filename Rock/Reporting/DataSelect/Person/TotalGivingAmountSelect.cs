@@ -115,7 +115,7 @@ namespace Rock.Reporting.DataSelect.Person
             comparisonControl.ID = parentControl.ID + "_0";
             parentControl.Controls.Add( comparisonControl );
 
-            var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+            var globalAttributes = Rock.Cache.CacheGlobalAttributes.Get();
 
             NumberBox numberBoxAmount = new NumberBox();
             numberBoxAmount.PrependText = globalAttributes.GetValue( "CurrencySymbol" ) ?? "$";
@@ -327,7 +327,7 @@ namespace Rock.Reporting.DataSelect.Person
                 useAnalytics = selectionValues[7].AsBooleanOrNull() ?? false;
             }
 
-            int transactionTypeContributionId = Rock.Web.Cache.DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
+            int transactionTypeContributionId = Rock.Cache.CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
 
             IQueryable<decimal> personTotalAmountQry;
 
@@ -367,7 +367,7 @@ namespace Rock.Reporting.DataSelect.Person
 
                 if ( combineGiving )
                 {
-                    var personAmount = new AnalyticsSourcePersonHistoricalService( context ).Queryable()
+                    var personAmount = new AnalyticsDimPersonCurrentService( context ).Queryable()
                         .Join( financialTransactionQry, p => p.GivingId, f => f.GivingId, ( p, f ) => new
                         {
                             p.PersonId,
@@ -381,7 +381,7 @@ namespace Rock.Reporting.DataSelect.Person
                 }
                 else
                 {
-                    var personAmount = new AnalyticsSourcePersonHistoricalService( context ).Queryable()
+                    var personAmount = new AnalyticsDimPersonCurrentService( context ).Queryable()
                         .Join( financialTransactionQry, p => p.Id, f => f.AuthorizedPersonKey, ( p, f ) => new
                         {
                             p.PersonId,

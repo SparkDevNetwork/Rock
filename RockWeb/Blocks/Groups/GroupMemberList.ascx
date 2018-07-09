@@ -75,10 +75,78 @@
             </div>
 
              <script>
+
                 Sys.Application.add_load( function () {
                     $("div.photo-icon").lazyload({
                         effect: "fadeIn"
                     });
+
+                    // person-link-popover
+                    $('.js-person-popover').popover({
+                        placement: 'right', 
+                        trigger: 'manual',
+                        delay: 500,
+                        html: true,
+                        content: function() {
+                            var dataUrl = Rock.settings.get('baseUrl') + 'api/People/PopupHtml/' +  $(this).attr('personid') + '/false';
+
+                            var result = $.ajax({ 
+                                                type: 'GET', 
+                                                url: dataUrl, 
+                                                dataType: 'json', 
+                                                contentType: 'application/json; charset=utf-8',
+                                                async: false }).responseText;
+            
+                            var resultObject = jQuery.parseJSON(result);
+
+                            return resultObject.PickerItemDetailsHtml;
+
+                        }
+                    }).on('mouseenter', function () {
+                        var _this = this;
+                        $(this).popover('show');
+                        $(this).siblings('.popover').on('mouseleave', function () {
+                            $(_this).popover('hide');
+                        });
+                    }).on('mouseleave', function () {
+                        var _this = this;
+                        setTimeout(function () {
+                            if (!$('.popover:hover').length) {
+                                $(_this).popover('hide')
+                            }
+                        }, 100);
+                    });
+
+                   // $('.js-person-popover').popover('show'); // uncomment for styling
+
+                    // delete/archive prompt
+                    $('table.js-grid-group-members a.grid-delete-button').click(function (e) {
+                        var $btn = $(this);
+                        var $row = $btn.closest('tr');
+                        var actionName = 'delete';
+                        
+                        if ( $row.hasClass('js-has-grouphistory') ) {
+                            var actionName = 'archive';
+                        }
+
+                        var confirmMessage = 'Are you sure you want to ' + actionName + ' this group member?';
+
+                        e.preventDefault();
+                        Rock.dialogs.confirm(confirmMessage, function (result) {
+                            if (result) {
+                                if ( $row.hasClass('js-has-registration') )  {
+                                    Rock.dialogs.confirm('This group member was added through a registration. Are you sure that you want to ' + actionName + ' this group member and remove the link from the registration? ', function (result) {
+                                        if (result) {
+                                            window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+                                        }
+                                    });
+                                } else {
+                                    window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+                                }
+                            }
+                        });
+                    });
+
                 });
             </script>
 
@@ -86,7 +154,7 @@
                 Title="<i class='fa fa-share'></i> Place Elsewhere" OnSaveClick="mdPlaceElsewhere_SaveClick"
                 SaveButtonText="Place">
                 <Content>
-                    <asp:ValidationSummary ID="vsPlaceElsewhere" runat="server" ValidationGroup="vgPlaceElsewhere" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                    <asp:ValidationSummary ID="vsPlaceElsewhere" runat="server" ValidationGroup="vgPlaceElsewhere" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
                     <Rock:RockLiteral ID="lWorkflowTriggerName" runat="server" Label="Workflow Trigger" />
                     <Rock:RockControlWrapper ID="rcwSelectMemberTrigger" runat="server" Label="Select Workflow Trigger">
                         <Rock:HiddenFieldWithClass ID="hfPlaceElsewhereTriggerId" CssClass="js-hidden-selected" runat="server" />

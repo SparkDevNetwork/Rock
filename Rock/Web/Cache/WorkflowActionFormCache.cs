@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 
+using Rock.Cache;
 using Rock.Data;
 using Rock.Model;
 
@@ -28,20 +29,21 @@ namespace Rock.Web.Cache
     /// Cached WorkflowActionForm
     /// </summary>
     [Serializable]
+    [Obsolete( "Use Rock.Cache.CacheWorkflowActionForm instead" )]
     public class WorkflowActionFormCache : CachedModel<WorkflowActionForm>
     {
         #region Constructors
 
-        private WorkflowActionFormCache( WorkflowActionForm model )
+        private WorkflowActionFormCache( CacheWorkflowActionForm cacheItem )
         {
-            CopyFromModel( model );
+            CopyFromNewCache( cacheItem );
         }
 
         #endregion
 
         #region Properties
 
-        private object _obj = new object();
+        private readonly object _obj = new object();
 
         /// <summary>
         /// Gets or sets the notification system email identifier.
@@ -112,21 +114,21 @@ namespace Rock.Web.Cache
                 var formAttributes = new List<WorkflowActionFormAttributeCache>();
 
                 lock ( _obj )
-                { 
-                    if ( formAttributeIds == null )
+                {
+                    if ( _formAttributeIds == null )
                     {
                         using ( var rockContext = new RockContext() )
                         {
-                            formAttributeIds = new Model.WorkflowActionFormAttributeService( rockContext )
+                            _formAttributeIds = new WorkflowActionFormAttributeService( rockContext )
                                 .Queryable().AsNoTracking()
-                                .Where( a => a.WorkflowActionFormId == this.Id )
+                                .Where( a => a.WorkflowActionFormId == Id )
                                 .Select( a => a.Id )
                                 .ToList();
                         }
                     }
                 }
 
-                foreach ( int id in formAttributeIds )
+                foreach ( var id in _formAttributeIds )
                 {
                     var formAttribute = WorkflowActionFormAttributeCache.Read( id );
                     if ( formAttribute != null )
@@ -138,7 +140,7 @@ namespace Rock.Web.Cache
                 return formAttributes;
             }
         }
-        private List<int> formAttributeIds = null;
+        private List<int> _formAttributeIds;
 
         /// <summary>
         /// Gets the buttons.
@@ -146,13 +148,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The buttons.
         /// </value>
-        public List<WorkflowActionForm.LiquidButton> Buttons
-        {
-            get
-            {
-                return WorkflowActionForm.GetActionButtons( Actions );
-            }
-        }
+        public List<WorkflowActionForm.LiquidButton> Buttons => WorkflowActionForm.GetActionButtons( Actions );
 
         #endregion
 
@@ -162,34 +158,50 @@ namespace Rock.Web.Cache
         /// Copies from model.
         /// </summary>
         /// <param name="model">The model.</param>
-        public override void CopyFromModel( Data.IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
             base.CopyFromModel( model );
 
-            if ( model is WorkflowActionForm )
-            {
-                var workflowActionForm = (WorkflowActionForm)model;
-                this.NotificationSystemEmailId = workflowActionForm.NotificationSystemEmailId;
-                this.IncludeActionsInNotification = workflowActionForm.IncludeActionsInNotification;
-                this.Header = workflowActionForm.Header;
-                this.Footer = workflowActionForm.Footer;
-                this.Actions = workflowActionForm.Actions;
-                this.ActionAttributeGuid = workflowActionForm.ActionAttributeGuid;
-                this.AllowNotes = workflowActionForm.AllowNotes;
+            if ( !( model is WorkflowActionForm ) ) return;
 
-                // set formAttributeIds to null so it load them all at once on demand
-                this.formAttributeIds = null;
-            }
+            var workflowActionForm = (WorkflowActionForm)model;
+            NotificationSystemEmailId = workflowActionForm.NotificationSystemEmailId;
+            IncludeActionsInNotification = workflowActionForm.IncludeActionsInNotification;
+            Header = workflowActionForm.Header;
+            Footer = workflowActionForm.Footer;
+            Actions = workflowActionForm.Actions;
+            ActionAttributeGuid = workflowActionForm.ActionAttributeGuid;
+            AllowNotes = workflowActionForm.AllowNotes;
+
+            // set _formAttributeIds to null so it load them all at once on demand
+            _formAttributeIds = null;
+        }
+
+        /// <summary>
+        /// Copies properties from a new cached entity
+        /// </summary>
+        /// <param name="cacheEntity">The cache entity.</param>
+        protected sealed override void CopyFromNewCache( IEntityCache cacheEntity )
+        {
+            base.CopyFromNewCache( cacheEntity );
+
+            if ( !( cacheEntity is CacheWorkflowActionForm ) ) return;
+
+            var workflowActionForm = (CacheWorkflowActionForm)cacheEntity;
+            NotificationSystemEmailId = workflowActionForm.NotificationSystemEmailId;
+            IncludeActionsInNotification = workflowActionForm.IncludeActionsInNotification;
+            Header = workflowActionForm.Header;
+            Footer = workflowActionForm.Footer;
+            Actions = workflowActionForm.Actions;
+            ActionAttributeGuid = workflowActionForm.ActionAttributeGuid;
+            AllowNotes = workflowActionForm.AllowNotes;
+
+            _formAttributeIds = workflowActionForm.FormAttributes.Select( a => a.AttributeId ).ToList();
         }
 
         #endregion
 
         #region Static Methods
-
-        private static string CacheKey( int id )
-        {
-            return string.Format( "Rock:WorkflowActionForm:{0}", id );
-        }
 
         /// <summary>
         /// Returns WorkflowActionForm object from cache.  If workflowActionForm does not already exist in cache, it
@@ -200,37 +212,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static WorkflowActionFormCache Read( int id, RockContext rockContext = null )
         {
-            return GetOrAddExisting( WorkflowActionFormCache.CacheKey( id ),
-                () => LoadById( id, rockContext ) );
-        }
-
-        private static WorkflowActionFormCache LoadById( int id, RockContext rockContext )
-        {
-            if ( rockContext != null )
-            {
-                return LoadById2( id, rockContext );
-            }
-
-            using ( var rockContext2 = new RockContext() )
-            {
-                return LoadById2( id, rockContext2 );
-            }
-        }
-
-        private static WorkflowActionFormCache LoadById2( int id, RockContext rockContext )
-        {
-            var workflowActionFormService = new WorkflowActionFormService( rockContext );
-            var workflowActionFormModel = workflowActionFormService
-                .Queryable()
-                .Where( t => t.Id == id )
-                .FirstOrDefault();
-
-            if ( workflowActionFormModel != null )
-            {
-                return new WorkflowActionFormCache( workflowActionFormModel );
-            }
-
-            return null;
+            return new WorkflowActionFormCache( CacheWorkflowActionForm.Get( id, rockContext ) );
         }
 
         /// <summary>
@@ -241,33 +223,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static WorkflowActionFormCache Read( Guid guid, RockContext rockContext = null )
         {
-            int id = GetOrAddExisting( guid.ToString(),
-                () => LoadByGuid( guid, rockContext ) );
-
-            return Read( id, rockContext );
-        }
-
-        private static int LoadByGuid( Guid guid, RockContext rockContext )
-        {
-            if ( rockContext != null )
-            {
-                return LoadByGuid2( guid, rockContext );
-            }
-
-            using ( var rockContext2 = new RockContext() )
-            {
-                return LoadByGuid2( guid, rockContext2 );
-            }
-        }
-
-        private static int LoadByGuid2( Guid guid, RockContext rockContext )
-        {
-            var workflowActionFormService = new WorkflowActionFormService( rockContext );
-            return workflowActionFormService
-                .Queryable().AsNoTracking()
-                .Where( c => c.Guid.Equals( guid ) )
-                .Select( c => c.Id )
-                .FirstOrDefault();
+            return new WorkflowActionFormCache( CacheWorkflowActionForm.Get( guid, rockContext ) );
         }
 
         /// <summary>
@@ -278,17 +234,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static WorkflowActionFormCache Read( WorkflowActionForm workflowActionFormModel, RockContext rockContext = null )
         {
-            return GetOrAddExisting( WorkflowActionFormCache.CacheKey( workflowActionFormModel.Id ),
-                () => LoadByModel( workflowActionFormModel ) );
-        }
-
-        private static WorkflowActionFormCache LoadByModel( WorkflowActionForm workflowActionFormModel )
-        {
-            if ( workflowActionFormModel != null )
-            {
-                return new WorkflowActionFormCache( workflowActionFormModel );
-            }
-            return null;
+            return new WorkflowActionFormCache( CacheWorkflowActionForm.Get( workflowActionFormModel ) );
         }
 
         /// <summary>
@@ -297,15 +243,7 @@ namespace Rock.Web.Cache
         /// <param name="id"></param>
         public static void Flush( int id )
         {
-            var actionForm = WorkflowActionFormCache.Read( id );
-            if ( actionForm != null  )
-            {
-                foreach ( var formAttribute in actionForm.FormAttributes )
-                {
-                    WorkflowActionFormAttributeCache.Flush( formAttribute.Id );
-                }
-            }
-            FlushCache( WorkflowActionFormCache.CacheKey( id ) );
+            CacheWorkflowActionForm.Remove( id );
         }
 
         #endregion

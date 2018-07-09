@@ -25,7 +25,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -186,7 +186,7 @@ namespace RockWeb.Blocks.Finance
         private void BindGrid()
         {
             var rockContext = new RockContext();
-            var recordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
+            var recordTypeValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
 
             var queryable = new PersonService( rockContext ).Queryable()
                 .Where( q => q.RecordTypeValueId == recordTypeValueId );
@@ -214,7 +214,7 @@ namespace RockWeb.Blocks.Finance
 
             if ( ! viaSearch )
             {
-                var activeRecordStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
+                var activeRecordStatusValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
                 string activeFilterValue = gfBusinessFilter.GetUserPreference( "Active Status" );
                 if ( activeFilterValue == "inactive" )
                 {
@@ -265,7 +265,7 @@ namespace RockWeb.Blocks.Finance
             }
             else
             {
-                gBusinessList.EntityTypeId = EntityTypeCache.Read<Person>().Id;
+                gBusinessList.EntityTypeId = CacheEntityType.Get<Person>().Id;
                 gBusinessList.DataSource = businessList.ToList();
                 gBusinessList.DataBind();
             }

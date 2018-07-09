@@ -26,8 +26,8 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
+using Rock.Cache;
 using Rock.Security;
-using Rock.Web.Cache;
 
 namespace Rock.Web.UI
 {

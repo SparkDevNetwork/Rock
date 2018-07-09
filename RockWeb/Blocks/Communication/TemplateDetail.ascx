@@ -13,7 +13,7 @@
 
                 <asp:HiddenField ID="hfCommunicationTemplateId" runat="server" />
 
-                <asp:ValidationSummary ID="ValidationSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                <asp:ValidationSummary ID="ValidationSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
 
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
@@ -110,6 +110,8 @@
                             <div class="col-md-4">
                                 <Rock:RockCheckBox ID="cbCssInliningEnabled" runat="server" Text="CSS Inlining Enabled" Help="Enable CSS Inlining to move styles to inline attributes. This can help maximize compatibility with email clients." />
                                 <Rock:KeyValueList ID="kvlMergeFields" runat="server" Label="Lava Fields" KeyPrompt="Key" Help="Add any fields and their default values that can be used as lava merge fields within the template html. Any fields with a 'Color' suffix will use a Color Picker as the value editor." ValuePrompt="Default Value" />
+                                
+                                <asp:LinkButton ID="lbUpdateLavaFields" runat="server" Text="Update Lava Fields" CssClass="btn btn-xs btn-action" OnClick="lbUpdateLavaFields_Click" CausesValidation="false" />
                             </div>
                         </div>
                     </asp:Panel>
@@ -146,7 +148,7 @@
 
                                             <asp:HiddenField ID="hfLavaFieldsState" runat="server" />
                                             <asp:PlaceHolder ID="phLavaFieldsControls" runat="server" />
-                                            <asp:LinkButton ID="btnUpdateTemplatePreview" runat="server" CssClass="btn btn-xs btn-action" Text="Update" OnClick="btnUpdateTemplatePreview_Click" />
+                                            <asp:LinkButton ID="btnUpdateTemplatePreview" runat="server" CssClass="btn btn-xs btn-action" Text="Update" OnClick="btnUpdateTemplatePreview_Click" CausesValidation="false" />
                                         </div>
                                     </div>
                                 </asp:Panel>

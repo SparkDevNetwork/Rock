@@ -210,6 +210,9 @@
   .panel-body {
     .noteentry-control {
       overflow: hidden;
+      textarea {
+        .resizable(vertical)
+      }
     }
 
     .noteentry-notetype {
@@ -360,15 +363,14 @@
   }
 
   .conditional-run-criteria {
-    padding-top: 15px;
-    margin-top: -15px;
-    margin-bottom: 15px;
     border-style: solid;
     border-width: 1px;
+    margin: -15px -16px 15px;
+    padding: 15px 0 10px;
   }
 
-  .form-action-rows .row {
-    margin-bottom: 12px;
+  .form-action-rows .form-row {
+    margin-bottom: 15px;
   }
 }
 

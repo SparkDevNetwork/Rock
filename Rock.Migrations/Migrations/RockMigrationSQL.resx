@@ -670,4 +670,82 @@
   <data name="_201803301619284_Rollup_0330" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201803301619284_rollup_0330.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
+  <data name="_201804272301456_MergeFromV7_4_AddVimeoShortCode" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201804272301456_mergefromv7_4_addvimeoshortcode.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201804272301456_MergeFromV7_4_FixAccordionShortCode" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201804272301456_mergefromv7_4_fixaccordionshortcode.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201804272301456_MergeFromV7_4_FixThankyouAndOngoingHyphenations" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201804272301456_mergefromv7_4_fixthankyouandongoinghyphenations.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201804272301456_MergeFromV7_4_spAnalytics_ETL_Campus" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201804272301456_mergefromv7_4_spanalytics_etl_campus.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201804272301456_MergeFromV7_4_spCrm_PersonDuplicateFinder" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201804272301456_mergefromv7_4_spcrm_personduplicatefinder.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201804272301456_MergeFromV7_4_spCrm_PersonMerge" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201804272301456_mergefromv7_4_spcrm_personmerge.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201804272301456_MergeFromV7_4_GivingAnalyticsAccounts_AccountTotals" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201804272301456_mergefromv7_4_givinganalyticsaccounts_accounttotals.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+  </data>
+  <data name="_201804272301456_MergeFromV7_4_GivingAnalyticsAccounts_PersonSummary" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201804272301456_mergefromv7_4_givinganalyticsaccounts_personsummary.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+  </data>
+  <data name="_201804272301456_MergeFromV7_4_GivingAnalyticsAccounts_TransactionData" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201804272301456_mergefromv7_4_givinganalyticsaccounts_transactiondata.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+  </data>
+  <data name="_201805072022522_GroupHistory_spCrm_PersonMerge" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201805072022522_grouphistory_spcrm_personmerge.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201805072022522_GroupHistory_spCrm_PersonMergeRelationships" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201805072022522_grouphistory_spcrm_personmergerelationships.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201805152055059_AttendanceOccurrence_spAnalytics_ETL_Attendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201805152055059_attendanceoccurrence_spanalytics_etl_attendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201805152055059_AttendanceOccurrence_spCheckin_AttendanceAnalyticsQuery_AttendeeDates" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201805152055059_attendanceoccurrence_spcheckin_attendanceanalyticsquery_attendeedates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201805152055059_AttendanceOccurrence_spCheckin_AttendanceAnalyticsQuery_AttendeeFirstDates" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201805152055059_attendanceoccurrence_spcheckin_attendanceanalyticsquery_attendeefirstdates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201805152055059_AttendanceOccurrence_spCheckin_AttendanceAnalyticsQuery_AttendeeLastAttendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201805152055059_attendanceoccurrence_spcheckin_attendanceanalyticsquery_attendeelastattendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201805152055059_AttendanceOccurrence_spCheckin_AttendanceAnalyticsQuery_Attendees" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201805152055059_attendanceoccurrence_spcheckin_attendanceanalyticsquery_attendees.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201805152055059_AttendanceOccurrence_spCheckin_AttendanceAnalyticsQuery_NonAttendees" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201805152055059_attendanceoccurrence_spcheckin_attendanceanalyticsquery_nonattendees.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201805152055059_AttendanceOccurrence_spCheckin_BadgeAttendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201805152055059_attendanceoccurrence_spcheckin_badgeattendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201805152055059_AttendanceOccurrence_spCheckin_WeeksAttendedInDuration" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201805152055059_attendanceoccurrence_spcheckin_weeksattendedinduration.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201805152055059_AttendanceOccurrence_spCrm_FamilyAnalyticsAttendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201805152055059_attendanceoccurrence_spcrm_familyanalyticsattendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201805152055059_AttendanceOccurrence_spCrm_FamilyAnalyticsEraDataset" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201805152055059_attendanceoccurrence_spcrm_familyanalyticseradataset.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201805152055059_AttendanceOccurrence_spCrm_FamilyAnalyticsUpdateVisitDates" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201805152055059_attendanceoccurrence_spcrm_familyanalyticsupdatevisitdates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201805152055059_AttendanceOccurrence_vCheckin_GroupTypeAttendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201805152055059_attendanceoccurrence_vcheckin_grouptypeattendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201805152055059_AttendanceOccurrence_vCheckin_Attendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201805152055059_attendanceoccurrence_vcheckin_attendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201805171836577_Rollup_0517_CreatePresenceUser" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201805171836577_rollup_0517_createpresenceuser.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201805171836577_Rollup_0517_spAnalytics_ETL_Attendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201805171836577_rollup_0517_spanalytics_etl_attendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
 </root>

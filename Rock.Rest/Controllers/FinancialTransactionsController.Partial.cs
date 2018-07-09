@@ -251,7 +251,7 @@ namespace Rock.Rest.Controllers
                 qry = qry.Where( a => a.TransactionDateTime < options.EndDate.Value );
             }
 
-            var transactionTypeContribution = Rock.Web.Cache.DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
+            var transactionTypeContribution = Rock.Cache.CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
             if ( transactionTypeContribution != null )
             {
                 int transactionTypeContributionId = transactionTypeContribution.Id;

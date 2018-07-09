@@ -28,8 +28,8 @@ using System.Security.Cryptography;
 using System.Text;
 using Rock.Data;
 using Rock.Financial;
+using Rock.Cache;
 using Rock.Security;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -240,6 +240,7 @@ namespace Rock.Model
             }
         }
 
+
         /// <summary>
         /// Gets or sets the history changes.
         /// </summary>
@@ -247,7 +248,17 @@ namespace Rock.Model
         /// The history changes.
         /// </value>
         [NotMapped]
+        [Obsolete( "Use HistoryChangeList" )]
         public virtual List<string> HistoryChanges { get; set; }
+
+        /// <summary>
+        /// Gets or sets the history changes.
+        /// </summary>
+        /// <value>
+        /// The history changes.
+        /// </value>
+        [NotMapped]
+        public virtual History.HistoryChangeList HistoryChangeList { get; set; }
 
         #endregion
 
@@ -357,31 +368,31 @@ namespace Rock.Model
         public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
         {
             var rockContext = (RockContext)dbContext;
-            HistoryChanges = new List<string>();
+            HistoryChangeList = new History.HistoryChangeList();
 
             switch ( entry.State )
             {
                 case System.Data.Entity.EntityState.Added:
                     {
-                        History.EvaluateChange( HistoryChanges, "Account Number", string.Empty, AccountNumberMasked );
-                        History.EvaluateChange( HistoryChanges, "Currency Type", (int?)null, CurrencyTypeValue, CurrencyTypeValueId );
-                        History.EvaluateChange( HistoryChanges, "Credit Card Type", (int?)null, CreditCardTypeValue, CreditCardTypeValueId );
-                        History.EvaluateChange( HistoryChanges, "Name On Card", string.Empty, AccountNumberMasked, true );
-                        History.EvaluateChange( HistoryChanges, "Expiration Month", string.Empty, ExpirationMonthEncrypted, true );
-                        History.EvaluateChange( HistoryChanges, "Expiration Year", string.Empty, ExpirationYearEncrypted, true );
-                        History.EvaluateChange( HistoryChanges, "Billing Location", string.Empty, History.GetValue<Location>( BillingLocation, BillingLocationId, rockContext ) );
+                        History.EvaluateChange( HistoryChangeList, "Account Number", string.Empty, AccountNumberMasked );
+                        History.EvaluateChange( HistoryChangeList, "Currency Type", (int?)null, CurrencyTypeValue, CurrencyTypeValueId );
+                        History.EvaluateChange( HistoryChangeList, "Credit Card Type", (int?)null, CreditCardTypeValue, CreditCardTypeValueId );
+                        History.EvaluateChange( HistoryChangeList, "Name On Card", string.Empty, AccountNumberMasked, true );
+                        History.EvaluateChange( HistoryChangeList, "Expiration Month", string.Empty, ExpirationMonthEncrypted, true );
+                        History.EvaluateChange( HistoryChangeList, "Expiration Year", string.Empty, ExpirationYearEncrypted, true );
+                        History.EvaluateChange( HistoryChangeList, "Billing Location", string.Empty, History.GetValue<Location>( BillingLocation, BillingLocationId, rockContext ) );
                         break;
                     }
                 case System.Data.Entity.EntityState.Modified:
                 case System.Data.Entity.EntityState.Deleted:
                     {
-                        History.EvaluateChange( HistoryChanges, "Account Number", entry.OriginalValues["AccountNumberMasked"].ToStringSafe(), AccountNumberMasked );
-                        History.EvaluateChange( HistoryChanges, "Currency Type", entry.OriginalValues["CurrencyTypeValueId"].ToStringSafe().AsIntegerOrNull(), CurrencyTypeValue, CurrencyTypeValueId );
-                        History.EvaluateChange( HistoryChanges, "Credit Card Type", entry.OriginalValues["CreditCardTypeValueId"].ToStringSafe().AsIntegerOrNull(), CreditCardTypeValue, CreditCardTypeValueId );
-                        History.EvaluateChange( HistoryChanges, "Name On Card", entry.OriginalValues["AccountNumberMasked"].ToStringSafe(), AccountNumberMasked, true );
-                        History.EvaluateChange( HistoryChanges, "Expiration Month", entry.OriginalValues["ExpirationMonthEncrypted"].ToStringSafe(), ExpirationMonthEncrypted, true );
-                        History.EvaluateChange( HistoryChanges, "Expiration Year", entry.OriginalValues["ExpirationYearEncrypted"].ToStringSafe(), ExpirationYearEncrypted, true );
-                        History.EvaluateChange( HistoryChanges, "Billing Location", History.GetValue<Location>( null, entry.OriginalValues["BillingLocationId"].ToStringSafe().AsIntegerOrNull(), rockContext ), History.GetValue<Location>( BillingLocation, BillingLocationId, rockContext ) );
+                        History.EvaluateChange( HistoryChangeList, "Account Number", entry.OriginalValues["AccountNumberMasked"].ToStringSafe(), AccountNumberMasked );
+                        History.EvaluateChange( HistoryChangeList, "Currency Type", entry.OriginalValues["CurrencyTypeValueId"].ToStringSafe().AsIntegerOrNull(), CurrencyTypeValue, CurrencyTypeValueId );
+                        History.EvaluateChange( HistoryChangeList, "Credit Card Type", entry.OriginalValues["CreditCardTypeValueId"].ToStringSafe().AsIntegerOrNull(), CreditCardTypeValue, CreditCardTypeValueId );
+                        History.EvaluateChange( HistoryChangeList, "Name On Card", entry.OriginalValues["AccountNumberMasked"].ToStringSafe(), AccountNumberMasked, true );
+                        History.EvaluateChange( HistoryChangeList, "Expiration Month", entry.OriginalValues["ExpirationMonthEncrypted"].ToStringSafe(), ExpirationMonthEncrypted, true );
+                        History.EvaluateChange( HistoryChangeList, "Expiration Year", entry.OriginalValues["ExpirationYearEncrypted"].ToStringSafe(), ExpirationYearEncrypted, true );
+                        History.EvaluateChange( HistoryChangeList, "Billing Location", History.GetValue<Location>( null, entry.OriginalValues["BillingLocationId"].ToStringSafe().AsIntegerOrNull(), rockContext ), History.GetValue<Location>( BillingLocation, BillingLocationId, rockContext ) );
                         break;
                     }
             }
@@ -395,7 +406,7 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public override void PostSaveChanges( Data.DbContext dbContext )
         {
-            if ( HistoryChanges.Any() )
+            if ( HistoryChangeList.Any() )
             {
                 foreach ( var txn in new FinancialTransactionService( (RockContext)dbContext )
                     .Queryable().AsNoTracking()
@@ -403,8 +414,9 @@ namespace Rock.Model
                     .Select( t => new { t.Id, t.BatchId } )
                     .ToList() )
                 {
-                    HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialTransaction ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), txn.Id, HistoryChanges, true, this.ModifiedByPersonAliasId );
-                    var batchHistory = new List<string> { string.Format( "Updated <span class='field-name'>Transaction</span> ID: <span class='field-value'>{0}</span>.", txn.Id ) };
+                    HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialTransaction ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), txn.Id, HistoryChangeList, true, this.ModifiedByPersonAliasId );
+                    var batchHistory = new History.HistoryChangeList();
+                    batchHistory.AddChange( History.HistoryVerb.Modify, History.HistoryChangeType.Property, "Transaction" );
                     HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialBatch ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), txn.BatchId.Value, batchHistory, string.Empty, typeof( FinancialTransaction ), txn.Id, true, this.ModifiedByPersonAliasId );
                 }
             }

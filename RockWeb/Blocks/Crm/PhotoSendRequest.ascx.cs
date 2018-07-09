@@ -25,7 +25,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using Rock.Communication;
@@ -174,7 +174,7 @@ namespace RockWeb.Blocks.Crm
                         }
                         testRecipient.Status = CommunicationRecipientStatus.Pending;
                         testRecipient.PersonAliasId = CurrentPersonAliasId.Value;
-                        testRecipient.MediumEntityTypeId = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() ).Id;
+                        testRecipient.MediumEntityTypeId = CacheEntityType.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() ).Id;
                         testCommunication.Recipients.Add( testRecipient );
 
                         var communicationService = new CommunicationService( rockContext );
@@ -333,7 +333,7 @@ namespace RockWeb.Blocks.Crm
 
             var photoRequestGroup = Rock.SystemGuid.Group.GROUP_PHOTO_REQUEST.AsGuid();
 
-            var familyGroupType = GroupTypeCache.GetFamilyGroupType();
+            var familyGroupType = CacheGroupType.GetFamilyGroupType();
             List<int> selectedRoleIds = cblRoles.SelectedValuesAsInt;
 
             var selectedConnectionStatuses = cblConnectionStatus.SelectedValuesAsInt;
@@ -395,7 +395,7 @@ namespace RockWeb.Blocks.Crm
                 // add each person as a recipient to the communication
                 if ( peopleIds != null )
                 {
-                    var emailMediumTypeId = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() ).Id;
+                    var emailMediumTypeId = CacheEntityType.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() ).Id;
 
                     foreach ( var personId in peopleIds )
                     {
@@ -451,13 +451,13 @@ namespace RockWeb.Blocks.Crm
         private void BindCheckBoxLists()
         {
             // roles...
-            var familyGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
+            var familyGroupType = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
             cblRoles.DataSource = familyGroupType.Roles;
             cblRoles.DataBind();
 
             // connection status...
             // NOTE: if we want to bind and preselect one or more items based on an attribute, we can do it like this
-            //var statuses = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ).DefinedValues
+            //var statuses = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ).DefinedValues
             //    .OrderBy( v => v.Order )
             //    .ThenBy( v => v.Value )
             //    .Select( v => new ListItem
@@ -474,7 +474,7 @@ namespace RockWeb.Blocks.Crm
             //}
 
             // otherwise we can just bind like this for now
-            cblConnectionStatus.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ) );
+            cblConnectionStatus.BindToDefinedType( CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ) );
         }
 
         #endregion

@@ -111,34 +111,31 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value != null )
+            var picker = control as MetricCategoryPicker;
+
+            if ( picker != null )
             {
-                var picker = control as MetricCategoryPicker;
+                List<MetricCategory> metricCategories = new List<MetricCategory>();
+                var guidPairs = Rock.Attribute.MetricCategoriesFieldAttribute.GetValueAsGuidPairs( value );
+                MetricCategoryService metricCategoryService = new MetricCategoryService( new RockContext() );
 
-                if ( picker != null )
+                foreach ( var guidPair in guidPairs )
                 {
-                    List<MetricCategory> metricCategories = new List<MetricCategory>();
-                    var guidPairs = Rock.Attribute.MetricCategoriesFieldAttribute.GetValueAsGuidPairs( value );
-                    MetricCategoryService metricCategoryService = new MetricCategoryService( new RockContext() );
-
-                    foreach (var guidPair in guidPairs)
+                    // first try to get each metric from the category that it was selected from
+                    var metricCategory = metricCategoryService.Queryable().Where( a => a.Metric.Guid == guidPair.MetricGuid && a.Category.Guid == guidPair.CategoryGuid ).FirstOrDefault();
+                    if (metricCategory == null)
                     {
-                        // first try to get each metric from the category that it was selected from
-                        var metricCategory = metricCategoryService.Queryable().Where( a => a.Metric.Guid == guidPair.MetricGuid && a.Category.Guid == guidPair.CategoryGuid ).FirstOrDefault();
-                        if (metricCategory == null)
-                        {
-                            // if the metric isn't found in the original category, just the first one, ignoring category
-                            metricCategory = metricCategoryService.Queryable().Where( a => a.Metric.Guid == guidPair.MetricGuid ).FirstOrDefault();
-                        }
-
-                        if (metricCategory != null)
-                        {
-                            metricCategories.Add( metricCategory );
-                        }
+                        // if the metric isn't found in the original category, just the first one, ignoring category
+                        metricCategory = metricCategoryService.Queryable().Where( a => a.Metric.Guid == guidPair.MetricGuid ).FirstOrDefault();
                     }
-                    
-                    picker.SetValues( metricCategories );
+
+                    if (metricCategory != null)
+                    {
+                        metricCategories.Add( metricCategory );
+                    }
                 }
+                    
+                picker.SetValues( metricCategories );
             }
         }
 

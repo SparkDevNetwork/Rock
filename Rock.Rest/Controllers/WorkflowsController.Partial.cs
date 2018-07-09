@@ -45,7 +45,7 @@ namespace Rock.Rest.Controllers
         public Rock.Model.Workflow WorkflowEntry( int workflowTypeId )
         {
             var rockContext = new Rock.Data.RockContext();
-            var workflowType = Web.Cache.WorkflowTypeCache.Read( workflowTypeId );
+            var workflowType = Cache.CacheWorkflowType.Get( workflowTypeId );
 
             if ( workflowType != null && ( workflowType.IsActive ?? true ) )
             {

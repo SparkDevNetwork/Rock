@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Model
 {
@@ -209,7 +209,7 @@ namespace Rock.Model
 
             var rockContext = this.Context as Rock.Data.RockContext;
 
-            var registrationEntityType = EntityTypeCache.Read( typeof( Rock.Model.Registration ) );
+            var registrationEntityType = CacheEntityType.Get( typeof( Rock.Model.Registration ) );
             if ( registrationEntityType != null )
             {
                 foreach ( var transactionDetail in refundTransaction.TransactionDetails
@@ -218,8 +218,8 @@ namespace Rock.Model
                         d.EntityTypeId.Value == registrationEntityType.Id &&
                         d.EntityId.HasValue ) )
                 {
-                    var registrationChanges = new List<string>();
-                    registrationChanges.Add( string.Format( "Processed refund for {0}.", transactionDetail.Amount.FormatAsCurrency() ) );
+                    var registrationChanges = new History.HistoryChangeList();
+                    registrationChanges.AddChange( History.HistoryVerb.Process, History.HistoryChangeType.Record, $"{transactionDetail.Amount.FormatAsCurrency()} Refund" );
                     HistoryService.SaveChanges(
                         rockContext,
                         typeof( Registration ),

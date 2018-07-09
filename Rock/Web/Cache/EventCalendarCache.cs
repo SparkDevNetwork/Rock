@@ -16,9 +16,8 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
-using System.Linq;
 
+using Rock.Cache;
 using Rock.Data;
 using Rock.Model;
 
@@ -29,6 +28,7 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
+    [Obsolete( "Use Rock.Cache.CacheEventCalendar instead" )]
     public class EventCalendarCache : CachedModel<EventCalendar>
     {
         #region Constructors
@@ -37,9 +37,9 @@ namespace Rock.Web.Cache
         {
         }
 
-        private EventCalendarCache( EventCalendar eventCalendar )
+        private EventCalendarCache( CacheEventCalendar cacheEventCalendar )
         {
-            CopyFromModel( eventCalendar );
+            CopyFromNewCache( cacheEventCalendar );
         }
 
         #endregion
@@ -91,21 +91,48 @@ namespace Rock.Web.Cache
         #region Public Methods
 
         /// <summary>
+        /// Gets the cache key for the selected event calendar id.
+        /// </summary>
+        /// <param name="id">The event calendar id.</param>
+        /// <returns></returns>
+        [Obsolete ("No longer used", false)]
+        public static string CacheKey( int id )
+        {
+            return $"Rock:EventCalendar:{id}";
+        }
+
+        /// <summary>
         /// Copies from model.
         /// </summary>
         /// <param name="model">The model.</param>
-        public override void CopyFromModel( Data.IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
             base.CopyFromModel( model );
 
-            if ( model is EventCalendar )
-            {
-                var eventCalendar = (EventCalendar)model;
-                this.Description = eventCalendar.Description;
-                this.IconCssClass = eventCalendar.IconCssClass;
-                this.IsActive = eventCalendar.IsActive;
-                this.Name = eventCalendar.Name;
-            }
+            if ( !( model is EventCalendar ) ) return;
+
+            var eventCalendar = (EventCalendar)model;
+            Description = eventCalendar.Description;
+            IconCssClass = eventCalendar.IconCssClass;
+            IsActive = eventCalendar.IsActive;
+            Name = eventCalendar.Name;
+        }
+
+        /// <summary>
+        /// Copies properties from a new cached entity
+        /// </summary>
+        /// <param name="cacheEntity">The cache entity.</param>
+        protected sealed override void CopyFromNewCache( IEntityCache cacheEntity )
+        {
+            base.CopyFromNewCache( cacheEntity );
+
+            if ( !( cacheEntity is CacheEventCalendar ) ) return;
+
+            var eventCalendar = (CacheEventCalendar)cacheEntity;
+            Description = eventCalendar.Description;
+            IconCssClass = eventCalendar.IconCssClass;
+            IsActive = eventCalendar.IsActive;
+            Name = eventCalendar.Name;
         }
 
         /// <summary>
@@ -116,22 +143,12 @@ namespace Rock.Web.Cache
         /// </returns>
         public override string ToString()
         {
-            return this.Name;
+            return Name;
         }
 
         #endregion
 
         #region Static Methods
-
-        /// <summary>
-        /// Gets the cache key for the selected event calendar id.
-        /// </summary>
-        /// <param name="id">The event calendar id.</param>
-        /// <returns></returns>
-        public static string CacheKey( int id )
-        {
-            return string.Format( "Rock:EventCalendar:{0}", id );
-        }
 
         /// <summary>
         /// Returns EventCalendar object from cache.  If event calendar does not already exist in cache, it
@@ -142,35 +159,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static EventCalendarCache Read( int id, RockContext rockContext = null )
         {
-            return GetOrAddExisting( EventCalendarCache.CacheKey( id ), 
-                () => LoadById( id, rockContext ) );
-        }
-
-        private static EventCalendarCache LoadById( int id, RockContext rockContext )
-        {
-            if ( rockContext != null )
-            {
-                return LoadById2( id, rockContext );
-            }
-
-            using ( var rockContext2 = new RockContext() )
-            {
-                return LoadById2( id, rockContext2 );
-            }
-        }
-
-        private static EventCalendarCache LoadById2( int id, RockContext rockContext )
-        {
-            var eventCalendarService = new EventCalendarService( rockContext );
-            var eventCalendarModel = eventCalendarService
-                .Queryable().AsNoTracking()
-                .FirstOrDefault( c => c.Id == id );
-            if ( eventCalendarModel != null )
-            {
-                return new EventCalendarCache( eventCalendarModel );
-            }
-
-            return null;
+            return new EventCalendarCache( CacheEventCalendar.Get( id, rockContext ) );
         }
 
         /// <summary>
@@ -181,33 +170,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static EventCalendarCache Read( Guid guid, RockContext rockContext = null )
         {
-            int id = GetOrAddExisting( guid.ToString(),
-                () => LoadByGuid( guid, rockContext ) );
-
-            return Read( id, rockContext );
-        }
-
-        private static int LoadByGuid( Guid guid, RockContext rockContext )
-        {
-            if ( rockContext != null )
-            {
-                return LoadByGuid2( guid, rockContext );
-            }
-
-            using ( var rockContext2 = new RockContext() )
-            {
-                return LoadByGuid2( guid, rockContext2 );
-            }
-        }
-
-        private static int LoadByGuid2( Guid guid, RockContext rockContext )
-        {
-            var eventCalendarService = new EventCalendarService( rockContext );
-            return eventCalendarService
-                .Queryable().AsNoTracking()
-                .Where( c => c.Guid.Equals( guid ))
-                .Select( c => c.Id )
-                .FirstOrDefault();
+            return new EventCalendarCache( CacheEventCalendar.Get( guid, rockContext ) );
         }
 
         /// <summary>
@@ -217,17 +180,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static EventCalendarCache Read( EventCalendar eventCalendarModel )
         {
-            return GetOrAddExisting( EventCalendarCache.CacheKey( eventCalendarModel.Id ),
-                () => LoadByModel( eventCalendarModel ) );
-        }
-
-        private static EventCalendarCache LoadByModel( EventCalendar eventCalendarModel )
-        {
-            if ( eventCalendarModel != null )
-            {
-                return new EventCalendarCache( eventCalendarModel );
-            }
-            return null;
+            return new EventCalendarCache( CacheEventCalendar.Get( eventCalendarModel ) );
         }
 
         /// <summary>
@@ -236,28 +189,17 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static List<EventCalendarCache> All()
         {
-            List<EventCalendarCache> eventCalendars = new List<EventCalendarCache>();
-            var eventCalendarIds = GetOrAddExisting( "Rock:EventCalendar:All", () => LoadAll() );
-            if ( eventCalendarIds != null )
-            {
-                foreach ( int eventCalendarId in eventCalendarIds )
-                {
-                    eventCalendars.Add( EventCalendarCache.Read( eventCalendarId ) );
-                }
-            }
-            return eventCalendars;
-        }
+            var eventCalendars = new List<EventCalendarCache>();
 
-        private static List<int> LoadAll()
-        {
-            using ( var rockContext = new RockContext() )
+            var cacheEventCalendars = CacheEventCalendar.All();
+            if ( cacheEventCalendars == null ) return eventCalendars;
+
+            foreach ( var cacheEventCalendar in cacheEventCalendars )
             {
-                return new EventCalendarService( rockContext )
-                    .Queryable().AsNoTracking()
-                    .OrderBy( c => c.Name )
-                    .Select( c => c.Id )
-                    .ToList();
+                eventCalendars.Add( new EventCalendarCache( cacheEventCalendar ) );
             }
+
+            return eventCalendars;
         }
 
         /// <summary>
@@ -266,8 +208,7 @@ namespace Rock.Web.Cache
         /// <param name="id"></param>
         public static void Flush( int id )
         {
-            FlushCache( EventCalendarCache.CacheKey( id ) );
-            FlushCache( "Rock:EventCalendar:All" );
+            CacheEventCalendar.Remove( id );
         }
 
         #endregion

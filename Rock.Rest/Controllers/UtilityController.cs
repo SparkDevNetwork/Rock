@@ -18,7 +18,7 @@ using System;
 using System.Web.Http;
 using System.Collections.Generic;
 using System.Linq;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 using Rock.VersionInfo;
 using Rock.Rest.Filters;
@@ -92,7 +92,7 @@ namespace Rock.Rest.Controllers
                 {
                     int id = idParts[0].AsInteger();
                     Guid guid = idParts[1].AsGuid();
-                    var campus = CampusCache.Read( guid );
+                    var campus = CacheCampus.Get( guid );
                     if ( campus != null )
                     {
                         return campus.Id;
@@ -130,9 +130,9 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/Utility/TextToWorkflow/{fromNumber}/{toNumber}/{message}" )]
         public string TextToWorkflow( string fromNumber, string toNumber, string message )
         {
-            string processResponse = string.Empty;
+            var processResponse = string.Empty;
 
-            Rock.Utility.TextToWorkflow.MessageRecieved( toNumber, fromNumber, message, out processResponse );
+            Utility.TextToWorkflow.MessageRecieved( toNumber, fromNumber, message, out processResponse );
 
             return processResponse;
         }

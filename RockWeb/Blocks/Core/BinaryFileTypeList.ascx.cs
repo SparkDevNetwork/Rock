@@ -23,7 +23,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -57,7 +57,7 @@ namespace RockWeb.Blocks.Administration
             gBinaryFileType.IsDeleteEnabled = canAddEditDelete;
 
             SecurityField securityField = gBinaryFileType.Columns.OfType<SecurityField>().FirstOrDefault();
-            securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.BinaryFileType ) ).Id;
+            securityField.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.BinaryFileType ) ).Id;
         }
 
         /// <summary>
@@ -176,7 +176,7 @@ namespace RockWeb.Blocks.Administration
                 gBinaryFileType.DataSource = qry.OrderBy( p => p.Name ).ToList();
             }
 
-            gBinaryFileType.EntityTypeId = EntityTypeCache.Read<Rock.Model.BinaryFileType>().Id;
+            gBinaryFileType.EntityTypeId = CacheEntityType.Get<Rock.Model.BinaryFileType>().Id;
             gBinaryFileType.DataBind();
         }
 

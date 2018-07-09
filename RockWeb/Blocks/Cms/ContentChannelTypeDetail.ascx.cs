@@ -22,7 +22,7 @@ using Rock;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
@@ -243,11 +243,11 @@ namespace RockWeb.Blocks.Cms
                     contentType = contentTypeService.Get( contentType.Guid );
 
                     // Save the Channel Attributes
-                    int entityTypeId = EntityTypeCache.Read( typeof( ContentChannel ) ).Id;
+                    int entityTypeId = CacheEntityType.Get( typeof( ContentChannel ) ).Id;
                     SaveAttributes( contentType.Id, entityTypeId, ChannelAttributesState, rockContext );
 
                     // Save the Item Attributes
-                    entityTypeId = EntityTypeCache.Read( typeof( ContentChannelItem ) ).Id;
+                    entityTypeId = CacheEntityType.Get( typeof( ContentChannelItem ) ).Id;
                     SaveAttributes( contentType.Id, entityTypeId, ItemAttributesState, rockContext );
 
                 } );
@@ -314,7 +314,7 @@ namespace RockWeb.Blocks.Cms
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
-                attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
+                attribute.FieldTypeId = CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
                 edtChannelAttributes.ActionTitle = ActionTitle.Add( tbName.Text + " Channel Attribute" );
 
             }
@@ -467,7 +467,7 @@ namespace RockWeb.Blocks.Cms
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
-                attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
+                attribute.FieldTypeId = CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
                 edtItemAttributes.ActionTitle = ActionTitle.Add( tbName.Text + " Item Attribute" );
 
             }
@@ -656,7 +656,7 @@ namespace RockWeb.Blocks.Cms
 
             string qualifierValue = contentType.Id.ToString();
 
-            attributeService.GetByEntityTypeId( new ContentChannel().TypeId ).AsQueryable()
+            attributeService.GetByEntityTypeId( new ContentChannel().TypeId, true ).AsQueryable()
                 .Where( a =>
                     a.EntityTypeQualifierColumn.Equals( "ContentChannelTypeId", StringComparison.OrdinalIgnoreCase ) &&
                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
@@ -664,7 +664,7 @@ namespace RockWeb.Blocks.Cms
                 .ForEach( a => ChannelAttributesState.Add( a ) );
             BindChannelAttributesGrid();
 
-            attributeService.GetByEntityTypeId( new ContentChannelItem().TypeId ).AsQueryable()
+            attributeService.GetByEntityTypeId( new ContentChannelItem().TypeId, true ).AsQueryable()
                 .Where( a =>
                     a.EntityTypeQualifierColumn.Equals( "ContentChannelTypeId", StringComparison.OrdinalIgnoreCase ) &&
                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
@@ -688,13 +688,13 @@ namespace RockWeb.Blocks.Cms
             AttributeService attributeService = new AttributeService( rockContext );
 
             // Get the existing attributes for this entity type and qualifier value
-            var existingAttributes = attributeService.Get( entityTypeId, qualifierColumn, qualifierValue );
+            var existingAttributes = attributeService.GetByEntityTypeQualifier( entityTypeId, qualifierColumn, qualifierValue, true );
 
             // Delete any of those attributes that were removed in the UI
             var selectedAttributeGuids = attributes.Select( a => a.Guid );
             foreach ( var attr in existingAttributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
             {
-                Rock.Web.Cache.AttributeCache.Flush( attr.Id );
+                Rock.Cache.CacheAttribute.Remove( attr.Id );
                 attributeService.Delete( attr );
             }
 
@@ -706,7 +706,7 @@ namespace RockWeb.Blocks.Cms
                 Rock.Attribute.Helper.SaveAttributeEdits( attr, entityTypeId, qualifierColumn, qualifierValue, rockContext );
             }
 
-            AttributeCache.FlushEntityAttributes();
+            CacheAttribute.RemoveEntityAttributes();
         }
 
         /// <summary>

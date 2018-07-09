@@ -24,7 +24,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Workflow.Action
 {
@@ -64,7 +64,7 @@ namespace Rock.Workflow.Action
         {
             errorMessages = new List<string>();
 
-            var attribute = AttributeCache.Read( GetAttributeValue( action, "PersonAttribute" ).AsGuid(), rockContext );
+            var attribute = CacheAttribute.Get( GetAttributeValue( action, "PersonAttribute" ).AsGuid(), rockContext );
             if ( attribute != null )
             {
                 var mergeFields = GetMergeFields( action );
@@ -83,10 +83,9 @@ namespace Rock.Workflow.Action
                     Person person = null;
                     PersonAlias personAlias = null;
                     var personService = new PersonService( rockContext );
-                    var people = personService.GetByMatch( firstName, lastName, email ).ToList();
-                    if ( people.Count == 1 )
+                    person = personService.FindPerson( firstName, lastName, email, true );
+                    if ( person.IsNotNull() )
                     {
-                        person = people.First();
                         personAlias = person.PrimaryAlias;
                     }
                     else
@@ -98,21 +97,21 @@ namespace Rock.Workflow.Action
                         person.IsEmailActive = true;
                         person.Email = email;
                         person.EmailPreference = EmailPreference.EmailAllowed;
-                        person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                        person.RecordTypeValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
 
-                        var defaultConnectionStatus = DefinedValueCache.Read( GetAttributeValue( action, "DefaultConnectionStatus" ).AsGuid() );
+                        var defaultConnectionStatus = CacheDefinedValue.Get( GetAttributeValue( action, "DefaultConnectionStatus" ).AsGuid() );
                         if ( defaultConnectionStatus != null )
                         {
                             person.ConnectionStatusValueId = defaultConnectionStatus.Id;
                         }
 
-                        var defaultRecordStatus = DefinedValueCache.Read( GetAttributeValue( action, "DefaultRecordStatus" ).AsGuid() );
+                        var defaultRecordStatus = CacheDefinedValue.Get( GetAttributeValue( action, "DefaultRecordStatus" ).AsGuid() );
                         if ( defaultRecordStatus != null )
                         {
                             person.RecordStatusValueId = defaultRecordStatus.Id;
                         }
 
-                        var defaultCampus = CampusCache.Read( GetAttributeValue( action, "DefaultCampus", true ).AsGuid() );
+                        var defaultCampus = CacheCampus.Get( GetAttributeValue( action, "DefaultCampus", true ).AsGuid() );
                         var familyGroup = PersonService.SaveNewPerson( person, rockContext, ( defaultCampus != null ? defaultCampus.Id : (int?)null ), false );
                         if ( familyGroup != null && familyGroup.Members.Any() )
                         {

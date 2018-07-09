@@ -1138,7 +1138,7 @@ END:VCALENDAR
             _vsValidation.ClientIDMode = ClientIDMode.Static;
             _vsValidation.ID = "vsValidation_" + this.ClientID;
             _vsValidation.HeaderText = "Please Correct the Following";
-            _vsValidation.CssClass = "alert alert-danger";
+            _vsValidation.CssClass = "alert alert-validation";
             _vsValidation.ValidationGroup = validationGroup;
 
             _dpStartDateTime.ClientIDMode = ClientIDMode.Static;

@@ -28,7 +28,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
@@ -47,7 +47,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     {
         #region Fields
 
-        private GroupTypeCache _groupType = null;
+        private CacheGroupType _groupType = null;
         private bool _IsFamilyGroupType = false;
         private bool _allowEdit = false;
 
@@ -67,10 +67,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             base.OnInit( e );
 
-            _groupType = GroupTypeCache.Read( GetAttributeValue( "GroupType" ).AsGuid() );
+            _groupType = CacheGroupType.Get( GetAttributeValue( "GroupType" ).AsGuid() );
             if ( _groupType == null )
             {
-                _groupType = GroupTypeCache.GetFamilyGroupType();
+                _groupType = CacheGroupType.GetFamilyGroupType();
             }
             _IsFamilyGroupType = _groupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
 
@@ -195,7 +195,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         if ( groupHeaderLava.IsNotNullOrWhitespace() || groupFooterLava.IsNotNullOrWhitespace() )
                         {
                             // add header and footer information
-                            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, CurrentPerson );
+                            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
                             mergeFields.Add( "Group", group );
                             mergeFields.Add( "GroupMembers", members );
 
@@ -203,7 +203,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             Literal lGroupFooter = e.Item.FindControl( "lGroupFooter" ) as Literal;
 
                             lGroupHeader.Text = groupHeaderLava.ResolveMergeFields( mergeFields );
-                            lGroupFooter.Text = groupHeaderLava.ResolveMergeFields( mergeFields );
+                            lGroupFooter.Text = groupFooterLava.ResolveMergeFields( mergeFields );
                         }
 
                         var orderedMembers = new List<GroupMember>();

@@ -44,8 +44,8 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Cache;
 using Rock.Security;
-using Rock.Web.Cache;
 using Rock.Web.UI;
 using UAParser;
 
@@ -56,6 +56,8 @@ namespace Rock.Lava
     /// </summary>
     public static class RockFilters
     {
+        static Random _randomNumberGenerator = new Random();
+
         #region String Filters
 
 
@@ -932,11 +934,27 @@ namespace Rock.Lava
                 format = " " + format;
             }
 
-            DateTime date;
+            var inputDateTime = input.ToString().AsDateTime();
 
-            return DateTime.TryParse( input.ToString(), out date )
-                ? Liquid.UseRubyDateFormat ? date.ToStrFTime( format ).Trim() : date.ToString( format ).Trim()
-                : input.ToString().Trim();
+            // Check for invalid date
+            if (! inputDateTime.HasValue )
+            {
+                return input.ToString().Trim();
+            }
+
+            // Consider special 'Standard Date' format
+            if ( format == "sd" )
+            {
+                return inputDateTime.Value.ToShortDateString();
+            }
+
+            // Consider special 'Standard Time' format
+            if ( format == "st" )
+            {
+                return inputDateTime.Value.ToShortTimeString();
+            }
+
+            return Liquid.UseRubyDateFormat ? inputDateTime.Value.ToStrFTime( format ).Trim() : inputDateTime.Value.ToString( format ).Trim();
         }
 
         /// <summary>
@@ -1490,7 +1508,7 @@ namespace Rock.Lava
             if ( input is string )
             {
                 // if the input is a string, just append the currency symbol to the front, even if it can't be converted to a number
-                var currencySymbol = GlobalAttributesCache.Value( "CurrencySymbol" );
+                var currencySymbol = CacheGlobalAttributes.Value( "CurrencySymbol" );
                 return string.Format( "{0}{1}", currencySymbol, input );
             }
             else
@@ -1696,21 +1714,21 @@ namespace Rock.Lava
         /// <returns></returns>
         public static object Attribute( DotLiquid.Context context, object input, string attributeKey, string qualifier = "" )
         {
-            IHasAttributes item = null;
+            Data.IHasAttributes item = null;
 
             if ( input == null || attributeKey == null )
             {
                 return string.Empty;
             }
 
-            AttributeCache attribute = null;
+            CacheAttribute attribute = null;
             string rawValue = string.Empty;
             int? entityId = null;
 
             // If Input is "Global" then look for a global attribute with key
             if ( input.ToString().Equals( "Global", StringComparison.OrdinalIgnoreCase ) )
             {
-                var globalAttributeCache = Rock.Web.Cache.GlobalAttributesCache.Read();
+                var globalAttributeCache = Rock.Cache.CacheGlobalAttributes.Get();
                 attribute = globalAttributeCache.Attributes
                     .FirstOrDefault( a => a.Key.Equals( attributeKey, StringComparison.OrdinalIgnoreCase ) );
                 if ( attribute != null )
@@ -1740,13 +1758,13 @@ namespace Rock.Lava
             // If input is an object that has attributes, find its attribute value
             else
             {
-                if ( input is IHasAttributes )
+                if ( input is Data.IHasAttributes )
                 {
-                    item = (IHasAttributes)input;
+                    item = (Data.IHasAttributes)input;
                 }
-                else if ( input is IHasAttributesWrapper )
+                else if ( input is Data.IHasAttributesWrapper )
                 {
-                    item = ( (IHasAttributesWrapper)input ).HasAttributesEntity;
+                    item = ( (Data.IHasAttributesWrapper)input ).HasAttributesEntity;
                 }
 
                 if ( item != null )
@@ -2086,7 +2104,7 @@ namespace Rock.Lava
 
             if ( person != null )
             {
-                var familyGroupTypeId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
+                var familyGroupTypeId = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
 
                 Location location = null;
 
@@ -2676,8 +2694,12 @@ namespace Rock.Lava
             if ( person != null && numericalGroupTypeId.HasValue )
             {
                 return new AttendanceService( GetRockContext( context ) ).Queryable()
-                    .Where( a => a.Group.GroupTypeId == numericalGroupTypeId && a.PersonAlias.PersonId == person.Id && a.DidAttend == true )
-                    .Select( a => a.Group ).Distinct().ToList();
+                    .Where( a => 
+                        a.Occurrence.Group != null && 
+                        a.Occurrence.Group.GroupTypeId == numericalGroupTypeId && 
+                        a.PersonAlias.PersonId == person.Id && 
+                        a.DidAttend == true )
+                    .Select( a => a.Occurrence.Group ).Distinct().ToList();
             }
 
             return new List<Model.Group>();
@@ -2698,8 +2720,13 @@ namespace Rock.Lava
             if ( person != null && numericalGroupTypeId.HasValue )
             {
                 var attendance = new AttendanceService( GetRockContext( context ) ).Queryable( "Group" )
-                    .Where( a => a.Group.GroupTypeId == numericalGroupTypeId && a.PersonAlias.PersonId == person.Id && a.DidAttend == true )
-                    .OrderByDescending( a => a.StartDateTime ).FirstOrDefault();
+                    .Where( a => 
+                        a.Occurrence.Group != null &&
+                        a.Occurrence.Group.GroupTypeId == numericalGroupTypeId && 
+                        a.PersonAlias.PersonId == person.Id && 
+                        a.DidAttend == true )
+                    .OrderByDescending( a => a.StartDateTime )
+                    .FirstOrDefault();
 
                 return attendance;
             }
@@ -3173,132 +3200,132 @@ namespace Rock.Lava
                         {
                             if ( inputAsInt.HasValue )
                             {
-                                return DefinedValueCache.Read( inputAsInt.Value );
+                                return CacheDefinedValue.Get( inputAsInt.Value );
                             }
                             else
                             {
-                                return DefinedValueCache.Read( inputAsGuid.Value );
+                                return CacheDefinedValue.Get( inputAsGuid.Value );
                             }
                         }
                     case "DefinedType":
                         {
                             if ( inputAsInt.HasValue )
                             {
-                                return DefinedTypeCache.Read( inputAsInt.Value );
+                                return CacheDefinedType.Get( inputAsInt.Value );
                             }
                             else
                             {
-                                return DefinedTypeCache.Read( inputAsGuid.Value );
+                                return CacheDefinedType.Get( inputAsGuid.Value );
                             }
                         }
                     case "Campus":
                         {
                             if ( inputAsInt.HasValue )
                             {
-                                return CampusCache.Read( inputAsInt.Value );
+                                return CacheCampus.Get( inputAsInt.Value );
                             }
                             else
                             {
-                                return CampusCache.Read( inputAsGuid.Value );
+                                return CacheCampus.Get( inputAsGuid.Value );
                             }
                         }
                     case "Category":
                         {
                             if ( inputAsInt.HasValue )
                             {
-                                return CategoryCache.Read( inputAsInt.Value );
+                                return CacheCategory.Get( inputAsInt.Value );
                             }
                             else
                             {
-                                return CategoryCache.Read( inputAsGuid.Value );
+                                return CacheCategory.Get( inputAsGuid.Value );
                             }
                         }
                     case "GroupType":
                         {
                             if ( inputAsInt.HasValue )
                             {
-                                return GroupTypeCache.Read( inputAsInt.Value );
+                                return CacheGroupType.Get( inputAsInt.Value );
                             }
                             else
                             {
-                                return GroupTypeCache.Read( inputAsGuid.Value );
+                                return CacheGroupType.Get( inputAsGuid.Value );
                             }
                         }
                     case "Page":
                         {
                             if ( inputAsInt.HasValue )
                             {
-                                return PageCache.Read( inputAsInt.Value );
+                                return CachePage.Get( inputAsInt.Value );
                             }
                             else
                             {
-                                return PageCache.Read( inputAsGuid.Value );
+                                return CachePage.Get( inputAsGuid.Value );
                             }
                         }
                     case "Block":
                         {
                             if ( inputAsInt.HasValue )
                             {
-                                return BlockCache.Read( inputAsInt.Value );
+                                return CacheBlock.Get( inputAsInt.Value );
                             }
                             else
                             {
-                                return BlockCache.Read( inputAsGuid.Value );
+                                return CacheBlock.Get( inputAsGuid.Value );
                             }
                         }
                     case "BlockType":
                         {
                             if ( inputAsInt.HasValue )
                             {
-                                return BlockTypeCache.Read( inputAsInt.Value );
+                                return CacheBlockType.Get( inputAsInt.Value );
                             }
                             else
                             {
-                                return BlockTypeCache.Read( inputAsGuid.Value );
+                                return CacheBlockType.Get( inputAsGuid.Value );
                             }
                         }
                     case "EventCalendar":
                         {
                             if ( inputAsInt.HasValue )
                             {
-                                return EventCalendarCache.Read( inputAsInt.Value );
+                                return CacheEventCalendar.Get( inputAsInt.Value );
                             }
                             else
                             {
-                                return EventCalendarCache.Read( inputAsGuid.Value );
+                                return CacheEventCalendar.Get( inputAsGuid.Value );
                             }
                         }
                     case "Attribute":
                         {
                             if ( inputAsInt.HasValue )
                             {
-                                return AttributeCache.Read( inputAsInt.Value );
+                                return CacheAttribute.Get( inputAsInt.Value );
                             }
                             else
                             {
-                                return AttributeCache.Read( inputAsGuid.Value );
+                                return CacheAttribute.Get( inputAsGuid.Value );
                             }
                         }
                     case "NoteType":
                         {
                             if ( inputAsInt.HasValue )
                             {
-                                return NoteTypeCache.Read( inputAsInt.Value );
+                                return CacheNoteType.Get( inputAsInt.Value );
                             }
                             else
                             {
-                                return NoteTypeCache.Read( inputAsGuid.Value );
+                                return CacheNoteType.Get( inputAsGuid.Value );
                             }
                         }
                     case "ContentChannel":
                         {
                             if ( inputAsInt.HasValue )
                             {
-                                return ContentChannelCache.Read( inputAsInt.Value );
+                                return CacheContentChannel.Get( inputAsInt.Value );
                             }
                             else
                             {
-                                return ContentChannelCache.Read( inputAsGuid.Value );
+                                return CacheContentChannel.Get( inputAsGuid.Value );
                             }
                         }
                     default:
@@ -3742,8 +3769,7 @@ namespace Rock.Lava
             {
                 return null;
             }
-
-            return input.ToString().AsIntegerOrNull();
+            return (int?)input.ToString().AsDecimalOrNull();
         }
 
         /// <summary>
@@ -3829,7 +3855,7 @@ namespace Rock.Lava
             // Ensure that the provided site exists
             if ( siteId.HasValue )
             {
-                SiteCache site = SiteCache.Read( siteId.Value );
+                CacheSite site = CacheSite.Get( siteId.Value );
                 if ( site == null )
                 {
                     siteId = null;
@@ -3907,18 +3933,36 @@ namespace Rock.Lava
             }
 
             var inputList = input as IList;
-            Random rng = new Random();
             int n = inputList.Count;
             while ( n > 1 )
             {
                 n--;
-                int k = rng.Next( n + 1 );
+                int k = _randomNumberGenerator.Next( n + 1 );
                 var value = inputList[k];
                 inputList[k] = inputList[n];
                 inputList[n] = value;
             }
 
             return inputList;
+        }
+
+        /// <summary>
+        /// Determines whether [contains] [the specified input].
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="containValue">The contain value.</param>
+        /// <returns>
+        ///   <c>true</c> if [contains] [the specified input]; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool Contains( object input, object containValue)
+        {
+            var inputList = ( input as IList );
+            if ( inputList != null )
+            {
+                return inputList.Contains( containValue );
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -4035,7 +4079,7 @@ namespace Rock.Lava
             if ( input is IEnumerable )
             {
                 var rockContext = GetRockContext( context );
-                var inputList = ( input as IEnumerable ).OfType<Rock.Attribute.IHasAttributes>().ToList();
+                var inputList = ( input as IEnumerable ).OfType<Data.IHasAttributes>().ToList();
                 foreach ( var item in inputList )
                 {
                     if ( item.Attributes == null )
@@ -4281,7 +4325,7 @@ namespace Rock.Lava
 
                 if ( id.HasValue )
                 {
-                    var entityTypes = EntityTypeCache.All();
+                    var entityTypes = CacheEntityType.All();
                     var entityTypeCache = entityTypes.Where( e => String.Equals( e.Name, typeName, StringComparison.OrdinalIgnoreCase ) ).FirstOrDefault();
 
                     if ( entityTypeCache != null )

@@ -109,7 +109,7 @@ namespace Rock.Reporting.DataFilter.Person
             string[] options = selection.Split( '|' );
             if ( options.Length >= 4 )
             {
-                var groupType = Rock.Web.Cache.GroupTypeCache.Read( options[0].AsGuid() );
+                var groupType = Rock.Cache.CacheGroupType.Get( options[0].AsGuid() );
 
                 ComparisonType comparisonType = options[1].ConvertToEnum<ComparisonType>( ComparisonType.GreaterThanOrEqualTo );
                 bool includeChildGroups = options.Length > 4 ? options[4].AsBoolean() : false;
@@ -381,23 +381,23 @@ namespace Rock.Reporting.DataFilter.Person
             if ( dateRange.Start.HasValue )
             {
                 var startDate = dateRange.Start.Value;
-                attendanceQry = attendanceQry.Where( a => a.StartDateTime >= startDate );
+                attendanceQry = attendanceQry.Where( a => a.Occurrence.OccurrenceDate >= startDate );
             }
 
             if ( dateRange.End.HasValue )
             {
                 var endDate = dateRange.End.Value;
-                attendanceQry = attendanceQry.Where( a => a.StartDateTime < endDate );
+                attendanceQry = attendanceQry.Where( a => a.Occurrence.OccurrenceDate < endDate );
             }
 
             if ( groupTypeIds.Count == 1 )
             {
                 int groupTypeId = groupTypeIds[0];
-                attendanceQry = attendanceQry.Where( a => a.Group.GroupTypeId == groupTypeId );
+                attendanceQry = attendanceQry.Where( a => a.Occurrence.Group.GroupTypeId == groupTypeId );
             }
             else if ( groupTypeIds.Count > 1 )
             {
-                attendanceQry = attendanceQry.Where( a => groupTypeIds.Contains( a.Group.GroupTypeId ) );
+                attendanceQry = attendanceQry.Where( a => groupTypeIds.Contains( a.Occurrence.Group.GroupTypeId ) );
             }
             else
             {

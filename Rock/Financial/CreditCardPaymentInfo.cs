@@ -17,7 +17,7 @@
 using System;
 using System.Text.RegularExpressions;
 
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Financial
 {
@@ -117,15 +117,15 @@ namespace Rock.Financial
         /// <summary>
         /// Gets the currency type value.
         /// </summary>
-        public override DefinedValueCache CurrencyTypeValue
+        public override CacheDefinedValue CurrencyTypeValue
         {
-            get { return DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) ); }
+            get { return CacheDefinedValue.Get( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) ); }
         }
 
         /// <summary>
         /// Gets the credit card type value id.
         /// </summary>
-        public override DefinedValueCache CreditCardTypeValue
+        public override CacheDefinedValue CreditCardTypeValue
         {
             get
             {
@@ -138,9 +138,9 @@ namespace Rock.Financial
         /// </summary>
         /// <param name="ccNumber">The cc number.</param>
         /// <returns></returns>
-        public static DefinedValueCache GetCreditCardType( string ccNumber )
+        public static CacheDefinedValue GetCreditCardType( string ccNumber )
         {
-            foreach ( var dv in DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE ) ).DefinedValues )
+            foreach ( var dv in CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE ) ).DefinedValues )
             {
                 string pattern = dv.GetAttributeValue( "RegExPattern" );
                 if ( !string.IsNullOrWhiteSpace( pattern ) )

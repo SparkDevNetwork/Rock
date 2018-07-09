@@ -172,6 +172,12 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<Group>( Context ).Queryable().Any( a => a.StatusValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Group.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<GroupLocation>( Context ).Queryable().Any( a => a.GroupLocationTypeValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, GroupLocation.FriendlyTypeName );
@@ -253,6 +259,12 @@ namespace Rock.Model
             if ( new Service<PersonalDevice>( Context ).Queryable().Any( a => a.PersonalDeviceTypeValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, PersonalDevice.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<PersonSearchKey>( Context ).Queryable().Any( a => a.SearchTypeValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, PersonSearchKey.FriendlyTypeName );
                 return false;
             }  
  

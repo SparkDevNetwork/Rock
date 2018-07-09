@@ -25,7 +25,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Model
 {
@@ -178,7 +178,7 @@ namespace Rock.Model
         /// The history changes.
         /// </value>
         [NotMapped]
-        private List<string> GroupHistoryChanges { get; set; }
+        private History.HistoryChangeList GroupHistoryChanges { get; set; }
 
         #endregion
 
@@ -193,7 +193,7 @@ namespace Rock.Model
         {
             var rockContext = (RockContext)dbContext;
 
-            GroupHistoryChanges = new List<string>();
+            GroupHistoryChanges = new History.HistoryChangeList();
 
             switch ( entry.State )
             {
@@ -210,7 +210,7 @@ namespace Rock.Model
 
                 case System.Data.Entity.EntityState.Modified:
                     {
-                        string locationTypeName = DefinedValueCache.GetName( GroupLocationTypeValueId ) ?? "Unknown";
+                        string locationTypeName = CacheDefinedValue.GetName( GroupLocationTypeValueId ) ?? "Unknown";
                         int? oldLocationTypeId = entry.OriginalValues["GroupLocationTypeValueId"].ToStringSafe().AsIntegerOrNull();
                         if ( ( oldLocationTypeId ?? 0 ) == ( GroupLocationTypeValueId ?? 0 ) )
                         {
@@ -219,7 +219,7 @@ namespace Rock.Model
                         else
                         {
                             Location newLocation = null;
-                            History.EvaluateChange( GroupHistoryChanges, $"{DefinedValueCache.GetName( oldLocationTypeId ) ?? "Unknown"} Location", entry.OriginalValues["LocationId"].ToStringSafe().AsIntegerOrNull(), newLocation, (int?)null, rockContext );
+                            History.EvaluateChange( GroupHistoryChanges, $"{CacheDefinedValue.GetName( oldLocationTypeId ) ?? "Unknown"} Location", entry.OriginalValues["LocationId"].ToStringSafe().AsIntegerOrNull(), newLocation, (int?)null, rockContext );
                             History.EvaluateChange( GroupHistoryChanges, $"{locationTypeName} Location", (int?)null, Location, LocationId, rockContext );
                         }
 

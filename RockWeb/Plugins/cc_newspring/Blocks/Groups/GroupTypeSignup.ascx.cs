@@ -33,7 +33,7 @@ using System.Runtime.Caching;
 using System.Web.UI.WebControls;
 using System.Data.Entity.Core.Objects;
 
-namespace RockWeb.Plugins.cc_newspring.Blocks.Groups
+namespace RockWeb.Plugins.cc_newspring.Groups
 {
     /// <summary>
     /// Block that syncs selected people to an exchange server.
@@ -201,9 +201,10 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Groups
 
         private void LoadRegistration()
         {
-            RockContext rockContext = new RockContext();
-            GroupService groupService = new GroupService( rockContext );
-            AttendanceService attendanceService = new AttendanceService( rockContext );
+            var rockContext = new RockContext();
+            var groupService = new GroupService( rockContext );
+            var attendanceService = new AttendanceService( rockContext );
+	    var attendanceOccurrenceService = new AttendanceOccurrenceService( rockContext );
 
             // get list of groups of this type
             var groups = groupService.Queryable()
@@ -217,36 +218,37 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Groups
             // get listing of possible attendance for groups of this type
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( GetAttributeValue( "DateRange" ) ?? "-1||" );
 
-            _schedules = attendanceService.Queryable()
-                                        .Where( a =>
-                                            a.GroupId.HasValue
-                                            && groupIds.Contains( a.GroupId.Value ) 
-                                            && a.StartDateTime >= dateRange.Start.Value 
-                                            && a.StartDateTime <= dateRange.End.Value
-                                            && a.LocationId == _location.Id )
-                                        .Select( a => new ScheduleResult
+            var attendanceOccurrences = attendanceOccurrenceService.Queryable()
+                                            .Where( a =>
+                                                a.GroupId.HasValue
+                                                && groupIds.Contains( a.GroupId.Value )
+                                                && a.OccurrenceDate >= dateRange.Start.Value
+                                                && a.OccurrenceDate <= dateRange.End.Value
+                                                && a.LocationId == _location.Id )
+                                            .Distinct()
+                                            .ToList();
+                                            
+
+            _schedules = attendanceOccurrences.Select( a => new ScheduleResult
                                         {
                                             Group = a.Group,
                                             Schedule = a.Schedule,
-                                            Date = a.StartDateTime
+                                            Date = a.OccurrenceDate
                                         } )
                                         .Distinct()
                                         .ToList();
-            
+            var occurrenceIds = attendanceOccurrences.Select( o => o.Id ).ToList();
+
             // get personal schedules (things you already signed up for)
             _personalSchedules = attendanceService.Queryable()
                                     .Where( a =>
-                                            a.GroupId.HasValue
-                                            && groupIds.Contains( a.GroupId.Value )
-                                            && a.StartDateTime >= dateRange.Start.Value
-                                            && a.StartDateTime <= dateRange.End.Value 
+                                            occurrenceIds.Contains( a.OccurrenceId )
                                             && a.PersonAlias.PersonId == CurrentPersonId
-                                            && a.LocationId == _location.Id 
                                             && a.RSVP == RSVP.Yes)
                                         .Select( a => new ScheduleResult
                                         {
-                                            Group = a.Group,
-                                            Schedule = a.Schedule,
+                                            Group = a.Occurrence.Group,
+                                            Schedule = a.Occurrence.Schedule,
                                             Date = a.StartDateTime
                                         } )
                                         .Distinct()
@@ -298,15 +300,32 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Groups
                                 {
                                     RemovePersonRsvp( CurrentPerson, originalGroupId, scheduleId, scheduleDate );
                                 }
-                                
+
                                 // mark them as coming
-                                var attendanceRecord = new Attendance();
-                                attendanceRecord.PersonAliasId = CurrentPersonAliasId;
-                                attendanceRecord.GroupId = groupId;
-                                attendanceRecord.ScheduleId = scheduleId;
-                                attendanceRecord.StartDateTime = scheduleDate.Value.Date;
-                                attendanceRecord.RSVP = RSVP.Yes;
-                                attendanceRecord.LocationId = _location.Id;
+                                var attendanceOccurrenceService = new AttendanceOccurrenceService( rockContext );
+                                var attendanceOccurrence = attendanceOccurrenceService.Queryable()
+                                                            .Where( o =>
+                                                                o.GroupId == groupId &&
+                                                                o.ScheduleId == scheduleId &&
+                                                                o.LocationId == _location.Id
+                                                                )
+                                                            .FirstOrDefault();
+
+                                // Didn't find an attendance occurence to mark the attendance for. This should not happen, but just in case.
+                                if ( attendanceOccurrence == null )
+                                {
+                                    nbMessages.NotificationBoxType = NotificationBoxType.Warning;
+                                    nbMessages.Text = "Could not find a matching attendance occurrence to add the attendance to.";
+                                    return;
+                                }
+
+                                var attendanceRecord = new Attendance
+                                {
+                                    PersonAliasId = CurrentPersonAliasId,
+                                    OccurrenceId = attendanceOccurrence.Id,
+                                    StartDateTime = scheduleDate.Value.Date,
+                                    RSVP = RSVP.Yes
+                                };
 
                                 attendanceService.Add( attendanceRecord );
                                 rockContext.SaveChanges();
@@ -314,17 +333,19 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Groups
                                 // add them to the group
                                 var groupMember = groupMemberService.Queryable().Where( m => m.PersonId == CurrentPersonId && m.GroupId == groupId ).FirstOrDefault();
 
-                                if (groupMember == null )
+                                if ( groupMember == null )
                                 {
                                     bool createAsInactive = GetAttributeValue( "GroupMembersInactive" ).AsBoolean();
 
                                     groupMember = new GroupMember();
-                                    groupMemberService.Add( groupMember );
                                     groupMember.PersonId = CurrentPersonId.Value;
                                     groupMember.GroupId = groupId;
                                     groupMember.GroupMemberStatus = createAsInactive ? GroupMemberStatus.Inactive : GroupMemberStatus.Active;
                                     groupMember.GroupRoleId = _groupRoleId;
+				    
+				    groupMemberService.Add( groupMember );
                                 }
+
 
                                 rockContext.SaveChanges();
 
@@ -336,8 +357,8 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Groups
                                     groupMember.SetAttributeValue( GetAttributeValue( "DescriptionAttribute" ), string.Format( "{0} {1}", scheduleDate.Value.ToShortDateString(), scheduleName ) );
                                     groupMember.SaveAttributeValues();
                                 }
+                                
                             }
-                            
                         }
                     }
                 }
@@ -364,8 +385,8 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Groups
             var attendanceRecord = attendanceService.Queryable()
                                     .Where( a =>
                                          a.PersonAlias.PersonId == CurrentPersonId
-                                         && a.GroupId == groupId
-                                         && a.ScheduleId == scheduleId
+                                         && a.Occurrence.GroupId == groupId
+                                         && a.Occurrence.ScheduleId == scheduleId
                                          && a.RSVP == RSVP.Yes
                                          && DbFunctions.TruncateTime( a.StartDateTime ) == DbFunctions.TruncateTime( scheduleDate.Value ) )
                                     .FirstOrDefault();

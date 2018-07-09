@@ -24,7 +24,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -221,7 +221,7 @@ namespace RockWeb.Blocks.CheckIn
 
             rockContext.SaveChanges();
 
-            Rock.CheckIn.KioskDevice.FlushAll();
+            Rock.CheckIn.KioskDevice.Clear();
 
             if ( _groupTypeId.HasValue )
             {
@@ -271,11 +271,11 @@ namespace RockWeb.Blocks.CheckIn
             int? categoryId = GetBlockUserPreference( "Category" ).AsIntegerOrNull();
             if ( !categoryId.HasValue )
             {
-                var categoryCache = CategoryCache.Read( Rock.SystemGuid.Category.SCHEDULE_SERVICE_TIMES.AsGuid() );
+                var categoryCache = CacheCategory.Get( Rock.SystemGuid.Category.SCHEDULE_SERVICE_TIMES.AsGuid() );
                 categoryId = categoryCache != null ? categoryCache.Id : (int?)null;
             }
 
-            pCategory.EntityTypeId = EntityTypeCache.GetId( typeof( Rock.Model.Schedule ) ) ?? 0;
+            pCategory.EntityTypeId = CacheEntityType.GetId( typeof( Rock.Model.Schedule ) ) ?? 0;
             if ( categoryId.HasValue )
             {
                 pCategory.SetValue( new CategoryService( rockContext ).Get( categoryId.Value ) );
@@ -434,7 +434,7 @@ namespace RockWeb.Blocks.CheckIn
                 dataTable.Rows.Add( dataRow );
             }
 
-            gGroupLocationSchedule.EntityTypeId = EntityTypeCache.Read<GroupLocation>().Id;
+            gGroupLocationSchedule.EntityTypeId = CacheEntityType.Get<GroupLocation>().Id;
             gGroupLocationSchedule.DataSource = dataTable;
             gGroupLocationSchedule.DataBind();
         }
@@ -496,7 +496,7 @@ namespace RockWeb.Blocks.CheckIn
 
             // populate the GroupType DropDownList only with GroupTypes with GroupTypePurpose of Checkin Template
             // or with group types that allow multiple locations/schedules and support named locations
-            int groupTypePurposeCheckInTemplateId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE ) ).Id;
+            int groupTypePurposeCheckInTemplateId = CacheDefinedValue.Get( new Guid( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE ) ).Id;
             GroupTypeService groupTypeService = new GroupTypeService( rockContext );
 
             // First find all the group types that have a purpose of 'Check-in Template'

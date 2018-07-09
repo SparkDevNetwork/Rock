@@ -29,7 +29,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 
 /*******************************************************************************************************************************
@@ -50,6 +50,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [SecurityAction( "EditRecordStatus", "The roles and/or users that can edit the record status for the selected person." )]
     [BooleanField("Hide Grade", "Should the Grade (and Graduation Year) fields be hidden?", false, "", 0)]
     [BooleanField("Hide Anniversary Date", "Should the Anniversary Date field be hidden?", false, "", 1)]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_SEARCH_KEYS, "Search Key Types", "Optional list of search key types to limit the display in search keys grid. No selection will show all.", false, true, "", "", 2 )]
     public partial class EditPerson : Rock.Web.UI.PersonBlock
     {
         /// <summary>
@@ -60,12 +61,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             base.OnInit( e );
 
-            ddlTitle.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_TITLE ) ), true );
-            ddlSuffix.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_SUFFIX ) ), true );
-            ddlMaritalStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS ) ), true );
-            ddlConnectionStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ), true );
-            ddlRecordStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ) );
-            ddlReason.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ), true );
+            ddlTitle.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_TITLE ) ), true );
+            ddlSuffix.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_SUFFIX ) ), true );
+            ddlMaritalStatus.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS ) ), true );
+            ddlConnectionStatus.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ), true );
+            ddlRecordStatus.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ) );
+            ddlReason.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ), true );
 
             pnlGivingGroup.Visible = UserCanAdministrate || IsUserAuthorized( "EditFinancials" );
 
@@ -104,6 +105,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             grdPreviousNames.Actions.ShowAdd = true;
             grdPreviousNames.Actions.AddClick += grdPreviousNames_AddClick;
+            gSearchKeys.Actions.ShowAdd = true;
+            gSearchKeys.Actions.AddClick += gSearchKeys_AddClick;
 
             pnlGradeGraduation.Visible = !GetAttributeValue( "HideGrade" ).AsBoolean();
             dpAnniversaryDate.Visible = !GetAttributeValue( "HideAnniversaryDate" ).AsBoolean();
@@ -159,6 +162,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         private List<PersonPreviousName> PersonPreviousNamesState { get; set; }
 
         /// <summary>
+        /// Gets or sets the state of the person search keys.
+        /// </summary>
+        /// <value>
+        /// The state of the person search keys.
+        /// </value>
+        private List<PersonSearchKey> PersonSearchKeysState { get; set; }
+
+        /// <summary>
         /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
         /// </summary>
         /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
@@ -175,6 +186,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             else
             {
                 PersonPreviousNamesState = PersonPreviousName.FromJsonAsList( json ) ?? new List<PersonPreviousName>();
+            }
+
+            json = ViewState["PersonSearchKeysState"] as string;
+
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                PersonSearchKeysState = new List<PersonSearchKey>();
+            }
+            else
+            {
+                PersonSearchKeysState = PersonSearchKey.FromJsonAsList( json ) ?? new List<PersonSearchKey>();
             }
         }
 
@@ -193,6 +215,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             };
 
             ViewState["PersonPreviousNamesState"] = JsonConvert.SerializeObject( PersonPreviousNamesState, Formatting.None, jsonSetting );
+            ViewState["PersonSearchKeysState"] = JsonConvert.SerializeObject( PersonSearchKeysState, Formatting.None, jsonSetting );
 
             return base.SaveViewState();
         }
@@ -206,7 +229,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void ddlRecordStatus_SelectedIndexChanged( object sender, EventArgs e )
         {
-            bool showInactiveReason = ( ddlRecordStatus.SelectedValueAsInt() == DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id );
+            bool showInactiveReason = ( ddlRecordStatus.SelectedValueAsInt() == CacheDefinedValue.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id );
 
             bool canEditRecordStatus = UserCanAdministrate || IsUserAuthorized( "EditRecordStatus" );
             ddlReason.Visible = showInactiveReason && canEditRecordStatus;
@@ -353,8 +376,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     person.IsLockedAsChild = cbLockAsChild.Checked;
 
                     // Save the Envelope Number attribute if it exists and has changed
-                    var personGivingEnvelopeAttribute = AttributeCache.Read( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
-                    if ( GlobalAttributesCache.Read().EnableGivingEnvelopeNumber && personGivingEnvelopeAttribute != null )
+                    var personGivingEnvelopeAttribute = CacheAttribute.Get( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
+                    if ( CacheGlobalAttributes.Get().EnableGivingEnvelopeNumber && personGivingEnvelopeAttribute != null )
                     {
                         if ( person.Attributes == null )
                         {
@@ -412,7 +435,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     }
 
                     bool recordStatusChangedToOrFromInactive = false;
-                    var recordStatusInactiveId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
+                    var recordStatusInactiveId = CacheDefinedValue.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
 
                     int? newRecordStatusId = ddlRecordStatus.SelectedValueAsInt();
                     // Is the person's record status changing?
@@ -448,6 +471,19 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     {
                         addedPreviousName.PersonAliasId = person.PrimaryAliasId.Value;
                         personPreviousNameService.Add( addedPreviousName );
+                    }
+
+                    var personSearchKeyService = new PersonSearchKeyService( rockContext );
+                    var databaseSearchKeys = personSearchKeyService.Queryable().Where( a => a.PersonAlias.PersonId == person.Id ).ToList();
+                    foreach ( var deletedSearchKey in databaseSearchKeys.Where( a => !PersonSearchKeysState.Any( p => p.Guid == a.Guid ) ) )
+                    {
+                        personSearchKeyService.Delete( deletedSearchKey );
+                    }
+
+                    foreach ( var personSearchKey in PersonSearchKeysState.Where( a => !databaseSearchKeys.Any( d => d.Guid == a.Guid ) ) )
+                    {
+                        personSearchKey.PersonAliasId = person.PrimaryAliasId.Value;
+                        personSearchKeyService.Add( personSearchKey );
                     }
 
                     if ( person.IsValid )
@@ -600,10 +636,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             ddlRecordStatus_SelectedIndexChanged( null, null );
 
-            var mobilePhoneType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) );
+            var mobilePhoneType = CacheDefinedValue.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) );
 
             var phoneNumbers = new List<PhoneNumber>();
-            var phoneNumberTypes = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE ) );
+            var phoneNumberTypes = CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE ) );
             if ( phoneNumberTypes.DefinedValues.Any() )
             {
                 foreach ( var phoneNumberType in phoneNumberTypes.DefinedValues )
@@ -633,16 +669,25 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             ddlGivingGroup.SetValue( Person.GivingGroupId );
             cbLockAsChild.Checked = Person.IsLockedAsChild;
-            var personGivingEnvelopeAttribute = AttributeCache.Read( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
-            rcwEnvelope.Visible = GlobalAttributesCache.Read().EnableGivingEnvelopeNumber && personGivingEnvelopeAttribute != null;
+            var personGivingEnvelopeAttribute = CacheAttribute.Get( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
+            rcwEnvelope.Visible = CacheGlobalAttributes.Get().EnableGivingEnvelopeNumber && personGivingEnvelopeAttribute != null;
             if ( personGivingEnvelopeAttribute != null )
             {
                 tbGivingEnvelopeNumber.Text = Person.GetAttributeValue( personGivingEnvelopeAttribute.Key );
             }
 
             this.PersonPreviousNamesState = Person.GetPreviousNames().ToList();
+             var searchTypeQry = Person.GetPersonSearchKeys();
+
+            var searchTypesList = this.GetAttributeValue( "SearchKeyTypes" ).SplitDelimitedValues().AsGuidList();
+            if ( searchTypesList.Any() )
+            {
+                searchTypeQry = searchTypeQry.Where( a => searchTypesList.Contains( a.SearchTypeValue.Guid ) );
+            }
+            this.PersonSearchKeysState = searchTypeQry.ToList();
 
             BindPersonPreviousNamesGrid();
+            BindPersonSearchKeysGrid();
         }
 
         /// <summary>
@@ -653,6 +698,16 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             grdPreviousNames.DataKeyNames = new string[] { "Guid" };
             grdPreviousNames.DataSource = this.PersonPreviousNamesState;
             grdPreviousNames.DataBind();
+        }
+
+        /// <summary>
+        /// Binds the person previous names grid.
+        /// </summary>
+        private void BindPersonSearchKeysGrid()
+        {
+            gSearchKeys.DataKeyNames = new string[] { "Guid" };
+            gSearchKeys.DataSource = this.PersonSearchKeysState;
+            gSearchKeys.DataBind();
         }
 
         /// <summary>
@@ -667,14 +722,39 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         }
 
         /// <summary>
-        /// Handles the Delete event of the grdPreviousNames control.
+        /// Handles the AddClick event of the gSearchKeys control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
-        protected void grdPreviousNames_Delete( object sender, RowEventArgs e )
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gSearchKeys_AddClick(object sender, EventArgs e)
         {
-            this.PersonPreviousNamesState.RemoveEntity( (Guid)e.RowKeyValue );
-            BindPersonPreviousNamesGrid();
+            tbSearchValue.Text = string.Empty;
+            var searchValueTypes = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_SEARCH_KEYS ).DefinedValues;
+
+            var searchTypesList = this.GetAttributeValue( "SearchKeyTypes" ).SplitDelimitedValues().AsGuidList();
+            if ( searchTypesList.Any() )
+            {
+                searchValueTypes = searchValueTypes.Where( a => searchTypesList.Contains( a.Guid ) ).ToList();
+            }
+
+            ddlSearchValueType.DataSource = searchValueTypes;
+            ddlSearchValueType.DataTextField = "Value";
+            ddlSearchValueType.DataValueField = "Id";
+            ddlSearchValueType.DataBind();
+            ddlSearchValueType.Items.Insert( 0, new ListItem() );
+            mdSearchKey.Show();
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the mdSearchKey control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdSearchKey_SaveClick( object sender, EventArgs e )
+        {
+            this.PersonSearchKeysState.Add( new PersonSearchKey { SearchValue = tbSearchValue.Text, SearchTypeValueId = ddlSearchValueType.SelectedValue.AsInteger(), Guid = Guid.NewGuid() } );
+            BindPersonSearchKeysGrid();
+            mdSearchKey.Hide();
         }
 
         /// <summary>
@@ -691,13 +771,35 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         }
 
         /// <summary>
+        /// Handles the Delete event of the grdPreviousNames control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void grdPreviousNames_Delete( object sender, RowEventArgs e )
+        {
+            this.PersonPreviousNamesState.RemoveEntity( (Guid)e.RowKeyValue );
+            BindPersonPreviousNamesGrid();
+        }
+
+        /// <summary>
+        /// Handles the Delete event of the gSearchKeys control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gSearchKeys_Delete( object sender, RowEventArgs e )
+        {
+            this.PersonSearchKeysState.RemoveEntity( ( Guid ) e.RowKeyValue );
+            BindPersonSearchKeysGrid();
+        }
+
+        /// <summary>
         /// Handles the Click event of the btnGenerateEnvelopeNumber control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnGenerateEnvelopeNumber_Click( object sender, EventArgs e )
         {
-            var personGivingEnvelopeAttribute = AttributeCache.Read( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
+            var personGivingEnvelopeAttribute = CacheAttribute.Get( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
             var maxEnvelopeNumber = new AttributeValueService( new RockContext() ).Queryable()
                                     .Where( a => a.AttributeId == personGivingEnvelopeAttribute.Id && a.ValueAsNumeric.HasValue )
                                     .Max( a => (int?)a.ValueAsNumeric );

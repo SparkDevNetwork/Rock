@@ -31,7 +31,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.UniversalSearch;
 using Rock.Web.UI;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Newtonsoft.Json.Linq;
 using Rock.UniversalSearch.IndexModels;
 using System.Reflection;
@@ -236,7 +236,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="documentId">The document identifier.</param>
         private void RedirectToDocument( string documentType, string documentId )
         {
-            var indexDocumentEntityType = EntityTypeCache.Read( documentType );
+            var indexDocumentEntityType = CacheEntityType.Get( documentType );
 
             var indexDocumentType = indexDocumentEntityType.GetEntityType();
 
@@ -651,7 +651,7 @@ namespace RockWeb.Blocks.Cms
                 enabledModelIds = GetAttributeValue( "EnabledModels" ).Split( ',' ).Select( int.Parse ).ToList();
             }
 
-            var entities = EntityTypeCache.All();
+            var entities = CacheEntityType.All();
             var indexableEntities = entities.Where( i => i.IsIndexingEnabled == true ).ToList();
 
             // if enabled entities setting is set further filter by those
@@ -736,7 +736,7 @@ namespace RockWeb.Blocks.Cms
                 enabledModelIds = GetAttributeValue( "EnabledModels" ).Split( ',' ).Select( int.Parse ).ToList();
             }
 
-            var entities = EntityTypeCache.All();
+            var entities = CacheEntityType.All();
             var indexableEntities = entities.Where( i => i.IsIndexingEnabled == true ).ToList();
 
             // if select entities are configured further filter by them
@@ -830,7 +830,7 @@ namespace RockWeb.Blocks.Cms
                 enabledModelIds = GetAttributeValue( "EnabledModels" ).Split( ',' ).Select( int.Parse ).ToList();
             }
 
-            var entities = EntityTypeCache.All();
+            var entities = CacheEntityType.All();
             var indexableEntities = entities.Where( i => i.IsIndexingSupported == true && enabledModelIds.Contains( i.Id ) ).ToList();
             cblEnabledModels.DataValueField = "Id";
             cblEnabledModels.DataTextField = "FriendlyName";

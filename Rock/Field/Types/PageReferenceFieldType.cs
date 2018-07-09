@@ -52,7 +52,7 @@ namespace Rock.Field.Types
                     Guid? pageGuid = valuePair[0].AsGuidOrNull();
                     if ( pageGuid.HasValue )
                     {
-                        var page = Rock.Web.Cache.PageCache.Read( pageGuid.Value );
+                        var page = Rock.Cache.CachePage.Get( pageGuid.Value );
                         if ( page != null )
                         {
                             if ( valuePair.Length > 1 )
@@ -140,46 +140,43 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value != null )
+            PagePicker ppPage = control as PagePicker;
+            if ( ppPage != null )
             {
-	            PagePicker ppPage = control as PagePicker;
-    	        if ( ppPage != null )
-        	    {
-                    string[] valuePair = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
+                string[] valuePair = ( value ?? string.Empty ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
 
-                    Page page = null;
-                    PageRoute pageRoute = null;
+                Page page = null;
+                PageRoute pageRoute = null;
 
-                    //// Value is in format "Page.Guid,PageRoute.Guid"
-                    //// If only the Page.Guid is specified this is just a reference to a page without a special route
-                    //// In case the PageRoute record can't be found from PageRoute.Guid (maybe the pageroute was deleted), fall back to the Page without a PageRoute
+                //// Value is in format "Page.Guid,PageRoute.Guid"
+                //// If only the Page.Guid is specified this is just a reference to a page without a special route
+                //// In case the PageRoute record can't be found from PageRoute.Guid (maybe the pageroute was deleted), fall back to the Page without a PageRoute
 
-                    var rockContext = new RockContext();
+                var rockContext = new RockContext();
 
-                    if ( valuePair.Length == 2 )
+                if ( valuePair.Length == 2 )
+                {
+                    Guid pageRouteGuid;
+                    Guid.TryParse( valuePair[1], out pageRouteGuid );
+                    pageRoute = new PageRouteService( rockContext ).Get( pageRouteGuid );
+                }
+
+                if ( pageRoute != null )
+                {
+                    ppPage.SetValue( pageRoute );
+                }
+                else
+                {
+                    if ( valuePair.Length > 0 )
                     {
-                        Guid pageRouteGuid;
-                        Guid.TryParse( valuePair[1], out pageRouteGuid );
-                        pageRoute = new PageRouteService( rockContext ).Get( pageRouteGuid );
+                        Guid pageGuid;
+                        Guid.TryParse( valuePair[0], out pageGuid );
+                        page = new PageService( rockContext ).Get( pageGuid );
                     }
 
-                    if ( pageRoute != null )
-                    {
-                        ppPage.SetValue( pageRoute );
-                    }
-                    else
-                    {
-                        if ( valuePair.Length > 0 )
-                        {
-                            Guid pageGuid;
-                            Guid.TryParse( valuePair[0], out pageGuid );
-                            page = new PageService( rockContext ).Get( pageGuid );
-                        }
-
-                        ppPage.SetValue( page );
-                    }
-        	    }
-        	}
+                    ppPage.SetValue( page );
+                }
+            }
         }
 
         #endregion

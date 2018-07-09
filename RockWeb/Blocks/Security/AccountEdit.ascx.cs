@@ -25,7 +25,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -52,8 +52,8 @@ namespace RockWeb.Blocks.Security
         {
             base.OnInit( e );
 
-            ddlTitle.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_TITLE ) ), true );
-            ddlSuffix.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_SUFFIX ) ), true );
+            ddlTitle.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_TITLE ) ), true );
+            ddlSuffix.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_SUFFIX ) ), true );
             string smsScript = @"
     $('.js-sms-number').click(function () {
         if ($(this).is(':checked')) {
@@ -283,7 +283,7 @@ namespace RockWeb.Blocks.Security
                                     {
                                         var groupLocationService = new GroupLocationService( rockContext );
 
-                                        var dvHomeAddressType = DefinedValueCache.Read( addressTypeGuid.Value );
+                                        var dvHomeAddressType = CacheDefinedValue.Get( addressTypeGuid.Value );
                                         var familyAddress = groupLocationService.Queryable().Where( l => l.GroupId == familyGroup.Id && l.GroupLocationTypeValueId == dvHomeAddressType.Id ).FirstOrDefault();
                                         if ( familyAddress != null && string.IsNullOrWhiteSpace( acAddress.Street1 ) )
                                         {
@@ -310,7 +310,7 @@ namespace RockWeb.Blocks.Security
                                                     var previousAddress = new GroupLocation();
                                                     groupLocationService.Add( previousAddress );
 
-                                                    var previousAddressValue = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid() );
+                                                    var previousAddressValue = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid() );
                                                     if ( previousAddressValue  != null )
                                                     {
                                                         previousAddress.GroupLocationTypeValueId = previousAddressValue.Id;
@@ -390,7 +390,7 @@ namespace RockWeb.Blocks.Security
                 Guid? locationTypeGuid = GetAttributeValue( "LocationType" ).AsGuidOrNull();
                 if ( locationTypeGuid.HasValue )
                 {
-                    var addressTypeDv = DefinedValueCache.Read( locationTypeGuid.Value );
+                    var addressTypeDv = CacheDefinedValue.Get( locationTypeGuid.Value );
 
                     // if address type is home enable the move and is mailing/physical
                     if (addressTypeDv.Guid == Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() )
@@ -411,7 +411,7 @@ namespace RockWeb.Blocks.Security
 
                     if ( familyGroupTypeGuid.HasValue )
                     {
-                        var familyGroupType = GroupTypeCache.Read( familyGroupTypeGuid.Value );
+                        var familyGroupType = CacheGroupType.Get( familyGroupTypeGuid.Value );
 
                         var familyAddress = new GroupLocationService( rockContext ).Queryable()
                                             .Where( l => l.Group.GroupTypeId == familyGroupType.Id
@@ -428,10 +428,10 @@ namespace RockWeb.Blocks.Security
                     }
                 }
 
-                var mobilePhoneType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) );
+                var mobilePhoneType = CacheDefinedValue.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) );
 
                 var phoneNumbers = new List<PhoneNumber>();
-                var phoneNumberTypes = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE ) );
+                var phoneNumberTypes = CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE ) );
                 if ( phoneNumberTypes.DefinedValues.Any() )
                 {
                     foreach ( var phoneNumberType in phoneNumberTypes.DefinedValues )

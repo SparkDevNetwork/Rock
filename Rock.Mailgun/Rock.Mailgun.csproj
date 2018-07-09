@@ -52,6 +52,7 @@
     </Compile>
     <Compile Include="Communication\Transport\MailgunHttp.cs" />
     <Compile Include="Communication\Transport\MailgunSmtp.cs" />
+    <Compile Include="MailgunUtilities.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

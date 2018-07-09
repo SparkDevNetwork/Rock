@@ -16,10 +16,10 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
 
+using Rock.Cache;
 using Rock.Data;
 using Rock.Model;
 
@@ -30,20 +30,21 @@ namespace Rock.Web.Cache
     /// </summary>
     [Serializable]
     [DataContract]
+    [Obsolete( "Use Rock.Cache.CacheGroupType instead" )]
     public class GroupTypeCache : CachedModel<GroupType>
     {
         #region Constructors
 
-        private GroupTypeCache( GroupType groupType )
+        private GroupTypeCache( CacheGroupType cacheGroupType )
         {
-            CopyFromModel( groupType );
+            CopyFromNewCache( cacheGroupType );
         }
 
         #endregion
 
         #region Properties
 
-        private object _obj = new object();
+        private readonly object _obj = new object();
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is system.
@@ -273,12 +274,10 @@ namespace Rock.Web.Cache
             {
                 if ( InheritedGroupTypeId.HasValue && InheritedGroupTypeId.Value != 0 )
                 {
-                    return GroupTypeCache.Read( InheritedGroupTypeId.Value );
+                    return Read( InheritedGroupTypeId.Value );
                 }
-                else
-                {
-                    return null;
-                }
+
+                return null;
             }
         }
 
@@ -333,10 +332,8 @@ namespace Rock.Web.Cache
                 {
                     return DefinedValueCache.Read( GroupTypePurposeValueId.Value );
                 }
-                else
-                {
-                    return null;
-                }
+
+                return null;
             }
         }
 
@@ -367,7 +364,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The roles.
         /// </value>
-        public List<GroupTypeRoleCache> Roles{ get; set; }
+        public List<GroupTypeRoleCache> Roles { get; set; }
 
         /// <summary>
         /// Gets or sets the group schedule exclusions.
@@ -389,23 +386,25 @@ namespace Rock.Web.Cache
             {
                 var childGroupTypes = new List<GroupTypeCache>();
 
-                lock( _obj )
-                { 
+                lock ( _obj )
+                {
                     if ( childGroupTypeIds == null )
                     {
                         using ( var rockContext = new RockContext() )
                         {
                             childGroupTypeIds = new GroupTypeService( rockContext )
-                                .GetChildGroupTypes( this.Id )
+                                .GetChildGroupTypes( Id )
                                 .Select( g => g.Id )
-                                .ToList();                        
+                                .ToList();
                         }
                     }
                 }
 
-                foreach ( int id in childGroupTypeIds )
+                if ( childGroupTypeIds == null ) return childGroupTypes;
+
+                foreach ( var id in childGroupTypeIds )
                 {
-                    var groupType = GroupTypeCache.Read( id );
+                    var groupType = Read( id );
                     if ( groupType != null )
                     {
                         childGroupTypes.Add( groupType );
@@ -415,7 +414,7 @@ namespace Rock.Web.Cache
                 return childGroupTypes;
             }
         }
-        private List<int> childGroupTypeIds = null;
+        private List<int> childGroupTypeIds;
 
         /// <summary>
         /// Gets the parent group types.
@@ -434,28 +433,26 @@ namespace Rock.Web.Cache
                     using ( var rockContext = new RockContext() )
                     {
                         parentGroupTypeIds = new GroupTypeService( rockContext )
-                            .GetParentGroupTypes( this.Id )
+                            .GetParentGroupTypes( Id )
                             .Select( g => g.Id )
                             .ToList();
                     }
                 }
 
-                if ( parentGroupTypeIds != null )
+                if ( parentGroupTypeIds == null ) return parentGroupTypes;
+                foreach ( var id in parentGroupTypeIds )
                 {
-                    foreach ( int id in parentGroupTypeIds )
+                    var groupType = Read( id );
+                    if ( groupType != null )
                     {
-                        var groupType = GroupTypeCache.Read( id );
-                        if ( groupType != null )
-                        {
-                            parentGroupTypes.Add( groupType );
-                        }
+                        parentGroupTypes.Add( groupType );
                     }
                 }
 
                 return parentGroupTypes;
             }
         }
-        private List<int> parentGroupTypeIds = null;
+        private List<int> parentGroupTypeIds;
 
         /// <summary>
         /// Gets the location type values.
@@ -467,22 +464,19 @@ namespace Rock.Web.Cache
         {
             get
             {
-                List<DefinedValueCache> locationTypeValues = new List<DefinedValueCache>();
+                var locationTypeValues = new List<DefinedValueCache>();
+                if ( locationTypeValueIDs == null ) return null;
 
-                if ( locationTypeValueIDs != null )
+                foreach ( var id in locationTypeValueIDs.ToList() )
                 {
-                    foreach ( int id in locationTypeValueIDs.ToList() )
-                    {
-                        locationTypeValues.Add( DefinedValueCache.Read( id ) );
-                    }
-
-                    return locationTypeValues;
+                    locationTypeValues.Add( DefinedValueCache.Read( id ) );
                 }
 
-                return null;
+                return locationTypeValues;
+
             }
         }
-        private List<int> locationTypeValueIDs = null;
+        private List<int> locationTypeValueIDs;
 
         #endregion
 
@@ -492,56 +486,108 @@ namespace Rock.Web.Cache
         /// Copies from model.
         /// </summary>
         /// <param name="model">The model.</param>
-        public override void CopyFromModel( Data.IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
             base.CopyFromModel( model );
 
-            if ( model is GroupType )
-            {
-                var groupType = (GroupType)model;
-                this.IsSystem = groupType.IsSystem;
-                this.Name = groupType.Name;
-                this.Description = groupType.Description;
-                this.GroupTerm = groupType.GroupTerm;
-                this.GroupMemberTerm = groupType.GroupMemberTerm;
-                this.DefaultGroupRoleId = groupType.DefaultGroupRoleId;
-                this.AllowMultipleLocations = groupType.AllowMultipleLocations;
-                this.ShowInGroupList = groupType.ShowInGroupList;
-                this.ShowInNavigation = groupType.ShowInNavigation;
-                this.IconCssClass = groupType.IconCssClass;
-                this.TakesAttendance = groupType.TakesAttendance;
-                this.AttendanceCountsAsWeekendService = groupType.AttendanceCountsAsWeekendService;
-                this.SendAttendanceReminder = groupType.SendAttendanceReminder;
-                this.ShowConnectionStatus = groupType.ShowConnectionStatus;
-                this.AttendanceRule = groupType.AttendanceRule;
-                this.GroupCapacityRule = groupType.GroupCapacityRule;
-                this.AttendancePrintTo = groupType.AttendancePrintTo;
-                this.Order = groupType.Order;
-                this.InheritedGroupTypeId = groupType.InheritedGroupTypeId;
-                this.AllowedScheduleTypes = groupType.AllowedScheduleTypes;
-                this.LocationSelectionMode = groupType.LocationSelectionMode;
-                this.EnableLocationSchedules = groupType.EnableLocationSchedules;
-                this.GroupTypePurposeValueId = groupType.GroupTypePurposeValueId;
-                this.IgnorePersonInactivated = groupType.IgnorePersonInactivated;
-                this.IsIndexEnabled = groupType.IsIndexEnabled;
-                this.GroupViewLavaTemplate = groupType.GroupViewLavaTemplate;
-                this.locationTypeValueIDs = groupType.LocationTypes.Select( l => l.LocationTypeValueId ).ToList();
-                this.AllowSpecificGroupMemberAttributes = groupType.AllowSpecificGroupMemberAttributes;
-                this.EnableSpecificGroupRequirements = groupType.EnableSpecificGroupRequirements;
-                this.AllowGroupSync = groupType.AllowGroupSync;
-                this.AllowSpecificGroupMemberWorkflows = groupType.AllowSpecificGroupMemberWorkflows;
-                this.Roles = new List<GroupTypeRoleCache>();
-                groupType.Roles
-                    .OrderBy( r => r.Order )
-                    .ToList()
-                    .ForEach( r => Roles.Add( new GroupTypeRoleCache( r ) ) );
+            if ( !( model is GroupType ) ) return;
 
-                this.GroupScheduleExclusions = new List<DateRange>();
-                groupType.GroupScheduleExclusions
-                    .OrderBy( s => s.StartDate )
-                    .ToList()
-                    .ForEach( s => GroupScheduleExclusions.Add( new DateRange( s.StartDate, s.EndDate ) ) );
-            }
+            var groupType = (GroupType)model;
+            IsSystem = groupType.IsSystem;
+            Name = groupType.Name;
+            Description = groupType.Description;
+            GroupTerm = groupType.GroupTerm;
+            GroupMemberTerm = groupType.GroupMemberTerm;
+            DefaultGroupRoleId = groupType.DefaultGroupRoleId;
+            AllowMultipleLocations = groupType.AllowMultipleLocations;
+            ShowInGroupList = groupType.ShowInGroupList;
+            ShowInNavigation = groupType.ShowInNavigation;
+            IconCssClass = groupType.IconCssClass;
+            TakesAttendance = groupType.TakesAttendance;
+            AttendanceCountsAsWeekendService = groupType.AttendanceCountsAsWeekendService;
+            SendAttendanceReminder = groupType.SendAttendanceReminder;
+            ShowConnectionStatus = groupType.ShowConnectionStatus;
+            AttendanceRule = groupType.AttendanceRule;
+            GroupCapacityRule = groupType.GroupCapacityRule;
+            AttendancePrintTo = groupType.AttendancePrintTo;
+            Order = groupType.Order;
+            InheritedGroupTypeId = groupType.InheritedGroupTypeId;
+            AllowedScheduleTypes = groupType.AllowedScheduleTypes;
+            LocationSelectionMode = groupType.LocationSelectionMode;
+            EnableLocationSchedules = groupType.EnableLocationSchedules;
+            GroupTypePurposeValueId = groupType.GroupTypePurposeValueId;
+            IgnorePersonInactivated = groupType.IgnorePersonInactivated;
+            IsIndexEnabled = groupType.IsIndexEnabled;
+            GroupViewLavaTemplate = groupType.GroupViewLavaTemplate;
+            locationTypeValueIDs = groupType.LocationTypes.Select( l => l.LocationTypeValueId ).ToList();
+            AllowSpecificGroupMemberAttributes = groupType.AllowSpecificGroupMemberAttributes;
+            EnableSpecificGroupRequirements = groupType.EnableSpecificGroupRequirements;
+            AllowGroupSync = groupType.AllowGroupSync;
+            AllowSpecificGroupMemberWorkflows = groupType.AllowSpecificGroupMemberWorkflows;
+            Roles = new List<GroupTypeRoleCache>();
+
+            groupType.Roles
+                .OrderBy( r => r.Order )
+                .ToList()
+                .ForEach( r => Roles.Add( new GroupTypeRoleCache( r ) ) );
+
+            GroupScheduleExclusions = new List<DateRange>();
+            groupType.GroupScheduleExclusions
+                .OrderBy( s => s.StartDate )
+                .ToList()
+                .ForEach( s => GroupScheduleExclusions.Add( new DateRange( s.StartDate, s.EndDate ) ) );
+        }
+
+        /// <summary>
+        /// Copies properties from a new cached entity
+        /// </summary>
+        /// <param name="cacheEntity">The cache entity.</param>
+        protected sealed override void CopyFromNewCache( IEntityCache cacheEntity )
+        {
+            base.CopyFromNewCache( cacheEntity );
+
+            if ( !( cacheEntity is CacheGroupType ) ) return;
+
+            var groupType = (CacheGroupType)cacheEntity;
+            IsSystem = groupType.IsSystem;
+            Name = groupType.Name;
+            Description = groupType.Description;
+            GroupTerm = groupType.GroupTerm;
+            GroupMemberTerm = groupType.GroupMemberTerm;
+            DefaultGroupRoleId = groupType.DefaultGroupRoleId;
+            AllowMultipleLocations = groupType.AllowMultipleLocations;
+            ShowInGroupList = groupType.ShowInGroupList;
+            ShowInNavigation = groupType.ShowInNavigation;
+            IconCssClass = groupType.IconCssClass;
+            TakesAttendance = groupType.TakesAttendance;
+            AttendanceCountsAsWeekendService = groupType.AttendanceCountsAsWeekendService;
+            SendAttendanceReminder = groupType.SendAttendanceReminder;
+            ShowConnectionStatus = groupType.ShowConnectionStatus;
+            AttendanceRule = groupType.AttendanceRule;
+            GroupCapacityRule = groupType.GroupCapacityRule;
+            AttendancePrintTo = groupType.AttendancePrintTo;
+            Order = groupType.Order;
+            InheritedGroupTypeId = groupType.InheritedGroupTypeId;
+            AllowedScheduleTypes = groupType.AllowedScheduleTypes;
+            LocationSelectionMode = groupType.LocationSelectionMode;
+            EnableLocationSchedules = groupType.EnableLocationSchedules;
+            GroupTypePurposeValueId = groupType.GroupTypePurposeValueId;
+            IgnorePersonInactivated = groupType.IgnorePersonInactivated;
+            IsIndexEnabled = groupType.IsIndexEnabled;
+            GroupViewLavaTemplate = groupType.GroupViewLavaTemplate;
+            locationTypeValueIDs = groupType.LocationTypeValueIDs;
+            AllowSpecificGroupMemberAttributes = groupType.AllowSpecificGroupMemberAttributes;
+            EnableSpecificGroupRequirements = groupType.EnableSpecificGroupRequirements;
+            AllowGroupSync = groupType.AllowGroupSync;
+            AllowSpecificGroupMemberWorkflows = groupType.AllowSpecificGroupMemberWorkflows;
+            Roles = new List<GroupTypeRoleCache>();
+
+            groupType.Roles
+                .OrderBy( r => r.Order )
+                .ToList()
+                .ForEach( r => Roles.Add( new GroupTypeRoleCache( r ) ) );
+
+            GroupScheduleExclusions = new List<DateRange>( groupType.GroupScheduleExclusions );
         }
 
         /// <summary>
@@ -552,17 +598,12 @@ namespace Rock.Web.Cache
         /// </returns>
         public override string ToString()
         {
-            return this.Name;
+            return Name;
         }
 
         #endregion
 
         #region Static Methods
-
-        private static string CacheKey( int id )
-        {
-            return string.Format( "Rock:GroupType:{0}", id );
-        }
 
         /// <summary>
         /// Returns GroupType object from cache.  If groupType does not already exist in cache, it
@@ -573,33 +614,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static GroupTypeCache Read( int id, RockContext rockContext = null )
         {
-            return GetOrAddExisting( GroupTypeCache.CacheKey( id ),
-                () => LoadById( id, rockContext ) );
-        }
-
-        private static GroupTypeCache LoadById( int id, RockContext rockContext )
-        {
-            if ( rockContext != null )
-            {
-                return LoadById2( id, rockContext );
-            }
-
-            using ( var rockContext2 = new RockContext() )
-            {
-                return LoadById2( id, rockContext2 );
-            }
-        }
-
-        private static GroupTypeCache LoadById2( int id, RockContext rockContext )
-        {
-            var groupTypeService = new GroupTypeService( rockContext );
-            var groupTypeModel = groupTypeService.Queryable().Include(a => a.Roles).FirstOrDefault(a => a.Id == id );
-            if ( groupTypeModel != null )
-            {
-                return new GroupTypeCache( groupTypeModel );
-            }
-
-            return null;
+            return new GroupTypeCache( CacheGroupType.Get( id, rockContext ) );
         }
 
         /// <summary>
@@ -609,7 +624,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static GroupTypeCache Read( string guid )
         {
-            return Read( new Guid( guid ) );
+            return new GroupTypeCache( CacheGroupType.Get( guid ) );
         }
 
         /// <summary>
@@ -620,33 +635,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static GroupTypeCache Read( Guid guid, RockContext rockContext = null )
         {
-            int id = GetOrAddExisting( guid.ToString(),
-                () => LoadByGuid( guid, rockContext ) );
-
-            return Read( id, rockContext );
-        }
-
-        private static int LoadByGuid( Guid guid, RockContext rockContext )
-        {
-            if ( rockContext != null )
-            {
-                return LoadByGuid2( guid, rockContext );
-            }
-
-            using ( var rockContext2 = new RockContext() )
-            {
-                return LoadByGuid2( guid, rockContext2 );
-            }
-        }
-
-        private static int LoadByGuid2( Guid guid, RockContext rockContext )
-        {
-            var groupTypeService = new GroupTypeService( rockContext );
-            return groupTypeService
-                .Queryable().AsNoTracking()
-                .Where( c => c.Guid.Equals( guid ) )
-                .Select( c => c.Id )
-                .FirstOrDefault();
+            return new GroupTypeCache( CacheGroupType.Get( guid, rockContext ) );
         }
 
         /// <summary>
@@ -656,17 +645,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static GroupTypeCache Read( GroupType groupTypeModel )
         {
-            return GetOrAddExisting( GroupTypeCache.CacheKey( groupTypeModel.Id ),
-                () => LoadByModel( groupTypeModel ) );
-        }
-
-        private static GroupTypeCache LoadByModel( GroupType groupTypeModel )
-        {
-            if ( groupTypeModel != null )
-            {
-                return new GroupTypeCache( groupTypeModel );
-            }
-            return null;
+            return new GroupTypeCache( CacheGroupType.Get( groupTypeModel ) );
         }
 
         /// <summary>
@@ -675,29 +654,17 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static List<GroupTypeCache> All()
         {
-            List<GroupTypeCache> groupTypes = new List<GroupTypeCache>();
-            var groupTypeIds = GetOrAddExisting( "Rock:GroupType:All", () => LoadAll() );
-            if ( groupTypeIds != null )
-            {
-                foreach ( int groupTypeId in groupTypeIds )
-                {
-                    var groupTypeCache = GroupTypeCache.Read( groupTypeId );
-                    groupTypes.Add( groupTypeCache );
-                }
-            }
-            return groupTypes;
-        }
+            var groupTypes = new List<GroupTypeCache>();
 
-        private static List<int> LoadAll()
-        {
-            using ( var rockContext = new RockContext() )
+            var cacheGroupTypes = CacheGroupType.All();
+            if ( cacheGroupTypes == null ) return groupTypes;
+
+            foreach ( var cacheGroupType in cacheGroupTypes )
             {
-                return new GroupTypeService( rockContext )
-                    .Queryable().AsNoTracking()
-                    .OrderBy( c => c.Name )
-                    .Select( c => c.Id )
-                    .ToList();
+                groupTypes.Add( new GroupTypeCache( cacheGroupType ) );
             }
+
+            return groupTypes;
         }
 
         /// <summary>
@@ -706,9 +673,7 @@ namespace Rock.Web.Cache
         /// <param name="id"></param>
         public static void Flush( int id )
         {
-            FlushCache( GroupTypeCache.CacheKey( id ) );
-
-            FlushCache( "Rock:GroupType:All" );
+            CacheGroupType.Remove( id );
         }
 
         /// <summary>
@@ -717,7 +682,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static GroupTypeCache GetFamilyGroupType()
         {
-            return GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
+            return Read( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
         }
 
         /// <summary>
@@ -726,7 +691,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static GroupTypeCache GetSecurityRoleGroupType()
         {
-            return GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
+            return Read( SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
         }
 
         #endregion
@@ -735,6 +700,7 @@ namespace Rock.Web.Cache
     /// <summary>
     /// Cached version of GroupTypeRole
     /// </summary>
+    [Obsolete( "Use Rock.Cache.GroupTypeRoleCache instead" )]
     public class GroupTypeRoleCache
     {
         /// <summary>
@@ -752,7 +718,7 @@ namespace Rock.Web.Cache
         /// The unique identifier.
         /// </value>
         public Guid Guid { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
@@ -836,6 +802,24 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="GroupTypeRoleCache"/> class.
+        /// </summary>
+        /// <param name="role">The role.</param>
+        public GroupTypeRoleCache( Rock.Cache.GroupTypeRoleCache role )
+        {
+            Id = role.Id;
+            Guid = role.Guid;
+            Name = role.Name;
+            Order = role.Order;
+            MaxCount = role.MaxCount;
+            MinCount = role.MinCount;
+            IsLeader = role.IsLeader;
+            CanView = role.CanView;
+            CanEdit = role.CanEdit;
+            CanManageMembers = role.CanManageMembers;
+        }
+
+        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>
@@ -843,7 +827,7 @@ namespace Rock.Web.Cache
         /// </returns>
         public override string ToString()
         {
-            return this.Name;
+            return Name;
         }
     }
 }

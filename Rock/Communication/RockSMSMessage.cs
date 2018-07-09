@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Communication
 {
@@ -34,7 +34,7 @@ namespace Rock.Communication
         {
             get
             {
-                return EntityTypeCache.Read( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() ).Id;
+                return CacheEntityType.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() ).Id;
             }
         }
 
@@ -44,7 +44,7 @@ namespace Rock.Communication
         /// <value>
         /// From number.
         /// </value>
-        public DefinedValueCache FromNumber { get; set; }
+        public CacheDefinedValue FromNumber { get; set; }
 
         /// <summary>
         /// Gets or sets the message.

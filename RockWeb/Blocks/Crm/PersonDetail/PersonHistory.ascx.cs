@@ -27,7 +27,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -76,8 +76,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             base.OnLoad( e );
 
-            personEntityTypeId = EntityTypeCache.Read( typeof( Person ) ).Id;
-            groupEntityTypeId = EntityTypeCache.Read( typeof( Group ) ).Id;
+            personEntityTypeId = CacheEntityType.Get( typeof( Person ) ).Id;
+            groupEntityTypeId = CacheEntityType.Get( typeof( Group ) ).Id;
 
             if ( Person != null )
             {
@@ -138,7 +138,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         int? categoryId = e.Value.AsIntegerOrNull();
                         if ( categoryId.HasValue )
                         {
-                            var category = Rock.Web.Cache.CategoryCache.Read( categoryId.Value );
+                            var category = Rock.Cache.CacheCategory.Get( categoryId.Value );
                             if ( category != null )
                             {
                                 e.Value = category.Name;
@@ -191,7 +191,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             BindGrid();
         }
 
-        #endregion
+        #endregion 
 
         #region Methods
 
@@ -242,12 +242,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         qry = qry.Where( a => a.CategoryId == categoryId.Value );
                     }
 
-                    string summary = gfSettings.GetUserPreference( "Summary Contains" );
-                    if ( !string.IsNullOrWhiteSpace( summary ) )
-                    {
-                        qry = qry.Where( h => h.Summary.Contains( summary ) );
-                    }
-
                     int personId = int.MinValue;
                     if ( int.TryParse( gfSettings.GetUserPreference( "Who" ), out personId ) )
                     {
@@ -280,17 +274,22 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                     // Combine history records that were saved at the same time
                     var histories = new List<History>();
+                    var historyCombinedSummary = new Dictionary<int, string>();
                     foreach ( var history in qry )
                     {
                         // Make sure current person is allowed to view the category for the history item.
                         if ( !categoriesAllowed.ContainsKey( history.CategoryId ) )
                         {
-                            categoriesAllowed.Add( history.CategoryId, history.Category.IsAuthorized( Authorization.VIEW, CurrentPerson ) );
+                            var categoryCache = CacheCategory.Get( history.CategoryId );
+                            if ( categoryCache != null )
+                            {
+                                categoriesAllowed.Add( history.CategoryId, categoryCache.IsAuthorized( Authorization.VIEW, CurrentPerson ) );
+                            }
                         }
 
                         if ( categoriesAllowed[history.CategoryId] )
                         {
-                            var existingHistory = histories
+                            int? existingHistoryId = histories
                                 .Where( h =>
                                     h.CreatedByPersonAliasId == history.CreatedByPersonAliasId &&
                                     h.CreatedDateTime == history.CreatedDateTime &&
@@ -298,26 +297,34 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                     h.EntityId == history.EntityId &&
                                     h.CategoryId == history.CategoryId &&
                                     h.RelatedEntityTypeId == history.RelatedEntityTypeId &&
-                                    h.RelatedEntityId == history.RelatedEntityId ).FirstOrDefault();
-                            if ( existingHistory != null )
+                                    h.RelatedEntityId == history.RelatedEntityId ).Select(a => (int?)a.Id).FirstOrDefault();
+
+                            if ( existingHistoryId.HasValue && historyCombinedSummary.ContainsKey( existingHistoryId.Value ) )
                             {
-                                existingHistory.Summary += "<br/>" + history.Summary;
+                                historyCombinedSummary[existingHistoryId.Value] += "<br/>" + history.SummaryHtml;
                             }
                             else
                             {
+                                historyCombinedSummary.Add( history.Id, history.SummaryHtml );
                                 histories.Add( history );
                             }
                         }
                     }
 
+                    string summary = gfSettings.GetUserPreference( "Summary Contains" );
+                    if ( !string.IsNullOrWhiteSpace( summary ) )
+                    {
+                        histories = histories.Where( h => historyCombinedSummary.Any( a => a.Value.Contains( summary ) && a.Key == h.Id ) ).ToList();
+                    }
+
                     // For related items, make sure user is authorized to view the history
-                    int? attributeEntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Attribute ) ).Id;
+                    int? attributeEntityTypeId = CacheEntityType.Get( typeof( Rock.Model.Attribute ) ).Id;
                     var groupService = new GroupService( rockContext );
                     foreach ( var history in histories.Where( h => h.RelatedEntityId.HasValue && h.RelatedEntityId.Value > 0 ).ToList() )
                     {
                         if ( history.RelatedEntityTypeId == attributeEntityTypeId )
                         {
-                            var attr = AttributeCache.Read( history.RelatedEntityId.Value );
+                            var attr = CacheAttribute.Get( history.RelatedEntityId.Value );
                             if ( attr == null || !attr.IsAuthorized( Authorization.VIEW, CurrentPerson ))
                             {
                                 histories.Remove( history );
@@ -341,7 +348,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         EntityTypeId = h.EntityTypeId,
                         EntityId = h.EntityId,
                         Caption = h.Caption ?? string.Empty,
-                        Summary = h.Summary,
+                        Summary = historyCombinedSummary.GetValueOrNull( h.Id ),
                         RelatedEntityTypeId = h.RelatedEntityTypeId ?? 0,
                         RelatedEntityId = h.RelatedEntityId ?? 0,
                         CreatedByPersonId = h.CreatedByPersonAlias != null ? h.CreatedByPersonAlias.PersonId : 0,
@@ -349,7 +356,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         CreatedDateTime = h.CreatedDateTime
                     } ).ToList();
 
-                    gHistory.EntityTypeId = EntityTypeCache.Read<History>().Id;
+                    gHistory.EntityTypeId = CacheEntityType.Get<History>().Id;
                     gHistory.DataBind();
                 }
             }
@@ -385,7 +392,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             if ( entityId.HasValue && entityId.Value > 0 )
             {
-                var category = CategoryCache.Read( categoryId );
+                var category = CacheCategory.Get( categoryId );
                 if ( category != null )
                 {
                     string urlMask = category.GetAttributeValue( "UrlMask" );

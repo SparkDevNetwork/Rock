@@ -24,7 +24,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -38,9 +38,9 @@ namespace RockWeb.Blocks.Security
     [BooleanField("Show Name", "Show or hide the Name fields. If it is visible then it will be required.", true, "", 2, "ShowName", IsRequired = true )]
     [BooleanField( "Show Mobile Phone", "Show or hide the Mobile Phone Number field. If it is visible then it will be required.", true, "", 3, "ShowMobilePhone", IsRequired = true )]
     [BooleanField( "Show Email", "Show or hide the Email field. If it is visible then it will be required.", true, "", 4, "ShowEmail", IsRequired = true )]
-    [BooleanField( "Show Acceptance Checkbox", "Show or hide the \"I Accept\" checkbox. If it is visible then it will be required. This should be visible if the \"Terms And Conditions\" are also visible.", true, "", 5, "ShowAccept", IsRequired = true )]
+    [BooleanField( "Show Acceptance Checkbox", "Show or hide the \"I Accept\" checkbox. If it is visible then it will be required. This should be visible if the \"Terms And Conditions\" are also visible.", false, "", 5, "ShowAccept", IsRequired = true )]
     [TextField( "Acceptance Checkbox Label", "Text used to signify user agreement with the Terms and Conditions", true, "I Accept", "", 6, "AcceptanceLabel" )]
-    [TextField( "Button Text", "Text to display on the button", true, "Connect To Wi-Fi", "", 7, "ButtonText" )]
+    [TextField( "Button Text", "Text to display on the button", true, "Accept and Connect", "", 7, "ButtonText" )]
     [BooleanField( "Show Legal Note", "Show or hide the Terms and Conditions. This should be always be visible unless users are being automatically connected without any agreement needed.", true, "", 8, "ShowLegalNote", IsRequired = true )]
     [CodeEditorField ( "Legal Note", "A legal note outlining the Terms and Conditions for using Wi-Fi.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, false, DEFAULT_LEGAL_NOTE, "", 9, "LegalNote" )]
     public partial class CaptivePortal : RockBlock
@@ -102,10 +102,31 @@ namespace RockWeb.Blocks.Security
 </html>";
         #endregion
 
+        /// <summary>
+        /// The user agents to ignore. UA strings that begin with one of these will be ignored.
+        /// This is to fix Apple devices loading the page with its CaptiveNetwork WISPr UA and messing
+        /// up the device info, which is parsed from the UA. Ignoring "CaptiveNetworkSupport*"
+        /// will fix 100% of current known issues, if more than a few come up we should put this
+        /// into the DB as DefinedType/DefinedValues.
+        /// </summary>
+        private List<string> _userAgentsToIgnore = new List<string>()
+        {
+            "CaptiveNetworkSupport"
+        };
+
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
             nbAlert.Visible = false;
+
+            // Go through the UA ignore list and don't load anything we don't care about or want.
+            foreach ( string userAgentToIgnore in _userAgentsToIgnore )
+            {
+                if ( Request.UserAgent.StartsWith( userAgentToIgnore ) )
+                {
+                    return;
+                }
+            }
 
             if ( !IsPostBack )
             {
@@ -252,8 +273,9 @@ namespace RockWeb.Blocks.Security
         /// <returns>DevinedValueId for "Mobile" or "Computer", Mobile includes Tablet. Null if there is a data issue and the DefinedType is missing</returns>
         private int? GetDeviceTypeValueId()
         {
-            DefinedTypeCache definedTypeCache = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSONAL_DEVICE_TYPE.AsGuid() );
-            DefinedValueCache definedValueCache = null;
+            // Get the device type Mobile or Computer
+            CacheDefinedType definedTypeCache = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSONAL_DEVICE_TYPE.AsGuid() );
+            CacheDefinedValue definedValueCache = null;
 
             var clientType = InteractionDeviceType.GetClientType( Request.UserAgent );
             clientType = clientType == "Mobile" || clientType == "Tablet" ? "Mobile" : "Computer";
@@ -264,7 +286,7 @@ namespace RockWeb.Blocks.Security
 
                 if ( definedValueCache == null )
                 {
-                    definedValueCache = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSONAL_DEVICE_TYPE_COMPUTER.AsGuid() );
+                    definedValueCache = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSONAL_DEVICE_TYPE_COMPUTER.AsGuid() );
                 }
 
                 return definedValueCache.Id;
@@ -283,15 +305,15 @@ namespace RockWeb.Blocks.Security
             // get the OS
             string platform = client.OS.Family.Split( ' ' ).First();
 
-            DefinedTypeCache definedTypeCache = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSONAL_DEVICE_PLATFORM.AsGuid() );
-            DefinedValueCache definedValueCache = null;
+            CacheDefinedType definedTypeCache = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSONAL_DEVICE_PLATFORM.AsGuid() );
+            CacheDefinedValue definedValueCache = null;
             if ( definedTypeCache != null )
             {
                 definedValueCache = definedTypeCache.DefinedValues.FirstOrDefault( v => v.Value == platform );
 
                 if ( definedValueCache == null )
                 {
-                    definedValueCache = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSONAL_DEVICE_PLATFORM_OTHER.AsGuid() );
+                    definedValueCache = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSONAL_DEVICE_PLATFORM_OTHER.AsGuid() );
                 }
 
                 return definedValueCache.Id;
@@ -393,8 +415,8 @@ namespace RockWeb.Blocks.Security
             }
 
             PersonService personService = new PersonService( new RockContext() );
-            int mobilePhoneTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
-
+            int mobilePhoneTypeId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
+            
             // Use the entered info to try and find an existing user
             string mobilePhoneNumber = tbMobilePhone.Text.RemoveAllNonAlphaNumericCharacters();
             Person person = personService
@@ -501,7 +523,7 @@ namespace RockWeb.Blocks.Security
 
                 Person person = new PersonService( rockContext ).Get( ( int ) personId );
 
-                int mobilePhoneTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
+                int mobilePhoneTypeId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
 
                 person.Email = tbEmail.Text;
 

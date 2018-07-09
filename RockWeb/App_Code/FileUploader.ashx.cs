@@ -29,7 +29,7 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace RockWeb
 {
@@ -259,24 +259,6 @@ namespace RockWeb
                 binaryFile.MimeType = _mimeTypeRemap[binaryFile.MimeType];
             }
 
-
-
-            if ( binaryFile.MimeType.StartsWith( "image/" ) )
-            {
-                try
-                {
-                    using ( Bitmap bm = new Bitmap( uploadedFile.InputStream ) )
-                    {
-                        if ( bm != null )
-                        {
-                            binaryFile.Width = bm.Width;
-                            binaryFile.Height = bm.Height;
-                        }
-                    }
-                }
-                catch ( Exception ) { } // if the file is an invalid photo keep moving
-            }
-
             binaryFile.ContentStream = GetFileContentStream( context, uploadedFile );
             rockContext.SaveChanges();
 
@@ -310,7 +292,7 @@ namespace RockWeb
         public virtual void ValidateFileType( HttpContext context, HttpPostedFile uploadedFile )
         {
             // validate file type (applies to all uploaded files)
-            var globalAttributesCache = GlobalAttributesCache.Read();
+            var globalAttributesCache = CacheGlobalAttributes.Get();
             IEnumerable<string> contentFileTypeBlackList = ( globalAttributesCache.GetValue( "ContentFiletypeBlacklist" ) ?? string.Empty ).Split( new char[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries );
 
             // clean up list

@@ -13,6 +13,7 @@
 
 // 1. Imports
 //--------------------------------
+@import "_rock-mixins.less";
 @import "./FontAwesome/mixins.less";
 @import "./FontAwesome/variables.less";
 @import "./FontAwesome/_rock-upgrade-map-variables.less";
@@ -58,18 +59,25 @@
 @import "./Bootstrap/mixins.less";
 
 
-
-
-
 // 2. HTML Overrides
 //--------------------------------
 
 iframe {
-  border: 1px solid @input-border;
+  border: 0 solid @input-border;
 }
 
 // 3. Utility Classes
 //--------------------------------
+
+.form-row {
+  .make-row(10px);
+  .clearfix();
+  & > .col,
+  & > [class*=col-] {
+    padding-right: 5px;
+    padding-left: 5px;
+  }
+}
 
 .clickable {
   cursor: pointer;
@@ -84,21 +92,16 @@ iframe {
 
   &.tip-liquid,
   &.tip-lava {
-    &:after {
+    &::after {
       content: "{{ Lava }}";
     }
   }
 
   &.tip-html {
-    &:after {
+    &::after {
       content: "< HTML />";
     }
   }
-}
-
-// get dropdowns to display above the admin bar
-.dropdown-menu {
-  z-index: 1050;
 }
 
 .navigation-tip {
@@ -155,13 +158,38 @@ a.warning {
 
 // make icons inside of a button fixed with
 .btn i.fa {
-  width: (20em / 16);
+  width: 1.25em;
   text-align: center;
+}
+
+.btn i.btn-icon {
+  position: relative;
+  vertical-align: middle;
+  top: -1px;
+  width: 1em;
+  height: 1em;
+  margin-left: 0.5em;
 }
 
 // add new alert style
 .alert-default {
   .alert-variant(@alert-default-bg; @alert-default-border; @alert-default-text);
+}
+
+.alert-validation {
+  .alert-variant(@alert-validation-bg; @alert-validation-border; @alert-validation-heading);
+  font-weight: 700;
+
+  ul,
+  span {
+    font-weight: 400;
+    color: #484848;
+  }
+
+  ul {
+    padding: 5px 25px 0;
+    line-height: 1.5;
+  }
 }
 
 // fix btn colors that are inside of panels
@@ -248,6 +276,7 @@ th[align=center] {
 }
 
 .badge-legend .badge {
+  height: @line-height-computed;
   margin-right: 4px;
   cursor: pointer;
 }
@@ -438,8 +467,6 @@ th[align=center] {
 }
 
 .panel-persondetails {
-  border-top-color: @panel-top-border-color;
-  // panel extensions    ->      .panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
   .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
 
   .panel-heading {
@@ -512,7 +539,7 @@ th[align=center] {
 
   .panel-body {
     .grid.grid-panel {
-      margin: -15px;
+      margin: -16px;
 
       .grid-filter {
         border-radius: 0;
@@ -669,23 +696,10 @@ th[align=center] {
 }
 
 
-
 .btn-minimal {
   padding: 0;
   color: lighten(@text-color, 30%);
   text-decoration: none;
-}
-
-// alert extentions
-.alert {
-  // styling for exceptions
-
-  pre {
-    padding: 0;
-    color: inherit;
-    background-color: transparent;
-    border: 0;
-  }
 }
 
 // make links in alerts the same color as the text with a nice dotted underline
@@ -731,25 +745,9 @@ th[align=center] {
   }
 }
 
-.alert {
-  // hide the styling of pre's inside of alerts
-  pre {
-    padding: 0;
-    color: inherit;
-    background-color: transparent;
-    border: 0;
-  }
-}
-
 // system errors
 
 .system-error {
-  pre {
-    color: inherit;
-    background-color: transparent;
-    border: 0;
-  }
-
   .close {
     color: inherit;
   }
@@ -839,4 +837,28 @@ div.aspNetDisabled {
 .icon-fw {
   width: (18em / 14); // font-awesome
   text-align: center;
+}
+
+
+.btn-outline-default {
+  .button-outline-variant(@btn-default-color; @btn-default-bg; @btn-default-border);
+}
+.btn-outline-primary {
+  .button-outline-variant(@btn-primary-color; @btn-primary-bg; @btn-primary-border);
+}
+// Success appears as green
+.btn-outline-success {
+  .button-outline-variant(@btn-success-color; @btn-success-bg; @btn-success-border);
+}
+// Info appears as blue-green
+.btn-outline-info {
+  .button-outline-variant(@btn-info-color; @btn-info-bg; @btn-info-border);
+}
+// Warning appears as orange
+.btn-outline-warning {
+  .button-outline-variant(@btn-warning-color; @btn-warning-bg; @btn-warning-border);
+}
+// Danger and error appear as red
+.btn-danger {
+  .button-outline-variant(@btn-danger-color; @btn-danger-bg; @btn-danger-border);
 }

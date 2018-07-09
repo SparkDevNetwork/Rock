@@ -39,7 +39,7 @@ namespace Rock.Security
             get
             {
                 // Read should never return null since it will create entity type if it doesn't exist
-                return Rock.Web.Cache.EntityTypeCache.Read( this.GetType() ).Id;
+                return Rock.Cache.CacheEntityType.Get( this.GetType() ).Id;
             }
         }
         /// <summary>

@@ -22,7 +22,7 @@ using System.IO;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using System.Reflection;
 
 namespace Rock.Transactions
@@ -112,15 +112,15 @@ namespace Rock.Transactions
         {
             using ( var rockContext = new RockContext() )
             {
-                WorkflowTypeCache workflowType = null;
+                CacheWorkflowType workflowType = null;
                 if ( WorkflowTypeGuid.HasValue )
                 {
-                    workflowType = WorkflowTypeCache.Read( WorkflowTypeGuid.Value );
+                    workflowType = CacheWorkflowType.Get( WorkflowTypeGuid.Value );
                 }
 
                 if ( workflowType == null && WorkflowTypeId.HasValue )
                 {
-                    workflowType = WorkflowTypeCache.Read( WorkflowTypeId.Value );
+                    workflowType = CacheWorkflowType.Get( WorkflowTypeId.Value );
                 }
 
                 if ( workflowType != null && ( workflowType.IsActive ?? true ) )

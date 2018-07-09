@@ -13,13 +13,14 @@
                     <i class="fa fa-check-square-o"></i>
                     <asp:Literal ID="lHeading" runat="server" Text="Group Attendance" />
                 </h1>
-                <Rock:ButtonDropDownList ID="bddlCampus" runat="server" FormGroupCssClass="panel-options pull-right" Title="All Campuses" SelectionStyle="Checkmark" OnSelectionChanged="bddlCampus_SelectionChanged" DataTextField="Name" DataValueField="Id" />
+                <Rock:ButtonDropDownList ID="bddlCampus" runat="server" FormGroupCssClass="panel-options pull-right" Title="All Campuses" SelectionStyle="Checkmark" 
+                    OnSelectionChanged="bddlCampus_SelectionChanged" DataTextField="Name" DataValueField="Id" />
             </div>
             
             <div class="panel-body">
 
                 <Rock:NotificationBox ID="nbNotice" runat="server" />
-                <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
                 <asp:CustomValidator ID="cvAttendance" runat="server" Display="None" />
 
                 <asp:Panel id="pnlDetails" runat="server">
@@ -27,7 +28,7 @@
                     <div class="row">
                         <div class="col-sm-3">
                             <Rock:RockLiteral ID="lOccurrenceDate" runat="server" Label="Attendance For" />
-                            <Rock:DatePicker ID="dpOccurrenceDate" runat="server" Label="Attendance For" AllowFutureDateSelection="false"  Required="true" />
+                            <Rock:DatePicker ID="dpOccurrenceDate" runat="server" Label="Attendance For" AllowFutureDateSelection="false" Required="true" />
                         </div>
                         <div class="col-sm-3">
                             <Rock:RockLiteral ID="lLocation" runat="server" Label="Location" />

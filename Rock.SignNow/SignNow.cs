@@ -21,10 +21,10 @@ using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 
-using Rock.Security;
+using Rock.Cache;
 using Rock.Attribute;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Security;
 
 using Newtonsoft.Json.Linq;
 using System.Web;
@@ -243,15 +243,15 @@ namespace Rock.SignNow
 
             if ( sendInvite && assignedTo != null && !string.IsNullOrEmpty( assignedTo.Email ) )
             {
-                string orgAbbrev = GlobalAttributesCache.Value( "OrganizationAbbreviation" );
+                string orgAbbrev = CacheGlobalAttributes.Value( "OrganizationAbbreviation" );
                 if ( string.IsNullOrWhiteSpace( orgAbbrev) )
                 {
-                    orgAbbrev = GlobalAttributesCache.Value( "OrganizationName" );
+                    orgAbbrev = CacheGlobalAttributes.Value( "OrganizationName" );
                 }
 
                 string subject = string.Format( "Digital Signature Request from {0}", orgAbbrev );
                 string message = string.Format( "{0} has requested a digital signature for a '{1}' document for {2}.",
-                    GlobalAttributesCache.Value( "OrganizationName" ), documentTemplate.Name, appliesTo != null ? appliesTo.FullName : assignedTo.FullName );
+                    CacheGlobalAttributes.Value( "OrganizationName" ), documentTemplate.Name, appliesTo != null ? appliesTo.FullName : assignedTo.FullName );
 
                 // Get the document to determine the roles (if any) are needed
                 JObject getDocumentRes = SignNowSDK.Document.Get( accessToken, documentId );
@@ -423,15 +423,15 @@ namespace Rock.SignNow
                 return false;
             }
 
-            string orgAbbrev = GlobalAttributesCache.Value( "OrganizationAbbreviation" );
+            string orgAbbrev = CacheGlobalAttributes.Value( "OrganizationAbbreviation" );
             if ( string.IsNullOrWhiteSpace( orgAbbrev ) )
             {
-                orgAbbrev = GlobalAttributesCache.Value( "OrganizationName" );
+                orgAbbrev = CacheGlobalAttributes.Value( "OrganizationName" );
             }
 
             string subject = string.Format( "Digital Signature Request from {0}", orgAbbrev );
             string message = string.Format( "{0} has requested a digital signature for a '{1}' document for {2}.",
-                GlobalAttributesCache.Value( "OrganizationName" ), document.SignatureDocumentTemplate.Name, 
+                CacheGlobalAttributes.Value( "OrganizationName" ), document.SignatureDocumentTemplate.Name, 
                 document.AppliesToPersonAlias != null ? document.AppliesToPersonAlias.Person.FullName : document.AssignedToPersonAlias.Person.FullName );
 
 
@@ -636,7 +636,7 @@ namespace Rock.SignNow
         {
             errorMessage = string.Empty;
 
-            string accessToken = GlobalAttributesCache.Value( "SignNowAccessToken" );
+            string accessToken = CacheGlobalAttributes.Value( "SignNowAccessToken" );
             if ( !recreate && !string.IsNullOrWhiteSpace( accessToken ) )
             {
                 try
@@ -661,7 +661,7 @@ namespace Rock.SignNow
             if ( string.IsNullOrWhiteSpace( errorMessage ) )
             {
                 accessToken = OAuthRes.Value<string>( "access_token" );
-                GlobalAttributesCache globalCache = GlobalAttributesCache.Read();
+                CacheGlobalAttributes globalCache = CacheGlobalAttributes.Get();
                 globalCache.SetValue( "SignNowAccessToken", accessToken, true );
             }
 

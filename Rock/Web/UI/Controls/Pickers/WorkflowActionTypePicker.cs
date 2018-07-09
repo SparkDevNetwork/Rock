@@ -21,7 +21,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Workflow;
 
 namespace Rock.Web.UI.Controls
@@ -46,7 +46,20 @@ namespace Rock.Web.UI.Controls
         /// Sets the value.
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
-        public void SetValue( EntityTypeCache entityType )
+        [Obsolete]
+        public void SetValue( Web.Cache.EntityTypeCache entityType )
+        {
+            if ( entityType != null )
+            {
+                SetValue( CacheEntityType.Get( entityType.Id ) );
+            }
+        }
+
+        /// <summary>
+        /// Sets the value.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        public void SetValue( CacheEntityType entityType )
         {
             ItemId = Constants.None.IdValue;
             ItemName = Constants.None.TextHtml;
@@ -79,7 +92,23 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="entityTypes">The entity types.</param>
         /// <exception cref="System.NotSupportedException"></exception>
-        public void SetValues( IEnumerable<EntityTypeCache> entityTypes )
+        [Obsolete]
+        public void SetValues( IEnumerable<Web.Cache.EntityTypeCache> entityTypes )
+        {
+            var newEntityTypes = new List<CacheEntityType>();
+            foreach( var entityType in entityTypes )
+            {
+                newEntityTypes.Add( CacheEntityType.Get( entityType.Id ) );
+            }
+            SetValues( newEntityTypes );
+        }
+
+        /// <summary>
+        /// Sets the values.
+        /// </summary>
+        /// <param name="entityTypes">The entity types.</param>
+        /// <exception cref="System.NotSupportedException"></exception>
+        public void SetValues( IEnumerable<CacheEntityType> entityTypes )
         {
             var theEntityTypes = entityTypes.ToList();
             if ( theEntityTypes.Any() )
@@ -128,7 +157,7 @@ namespace Rock.Web.UI.Controls
             int? entityTypeId = ItemId.AsIntegerOrNull();
             if ( entityTypeId.HasValue )
             {
-                var entityType = EntityTypeCache.Read( entityTypeId.Value );
+                var entityType = CacheEntityType.Get( entityTypeId.Value );
                 SetValue( entityType );
             }
         }
@@ -138,13 +167,13 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected override void SetValuesOnSelect()
         {
-            var entityTypes = new List<EntityTypeCache>();
+            var entityTypes = new List<CacheEntityType>();
             foreach ( var itemId in ItemIds )
             {
                 int? entityTypeId = itemId.AsIntegerOrNull();
                 if ( entityTypeId.HasValue )
                 {
-                    entityTypes.Add( EntityTypeCache.Read( entityTypeId.Value ) );
+                    entityTypes.Add( CacheEntityType.Get( entityTypeId.Value ) );
                 }
             }
 

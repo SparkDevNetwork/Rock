@@ -16,17 +16,10 @@
 //
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.IO;
+using System.Linq;
 
-using Rock.Attribute;
+using Rock.Cache;
 using Rock.Model;
-using Rock.Web.UI.Controls;
-using Rock.Data;
-using System.Collections.Generic;
-using System.Data;
-using System;
-using System.Diagnostics;
-using Rock.Web.Cache;
 
 namespace Rock.PersonProfile.Badge
 {
@@ -37,25 +30,30 @@ namespace Rock.PersonProfile.Badge
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "Top Person Signal" )]
 
-    public class TopPersonSignal : BadgeComponent
+    public class TopPersonSignal : BadgeComponentModern
     {
         /// <summary>
         /// Renders the specified writer.
         /// </summary>
         /// <param name="badge">The badge.</param>
         /// <param name="writer">The writer.</param>
-        public override void Render( PersonBadgeCache badge, System.Web.UI.HtmlTextWriter writer )
+        public override void Render( CachePersonBadge badge, System.Web.UI.HtmlTextWriter writer )
         {
             if ( !string.IsNullOrWhiteSpace( Person.TopSignalColor ) && Person.Signals.Count > 0 )
             {
                 writer.Write( string.Format( @"
-<div class='badge badge-signal badge-id-{0}'>
+<div class='badge badge-signal badge-id-{0}' data-toggle='tooltip' title='{3} has the following {4}: {5}'>
     <div class='badge-content' style='color: {1};'>
         <i class='fa fa-flag badge-icon'></i>
         <span class='signal'>{2}</span>
     </div>
 </div>",
-                    badge.Id, Person.TopSignalColor, Person.Signals.Count ) );
+                    badge.Id,
+                    Person.TopSignalColor,
+                    Person.Signals.Count,
+                    Person.NickName,
+                    "signal".PluralizeIf( Person.Signals.Count != 1 ),
+                    string.Join( ", ", Person.Signals.Select( s => s.SignalType.Name.EncodeHtml() ) ) ) );
             }
         }
     }

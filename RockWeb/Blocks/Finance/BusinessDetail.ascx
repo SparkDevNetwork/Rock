@@ -16,7 +16,7 @@
                 <div class="panel-body">
 
                     <div id="pnlEditDetails" runat="server">
-                        <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                        <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
                         <asp:HiddenField ID="hfBusinessId" runat="server" />
                         <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
 
@@ -108,7 +108,7 @@
             <Rock:ModalDialog ID="mdAddContact" runat="server" Title="Add Contact" ValidationGroup="AddContact">
                 <Content>
                     <asp:HiddenField ID="hfModalOpen" runat="server" />
-                    <asp:ValidationSummary ID="valSummaryAddContact" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="AddContact" />
+                    <asp:ValidationSummary ID="valSummaryAddContact" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" ValidationGroup="AddContact" />
                     <Rock:PersonPicker ID="ppContact" runat="server" Label="Contact" Required="true" ValidationGroup="AddContact" />
                 </Content>
             </Rock:ModalDialog>

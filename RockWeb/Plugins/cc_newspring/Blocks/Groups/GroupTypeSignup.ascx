@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="GroupTypeSignup.ascx.cs" Inherits="RockWeb.Plugins.cc_newspring.Blocks.Groups.GroupTypeSignup" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="GroupTypeSignup.ascx.cs" Inherits="RockWeb.Plugins.cc_newspring.Groups.GroupTypeSignup" %>
 
 <style>
     .schedule-item {

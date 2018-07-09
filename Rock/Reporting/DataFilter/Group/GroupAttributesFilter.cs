@@ -27,7 +27,7 @@ using Newtonsoft.Json;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.Group
@@ -106,7 +106,7 @@ namespace Rock.Reporting.DataFilter.Group
             var values = JsonConvert.DeserializeObject<List<string>>( selection );
             if ( values.Count >= 2 )
             {
-                var groupType = GroupTypeCache.Read( values[0].AsGuid() );
+                var groupType = CacheGroupType.Get( values[0].AsGuid() );
                 if ( groupType != null )
                 {
                     var entityFields = GetGroupAttributes( groupType.Id );
@@ -279,7 +279,7 @@ namespace Rock.Reporting.DataFilter.Group
                     // note: since this datafilter creates additional controls outside of CreateChildControls(), we'll use our _controlsToRender instead of the controls parameter
                     GroupTypePicker groupTypePicker = containerControl.Controls[0] as GroupTypePicker;
                     Guid groupTypeGuid = Guid.Empty;
-                    var groupType = GroupTypeCache.Read( groupTypePicker.SelectedGroupTypeId ?? 0 );
+                    var groupType = CacheGroupType.Get( groupTypePicker.SelectedGroupTypeId ?? 0 );
                     if ( groupType != null )
                     {
                         if ( containerControl.Controls.Count == 1 || filterMode == FilterMode.SimpleFilter )
@@ -327,7 +327,7 @@ namespace Rock.Reporting.DataFilter.Group
                 var values = JsonConvert.DeserializeObject<List<string>>( selection );
                 if ( controls.Length > 0 && values.Count > 0 )
                 {
-                    var groupType = GroupTypeCache.Read( values[0].AsGuid() );
+                    var groupType = CacheGroupType.Get( values[0].AsGuid() );
                     if ( groupType != null )
                     {
                         var containerControl = controls[0] as DynamicControlsPanel;
@@ -368,7 +368,7 @@ namespace Rock.Reporting.DataFilter.Group
 
                 if ( values.Count >= 3 )
                 {
-                    var groupType = GroupTypeCache.Read( values[0].AsGuid() );
+                    var groupType = CacheGroupType.Get( values[0].AsGuid() );
                     if ( groupType != null )
                     {
                         string selectedProperty = values[1];

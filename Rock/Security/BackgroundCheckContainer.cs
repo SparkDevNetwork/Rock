@@ -65,6 +65,24 @@ namespace Rock.Security
         }
 
         /// <summary>
+        /// Gets the active component.
+        /// </summary>
+        /// <returns></returns>
+        public static BackgroundCheckComponent GetActiveComponent()
+        {
+            foreach ( var indexType in BackgroundCheckContainer.Instance.Components )
+            {
+                var component = indexType.Value.Value;
+                if ( component.IsActive )
+                {
+                    return component;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Gets or sets the MEF components.
         /// </summary>
         /// <value>

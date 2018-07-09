@@ -44,6 +44,9 @@ namespace Rock.Client
         public string Description { get; set; }
 
         /// <summary />
+        public bool EnableHistory { get; set; }
+
+        /// <summary />
         public int? EntityTypeId { get; set; }
 
         /// <summary />
@@ -63,6 +66,9 @@ namespace Rock.Client
 
         /// <summary />
         public string IconCssClass { get; set; }
+
+        /// <summary />
+        public bool IsActive { get; set; }
 
         /// <summary />
         public bool IsAnalytic { get; set; }
@@ -135,6 +141,7 @@ namespace Rock.Client
             this.AllowSearch = source.AllowSearch;
             this.DefaultValue = source.DefaultValue;
             this.Description = source.Description;
+            this.EnableHistory = source.EnableHistory;
             this.EntityTypeId = source.EntityTypeId;
             this.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
             this.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
@@ -142,6 +149,7 @@ namespace Rock.Client
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.IconCssClass = source.IconCssClass;
+            this.IsActive = source.IsActive;
             this.IsAnalytic = source.IsAnalytic;
             this.IsAnalyticHistory = source.IsAnalyticHistory;
             this.IsGridColumn = source.IsGridColumn;

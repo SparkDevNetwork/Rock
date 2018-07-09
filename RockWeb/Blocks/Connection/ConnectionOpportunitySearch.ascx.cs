@@ -27,7 +27,7 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using Rock.Store;
@@ -61,7 +61,7 @@ namespace RockWeb.Blocks.Connection
         /// <value>
         /// The available attributes.
         /// </value>
-        public List<AttributeCache> AvailableAttributes { get; set; }
+        public List<CacheAttribute> AvailableAttributes { get; set; }
 
         #endregion
 
@@ -75,7 +75,7 @@ namespace RockWeb.Blocks.Connection
         {
             base.LoadViewState( savedState );
 
-            AvailableAttributes = ViewState["AvailableAttributes"] as List<AttributeCache>;
+            AvailableAttributes = ViewState["AvailableAttributes"] as List<CacheAttribute>;
 
             SetFilters( false );
         }
@@ -198,22 +198,32 @@ namespace RockWeb.Blocks.Connection
                         {
                             string filterControlId = "filter_" + attribute.Id.ToString();
                             var filterControl = phAttributeFilters.FindControl( filterControlId );
-                            if ( filterControl != null )
+                            if ( filterControl == null ) continue;
+
+                            var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
+                            var filterIsDefault = attribute.FieldType.Field.IsEqualToValue( filterValues, attribute.DefaultValue );
+                            var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
+                            if ( expression == null ) continue;
+
+                            searchSelections.Add( filterControlId, filterValues.ToJson() );
+                            var attributeValues = attributeValueService
+                                .Queryable()
+                                .Where( v => v.Attribute.Id == attribute.Id );
+
+                            var filteredAttributeValues = attributeValues.Where( parameterExpression, expression, null );
+
+                            if ( filterIsDefault )
                             {
-                                var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
-                                var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
-                                if ( expression != null )
-                                {
-                                    searchSelections.Add( filterControlId, filterValues.ToJson() );
-                                    var attributeValues = attributeValueService
-                                        .Queryable()
-                                        .Where( v => v.Attribute.Id == attribute.Id );
-
-                                    attributeValues = attributeValues.Where( parameterExpression, expression, null );
-
-                                    qrySearch = qrySearch.Where( o => attributeValues.Select( v => v.EntityId ).Contains( o.Id ) ).ToList();
-                                }
+                                qrySearch = qrySearch.Where( w =>
+                                     !attributeValues.Any( v => v.EntityId == w.Id ) ||
+                                     filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Id ) ).ToList();
                             }
+                            else
+                            {
+                                qrySearch = qrySearch.Where( w =>
+                                    filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Id ) ).ToList();
+                            }
+                            
                         }
                     }
                 }
@@ -225,7 +235,7 @@ namespace RockWeb.Blocks.Connection
 
                 var mergeFields = new Dictionary<string, object>();
                 mergeFields.Add( "CurrentPerson", CurrentPerson );
-                mergeFields.Add( "CampusContext", RockPage.GetCurrentContext( EntityTypeCache.Read( "Rock.Model.Campus" ) ) as Campus );
+                mergeFields.Add( "CampusContext", RockPage.GetCurrentContext( CacheEntityType.Get( "Rock.Model.Campus" ) ) as Campus );
                 var pageReference = new PageReference( GetAttributeValue( "DetailPage" ), null );
                 mergeFields.Add( "DetailPage", BuildDetailPageUrl(pageReference.BuildUrl()) );
 
@@ -298,7 +308,7 @@ namespace RockWeb.Blocks.Connection
                 if ( GetAttributeValue( "DisplayCampusFilter" ).AsBoolean() )
                 {
                     cblCampus.Visible = true;
-                    cblCampus.DataSource = CampusCache.All( GetAttributeValue( "DisplayInactiveCampuses" ).AsBoolean() );
+                    cblCampus.DataSource = CacheCampus.All( GetAttributeValue( "DisplayInactiveCampuses" ).AsBoolean() );
                     cblCampus.DataBind();
                 }
                 else
@@ -320,7 +330,7 @@ namespace RockWeb.Blocks.Connection
                 }
                 else if ( GetAttributeValue( "EnableCampusContext" ).AsBoolean() )
                 {
-                    var campusEntityType = EntityTypeCache.Read( "Rock.Model.Campus" );
+                    var campusEntityType = CacheEntityType.Get( "Rock.Model.Campus" );
                     var contextCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
 
                     if ( contextCampus != null )
@@ -332,7 +342,7 @@ namespace RockWeb.Blocks.Connection
                 if ( GetAttributeValue( "DisplayAttributeFilters" ).AsBoolean() )
                 {
                     // Parse the attribute filters 
-                    AvailableAttributes = new List<AttributeCache>();
+                    AvailableAttributes = new List<CacheAttribute>();
                     if ( connectionType != null )
                     {
                         int entityTypeId = new ConnectionOpportunity().TypeId;
@@ -345,7 +355,7 @@ namespace RockWeb.Blocks.Connection
                             .OrderBy( a => a.Order )
                             .ThenBy( a => a.Name ) )
                         {
-                            AvailableAttributes.Add( AttributeCache.Read( attributeModel ) );
+                            AvailableAttributes.Add( CacheAttribute.Get( attributeModel ) );
                         }
                     }
 

@@ -118,7 +118,7 @@ namespace Rock.Web.UI.Controls
                 ddlButtonHtml.AddCssClass( "form-action-button" );
                 ddlButtonHtml.AddCssClass( "form-control" );
                 ddlButtonHtml.AddCssClass( "js-form-action-input" );
-                var definedType = Rock.Web.Cache.DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.BUTTON_HTML.AsGuid() );
+                var definedType = Rock.Cache.CacheDefinedType.Get( Rock.SystemGuid.DefinedType.BUTTON_HTML.AsGuid() );
                 foreach( var definedValue in definedType.DefinedValues )
                 {
                     var li = new ListItem( definedValue.Value, definedValue.Guid.ToString() );
@@ -172,7 +172,7 @@ namespace Rock.Web.UI.Controls
             valueHtml.Append( @"<div class=""row"">" );
             valueHtml.Append( @"<div class=""col-sm-2""><input class=""form-action-key form-control js-form-action-input"" type=""text"" placeholder=""Action""></input></div>" );
             valueHtml.Append( @"<div class=""col-sm-2""><select class=""form-action-button form-control js-form-action-input"">" );
-            var definedType = Rock.Web.Cache.DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.BUTTON_HTML.AsGuid() );
+            var definedType = Rock.Cache.CacheDefinedType.Get( Rock.SystemGuid.DefinedType.BUTTON_HTML.AsGuid() );
             foreach ( var definedValue in definedType.DefinedValues )
             {
                 valueHtml.AppendFormat( @"<option value=""{0}"">{1}</option>", definedValue.Guid.ToString(), definedValue.Value );
@@ -245,7 +245,7 @@ namespace Rock.Web.UI.Controls
 
             for (int i = 0; i < _actionControls.Count; i++)
             {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-row" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 // Write Action
@@ -315,7 +315,7 @@ namespace Rock.Web.UI.Controls
     function updateFormActions( e ) {
         var $actionList = e.closest('div.form-action-list');
         var newValue = '';
-        $actionList.find('div.form-action-rows:first').children('div.row').each(function( index ) {
+        $actionList.find('div.form-action-rows:first').children('div.form-row').each(function( index ) {
             newValue += 
                 $(this).find('.form-action-key:first').val() + '^' + 
                 $(this).find('.form-action-button:first').val() + '^' + 
@@ -334,7 +334,7 @@ namespace Rock.Web.UI.Controls
     $(document).on('click', 'a.form-action-remove', function (e) {
         e.preventDefault();
         var $rows = $(this).closest('div.form-action-rows');
-        $(this).closest('div.row').remove();
+        $(this).closest('div.form-row').remove();
         updateFormActions($rows);            
     });
 

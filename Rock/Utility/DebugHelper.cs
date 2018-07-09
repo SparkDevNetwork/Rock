@@ -178,12 +178,17 @@ namespace Rock
 
                 sbDebug.AppendLine( "\nEND\nGO\n\n" );
 
+                System.Diagnostics.Debug.Write( sbDebug.ToString() );
+
+                var sqlConnection = command.Connection as System.Data.SqlClient.SqlConnection;
+
+                sqlConnection.StatisticsEnabled = true;
+                sqlConnection.ResetStatistics();
+
                 if ( userState == null )
                 {
                     userState = new DebugHelperUserState { CallNumber = DebugHelper._callCounts, Stopwatch = Stopwatch.StartNew() };
                 }
-
-                System.Diagnostics.Debug.Write( sbDebug.ToString() );
             }
 
             /// <summary>
@@ -198,7 +203,14 @@ namespace Rock
                 if ( debugHelperUserState != null )
                 {
                     debugHelperUserState.Stopwatch.Stop();
-                    System.Diagnostics.Debug.Write( string.Format( "\n/* Call# {0}: ElapsedTime [{1}ms]*/\n", debugHelperUserState.CallNumber, debugHelperUserState.Stopwatch.Elapsed.TotalMilliseconds ) );
+
+                    var sqlConnection = command.Connection as System.Data.SqlClient.SqlConnection;
+
+                    var stats = sqlConnection.RetrieveStatistics();
+                    sqlConnection.StatisticsEnabled = false;
+                    var commandExecutionTimeInMs = ( long ) stats["ExecutionTime"];
+
+                    System.Diagnostics.Debug.Write( $"\n/* Call# {debugHelperUserState.CallNumber}: ElapsedTime [{debugHelperUserState.Stopwatch.Elapsed.TotalMilliseconds}ms], SQLConnection.Statistics['ExecutionTime'] = [{commandExecutionTimeInMs}ms] */\n" );
                 }
             }
         }

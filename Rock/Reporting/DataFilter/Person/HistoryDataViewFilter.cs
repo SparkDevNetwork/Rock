@@ -24,7 +24,7 @@ using System.Web.UI;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
 
@@ -209,7 +209,7 @@ function() {
             filterControl.Controls.Add( ddlDataView );
 
             // Populate the Data View Picker
-            int entityTypeId = EntityTypeCache.Read( typeof(History) ).Id;
+            int entityTypeId = CacheEntityType.Get( typeof(History) ).Id;
             ddlDataView.EntityTypeId = entityTypeId;
 
             return new Control[] {ddlDataView};
@@ -286,7 +286,7 @@ function() {
             }
 
             // Select only those History records that are either related to a Person, or affect a Person.
-            int personEntityTypeId = EntityTypeCache.GetId( typeof(Model.Person) ).GetValueOrDefault();
+            int personEntityTypeId = CacheEntityType.GetId( typeof(Model.Person) ).GetValueOrDefault();
 
             historyQuery = historyQuery.Where( x => x.EntityTypeId == personEntityTypeId );
 

@@ -409,7 +409,9 @@ namespace Rock.Web.UI.Controls
             string postbackScript = string.Empty;
             if ( SelectionChanged != null )
             {
-                postbackScript = string.Format( "__doPostBack('{1}', '{0}=' + idvalue);", this.ID, postbackControlId );
+                postbackScript = $@"
+                    var postbackArg = '{this.ID}=' + idvalue;
+                    window.location = ""javascript:__doPostBack('{postbackControlId}', '"" +  postbackArg + ""')"";";
             }
 
             string script = string.Format(

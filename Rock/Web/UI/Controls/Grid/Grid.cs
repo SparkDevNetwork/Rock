@@ -30,7 +30,7 @@ using OfficeOpenXml;
 using Rock;
 using Rock.Data;
 using Rock.Utility;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -334,6 +334,9 @@ namespace Rock.Web.UI.Controls
                     this.AllowSorting = false;
                     this.Actions.ShowExcelExport = false;
                     this.Actions.ShowMergeTemplate = false;
+
+                    // disable showing buttons in the header of light grids
+                    this.ShowActionsInHeader = false;
                 }
             }
         }
@@ -690,7 +693,7 @@ namespace Rock.Web.UI.Controls
             var rockBlock = this.RockBlock();
             if ( rockBlock != null )
             {
-                string preferenceKey = string.Format( "{0}_{1}", PAGE_SIZE_KEY, rockBlock.BlockCache.Id );
+                string preferenceKey = string.Format( "{0}_{1}", PAGE_SIZE_KEY, rockBlock.CacheBlock.Id );
                 pageSize = rockBlock.GetUserPreference( preferenceKey ).AsInteger();
                 if ( pageSize != 50 && pageSize != 500 && pageSize != 5000 )
                 {
@@ -742,13 +745,7 @@ namespace Rock.Web.UI.Controls
                     }
                 }
             }
-
-            // disable showing buttons in the header of light grids
-            if ( DisplayType == GridDisplayType.Light )
-            {
-                ShowActionsInHeader = false;
-            }
-
+            
             base.OnLoad( e );
         }
 
@@ -759,24 +756,22 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.ShowConfirmDeleteDialog && this.Enabled && this.IsDeleteEnabled )
             {
-                string deleteButtonScriptFormat = @"
-   $('#{0} .grid-delete-button').not('.disabled').on( 'click', function (event) {{
-  return Rock.dialogs.confirmDelete(event, '{1}');
+                string deleteButtonScript = $@"
+$('#{this.ClientID} .grid-delete-button').not('.disabled').on( 'click', function (event) {{
+    return Rock.dialogs.confirmDelete(event, '{this.RowItemText}');
 }});";
-                string deleteButtonScript = string.Format( deleteButtonScriptFormat, this.ClientID, this.RowItemText );
                 ScriptManager.RegisterStartupScript( this, this.GetType(), "grid-delete-confirm-script-" + this.ClientID, deleteButtonScript, true );
             }
 
-            string clickScript = string.Format( "__doPostBack('{0}', 'RowSelected$' + dataRowIndexValue);", this.UniqueID );
-
-            string gridSelectCellScriptFormat = @"
-   $('#{0} .grid-select-cell').on( 'click', function (event) {{
-  if (!($(event.target).is('a') || $(event.target).parent().is('a'))) {{
-    var dataRowIndexValue = $(this).closest('tr').attr('data-row-index');
-    {1}
-  }}
+            string gridSelectCellScript = $@"
+$('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
+    if (!($(event.target).is('a') || $(event.target).parent().is('a'))) {{
+        var dataRowIndexValue = $(this).closest('tr').attr('data-row-index');
+        var postbackArg = 'RowSelected$' + dataRowIndexValue;
+        window.location = ""javascript:__doPostBack('{this.UniqueID}', '"" +  postbackArg + ""')"";
+    }}
 }});";
-            string gridSelectCellScript = string.Format( gridSelectCellScriptFormat, this.ClientID, clickScript );
+
             ScriptManager.RegisterStartupScript( this, this.GetType(), "grid-select-cell-script-" + this.ClientID, gridSelectCellScript, true );
 
             // render script for popovers
@@ -1391,10 +1386,10 @@ namespace Rock.Web.UI.Controls
 
             if ( e.CommandName == "RowSelected" )
             {
-                int rowIndex = int.MinValue;
-                if ( int.TryParse( e.CommandArgument.ToString(), out rowIndex ) )
+                int? rowIndex = e.CommandArgument?.ToString().AsIntegerOrNull();
+                if ( rowIndex.HasValue )
                 {
-                    RowEventArgs a = new RowEventArgs( this.Rows[rowIndex] );
+                    RowEventArgs a = new RowEventArgs( this.Rows[rowIndex.Value] );
                     OnRowSelected( a );
                 }
             }
@@ -1414,7 +1409,7 @@ namespace Rock.Web.UI.Controls
             var rockBlock = this.RockBlock();
             if ( rockBlock != null )
             {
-                string preferenceKey = string.Format( "{0}_{1}", PAGE_SIZE_KEY, rockBlock.BlockCache.Id );
+                string preferenceKey = string.Format( "{0}_{1}", PAGE_SIZE_KEY, rockBlock.CacheBlock.Id );
                 rockBlock.SetUserPreference( preferenceKey, e.Number.ToString() );
             }
 
@@ -1989,7 +1984,7 @@ namespace Rock.Web.UI.Controls
                         }
                     }
 
-                    Rock.Attribute.IHasAttributes dataItemWithAttributes = null;
+                    IHasAttributes dataItemWithAttributes = null;
                     if ( attributeFields.Any() )
                     {
                         // First check to see if there is an object list
@@ -1999,14 +1994,14 @@ namespace Rock.Web.UI.Controls
                             string key = DataKeys[dataIndex].Value.ToString();
                             if ( !string.IsNullOrWhiteSpace( key ) && ObjectList.ContainsKey( key ) )
                             {
-                                dataItemWithAttributes = ObjectList[key] as Rock.Attribute.IHasAttributes;
+                                dataItemWithAttributes = ObjectList[key] as IHasAttributes;
                             }
                         }
 
                         // Then check if DataItem has attributes
                         if ( dataItemWithAttributes == null )
                         {
-                            dataItemWithAttributes = item as Rock.Attribute.IHasAttributes;
+                            dataItemWithAttributes = item as IHasAttributes;
                         }
 
                         if ( dataItemWithAttributes != null )
@@ -2248,7 +2243,7 @@ namespace Rock.Web.UI.Controls
 
                         if ( definedValueId > 0 )
                         {
-                            var definedValue = DefinedValueCache.Read( definedValueId );
+                            var definedValue = CacheDefinedValue.Get( definedValueId );
                             if ( definedValue != null )
                             {
                                 return definedValue.Value;
@@ -2273,7 +2268,7 @@ namespace Rock.Web.UI.Controls
 
                             if ( isGuid )
                             {
-                                var definedValue = DefinedValueCache.Read( definedValueGuid );
+                                var definedValue = CacheDefinedValue.Get( definedValueGuid );
 
                                 if ( definedValue != null )
                                 {
@@ -2769,7 +2764,7 @@ namespace Rock.Web.UI.Controls
             if ( keys.Any() )
             {
                 var entitySet = new Rock.Model.EntitySet();
-                entitySet.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read<Rock.Model.Person>().Id;
+                entitySet.EntityTypeId = Rock.Cache.CacheEntityType.Get<Rock.Model.Person>().Id;
                 entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( 5 );
                 List<Rock.Model.EntitySetItem> entitySetItems = new List<Rock.Model.EntitySetItem>();
 
@@ -2888,7 +2883,7 @@ namespace Rock.Web.UI.Controls
                 entitySet.EntityTypeId = null;
             }
 
-            bool isPersonEntitySet = this.EntityTypeId == EntityTypeCache.GetId<Rock.Model.Person>();
+            bool isPersonEntitySet = this.EntityTypeId == CacheEntityType.GetId<Rock.Model.Person>();
             string dataKeyField = this.DataKeyNames.FirstOrDefault() ?? "Id";
             if ( isPersonEntitySet && !string.IsNullOrEmpty( this.PersonIdField ) )
             {
@@ -2967,8 +2962,6 @@ namespace Rock.Web.UI.Controls
             }
 
             int? entityTypeId = null;
-            string dataKeyColumn = this.DataKeyNames.FirstOrDefault() ?? "Id";
-            PropertyInfo idProp = dataSourceObjectType.GetProperty( dataKeyColumn );
 
             if ( this.EntityTypeId.HasValue )
             {
@@ -2989,13 +2982,25 @@ namespace Rock.Web.UI.Controls
                         entityType = dataSourceObjectType;
                     }
 
-                    var entityTypeCache = Rock.Web.Cache.EntityTypeCache.Read( entityType, false );
+                    var entityTypeCache = Rock.Cache.CacheEntityType.Get( entityType, false );
                     if ( entityTypeCache != null )
                     {
                         entityTypeId = entityTypeCache.Id;
                     }
                 }
             }
+
+            string entityIdColumn;
+            if ( entityTypeId.HasValue && entityTypeId.Value == CacheEntityType.GetId<Model.Person>() )
+            {
+                entityIdColumn = this.PersonIdField ?? "Id";
+            }
+            else
+            {
+                entityIdColumn = this.DataKeyNames.FirstOrDefault() ?? "Id";
+            }
+
+            PropertyInfo idProp = dataSourceObjectType.GetProperty( entityIdColumn );
 
             // first try to get the SelectedKeys from the SelectField (if there is one)
             HashSet<int> selectedKeys = new HashSet<int>( this.SelectedKeys.Select( a => a as int? ).Where( a => a.HasValue ).Select( a => a.Value ).Distinct().ToList() );
@@ -3031,7 +3036,7 @@ namespace Rock.Web.UI.Controls
 
             if ( entityTypeId.HasValue )
             {
-                var dataSourceObjectTypeEntityType = EntityTypeCache.Read( dataSourceObjectType, false );
+                var dataSourceObjectTypeEntityType = CacheEntityType.Get( dataSourceObjectType, false );
                 if ( dataSourceObjectTypeEntityType != null && dataSourceObjectTypeEntityType.Id == entityTypeId )
                 {
                     // the entityType and the Datasource type are the same, so no additional merge fields 
@@ -3039,7 +3044,7 @@ namespace Rock.Web.UI.Controls
                 else
                 {
                     // the entityType and the Datasource type are different, so figure out the extra properties and put them into AdditionalMergeFields
-                    var entityType = EntityTypeCache.Read( entityTypeId.Value ).GetEntityType();
+                    var entityType = CacheEntityType.Get( entityTypeId.Value ).GetEntityType();
                     var entityTypePropertyNames = entityType.GetProperties().Select( a => a.Name ).ToList();
 
                     additionalMergeProperties = new List<PropertyInfo>();
@@ -3181,7 +3186,7 @@ namespace Rock.Web.UI.Controls
                         if ( pageRef.IsValid )
                         {
                             // if a valid pageref was found, check the security of the page
-                            var page = PageCache.Read( pageRef.PageId );
+                            var page = CachePage.Get( pageRef.PageId );
                             if ( page != null )
                             {
                                 return page.IsAuthorized( Rock.Security.Authorization.VIEW, rockPage.CurrentPerson );
@@ -3214,17 +3219,9 @@ namespace Rock.Web.UI.Controls
 
                 string dataKey = parms[0];
 
-                int oldIndex = 0;
-                if ( !int.TryParse( parms[1], out oldIndex ) )
-                {
-                    oldIndex = 0;
-                }
+                int oldIndex = parms[1].AsIntegerOrNull() ?? 0;
 
-                int newIndex = 0;
-                if ( !int.TryParse( parms[2], out newIndex ) )
-                {
-                    newIndex = 0;
-                }
+                int newIndex = parms[2].AsIntegerOrNull() ?? 0;
 
                 int pageFactor = this.PageIndex * this.PageSize;
                 oldIndex += pageFactor;

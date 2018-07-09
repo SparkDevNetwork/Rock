@@ -25,7 +25,7 @@ using RestSharp;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Security.Authentication.Auth0
 {
@@ -224,15 +224,11 @@ namespace Rock.Security.Authentication.Auth0
                     if ( !string.IsNullOrWhiteSpace( email ) )
                     {
                         var personService = new PersonService( rockContext );
-                        var people = personService.GetByMatch( firstName, lastName, email );
-                        if ( people.Count() == 1 )
-                        {
-                            person = people.First();
-                        }
+                        person = personService.FindPerson( firstName, lastName, email, true );
                     }
 
-                    var personRecordTypeId = DefinedValueCache.Read( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
-                    var personStatusPending = DefinedValueCache.Read( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() ).Id;
+                    var personRecordTypeId = CacheDefinedValue.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                    var personStatusPending = CacheDefinedValue.Get( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() ).Id;
 
                     rockContext.WrapTransaction( () =>
                     {
@@ -269,7 +265,7 @@ namespace Rock.Security.Authentication.Auth0
 
                         if ( person != null )
                         {
-                            int typeId = EntityTypeCache.Read( typeof( Auth0Authentication ) ).Id;
+                            int typeId = CacheEntityType.Get( typeof( Auth0Authentication ) ).Id;
                             user = UserLoginService.Create( rockContext, person, AuthenticationServiceType.External, typeId, userName, "auth0", true );
                             user.ForeignKey = auth0UserInfo.sub;
                         }

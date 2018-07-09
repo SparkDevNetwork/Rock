@@ -16,9 +16,9 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 
+using Rock.Cache;
 using Rock.Data;
 using Rock.Model;
 
@@ -29,20 +29,21 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
+    [Obsolete( "Use Rock.Cache.CacheDefinedType instead" )]
     public class DefinedTypeCache : CachedModel<DefinedType>
     {
         #region Constructors
 
-        private DefinedTypeCache( DefinedType model )
+        private DefinedTypeCache( CacheDefinedType cacheDefinedType )
         {
-            CopyFromModel( model );
+            CopyFromNewCache( cacheDefinedType );
         }
 
         #endregion
 
         #region Properties
 
-        private object _obj = new object();
+        private readonly object _obj = new object();
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is system.
@@ -143,13 +144,13 @@ namespace Rock.Web.Cache
                 var definedValues = new List<DefinedValueCache>();
 
                 lock ( _obj )
-                { 
+                {
                     if ( definedValueIds == null )
                     {
                         using ( var rockContext = new RockContext() )
                         {
-                            definedValueIds = new Model.DefinedValueService( rockContext )
-                                .GetByDefinedTypeId( this.Id )
+                            definedValueIds = new DefinedValueService( rockContext )
+                                .GetByDefinedTypeId( Id )
                                 .Select( v => v.Id )
                                 .ToList();
                         }
@@ -168,7 +169,7 @@ namespace Rock.Web.Cache
                 return definedValues;
             }
         }
-        private List<int> definedValueIds = null;
+        private List<int> definedValueIds;
 
         #endregion
 
@@ -178,23 +179,44 @@ namespace Rock.Web.Cache
         /// Copies from model.
         /// </summary>
         /// <param name="model">The model.</param>
-        public override void CopyFromModel( Data.IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
             base.CopyFromModel( model );
 
-            if ( model is DefinedType )
-            {
-                var definedType = (DefinedType)model;
-                this.IsSystem = definedType.IsSystem;
-                this.FieldTypeId = definedType.FieldTypeId;
-                this.Order = definedType.Order;
-                this.CategoryId = definedType.CategoryId;
-                this.Name = definedType.Name;
-                this.Description = definedType.Description;
+            if ( !( model is DefinedType ) ) return;
 
-                // set definedValueIds to null so it load them all at once on demand
-                this.definedValueIds = null;
-            }
+            var definedType = (DefinedType)model;
+            IsSystem = definedType.IsSystem;
+            FieldTypeId = definedType.FieldTypeId;
+            Order = definedType.Order;
+            CategoryId = definedType.CategoryId;
+            Name = definedType.Name;
+            Description = definedType.Description;
+
+            // set definedValueIds to null so it load them all at once on demand
+            definedValueIds = null;
+        }
+
+        /// <summary>
+        /// Copies properties from a new cached entity
+        /// </summary>
+        /// <param name="cacheEntity">The cache entity.</param>
+        protected sealed override void CopyFromNewCache( IEntityCache cacheEntity )
+        {
+            base.CopyFromNewCache( cacheEntity );
+
+            if ( !( cacheEntity is CacheDefinedType ) ) return;
+
+            var definedType = (CacheDefinedType)cacheEntity;
+            IsSystem = definedType.IsSystem;
+            FieldTypeId = definedType.FieldTypeId;
+            Order = definedType.Order;
+            CategoryId = definedType.CategoryId;
+            Name = definedType.Name;
+            Description = definedType.Description;
+
+            // set definedValueIds to null so it load them all at once on demand
+            definedValueIds = null;
         }
 
         /// <summary>
@@ -205,17 +227,12 @@ namespace Rock.Web.Cache
         /// </returns>
         public override string ToString()
         {
-            return this.Name;
+            return Name;
         }
 
         #endregion
 
         #region Static Methods
-
-        private static string CacheKey( int id )
-        {
-            return string.Format( "Rock:DefinedType:{0}", id );
-        }
 
         /// <summary>
         /// Returns DefinedType object from cache.  If definedType does not already exist in cache, it
@@ -226,37 +243,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static DefinedTypeCache Read( int id, RockContext rockContext = null )
         {
-            return GetOrAddExisting( DefinedTypeCache.CacheKey( id ),
-                () => LoadById( id, rockContext ) );
-        }
-
-        private static DefinedTypeCache LoadById( int id, RockContext rockContext )
-        {
-            if ( rockContext != null )
-            {
-                return LoadById2( id, rockContext );
-            }
-
-            using ( var rockContext2 = new RockContext() )
-            {
-                return LoadById2( id, rockContext2 );
-            }
-        }
-
-        private static DefinedTypeCache LoadById2( int id, RockContext rockContext )
-        {
-            var definedTypeService = new DefinedTypeService( rockContext );
-            var definedTypeModel = definedTypeService
-                .Queryable()
-                .Where( t => t.Id == id )
-                .FirstOrDefault();
-
-            if ( definedTypeModel != null )
-            {
-                return new DefinedTypeCache( definedTypeModel );
-            }
-
-            return null;
+            return new DefinedTypeCache( CacheDefinedType.Get( id, rockContext ) );
         }
 
         /// <summary>
@@ -267,33 +254,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static DefinedTypeCache Read( Guid guid, RockContext rockContext = null )
         {
-            int id = GetOrAddExisting( guid.ToString(),
-                () => LoadByGuid( guid, rockContext ) );
-
-            return Read( id, rockContext );
-        }
-
-        private static int LoadByGuid( Guid guid, RockContext rockContext )
-        {
-            if ( rockContext != null )
-            {
-                return LoadByGuid2( guid, rockContext );
-            }
-
-            using ( var rockContext2 = new RockContext() )
-            {
-                return LoadByGuid2( guid, rockContext2 );
-            }
-        }
-
-        private static int LoadByGuid2( Guid guid, RockContext rockContext )
-        {
-            var definedTypeService = new DefinedTypeService( rockContext );
-            return definedTypeService
-                .Queryable().AsNoTracking()
-                .Where( c => c.Guid.Equals( guid ) )
-                .Select( c => c.Id )
-                .FirstOrDefault();
+            return new DefinedTypeCache( CacheDefinedType.Get( guid, rockContext ) );
         }
 
         /// <summary>
@@ -304,17 +265,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static DefinedTypeCache Read( DefinedType definedTypeModel, RockContext rockContext = null )
         {
-            return GetOrAddExisting( DefinedTypeCache.CacheKey( definedTypeModel.Id ),
-                () => LoadByModel( definedTypeModel ) );
-        }
-
-        private static DefinedTypeCache LoadByModel( DefinedType definedTypeModel )
-        {
-            if ( definedTypeModel != null )
-            {
-                return new DefinedTypeCache( definedTypeModel );
-            }
-            return null;
+            return new DefinedTypeCache( CacheDefinedType.Get( definedTypeModel ) );
         }
 
         /// <summary>
@@ -323,7 +274,7 @@ namespace Rock.Web.Cache
         /// <param name="id"></param>
         public static void Flush( int id )
         {
-            FlushCache( DefinedTypeCache.CacheKey( id ) );
+            CacheDefinedType.Remove( id );
         }
 
         #endregion

@@ -25,7 +25,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using System.Data.Entity;
@@ -130,7 +130,7 @@ namespace RockWeb.Blocks.Crm
 
             foreach ( var guid in GetAttributeValue( "ShowPhones" ).SplitDelimitedValues().AsGuidList() )
             {
-                var phoneValue = DefinedValueCache.Read( guid );
+                var phoneValue = CacheDefinedValue.Get( guid );
                 if ( phoneValue != null )
                 {
                     _phoneNumberCaptions.Add( phoneValue.Id, phoneValue.Value );
@@ -379,7 +379,7 @@ namespace RockWeb.Blocks.Crm
                     bool optIn = lbOptInOut.Text == "Opt in to the Directory";
                     if ( _showFamily )
                     {
-                        var familyGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
+                        var familyGroupType = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
 
                         foreach ( var familyMember in new GroupService( rockContext )
                             .Queryable().AsNoTracking()
@@ -544,8 +544,8 @@ namespace RockWeb.Blocks.Crm
 
                 if ( _showAddress )
                 {
-                    var familyGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
-                    var homeLoc = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
+                    var familyGroupType = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
+                    var homeLoc = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
                     if ( familyGroupType != null && homeLoc != null )
                     {
                         _addresses = new GroupMemberService( rockContext )
@@ -576,7 +576,7 @@ namespace RockWeb.Blocks.Crm
                 LoadPhoneNumbers( rockContext, personIds );
             }
 
-            if ( _showEnvelopeNumber && GlobalAttributesCache.Read().EnableGivingEnvelopeNumber )
+            if ( _showEnvelopeNumber && CacheGlobalAttributes.Get().EnableGivingEnvelopeNumber )
             {
                 LoadEnvelopeNumbers( rockContext, people.Select( p => p.Id ).ToList() );
             }
@@ -595,7 +595,7 @@ namespace RockWeb.Blocks.Crm
         /// <param name="personIds">The person ids.</param>
         private void LoadEnvelopeNumbers( RockContext rockContext, List<int> personIds )
         {
-            var personGivingEnvelopeAttribute = AttributeCache.Read( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
+            var personGivingEnvelopeAttribute = CacheAttribute.Get( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
             _envelopeNumbers = new AttributeValueService( rockContext ).Queryable()
                                     .Where( a => a.AttributeId == personGivingEnvelopeAttribute.Id )
                                     .Where( a => personIds.Contains( a.EntityId.Value ) )
@@ -608,7 +608,7 @@ namespace RockWeb.Blocks.Crm
 
         private void BindFamilies( RockContext rockContext, IQueryable<Person> personQry, IQueryable<int> dataviewPersonIdQry )
         {
-            var familyGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
+            var familyGroupType = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
 
             var personIds = personQry.Select( p => p.Id );
 
@@ -651,7 +651,7 @@ namespace RockWeb.Blocks.Crm
 
             if ( _showAddress )
             {
-                var homeLoc = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
+                var homeLoc = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
                 if ( familyGroupType != null && homeLoc != null )
                 {
                     _addresses = new GroupService( rockContext )
@@ -682,7 +682,7 @@ namespace RockWeb.Blocks.Crm
                 LoadPhoneNumbers( rockContext, familyPersonIds );
             }
 
-            if ( _showEnvelopeNumber && GlobalAttributesCache.Read().EnableGivingEnvelopeNumber )
+            if ( _showEnvelopeNumber && CacheGlobalAttributes.Get().EnableGivingEnvelopeNumber )
             {
                 LoadEnvelopeNumbers( rockContext, familyPersonIds );
             }
@@ -862,7 +862,7 @@ namespace RockWeb.Blocks.Crm
                 {
                     if ( this.RecordTypeValueId.HasValue )
                     {
-                        var recordType = DefinedValueCache.Read( RecordTypeValueId.Value );
+                        var recordType = CacheDefinedValue.Get( RecordTypeValueId.Value );
                         if ( recordType != null )
                         {
                             return Person.GetPersonPhotoUrl( this.Id, this.PhotoId, this.Age, this.Gender, recordType.Guid, 200, 200 );

@@ -61,7 +61,7 @@
 
     &:focus {
       outline: 0; // get rid of orange box in chrome
-      box-shadow: 0 0 0 0;
+      box-shadow: 0;
     }
   }
 
@@ -71,8 +71,9 @@
 
   .tt-dropdown-menu {
     min-width: 290px;
+    max-width: 100vw;
     margin-top: 2px;
-    margin-left: -6px;
+    margin-left: 0;
     border: 0;
   }
 
@@ -89,6 +90,7 @@
       width: 100%;
       color: @smartsearch-text-color;
       text-align: right;
+      cursor: pointer;
 
       span {
         padding-right: 4px;

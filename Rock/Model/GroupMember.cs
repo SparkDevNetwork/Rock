@@ -27,7 +27,7 @@ using System.Runtime.Serialization;
 using Humanizer;
 using Rock.Data;
 using Rock.Transactions;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Model
 {
@@ -148,6 +148,42 @@ namespace Rock.Model
         [DataMember]
         public int? GroupOrder { get; set; }
 
+        /// <summary>
+        /// Gets or sets the date that this group member became inactive
+        /// </summary>
+        /// <value>
+        /// The in active date time.
+        /// </value>
+        [DataMember]
+        public DateTime? InactiveDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this group member is archived (soft deleted)
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is archived; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsArchived { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets the date time that this group member was archived (soft deleted)
+        /// </summary>
+        /// <value>
+        /// The archived date time.
+        /// </value>
+        [DataMember]
+        public DateTime? ArchivedDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the PersonAliasId that archived (soft deleted) this group member
+        /// </summary>
+        /// <value>
+        /// The archived by person alias identifier.
+        /// </value>
+        [DataMember]
+        public int? ArchivedByPersonAliasId { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -178,6 +214,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual GroupTypeRole GroupRole { get; set; }
+
+        /// <summary>
+        /// Gets or sets the PersonAlias that archived (soft deleted) this group member
+        /// </summary>
+        /// <value>
+        /// The archived by person alias.
+        /// </value>
+        [DataMember]
+        public virtual PersonAlias ArchivedByPersonAlias { get; set; }
 
         /// <summary>
         /// Gets or sets the group member requirements.
@@ -215,7 +260,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return Person.ToStringSafe();
+            return Person?.ToString();
         }
 
         /// <summary>
@@ -283,6 +328,7 @@ namespace Rock.Model
             {
                 group = new GroupService( rockContext ).Get( this.GroupId );
             }
+
             if ( group != null )
             {
                 string oldGroupName = group.Name;
@@ -301,9 +347,9 @@ namespace Rock.Model
                     HistoryChanges.Add( new HistoryItem()
                     {
                         PersonId = newPersonId.Value,
-                        Changes = new List<string>(),
                         Caption = group.Name,
-                        GroupId = group.Id
+                        GroupId = group.Id,
+                        Group = group
                     } );
                 }
 
@@ -312,10 +358,9 @@ namespace Rock.Model
                     HistoryChanges.Add( new HistoryItem()
                     {
                         PersonId = oldPersonId.Value,
-                        Changes = new List<string>(),
                         Caption = oldGroupName,
                         GroupId = oldGroupId
-                    } );
+                    } ); 
                 }
 
                 if ( newPersonId.HasValue && newGroupId.HasValue && 
@@ -323,11 +368,21 @@ namespace Rock.Model
                 {
                     // New Person in group
                     var historyItem = HistoryChanges.First( h => h.PersonId == newPersonId.Value && h.GroupId == newGroupId.Value );
-                    historyItem.Changes.Add( $"Added to '{group.Name}' Group" );
-                    History.EvaluateChange( historyItem.Changes, $"{historyItem.Caption} Role", (int?)null, GroupRole, GroupRoleId, rockContext );
-                    History.EvaluateChange( historyItem.Changes, $"{historyItem.Caption} Note", string.Empty, Note );
-                    History.EvaluateChange( historyItem.Changes, $"{historyItem.Caption} Status", null, GroupMemberStatus );
-                    History.EvaluateChange( historyItem.Changes, $"{historyItem.Caption} Guest Count", (int?)null, GuestCount );
+
+                    historyItem.PersonHistoryChangeList.AddChange( History.HistoryVerb.AddedToGroup, History.HistoryChangeType.Record, $"'{group.Name}' Group" );
+                    History.EvaluateChange( historyItem.PersonHistoryChangeList, $"{historyItem.Caption} Role", (int?)null, GroupRole, GroupRoleId, rockContext );
+                    History.EvaluateChange( historyItem.PersonHistoryChangeList, $"{historyItem.Caption} Note", string.Empty, Note );
+                    History.EvaluateChange( historyItem.PersonHistoryChangeList, $"{historyItem.Caption} Status", null, GroupMemberStatus );
+                    History.EvaluateChange( historyItem.PersonHistoryChangeList, $"{historyItem.Caption} Guest Count", (int?)null, GuestCount );
+
+                    var addedMemberPerson = this.Person ?? new PersonService( rockContext ).Get( this.PersonId );
+
+                    // add the Person's Name as ValueName and Caption (just in case the groupmember record is deleted later)
+                    historyItem.GroupMemberHistoryChangeList.AddChange( History.HistoryVerb.AddedToGroup, History.HistoryChangeType.Record, $"{addedMemberPerson?.FullName}" ).SetCaption( $"{addedMemberPerson?.FullName}" );
+                    History.EvaluateChange( historyItem.GroupMemberHistoryChangeList, $"Role", ( int? ) null, GroupRole, GroupRoleId, rockContext );
+                    History.EvaluateChange( historyItem.GroupMemberHistoryChangeList, $"Note", string.Empty, Note );
+                    History.EvaluateChange( historyItem.GroupMemberHistoryChangeList, $"Status", null, GroupMemberStatus );
+                    History.EvaluateChange( historyItem.GroupMemberHistoryChangeList, $"Guest Count", ( int? ) null, GuestCount );
                 }
 
                 if ( newPersonId.HasValue && oldPersonId.HasValue && oldPersonId.Value == newPersonId.Value &&
@@ -335,22 +390,51 @@ namespace Rock.Model
                 {
                     // Updated same person in group
                     var historyItem = HistoryChanges.First( h => h.PersonId == newPersonId.Value && h.GroupId == newGroupId.Value );
-                    History.EvaluateChange( historyItem.Changes, $"{historyItem.Caption} Role", entry.OriginalValues["GroupRoleId"].ToStringSafe().AsIntegerOrNull(), GroupRole, GroupRoleId, rockContext );
-                    History.EvaluateChange( historyItem.Changes, $"{historyItem.Caption} Note", entry.OriginalValues["Note"].ToStringSafe(), Note );
-                    History.EvaluateChange( historyItem.Changes, $"{historyItem.Caption} Status", entry.OriginalValues["GroupMemberStatus"].ToStringSafe().ConvertToEnum<GroupMemberStatus>(), GroupMemberStatus );
-                    History.EvaluateChange( historyItem.Changes, $"{historyItem.Caption} Guest Count", entry.OriginalValues["GuestCount"].ToStringSafe().AsIntegerOrNull(), GuestCount );
+                    History.EvaluateChange( historyItem.PersonHistoryChangeList, $"{historyItem.Caption} Role", entry.OriginalValues["GroupRoleId"].ToStringSafe().AsIntegerOrNull(), GroupRole, GroupRoleId, rockContext );
+                    History.EvaluateChange( historyItem.PersonHistoryChangeList, $"{historyItem.Caption} Note", entry.OriginalValues["Note"].ToStringSafe(), Note );
+                    History.EvaluateChange( historyItem.PersonHistoryChangeList, $"{historyItem.Caption} Status", entry.OriginalValues["GroupMemberStatus"].ToStringSafe().ConvertToEnum<GroupMemberStatus>(), GroupMemberStatus );
+                    History.EvaluateChange( historyItem.PersonHistoryChangeList, $"{historyItem.Caption} Guest Count", entry.OriginalValues["GuestCount"].ToStringSafe().AsIntegerOrNull(), GuestCount );
+                    History.EvaluateChange( historyItem.PersonHistoryChangeList, $"{historyItem.Caption} Archived", entry.OriginalValues["IsArchived"].ToStringSafe().AsBoolean(), IsArchived );
+
+                    // If the groupmember was Archived, make sure it is the first GroupMember History change (since they get summarized when doing a HistoryLog and Timeline
+                    bool origIsArchived = entry.OriginalValues["IsArchived"].ToStringSafe().AsBoolean();
+
+                    if ( origIsArchived != IsArchived )
+                    {
+                        var memberPerson = this.Person ?? new PersonService( rockContext ).Get( this.PersonId );
+                        if ( IsArchived == true )
+                        {
+                            // GroupMember changed to Archived
+                            historyItem.GroupMemberHistoryChangeList.AddChange( History.HistoryVerb.RemovedFromGroup, History.HistoryChangeType.Record, $"{memberPerson?.FullName}" ).SetCaption( $"{memberPerson?.FullName}" );
+                        }
+                        else
+                        {
+                            // GroupMember changed to Not archived
+                            historyItem.GroupMemberHistoryChangeList.AddChange( History.HistoryVerb.AddedToGroup, History.HistoryChangeType.Record, $"{memberPerson?.FullName}" ).SetCaption( $"{memberPerson?.FullName}" );
+                        }
+                    }
+
+                    History.EvaluateChange( historyItem.GroupMemberHistoryChangeList, $"Role", entry.OriginalValues["GroupRoleId"].ToStringSafe().AsIntegerOrNull(), GroupRole, GroupRoleId, rockContext );
+                    History.EvaluateChange( historyItem.GroupMemberHistoryChangeList, $"Note", entry.OriginalValues["Note"].ToStringSafe(), Note );
+                    History.EvaluateChange( historyItem.GroupMemberHistoryChangeList, $"Status", entry.OriginalValues["GroupMemberStatus"].ToStringSafe().ConvertToEnum<GroupMemberStatus>(), GroupMemberStatus );
+                    History.EvaluateChange( historyItem.GroupMemberHistoryChangeList, $"Guest Count", entry.OriginalValues["GuestCount"].ToStringSafe().AsIntegerOrNull(), GuestCount );
                 }
 
                 if ( oldPersonId.HasValue && oldGroupId.HasValue && 
                     ( !newPersonId.HasValue || newPersonId.Value != oldPersonId.Value || !newGroupId.HasValue || newGroupId.Value != oldGroupId.Value ) )
                 {
-                    // Removed a person in group
+                    // Removed a person/groupmember in group
                     var historyItem = HistoryChanges.First( h => h.PersonId == oldPersonId.Value && h.GroupId == oldGroupId.Value );
-                    historyItem.Changes.Add( $"Removed from '{oldGroupName}' Group" );
+
+                    historyItem.PersonHistoryChangeList.AddChange( History.HistoryVerb.RemovedFromGroup, History.HistoryChangeType.Record, $"{oldGroupName} Group");
+
+                    var deletedMemberPerson = this.Person ?? new PersonService( rockContext ).Get( this.PersonId );
+
+                    historyItem.GroupMemberHistoryChangeList.AddChange( History.HistoryVerb.RemovedFromGroup, History.HistoryChangeType.Record, $"{deletedMemberPerson?.FullName}" ).SetCaption( $"{deletedMemberPerson?.FullName}" );
                 }
 
                 // process universal search indexing if required
-                var groupType = GroupTypeCache.Read( group.GroupTypeId );
+                var groupType = CacheGroupType.Get( group.GroupTypeId );
                 if ( groupType != null && groupType.IsIndexEnabled )
                 {
                     IndexEntityTransaction transaction = new IndexEntityTransaction();
@@ -374,11 +458,21 @@ namespace Rock.Model
         {
             if ( HistoryChanges != null )
             {
-                foreach ( var historyItem in HistoryChanges.Where( h => h.Changes.Any() ) )
+                foreach ( var historyItem in HistoryChanges )
                 {
                     int personId = historyItem.PersonId > 0 ? historyItem.PersonId : PersonId;
+
+                    // if GroupId is 0, it is probably a Group that wasn't saved yet, so get the GroupId from historyItem.Group.Id instead
+                    if ( historyItem.GroupId == 0 )
+                    {
+                        historyItem.GroupId = historyItem.Group?.Id;
+                    }
+
                     HistoryService.SaveChanges( (RockContext)dbContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_GROUP_MEMBERSHIP.AsGuid(),
-                        personId, historyItem.Changes, historyItem.Caption, typeof( Group ), historyItem.GroupId, true, this.ModifiedByPersonAliasId );
+                        personId, historyItem.PersonHistoryChangeList, historyItem.Caption, typeof( Group ), historyItem.GroupId, true, this.ModifiedByPersonAliasId );
+
+                    HistoryService.SaveChanges( ( RockContext ) dbContext, typeof( GroupMember ), Rock.SystemGuid.Category.HISTORY_GROUP_CHANGES.AsGuid(),
+                        this.Id, historyItem.GroupMemberHistoryChangeList, historyItem.Caption, typeof( Group ), historyItem.GroupId, true, this.ModifiedByPersonAliasId );
                 }
             }
 
@@ -439,15 +533,16 @@ namespace Rock.Model
             errorMessage = string.Empty;
 
             // load group including members to save queries in group member validation
+            var groupService = new GroupService( rockContext );
             var group = this.Group ?? new GroupService( rockContext ).Queryable( "Members" ).Where( g => g.Id == this.GroupId ).FirstOrDefault();
 
-            var groupType = GroupTypeCache.Read( group.GroupTypeId );
+            var groupType = CacheGroupType.Get( group.GroupTypeId );
             var groupRole = groupType.Roles.First( a => a.Id == this.GroupRoleId );
 
             var existingGroupMembership = group.Members.Where( m => m.PersonId == this.PersonId );
 
             // check to see if the person is already a member of the group/role
-            bool allowDuplicateGroupMembers = ConfigurationManager.AppSettings["AllowDuplicateGroupMembers"].AsBoolean();
+            bool allowDuplicateGroupMembers = groupService.AllowsDuplicateMembers( group );
 
             if ( !allowDuplicateGroupMembers )
             {
@@ -720,8 +815,8 @@ namespace Rock.Model
         /// <summary>
         /// Get a list of all inherited Attributes that should be applied to this entity.
         /// </summary>
-        /// <returns>A list of all inherited AttributeCache objects.</returns>
-        public override List<AttributeCache> GetInheritedAttributes( Rock.Data.RockContext rockContext )
+        /// <returns>A list of all inherited CacheAttribute objects.</returns>
+        public override List<Cache.CacheAttribute> GetInheritedAttributes( Rock.Data.RockContext rockContext )
         {
             var group = this.Group;
             if ( group == null && this.GroupId > 0 )
@@ -736,7 +831,7 @@ namespace Rock.Model
                 var groupType = group.GroupType;
                 if ( groupType == null && group.GroupTypeId > 0 )
                 {
-                    // Can't use GroupTypeCache here since it loads attributes and would
+                    // Can't use CacheGroupType here since it loads attributes and would
                     // result in a recursive stack overflow situation.
                     groupType = new GroupTypeService( rockContext )
                         .Queryable().AsNoTracking()
@@ -770,6 +865,16 @@ namespace Rock.Model
             this.HasRequired( p => p.Person ).WithMany( p => p.Members ).HasForeignKey( p => p.PersonId ).WillCascadeOnDelete( true );
             this.HasRequired( p => p.Group ).WithMany( p => p.Members ).HasForeignKey( p => p.GroupId ).WillCascadeOnDelete( true );
             this.HasRequired( p => p.GroupRole ).WithMany().HasForeignKey( p => p.GroupRoleId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.ArchivedByPersonAlias ).WithMany().HasForeignKey( p => p.ArchivedByPersonAliasId ).WillCascadeOnDelete( false );
+
+            // Tell EF that we never want archived group members. 
+            // This will prevent archived members from being included in any GroupMember queries.
+            // It will also prevent navigation properties of GroupMember from including archived group members.
+            Z.EntityFramework.Plus.QueryFilterManager.Filter<GroupMember>( x => x.Where( m => m.IsArchived == false ) );
+
+            // In the case of GroupMember as a property (not a collection), we DO want to fetch the groupMember record even if it is archived, so ensure that AllowPropertyFilter = false;
+            // NOTE: This is not specific to GroupMember, it is for any Filtered Model (currently just Group and GroupMember)
+            Z.EntityFramework.Plus.QueryFilterManager.AllowPropertyFilter = false;
         }
     }
 
@@ -822,7 +927,7 @@ namespace Rock.Model
     /// <summary>
     /// Helper class for tracking changes
     /// </summary>
-    public class HistoryItem
+    public class HistoryItem 
     {
         /// <summary>
         /// Gets or sets the person identifier.
@@ -833,12 +938,20 @@ namespace Rock.Model
         public int PersonId { get; set; }
 
         /// <summary>
-        /// Gets or sets the changes.
+        /// Gets or sets the changes to be written as Person History
         /// </summary>
         /// <value>
         /// The changes.
         /// </value>
-        public List<string> Changes { get; set; }
+        public History.HistoryChangeList PersonHistoryChangeList { get; set; } = new History.HistoryChangeList();
+
+        /// <summary>
+        /// Gets or sets the changes to be written as GroupMember History
+        /// </summary>
+        /// <value>
+        /// The group member history change list.
+        /// </value>
+        public History.HistoryChangeList GroupMemberHistoryChangeList { get; set; } = new History.HistoryChangeList();
 
         /// <summary>
         /// Gets or sets the caption.
@@ -855,5 +968,13 @@ namespace Rock.Model
         /// The group identifier.
         /// </value>
         public int? GroupId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group. Use this to get the GroupId on PostSaveChanges if GroupId is 0 (new Group)
+        /// </summary>
+        /// <value>
+        /// The group.
+        /// </value>
+        public Group Group { get; set; }
     }
 }

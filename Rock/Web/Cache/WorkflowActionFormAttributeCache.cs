@@ -15,10 +15,8 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
-using System.Data.Entity;
-using System.Linq;
 
+using Rock.Cache;
 using Rock.Data;
 using Rock.Model;
 
@@ -28,20 +26,19 @@ namespace Rock.Web.Cache
     /// Cached WorkflowActionFormAttribute
     /// </summary>
     [Serializable]
+    [Obsolete( "Use Rock.Cache.CacheWorkflowActionFormAttribute instead" )]
     public class WorkflowActionFormAttributeCache : CachedModel<WorkflowActionFormAttribute>
     {
         #region Constructors
 
-        private WorkflowActionFormAttributeCache( WorkflowActionFormAttribute model )
+        private WorkflowActionFormAttributeCache( CacheWorkflowActionFormAttribute cacheItem )
         {
-            CopyFromModel( model );
+            CopyFromNewCache( cacheItem );
         }
 
         #endregion
 
         #region Properties
-
-        private object _obj = new object();
 
         /// <summary>
         /// Gets or sets the form Id
@@ -121,13 +118,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The workflow action form.
         /// </value>
-        public WorkflowActionFormCache  WorkflowActionForm
-        {
-            get
-            {
-                return WorkflowActionFormCache.Read( WorkflowActionFormId );
-            }
-        }
+        public WorkflowActionFormCache WorkflowActionForm => WorkflowActionFormCache.Read( WorkflowActionFormId );
 
         /// <summary>
         /// Gets the attribute.
@@ -135,13 +126,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The attribute.
         /// </value>
-        public AttributeCache Attribute
-        {
-            get
-            {
-                return AttributeCache.Read( AttributeId );
-            }
-        }
+        public AttributeCache Attribute => AttributeCache.Read( AttributeId );
 
         #endregion
 
@@ -151,34 +136,49 @@ namespace Rock.Web.Cache
         /// Copies from model.
         /// </summary>
         /// <param name="model">The model.</param>
-        public override void CopyFromModel( Data.IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
             base.CopyFromModel( model );
 
-            if ( model is WorkflowActionFormAttribute )
-            {
-                var workflowActionFormAttribute = (WorkflowActionFormAttribute)model;
+            if ( !( model is WorkflowActionFormAttribute ) ) return;
 
-                this.WorkflowActionFormId = workflowActionFormAttribute.WorkflowActionFormId;
-                this.AttributeId = workflowActionFormAttribute.AttributeId;
-                this.Order = workflowActionFormAttribute.Order;
-                this.IsVisible = workflowActionFormAttribute.IsVisible;
-                this.IsReadOnly = workflowActionFormAttribute.IsReadOnly;
-                this.IsRequired = workflowActionFormAttribute.IsRequired;
-                this.HideLabel = workflowActionFormAttribute.HideLabel;
-                this.PreHtml = workflowActionFormAttribute.PreHtml;
-                this.PostHtml = workflowActionFormAttribute.PostHtml;
-            }
+            var workflowActionFormAttribute = (WorkflowActionFormAttribute)model;
+            WorkflowActionFormId = workflowActionFormAttribute.WorkflowActionFormId;
+            AttributeId = workflowActionFormAttribute.AttributeId;
+            Order = workflowActionFormAttribute.Order;
+            IsVisible = workflowActionFormAttribute.IsVisible;
+            IsReadOnly = workflowActionFormAttribute.IsReadOnly;
+            IsRequired = workflowActionFormAttribute.IsRequired;
+            HideLabel = workflowActionFormAttribute.HideLabel;
+            PreHtml = workflowActionFormAttribute.PreHtml;
+            PostHtml = workflowActionFormAttribute.PostHtml;
+        }
+
+        /// <summary>
+        /// Copies properties from a new cached entity
+        /// </summary>
+        /// <param name="cacheEntity">The cache entity.</param>
+        protected sealed override void CopyFromNewCache( IEntityCache cacheEntity )
+        {
+            base.CopyFromNewCache( cacheEntity );
+
+            if ( !( cacheEntity is CacheWorkflowActionFormAttribute ) ) return;
+
+            var workflowActionFormAttribute = (CacheWorkflowActionFormAttribute)cacheEntity;
+            WorkflowActionFormId = workflowActionFormAttribute.WorkflowActionFormId;
+            AttributeId = workflowActionFormAttribute.AttributeId;
+            Order = workflowActionFormAttribute.Order;
+            IsVisible = workflowActionFormAttribute.IsVisible;
+            IsReadOnly = workflowActionFormAttribute.IsReadOnly;
+            IsRequired = workflowActionFormAttribute.IsRequired;
+            HideLabel = workflowActionFormAttribute.HideLabel;
+            PreHtml = workflowActionFormAttribute.PreHtml;
+            PostHtml = workflowActionFormAttribute.PostHtml;
         }
 
         #endregion
 
         #region Static Methods
-
-        private static string CacheKey( int id )
-        {
-            return string.Format( "Rock:WorkflowActionFormAttribute:{0}", id );
-        }
 
         /// <summary>
         /// Returns WorkflowActionFormAttribute object from cache.  If workflowActionFormAttribute does not already exist in cache, it
@@ -189,37 +189,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static WorkflowActionFormAttributeCache Read( int id, RockContext rockContext = null )
         {
-            return GetOrAddExisting( WorkflowActionFormAttributeCache.CacheKey( id ),
-                () => LoadById( id, rockContext ) );
-        }
-
-        private static WorkflowActionFormAttributeCache LoadById( int id, RockContext rockContext )
-        {
-            if ( rockContext != null )
-            {
-                return LoadById2( id, rockContext );
-            }
-
-            using ( var rockContext2 = new RockContext() )
-            {
-                return LoadById2( id, rockContext2 );
-            }
-        }
-
-        private static WorkflowActionFormAttributeCache LoadById2( int id, RockContext rockContext )
-        {
-            var workflowActionFormAttributeService = new WorkflowActionFormAttributeService( rockContext );
-            var workflowActionFormAttributeModel = workflowActionFormAttributeService
-                .Queryable()
-                .Where( t => t.Id == id )
-                .FirstOrDefault();
-
-            if ( workflowActionFormAttributeModel != null )
-            {
-                return new WorkflowActionFormAttributeCache( workflowActionFormAttributeModel );
-            }
-
-            return null;
+            return new WorkflowActionFormAttributeCache( CacheWorkflowActionFormAttribute.Get( id, rockContext ) );
         }
 
         /// <summary>
@@ -230,33 +200,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static WorkflowActionFormAttributeCache Read( Guid guid, RockContext rockContext = null )
         {
-            int id = GetOrAddExisting( guid.ToString(),
-                () => LoadByGuid( guid, rockContext ) );
-
-            return Read( id, rockContext );
-        }
-
-        private static int LoadByGuid( Guid guid, RockContext rockContext )
-        {
-            if ( rockContext != null )
-            {
-                return LoadByGuid2( guid, rockContext );
-            }
-
-            using ( var rockContext2 = new RockContext() )
-            {
-                return LoadByGuid2( guid, rockContext2 );
-            }
-        }
-
-        private static int LoadByGuid2( Guid guid, RockContext rockContext )
-        {
-            var workflowActionFormAttributeService = new WorkflowActionFormAttributeService( rockContext );
-            return workflowActionFormAttributeService
-                .Queryable().AsNoTracking()
-                .Where( c => c.Guid.Equals( guid ) )
-                .Select( c => c.Id )
-                .FirstOrDefault();
+            return new WorkflowActionFormAttributeCache( CacheWorkflowActionFormAttribute.Get( guid, rockContext ) );
         }
 
         /// <summary>
@@ -267,17 +211,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static WorkflowActionFormAttributeCache Read( WorkflowActionFormAttribute workflowActionFormAttributeModel, RockContext rockContext = null )
         {
-            return GetOrAddExisting( WorkflowActionFormAttributeCache.CacheKey( workflowActionFormAttributeModel.Id ),
-                () => LoadByModel( workflowActionFormAttributeModel ) );
-        }
-
-        private static WorkflowActionFormAttributeCache LoadByModel( WorkflowActionFormAttribute workflowActionFormAttributeModel )
-        {
-            if ( workflowActionFormAttributeModel != null )
-            {
-                return new WorkflowActionFormAttributeCache( workflowActionFormAttributeModel );
-            }
-            return null;
+            return new WorkflowActionFormAttributeCache( CacheWorkflowActionFormAttribute.Get( workflowActionFormAttributeModel ) );
         }
 
         /// <summary>
@@ -286,7 +220,7 @@ namespace Rock.Web.Cache
         /// <param name="id"></param>
         public static void Flush( int id )
         {
-            FlushCache( WorkflowActionFormAttributeCache.CacheKey( id ) );
+            CacheWorkflowActionFormAttribute.Remove( id );
         }
 
         #endregion

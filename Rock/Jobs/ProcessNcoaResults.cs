@@ -27,7 +27,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI;
 
 namespace Rock.Jobs
@@ -60,15 +60,15 @@ namespace Rock.Jobs
         {
             // Get the inactive reason
             JobDataMap dataMap = context.JobDetail.JobDataMap;
-            var inactiveReason = DefinedValueCache.Read( dataMap.GetString( "InactiveReason" ).AsGuid() );
+            var inactiveReason = CacheDefinedValue.Get( dataMap.GetString( "InactiveReason" ).AsGuid() );
 
             List<int> ncoaIds = null;
 
             var minMoveDistance = SystemSettings.GetValue( SystemKey.SystemSetting.NCOA_MINIMUM_MOVE_DISTANCE_TO_INACTIVATE ).AsDecimalOrNull();
 
             // Get the ID's for the "Home" and "Previous" family group location types
-            int? homeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() )?.Id;
-            int? previousValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid() )?.Id;
+            int? homeValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() )?.Id;
+            int? previousValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid() )?.Id;
 
             // Process the 'None' and 'NoMove' NCOA Types (these will always have an address state as 'invalid')
             var markInvalidAsPrevious = SystemSettings.GetValue( SystemKey.SystemSetting.NCOA_SET_INVALID_AS_PREVIOUS ).AsBoolean();
@@ -93,7 +93,7 @@ namespace Rock.Jobs
                         var groupService = new GroupService( rockContext );
                         var groupLocationService = new GroupLocationService( rockContext );
 
-                        var changes = new List<string>();
+                        var changes = new History.HistoryChangeList();
 
                         // If configured to mark these as previous, and we're able to mark it as previous set the status to 'Complete'
                         // otherwise set it to require a manual update
@@ -156,7 +156,7 @@ namespace Rock.Jobs
                         var groupService = new GroupService( rockContext );
                         var groupLocationService = new GroupLocationService( rockContext );
 
-                        var changes = new List<string>();
+                        var changes = new History.HistoryChangeList();
 
                         // If configured to mark these as previous, and we're able to mark it as previous set the status to 'Complete'
                         // otherwise set it to require a manual update
@@ -224,7 +224,7 @@ namespace Rock.Jobs
                         var locationService = new LocationService( rockContext );
                         var personService = new PersonService( rockContext );
 
-                        var familyChanges = new List<string>();
+                        var familyChanges = new History.HistoryChangeList();
 
                         // If we're able to mark the existing address as previous and successfully create a new home address..
                         if ( MarkAsPreviousLocation( ncoaHistory, groupLocationService, previousValueId, familyChanges ) &&
@@ -256,8 +256,11 @@ namespace Rock.Jobs
                                         if ( ncoaHistory.MoveDistance.HasValue && minMoveDistance.HasValue &&
                                             ncoaHistory.MoveDistance.Value >= minMoveDistance.Value )
                                         {
-                                            var personChanges = personService.InactivatePerson( fm.Person, inactiveReason,
-                                                $"Received a Change of Address (NCOA) notice that was for more than {minMoveDistance} miles away." );
+                                            History.HistoryChangeList personChanges;
+
+                                            personService.InactivatePerson( fm.Person, inactiveReason,
+                                                $"Received a Change of Address (NCOA) notice that was for more than {minMoveDistance} miles away.", out personChanges );
+
                                             if ( personChanges.Any() )
                                             {
                                                 HistoryService.SaveChanges(
@@ -323,7 +326,7 @@ namespace Rock.Jobs
                         var locationService = new LocationService( rockContext );
                         var personService = new PersonService( rockContext );
 
-                        var changes = new List<string>();
+                        var changes = new History.HistoryChangeList();
 
                         // Default the status to requiring a manual update (we might change this though)
                         ncoaHistory.Processed = Processed.ManualUpdateRequired;
@@ -365,8 +368,11 @@ namespace Rock.Jobs
                                         if ( ncoaHistory.MoveDistance.HasValue && minMoveDistance.HasValue &&
                                             ncoaHistory.MoveDistance.Value >= minMoveDistance.Value )
                                         {
-                                            var personChanges = personService.InactivatePerson( familyMember.Person, inactiveReason,
-                                            $"Received a Change of Address (NCOA) notice that was for more than {minMoveDistance} miles away." );
+                                            History.HistoryChangeList personChanges;
+
+                                            personService.InactivatePerson( familyMember.Person, inactiveReason,
+                                                $"Received a Change of Address (NCOA) notice that was for more than {minMoveDistance} miles away.", out personChanges );
+
                                             if ( personChanges.Any() )
                                             {
                                                 HistoryService.SaveChanges(
@@ -400,7 +406,7 @@ namespace Rock.Jobs
             }
         }
 
-        private bool MarkAsPreviousLocation( NcoaHistory ncoaHistory, GroupLocationService groupLocationService, int? previousValueId, List<string> changes )
+        private bool MarkAsPreviousLocation( NcoaHistory ncoaHistory, GroupLocationService groupLocationService, int? previousValueId, History.HistoryChangeList changes )
         {
             if ( ncoaHistory.LocationId.HasValue && previousValueId.HasValue )
             {
@@ -414,7 +420,8 @@ namespace Rock.Jobs
                 {
                     if ( groupLocation.GroupLocationTypeValueId != previousValueId.Value )
                     {
-                        changes.Add( $"Modifed Location Type for <span class='field-name'>{groupLocation.Location}</span> to <span class='field-value'>Previous</span> due to NCOA Request." );
+                        changes.AddChange( History.HistoryVerb.Modify, History.HistoryChangeType.Property, $"Location Type for {groupLocation.Location} ").SetNewValue( "Previous" ).SourceOfChange = "NCOA Request";
+
                         groupLocation.GroupLocationTypeValueId = previousValueId.Value;
                     }
 
@@ -425,7 +432,7 @@ namespace Rock.Jobs
             return false;
         }
 
-        private bool AddNewHomeLocation( NcoaHistory ncoaHistory, LocationService locationService, GroupLocationService groupLocationService, int? homeValueId, List<string> changes )
+        private bool AddNewHomeLocation( NcoaHistory ncoaHistory, LocationService locationService, GroupLocationService groupLocationService, int? homeValueId, History.HistoryChangeList changes )
         {
             if ( homeValueId.HasValue )
             {
@@ -444,7 +451,7 @@ namespace Rock.Jobs
                 groupLocation.IsMailingLocation = true;
                 groupLocationService.Add( groupLocation );
 
-                changes.Add( $"Added <span class='field-name'>{groupLocation.Location}</span> as a new <span class'field-value'>Home</span> Location Type due to NCOA Request." );
+                changes.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Property, "Location" ).SetNewValue( groupLocation.Location.ToString() ).SourceOfChange = "NCOA Request";
 
                 return true;
             }

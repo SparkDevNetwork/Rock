@@ -21,9 +21,9 @@ using System.Linq;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Cache;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Finance
@@ -104,15 +104,15 @@ namespace RockWeb.Blocks.Finance
                     pnlToPerson.Visible = true;
                     tbPersonFirstName.Text = string.Empty;
                     tbPersonLastName.Text = person.LastName;
-                    dvpPersonConnectionStatus.DefinedTypeId = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ).Id;
-                    dvpMaritalStatus.DefinedTypeId = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ).Id;
+                    dvpPersonConnectionStatus.DefinedTypeId = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ).Id;
+                    dvpMaritalStatus.DefinedTypeId = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ).Id;
                     rblGender.BindToEnum<Gender>();
 
                     rblGender.SetValue( Gender.Unknown.ConvertToInt() );
 
                     if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "DefaultConnectionStatus" ) ) )
                     {
-                        var dv = DefinedValueCache.Read( GetAttributeValue( "DefaultConnectionStatus" ).AsGuid() );
+                        var dv = CacheDefinedValue.Get( GetAttributeValue( "DefaultConnectionStatus" ).AsGuid() );
                         if ( dv != null )
                         {
                             dvpPersonConnectionStatus.SetValue( dv.Id );
@@ -127,7 +127,8 @@ namespace RockWeb.Blocks.Finance
                     var families = person.GetFamilies();
                     if ( families.Count() != 1 )
                     {
-                        nbError.Text = "Cannot convert person record to a business. Please adjust the family membership of the selected person so they are only a member of a single family and then try again.";
+                        nbError.Heading = "Cannot convert person record to a business";
+                        nbError.Text = "To avoid data loss move this person to one family before proceeding.";
                         return;
                     }
 
@@ -137,7 +138,8 @@ namespace RockWeb.Blocks.Finance
                     var family = families.First();
                     if ( family.Members.Count != 1 )
                     {
-                        nbError.Text = "Cannot convert person record to a business. Please remove extra family members before trying to convert this person to a business.";
+                        nbError.Heading = "Cannot convert person record to a business";
+                        nbError.Text = "To avoid data loss move this person to their own family before proceeding.";
                         return;
                     }
 
@@ -146,7 +148,8 @@ namespace RockWeb.Blocks.Finance
                     //
                     if ( person.GivingGroup == null || person.GivingGroup.Members.Count != 1 || person.GivingLeaderId != person.Id )
                     {
-                        nbError.Text = "Cannot convert person record to a business. Please fix the giving group and then try again.";
+                        nbError.Heading = "Cannot convert person record to a business";
+                        nbError.Text = "Please fix the giving group and then try again.";
                         return;
                     }
 
@@ -165,7 +168,7 @@ namespace RockWeb.Blocks.Finance
         {
             var context = new RockContext();
             var person = new PersonService( context ).Get( ppSource.PersonId.Value );
-            person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON ).Id;
+            person.RecordTypeValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON ).Id;
             person.ConnectionStatusValueId = dvpPersonConnectionStatus.SelectedValueAsInt();
             person.FirstName = tbPersonFirstName.Text.Trim();
             person.NickName = tbPersonFirstName.Text.Trim();
@@ -182,7 +185,7 @@ namespace RockWeb.Blocks.Finance
                 { "PersonId", person.Id.ToString() }
             };
             var pageRef = new Rock.Web.PageReference( Rock.SystemGuid.Page.PERSON_PROFILE_PERSON_PAGES, parameters );
-            nbSuccess.Text = string.Format( "<a href='{1}'>{0}</a> has been converted to a person.", person.FullName, pageRef.BuildUrl() );
+            nbSuccess.Text = string.Format( "The business formerly known as <a href='{1}'>{0}</a> has been converted to a person.", person.FullName, pageRef.BuildUrl() );
             
             pnlToPerson.Visible = false;
         }
@@ -197,7 +200,7 @@ namespace RockWeb.Blocks.Finance
             var context = new RockContext();
             var person = new PersonService( context ).Get( ppSource.PersonId.Value );
 
-            person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS ).Id;
+            person.RecordTypeValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS ).Id;
             person.ConnectionStatusValueId = null;
             person.TitleValueId = null;
             person.FirstName = null;
@@ -217,8 +220,8 @@ namespace RockWeb.Blocks.Finance
             var family = person.GetFamily( context );
             if ( family.GroupLocations.Count > 0 )
             {
-                var workLocationTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK ).Id;
-                var homeLocationTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME ).Id;
+                var workLocationTypeId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK ).Id;
+                var homeLocationTypeId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME ).Id;
 
                 var workLocation = family.GroupLocations.Where( gl => gl.GroupLocationTypeValueId == workLocationTypeId ).FirstOrDefault();
                 if ( workLocation == null )
@@ -236,8 +239,8 @@ namespace RockWeb.Blocks.Finance
             //
             if ( person.PhoneNumbers.Count > 0 )
             {
-                var workPhoneTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK ).Id;
-                var homePhoneTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ).Id;
+                var workPhoneTypeId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK ).Id;
+                var homePhoneTypeId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ).Id;
 
                 var workPhone = person.PhoneNumbers.Where( pn => pn.NumberTypeValueId == workPhoneTypeId ).FirstOrDefault();
                 if ( workPhone == null )
@@ -253,7 +256,7 @@ namespace RockWeb.Blocks.Finance
             //
             // Make sure member status in family is set to Adult.
             //
-            var adultRoleId = GroupTypeCache.GetFamilyGroupType().Roles
+            var adultRoleId = CacheGroupType.GetFamilyGroupType().Roles
                 .Where( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() )
                 .Select( a => a.Id ).First();
             family.Members.Where( m => m.PersonId == person.Id ).First().GroupRoleId = adultRoleId;
@@ -267,7 +270,7 @@ namespace RockWeb.Blocks.Finance
                 { "BusinessId", person.Id.ToString() }
             };
             var pageRef = new Rock.Web.PageReference( Rock.SystemGuid.Page.BUSINESS_DETAIL, parameters );
-            nbSuccess.Text = string.Format( "<a href='{1}'>{0}</a> has been converted to a business.", person.LastName, pageRef.BuildUrl() );
+            nbSuccess.Text = string.Format( "The person formerly known as <a href='{1}'>{0}</a> has been converted to a business.", person.LastName, pageRef.BuildUrl() );
 
             pnlToBusiness.Visible = false;
         }

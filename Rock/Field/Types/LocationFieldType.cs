@@ -49,7 +49,7 @@ namespace Rock.Field.Types
                 if ( locGuid.HasValue )
                 {
                     // Check to see if this is the org address first (to avoid db read)
-                    var globalAttributesCache = Web.Cache.GlobalAttributesCache.Read();
+                    var globalAttributesCache = Cache.CacheGlobalAttributes.Get();
                     var orgLocGuid = globalAttributesCache.GetValue( "OrganizationAddress" ).AsGuidOrNull();
                     if ( orgLocGuid.HasValue && orgLocGuid.Value == locGuid.Value )
                     {
@@ -99,21 +99,13 @@ namespace Rock.Field.Types
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var picker = control as LocationPicker;
-            string result = null;
 
             if ( picker != null )
             {
-                var guid = Guid.Empty;
-
-                if ( picker.Location != null )
-                {
-                    guid = picker.Location.Guid;
-                }
-
-                result = guid.ToString();
+                return picker.Location?.Guid.ToString();
             }
 
-            return result;
+            return null;
         }
 
         /// <summary>
@@ -124,17 +116,23 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value != null )
+            var picker = control as LocationPicker;
+            if ( picker != null )
             {
-                var picker = control as LocationPicker;
-
-                if ( picker != null )
+                Guid? locationGuid = value.AsGuidOrNull();
+                if ( locationGuid.HasValue )
                 {
-                    Guid guid;
-                    Guid.TryParse( value, out guid );
-                    var location = new LocationService( new RockContext() ).Get( guid );
-                    picker.SetBestPickerModeForLocation( location );
-                    picker.Location = location;
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var location = new LocationService( rockContext ).Get( locationGuid.Value );
+                        picker.SetBestPickerModeForLocation( location );
+                        picker.Location = location;
+                    }
+                }
+                else
+                {
+                    picker.SetBestPickerModeForLocation( null );
+                    picker.Location = null;
                 }
             }
         }
@@ -152,8 +150,8 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = new LocationService( new RockContext() ).Get( guid );
-            return item != null ? item.Id : (int?)null;
+            var itemId = new LocationService( new RockContext() ).GetId( guid );
+            return itemId;
         }
 
         /// <summary>
@@ -164,9 +162,8 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var item = new LocationService( new RockContext() ).Get( id ?? 0 );
-            string guidValue = item != null ? item.Guid.ToString() : string.Empty;
-            SetEditValue( control, configurationValues, guidValue );
+            var itemGuid = new LocationService( new RockContext() ).GetGuid( id ?? 0 );
+            SetEditValue( control, configurationValues, itemGuid?.ToString() );
         }
 
         /// <summary>

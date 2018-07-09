@@ -5,7 +5,7 @@
         <asp:HiddenField ID="hfMacAddress" runat="server" />
         <asp:HiddenField ID="hfPersonAliasId" runat="server" />
         <Rock:NotificationBox ID="nbAlert" runat="server" NotificationBoxType="Warning" />
-        <asp:ValidationSummary ID="valCaptivePortal" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="CaptivePortal" />
+        <asp:ValidationSummary ID="valCaptivePortal" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" ValidationGroup="CaptivePortal" />
         <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server">
             
             <div class="panel-heading">
@@ -25,7 +25,7 @@
 
                 <div class="row">
                     <div class="col-sm-6">
-                        <Rock:RockTextBox ID="tbMobilePhone" runat="server" Required="false" Label="Mobile Number" ValidationGroup="CaptivePortal" />
+                        <Rock:PhoneNumberBox ID="tbMobilePhone" runat="server" Required="false" Label="Mobile Number" ValidationGroup="CaptivePortal" />
                     </div>
                 
                     <div class="col-sm-6">
@@ -34,21 +34,21 @@
                 </div>
 
                 <%-- box here to display T&C --%>
-                <div class="row">
+                <div>
                     <div>
                         <iframe id="iframeLegalNotice" runat="server" style="width: 100%; height: 400px; background-color: #fff;"></iframe>
                     </div>
                 </div>
                 
                 <%-- Checkbox here to indicate agreement with T&C --%>
-                <div class="row" >
+                <div>
                     <div style="display: inline-block;">
                         <Rock:RockCheckBox ID="cbAcceptTAC" runat="server" ValidationGroup="CaptivePortal" />
                     </div>
                 </div>
 
                 <%-- Button here to connect --%>
-                <div class="actions row">
+                <div class="actions">
                     <div>
                         <asp:LinkButton ID="btnConnect" runat="server" Text="Connect To WiFi" CssClass="btn btn-primary" OnClick="btnConnect_Click" style="width:100%;" ValidationGroup="CaptivePortal" />
                     </div>

@@ -38,7 +38,7 @@
 
                         <div class="tabContent">
 
-                            <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                            <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
 
                             <asp:Panel ID="pnlBasicProperty" runat="server" Visible="true">
                                 <div class="row">
@@ -98,11 +98,11 @@
                                         <Rock:RockCheckBox ID="cbEnableViewState" runat="server" Text="Enable ViewState" />
                                         <Rock:RockCheckBox ID="cbIncludeAdminFooter" runat="server" Text="Allow Configuration" />
                                         <Rock:RockCheckBox ID="cbAllowIndexing" runat="server" Text="Allow Indexing" />
-                                        <Rock:DataTextBox ID="tbCacheDuration" runat="server" Label="Cache Duration" SourceTypeName="Rock.Model.Page, Rock" PropertyName="OutputCacheDuration" />
+                                        <Rock:DataTextBox ID="tbCacheDuration" runat="server" Label="Cache Duration" Help="The length of time, in seconds, to cache the results of the page. This is cached on the individuals browser using the Expires header in the HTTP response." SourceTypeName="Rock.Model.Page, Rock" PropertyName="OutputCacheDuration" />
                                     </div>
                                     <div class="col-md-6">
                                         <Rock:DataTextBox ID="tbBodyCssClass" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="BodyCssClass" Label="Body CSS Class"
-                                            Help="The CSS class to add to the body tag (if theme support it)." />
+                                            Help="The CSS class to add to the body tag (if theme supports it)." />
                                         <fieldset>
                                             <Rock:NotificationBox ID="nbPageRouteWarning" runat="server" />
                                             <Rock:RockTextBox ID="tbPageRoute" runat="server" TextMode="MultiLine" Rows="3" Label="Page Routes" Help="A unique, friendly route name for the page (e.g. 'Login' or 'Community/GetInvolved')" />
@@ -123,7 +123,7 @@
                                 </div>
                                 <div class="row">
                                     <div class="col-md-12">
-                                        <Rock:CodeEditor ID="ceHeaderContent" runat="server" Label="Header Content" EditorMode="Html" EditorTheme="Rock" EditorHeight="400"
+                                        <Rock:CodeEditor ID="ceHeaderContent" runat="server" Label="Header Content" EditorMode="Lava" EditorTheme="Rock" EditorHeight="400"
                                             Help="Additional HTML content to include in the &amp;lt;head&amp;gt; section of the rendered page." />
                                     </div>
                                 </div>
@@ -225,9 +225,9 @@
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" />
                         <div class="pull-right">
-                            <a title="Child Pages" class="btn btn-default btn-sm page-child-pages" runat="server" id="aChildPages"><i class="fa fa-sitemap"></i></a>
-                            <asp:LinkButton ID="btnCopy" runat="server" Tooltip="Copy Page" CssClass="btn btn-default btn-sm" OnClick="btnCopy_Click"><i class="fa fa-clone"></i></asp:LinkButton>
-                            <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" />
+                            <a title="Child Pages" class="btn btn-default btn-sm btn-square page-child-pages" runat="server" id="aChildPages"><i class="fa fa-sitemap"></i></a>
+                            <asp:LinkButton ID="btnCopy" runat="server" Tooltip="Copy Page" CssClass="btn btn-default btn-sm btn-square" OnClick="btnCopy_Click"><i class="fa fa-clone"></i></asp:LinkButton>
+                            <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-square btn-security" />
                         </div>
                     </asp:Panel>
                 </fieldset>

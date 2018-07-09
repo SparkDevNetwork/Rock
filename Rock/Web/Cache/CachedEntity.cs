@@ -33,6 +33,7 @@ namespace Rock.Web.Cache
     /// <typeparam name="T"></typeparam>
     [Serializable]
     [DataContract]
+    [Obsolete( "Use Rock.Cache.EntityCache instead" )]
     public abstract class CachedEntity<T>  
         where T : Rock.Data.Entity<T>, new()
     {
@@ -199,6 +200,19 @@ namespace Rock.Web.Cache
 
             RockMemoryCache cache = RockMemoryCache.Default;
             cache.Set( model.Guid.ToString(), model.Id, new CacheItemPolicy() );
+        }
+
+        /// <summary>
+        /// Copies properties from a new cached entity
+        /// </summary>
+        /// <param name="cacheEntity">The cache entity.</param>
+        protected virtual void CopyFromNewCache(Rock.Cache.IEntityCache cacheEntity)
+        {
+            this.Id = cacheEntity.Id;
+            this.Guid = cacheEntity.Guid;
+            this.ForeignId = cacheEntity.ForeignId;
+            this.ForeignGuid = cacheEntity.ForeignGuid;
+            this.ForeignKey = cacheEntity.ForeignKey;
         }
 
     }

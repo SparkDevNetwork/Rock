@@ -221,17 +221,30 @@ namespace Rock
         #region HtmlControl Extensions
 
         /// <summary>
-        /// Adds a CSS class name to an html control.
+        /// Adds a CSS class name to an html control, will not add duplicates.
         /// </summary>
         /// <param name="htmlControl">The html control.</param>
         /// <param name="className">Name of the class.</param>
         public static void AddCssClass( this System.Web.UI.HtmlControls.HtmlControl htmlControl, string className )
         {
-            string match = @"\b" + className + "\b";
+            if ( className.IsNullOrWhiteSpace() )
+            {
+                return;
+            }
+
             string css = htmlControl.Attributes["class"] ?? string.Empty;
 
-            if ( !Regex.IsMatch( css, match, RegexOptions.IgnoreCase ) )
-                htmlControl.Attributes["class"] = Regex.Replace( css + " " + className, @"^\s+", "", RegexOptions.IgnoreCase );
+            if ( css.IsNullOrWhiteSpace() )
+            {
+                htmlControl.Attributes["class"] = className;
+                return;
+            }
+
+            string pattern = $"\\b{className}\\b";
+            if ( !Regex.IsMatch( css, pattern, RegexOptions.IgnoreCase ) )
+            {
+                htmlControl.Attributes["class"] += $" {className}";
+            }
         }
 
         /// <summary>
@@ -241,11 +254,16 @@ namespace Rock
         /// <param name="className">Name of the class.</param>
         public static void RemoveCssClass( this System.Web.UI.HtmlControls.HtmlControl htmlControl, string className )
         {
-            string match = @"\s*\b" + className + @"\b";
+            if (className.IsNullOrWhiteSpace() || htmlControl.Attributes["class"].IsNullOrWhiteSpace() )
+            {
+                return;
+            }
+
+            string match = $"\\s*\\b{className}\\b";
             string css = htmlControl.Attributes["class"] ?? string.Empty;
 
-            if ( Regex.IsMatch( css, match, RegexOptions.IgnoreCase ) )
-                htmlControl.Attributes["class"] = Regex.Replace( css, match, "", RegexOptions.IgnoreCase );
+            //the internals of regex.replace do a match before trying a replace. https://referencesource.microsoft.com/#System/regex/system/text/regularexpressions/RegexReplacement.cs,261
+            htmlControl.Attributes["class"] = Regex.Replace( css, match, "", RegexOptions.IgnoreCase );
         }
 
         #endregion HtmlControl Extensions
@@ -470,7 +488,20 @@ namespace Rock
         /// <param name="definedType">Type of the defined.</param>
         /// <param name="insertBlankOption">if set to <c>true</c> [insert blank option].</param>
         /// <param name="useDescriptionAsText">if set to <c>true</c> [use description as text].</param>
-        public static void BindToDefinedType( this ListControl listControl, Rock.Web.Cache.DefinedTypeCache definedType, bool insertBlankOption = false, bool useDescriptionAsText = false )
+        [Obsolete]
+        public static void BindToDefinedType( this ListControl listControl, Web.Cache.DefinedTypeCache definedType, bool insertBlankOption = false, bool useDescriptionAsText = false )
+        {
+            BindToDefinedType( listControl, Cache.CacheDefinedType.Get( definedType.Id ), insertBlankOption, useDescriptionAsText );
+        }
+
+        /// <summary>
+        /// Binds to the values of a definedType using the definedValue's Id as the listitem value
+        /// </summary>
+        /// <param name="listControl">The list control.</param>
+        /// <param name="definedType">Type of the defined.</param>
+        /// <param name="insertBlankOption">if set to <c>true</c> [insert blank option].</param>
+        /// <param name="useDescriptionAsText">if set to <c>true</c> [use description as text].</param>
+        public static void BindToDefinedType( this ListControl listControl, Cache.CacheDefinedType definedType, bool insertBlankOption = false, bool useDescriptionAsText = false )
         {
             var ds = definedType.DefinedValues
                 .Select( v => new

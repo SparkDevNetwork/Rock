@@ -114,7 +114,7 @@ namespace Rock.CheckIn
         {
             get
             {
-                return KioskDevice.Read( DeviceId, ConfiguredGroupTypes );
+                return KioskDevice.Get( DeviceId, ConfiguredGroupTypes );
             }
         }
 

@@ -15,11 +15,10 @@
 // </copyright>
 //
 using System;
-using System.Data.Entity;
-using System.Linq;
 using System.Runtime.Caching;
 using System.Runtime.Serialization;
 
+using Rock.Cache;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -32,6 +31,7 @@ namespace Rock.Web.Cache
     /// </summary>
     [Serializable]
     [DataContract]
+    [Obsolete( "Use Rock.Cache.CacheRestAction instead" )]
     public class RestActionCache : CachedModel<RestAction>
     {
         #region Constructors
@@ -40,9 +40,9 @@ namespace Rock.Web.Cache
         {
         }
 
-        private RestActionCache( RestAction model )
+        private RestActionCache( CacheRestAction cacheRestAction )
         {
-            CopyFromModel( model );
+            CopyFromNewCache( cacheRestAction );
         }
 
         #endregion
@@ -91,10 +91,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The type of the field.
         /// </value>
-        public RestControllerCache RestController
-        {
-            get { return RestControllerCache.Read( ControllerId ); }
-        }
+        public RestControllerCache RestController => RestControllerCache.Read( ControllerId );
 
         /// <summary>
         /// Gets the parent authority.
@@ -102,13 +99,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The parent authority.
         /// </value>
-        public override ISecured ParentAuthority
-        {
-            get
-            {
-                return RestController;
-            }
-        }
+        public override ISecured ParentAuthority => RestController;
 
         #endregion
 
@@ -118,20 +109,34 @@ namespace Rock.Web.Cache
         /// Copies the model property values to the DTO properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public override void CopyFromModel( Data.IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
             base.CopyFromModel( model );
 
-            if ( model is RestAction )
-            {
-                var RestAction = (RestAction)model;
-                this.ControllerId = RestAction.ControllerId;
-                this.Method = RestAction.Method;
-                this.ApiId = RestAction.ApiId;
-                this.Path = RestAction.Path;
+            if ( !( model is RestAction ) ) return;
 
-                SetCache( RestAction.ApiId, model.Id, new CacheItemPolicy() );
-            }
+            var RestAction = (RestAction)model;
+            ControllerId = RestAction.ControllerId;
+            Method = RestAction.Method;
+            ApiId = RestAction.ApiId;
+            Path = RestAction.Path;
+        }
+
+        /// <summary>
+        /// Copies properties from a new cached entity
+        /// </summary>
+        /// <param name="cacheEntity">The cache entity.</param>
+        protected sealed override void CopyFromNewCache( IEntityCache cacheEntity )
+        {
+            base.CopyFromNewCache( cacheEntity );
+
+            if ( !( cacheEntity is CacheRestAction ) ) return;
+
+            var RestAction = (CacheRestAction)cacheEntity;
+            ControllerId = RestAction.ControllerId;
+            Method = RestAction.Method;
+            ApiId = RestAction.ApiId;
+            Path = RestAction.Path;
         }
 
         /// <summary>
@@ -142,17 +147,12 @@ namespace Rock.Web.Cache
         /// </returns>
         public override string ToString()
         {
-            return this.Path;
+            return Path;
         }
 
         #endregion
 
         #region Static Methods
-
-        private static string CacheKey( int id )
-        {
-            return string.Format( "Rock:RestAction:{0}", id );
-        }
 
         /// <summary>
         /// Returns RestAction object from cache.  If RestAction does not already exist in cache, it
@@ -163,36 +163,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static RestActionCache Read( int id, RockContext rockContext = null )
         {
-            return GetOrAddExisting( RestActionCache.CacheKey( id ),
-                () => LoadById( id, rockContext ) );
-        }
-
-        private static RestActionCache LoadById( int id, RockContext rockContext )
-        {
-            if ( rockContext != null )
-            {
-                return LoadById2( id, rockContext );
-            }
-
-            using ( var rockContext2 = new RockContext() )
-            {
-                return LoadById2( id, rockContext2 );
-            }
-        }
-
-        private static RestActionCache LoadById2( int id, RockContext rockContext )
-        {
-            if ( id > 0 )
-            {
-                var restActionService = new RestActionService( rockContext );
-                var restActionModel = restActionService.Get( id );
-                if ( restActionModel != null )
-                {
-                    return new RestActionCache( restActionModel );
-                }
-            }
-
-            return null;
+            return new RestActionCache( CacheRestAction.Get( id, rockContext ) );
         }
 
         /// <summary>
@@ -203,33 +174,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static RestActionCache Read( Guid guid, RockContext rockContext = null )
         {
-            int id = GetOrAddExisting( guid.ToString(),
-                () => LoadByGuid( guid, rockContext ) );
-
-            return Read( id, rockContext );
-        }
-
-        private static int LoadByGuid( Guid guid, RockContext rockContext )
-        {
-            if ( rockContext != null )
-            {
-                return LoadByGuid2( guid, rockContext );
-            }
-
-            using ( var rockContext2 = new RockContext() )
-            {
-                return LoadByGuid2( guid, rockContext2 );
-            }
-        }
-
-        private static int LoadByGuid2( Guid guid, RockContext rockContext )
-        {
-            var RestActionService = new RestActionService( rockContext );
-            return RestActionService
-                .Queryable().AsNoTracking()
-                .Where( c => c.Guid.Equals( guid ) )
-                .Select( c => c.Id )
-                .FirstOrDefault();
+            return new RestActionCache( CacheRestAction.Get( guid, rockContext ) );
         }
 
         /// <summary>
@@ -240,32 +185,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static RestActionCache Read( string apiId, RockContext rockContext = null )
         {
-            int id = GetOrAddExisting( apiId,
-                () => LoadByApiId( apiId, rockContext ) );
-
-            return Read( id, rockContext );
-        }
-
-        private static int LoadByApiId( string apiId, RockContext rockContext )
-        {
-            if ( rockContext != null )
-            {
-                return LoadByApiId2( apiId, rockContext );
-            }
-
-            using ( var rockContext2 = new RockContext() )
-            {
-                return LoadByApiId2( apiId, rockContext2 );
-            }
-        }
-        private static int LoadByApiId2( string apiId, RockContext rockContext )
-        {
-            var RestActionService = new RestActionService( rockContext );
-            return RestActionService
-                .Queryable().AsNoTracking()
-                .Where( a => a.ApiId == apiId )
-                .Select( c => c.Id )
-                .FirstOrDefault();
+            return new RestActionCache( CacheRestAction.Get( apiId ) );
         }
 
         /// <summary>
@@ -275,17 +195,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static RestActionCache Read( RestAction restActionModel )
         {
-            return GetOrAddExisting( RestActionCache.CacheKey( restActionModel.Id ),
-                () => LoadByModel( restActionModel ) );
-        }
-
-        private static RestActionCache LoadByModel( RestAction restActionModel )
-        {
-            if ( restActionModel != null )
-            {
-                return new RestActionCache( restActionModel );
-            }
-            return null;
+            return new RestActionCache( CacheRestAction.Get( restActionModel ) );
         }
 
         /// <summary>
@@ -294,7 +204,7 @@ namespace Rock.Web.Cache
         /// <param name="id"></param>
         public static void Flush( int id )
         {
-            FlushCache( RestActionCache.CacheKey( id ) );
+            CacheRestAction.Remove( id );
         }
 
         /// <summary>
@@ -304,16 +214,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static string GetName( int? id )
         {
-            if ( id.HasValue )
-            {
-                var restAction = Read( id.Value );
-                if ( restAction != null )
-                {
-                    return restAction.Method;
-                }
-            }
-
-            return null;
+            return CacheRestAction.GetName( id );
         }
 
         #endregion

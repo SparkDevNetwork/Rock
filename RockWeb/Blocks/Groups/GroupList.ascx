@@ -20,7 +20,7 @@
                         </Rock:RockDropDownList>
                     </Rock:GridFilter>
                     <Rock:ModalAlert ID="mdGridWarning" runat="server" />
-                    <Rock:Grid ID="gGroups" runat="server" RowItemText="Group" AllowSorting="true" OnRowSelected="gGroups_Edit">
+                    <Rock:Grid ID="gGroups" runat="server" RowItemText="Group" AllowSorting="true" OnRowSelected="gGroups_Edit" CssClass="js-grid-group-list" OnRowDataBound="gGroups_RowDataBound">
                         <Columns>
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                             <Rock:RockTemplateField HeaderText="Name" SortExpression="Name" Visible="false">
@@ -36,7 +36,7 @@
                             <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
                             <Rock:BoolField DataField="IsActive" HeaderText="Active" SortExpression="IsActiveOrder" />
                             <Rock:SecurityField TitleField="Name" />
-                            <Rock:DeleteField OnClick="gGroups_Delete" />
+                            <Rock:DeleteField OnClick="gGroups_DeleteOrArchive" />
                         </Columns>
                     </Rock:Grid>
                 </div>
@@ -47,6 +47,7 @@
             <Content>
                 <div class="row">
                     <div class="col-md-4">
+                        <Rock:NotificationBox ID="nbModalDetailsMessage" runat="server" NotificationBoxType="Danger" Title="Error" Visible="false" />
                         <Rock:RockDropDownList ID="ddlGroup" runat="server" Label="Group" DataTextField="Name" DataValueField="Id" ValidationGroup="GroupName" EnhanceForLongLists="true" />
                     </div>
                 </div>
@@ -55,5 +56,38 @@
         </Rock:ModalDialog>
 
         <Rock:NotificationBox ID="nbMessage" runat="server" Title="Error" NotificationBoxType="Danger" Visible="false" />
+
+        <script>
+
+            Sys.Application.add_load(function () {
+                // delete/archive prompt
+                $('table.js-grid-group-list a.grid-delete-button').click(function (e) {
+                    var $btn = $(this);
+                    var $row = $btn.closest('tr');
+                    var actionName = 'delete';
+                    var confirmMessage;
+
+                    if ($row.hasClass('js-has-grouphistory')) {
+                        var actionName = 'archive';
+                    }
+
+                    var groupListMode = <%=(int)GroupListGridMode%>;
+
+                    if (groupListMode == 0) {
+
+                        confirmMessage = 'Are you sure you want to ' + actionName + ' this person from this group?';
+                    } else {
+                        confirmMessage = 'Are you sure you want to ' + actionName + ' this group?';
+                    }
+
+                    e.preventDefault();
+                    Rock.dialogs.confirm(confirmMessage, function (result) {
+                        if (result) {
+                            window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+                        }
+                    });
+                });
+            });
+        </script>
     </ContentTemplate>
 </asp:UpdatePanel>

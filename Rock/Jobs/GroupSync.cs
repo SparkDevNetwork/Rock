@@ -27,7 +27,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Communication;
 
 namespace Rock.Jobs
@@ -66,6 +66,8 @@ namespace Rock.Jobs
             // Counters for displaying results
             int groupsSynced = 0;
             int groupsChanged = 0;
+            string groupName = string.Empty;
+            string dataViewName = string.Empty;
 
             try
             {
@@ -95,9 +97,12 @@ namespace Rock.Jobs
                             .FirstOrDefault( s => s.Id == syncId );
 
                         // Ensure that the group's Sync Data View is a person dataview
-                        if ( sync.SyncDataView.EntityTypeId == EntityTypeCache.Read( typeof( Person ) ).Id )
+                        if ( sync.SyncDataView.EntityTypeId == CacheEntityType.Get( typeof( Person ) ).Id )
                         {
                             List<string> errorMessages = new List<string>();
+
+                            dataViewName = sync.SyncDataView.Name;
+                            groupName = sync.Group.Name;
 
                             // Get the person id's from the dataview (source)
                             var personService = new PersonService( rockContext );
@@ -107,6 +112,13 @@ namespace Rock.Jobs
                                 .Get( parameterExpression, whereExpression )
                                 .Select( q => q.Id )
                                 .ToList();
+                            
+                            // If any error occurred, just skip this sync for now.
+                            if ( errorMessages.Count > 0 )
+                            {
+                                ExceptionLogService.LogException( new Exception( string.Format( "An error occurred while trying to GroupSync group '{0}' and data view '{1}' so the sync was skipped. Error: {2}", groupName, dataViewName, String.Join( ",", errorMessages ) ) ) );
+                                continue;
+                            }
 
                             // Get the person id's in the group (target)
                             var targetPersonIds = new GroupMemberService( rockContext )
@@ -192,7 +204,7 @@ namespace Rock.Jobs
                                                     groupMemberContext,
                                                     person,
                                                     AuthenticationServiceType.Internal,
-                                                    EntityTypeCache.Read( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id,
+                                                    CacheEntityType.Get( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id,
                                                     username,
                                                     newPassword,
                                                     true,
@@ -227,7 +239,7 @@ namespace Rock.Jobs
                             // If the group changed, and it was a security group, flush the security for the group
                             if ( hasSyncChanged && ( sync.Group.IsSecurityRole || sync.Group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) ) )
                             {
-                                Rock.Security.Role.Flush( sync.GroupId );
+                                Rock.Cache.CacheRole.Remove( sync.GroupId );
                             }
                         }
                     }

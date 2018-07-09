@@ -26,7 +26,7 @@ using System.Collections.Generic;
 using System.Data;
 using System;
 using System.Diagnostics;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Humanizer;
 
 namespace Rock.PersonProfile.Badge
@@ -38,7 +38,7 @@ namespace Rock.PersonProfile.Badge
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "Attending Duration" )]
     
-    public class AttendingDuration : BadgeComponent
+    public class AttendingDuration : BadgeComponentModern
     {
 
         private int _weeksPeriodInDays = 56;
@@ -49,7 +49,7 @@ namespace Rock.PersonProfile.Badge
         /// </summary>
         /// <param name="badge">The badge.</param>
         /// <param name="writer">The writer.</param>
-        public override void Render( PersonBadgeCache badge, System.Web.UI.HtmlTextWriter writer )
+        public override void Render( CachePersonBadge badge, System.Web.UI.HtmlTextWriter writer )
         {
             var value = Person.GetAttributeValue( "FirstVisit" );
             DateTime? firstVisit = Person.GetAttributeValue( "FirstVisit" ).AsDateTime();

@@ -15,9 +15,8 @@
 // </copyright>
 //
 using System;
-using System.Data.Entity;
-using System.Linq;
 
+using Rock.Cache;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -29,6 +28,7 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
+    [Obsolete( "Use Rock.Cache.LayoutCache instead" )]
     public class LayoutCache : CachedModel<Layout>
     {
         #region Constructors
@@ -37,9 +37,9 @@ namespace Rock.Web.Cache
         {
         }
 
-        private LayoutCache( Layout layout )
+        private LayoutCache( CacheLayout cacheLayout )
         {
-            CopyFromModel( layout );
+            CopyFromNewCache( cacheLayout );
         }
 
         #endregion
@@ -92,13 +92,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The site.
         /// </value>
-        public SiteCache Site
-        {
-            get
-            {
-                return SiteCache.Read( SiteId );
-            }
-        }
+        public SiteCache Site => SiteCache.Read( SiteId );
 
         /// <summary>
         /// Gets the parent authority.
@@ -106,13 +100,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The parent authority.
         /// </value>
-        public override ISecured ParentAuthority
-        {
-            get
-            {
-                return this.Site;
-            }
-        }
+        public override ISecured ParentAuthority => Site;
 
         #endregion
 
@@ -122,19 +110,36 @@ namespace Rock.Web.Cache
         /// Copies from model.
         /// </summary>
         /// <param name="model">The model.</param>
-        public override void CopyFromModel( Data.IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
             base.CopyFromModel( model );
 
-            if ( model is Layout )
-            {
-                var layout = (Layout)model;
-                this.IsSystem = layout.IsSystem;
-                this.SiteId = layout.SiteId;
-                this.FileName = layout.FileName;
-                this.Name = layout.Name;
-                this.Description = layout.Description;
-            }
+            if ( !( model is Layout ) ) return;
+
+            var layout = (Layout)model;
+            IsSystem = layout.IsSystem;
+            SiteId = layout.SiteId;
+            FileName = layout.FileName;
+            Name = layout.Name;
+            Description = layout.Description;
+        }
+
+        /// <summary>
+        /// Copies properties from a new cached entity
+        /// </summary>
+        /// <param name="cacheEntity">The cache entity.</param>
+        protected sealed override void CopyFromNewCache( IEntityCache cacheEntity )
+        {
+            base.CopyFromNewCache( cacheEntity );
+
+            if ( !( cacheEntity is CacheLayout ) ) return;
+
+            var layout = (CacheLayout)cacheEntity;
+            IsSystem = layout.IsSystem;
+            SiteId = layout.SiteId;
+            FileName = layout.FileName;
+            Name = layout.Name;
+            Description = layout.Description;
         }
 
         /// <summary>
@@ -145,17 +150,12 @@ namespace Rock.Web.Cache
         /// </returns>
         public override string ToString()
         {
-            return this.Name;
+            return Name;
         }
 
         #endregion
 
         #region Static Methods
-
-        private static string CacheKey( int id )
-        {
-            return string.Format( "Rock:Layout:{0}", id );
-        }
 
         /// <summary>
         /// Returns Layout object from cache.  If Layout does not already exist in cache, it
@@ -166,33 +166,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static LayoutCache Read( int id, RockContext rockContext = null )
         {
-            return GetOrAddExisting( LayoutCache.CacheKey( id ),
-                () => LoadById( id, rockContext ) );
-        }
-
-        private static LayoutCache LoadById( int id, RockContext rockContext )
-        {
-            if ( rockContext != null )
-            {
-                return LoadById2( id, rockContext );
-            }
-
-            using ( var rockContext2 = new RockContext() )
-            {
-                return LoadById2( id, rockContext2 );
-            }
-        }
-
-        private static LayoutCache LoadById2( int id, RockContext rockContext )
-        {
-            var layoutService = new LayoutService( rockContext );
-            var layoutModel = layoutService.Get( id );
-            if ( layoutModel != null )
-            {
-                return new LayoutCache( layoutModel );
-            }
-
-            return null;
+            return new LayoutCache( CacheLayout.Get( id, rockContext ) );
         }
 
         /// <summary>
@@ -203,33 +177,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static LayoutCache Read( Guid guid, RockContext rockContext = null )
         {
-            int id = GetOrAddExisting( guid.ToString(),
-                () => LoadByGuid( guid, rockContext ) );
-
-            return Read( id, rockContext );
-        }
-
-        private static int LoadByGuid( Guid guid, RockContext rockContext )
-        {
-            if ( rockContext != null )
-            {
-                return LoadByGuid2( guid, rockContext );
-            }
-
-            using ( var rockContext2 = new RockContext() )
-            {
-                return LoadByGuid2( guid, rockContext2 );
-            }
-        }
-
-        private static int LoadByGuid2( Guid guid, RockContext rockContext = null )
-        {
-            var LayoutService = new LayoutService( rockContext );
-            return LayoutService
-                .Queryable().AsNoTracking()
-                .Where( c => c.Guid.Equals( guid ) )
-                .Select( c => c.Id )
-                .FirstOrDefault();
+            return new LayoutCache( CacheLayout.Get( guid, rockContext ) );
         }
 
         /// <summary>
@@ -239,17 +187,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static LayoutCache Read( Layout LayoutModel )
         {
-            return GetOrAddExisting( LayoutCache.CacheKey( LayoutModel.Id ),
-                () => LoadByModel( LayoutModel ) );
-        }
-
-        private static LayoutCache LoadByModel( Layout LayoutModel )
-        {
-            if ( LayoutModel != null )
-            {
-                return new LayoutCache( LayoutModel );
-            }
-            return null;
+            return new LayoutCache( CacheLayout.Get( LayoutModel ) );
         }
 
         /// <summary>
@@ -258,7 +196,7 @@ namespace Rock.Web.Cache
         /// <param name="id"></param>
         public static void Flush( int id )
         {
-            FlushCache( LayoutCache.CacheKey( id ) );
+            CacheLayout.Remove( id );
         }
 
         #endregion

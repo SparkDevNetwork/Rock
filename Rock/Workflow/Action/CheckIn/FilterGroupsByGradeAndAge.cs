@@ -22,7 +22,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Workflow.Action.CheckIn
 {
@@ -70,7 +70,7 @@ namespace Rock.Workflow.Action.CheckIn
                 var ageRangeAttributeGuid = GetAttributeValue( action, "GroupAgeRangeAttribute" ).AsGuidOrNull();
                 if ( ageRangeAttributeGuid.HasValue )
                 {
-                    var attribute = AttributeCache.Read( ageRangeAttributeGuid.Value, rockContext );
+                    var attribute = CacheAttribute.Get( ageRangeAttributeGuid.Value, rockContext );
                     if ( attribute != null )
                     {
                         ageRangeAttributeKey = attribute.Key;
@@ -82,7 +82,7 @@ namespace Rock.Workflow.Action.CheckIn
                 var birthdateRangeAttributeGuid = GetAttributeValue( action, "GroupBirthdateRangeAttribute" ).AsGuidOrNull();
                 if ( birthdateRangeAttributeGuid.HasValue )
                 {
-                    var attribute = AttributeCache.Read( birthdateRangeAttributeGuid.Value, rockContext );
+                    var attribute = CacheAttribute.Get( birthdateRangeAttributeGuid.Value, rockContext );
                     if ( attribute != null )
                     {
                         birthdateRangeAttributeKey = attribute.Key;
@@ -105,12 +105,12 @@ namespace Rock.Workflow.Action.CheckIn
                             // First check to see 
                             string gradeOffsetRange = group.Group.GetAttributeValue( "GradeRange" ) ?? string.Empty;
                             var gradeOffsetRangePair = gradeOffsetRange.Split( new char[] { ',' }, StringSplitOptions.None ).AsGuidOrNullList().ToArray();
-                            DefinedValueCache minGradeDefinedValue = null;
-                            DefinedValueCache maxGradeDefinedValue = null;
+                            CacheDefinedValue minGradeDefinedValue = null;
+                            CacheDefinedValue maxGradeDefinedValue = null;
                             if ( gradeOffsetRangePair.Length == 2 )
                             {
-                                minGradeDefinedValue = gradeOffsetRangePair[0].HasValue ? DefinedValueCache.Read( gradeOffsetRangePair[0].Value ) : null;
-                                maxGradeDefinedValue = gradeOffsetRangePair[1].HasValue ? DefinedValueCache.Read( gradeOffsetRangePair[1].Value ) : null;
+                                minGradeDefinedValue = gradeOffsetRangePair[0].HasValue ? CacheDefinedValue.Get( gradeOffsetRangePair[0].Value ) : null;
+                                maxGradeDefinedValue = gradeOffsetRangePair[1].HasValue ? CacheDefinedValue.Get( gradeOffsetRangePair[1].Value ) : null;
                             }
                             if ( maxGradeDefinedValue != null || minGradeDefinedValue != null )
                             {

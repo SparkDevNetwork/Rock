@@ -27,6 +27,7 @@ using Newtonsoft.Json;
 
 using Rock.Data;
 using Rock.Communication;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -335,6 +336,15 @@ namespace Rock.Model
         public virtual PersonAlias SenderPersonAlias { get; set; }
 
         /// <summary>
+        /// Gets a value indicating whether this instance is personal (has a SenderPersonAliasId value) or not
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is personal; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public virtual bool IsPersonal => SenderPersonAliasId.HasValue;
+
+        /// <summary>
         /// Gets or sets the logo binary file that email messages using this template can use for the logo in the message content
         /// </summary>
         /// <value>
@@ -585,22 +595,9 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// A parent authority.  If a user is not specifically allowed or denied access to
-        /// this object, Rock will check the default authorization on the current type, and
-        /// then the authorization on the Rock.Security.GlobalDefault entity
+        /// When checking for security, if a template does not have specific rules, first check the category it belongs to, but then check the default entity securit for templates.
         /// </summary>
-        public override Security.ISecured ParentAuthority
-        {
-            get
-            {
-                if ( this.Category != null )
-                {
-                    return this.Category;
-                }
-
-                return base.ParentAuthority;
-            }
-        }
+        public override ISecured ParentAuthorityPre => this.Category ?? base.ParentAuthority;
 
         #endregion
 

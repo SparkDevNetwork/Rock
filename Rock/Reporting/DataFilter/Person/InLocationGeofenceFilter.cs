@@ -24,7 +24,7 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 using System.Web.UI.WebControls;
 
@@ -149,7 +149,7 @@ function() {
             ddlLocationType.Label = "Location Type";
             ddlLocationType.DataValueField = "Id";
             ddlLocationType.DataTextField = "Value";
-            DefinedTypeCache locationDefinedType = DefinedTypeCache.Read( SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() );
+            CacheDefinedType locationDefinedType = CacheDefinedType.Get( SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() );
             ddlLocationType.BindToDefinedType( locationDefinedType );
             ddlLocationType.Items.Insert( 0, new ListItem( "(All Location Types)", "" ) );
             panel.Controls.Add( ddlLocationType );

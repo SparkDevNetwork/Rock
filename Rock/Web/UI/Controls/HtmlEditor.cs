@@ -22,8 +22,8 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Data;
+using Rock.Cache;
 using Rock.Security;
-using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -499,7 +499,21 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return ViewState["StartInCodeEditorMode"] as bool? ?? false;
+                bool startInCodeEditorMode = ViewState["StartInCodeEditorMode"] as bool? ?? false;
+
+                if ( !startInCodeEditorMode )
+                {
+                    EnsureChildControls();
+                    if ( _ceEditor.Text.HasLavaCommandFields() )
+                    {
+                        // if there are lava commands {% %} in the text, force code editor mode
+                        startInCodeEditorMode = true;
+                    }
+                }
+
+                ViewState["StartInCodeEditorMode"] = startInCodeEditorMode;
+
+                return startInCodeEditorMode;
             }
 
             set
@@ -666,7 +680,7 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
-            var globalAttributesCache = GlobalAttributesCache.Read();
+            var globalAttributesCache = CacheGlobalAttributes.Get();
 
             string imageFileTypeWhiteList = globalAttributesCache.GetValue( "ContentImageFiletypeWhitelist" );
             string fileTypeBlackList = globalAttributesCache.GetValue( "ContentFiletypeBlacklist" );

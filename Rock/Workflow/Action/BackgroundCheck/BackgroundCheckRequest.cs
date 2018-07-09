@@ -22,8 +22,8 @@ using System.ComponentModel.Composition;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Cache;
 using Rock.Security;
-using Rock.Web.Cache;
 
 namespace Rock.Workflow.Action
 {
@@ -62,10 +62,10 @@ namespace Rock.Workflow.Action
                 var provider = BackgroundCheckContainer.GetComponent( providerGuid );
                 if ( provider != null )
                 {
-                    var personAttribute = AttributeCache.Read( GetAttributeValue( action, "PersonAttribute" ).AsGuid() );
-                    var ssnAttribute = AttributeCache.Read( GetAttributeValue( action, "SSNAttribute" ).AsGuid() );
-                    var requestTypeAttribute = AttributeCache.Read( GetAttributeValue( action, "RequestTypeAttribute" ).AsGuid() );
-                    var billingCodeAttribute = AttributeCache.Read( GetAttributeValue( action, "BillingCodeAttribute" ).AsGuid() );
+                    var personAttribute = CacheAttribute.Get( GetAttributeValue( action, "PersonAttribute" ).AsGuid() );
+                    var ssnAttribute = CacheAttribute.Get( GetAttributeValue( action, "SSNAttribute" ).AsGuid() );
+                    var requestTypeAttribute = CacheAttribute.Get( GetAttributeValue( action, "RequestTypeAttribute" ).AsGuid() );
+                    var billingCodeAttribute = CacheAttribute.Get( GetAttributeValue( action, "BillingCodeAttribute" ).AsGuid() );
 
                     return provider.SendRequest( rockContext, action.Activity.Workflow, personAttribute,
                         ssnAttribute, requestTypeAttribute, billingCodeAttribute, out errorMessages );

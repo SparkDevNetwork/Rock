@@ -14,19 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.IO;
 
 using Rock.Attribute;
+using Rock.Cache;
 using Rock.Model;
-using Rock.Web.UI.Controls;
-using Rock.Data;
-using System.Collections.Generic;
-using System.Data;
-using System;
-using System.Diagnostics;
-using Rock.Web.Cache;
 using Rock.Web;
 
 namespace Rock.PersonProfile.Badge
@@ -39,14 +33,14 @@ namespace Rock.PersonProfile.Badge
     [ExportMetadata( "ComponentName", "Personal Device" )]
 
     [LinkedPage( "Personal Devices Detail", "Page to show the details of the personal devices added.", false, order: 1 )]
-    public class PersonalDevice : BadgeComponent
+    public class PersonalDevice : BadgeComponentModern
     {
         /// <summary>
         /// Renders the specified writer.
         /// </summary>
         /// <param name="badge">The badge.</param>
         /// <param name="writer">The writer.</param>
-        public override void Render( PersonBadgeCache badge, System.Web.UI.HtmlTextWriter writer )
+        public override void Render( CachePersonBadge badge, System.Web.UI.HtmlTextWriter writer )
         {
             if ( Person != null )
             {

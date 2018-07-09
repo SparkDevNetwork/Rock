@@ -158,7 +158,7 @@ namespace RockWeb.Blocks.Core
             rockContext.SaveChanges();
             schedule.SaveAttributeValues( rockContext );
 
-            Rock.CheckIn.KioskDevice.FlushAll();
+            Rock.CheckIn.KioskDevice.Clear();
 
             var qryParams = new Dictionary<string, string>();
             qryParams["ScheduleId"] = schedule.Id.ToString();
@@ -370,7 +370,7 @@ namespace RockWeb.Blocks.Core
                 string errorMessage = string.Empty;
                 btnDelete.Visible = scheduleService.CanDelete( schedule, out errorMessage );
 
-                var hasAttendances = schedule.Id > 0 && new AttendanceService( new RockContext() ).Queryable().Where( a => a.ScheduleId.HasValue && a.ScheduleId == schedule.Id ).Any();
+                var hasAttendances = schedule.Id > 0 && new AttendanceService( new RockContext() ).Queryable().Where( a => a.Occurrence.ScheduleId.HasValue && a.Occurrence.ScheduleId == schedule.Id ).Any();
                 hfHasAttendanceHistory.Value = hasAttendances.Bit().ToString();
 
                 if ( schedule.Id > 0 )

@@ -21,12 +21,12 @@ using System.Linq;
 
 using Rock.Model;
 using Rock.Rest.Filters;
-using Rock.Security;
+using Rock.Cache;
 using Rock.Data;
 using System.Collections.Generic;
 using System.Data;
 using System;
-using Rock.Web.Cache;
+using Rock.Security;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Rest.Controllers
@@ -120,7 +120,7 @@ namespace Rock.Rest.Controllers
                 result.LastName = person.LastName;
             }
 
-            var purposeValue = DefinedValueCache.Read( definedValueGuid );
+            var purposeValue = CacheDefinedValue.Get( definedValueGuid );
             result.Purpose = purposeValue.Value;
 
             // determine if person is in a group with this purpose
@@ -217,7 +217,7 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/PersonBadges/LastVisitOnSite/{personId}/{siteId}" )]
         public int GetLastVisitOnSite( int personId, int siteId )
         {
-            int channelMediumValueId = DefinedValueCache.Read( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
+            int channelMediumValueId = CacheDefinedValue.Get( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
 
             InteractionChannelService interactionChannelService = new InteractionChannelService( ( Rock.Data.RockContext ) Service.Context );
             var interactionChannel = interactionChannelService.Queryable()
@@ -252,7 +252,7 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/PersonBadges/PersonalDevicesNumber/{personId}" )]
         public int GetPersonalDevicesNumber( int personId )
         {
-            int channelMediumValueId = DefinedValueCache.Read( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
+            int channelMediumValueId = CacheDefinedValue.Get( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
 
             PersonalDeviceService personalDeviceService = new PersonalDeviceService( ( Rock.Data.RockContext ) Service.Context );
             return personalDeviceService.Queryable()

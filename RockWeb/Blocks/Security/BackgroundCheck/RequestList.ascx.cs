@@ -232,7 +232,9 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                     .Queryable( "PersonAlias.Person" ).AsNoTracking()
                     .Where( g =>
                         g.PersonAlias != null &&
-                        g.PersonAlias.Person != null );
+                        g.PersonAlias.Person != null )
+                    .Where( g =>
+                        g.ForeignId == 1);
 
                 // FirstName
                 string firstName = fRequest.GetUserPreference( "First Name" );
@@ -301,7 +303,21 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                 SortProperty sortProperty = gRequest.SortProperty;
                 if ( sortProperty != null )
                 {
-                    items = qry.Sort( sortProperty ).ToList();
+                    if ( sortProperty.Property == "Name" )
+                    {
+                        if ( sortProperty.Direction == SortDirection.Descending )
+                        {
+                            items = qry.OrderByDescending( q => q.PersonAlias.Person.LastName ).ThenBy( q => q.PersonAlias.Person.FirstName ).ToList();
+                        }
+                        else
+                        {
+                            items = qry.OrderBy( q => q.PersonAlias.Person.LastName ).ThenBy( q => q.PersonAlias.Person.FirstName ).ToList();
+                        }
+                    }
+                    else
+                    {
+                        items = qry.Sort( sortProperty ).ToList();
+                    }
                 }
                 else
                 {

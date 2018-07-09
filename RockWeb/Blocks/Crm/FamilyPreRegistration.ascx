@@ -4,12 +4,12 @@
     <ContentTemplate>
 
         <Rock:NotificationBox ID="nbError" runat="server" NotificationBoxType="Danger" />
-        <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+        <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
 
         <div class="panel panel-block">
 
             <div class="panel-heading">
-                <h1>Family Pre-Registration</h1>
+                <h1 class="panel-title">Family Pre-Registration</h1>
             </div>
             <div class="panel-body">
 
@@ -56,16 +56,16 @@
                                 <Rock:RockDropDownList ID="ddlGender1" runat="server" Label="Gender" />
                             </asp:Panel>
                             <asp:Panel CssClass="col-sm-3" runat="server" ID="pnlBirthDate1">
-                                <Rock:DatePicker ID="dpBirthDate1" runat="server" Label="Birthdate" AllowFutureDateSelection="False" ForceParse="false" />
+                                <Rock:DatePicker ID="dpBirthDate1" runat="server" Label="Birthdate" AllowFutureDates="False" RequireYear="True" ShowOnFocus="false" StartView="decade" />
                             </asp:Panel>
                             <asp:Panel CssClass="col-sm-3" runat="server" ID="pnlMaritalStatus1">
                                 <Rock:DefinedValuePicker ID="dvpMaritalStatus1" runat="server" Label="Marital Status" />
                             </asp:Panel>
-                            <asp:Panel CssClass="col-sm-3" runat="server" ID="pnlEmail1">
-                                <Rock:EmailBox ID="tbEmail1" runat="server" Label="Email" />
-                            </asp:Panel>
                             <asp:Panel CssClass="col-sm-3" runat="server" ID="pnlMobilePhone1">
                                 <Rock:PhoneNumberBox ID="pnMobilePhone1" runat="server" Label="Mobile Phone" />
+                            </asp:Panel>
+                            <asp:Panel CssClass="col-sm-6" runat="server" ID="pnlEmail1">
+                                <Rock:EmailBox ID="tbEmail1" runat="server" Label="Email" />
                             </asp:Panel>
                             <Rock:DynamicPlaceholder ID="phAttributes1" runat="server" />
                         </div>
@@ -90,16 +90,16 @@
                                     <Rock:RockDropDownList ID="ddlGender2" runat="server" Label="Gender" />
                                 </asp:Panel>
                                 <asp:Panel CssClass="col-sm-3" runat="server" ID="pnlBirthDate2">
-                                    <Rock:DatePicker ID="dpBirthDate2" runat="server" Label="Birthdate" AllowFutureDateSelection="False" ForceParse="false" />
+                                    <Rock:DatePicker ID="dpBirthDate2" runat="server" Label="Birthdate" AllowFutureDates="False" ShowOnFocus="false" StartView="decade"/>
                                 </asp:Panel>
                                 <asp:Panel CssClass="col-sm-3" runat="server" ID="pnlMaritalStatus2">
                                     <Rock:DefinedValuePicker ID="dvpMaritalStatus2" runat="server" Label="Marital Status" />
                                 </asp:Panel>
-                                <asp:Panel CssClass="col-sm-3" runat="server" ID="pnlEmail2">
-                                    <Rock:EmailBox ID="tbEmail2" runat="server" Label="Email" />
-                                </asp:Panel>
                                 <asp:Panel CssClass="col-sm-3" runat="server" ID="pnlMobilePhone2">
                                     <Rock:PhoneNumberBox ID="pnMobilePhone2" runat="server" Label="Mobile Phone" />
+                                </asp:Panel>
+                                <asp:Panel CssClass="col-sm-6" runat="server" ID="pnlEmail2">
+                                    <Rock:EmailBox ID="tbEmail2" runat="server" Label="Email" />
                                 </asp:Panel>
                                 <Rock:DynamicPlaceholder ID="phAttributes2" runat="server" />
                             </div>

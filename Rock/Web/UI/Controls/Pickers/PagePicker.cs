@@ -143,7 +143,7 @@ namespace Rock.Web.UI.Controls
             string scriptFormat = @"
 
                 $('#{0}').click(function () {{
-                    $('#page-route-picker_{3}').find('.js-page-route-picker-menu').toggle(function () {{
+                    $('#page-route-picker_{3}').find('.js-page-route-picker-menu').toggle(0, function () {{
                         Rock.dialogs.updateModalScrollBar('page-route-picker_{3}');
                     }});
                 }});
@@ -445,7 +445,7 @@ namespace Rock.Web.UI.Controls
         {
             int? pageId = null;
             var rockBlock = this.RockBlock();
-            if ( rockBlock.PageCache.Guid == Rock.SystemGuid.Page.BLOCK_PROPERTIES.AsGuid() )
+            if ( rockBlock.CachePage.Guid == Rock.SystemGuid.Page.BLOCK_PROPERTIES.AsGuid() )
             {
                 // if the BlockProperties block is the current block, we'll treat the page that this block properties is for as the current page
                 int blockId = rockBlock.PageParameter( "BlockId" ).AsInteger();
@@ -457,7 +457,7 @@ namespace Rock.Web.UI.Controls
             }
             else
             {
-                pageId = rockBlock.PageCache.Id;
+                pageId = rockBlock.CachePage.Id;
             }
 
             if ( pageId.HasValue )

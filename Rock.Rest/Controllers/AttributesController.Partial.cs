@@ -22,7 +22,7 @@ using System.Web.Http;
 using Rock.Model;
 using Rock.Rest.Filters;
 using System.Net.Http;
-using Rock.Web.Cache;
+using Rock.Cache;
 
 namespace Rock.Rest.Controllers
 {
@@ -39,7 +39,7 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/attributes/flush/{id}" )]
         public void Flush( int id )
         {
-            Rock.Web.Cache.AttributeCache.Flush( id );
+            Rock.Cache.CacheAttribute.Remove( id );
         }
 
         /// <summary>
@@ -50,7 +50,7 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/attributes/flush" )]
         public void Flush()
         {
-            Rock.Web.Cache.GlobalAttributesCache.Flush();
+            Rock.Cache.CacheGlobalAttributes.Remove();
         }
 
         /// <summary>
@@ -73,7 +73,7 @@ namespace Rock.Rest.Controllers
             }
 
             var result = base.Post( value );
-            AttributeCache.FlushEntityAttributes();
+            CacheAttribute.RemoveEntityAttributes();
 
             return result;
         }
@@ -86,8 +86,8 @@ namespace Rock.Rest.Controllers
         public override void Delete( int id )
         {
             base.Delete( id );
-            AttributeCache.Flush( id );
-            AttributeCache.FlushEntityAttributes();
+            CacheAttribute.Remove( id );
+            CacheAttribute.RemoveEntityAttributes();
         }
 
         /// <summary>
@@ -99,8 +99,8 @@ namespace Rock.Rest.Controllers
         public override void Put( int id, [FromBody] Model.Attribute value )
         {
             base.Put( id, value );
-            AttributeCache.Flush( id );
-            AttributeCache.FlushEntityAttributes();
+            CacheAttribute.Remove( id );
+            CacheAttribute.RemoveEntityAttributes();
         }
     }
 }

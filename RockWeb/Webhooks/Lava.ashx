@@ -26,7 +26,7 @@ using System.Web;
 using System.Xml;
 
 using Rock;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Newtonsoft.Json;
 
 /// <summary>
@@ -90,20 +90,20 @@ public class Lava : IHttpHandler
     #region Main Methods
 
     /// <summary>
-    /// Retrieve the DefinedValueCache for this request by matching the Method and Url
+    /// Retrieve the CacheDefinedValue for this request by matching the Method and Url
     /// </summary>
     /// <param name="request">The HttpRequest object that this Api request is for.</param>
     /// <returns>
     /// A DefinedValue for the API request that was matched or null if one was not found.
     /// </returns>
-    protected DefinedValueCache GetApiForRequest( HttpRequest request, Dictionary<string, object> mergeFields )
+    protected CacheDefinedValue GetApiForRequest( HttpRequest request, Dictionary<string, object> mergeFields )
     {
         var url = "/" + string.Join( "", request.Url.Segments.SkipWhile( s => !s.EndsWith( ".ashx", StringComparison.InvariantCultureIgnoreCase ) && !s.EndsWith( ".ashx/", StringComparison.InvariantCultureIgnoreCase ) ).Skip( 1 ).ToArray() );
 
-        var dt = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.WEBHOOK_TO_LAVA.AsGuid() );
+        var dt = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.WEBHOOK_TO_LAVA.AsGuid() );
         if ( dt != null )
         {
-            foreach ( DefinedValueCache api in dt.DefinedValues.OrderBy( h => h.Order ) )
+            foreach ( CacheDefinedValue api in dt.DefinedValues.OrderBy( h => h.Order ) )
             {
                 string apiUrl = api.Value;
                 string apiMethod = api.GetAttributeValue( "Method" );

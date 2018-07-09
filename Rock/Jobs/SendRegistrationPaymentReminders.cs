@@ -74,7 +74,7 @@ namespace Rock.Jobs
                 int sendCount = 0;
                 int registrationInstanceCount = 0;
 
-                var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read().GetValue( "PublicApplicationRoot" );
+                var appRoot = Rock.Cache.CacheGlobalAttributes.Get().GetValue( "PublicApplicationRoot" );
 
                 RegistrationService registrationService = new RegistrationService( rockContext );
 

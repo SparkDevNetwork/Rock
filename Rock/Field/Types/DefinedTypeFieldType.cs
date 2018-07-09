@@ -22,7 +22,7 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -51,7 +51,7 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if (guid.HasValue)
             {
-                var definedType = DefinedTypeCache.Read( guid.Value );
+                var definedType = CacheDefinedType.Get( guid.Value );
                 if (definedType != null)
                 { 
                     formattedValue = definedType.Name;
@@ -75,7 +75,7 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                var definedType = DefinedTypeCache.Read( guid.Value );
+                var definedType = CacheDefinedType.Get( guid.Value );
 
                 // sort by Order then Name (using a padded string)
                 var sortValue = definedType.Order.ToString().PadLeft( 10 ) + "," + definedType.Name;
@@ -163,7 +163,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = DefinedTypeCache.Read( guid );
+            var item = CacheDefinedType.Get( guid );
             return item != null ? item.Id : (int?)null;
         }
 
@@ -175,10 +175,10 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            DefinedTypeCache item = null;
+            CacheDefinedType item = null;
             if ( id.HasValue )
             {
-                item = DefinedTypeCache.Read( id.Value );
+                item = CacheDefinedType.Get( id.Value );
             }
             string guidValue = item != null ? item.Guid.ToString() : string.Empty;
             SetEditValue( control, configurationValues, guidValue );

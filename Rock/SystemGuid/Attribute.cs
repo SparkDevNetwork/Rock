@@ -191,5 +191,14 @@ namespace Rock.SystemGuid
         public const string DEFINED_VALUE_FUNDRAISING_DONATE_BUTTON_TEXT = "7ACD6580-0E5B-4407-BC8B-1BBBAF443B1E";
 
         #endregion
+        
+        #region BIO Block
+
+        /// <summary>
+        /// The bio block's workflow action attribute Guid
+        /// </summary>
+        public const string BIO_WORKFLOWACTION = "7197A0FB-B330-43C4-8E62-F3C14F649813";
+
+        #endregion
     }
 }
