@@ -4,6 +4,13 @@
     background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/hero-connect.jpg");
 }
 
+/* Mobile Background Image */
+@media screen and (max-width: 500px) {
+    .page-background {
+        background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/hero-mobile-connect.jpg");
+    }
+}
+
 .group-title h1 {
     font-size: 60px;
     font-weight: 900;

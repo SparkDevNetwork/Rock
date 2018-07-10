@@ -1,9 +1,0 @@
-﻿{% for item in Items %}
-    
-    <div>
-        {{ item.Image }}
-    </div>
-    
-    {{ item.Content }}
-
-{% endfor %}

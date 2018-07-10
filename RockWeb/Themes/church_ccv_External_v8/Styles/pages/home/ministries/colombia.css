@@ -3,6 +3,13 @@
     background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/hero-missions-colombia.jpg");
 }
 
+/* Mobile Background Image */
+@media screen and (max-width: 500px) {
+    .page-background {
+        background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/hero-mobile-missions-colombia.jpg");
+    }
+}
+
 #ternavbar-bg {
     display: flex;
 }
@@ -22,6 +29,7 @@
 
 ul {
     color: #7c7c7c;
+    list-style: none;
 }
 
 @media only screen and (min-width: 1024px) {    

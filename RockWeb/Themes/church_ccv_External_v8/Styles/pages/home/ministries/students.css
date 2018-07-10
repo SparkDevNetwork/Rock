@@ -2,6 +2,13 @@
     background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/hero-students.jpg");
     background-color: white;
 }
+
+/* Mobile Background Image */
+@media screen and (max-width: 500px) {
+    .page-background {
+        background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/hero-mobile-students.jpg");
+    }
+}
  
 #ternavbar-bg {
     display: none;

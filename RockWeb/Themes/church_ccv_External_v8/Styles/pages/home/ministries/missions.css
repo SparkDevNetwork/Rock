@@ -4,6 +4,13 @@
     background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/hero-missions.jpg");
 }
 
+/* Mobile Background Image */
+@media screen and (max-width: 500px) {
+    .page-background {
+        background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/hero-mobile-missions.jpg");
+    }
+}
+
 #section-b-bg {
     background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/background-missions-colombia.jpg");
 }

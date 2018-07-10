@@ -6,4 +6,10 @@
 
 {% include '~~/Assets/Lava/home/locations/script-campus-locations.lava' %}
 
-<script src="~~/Scripts/min/our-campuses-map.min.js?v=4"></script>
+<script src="~~/Scripts/min/our-campuses-map.min.js?v=5"></script>
+
+{% comment %}	
+    Use this to iterate on the unminified versions
+    <script src="~~/Scripts/_map.js"></script>
+    <script src="~~/Scripts/our-campuses-map.js"></script>  
+{% endcomment %}

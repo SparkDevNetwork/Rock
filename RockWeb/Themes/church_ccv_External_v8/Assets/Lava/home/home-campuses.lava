@@ -36,7 +36,7 @@
                         {% assign useLightIcon = true %}
                         {% include '~~/Assets/Lava/service-times/Grid.lava' %}
                     </div>
-                    <a class="btn btn-primary btn-campus" href="/locationsv2/{{ campus.Name | Downcase | Replace: ' ', '-' }}">Learn More</a>
+                    <a class="btn btn-primary btn-campus" href="/locations/{{ campus.Name | Downcase | Replace: ' ', '-' }}">Learn More</a>
                 </div>
             {% endif %}
 

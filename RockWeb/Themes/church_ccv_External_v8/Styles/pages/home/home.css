@@ -4,12 +4,20 @@
     background-size: unset;
 }
 
+/* Mobile Background Image */
+@media screen and (max-width: 500px) {
+    .page-background {
+        background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/hero-mobile-home.jpg") !important;
+    }
+}
+
 #subnavbar-bg {
     display: none;
 }
 
 .main-feature {
     padding-top: 175px;
+    height: unset;
 }
 
 .title h1 {
@@ -365,7 +373,7 @@
 
 /* Kids / Students Section */
 #zone-sectiond {
-    margin: 0 -15px;
+    margin: 0;
     max-width: unset;
 }
 

@@ -1,83 +1,103 @@
-
-.page-background {   
+.page-background {
     background-image: url("/Themes/church_ccv_External_v8/Assets/Images/footer/hero-careers.jpg");
+}
+
+@media screen and (max-width: 500px) {
+    .page-background {
+        background-image: url("/Themes/church_ccv_External_v8/Assets/Images/footer/hero-mobile-careers.jpg");
+    }
 }
 
 #ternavbar-bg {
     display: flex;
 }
 
-#section-b-bg {
-    background-color: #FFFFFF;
-}
-
-.open-positions-section {
+.single-container {
+    padding-top: 30px;
     text-align: center;
+    line-height: 200%;
 }
 
-.culture-features {
+.feature h4, p{
+    line-height: 200%;
+}
+
+.feature {
+    width: 100%;
+    padding-right: 20px;
+    padding-bottom: 40px;
+}
+
+.culture-features { 
+    justify-content: space-between;
+}
+
+.single-infoSection {
+    min-height: 200px;
+}
+
+#section-b-bg,#section-d-bg {
+	background-color: #ffffff;
+}
+
+.header-title {
+    padding-top: 30px;
+    padding-bottom: 30px;
+}
+
+.infoSections {
     display: flex;
-    flex-direction: column;
 }
 
-@media screen and (min-width: 992px) {
-    .culture-features {
-        flex-direction: row;
+#zone-tertiarynavbar {
+    margin: 0;
+}
+/* .infoSection-mobile {
+    display: none;
+} */
+
+.navigation-tertiary-items {
+    padding-left: 150px;
+}
+
+@media screen and (max-width: 927px) {
+
+    .single-container {
+        margin-top: 0px;
+        text-align: unset;
+    }
+    
+    .header-title {
+        display: inline-block;
+ 
     }
 
     .feature {
-        padding: 15px;
-        max-width: 400px;
+        width: 100%;
+        padding-right: 10px;
+        padding-bottom: 10px;
+    }
+
+    .culture-features p {
+        font-size: 14px;
+    }
+
+    h4 {
+        font-size: 18px;
+    }
+
+    .navigation-tertiary-items-slick {
+        padding-left: 50px;
     }
 }
 
-@media screen and (min-width: 1200px) {
-    .culture-features {
-        justify-content: flex-start;
-    }
-}
-
-.culture-images {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-
-    justify-content: center;
-}
-
-.culture-images .multi {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-}
-
-.culture-images img {
-    padding: 10px;
-    object-fit: cover;
-}
-
-@media screen and (max-width: 568px) {
-    .culture-images {
-        flex-direction: column;
-    }
-    .culture-images .multi {
+@media screen and (max-width: 427px) {
+    .infoSections {
         flex-direction: column;
     }
 
-    .culture-images img {
-        object-fit: contain;
-    }
-
-    .wide-img-only {
-        display: none;
-    }
-}
-
-#submit-resume-btn {
-    width: 128px;
-    height: 48px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    /* .infoSection-mobile {
+        display: flex;
+        flex-direction: row;
+    } */
 }

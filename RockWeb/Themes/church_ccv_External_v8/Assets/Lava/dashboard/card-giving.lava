@@ -16,7 +16,7 @@
             </div>
             <div class="giving-title-links-mobile">
                 <button class="dropdown-toggle" type="button" data-toggle="dropdown" style="border: 0px;">Navigate<b class="fa fa-caret-down"></b></button>
-                <ul class="dropdown-menu">
+                <ul class="dropdown-menu  giving-title-links-mobile-dropdown-menu">
                     <li class="navigation-secondary-mobile-item">
                         <a href="/get-involved/giving/now">Give Now</a>
                     </li>

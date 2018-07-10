@@ -3,6 +3,13 @@
     background-image: url("/Themes/church_ccv_External_v8/Assets/Images/footer/hero-contact.jpg");
 }
 
+/* Mobile Background Image */
+@media screen and (max-width: 500px) {
+    .page-background {
+        background-image: url("/Themes/church_ccv_External_v8/Assets/Images/footer/hero-mobile-contact.jpg");
+    }
+}
+
 .control-wrapper textarea {
     background-color: #eeeeee;
     border-bottom: unset;

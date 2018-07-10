@@ -59,6 +59,6 @@ list, but marked differently.
 {% else %}
 
   {% assign selectCampusBtnClasses = 'btn btn-primary' %}
-  {% include '~~/Assets/Lava/SelectACampus.lava' %}
+  {% include '~~/Assets/Lava/select-a-campus.lava' %}
 
 {% endif %}

@@ -5,7 +5,7 @@
 
 {% endcomment %}
 
-{% assign detailPage = detailPage | Default: '/watchv2/story' %}
+{% assign detailPage = detailPage | Default: '/watch/story' %}
 
 {% assign firstItem = Items[0] %}
 

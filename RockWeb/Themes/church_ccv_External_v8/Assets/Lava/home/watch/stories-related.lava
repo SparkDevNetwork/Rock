@@ -5,7 +5,7 @@
 {% endcomment %}
 
 {% unless Items == empty %}
-  {% assign detailPage = detailPage | Default: '/watchv2/story' %}
+  {% assign detailPage = detailPage | Default: '/watch/story' %}
 
   <hr class="margin-t-xl">
 

@@ -3,6 +3,13 @@
     background-color: #ffffff;
 }
 
+/* Mobile Background Image */
+@media screen and (max-width: 500px) {
+    .page-background {
+        background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/hero-mobile-baptism-registration.jpg");
+    }
+}
+
 /* use the expanded main feature only for tablet and larger */
 @media screen and (min-width: 501px) {
     .main-feature {
@@ -10,7 +17,6 @@
         padding-top: 125px;
     }
 }
-
 
 .reg-info h1 {
     font-size: 60px;

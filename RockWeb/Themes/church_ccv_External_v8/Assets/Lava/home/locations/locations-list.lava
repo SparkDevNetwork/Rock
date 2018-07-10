@@ -31,7 +31,7 @@
                 </div>
 
                 <div class="link">
-                    <a class="btn btn-primary" href="/locationsv2/{{ campus.Name | Downcase | Replace: ' ', '-' }}">Learn More</a>
+                    <a class="btn btn-primary" href="/locations/{{ campus.Name | Downcase | Replace: ' ', '-' }}">Learn More</a>
                 </div>
             </div>
         {% endif %}

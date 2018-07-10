@@ -17,12 +17,28 @@
         <a href="#" class="outer-circle-link hidden deg360" data-toggle="modal" data-target="#modalCoach"><img id="coach" class="nextstep-icon-inactive" src='~~/Assets/Images/home/get-involved/icon-coach.png'></a>
     </div>
     <div class="inner-circle">
-        <a href="#" onClick="toggleNextStepsMenu(); return false;">
-            <div class="inner-circle-text">
-                <span><i id="nextStepsNavArrow" class="mdi mdi-chevron-up"></i></span>
-                <span>My Next Steps</span>
-            </div>
-        </a>
+        <div class="inner-circle-text">
+            <a href="/dashboard/profile" >
+                {% if CurrentPerson.PhotoId %}
+                    <img class="img img-responsive" src="/GetImage.ashx?id={{ CurrentPerson.PhotoId }}" style="border-radius: 50%;" /> 
+                {% else %}
+                    {% if CurrentPerson.Age < 18 %}
+                        {% if CurrentPerson.Gender == "Female" %}
+                            <img class="img img-responsive" src="/Assets/Images/person-no-photo-child-female.svg" style="border-radius: 50%;" /> 
+                        {% else %}
+                            <img class="img img-responsive" src="/Assets/Images/person-no-photo-child-male.svg" style="border-radius: 50%;" /> 
+                        {% endif %}
+                    {% else %}
+                        {% if CurrentPerson.Gender == "Female" %}
+                            <img class="img img-responsive" src="/Assets/Images/person-no-photo-female.svg" style="border-radius: 50%;" /> 
+                        {% else %}
+                            <img class="img img-responsive" src="/Assets/Images/person-no-photo-male.svg" style="border-radius: 50%;" /> 
+                        {% endif %}
+                    {% endif %}
+                {% endif %}
+            </a>
+            <span class="inner-circle-text-desktop">My Next Steps</span>
+        </div>
     </div>
 </div>
 
@@ -46,7 +62,7 @@
     // toggle the next steps menu open / close
     toggleNextStepsMenu = function() {
         $('.outer-circle-link').toggleClass('outer-circle-link-open');
-        $('#nextStepsNavArrow').toggleClass('mdi-chevron-up mdi-chevron-down')
+    //  $('#nextStepsNavArrow').toggleClass('mdi-chevron-up mdi-chevron-down') - Leaving in case they change their minds...
     };
 
     // setup popover
@@ -90,13 +106,13 @@
                 htmlContent += `<div class="nextstep-modal-baptism-buttons">
                                     {% assign baptizedHere = CurrentPerson | Attribute:'BaptizedHere' %}
                                     {% if baptizedHere == 'Yes' %}
-                                        <a href="/baptismdashboardV2?display=certificate&paguid={{ CurrentPerson.PrimaryAlias.Guid }}">
+                                        <a href="/baptismdashboard?display=certificate&paguid={{ CurrentPerson.PrimaryAlias.Guid }}">
                                             <i class="mdi mdi-certificate nextstep-modal-baptism-icon"></i>
                                         </a>
                                     {% endif %}
                                     {% assign baptismPhoto = CurrentPerson | Attribute:'BaptismPhoto' %}
                                     {% if baptismPhoto != null and baptismPhoto != '' %}
-                                        <a href="/baptismdashboardV2?display=photo&paguid={{ CurrentPerson.PrimaryAlias.Guid }}">
+                                        <a href="/baptismdashboard?display=photo&paguid={{ CurrentPerson.PrimaryAlias.Guid }}">
                                             <i class="fa fa-picture-o nextstep-modal-baptism-icon"></i>
                                         </a>
                                     {% endif %}  

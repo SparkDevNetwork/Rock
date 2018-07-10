@@ -16,20 +16,12 @@
             </div>
         </div>
         
-        {% if EventItemOccurrence.Campus != null and EventItemOccurrence.Location != '' %}
-            <div class="info-row">
+        <div id="event-detail-card-location" class="info-row">
             <h6>Location:</h6>
             
-            <p class="info-text">
-                {% if EventItemOccurrence.Campus != null %}
-                    {{EventItemOccurrence.Campus.Name}} Campus <br/>
-                {% endif %}
-                {% if EventItemOccurrence.Location != '' %}
-                    {{ EventItemOccurrence.Location }}
-                {% endif %}
-            </p>
+            <div id="event-detail-card-location-text" class="info-text">
             </div>
-        {% endif %}
+        </div>
         
         <div id="event-detail-card-note" class="info-row">
             <h6>Notes:</h6>

@@ -13,14 +13,14 @@
 
 #subnavbar-bg {
     background-color: #7A1315;
-    z-index: 998;
+    z-index: 997;
 }
 
 /* By default hide the tertiary navbar */
 #ternavbar-bg {
     display: none;
     background-color: #FFFFFF;
-    z-index: 998;
+    z-index: 995;
 }
 
 #section-a-bg, #section-b-bg, #section-c-bg, #section-d-bg, #section-e-bg, #section-f-bg, #section-g-bg, #section-h-bg, #single-section-bg {
@@ -619,6 +619,10 @@
 
     .navigation-secondary-mobile .dropdown-menu > li > a {
         color: #FFFFFF;
+    }
+
+    .navigation-secondary-mobile .dropdown-menu > li > a:hover {
+        background-color: transparent;
     }
 }
 /* End Navigation-Secondary */

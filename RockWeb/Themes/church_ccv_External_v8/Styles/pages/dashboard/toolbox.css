@@ -2,6 +2,8 @@
 .toolbox-row {
     display: flex;
     justify-content: space-between;
+    position: relative;
+    z-index: 1;
 }
 
 .toolbox-card {
@@ -596,10 +598,6 @@
     flex-direction: column;
 }
 
-.toolbox-group-members-card .person-contact {
-    margin-left: 20px;
-}
-
 .person-row-details {
     display: flex;
     flex-direction: column;
@@ -714,7 +712,7 @@
 /* smallest phones...dont hate me... */
 @media screen and (max-width: 320px) {
     .person-row-details {
-        width: 75%;
+        width: 80%;
     }
 }
 /* End Toolbox Group Member Card */

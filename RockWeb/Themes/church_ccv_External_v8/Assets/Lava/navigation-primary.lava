@@ -29,11 +29,11 @@
                     {% if childPageTitle == 'get involved' %}
                         {% assign activeClass = 'active' %}
                     {% endif %}
-                {% when 'locationsv2' %}
+                {% when 'locations' %}
                     {% if childPageTitle == 'locations' %}
                         {% assign activeClass = 'active' %}
                     {% endif %}
-                {% when 'watchv2' %}
+                {% when 'watch' %}
                     {% if childPageTitle == 'watch' %}
                         {% assign activeClass = 'active' %}
                     {% endif %}

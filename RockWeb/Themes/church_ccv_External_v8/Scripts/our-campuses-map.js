@@ -24,6 +24,8 @@ CCV.showMapCampusModal = function() {
   if (!CCV.campusModalMapHasBeenDrawn) {
     window.campusModalMap = new CCV.campusInfoWindowMap(document.getElementById('our-campuses-map'))
 
+
+
     options = {
       mapTypeId: 'CCV',
       

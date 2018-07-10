@@ -5,7 +5,7 @@
 <div class="navigation-mobile-title">
     <div class="navigation-mobile-title-search-wrapper">
         Menu
-        <!--<a class="navigation-mobile-magnify mdi mdi-magnify" href="/searchv2"></a>-->
+        <a class="navigation-mobile-magnify mdi mdi-magnify" href="/search"></a>
     </div>
     <button class="mdi mdi-close navigation-mobile-close" type="button" onClick="toggleNavbar(false);"></button>
 </div>
@@ -16,8 +16,9 @@
             <div class="dropdown">
                 <button class="dropdown-toggle navigation-mobile-item" type="button" data-toggle="dropdown" style="border: 0px;">Dashboard<b class="fa fa-caret-down"></b></button>
                 <ul class="dropdown-menu">
-                    <li><a class="navigation-mobile-item" href="/dashboardv2">Dashboard</a></li>
+                    <li><a class="navigation-mobile-item" href="/dashboard">Dashboard</a></li>
                     <li><a class="navigation-mobile-item" href="/dashboard/profile">Profile</a></li>
+                    <li><a class="navigation-mobile-item" href="/get-involved/giving/now">Give Now</a></li>
                     <li><a class="navigation-mobile-item" href="/dashboard/recurring-giving">Recurring Giving</a></li>
                     <li><a class="navigation-mobile-item" href="/dashboard/payment-accounts">Payment Accounts</a></li>
                     <li><a class="navigation-mobile-item" href="/dashboard/giving-history">Giving History</a></li>
@@ -50,7 +51,7 @@
     {% if CurrentPerson %}
         <li><a class="navigation-mobile-item" onclick="logout();">Logout</a></li>
     {% else %}
-        <li><a class="navigation-mobile-item" href="/registerv2">Register</a></li>
+        <li><a class="navigation-mobile-item" href="/register">Register</a></li>
         <li><a class="navigation-mobile-item" href="/login">Login</a></li>
     {% endif %}
 </ul>

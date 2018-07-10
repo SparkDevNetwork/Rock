@@ -32,6 +32,7 @@
 </div>
 
 <script>
+var showGroupMarketingCard = false;
 
 displayNextStepCard = function(incompleteSteps) {
     if (incompleteSteps.length > 0) {
@@ -41,10 +42,26 @@ displayNextStepCard = function(incompleteSteps) {
 
         $('#infoCardImage').attr('src', stepsJSON[displayStepIndex].Content.CardImage)
         $('#infoCardHeader').html(stepsJSON[displayStepIndex].Content.Title);
-        $('#infoCardSubHeader').html(stepsJSON[displayStepIndex].Content.Title);
+        $('#infoCardSubHeader').html(stepsJSON[displayStepIndex].Content.SubHeader);
         $('#infoCardContent').html(stepsJSON[displayStepIndex].Content.Content);
         $('#infoCardLink').attr('href', stepsJSON[displayStepIndex].Content.Buttons[0].Link );
         $('#infoCardLinkText').html(stepsJSON[displayStepIndex].Content.Buttons[0].Label );
+
+        $('#loadingCard').toggleClass('hidden');
+        $('#infoCard').toggleClass('hidden')
+    } else {
+        var allStepsCompletedJSON = JSON.parse(`{{ allStepsCompletedContentJSON }}`);
+
+        var availableStepsIndex = [0];
+
+        var displayStepIndex = availableStepsIndex[Math.floor(Math.random() * availableStepsIndex.length)];
+        
+        $('#infoCardImage').attr('src', allStepsCompletedJSON[displayStepIndex].Content.CardImage)
+        $('#infoCardHeader').html(allStepsCompletedJSON[displayStepIndex].Content.Title);
+        $('#infoCardSubHeader').html(allStepsCompletedJSON[displayStepIndex].Content.SubHeader);
+        $('#infoCardContent').html(allStepsCompletedJSON[displayStepIndex].Content.Content);
+        $('#infoCardLink').attr('href', allStepsCompletedJSON[displayStepIndex].Content.Buttons[0].Link );
+        $('#infoCardLinkText').html(allStepsCompletedJSON[displayStepIndex].Content.Buttons[0].Label );
 
         $('#loadingCard').toggleClass('hidden');
         $('#infoCard').toggleClass('hidden')
@@ -92,10 +109,12 @@ Sys.Application.add_load(function(sender, args){
                                         break;
                                     };   
                                     case 'ConnectionResult': {
-                                        // 1 = not connected
-                                        if (keyData.ConnectionStatus === 1) {
-                                            // 3 = Connected index in JSON
-                                            incompleteSteps.push(3);
+                                        if (showGroupMarketingCard == true) {
+                                            // 1 = not connected
+                                            if (keyData.ConnectionStatus === 1) {
+                                                // 3 = Connected index in JSON
+                                                incompleteSteps.push(3);
+                                            }
                                         }
                                         break;
                                     };

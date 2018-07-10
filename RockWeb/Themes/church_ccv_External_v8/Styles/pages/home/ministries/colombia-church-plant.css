@@ -4,6 +4,13 @@
     background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/hero-church-plant-colombia.jpg");
 }
 
+/* Mobile Background Image */
+@media screen and (max-width: 500px) {
+    .page-background {
+        background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/hero-mobile-church-plant-colombia.jpg");
+    }
+}
+
 .main-feature {
     padding-top: 300px;
 }

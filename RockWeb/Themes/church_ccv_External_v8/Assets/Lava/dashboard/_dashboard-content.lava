@@ -39,7 +39,7 @@
                 "Title": "Starting Point",
                 "Icon": "/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/icon-starting-point.png",
                 "Image": "~~/Assets/Images/home/get-involved/feature-next-steps-starting-point.jpg",
-                "Content": "Dive deeper into the Christian faith and learn what CCV is all about. Take your first step in getting connected with CCV by attending our Starting Point class.",
+                "Content": "Find out what CCV is all about, equip yourself with the essentials of the Christian faith, and find opportunities to get plugged in.",
                 "Buttons": [
                     {
                         "Label": "Learn More",
@@ -47,7 +47,8 @@
                         "Class": "btn-primary"
                     }
                 ],
-                "CardImage": "/Themes/church_ccv_External_v8/Assets/Images/dashboard/feature-dashboard-next-step-starting-point.jpg"
+                "CardImage": "/Themes/church_ccv_External_v8/Assets/Images/dashboard/feature-dashboard-next-step-starting-point.jpg",
+                "SubHeader": "Begin your adventure"
             }
         },
         {
@@ -65,7 +66,8 @@
                         "Class": "btn-primary"
                     }
                 ],
-                "CardImage": "/Themes/church_ccv_External_v8/Assets/Images/dashboard/feature-dashboard-next-step-baptism.jpg"
+                "CardImage": "/Themes/church_ccv_External_v8/Assets/Images/dashboard/feature-dashboard-next-step-baptism.jpg",
+                "SubHeader": "Declare your faith"
             }
         },
         {
@@ -75,15 +77,16 @@
                 "Title": "Worship",
                 "Icon": "/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/icon-worship.png",
                 "Image": "~~/Assets/Images/home/get-involved/feature-next-steps-worship.jpg",
-                "Content": "CCV is one church in many locations. Find the campus closest to home and join the family by attending regularly. Our exciting weekend programs for all ages are experiences you won't want to miss.",
+                "Content": "Our exciting weekend programs for all ages are experiences you won't want to miss. Join us weekly and see how your faith grows.",
                 "Buttons": [
                     {
                         "Label": "Locations & Times",
-                        "Link": "/locationsv2",
+                        "Link": "/locations",
                         "Class": "btn-primary"
                     }
                 ],
-                "CardImage": "/Themes/church_ccv_External_v8/Assets/Images/dashboard/feature-dashboard-next-step-worship.jpg"
+                "CardImage": "/Themes/church_ccv_External_v8/Assets/Images/dashboard/feature-dashboard-next-step-worship.jpg",
+                "SubHeader": "Express your faith"
             }
         },
         {
@@ -101,7 +104,8 @@
                         "Class": "btn-primary"
                     }
                 ],
-                "CardImage": "/Themes/church_ccv_External_v8/Assets/Images/dashboard/feature-dashboard-next-step-connect.jpg"
+                "CardImage": "/Themes/church_ccv_External_v8/Assets/Images/dashboard/feature-dashboard-next-step-connect.jpg",
+                "SubHeader": "Grow your faith"
             }
         },
         {
@@ -119,7 +123,8 @@
                         "Class": "btn-primary"
                     }
                 ],
-                "CardImage": "/Themes/church_ccv_External_v8/Assets/Images/dashboard/feature-dashboard-next-step-serve.jpg"
+                "CardImage": "/Themes/church_ccv_External_v8/Assets/Images/dashboard/feature-dashboard-next-step-serve.jpg",
+                "SubHeader": "Live your faith"
             }
         },
         {
@@ -129,15 +134,21 @@
                 "Title": "Give",
                 "Icon": "/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/icon-give.png",
                 "Image": "~~/Assets/Images/home/get-involved/feature-next-steps-give.jpg",
-                "Content": "If you call CCV your home, we encourage you to give generously knowing that your money is being used to support the mission of Jesus Christ, both here in the Valley and around the world.",
+                "Content": "Giving is a biblical principal designed to teach us to trust God daily for our provisions. When we give, we demonstrate our trust in Him.",
                 "Buttons": [
+                    {
+                        "Label": "Give Now",
+                        "Link": "/get-involved/giving/now",
+                        "Class": "btn-primary double"
+                    },
                     {
                         "Label": "Learn More",
                         "Link": "/get-involved/giving",
-                        "Class": "btn-primary"
+                        "Class": "btn-primary double"
                     }
                 ],
-                "CardImage": "/Themes/church_ccv_External_v8/Assets/Images/dashboard/feature-dashboard-next-step-give.jpg"
+                "CardImage": "/Themes/church_ccv_External_v8/Assets/Images/dashboard/feature-dashboard-next-step-give.jpg",
+                "SubHeader": "Trust your faith"
             }
         },
         {
@@ -155,7 +166,8 @@
                         "Class": "btn-primary"
                     }
                 ],
-                "CardImage": "/Themes/church_ccv_External_v8/Assets/Images/dashboard/feature-dashboard-next-step-share.jpg"
+                "CardImage": "/Themes/church_ccv_External_v8/Assets/Images/dashboard/feature-dashboard-next-step-share.jpg",
+                "SubHeader": "Share your faith"
             }
         },
         {
@@ -170,19 +182,52 @@
                     {
                         "Label": "Request a Coach",
                         "Link": "/get-involved/next-steps/coach-request?Whattypeofcoaching=Request%20a%20Coach",
-                        "Class": "btn-primary"
+                        "Class": "btn-primary double"
                     },
                     {
                         "Label": "Become a Coach",
                         "Link": "/get-involved/next-steps/coach-request?Whattypeofcoaching=Become%20a%20Coach",
-                        "Class": "btn-primary"
+                        "Class": "btn-primary double"
                     }
                 ],
-                "CardImage": "/Themes/church_ccv_External_v8/Assets/Images/dashboard/feature-dashboard-next-step-coach.jpg"
+                "CardImage": "/Themes/church_ccv_External_v8/Assets/Images/dashboard/feature-dashboard-next-step-coach.jpg",
+                "SubHeader": "Multiply your faith"
             }
         }
     ]
     {% endcapture %}
 
 {% comment %} End Default Steps Content  {% endcomment %}
- 
+
+{% comment %} 
+    Card Content For when all steps have been compoleted 
+    Reminder: Image is for the modals, CardImage is for the marketing cards
+    Reminder2: If adding new steps, dont forget to add the new step indexes in the card-next-step.lava
+{% endcomment %}
+
+    {% capture allStepsCompletedContentJSON %}
+    [
+        {
+            "Name" : "GoOnATrip",
+            "Content": 
+            {
+                "Title": "Missions",
+                "Icon": "",
+                "Image": "",
+                "Content": "Get involved in God’s global mission! Sign-up for a short-term trip and make an impact in the lives of others around the world.",
+                "Buttons": [
+                    {
+                        "Label": "Learn More",
+                        "Link": "/ministries/missions/trips",
+                        "Class": "btn-primary"
+                    }
+                ],
+                "CardImage": "/Themes/church_ccv_External_v8/Assets/Images/dashboard/feature-dashboard-next-step-go-on-a-trip.jpg",
+                "SubHeader": "Go on a trip"
+            }
+        }
+    ]
+
+     {% endcapture %}
+
+{% comment %} End Default Steps Content  {% endcomment %}

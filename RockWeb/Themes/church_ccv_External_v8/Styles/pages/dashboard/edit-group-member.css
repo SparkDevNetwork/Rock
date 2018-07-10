@@ -5,6 +5,8 @@
         flex-direction: column;
         justify-content: space-between;
         margin-left: 20px;
+        position: relative;
+        z-index: 1;
     }
 
     .edit-card {
@@ -20,84 +22,151 @@
         box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px;
         border-radius: 5px;
         margin-bottom: 30px;
+        padding-left: 10px;
     }
 
-    .left-card p {
+    .edit-card p {
         line-height: 1.5;
     }
 
-    .left-card .header h4 {
+    .edit-card .header h4 {
         font-size: 26px;
         line-height: 31px;
         margin: 14px 30px 20px 30px;
     }
 
-    .left-card-content {
+    .edit-card-content {
         margin: 20px 30px;
     }
 
-    .left-card-content h3 {
+    .edit-card-content h3 {
         font-size: 26px;
         line-height: 31px;
         margin: 0 0 20px 0;
         padding: 0;
+        
     }
 
+    h3 {
+        font-family: "DINWebCondensed",sans-serif;
+        font-size: 25px;
+    }
 
     .panel.panel-block>.panel-body {
         padding: 0;
         padding-left: 20px;
     }
 
-    .email-box {
+    .edit-card .email-box {
         margin-bottom: 0px;
     }
 
-    .form-group {
+    .edit-card .form-group {
         margin-left: 180px;
+        margin-top: -70px;
+        width: 250px;
+    }
+
+    .edit-card .form-group.rock-radio-button-list {
+        margin-top: -150px;
+        padding-bottom: 70px;
+    }
+
+    .edit-card .form-group.phone-number-box {
+        margin-left: 450px;
+        width: 200px;
+        margin-top: -120px;
+        padding-bottom: 110px;
+    }
+
+    .edit-card .form-group.date-picker {
+        margin-left: 700px;
+        margin-top: -260px; 
+        width: 200px;
+    }
+
+    .edit-card .checkbox {
+        margin-left: 440px;
+        margin-top: -45px;
         top: 0px;
+        position: absolute;
     }
 
-    .form-group.rock-radio-button-list {
-        margin-top: -170px;
-    }
-
-    .form-group.phone-number-box {
-        margin-left: 500px;
+    .edit-card .form-group.rock-drop-down-list {
+        margin-left: 700px;
         width: 200px;
-        margin-top: -100px;
-    }
-
-    .form-group.date-picker {
-        margin-left: 730px;
-        margin-top: -180px;
-        width: 200px;
-    }
-
-    .checkbox {
-        margin-left: 500px;
-        margin-top: 75px;
-    }
-
-    .form-group.rock-drop-down-list {
-        margin-left: 730px;
-        width: 200px;
+        position: absolute;
+        top: -120px;
     }
     
-    .actions {
+    .edit-card .actions {
+        position: absolute;
+        top: 240px;
+    }
+
+    .form-control, input {
+        outline: 0;
+        background: transparent;
+        border: 2px solid lightgrey;
+        font-weight: 600;
+        color: #000;
+    }
+
+    .radio label, .checkbox label {
+        padding-left: 30px;
+        margin-bottom: 0;
+        font-weight: normal;
+        cursor: pointer;
+    }
+
+    /* Bottom Card */
+    .bottom-card .form-group.rock-drop-down-list {
+        margin-left: 10px;
+        width: 500px;
+    }
+
+    .bottom-card {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        color: rgba(0, 0, 0, 0.87);
+        background-color: #ffffff;
+        transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: rgba(0,0,0,0);
+        box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px;
+        border-radius: 5px;
         padding-bottom: 10px;
     }
 }
 
 /* Mobile View */
-/* .edit-row {
+ .edit-row {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    margin-left: 20px;
+    margin-left: 0px;
 }
 
 .edit-card {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    margin-right: 20px;
+    color: rgba(0, 0, 0, 0.87);
+    background-color: #ffffff;
+    transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+    box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px;
+    border-radius: 5px;
+    margin-bottom: 30px;
+    padding-left: 10px;
+    padding-right: 10px;
+    margin-right: 0;
+}
+
+.bottom-card {
     display: flex;
     flex-direction: column;
     color: rgba(0, 0, 0, 0.87);
@@ -107,24 +176,23 @@
     -webkit-tap-highlight-color: rgba(0,0,0,0);
     box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px;
     border-radius: 5px;
-    margin-bottom: 30px;
-} */
+} 
 
-/* .left-card p {
+ .bottom-card p {
     line-height: 1.5;
 }
 
-.left-card .header h4 {
+.bottom-card .header h4 {
     font-size: 26px;
     line-height: 31px;
     margin: 14px 30px 20px 30px;
 }
 
-.left-card-content {
+.bottom-card-content {
     margin: 20px 30px;
 }
 
-.left-card-content h3 {
+.bottom-card-content h3 {
     font-size: 26px;
     line-height: 31px;
     margin: 0 0 20px 0;
@@ -133,9 +201,34 @@
 
 .panel.panel-block>.panel-body {
     padding: 0;
-    padding-left: 20px;
+    padding-left: 0px;
 }
 
 .email-box {
     margin-bottom: 0px;
-} */
+} 
+
+h3 {
+    font-family: "DINWebCondensed",sans-serif;
+    font-size: 23px;
+}
+
+.image-editor-fileinput {
+    display: none;
+}
+
+.form-group {
+    margin-left: 5px;
+    margin-top: 5px;
+}
+
+.bottom-card .actions {
+    margin-left: 10px;
+    /* margin-left: 50px; */
+    margin-right: 10px;
+}
+
+.bottom-card .panel {
+    margin-left: 10px;
+    margin-right: 10px;
+}

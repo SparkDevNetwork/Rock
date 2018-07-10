@@ -1,4 +1,4 @@
-.page-background { 
-    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/hero-image-missing.jpg");
-    background-color: white;
- }
+/*This page is purely a redirect that exists so it shows up in the subnav-bar.*/
+.page-background {   
+    background-color: #616161;
+}

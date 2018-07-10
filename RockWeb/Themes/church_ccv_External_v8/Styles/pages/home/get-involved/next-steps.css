@@ -3,6 +3,13 @@
     background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/hero-next-steps.jpg");
 }
 
+/* Mobile Background Image */
+@media screen and (max-width: 500px) {
+    .page-background {
+        background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/hero-mobile-next-steps.jpg");
+    }
+}
+
 #ternavbar-bg {
     display: none;
 }

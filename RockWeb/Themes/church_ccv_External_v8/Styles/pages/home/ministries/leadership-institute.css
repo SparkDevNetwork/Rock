@@ -2,6 +2,13 @@
    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/hero-leadership-institute.jpg");
 }
 
+/* Mobile Background Image */
+@media screen and (max-width: 500px) {
+    .page-background {
+        background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/hero-mobile-leadership-institute.jpg");
+    }
+}
+
 #section-b-bg, #section-d-bg, #section-f-bg {
     background-color: #FFFFFF;
 }

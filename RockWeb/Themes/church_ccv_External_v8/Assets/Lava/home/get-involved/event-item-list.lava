@@ -126,6 +126,18 @@
                         {% else %}
                             {% capture detailUrl %}{{ DetailsPage }}?EventOccurrenceId={{ eventOccurrenceSummary.EventItemOccurrence.Id }}{% endcapture %}
                         {% endif %}
+
+                        {% comment %}Build the location string IF it exists {% endcomment %}
+                        {% assign locationString = '' %}
+
+                        {% if eventOccurrenceSummary.EventItemOccurrence.Campus != null  %}
+                            {% assign locationString = {{eventOccurrenceSummary.EventItemOccurrence.Campus.Name}} %}
+                            {% assign locationString = locationString | Append:  ' Campus<br/>' %}
+                        {% endif %}
+
+                        {% if eventOccurrenceSummary.EventItemOccurrence.Location != '' %}
+                            {% assign locationString = locationString | Append: {{eventOccurrenceSummary.EventItemOccurrence.Location}} %}
+                        {% endif %}
              
                         {% comment %}If this is a starting point or baptism, we only want to render ONE to represent all for the given month {% endcomment %}
                         {% if eventOccurrenceSummary.EventItem.Id == startingpointEventId or eventOccurrenceSummary.EventItem.Id == baptismEventId %}
@@ -155,7 +167,7 @@
                                         contactPhone: '{{ eventOccurrenceSummary.EventItemOccurrence.ContactPhone }}',
                                         note: '{{ eventOccurrenceSummary.EventItemOccurrence.Note | Escape }}',
                                         regInfo: '',
-                                        location: '{{ eventOccurrenceSummary.EventItemOccurrence.Location }}'
+                                        location: '{{ locationString | Escape }}'
                                     };
                                     gEvents[{{ eventOccurrenceSummary.EventItemOccurrence.Id }}] = eventItem;
                                     
@@ -221,7 +233,8 @@
                                     contactEmail: '{{ eventOccurrenceSummary.EventItemOccurrence.ContactEmail }}',
                                     contactPhone: '{{ eventOccurrenceSummary.EventItemOccurrence.ContactPhone }}',
                                     note: '{{ eventOccurrenceSummary.EventItemOccurrence.Note | Escape }}',
-                                    regInfo: '{{ regInfo }}'
+                                    regInfo: '{{ regInfo }}',
+                                    location: '{{ locationString | Escape }}'
                                 };
                                 gEvents[{{ eventOccurrenceSummary.EventItemOccurrence.Id }}] = eventItem;
                                 
@@ -449,6 +462,19 @@
             else {
                 contactObj.hide();
             }
+
+            var locationObj = $("#event-detail-card-location", parentEventItemCard);
+            if( eventItem.location != '' ) {
+                locationObj.show();
+                
+                var locationDetails = $("#event-detail-card-location-text", parentEventItemCard);
+                
+                var decodedHtmlStr = decodeHtml( eventItem.location );
+                locationDetails.html( decodedHtmlStr );
+            }
+            else {
+                locationObj.hide();
+            }
             
             var noteObj = $("#event-detail-card-note", parentEventItemCard);
             if( eventItem.note != '' ) {
@@ -474,4 +500,7 @@
             }
         }
     </script>
+
+{% else %}
+    <h3>Select your campus for a list of events and activities.</h3>
 {% endif %}

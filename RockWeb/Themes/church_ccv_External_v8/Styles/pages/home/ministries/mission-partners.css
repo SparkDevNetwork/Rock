@@ -3,6 +3,13 @@
 	background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/hero-missions-partners.jpg");
  }
  
+ /* Mobile Background Image */
+@media screen and (max-width: 500px) {
+    .page-background {
+        background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/hero-mobile-missions-partners.jpg");
+    }
+}
+
  #ternavbar-bg {
 	 display: flex;
  }
@@ -12,7 +19,7 @@
  }
  
  .navigation-tertiary-item {
-	 padding: 10px 20px;
+	 
  }
  
  .event-cards-row {
@@ -26,6 +33,9 @@
 	}
  }
  
+ @media (max-width: 1100px){
+
+}
  .event-card {
 	height: 450px;
  }

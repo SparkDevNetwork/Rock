@@ -12,14 +12,14 @@
         <!-- Modal content-->
         <div class="nextstep-modal-container">
             <div class="nextstep-modal-image">
-                <img src="{{ modal.Content.Image }}"></img>
+                <img src="{{ modal.Content.Image }}">
             </div>
             <div class="nextstep-modal-content">
                 <div class="nextstep-modal-content-header">
                     <button type="button" class="close" data-dismiss="modal"><i class="mdi mdi-close nextstep-modal-close"></i></button>
                     <div class="nextstep-modal-content-title">
                         {% if modal.Content.Icon != "" %}
-                            <img class="nextstep-icon-inactive" src='{{ modal.Content.Icon }}'>
+                            <img class="nextstep-icon-active" src='{{ modal.Content.Icon }}' alt="">
                         {% endif %}
                         <h4>{{ modal.Content.Title }}</h4>
                     </div>

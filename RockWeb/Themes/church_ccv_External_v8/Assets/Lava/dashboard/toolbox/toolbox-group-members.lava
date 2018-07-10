@@ -46,7 +46,7 @@
                             </div>
                             <div class="person-info">
                                 <div>
-                                  <a href="/page/1925?GroupMemberId={{ member.Id }}&AdminPersonId={{ CurrentPerson.Id }}"> <h5>{{ member.Person.FullName }}</h5> </a> 
+                                  <a href="/toolbox/edit-group-member?GroupMemberId={{ member.Id }}&AdminPersonId={{ CurrentPerson.Id }}"> <h5>{{ member.Person.FullName }}</h5> </a> 
                                 </div>
                             </div> 
                             <div class="person-contact">
@@ -438,7 +438,6 @@
                         }
 
                         // Activate Tooltips
-                        activatePopOver('.tooltip-more-options', 'More Options');
                         activatePopOver('.tooltip-add-group-member', 'Add Group Member');
                         activatePopOver('.tooltip-email-group', 'Email Group');
                         activatePopOver('.tooltip-email-person', 'Email');

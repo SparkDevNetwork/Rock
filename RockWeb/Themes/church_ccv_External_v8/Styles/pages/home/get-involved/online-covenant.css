@@ -3,6 +3,13 @@
    background-color: #FFFFFF;
 }
 
+/* Mobile Background Image */
+@media screen and (max-width: 500px) {
+    .page-background {
+        background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/hero-mobile-starting-point.jpg");
+    }
+}
+
 .control-wrapper textarea {
     background-color: #eeeeee;
     border-bottom: unset;

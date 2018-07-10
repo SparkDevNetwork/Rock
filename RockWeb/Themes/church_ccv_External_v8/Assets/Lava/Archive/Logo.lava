@@ -1,5 +1,0 @@
-{% comment %}
-{% include '~~/Assets/Lava/Header/Logo.lava' %}
-{% endcomment %}
-
-<a class="logo" href="~/homev2"><span class="sr-only">{{ 'Global' | Attribute:'OrganizationName' }}</span></a>

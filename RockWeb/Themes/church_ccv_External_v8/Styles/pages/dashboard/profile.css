@@ -1,5 +1,7 @@
 .profile {
     display: flex;
+    position: relative;
+    z-index: 1;
 }
 
 .profile-card {
@@ -76,6 +78,8 @@
 .back-button .btn {
     float: unset;
     margin-bottom: 20px;
+    min-width: 60px;
+    max-width: 60px;
 }
 
 .col-md-1.photo {

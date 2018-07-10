@@ -1,9 +1,0 @@
-
-{% assign firstSeries = FirstSeries %}
-<a href="{{ LinkedPages.SeriesDetailPage }}?SeriesId={{ firstSeries.Id }}">
-  <header class="bigblock bigblock-flexbg bigblock-flexbg-md" style="background-image: url('/GetImage.ashx?guid={{ firstSeries.Attributes.HeaderImage }}');">
-    <div class="container">
-      <div class="watch-currenttag">Current Series</div>
-    </div>
-  </header>
-</a>

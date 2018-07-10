@@ -2,6 +2,8 @@
 .baptism-dashboard-container {
     display: flex;
     justify-content: space-around;
+    position: relative;
+    z-index: 1;
 }
 
 .baptism-dashboard-image, .baptism-dashboard-photo {
@@ -72,9 +74,15 @@
 }
 
 /* Mobile Styling */
-@media screen and (max-width: 500px) {
+@media screen and (max-width: 768px) {
     .baptism-dashboard-container {
         margin: 15px;
+    }
+}
+
+@media screen and (max-width: 500px) {
+    .baptism-dashboard-container {
+        margin: 15px 0;
     }
 
     .baptism-dashboard-photo {

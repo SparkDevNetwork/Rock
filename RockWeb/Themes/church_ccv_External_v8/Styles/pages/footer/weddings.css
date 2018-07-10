@@ -2,6 +2,13 @@
     background-image: url("/Themes/church_ccv_External_v8/Assets/Images/footer/hero-weddings.jpg");
 }
 
+/* Mobile Background Image */
+@media screen and (max-width: 500px) {
+    .page-background {
+        background-image: url("/Themes/church_ccv_External_v8/Assets/Images/footer/hero-mobile-weddings.jpg");
+    }
+}
+
 .weddings-section {
     padding: 10px 0;
 }

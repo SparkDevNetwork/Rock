@@ -32,8 +32,8 @@
         <p>CCV is one church in many locations. Find the campus closest to home and join the family by attending regularly. Our exciting weekend programs for all ages are experiences you won't want to miss.
         </p>
         <div class="btn-row">
-            <a href="/locationsv2" class="btn btn-default">Locations & Times</a>
-            <a href="https://www.bible.com/reading-plans" class="btn btn-default">Bible Reading</a>
+            <a href="/locations" class="btn btn-default">Locations & Times</a>
+            <a href="https://www.bible.com/reading-plans" target="_blank" class="btn btn-default">Bible Reading</a>
         </div>
     </div>
 </div>

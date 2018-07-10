@@ -5,6 +5,13 @@
     background-size: unset;
 }
 
+/* Mobile Background Image */
+@media screen and (max-width: 500px) {
+    .page-background {
+        background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/hero-mobile-home.jpg");
+    }
+}
+
 /* Common Standard Layout Overrides for Dashboard */
 #subnavbar-bg, #ternavbar-bg {
     display: none;
@@ -70,6 +77,19 @@ h2 {
     }
 }
 
+/* Push dashboard down when user photo is displayed in center */
+@media screen and (max-width: 1100px) {
+    .dashboard {
+        margin-top: 60px;
+    }
+}
+
+@media screen and (max-width: 500px) {
+    .dashboard {
+        margin-top: 30px;
+    }
+}
+
 /* Dashboard Title */
 .title h3 {
     padding-top: unset;
@@ -95,8 +115,8 @@ h2 {
 }
 
 .back-button .btn {
-    min-width: 100px;
-    max-width: 100px;
+    min-width: 60px;
+    max-width: 60px;
     margin-bottom: 20px;
     margin-right: 20px;
 }
@@ -132,6 +152,9 @@ h2 {
         margin: 0;
     }
 
+    a.double {
+        margin-left: 5px;
+    }
 
     #titleMessage {
         display: none;
@@ -143,18 +166,27 @@ h2 {
         margin: 0 auto 15px auto;
     }
 
+    .back-button {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .back-button .btn {
+        margin-right: 0;
+    }
+
     .print-button {
         flex-direction: column;
     }
 
     #btnPrint {
         width: 100px;
-        /*margin: 10px auto 0 auto; - JHM 7-1: Removing, because I believe this was only used on the Baptism Photo / Cert page and isn't needed.*/ 
     }
 
     .title h2, .print-button h2  {
         font-size: 24px;
         text-align: center;
+        padding: 0;
     }
 }
 
@@ -213,31 +245,64 @@ h2 {
 .inner-circle {
     background-color: #f3f3f3;
     position: relative;
-    width: 200px;
+    width: 210px;
     height: 210px;
     border-radius: 50%;
     margin: 0 auto;
     margin-top: -60px;
+    z-index: 1;
+}
+
+.inner-circle img {
+    /* Leaving this incase they decide they want image to show in Desktop view
+    width: 200px;
+    height: 200px;
+    margin-top: -10px; */
+
+    display: none;
 }
 
 .inner-circle-text {
+    height: 100%;
     display: flex;
     flex-direction: column;
+    justify-content: center;
     align-items: center;
     padding-top: 13px;
-}
-
-.inner-circle-text i {
-    color: #7A1315; 
-    font-size: 30px;
-}
-
-.inner-circle a {
     font-family: akrobat;
     color: #7A1315;
     font-size: 18px;
     text-transform: uppercase;
-    text-decoration: none;
+}
+
+.inner-circle-text-desktop {
+    display: block;
+    margin-top: -40%;
+}
+
+/* Trigger user photo when hamburger menu is displayed */
+@media screen and (max-width: 1100px){
+    /* .inner-circle {
+        width: 130px;
+        height: 130px;
+        margin: 0 auto;
+        top: -95%;
+    } */
+
+    .inner-circle img {
+        display: block;
+        width: 200px;
+        height: 200px;
+        margin-top: -4px;
+    }
+
+    .inner-circle-text-desktop {
+        display: none;
+    }
+
+    .inner-circle-text {
+        padding-top: 0;
+    }
 }
 
 /* Mobile styling next steps nav */
@@ -281,24 +346,23 @@ h2 {
         width: 130px;
         height: 130px;
         margin: 0 auto;
-        top: -90%;
+        top: -95%;
+    }
+
+    .inner-circle img {
+        display: block;
+        width: 122px;
+        height: 122px;
+        margin-top: 3px;
+    }
+
+    .inner-circle-text-desktop {
+        display: none;
     }
 
     .inner-circle-text {
         padding-top: 0;
     }
-
-    .inner-circle-text svg {
-        height: 30px; 
-        width: 30px; 
-        margin-top: 5px;
-        margin-bottom: -4px;
-    }
-    
-    .inner-circle a {
-        font-size: 16px;
-    }
-
 }
 
 /* Popover Styling */
@@ -478,6 +542,7 @@ h2 {
 .dashboard-row {
     display: flex;
     justify-content: center;
+    z-index: 2;
 }
 
 .dashboard-card {
@@ -491,7 +556,6 @@ h2 {
     height: 450px; 
     max-height: 450px; 
     background-color: #FFFFFF; 
-    z-index: 1; 
     overflow: hidden;
     margin: 0 10px;
 }
@@ -1184,9 +1248,8 @@ h2 {
     .giving-title-links-mobile > ul {
         right: 0;
         top: unset;
-        margin: 0 auto;
+        margin: 0 22px;
         margin-top: 25px;
-        width: 81%;
         text-align: center;
         border: unset;
         border-radius: unset;
@@ -1218,7 +1281,12 @@ h2 {
         padding-left: unset;
         padding-top: 30px;
     }
+}
 
+@media screen and (max-width: 400px) {
+    .giving-title-links-mobile > ul {
+        margin: 0 21px;
+    }
 }
 
 /* End Dashboard Giving Panel */

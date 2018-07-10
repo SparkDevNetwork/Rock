@@ -22,7 +22,7 @@
                 {% endif %}
 
                 <li class="navigation-secondary-item {{ activeClass }}">
-                    <a href="/locationsv2/{{ campusUrlSegment }}">{{ campus.Name }}</a>
+                    <a href="/locations/{{ campusUrlSegment }}">{{ campus.Name }}</a>
                 </li>
             {% endif %}
         {% endfor %}
@@ -51,7 +51,7 @@
                     {% endif %}
 
                     <li class="navigation-secondary-mobile-item {{ activeClass }}">
-                        <a href="/locationsv2/{{ campusUrlSegment }}">{{ campus.Name }}</a>
+                        <a href="/locations/{{ campusUrlSegment }}">{{ campus.Name }}</a>
                     </li>
                 {% endif %}
 

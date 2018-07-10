@@ -3,6 +3,13 @@
     background-color: white;
 }
 
+/* Mobile Background Image */
+@media screen and (max-width: 500px) {
+    .page-background {
+        background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/watch/hero-mobile-messages.jpg");
+    }
+}
+
 .messages {
     display: flex;
     flex-direction: column;

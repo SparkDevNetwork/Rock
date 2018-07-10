@@ -16,6 +16,11 @@
             {% assign itemCampuses = itemCampusesRaw | Split: ',' %}
             {% assign showItem = false %}
             {% assign externalUrl = item | Attribute: 'ExternalLink' %}
+            {% assign urlTarget = ""  %}
+            {% if externalUrl contains "http" %}
+                {% assign urlTarget = "target='_blank'" %}
+            {% endif %}
+
             {% capture internalUrl %}{{ LinkedPages.DetailPage }}?Item={{ item.Id }}{% endcapture %}
             {% assign itemLink = externalUrl | Default: internalUrl %}
 
@@ -45,7 +50,7 @@
                     </div>
                     <div class="item-content">
                         <p>{{ item | Attribute:'SummaryText'}}</p>
-                        <a href="{{ itemLink }}" style="color: rgb(122, 19, 21); text-transform: uppercase; font-family: Akrobat; font-weight: bold;">{{ itemLinkText }}&nbsp</a><i class="fa fa-angle-right fa-lg" style="vertical-align: -10%;"></i>     
+                        <a href="{{ itemLink }}" style="color: rgb(122, 19, 21); text-transform: uppercase; font-family: Akrobat; font-weight: bold;" {{ urlTarget }}>{{ itemLinkText }}&nbsp</a><i class="fa fa-angle-right fa-lg" style="vertical-align: -10%;"></i>     
                     </div>
                 </div>
             {% endif %}

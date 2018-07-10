@@ -32,6 +32,12 @@ TODO: Add Other Group Type leader roles
 {% comment %} Check if user in any groups, if not display Call To Action Serving {% endcomment %}
 {% assign numberOfGroups = Groups | Size %}
 {% if numberOfGroups > 0 %}
+    <script>
+        // global variable to show/hide group card in Next Steps Marketing cards (middle section)
+        // a person can be a leader in a non adult/neighborhood type group, which would hide the group 
+        // marketing card on the right, so we would then want to show it in the middle marketing cards.
+        showGroupMarketingCard = true;
+    </script>
 
     {% comment %} Render {% endcomment %}
     <div>
@@ -63,7 +69,7 @@ TODO: Add Other Group Type leader roles
                                 {% comment %} Admin Header {% endcomment %}
                                 {% if showAdminElements == true %}    
                                     {% if group.Group.GroupTypeId == 49 %}                            
-                                        <a href="/toolboxv2?GroupId={{ group.Group.Id }}" class="tooltip-access-toolbox">
+                                        <a href="/toolbox?GroupId={{ group.Group.Id }}" class="tooltip-access-toolbox">
                                             <div class="group-name-row-content">
                                                 <span>{{ group.Group.Name }}</span>
                                                 <i class="mdi mdi-chevron-right group-header-icon"></i>
@@ -85,12 +91,16 @@ TODO: Add Other Group Type leader roles
                                         </a>
                                     {% endif %}                                    
                                     <button type="button" data-toggle="collapse" data-target="#groupDetails{{ groupIndex }}" class="group-details-toggle">
-                                        <i id="groupDetailsToggle{{ groupIndex }}" class="mdi mdi-chevron-down group-header-icon tooltip-group-details"></i>
+                                        {% assign chevronIcon = "mdi-chevron-down" %}
+                                        {% if forloop.first %}
+                                            {% assign chevronIcon = "mdi-chevron-up" %}
+                                        {% endif %}
+                                        <i id="groupDetailsToggle{{ groupIndex }}" class="mdi {{ chevronIcon }} group-header-icon tooltip-group-details"></i>
                                     </button>
                                 </div>
                             </div>
                         </div>
-                        <div id="groupDetails{{ groupIndex }}" class="collapse">
+                        <div id="groupDetails{{ groupIndex }}" class="collapse {% if forloop.first %}in{% endif %}">
 
                             {% comment %} Show Coach Video if Admin and group is a CCV group {% endcomment %}
                             {% if showAdminElements == true %}
@@ -112,49 +122,49 @@ TODO: Add Other Group Type leader roles
                             {% endif %}
                                 
 
-                        {% comment %} Render Group Members {% endcomment %}
-                        {% for member in group.Group.Members %}
+                            {% comment %} Render Group Members {% endcomment %}
+                            {% for member in group.Group.Members %}
 
-                            {% comment %} Check for Coach {% endcomment %}
-                            {% assign memberGroupRoleId = member.GroupRoleId | ToString %}
-                            {% if groupCoachIds contains memberGroupRoleId %}
-                                {% assign isCoach = true %}
-                            {% else %}
-                                {% assign isCoach = false %}
-                            {% endif %}
+                                {% comment %} Check for Coach {% endcomment %}
+                                {% assign memberGroupRoleId = member.GroupRoleId | ToString %}
+                                {% if groupCoachIds contains memberGroupRoleId %}
+                                    {% assign isCoach = true %}
+                                {% else %}
+                                    {% assign isCoach = false %}
+                                {% endif %}
 
-                                    <div class="person-row-summary">
-                                        <div>
-                                            <img src="{{ member.Person.PhotoUrl }}" width="60" height="60" style="border-radius: 50%;">
-                                        </div>
-                                        <div class="person-info">
+                                        <div class="person-row-summary">
                                             <div>
-                                                <h5>{{ member.Person.FullName }}</h5>
+                                                <img src="{{ member.Person.PhotoUrl }}" width="60" height="60" style="border-radius: 50%;">
                                             </div>
-                                        </div>
-                                        <div class="person-contact">
-                                            {% comment %} Show Contact buttons for everyone if coach, otherwise just show for coach {% endcomment %}
-                                            {% if isCoach == true or showAdminElements == true %}
-                                                {% assign cellPhone = member.Person | PhoneNumber:'Mobile', true %}
-                                                {% assign homePhone = member.Person | PhoneNumber:'Home' %}
+                                            <div class="person-info">
+                                                <div>
+                                                    <h5>{{ member.Person.FullName }}</h5>
+                                                </div>
+                                            </div>
+                                            <div class="person-contact">
+                                                {% comment %} Show Contact buttons for everyone if coach, otherwise just show for coach {% endcomment %}
+                                                {% if isCoach == true or showAdminElements == true %}
+                                                    {% assign cellPhone = member.Person | PhoneNumber:'Mobile', true %}
+                                                    {% assign homePhone = member.Person | PhoneNumber:'Home' %}
 
-                                                {% if cellPhone %}
-                                                    <a href="tel:{{cellPhone}}">
-                                                        <i class="mdi mdi-phone dashboard-icon tooltip-phone-person"></i>
-                                                    </a>
-                                                {% elseif homePhone %}
-                                                    <a href="tel:{{homePhone}}">
-                                                        <i class="mdi mdi-phone dashboard-icon tooltip-phone-person"></i>
+                                                    {% if cellPhone %}
+                                                        <a href="tel:{{cellPhone}}">
+                                                            <i class="mdi mdi-phone dashboard-icon tooltip-phone-person"></i>
+                                                        </a>
+                                                    {% elseif homePhone %}
+                                                        <a href="tel:{{homePhone}}">
+                                                            <i class="mdi mdi-phone dashboard-icon tooltip-phone-person"></i>
+                                                        </a>
+                                                    {% endif %}
+                                                    <a href="/page/1751?person={{ member.Person.Id }}">
+                                                        <i class="mdi mdi-email dashboard-icon tooltip-email-person"></i>
                                                     </a>
                                                 {% endif %}
-                                                <a href="/page/1751?person={{ member.Person.Id }}">
-                                                    <i class="mdi mdi-email dashboard-icon tooltip-email-person"></i>
-                                                </a>
-                                            {% endif %}
+                                            </div>
                                         </div>
-                                    </div>
 
-                        {% endfor %}
+                            {% endfor %}
                         </div>
                         
                         
@@ -186,6 +196,11 @@ TODO: Add Other Group Type leader roles
         </div>
     </div>
 {% else %}
+    <script>
+        // global variable to show/hide group card in Next Steps Marketing cards (middle section)
+        // If this card is displaying, we want to hide the group card in next steps marketing
+        showGroupMarketingCard = false;
+    </script>
 
     {% comment %} Render Serve Call to Action {% endcomment %}
     <div class="info-card">
