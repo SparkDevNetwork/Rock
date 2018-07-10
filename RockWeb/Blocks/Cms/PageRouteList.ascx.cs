@@ -27,6 +27,7 @@ using System.ComponentModel;
 using Rock.Security;
 using Rock.Cache;
 using System.Web.UI.WebControls;
+using System.Data.Entity;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -194,7 +195,7 @@ namespace RockWeb.Blocks.Cms
             }
 
             int entityTypeId = new PageRoute().TypeId;
-            foreach ( var attribute in new AttributeService( new RockContext() ).Queryable()
+            foreach ( var attribute in new AttributeService( new RockContext() ).Queryable().AsNoTracking()
                 .Where( a =>
                     a.EntityTypeId == entityTypeId &&
                     a.IsGridColumn
@@ -228,7 +229,7 @@ namespace RockWeb.Blocks.Cms
         private void BindFilter()
         {
             ddlSite.Items.Clear();
-            foreach ( CacheSite site in new SiteService( new RockContext() ).Queryable().OrderBy( s => s.Name ).Select( a => a.Id ).ToList().Select( a => CacheSite.Get( a ) ) )
+            foreach ( CacheSite site in new SiteService( new RockContext() ).Queryable().AsNoTracking().OrderBy( s => s.Name ).Select( a => a.Id ).ToList().Select( a => CacheSite.Get( a ) ) )
             {
                 ddlSite.Items.Add( new ListItem( site.Name, site.Id.ToString() ) );
             }
@@ -245,7 +246,7 @@ namespace RockWeb.Blocks.Cms
             SortProperty sortProperty = gPageRoutes.SortProperty;
             gPageRoutes.EntityTypeId = CacheEntityType.Get<PageRoute>().Id;
 
-            var queryable = pageRouteService.Queryable();
+            var queryable = pageRouteService.Queryable().AsNoTracking();
 
             int? siteId = gFilter.GetUserPreference( "Site" ).AsIntegerOrNull();
             if ( siteId.HasValue )
