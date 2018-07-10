@@ -111,6 +111,22 @@ namespace Rock.Model
         [DataMember]
         public string HelpText { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this Defined Type is active.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember( IsRequired = true )]
+        [Required]
+        public bool IsActive
+        {
+            get { return _isActive; }
+            set { _isActive = value; }
+        }
+
+        private bool _isActive = true;
+
         #endregion 
 
         #region Virtual Properties
