@@ -1738,12 +1738,19 @@ WHERE b.ForeignKey LIKE 'PersonForeignId_{foreignSystemKey}_%'
 	AND p.PhotoId IS NULL" );
 
             // Update FamilyPhoto attribute for photos that were imported
-            var familyGroupType = CacheGroupType.GetFamilyGroupType();
-            var familyPhotoAttribute = familyGroupType.Attributes.GetValueOrNull( "FamilyPhoto" );
-            if ( familyPhotoAttribute != null )
+            int? familyPhotoAttributeId = null;
+            var groupEntityTypeId = CacheEntityType.Get( SystemGuid.EntityType.GROUP.AsGuid() )?.Id;
+            var familyGroupTypeId = CacheGroupType.GetFamilyGroupType()?.Id;
+            if ( groupEntityTypeId.HasValue && familyGroupTypeId.HasValue )
+            {
+                familyPhotoAttributeId = new AttributeService( rockContext )
+                    .Get( groupEntityTypeId.Value, "GroupTypeId", familyGroupTypeId.Value.ToString(), "FamilyPhoto" )?.Id;
+            }
+
+            if ( familyPhotoAttributeId.HasValue )
             {
                 rockContext.Database.ExecuteSqlCommand( $@"
-DECLARE @AttributeId INT = {familyPhotoAttribute.Id}
+DECLARE @AttributeId INT = {familyPhotoAttributeId.Value}
 
 -- just in case the family photo was already saved but with No Photo
 DELETE
@@ -1769,7 +1776,7 @@ SELECT 0
 	,newid()
 FROM [Group] g
 INNER JOIN BinaryFile b ON g.ForeignId = Replace(b.ForeignKey, 'FamilyForeignId_{foreignSystemKey}_', '')
-WHERE g.GroupTypeId = {familyGroupType.Id}
+WHERE g.GroupTypeId = {familyGroupTypeId.Value}
 	AND b.ForeignKey LIKE 'FamilyForeignId_{foreignSystemKey}_%'
 	AND g.Id NOT IN (
 		SELECT EntityId
