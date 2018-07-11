@@ -12,6 +12,7 @@
                     
                     <div class="panel-labels">
                         <Rock:HighlightLabel ID="hlblEditDataViewId" runat="server" />
+                        <div class="label label-primary"><asp:LinkButton ID="lbCreateReport" runat="server" OnClick="lbCreateReport_Click" ><i class="fa fa-plus"></i> Create Report</asp:LinkButton></div>
                     </div>
                 </div>
                 <div class="panel-body">
@@ -55,6 +56,7 @@
                         <div class="panel-labels">
                              <Rock:HighlightLabel ID="hlblDataViewId" runat="server" />
                              <Rock:HighlightLabel ID="hlblPersisted" LabelType="Info" Text="Persisted" Visible="false" runat="server" />
+                            <div class="label label-primary"><asp:LinkButton ID="lbViewCreateReport" runat="server" OnClick="lbCreateReport_Click" ><i class="fa fa-plus"></i> Create Report</asp:LinkButton></div>
                         </div>
                     </div>
                     <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
