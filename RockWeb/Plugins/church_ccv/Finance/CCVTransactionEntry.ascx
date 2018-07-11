@@ -324,7 +324,7 @@
                     </asp:Panel>
 
                     <%-- Manage Transaction Link --%>
-                    <asp:HyperLink ID="hlSuccessLink" runat="server" Text="To fully manage your account, please login / register" NavigateUrl="/loginv2" CssClass="success-link" />
+                    <asp:HyperLink ID="hlSuccessLink" runat="server" Text="To fully manage your account, please login / register" NavigateUrl="/login" CssClass="success-link" />
 
                     <%-- Success Details --%>
                     <div class="success-details">

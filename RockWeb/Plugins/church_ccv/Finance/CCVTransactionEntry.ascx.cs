@@ -238,8 +238,8 @@ TransactionAcountDetails: [
                             pnlSavePaymentAccount.Visible = true;
 
                             // Update success hyperlink
-                            hlSuccessLink.Text = "Manage Automated Giving";
-                            hlSuccessLink.NavigateUrl = "/dashboard/manage-automated-giving";
+                            hlSuccessLink.Text = "Manage Recurring Giving";
+                            hlSuccessLink.NavigateUrl = "/dashboard/recurring-giving";
                         }                            
                     }                        
                 }
