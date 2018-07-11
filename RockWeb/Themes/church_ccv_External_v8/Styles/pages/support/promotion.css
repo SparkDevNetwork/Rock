@@ -1,0 +1,13 @@
+﻿.page-background {   
+    background-color: black;
+}
+
+#subnavbar-bg {
+    display: none;
+}
+
+.main-feature {
+    height: unset;
+    padding-top: 100px;
+    margin-bottom: 100px;
+}

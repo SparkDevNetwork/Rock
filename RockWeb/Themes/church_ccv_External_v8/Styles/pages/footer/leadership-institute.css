@@ -1,0 +1,160 @@
+.page-background {
+   background-image: url("/Themes/church_ccv_External_v8/Assets/Images/footer/hero-leadership-institute.jpg");
+}
+
+/* Mobile Background Image */
+@media screen and (max-width: 500px) {
+    .page-background {
+        background-image: url("/Themes/church_ccv_External_v8/Assets/Images/footer/hero-mobile-leadership-institute.jpg");
+    }
+}
+
+#section-b-bg, #section-d-bg, #section-f-bg {
+    background-color: #FFFFFF;
+}
+
+.program-features {
+    flex-direction: column;
+    justify-content: center;
+}
+
+.program-features-items {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.program-features-item {
+    display: flex;
+    width: 45%;
+}
+
+.program-features-item img {
+    width: 40px;
+    height: 40px;
+    margin-right: 10px;
+}
+
+
+
+.li-testimonials {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.li-logo {
+    min-width: 200px;
+    max-width: 200px;
+    min-height: 200px;
+    max-height: 200px;
+    margin-right: 100px;
+    margin-left: 40px;
+}
+
+.testimonials-content {
+    display: flex;
+    flex-direction: column;
+    max-width: 650px;
+}
+
+.testimonials-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nav-button {
+    -webkit-appearance: unset;
+    background-color: unset;
+    border-color: unset;
+    border-style: unset;
+    border-width: unset;
+    padding: 0;
+}
+
+.nav-button i {
+    font-size: 32px;
+    color: #7A1315;
+}
+
+.testimonials-item p {
+    text-align: justify;
+}
+
+.li-faq {
+    display: flex;
+    flex-direction: column;
+    padding: 20px 0;
+}
+
+.li-faq-item p, .li-faq-item ul {
+    width: 95%;
+    margin: 0 auto;
+}
+
+/* Tablet Landscape Styling */
+@media screen and (max-width: 1024px) {
+    .li-testimonials {
+        flex-direction: column;
+        justify-content: space-around;
+        padding-top: 25px;
+    }
+}
+
+/* Tablet Portrait Styling */
+@media screen and (max-width: 768px) {
+    .testimonials-content {
+        width: 100%;
+    }
+
+    .li-logo {
+        min-width: 150px;
+        max-width: 150px;
+        min-height: 150px;
+        max-height: 150px;
+        margin-right: 0;
+        margin-left: 0;
+    }
+}
+
+/* Mobile Styling */
+@media screen and (max-width: 500px) {
+    .left h2 {
+        margin: 0;
+    }
+    .program-features-item {
+        width: 100%;
+        padding: 10px 0;
+        align-items: center;
+    }
+
+    .program-features-item img {
+        margin-right: 20px;
+    }
+
+    .li-testimonials {
+        flex-direction: column;
+        padding-top: 25px;
+    }
+
+    .testimonials-content {
+        width: 100%;
+    }
+
+    .li-faq {
+        flex-wrap: unset;
+        flex-direction: column;
+        height: unset;
+    }
+
+    .li-faq-item {
+        width: 100%;
+    }
+}
+
+
+
+
+

@@ -1,0 +1,51 @@
+
+<div class="li-testimonials infoSection">
+   <img class="li-logo img-responsive" src="~~/Assets/Images/logos/logo-leadership-institute.png" alt="Leadership Institute" />
+   
+   <div class="testimonials-content">
+      
+      <div class="testimonials-header">
+         <h2>Testimonials</h2>
+         <div class="nav-buttons">
+            <button type="button" class="nav-button nav-prev"><i class="mdi mdi-chevron-left event-card-navigation-icon"></i></button>
+            <button type="button" class="nav-button nav-next"><i class="mdi mdi-chevron-right event-card-navigation-icon"></i></button>
+         </div>
+      </div>
+      
+      <div class="testimonials">
+         <div class="testimonials-item">
+            <p>"I absolutely loved my time at CCV. The experiences I had in the residency are ones I will remember and carry throughout my carrier. By being given opportunities to lead in big ways and in new environments, it undeniably pushed me out of my comfort zone. Each season of the residency allowed me to realize and reach a new potential in my leadership journey. If you hunger for more training on how you can be a more powerful force for the local church, then this program is for you!"</p>
+            <p class="citation">- Mel Ferguson, 2016 Residency</p>
+         </div>
+         <div class="testimonials-item">
+            <p>"The Leadership Institute has made such a big impact on my life and changed the course of my ministry journey. This experience helped me find my love for the Special Needs community as well as the necessary training to be an effective leader. I am so thankful for the Leadership Institute’s spiritual and practical training and how they help send out leaders to impact the world."</p>
+            <p class="citation">- Erin Wickenkamp, 2016 Residency</p>
+         </div>
+         <div class="testimonials-item">
+            <p>"Getting the opportunity to learn and develop as a leader in CCV’s leadership institute has helped prepare me for ministry in ways I would have anticipated needing. It gave me real hands on experience under the guidance of some incredible leaders to help me apply the theological training I received at bible college. Through the residency I was also able to refine the calling God has in my life by broadening my perspective on what God has gifted and equipped me to do. I will always be thankful for way so many people invested in my development as a resident."</p>
+            <p class="citation">- Joel Wickenkamp, 2016 Residency</p>
+         </div>
+         <div class="testimonials-item">
+            <p>"Before I came to CCV for the Leadership Institute, I had no idea a program designed to prepare someone for full time ministry existed. I grew up in church world as a pastor’s daughter, but didn’t realize there was still so much I didn’t know. The program equipped me with hands on experience at the deepest level possible. I was given the freedom to try and sometimes fail, but grow and learn through the process. I had classes where I learned from some of the greatest leaders in ministry and then got to go and apply that knowledge. The residency program helped me step into my first ministry job with confidence and discover how God designed me to help further His Kingdom."</p>
+            <p class="citation">- Sloane Lindsey, 2017 Residency</p>
+         </div>
+      </div>
+   </div>
+
+</div>
+
+<script>
+$(document).ready(function() {
+   $('.testimonials').slick( {
+      arrows: false
+   });
+});
+
+$('.nav-prev').click(function(){
+  $('.testimonials').slick('slickPrev');
+})
+
+$('.nav-next').click(function(){
+  $('.testimonials').slick('slickNext');
+})
+</script>

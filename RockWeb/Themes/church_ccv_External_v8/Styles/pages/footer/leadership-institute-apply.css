@@ -1,0 +1,10 @@
+.page-background {
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/footer/hero-leadership-institute.jpg");
+ }
+
+ /* Mobile Background Image */
+@media screen and (max-width: 500px) {
+    .page-background {
+        background-image: url("/Themes/church_ccv_External_v8/Assets/Images/footer/hero-mobile-leadership-institute.jpg");
+    }
+}

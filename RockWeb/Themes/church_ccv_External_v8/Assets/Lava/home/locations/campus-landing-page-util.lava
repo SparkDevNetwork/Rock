@@ -14,8 +14,19 @@ Now iterate thru the campuses and find a matching name
 {% endcomment %}
 {% assign campusName = urlSegments | Last | Downcase %}
 
+{% comment %} if campus name is two words, add in a dash (to accomodate marketing links and SEO) {% endcomment %}
+{% case campusName %}
+    {% when 'eastvalley' %}
+        {% assign campusName = 'east-valley' %}
+    {% when 'midtown' %}
+        {% assign campusName = 'midtown-phoenix' %}
+    {% when 'northphoenix' %}
+        {% assign campusName = 'north-phoenix' %}
+{% endcase %}
+
 {% for currCampus in Campuses %}
     {% assign lowerName = currCampus.Name | Replace:' ', '-' | Downcase %}
+
     {% if lowerName == campusName %}
         {% assign campus = currCampus %}
     {% endif %}

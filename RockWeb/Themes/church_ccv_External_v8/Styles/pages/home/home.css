@@ -34,6 +34,12 @@
     margin-top: 25px;
 }
 
+@media screen and (max-width: 500px) {
+    .title-buttons {
+        flex-direction: column;
+    }
+}
+
 .btn-register, .btn-login {
     height: 50px;
     border: 1px solid #FFFFFF;
@@ -373,8 +379,14 @@
 
 /* Kids / Students Section */
 #zone-sectiond {
-    margin: 0;
+    margin: 0 -15px;
     max-width: unset;
+}
+
+@media screen and (max-width: 500px) {
+    #zone-sectiond {
+        margin: 0;
+    }
 }
 
 .kids-students {

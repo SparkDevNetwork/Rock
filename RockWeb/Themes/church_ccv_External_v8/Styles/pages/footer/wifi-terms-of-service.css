@@ -1,0 +1,35 @@
+.page-background {   
+    background-color: #616161;
+}
+
+.wifi-terms {
+    margin: 0;
+}
+
+.wifi-terms h2 {
+    font-size: 42px;
+    line-height: 50px;
+    font-weight: 400;
+}
+
+.wifi-terms-section {
+    border-bottom: 2px solid #EEEEEE;
+    padding: 10px 0;
+}
+
+.wifi-terms-section p,.wifi-terms-section li {
+    font-family: heebo;
+    font-size: 14px;
+    line-height: 26px;
+    color: #707270;
+}
+
+#ternavbar-bg {
+    display: none;
+}
+/* Mobile Styling */
+@media screen and (max-width: 500px) {
+    .wifi-terms {
+        margin: 0;
+    }
+}

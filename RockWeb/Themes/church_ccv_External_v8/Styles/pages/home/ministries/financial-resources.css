@@ -173,13 +173,13 @@
     .next {
         margin-left: 280px;
         margin-right: 0px;
-        top: 1370px;
+        top: 1570px;
       }
       
       .prev{
         margin-right: 0px;
         margin-left: 0px;
-        top: 1370px;
+        top: 1570px;
       }
 
     .book {
@@ -225,12 +225,12 @@
 
     .next {
         right: 10px;
-        top: 1440px;
+        top: 1640px;
       }
       
       .prev{
         left: 10px;
-        top: 1440px;
+        top: 1640px;
       }
 
     .navigation-tertiary-mobile {
@@ -251,12 +251,12 @@
 
     .next {
         right: 10px;
-        top: 1640px;
+        top: 1840px;
       }
       
       .prev{
         left: 10px;
-        top: 1640px;
+        top: 1840px;
       }
 
     .navigation-tertiary-mobile {

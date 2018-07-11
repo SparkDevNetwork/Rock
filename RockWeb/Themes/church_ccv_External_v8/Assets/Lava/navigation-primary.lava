@@ -3,8 +3,13 @@
 {% endcomment %}
 
 {% assign urlSegs = 'Global' | Page:'Url' | Url:'segments' %}
-{% assign navSection = urlSegs[1] | Downcase %}
-{% assign navSection = navSection | Replace:'/', '' %}
+{% assign urlSegsSize = urlSegs | Size %}
+{% if urlSegsSize > 1 %}
+    {% assign navSection = urlSegs[1] | Downcase %}
+    {% assign navSection = navSection | Replace:'/', '' %}
+{% else %}
+    {% assign navSection = 'home' %}
+{% endif %}
 
 {% if Page.DisplayChildPages == 'true' and Page.Pages != empty %}
 

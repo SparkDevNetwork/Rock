@@ -1,0 +1,36 @@
+.main-feature {
+    background-color: black;
+}
+
+#subnavbar-bg { 
+    display: none;
+}
+
+.photo-upload-panel {
+    display: flex;
+    flex-direction: column;
+}
+
+.photoupload-photo {
+    margin: 20px;
+}
+
+.photoupload-photo .image-editor {
+    float: unset;
+}
+
+.image-editor-photo .image-container {
+    width: 200px;
+    height: 200px;
+}
+
+@media screen and (min-width: 501px) {
+    .main-feature {
+        padding-top: 125px;
+        height: 350px;
+    }
+
+    .photo-upload-panel {
+        flex-direction: row;
+    }
+}

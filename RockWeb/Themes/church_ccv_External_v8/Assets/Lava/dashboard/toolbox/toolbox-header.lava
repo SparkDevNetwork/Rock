@@ -49,6 +49,15 @@
     }
 </script>
 
+{% comment %} Check for GroupId page parameter, if missing redirect back to dashboard {% endcomment %}
+{% unless PageParameter.GroupId %}
+    {% if CurrentPersonCanEdit %}
+        <p class="alert alert-warning">If you could not edit you would be redirected to: <a href="/dashboard">Dashboard</a> because there is no group id query parameter.</p>
+    {% else %}
+        {{ '/dashboard' | PageRedirect }}
+    {% endif %}
+{% endunless %}
+
 {% comment %}Force conversion from string to int {% endcomment %}
 {% assign groupId = PageParameter.GroupId | Plus: 0 %}
 

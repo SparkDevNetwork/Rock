@@ -1,0 +1,30 @@
+﻿.page-background {   
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/support/hero-volunteer-screening.jpg");
+}
+
+/* Mobile Background Image */
+@media screen and (max-width: 500px) {
+    .page-background {
+        background-image: url("/Themes/church_ccv_External_v8/Assets/Images/support/hero-mobile-volunteer-screening.jpg");
+    }
+}
+
+#subnavbar-bg { 
+    display: none;
+}
+
+.background-card {
+    min-height: 500px;
+}
+
+@media screen and (min-width: 501px) {
+    .main-feature {
+        padding-top: 125px;
+        height: 350px;
+    }
+
+    .background-card {
+        padding-top: 75px;
+        padding-bottom: 75px;
+    }
+}
