@@ -19,7 +19,7 @@
 
                 <Rock:NotificationBox ID="nbErrorMessage" runat="server" NotificationBoxType="Danger" />
 
-                <div id="pnlEditDetails" runat="server">
+                <div id="pnlEditDetails" runat="server" class="group-member-edit">
 
                     <div class="row">
                         <div class="col-md-6">
