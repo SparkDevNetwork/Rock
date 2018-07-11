@@ -1,6 +1,6 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PhotoUpload.ascx.cs" Inherits="RockWeb.Blocks.Crm.PhotoUpload" %>
-
-<asp:UpdatePanel ID="upnlContent" runat="server">
+<!-- CFU 7-10-2018: added class to panel to override styling -->
+<asp:UpdatePanel ID="upnlContent" runat="server" class="photo-upload-panel">
     <ContentTemplate>
         <Rock:NotificationBox runat="server" ID="nbWarning" NotificationBoxType="Warning" Text="The address you provided is not valid. Are you sure you copied that web address correctly?" Visible="false"></Rock:NotificationBox>
         <asp:PlaceHolder ID="phPhotos" runat="server"></asp:PlaceHolder>
