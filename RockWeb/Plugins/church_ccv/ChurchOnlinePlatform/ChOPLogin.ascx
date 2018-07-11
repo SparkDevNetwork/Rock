@@ -3,7 +3,7 @@
     <asp:Panel ID="pnlLogin" runat="server" DefaultButton="btnLogin">
         <div class="sso-login-wrapper">
             <div id="sso-login-panel-title">
-                <img src="/themes/church_ccv_external_v8/assets/ccv_logo-hi-res.png" style="width: 125px;"/>
+                <img src="/themes/church_ccv_external_v8/assets/Images/logos/ccv_logo-hi-res.png" style="width: 125px;"/>
             
                 <h1 class="lm-form-title text-center">Log In</h1>
                 <p class="small-paragraph-bold">Fill out the form below to securely access your account.</p>
