@@ -43,6 +43,8 @@ namespace Rock.Lava.Shortcodes
 
         Dictionary<string, object> _internalMergeFields;
 
+        const int _maxRecursionDepth = 10;
+
         /// <summary>
         /// Method that will be run at Rock startup
         /// </summary>
@@ -69,7 +71,7 @@ namespace Rock.Lava.Shortcodes
         {
             _markup = markup;
             _tagName = tagName;
-            _shortcode = CacheLavaShortcode.Get( _tagName );
+            _shortcode = CacheLavaShortcode.All().Where( c => c.TagName == tagName ).FirstOrDefault();
 
             base.Initialize( tagName, markup, tokens );
         }
@@ -87,6 +89,20 @@ namespace Rock.Lava.Shortcodes
 
                 // add a unique id so shortcodes have easy access to one
                 parms.AddOrReplace( "uniqueid", "id-" + Guid.NewGuid().ToString() );
+
+                // keep track of the recurrsion depth
+                int currentRecurrsionDepth = 0;
+                if ( parms.ContainsKey( "RecursionDepth" ) )
+                {
+                    currentRecurrsionDepth = parms["RecursionDepth"].ToString().AsInteger() + 1;
+
+                    if ( currentRecurrsionDepth > _maxRecursionDepth )
+                    {
+                        result.Write( "A recursive loop was dected and processing of this shortcode has stopped." );
+                        return;
+                    }
+                }
+                parms.AddOrReplace( "RecursionDepth", currentRecurrsionDepth );
 
                 var results = _shortcode.Markup.ResolveMergeFields( parms, _shortcode.EnabledLavaCommands );
                 result.Write( results );
@@ -112,6 +128,16 @@ namespace Rock.Lava.Shortcodes
             // first run lava across the inputted markup
             _internalMergeFields = new Dictionary<string, object>();
 
+            // get merge fields loaded by the block or container
+            if ( context.Environments.Count > 0 )
+            {
+                foreach ( var item in context.Environments[0] )
+                {
+                    _internalMergeFields.AddOrReplace( item.Key, item.Value );
+                    parms.AddOrReplace( item.Key, item.Value );
+                }
+            }
+
             // get variables defined in the lava source
             foreach ( var scope in context.Scopes )
             {
@@ -122,15 +148,6 @@ namespace Rock.Lava.Shortcodes
                 }
             }
 
-            // get merge fields loaded by the block or container
-            if ( context.Environments.Count > 0 )
-            {
-                foreach ( var item in context.Environments[0] )
-                {
-                    _internalMergeFields.AddOrReplace( item.Key, item.Value );
-                    parms.AddOrReplace( item.Key, item.Value );
-                }
-            }
             var resolvedMarkup = markup.ResolveMergeFields( _internalMergeFields );
 
             // create all the parameters from the shortcode with their default values
