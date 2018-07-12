@@ -441,7 +441,6 @@ namespace RockWeb.Blocks.Security
             }
 
             PersonService.SaveNewPerson( person, new RockContext() );
-        }
 
             // Link new device to person alias
             RockPage.LinkPersonAliasToDevice( person.PrimaryAlias.Id, hfMacAddress.Value );
