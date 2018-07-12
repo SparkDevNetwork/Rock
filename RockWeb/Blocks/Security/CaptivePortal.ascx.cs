@@ -166,9 +166,12 @@ namespace RockWeb.Blocks.Security
                 else
                 {
                     personalDevice = CreateDevice( macAddress );
-                    CreateDeviceCookie( macAddress );
                 }
-                
+
+                // We are going to create this everytime they hit the captive portal page. Otherwise if the device is saved but not linked to an actual user (not the fake one created here),
+                // and then deleted by the user/browser/software, then they'll never get the cookie again and won't automatically get linked by RockPage.
+                CreateDeviceCookie( macAddress );
+
                 // See if user is logged and link the alias to the device.
                 if ( CurrentPerson != null )
                 {
@@ -524,19 +527,21 @@ namespace RockWeb.Blocks.Security
                 }
 
                 Person person = new PersonService( rockContext ).Get( ( int ) personId );
-
-                int mobilePhoneTypeId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
-
                 person.Email = tbEmail.Text;
 
-                if ( !person.PhoneNumbers.Where( n => n.NumberTypeValueId == mobilePhoneTypeId ).Any() )
+                int mobilePhoneTypeId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
+                if ( !person.PhoneNumbers.Where( n => n.NumberTypeValueId == mobilePhoneTypeId ).Any() &&
+                    tbMobilePhone.Text.RemoveAllNonAlphaNumericCharacters().IsNotNullOrWhitespace() )
                 {
                     person.PhoneNumbers.Add( new PhoneNumber { IsSystem = false, Number = tbMobilePhone.Text.RemoveAllNonAlphaNumericCharacters(), NumberTypeValueId = mobilePhoneTypeId } );
                 }
                 else
                 {
                     PhoneNumber phoneNumber = person.PhoneNumbers.Where( p => p.NumberTypeValueId == mobilePhoneTypeId ).FirstOrDefault();
-                    phoneNumber.Number = tbMobilePhone.Text.RemoveAllNonAlphaNumericCharacters();
+                    if ( phoneNumber != null )
+                    {
+                        phoneNumber.Number = tbMobilePhone.Text.RemoveAllNonAlphaNumericCharacters();
+                    }
                 }
 
                 rockContext.SaveChanges();
