@@ -78,6 +78,10 @@
     <Compile Include="Migrations\201806262300325_Rollup_0626.Designer.cs">
       <DependentUpon>201806262300325_Rollup_0626.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201807102225186_AddIsActiveToDefinedValueType.cs" />
+    <Compile Include="Migrations\201807102225186_AddIsActiveToDefinedValueType.Designer.cs">
+      <DependentUpon>201807102225186_AddIsActiveToDefinedValueType.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 8.0\Version 1.8.0\201801162056008_V8Features.cs" />
     <Compile Include="Migrations\Version 8.0\Version 1.8.0\201801162056008_V8Features.Designer.cs">
       <DependentUpon>201801162056008_V8Features.cs</DependentUpon>
@@ -2903,6 +2907,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201806262300325_Rollup_0626.resx">
       <DependentUpon>201806262300325_Rollup_0626.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201807102225186_AddIsActiveToDefinedValueType.resx">
+      <DependentUpon>201807102225186_AddIsActiveToDefinedValueType.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201801162056008_V8Features.resx">
       <DependentUpon>201801162056008_V8Features.cs</DependentUpon>

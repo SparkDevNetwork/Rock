@@ -426,19 +426,21 @@ namespace RockWeb.Blocks.Security
                 .Where( p => p.Email == tbEmail.Text )
                 .Where( p => p.PhoneNumbers.Where( n => n.NumberTypeValueId == mobilePhoneTypeId ).FirstOrDefault().Number == mobilePhoneNumber )
                 .FirstOrDefault();
-            
-            // If no known person record then create one
-            if ( person == null )
-            {
-                person = new Person {
-                    FirstName = tbFirstName.Text,
-                    LastName = tbLastName.Text,
-                    Email = tbEmail.Text,
-                    PhoneNumbers = new List<PhoneNumber>() { new PhoneNumber { IsSystem = false, Number = tbMobilePhone.Text.RemoveAllNonAlphaNumericCharacters(), NumberTypeValueId = mobilePhoneTypeId } }
-                };
 
-                PersonService.SaveNewPerson( person, new RockContext() );
+            // If no known person record then create one
+            person = new Person
+            {
+                FirstName = tbFirstName.Text,
+                LastName = tbLastName.Text,
+                Email = tbEmail.Text
+            };
+
+            if ( tbMobilePhone.Text.RemoveAllNonAlphaNumericCharacters().IsNotNullOrWhitespace() )
+            {
+                person.PhoneNumbers = new List<PhoneNumber>() { new PhoneNumber { IsSystem = false, Number = tbMobilePhone.Text.RemoveAllNonAlphaNumericCharacters(), NumberTypeValueId = mobilePhoneTypeId } };
             }
+
+            PersonService.SaveNewPerson( person, new RockContext() );
 
             // Link new device to person alias
             RockPage.LinkPersonAliasToDevice( person.PrimaryAlias.Id, hfMacAddress.Value );

@@ -268,8 +268,8 @@ namespace RockWeb.Blocks.Communication
                     copyName = string.Format( "Copy({0}) of {1}", copyNumber, template.Name );
                 }
 
-                template.Name = copyName.Truncate( 100 );
-                template.IsSystem = false;
+                templateCopy.Name = copyName.Truncate( 100 );
+                templateCopy.IsSystem = false;
                 templateCopy.Guid = Guid.NewGuid();
                 service.Add( templateCopy );
                 rockContext.SaveChanges();
