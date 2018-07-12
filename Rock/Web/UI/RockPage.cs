@@ -943,7 +943,21 @@ namespace Rock.Web.UI
                         GetCookieContext( GetContextCookieName( false ) );      // Site
                         GetCookieContext( GetContextCookieName( true ) );       // Page (will replace any site values)
 
-                        // check for page context
+                        // check to see if any of the ModelContext.Keys that got set from Cookies are on the URL. If so, the URL value overrides the Cookie value
+                        foreach ( var modelContextName in ModelContext.Keys.ToList() )
+                        {
+                            var type = Type.GetType( modelContextName, false, false );
+                            if ( type != null )
+                            {
+                                int? contextId = PageParameter( type.Name + "Id" ).AsIntegerOrNull();
+                                if ( contextId.HasValue )
+                                {
+                                    ModelContext.AddOrReplace( modelContextName, new Data.KeyEntity( contextId.Value ) );
+                                }
+                            }
+                        }
+
+                        // check for page context (that were explicitly set in Page Properties)
                         foreach ( var pageContext in _pageCache.PageContexts )
                         {
                             int? contextId = PageParameter( pageContext.Value ).AsIntegerOrNull();
