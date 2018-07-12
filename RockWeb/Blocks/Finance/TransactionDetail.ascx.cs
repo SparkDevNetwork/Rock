@@ -398,8 +398,8 @@ namespace RockWeb.Blocks.Finance
                 txn.FinancialPaymentDetail.CreditCardTypeValueId = ddlCreditCardType.SelectedValueAsInt();
 
                 txn.Summary = tbSummary.Text;
-
-                decimal totalAmount = TransactionDetailsState.Select( d => d.Amount ).ToList().Sum();
+                decimal totalAmount = tbSingleAccountAmount.Text == string.Empty ? TransactionDetailsState.Select( d => d.Amount ).ToList().Sum() : tbSingleAccountAmount.Text.AsDecimal();
+              
                 if ( cbIsRefund.Checked && totalAmount > 0 )
                 {
                     nbErrorMessage.Title = "Incorrect Refund Amount";
@@ -663,6 +663,7 @@ namespace RockWeb.Blocks.Finance
             if ( TransactionDetailsState.Count() == 1 )
             {
                 TransactionDetailsState.First().Amount = tbSingleAccountAmount.Text.AsDecimal();
+                tbSingleAccountAmount.Text = string.Empty;
                 UseSimpleAccountMode = false;
                 BindAccounts();
             }

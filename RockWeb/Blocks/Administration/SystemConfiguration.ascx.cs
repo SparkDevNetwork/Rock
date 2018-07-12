@@ -31,6 +31,7 @@ using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using System.Configuration;
 using Microsoft.Web.XmlTransform;
+using Rock.SystemKey;
 
 namespace RockWeb.Blocks.Administration
 {
@@ -81,6 +82,7 @@ namespace RockWeb.Blocks.Administration
 
             if ( !Page.IsPostBack )
             {
+                BindGeneralConfiguration();
                 BindTimeZones();
                 BindOtherAppSettings();
                 BindMaxFileSize();
@@ -102,13 +104,35 @@ namespace RockWeb.Blocks.Administration
         {
             // nothing here yet...
         }
-        
+
+        /// <summary>
+        /// Handles saving the general configuration set by the user to the database.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void btnGeneralSave_Click( object sender, EventArgs e )
+        {
+            if ( !Page.IsValid )
+            {
+                return;
+            }
+
+            nbGeneralMessage.Visible = true;
+
+            // Save General
+            Rock.Web.SystemSettings.SetValue( SystemSetting.ENABLE_MULTI_TIME_ZONE_SUPPORT, cbEnableMultipleTimeZone.Checked.ToString() );
+
+            nbGeneralMessage.NotificationBoxType = NotificationBoxType.Success;
+            nbGeneralMessage.Title = "Success";
+            nbGeneralMessage.Text = "Setting saved successfully.";
+        }
+
         /// <summary>
         /// Handles saving all the data set by the user to the web.config.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected void bbtnSaveConfig_Click( object sender, EventArgs e )
+        protected void btnSaveConfig_Click( object sender, EventArgs e )
         {
             if ( !Page.IsValid )
             {
@@ -142,6 +166,14 @@ namespace RockWeb.Blocks.Administration
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Bind thee general configuration
+        /// </summary>
+        private void BindGeneralConfiguration()
+        {
+            cbEnableMultipleTimeZone.Checked = Rock.Web.SystemSettings.GetValue( SystemSetting.ENABLE_MULTI_TIME_ZONE_SUPPORT ).AsBoolean();
+        }
 
         /// <summary>
         /// Bind the available time zones and select the one that's configured in the

@@ -2533,7 +2533,6 @@ namespace RockWeb.Blocks.Groups
 
             RockContext rockContext = new RockContext();
 
-            CreateDataViewDropDownList( rockContext );
             CreateRoleDropDownList( rockContext );
             CreateGroupSyncEmailDropDownLists( rockContext );
             ShowDialog( "GROUPSYNCSETTINGS", true );
@@ -2556,8 +2555,8 @@ namespace RockWeb.Blocks.Groups
 
             hfGroupSyncGuid.Value = syncGuid.ToString();
 
-            CreateDataViewDropDownList( rockContext );
-            ddlSyncDataView.SetValue( groupSync.SyncDataViewId );
+            dvipSyncDataView.EntityTypeId = CacheEntityType.Get<Person>().Id;
+            dvipSyncDataView.SetValue( groupSync.SyncDataViewId );
 
             CreateRoleDropDownList( rockContext, groupSync.GroupTypeRoleId );
             ddlGroupRoles.SetValue( groupSync.GroupTypeRoleId );
@@ -2620,9 +2619,7 @@ namespace RockWeb.Blocks.Groups
 
             groupSync.GroupId = hfGroupId.ValueAsInt();
             groupSync.GroupTypeRoleId = ddlGroupRoles.SelectedValue.AsInteger();
-            groupSync.GroupTypeRole = new GroupTypeRoleService( rockContext ).Get( groupSync.GroupTypeRoleId );
-            groupSync.SyncDataViewId = ddlSyncDataView.SelectedValue.AsInteger();
-            groupSync.SyncDataView = new DataViewService( rockContext ).Get( groupSync.SyncDataViewId );
+            groupSync.SyncDataViewId = dvipSyncDataView.SelectedValueAsInt() ?? 0;
             groupSync.ExitSystemEmailId = ddlExitEmail.SelectedValue.AsIntegerOrNull();
             groupSync.WelcomeSystemEmailId = ddlWelcomeEmail.SelectedValue.AsIntegerOrNull();
             groupSync.AddUserAccountsDuringSync = cbCreateLoginDuringSync.Checked;
@@ -2707,30 +2704,11 @@ namespace RockWeb.Blocks.Groups
         }
 
         /// <summary>
-        /// Creates the data view drop down list without an filters.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        private void CreateDataViewDropDownList( RockContext rockContext )
-        {
-            var dataViews = new DataViewService( rockContext )
-                .Queryable()
-                .ToList();
-
-            // Give a blank for the first selection
-            ddlSyncDataView.Items.Add( new ListItem() );
-
-            foreach ( var dataView in dataViews )
-            {
-                ddlSyncDataView.Items.Add( new ListItem( dataView.Name, dataView.Id.ToString() ) );
-            }
-        }
-
-        /// <summary>
         /// Clears the values from the group sync modal controls.
         /// </summary>
         private void ClearGroupSyncModal()
         {
-            ddlSyncDataView.Items.Clear();
+            //ddlSyncDataView.Items.Clear();
             ddlGroupRoles.Items.Clear();
             ddlWelcomeEmail.Items.Clear();
             ddlExitEmail.Items.Clear();

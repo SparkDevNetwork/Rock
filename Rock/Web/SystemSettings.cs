@@ -136,6 +136,79 @@ namespace Rock.Web
         }
 
         /// <summary>
+        /// Gets the value from web configuration.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public static string GetValueFromWebConfig( string key )
+        {
+            return System.Configuration.ConfigurationManager.AppSettings[key] ?? string.Empty;
+        }
+
+        /// <summary>
+        /// Sets the value to web configuration.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        public static void SetValueToWebConfig( string key, string value )
+        {
+            try
+            {
+                if ( System.Configuration.ConfigurationManager.AppSettings[key] != null )
+                {
+                    System.Configuration.Configuration rockWebConfig = System.Web.Configuration.WebConfigurationManager.OpenWebConfiguration( "~" );
+                    rockWebConfig.AppSettings.Settings[key].Value = value;
+                    rockWebConfig.Save();
+                }
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex, null );
+            }
+        }
+
+        /// <summary>
+        /// Sets values to web configuration.
+        /// Use this when saving multiple keys so a save is not called for each key.
+        /// </summary>
+        /// <param name="settings">The settings.</param>
+        public static void SetValueToWebConfig( Dictionary<string,string> settings )
+        {
+            bool changed = false;
+            System.Configuration.Configuration rockWebConfig = null;
+
+            try
+            {
+                rockWebConfig = System.Web.Configuration.WebConfigurationManager.OpenWebConfiguration( "~" );
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex, null );
+            }
+
+            foreach ( var setting in settings )
+            {
+                if ( System.Configuration.ConfigurationManager.AppSettings[setting.Key] != null )
+                {
+                    rockWebConfig.AppSettings.Settings[setting.Key].Value = setting.Value;
+                    changed = true;
+                }
+            }
+
+            try
+            {
+                if ( changed )
+                {
+                    rockWebConfig.Save();
+                }
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex, null );
+            }
+        }
+
+        /// <summary>
         /// Returns Global Attributes from cache.  If they are not already in cache, they
         /// will be read and added to cache
         /// </summary>
