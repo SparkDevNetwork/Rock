@@ -2,11 +2,16 @@
   <!-- Wrapper for slides -->
   <div class="carousel-inner">
     {%- for item in Items -%}
-        {%- if LinkedPages.DetailPage contains '{Slug}' and item.PrimarySlug != '' -%}
-          {%- assign itemLink = LinkedPages.DetailPage | Replace:'{Slug}',item.PrimarySlug | Prepend:'/' -%}
+      {%- assign itemPrimarySlug = item.PrimarySlug | Trim -%}
+      {%- if LinkedPages.DetailPage contains '{Slug}' and itemPrimarySlug != '' -%}
+        {%- assign itemLink = LinkedPages.DetailPage | Replace:'{Slug}',item.PrimarySlug | Prepend:'/' -%}
+      {%- else -%}
+        {%- if LinkedPages.DetailPage contains '{Slug}' -%}
+          {%- assign itemLink = LinkedPages.DetailPage | Replace:'{Slug}',item.Id | Prepend:'/' -%}
         {%- else -%}
           {%- capture itemLink -%}{{ LinkedPages.DetailPage }}?Item={{ item.Id }}{%- endcapture -%}
         {%- endif -%}
+      {%- endif -%}
     {%- if forloop.index == 1 -%}
     <div class="item active">
       {%- else -%}

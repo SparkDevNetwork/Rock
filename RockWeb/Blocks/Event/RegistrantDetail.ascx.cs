@@ -456,7 +456,10 @@ namespace RockWeb.Blocks.Event
                                 reloadedRegistrant.GroupMemberId = groupMember.Id;
                             }
                         }
-                        reloadedRegistrant.Registration.SavePersonNotesAndHistory( reloadedRegistrant.Registration.PersonAlias.Person, this.CurrentPersonAliasId, previousRegistrantPersonIds );
+                        if (reloadedRegistrant.Registration.FirstName.IsNotNullOrWhitespace() && reloadedRegistrant.Registration.LastName.IsNotNullOrWhitespace())
+                        {
+                            reloadedRegistrant.Registration.SavePersonNotesAndHistory( reloadedRegistrant.Registration.FirstName, reloadedRegistrant.Registration.LastName, this.CurrentPersonAliasId, previousRegistrantPersonIds );
+                        }
                         newRockContext.SaveChanges();
                     }
                 }
@@ -717,29 +720,34 @@ namespace RockWeb.Blocks.Event
         {
             phFields.Controls.Clear();
 
-            if ( TemplateState.Forms == null )
+            if ( TemplateState.Forms != null )
             {
-                return;
-            }
-
-            foreach ( var form in TemplateState.Forms.OrderBy( f => f.Order ) )
-            {
-                if ( form.Fields == null )
+                foreach ( var form in TemplateState.Forms.OrderBy( f => f.Order ) )
                 {
-                    continue;
-                }
-
-                foreach ( var field in form.Fields.OrderBy( f => f.Order ) )
-                {
-                    if ( field.FieldSource == RegistrationFieldSource.RegistrationAttribute )
+                    if ( form.Fields != null )
                     {
-                        if ( field.AttributeId.HasValue )
+                        foreach ( var field in form.Fields.OrderBy( f => f.Order ) )
                         {
-                            object fieldValue = RegistrantState.FieldValues.ContainsKey( field.Id ) ? RegistrantState.FieldValues[field.Id].FieldValue : null;
-                            string value = setValues && fieldValue != null ? fieldValue.ToString() : string.Empty;
+                            if ( field.FieldSource == RegistrationFieldSource.RegistrationAttribute )
+                            {
+                                object fieldValue = null;
+                                if ( RegistrantState.FieldValues.ContainsKey( field.Id ) )
+                                {
+                                    fieldValue = RegistrantState.FieldValues[field.Id].FieldValue;
+                                }
 
-                            var attribute = CacheAttribute.Get( field.AttributeId.Value );
-                            attribute.AddControl( phFields.Controls, value, BlockValidationGroup, setValues, true, field.IsRequired, null, field.Attribute.Description );
+                                if ( field.AttributeId.HasValue )
+                                {
+                                    var attribute = CacheAttribute.Get( field.AttributeId.Value );
+                                    string value = string.Empty;
+                                    if ( setValues && fieldValue != null )
+                                    {
+                                        value = fieldValue.ToString();
+                                    }
+
+                                    attribute.AddControl( phFields.Controls, value, BlockValidationGroup, setValues, true, field.IsRequired, null, string.Empty );
+                                }
+                            }
                         }
                     }
                 }

@@ -169,60 +169,6 @@ namespace Rock.Cache
         #region Static Methods
 
         /// <summary>
-        /// Gets the specified tag name.
-        /// </summary>
-        /// <param name="tagName">Name of the tag.</param>
-        /// <returns></returns>
-        public new static CacheLavaShortcode Get(string tagName)
-        {
-            return Get(tagName, null);
-        }
-
-        /// <summary>
-        /// Gets the specified tag name.
-        /// </summary>
-        /// <param name="tagName">Name of the tag.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        public static CacheLavaShortcode Get(string tagName, RockContext rockContext)
-        {
-            return tagName.IsNotNullOrWhitespace()
-                ? GetOrAddExisting(tagName, () => QueryDbByTagName(tagName, rockContext)) : null;
-        }
-
-        private static CacheLavaShortcode QueryDbByTagName( string tagName, RockContext rockContext )
-        {
-            if ( rockContext != null )
-            {
-                return QueryDbByTagNamebWithContext( tagName, rockContext );
-            }
-
-            using ( var newRockContext = new RockContext() )
-            {
-                return QueryDbByTagNamebWithContext( tagName, newRockContext );
-            }
-        }
-
-        /// <summary>
-        /// Queries the database by id with context.
-        /// </summary>
-        /// <param name="tagName">Name of the tag.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        private static CacheLavaShortcode QueryDbByTagNamebWithContext( string tagName, RockContext rockContext )
-        {
-            var service = new LavaShortcodeService( rockContext );
-            var entity = service.Queryable().AsNoTracking(  )
-                .FirstOrDefault(c => c.TagName == tagName);
-
-            if ( entity == null ) return null;
-
-            var value = new CacheLavaShortcode();
-            value.SetFromEntity( entity );
-            return value;
-        }
-
-        /// <summary>
         /// Returns all Lava shortcodes
         /// </summary>
         /// <returns></returns>

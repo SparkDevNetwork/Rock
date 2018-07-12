@@ -12,7 +12,7 @@
         {%- if headerImageId != '' -%}
         <div class="hero hero-card has-overlay" style="background-image: url('/GetImage.ashx?Id={{ headerImageId }}&maxWidth=2500');">
         {%- else -%}
-        <div class="hero hero-card"></div>
+        <div class="hero hero-card">
         {%- endif -%}
     </Rock:Lava>
         <div class="container d-flex flex-column" style="min-height: 100vh;">

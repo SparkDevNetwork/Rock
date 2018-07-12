@@ -10,7 +10,7 @@
 
         <div class="treeview">
             <div class="treeview-actions" id="divTreeviewActions" runat="server">
-                
+
                 <div class="btn-group">
                     <button type="button" class="btn btn-action btn-xs dropdown-toggle" data-toggle="dropdown">
                         <i class="fa fa-plus-circle"></i> Add Location <span class="fa fa-caret-down"></span>
@@ -24,14 +24,14 @@
             </div>
 
             <div class="treeview-scroll scroll-container scroll-container-horizontal">
-                
+
                 <div class="viewport">
                     <div class="overview">
                         <div class="panel-body treeview-frame">
                             <div id="treeview-content">
                             </div>
                         </div>
-                    
+
                     </div>
                 </div>
                 <div class="scrollbar"><div class="track"><div class="thumb"><div class="end"></div></div></div></div>
@@ -50,7 +50,7 @@
                 var scrollContainer = scrollbCategory.find('.viewport');
                 var scrollIndicator = scrollbCategory.find('.track');
                 locationIScroll = new IScroll(scrollContainer[0], {
-                    mouseWheel: true,
+                    mouseWheel: false,
                     eventPassthrough: true,
                     preventDefault: false,
                     scrollX: true,

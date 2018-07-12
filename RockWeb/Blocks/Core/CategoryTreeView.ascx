@@ -44,7 +44,7 @@
             </div>
 
             <Rock:NotificationBox ID="nbWarning" runat="server" NotificationBoxType="Warning" />
-            
+
             <div class="treeview-scroll scroll-container scroll-container-horizontal">
 
                 <div class="viewport">
@@ -73,7 +73,7 @@
             var scrollContainer = scrollbCategory.find('.viewport');
             var scrollIndicator = scrollbCategory.find('.track');
                 <%=pnlTreeviewContent.ClientID%>IScroll = new IScroll(scrollContainer[0], {
-                    mouseWheel: true,
+                    mouseWheel: false,
                     eventPassthrough: true,
                     preventDefault: false,
                     scrollX: true,
