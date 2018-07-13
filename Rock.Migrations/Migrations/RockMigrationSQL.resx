@@ -766,4 +766,7 @@
   <data name="_201806111950515_ContentChannelViewDetail" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>version 8.0\version 1.8.0\201806111950515_contentchannelviewdetail.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
+  <data name="_201805171836577_Rollup_0517_vCheckin_Attendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>version 8.0\version 1.8.0\201805171836577_rollup_0517_vcheckin_attendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
 </root>
