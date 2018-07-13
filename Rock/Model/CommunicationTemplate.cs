@@ -409,7 +409,7 @@ namespace Rock.Model
                     mediumData.AddIfNotBlank( "Subject", Subject );
                     mediumData.AddIfNotBlank( "Message", SMSMessage );
                 }
-                else if ( PushMessage.IsNotNullOrWhitespace() )
+                else if ( PushMessage.IsNotNullOrWhiteSpace() )
                 {
                     mediumData.AddIfNotBlank( "Title", PushTitle );
                     mediumData.AddIfNotBlank( "Message", PushMessage );

@@ -1111,7 +1111,7 @@ namespace Rock.Web.UI
                                 Page.Trace.Warn( "Getting memory cache" );
                                 string blockCacheKey = string.Format( "Rock:BlockOutput:{0}", block.Id );
                                 var blockCacheString = RockCache.Get( blockCacheKey ) as string;
-                                if ( blockCacheString.IsNotNullOrWhitespace() )
+                                if ( blockCacheString.IsNotNullOrWhiteSpace() )
                                 {
                                     // If the current block exists in our custom output cache, add the cached output instead of adding the control
                                     control = new LiteralControl( blockCacheString );

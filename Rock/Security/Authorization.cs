@@ -704,7 +704,7 @@ namespace Rock.Security
 
             // If cookie is for a more generic domain, we need to store that domain so that we can expire it correctly 
             // when the user signs out.
-            if ( !authCookie.Domain.IsNotNullOrWhitespace() ) return;
+            if ( !authCookie.Domain.IsNotNullOrWhiteSpace() ) return;
 
             var domainCookie =
                 new HttpCookie( $"{FormsAuthentication.FormsCookieName}_DOMAIN", authCookie.Domain )
@@ -759,7 +759,7 @@ namespace Rock.Security
         {
             var httpCookie = new HttpCookie( FormsAuthentication.FormsCookieName, value )
             {
-                Domain = domain.IsNotNullOrWhitespace() ? domain : FormsAuthentication.CookieDomain,
+                Domain = domain.IsNotNullOrWhiteSpace() ? domain : FormsAuthentication.CookieDomain,
                 HttpOnly = true,
                 Path = FormsAuthentication.FormsCookiePath,
                 Secure = FormsAuthentication.RequireSSL
@@ -780,7 +780,7 @@ namespace Rock.Security
 
             // Get the first domain in the list that the current request's host name ends with
             var domain = domains.FirstOrDefault( d => HttpContext.Current.Request.Url.Host.ToLower().EndsWith( d.ToLower() ) );
-            if ( !domain.IsNotNullOrWhitespace() ) return null;
+            if ( !domain.IsNotNullOrWhiteSpace() ) return null;
 
             // Make sure domain name is prefixed with a '.'
             domain = domain != null && domain.StartsWith( "." ) ? domain : $".{domain}";

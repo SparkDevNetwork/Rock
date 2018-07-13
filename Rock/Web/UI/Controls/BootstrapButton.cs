@@ -188,7 +188,7 @@ namespace Rock.Web.UI.Controls
         {
             base.OnCommand( e );
 
-            if ( CompletedText.IsNotNullOrWhitespace() || CompletedMessage.IsNotNullOrWhitespace() )
+            if ( CompletedText.IsNotNullOrWhiteSpace() || CompletedMessage.IsNotNullOrWhiteSpace() )
             {
                 _isButtonClicked = true;
                 var script = string.Format(
