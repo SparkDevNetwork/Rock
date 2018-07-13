@@ -1218,11 +1218,8 @@ namespace RockWeb.Blocks.Communication
 
             hfShowAdditionalFields.Value = ( !string.IsNullOrEmpty( communicationTemplate.ReplyToEmail ) || !string.IsNullOrEmpty( communicationTemplate.CCEmails ) || !string.IsNullOrEmpty( communicationTemplate.BCCEmails ) ).ToTrueFalse().ToLower();
 
-            // only set the subject if the template has one (just in case they already typed in an email subject for this communication
-            if ( communicationTemplate.Subject.IsNotNullOrWhitespace() )
-            {
-                tbEmailSubject.Text = communicationTemplate.Subject;
-            }
+            //  set the subject from the template even if it is null so we don't accidently keep a subject doesn't make sense for the newly selected template
+            tbEmailSubject.Text = communicationTemplate.Subject;
 
             // if this communication already has an Email Content specified, since they picked (or re-picked) a template, 
             // we'll have to start over on the EmailEditorHtml since the content is dependent on the template
