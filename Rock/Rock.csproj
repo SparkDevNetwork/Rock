@@ -1720,6 +1720,8 @@
     <Compile Include="Web\UI\Controls\Grid\EncryptedField.cs" />
     <Compile Include="Web\UI\Controls\Grid\HtmlField.cs" />
     <Compile Include="Web\UI\Controls\Grid\LavaField.cs" />
+    <Compile Include="Web\UI\Controls\NewFamily\AdvanceInfo.cs" />
+    <Compile Include="Web\UI\Controls\NewFamily\AdvanceInfoRow.cs" />
     <Compile Include="Web\UI\Controls\NoteEditor.cs" />
     <Compile Include="Web\UI\Controls\NoteOptions.cs" />
     <Compile Include="Web\UI\Controls\ControlMirror.cs" />
