@@ -355,7 +355,7 @@ namespace Rock.Reporting.DataFilter
                     var errorMessages = new List<string>();
                     if ( selectionConfig.UsePersisted == false )
                     {
-                        dataViewFilterOverrides.IgnoreDataViewPersistedValues.Add( dataView.Id );
+                        dataViewFilterOverrides?.IgnoreDataViewPersistedValues.Add( dataView.Id );
                     }
 
                     Expression expression = dataView.GetExpression( serviceInstance, parameterExpression, dataViewFilterOverrides, out errorMessages );
