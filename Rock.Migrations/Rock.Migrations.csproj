@@ -5135,6 +5135,9 @@
     <Content Include="Migrations\Version 8.0\Version 1.8.0\201805171836577_Rollup_0517_spAnalytics_ETL_Attendance.sql">
       <DependentUpon>201805171836577_Rollup_0517.cs</DependentUpon>
     </Content>
+    <Content Include="Migrations\Version 8.0\Version 1.8.0\201805171836577_Rollup_0517_vCheckin_Attendance.sql">
+      <DependentUpon>201805171836577_Rollup_0517.cs</DependentUpon>
+    </Content>
     <Content Include="Migrations\Version 8.0\Version 1.8.0\201805211735573_Homepage_ContentChannel.sql">
       <DependentUpon>201805211735573_Homepage.cs</DependentUpon>
     </Content>
