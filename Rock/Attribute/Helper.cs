@@ -355,6 +355,13 @@ namespace Rock.Attribute
         [Obsolete]
         public static void LoadAttributes( Rock.Attribute.IHasAttributes entity, RockContext rockContext )
         {
+            // If a pre-v8 plugin calls LoadAttributes, it is possible that the entity is really a Rock.Data.IHasAttributes, but called this LoadAttributes instead.  If so, go ahead and call the Rock.Data.IHasAttributes LoadAttributes instead
+            if ( entity is Rock.Data.IHasAttributes )
+            {
+                ( entity as Rock.Data.IHasAttributes ).LoadAttributes( rockContext );
+                return;
+            }
+
             if ( entity != null )
             {
                 Dictionary<string, PropertyInfo> properties = new Dictionary<string, PropertyInfo>();
@@ -1009,8 +1016,15 @@ namespace Rock.Attribute
         /// If a rockContext value is included, this method will save any previous changes made to the context
         /// </remarks>
         [Obsolete]
-        public static void SaveAttributeValues( IHasAttributes model, RockContext rockContext = null )
+        public static void SaveAttributeValues( Rock.Attribute.IHasAttributes model, RockContext rockContext = null )
         {
+            // If a pre-v8 plugin calls SaveAttributeValues, it is possible that the entity is really a Rock.Data.IHasAttributes, but called this SaveAttributeValues instead.  If so, go ahead and call the Rock.Data.IHasAttributes SaveAttributeValues instead
+            if ( model is Rock.Data.IHasAttributes )
+            {
+                ( model as Rock.Data.IHasAttributes ).SaveAttributeValues( rockContext );
+                return;
+            }
+
             if ( model != null && model.Attributes != null && model.AttributeValues != null && model.Attributes.Any() && model.AttributeValues.Any() )
             {
                 rockContext = rockContext ?? new RockContext();
@@ -1100,7 +1114,7 @@ namespace Rock.Attribute
         /// If a rockContext value is included, this method will save any previous changes made to the context
         /// </remarks>
         [Obsolete]
-        public static void SaveAttributeValue( IHasAttributes model, Rock.Web.Cache.AttributeCache attribute, string newValue, RockContext rockContext = null )
+        public static void SaveAttributeValue( Rock.Attribute.IHasAttributes model, Rock.Web.Cache.AttributeCache attribute, string newValue, RockContext rockContext = null )
         {
             if ( model != null && attribute != null )
             {
