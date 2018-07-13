@@ -167,7 +167,7 @@ namespace Rock
         public static WebControl AddCssClass( this WebControl webControl, string className )
         {
             // if the className is blank, don't do anything
-            if ( className.IsNotNullOrWhitespace() )
+            if ( className.IsNotNullOrWhiteSpace() )
             {
                 // if the webControl doesn't have a CssClass yet, simply set it to the className
                 if ( webControl.CssClass.IsNullOrWhiteSpace() )

@@ -285,7 +285,7 @@ END
         /// <returns></returns>
         private static string ConvertMediumData( Dictionary<string, string> mediumData, string key, string propertyValue )
         {
-            if ( propertyValue.IsNotNullOrWhitespace() )
+            if ( propertyValue.IsNotNullOrWhiteSpace() )
             {
                 return propertyValue;
             }

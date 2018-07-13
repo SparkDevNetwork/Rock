@@ -154,7 +154,7 @@ namespace Rock.Cache
         /// <returns></returns>
         public static CacheRestController Get( string className, RockContext rockContext )
         {
-            return className.IsNotNullOrWhitespace()
+            return className.IsNotNullOrWhiteSpace()
                 ? GetOrAddExisting( className, () => QueryDbByClassName( className, rockContext ) ) : null;
         }
 

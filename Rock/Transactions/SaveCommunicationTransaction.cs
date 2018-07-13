@@ -182,7 +182,7 @@ namespace Rock.Transactions
             using ( var rockContext = new RockContext() )
             {
                 int? senderPersonAliasId = null;
-                if ( FromAddress.IsNotNullOrWhitespace() )
+                if ( FromAddress.IsNotNullOrWhiteSpace() )
                 {
                     var sender = new PersonService( rockContext )
                         .Queryable().AsNoTracking()

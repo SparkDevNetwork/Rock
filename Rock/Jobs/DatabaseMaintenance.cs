@@ -107,7 +107,7 @@ namespace Rock.Jobs
 
                     resultsMessage.Append( errorMessage );
 
-                    if ( alertEmail.IsNotNullOrWhitespace() )
+                    if ( alertEmail.IsNotNullOrWhiteSpace() )
                     {
                         var globalAttributes = CacheGlobalAttributes.Get();
                         string emailHeader = globalAttributes.GetValue( "EmailHeader" );

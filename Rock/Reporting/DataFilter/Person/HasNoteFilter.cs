@@ -123,7 +123,7 @@ function() {
                 }
 
                 var containingText = selectionValues[1];
-                if ( containingText.IsNotNullOrWhitespace() )
+                if ( containingText.IsNotNullOrWhiteSpace() )
                 {
                     result += $" containing '{containingText}'";
                 }
@@ -244,7 +244,7 @@ function() {
                     noteQry = noteQry.Where( x => x.NoteTypeId == noteTypeId );
                 }
 
-                if ( containsText.IsNotNullOrWhitespace() )
+                if ( containsText.IsNotNullOrWhiteSpace() )
                 {
                     noteQry = noteQry.Where( a => a.Text.Contains( containsText ) );
                 }
