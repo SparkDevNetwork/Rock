@@ -18,7 +18,8 @@ namespace Rock.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
-    
+    using System.IO;
+
     /// <summary>
     ///
     /// </summary>
@@ -29,27 +30,65 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            AddColumn("dbo.DefinedValue", "IsActive", c => c.Boolean(nullable: false));
-            AddColumn("dbo.DefinedType", "IsActive", c => c.Boolean(nullable: false));
+            AddColumn( "dbo.DefinedValue", "IsActive", c => c.Boolean( nullable: false, defaultValue: true ) );
+            AddColumn( "dbo.DefinedType", "IsActive", c => c.Boolean( nullable: false, defaultValue: true ) );
 
-            Sql( @"UPDATE
-                	[dbo].[DefinedValue]
-                   SET 
-                    [IsActive] = 1" );
-
-            Sql( @"UPDATE
-                	[dbo].[DefinedType]
-                   SET 
-                    [IsActive] = 1" );
+            MoveOriginalCssOverrides();
         }
-        
+
+        /// <summary>
+        /// Moves the original CSS and Variable LESS overrides from Rock Theme to RockOriginal Theme
+        /// </summary>
+        private static void MoveOriginalCssOverrides()
+        {
+            if ( !System.Web.Hosting.HostingEnvironment.IsHosted )
+            {
+                // We only want to backup if this is a production environment, so if this migration was run from Package Manager Console, don't copy the files
+                return;
+            }
+
+            // Copy the existing (old) _css-overrides.less to RockOriginal to preserve any customizations that were made, then replace it with a blank one for the new v8 Rock Theme
+            var rockCssOverridesPath = System.IO.Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "Themes\\Rock\\Styles\\_css-overrides.less" );
+            var rockOriginalCssOverridesPath = System.IO.Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "Themes\\RockOriginal\\Styles\\_css-overrides.less" );
+
+            if ( !File.Exists( rockOriginalCssOverridesPath ) )
+            {
+                if ( File.Exists( rockCssOverridesPath ) )
+                {
+                    File.Copy( rockCssOverridesPath, rockOriginalCssOverridesPath );
+                    File.WriteAllText( rockCssOverridesPath, string.Empty );
+                }
+                else
+                {
+                    File.WriteAllText( rockOriginalCssOverridesPath, string.Empty );
+                }
+            }
+
+            // Copy the existing (old) _variable-overrides.less to RockOriginal to preserve any customizations that were made, then replace it with a blank one for the new v8 Rock Theme
+            var rockVariableOverridesPath = System.IO.Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "Themes\\Rock\\Styles\\_variable-overrides.less" );
+            var rockOriginalVariableOverridesPath = System.IO.Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "Themes\\RockOriginal\\Styles\\_variable-overrides.less" );
+
+            if ( !File.Exists( rockOriginalVariableOverridesPath ) )
+            {
+                if ( File.Exists( rockVariableOverridesPath ) )
+                {
+                    File.Copy( rockVariableOverridesPath, rockOriginalVariableOverridesPath );
+                    File.WriteAllText( rockVariableOverridesPath, string.Empty );
+                }
+                else
+                {
+                    File.WriteAllText( rockOriginalVariableOverridesPath, string.Empty );
+                }
+            }
+        }
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
         public override void Down()
         {
-            DropColumn("dbo.DefinedType", "IsActive");
-            DropColumn("dbo.DefinedValue", "IsActive");
+            DropColumn( "dbo.DefinedType", "IsActive" );
+            DropColumn( "dbo.DefinedValue", "IsActive" );
         }
     }
 }
