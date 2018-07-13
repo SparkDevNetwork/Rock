@@ -3,11 +3,6 @@
 /bin/*.pdb
 /bin/*.xml
 
-# Make sure all the roslyn files are stored in source control. 
-# The don't restore consistently when switching branches, and we probably want them in source control anyways
-!/bin/roslyn/*.dll
-!/bin/roslyn/*.exe
-
 /*.suo
 /*.user
 /Test.aspx
