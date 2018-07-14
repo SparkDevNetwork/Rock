@@ -965,8 +965,8 @@ WHERE ExpireDateTime IS NOT NULL
                 // if IO Exception thrown and this is not a retry attempt
                 if ( !isRetryAttempt )
                 {
-                    // have thread sleep for 10 ms and retry delete
-                    System.Threading.Thread.Sleep( 10 );
+                    // wait for 10 ms and retry delete
+                    System.Threading.Tasks.Task.Delay( 10 ).Wait();
                     DeleteDirectory( directoryPath, true );
                 }
             }
@@ -993,8 +993,8 @@ WHERE ExpireDateTime IS NOT NULL
                 // If an IO exception has occurred and this is not a retry attempt
                 if ( !isRetryAttempt )
                 {
-                    // have the thread sleep for 10 ms and retry delete.
-                    System.Threading.Thread.Sleep( 10 );
+                    // wait for 10 ms and retry delete.
+                    System.Threading.Tasks.Task.Delay( 10 ).Wait();
                     DeleteFile( filePath, true );
                 }
             }

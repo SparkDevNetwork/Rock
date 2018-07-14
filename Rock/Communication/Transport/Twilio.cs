@@ -111,7 +111,7 @@ namespace Rock.Communication.Transport
 
                     if ( throttlingWaitTimeMS.HasValue )
                     {
-                        System.Threading.Thread.Sleep( throttlingWaitTimeMS.Value );
+                        System.Threading.Tasks.Task.Delay( throttlingWaitTimeMS.Value ).Wait();
                     }
                 }
             }
@@ -267,7 +267,7 @@ namespace Rock.Communication.Transport
 
                                 if ( throttlingWaitTimeMS.HasValue )
                                 {
-                                    System.Threading.Thread.Sleep( throttlingWaitTimeMS.Value );
+                                    System.Threading.Tasks.Task.Delay( throttlingWaitTimeMS.Value ).Wait();
                                 }
                             }
                             else

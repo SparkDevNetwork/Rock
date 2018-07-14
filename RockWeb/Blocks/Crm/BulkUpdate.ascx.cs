@@ -818,7 +818,7 @@ namespace RockWeb.Blocks.Crm
                     //
                     // Wait for the browser to finish loading.
                     //
-                    Thread.Sleep( 1000 );
+                    Task.Delay( 1000 ).Wait();
                     HubContext.Clients.Client( hfConnectionId.Value ).bulkUpdateProgress( "0", "0" );
 
                     if ( individuals.Any() )
@@ -852,14 +852,14 @@ namespace RockWeb.Blocks.Crm
                                 lastNotified = RockDateTime.Now;
                             }
 
-                            Thread.Sleep( 250 );
+                            Task.Delay( 250 ).Wait();
                         }
                     }
 
                     //
                     // Give any jQuery transitions a moment to settle.
                     //
-                    Thread.Sleep( 600 );
+                    Task.Delay( 600 ).Wait();
 
                     if ( workers.Any( w => w.IsFaulted ) )
                     {

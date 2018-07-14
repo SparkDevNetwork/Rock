@@ -290,7 +290,7 @@ public class LaunchWorkflow : IHttpHandler
             {
                 if ( retry < maxRetry - 1 )
                 {
-                    System.Threading.Thread.Sleep( 2000 );
+                    System.Threading.Tasks.Task.Delay( 2000 ).Wait();
                 }
             }
         }
