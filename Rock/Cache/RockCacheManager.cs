@@ -99,12 +99,8 @@ namespace Rock.Cache
         /// <returns></returns>
         private static ICacheManagerConfiguration GetCacheConfig()
         {
-            // We need to get the settings from the DB instead of the cache or else we'll go into an infinite loop (which is bad).
-            var attributeService = new Model.AttributeService( new Data.RockContext() );
-            bool redisEnabled = attributeService.GetSystemSettingValue( SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER )?.AsBoolean() ?? false;
-            bool disableBackplane = System.Configuration.ConfigurationManager.AppSettings["DisableRemoteCache"].AsBooleanOrNull() ?? false;
-            
-            if ( redisEnabled == false || disableBackplane )
+            bool redisEnabled = Rock.Web.SystemSettings.GetValueFromWebConfig( SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER )?.AsBoolean()?? false;
+            if ( redisEnabled == false )
             {
                 return new ConfigurationBuilder( "InProcess" )
                 .WithDictionaryHandle()
@@ -112,9 +108,9 @@ namespace Rock.Cache
                 .Build();
             }
 
-            string redisPassword = attributeService.GetSystemSettingValue( Rock.SystemKey.SystemSetting.REDIS_PASSWORD ) ?? string.Empty;
-            string[] redisEndPointList = attributeService.GetSystemSettingValue( SystemKey.SystemSetting.REDIS_ENDPOINT_LIST )?.Split( ',' );
-            int redisDbIndex = attributeService.GetSystemSettingValue( SystemKey.SystemSetting.REDIS_DATABASE_NUMBER )?.AsIntegerOrNull() ?? 0;
+            string redisPassword = Web.SystemSettings.GetValueFromWebConfig( SystemKey.SystemSetting.REDIS_PASSWORD ) ?? string.Empty;
+            string[] redisEndPointList = Web.SystemSettings.GetValueFromWebConfig( SystemKey.SystemSetting.REDIS_ENDPOINT_LIST )?.Split( ',' );
+            int redisDbIndex = Web.SystemSettings.GetValueFromWebConfig( SystemKey.SystemSetting.REDIS_DATABASE_NUMBER )?.AsIntegerOrNull() ?? 0;
 
             return new ConfigurationBuilder( "InProcess With Redis Backplane" )
                 .WithJsonSerializer()
@@ -124,7 +120,7 @@ namespace Rock.Cache
                 {
                     redisConfig.WithAllowAdmin().WithDatabase( redisDbIndex );
 
-                    if( redisPassword.IsNotNullOrWhitespace() )
+                    if( redisPassword.IsNotNullOrWhiteSpace() )
                     {
                         redisConfig.WithPassword( redisPassword );
                     }
@@ -132,7 +128,14 @@ namespace Rock.Cache
                     foreach ( var redisEndPoint in redisEndPointList )
                     {
                         string[] info = redisEndPoint.Split( ':' );
-                        redisConfig.WithEndpoint( info[0], info[1].AsIntegerOrNull() ?? 6379 );
+                        if ( info.Length == 2 )
+                        {
+                            redisConfig.WithEndpoint( info[0], info[1].AsIntegerOrNull() ?? 6379 );
+                        }
+                        else
+                        {
+                            redisConfig.WithEndpoint( info[0], 6379 );
+                        }
                     }
                 } )
                 .WithMaxRetries( 100 )
@@ -187,21 +190,21 @@ namespace Rock.Cache
             // If an expiration timespan was specific, will need to use a CacheItem to add item to cache.
             if ( expiration != TimeSpan.MaxValue )
             {
-                var cacheItem = region.IsNotNullOrWhitespace() ? Cache.GetCacheItem( key, region ) : Cache.GetCacheItem( key );
+                var cacheItem = region.IsNotNullOrWhiteSpace() ? Cache.GetCacheItem( key, region ) : Cache.GetCacheItem( key );
                 if ( cacheItem != null )
                 {
                     Cache.Put( cacheItem.WithAbsoluteExpiration( expiration ) );
                 }
                 else
                 {
-                    cacheItem = region.IsNotNullOrWhitespace() ?
+                    cacheItem = region.IsNotNullOrWhiteSpace() ?
                         new CacheItem<T>( key, region, updateValue, ExpirationMode.Absolute, expiration ) :
                         new CacheItem<T>( key, updateValue, ExpirationMode.Absolute, expiration );
                     Cache.Add( cacheItem );
                 }
             }
 
-            if ( region.IsNotNullOrWhitespace() )
+            if ( region.IsNotNullOrWhiteSpace() )
             {
                 Cache.AddOrUpdate( key, region, updateValue, v => updateValue );
             }

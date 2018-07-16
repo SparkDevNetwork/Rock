@@ -783,12 +783,7 @@ namespace Rock.Web.UI
                 }
 
                 // Check if there is a ROCK_PERSONALDEVICE_ADDRESS cookie, link person to device
-                if ( Request.Cookies["rock_wifi"] != null )
-                {
-                    HttpCookie httpCookie = Request.Cookies["rock_wifi"];
-                    LinkPersonAliasToDevice( ( int ) CurrentPersonAliasId, httpCookie.Values["ROCK_PERSONALDEVICE_ADDRESS"] );
-                    Response.Cookies["rock_wifi"].Expires = DateTime.Now.AddDays( -1 );
-                }
+                HandleRockWiFiCookie( CurrentPersonAliasId );
             }
 
             // If a PageInstance exists
@@ -943,7 +938,21 @@ namespace Rock.Web.UI
                         GetCookieContext( GetContextCookieName( false ) );      // Site
                         GetCookieContext( GetContextCookieName( true ) );       // Page (will replace any site values)
 
-                        // check for page context
+                        // check to see if any of the ModelContext.Keys that got set from Cookies are on the URL. If so, the URL value overrides the Cookie value
+                        foreach ( var modelContextName in ModelContext.Keys.ToList() )
+                        {
+                            var type = Type.GetType( modelContextName, false, false );
+                            if ( type != null )
+                            {
+                                int? contextId = PageParameter( type.Name + "Id" ).AsIntegerOrNull();
+                                if ( contextId.HasValue )
+                                {
+                                    ModelContext.AddOrReplace( modelContextName, new Data.KeyEntity( contextId.Value ) );
+                                }
+                            }
+                        }
+
+                        // check for page context (that were explicitly set in Page Properties)
                         foreach ( var pageContext in _pageCache.PageContexts )
                         {
                             int? contextId = PageParameter( pageContext.Value ).AsIntegerOrNull();
@@ -1097,7 +1106,7 @@ namespace Rock.Web.UI
                                 Page.Trace.Warn( "Getting memory cache" );
                                 string blockCacheKey = string.Format( "Rock:BlockOutput:{0}", block.Id );
                                 var blockCacheString = RockCache.Get( blockCacheKey ) as string;
-                                if ( blockCacheString.IsNotNullOrWhitespace() )
+                                if ( blockCacheString.IsNotNullOrWhiteSpace() )
                                 {
                                     // If the current block exists in our custom output cache, add the cached output instead of adding the control
                                     control = new LiteralControl( blockCacheString );
@@ -2146,6 +2155,23 @@ Sys.Application.add_load(function () {
             }
         }
 
+        private void HandleRockWiFiCookie( int? personAliasId )
+        {
+            if ( personAliasId == null)
+            {
+                return;
+            }
+
+            if ( Request.Cookies["rock_wifi"] != null )
+            {
+                HttpCookie httpCookie = Request.Cookies["rock_wifi"];
+                if ( LinkPersonAliasToDevice( ( int ) personAliasId, httpCookie.Values["ROCK_PERSONALDEVICE_ADDRESS"] ) )
+                {
+                    Response.Cookies["rock_wifi"].Expires = DateTime.Now.AddDays( -1 );
+                }
+            }
+        }
+
         /// <summary>
         /// Gets the name of the context cookie.
         /// </summary>
@@ -2172,18 +2198,18 @@ Sys.Application.add_load(function () {
         /// Links the person alias to device.
         /// </summary>
         /// <param name="personAliasId">The person alias identifier.</param>
-        /// <param name="MacAddress">The mac address.</param>
-        public void LinkPersonAliasToDevice(int personAliasId, string MacAddress)
+        /// <param name="macAddress">The mac address.</param>
+        public bool LinkPersonAliasToDevice(int personAliasId, string macAddress)
         {
             using ( var rockContext = new RockContext() )
             {
                 PersonalDeviceService personalDeviceService = new PersonalDeviceService( rockContext );
-                PersonalDevice personalDevice = personalDeviceService.GetByMACAddress( MacAddress );
+                PersonalDevice personalDevice = personalDeviceService.GetByMACAddress( macAddress );
 
                 // It's possible that the device was deleted from the DB but a cookie still exists
-                if ( personalDevice == null )
+                if ( personalDevice == null || personAliasId == 0 )
                 {
-                    return;
+                    return false;
                 }
 
                 // Assign the current Person.Alias to the device and save
@@ -2196,6 +2222,8 @@ Sys.Application.add_load(function () {
                 // Update interactions for this device with this person.alias if they don't already have one.
                 InteractionService interactionService = new InteractionService( rockContext );
                 interactionService.UpdateInteractionsWithPersonAliasIdForDeviceId( personAliasId, personalDevice.Id );
+
+                return true;
             }
         }
 

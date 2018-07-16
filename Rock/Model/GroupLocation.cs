@@ -200,7 +200,7 @@ namespace Rock.Model
                 case System.Data.Entity.EntityState.Added:
                     {
                         string locationType = History.GetDefinedValueValue( null, GroupLocationTypeValueId );
-                        locationType = locationType.IsNotNullOrWhitespace() ? locationType : "Unknown";
+                        locationType = locationType.IsNotNullOrWhiteSpace() ? locationType : "Unknown";
                         History.EvaluateChange( GroupHistoryChanges, $"{locationType} Location", (int?)null, Location, LocationId, rockContext );
                         History.EvaluateChange( GroupHistoryChanges, $"{locationType} Is Mailing", false, IsMailingLocation );
                         History.EvaluateChange( GroupHistoryChanges, $"{locationType} Is Mapp Location", false, IsMappedLocation );
@@ -232,7 +232,7 @@ namespace Rock.Model
                 case System.Data.Entity.EntityState.Deleted:
                     {
                         string locationType = History.GetDefinedValueValue( null, entry.OriginalValues["GroupLocationTypeValueId"].ToStringSafe().AsIntegerOrNull() );
-                        locationType = locationType.IsNotNullOrWhitespace() ? locationType : "Unknown";
+                        locationType = locationType.IsNotNullOrWhiteSpace() ? locationType : "Unknown";
                         Location loc = null;
                         History.EvaluateChange( GroupHistoryChanges, $"{locationType} Location", entry.OriginalValues["LocationId"].ToStringSafe().AsIntegerOrNull(), loc, (int?)null, rockContext );
                         break;

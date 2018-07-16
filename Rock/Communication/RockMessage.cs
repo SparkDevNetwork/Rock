@@ -121,7 +121,7 @@ namespace Rock.Communication
         /// <param name="to">To.</param>
         public void AddRecipient( string to )
         {
-            if ( to.IsNotNullOrWhitespace() )
+            if ( to.IsNotNullOrWhiteSpace() )
             {
                 _recipients.Add( new RecipientData( to ) );
             }

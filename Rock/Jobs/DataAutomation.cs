@@ -873,7 +873,7 @@ Update Family Status: {updateFamilyStatus}
                     // increase the timeout just in case.
                     rockContext.Database.CommandTimeout = 180;
 
-                    adultChildIds = new GroupMemberService( rockContext )
+                    var qry = new GroupMemberService( rockContext )
                         .Queryable().AsNoTracking()
                         .Where( m =>
                             m.GroupRoleId == childRole.Id &&
@@ -881,7 +881,16 @@ Update Family Status: {updateFamilyStatus}
                             m.Person.BirthDate <= adultBirthdate &&
                             m.Person.RecordStatusValue != null &&
                             m.Person.RecordStatusValue.Guid == activeRecordStatusGuid &&
-                            !m.Person.IsLockedAsChild )
+                            !m.Person.IsLockedAsChild );
+
+                    if ( settings.IsOnlyMoveGraduated )
+                    {
+                        int maxGradYear = CalculateMaxGradYear();
+                        // Children who have a graduation year and have graduated
+                        qry = qry.Where( gm => gm.Person.GraduationYear != null && gm.Person.GraduationYear <= maxGradYear );
+                    }
+
+                    adultChildIds = qry
                         .OrderBy( m => m.PersonId )
                         .Select( m => m.PersonId )
                         .Distinct()
@@ -984,7 +993,7 @@ Update Family Status: {updateFamilyStatus}
                                     // Save role change to history
                                     var memberChanges = new History.HistoryChangeList();
                                     History.EvaluateChange( memberChanges, "Role", string.Empty, adultRole.Name );
-                                    HistoryService.SaveChanges( rockContext, typeof( Person ), familyChangesGuid, personId, memberChanges, newFamily.Name, typeof( Group ), newFamily.Id, false );
+                                    HistoryService.SaveChanges( rockContext, typeof( Person ), familyChangesGuid, personId, memberChanges, newFamily.Name, typeof( Group ), newFamily.Id, false, null, "Data Automation" );
                                 }
                                 else
                                 {
@@ -1020,7 +1029,7 @@ Update Family Status: {updateFamilyStatus}
                                     History.EvaluateChange( familyChanges, groupLocation.GroupLocationTypeValue.Value + " Location", string.Empty, groupLocation.Location.ToString() );
                                 }
 
-                                HistoryService.SaveChanges( rockContext, typeof( Person ), familyChangesGuid, personId, familyChanges, false );
+                                HistoryService.SaveChanges( rockContext, typeof( Person ), familyChangesGuid, personId, familyChanges, false,null, "Data Automation" );
                             }
 
                             // If user configured the job to copy home phone and this person does not have a home phone, copy the first home phone number from another adult in original family(s)
@@ -1133,6 +1142,25 @@ Update Family Status: {updateFamilyStatus}
                 return ex.Messages().AsDelimited( "; " );
             }
         }
+
+        /// <summary>
+        /// Calculates the last graduation year which children can have graduated in order to be considered an adult. I.E. Any year greater than this and they have not graduated yet
+        /// </summary>
+        /// <returns></returns>
+        private int CalculateMaxGradYear()
+        {
+            var graduationDateWithCurrentYear = CacheGlobalAttributes.Get().GetValue( "GradeTransitionDate" ).MonthDayStringAsDateTime() ?? new DateTime( RockDateTime.Today.Year, 6, 1 );
+            if ( !( graduationDateWithCurrentYear < RockDateTime.Today ) )
+            {
+                // if the graduation date hasn't occurred this year yet, return last year's graduation date as any children with this years date have not graduated yet
+                return graduationDateWithCurrentYear.AddYears( -1 ).Year;
+            }
+            else
+            {
+                return graduationDateWithCurrentYear.Year;
+            }
+        }
+
 
         #endregion Move Adult Children
 

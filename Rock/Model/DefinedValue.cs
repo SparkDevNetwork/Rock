@@ -85,6 +85,22 @@ namespace Rock.Model
         [DataMember]
         public string Description { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this DefinedValue is active.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember( IsRequired = true )]
+        [Required]
+        public bool IsActive
+        {
+            get { return _isActive; }
+            set { _isActive = value; }
+        }
+
+        private bool _isActive = true;
+
         #endregion
 
         #region Virtual Properties
@@ -148,7 +164,7 @@ namespace Rock.Model
         public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
         {
             CacheDefinedValue.UpdateCachedEntity( this.Id, entityState );
-            CacheDefinedType.Get( this.DefinedTypeId )?.ReloadDefinedValues();
+            CacheDefinedType.Get( this.DefinedTypeId, (RockContext)dbContext )?.ReloadDefinedValues();
         }
 
         #endregion

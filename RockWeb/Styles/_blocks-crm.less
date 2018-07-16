@@ -847,9 +847,8 @@ span.field-value {
 // -------------------------
 
 .table-groupmembers .radio:first-child {
-  margin-top: 0;
+  margin-top: 0 !important;
 }
-
 
 @media (max-width: @screen-sm) {
   /* Force table to not be like tables anymore */
@@ -858,7 +857,13 @@ span.field-value {
   .table-groupmembers tbody,
   .table-groupmembers th,
   .table-groupmembers td,
-  .table-groupmembers tr {
+  .table-groupmembers tr,
+  table.table-groupcontactinfo,
+  .table-groupcontactinfo thead,
+  .table-groupcontactinfo tbody,
+  .table-groupcontactinfo th,
+  .table-groupcontactinfo td,
+  .table-groupcontactinfo tr {
     display: block;
   }
 
@@ -908,7 +913,7 @@ span.field-value {
         position: relative;
         display: block;
         width: 100%;
-        padding: 6px;
+        padding: 10px;
 
         /* Top/left values mimic padding */
         font-size: @grid-column-header-font-size;
@@ -983,6 +988,86 @@ span.field-value {
       }
 
       .radio:last-of-type {
+        margin-bottom: 0;
+      }
+    }
+
+    .pull-right {
+      float: none !important;
+    }
+  }
+
+  .table-groupcontactinfo {
+    margin-bottom: 12px;
+    /* Hide table headers (but not display: none;, for accessibility) */
+    thead tr {
+      position: absolute;
+      top: -9999px;
+      left: -9999px;
+    }
+
+    > thead > tr > th,
+    > tbody > tr > th,
+    > tfoot > tr > th,
+    > thead > tr > td,
+    > tbody > tr > td,
+    > tfoot > tr > td {
+      border: 0;
+    }
+
+    > tbody > tr > td {
+      position: relative;
+
+      /* Behave  like a "row" */
+      border: 0;
+      border-bottom: 1px solid @gray-lighter;
+    }
+
+    /* Label the data */
+    tbody {
+      .person-name {
+        /* Now like a table header */
+        position: relative;
+        display: block;
+        width: 100%;
+        padding: 10px;
+
+        /* Top/left values mimic padding */
+        font-size: @grid-column-header-font-size;
+        font-weight: @grid-column-header-font-weight;
+        color: @grid-column-header-text-color;
+        // content: "Person #" counter(rowNumber);
+        background-color: @grid-column-header-bg;
+        border-bottom: 2px solid @grid-column-header-border-color;
+
+        &:before {
+          content: "Contact Info: "
+        }
+      }
+
+      .person-sms{
+        position: relative;
+        padding-left: 35%;
+
+        /* Behave  like a "row" */
+        border: 0;
+        border-bottom: 1px solid @gray-lighter;
+
+        &:before {
+          /* Now like a table header */
+          position: absolute;
+
+          /* Top/left values mimic padding */
+          top: 14px;
+          left: 6px;
+          width: 35%;
+          padding-right: 10px;
+          font-weight: @grid-column-header-font-weight;
+          content: "Enable SMS";
+        }
+      }
+
+      > tr > td > .form-group {
         margin-bottom: 0;
       }
     }

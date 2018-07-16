@@ -17,13 +17,14 @@
 using System;
 using System.ComponentModel;
 using System.Collections.Generic;
+using System.Threading;
+using System.Data.Entity;
 using System.Linq;
-using System.Runtime.Caching;
 using System.Text;
+using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using System.Xml.Linq;
-using System.Xml.Xsl;
+using Microsoft.AspNet.SignalR;
 
 using Rock;
 using Rock.Attribute;
@@ -36,7 +37,6 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls.Communication;
 using Rock.Web.UI.Controls;
 using Rock.Transactions;
-using System.Data.Entity;
 
 namespace RockWeb.Blocks.Crm
 {
@@ -47,18 +47,29 @@ namespace RockWeb.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Used for updating information about several individuals at once." )]
 
+    [SecurityAction( "EditConnectionStatus", "The roles and/or users that can edit the connection status for the selected persons." )]
+    [SecurityAction( "EditRecordStatus", "The roles and/or users that can edit the record status for the selected persons." )]
+
     [AttributeCategoryField( "Attribute Categories", "The person attribute categories to display and allow bulk updating", true, "Rock.Model.Person", false, "", "", 0 )]
     [IntegerField( "Display Count", "The initial number of individuals to display prior to expanding list", false, 0, "", 1 )]
     [WorkflowTypeField( "Workflow Types", "The workflows to make available for bulk updating.", true, false, "", "", 2 )]
+    [IntegerField( "Task Count", "The number of concurrent tasks to use when performing updates. If left blank then it will be determined automatically.", false, 0, "", 3 )]
     public partial class BulkUpdate : RockBlock
     {
         #region Fields
 
         DateTime _gradeTransitionDate = new DateTime( RockDateTime.Today.Year, 6, 1 );
+        bool _canEditConnectionStatus = false;
+        bool _canEditRecordStatus = true;
 
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// This holds the reference to the RockMessageHub SignalR Hub context.
+        /// </summary>
+        private IHubContext HubContext = GlobalHost.ConnectionManager.GetHubContext<RockMessageHub>();
 
         private List<Individual> Individuals { get; set; }
         private bool ShowAllIndividuals { get; set; }
@@ -73,15 +84,23 @@ namespace RockWeb.Blocks.Crm
         {
             base.OnInit( e );
 
+            RockPage.AddScriptLink( "~/Scripts/jquery.signalR-2.2.0.min.js", false );
+
             var personEntityTypeId = CacheEntityType.Get( typeof( Rock.Model.Person ) ).Id;
 
             ddlTitle.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_TITLE ) ), true );
-            ddlStatus.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ) );
+            ddlConnectionStatus.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ) );
             ddlMaritalStatus.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS ) ) );
             ddlSuffix.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_SUFFIX ) ), true );
             ddlRecordStatus.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ) );
             ddlInactiveReason.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ) );
             ddlReviewReason.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_REVIEW_REASON ) ), true );
+
+            _canEditConnectionStatus = UserCanAdministrate || IsUserAuthorized( "EditConnectionStatus" );
+            ddlConnectionStatus.Visible = _canEditConnectionStatus;
+
+            _canEditRecordStatus = UserCanAdministrate || IsUserAuthorized( "EditRecordStatus" );
+            ddlRecordStatus.Visible = _canEditRecordStatus;
 
             rlbWorkFlowType.Items.Clear();
             var guidList = GetAttributeValue( "WorkflowTypes" ).SplitDelimitedValues().AsGuidList();
@@ -90,8 +109,7 @@ namespace RockWeb.Blocks.Crm
                 var workflowTypeService = new WorkflowTypeService( rockContext );
                 foreach ( var workflowType in new WorkflowTypeService( rockContext )
                     .Queryable().AsNoTracking()
-                    .Where( t => guidList.Contains( t.Guid ) &&
-                    t.IsActive )
+                    .Where( t => guidList.Contains( t.Guid ) && t.IsActive )
                     .ToList() )
                 {
                     if ( workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
@@ -450,13 +468,13 @@ namespace RockWeb.Blocks.Crm
                     EvaluateChange( changes, "Suffix", CacheDefinedValue.GetName( newSuffixId ) );
                 }
 
-                if ( SelectedFields.Contains( ddlStatus.ClientID ) )
+                if ( SelectedFields.Contains( ddlConnectionStatus.ClientID ) && _canEditConnectionStatus )
                 {
-                    int? newConnectionStatusId = ddlStatus.SelectedValueAsInt();
+                    int? newConnectionStatusId = ddlConnectionStatus.SelectedValueAsInt();
                     EvaluateChange( changes, "Connection Status", CacheDefinedValue.GetName( newConnectionStatusId ) );
                 }
 
-                if ( SelectedFields.Contains( ddlRecordStatus.ClientID ) )
+                if ( SelectedFields.Contains( ddlRecordStatus.ClientID ) && _canEditRecordStatus )
                 {
                     int? newRecordStatusId = ddlRecordStatus.SelectedValueAsInt();
                     EvaluateChange( changes, "Record Status", CacheDefinedValue.GetName( newRecordStatusId ) );
@@ -775,19 +793,140 @@ namespace RockWeb.Blocks.Crm
             if ( Page.IsValid )
             {
                 var individuals = Individuals.ToList();
-                while ( individuals.Any() )
+
+                var task = new Task( () =>
                 {
-                    ProcessIndividuals( individuals.Take( 50 ).ToList() );
-                    individuals = individuals.Skip( 50 ).ToList();
+                    int taskCount = GetAttributeValue( "TaskCount" ).AsInteger();
+                    int totalCount = individuals.Count;
+                    int processedCount = 0;
+                    var workers = new List<Task>();
+                    DateTime lastNotified = RockDateTime.Now;
+
+                    //
+                    // Validate task count.
+                    //
+                    if ( taskCount > 64 )
+                    {
+                        // Prevent the user from doing too much damage.
+                        taskCount = 64;
+                    }
+                    else if ( taskCount < 1 )
+                    {
+                        taskCount = Environment.ProcessorCount;
+                    }
+
+                    //
+                    // Wait for the browser to finish loading.
+                    //
+                    Task.Delay( 1000 ).Wait();
+                    HubContext.Clients.Client( hfConnectionId.Value ).bulkUpdateProgress( "0", "0" );
+
+                    if ( individuals.Any() )
+                    {
+                        //
+                        // Spin up some workers to process the updates.
+                        //
+                        for ( int i = 0; i < taskCount; i++ )
+                        {
+                            var worker = Task.Factory.StartNew( () => WorkerTask( individuals ) );
+                            workers.Add( worker );
+                        }
+
+                        //
+                        // Wait for the workers to finish processing.
+                        //
+                        while ( workers.Any( t => !t.IsCompleted ) )
+                        {
+                            var timeDiff = RockDateTime.Now - lastNotified;
+                            if ( timeDiff.TotalSeconds >= 2.5 )
+                            {
+                                lock ( individuals )
+                                {
+                                    processedCount = totalCount - individuals.Count;
+                                }
+
+                                HubContext.Clients.Client( hfConnectionId.Value ).bulkUpdateProgress(
+                                    processedCount.ToString( "n0" ),
+                                    totalCount.ToString( "n0" ) );
+
+                                lastNotified = RockDateTime.Now;
+                            }
+
+                            Task.Delay( 250 ).Wait();
+                        }
+                    }
+
+                    //
+                    // Give any jQuery transitions a moment to settle.
+                    //
+                    Task.Delay( 600 ).Wait();
+
+                    if ( workers.Any( w => w.IsFaulted ) )
+                    {
+                        string status = string.Join( "<br>", workers.Where( w => w.IsFaulted ).Select( w => w.Exception.InnerException.Message.EncodeHtml() ) );
+
+                        HubContext.Clients.Client( hfConnectionId.Value ).bulkUpdateStatus( status, false );
+                    }
+                    else
+                    {
+                        var status = string.Format( "{0} {1} successfully updated.",
+                            Individuals.Count().ToString( "N0" ), ( Individuals.Count() > 1 ? "people were" : "person was" ) );
+
+                        HubContext.Clients.Client( hfConnectionId.Value ).bulkUpdateStatus( status.EncodeHtml(), true );
+                    }
+                } );
+
+                task.ContinueWith( ( t ) =>
+                {
+                    if ( t.IsFaulted )
+                    {
+                        string status = t.Exception.InnerException.Message;
+                        HubContext.Clients.Client( hfConnectionId.Value ).exportStatus( status.EncodeHtml(), false );
+                    }
+                } );
+
+                pnlConfirm.Visible = false;
+                pnlProcessing.Visible = true;
+
+                task.Start();
+            }
+        }
+
+        /// <summary>
+        /// Worker task for processing individuals in batches.
+        /// </summary>
+        /// <param name="individualsList">The individuals list.</param>
+        protected void WorkerTask( object individualsList )
+        {
+            const int batchSize = 50;
+
+            var individuals = ( List<Individual> ) individualsList;
+
+            while ( true )
+            {
+                List<Individual> batch = null;
+
+                //
+                // Get the next chunk.
+                //
+                lock ( individuals )
+                {
+                    batch = individuals.Take( batchSize ).ToList();
+                    if ( batch.Count > 0 )
+                    {
+                        individuals.RemoveRange( 0, batch.Count );
+                    }
                 }
 
-                pnlEntry.Visible = false;
-                pnlConfirm.Visible = false;
+                //
+                // Check if we are all done.
+                //
+                if ( batch.Count == 0 )
+                {
+                    break;
+                }
 
-                nbResult.Text = string.Format( "{0} {1} successfully updated.",
-                    Individuals.Count().ToString( "N0" ), ( Individuals.Count() > 1 ? "people were" : "person was" ) );
-
-                pnlResult.Visible = true;
+                ProcessIndividuals( batch );
             }
         }
 
@@ -806,7 +945,7 @@ namespace RockWeb.Blocks.Crm
 
             int? newTitleId = ddlTitle.SelectedValueAsInt();
             int? newSuffixId = ddlSuffix.SelectedValueAsInt();
-            int? newConnectionStatusId = ddlStatus.SelectedValueAsInt();
+            int? newConnectionStatusId = ddlConnectionStatus.SelectedValueAsInt();
             int? newRecordStatusId = ddlRecordStatus.SelectedValueAsInt();
             int? newInactiveReasonId = ddlInactiveReason.SelectedValueAsInt();
             string newInactiveReasonNote = tbInactiveReasonNote.Text;
@@ -851,12 +990,12 @@ namespace RockWeb.Blocks.Crm
                     person.SuffixValueId = newSuffixId;
                 }
 
-                if ( SelectedFields.Contains( ddlStatus.ClientID ) )
+                if ( SelectedFields.Contains( ddlConnectionStatus.ClientID ) && _canEditConnectionStatus )
                 {
                     person.ConnectionStatusValueId = newConnectionStatusId;
                 }
 
-                if ( SelectedFields.Contains( ddlRecordStatus.ClientID ) )
+                if ( SelectedFields.Contains( ddlRecordStatus.ClientID )  && _canEditRecordStatus )
                 {
                     person.RecordStatusValueId = newRecordStatusId;
 
@@ -1476,7 +1615,7 @@ namespace RockWeb.Blocks.Crm
         private void SetControlSelection()
         {
             SetControlSelection( ddlTitle, "Title" );
-            SetControlSelection( ddlStatus, "Connection Status" );
+            SetControlSelection( ddlConnectionStatus, "Connection Status", _canEditConnectionStatus );
             SetControlSelection( ddlGender, "Gender" );
             SetControlSelection( ddlMaritalStatus, "Marital Status" );
             SetControlSelection( ddlGradePicker, CacheGlobalAttributes.Get().GetValue( "core.GradeLabel" ) );
@@ -1485,7 +1624,7 @@ namespace RockWeb.Blocks.Crm
             SetControlSelection( cpCampus, "Campus" );
             SetControlSelection( ddlCommunicationPreference, "Communication Preference" );
             SetControlSelection( ddlSuffix, "Suffix" );
-            SetControlSelection( ddlRecordStatus, "Record Status" );
+            SetControlSelection( ddlRecordStatus, "Record Status", _canEditRecordStatus );
             SetControlSelection( ddlIsEmailActive, "Email Status" );
             SetControlSelection( ddlEmailPreference, "Email Preference" );
             SetControlSelection( tbEmailNote, "Email Note" );
@@ -1504,6 +1643,13 @@ namespace RockWeb.Blocks.Crm
             if ( webControl != null )
             {
                 webControl.Enabled = controlEnabled;
+            }
+        }
+        private void SetControlSelection( IRockControl control, string label, bool canEdit )
+        {
+            if (canEdit)
+            {
+                SetControlSelection( control, label );
             }
         }
 

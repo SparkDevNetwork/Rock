@@ -8,6 +8,40 @@
 
 // 1. Group / Location
 // -------------------------
+.checkin-item {
+  padding: 12px;
+  border: 1px solid @input-border;
+  cursor: pointer;
+  margin-bottom: 6px;
+  border-top-width: 3px;
+
+  .fa-bars {
+    opacity: .5;
+    margin-right: 6px;
+  }
+
+  &-selected {
+    background-color: @gray-lightest;
+  }
+}
+
+.checkin-list {
+  list-style-type: none;
+  padding-left: 40px;
+
+  &-first {
+    padding-left: 0;
+  }
+}
+
+.checkin-group {
+  border-top-color: #afd074;
+}
+
+.checkin-area {
+  border-top-color: #5593a4;
+}
+
 .panel.panel-widget {
   &.checkin-group {
     border-top-color: @checkin-group-border-color;

@@ -169,7 +169,7 @@ namespace Rock.Communication.Transport
                 // Reply To
                 try
                 {
-                    if ( emailMessage.ReplyToEmail.IsNotNullOrWhitespace() )
+                    if ( emailMessage.ReplyToEmail.IsNotNullOrWhiteSpace() )
                     {
                         // Resolve any possible merge fields in the replyTo address
                         message.ReplyToList.Add( new MailAddress( emailMessage.ReplyToEmail.ResolveMergeFields( mergeFields, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands ) ) );

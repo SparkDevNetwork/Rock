@@ -95,11 +95,20 @@ namespace Rock.Communication.Medium
                 Person toPerson = null;
 
                 var mobilePhoneNumberValueId = CacheDefinedValue.Get( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
+                var cleanFromPhone = fromPhone.Replace( "+", "" );
 
-                // get from person
+                //
+                // Get the person who sent the message. Filter to any matching phone number, regardless
+                // of type. Then order by those with a matching number and SMS enabled; then further order
+                // by matching number with type == mobile; finally order by person Id to get the oldest
+                // person to get the oldest person in the case of duplicate records.
+                //
                 var fromPerson = new PersonService( rockContext ).Queryable()
-                    .Where( p => p.PhoneNumbers.Any( n => ( n.CountryCode + n.Number ) == fromPhone.Replace( "+", "" ) && n.NumberTypeValueId == mobilePhoneNumberValueId ) )
-                    .OrderBy( p => p.Id ).FirstOrDefault(); // order by person id to get the oldest person to help with duplicate records of the response recipient
+                    .Where( p => p.PhoneNumbers.Any( n => ( n.CountryCode + n.Number ) == cleanFromPhone ) )
+                    .OrderByDescending( p => p.PhoneNumbers.Any( n => ( n.CountryCode + n.Number ) == cleanFromPhone && n.IsMessagingEnabled ) )
+                    .ThenByDescending( p => p.PhoneNumbers.Any( n => ( n.CountryCode + n.Number ) == cleanFromPhone && n.NumberTypeValueId == mobilePhoneNumberValueId ) )
+                    .ThenBy( p => p.Id )
+                    .FirstOrDefault();
 
                 // get recipient from defined value
                 var fromPhoneDv = FindFromPhoneDefinedValue( toPhone );

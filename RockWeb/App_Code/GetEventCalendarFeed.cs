@@ -360,7 +360,7 @@ namespace RockWeb
             List<string> stringIdList = new List<string>();
             List<int> intIdList = new List<int>();
 
-            if ( queryParamemter.IsNotNullOrWhitespace() )
+            if ( queryParamemter.IsNotNullOrWhiteSpace() )
             {
                 stringIdList = queryParamemter.Split( ',' ).ToList();
 

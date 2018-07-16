@@ -70,7 +70,7 @@ namespace Rock.Jobs
             // if 'All' wasn't selected the filter out the ones that weren't selected
             if ( !allEntities )
             {
-                if ( selectedEntitiesSetting.IsNotNullOrWhitespace() )
+                if ( selectedEntitiesSetting.IsNotNullOrWhiteSpace() )
                 {
                     var selectedEntityIds = selectedEntitiesSetting.Split( ',' ).Select( int.Parse ).ToList();
                     selectedEntityTypes = selectedEntityTypes.Where( e => selectedEntityIds.Contains( e.Id ) );

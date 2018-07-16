@@ -99,7 +99,7 @@ namespace Rock.Communication
                 foreach ( var attr in this.Attributes.Select( a => a.Value ) )
                 {
                     string value = this.GetAttributeValue( attr.Key );
-                    if ( value.IsNotNullOrWhitespace() )
+                    if ( value.IsNotNullOrWhiteSpace() )
                     {
                         mediumAttributes.Add( attr.Key, GetAttributeValue( attr.Key ) );
                     }
@@ -144,7 +144,7 @@ namespace Rock.Communication
                 foreach ( var attr in this.Attributes.Select( a => a.Value ) )
                 {
                     string value = this.GetAttributeValue( attr.Key );
-                    if ( value.IsNotNullOrWhitespace() )
+                    if ( value.IsNotNullOrWhiteSpace() )
                     {
                         mediumAttributes.Add( attr.Key, GetAttributeValue( attr.Key ) );
                     }

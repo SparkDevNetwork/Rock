@@ -75,7 +75,7 @@ namespace Rock.Lava.Shortcodes
         {
             _markup = markup;
             _tagName = tagName;
-            _shortcode = CacheLavaShortcode.Get( _tagName );
+            _shortcode = CacheLavaShortcode.All().Where( c => c.TagName == tagName ).FirstOrDefault();
 
             base.Initialize( tagName, markup, tokens );
         }
@@ -157,7 +157,7 @@ namespace Rock.Lava.Shortcodes
                 _enabledSecurityCommands = context.Registers["EnabledCommands"].ToString();
             }
 
-            var shortcode = CacheLavaShortcode.Get( _tagName );
+            var shortcode = CacheLavaShortcode.Get( _shortcode.Id );
 
             if ( shortcode != null )
             {
@@ -192,7 +192,7 @@ namespace Rock.Lava.Shortcodes
                 }
 
                 // merge the block markup in
-                if ( blockMarkup.IsNotNullOrWhitespace() )
+                if ( blockMarkup.IsNotNullOrWhiteSpace() )
                 {
                     Regex rgx = new Regex( @"{{\s*blockContent\s*}}", RegexOptions.IgnoreCase );
                     lavaTemplate = rgx.Replace( lavaTemplate, blockMarkup );
@@ -218,7 +218,7 @@ namespace Rock.Lava.Shortcodes
                 }
                 else
                 {
-                    if ( shortcode.EnabledLavaCommands.IsNotNullOrWhitespace() )
+                    if ( shortcode.EnabledLavaCommands.IsNotNullOrWhiteSpace() )
                     {
                         _enabledSecurityCommands = shortcode.EnabledLavaCommands;
                     }

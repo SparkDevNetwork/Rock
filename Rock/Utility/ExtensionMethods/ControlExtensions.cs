@@ -167,7 +167,7 @@ namespace Rock
         public static WebControl AddCssClass( this WebControl webControl, string className )
         {
             // if the className is blank, don't do anything
-            if ( className.IsNotNullOrWhitespace() )
+            if ( className.IsNotNullOrWhiteSpace() )
             {
                 // if the webControl doesn't have a CssClass yet, simply set it to the className
                 if ( webControl.CssClass.IsNullOrWhiteSpace() )
@@ -445,7 +445,8 @@ namespace Rock
         /// <param name="listControl">The list control.</param>
         /// <param name="insertBlankOption">if set to <c>true</c> [insert blank option].</param>
         /// <param name="ignoreTypes">any enums that should not be included in the list control</param>
-        public static void BindToEnum<T>( this ListControl listControl, bool insertBlankOption = false, T[] ignoreTypes = null )
+        /// <param name="sortAlpha">Sort the collection by value in alpha asc, otherwise sorts by enum order.</param>
+        public static void BindToEnum<T>( this ListControl listControl, bool insertBlankOption = false, T[] ignoreTypes = null, bool sortAlpha = false )
         {
             var enumType = typeof( T );
             var dictionary = new Dictionary<int, string>();
@@ -470,7 +471,15 @@ namespace Rock
                 }
             }
 
-            listControl.DataSource = dictionary;
+            if (sortAlpha)
+            {
+                listControl.DataSource = dictionary.OrderBy( x => x.Value );
+            }
+            else
+            {
+                listControl.DataSource = dictionary;
+            }
+
             listControl.DataTextField = "Value";
             listControl.DataValueField = "Key";
             listControl.DataBind();

@@ -542,7 +542,7 @@ namespace Rock.UniversalSearch.IndexComponents
 
                             var indexBoost = CacheGlobalAttributes.Value( "UniversalSearchIndexBoost" );
 
-                            if ( indexBoost.IsNotNullOrWhitespace() )
+                            if ( indexBoost.IsNotNullOrWhiteSpace() )
                             {
                                 var boostItems = indexBoost.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
                                 foreach (var boostItem in boostItems )

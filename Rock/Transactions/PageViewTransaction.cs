@@ -169,7 +169,7 @@ namespace Rock.Transactions
                 if ( interactionComponent != null )
                 {
                     var title = string.Empty;
-                    if ( BrowserTitle.IsNotNullOrWhitespace() )
+                    if ( BrowserTitle.IsNotNullOrWhiteSpace() )
                     {
                         title = BrowserTitle;
                     }

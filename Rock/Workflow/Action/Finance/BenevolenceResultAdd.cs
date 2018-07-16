@@ -124,12 +124,12 @@ namespace Rock.Workflow.Action
                 return false;
             }
             
-            if ( nextSteps.IsNotNullOrWhitespace() )
+            if ( nextSteps.IsNotNullOrWhiteSpace() )
             {
                 request.ProvidedNextSteps = nextSteps;
             }
 
-            if ( resultSummary.IsNotNullOrWhitespace() )
+            if ( resultSummary.IsNotNullOrWhiteSpace() )
             {
                 request.ResultSummary = resultSummary;
             }

@@ -138,7 +138,7 @@ namespace Rock.Transactions
 
                         // check that the page exists as a component
                         var interactionComponent = new InteractionComponentService( rockContext ).GetComponentByEntityId( interactionChannel.Id, PageShortLinkId.Value, Token );
-                        if ( Url.IsNotNullOrWhitespace() )
+                        if ( Url.IsNotNullOrWhiteSpace() )
                         {
                             
                             if ( interactionComponent.ComponentSummary != Url )
@@ -159,7 +159,7 @@ namespace Rock.Transactions
                         if ( interactionComponent != null )
                         {
                             int? personAliasId = null;
-                            if ( UserName.IsNotNullOrWhitespace() )
+                            if ( UserName.IsNotNullOrWhiteSpace() )
                             {
                                 var currentUser = new UserLoginService( rockContext ).GetByUserName( UserName );
                                 personAliasId = currentUser?.Person?.PrimaryAlias?.Id;

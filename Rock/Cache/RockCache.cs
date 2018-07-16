@@ -187,7 +187,7 @@ namespace Rock.Cache
         /// <returns></returns>
         public static object GetOrAddExisting( string key, string region, Func<object> itemFactory, TimeSpan expiration )
         {
-            var value = region.IsNotNullOrWhitespace() ?
+            var value = region.IsNotNullOrWhiteSpace() ?
                 RockCacheManager<object>.Instance.Cache.Get( key, region ) :
                 RockCacheManager<object>.Instance.Cache.Get( key );
 
@@ -209,7 +209,7 @@ namespace Rock.Cache
                 return null;
             }
 
-            if ( region.IsNotNullOrWhitespace() )
+            if ( region.IsNotNullOrWhiteSpace() )
             {
                 RockCacheManager<object>.Instance.AddOrUpdate( key, region, value, expiration );
             }
@@ -291,7 +291,7 @@ namespace Rock.Cache
         /// <param name="cacheTags">The cache tags.</param>
         public static void AddOrUpdate( string key, string region, object obj, TimeSpan expiration, string cacheTags )
         {
-            if ( region.IsNotNullOrWhitespace() )
+            if ( region.IsNotNullOrWhiteSpace() )
             {
                 RockCacheManager<object>.Instance.AddOrUpdate( key, region, obj, expiration );
             }
@@ -300,7 +300,7 @@ namespace Rock.Cache
                 RockCacheManager<object>.Instance.AddOrUpdate( key, obj, expiration );
             }
 
-            if ( cacheTags.IsNotNullOrWhitespace() )
+            if ( cacheTags.IsNotNullOrWhiteSpace() )
             {
                 // trim the results since the tag name could come from lava and not from a prevalidated value stored in DefinedValue.
                 var cacheTagList = cacheTags.Split( ',' ).Select( t => t.Trim() );
@@ -351,7 +351,7 @@ namespace Rock.Cache
         /// <param name="region">The region.</param>
         public static void Remove( string key, string region )
         {
-            if ( region.IsNotNullOrWhitespace() )
+            if ( region.IsNotNullOrWhiteSpace() )
             {
                 RockCacheManager<object>.Instance.Cache.Remove( key, region );
             }
@@ -600,7 +600,7 @@ namespace Rock.Cache
                 configurationOptions.ConnectRetry = 1;
                 configurationOptions.ConnectTimeout = 500;
 
-                if ( password.IsNotNullOrWhitespace() )
+                if ( password.IsNotNullOrWhiteSpace() )
                 {
                     configurationOptions.Password = password;
                 }

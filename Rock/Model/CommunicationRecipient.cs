@@ -386,7 +386,7 @@ namespace Rock.Model
             }
 
             string deviceTypeDetails = $"{interaction?.InteractionSession?.DeviceType?.OperatingSystem} {interaction?.InteractionSession?.DeviceType?.DeviceTypeData} {interaction?.InteractionSession?.DeviceType?.Application} {interaction?.InteractionSession?.DeviceType?.ClientType}";
-            if ( deviceTypeDetails.IsNotNullOrWhitespace() )
+            if ( deviceTypeDetails.IsNotNullOrWhiteSpace() )
             {
                 interactionDetails += $" using {deviceTypeDetails}";
             }
