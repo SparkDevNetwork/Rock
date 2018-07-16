@@ -1,0 +1,709 @@
+{% comment %} 
+    {% include '~~/Assets/Lava/dashboard/toolbox/toolbox-group-members.lava' %}  
+{% endcomment %}
+
+{% comment %} {% assign group = Groups | First %} {% endcomment %}
+
+{% assign groupId = PageParameter.GroupId %}
+
+{% for currGroup in Groups %}
+   {% if currGroup.Group.Id == groupId %}
+      {% assign group = currGroup.Group %}
+   {% endif %}
+{% endfor %}
+
+
+{% assign currentYear = 'Now' | Date:'yyyy' %}
+
+{% if group != null and group != '' %}
+    {% comment %} Load default content for badges {% endcomment %}
+    {% include '~~/Assets/Lava/dashboard/_dashboard-content.lava' %}
+    {% assign stepsContent = stepsContentJSON | FromJSON %}
+
+    <div class="dashboard-card toolbox-group-members-card">
+        {% comment %} Include card header, tell header card to render add button {% endcomment %}
+        {% assign renderAddButton = 'true' %}
+        {% include '~~/Assets/Lava/dashboard/students-toolbox/_students-toolbox-group-members-header.lava' %}
+        <div class="content">
+            <div>
+                <div class="group-header roster-header">
+                    <h5>Student Roster</h5>
+                    <div class="group-name-row-buttons">
+                        <button type="button" data-toggle="collapse" data-target="#studentRoster" class="group-details-toggle">
+                            <i id="studentRosterToggle" class="mdi mdi-chevron-up group-header-icon tooltip-group-details"></i>
+                        </button>
+                    </div>
+                </div>
+
+                {% assign parentRoster = '' %}
+
+                <div id="studentRoster" class="collapse in">
+
+                    <div class="group-header">
+                        <a href="/page/1751?group={{ group.Id }}">
+                            <div class="group-header-content">
+                                <div class="tooltip-email-group" style="display: flex; align-items: center;">
+                                    <i class="mdi mdi-email dashboard-icon"></i>
+                                    <span>Email Students</span>
+                                    <i class="mdi mdi-chevron-right dashboard-icon" style="color: #7A1315; margin: 0;"></i>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+
+                    {% assign groupMembersSorted = group.Members | Sort:'GroupMemberStatus' %}
+
+                    {% comment %} Render Group Members {% endcomment %}
+                    {% for member in groupMembersSorted %}
+
+                        {% comment %} If under 18, get parents and add id's to parentRoster {% endcomment %}
+                        {% if member.Person.Age > 18 %}
+                            {% assign memberParents = member.Person | Parents %}
+                            {% for memberParent in memberParents %}
+                                {% capture temp %}{{ parentRoster }}{{ memberParent.Id }},{% endcapture %}
+                                {% assign parentRoster = temp %}
+                            {% endfor %}
+                        {% endif %}
+
+                        {% comment %} Check if person has registered for camp {% endcomment %}
+                        {% assign registeredForCamp = false %}
+                        {% assign campGroups = member.Person | Groups: '93' %}
+
+                        {% for campGroup in campGroups %}
+                            {% if campGroup.Group.Name contains currentYear %}
+                                {% assign registeredForCamp = true %}
+                            {% endif %}
+                        {% endfor %}
+
+                        {% assign personIndex = forloop.index %}
+
+                        <div class="person-row">
+                            <div class="person-row-summary">
+                                <div>
+                                    <img src="{{ member.Person.PhotoUrl }}" width="60" height="60" style="border-radius: 50%;">
+                                </div>
+                                <div class="person-info">
+                                    <div>
+                                        <a href="/toolbox/edit-group-member?GroupMemberId={{ member.Id }}&AdminPersonId={{ CurrentPerson.Id }}"> <h5 style="padding: 0;">{{ member.Person.FullName }}</h5> </a> 
+                                    </div>
+                                    <p style="padding: 0;"><small>{{ member.GroupMemberStatus }}</small></p>
+                                </div> 
+                                <div class="person-contact">
+                                    {% assign cellPhone = member.Person | PhoneNumber:'Mobile' %}
+                                    {% assign homePhone = member.Person | PhoneNumber:'Main/Home' %}
+
+                                    {% if cellPhone %}
+                                        <a href="tel:+1{{cellPhone}}">
+                                        <i class="mdi mdi-phone dashboard-icon tooltip-phone-person"></i>
+                                        </a>
+                                    {% elseif homePhone %}
+                                        <a href="tel:+1{{homePhone}}">
+                                        <i class="mdi mdi-phone dashboard-icon tooltip-phone-person"></i>
+                                        </a>
+                                    {% endif %}
+                                    <a href="/page/1751?person={{ member.Person.Id }}">
+                                        <i class="mdi mdi-email dashboard-icon tooltip-email-person"></i>
+                                    </a>
+                                    <button type="button" data-toggle="collapse" data-target="#personDetails{{ personIndex }}" class="person-details-toggle">
+                                        <i id="personDetailsToggle{{ personIndex }}" class="mdi mdi-chevron-down dashboard-icon tooltip-person-details" style="color: #7A1315"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="personDetails{{ personIndex }}" class="collapse">
+                                <div class="person-row-details">
+                                    <div id="personBadges{{ personIndex }}" class="person-badges">
+                                        {% for step in stepsContent %}
+                                            <img id="{{ step.Name }}Badge{{ personIndex }}" class="nextstep-icon-loading" src='{{ step.Content.Icon }}'>
+                                        {% endfor %}
+                                    </div>
+                                    {% if cellPhone %}
+                                        <p>{{ cellPhone }} (Mobile)</p>
+                                    {% endif %}
+                                    {% if homePhone %}
+                                        <p>{{ homePhone }} (Main/Home)</p>
+                                    {% endif %}
+                                    {% if member.Person.Email != null and member.Person.Email != '' %}
+                                        <a>{{ member.Person.Email }}</a>
+                                    {% endif %}
+                                    {% if member.Person.BirthDate != null and member.Person.BirthDate != '' %}
+                                        <p>Birthday: {{ member.Person.BirthDate | Date:'M/d/yyyy' }} ({{ member.Person.Age }} yrs. old)</p>
+                                    {% endif %}
+                                    {% assign addressHome = member.Person | Address:'Home' %}
+                                    {% if addressHome != null and addressHome != '' %}
+                                        <p>Address: {{ member.Person | Address:'Home','[[Street1]]' }}</p>
+                                        <p class="person-details-additional-address">{{ member.Person | Address:'Home','[[Street2]]' }}</p>
+                                        <p class="person-details-additional-address">{{ member.Person | Address:'Home','[[City]], [[State]], [[PostalCode]]' }}</p>
+                                    {% endif %}
+                                    {% if registeredForCamp %}
+                                        <p>Registered For {{ currentYear }} Camp</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <script>
+                            // on details collapse change toggle icon
+                            $('#personDetails{{ personIndex }}').on('shown.bs.collapse', function() {
+                                toggleChevron('#personDetailsToggle{{ personIndex }}');
+                            });
+                            $('#personDetails{{ personIndex }}').on('hidden.bs.collapse', function() {
+                                toggleChevron('#personDetailsToggle{{ personIndex }}');
+                            });
+                            // on details click, query badges API for person selected
+                            $('#personDetailsToggle{{ personIndex }}').on('click', function() {
+                                // Check if query has already been made
+                                if(!$('#personDetailsToggle{{ personIndex }}').hasClass('badge-data-received')) {
+                                    // Start loading animation
+                                    $('#personBadges{{ personIndex }}').toggleClass('nextstep-loading-badges');
+
+                                    // Make API calls for badges
+                                    // if current person query api for steps taken
+                                    var currentPersonGuid = '{{ member.Person.Guid }}';
+                                    if (currentPersonGuid !== '') {
+                                        $.getJSON('/api/CCV/Badges/StepsBar/'+currentPersonGuid, function(data, status){
+                                            for (var key in data) {
+                                                if (data.hasOwnProperty(key)) {
+                                                    var keyData = data[key];
+                                                    // Process response
+                                                    switch (key) {
+                                                        case 'BaptismResult': {
+                                                            updateBaptismBadge('#BaptismBadge{{ personIndex }}', keyData);
+                                                            break;
+                                                        };
+                                                        case 'IsWorshipper': {
+                                                            updateWorshipBadge('#WorshipBadge{{ personIndex }}', keyData);
+                                                            break;
+                                                        };   
+                                                        case 'ConnectionResult': {
+                                                            updateConnectBadge('#ConnectBadge{{ personIndex }}', keyData);
+                                                            break;
+                                                        };
+                                                        case 'ServingResult': {
+                                                            updateServeBadge('#ServeBadge{{ personIndex }}', keyData);
+                                                            break;
+                                                        };  
+                                                        case 'IsTithing': {
+                                                            updateGiveBadge('#GiveBadge{{ personIndex }}', keyData);
+                                                            break;
+                                                        };  
+                                                        case 'SharedStoryResult': {
+                                                            updateShareBadge('#ShareBadge{{ personIndex }}', keyData);
+                                                            break;
+                                                        };    
+                                                        case 'CoachingResult': {
+                                                            updateCoachBadge('#CoachBadge{{ personIndex }}', keyData);
+                                                            break;
+                                                        };                        
+                                                        default:
+                                                            break;
+                                                    }
+                                                }
+                                            }
+                                            // if success add received class so we dont request on the next click
+                                            if (status === 'success') {
+                                                $('#personDetailsToggle{{ personIndex }}').toggleClass('badge-data-received');
+                                            }
+                                            // Stop loading animation
+                                            $('#personBadges{{ personIndex }}').toggleClass('nextstep-loading-badges');
+                                        });
+                                    }
+                                }
+                                
+                                // Check if query has already been made
+                                if(!$('#personDetailsToggle{{ personIndex }}').hasClass('startingpoint-data-received')) {
+                                    // Start loading animation
+                                    $('#personBadges{{ personIndex }}').toggleClass('nextstep-loading-startingpoint');
+
+                                    // If current person query api for starting point step
+                                    var currentPersonId = '{{ member.Person.Id }}'
+                                    if (currentPersonId !== '') {
+                                        $.getJSON('/api/CCV/Badges/TakenStartingPoint/'+currentPersonId, function(data, status){
+                                            // process response
+                                            updateStartingPointBadge('#StartingPointBadge{{ personIndex }}', data);
+
+                                            // if success add received class so we dont request on the next click
+                                            if (status === 'success') {
+                                                $('#personDetailsToggle{{ personIndex }}').toggleClass('startingpoint-data-received');
+                                            }
+                                            // Stop loading animation
+                                            $('#personBadges{{ personIndex }}').toggleClass('nextstep-loading-startingpoint');
+                                        });
+                                    }
+                                }                            
+                            });
+
+                            // Activate Tooltips
+                            activatePopOver('.tooltip-add-group-member', 'Add Group Member');
+                            activatePopOver('.tooltip-email-group', 'Email Students');
+                            activatePopOver('.tooltip-email-person', 'Email');
+                            activatePopOver('.tooltip-phone-person', 'Call');
+                            activatePopOver('.tooltip-person-details', 'Person Details');
+                        </script>
+
+                    {% endfor %}
+
+                </div>
+
+                <div class="group-header roster-header">
+                    <h5>Parent Roster</h5>
+                    <div class="group-name-row-buttons">
+                        <button type="button" data-toggle="collapse" data-target="#parentRoster" class="group-details-toggle">
+                            <i id="parentRosterToggle" class="mdi mdi-chevron-down group-header-icon tooltip-group-details"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="parentRoster" class="collapse">
+
+                    <div class="group-header">
+                        <a href="">
+                            <div class="group-header-content">
+                                <div class="tooltip-email-group" style="display: flex; align-items: center;">
+                                    <i class="mdi mdi-email dashboard-icon"></i>
+                                    <span>Email Parents</span>
+                                    <i class="mdi mdi-chevron-right dashboard-icon" style="color: #7A1315; margin: 0;"></i>
+                                </div>
+                        </div>
+                        </a>
+                    </div>
+
+                    {% assign parentIds = parentRoster | Split:',' %}
+
+                    {% comment %} Render Parents {% endcomment %}
+                    {% for id in parentIds %}
+
+                        {% comment %} Get parent object {% endcomment %}
+                        {% assign rosterParent = id | PersonById %}
+                        
+                        {% assign personIndex = forloop.index %}
+
+                        <div class="person-row">
+                            <div class="person-row-summary">
+                                <div>
+                                    <img src="{{ rosterParent.PhotoUrl }}" width="60" height="60" style="border-radius: 50%;">
+                                </div>
+                                <div class="person-info">
+                                    <div>
+                                    <a href="/toolbox/edit-group-member?GroupMemberId={{ rosterParent.Id }}&AdminPersonId={{ CurrentPerson.Id }}"> <h5>{{ rosterParent.FullName }}</h5> </a> 
+                                    </div>
+                                </div> 
+                                <div class="person-contact">
+                                    {% assign cellPhone = rosterParent | PhoneNumber:'Mobile' %}
+                                    {% assign homePhone = rosterParent | PhoneNumber:'Main/Home' %}
+
+                                    {% if cellPhone %}
+                                        <a href="tel:+1{{cellPhone}}">
+                                        <i class="mdi mdi-phone dashboard-icon tooltip-phone-person"></i>
+                                        </a>
+                                    {% elseif homePhone %}
+                                        <a href="tel:+1{{homePhone}}">
+                                        <i class="mdi mdi-phone dashboard-icon tooltip-phone-person"></i>
+                                        </a>
+                                    {% endif %}
+                                    <a href="/page/1751?person={{ rosterParent.Id }}">
+                                        <i class="mdi mdi-email dashboard-icon tooltip-email-person"></i>
+                                    </a>
+                                    <button type="button" data-toggle="collapse" data-target="#parentDetails{{ personIndex }}" class="person-details-toggle">
+                                        <i id="parentDetailsToggle{{ personIndex }}" class="mdi mdi-chevron-down dashboard-icon tooltip-person-details" style="color: #7A1315"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="parentDetails{{ personIndex }}" class="collapse">
+                                <div class="person-row-details">
+                                    <div id="parentBadges{{ personIndex }}" class="person-badges">
+                                        {% for step in stepsContent %}
+                                            <img id="{{ step.Name }}ParentBadge{{ personIndex }}" class="nextstep-icon-loading" src='{{ step.Content.Icon }}'>
+                                        {% endfor %}
+                                    </div>
+                                    {% if cellPhone %}
+                                        <p>{{ cellPhone }} (Mobile)</p>
+                                    {% endif %}
+                                    {% if homePhone %}
+                                        <p>{{ homePhone }} (Main/Home)</p>
+                                    {% endif %}
+                                    {% if rosterParent.Email != null and rosterParent.Email != '' %}
+                                        <a>{{ rosterParent.Email }}</a>
+                                    {% endif %}
+                                    {% if rosterParent.BirthDate != null and rosterParent.BirthDate != '' %}
+                                        <p>Birthday: {{ rosterParent.BirthDate | Date:'M/d/yyyy' }} ({{ rosterParent.Age }} yrs. old)</p>
+                                    {% endif %}
+                                    {% if rosterParent.AnniversaryDate != null and rosterParent.AnniversaryDate != '' %}
+                                        <p>Anniversary: {{ rosterParent.AnniversaryDate | Date:'M/d/yyyy' }} ({{ rosterParent.AnniversaryDate | DateDiff:'Now','M' | DividedBy:12 | Floor }} yrs.)</p>
+                                    {% endif %}
+                                    {% assign spouse = rosterParent | Parents | First %}
+                                    {% if spouse != null and spuse != '' %}
+                                        <p>Spouse: {{ spouse.FullName }} </p>
+                                    {% endif %}
+                                    {% assign hasChildren = rosterParent | Children | First | Property:'BirthDate' %}
+                                    {% if hasChildren != null and hasChildren != '' %}
+                                        {% assign children = rosterParent | Children | Sort:'BirthDate' %}
+                                        {% for child in children %}
+                                            {% if forloop.index == 1 %}
+                                                <p>Kids: {{ child.FullName }}, Age: {{ child.Age }}</p>
+                                            {% else %}
+                                                <p class="person-details-additional-child">{{ child.FullName }}, Age: {{ child.Age }}</p>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endif %}
+                                    {% assign addressHome = rosterParent | Address:'Home' %}
+                                    {% if addressHome != null and addressHome != '' %}
+                                        <p>Address: {{ rosterParent | Address:'Home','[[Street1]]' }}</p>
+                                        <p class="person-details-additional-address">{{ rosterParent | Address:'Home','[[Street2]]' }}</p>
+                                        <p class="person-details-additional-address">{{ rosterParent | Address:'Home','[[City]], [[State]], [[PostalCode]]' }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <script>
+                            // on details collapse change toggle icon
+                            $('#parentDetails{{ personIndex }}').on('shown.bs.collapse', function() {
+                                toggleChevron('#parentDetailsToggle{{ personIndex }}');
+                            });
+                            $('#parentDetails{{ personIndex }}').on('hidden.bs.collapse', function() {
+                                toggleChevron('#parentDetailsToggle{{ personIndex }}');
+                            });
+                            // on details click, query badges API for person selected
+                            $('#parentDetailsToggle{{ personIndex }}').on('click', function() {
+                                // Check if query has already been made
+                                if(!$('#parentDetailsToggle{{ personIndex }}').hasClass('badge-data-received')) {
+                                    // Start loading animation
+                                    $('#parentBadges{{ personIndex }}').toggleClass('nextstep-loading-badges');
+
+                                    // Make API calls for badges
+                                    // if current person query api for steps taken
+                                    var currentPersonGuid = '{{ rosterParent.Guid }}';
+                                    if (currentPersonGuid !== '') {
+                                        $.getJSON('/api/CCV/Badges/StepsBar/'+currentPersonGuid, function(data, status){
+                                            for (var key in data) {
+                                                if (data.hasOwnProperty(key)) {
+                                                    var keyData = data[key];
+                                                    // Process response
+                                                    switch (key) {
+                                                        case 'BaptismResult': {
+                                                            updateBaptismBadge('#BaptismParentBadge{{ personIndex }}', keyData);
+                                                            break;
+                                                        };
+                                                        case 'IsWorshipper': {
+                                                            updateWorshipBadge('#WorshipParentBadge{{ personIndex }}', keyData);
+                                                            break;
+                                                        };   
+                                                        case 'ConnectionResult': {
+                                                            updateConnectBadge('#ConnectParentBadge{{ personIndex }}', keyData);
+                                                            break;
+                                                        };
+                                                        case 'ServingResult': {
+                                                            updateServeBadge('#ServeParentBadge{{ personIndex }}', keyData);
+                                                            break;
+                                                        };  
+                                                        case 'IsTithing': {
+                                                            updateGiveBadge('#GiveParentBadge{{ personIndex }}', keyData);
+                                                            break;
+                                                        };  
+                                                        case 'SharedStoryResult': {
+                                                            updateShareBadge('#ShareParentBadge{{ personIndex }}', keyData);
+                                                            break;
+                                                        };    
+                                                        case 'CoachingResult': {
+                                                            updateCoachBadge('#CoachParentBadge{{ personIndex }}', keyData);
+                                                            break;
+                                                        };                        
+                                                        default:
+                                                            break;
+                                                    }
+                                                }
+                                            }
+                                            // if success add received class so we dont request on the next click
+                                            if (status === 'success') {
+                                                $('#parentDetailsToggle{{ personIndex }}').toggleClass('badge-data-received');
+                                            }
+                                            // Stop loading animation
+                                            $('#parentBadges{{ personIndex }}').toggleClass('nextstep-loading-badges');
+                                        });
+                                    }
+                                }
+                                
+                                // Check if query has already been made
+                                if(!$('#parentDetailsToggle{{ personIndex }}').hasClass('startingpoint-data-received')) {
+                                    // Start loading animation
+                                    $('#parentBadges{{ personIndex }}').toggleClass('nextstep-loading-startingpoint');
+
+                                    // If current person query api for starting point step
+                                    var currentPersonId = '{{ rosterParent.Id }}'
+                                    if (currentPersonId !== '') {
+                                        $.getJSON('/api/CCV/Badges/TakenStartingPoint/'+currentPersonId, function(data, status){
+                                            // process response
+                                            updateStartingPointBadge('#StartingPointBadge{{ personIndex }}', data);
+
+                                            // if success add received class so we dont request on the next click
+                                            if (status === 'success') {
+                                                $('#parentDetailsToggle{{ personIndex }}').toggleClass('startingpoint-data-received');
+                                            }
+                                            // Stop loading animation
+                                            $('#parentBadges{{ personIndex }}').toggleClass('nextstep-loading-startingpoint');
+                                        });
+                                    }
+                                }                            
+                            });
+
+                            // Activate Tooltips
+                            activatePopOver('.tooltip-add-group-member', 'Add Group Member');
+                            activatePopOver('.tooltip-email-group', 'Email Parents');
+                            activatePopOver('.tooltip-email-person', 'Email');
+                            activatePopOver('.tooltip-phone-person', 'Call');
+                            activatePopOver('.tooltip-person-details', 'Person Details');
+                        </script>
+
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+{% endif %}
+
+<script>
+    // on details collapse change toggle icon - student roster
+    $('#studentRoster').on('shown.bs.collapse', function() {
+        toggleChevron('#studentRosterToggle');
+    });
+    $('#studentRoster').on('hidden.bs.collapse', function() {
+        toggleChevron('#studentRosterToggle');
+    });
+    
+    // on details collapse change toggle icon - parent roster
+    $('#parentRoster').on('shown.bs.collapse', function() {
+        toggleChevron('#parentRosterToggle');
+    });
+    $('#parentRoster').on('hidden.bs.collapse', function() {
+        toggleChevron('#parentRosterToggle');
+    });
+
+    // Update starting point badge icon and relative popover
+    updateStartingPointBadge = function(element, data) {
+        switch (data.Status) {
+            case 0: {
+                // has not attended starting point
+                statusValue = 'Has not taken Starting Point.';
+                                                    
+                // change color of icon
+                toggleInactiveBadge(element);
+                break;
+            }
+            case 1: {
+                // attended starting point
+                statusValue = `Took Starting Point on ${data.DateFormatted}!`;
+                
+                // change color of icon
+                toggleActiveBadge(element);
+                break;
+            }
+            case 2: { 
+                // registered for starting point
+                statusValue = `Registered to take Starting Point on ${data.DateFormatted}!`;
+                
+                // change color of icon
+                toggleInactiveBadge(element);                                  
+                break;
+            }
+            default: 
+                break;
+        }
+
+        activatePopOver(element, statusValue);
+    }
+
+    // Update baptism badge icon and update relative popover
+    updateBaptismBadge = function(element, data) {
+        switch (data.BaptismStatus) {
+            case 0: {
+                // is not baptised
+                statusValue = 'Is not baptized.'; 
+
+                // change color of icon
+                toggleInactiveBadge(element);                          
+                break;
+            }
+            case 1: {
+                // is baptised
+                statusValue = `Was baptised on ${data.BaptismDateFormatted}!`;
+
+                // change color of icon
+                toggleActiveBadge(element);
+                break;
+            }
+            case 2: {
+                // regestered to be baptised
+                statusValue = `Registered for baptism on ${moment( new Date(data.BaptismRegistrationDate)).format("M/D/YYYY")}!`;
+                
+                // change color of icon
+                toggleInactiveBadge(element);
+                break;
+            }
+            default: 
+                break;
+        }
+
+        activatePopOver(element, statusValue);
+    }
+
+    // Update worship badge icon and update relative popover
+    updateWorshipBadge = function(element, data) {
+        if (data) {
+            // is worshiping 
+            statusValue = 'Worships regularly.';
+
+            // change color of icon 
+            toggleActiveBadge(element);
+        } else {
+            // is not worshiping
+            statusValue = 'Does not worship regularly.';
+
+            // change color of icon 
+            toggleInactiveBadge(element);
+        }
+
+        activatePopOver(element, statusValue);
+    }
+
+    // Update connect badge icon and update relative popover
+    updateConnectBadge = function(element, data) {
+        switch (data.ConnectionStatus) {
+            case 0: {
+                // in a group
+                statusValue = `Is in a CCV group (eariest active group ${moment( new Date(data.ConnectedSince)).format("M/D/YYYY")}).`; 
+
+                // change color of icon
+                toggleActiveBadge(element);
+                break;
+            }
+            case 1: {
+                // not in a group
+                statusValue = 'Is not connected to a CCV group.'; 
+
+                // change color of icon 
+                toggleInactiveBadge(element);
+                break;
+            }
+            case 2: { 
+                // registered for a group
+                statusValue = 'Is registered for a CCV group.'; 
+
+                // change color of icon 
+                toggleInactiveBadge(element);
+                break;
+            }
+            default: 
+                break;
+        }
+
+        activatePopOver(element, statusValue);
+    }
+
+    // Update serve badge icon and update relative popover
+    updateServeBadge = function(element, data) {
+        switch (data.ServingStatus) {
+            case 0: {
+                // Not serving
+                statusValue = 'Is not serving.'; 
+
+                // change color of icon 
+                toggleInactiveBadge(element);
+                break;
+            }
+            case 1: {
+                // Registered to serve
+                statusValue = 'Is registered to serve.';
+
+                // change color of icon 
+                toggleInactiveBadge(element);
+                break;
+            }
+            case 2: { 
+                // Is Serving
+                statusValue = `Is serving (earliest active group ${moment( new Date(data.ServingSince)).format("M/D/YYYY")}).`; 
+
+                // change color of icon
+                toggleActiveBadge(element);
+                break;
+            }
+            default: 
+                break;
+        }
+
+        activatePopOver(element, statusValue);
+    }
+
+    // Update give badge icon and update relative popover
+    updateGiveBadge = function(element, data) {
+        if (data) {
+            // giving
+            statusValue = 'Is giving.'; 
+
+            // change color of icon
+            toggleActiveBadge(element);
+        } else {
+            // not giving
+            statusValue = 'Is not giving.';
+
+            // change color of icon 
+            toggleInactiveBadge(element);
+        }
+
+        activatePopOver(element, statusValue);
+    }
+
+    // Update share badge icon and update relative popover
+    updateShareBadge = function(element, data) {
+        if (data.SharedStory) {
+            // Story shared
+            statusValue = 'Has shared a story.'; 
+
+            // update modal content
+            $('#modalContentShare').html(statusValue);            
+
+            // change color of icon
+            toggleActiveBadge(element);
+        } else {
+            // Story not shared
+            statusValue = 'Has not shared a story.';
+
+            // change color of icon 
+            toggleInactiveBadge(element);
+        }
+
+        activatePopOver(element, statusValue);
+    }
+
+    // Update active coach icon and update relative popover
+    updateCoachBadge = function(element, data) {
+        if (data.IsCoaching) {
+            // is Coach
+            statusValue = `Is coaching (earliest active group ${moment( new Date(data.CoachingSince)).format("M/D/YYYY")}).`; 
+
+            // change color of icon
+            toggleActiveBadge(element);
+        } else {
+            // is not Coach
+            statusValue = 'Is not coaching.';
+
+            // change color of icon 
+            toggleInactiveBadge(element);
+        }
+
+        activatePopOver(element, statusValue);
+    }
+
+    // Toggle nextstep badge active color
+    toggleActiveBadge = function(element) {
+        $(element).toggleClass('nextstep-icon-active nextstep-icon-loading');
+    }
+
+    // Toggle nextstep badge inactive color
+    toggleInactiveBadge = function(element) {
+        $(element).toggleClass('nextstep-icon-inactive nextstep-icon-loading');
+    }
+
+    toggleChevron = function(element) {
+        $(element).toggleClass('mdi-chevron-down mdi-chevron-up');
+    }
+
+</script>

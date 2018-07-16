@@ -1065,6 +1065,20 @@ body.modal-open, .modal-open .navbar-fixed-top, .modal-open .navbar-fixed-bottom
     overflow: visible;
 }
 
+@media screen and (max-width: 500px) {
+    .modal {
+        width: unset;
+        position: relative;
+        left: unset;
+        margin: 20px;
+    }
+
+    .modal-footer .btn+.btn {
+        margin-left: 0;
+    }
+}
+
+
     .modal.fade {
         top: -100%;
         transition: opacity .3s linear,top .3s ease-out,bottom .3s ease-out,margin-top .3s ease-out;

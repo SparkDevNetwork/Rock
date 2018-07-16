@@ -1,0 +1,76 @@
+<script charset="ISO-8859-1" src="//fast.wistia.com/assets/external/E-v1.js" async></script>
+
+
+{% assign currentCategory = '' %}
+{% assign Currentforloopindex = 0 %}
+
+{% for item in Items %}
+    {% assign itemCategory = item | Attribute:'Category' %}
+
+    {% if itemCategory != currentCategory or forloop.first %}
+        {% unless forloop.first %}
+                </div>
+            </div>
+        {% endunless %}
+
+        {% assign currentCategory = itemCategory %}
+        {% assign Currentforloopindex = 0 %}
+
+        {% if itemCategory != '' %}
+            <div class="item-row">
+                <a name="{{ itemCategory }}"></a>
+                <h3 class="page-header">{{ itemCategory }}</h3>
+                <button type="button" class="btn btn-primary" onClick="toggleTrailerButton(this)" data-toggle="collapse" data-target="#{{itemCategory | Replace:' ', '_'}}">View Videos +</button>
+            </div>
+            <br>
+        {% endif %}
+
+        <div class="collapse" id="{{itemCategory | Replace:' ', '_'}}">
+            <div class="item-row-videos">
+    {% endif %}
+
+    {% assign itemWistiaId = item | Attribute:'WistiaId' %}
+    {% assign Currentforloopindex = Currentforloopindex | Plus: 1 %}
+
+                <div class="item-row-video">
+                    {% if itemWistiaId != empty %}
+                        <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                            <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                                <span class="wistia_embed wistia_async_{{ itemWistiaId }} popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+                            </div>
+                        </div>
+                    {% elsif item.Photo != empty %}
+                        <a href="{{ item | Attribute: 'Photo', 'Url' }}" class="lightbox">
+                            <img src="{{ item | Attribute: 'Photo', 'Url' }}&width=640&height=360&mode=crop&scale=both" alt="{{ item.Title }}" />
+                        </a>
+                    {% endif %}
+                    <h5>{{ item.Title }}</h5>
+                    {% assign Resources = item | Attribute: 'Resources' %}
+                    {% if Resources != empty %}
+                        <ul>
+                            {% for _resource in Resources %}
+                                {% assign resource = _resource | PropertyToKeyValue %}
+                                <li><a href="{{ resource.Value }}">{{ resource.Key }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+
+
+    {% if forloop.last %}
+            </div>
+        </div>
+    {% endif %}
+
+{% endfor %}
+
+<script>
+function toggleTrailerButton( button ) {
+   if ( button.textContent == 'View Videos +' ) { 
+      button.textContent = 'View Videos -'; 
+   } else { 
+      button.textContent = 'View Videos +' 
+   }
+}
+</script>

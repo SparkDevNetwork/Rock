@@ -1,0 +1,40 @@
+{% comment %}  {% endcomment %}
+
+{% comment %} Check if person is an editor or admin to show/hide Preview Guides {% endcomment %}
+{% assign isEditor = false %}
+
+{% assign editors = CurrentPerson | Group: "1760271" %}
+{% for editor in editors %}
+    {% if editor.Id %}
+        {% assign isEditor = true %}
+    {% endif %}
+{% endfor %}
+
+{% assign admins = CurrentPerson | Group: "2" %}
+{% for admin in admins %}
+    {% if admin.Id %}
+        {% assign isEditor = true %}
+    {% endif %}
+{% endfor %}
+
+<div class="toolbox-subnav-desktop">
+    {% comment %} <div id="jr-high-button" onClick="subLinkClicked(this, 'jr-high')">Jr High Guide</div>
+    <div id="sr-high-button" onClick="subLinkClicked(this, 'sr-high')">High School Guide</div> {% endcomment %}
+    {% if isEditor %}
+        <div id="preview-guides-button" onClick="subLinkClicked(this, 'preview-guides')">Preview Guides</div>
+    {% endif %}
+</div>
+
+<div class="toolbox-subnav-mobile">
+    <div class="toolbox-subnav-mobile-items">
+        <div id="jr-high-mobile-button" onClick="subLinkClicked(this, 'jr-high')" class="subnav-item">Jr High Guide</div>
+        <div id="sr-high-mobile-button" onClick="subLinkClicked(this, 'sr-high')" class="subnav-item">High School Guide</div>
+        {% if isEditor %}
+            <div id="preview-guides-mobile-button" onClick="subLinkClicked(this, 'preview-guides')" class="subnav-item">Preview Guides</div>
+        {% endif %}
+
+        <div id="coach-guides-mobile-button" onClick="linkClicked(this, 'coach-guides')" class="subnav-item toolbox-subnav-div-selected">Coach Guides</div>
+        <div id="training-center-mobile-button" onClick="linkClicked(this, 'training-center')" class="subnav-item">Training Center</div>
+        <div id="group-details-button" onClick="linkClicked(this, 'group-details', false)" class="subnav-item">Group Details</div>
+    </div>
+</div>

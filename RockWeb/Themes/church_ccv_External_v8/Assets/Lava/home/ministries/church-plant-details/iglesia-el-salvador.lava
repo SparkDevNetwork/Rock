@@ -1,0 +1,8 @@
+
+{% assign contentChannelChurchName = "Iglesia El Salvador" %}
+{% assign displayChurchName = "Iglesia El Salvador" %}
+{% assign churchLocation = "RIOGRANDE - TURBO, ANTIOQUIA" %}
+{% assign pastorName = "Marcos Sibaja" %}
+{% assign pastorDetail = "Pastor Marcos Sibaja made a decision of faith 44 years ago. Since he was young he wanted to serve the Lord Jesus. He started his leadership process in a local church. For the last 16 years he has served the Lord as a Pastor. Currently, he is accredited as a liscenced pastor by the denomination and has a good testimony and positive references from other pastors in the denomination. He has two children and together with his wife will develop the pastoral work in Riogrande." %}
+{% assign pastorImg = "~~/Assets/Images/home/ministries/colombia-church-plant/pastors/NPX-Marcos.png" %}
+{% assign campusSponsor = "North Phoenix" %}

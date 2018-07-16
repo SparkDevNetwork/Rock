@@ -1,0 +1,14 @@
+{% comment %} 
+    {% include '~~/Assets/Lava/dashboard/students-toolbox/_students-toolbox-group-members-header.lava' %}  
+{% endcomment %}
+
+<div class="title">
+    <h4>Members</h4>
+    <div>
+        {% if renderAddButton == 'true' %}
+            <a href="#" onclick="btnAddGroupMember({{ group.Id }},{{ group.GroupType.DefaultGroupRoleId }}); return false;">
+                <i class="mdi mdi-account-plus dashboard-title-icon tooltip-add-group-member"></i>
+            </a>
+        {% endif %}
+    </div>   
+</div>

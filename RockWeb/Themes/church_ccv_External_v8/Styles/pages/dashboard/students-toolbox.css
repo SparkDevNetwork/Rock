@@ -1,0 +1,564 @@
+.toolbox-row {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    z-index: 1;
+}
+
+.toolbox-card {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    margin-right: 20px;
+    color: rgba(0, 0, 0, 0.87);
+    background-color: #ffffff;
+    transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+    box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px;
+    border-radius: 5px;
+}
+
+.toolbox-card p {
+    line-height: 1.5;
+}
+
+.toolbox-card .header h4 {
+    font-size: 26px;
+    line-height: 31px;
+    margin: 14px 30px 20px 30px;
+}
+
+.toolbox-card-content {
+    margin: 20px 30px;
+}
+
+.toolbox-card-content h3 {
+    font-size: 26px;
+    line-height: 31px;
+    margin: 0 0 20px 0;
+    padding: 0;
+}
+
+/* by default, dont show mobile nav */
+.toolbox-subnav-mobile {
+    display: none;
+}
+
+.toolbox-subnav-desktop {
+    display: flex;
+    padding: 0px 30px 18px 15px;
+    flex-wrap: wrap;
+}
+
+.toolbox-subnav-desktop > div {
+    text-decoration: none;
+    text-transform: uppercase;
+    color: #707270;
+    padding: 0 15px;
+    font-family: Heebo;
+    font-size: 14px;
+    font-weight: 900;
+    line-height: 17px;
+}
+
+.toolbox-subnav-desktop > div:hover {
+    cursor: pointer;
+    color: #7a1315;
+}
+
+.toolbox-subnav-div-selected {
+    color: #7a1315 !important;
+}
+
+.group-info-banner {
+    display: flex;
+    flex-wrap: nowrap;
+    background-color: #eeeeee;
+    padding: 14px 5px 10px 5px;
+}
+
+.group-info-banner > div {
+    text-decoration: none;
+
+    padding: 0 25px 0 25px;
+    color: #707270;
+
+    font-family: heebo;
+    font-size: 14px;
+    font-weight: normal;
+    line-height: 26px;
+}
+
+.group-info-banner > div > span {
+    padding-left: 10px;
+}
+
+/* Coach Guide */
+.guide {
+    padding: 30px;
+}
+
+.guide-header {
+    display: flex;
+    justify-content: space-between;
+}
+
+.label {
+    line-height: unset;
+}
+
+/* Phone */
+@media screen and (max-width: 500px) {   
+    .guide-header {
+        flex-direction: column;
+    }
+
+    .guide {
+        padding-bottom: 0;
+    }
+
+    .guide-header .text-muted {
+        padding-top: 10px;
+        align-self: flex-end;
+    }
+
+    .guide h1 {
+        font-size: 26px;
+        line-height: 31px;
+    }
+
+}
+
+/* End Coach Guide */
+
+/* Training Center */
+.item-row-videos {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.item-row-video {
+    width: 32%;
+}
+
+/* Phone */
+@media screen and (max-width: 500px) {    
+    .item-row-videos {
+        flex-direction: column;
+    }
+
+    .item-row-video {
+        width: 90%;
+    }
+
+}
+/* End Training Center */
+
+/* Group Details */
+.roster-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.group-picture {
+    margin: 0 -30px;
+}
+
+.group-picture img {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.group-heading {
+    border-bottom: 1px solid #EEEEEE;
+}
+
+.toolbox-card-content.group-details-panel .group-heading {
+    margin: 0 -30px;
+    padding: 20px 30px;
+}
+
+.group-details {
+    display: flex;
+    justify-content: space-between;
+    margin: 0 -30px;
+    padding: 0 30px;
+}
+
+.group-details-left {
+    flex: .5;
+    margin-right: 20px;
+}
+
+.group-details-right {
+    flex: 1;
+}
+
+.group-leaders {
+    padding: 20px; 
+    background-color: #EEEEEE;
+    margin-bottom: 20px;
+}
+
+.group-map {
+    height: 200px;
+    margin-top: 20px;
+}
+
+.group-schedule .btn {
+    float: right;
+}
+
+/* Mobile Styling */
+/* Small Laptop */
+@media screen and (max-width: 1024px) {
+    .toolbox-row {
+        flex-direction: column;
+    }
+
+    .toolbox-card {
+        margin-right: 0;
+        margin-bottom: 20px;
+    }
+
+}
+
+/* Phone */
+@media screen and (max-width: 500px) {    
+    .toolbox-subnav-desktop {
+        display: none;
+    }
+
+    .toolbox-subnav-mobile {
+        display: flex;
+        align-items: center;
+    }
+    
+    .toolbox-subnav-mobile-items {
+        max-width: 100%;
+        margin: 0 auto 10px 0;
+        font-size: 16px;
+        font-family: akrobat;
+        font-weight: bold;
+        line-height: 18px;
+        text-transform: uppercase;
+        text-decoration: none;
+        color: #707270;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .toolbox-subnav-mobile-items .subnav-item {
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .toolbox-subnav-mobile-items .subnav-item {
+        visibility: hidden;
+    }
+
+    .toolbox-subnav-mobile-items.slick-initialized .subnav-item {
+        visibility: unset;
+    }
+
+    .subnav-item {
+        padding: 0 10px;
+        white-space: nowrap;
+    }
+
+    .subnav-item:focus, .toolbox-subnav-div-selected {
+        outline: none;
+        border: none;
+    }
+
+    .nav-arrow {
+        font-size: 24px;
+        color: #707270;
+    }
+
+    .nav-next {
+        padding-left: 10px;
+    }
+
+    .toolbox-card-content.group-details-panel {
+        margin: 0 20px 20px 20px;
+    }
+
+    .toolbox-card .header h4 {
+        margin: 20px;
+        padding: 0;
+    }
+    
+    .group-info-banner {
+        flex-direction: column;
+        padding: 20px;
+    }
+
+    .group-info-banner > div {
+        padding: 0;
+        line-height: 14px;
+        font-size: 12px;
+    }
+
+    .group-info-banner > div > span {
+        font-size: 14px;
+        line-height: 16px;
+    }
+
+    .group-info-banner > div:nth-child(2) {
+        padding: 5px 0;
+    }
+
+    .toolbox-card-content {
+        margin: 0;
+    }
+
+    .toolbox-card-content .item-row {
+        margin: 0 20px 20px 20px;
+    }
+
+    .toolbox-card-content h3 {
+        margin: 0;
+    }
+
+    .toolbox-card-content.latest-series-content h3 {
+        margin: 10px 20px;
+    }
+
+    .group-heading {
+        margin: 0 10px;
+    }
+
+    .toolbox-card-content.group-details-panel .group-heading {
+        margin: 20px 0 10px 0;
+        border-bottom: unset;
+        padding: 0;
+    }
+
+    .group-details {
+        flex-direction: column;
+        margin: 0 -20px;
+    }
+
+    .group-details-left, .group-details-right {
+        flex: 1;
+        margin-right: 0;
+    }
+
+    .group-leaders, .group-map {
+        margin: 0 -30px;
+    }
+
+    .group-leaders {
+        padding: 20px 30px;
+    }
+}
+
+
+/* End Toolbox Card */
+
+/* Toolbox Sidebar */
+.toolbox-sidebar {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Toolbox Sidebar Mobile styling */
+/* Small Laptop */
+@media screen and (max-width: 1024px) {
+    .toolbox-sidebar {
+        flex-direction: row;
+        justify-content: space-evenly;
+    }
+
+    .dashboard-card {
+        width: 370px;
+    }
+}
+/* Tablet */
+@media screen and (max-width: 768px) {
+    .toolbox-sidebar {
+        align-items: center;
+        flex-direction: column;
+    }
+
+    .dashboard-card {
+        width: 360px;
+    }
+}
+
+/* Phone */
+@media screen and (max-width: 500px) {
+    .dashboard-card, .toolbox-group-members-card {
+        width: 100%;
+    }
+}
+
+/* End Toolbox Sidebar */
+
+/* Toolbox Group Member Card */
+.toolbox-group-members-card {
+    margin: 0;
+    height: 690px;
+    max-height: 690px;
+}
+
+.toolbox-group-members-card .title a {
+    color: #424242;
+}
+
+.toolbox-group-members-card .title a:hover {
+    text-decoration: none;
+}
+
+.toolbox-group-members-card .title .dropdown-toggle {
+    border: 0;
+    background-color: unset;
+    padding-top: 5px;
+    margin-right: 3px;
+}
+
+.toolbox-group-members-title-icon {
+    color: #424242; 
+    font-size: 24px;
+    margin: 0 5px;
+}
+
+.panel-dropdown-menu {
+    top: unset;
+    left: inherit;
+    width: 220px;
+}
+
+.toolbox-group-members-card .content {
+    height: 625px;
+}
+
+.person-row {
+    display: flex;
+    flex-direction: column;
+}
+
+.person-row-details {
+    display: flex;
+    flex-direction: column;
+    margin-left: 110px;
+}
+
+.person-row-details p {
+    margin: 0;
+    line-height: 26px;
+    font-family: heebo;
+    font-size: 14px;
+    color: #707270;
+}
+
+.person-row-details a {
+    color: #8f3839;
+}
+
+.person-row-details a:hover {
+    text-decoration: none;
+}
+
+.person-details-toggle {
+    background-color: unset;
+    border: unset;
+    padding: unset;
+}
+
+.person-row-details .person-details-additional-child {
+    margin-left: 34px;
+}
+
+.person-row-details .person-details-additional-address {
+    margin-left: 58px;
+}
+
+.btn-link, .btn-link:hover {
+    background-color: #7A1315;
+    color: #FFFFFF;
+    border-radius: 4px;
+    font-weight: normal;
+    text-decoration: none;
+}
+
+.btn-link:hover {
+    background-color: #4e0c0d;
+    border-color: #4e0c0d;
+}
+
+
+/* Group Member Badges Styling */
+.person-badges img {
+    width: 24px;
+    height: 24px;
+    margin-bottom: 10px;
+}
+
+
+/* Flash class and keyframe animation */
+.nextstep-loading {
+    -webkit-animation: flash linear 1s infinite;
+    animation: flash linear 1s infinite;
+}
+    @-webkit-keyframes flash {
+        0% { opacity: 1; } 
+        50% { opacity: .1; } 
+        100% { opacity: 1; }
+    }
+    @keyframes flash {
+        0% { opacity: 1; } 
+        50% { opacity: .1; } 
+        100% { opacity: 1; }
+    }
+
+/* Fix Blue Box around calling href bug */
+.person-details-toggle:focus {
+    outline:none!important
+}
+
+/* Mobile Styling */
+/* Phone */
+@media screen and (max-width: 500px) {
+    .toolbox-group-members-card {
+        margin-bottom: 20px;
+    }
+
+    .person-row-summary {
+        padding: 0 10px;
+    }
+
+    .person-row-summary img {
+        margin: 10px 0;
+    }
+
+    .person-row-details {
+        margin: 0 auto;
+        width: 60%;
+    }
+
+    .group-picture {
+        margin: 0 -20px;
+    }
+}
+
+/* smaller phones */
+@media screen and (max-width: 400px) {
+    .person-row-details {
+        width: 75%;
+    }
+}
+
+/* smallest phones...dont hate me... */
+@media screen and (max-width: 320px) {
+    .person-row-details {
+        width: 80%;
+    }
+}
+/* End Toolbox Group Member Card */

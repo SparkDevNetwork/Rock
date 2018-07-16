@@ -14,9 +14,13 @@
     display: none;
 }
 
-#h3 {
+h3 {
     padding-top: 20px;
     padding-left: 50px;
+}
+
+#h3 {
+    padding-top: 100px;
 }
 
 .leaders {
@@ -41,7 +45,7 @@
 
 /* Mobile Styling */
 @media screen and (max-width: 500px) {
-    #h3 {
+    h3 {
         padding: 20px 0;
         margin: 0;
         font-size: 27px;

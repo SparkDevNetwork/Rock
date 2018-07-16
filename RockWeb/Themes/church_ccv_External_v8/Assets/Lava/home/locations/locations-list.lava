@@ -6,7 +6,7 @@
             <div class="event-card our-campuses-card-override">
                 <div class="image">
                     {% assign imageGuid = campus | Attribute:'FeatureImage', 'RawValue' %}
-                    <img src="{{appRoot}}GetImage.ashx?Guid={{imageGuid}}&width=350&mode=crop"/>
+                    <img src="/Themes/church_ccv_External_v8/Assets/Images/home/locations/feature-locations-{{ campus.ShortCode }}.jpg"/>
                 </div>
                 <div class="header">
                     <h4>{{ campus.Name }}</h4>

@@ -54,6 +54,6 @@
     </div>
 
 {% else %}
-	No Church Found
+	Check back soon for updates.
 {% endif %}
 

@@ -10,6 +10,7 @@
 .main-feature {
     padding-top: 65px;
     max-height: max-content;
+    height: unset;
 }
 
 /*  
@@ -180,15 +181,11 @@ p {
     margin-right: -15px;  
     max-width: initial;
 }
-/*
-.feature {
-    padding-bottom: 7px;var(--section-feature-padding-bottom-desktop) 856px; 
-}  */
 
 #feature-image-desktop {
     background-image: var(--section-feature-bg-desktop); 
-    padding-bottom: var(--section-feature-padding-bottom-desktop); /* 856px; */
-    display: block; /* var(--section-feature-display-desktop);  */
+    height: var(--section-feature-height-desktop);
+    display: block;
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -204,27 +201,18 @@ p {
 
 /* Mobile Styling */
 @media screen and (max-width: 500px) { 
-      /* .feature {
-        padding-bottom: var(--section-feature-padding-bottom-mobile); /* 0px; *
-    }   */
-
-    
-    #feature-image-desktop {
-        display: none;
-    }
 
     #feature-image-mobile {
         background-image: var(--section-feature-bg-mobile); 
-        padding-bottom: var(--section-feature-padding-bottom-mobile);
-        display: block; /* var(--section-feature-display-mobile); inline-block;  */
+        height: var(--section-feature-height-mobile);
+        display: block;
         background-size: cover;
-        /* background-position: center; */
+        background-position: right;
         background-repeat: no-repeat;
     }
 
-    #zone-feature {
-        margin-left: -15px;
-        margin-right: -15px;
+    #feature-image-desktop {
+        display: none;
     }
 }
 
@@ -400,9 +388,9 @@ p {
 #zone-sectione {
     margin: unset; 
     max-width: unset;
+    background-size: cover;
     margin-left: -15px;
     margin-right: -15px;
-    background-size: cover;
 }
 
 .sectionE {
@@ -508,12 +496,12 @@ p {
  /* A div that contains all divs */
 #visit-campus-container {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-around; /*flex-end;*/
     align-items: center;
 }
 
 #visit-campus-inner-container {
-    margin-right: 180px;
+    /* margin-right: 180px; */
     margin-top: 40px;
     margin-bottom: 40px;
 }
@@ -522,6 +510,10 @@ p {
     width: 100%;
     margin-left: -15px;
     margin-right: 150px;
+}
+
+#visit-campus-image img {
+    /* max-width: 600px; */
 }
 
 /* Styles and centers all the buttons that are part of the visit-campus-buttons class  */
@@ -562,3 +554,8 @@ p {
 /*  
  *  End Visit A Campus Section. (Section G)
  */
+
+ .dashboard-events-row {
+     padding-top: 30px;
+ }
+

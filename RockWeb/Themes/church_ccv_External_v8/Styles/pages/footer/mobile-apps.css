@@ -1,6 +1,13 @@
-.page-background {   
-    background-color: #616161;
-}
+.page-background {
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/footer/hero-mobile-apps.jpg");
+ }
+ 
+ /* Mobile Background Image */
+ @media screen and (max-width: 500px) {
+     .page-background {
+         background-image: url("/Themes/church_ccv_External_v8/Assets/Images/footer/hero-mobile-mobile-apps.jpg");
+     }
+ }
 
 .logo-wrapper {
     display: flex;

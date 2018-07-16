@@ -123,8 +123,9 @@
     flex-direction: column;
     width: 30%;
     min-height: 210px;
-    background-color: rgba(0,0,0,.7);
+    background-color: rgba(247, 244, 244, 0.15);
     padding: 30px;
+    border-radius: 5px;
 }
 
 .cta-link {

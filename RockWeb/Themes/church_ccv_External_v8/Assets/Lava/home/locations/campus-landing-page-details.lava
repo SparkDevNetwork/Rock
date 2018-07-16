@@ -16,59 +16,69 @@
                You will receive a matching pick-up receipt which will be required to pick your child up after service. Jr High and High School Students are able to check themselves into class using the self-service kiosks.
             </p>
         </div>
-        <div class="campus-info-card">
-            <div class="content">
-                <div class="address">
-                    <i class="fa fa-map-marker campus-info-icon"></i>
-                    <div>
-                        <p>{{ campus.Location.Street1 }}</p>
-                        <p>{{ campus.Location.City }}, {{ campus.Location.State }} {{ campus.Location.PostalCode }}</p>
+        <div class="campus-info-right">
+            <div class="campus-info-card">
+                <div class="content">
+                    <div class="address">
+                        <i class="fa fa-map-marker campus-info-icon"></i>
+                        <div>
+                            <p>{{ campus.Location.Street1 }}</p>
+                            <p>{{ campus.Location.City }}, {{ campus.Location.State }} {{ campus.Location.PostalCode }}</p>
+                        </div>
                     </div>
-                </div>
-                <div class="phone">
-                    <i class="fa fa-phone campus-info-icon"></i>
-                    <a href="tel:{{ campus.PhoneNumber }}">{{ campus.PhoneNumber }}</a>
-                </div>
-                
-                <div class="service-times">
-                    <h5>SERVICE TIMES</h5>
-                    {% assign comingSoonUntil = campus | Attribute: 'ComingSoonUntil' | Date: 'yyyyMMdd' %}
-                    {% assign today = 'Now' | Date: 'yyyyMMdd' %}
-                    {% if today < comingSoonUntil %}
-                        {% assign isComingSoon = true %}
-                    {% endif %}
+                    <div class="phone">
+                        <i class="fa fa-phone campus-info-icon"></i>
+                        <a href="tel:{{ campus.PhoneNumber }}">{{ campus.PhoneNumber }}</a>
+                    </div>
                     
-                    {% assign times = campus.ServiceTimes %}
-                    {% include '~~/Assets/Lava/service-times/grid.lava' %}
-                </div>
+                    <div class="service-times">
+                        <h5>SERVICE TIMES</h5>
+                        {% assign comingSoonUntil = campus | Attribute: 'ComingSoonUntil' | Date: 'yyyyMMdd' %}
+                        {% assign today = 'Now' | Date: 'yyyyMMdd' %}
+                        {% if today < comingSoonUntil %}
+                            {% assign isComingSoon = true %}
+                        {% endif %}
+                        
+                        {% assign times = campus.ServiceTimes %}
+                        {% include '~~/Assets/Lava/service-times/grid.lava' %}
+                    </div>
 
-                <div class="kids-students-times">
-                    <h5>KIDS & STUDENTS TIMES</h5>
-                    <div class="time-entry">
-                        <p class="time-entry-label">Infant to 6th Grade</p>
-                        <p class="time-entry-details">Available during all services</p>
-                    </div>
-                    <div class="time-entry">
-                        <p class="time-entry-label">7th Grade</p>
-                        <div class="time-entry-details">
-                            <p>{{campus.7thGradeServiceTime}}</p>
-                            <p>{{campus.7thGradeServiceLocation}}</p>
+                    <div class="kids-students-times">
+                        <h5>KIDS & STUDENTS TIMES</h5>
+                        <div class="time-entry">
+                            <p class="time-entry-label">Infant to 6th Grade</p>
+                            <p class="time-entry-details">Available during all services</p>
+                        </div>
+                        <div class="time-entry">
+                            <p class="time-entry-label">7th Grade</p>
+                            <div class="time-entry-details">
+                                <p>{{campus.7thGradeServiceTime}}</p>
+                                <p>{{campus.7thGradeServiceLocation}}</p>
+                            </div>
+                        </div>
+                        <div class="time-entry">
+                            <p class="time-entry-label">8th Grade</p>
+                            <div class="time-entry-details">
+                                <p>{{campus.8thGradeServiceTime}}</p>
+                                <p>{{campus.8thGradeServiceLocation}}</p>
+                            </div>
+                        </div>
+                        <div class="time-entry time-entry-last">
+                            <p class="time-entry-label">High School</p>
+                            <div class="time-entry-details">
+                                <p>{{campus.HighSchoolTime}}</p>
+                                <p>{{campus.HighSchoolLocations}}</p>
+                            </div>
                         </div>
                     </div>
-                    <div class="time-entry">
-                        <p class="time-entry-label">8th Grade</p>
-                        <div class="time-entry-details">
-                            <p>{{campus.8thGradeServiceTime}}</p>
-                            <p>{{campus.8thGradeServiceLocation}}</p>
-                        </div>
-                    </div>
-                    <div class="time-entry time-entry-last">
-                        <p class="time-entry-label">High School</p>
-                        <div class="time-entry-details">
-                            <p>{{campus.HighSchoolTime}}</p>
-                            <p>{{campus.HighSchoolLocations}}</p>
-                        </div>
-                    </div>
+                </div>
+            </div>
+            <div class="icon-details">
+                <div class="icon-desc">
+                    <p><span class="csi csi-slt"></span> Sign language available</p>
+                </div>
+                <div class="icon-desc">
+                    <p><span class="csi csi-special-needs"></span> Special Needs</p>
                 </div>
             </div>
         </div>

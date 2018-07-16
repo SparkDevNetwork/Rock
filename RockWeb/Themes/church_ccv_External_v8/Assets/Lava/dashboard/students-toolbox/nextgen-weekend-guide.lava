@@ -1,0 +1,52 @@
+{% comment %}
+  {% include '~~/Assets/Lava/NextGenWeekendGuide.lava' %}
+{% endcomment %}
+
+{% assign item = Items | First %}
+
+{% if item %}
+
+    <div class="guide">
+        <div class="guide-header">
+            {% case item.Grade %}
+                {% when 'JrHigh' %}
+                    <span class="label label-default">Jr. High Coach Guide</span>
+                {% when 'SrHigh' %}
+                    <span class="label label-default">High School Coach Guide</span>
+            {% endcase %}
+            <span class="text-muted">Published {{ item.StartDateTime | HumanizeDateTime }}</span>
+        </div>
+
+        <article class="text-responsive">
+            {% for item in Items %}
+                <h1 class="guide-item-title">{{ item.Title }}</h1>
+                {{ item.Content | FromMarkdown }}
+            
+                {% assign wistiaId = item | Attribute: 'WistiaId' %}
+                {% if wistiaId != empty %}
+                    <div class="guide-item-video">
+                        <script src="//fast.wistia.com/embed/medias/{{ wistiaId }}.jsonp" async></script><script src="//fast.wistia.com/assets/external/E-v1.js" async></script><div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;"><div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;"><div class="wistia_embed wistia_async_{{ wistiaId }} videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="height:100%;width:100%">&nbsp;</div></div></div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </article>
+    </div>
+
+    <script>
+        var refTagger = {
+            settings: {
+            bibleVersion: "NIV",
+            roundCorners: true,
+            socialSharing: [],
+            tagChapters: true,
+            caseInsensitive: !false
+            }
+        };
+        (function(d, t) {
+            var g = d.createElement(t), s = d.getElementsByTagName(t)[0];
+            g.src = "//api.reftagger.com/v2/RefTagger.js";
+            s.parentNode.insertBefore(g, s);
+        }(document, "script"));
+    </script>
+
+{% endif %}

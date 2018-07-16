@@ -42,4 +42,11 @@
     -webkit-font-smoothing: antialiased;
     margin: 0 auto;
     line-height: 1.21;
+    padding: 100px 0;
+}
+
+@media screen and (max-width: 500px) {
+    .graphicSection.bottom {
+        min-height: 300px;
+    }
 }

@@ -9,7 +9,23 @@
         };
       
     function handleOnLoad() {
-        $(".page-background").css('background-image', 'url({{campus | Attribute:'MarketingSiteCoverPhoto', 'Url' }}');
+        // setup a callback for browser width changes
+        const mq = window.matchMedia( "(min-width: 501px)" );
+        mq.addListener( widthChange );
+        
+        widthChange( mq );
+    }
+
+    function widthChange( mediaQuery ) {
+    
+        // this event is called when we do or do not hit 501px.
+        // therefore, we can take its true/false and display correct size
+        if ( mediaQuery.matches) {
+            $(".page-background").css('background-image', 'url(/Themes/church_ccv_External_v8/Assets/Images/home/locations/campus-landing/hero-locations-{{ campus.ShortCode }}.jpg');
+
+        } else {
+            $(".page-background").css('background-image', 'url(/Themes/church_ccv_External_v8/Assets/Images/home/locations/campus-landing/hero-mobile-locations-{{ campus.ShortCode }}.jpg');
+        }
     }
 </script>
 
@@ -21,12 +37,14 @@
         <div class="left">
             {% assign campusLeader = campus.LeaderPersonAliasId | PersonByAliasId %}
             <div class="campus-leader">
-                <img src="{{ 'Global' | Attribute: 'PublicApplicationRoot' }}{{ campusLeader.PhotoUrl }}&width=180" style="border-radius: 50%;"/>
-                <div class="campus-leader-details">
-                    <h4>{{ campusLeader.NickName }} {{ campusLeader.LastName }}</h4>
-                    <p>Campus Pastor</p>
-                    <p class="campus-leader-email">{{ campusLeader.Email }}</p>
-                </div>
+                {% if campusLeader %}
+                    <img src="{{ 'Global' | Attribute: 'PublicApplicationRoot' }}{{ campusLeader.PhotoUrl }}&width=600&height=600" style="border-radius: 50%;"/>
+                    <div class="campus-leader-details">
+                        <h4>{{ campusLeader.NickName }} {{ campusLeader.LastName }}</h4>
+                        <p>Campus Pastor</p>
+                        <p class="campus-leader-email">{{ campusLeader.Email }}</p>
+                    </div>
+                {% endif %}
             </div>
         </div>
         <div class="right">

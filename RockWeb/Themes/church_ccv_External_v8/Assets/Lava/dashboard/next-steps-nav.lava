@@ -46,6 +46,7 @@
     // global varibables
     var apiStartingPointResponse = '';
     var apiStepsResponse = '';
+    var nextStepsFAQ = "<br/><a href='/Content/ccv.church/2018/FAQ_Doc.pdf'>Next Steps FAQ</a>";
 
     $( document ).ready(function() {
         // hidden is used to prevent steps icons from displaying in front of dashboard cards on load
@@ -145,7 +146,7 @@
             statusValue = 'It’s good to see you! Thank you for joining us regularly. Invite a friend next week.';
 
             // update modal content
-            $('#modalContentWorship').html(statusValue);
+            $('#modalContentWorship').html(statusValue+nextStepsFAQ);
 
             // change color of icon 
             toggleActiveIcon('#worship');
@@ -165,7 +166,7 @@
                 statusValue = `You’re in a group! It’s time to reach your community and impact it for the better.`; 
 
                 // update modal content
-                $('#modalContentConnect').html(statusValue);
+                $('#modalContentConnect').html(statusValue+nextStepsFAQ);
 
                 // change color of icon
                 toggleActiveIcon('#connect');
@@ -204,7 +205,7 @@
                 statusValue = 'You are registered to serve.';
 
                 // update modal content
-                $('#modalContentServe').html(statusValue);
+                $('#modalContentServe').html(statusValue+nextStepsFAQ);
                 break;
             }
             case 2: { 
@@ -212,7 +213,7 @@
                 statusValue = `Thank you for the time that you invest into our ministries. We couldn’t do it without you!`; 
                 
                 // update modal content
-                $('#modalContentServe').html(statusValue);
+                $('#modalContentServe').html(statusValue+nextStepsFAQ);
 
                 // change color of icon
                 toggleActiveIcon('#serve');
@@ -232,7 +233,7 @@
             statusValue = `Thank you for generously giving to support our mission to reach others for Jesus Christ, both in the Valley and around the world.`; 
 
             // update modal content
-            $('#modalContentGive').html(statusValue);
+            $('#modalContentGive').html(statusValue+nextStepsFAQ);
 
             // change color of icon
             toggleActiveIcon('#give');
@@ -251,7 +252,7 @@
             statusValue = 'You’ve shared with us how God has changed your life; don’t stop there, share your story with others too. It just might be the encouragement that leads someone else to Christ.'; 
 
             // update modal content
-            $('#modalContentShare').html(statusValue);            
+            $('#modalContentShare').html(statusValue+nextStepsFAQ);            
 
             // change color of icon
             toggleActiveIcon('#share');
@@ -270,7 +271,7 @@
             statusValue = `Thank you for leading people through their Next Steps at CCV. Do you know someone that would make a good Coach? Ask them to join you.`; 
 
             // update modal content
-            $('#modalContentCoach').html(statusValue);
+            $('#modalContentCoach').html(statusValue+nextStepsFAQ);
 
             // change color of icon
             toggleActiveIcon('#coach');

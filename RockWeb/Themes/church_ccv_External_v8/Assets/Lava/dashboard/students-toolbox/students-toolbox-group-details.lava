@@ -1,0 +1,90 @@
+
+{% assign familyPicture = Group | Attribute: 'FamilyPicture', 'RawValue' %}
+{% if familyPicture != empty %}
+    <div class="group-picture">
+        <img src="/GetImage.ashx?guid={{ familyPicture }}" alt="Family Picture" />
+    </div>
+{% endif %}
+<h3 class="page-heading group-heading">Group Details</h3>
+<div class="group-details">
+    <div class="group-details-left">
+        <div class="group-leaders">
+            <h5>Leaders</h5>
+            {% for member in Group.Members %}
+                {% if member.GroupRole.IsLeader %}
+                    <p class="group-leader-name">{{ member.Person.FullName }} <small>({{ member.GroupRole.Name}})</small></p>
+                {% endif %}
+            {% endfor %}
+        </div>
+        
+        {% assign groupAddr = Group.GroupLocations | First %}
+        <h5>Address</h5>
+        <P>{{ groupAddr.Location.Street1 }}</P>
+        
+        <h5>City</h5>
+        <P>{{ groupAddr.Location.City }}</P>
+        
+        <h5>Zip</h5>
+        <P>{{ groupAddr.Location.PostalCode }}</P>
+
+        {% for groupLocation in Group.GroupLocations %}
+            {% if groupLocation.Location.GeoPoint %}
+                {% assign groupgeo = groupLocation.Location.GeoPoint | Split: ',' %}
+                <div id="groupMap" class="group-map">
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+    <div class="group-details-right">
+        <div class="group-schedule">
+            {% if Group.Schedule.FriendlyScheduleText %}
+                <h4 class="no-caps margin-t-none" style="padding-top: 26px;">Meets every {{Group.Schedule.FriendlyScheduleText}}</h4>
+            {% endif %}
+        
+            {% for attribute in Group.AttributeValues %}
+                {% unless attribute.AttributeName == "Meeting Day" or attribute.AttributeName == "Meeting Time" or attribute.ValueFormatted == empty %}
+                    {% unless attribute.AttributeName == "Family Picture" %}
+                        <h5>{{ attribute.AttributeName }}:</h5> <P>{{ attribute.ValueFormatted }} </P>
+                        <br/>
+                        <br/>
+                    {% endunless %}
+                {% endunless %}
+            {% endfor %}
+        
+            {% if LinkedPages.CommunicationPage != '' and AllowedActions.Edit == true %}
+                {% if customEmailButtons %}
+                    {{ customEmailButtons }}
+                {% else %}
+                    <a onclick="{{ '' | Postback:'SendCommunication' }}" class="btn btn-default btn-xs">
+                        <i class="fa fa-envelope-o"></i> Email Roster
+                    </a>
+                {% endif %}
+            {% endif %}
+            {% if AllowedActions.Edit == true %}
+                <a class="btn btn-primary" href="#" onclick="{{ Group.Id | Postback:'EditGroup' }}"></i> Edit</a>
+            {% endif %}        
+        </div>
+    </div>
+</div>
+
+    <script src="/Themes/church_ccv_External_v8/Scripts/_map.js"></script>
+
+    <script>
+        var groupMap;
+        Sys.Application.add_load(function(){
+            $(window).on('googleMapsIsLoaded', function(){
+                var mapHolder = document.getElementById('groupMap')
+                if (mapHolder) {
+                    var mapPoint = [{
+                        title: "{{ Group.Name }}",
+                        lat: {{ groupgeo[0] }},
+                        lng: {{ groupgeo[1] }}
+                    }]
+                    groupMap = new CCV.baseMap(mapHolder, mapPoint)
+                    groupMap.useScrollZoom = false
+                    groupMap.draw()
+                }
+            })
+            Rock.controls.util.loadGoogleMapsApi('https://maps.googleapis.com/maps/api/js?key={{ 'Global' | Attribute:'GoogleAPIKey' }}');
+        })
+    </script>

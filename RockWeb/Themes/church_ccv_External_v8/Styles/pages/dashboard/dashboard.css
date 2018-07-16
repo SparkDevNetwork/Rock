@@ -608,7 +608,7 @@ h2 {
     height: 405px;
     display: flex; 
     flex-direction: column;
-    padding-bottom: 20px;
+    padding-bottom: 35px;
 }
 
 .dashboard-card .content .header {
@@ -1438,3 +1438,14 @@ h2 {
 }
 
 /* End Change Password Styling */
+
+/* Overrides for smaller phontes */
+@media screen and (max-width: 320px) {
+    .background-card {
+        padding: 5px;
+    }
+
+    .grid .table > tbody > tr > td {
+        padding: 0;
+    }
+}

@@ -1,0 +1,159 @@
+
+{% comment %} Check for GroupId page parameter, if missing redirect back to dashboard {% endcomment %}
+{% unless PageParameter.GroupId %}
+    {% if CurrentPersonCanEdit %}
+        <p class="alert alert-warning">If you could not edit you would be redirected to: <a href="/dashboard">Dashboard</a> because there is no group id query parameter.</p>
+    {% else %}
+        {{ '/dashboard' | PageRedirect }}
+    {% endif %}
+{% endunless %}
+
+{% comment %}Force conversion from string to int {% endcomment %}
+{% assign groupId = PageParameter.GroupId | Plus: 0 %}
+
+{% assign groupMembers = CurrentPerson | Groups: "94" %}
+
+{% for groupMember in groupMembers %}
+    {% if groupMember.Group.Id == groupId %}
+        {% assign group = groupMember.Group %}
+    {% endif %}
+{% endfor %}
+
+{% comment %} If group is not a student group redirect back to dashboard {% endcomment %}
+{% unless group.GroupTypeId == 94 %}
+    {% if CurrentPersonCanEdit %}
+        <p class="alert alert-warning">If you could not edit you would be redirected to: <a href="/dashboard">Dashboard</a> because either you are not a member of the group or the group passed is not a student group.</p>
+    {% else %}
+        {{ '/dashboard' | PageRedirect }}
+    {% endif %}
+{% endunless %}
+
+{% comment %} Check if person is an editor/admin to show/hide Preview Guide Link {% endcomment %}
+{% assign isEditor = false %}
+
+{% assign editors = CurrentPerson | Group: "1760271" %}
+{% for editor in editors %}
+    {% if editor.Id %}
+        {% assign isEditor = true %}
+    {% endif %}
+{% endfor %}
+
+{% assign admins = CurrentPerson | Group: "2" %}
+{% for admin in admins %}
+    {% if admin.Id %}
+        {% assign isEditor = true %}
+    {% endif %}
+{% endfor %}
+
+<script>
+    // adds on "onload" hook to the window.onload function chain
+    var oldonload = window.onload;
+    window.onload = (typeof window.onload != 'function') ?
+        handleOnLoad : function() { 
+            oldonload(); handleOnLoad(); 
+        };
+
+    var gCurrentLink;
+    var gCurrentPanel;
+
+    function handleOnLoad() {
+        // default to the coach guides panel
+        gCurrentLink = $("#coach-guide-button")[0];
+        gCurrentPanel = $("#coach-guide-panel")[0];
+
+        {% if group.ParentGroupId == 1760335 %}
+            // show sr high panel
+            $("#sr-high-panel").css('display','block');
+        {% else %}
+            // default to jr high panel
+            $("#jr-high-panel").css('display','block');
+        {% endif %}
+
+        togglePanel( gCurrentLink, gCurrentPanel, true );
+    }
+
+    function togglePanel(panelLink, panelObj, enabled) {
+        if( enabled ) {
+            panelLink.classList.add('toolbox-subnav-div-selected');
+            panelObj.style.display="block";
+        }
+        else {
+            panelLink.classList.remove('toolbox-subnav-div-selected');
+            panelObj.style.display="none";
+        }
+    }
+         
+    function linkClicked(linkElement, sectionName, showInfoBanner = true) {
+        // remove styling from default mobile panel - Jered better way?
+        $('#dashboard-mobile-button').removeClass('toolbox-subnav-div-selected');
+
+        // turn off existing panel
+        togglePanel( gCurrentLink, gCurrentPanel, false );
+        
+        var targetPanel = $("#" + sectionName + "-panel")[0];
+        gCurrentPanel = targetPanel;
+        gCurrentLink = linkElement;
+        
+        togglePanel( gCurrentLink, gCurrentPanel, true );
+
+        $(".group-info-banner")[0].style.display = showInfoBanner == true ? "flex" : "none";
+    }
+
+    function tryToggleInfoBanner( sectionName ) {
+    }
+</script>
+
+<div class="header">
+    <h4>{{ group.Name }}</h4>
+</div>
+
+<div class="toolbox-subnav-desktop">
+    <div id="coach-guide-button" onClick="linkClicked(this, 'coach-guide')">Coach Guide</div>
+    {% if isEditor %}
+        <div id="preview-guide-button" onClick="linkClicked(this, 'preview-guide')">Preview Coach Guide</div>
+    {% endif %}
+    <div id="training-center-button" onClick="linkClicked(this, 'training-center')">Training Center</div>
+    <div id="group-details-button" onClick="linkClicked(this, 'group-details', false)">Group Details</div>
+</div>
+
+<div class="toolbox-subnav-mobile">
+    <div class="toolbox-subnav-mobile-items">
+        <div id="coach-guide-mobile-button" onClick="linkClicked(this, 'coach-guide')" class="subnav-item toolbox-subnav-div-selected">Coach Guide</div>
+        {% if isEditor %}
+            <div id="preview-guide-mobile-button" onClick="linkClicked(this, 'preview-guide')">Preview Coach Guide</div>
+        {% endif %}
+        <div id="training-center-mobile-button" onClick="linkClicked(this, 'training-center')" class="subnav-item">Training Center</div>
+        <div id="group-details-button" onClick="linkClicked(this, 'group-details', false)" class="subnav-item">Group Details</div>
+    </div>
+</div>
+
+<div class="group-info-banner">
+    <div>Meets <span style="color: black;">{{ group.Schedule.FriendlyScheduleText }} </span></div>
+    <div>Members <span style="color: black;">{{ group.Members | Size }} </span></div>
+    <div>Started <span style="color: black;">{{ group.CreatedDateTime | Date:'yyyy'}} </span></div>
+</div>
+
+<script>
+    $(document).ready(function(){
+        $('.toolbox-subnav-mobile-items').slick({
+            infinite: false,
+            slidesToShow: 2,
+            swipeToSlide: true,    
+            arrows: true,
+            variableWidth: true,
+            prevArrow: '<div class="nav-prev nav-arrow"><i class="mdi mdi-chevron-left"></i></div>',
+            nextArrow: '<div class="nav-next nav-arrow"><i class="mdi mdi-chevron-right"></i></div>'
+
+        });
+    });
+    
+    $('.nav-prev').click(function(){
+        $('.toolbox-subnav-mobile-items').slick('slickPrev');
+    });
+
+    $('.nav-next').click(function(){
+        $('.toolbox-subnav-mobile-items').slick('slickNext');
+    });
+</script>
+
+   

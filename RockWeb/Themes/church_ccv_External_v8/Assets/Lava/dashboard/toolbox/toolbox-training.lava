@@ -21,6 +21,7 @@
         <h3 class="page-header">{{ itemCategory }}</h3>
         <button type="button" class="btn btn-primary" onClick="toggleTrailerButton(this)" data-toggle="collapse" data-target="#{{itemCategory | Replace:' ', '_'}}">View Videos +</button>
       </div>
+      <br>
     {% endif %}
 
     <div class="row margin-b-xl collapse" id="{{itemCategory | Replace:' ', '_'}}">

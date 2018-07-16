@@ -8,19 +8,19 @@
 
     {% comment %} Morning {% endcomment %}
     {% assign morningGreeting = "Good Morning, " %}
-    {% assign morningMessage = "You're an early riser" %}
+    {% assign morningMessage = "I hope you have a great day!" %}
 
     {% comment %} Afternoon {% endcomment %}
     {% assign afternoonGreeting = "Good Afternoon, " %}
-    {% assign afternoonMessage = "Hope your day is going great! Thanks for making God and faith a priority." %}
+    {% assign afternoonMessage = "Hope your day is going great!" %}
 
     {% comment %} Evening {% endcomment %}
     {% assign eveningGreeting = "Good Evening, " %}
-    {% assign eveningMessage = "What a day! Thanks for making God and faith a priority." %}
+    {% assign eveningMessage = "What a day!" %}
 
     {% comment %} Late Night {% endcomment %}
     {% assign nightGreeting = "Hello, " %}
-    {% assign nightMessage = "Or should we call you night owl? Thanks for making God and faith a priority." %}
+    {% assign nightMessage = "Or should we call you night owl?" %}
 
 {% comment %} End Time Context Content {% endcomment %}
 
@@ -58,7 +58,7 @@
                 "Title": "Baptism",
                 "Icon": "/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/icon-baptism.png",
                 "Image": "~~/Assets/Images/home/get-involved/feature-next-steps-baptism.jpg",
-                "Content": "If you've made a commitment to Christ, baptism is the best way to express your faith and reflect your life change.",
+                "Content": "If you've made a commitment to Christ, baptism is the best way to express your faith and reflect your life change.<br/><a href='/Content/ccv.church/2018/FAQ_Doc.pdf'>Next Steps FAQ</a>",
                 "Buttons": [
                     {
                         "Label": "Learn More",
@@ -77,7 +77,7 @@
                 "Title": "Worship",
                 "Icon": "/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/icon-worship.png",
                 "Image": "~~/Assets/Images/home/get-involved/feature-next-steps-worship.jpg",
-                "Content": "Our exciting weekend programs for all ages are experiences you won't want to miss. Join us weekly and see how your faith grows.",
+                "Content": "Our exciting weekend programs for all ages are experiences you won't want to miss. Join us weekly and see how your faith grows.<br/><a href='/Content/ccv.church/2018/FAQ_Doc.pdf'>Next Steps FAQ</a>",
                 "Buttons": [
                     {
                         "Label": "Locations & Times",
@@ -96,7 +96,7 @@
                 "Title": "Connect",
                 "Icon": "/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/icon-connect.png",
                 "Image": "~~/Assets/Images/home/get-involved/feature-next-steps-connect.jpg",
-                "Content": "Life was not meant to be lived alone. Gather weekly with others to build a community and impact it for the better.",
+                "Content": "Life was not meant to be lived alone. Gather weekly with others to build a community and impact it for the better.<br/><a href='/Content/ccv.church/2018/FAQ_Doc.pdf'>Next Steps FAQ</a>",
                 "Buttons": [
                     {
                         "Label": "Find a Group",
@@ -115,7 +115,7 @@
                 "Title": "Serve",
                 "Icon": "/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/icon-serve.png",
                 "Image": "~~/Assets/Images/home/get-involved/feature-next-steps-serve.jpg",
-                "Content": "Serving others is a great way to live out your faith and get involved in the CCV community. Experience first-hand the impact you can make!",
+                "Content": "Serving others is a great way to live out your faith and get involved in the CCV community. Experience first-hand the impact you can make!<br/><a href='/Content/ccv.church/2018/FAQ_Doc.pdf'>Next Steps FAQ</a>",
                 "Buttons": [
                     {
                         "Label": "Serve at CCV",
@@ -134,7 +134,7 @@
                 "Title": "Give",
                 "Icon": "/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/icon-give.png",
                 "Image": "~~/Assets/Images/home/get-involved/feature-next-steps-give.jpg",
-                "Content": "Giving is a biblical principal designed to teach us to trust God daily for our provisions. When we give, we demonstrate our trust in Him.",
+                "Content": "Giving is a biblical principal designed to teach us to trust God daily for our provisions. When we give, we demonstrate our trust in Him.<br/><a href='/Content/ccv.church/2018/FAQ_Doc.pdf'>Next Steps FAQ</a>",
                 "Buttons": [
                     {
                         "Label": "Give Now",
@@ -158,7 +158,7 @@
                 "Title": "Share",
                 "Icon": "/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/icon-share.png",
                 "Image": "~~/Assets/Images/home/get-involved/feature-next-steps-share.jpg",
-                "Content": "We each have a story, and we want to help you tell yours. Your story just might be the catalyst that will lead someone else to Christ.",
+                "Content": "We each have a story, and we want to help you tell yours. Your story just might be the catalyst that will lead someone else to Christ.<br/><a href='/Content/ccv.church/2018/FAQ_Doc.pdf'>Next Steps FAQ</a>",
                 "Buttons": [
                     {
                         "Label": "Share Your Story",
@@ -177,7 +177,7 @@
                 "Title": "Coach",
                 "Icon": "/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/icon-coach.png",
                 "Image": "~~/Assets/Images/home/get-involved/feature-next-steps-coach.jpg",
-                "Content": "CCV Coaches are trained individuals within the church whose sole responsibility is to help you determine your Next Steps at CCV.",
+                "Content": "CCV Coaches are trained individuals within the church whose sole responsibility is to help you determine your Next Steps at CCV.<br/><a href='/Content/ccv.church/2018/FAQ_Doc.pdf'>Next Steps FAQ</a>",
                 "Buttons": [
                     {
                         "Label": "Request a Coach",
