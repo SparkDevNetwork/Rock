@@ -246,7 +246,7 @@ namespace Rock.Web.UI.Controls
                 AdditionalFilterDisplay.ToList().ForEach( d => filterDisplay.Add( d.Key, d.Value ) );
 
                 List<UserPreference> userPreferencesForFilter;
-                if ( this.UserPreferenceKeyPrefix.IsNotNullOrWhitespace() )
+                if ( this.UserPreferenceKeyPrefix.IsNotNullOrWhiteSpace() )
                 {
                     userPreferencesForFilter = _userPreferences.Where( a => a.Key.StartsWith( this.UserPreferenceKeyPrefix ) ).ToList();
                 }

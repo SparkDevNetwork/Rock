@@ -236,7 +236,7 @@ namespace Rock.Model
             refundTransaction.RefundDetails.OriginalTransactionId = transaction.Id;
 
             string batchName = transaction.Batch.Name;
-            if ( batchNameSuffix.IsNotNullOrWhitespace() && !batchName.EndsWith( batchNameSuffix ) )
+            if ( batchNameSuffix.IsNotNullOrWhiteSpace() && !batchName.EndsWith( batchNameSuffix ) )
             {
                 batchName += batchNameSuffix;
             }

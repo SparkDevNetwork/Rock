@@ -876,7 +876,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     groupMembers.Select( m => m.Person.NickName ).ToList().AsDelimited( ", " ) );
             }
 
-            if ( location != null && location.GetFullStreetAddress().IsNotNullOrWhitespace() )
+            if ( location != null && location.GetFullStreetAddress().IsNotNullOrWhiteSpace() )
             {
                 personInfoHtml.AppendFormat( "<p><strong>Address</strong><br/>{0}</p>", location.GetFullStreetAddress().ConvertCrLfToHtmlBr() );
             }

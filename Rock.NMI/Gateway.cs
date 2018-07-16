@@ -286,7 +286,7 @@ namespace Rock.NMI
                     errorMessage = result.GetValueOrNull( "result-text" );
 
                     string resultCodeMessage = GetResultCodeMessage( result );
-                    if ( resultCodeMessage.IsNotNullOrWhitespace() )
+                    if ( resultCodeMessage.IsNotNullOrWhiteSpace() )
                     {
                         errorMessage += string.Format( " ({0})", resultCodeMessage );
                     }

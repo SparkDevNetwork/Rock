@@ -225,6 +225,8 @@ namespace Rock.Jobs
                 personRockContext.SaveChanges();
             }
 
+            AddMissingAlternateIds();
+
             using ( var personRockContext = new Rock.Data.RockContext() )
             {
                 PersonService personService = new PersonService( personRockContext );
@@ -299,6 +301,64 @@ namespace Rock.Jobs
                 {
                     IsActive = false
                 } );
+            }
+        }
+
+        /// <summary>
+        /// Adds any missing person alternate ids; limited to 150k records per run
+        /// to avoid any possible memory issues. Processes about 150k records
+        /// in 52 seconds.
+        /// </summary>
+        private static void AddMissingAlternateIds()
+        {
+            using ( var personRockContext = new Rock.Data.RockContext() )
+            {
+                var personService = new PersonService( personRockContext );
+                int alternateValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() ).Id;
+                var personSearchKeyService = new PersonSearchKeyService( personRockContext );
+                var alternateKeyQuery = personSearchKeyService.Queryable().AsNoTracking().Where( a => a.SearchTypeValueId == alternateValueId );
+
+                IQueryable<Person> personQuery = personService.Queryable( includeDeceased: true ).AsNoTracking();
+
+                // Make a list of items that we're going to bulk insert.
+                var itemsToInsert = new List<PersonSearchKey>();
+
+                // Get all existing keys so we can keep track and quickly check them while we're bulk adding new ones.
+                var keys = new HashSet<string>( personSearchKeyService.Queryable().AsNoTracking()
+                    .Where( a => a.SearchTypeValueId == alternateValueId )
+                    .Select( a => a.SearchValue )
+                    .ToList() );
+
+                string alternateId = string.Empty;
+
+                // Find everyone who does not yet have an alternateKey.
+                foreach ( var person in personQuery = personQuery
+                    .Where( p => !alternateKeyQuery.Any( f => f.PersonAlias.PersonId == p.Id ) )
+                    .Take( 150000 ) )
+                {
+                    // Regenerate key if it already exists.
+                    do
+                    {
+                        alternateId = PersonSearchKeyService.GenerateRandomAlternateId();
+                    } while ( keys.Contains( alternateId ) );
+
+                    keys.Add( alternateId );
+
+                    itemsToInsert.Add(
+                        new PersonSearchKey()
+                        {
+                            PersonAliasId = person.PrimaryAliasId,
+                            SearchTypeValueId = alternateValueId,
+                            SearchValue = alternateId
+                        }
+                    );
+                }
+
+                if ( itemsToInsert.Count > 0 )
+                {
+                    // Now add them in one bulk insert.
+                    personRockContext.BulkInsert( itemsToInsert );
+                }
             }
         }
 
@@ -905,8 +965,8 @@ WHERE ExpireDateTime IS NOT NULL
                 // if IO Exception thrown and this is not a retry attempt
                 if ( !isRetryAttempt )
                 {
-                    // have thread sleep for 10 ms and retry delete
-                    System.Threading.Thread.Sleep( 10 );
+                    // wait for 10 ms and retry delete
+                    System.Threading.Tasks.Task.Delay( 10 ).Wait();
                     DeleteDirectory( directoryPath, true );
                 }
             }
@@ -933,8 +993,8 @@ WHERE ExpireDateTime IS NOT NULL
                 // If an IO exception has occurred and this is not a retry attempt
                 if ( !isRetryAttempt )
                 {
-                    // have the thread sleep for 10 ms and retry delete.
-                    System.Threading.Thread.Sleep( 10 );
+                    // wait for 10 ms and retry delete.
+                    System.Threading.Tasks.Task.Delay( 10 ).Wait();
                     DeleteFile( filePath, true );
                 }
             }

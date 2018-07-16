@@ -285,7 +285,7 @@ namespace Rock.Web.UI.Controls
                 if ( idParts.Count == 1 && idParts[0].StartsWith( "AdditionalMergeField" ) ) 
                 {
                     string mFields = idParts[0].Replace( "AdditionalMergeField_", "" ).Replace( "AdditionalMergeFields_", "" );
-                    if ( mFields.IsNotNullOrWhitespace() )
+                    if ( mFields.IsNotNullOrWhiteSpace() )
                     {
                         string beginFor = "{% for field in AdditionalFields %}";
                         string endFor = "{% endfor %}";

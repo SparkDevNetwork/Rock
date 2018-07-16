@@ -1242,7 +1242,7 @@ namespace Rock.Lava
             int? month;
             int? year;
 
-            if (input.ToString().IsNotNullOrWhitespace() )
+            if (input.ToString().IsNotNullOrWhiteSpace() )
             {
                 DateTime? date;
 
@@ -2757,9 +2757,10 @@ namespace Rock.Lava
         /// <param name="context">The context.</param>
         /// <param name="input">The input.</param>
         /// <param name="groupTypeId">The group type identifier.</param>
-        /// <param name="status">The status.</param>
+        /// <param name="memberStatus">If not <c>All</c> then only active group members will be included.</param>
+        /// <param name="groupStatus">If not <c>All</c> then only active groups will be included.</param>
         /// <returns></returns>
-        public static List<Rock.Model.GroupMember> Groups( DotLiquid.Context context, object input, string groupTypeId, string status = "Active" )
+        public static List<Rock.Model.GroupMember> Groups( DotLiquid.Context context, object input, string groupTypeId, string memberStatus = "Active", string groupStatus = "Active" )
         {
             var person = GetPerson( input );
             int? numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
@@ -2768,15 +2769,20 @@ namespace Rock.Lava
             {
                 var groupQuery = new GroupMemberService( GetRockContext( context ) )
                     .Queryable( "Group, GroupRole" )
+                    .AsNoTracking()
                     .Where( m =>
                         m.PersonId == person.Id &&
-                        m.Group.GroupTypeId == numericalGroupTypeId.Value &&
-                        m.Group.IsActive );
+                        m.Group.GroupTypeId == numericalGroupTypeId.Value );
 
-                if ( status != "All" )
+                if ( groupStatus != "All" )
+                {
+                    groupQuery = groupQuery.Where( m => m.Group.IsActive );
+                }
+
+                if ( memberStatus != "All" )
                 {
                     GroupMemberStatus queryStatus = GroupMemberStatus.Active;
-                    queryStatus = (GroupMemberStatus)Enum.Parse( typeof( GroupMemberStatus ), status, true );
+                    queryStatus = (GroupMemberStatus)Enum.Parse( typeof( GroupMemberStatus ), memberStatus, true );
 
                     groupQuery = groupQuery.Where( m => m.GroupMemberStatus == queryStatus );
                 }
@@ -2809,6 +2815,7 @@ namespace Rock.Lava
             {
                 var groupQuery = new GroupMemberService( GetRockContext( context ) )
                     .Queryable( "Group, GroupRole" )
+                    .AsNoTracking()
                     .Where( m =>
                         m.PersonId == person.Id &&
                         m.Group.Id == numericalGroupId.Value &&
@@ -3233,7 +3240,7 @@ namespace Rock.Lava
                 userName = option1 ?? option2;
             }
 
-            if ( userName.IsNotNullOrWhitespace() )
+            if ( userName.IsNotNullOrWhiteSpace() )
             {
                 // if userName was specified, don't return anything if the currentPerson doesn't have a matching userName
                 var currentPerson = GetCurrentPerson( context );
@@ -3301,11 +3308,11 @@ namespace Rock.Lava
             if ( input.StartsWith( "~~" ) )
             {
                 string theme = "Rock";
-                if ( page.Theme.IsNotNullOrWhitespace() )
+                if ( page.Theme.IsNotNullOrWhiteSpace() )
                 {
                     theme = page.Theme;
                 }
-                else if ( page.Site != null && page.Site.Theme.IsNotNullOrWhitespace() )
+                else if ( page.Site != null && page.Site.Theme.IsNotNullOrWhiteSpace() )
                 {
                     theme = page.Site.Theme;
                 }

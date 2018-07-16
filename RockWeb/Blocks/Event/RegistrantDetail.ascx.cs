@@ -456,7 +456,10 @@ namespace RockWeb.Blocks.Event
                                 reloadedRegistrant.GroupMemberId = groupMember.Id;
                             }
                         }
-                        reloadedRegistrant.Registration.SavePersonNotesAndHistory( reloadedRegistrant.Registration.PersonAlias.Person, this.CurrentPersonAliasId, previousRegistrantPersonIds );
+                        if (reloadedRegistrant.Registration.FirstName.IsNotNullOrWhitespace() && reloadedRegistrant.Registration.LastName.IsNotNullOrWhitespace())
+                        {
+                            reloadedRegistrant.Registration.SavePersonNotesAndHistory( reloadedRegistrant.Registration.FirstName, reloadedRegistrant.Registration.LastName, this.CurrentPersonAliasId, previousRegistrantPersonIds );
+                        }
                         newRockContext.SaveChanges();
                     }
                 }

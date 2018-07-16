@@ -1177,6 +1177,7 @@
     <Compile Include="Model\PersonDuplicate.cs" />
     <Compile Include="Model\PersonPreviousName.cs" />
     <Compile Include="Model\PersonSearchKey.cs" />
+    <Compile Include="Model\PersonSearchKeyService.Partial.cs" />
     <Compile Include="Model\PersonService.Partial.cs" />
     <Compile Include="Model\PersonSignal.cs" />
     <Compile Include="Model\PersonToken.cs" />

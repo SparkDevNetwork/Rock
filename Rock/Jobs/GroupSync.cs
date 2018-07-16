@@ -152,7 +152,7 @@ namespace Rock.Jobs
                                     if ( sync.ExitSystemEmail != null )
                                     {
                                         var person = new PersonService( groupMemberContext ).Get( personId );
-                                        if ( person.Email.IsNotNullOrWhitespace() )
+                                        if ( person.Email.IsNotNullOrWhiteSpace() )
                                         {
                                             // Send the exit email
                                             var mergeFields = new Dictionary<string, object>();
@@ -187,7 +187,7 @@ namespace Rock.Jobs
                                     if ( sync.WelcomeSystemEmail != null )
                                     {
                                         var person = new PersonService( groupMemberContext ).Get( personId );
-                                        if ( person.Email.IsNotNullOrWhitespace() )
+                                        if ( person.Email.IsNotNullOrWhiteSpace() )
                                         {
                                             // If the group is configured to add a user account for anyone added to the group, and person does not yet have an
                                             // account, add one for them.

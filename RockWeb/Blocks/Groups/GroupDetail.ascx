@@ -330,7 +330,7 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlSyncDataView" runat="server" Label="Sync Data View" Help="Select the Data View for the sync" required="true" ValidationGroup="GroupSyncSettings"></Rock:RockDropDownList>
+                        <Rock:DataViewItemPicker ID="dvipSyncDataView" runat="server" Label="Sync Data View" Help="Select the Data View for the sync" required="true" ValidationGroup="GroupSyncSettings" />
                     </div>
                     <div class="col-md-6">
                         <Rock:RockDropDownList ID="ddlGroupRoles" runat="server" Label="Group Role to Assign" Help="Select the role to assign the members added by the selected Data View" required="true" ValidationGroup="GroupSyncSettings" />

@@ -98,7 +98,7 @@ namespace Rock.Communication.Transport
 
                         MessageResource response = SendToTwilio( smsMessage.FromNumber.Value, null, attachmentMediaUrls, message, recipientData.To );
 
-                        if ( response.ErrorMessage.IsNotNullOrWhitespace() )
+                        if ( response.ErrorMessage.IsNotNullOrWhiteSpace() )
                         {
                             errorMessages.Add( response.ErrorMessage );
                         }
@@ -111,7 +111,7 @@ namespace Rock.Communication.Transport
 
                     if ( throttlingWaitTimeMS.HasValue )
                     {
-                        System.Threading.Thread.Sleep( throttlingWaitTimeMS.Value );
+                        System.Threading.Tasks.Task.Delay( throttlingWaitTimeMS.Value ).Wait();
                     }
                 }
             }
@@ -267,7 +267,7 @@ namespace Rock.Communication.Transport
 
                                 if ( throttlingWaitTimeMS.HasValue )
                                 {
-                                    System.Threading.Thread.Sleep( throttlingWaitTimeMS.Value );
+                                    System.Threading.Tasks.Task.Delay( throttlingWaitTimeMS.Value ).Wait();
                                 }
                             }
                             else
@@ -343,7 +343,7 @@ namespace Rock.Communication.Transport
                         Body = messageChunk
                     };
 
-                    if ( callbackUrl.IsNotNullOrWhitespace() )
+                    if ( callbackUrl.IsNotNullOrWhiteSpace() )
                     {
                         createMessageOptions.StatusCallback = new Uri( callbackUrl );
                     }
@@ -373,7 +373,7 @@ namespace Rock.Communication.Transport
                     Body = message
                 };
 
-                if ( callbackUrl.IsNotNullOrWhitespace() )
+                if ( callbackUrl.IsNotNullOrWhiteSpace() )
                 {
                     createMessageOptions.StatusCallback = new Uri( callbackUrl );
                 }

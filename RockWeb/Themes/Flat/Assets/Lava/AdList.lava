@@ -1,13 +1,16 @@
 ﻿<div class="announcement-list">
 
   {% for item in Items -%}
-
-    {%- if LinkedPages.DetailPage contains '{Slug}' and item.PrimarySlug != '' -%}
+    {%- assign itemPrimarySlug = item.PrimarySlug | Trim -%}
+    {%- if LinkedPages.DetailPage contains '{Slug}' and itemPrimarySlug != '' -%}
       {%- assign itemLink = LinkedPages.DetailPage | Replace:'{Slug}',item.PrimarySlug | Prepend:'/' -%}
     {%- else -%}
-      {%- capture itemLink -%}{{ LinkedPages.DetailPage }}?Item={{ item.Id }}{%- endcapture -%}
+      {%- if LinkedPages.DetailPage contains '{Slug}' -%}
+        {%- assign itemLink = LinkedPages.DetailPage | Replace:'{Slug}',item.Id | Prepend:'/' -%}
+      {%- else -%}
+        {%- capture itemLink -%}{{ LinkedPages.DetailPage }}?Item={{ item.Id }}{%- endcapture -%}
+      {%- endif -%}
     {%- endif -%}
-
     <div class="announcement">
       <a href="{{ itemLink }}">{{ item | Attribute:'Image' }}</a>
     </div>
