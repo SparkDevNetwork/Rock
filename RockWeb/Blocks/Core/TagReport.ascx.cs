@@ -169,7 +169,7 @@ namespace RockWeb.Blocks.Core
                         if ( entity != null )
                         {
                             string url = string.Format( "~/{0}/{1}", entityType.FriendlyName.Replace( " ", "" ), entity.Id );
-                            if ( entityType.LinkUrlLavaTemplate.IsNotNullOrWhitespace() )
+                            if ( entityType.LinkUrlLavaTemplate.IsNotNullOrWhiteSpace() )
                             {
                                 url = entityType.LinkUrlLavaTemplate.ResolveMergeFields( new Dictionary<string, object> { { "Entity", entity } } );
                             }

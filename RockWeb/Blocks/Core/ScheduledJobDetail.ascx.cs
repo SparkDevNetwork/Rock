@@ -227,7 +227,7 @@ namespace RockWeb.Blocks.Administration
             tbName.Text = job.Name;
             tbDescription.Text = job.Description;
             cbActive.Checked = job.IsActive.HasValue ? job.IsActive.Value : false;
-            if ( job.Class.IsNotNullOrWhitespace() )
+            if ( job.Class.IsNotNullOrWhiteSpace() )
             {
                 if ( ddlJobTypes.Items.FindByValue( job.Class ) == null )
                 {

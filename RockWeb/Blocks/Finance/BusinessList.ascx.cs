@@ -283,7 +283,7 @@ namespace RockWeb.Blocks.Finance
         protected string FormatContactInfo( string phone, string address )
         {
             var values = new List<string> { phone, address, "&nbsp;", "&nbsp" };
-            return values.Where( v => v.IsNotNullOrWhitespace() ).Take( 2 ).ToList().AsDelimited( "<br/>" );
+            return values.Where( v => v.IsNotNullOrWhiteSpace() ).Take( 2 ).ToList().AsDelimited( "<br/>" );
         }
 
         #endregion Internal Methods

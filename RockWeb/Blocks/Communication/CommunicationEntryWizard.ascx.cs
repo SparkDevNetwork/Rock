@@ -1174,7 +1174,7 @@ namespace RockWeb.Blocks.Communication
             var communicationTemplate = new CommunicationTemplateService( new RockContext() ).Get( hfSelectedCommunicationTemplateId.Value.AsInteger() );
 
             // If the template does not provide a default From Name and Address use the current person.
-            if ( communicationTemplate.FromName.IsNotNullOrWhitespace() )
+            if ( communicationTemplate.FromName.IsNotNullOrWhiteSpace() )
             {
                 tbFromName.Text = communicationTemplate.FromName;
             }
@@ -1187,7 +1187,7 @@ namespace RockWeb.Blocks.Communication
                 }
             }
 
-            if ( communicationTemplate.FromEmail.IsNotNullOrWhitespace() )
+            if ( communicationTemplate.FromEmail.IsNotNullOrWhiteSpace() )
             {
                 ebFromAddress.Text = communicationTemplate.FromEmail;
             }
@@ -1201,17 +1201,17 @@ namespace RockWeb.Blocks.Communication
             }
 
             // only set the ReplyToEmail, CCEMails, and BCCEmails if the template has one (just in case they already filled these in for this communication
-            if ( communicationTemplate.ReplyToEmail.IsNotNullOrWhitespace() )
+            if ( communicationTemplate.ReplyToEmail.IsNotNullOrWhiteSpace() )
             {
                 ebReplyToAddress.Text = communicationTemplate.ReplyToEmail;
             }
 
-            if ( communicationTemplate.CCEmails.IsNotNullOrWhitespace() )
+            if ( communicationTemplate.CCEmails.IsNotNullOrWhiteSpace() )
             {
                 ebCCList.Text = communicationTemplate.CCEmails;
             }
 
-            if ( communicationTemplate.BCCEmails.IsNotNullOrWhitespace() )
+            if ( communicationTemplate.BCCEmails.IsNotNullOrWhiteSpace() )
             {
                 ebBCCList.Text = communicationTemplate.BCCEmails;
             }
@@ -1241,7 +1241,7 @@ namespace RockWeb.Blocks.Communication
             }
 
             // only set the SMSMessage if the template has one (just in case they already typed in an SMSMessage for this communication
-            if ( communicationTemplate.SMSMessage.IsNotNullOrWhitespace() )
+            if ( communicationTemplate.SMSMessage.IsNotNullOrWhiteSpace() )
             {
                 tbSMSTextMessage.Text = communicationTemplate.SMSMessage;
             }
@@ -1659,7 +1659,7 @@ namespace RockWeb.Blocks.Communication
                 foreach ( var attr in emailMediumWithActiveTransport.Attributes.Select( a => a.Value ) )
                 {
                     string value = emailMediumWithActiveTransport.GetAttributeValue( attr.Key );
-                    if ( value.IsNotNullOrWhitespace() )
+                    if ( value.IsNotNullOrWhiteSpace() )
                     {
                         mediumAttributes.Add( attr.Key, value );
                     }

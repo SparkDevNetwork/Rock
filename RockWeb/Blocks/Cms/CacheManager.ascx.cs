@@ -339,7 +339,7 @@ namespace RockWeb.Blocks.Cms
             foreach ( var keyValuePair in keyValuePairs )
             {
                 serverList += keyValuePair.Value + ",";
-                endPointsHaveAtLeastOneValue = keyValuePair.Value.Trim().IsNotNullOrWhitespace() ? true : endPointsHaveAtLeastOneValue;
+                endPointsHaveAtLeastOneValue = keyValuePair.Value.Trim().IsNotNullOrWhiteSpace() ? true : endPointsHaveAtLeastOneValue;
             }
 
             serverList = serverList.TrimEnd( ',' );
