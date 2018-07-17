@@ -75,6 +75,13 @@ TODO: Add Other Group Type leader roles
                                                 <i class="mdi mdi-chevron-right group-header-icon"></i>
                                             </div>
                                         </a>
+                                    {% elseif group.Group.GroupTypeId == 94 %}
+                                        <a href="/student-toolbox?GroupId={{ group.Group.Id }}" class="tooltip-access-toolbox">
+                                            <div class="group-name-row-content">
+                                                <span>{{ group.Group.Name }}</span>
+                                                <i class="mdi mdi-chevron-right group-header-icon"></i>
+                                            </div>
+                                        </a>
                                     {% else %}
                                         <h5>{{ group.Group.Name }}</h5>
                                     {% endif %}
