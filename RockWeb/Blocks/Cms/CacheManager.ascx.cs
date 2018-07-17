@@ -24,7 +24,7 @@ using System.Linq;
 using System.Web.UI.WebControls;
 
 using Rock;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -122,7 +122,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void BindGrid()
         {
-            int cacheTagDefinedTypeId = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.CACHE_TAGS ).Id;
+            int cacheTagDefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.CACHE_TAGS ).Id;
             RockContext rockContext = new RockContext();
             DefinedValueService definedValueService = new DefinedValueService( rockContext );
             var cacheTags = definedValueService.Queryable().Where( v => v.DefinedTypeId == cacheTagDefinedTypeId ).ToList();
@@ -166,7 +166,7 @@ namespace RockWeb.Blocks.Cms
         protected void gCacheTagList_ClearCacheTag( object sender, RowEventArgs e )
         {
             var definedValueId = e.RowKeyId;
-            var definedValue = CacheDefinedValue.Get( definedValueId );
+            var definedValue = DefinedValueCache.Get( definedValueId );
             RockCache.RemoveForTags( definedValue.Value );
             DisplayNotification( nbMessage, string.Format( "Removed cached items tagged with \"{0}\".", definedValue.Value ), NotificationBoxType.Success );
         }
@@ -571,7 +571,7 @@ namespace RockWeb.Blocks.Cms
             }
 
             // see if the tag exists
-            int cachedTagDefinedTypeId = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.CACHE_TAGS ).Id;
+            int cachedTagDefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.CACHE_TAGS ).Id;
             var rockContext = new RockContext();
             var definedValueService = new DefinedValueService( rockContext );
 
@@ -590,7 +590,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void SaveTag()
         {
-            int cachedTagDefinedTypeId = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.CACHE_TAGS ).Id;
+            int cachedTagDefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.CACHE_TAGS ).Id;
             var rockContext = new RockContext();
             var definedValueService = new DefinedValueService( rockContext );
             int order = 0;

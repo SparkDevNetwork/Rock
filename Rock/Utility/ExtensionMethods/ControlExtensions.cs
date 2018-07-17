@@ -20,6 +20,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Web.UI.WebControls;
+using Rock.Web.Cache;
 
 namespace Rock
 {
@@ -497,20 +498,7 @@ namespace Rock
         /// <param name="definedType">Type of the defined.</param>
         /// <param name="insertBlankOption">if set to <c>true</c> [insert blank option].</param>
         /// <param name="useDescriptionAsText">if set to <c>true</c> [use description as text].</param>
-        [Obsolete]
-        public static void BindToDefinedType( this ListControl listControl, Web.Cache.DefinedTypeCache definedType, bool insertBlankOption = false, bool useDescriptionAsText = false )
-        {
-            BindToDefinedType( listControl, Cache.CacheDefinedType.Get( definedType.Id ), insertBlankOption, useDescriptionAsText );
-        }
-
-        /// <summary>
-        /// Binds to the values of a definedType using the definedValue's Id as the listitem value
-        /// </summary>
-        /// <param name="listControl">The list control.</param>
-        /// <param name="definedType">Type of the defined.</param>
-        /// <param name="insertBlankOption">if set to <c>true</c> [insert blank option].</param>
-        /// <param name="useDescriptionAsText">if set to <c>true</c> [use description as text].</param>
-        public static void BindToDefinedType( this ListControl listControl, Cache.CacheDefinedType definedType, bool insertBlankOption = false, bool useDescriptionAsText = false )
+        public static void BindToDefinedType( this ListControl listControl, DefinedTypeCache definedType, bool insertBlankOption = false, bool useDescriptionAsText = false )
         {
             var ds = definedType.DefinedValues
                 .Select( v => new
@@ -536,11 +524,11 @@ namespace Rock
         /// Returns the Value as Int or null if Value is <see cref="T:Rock.Constants.None"/>.
         /// </summary>
         /// <param name="listControl">The list control.</param>
-        /// <param name="NoneAsNull">if set to <c>true</c>, will return Null if SelectedValue = <see cref="T:Rock.Constants.None" /> </param>
+        /// <param name="noneAsNull">if set to <c>true</c>, will return Null if SelectedValue = <see cref="T:Rock.Constants.None" /> </param>
         /// <returns></returns>
-        public static int? SelectedValueAsInt( this ListControl listControl, bool NoneAsNull = true )
+        public static int? SelectedValueAsInt( this ListControl listControl, bool noneAsNull = true )
         {
-            if ( NoneAsNull )
+            if ( noneAsNull )
             {
                 if ( listControl == null || listControl.SelectedValue.Equals( Rock.Constants.None.Id.ToString() ) )
                 {

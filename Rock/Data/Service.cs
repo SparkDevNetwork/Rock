@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Linq.Expressions;
+using Rock.Web.Cache;
 using Z.EntityFramework.Plus;
 
 namespace Rock.Data
@@ -510,7 +511,7 @@ namespace Rock.Data
         {
             var rockContext = this.Context as RockContext;
 
-            var entityType = Rock.Cache.CacheEntityType.Get( typeof( T ), false, rockContext );
+            var entityType = EntityTypeCache.Get( typeof( T ), false, rockContext );
             if ( entityType != null )
             {
                 var followerPersonIds = new Rock.Model.FollowingService( rockContext )
@@ -537,7 +538,7 @@ namespace Rock.Data
         {
             var rockContext = this.Context as RockContext;
 
-            var entityType = Rock.Cache.CacheEntityType.Get( typeof( T ), false, rockContext );
+            var entityType = EntityTypeCache.Get( typeof( T ), false, rockContext );
             if ( entityType != null )
             {
                 var ids = new Rock.Model.FollowingService( rockContext )

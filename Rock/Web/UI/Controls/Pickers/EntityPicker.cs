@@ -23,7 +23,7 @@ using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Field;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -268,7 +268,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                var entityType = CacheEntityType.Get( this.EntityId ?? 0 );
+                var entityType = EntityTypeCache.Get( this.EntityId ?? 0 );
                 if ( entityType != null )
                 {
                     return entityType.Name;
@@ -281,7 +281,7 @@ namespace Rock.Web.UI.Controls
 
             set
             {
-                var entityType = CacheEntityType.Get( value );
+                var entityType = EntityTypeCache.Get( value );
                 if ( entityType != null )
                 {
                     this.EntityTypeId = entityType.Id;
@@ -312,7 +312,7 @@ namespace Rock.Web.UI.Controls
 
                 int? result = null;
 
-                var entityType = CacheEntityType.Get( this.EntityTypeId ?? 0 );
+                var entityType = EntityTypeCache.Get( this.EntityTypeId ?? 0 );
                 if ( entityType != null && entityType.SingleValueFieldType != null && entityType.SingleValueFieldType.Field is IEntityFieldType )
                 {
                     result = ( entityType.SingleValueFieldType.Field as IEntityFieldType ).GetEditValueAsEntityId( _entityTypeEditControl, new Dictionary<string, ConfigurationValue>() );
@@ -330,7 +330,7 @@ namespace Rock.Web.UI.Controls
                     return;
                 }
 
-                var entityType = CacheEntityType.Get( this.EntityTypeId ?? 0 );
+                var entityType = EntityTypeCache.Get( this.EntityTypeId ?? 0 );
                 if ( entityType != null && entityType.SingleValueFieldType != null && entityType.SingleValueFieldType.Field is IEntityFieldType )
                 {
                     ( entityType.SingleValueFieldType.Field as IEntityFieldType ).SetEditValueFromEntityId( _entityTypeEditControl, new Dictionary<string, ConfigurationValue>(), value );
@@ -459,7 +459,7 @@ namespace Rock.Web.UI.Controls
             string fieldTypeName = "Entity";
             Control entityTypeEditControl = null;
 
-            var entityType = CacheEntityType.Get( this.EntityTypeId ?? 0 );
+            var entityType = EntityTypeCache.Get( this.EntityTypeId ?? 0 );
             if ( entityType != null && entityType.SingleValueFieldType != null )
             {
                 fieldTypeName = entityType.SingleValueFieldType.Name;

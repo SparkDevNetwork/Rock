@@ -21,6 +21,7 @@ using System.Data.Entity.Infrastructure;
 using System.Linq;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Transactions
 {
@@ -131,7 +132,7 @@ namespace Rock.Transactions
 
         private void LaunchWorkflow( RockContext rockContext, ConnectionWorkflow connectionWorkflow, string name )
         {
-            var workflowType = Cache.CacheWorkflowType.Get( connectionWorkflow.WorkflowTypeId.Value );
+            var workflowType = WorkflowTypeCache.Get( connectionWorkflow.WorkflowTypeId.Value );
             if ( workflowType != null && ( workflowType.IsActive ?? true ) )
             {
                 ConnectionRequestActivity connectionRequestActivity = null;

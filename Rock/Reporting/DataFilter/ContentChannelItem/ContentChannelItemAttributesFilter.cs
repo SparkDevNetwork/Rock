@@ -26,7 +26,7 @@ using Newtonsoft.Json;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.ContentChannelItem
@@ -189,7 +189,7 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
                 if ( control != null )
                 {
                     // Add the field to the dropdown of available fields
-                    if ( CacheAttribute.Get( entityField.AttributeGuid.Value )?.EntityTypeQualifierColumn == "ContentChannelTypeId" )
+                    if ( AttributeCache.Get( entityField.AttributeGuid.Value )?.EntityTypeQualifierColumn == "ContentChannelTypeId" )
                     {
                         ddlProperty.Items.Add( new ListItem( entityField.TitleWithoutQualifier, entityField.UniqueName ) );
                     }
@@ -418,7 +418,7 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
                     var allEntityAttributeFields = EntityHelper.GetEntityFields( typeof( Rock.Model.ContentChannelItem ) ).Where( a => a.FieldKind == FieldKind.Attribute );
                     foreach ( var entityAttributeField in allEntityAttributeFields )
                     {
-                        var attributeCache = CacheAttribute.Get( entityAttributeField.AttributeGuid.Value );
+                        var attributeCache = AttributeCache.Get( entityAttributeField.AttributeGuid.Value );
                         if ( attributeCache.EntityTypeQualifierColumn == "ContentChannelTypeId" && attributeCache.EntityTypeQualifierValue == contentChannelTypeId.ToString() )
                         {
                             entityAttributeFields.Add( entityAttributeField );

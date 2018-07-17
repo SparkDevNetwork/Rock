@@ -22,7 +22,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -183,7 +183,7 @@ namespace Rock.Model
 
             if ( this.EntitySetPurposeValueId != null )
             {
-                var purpose = CacheDefinedValue.Get( this.EntitySetPurposeValueId.Value );
+                var purpose = DefinedValueCache.Get( this.EntitySetPurposeValueId.Value );
                 if ( purpose != null )
                 {
                     return purpose.Value;
@@ -192,7 +192,7 @@ namespace Rock.Model
 
             if ( this.EntityTypeId.HasValue )
             {
-                var entityType = CacheEntityType.Get( this.EntityTypeId.Value );
+                var entityType = EntityTypeCache.Get( this.EntityTypeId.Value );
                 if ( entityType != null )
                 {
                     return string.Format( "{0} Entity Set", entityType.Name );

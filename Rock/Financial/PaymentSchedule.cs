@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using Rock.Web.Cache;
 
 namespace Rock.Financial
 {
@@ -37,7 +38,7 @@ namespace Rock.Financial
         /// <value>
         /// The transaction frequency value.
         /// </value>
-        public Rock.Cache.CacheDefinedValue TransactionFrequencyValue { get; set; }
+        public DefinedValueCache TransactionFrequencyValue { get; set; }
 
         /// <summary>
         /// Gets or sets the start date.

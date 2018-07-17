@@ -30,7 +30,7 @@ using RestSharp;
 using RestSharp.Authenticators;
 
 using Rock.Attribute;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
 using Rock.Transactions;
@@ -104,7 +104,7 @@ namespace Rock.Communication.Transport
                 return !errorMessages.Any();
             }
 
-            var globalAttributes = CacheGlobalAttributes.Get();
+            var globalAttributes = GlobalAttributesCache.Get();
 
             string fromAddress = emailMessage.FromEmail.IsNullOrWhiteSpace() ? globalAttributes.GetValue( "OrganizationEmail" ) : emailMessage.FromEmail;
             string fromName = emailMessage.FromName.IsNullOrWhiteSpace() ? globalAttributes.GetValue( "OrganizationName" ) : emailMessage.FromName;
@@ -276,7 +276,7 @@ namespace Rock.Communication.Transport
                 }
 
                 var currentPerson = communication.CreatedByPersonAlias?.Person;
-                var globalAttributes = CacheGlobalAttributes.Get();
+                var globalAttributes = GlobalAttributesCache.Get();
                 string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
                 var mergeFields = Lava.LavaHelper.GetCommonMergeFields( null, currentPerson );
                 var cssInliningEnabled = communication.CommunicationTemplate?.CssInliningEnabled ?? false;
@@ -297,8 +297,8 @@ namespace Rock.Communication.Transport
                     replyTo.Value = communication.ReplyToEmail.ResolveMergeFields( mergeFields, currentPerson );
                 }
 
-                var personEntityTypeId = CacheEntityType.Get( "Rock.Model.Person" ).Id;
-                var communicationEntityTypeId = CacheEntityType.Get( "Rock.Model.Communication" ).Id;
+                var personEntityTypeId = EntityTypeCache.Get( "Rock.Model.Person" ).Id;
+                var communicationEntityTypeId = EntityTypeCache.Get( "Rock.Model.Communication" ).Id;
                 var communicationCategoryGuid = Rock.SystemGuid.Category.HISTORY_PERSON_COMMUNICATIONS.AsGuid();
 
                 RestRequest restRequest = null;
@@ -523,7 +523,7 @@ namespace Rock.Communication.Transport
             List<string> toEmailAddresses = restRequest.Parameters.Where( p => p.Name == "to" ).Select( p => p.Value.ToString() ).ToList();
 
             // Get the safe sender domains
-            var safeDomainValues = CacheDefinedType.Get( SystemGuid.DefinedType.COMMUNICATION_SAFE_SENDER_DOMAINS.AsGuid() ).DefinedValues;
+            var safeDomainValues = DefinedTypeCache.Get( SystemGuid.DefinedType.COMMUNICATION_SAFE_SENDER_DOMAINS.AsGuid() ).DefinedValues;
             var safeDomains = safeDomainValues.Select( v => v.Value ).ToList();
 
             // Check to make sure the From email domain is a safe sender, if so then we are done.
@@ -606,7 +606,7 @@ namespace Rock.Communication.Transport
         [Obsolete( "Use Send( Communication communication, Dictionary<string, string> mediumAttributes ) instead" )]
         public override void Send( Rock.Model.Communication communication )
         {
-            int mediumEntityId = CacheEntityType.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() )?.Id ?? 0;
+            int mediumEntityId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() )?.Id ?? 0;
             Send( communication, mediumEntityId, null );
         }
 
@@ -648,7 +648,7 @@ namespace Rock.Communication.Transport
             message.CreateCommunicationRecord = createCommunicationHistory;
 
             var errorMessages = new List<string>();
-            int mediumEntityId = CacheEntityType.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() )?.Id ?? 0;
+            int mediumEntityId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() )?.Id ?? 0;
             Send( message, mediumEntityId, null, out errorMessages );
         }
 
@@ -703,7 +703,7 @@ namespace Rock.Communication.Transport
             message.MessageMetaData = metaData;
 
             var errorMessages = new List<string>();
-            int mediumEntityId = CacheEntityType.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() )?.Id ?? 0;
+            int mediumEntityId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() )?.Id ?? 0;
             Send( message, mediumEntityId, null, out errorMessages );
         }
 
@@ -789,7 +789,7 @@ namespace Rock.Communication.Transport
             }
 
             var errorMessages = new List<string>();
-            int mediumEntityId = CacheEntityType.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() )?.Id ?? 0;
+            int mediumEntityId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() )?.Id ?? 0;
             Send( message, mediumEntityId, null, out errorMessages );
         }
 

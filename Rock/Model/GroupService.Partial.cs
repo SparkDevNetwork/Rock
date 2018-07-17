@@ -20,7 +20,7 @@ using System.Data.Entity;
 using System.Data.Entity.Spatial;
 using System.Linq;
 using Rock.Data;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Z.EntityFramework.Plus;
 
 namespace Rock.Model
@@ -162,7 +162,7 @@ namespace Rock.Model
             var rockContext = (RockContext)this.Context;
             var groupLocationService = new GroupLocationService( rockContext );
 
-            var familyGroupTypeId = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
+            var familyGroupTypeId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
 
             return groupLocationService.GetMappedLocationsByGeofences( geofences )
                 .Where( l =>
@@ -673,7 +673,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static Group SaveNewFamily( RockContext rockContext, List<GroupMember> familyMembers, int? campusId, bool savePersonAttributes )
         {
-            var familyGroupType = CacheGroupType.GetFamilyGroupType();
+            var familyGroupType = GroupTypeCache.GetFamilyGroupType();
             string familyName = familyMembers.FirstOrDefault().Person.LastName + " Family";
             return SaveNewGroup( rockContext, familyGroupType.Id, null, familyName, familyMembers, campusId, savePersonAttributes );
         }
@@ -691,7 +691,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static Group SaveNewGroup( RockContext rockContext, int groupTypeId, Guid? parentGroupGuid, string groupName, List<GroupMember> groupMembers, int? campusId, bool savePersonAttributes )
         {
-            var groupType = CacheGroupType.Get( groupTypeId );
+            var groupType = GroupTypeCache.Get( groupTypeId );
 
             if ( groupType != null )
             {
@@ -1013,7 +1013,7 @@ namespace Rock.Model
         {
             if ( location != null )
             {
-                var groupType = CacheGroupType.Get( group.GroupTypeId );
+                var groupType = GroupTypeCache.Get( group.GroupTypeId );
                 if ( groupType != null )
                 {
                     var locationType = groupType.LocationTypeValues.FirstOrDefault( l => l.Guid.Equals( locationTypeGuid.AsGuid() ) );
@@ -1077,7 +1077,7 @@ namespace Rock.Model
         /// </returns>
         public override bool Delete( Group item )
         {
-            var groupTypeCache = CacheGroupType.Get( item.GroupTypeId );
+            var groupTypeCache = GroupTypeCache.Get( item.GroupTypeId );
             if ( groupTypeCache?.EnableGroupHistory == true )
             {
                 var rockContext = this.Context as RockContext;

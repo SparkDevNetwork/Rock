@@ -21,6 +21,7 @@ using System.Data.Entity.Infrastructure;
 using System.Linq;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Transactions
 {
@@ -288,7 +289,7 @@ namespace Rock.Transactions
                 groupMember = new GroupMemberService( rockContext ).Get( GroupMemberGuid.Value );
             }
 
-            var workflowType = Cache.CacheWorkflowType.Get( workflowTypeId );
+            var workflowType = WorkflowTypeCache.Get( workflowTypeId );
             if ( workflowType != null && ( workflowType.IsActive ?? true ) )
             {
                 var workflow = Rock.Model.Workflow.Activate( workflowType, name );

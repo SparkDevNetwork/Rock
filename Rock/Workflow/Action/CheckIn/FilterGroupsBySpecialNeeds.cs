@@ -22,7 +22,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Workflow.Action.CheckIn
 {
@@ -71,14 +71,14 @@ namespace Rock.Workflow.Action.CheckIn
                 var personSpecialNeedsGuid = GetAttributeValue( action, "PersonSpecialNeedsAttribute" ).AsGuid();
                 if ( personSpecialNeedsGuid != Guid.Empty )
                 {
-                    personSpecialNeedsKey = CacheAttribute.Get( personSpecialNeedsGuid, rockContext ).Key;
+                    personSpecialNeedsKey = AttributeCache.Get( personSpecialNeedsGuid, rockContext ).Key;
                 }
 
                 var groupSpecialNeedsKey = string.Empty;
                 var groupSpecialNeedsGuid = GetAttributeValue( action, "GroupSpecialNeedsAttribute" ).AsGuid();
                 if ( groupSpecialNeedsGuid != Guid.Empty )
                 {
-                    groupSpecialNeedsKey = CacheAttribute.Get( groupSpecialNeedsGuid, rockContext ).Key;
+                    groupSpecialNeedsKey = AttributeCache.Get( groupSpecialNeedsGuid, rockContext ).Key;
                 }
 
                 // log a warning if the attribute is missing or invalid

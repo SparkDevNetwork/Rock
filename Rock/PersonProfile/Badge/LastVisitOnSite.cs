@@ -26,7 +26,7 @@ using System.Collections.Generic;
 using System.Data;
 using System;
 using System.Diagnostics;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.PersonProfile.Badge
 {
@@ -39,19 +39,19 @@ namespace Rock.PersonProfile.Badge
     
     [SiteField("Site", "Site to filter for.", true, "3", "", 1)]
     [LinkedPage("Page View Details", "Page to show the details of the page views. If blank no link is created.", false, "", "", 2)]
-    public class LastVisitOnSite : BadgeComponentModern
+    public class LastVisitOnSite : BadgeComponent
     {        
         /// <summary>
         /// Renders the specified writer.
         /// </summary>
         /// <param name="badge">The badge.</param>
         /// <param name="writer">The writer.</param>
-        public override void Render( CachePersonBadge badge, System.Web.UI.HtmlTextWriter writer )
+        public override void Render( PersonBadgeCache badge, System.Web.UI.HtmlTextWriter writer )
         {
             int? siteId = GetAttributeValue( badge, "Site" ).AsIntegerOrNull();
             if ( siteId.HasValue )
             {
-                var site = Rock.Cache.CacheSite.Get( siteId.Value );
+                var site = SiteCache.Get( siteId.Value );
                 if ( site != null )
                 {
                     string siteName = site.Name;
@@ -61,7 +61,7 @@ namespace Rock.PersonProfile.Badge
 
                     if ( !String.IsNullOrEmpty( GetAttributeValue( badge, "PageViewDetails" ) ) )
                     {
-                        int pageId = Rock.Cache.CachePage.Get( Guid.Parse( GetAttributeValue( badge, "PageViewDetails" ) ) ).Id;
+                        int pageId = PageCache.Get( Guid.Parse( GetAttributeValue( badge, "PageViewDetails" ) ) ).Id;
 
                         // NOTE: Since this block shows a history of sites a person visited in Rock, use Person.Guid instead of Person.Id to reduce the risk of somebody manually editing the URL to see somebody else pageview history
                         detailPageUrl = System.Web.VirtualPathUtility.ToAbsolute( $"~/page/{pageId}?PersonGuid={Person.Guid}&SiteId={siteId}" );

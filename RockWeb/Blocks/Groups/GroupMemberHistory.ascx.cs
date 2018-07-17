@@ -22,7 +22,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
@@ -221,7 +221,7 @@ namespace RockWeb.Blocks.Groups
             bool showMembersGrid = this.GetAttributeValue( "ShowMembersGrid" ).AsBoolean();
 
             // only show this block if GroupHistory is enabled
-            var groupType = CacheGroupType.Get( groupTypeId );
+            var groupType = GroupTypeCache.Get( groupTypeId );
             if ( groupType != null && groupType.EnableGroupHistory == false )
             {
                 this.Visible = false;
@@ -254,7 +254,7 @@ namespace RockWeb.Blocks.Groups
             var rockContext = new RockContext();
             int groupId = hfGroupId.Value.AsInteger();
             var group = new GroupService( rockContext ).Get( groupId );
-            var groupTypeCache = CacheGroupType.Get( group.GroupTypeId );
+            var groupTypeCache = GroupTypeCache.Get( group.GroupTypeId );
             gfGroupMembers.UserPreferenceKeyPrefix = string.Format( "{0}-", groupId );
 
             tbFirstName.Text = gfGroupMembers.GetUserPreference( "First Name" );
@@ -403,7 +403,7 @@ namespace RockWeb.Blocks.Groups
 
             string timelineLavaTemplate = this.GetAttributeValue( "TimelineLavaTemplate" );
 
-            string timelineHtml = historyService.GetTimelineHtml( timelineLavaTemplate, CacheEntityType.Get<Rock.Model.GroupMember>(), groupMemberId, null, additionalMergeFields );
+            string timelineHtml = historyService.GetTimelineHtml( timelineLavaTemplate, EntityTypeCache.Get<Rock.Model.GroupMember>(), groupMemberId, null, additionalMergeFields );
             lTimelineHtml.Text = "<div class='panel-body'>" + timelineHtml + "</div>";
         }
 

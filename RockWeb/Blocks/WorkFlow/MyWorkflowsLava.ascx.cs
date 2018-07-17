@@ -25,7 +25,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using Rock.Security;
@@ -233,7 +233,7 @@ namespace RockWeb.Blocks.WorkFlow
 
         private List<int> GetCategories( RockContext rockContext )
         {
-            int entityTypeId = CacheEntityType.Get( typeof( Rock.Model.WorkflowType ) ).Id;
+            int entityTypeId = EntityTypeCache.Get( typeof( Rock.Model.WorkflowType ) ).Id;
 
             var selectedCategories = new List<Guid>();
             GetAttributeValue( "Categories" ).SplitDelimitedValues().ToList().ForEach( c => selectedCategories.Add( c.AsGuid() ) );

@@ -20,7 +20,7 @@ using System.Reflection;
 using System.Threading;
 using System.Web;
 using Rock;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Model;
 
 namespace RockWeb
@@ -47,7 +47,7 @@ namespace RockWeb
                     throw new Exception( "Missing or invalid EntityTypeId or RecordKey" );
                 }
 
-                Type backgroundCheckComponentType = Type.GetType( CacheEntityType.Get( entityTypeId ).AssemblyName );
+                Type backgroundCheckComponentType = Type.GetType( EntityTypeCache.Get( entityTypeId ).AssemblyName );
                 if ( backgroundCheckComponentType != null )
                 {
                     MethodInfo methodInfo = backgroundCheckComponentType.GetMethod( "GetReportUrl" );

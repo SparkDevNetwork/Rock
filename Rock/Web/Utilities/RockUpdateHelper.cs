@@ -21,7 +21,7 @@ using System.Linq;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Web.Utilities
 {
@@ -50,7 +50,7 @@ namespace Rock.Web.Utilities
             {
                 using ( var rockContext = new RockContext() )
                 {
-                    var entityType = CacheEntityType.Get( "Rock.Security.BackgroundCheck.ProtectMyMinistry", false, rockContext );
+                    var entityType = EntityTypeCache.Get( "Rock.Security.BackgroundCheck.ProtectMyMinistry", false, rockContext );
                     if ( entityType != null )
                     {
                         var pmmUserName = new AttributeValueService( rockContext )

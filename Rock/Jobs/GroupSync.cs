@@ -27,7 +27,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Communication;
 
 namespace Rock.Jobs
@@ -97,7 +97,7 @@ namespace Rock.Jobs
                             .FirstOrDefault( s => s.Id == syncId );
 
                         // Ensure that the group's Sync Data View is a person dataview
-                        if ( sync.SyncDataView.EntityTypeId == CacheEntityType.Get( typeof( Person ) ).Id )
+                        if ( sync.SyncDataView.EntityTypeId == EntityTypeCache.Get( typeof( Person ) ).Id )
                         {
                             List<string> errorMessages = new List<string>();
 
@@ -204,7 +204,7 @@ namespace Rock.Jobs
                                                     groupMemberContext,
                                                     person,
                                                     AuthenticationServiceType.Internal,
-                                                    CacheEntityType.Get( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id,
+                                                    EntityTypeCache.Get( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id,
                                                     username,
                                                     newPassword,
                                                     true,

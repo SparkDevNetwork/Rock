@@ -20,7 +20,7 @@ using Quartz;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using System.Data.Entity;
 
 namespace Rock.Jobs
@@ -98,8 +98,8 @@ namespace Rock.Jobs
 
             int howManyLeft = howManyToConvert;
 
-            var attribute = CacheAttribute.Get( "8F528431-A438-4488-8DC3-CA42E66C1B37".AsGuid() );
-            var searchTypeValue = CacheDefinedValue.Get( SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() );
+            var attribute = AttributeCache.Get( "8F528431-A438-4488-8DC3-CA42E66C1B37".AsGuid() );
+            var searchTypeValue = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() );
             if ( attribute != null && searchTypeValue != null )
             {
                 while ( howManyLeft > 0 )

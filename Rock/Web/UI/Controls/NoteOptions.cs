@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Model;
 
 namespace Rock.Web.UI.Controls
@@ -48,7 +48,7 @@ namespace Rock.Web.UI.Controls
         /// Sets the note types.
         /// </summary>
         /// <param name="noteTypeList">The note type list.</param>
-        public void SetNoteTypes( List<CacheNoteType> noteTypeList )
+        public void SetNoteTypes( List<NoteTypeCache> noteTypeList )
         {
             this.NoteTypes = noteTypeList.ToArray();
         }
@@ -59,11 +59,11 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The note types.
         /// </value>
-        public CacheNoteType[] NoteTypes
+        public NoteTypeCache[] NoteTypes
         {
             get
             {
-                return _noteTypeIds.Select( a => CacheNoteType.Get( a ) ).ToArray();
+                return _noteTypeIds.Select( a => NoteTypeCache.Get( a ) ).ToArray();
             }
 
             set
@@ -78,7 +78,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="currentPerson">The current person.</param>
         /// <returns></returns>
-        public List<CacheNoteType> GetViewableNoteTypes( Person currentPerson )
+        public List<NoteTypeCache> GetViewableNoteTypes( Person currentPerson )
         {
             return this.NoteTypes?.Where( a => a.IsAuthorized( Security.Authorization.VIEW, currentPerson ) ).ToList();
         }
@@ -88,7 +88,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="currentPerson">The current person.</param>
         /// <returns></returns>
-        public List<CacheNoteType> GetEditableNoteTypes( Person currentPerson )
+        public List<NoteTypeCache> GetEditableNoteTypes( Person currentPerson )
         {
             return this.NoteTypes?.Where( a => a.UserSelectable && a.IsAuthorized( Security.Authorization.EDIT, currentPerson ) ).ToList();
         }

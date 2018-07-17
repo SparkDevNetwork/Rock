@@ -24,7 +24,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Workflow.Action
 {
@@ -58,7 +58,7 @@ namespace Rock.Workflow.Action
             if (!string.IsNullOrEmpty(tagName)) {
 
                 // get person entity type
-                var personEntityType = Rock.Cache.CacheEntityType.Get("Rock.Model.Person");
+                var personEntityType = EntityTypeCache.Get("Rock.Model.Person");
 
                 // get tag
                 TagService tagService = new TagService( rockContext );
@@ -71,7 +71,7 @@ namespace Rock.Workflow.Action
                     Guid guidPersonAttribute = value.AsGuid();
                     if ( !guidPersonAttribute.IsEmpty() )
                     {
-                        var attributePerson = CacheAttribute.Get( guidPersonAttribute, rockContext );
+                        var attributePerson = AttributeCache.Get( guidPersonAttribute, rockContext );
                         if ( attributePerson != null )
                         {
                             string attributePersonValue = action.GetWorklowAttributeValue( guidPersonAttribute );

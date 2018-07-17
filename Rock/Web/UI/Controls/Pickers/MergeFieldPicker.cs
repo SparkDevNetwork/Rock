@@ -22,7 +22,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Model;
 using Rock;
-using Rock.Cache;
+using Rock.Web.Cache;
 using System.Web;
 
 namespace Rock.Web.UI.Controls
@@ -344,7 +344,7 @@ namespace Rock.Web.UI.Controls
 
                 // Get the root type
                 int pathPointer = 0;
-                CacheEntityType entityType = null;
+                EntityTypeCache entityType = null;
                 while ( entityType == null && pathPointer < idParts.Count() )
                 {
                     string item = idParts[pathPointer];
@@ -353,7 +353,7 @@ namespace Rock.Web.UI.Controls
                     string itemName = itemParts.Length > 1 ? itemParts[0] : string.Empty;
                     string itemType = itemParts.Length > 1 ? itemParts[1] : item;
 
-                    entityType = CacheEntityType.Get( itemType, false );
+                    entityType = EntityTypeCache.Get( itemType, false );
 
                     workingParts.Add( entityType != null ? 
                         ( itemName != string.Empty ? itemName : entityType.FriendlyName.Replace( " ", string.Empty) ) :

@@ -23,7 +23,7 @@ using System.Linq;
 using Rock.CheckIn;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Workflow.Action.CheckIn
 {
@@ -58,7 +58,7 @@ namespace Rock.Workflow.Action.CheckIn
                     var people = service.GetByGroupId( family.Group.Id ).AsNoTracking();
                     if ( checkInState.CheckInType != null && checkInState.CheckInType.PreventInactivePeople )
                     {
-                        var dvInactive = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
+                        var dvInactive = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
                         if ( dvInactive != null )
                         {
                             people = people.Where( m => m.Person.RecordStatusValueId != dvInactive.Id );

@@ -32,7 +32,7 @@ using Lucene.Net.Search;
 using Lucene.Net.Store;
 using Lucene.Net.Util;
 using Newtonsoft.Json.Linq;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
 using Rock.UniversalSearch.IndexModels;
@@ -489,7 +489,7 @@ namespace Rock.UniversalSearch.IndexComponents
                 {
                     //add all entities
                     allEntities = true;
-                    var selectedEntityTypes = CacheEntityType.All().Where( e => e.IsIndexingSupported && e.IsIndexingEnabled && e.FriendlyName != "Site" );
+                    var selectedEntityTypes = EntityTypeCache.All().Where( e => e.IsIndexingSupported && e.IsIndexingEnabled && e.FriendlyName != "Site" );
 
                     foreach ( var entityTypeCache in selectedEntityTypes )
                     {

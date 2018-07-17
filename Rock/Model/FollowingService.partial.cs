@@ -18,7 +18,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using Rock.Data;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -36,7 +36,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IQueryable<IEntity> GetFollowedItems( int entityTypeId, int personId )
         {
-            CacheEntityType itemEntityType = CacheEntityType.Get( entityTypeId );
+            EntityTypeCache itemEntityType = EntityTypeCache.Get( entityTypeId );
             var rockContext = this.Context as RockContext;
             var followedItemsQry = this.Queryable().Where( a => a.PersonAlias.PersonId == personId && a.EntityTypeId == entityTypeId );
 

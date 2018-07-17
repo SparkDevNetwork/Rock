@@ -23,24 +23,23 @@ using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Attribute
 {
     /// <summary>
-    /// Static Helper class for creating, saving, and reading attributes and attribute values of any <see cref="Rock.Data.IHasAttributes"/> class
+    /// Static Helper class for creating, saving, and reading attributes and attribute values of any <see cref="Rock.Attribute.IHasAttributes"/> class
     /// </summary>
     public static class Helper
     {
         /// <summary>
         /// Updates the attributes.
         /// </summary>
-        /// <param name="type">The type (should be a <see cref="Rock.Data.IHasAttributes" /> object.</param>
+        /// <param name="type">The type (should be a <see cref="Rock.Attribute.IHasAttributes" /> object.</param>
         /// <param name="entityTypeId">The entity type id.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
@@ -268,7 +267,7 @@ namespace Rock.Attribute
                 {
                     foreach ( string propertyCategory in propertyCategories )
                     {
-                        int attributeEntityTypeId = CacheEntityType.Get( typeof( Rock.Model.Attribute ) ).Id;
+                        int attributeEntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Attribute ) ).Id;
                         var category = categoryService.Get( propertyCategory, attributeEntityTypeId, "EntityTypeId", entityTypeId.ToString() ).FirstOrDefault();
                         if ( category == null )
                         {
@@ -326,7 +325,6 @@ namespace Rock.Attribute
         /// Loads the <see cref="P:IHasAttributes.Attributes" /> and <see cref="P:IHasAttributes.AttributeValues" /> of any <see cref="IHasAttributes" /> object
         /// </summary>
         /// <param name="entity">The item.</param>
-        [Obsolete]
         public static void LoadAttributes( Rock.Attribute.IHasAttributes entity )
         {
             using ( var rockContext = new RockContext() )
@@ -334,192 +332,13 @@ namespace Rock.Attribute
                 LoadAttributes( entity, rockContext );
             }
         }
-
-        /// <summary>
-        /// Loads the <see cref="P:IHasAttributes.Attributes" /> and <see cref="P:IHasAttributes.AttributeValues" /> of any <see cref="IHasAttributes" /> object
-        /// </summary>
-        /// <param name="entity">The item.</param>
-        public static void LoadAttributes( Rock.Data.IHasAttributes entity )
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                LoadAttributes( entity, rockContext );
-            }
-        }
-
+        
         /// <summary>
         /// Loads the <see cref="P:IHasAttributes.Attributes" /> and <see cref="P:IHasAttributes.AttributeValues" /> of any <see cref="IHasAttributes" /> object
         /// </summary>
         /// <param name="entity">The item.</param>
         /// <param name="rockContext">The rock context.</param>
-        [Obsolete]
         public static void LoadAttributes( Rock.Attribute.IHasAttributes entity, RockContext rockContext )
-        {
-            // If a pre-v8 plugin calls LoadAttributes, it is possible that the entity is really a Rock.Data.IHasAttributes, but called this LoadAttributes instead.  If so, go ahead and call the Rock.Data.IHasAttributes LoadAttributes instead
-            if ( entity is Rock.Data.IHasAttributes )
-            {
-                ( entity as Rock.Data.IHasAttributes ).LoadAttributes( rockContext );
-                return;
-            }
-
-            if ( entity != null )
-            {
-                Dictionary<string, PropertyInfo> properties = new Dictionary<string, PropertyInfo>();
-
-                Type entityType = entity.GetType();
-                if ( entityType.IsDynamicProxyType() )
-                {
-                    entityType = entityType.BaseType;
-                }
-
-                rockContext = rockContext ?? new RockContext();
-
-                var attributes = new List<Rock.Web.Cache.AttributeCache>();
-                var attributeValueService = new Rock.Model.AttributeValueService( rockContext );
-                var entityTypeCache = Rock.Cache.CacheEntityType.Get( entityType );
-
-                List<Rock.Web.Cache.AttributeCache> allAttributes = null;
-                List<int> altEntityIds = null;
-
-                //
-                // If this entity can provide inherited attribute information then
-                // load that data now. If they don't provide any then generate empty lists.
-                //
-                if ( entity is Rock.Attribute.IHasInheritedAttributes )
-                {
-                    allAttributes = ( (Rock.Attribute.IHasInheritedAttributes)entity ).GetInheritedAttributes( rockContext );
-                    altEntityIds = ( (Rock.Attribute.IHasInheritedAttributes)entity ).GetAlternateEntityIds( rockContext );
-                }
-
-                allAttributes = allAttributes ?? new List<Rock.Web.Cache.AttributeCache>();
-                altEntityIds = altEntityIds ?? new List<int>();
-
-                //
-                // Generate a list of all this entities properties for quick reference while
-                // loading the attributes.
-                //
-                foreach ( PropertyInfo propertyInfo in entityType.GetProperties() )
-                    properties.Add( propertyInfo.Name.ToLower(), propertyInfo );
-
-                //
-                // Get all the attributes that apply to this entity type and this entity's
-                // properties match any attribute qualifiers.
-                //
-                if ( entityTypeCache != null )
-                {
-                    int entityTypeId = entityTypeCache.Id;
-                    foreach ( var entityAttributes in CacheAttribute.GetByEntity( entityTypeCache.Id ) )
-                    {
-                        if ( string.IsNullOrEmpty( entityAttributes.EntityTypeQualifierColumn ) ||
-                            ( properties.ContainsKey( entityAttributes.EntityTypeQualifierColumn.ToLower() ) &&
-                            ( string.IsNullOrEmpty( entityAttributes.EntityTypeQualifierValue ) ||
-                            ( properties[entityAttributes.EntityTypeQualifierColumn.ToLower()].GetValue( entity, null ) ?? "" ).ToString() == entityAttributes.EntityTypeQualifierValue ) ) )
-                        {
-                            foreach ( int attributeId in entityAttributes.AttributeIds )
-                            {
-                                attributes.Add( Rock.Web.Cache.AttributeCache.Read( attributeId ) );
-                            }
-                        }
-                    }
-                }
-
-                //
-                // Append these attributes to our inherited attributes, in order.
-                //
-                foreach ( var attribute in attributes.OrderBy( a => a.Order ) )
-                {
-                    allAttributes.Add( attribute );
-                }
-
-                var attributeValues = new Dictionary<string, Rock.Web.Cache.AttributeValueCache>();
-
-                if ( allAttributes.Any() )
-                {
-                    foreach ( var attribute in allAttributes )
-                    {
-                        // Add a placeholder for this item's value for each attribute
-                        attributeValues.AddOrIgnore( attribute.Key, null );
-                    }
-
-                    // If loading attributes for a saved item, read the item's value(s) for each attribute 
-                    if ( !entityTypeCache.IsEntity || entity.Id != 0 )
-                    {
-                        List<int> attributeIds = allAttributes.Select( a => a.Id ).ToList();
-                        IQueryable<AttributeValue> attributeValueQuery;
-
-                        if ( altEntityIds.Any() )
-                        {
-                            attributeValueQuery = attributeValueService.Queryable().AsNoTracking()
-                                .Where( v =>
-                                    v.EntityId.HasValue &&
-                                    ( v.EntityId.Value == entity.Id || altEntityIds.Contains( v.EntityId.Value ) ) );
-                        }
-                        else
-                        {
-                            attributeValueQuery = attributeValueService.Queryable().AsNoTracking()
-                                .Where( v => v.EntityId.HasValue && v.EntityId.Value == entity.Id );
-                        }
-
-                        if ( attributeIds.Count != 1 )
-                        {
-                            attributeValueQuery = attributeValueQuery.Where( v => attributeIds.Contains( v.AttributeId ) );
-                        }
-                        else
-                        {
-                            int attributeId = attributeIds[0];
-                            attributeValueQuery = attributeValueQuery.Where( v => v.AttributeId == attributeId );
-                        }
-
-                        foreach ( var attributeValue in attributeValueQuery )
-                        {
-                            var attributeKey = CacheAttribute.Get( attributeValue.AttributeId ).Key;
-                            attributeValues[attributeKey] = new Rock.Web.Cache.AttributeValueCache( attributeValue );
-                        }
-                    }
-
-                    // Look for any attributes that don't have a value and create a default value entry
-                    foreach ( var attribute in allAttributes )
-                    {
-                        if ( attributeValues[attribute.Key] == null )
-                        {
-                            var attributeValue = new Rock.Web.Cache.AttributeValueCache();
-                            attributeValue.AttributeId = attribute.Id;
-                            attributeValue.EntityId = entity?.Id;
-                            var attributeValueDefaults = entity.AttributeValueDefaults;
-                            if ( attributeValueDefaults != null && attributeValueDefaults.ContainsKey( attribute.Key ) )
-                            {
-                                attributeValue.Value = attributeValueDefaults[attribute.Key];
-                            }
-                            else
-                            {
-                                attributeValue.Value = attribute.DefaultValue;
-                            }
-                            attributeValues[attribute.Key] = attributeValue;
-                        }
-                        else
-                        {
-                            if ( !String.IsNullOrWhiteSpace( attribute.DefaultValue ) &&
-                                String.IsNullOrWhiteSpace( attributeValues[attribute.Key].Value ) )
-                            {
-                                attributeValues[attribute.Key].Value = attribute.DefaultValue;
-                            }
-                        }
-                    }
-                }
-
-                entity.Attributes = new Dictionary<string, Rock.Web.Cache.AttributeCache>();
-                allAttributes.ForEach( a => entity.Attributes.AddOrIgnore( a.Key, a ) );
-
-                entity.AttributeValues = attributeValues;
-            }
-        }
-
-        /// <summary>
-        /// Loads the <see cref="P:IHasAttributes.Attributes" /> and <see cref="P:IHasAttributes.AttributeValues" /> of any <see cref="IHasAttributes" /> object
-        /// </summary>
-        /// <param name="entity">The item.</param>
-        /// <param name="rockContext">The rock context.</param>
-        public static void LoadAttributes( Rock.Data.IHasAttributes entity, RockContext rockContext )
         {
             if ( entity == null )
             {
@@ -532,25 +351,25 @@ namespace Rock.Attribute
                 entityType = entityType.BaseType;
             }
 
-            var attributes = new List<Rock.Cache.CacheAttribute>();
+            var attributes = new List<Rock.Web.Cache.AttributeCache>();
             
-            var entityTypeCache = Rock.Cache.CacheEntityType.Get( entityType );
+            var entityTypeCache = EntityTypeCache.Get( entityType );
 
-            List<Rock.Cache.CacheAttribute> allAttributes = null;
+            List<Rock.Web.Cache.AttributeCache> allAttributes = null;
             List<int> altEntityIds = null;
 
             //
             // If this entity can provide inherited attribute information then
             // load that data now. If they don't provide any then generate empty lists.
             //
-            if ( entity is Rock.Data.IHasInheritedAttributes )
+            if ( entity is Rock.Attribute.IHasInheritedAttributes )
             {
                 rockContext = rockContext ?? new RockContext();
-                allAttributes = ( ( Rock.Data.IHasInheritedAttributes ) entity ).GetInheritedAttributes( rockContext );
-                altEntityIds = ( ( Rock.Data.IHasInheritedAttributes ) entity ).GetAlternateEntityIds( rockContext );
+                allAttributes = ( ( Rock.Attribute.IHasInheritedAttributes ) entity ).GetInheritedAttributes( rockContext );
+                altEntityIds = ( ( Rock.Attribute.IHasInheritedAttributes ) entity ).GetAlternateEntityIds( rockContext );
             }
 
-            allAttributes = allAttributes ?? new List<Rock.Cache.CacheAttribute>();
+            allAttributes = allAttributes ?? new List<AttributeCache>();
             altEntityIds = altEntityIds ?? new List<int>();
 
             //
@@ -560,7 +379,7 @@ namespace Rock.Attribute
             if ( entityTypeCache != null )
             {
                 int entityTypeId = entityTypeCache.Id;
-                var entityAttributesList = CacheAttribute.GetByEntity( entityTypeCache.Id );
+                var entityAttributesList = AttributeCache.GetByEntity( entityTypeCache.Id );
                 if ( entityAttributesList.Any() )
                 {
                     var entityTypeQualifierColumnPropertyNames = entityAttributesList.Select( a => a.EntityTypeQualifierColumn ).Distinct().Where(a => !string.IsNullOrWhiteSpace(a)).ToList();
@@ -583,7 +402,7 @@ namespace Rock.Attribute
                         {
                             foreach ( int attributeId in entityAttributes.AttributeIds )
                             {
-                                attributes.Add( Rock.Cache.CacheAttribute.Get( attributeId ) );
+                                attributes.Add( Rock.Web.Cache.AttributeCache.Get( attributeId ) );
                             }
                         }
                     }
@@ -598,7 +417,7 @@ namespace Rock.Attribute
                 allAttributes.Add( attribute );
             }
 
-            var attributeValues = new Dictionary<string, CacheAttributeValue>();
+            var attributeValues = new Dictionary<string, AttributeValueCache>();
 
             if ( allAttributes.Any() )
             {
@@ -642,8 +461,8 @@ namespace Rock.Attribute
 
                     foreach ( var attributeValue in attributeValueQuery )
                     {
-                        var attributeKey = CacheAttribute.Get( attributeValue.AttributeId ).Key;
-                        attributeValues[attributeKey] = new CacheAttributeValue( attributeValue );
+                        var attributeKey = AttributeCache.Get( attributeValue.AttributeId ).Key;
+                        attributeValues[attributeKey] = new AttributeValueCache( attributeValue );
                     }
                 }
 
@@ -652,7 +471,7 @@ namespace Rock.Attribute
                 {
                     if ( attributeValues[attribute.Key] == null )
                     {
-                        var attributeValue = new CacheAttributeValue();
+                        var attributeValue = new AttributeValueCache();
                         attributeValue.AttributeId = attribute.Id;
                         attributeValue.EntityId = entity?.Id;
 
@@ -678,35 +497,10 @@ namespace Rock.Attribute
                 }
             }
 
-            entity.Attributes = new Dictionary<string, Cache.CacheAttribute>();
+            entity.Attributes = new Dictionary<string, Rock.Web.Cache.AttributeCache>();
             allAttributes.ForEach( a => entity.Attributes.AddOrIgnore( a.Key, a ) );
 
             entity.AttributeValues = attributeValues;
-        }
-
-        /// <summary>
-        /// Gets the attribute categories.
-        /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <param name="onlyIncludeGridColumns">if set to <c>true</c> will only include those attributes with the option to display in grid set to true</param>
-        /// <param name="allowMultiple">if set to <c>true</c> returns the attribute in each of its categories, if false, only returns attribut in first category.</param>
-        /// <param name="supressOrdering">if set to <c>true</c> supresses reording (LoadAttributes() may perform custom ordering as is the case for group member attributes).</param>
-        /// <returns></returns>
-        [Obsolete]
-        public static List<AttributeCategory> GetAttributeCategories( Rock.Attribute.IHasAttributes entity, bool onlyIncludeGridColumns = false, bool allowMultiple = false, bool supressOrdering = false )
-        {
-            if ( entity != null )
-            {
-                var attributes = entity.Attributes.Select( a => a.Value );
-                if ( !supressOrdering )
-                {
-                    attributes = attributes.OrderBy( t => t.EntityTypeQualifierValue ).ThenBy( t => t.Order ).ThenBy( t => t.Name );
-                }
-
-                return GetAttributeCategories( attributes.ToList(), onlyIncludeGridColumns, allowMultiple );
-            }
-
-            return null;
         }
         
         /// <summary>
@@ -717,7 +511,7 @@ namespace Rock.Attribute
         /// <param name="allowMultiple">if set to <c>true</c> returns the attribute in each of its categories, if false, only returns attribut in first category.</param>
         /// <param name="supressOrdering">if set to <c>true</c> supresses reording (LoadAttributes() may perform custom ordering as is the case for group member attributes).</param>
         /// <returns></returns>
-        public static List<CategoryAttributes> GetAttributeCategories( Rock.Data.IHasAttributes entity, bool onlyIncludeGridColumns = false, bool allowMultiple = false, bool supressOrdering = false)
+        public static List<CategoryAttributes> GetAttributeCategories( Rock.Attribute.IHasAttributes entity, bool onlyIncludeGridColumns = false, bool allowMultiple = false, bool supressOrdering = false)
         {
             if ( entity != null )
             {
@@ -732,7 +526,7 @@ namespace Rock.Attribute
 
             return null;
         }
-
+        
         /// <summary>
         /// Gets attributes grouped by category
         /// </summary>
@@ -740,46 +534,7 @@ namespace Rock.Attribute
         /// <param name="onlyIncludeGridColumns">if set to <c>true</c> will only include those attributes with the option to display in grid set to true</param>
         /// <param name="allowMultiple">if set to <c>true</c> returns the attribute in each of its categories, if false, only returns attribut in first category.</param>
         /// <returns></returns>
-        [Obsolete]
-        public static List<AttributeCategory> GetAttributeCategories( List<Rock.Web.Cache.AttributeCache> attributes, bool onlyIncludeGridColumns = false, bool allowMultiple = false )
-        {
-            var attributeCategories = new List<AttributeCategory>();
-
-            if ( onlyIncludeGridColumns )
-            {
-                attributes = attributes.Where( a => a.IsGridColumn ).ToList();
-            }
-
-            foreach ( var attribute in attributes )
-            {
-                if ( attribute.Categories.Any() )
-                {
-                    foreach ( var category in attribute.Categories.OrderBy( c => c.Name ) )
-                    {
-                        AddAttributeCategory( attributeCategories, category, attribute );
-                        if ( !allowMultiple )
-                        {
-                            break;
-                        }
-                    }
-                }
-                else
-                {
-                    AddAttributeCategory( attributeCategories, null, attribute );
-                }
-            }
-
-            return attributeCategories.OrderBy( c => c.CategoryName ).ToList();
-        }
-
-        /// <summary>
-        /// Gets attributes grouped by category
-        /// </summary>
-        /// <param name="attributes">The attributes.</param>
-        /// <param name="onlyIncludeGridColumns">if set to <c>true</c> will only include those attributes with the option to display in grid set to true</param>
-        /// <param name="allowMultiple">if set to <c>true</c> returns the attribute in each of its categories, if false, only returns attribut in first category.</param>
-        /// <returns></returns>
-        public static List<CategoryAttributes> GetAttributeCategories( List<Rock.Cache.CacheAttribute> attributes, bool onlyIncludeGridColumns = false, bool allowMultiple = false )
+        public static List<CategoryAttributes> GetAttributeCategories( List<Rock.Web.Cache.AttributeCache> attributes, bool onlyIncludeGridColumns = false, bool allowMultiple = false )
         {
             var attributeCategories = new List<CategoryAttributes>();
 
@@ -810,31 +565,7 @@ namespace Rock.Attribute
             return attributeCategories.OrderBy( c => c.CategoryName ).ToList();
         }
 
-        [Obsolete]
-        private static void AddAttributeCategory( List<AttributeCategory> attributeCategories, Rock.Web.Cache.CategoryCache category, Rock.Web.Cache.AttributeCache attribute )
-        {
-            AttributeCategory attributeCategory = null;
-            if ( category != null )
-            {
-                attributeCategory = attributeCategories.Where( g => g.Category != null && g.Category.Id == category.Id ).FirstOrDefault();
-            }
-            else
-            {
-                attributeCategory = attributeCategories.Where( g => g.Category == null ).FirstOrDefault();
-            }
-
-            if ( attributeCategory == null )
-            {
-                attributeCategory = new AttributeCategory();
-                attributeCategory.Category = category;
-                attributeCategory.Attributes = new List<Rock.Web.Cache.AttributeCache>();
-                attributeCategories.Add( attributeCategory );
-            }
-
-            attributeCategory.Attributes.Add( attribute );
-        }
-
-        private static void AddAttributeCategory( List<CategoryAttributes> attributeCategories, Rock.Cache.CacheCategory category, Rock.Cache.CacheAttribute attribute )
+        private static void AddAttributeCategory( List<CategoryAttributes> attributeCategories, CategoryCache category, Rock.Web.Cache.AttributeCache attribute )
         {
             CategoryAttributes attributeCategory = null;
             if ( category != null )
@@ -850,7 +581,7 @@ namespace Rock.Attribute
             {
                 attributeCategory = new CategoryAttributes();
                 attributeCategory.Category = category;
-                attributeCategory.Attributes = new List<Cache.CacheAttribute>();
+                attributeCategory.Attributes = new List<Rock.Web.Cache.AttributeCache>();
                 attributeCategories.Add( attributeCategory );
             }
 
@@ -1015,59 +746,7 @@ namespace Rock.Attribute
         /// <remarks>
         /// If a rockContext value is included, this method will save any previous changes made to the context
         /// </remarks>
-        [Obsolete]
         public static void SaveAttributeValues( Rock.Attribute.IHasAttributes model, RockContext rockContext = null )
-        {
-            // If a pre-v8 plugin calls SaveAttributeValues, it is possible that the entity is really a Rock.Data.IHasAttributes, but called this SaveAttributeValues instead.  If so, go ahead and call the Rock.Data.IHasAttributes SaveAttributeValues instead
-            if ( model is Rock.Data.IHasAttributes )
-            {
-                ( model as Rock.Data.IHasAttributes ).SaveAttributeValues( rockContext );
-                return;
-            }
-
-            if ( model != null && model.Attributes != null && model.AttributeValues != null && model.Attributes.Any() && model.AttributeValues.Any() )
-            {
-                rockContext = rockContext ?? new RockContext();
-                var attributeValueService = new Model.AttributeValueService( rockContext );
-                
-                var attributeIds = model.Attributes.Select( y => y.Value.Id ).ToList();
-                var valueQuery = attributeValueService.Queryable().Where( x => attributeIds.Contains( x.AttributeId ) && x.EntityId == model.Id );
-
-                var attributeValues = valueQuery.ToDictionary( x => x.AttributeKey );
-                foreach ( var attribute in model.Attributes.Values )
-                {
-                    if ( model.AttributeValues.ContainsKey( attribute.Key ) )
-                    {
-                        if ( attributeValues.ContainsKey( attribute.Key ) )
-                        {
-                            if ( attributeValues[attribute.Key].Value != model.AttributeValues[attribute.Key].Value )
-                            {
-                                attributeValues[attribute.Key].Value = model.AttributeValues[attribute.Key].Value;
-                            }
-                        }
-                        else
-                        {
-                            var attributeValue = new AttributeValue();
-                            attributeValue.AttributeId = attribute.Id;
-                            attributeValue.EntityId = model.Id;
-                            attributeValue.Value = model.AttributeValues[attribute.Key].Value ?? string.Empty;
-                            attributeValueService.Add( attributeValue );
-                        }
-                    }
-                }
-                rockContext.SaveChanges();
-            }
-        }
-
-        /// <summary>
-        /// Saves the attribute values.
-        /// </summary>
-        /// <param name="model">The model.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <remarks>
-        /// If a rockContext value is included, this method will save any previous changes made to the context
-        /// </remarks>
-        public static void SaveAttributeValues( Rock.Data.IHasAttributes model, RockContext rockContext = null )
         {
             if ( model != null && model.Attributes != null && model.AttributeValues != null && model.Attributes.Any() && model.AttributeValues.Any() )
             {
@@ -1113,7 +792,6 @@ namespace Rock.Attribute
         /// <remarks>
         /// If a rockContext value is included, this method will save any previous changes made to the context
         /// </remarks>
-        [Obsolete]
         public static void SaveAttributeValue( Rock.Attribute.IHasAttributes model, Rock.Web.Cache.AttributeCache attribute, string newValue, RockContext rockContext = null )
         {
             if ( model != null && attribute != null )
@@ -1143,69 +821,7 @@ namespace Rock.Attribute
 
                 if ( model.AttributeValues != null && model.AttributeValues.ContainsKey( attribute.Key ) )
                 {
-                    model.AttributeValues[attribute.Key] = new Rock.Web.Cache.AttributeValueCache( attributeValue );
-                }
-            }
-        }
-
-        /// <summary>
-        /// Saves an attribute value.
-        /// </summary>
-        /// <param name="model">The model.</param>
-        /// <param name="attribute">The attribute.</param>
-        /// <param name="newValue">The new value.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <remarks>
-        /// If a rockContext value is included, this method will save any previous changes made to the context
-        /// </remarks>
-        [Obsolete]
-        public static void SaveAttributeValue(Rock.Data.IHasAttributes model, Web.Cache.AttributeCache attribute, string newValue, RockContext rockContext = null)
-        {
-            if (attribute == null) return;
-            var newAttribute = CacheAttribute.Get( attribute.Id );
-            SaveAttributeValue( model, newAttribute, newValue, rockContext );
-        }
-
-        /// <summary>
-        /// Saves an attribute value.
-        /// </summary>
-        /// <param name="model">The model.</param>
-        /// <param name="attribute">The attribute.</param>
-        /// <param name="newValue">The new value.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <remarks>
-        /// If a rockContext value is included, this method will save any previous changes made to the context
-        /// </remarks>
-        public static void SaveAttributeValue( Rock.Data.IHasAttributes model, Rock.Cache.CacheAttribute attribute, string newValue, RockContext rockContext = null )
-        {
-            if ( model != null && attribute != null )
-            {
-                rockContext = rockContext ?? new RockContext();
-                var attributeValueService = new Model.AttributeValueService( rockContext );
-
-                var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, model.Id );
-                if ( attributeValue == null )
-                {
-                    if ( newValue == null )
-                    {
-                        return;
-                    }
-
-                    attributeValue = new Rock.Model.AttributeValue();
-                    attributeValue.AttributeId = attribute.Id;
-                    attributeValue.EntityId = model.Id;
-                    attributeValueService.Add( attributeValue );
-                }
-
-                if ( attributeValue.Value != newValue )
-                {
-                    attributeValue.Value = newValue;
-                    rockContext.SaveChanges();
-                }
-
-                if ( model.AttributeValues != null && model.AttributeValues.ContainsKey( attribute.Key ) )
-                {
-                    model.AttributeValues[attribute.Key] = new CacheAttributeValue( attributeValue );
+                    model.AttributeValues[attribute.Key] = new AttributeValueCache( attributeValue );
                 }
             }
         }
@@ -1220,7 +836,6 @@ namespace Rock.Attribute
         /// <remarks>
         /// If a rockContext value is included, this method will save any previous changes made to the context
         /// </remarks>
-        [Obsolete]
         public static void SaveAttributeValue( int entityId, Rock.Web.Cache.AttributeCache attribute, string newValue, RockContext rockContext = null )
         {
             if ( attribute != null )
@@ -1249,56 +864,18 @@ namespace Rock.Attribute
         }
 
         /// <summary>
-        /// Saves the attribute value.
-        /// </summary>
-        /// <param name="entityId">The entity identifier.</param>
-        /// <param name="attribute">The attribute.</param>
-        /// <param name="newValue">The new value.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <remarks>
-        /// If a rockContext value is included, this method will save any previous changes made to the context
-        /// </remarks>
-        public static void SaveAttributeValue( int entityId, Rock.Cache.CacheAttribute attribute, string newValue, RockContext rockContext = null )
-        {
-            if ( attribute != null )
-            {
-                rockContext = rockContext ?? new RockContext();
-                var attributeValueService = new Model.AttributeValueService( rockContext );
-
-                var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, entityId );
-                if ( attributeValue == null )
-                {
-                    if ( newValue == null )
-                    {
-                        return;
-                    }
-
-                    attributeValue = new Rock.Model.AttributeValue();
-                    attributeValue.AttributeId = attribute.Id;
-                    attributeValue.EntityId = entityId;
-                    attributeValueService.Add( attributeValue );
-                }
-
-                attributeValue.Value = newValue;
-
-                rockContext.SaveChanges();
-            }
-        }
-
-        /// <summary>
         /// Copies the attributes from one entity to another
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="target">The target.</param>
-        [Obsolete]
-        public static void CopyAttributes( IHasAttributes source, IHasAttributes target )
+        public static void CopyAttributes( Rock.Attribute.IHasAttributes source, Rock.Attribute.IHasAttributes target )
         {
             if ( source != null && target != null )
             {
                 // Copy Attributes
                 if ( source.Attributes != null )
                 {
-                    target.Attributes = new Dictionary<string, Rock.Web.Cache.AttributeCache>();
+                    target.Attributes = new Dictionary<string, AttributeCache>();
                     foreach ( var item in source.Attributes )
                     {
                         target.Attributes.Add( item.Key, item.Value );
@@ -1312,63 +889,13 @@ namespace Rock.Attribute
                 // Copy Attribute Values
                 if ( source.AttributeValues != null )
                 {
-                    target.AttributeValues = new Dictionary<string, Rock.Web.Cache.AttributeValueCache>();
+                    target.AttributeValues = new Dictionary<string, AttributeValueCache>();
                     foreach ( var item in source.AttributeValues )
                     {
                         var value = item.Value;
                         if ( value != null )
                         {
-                            var attributeValue = new Rock.Web.Cache.AttributeValueCache();
-                            attributeValue.AttributeId = value.AttributeId;
-                            attributeValue.Value = value.Value;
-                            target.AttributeValues.Add( item.Key, attributeValue );
-                        }
-                        else
-                        {
-                            target.AttributeValues.Add( item.Key, null );
-                        }
-                    }
-                }
-                else
-                {
-                    target.AttributeValues = null;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Copies the attributes from one entity to another
-        /// </summary>
-        /// <param name="source">The source.</param>
-        /// <param name="target">The target.</param>
-        public static void CopyAttributes( Rock.Data.IHasAttributes source, Rock.Data.IHasAttributes target )
-        {
-            if ( source != null && target != null )
-            {
-                // Copy Attributes
-                if ( source.Attributes != null )
-                {
-                    target.Attributes = new Dictionary<string, Cache.CacheAttribute>();
-                    foreach ( var item in source.Attributes )
-                    {
-                        target.Attributes.Add( item.Key, item.Value );
-                    }
-                }
-                else
-                {
-                    target.Attributes = null;
-                }
-
-                // Copy Attribute Values
-                if ( source.AttributeValues != null )
-                {
-                    target.AttributeValues = new Dictionary<string, CacheAttributeValue>();
-                    foreach ( var item in source.AttributeValues )
-                    {
-                        var value = item.Value;
-                        if ( value != null )
-                        {
-                            var attributeValue = new CacheAttributeValue();
+                            var attributeValue = new AttributeValueCache();
                             attributeValue.AttributeId = value.AttributeId;
                             attributeValue.Value = value.Value;
                             target.AttributeValues.Add( item.Key, attributeValue );
@@ -1394,21 +921,7 @@ namespace Rock.Attribute
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
         /// <param name="validationGroup">The validation group.</param>
         /// <param name="supressOrdering">if set to <c>true</c> supresses reording (LoadAttributes() may perform custom ordering as is the case for group member attributes).</param>
-        [Obsolete]
-        public static void AddEditControls( IHasAttributes item, Control parentControl, bool setValue, string validationGroup = "", bool supressOrdering = false )
-        {
-            AddEditControls( item, parentControl, setValue, validationGroup, new List<string>(), supressOrdering );
-        }
-
-        /// <summary>
-        /// Adds edit controls for each of the item's attributes
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="setValue">if set to <c>true</c> [set value].</param>
-        /// <param name="validationGroup">The validation group.</param>
-        /// <param name="supressOrdering">if set to <c>true</c> supresses reording (LoadAttributes() may perform custom ordering as is the case for group member attributes).</param>
-        public static void AddEditControls( Rock.Data.IHasAttributes item, Control parentControl, bool setValue, string validationGroup = "", bool supressOrdering = false )
+        public static void AddEditControls( Rock.Attribute.IHasAttributes item, Control parentControl, bool setValue, string validationGroup = "", bool supressOrdering = false )
         {
             AddEditControls( item, parentControl, setValue, validationGroup, new List<string>(), supressOrdering );
         }
@@ -1422,26 +935,11 @@ namespace Rock.Attribute
         /// <param name="validationGroup">The validation group.</param>
         /// <param name="exclude">List of attribute names not to render</param>
         /// <param name="supressOrdering">if set to <c>true</c> supresses reording (LoadAttributes() may perform custom ordering as is the case for group member attributes).</param>
-        [Obsolete]
-        public static void AddEditControls( IHasAttributes item, Control parentControl, bool setValue, string validationGroup, List<string> exclude, bool supressOrdering = false )
+        public static void AddEditControls( Rock.Attribute.IHasAttributes item, Control parentControl, bool setValue, string validationGroup, List<string> exclude, bool supressOrdering = false )
         {
             AddEditControls( item, parentControl, setValue, validationGroup, exclude, supressOrdering, null );
         }
-
-        /// <summary>
-        /// Adds edit controls for each of the item's attributes
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="setValue">if set to <c>true</c> [set value].</param>
-        /// <param name="validationGroup">The validation group.</param>
-        /// <param name="exclude">List of attribute names not to render</param>
-        /// <param name="supressOrdering">if set to <c>true</c> supresses reording (LoadAttributes() may perform custom ordering as is the case for group member attributes).</param>
-        public static void AddEditControls( Rock.Data.IHasAttributes item, Control parentControl, bool setValue, string validationGroup, List<string> exclude, bool supressOrdering = false )
-        {
-            AddEditControls( item, parentControl, setValue, validationGroup, exclude, supressOrdering, null );
-        }
-
+        
         /// <summary>
         /// Adds the edit controls.
         /// </summary>
@@ -1450,21 +948,7 @@ namespace Rock.Attribute
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
         /// <param name="validationGroup">The validation group.</param>
         /// <param name="numberOfColumns">The number of columns.</param>
-        [Obsolete]
-        public static void AddEditControls( IHasAttributes item, Control parentControl, bool setValue, string validationGroup, int? numberOfColumns )
-        {
-            AddEditControls( item, parentControl, setValue, validationGroup, new List<string>(), false, numberOfColumns );
-        }
-
-        /// <summary>
-        /// Adds the edit controls.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="setValue">if set to <c>true</c> [set value].</param>
-        /// <param name="validationGroup">The validation group.</param>
-        /// <param name="numberOfColumns">The number of columns.</param>
-        public static void AddEditControls( Rock.Data.IHasAttributes item, Control parentControl, bool setValue, string validationGroup, int? numberOfColumns )
+        public static void AddEditControls( Rock.Attribute.IHasAttributes item, Control parentControl, bool setValue, string validationGroup, int? numberOfColumns )
         {
             AddEditControls( item, parentControl, setValue, validationGroup, new List<string>(), false, numberOfColumns );
         }
@@ -1479,36 +963,7 @@ namespace Rock.Attribute
         /// <param name="numberOfColumns">The number of columns.</param>
         /// <param name="exclude">The exclude.</param>
         /// <param name="supressOrdering">if set to <c>true</c> [supress ordering].</param>
-        [Obsolete]
-        public static void AddEditControls( IHasAttributes item, Control parentControl, bool setValue, string validationGroup, List<string> exclude, bool supressOrdering, int? numberOfColumns = null )
-        {
-            if ( item != null && item.Attributes != null )
-            {
-                foreach ( var attributeCategory in GetAttributeCategories( item, false, false, supressOrdering ) )
-                {
-                    var attributeCategoryCacheAttributes = attributeCategory.Attributes.Select( a => CacheAttribute.Get( a.Id ) ).ToList();
-                    if ( attributeCategoryCacheAttributes.Where( a => a.IsActive ).Where( a => !exclude.Contains( a.Name ) && !exclude.Contains( a.Key ) ).Select( a => a.Key ).Count() > 0 )
-                    {
-                        AddEditControls(
-                            attributeCategory.Category != null ? attributeCategory.Category.Name : string.Empty,
-                            attributeCategoryCacheAttributes.Where( a => a.IsActive ).Select( a => a.Key ).ToList(),
-                            item, parentControl, validationGroup, setValue, exclude, numberOfColumns );
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Adds the edit controls.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="setValue">if set to <c>true</c> [set value].</param>
-        /// <param name="validationGroup">The validation group.</param>
-        /// <param name="numberOfColumns">The number of columns.</param>
-        /// <param name="exclude">The exclude.</param>
-        /// <param name="supressOrdering">if set to <c>true</c> [supress ordering].</param>
-        public static void AddEditControls( Rock.Data.IHasAttributes item, Control parentControl, bool setValue, string validationGroup, List<string> exclude, bool supressOrdering, int? numberOfColumns = null )
+        public static void AddEditControls( Rock.Attribute.IHasAttributes item, Control parentControl, bool setValue, string validationGroup, List<string> exclude, bool supressOrdering, int? numberOfColumns = null )
         {
             if ( item != null && item.Attributes != null )
             {
@@ -1535,23 +990,7 @@ namespace Rock.Attribute
         /// <param name="validationGroup">The validation group.</param>
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
         /// <param name="exclude">The exclude.</param>
-        [Obsolete]
-        public static void AddEditControls( string category, List<string> attributeKeys, IHasAttributes item, Control parentControl, string validationGroup, bool setValue, List<string> exclude )
-        {
-            AddEditControls( category, attributeKeys, item, parentControl, validationGroup, setValue, exclude, null );
-        }
-
-        /// <summary>
-        /// Adds the edit controls.
-        /// </summary>
-        /// <param name="category">The category.</param>
-        /// <param name="attributeKeys">The attribute keys.</param>
-        /// <param name="item">The item.</param>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="validationGroup">The validation group.</param>
-        /// <param name="setValue">if set to <c>true</c> [set value].</param>
-        /// <param name="exclude">The exclude.</param>
-        public static void AddEditControls( string category, List<string> attributeKeys, Rock.Data.IHasAttributes item, Control parentControl, string validationGroup, bool setValue, List<string> exclude )
+        public static void AddEditControls( string category, List<string> attributeKeys, Rock.Attribute.IHasAttributes item, Control parentControl, string validationGroup, bool setValue, List<string> exclude )
         {
             AddEditControls( category, attributeKeys, item, parentControl, validationGroup, setValue, exclude, null );
         }
@@ -1567,90 +1006,7 @@ namespace Rock.Attribute
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
         /// <param name="exclude">The exclude.</param>
         /// <param name="numberOfColumns">The number of columns.</param>
-        [Obsolete]
-        public static void AddEditControls( string category, List<string> attributeKeys, IHasAttributes item, Control parentControl, string validationGroup, bool setValue, List<string> exclude, int? numberOfColumns )
-        {
-            // ensure valid number of columns
-            if ( numberOfColumns.HasValue && numberOfColumns.Value > 12 )
-            {
-                numberOfColumns = 12;
-            }
-
-            bool parentIsDynamic = parentControl is DynamicControlsPanel || parentControl is DynamicPlaceholder;
-            HtmlGenericControl fieldSet = parentIsDynamic ? new DynamicControlsHtmlGenericControl( "fieldset" ) : new HtmlGenericControl( "fieldset" );
-
-            parentControl.Controls.Add( fieldSet );
-            fieldSet.Controls.Clear();
-
-            if ( !string.IsNullOrEmpty( category ) )
-            {
-                HtmlGenericControl legend = new HtmlGenericControl( "h4" );
-
-                if ( numberOfColumns.HasValue )
-                {
-                    HtmlGenericControl row = new HtmlGenericControl( "div" );
-                    row.AddCssClass( "row" );
-                    fieldSet.Controls.Add( row );
-
-                    HtmlGenericControl col = new HtmlGenericControl( "div" );
-                    col.AddCssClass( "col-md-12" );
-                    row.Controls.Add( col );
-
-                    col.Controls.Add( legend );
-                }
-                else
-                {
-                    fieldSet.Controls.Add( legend );
-                }
-
-                legend.Controls.Clear();
-                legend.InnerText = category.Trim();
-            }
-
-            HtmlGenericControl attributeRow = parentIsDynamic ? new DynamicControlsHtmlGenericControl( "div" ) : new HtmlGenericControl( "div" );
-            if ( numberOfColumns.HasValue )
-            {
-                fieldSet.Controls.Add( attributeRow );
-                attributeRow.AddCssClass( "row" );
-            }
-
-            foreach ( string key in attributeKeys )
-            {
-                var attribute = item.Attributes[key];
-
-                if ( !exclude.Contains( attribute.Name ) && !exclude.Contains( attribute.Key ) )
-                {
-                    // Add the control for editing the attribute value
-
-                    if ( numberOfColumns.HasValue )
-                    {
-                        int colSize = (int)Math.Ceiling( (double)12 / numberOfColumns.Value );
-
-                        HtmlGenericControl attributeCol = parentIsDynamic ? new DynamicControlsHtmlGenericControl( "div" ) : new HtmlGenericControl( "div" );
-                        attributeRow.Controls.Add( attributeCol );
-                        attributeCol.AddCssClass( string.Format( "col-md-{0}", colSize ) );
-                        attribute.AddControl( attributeCol.Controls, item.AttributeValues[attribute.Key].Value, validationGroup, setValue, true );
-                    }
-                    else
-                    {
-                        attribute.AddControl( fieldSet.Controls, item.AttributeValues[attribute.Key].Value, validationGroup, setValue, true );
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Adds the edit controls.
-        /// </summary>
-        /// <param name="category">The category.</param>
-        /// <param name="attributeKeys">The attribute keys.</param>
-        /// <param name="item">The item.</param>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="validationGroup">The validation group.</param>
-        /// <param name="setValue">if set to <c>true</c> [set value].</param>
-        /// <param name="exclude">The exclude.</param>
-        /// <param name="numberOfColumns">The number of columns.</param>
-        public static void AddEditControls( string category, List<string> attributeKeys, Rock.Data.IHasAttributes item, Control parentControl, string validationGroup, bool setValue, List<string> exclude, int? numberOfColumns )
+        public static void AddEditControls( string category, List<string> attributeKeys, Rock.Attribute.IHasAttributes item, Control parentControl, string validationGroup, bool setValue, List<string> exclude, int? numberOfColumns )
         {
             // ensure valid number of columns
             if ( numberOfColumns.HasValue && numberOfColumns.Value > 12)
@@ -1729,27 +1085,7 @@ namespace Rock.Attribute
         /// <param name="exclude">The exclude.</param>
         /// <param name="supressOrdering">if set to <c>true</c> supresses reording (LoadAttributes() may perform custom ordering as is the case for group member attributes).</param>
         /// <param name="showHeading">if set to <c>true</c> [show heading].</param>
-        [Obsolete]
-        public static void AddDisplayControls( IHasAttributes item, Control parentControl, List<string> exclude = null, bool supressOrdering = false, bool showHeading = true )
-        {
-            exclude = exclude ?? new List<string>();
-            string result = string.Empty;
-
-            if ( item?.Attributes != null )
-            {
-                AddDisplayControls( item, GetAttributeCategories( item, false, supressOrdering ), parentControl, exclude, showHeading );
-            }
-        }
-
-        /// <summary>
-        /// Gets the display HTML.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="exclude">The exclude.</param>
-        /// <param name="supressOrdering">if set to <c>true</c> supresses reording (LoadAttributes() may perform custom ordering as is the case for group member attributes).</param>
-        /// <param name="showHeading">if set to <c>true</c> [show heading].</param>
-        public static void AddDisplayControls( Rock.Data.IHasAttributes item, Control parentControl, List<string> exclude = null, bool supressOrdering = false, bool showHeading = true )
+        public static void AddDisplayControls( Rock.Attribute.IHasAttributes item, Control parentControl, List<string> exclude = null, bool supressOrdering = false, bool showHeading = true )
         {
             exclude = exclude ?? new List<string>();
             string result = string.Empty;
@@ -1768,8 +1104,7 @@ namespace Rock.Attribute
         /// <param name="parentControl">The parent control.</param>
         /// <param name="exclude">The exclude.</param>
         /// <param name="showHeading">if set to <c>true</c> [show heading].</param>
-        [Obsolete]
-        public static void AddDisplayControls( IHasAttributes item, List<AttributeCategory> attributeCategories, Control parentControl, List<string> exclude = null, bool showHeading = true )
+        public static void AddDisplayControls( Rock.Attribute.IHasAttributes item, List<CategoryAttributes> attributeCategories, Control parentControl, List<string> exclude = null, bool showHeading = true )
         {
             if ( item == null )
             {
@@ -1791,67 +1126,7 @@ namespace Rock.Attribute
                 HtmlGenericControl dl = new HtmlGenericControl( "dl" );
                 parentControl.Controls.Add( dl );
 
-                foreach ( var attribute in attributeCategory.Attributes.Where( a => CacheAttribute.Get( a.Id ).IsActive ) )
-                {
-                    if ( exclude == null || ( !exclude.Contains( attribute.Name ) && !exclude.Contains( attribute.Key ) ) )
-                    {
-                        // Get the Attribute Value formatted for display.
-                        string value = attribute.DefaultValue;
-                        if ( item.AttributeValues.ContainsKey( attribute.Key ) && item.AttributeValues[attribute.Key] != null )
-                        {
-                            value = item.AttributeValues[attribute.Key].Value;
-                        }
-
-                        string controlHtml = attribute.FieldType.Field.FormatValueAsHtml( parentControl, attribute.EntityTypeId, item.Id, value, attribute.QualifierValues );
-
-                        // If the Attribute Value has some content, display it.
-                        if ( !string.IsNullOrWhiteSpace( controlHtml ) )
-                        {
-                            HtmlGenericControl dt = new HtmlGenericControl( "dt" );
-                            dt.InnerText = attribute.Name;
-                            dl.Controls.Add( dt );
-
-                            HtmlGenericControl dd = new HtmlGenericControl( "dd" );
-
-                            dd.InnerHtml = controlHtml;
-                            dl.Controls.Add( dd );
-                        }
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Adds the display controls.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="attributeCategories">The attribute categories.</param>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="exclude">The exclude.</param>
-        /// <param name="showHeading">if set to <c>true</c> [show heading].</param>
-        public static void AddDisplayControls( Rock.Data.IHasAttributes item, List<CategoryAttributes> attributeCategories, Control parentControl, List<string> exclude = null, bool showHeading = true )
-        {
-            if ( item == null )
-            {
-                return;
-            }
-
-            foreach ( var attributeCategory in attributeCategories )
-            {
-                if ( showHeading )
-                {
-                    HtmlGenericControl header = new HtmlGenericControl( "h4" );
-
-                    string categoryName = attributeCategory.Category != null ? attributeCategory.Category.Name : string.Empty;
-
-                    header.InnerText = string.IsNullOrWhiteSpace( categoryName ) ? item.GetType().GetFriendlyTypeName() + " Attributes" : categoryName.Trim();
-                    parentControl.Controls.Add( header );
-                }
-
-                HtmlGenericControl dl = new HtmlGenericControl( "dl" );
-                parentControl.Controls.Add( dl );
-
-                foreach ( var attribute in attributeCategory.Attributes.Where( a => CacheAttribute.Get( a.Id ).IsActive ) )
+                foreach ( var attribute in attributeCategory.Attributes.Where( a => AttributeCache.Get( a.Id ).IsActive ) )
                 {
                     if ( exclude == null || ( !exclude.Contains( attribute.Name ) && !exclude.Contains( attribute.Key ) ) )
                     {
@@ -1886,8 +1161,7 @@ namespace Rock.Attribute
         /// </summary>
         /// <param name="parentControl">The parent control.</param>
         /// <param name="item">The item.</param>
-        [Obsolete]
-        public static void GetEditValues( Control parentControl, IHasAttributes item )
+        public static void GetEditValues( Control parentControl, Rock.Attribute.IHasAttributes item )
         {
             if ( item?.Attributes != null )
             {
@@ -1896,37 +1170,11 @@ namespace Rock.Attribute
                     Control control = parentControl.FindControl( string.Format( "attribute_field_{0}", attribute.Value.Id ) );
                     if ( control != null )
                     {
-                        var value = new Rock.Web.Cache.AttributeValueCache();
+                        var value = new AttributeValueCache();
 
                         // Creating a brand new AttributeValue and setting its Value property.
-                        // The Value prop's setter then queries the CacheAttribute passing in the AttributeId, which is 0
-                        // The CacheAttribute.Read method returns null
-                        value.Value = attribute.Value.FieldType.Field.GetEditValue( control, attribute.Value.QualifierValues );
-                        item.AttributeValues[attribute.Key] = value;
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets the edit values.
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="item">The item.</param>
-        public static void GetEditValues( Control parentControl, Rock.Data.IHasAttributes item )
-        {
-            if ( item?.Attributes != null )
-            {
-                foreach ( var attribute in item.Attributes )
-                {
-                    Control control = parentControl.FindControl( string.Format( "attribute_field_{0}", attribute.Value.Id ) );
-                    if ( control != null )
-                    {
-                        var value = new CacheAttributeValue();
-
-                        // Creating a brand new AttributeValue and setting its Value property.
-                        // The Value prop's setter then queries the CacheAttribute passing in the AttributeId, which is 0
-                        // The CacheAttribute.Read method returns null
+                        // The Value prop's setter then queries the AttributeCache passing in the AttributeId, which is 0
+                        // The AttributeCache.Read method returns null
                         value.Value = attribute.Value.FieldType.Field.GetEditValue( control, attribute.Value.QualifierValues );
                         item.AttributeValues[attribute.Key] = value;
                     }
@@ -1959,7 +1207,7 @@ namespace Rock.Attribute
 
             Expression whereExpression = Expression.Call( typeof( Queryable ), "Where", new Type[] { typeof( AttributeValue ) }, match );
 
-            var attributeCache = CacheAttribute.Get( attributeId );
+            var attributeCache = AttributeCache.Get( attributeId );
             var attributeValueFieldName = "Value";
             Type attributeValueFieldType = typeof( string );
             if ( attributeCache != null )
@@ -1984,34 +1232,8 @@ namespace Rock.Attribute
     /// Attributes group by category
     /// </summary>
     [Obsolete ("Use CategoryAttributes instead")]
-    public class AttributeCategory
+    public class AttributeCategory : CategoryAttributes
     {
-        /// <summary>
-        /// Gets or sets the category.
-        /// </summary>
-        /// <value>
-        /// The category.
-        /// </value>
-        public Rock.Web.Cache.CategoryCache Category { get; set; }
-
-        /// <summary>
-        /// Gets or sets the attributes.
-        /// </summary>
-        /// <value>
-        /// The attributes.
-        /// </value>
-        public List<Rock.Web.Cache.AttributeCache> Attributes { get; set; }
-
-        /// <summary>
-        /// Gets the name of the category.
-        /// </summary>
-        /// <value>
-        /// The name of the category.
-        /// </value>
-        public string CategoryName
-        {
-            get { return Category != null ? Category.Name : string.Empty; }
-        }
     }
 
     /// <summary>
@@ -2025,7 +1247,7 @@ namespace Rock.Attribute
         /// <value>
         /// The category.
         /// </value>
-        public Rock.Cache.CacheCategory Category { get; set; }
+        public CategoryCache Category { get; set; }
 
         /// <summary>
         /// Gets or sets the attributes.
@@ -2033,7 +1255,7 @@ namespace Rock.Attribute
         /// <value>
         /// The attributes.
         /// </value>
-        public List<Rock.Cache.CacheAttribute> Attributes { get; set; }
+        public List<Rock.Web.Cache.AttributeCache> Attributes { get; set; }
 
         /// <summary>
         /// Gets the name of the category.

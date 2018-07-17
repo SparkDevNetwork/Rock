@@ -24,7 +24,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Utility;
 using Rock.Security;
 using Rock.Web.UI.Controls;
@@ -206,7 +206,7 @@ function() {
             filterControl.Controls.Add( dvpDataView );
 
             // Populate the Data View Picker
-            int entityTypeId = CacheEntityType.Get( typeof( Model.UserLogin ) ).Id;
+            int entityTypeId = EntityTypeCache.Get( typeof( Model.UserLogin ) ).Id;
             dvpDataView.EntityTypeId = entityTypeId;
 
             return new Control[] { dvpDataView };

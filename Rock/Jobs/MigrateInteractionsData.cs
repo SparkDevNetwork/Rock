@@ -20,7 +20,7 @@ using Quartz;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
@@ -160,8 +160,8 @@ CommunicationRecipientActivity Moved: {_communicationRecipientActivityMoved}/{_c
         {
             using ( var rockContext = new RockContext() )
             {
-                var componentEntityTypePage = CacheEntityType.Get<Rock.Model.Page>();
-                var channelMediumWebsite = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE );
+                var componentEntityTypePage = EntityTypeCache.Get<Rock.Model.Page>();
+                var channelMediumWebsite = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE );
                 var sqlInsertSitesToChannels = $@"
 -- Insert Websites
 INSERT INTO [InteractionChannel] (
@@ -465,8 +465,8 @@ END
         {
             using ( var rockContext = new RockContext() )
             {
-                var componentEntityTypeCommunicationRecipient = CacheEntityType.Get<Rock.Model.CommunicationRecipient>();
-                var channelMediumCommunication = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_COMMUNICATION );
+                var componentEntityTypeCommunicationRecipient = EntityTypeCache.Get<Rock.Model.CommunicationRecipient>();
+                var channelMediumCommunication = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_COMMUNICATION );
 
                 // InteractionChannel for Communications already exists (in a migration)
                 var interactionChannel = new InteractionChannelService( rockContext ).Get( Rock.SystemGuid.InteractionChannel.COMMUNICATION.AsGuid() );

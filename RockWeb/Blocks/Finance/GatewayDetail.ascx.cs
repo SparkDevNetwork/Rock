@@ -26,7 +26,7 @@ using Rock.Financial;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Finance
@@ -259,8 +259,8 @@ namespace RockWeb.Blocks.Finance
             GatewayEntityTypeId = gateway.EntityTypeId;
             if ( gateway.EntityTypeId.HasValue )
             {
-                var GatewayComponentEntityType = CacheEntityType.Get( gateway.EntityTypeId.Value );
-                var GatewayEntityType = CacheEntityType.Get( "Rock.Model.FinancialGateway " );
+                var GatewayComponentEntityType = EntityTypeCache.Get( gateway.EntityTypeId.Value );
+                var GatewayEntityType = EntityTypeCache.Get( "Rock.Model.FinancialGateway " );
                 if ( GatewayComponentEntityType != null && GatewayEntityType != null )
                 {
                     using ( var rockContext = new RockContext() )

@@ -20,7 +20,7 @@ using System.Linq;
 using Quartz;
 
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Attribute;
 
 namespace Rock.Jobs

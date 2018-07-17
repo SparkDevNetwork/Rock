@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Web.UI.Controls;
 
@@ -132,7 +132,7 @@ namespace Rock.Field.Types
                 Guid guid = Guid.Empty;
                 if ( Guid.TryParse( value, out guid ) )
                 {
-                    var definedValue = Rock.Cache.CacheDefinedValue.Get( guid );
+                    var definedValue = DefinedValueCache.Get( guid );
                     if ( definedValue != null )
                     {
                         formattedValue = definedValue.Value;
@@ -167,7 +167,7 @@ namespace Rock.Field.Types
                 Guid groupTypeGuid = Guid.Empty;
                 if ( Guid.TryParse( configurationValues[GROUP_TYPE_KEY].Value, out groupTypeGuid ) )
                 {
-                    var groupType = Rock.Cache.CacheGroupType.Get( groupTypeGuid );
+                    var groupType = GroupTypeCache.Get( groupTypeGuid );
                     if (groupType != null)
                     {
                         var locationTypeValues = groupType.LocationTypeValues;
@@ -201,11 +201,11 @@ namespace Rock.Field.Types
             var picker = control as RockDropDownList;
             if ( picker != null )
             {
-                CacheDefinedValue definedValue = null;
+                DefinedValueCache definedValue = null;
                 int? definedValueId = picker.SelectedValue.AsIntegerOrNull();
                 if ( definedValueId.HasValue )
                 {
-                    definedValue = CacheDefinedValue.Get( definedValueId.Value );
+                    definedValue = DefinedValueCache.Get( definedValueId.Value );
                 }
 
                 return definedValue?.Guid.ToString();
@@ -225,11 +225,11 @@ namespace Rock.Field.Types
             var picker = control as RockDropDownList;
             if ( picker != null )
             {
-                CacheDefinedValue definedValue = null;
+                DefinedValueCache definedValue = null;
                 Guid? definedValueGuid = value.AsGuidOrNull();
                 if ( definedValueGuid.HasValue )
                 {
-                    definedValue = CacheDefinedValue.Get( definedValueGuid.Value );
+                    definedValue = DefinedValueCache.Get( definedValueGuid.Value );
                 }
 
                 picker.SetValue( definedValue?.Id );

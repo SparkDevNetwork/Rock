@@ -23,7 +23,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Workflow;
 
 namespace Rock.Web.UI.Controls
@@ -147,7 +147,7 @@ namespace Rock.Web.UI.Controls
                 _ddlActionAttribute.Items.Add( new ListItem() );
                 foreach ( var attributeItem in workflowTypeAttributes )
                 {
-                    var fieldType = CacheFieldType.Get( attributeItem.Value.FieldTypeId );
+                    var fieldType = FieldTypeCache.Get( attributeItem.Value.FieldTypeId );
                     if ( fieldType != null && fieldType.Field is Rock.Field.Types.TextFieldType )
                     {
                         var li = new ListItem( attributeItem.Value.Name, attributeItem.Key.ToString() );
@@ -239,7 +239,7 @@ namespace Rock.Web.UI.Controls
             _ddlNotificationSystemEmail.ID = this.ID + "_ddlNotificationSystemEmail";
             Controls.Add( _ddlNotificationSystemEmail );
 
-            var systemEmailCategory = CacheCategory.Get( Rock.SystemGuid.Category.SYSTEM_EMAIL_WORKFLOW.AsGuid() );
+            var systemEmailCategory = CategoryCache.Get( Rock.SystemGuid.Category.SYSTEM_EMAIL_WORKFLOW.AsGuid() );
             if ( systemEmailCategory != null )
             {
                 using ( var rockContext = new RockContext() )

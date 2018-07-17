@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -115,7 +115,7 @@ namespace Rock.Field.Types
                 Guid entityTypeGuid = value.AsGuid();
                 if ( entityTypeGuid != Guid.Empty )
                 {
-                    var entityType = CacheEntityType.Get( entityTypeGuid );
+                    var entityType = EntityTypeCache.Get( entityTypeGuid );
                     if ( entityType != null )
                     {
                         formattedValue = entityType.FriendlyName;

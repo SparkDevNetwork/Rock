@@ -22,7 +22,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 using System.Linq;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Field.Types
 {
@@ -70,7 +70,7 @@ namespace Rock.Field.Types
 
             ddl.Items.Add( new ListItem() );
             
-            var contentChannels = CacheContentChannel.All().OrderBy( a => a.Name ).ToList();
+            var contentChannels = ContentChannelCache.All().OrderBy( a => a.Name ).ToList();
             contentChannels.ForEach( g =>
                 ddl.Items.Add( new ListItem( g.Name, g.Id.ToString().ToUpper() ) )
             );
