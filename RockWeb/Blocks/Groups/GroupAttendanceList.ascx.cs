@@ -25,7 +25,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -86,7 +86,7 @@ namespace RockWeb.Blocks.Groups
             bddlCampus.Visible = _allowCampusFilter;
             if ( _allowCampusFilter )
             {
-                bddlCampus.DataSource = CacheCampus.All();
+                bddlCampus.DataSource = CampusCache.All();
                 bddlCampus.DataBind();
                 bddlCampus.Items.Insert( 0, new ListItem( "All Campuses", "0" ) );
             }
@@ -106,7 +106,7 @@ namespace RockWeb.Blocks.Groups
             {
                 if ( _allowCampusFilter )
                 {
-                    var campus = CacheCampus.Get( GetBlockUserPreference( "Campus" ).AsInteger() );
+                    var campus = CampusCache.Get( GetBlockUserPreference( "Campus" ).AsInteger() );
                     if ( campus != null )
                     {
                         bddlCampus.Title = campus.Name;
@@ -130,7 +130,7 @@ namespace RockWeb.Blocks.Groups
         protected void bddlCampus_SelectionChanged( object sender, EventArgs e )
         {
             SetBlockUserPreference( "Campus", bddlCampus.SelectedValue );
-            var campus = CacheCampus.Get( bddlCampus.SelectedValueAsInt() ?? 0 );
+            var campus = CampusCache.Get( bddlCampus.SelectedValueAsInt() ?? 0 );
             bddlCampus.Title = campus != null ? campus.Name : "All Campuses";
             BindGrid();
         }
@@ -515,7 +515,7 @@ namespace RockWeb.Blocks.Groups
                 {
                     // If campus filter is selected, load all the descendent locations for each campus into a dictionary
                     var locCampus = new Dictionary<int, int>();
-                    foreach ( var campus in CacheCampus.All().Where( c => c.LocationId.HasValue ) )
+                    foreach ( var campus in CampusCache.All().Where( c => c.LocationId.HasValue ) )
                     {
                         locCampus.AddOrIgnore( campus.LocationId.Value, campus.Id );
                         foreach ( var locId in locationService.GetAllDescendentIds( campus.LocationId.Value ) )

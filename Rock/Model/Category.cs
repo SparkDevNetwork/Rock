@@ -22,7 +22,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Security;
 
 namespace Rock.Model
@@ -196,10 +196,10 @@ namespace Rock.Model
         {
             get
             {
-                var entityTypeCache = CacheEntityType.Get( this.EntityTypeId );
+                var entityTypeCache = EntityTypeCache.Get( this.EntityTypeId );
                 if ( entityTypeCache == null && this.EntityType != null )
                 {
-                    entityTypeCache = CacheEntityType.Get( this.EntityType.Id );
+                    entityTypeCache = EntityTypeCache.Get( this.EntityType.Id );
                 }
 
                 if ( entityTypeCache != null )
@@ -285,7 +285,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IEntityCache GetCacheObject()
         {
-            return CacheCategory.Get( this.Id );
+            return CategoryCache.Get( this.Id );
         }
 
         /// <summary>
@@ -295,7 +295,7 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
         {
-            CacheCategory.UpdateCachedEntity( this.Id, entityState );
+            CategoryCache.UpdateCachedEntity( this.Id, entityState );
         }
 
         #endregion

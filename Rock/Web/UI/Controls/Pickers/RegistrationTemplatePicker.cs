@@ -20,7 +20,7 @@ using System.Linq;
 using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -36,7 +36,7 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( EventArgs e )
         {
             ItemRestUrlExtraParams = "?getCategorizedItems=true&showUnnamedEntityItems=false&showCategoriesThatHaveNoChildren=false";
-            ItemRestUrlExtraParams += "&entityTypeId=" + CacheEntityType.Get( Rock.SystemGuid.EntityType.REGISTRATION_TEMPLATE.AsGuid() ).Id;
+            ItemRestUrlExtraParams += "&entityTypeId=" + EntityTypeCache.Get( Rock.SystemGuid.EntityType.REGISTRATION_TEMPLATE.AsGuid() ).Id;
             this.IconCssClass = "fa fa-calendar";
             base.OnInit( e );
         }

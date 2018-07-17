@@ -31,7 +31,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -741,7 +741,7 @@ namespace RockWeb.Blocks.Connection
                 GroupConfigsState.Add( groupConfig );
             }
 
-            var groupType = CacheGroupType.Get( ddlGroupType.SelectedValueAsInt() ?? 0 );
+            var groupType = GroupTypeCache.Get( ddlGroupType.SelectedValueAsInt() ?? 0 );
             if ( groupType != null )
             {
                 groupConfig.GroupTypeId = groupType.Id;
@@ -896,7 +896,7 @@ namespace RockWeb.Blocks.Connection
             connectorGroup.CampusId = cpCampus.SelectedCampusId;
             if ( connectorGroup.CampusId.HasValue )
             {
-                var campus = CacheCampus.Get( connectorGroup.CampusId.Value );
+                var campus = CampusCache.Get( connectorGroup.CampusId.Value );
                 if ( campus != null )
                 {
                     connectorGroup.CampusName = campus.Name;
@@ -967,7 +967,7 @@ namespace RockWeb.Blocks.Connection
             var groupStateObj = ConnectorGroupsState.FirstOrDefault( l => l.Guid.Equals( connectionOpportunityConnectorGroupsGuid ) );
             if ( groupStateObj != null )
             {
-                cpCampus.Campuses = CacheCampus.All();
+                cpCampus.Campuses = CampusCache.All();
                 hfConnectorGroupGuid.Value = connectionOpportunityConnectorGroupsGuid.ToString();
                 cpCampus.SetValue( groupStateObj.CampusId );
                 gpGroup.SetValue( groupStateObj.GroupId );
@@ -976,7 +976,7 @@ namespace RockWeb.Blocks.Connection
             {
                 hfConnectorGroupGuid.Value = string.Empty;
                 gpGroup.SetValue( null );
-                cpCampus.Campuses = CacheCampus.All();
+                cpCampus.Campuses = CampusCache.All();
             }
 
             ShowDialog( "ConnectorGroupDetails", true );
@@ -1020,7 +1020,7 @@ namespace RockWeb.Blocks.Connection
                         {
                             var defaultConnector = new DefaultConnector();
 
-                            var campus = CacheCampus.Get( campusId );
+                            var campus = CampusCache.Get( campusId );
                             defaultConnector.CampusId = campus.Id;
                             defaultConnector.CampusName = campus.Name;
                             defaultConnector.PersonAliasId = DefaultConnectors.ContainsKey( campusId ) ? DefaultConnectors[campusId] : (int?)null;
@@ -1592,7 +1592,7 @@ namespace RockWeb.Blocks.Connection
         private void LoadDropDowns( ConnectionOpportunity connectionOpportunity )
         {
             cblCampus.Items.Clear();
-            cblCampus.DataSource = CacheCampus.All();
+            cblCampus.DataSource = CampusCache.All();
             cblCampus.DataBind();
             cblCampus.SetValues( connectionOpportunity.ConnectionOpportunityCampuses.Select( c => c.CampusId ).ToList() );
         }

@@ -19,9 +19,8 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-using Rock.Cache;
-using Rock.Data;
 using Rock.Web.Cache;
+using Rock.Data;
 
 namespace Rock.Model
 {
@@ -160,7 +159,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static AttributeValueHistorical CreateCurrentRowFromAttributeValue( AttributeValue attributeValue, DateTime effectiveDateTime )
         {
-            var attributeCache = CacheAttribute.Get( attributeValue.AttributeId );
+            var attributeCache = AttributeCache.Get( attributeValue.AttributeId );
             string formattedValue = attributeCache.FieldType.Field.FormatValue( null, attributeValue.Value, attributeCache.QualifierValues, true );
             var attributeValueHistoricalCurrent = new AttributeValueHistorical
             {

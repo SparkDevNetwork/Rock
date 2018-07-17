@@ -21,7 +21,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock.Data;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using System.Web;
 
@@ -182,7 +182,7 @@ namespace Rock.Field.Types
             {
                 for( int i = 0; i < values.Length; i++)
                 {
-                    var definedValue = CacheDefinedValue.Get( values[i].AsInteger() );
+                    var definedValue = DefinedValueCache.Get( values[i].AsInteger() );
                     if ( definedValue != null)
                     {
                         values[i] = definedValue.Value;

@@ -27,7 +27,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using System.Data.SqlClient;
@@ -107,7 +107,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                     SetSettingValue( rockContext, settings, "Password", tbPasswordNew.Text, true );
 
                     string defaultReturnUrl = string.Format( "{0}Webhooks/ProtectMyMinistry.ashx",
-                        CacheGlobalAttributes.Value( "PublicApplicationRoot" ).EnsureTrailingForwardslash() );
+                        GlobalAttributesCache.Value( "PublicApplicationRoot" ).EnsureTrailingForwardslash() );
                     SetSettingValue( rockContext, settings, "ReturnURL", defaultReturnUrl );
 
                     rockContext.SaveChanges();
@@ -212,7 +212,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
         protected void gDefinedValues_GridReorder( object sender, GridReorderEventArgs e )
         {
-            var definedType = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.BACKGROUND_CHECK_TYPES.AsGuid() );
+            var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.BACKGROUND_CHECK_TYPES.AsGuid() );
             if ( definedType != null )
             {
                 var changedIds = new List<int>();
@@ -271,7 +271,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         {
             int definedValueId = hfDefinedValueId.Value.AsInteger();
 
-            var definedType = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.BACKGROUND_CHECK_TYPES.AsGuid() );
+            var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.BACKGROUND_CHECK_TYPES.AsGuid() );
             if ( definedType != null )
             {
                 using ( var rockContext = new RockContext() )
@@ -301,7 +301,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                     int? dvJurisdictionCodeId = ddlMVRJurisdication.SelectedValueAsInt();
                     if ( dvJurisdictionCodeId.HasValue && dvJurisdictionCodeId.Value > 0 )
                     {
-                        var dvJurisdicationCode = CacheDefinedValue.Get( dvJurisdictionCodeId.Value );
+                        var dvJurisdicationCode = DefinedValueCache.Get( dvJurisdictionCodeId.Value );
                         if ( dvJurisdicationCode != null )
                         {
                             dvJurisdicationCodeGuid = dvJurisdicationCode.Guid;
@@ -330,7 +330,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnDefault_Click( object sender, EventArgs e )
         {
-            var bioBlock = CacheBlock.Get( Rock.SystemGuid.Block.BIO.AsGuid() );
+            var bioBlock = BlockCache.Get( Rock.SystemGuid.Block.BIO.AsGuid() );
             List<Guid> workflowActionGuidList = bioBlock.GetAttributeValues( "WorkflowActions" ).AsGuidList();
             if ( workflowActionGuidList == null || workflowActionGuidList.Count == 0 )
             {
@@ -421,7 +421,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         {
             using ( var rockContext = new RockContext() )
             {
-                var mvrJurisdicationCodes = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PROTECT_MY_MINISTRY_MVR_JURISDICTION_CODES.AsGuid() );
+                var mvrJurisdicationCodes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PROTECT_MY_MINISTRY_MVR_JURISDICTION_CODES.AsGuid() );
                 if ( mvrJurisdicationCodes != null )
                 {
                     ddlMVRJurisdication.BindToDefinedType( mvrJurisdicationCodes, true, true );
@@ -569,7 +569,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         /// <param name="definedValueId">The defined value identifier.</param>
         public void ShowPackageEdit( int definedValueId )
         {
-            var definedType = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.BACKGROUND_CHECK_TYPES.AsGuid() );
+            var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.BACKGROUND_CHECK_TYPES.AsGuid() );
             if ( definedType != null )
             {
                 DefinedValue definedValue = null;
@@ -600,7 +600,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                 Guid? mvrJurisdicationGuid = definedValue.GetAttributeValue( "MVRJurisdiction" ).AsGuidOrNull();
                 if ( mvrJurisdicationGuid.HasValue )
                 {
-                    var mvrJurisdication = CacheDefinedValue.Get( mvrJurisdicationGuid.Value );
+                    var mvrJurisdication = DefinedValueCache.Get( mvrJurisdicationGuid.Value );
                     if ( mvrJurisdication != null )
                     {
                         ddlMVRJurisdication.SetValue( mvrJurisdication.Id );
@@ -663,7 +663,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         /// <returns></returns>
         private List<AttributeValue> GetSettings( RockContext rockContext )
         {
-            var pmmEntityType = CacheEntityType.Get( typeof( Rock.Security.BackgroundCheck.ProtectMyMinistry ) );
+            var pmmEntityType = EntityTypeCache.Get( typeof( Rock.Security.BackgroundCheck.ProtectMyMinistry ) );
             if ( pmmEntityType != null )
             {
                 var service = new AttributeValueService( rockContext );
@@ -720,7 +720,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
             }
             else
             {
-                var pmmEntityType = CacheEntityType.Get( typeof( Rock.Security.BackgroundCheck.ProtectMyMinistry ) );
+                var pmmEntityType = EntityTypeCache.Get( typeof( Rock.Security.BackgroundCheck.ProtectMyMinistry ) );
                 if ( pmmEntityType != null )
                 {
                     var attribute = new AttributeService( rockContext )

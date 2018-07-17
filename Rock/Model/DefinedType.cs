@@ -20,7 +20,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 
 namespace Rock.Model
@@ -184,7 +184,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IEntityCache GetCacheObject()
         {
-            return CacheDefinedType.Get( this.Id );
+            return DefinedTypeCache.Get( this.Id );
         }
 
         /// <summary>
@@ -194,16 +194,16 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
         {
-            var cachedDefinedValues = CacheDefinedType.Get( this.Id, (RockContext)dbContext )?.DefinedValues;
+            var cachedDefinedValues = DefinedTypeCache.Get( this.Id, (RockContext)dbContext )?.DefinedValues;
             if ( cachedDefinedValues?.Any() == true )
             {
                 foreach ( var cachedDefinedValue in cachedDefinedValues )
                 {
-                    CacheDefinedValue.UpdateCachedEntity( cachedDefinedValue.Id, System.Data.Entity.EntityState.Detached );
+                    DefinedValueCache.UpdateCachedEntity( cachedDefinedValue.Id, System.Data.Entity.EntityState.Detached );
                 }
             }
 
-            CacheDefinedType.UpdateCachedEntity( this.Id, entityState );
+            DefinedTypeCache.UpdateCachedEntity( this.Id, entityState );
         }
 
         #endregion

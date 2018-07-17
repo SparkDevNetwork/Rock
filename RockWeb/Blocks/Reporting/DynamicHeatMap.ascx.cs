@@ -25,7 +25,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -86,7 +86,7 @@ namespace RockWeb.Blocks.Reporting
                 LoadDropDowns();
             }
 
-            cpCampuses.Campuses = CacheCampus.All();
+            cpCampuses.Campuses = CampusCache.All();
 
             // hide the group picker from the filter options if there is a PageParameter for the GroupId
             gpGroupToMap.Visible = !this.PageParameter( "GroupId" ).AsIntegerOrNull().HasValue;
@@ -255,7 +255,7 @@ namespace RockWeb.Blocks.Reporting
             // add styling to map
             string styleCode = "null";
 
-            CacheDefinedValue dvcMapStyle = CacheDefinedValue.Get( GetAttributeValue( "MapStyle" ).AsGuid() );
+            DefinedValueCache dvcMapStyle = DefinedValueCache.Get( GetAttributeValue( "MapStyle" ).AsGuid() );
             if ( dvcMapStyle != null )
             {
                 styleCode = dvcMapStyle.GetAttributeValue( "DynamicMapStyle" );
@@ -267,7 +267,7 @@ namespace RockWeb.Blocks.Reporting
             string latitude = "39.8282";
             string longitude = "-98.5795";
             string zoom = "4";
-            var orgLocation = CacheGlobalAttributes.Get().OrganizationLocation;
+            var orgLocation = GlobalAttributesCache.Get().OrganizationLocation;
             if ( orgLocation != null && orgLocation.GeoPoint != null )
             {
                 latitude = orgLocation.GeoPoint.Latitude.Value.ToString( System.Globalization.CultureInfo.GetCultureInfo( "en-US" ) );
@@ -276,7 +276,7 @@ namespace RockWeb.Blocks.Reporting
             }
 
             var rockContext = new RockContext();
-            var campuses = CacheCampus.All();
+            var campuses = CampusCache.All();
             var locationService = new LocationService( rockContext );
             CampusMarkersData = string.Empty;
             if ( cbShowCampusLocations.Checked )
@@ -305,9 +305,9 @@ namespace RockWeb.Blocks.Reporting
             }
 
             var groupMemberService = new GroupMemberService( rockContext );
-            var groupLocationTypeHome = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
+            var groupLocationTypeHome = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
             int groupLocationTypeHomeId = groupLocationTypeHome != null ? groupLocationTypeHome.Id : 0;
-            var groupTypeFamily = CacheGroupType.GetFamilyGroupType();
+            var groupTypeFamily = GroupTypeCache.GetFamilyGroupType();
             int groupTypeFamilyId = groupTypeFamily != null ? groupTypeFamily.Id : 0;
 
             // if there is a DataViewId page parameter, use that instead of the Block or Filter dataview setting (the filter control won't be visible if there is a DataViewId page parameter)
@@ -464,7 +464,7 @@ namespace RockWeb.Blocks.Reporting
         {
             var rockContext = new RockContext();
             var dataViewService = new DataViewService( rockContext );
-            var entityTypeIdPerson = CacheEntityType.GetId<Rock.Model.Person>() ?? 0;
+            var entityTypeIdPerson = EntityTypeCache.GetId<Rock.Model.Person>() ?? 0;
             var dataViewQry = dataViewService.Queryable().Where( a => a.EntityTypeId == entityTypeIdPerson ).OrderBy( a => a.Name ).Select( a => new { a.Name, a.Guid } );
 
             ddlBlockConfigDataView.Items.Clear();

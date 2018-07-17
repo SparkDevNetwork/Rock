@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -42,6 +42,8 @@ namespace RockWeb.Blocks.Security
 
     public partial class LoginStatus : Rock.Web.UI.RockBlock
     {
+        private const string LOG_OUT = "Log Out";
+        private const string LOG_IN = "Log In";
         #region Base Control Methods
 
         /// <summary>
@@ -108,7 +110,7 @@ namespace RockWeb.Blocks.Security
                     phMySettings.Visible = false;
                 }
 
-                lbLoginLogout.Text = "Log Out";
+                lbLoginLogout.Text = LOG_OUT;
 
                 divProfilePhoto.Attributes.Add( "style", String.Format( "background-image: url('{0}');", Rock.Model.Person.GetPersonPhotoUrl( currentPerson, 200, 200 )));
 
@@ -147,7 +149,7 @@ namespace RockWeb.Blocks.Security
                 phMyAccount.Visible = false;
                 phMyProfile.Visible = false;
                 phMySettings.Visible = false;
-                lbLoginLogout.Text = "Log In";
+                lbLoginLogout.Text = LOG_IN;
 
                 liDropdown.Visible = false;
                 liLogin.Visible = true;
@@ -168,7 +170,7 @@ namespace RockWeb.Blocks.Security
         protected void lbLoginLogout_Click( object sender, EventArgs e )
         {
             string action = hfActionType.Value;
-            if ( action == "Login" )
+            if ( action == LOG_IN )
             {
                 var site = RockPage.Layout.Site;
                 if ( site.LoginPageId.HasValue )
@@ -195,7 +197,7 @@ namespace RockWeb.Blocks.Security
 
                 // After logging out check to see if an anonymous user is allowed to view the current page.  If so
                 // redirect back to the current page, otherwise redirect to the site's default page
-                var currentPage = Rock.Cache.CachePage.Get( RockPage.PageId );
+                var currentPage = Rock.Web.Cache.PageCache.Get( RockPage.PageId );
                 if ( currentPage != null && currentPage.IsAuthorized(Authorization.VIEW, null))
                 {
                     string url = CurrentPageReference.BuildUrl( true );

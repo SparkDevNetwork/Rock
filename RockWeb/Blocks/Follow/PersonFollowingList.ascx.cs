@@ -26,7 +26,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -109,8 +109,8 @@ namespace RockWeb.Blocks.Follow
         {
             if ( e.Row.RowType == DataControlRowType.Header )
             {
-                e.Row.Cells[4].Text = CacheDefinedValue.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ) ).Value;
-                e.Row.Cells[5].Text = CacheDefinedValue.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) ).Value;
+                e.Row.Cells[4].Text = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ) ).Value;
+                e.Row.Cells[5].Text = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) ).Value;
             }
         }
 
@@ -134,7 +134,7 @@ namespace RockWeb.Blocks.Follow
                     .Where( p => itemsSelected.Contains( p.PersonId ) )
                     .Select( p => p.Id );
 
-                int personAliasEntityTypeId = CacheEntityType.Get( "Rock.Model.PersonAlias" ).Id;
+                int personAliasEntityTypeId = EntityTypeCache.Get( "Rock.Model.PersonAlias" ).Id;
                 foreach ( var following in followingService.Queryable()
                     .Where( f =>
                         f.EntityTypeId == personAliasEntityTypeId &&
@@ -183,7 +183,7 @@ namespace RockWeb.Blocks.Follow
             {
                 var rockContext = new RockContext();
 
-                int personAliasEntityTypeId = CacheEntityType.Get( "Rock.Model.PersonAlias" ).Id;
+                int personAliasEntityTypeId = EntityTypeCache.Get( "Rock.Model.PersonAlias" ).Id;
                 var personAliasIds = new FollowingService( rockContext ).Queryable()
                     .Where( f =>
                         f.EntityTypeId == personAliasEntityTypeId &&

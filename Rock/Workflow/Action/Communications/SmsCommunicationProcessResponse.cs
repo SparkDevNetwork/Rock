@@ -20,7 +20,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 
 using Rock.Attribute;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
 
@@ -57,7 +57,7 @@ namespace Rock.Workflow.Action
             var fromNumber = GetAttributeValue( action, "FromNumber", true ).ResolveMergeFields( mergeFields ).Trim();
             var toNumber = GetAttributeValue( action, "ToNumber", true ).ResolveMergeFields( mergeFields ).Trim();
             var message = GetAttributeValue( action, "Message" ).ResolveMergeFields( mergeFields ).Trim();
-            var attribute = CacheAttribute.Get( GetAttributeValue( action, "ErrorAttribute" ).AsGuid(), rockContext );
+            var attribute = AttributeCache.Get( GetAttributeValue( action, "ErrorAttribute" ).AsGuid(), rockContext );
 
             string errorMessage;
             new Rock.Communication.Medium.Sms().ProcessResponse( toNumber, fromNumber, message, out errorMessage );

@@ -21,7 +21,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using System.Text;
 using Rock.Data;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -147,7 +147,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IEntityCache GetCacheObject()
         {
-            return CacheLavaShortcode.Get( this.Id );
+            return LavaShortcodeCache.Get( this.Id );
         }
 
         /// <summary>
@@ -157,7 +157,7 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
         {
-            CacheLavaShortcode.UpdateCachedEntity( this.Id, entityState );
+            LavaShortcodeCache.UpdateCachedEntity( this.Id, entityState );
         }
 
         #endregion

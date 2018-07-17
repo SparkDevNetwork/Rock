@@ -26,6 +26,7 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -188,7 +189,7 @@ namespace RockWeb.Blocks.Security
                     // See if person is in role authorized
                     if ( !matchFound && authRule.GroupId.HasValue )
                     {
-                        var role = Rock.Cache.CacheRole.Get( authRule.GroupId.Value );
+                        var role = RoleCache.Get( authRule.GroupId.Value );
                         if ( role != null && role.IsPersonInRole( person.Guid ) )
                         {
                             matchFound = true;

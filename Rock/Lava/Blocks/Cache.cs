@@ -26,7 +26,7 @@ using System.Text.RegularExpressions;
 using DotLiquid;
 using DotLiquid.Util;
 
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Lava.Blocks
 {

@@ -20,7 +20,7 @@ using System.Net;
 using Newtonsoft.Json;
 using RestSharp;
 using RestSharp.Authenticators;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Checkr.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -38,7 +38,7 @@ namespace Rock.Checkr.CheckrApi
         /// <returns></returns>
         private static List<AttributeValue> GetSettings( RockContext rockContext )
         {
-            var checkrEntityType = CacheEntityType.Get( typeof( Rock.Checkr.Checkr ) );
+            var checkrEntityType = EntityTypeCache.Get( typeof( Rock.Checkr.Checkr ) );
             if ( checkrEntityType != null )
             {
                 var service = new AttributeValueService( rockContext );

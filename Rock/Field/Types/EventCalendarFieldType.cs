@@ -23,7 +23,7 @@ using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -51,7 +51,7 @@ namespace Rock.Field.Types
 
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
-                var eventCalendar = CacheEventCalendar.Get( value.AsGuid() );
+                var eventCalendar = EventCalendarCache.Get( value.AsGuid() );
                 if ( eventCalendar != null )
                 {
                     formattedValue = eventCalendar.Name;
@@ -77,7 +77,7 @@ namespace Rock.Field.Types
         {
             var eventCalendarPicker = new EventCalendarPicker { ID = id };
 
-            if ( CacheEventCalendar.All().Any() )
+            if ( EventCalendarCache.All().Any() )
             {
                 return eventCalendarPicker;
             }
@@ -101,7 +101,7 @@ namespace Rock.Field.Types
                 int? eventCalendarId = eventCalendarPicker.SelectedEventCalendarId;
                 if (eventCalendarId.HasValue)
                 {
-                    var eventCalendar = CacheEventCalendar.Get( eventCalendarId.Value );
+                    var eventCalendar = EventCalendarCache.Get( eventCalendarId.Value );
                     if (eventCalendar != null )
                     {
                         return eventCalendar.Guid.ToString();
@@ -128,7 +128,7 @@ namespace Rock.Field.Types
                 Guid guid = value.AsGuid();
 
                 // get the item (or null) and set it
-                var eventCalendar = CacheEventCalendar.Get( guid );
+                var eventCalendar = EventCalendarCache.Get( guid );
                 eventCalendarPicker.SetValue( eventCalendar == null ? "0" : eventCalendar.Id.ToString() );
             }
         }
@@ -173,7 +173,7 @@ namespace Rock.Field.Types
             cbList.AddCssClass( "js-filter-control" );
             cbList.RepeatDirection = RepeatDirection.Horizontal;
 
-            var eventCalendarList = CacheEventCalendar.All();
+            var eventCalendarList = EventCalendarCache.All();
             if ( eventCalendarList.Any() )
             {
                 foreach ( var eventCalendar in eventCalendarList )
@@ -298,7 +298,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = CacheEventCalendar.Get( guid );
+            var item = EventCalendarCache.Get( guid );
             return item != null ? item.Id : (int?)null;
         }
 
@@ -310,10 +310,10 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            CacheEventCalendar item = null;
+            EventCalendarCache item = null;
             if ( id.HasValue )
             {
-                item = CacheEventCalendar.Get( id.Value );
+                item = EventCalendarCache.Get( id.Value );
             }
             string guidValue = item != null ? item.Guid.ToString() : string.Empty;
             SetEditValue( control, configurationValues, guidValue );

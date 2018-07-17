@@ -27,7 +27,7 @@ using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.CheckIn
 {
@@ -243,7 +243,7 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
         protected void rSelection_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
-            var dvalue = e.Item.DataItem as CacheDefinedValue;
+            var dvalue = e.Item.DataItem as DefinedValueCache;
             var guid = dvalue.Guid.ToString().ToUpper();
 
             // Once we've hit the person's ability level -OR- if their level is not yet set, 
@@ -312,7 +312,7 @@ namespace RockWeb.Blocks.CheckIn
                         person.Person.LoadAttributes();
                         _personAbilityLevelGuid = person.Person.GetAttributeValue( "AbilityLevel" ).ToUpper();
 
-                        var abilityLevelDType = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_ABILITY_LEVEL_TYPE.AsGuid() );
+                        var abilityLevelDType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_ABILITY_LEVEL_TYPE.AsGuid() );
                         if ( abilityLevelDType != null )
                         {
                             rSelection.DataSource = abilityLevelDType.DefinedValues.ToList();
@@ -352,7 +352,7 @@ namespace RockWeb.Blocks.CheckIn
                         person.Person.LoadAttributes();
                         _personAbilityLevelGuid = person.Person.GetAttributeValue( "AbilityLevel" ).ToUpper();
 
-                        var abilityLevelDType = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_ABILITY_LEVEL_TYPE.AsGuid() );
+                        var abilityLevelDType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_ABILITY_LEVEL_TYPE.AsGuid() );
                         if ( abilityLevelDType != null )
                         {
                             rSelection.DataSource = abilityLevelDType.DefinedValues.ToList();

@@ -26,7 +26,7 @@ using RestSharp;
 using Rock.Data;
 using Rock.Model;
 using Rock.Store;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Utility
 {
@@ -64,7 +64,7 @@ namespace Rock.Utility
             sparkLinkRequest.VersionIds = installedPackages.Select( i => i.VersionId ).ToList();
             sparkLinkRequest.RockVersion = VersionInfo.VersionInfo.GetRockSemanticVersionNumber();
 
-            var globalAttributes = CacheGlobalAttributes.Get();
+            var globalAttributes = GlobalAttributesCache.Get();
             sparkLinkRequest.OrganizationName = globalAttributes.GetValue( "OrganizationName" );
             sparkLinkRequest.PublicUrl = globalAttributes.GetValue( "PublicApplicationRoot" );
 

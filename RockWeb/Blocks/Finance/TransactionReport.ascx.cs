@@ -26,7 +26,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Finance
@@ -241,7 +241,7 @@ namespace RockWeb.Blocks.Finance
             }
 
             // Transaction Types
-            var transactionTypeValueIdList = GetAttributeValue( "TransactionTypes" ).SplitDelimitedValues().AsGuidList().Select( a => CacheDefinedValue.Get( a ) ).Where( a => a != null ).Select( a => a.Id ).ToList();
+            var transactionTypeValueIdList = GetAttributeValue( "TransactionTypes" ).SplitDelimitedValues().AsGuidList().Select( a => DefinedValueCache.Get( a ) ).Where( a => a != null ).Select( a => a.Id ).ToList();
 
             if ( transactionTypeValueIdList.Any() )
             {
@@ -276,7 +276,7 @@ namespace RockWeb.Blocks.Finance
                 pnlSummary.Visible = true;
                 foreach ( var key in accountTotals.Keys )
                 {
-                    lAccountSummary.Text += string.Format( "<li>{0}: {2}{1}</li>", key, accountTotals[key], CacheGlobalAttributes.Value( "CurrencySymbol" ) );
+                    lAccountSummary.Text += string.Format( "<li>{0}: {2}{1}</li>", key, accountTotals[key], GlobalAttributesCache.Value( "CurrencySymbol" ) );
                 }
             }
             else
@@ -284,7 +284,7 @@ namespace RockWeb.Blocks.Finance
                 pnlSummary.Visible = false;
             }
 
-            gTransactions.EntityTypeId = CacheEntityType.Get<FinancialTransaction>().Id;
+            gTransactions.EntityTypeId = EntityTypeCache.Get<FinancialTransaction>().Id;
             gTransactions.DataSource = txns.Select( t => new
             {
                 t.Id,
@@ -319,13 +319,13 @@ namespace RockWeb.Blocks.Finance
             {
                 int currencyTypeId = txn.FinancialPaymentDetail.CurrencyTypeValueId.Value;
 
-                var currencyTypeValue = CacheDefinedValue.Get( currencyTypeId );
+                var currencyTypeValue = DefinedValueCache.Get( currencyTypeId );
                 currencyType = currencyTypeValue != null ? currencyTypeValue.Value : string.Empty;
 
                 if ( txn.FinancialPaymentDetail.CreditCardTypeValueId.HasValue )
                 {
                     int creditCardTypeId = txn.FinancialPaymentDetail.CreditCardTypeValueId.Value;
-                    var creditCardTypeValue = CacheDefinedValue.Get( creditCardTypeId );
+                    var creditCardTypeValue = DefinedValueCache.Get( creditCardTypeId );
                     creditCardType = creditCardTypeValue != null ? creditCardTypeValue.Value : string.Empty;
 
                     return string.Format( "{0} - {1}", currencyType, creditCardType );
@@ -345,7 +345,7 @@ namespace RockWeb.Blocks.Finance
             var sb = new StringBuilder();
             foreach ( var transactionDetail in txn.TransactionDetails )
             {
-                sb.AppendFormat( "{0} ({2}{1})<br>", transactionDetail.Account, transactionDetail.Amount, CacheGlobalAttributes.Value( "CurrencySymbol" ) );
+                sb.AppendFormat( "{0} ({2}{1})<br>", transactionDetail.Account, transactionDetail.Amount, GlobalAttributesCache.Value( "CurrencySymbol" ) );
             }
 
             return sb.ToString();

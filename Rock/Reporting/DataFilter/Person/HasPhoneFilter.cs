@@ -25,7 +25,7 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.Person
@@ -101,7 +101,7 @@ namespace Rock.Reporting.DataFilter.Person
             ddlPhoneNumberType.CssClass = "js-phonetype";
             ddlPhoneNumberType.ID = $"{filterControl.ID}_ddlPhoneNumberType";
             ddlPhoneNumberType.Items.Add( new ListItem("Any Phone", string.Empty) );
-            foreach ( var value in CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid() ).DefinedValues.OrderBy( a => a.Order ).ThenBy( a => a.Value ) )
+            foreach ( var value in DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid() ).DefinedValues.OrderBy( a => a.Order ).ThenBy( a => a.Value ) )
             {
                 ddlPhoneNumberType.Items.Add( new ListItem( value.Value.EndsWith( "Phone" ) ? value.Value : value.Value + " Phone", value.Guid.ToString() ) );
             }
@@ -237,7 +237,7 @@ namespace Rock.Reporting.DataFilter.Person
                 string hasPhoneOfType = selections[0].AsBoolean() ? "Has " : "Doesn't Have ";
                 Guid? phoneType = selections[1].AsGuidOrNull();
 
-                string phoneTypeName = phoneType == null ? "Any Phone" : CacheDefinedValue.Get( phoneType.Value ).Value + " Phone";
+                string phoneTypeName = phoneType == null ? "Any Phone" : DefinedValueCache.Get( phoneType.Value ).Value + " Phone";
                 string hasSMS = string.Empty;
 
                 if ( !string.IsNullOrEmpty( selections[2] ) )
@@ -273,7 +273,7 @@ namespace Rock.Reporting.DataFilter.Person
             string[] selections = selection.Split( '|' );
             bool hasPhoneOfType = selections[0].AsBoolean();
             Guid? phoneTypeGuid = selections[1].AsGuidOrNull();
-            int? phoneNumberTypeValueId = phoneTypeGuid.HasValue ? CacheDefinedValue.Get( phoneTypeGuid.Value ).Id : ( int? ) null;
+            int? phoneNumberTypeValueId = phoneTypeGuid.HasValue ? DefinedValueCache.Get( phoneTypeGuid.Value ).Id : ( int? ) null;
             bool? hasSMS = selections[2].AsBooleanOrNull();
             var qry = new PersonService( ( RockContext ) serviceInstance.Context ).Queryable();
 
