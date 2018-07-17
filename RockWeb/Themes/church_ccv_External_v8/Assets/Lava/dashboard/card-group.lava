@@ -76,7 +76,7 @@ TODO: Add Other Group Type leader roles
                                             </div>
                                         </a>
                                     {% elseif group.Group.GroupTypeId == 94 %}
-                                        <a href="/student-toolbox?GroupId={{ group.Group.Id }}" class="tooltip-access-toolbox">
+                                        <a href="/student-toolbox?GroupId={{ group.Group.Id }}" class="tooltip-access-student-toolbox">
                                             <div class="group-name-row-content">
                                                 <span>{{ group.Group.Name }}</span>
                                                 <i class="mdi mdi-chevron-right group-header-icon"></i>
@@ -181,6 +181,7 @@ TODO: Add Other Group Type leader roles
                         activatePopOver('.tooltip-add-group-member', 'Add Group Member');
                         activatePopOver('.tooltip-email-group', 'Email Group');
                         activatePopOver('.tooltip-access-toolbox', 'Access Group Toolbox');
+                        activatePopOver('.tooltip-access-student-toolbox', 'Access Student Toolbox');
                         activatePopOver('.tooltip-email-person', 'Email');
                         activatePopOver('.tooltip-phone-person', 'Call');
                         activatePopOver('.tooltip-group-details', 'Group Details');
