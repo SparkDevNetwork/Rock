@@ -24,7 +24,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -46,7 +46,7 @@ namespace RockWeb.Blocks.Core
     {
         #region fields
 
-        private CacheEntityType _blockConfigEntityType = null;
+        private EntityTypeCache _blockConfigEntityType = null;
 
         #endregion fields
 
@@ -71,7 +71,7 @@ namespace RockWeb.Blocks.Core
 
             foreach ( var securityField in gNoteTypes.Columns.OfType<SecurityField>() )
             {
-                securityField.EntityTypeId = CacheEntityType.Get( typeof( NoteType ) ).Id;
+                securityField.EntityTypeId = EntityTypeCache.Get( typeof( NoteType ) ).Id;
             }
 
             this.BlockUpdated += NoteTypeList_BlockUpdated;
@@ -97,7 +97,7 @@ namespace RockWeb.Blocks.Core
             Guid? entityTypeGuid = this.GetAttributeValue( "EntityType" ).AsGuidOrNull();
             if ( entityTypeGuid.HasValue )
             {
-                _blockConfigEntityType = CacheEntityType.Get( entityTypeGuid.Value );
+                _blockConfigEntityType = EntityTypeCache.Get( entityTypeGuid.Value );
             }
 
             gfNoteTypes.Visible = _blockConfigEntityType == null;
@@ -148,7 +148,7 @@ namespace RockWeb.Blocks.Core
                     int? entityTypeId = e.Value.AsIntegerOrNull();
                     if ( entityTypeId.HasValue )
                     {
-                        var entityType = CacheEntityType.Get( entityTypeId.Value );
+                        var entityType = EntityTypeCache.Get( entityTypeId.Value );
                         if ( entityType != null )
                         {
                             e.Value = entityType.FriendlyName;

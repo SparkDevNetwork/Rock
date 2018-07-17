@@ -22,7 +22,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.UI;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Model;
 
 namespace Rock.Web.UI.Controls
@@ -96,7 +96,7 @@ namespace Rock.Web.UI.Controls
             }
 
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( rockPage );
-            mergeFields.Add( "CurrentPage", CachePage.Get( rockPage.PageId ) );
+            mergeFields.Add( "CurrentPage", PageCache.Get( rockPage.PageId ) );
 
             return lava.ResolveMergeFields( mergeFields, "All" );
         }

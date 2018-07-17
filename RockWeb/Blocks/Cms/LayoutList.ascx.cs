@@ -24,7 +24,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using System.ComponentModel;
 using Rock.Security;
@@ -62,7 +62,7 @@ namespace RockWeb.Blocks.Cms
             var securityField = gLayouts.ColumnsOfType<SecurityField>().FirstOrDefault();
             if ( securityField != null )
             {
-                securityField.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.Layout ) ).Id;
+                securityField.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Layout ) ).Id;
             }
         }
 
@@ -163,7 +163,7 @@ namespace RockWeb.Blocks.Cms
             }
 
             var rockContext = new RockContext();
-            var site = CacheSite.Get( siteId, rockContext );
+            var site = SiteCache.Get( siteId, rockContext );
             if ( site == null )
             {
                 return;
@@ -197,7 +197,7 @@ namespace RockWeb.Blocks.Cms
         {
             string virtualPath = fileName;
 
-            var siteCache = CacheSite.Get( hfSiteId.ValueAsInt() );
+            var siteCache = SiteCache.Get( hfSiteId.ValueAsInt() );
             if ( siteCache != null )
             {
                 virtualPath = string.Format( "~/Themes/{0}/Layouts/{1}.aspx", siteCache.Theme, fileName );

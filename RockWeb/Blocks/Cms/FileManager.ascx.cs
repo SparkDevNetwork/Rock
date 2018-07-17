@@ -20,7 +20,7 @@ using System.Web;
 
 using Rock.Attribute;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Cms
@@ -63,7 +63,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void SetupIFrame()
         {
-            var globalAttributesCache = CacheGlobalAttributes.Get();
+            var globalAttributesCache = GlobalAttributesCache.Get();
 
             string imageFileTypeWhiteList = globalAttributesCache.GetValue( "ContentImageFiletypeWhitelist" );
             string fileTypeBlackList = globalAttributesCache.GetValue( "ContentFiletypeBlacklist" );

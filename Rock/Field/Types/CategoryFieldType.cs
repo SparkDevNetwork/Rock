@@ -23,7 +23,7 @@ using System.Web.UI.WebControls;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -166,7 +166,7 @@ namespace Rock.Field.Types
 
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
-                var category = CacheCategory.Get( value.AsGuid() );
+                var category = CategoryCache.Get( value.AsGuid() );
                 if ( category != null )
                 {
                     formattedValue = category.Name;
@@ -231,7 +231,7 @@ namespace Rock.Field.Types
                 var id = picker.ItemId.AsIntegerOrNull();
                 if ( id.HasValue )
                 {
-                    var category = CacheCategory.Get( id.Value );
+                    var category = CategoryCache.Get( id.Value );
                     if ( category != null )
                     {
                         return category.Guid.ToString();

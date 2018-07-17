@@ -24,7 +24,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Workflow;
 
 namespace Rock.Model
@@ -169,7 +169,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IEntityCache GetCacheObject()
         {
-            return CacheWorkflowActionForm.Get( this.Id );
+            return WorkflowActionFormCache.Get( this.Id );
         }
 
         /// <summary>
@@ -179,7 +179,7 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
         {
-            CacheWorkflowActionForm.UpdateCachedEntity( this.Id, entityState );
+            WorkflowActionFormCache.UpdateCachedEntity( this.Id, entityState );
         }
 
         #endregion
@@ -234,7 +234,7 @@ namespace Rock.Model
 
                     if ( details.Length > 1 )
                     {
-                        var definedValue = CacheDefinedValue.Get( details[1].AsGuid() );
+                        var definedValue = DefinedValueCache.Get( details[1].AsGuid() );
                         if ( definedValue != null )
                         {
                             button.Html = definedValue.GetAttributeValue( "ButtonHTML" );

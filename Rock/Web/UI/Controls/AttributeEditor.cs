@@ -26,7 +26,7 @@ using Rock;
 using Rock.Data;
 using Rock.Field;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -627,12 +627,12 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The excluded field types.
         /// </value>
-        public CacheFieldType[] ExcludedFieldTypes
+        public FieldTypeCache[] ExcludedFieldTypes
         {
             get
             {
                 int[] excludedFieldTypeIds = this.ViewState["ExcludedFieldTypeIds"] as int[];
-                return excludedFieldTypeIds?.Select( a => CacheFieldType.Get( a ) ).ToArray() ?? new CacheFieldType[0];
+                return excludedFieldTypeIds?.Select( a => FieldTypeCache.Get( a ) ).ToArray() ?? new FieldTypeCache[0];
             }
             set
             {
@@ -649,12 +649,12 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The included field types.
         /// </value>
-        public CacheFieldType[] IncludedFieldTypes
+        public FieldTypeCache[] IncludedFieldTypes
         {
             get
             {
                 int[] includedFieldTypeIds = this.ViewState["IncludedFieldTypeIds"] as int[];
-                return includedFieldTypeIds?.Select( a => CacheFieldType.Get( a ) ).ToArray() ?? new CacheFieldType[0];
+                return includedFieldTypeIds?.Select( a => FieldTypeCache.Get( a ) ).ToArray() ?? new FieldTypeCache[0];
             }
             set
             {
@@ -861,7 +861,7 @@ namespace Rock.Web.UI.Controls
 
             set
             {
-                var dummyQualifiers = CacheFieldType.Get( value ?? 1 ).Field.ConfigurationKeys().ToDictionary( k => k, v => new ConfigurationValue() );
+                var dummyQualifiers = FieldTypeCache.Get( value ?? 1 ).Field.ConfigurationKeys().ToDictionary( k => k, v => new ConfigurationValue() );
                 SetAttributeFieldType( value ?? 1, dummyQualifiers );
             }
         }
@@ -877,7 +877,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _ddlFieldType.SelectedValueAsInt() ?? CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT.AsGuid() )?.Id ?? 1;
+                return _ddlFieldType.SelectedValueAsInt() ?? FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT.AsGuid() )?.Id ?? 1;
             }
         }
 
@@ -913,7 +913,7 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
 
-                var field = Rock.Cache.CacheFieldType.Get( AttributeFieldTypeId )?.Field;
+                var field = FieldTypeCache.Get( AttributeFieldTypeId )?.Field;
                 return field?.ConfigurationValues( _phQualifiers.Controls.OfType<Control>().ToList() ) ?? new Dictionary<string, ConfigurationValue>();
             }
         }
@@ -929,14 +929,14 @@ namespace Rock.Web.UI.Controls
 
             _ddlFieldType.SetValue( fieldTypeId );
             _hfReadOnlyFieldTypeId.Value = fieldTypeId.ToString();
-            _lFieldType.Text = CacheFieldType.Get( fieldTypeId )?.Name;
+            _lFieldType.Text = FieldTypeCache.Get( fieldTypeId )?.Name;
 
             _phDefaultValue.Controls.Clear();
             _phQualifiers.Controls.Clear();
             CreateFieldTypeQualifierControls( fieldTypeId );
             CreateFieldTypeDefaultControl( fieldTypeId, qualifiers );
 
-            var field = Rock.Cache.CacheFieldType.Get( this.AttributeFieldTypeId )?.Field;
+            var field = FieldTypeCache.Get( this.AttributeFieldTypeId )?.Field;
             field?.SetConfigurationValues( _phQualifiers.Controls.OfType<Control>().ToList(), qualifiers );
             qualifiers = field.ConfigurationValues( _phQualifiers.Controls.OfType<Control>().ToList() );
 
@@ -996,7 +996,7 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 var defaultValue = string.Empty;
 
-                var field = Rock.Cache.CacheFieldType.Get( this.AttributeFieldTypeId ).Field;
+                var field = FieldTypeCache.Get( this.AttributeFieldTypeId ).Field;
                 var defaultControl = _phDefaultValue.Controls.OfType<Control>().FirstOrDefault();
                 if ( defaultControl != null )
                 {
@@ -1010,7 +1010,7 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
 
-                var field = Rock.Cache.CacheFieldType.Get( this.AttributeFieldTypeId ).Field;
+                var field = FieldTypeCache.Get( this.AttributeFieldTypeId ).Field;
                 var defaultControl = _phDefaultValue.Controls.OfType<Control>().FirstOrDefault();
                 if ( defaultControl != null )
                 {
@@ -1136,11 +1136,11 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.IncludedFieldTypes.Any() )
             {
-                _ddlFieldType.DataSource = CacheFieldType.All().Where( a => this.IncludedFieldTypes.Any( x => x.Id == a.Id ) ).ToList();
+                _ddlFieldType.DataSource = FieldTypeCache.All().Where( a => this.IncludedFieldTypes.Any( x => x.Id == a.Id ) ).ToList();
             }
             else
             {
-                _ddlFieldType.DataSource = CacheFieldType.All().Where( a => !this.ExcludedFieldTypes.Any( x => x.Id == a.Id ) ).ToList();
+                _ddlFieldType.DataSource = FieldTypeCache.All().Where( a => !this.ExcludedFieldTypes.Any( x => x.Id == a.Id ) ).ToList();
             }
 
             _ddlFieldType.DataBind();
@@ -1192,7 +1192,7 @@ namespace Rock.Web.UI.Controls
             _cpCategories.ID = "cpCategories_" + this.ID.ToString();
             _cpCategories.Label = "Categories";
             _cpCategories.AllowMultiSelect = true;
-            _cpCategories.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.Attribute ) ).Id;
+            _cpCategories.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Attribute ) ).Id;
             _cpCategories.EntityTypeQualifierColumn = "EntityTypeId";
             Controls.Add( _cpCategories );
 
@@ -1355,7 +1355,7 @@ namespace Rock.Web.UI.Controls
             // Only show the Analytic checkbox if the Entity is IAnalytic
             if ( this.AttributeEntityTypeId.HasValue )
             {
-                var entityType = CacheEntityType.Get( this.AttributeEntityTypeId.Value );
+                var entityType = EntityTypeCache.Get( this.AttributeEntityTypeId.Value );
                 if ( entityType != null )
                 {
                     _cbIsAnalytic.Visible = entityType.IsAnalyticAttributesSupported( this.AttributeEntityTypeQualifierColumn, this.AttributeEntityTypeQualifierValue );
@@ -1612,7 +1612,7 @@ namespace Rock.Web.UI.Controls
 
                 var qualifiers = new Dictionary<string, ConfigurationValue>();
                 
-                var field = CacheFieldType.Get( attribute.FieldTypeId )?.Field;
+                var field = FieldTypeCache.Get( attribute.FieldTypeId )?.Field;
                 if ( field != null )
                 {
                     // initialize qualifiers from field's Configuration Keys in case the Attribute doesn't have AttributeQualifiers for all the config keys yet
@@ -1637,7 +1637,7 @@ namespace Rock.Web.UI.Controls
 
             if ( objectType != null )
             {
-                this.AttributeEntityTypeId = Rock.Cache.CacheEntityType.Get( objectType ).Id;
+                this.AttributeEntityTypeId = EntityTypeCache.Get( objectType ).Id;
 
                 ObjectPropertyNames = new List<string>();
                 foreach ( var propInfo in objectType.GetProperties() )
@@ -1703,7 +1703,7 @@ namespace Rock.Web.UI.Controls
         {
             EnsureChildControls();
 
-            var field = Rock.Cache.CacheFieldType.Get( fieldTypeId ).Field;
+            var field = FieldTypeCache.Get( fieldTypeId ).Field;
 
             var configControls = field.ConfigurationControls();
             int i = 0;
@@ -1725,7 +1725,7 @@ namespace Rock.Web.UI.Controls
         {
             EnsureChildControls();
 
-            var field = Rock.Cache.CacheFieldType.Get( fieldTypeId ).Field;
+            var field = FieldTypeCache.Get( fieldTypeId ).Field;
 
             // default control id needs to be unique to field type because some field types will transform
             // field (i.e. htmleditor) and switching field types will not reset that

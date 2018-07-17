@@ -25,7 +25,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -57,7 +57,7 @@ namespace RockWeb.Blocks.Event
         /// <value>
         /// The available attributes.
         /// </value>
-        public List<CacheAttribute> AvailableAttributes { get; set; }
+        public List<AttributeCache> AvailableAttributes { get; set; }
 
         #endregion
 
@@ -71,7 +71,7 @@ namespace RockWeb.Blocks.Event
         {
             base.LoadViewState( savedState );
 
-            AvailableAttributes = ViewState["AvailableAttributes"] as List<CacheAttribute>;
+            AvailableAttributes = ViewState["AvailableAttributes"] as List<AttributeCache>;
 
             AddDynamicControls();
         }
@@ -341,7 +341,7 @@ namespace RockWeb.Blocks.Event
         {
             drpDate.DelimitedValues = rFilter.GetUserPreference( MakeKeyUniqueToEventCalendar( "DateRange" ) );
 
-            cblCampus.DataSource = CacheCampus.All();
+            cblCampus.DataSource = CampusCache.All();
             cblCampus.DataBind();
             string campusValue = rFilter.GetUserPreference( MakeKeyUniqueToEventCalendar( "Campus" ) );
             if ( !string.IsNullOrWhiteSpace( campusValue ) )
@@ -349,7 +349,7 @@ namespace RockWeb.Blocks.Event
                 cblCampus.SetValues( campusValue.Split( ';' ).ToList() );
             }
 
-            cblAudience.BindToDefinedType( CacheDefinedType.Get( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE.AsGuid() ) );
+            cblAudience.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE.AsGuid() ) );
             string audienceValue = rFilter.GetUserPreference( MakeKeyUniqueToEventCalendar( "Audiences" ) );
             if ( !string.IsNullOrWhiteSpace( audienceValue ) )
             {
@@ -367,7 +367,7 @@ namespace RockWeb.Blocks.Event
         private void BindAttributes()
         {
             // Parse the attribute filters 
-            AvailableAttributes = new List<CacheAttribute>();
+            AvailableAttributes = new List<AttributeCache>();
             if ( _eventCalendar != null )
             {
                 int entityTypeId = new EventCalendarItem().TypeId;
@@ -380,7 +380,7 @@ namespace RockWeb.Blocks.Event
                     .OrderBy( a => a.Order )
                     .ThenBy( a => a.Name ) )
                 {
-                    AvailableAttributes.Add( CacheAttribute.Get( attributeModel ) );
+                    AvailableAttributes.Add( AttributeCache.Get( attributeModel ) );
                 }
             }
         }
@@ -460,7 +460,7 @@ namespace RockWeb.Blocks.Event
                         boundField.AttributeId = attribute.Id;
                         boundField.HeaderText = attribute.Name;
 
-                        var attributeCache = Rock.Cache.CacheAttribute.Get( attribute.Id );
+                        var attributeCache = Rock.Web.Cache.AttributeCache.Get( attribute.Id );
                         if ( attributeCache != null )
                         {
                             boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
@@ -682,7 +682,7 @@ namespace RockWeb.Blocks.Event
                 // Save the calendar items to the grid's objectlist
                 gEventCalendarItems.ObjectList = new Dictionary<string, object>();
                 calendarItemsWithDates.ForEach( i => gEventCalendarItems.ObjectList.Add( i.EventCalendarItem.EventItem.Id.ToString(), i.EventCalendarItem ) );
-                gEventCalendarItems.EntityTypeId = CacheEntityType.Get( "Rock.Model.EventCalendarItem" ).Id;
+                gEventCalendarItems.EntityTypeId = EntityTypeCache.Get( "Rock.Model.EventCalendarItem" ).Id;
 
                 gEventCalendarItems.DataSource = calendarItemsWithDates.Select( i => new
                 {

@@ -20,7 +20,7 @@ using System.Linq;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Field.Types
 {

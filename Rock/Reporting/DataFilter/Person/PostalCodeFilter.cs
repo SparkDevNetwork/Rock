@@ -23,7 +23,7 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using System.Web.UI.WebControls;
 
@@ -120,7 +120,7 @@ function() {
                 string locationType = "";
                 if ( values.Length >= 3 && values[0].AsInteger() != 0 )
                 {
-                    var groupLocationType = CacheDefinedType.Get( SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() )
+                    var groupLocationType = DefinedTypeCache.Get( SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() )
                         .DefinedValues.FirstOrDefault( dv => dv.Id == values[2].AsInteger() );
                     if ( groupLocationType != null )
                     {
@@ -180,7 +180,7 @@ function() {
             ddlLocationType.Label = "Location Type";
             ddlLocationType.DataValueField = "Id";
             ddlLocationType.DataTextField = "Value";
-            CacheDefinedType locationDefinedType = CacheDefinedType.Get( SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() );
+            DefinedTypeCache locationDefinedType = DefinedTypeCache.Get( SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() );
             ddlLocationType.BindToDefinedType( locationDefinedType );
             ddlLocationType.Items.Insert( 0, new ListItem( "(All Location Types)", "" ) );
             filterControl.Controls.Add( ddlLocationType );

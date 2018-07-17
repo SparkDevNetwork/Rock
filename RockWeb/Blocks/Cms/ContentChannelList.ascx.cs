@@ -25,7 +25,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using System.ComponentModel;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using System.Collections.Generic;
 using System.Web.UI.WebControls;
 
@@ -67,7 +67,7 @@ namespace RockWeb.Blocks.Cms
             var securityField = gContentChannels.Columns.OfType<SecurityField>().FirstOrDefault();
             if ( securityField != null )
             {
-                securityField.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.ContentChannel ) ).Id;
+                securityField.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.ContentChannel ) ).Id;
             }
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
@@ -277,7 +277,7 @@ namespace RockWeb.Blocks.Cms
                     ).Count()
             } ).AsQueryable();
 
-            gContentChannels.EntityTypeId = CacheEntityType.Get<ContentChannel>().Id;
+            gContentChannels.EntityTypeId = EntityTypeCache.Get<ContentChannel>().Id;
 
             if ( sortProperty != null )
             {

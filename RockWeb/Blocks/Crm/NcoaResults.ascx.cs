@@ -27,7 +27,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -196,7 +196,7 @@ namespace RockWeb.Blocks.Crm
                     }
                 case "Campus":
                     {
-                        var campus = CacheCampus.Get( e.Value.AsInteger() );
+                        var campus = CampusCache.Get( e.Value.AsInteger() );
                         if ( campus != null )
                         {
                             e.Value = campus.Name;
@@ -399,7 +399,7 @@ namespace RockWeb.Blocks.Crm
             var campusId = gfNcoaFilter.GetUserPreference( "Campus" ).AsIntegerOrNull();
             if ( campusId.HasValue )
             {
-                var familyGroupType = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
+                var familyGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
                 var personAliasQuery = new PersonAliasService( rockContext ).Queryable().AsNoTracking();
                 var campusQuery = new GroupMemberService( rockContext )
                     .Queryable().AsNoTracking()

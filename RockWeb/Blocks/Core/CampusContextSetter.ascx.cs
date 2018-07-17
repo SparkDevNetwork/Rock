@@ -25,7 +25,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Core
@@ -97,7 +97,7 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         protected void LoadDropdowns()
         {
-            var campusEntityType = CacheEntityType.Get( typeof( Campus ) );
+            var campusEntityType = EntityTypeCache.Get( typeof( Campus ) );
             var currentCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
 
             var campusIdString = Request.QueryString["campusId"];
@@ -128,7 +128,7 @@ namespace RockWeb.Blocks.Core
             }
 
             bool includeInactive =  GetAttributeValue( "IncludeInactiveCampuses" ).AsBoolean();
-            var campusList = CacheCampus.All(includeInactive)
+            var campusList = CampusCache.All(includeInactive)
                 .Select( a => new CampusItem { Name = a.Name, Id = a.Id } )
                 .ToList();
 

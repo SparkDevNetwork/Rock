@@ -28,7 +28,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -56,7 +56,7 @@ namespace RockWeb.Blocks.Finance
         /// </value>
         protected Person TargetPerson { get; private set; }
 
-        public List<CacheAttribute> AvailableAttributes { get; set; }
+        public List<AttributeCache> AvailableAttributes { get; set; }
 
         #endregion
 
@@ -79,7 +79,7 @@ namespace RockWeb.Blocks.Finance
         {
             base.LoadViewState( savedState );
 
-            AvailableAttributes = ViewState["AvailableAttributes"] as List<CacheAttribute>;
+            AvailableAttributes = ViewState["AvailableAttributes"] as List<AttributeCache>;
 
             AddDynamicControls();
         }
@@ -149,7 +149,7 @@ namespace RockWeb.Blocks.Finance
         private void BindAttributes()
         {
             // Parse the attribute filters 
-            AvailableAttributes = new List<CacheAttribute>();
+            AvailableAttributes = new List<AttributeCache>();
             
             int entityTypeId = new BenevolenceRequest().TypeId;
             foreach ( var attributeModel in new AttributeService( new RockContext() ).Queryable()
@@ -160,7 +160,7 @@ namespace RockWeb.Blocks.Finance
                 .ThenBy( a => a.Order )
                 .ThenBy( a => a.Name ) )
             {
-                AvailableAttributes.Add( CacheAttribute.Get( attributeModel ) );
+                AvailableAttributes.Add( AttributeCache.Get( attributeModel ) );
             }
             
         }
@@ -250,7 +250,7 @@ namespace RockWeb.Blocks.Finance
                         int? campusId = e.Value.AsIntegerOrNull();
                         if( campusId.HasValue )
                         {
-                            e.Value = CacheCampus.Get( campusId.Value ).Name;
+                            e.Value = CampusCache.Get( campusId.Value ).Name;
                         }
                         return;
                     }
@@ -276,7 +276,7 @@ namespace RockWeb.Blocks.Finance
                     var definedValueId = e.Value.AsIntegerOrNull();
                     if ( definedValueId.HasValue )
                     {
-                        var definedValue = CacheDefinedValue.Get( definedValueId.Value );
+                        var definedValue = DefinedValueCache.Get( definedValueId.Value );
                         if ( definedValue != null )
                         {
                             e.Value = definedValue.Value;
@@ -325,7 +325,7 @@ namespace RockWeb.Blocks.Finance
                         {
                             if ( result.Amount != null )
                             {
-                                stringBuilder.Append( string.Format( "<div class='row'>{0} ({1}{2:0.00})</div>", result.ResultTypeValue, CacheGlobalAttributes.Value( "CurrencySymbol" ), result.Amount ) );
+                                stringBuilder.Append( string.Format( "<div class='row'>{0} ({1}{2:0.00})</div>", result.ResultTypeValue, GlobalAttributesCache.Value( "CurrencySymbol" ), result.Amount ) );
                             }
                             else
                             {
@@ -443,7 +443,7 @@ namespace RockWeb.Blocks.Finance
             drpDate.LowerValue = rFilter.GetUserPreference( "Start Date" ).AsDateTime();
             drpDate.UpperValue = rFilter.GetUserPreference( "End Date" ).AsDateTime();
 
-            cpCampus.Campuses = CacheCampus.All();
+            cpCampus.Campuses = CampusCache.All();
             cpCampus.SelectedCampusId = rFilter.GetUserPreference( "Campus" ).AsInteger();
 
             // hide the First/Last name filter if this is being used as a Person block
@@ -466,10 +466,10 @@ namespace RockWeb.Blocks.Finance
             ddlCaseWorker.Items.Insert( 0, new ListItem() );
             ddlCaseWorker.SetValue( rFilter.GetUserPreference( "Case Worker" ) );
 
-            ddlResult.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.BENEVOLENCE_RESULT_TYPE ) ), true );
+            ddlResult.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.BENEVOLENCE_RESULT_TYPE ) ), true );
             ddlResult.SetValue( rFilter.GetUserPreference( "Result" ) );
 
-            ddlStatus.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.BENEVOLENCE_REQUEST_STATUS ) ), true );
+            ddlStatus.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.BENEVOLENCE_REQUEST_STATUS ) ), true );
             ddlStatus.SetValue( rFilter.GetUserPreference( "Status" ) );
 
             // set attribute filters
@@ -525,7 +525,7 @@ namespace RockWeb.Blocks.Finance
                         boundField.AttributeId = attribute.Id;
                         boundField.HeaderText = attribute.Name;
 
-                        var attributeCache = Rock.Cache.CacheAttribute.Get( attribute.Id );
+                        var attributeCache = Rock.Web.Cache.AttributeCache.Get( attribute.Id );
                         if ( attributeCache != null )
                         {
                             boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
@@ -691,7 +691,7 @@ namespace RockWeb.Blocks.Finance
             gList.DataBind();
 
             // Builds the Totals section
-            var definedTypeCache = CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.BENEVOLENCE_RESULT_TYPE ) );
+            var definedTypeCache = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.BENEVOLENCE_RESULT_TYPE ) );
             Dictionary<string, decimal> resultTotals = new Dictionary<string, decimal>();
             decimal grandTotal = 0;
             foreach ( BenevolenceRequest request in list )
@@ -716,10 +716,10 @@ namespace RockWeb.Blocks.Finance
 
             foreach ( KeyValuePair<string, decimal> keyValuePair in resultTotals )
             {
-                phSummary.Controls.Add( new LiteralControl( string.Format( "<div class='row'><div class='col-xs-8'>{0}: </div><div class='col-xs-4 text-right'>{1}{2:#,##0.00}</div></div>", keyValuePair.Key, CacheGlobalAttributes.Value( "CurrencySymbol" ), keyValuePair.Value ) ) );
+                phSummary.Controls.Add( new LiteralControl( string.Format( "<div class='row'><div class='col-xs-8'>{0}: </div><div class='col-xs-4 text-right'>{1}{2:#,##0.00}</div></div>", keyValuePair.Key, GlobalAttributesCache.Value( "CurrencySymbol" ), keyValuePair.Value ) ) );
             }
 
-            phSummary.Controls.Add( new LiteralControl( string.Format( "<div class='row'><div class='col-xs-8'><b>Total: </div><div class='col-xs-4 text-right'>{0}{1:#,##0.00}</b></div></div>", CacheGlobalAttributes.Value( "CurrencySymbol" ), grandTotal ) ) );
+            phSummary.Controls.Add( new LiteralControl( string.Format( "<div class='row'><div class='col-xs-8'><b>Total: </div><div class='col-xs-4 text-right'>{0}{1:#,##0.00}</b></div></div>", GlobalAttributesCache.Value( "CurrencySymbol" ), grandTotal ) ) );
         }
 
         #endregion

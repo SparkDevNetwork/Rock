@@ -16,7 +16,6 @@
 //
 using System.Linq;
 using System.Web.UI;
-using Rock.Cache;
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
@@ -67,7 +66,7 @@ namespace Rock.Web.UI.Controls
         {
             this.AppendText = "<i></i>";
             this.AddCssClass( "rock-colorpicker-input input-width-lg" );
-            var definedValues = CacheDefinedType.Get( SystemGuid.DefinedType.COLOR_PICKER_SWATCHES )?.DefinedValues.ToDictionary( a => a.Description, a=>a.Value );
+            var definedValues = DefinedTypeCache.Get( SystemGuid.DefinedType.COLOR_PICKER_SWATCHES )?.DefinedValues.ToDictionary( a => a.Description, a=>a.Value );
 
             string script = $@"$('.rock-colorpicker-input').colorpicker({{
                 colorSelectors: {definedValues.ToJson(Newtonsoft.Json.Formatting.Indented).Replace("\"","'")}

@@ -31,7 +31,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -945,7 +945,7 @@ namespace RockWeb.Blocks.Event
             foreach ( var control in phRegistrantsRegistrantFormFieldFilters.ControlsOfTypeRecursive<Control>().Where( a => a.ID != null && a.ID.StartsWith( "filter" ) && a.ID.Contains( "_" ) ) )
             {
                 var attributeId = control.ID.Split( '_' )[1].AsInteger();
-                var attribute = CacheAttribute.Get( attributeId );
+                var attribute = AttributeCache.Get( attributeId );
                 if ( attribute != null )
                 {
                     attribute.FieldType.Field.SetFilterValues( control, attribute.QualifierValues, new List<string>() );
@@ -1098,7 +1098,7 @@ namespace RockWeb.Blocks.Event
                     int? campusId = e.Value.AsIntegerOrNull();
                     if ( campusId.HasValue )
                     {
-                        var campus = CacheCampus.Get( campusId.Value );
+                        var campus = CampusCache.Get( campusId.Value );
                         e.Value = campus != null ? campus.Name : string.Empty;
                     }
                     else
@@ -1112,7 +1112,7 @@ namespace RockWeb.Blocks.Event
                     int? dvId = e.Value.AsIntegerOrNull();
                     if ( dvId.HasValue )
                     {
-                        var maritalStatus = CacheDefinedValue.Get( dvId.Value );
+                        var maritalStatus = DefinedValueCache.Get( dvId.Value );
                         e.Value = maritalStatus != null ? maritalStatus.Value : string.Empty;
                     }
                     else
@@ -1201,7 +1201,7 @@ namespace RockWeb.Blocks.Event
                                 var campusNames = new List<string>();
                                 foreach ( int campusId in campusIds )
                                 {
-                                    var campus = CacheCampus.Get( campusId );
+                                    var campus = CampusCache.Get( campusId );
                                     if ( campus != null )
                                     {
                                         campusNames.Add( campus.Name );
@@ -1772,7 +1772,7 @@ namespace RockWeb.Blocks.Event
             if ( keys.Any() )
             {
                 var entitySet = new Rock.Model.EntitySet();
-                entitySet.EntityTypeId = Rock.Cache.CacheEntityType.Get<Rock.Model.RegistrationRegistrant>().Id;
+                entitySet.EntityTypeId = EntityTypeCache.Get<Rock.Model.RegistrationRegistrant>().Id;
                 entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( 20 );
 
                 foreach ( var key in keys )
@@ -1934,7 +1934,7 @@ namespace RockWeb.Blocks.Event
             foreach ( var control in phWaitListFormFieldFilters.ControlsOfTypeRecursive<Control>().Where( a => a.ID != null && a.ID.StartsWith( "filter" ) && a.ID.Contains( "_" ) ) )
             {
                 var attributeId = control.ID.Split( '_' )[1].AsInteger();
-                var attribute = CacheAttribute.Get( attributeId );
+                var attribute = AttributeCache.Get( attributeId );
                 if ( attribute != null )
                 {
                     attribute.FieldType.Field.SetFilterValues( control, attribute.QualifierValues, new List<string>() );
@@ -2088,7 +2088,7 @@ namespace RockWeb.Blocks.Event
                         int? campusId = e.Value.AsIntegerOrNull();
                         if ( campusId.HasValue )
                         {
-                            var campus = CacheCampus.Get( campusId.Value );
+                            var campus = CampusCache.Get( campusId.Value );
                             e.Value = campus != null ? campus.Name : string.Empty;
                         }
                         else
@@ -2102,7 +2102,7 @@ namespace RockWeb.Blocks.Event
                         int? dvId = e.Value.AsIntegerOrNull();
                         if ( dvId.HasValue )
                         {
-                            var maritalStatus = CacheDefinedValue.Get( dvId.Value );
+                            var maritalStatus = DefinedValueCache.Get( dvId.Value );
                             e.Value = maritalStatus != null ? maritalStatus.Value : string.Empty;
                         }
                         else
@@ -2183,7 +2183,7 @@ namespace RockWeb.Blocks.Event
                                 var campusNames = new List<string>();
                                 foreach ( int campusId in campusIds )
                                 {
-                                    var campus = CacheCampus.Get( campusId );
+                                    var campus = CampusCache.Get( campusId );
                                     if ( campus != null )
                                     {
                                         campusNames.Add( campus.Name );
@@ -2747,7 +2747,7 @@ namespace RockWeb.Blocks.Event
                     !r.IsTemporary )
                 .Select( r => r.Id );
 
-            var registrationEntityType = CacheEntityType.Get( typeof( Rock.Model.Registration ) );
+            var registrationEntityType = EntityTypeCache.Get( typeof( Rock.Model.Registration ) );
             hfHasPayments.Value = new FinancialTransactionDetailService( rockContext )
                 .Queryable().AsNoTracking()
                 .Where( d =>
@@ -2787,7 +2787,7 @@ namespace RockWeb.Blocks.Event
             {
                 using ( var rockContext = new RockContext() )
                 {
-                    var registrationEntityType = CacheEntityType.Get( typeof( Rock.Model.Registration ) );
+                    var registrationEntityType = EntityTypeCache.Get( typeof( Rock.Model.Registration ) );
 
                     var instance = new RegistrationInstanceService( rockContext ).Get( instanceId.Value );
                     if ( instance != null )
@@ -3109,9 +3109,9 @@ namespace RockWeb.Blocks.Event
                     }
 
                     bool preloadCampusValues = false;
-                    var registrantAttributes = new List<CacheAttribute>();
-                    var personAttributes = new List<CacheAttribute>();
-                    var groupMemberAttributes = new List<CacheAttribute>();
+                    var registrantAttributes = new List<AttributeCache>();
+                    var personAttributes = new List<AttributeCache>();
+                    var groupMemberAttributes = new List<AttributeCache>();
                     var registrantAttributeIds = new List<int>();
                     var personAttributesIds = new List<int>();
                     var groupMemberAttributesIds = new List<int>();
@@ -3514,7 +3514,7 @@ namespace RockWeb.Blocks.Event
                                         ) ).ToList();
 
                                 // Get the attributes to add to each row's object
-                                var attributes = new Dictionary<string, CacheAttribute>();
+                                var attributes = new Dictionary<string, AttributeCache>();
                                 RegistrantFields
                                         .Where( f => f.Attribute != null )
                                         .Select( f => f.Attribute )
@@ -3542,7 +3542,7 @@ namespace RockWeb.Blocks.Event
                                             v.EntityId.Value == registrant.PersonAlias.PersonId )
                                         .ToList()
                                         .ForEach( v => attributeFieldObject.AttributeValues
-                                            .Add( v.AttributeId.ToString() + v.Attribute.Key, new CacheAttributeValue( v ) ) );
+                                            .Add( v.AttributeId.ToString() + v.Attribute.Key, new AttributeValueCache( v ) ) );
 
                                     // Add any group member attribute values to object
                                     if ( registrant.GroupMemberId.HasValue )
@@ -3553,7 +3553,7 @@ namespace RockWeb.Blocks.Event
                                                 v.EntityId.Value == registrant.GroupMemberId.Value )
                                             .ToList()
                                             .ForEach( v => attributeFieldObject.AttributeValues
-                                                .Add( v.AttributeId.ToString() + v.Attribute.Key, new CacheAttributeValue( v ) ) );
+                                                .Add( v.AttributeId.ToString() + v.Attribute.Key, new AttributeValueCache( v ) ) );
                                     }
 
                                     // Add any registrant attribute values to object
@@ -3563,7 +3563,7 @@ namespace RockWeb.Blocks.Event
                                             v.EntityId.Value == registrant.Id )
                                         .ToList()
                                         .ForEach( v => attributeFieldObject.AttributeValues
-                                            .Add( v.AttributeId.ToString() + v.Attribute.Key, new CacheAttributeValue( v ) ) );
+                                            .Add( v.AttributeId.ToString() + v.Attribute.Key, new AttributeValueCache( v ) ) );
 
                                     // Add row attribute object to grid's object list
                                     gRegistrants.ObjectList.Add( registrant.Id.ToString(), attributeFieldObject );
@@ -3612,7 +3612,7 @@ namespace RockWeb.Blocks.Event
                                 new RegistrantFormField
                                 {
                                     FieldSource = formField.FieldSource,
-                                    Attribute = CacheAttribute.Get( formField.AttributeId.Value )
+                                    Attribute = AttributeCache.Get( formField.AttributeId.Value )
                                 } );
                         }
                     }
@@ -3698,7 +3698,7 @@ namespace RockWeb.Blocks.Event
                                 ddlRegistrantsCampus.Label = "Home Campus";
                                 ddlRegistrantsCampus.DataValueField = "Id";
                                 ddlRegistrantsCampus.DataTextField = "Name";
-                                ddlRegistrantsCampus.DataSource = CacheCampus.All();
+                                ddlRegistrantsCampus.DataSource = CampusCache.All();
                                 ddlRegistrantsCampus.DataBind();
                                 ddlRegistrantsCampus.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
 
@@ -3714,7 +3714,7 @@ namespace RockWeb.Blocks.Event
                                 ddlGroupPlacementsCampus.Label = "Home Campus";
                                 ddlGroupPlacementsCampus.DataValueField = "Id";
                                 ddlGroupPlacementsCampus.DataTextField = "Name";
-                                ddlGroupPlacementsCampus.DataSource = CacheCampus.All();
+                                ddlGroupPlacementsCampus.DataSource = CampusCache.All();
                                 ddlGroupPlacementsCampus.DataBind();
                                 ddlGroupPlacementsCampus.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
 
@@ -3730,7 +3730,7 @@ namespace RockWeb.Blocks.Event
                                 ddlWaitListCampus.Label = "Home Campus";
                                 ddlWaitListCampus.DataValueField = "Id";
                                 ddlWaitListCampus.DataTextField = "Name";
-                                ddlWaitListCampus.DataSource = CacheCampus.All();
+                                ddlWaitListCampus.DataSource = CampusCache.All();
                                 ddlWaitListCampus.DataBind();
                                 ddlWaitListCampus.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
                                 ddlWaitListCampus.SetValue( fRegistrants.GetUserPreference( "WL-Home Campus" ) );
@@ -3986,7 +3986,7 @@ namespace RockWeb.Blocks.Event
 
                             case RegistrationPersonFieldType.MaritalStatus:
                                 var ddlRegistrantsMaritalStatusFilter = new RockDropDownList();
-                                ddlRegistrantsMaritalStatusFilter.BindToDefinedType( CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ), true );
+                                ddlRegistrantsMaritalStatusFilter.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ), true );
                                 ddlRegistrantsMaritalStatusFilter.ID = "ddlRegistrantsMaritalStatusFilter";
                                 ddlRegistrantsMaritalStatusFilter.Label = "Marital Status";
 
@@ -3998,7 +3998,7 @@ namespace RockWeb.Blocks.Event
                                 phRegistrantsRegistrantFormFieldFilters.Controls.Add( ddlRegistrantsMaritalStatusFilter );
 
                                 var ddlGroupPlacementsMaritalStatusFilter = new RockDropDownList();
-                                ddlGroupPlacementsMaritalStatusFilter.BindToDefinedType( CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ), true );
+                                ddlGroupPlacementsMaritalStatusFilter.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ), true );
                                 ddlGroupPlacementsMaritalStatusFilter.ID = "ddlGroupPlacementsMaritalStatusFilter";
                                 ddlGroupPlacementsMaritalStatusFilter.Label = "Marital Status";
 
@@ -4010,7 +4010,7 @@ namespace RockWeb.Blocks.Event
                                 phGroupPlacementsFormFieldFilters.Controls.Add( ddlGroupPlacementsMaritalStatusFilter );
 
                                 var ddlWaitlistMaritalStatusFilter = new RockDropDownList();
-                                ddlWaitlistMaritalStatusFilter.BindToDefinedType( CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ), true );
+                                ddlWaitlistMaritalStatusFilter.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ), true );
                                 ddlWaitlistMaritalStatusFilter.ID = "ddlWaitlistMaritalStatusFilter";
                                 ddlWaitlistMaritalStatusFilter.Label = "Marital Status";
                                 ddlWaitlistMaritalStatusFilter.SetValue( fRegistrants.GetUserPreference( "WL-Marital Status" ) );
@@ -4233,7 +4233,7 @@ namespace RockWeb.Blocks.Event
                             boundField3.AttributeId = attribute.Id;
                             boundField3.HeaderText = attribute.Name;
 
-                            var attributeCache = Rock.Cache.CacheAttribute.Get( attribute.Id );
+                            var attributeCache = Rock.Web.Cache.AttributeCache.Get( attribute.Id );
                             if ( attributeCache != null )
                             {
                                 boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
@@ -4294,7 +4294,7 @@ namespace RockWeb.Blocks.Event
                     var creditCardTypes = new Dictionary<int, string>();
 
                     // If configured for a registration and registration is null, return
-                    int registrationEntityTypeId = CacheEntityType.Get( typeof( Rock.Model.Registration ) ).Id;
+                    int registrationEntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Registration ) ).Id;
 
                     // Get all the registrations for this instance
                     paymentRegistrations = new RegistrationService( rockContext )
@@ -4570,10 +4570,10 @@ namespace RockWeb.Blocks.Event
 
         private void PopulateTotals( List<TemplateDiscountReport> report )
         {
-            lTotalTotalCost.Text = string.Format( CacheGlobalAttributes.Value( "CurrencySymbol" ) + "{0:#,##0.00}", report.Sum( r => r.TotalCost ) );
-            lTotalDiscountQualifiedCost.Text = string.Format( CacheGlobalAttributes.Value( "CurrencySymbol" ) + "{0:#,##0.00}", report.Sum( r => r.DiscountQualifiedCost ) );
-            lTotalDiscounts.Text = string.Format( CacheGlobalAttributes.Value( "CurrencySymbol" ) + "{0:#,##0.00}", report.Sum( r => r.TotalDiscount ) );
-            lTotalRegistrationCost.Text = string.Format( CacheGlobalAttributes.Value( "CurrencySymbol" ) + "{0:#,##0.00}", report.Sum( r => r.RegistrationCost ) );
+            lTotalTotalCost.Text = string.Format( GlobalAttributesCache.Value( "CurrencySymbol" ) + "{0:#,##0.00}", report.Sum( r => r.TotalCost ) );
+            lTotalDiscountQualifiedCost.Text = string.Format( GlobalAttributesCache.Value( "CurrencySymbol" ) + "{0:#,##0.00}", report.Sum( r => r.DiscountQualifiedCost ) );
+            lTotalDiscounts.Text = string.Format( GlobalAttributesCache.Value( "CurrencySymbol" ) + "{0:#,##0.00}", report.Sum( r => r.TotalDiscount ) );
+            lTotalRegistrationCost.Text = string.Format( GlobalAttributesCache.Value( "CurrencySymbol" ) + "{0:#,##0.00}", report.Sum( r => r.RegistrationCost ) );
             lTotalRegistrations.Text = report.Count().ToString();
             lTotalRegistrants.Text = report.Sum( r => r.RegistrantCount ).ToString();
         }
@@ -4683,9 +4683,9 @@ namespace RockWeb.Blocks.Event
                     }
 
                     bool preloadCampusValues = false;
-                    var registrantAttributes = new List<CacheAttribute>();
-                    var personAttributes = new List<CacheAttribute>();
-                    var groupMemberAttributes = new List<CacheAttribute>();
+                    var registrantAttributes = new List<AttributeCache>();
+                    var personAttributes = new List<AttributeCache>();
+                    var groupMemberAttributes = new List<AttributeCache>();
                     var registrantAttributeIds = new List<int>();
                     var personAttributesIds = new List<int>();
                     var groupMemberAttributesIds = new List<int>();
@@ -5072,7 +5072,7 @@ namespace RockWeb.Blocks.Event
                                         ) ).ToList();
 
                                 // Get the attributes to add to each row's object
-                                var attributes = new Dictionary<string, CacheAttribute>();
+                                var attributes = new Dictionary<string, AttributeCache>();
                                 RegistrantFields
                                         .Where( f => f.Attribute != null )
                                         .Select( f => f.Attribute )
@@ -5100,7 +5100,7 @@ namespace RockWeb.Blocks.Event
                                             v.EntityId.Value == registrant.PersonAlias.PersonId )
                                         .ToList()
                                         .ForEach( v => attributeFieldObject.AttributeValues
-                                            .Add( v.AttributeId.ToString() + v.Attribute.Key, new CacheAttributeValue( v ) ) );
+                                            .Add( v.AttributeId.ToString() + v.Attribute.Key, new AttributeValueCache( v ) ) );
 
                                     // Add any group member attribute values to object
                                     if ( registrant.GroupMemberId.HasValue )
@@ -5111,7 +5111,7 @@ namespace RockWeb.Blocks.Event
                                                 v.EntityId.Value == registrant.GroupMemberId.Value )
                                             .ToList()
                                             .ForEach( v => attributeFieldObject.AttributeValues
-                                                .Add( v.AttributeId.ToString() + v.Attribute.Key, new CacheAttributeValue( v ) ) );
+                                                .Add( v.AttributeId.ToString() + v.Attribute.Key, new AttributeValueCache( v ) ) );
                                     }
 
                                     // Add any registrant attribute values to object
@@ -5121,7 +5121,7 @@ namespace RockWeb.Blocks.Event
                                             v.EntityId.Value == registrant.Id )
                                         .ToList()
                                         .ForEach( v => attributeFieldObject.AttributeValues
-                                            .Add( v.AttributeId.ToString() + v.Attribute.Key, new CacheAttributeValue( v ) ) );
+                                            .Add( v.AttributeId.ToString() + v.Attribute.Key, new AttributeValueCache( v ) ) );
 
                                     // Add row attribute object to grid's object list
                                     gWaitList.ObjectList.Add( registrant.Id.ToString(), attributeFieldObject );
@@ -5145,7 +5145,7 @@ namespace RockWeb.Blocks.Event
         private void BindLinkagesFilter()
         {
             fLinkages.UserPreferenceKeyPrefix = string.Format( "{0}-", hfRegistrationTemplateId.Value );
-            cblCampus.DataSource = CacheCampus.All();
+            cblCampus.DataSource = CampusCache.All();
             cblCampus.DataBind();
             string campusValue = fLinkages.GetUserPreference( "Campus" );
             if ( !string.IsNullOrWhiteSpace( campusValue ) )
@@ -5283,9 +5283,9 @@ namespace RockWeb.Blocks.Event
                     }
 
                     bool preloadCampusValues = false;
-                    var registrantAttributes = new List<CacheAttribute>();
-                    var personAttributes = new List<CacheAttribute>();
-                    var groupMemberAttributes = new List<CacheAttribute>();
+                    var registrantAttributes = new List<AttributeCache>();
+                    var personAttributes = new List<AttributeCache>();
+                    var groupMemberAttributes = new List<AttributeCache>();
                     var registrantAttributeIds = new List<int>();
                     var personAttributesIds = new List<int>();
                     var groupMemberAttributesIds = new List<int>();
@@ -5672,7 +5672,7 @@ namespace RockWeb.Blocks.Event
                                         ) ).ToList();
 
                                 // Get the attributes to add to each row's object
-                                var attributes = new Dictionary<string, CacheAttribute>();
+                                var attributes = new Dictionary<string, AttributeCache>();
                                 RegistrantFields
                                         .Where( f => f.Attribute != null )
                                         .Select( f => f.Attribute )
@@ -5700,7 +5700,7 @@ namespace RockWeb.Blocks.Event
                                             v.EntityId.Value == registrant.PersonAlias.PersonId )
                                         .ToList()
                                         .ForEach( v => attributeFieldObject.AttributeValues
-                                            .Add( v.AttributeId.ToString() + v.Attribute.Key, new CacheAttributeValue( v ) ) );
+                                            .Add( v.AttributeId.ToString() + v.Attribute.Key, new AttributeValueCache( v ) ) );
 
                                     // Add any group member attribute values to object
                                     if ( registrant.GroupMemberId.HasValue )
@@ -5711,7 +5711,7 @@ namespace RockWeb.Blocks.Event
                                                 v.EntityId.Value == registrant.GroupMemberId.Value )
                                             .ToList()
                                             .ForEach( v => attributeFieldObject.AttributeValues
-                                                .Add( v.AttributeId.ToString() + v.Attribute.Key, new CacheAttributeValue( v ) ) );
+                                                .Add( v.AttributeId.ToString() + v.Attribute.Key, new AttributeValueCache( v ) ) );
                                     }
 
                                     // Add any registrant attribute values to object
@@ -5721,7 +5721,7 @@ namespace RockWeb.Blocks.Event
                                             v.EntityId.Value == registrant.Id )
                                         .ToList()
                                         .ForEach( v => attributeFieldObject.AttributeValues
-                                            .Add( v.AttributeId.ToString() + v.Attribute.Key, new CacheAttributeValue( v ) ) );
+                                            .Add( v.AttributeId.ToString() + v.Attribute.Key, new AttributeValueCache( v ) ) );
 
                                     // Add row attribute object to grid's object list
                                     gGroupPlacements.ObjectList.Add( registrant.Id.ToString(), attributeFieldObject );
@@ -5856,7 +5856,7 @@ namespace RockWeb.Blocks.Event
             foreach ( var control in phGroupPlacementsFormFieldFilters.ControlsOfTypeRecursive<Control>().Where(a => a.ID != null && a.ID.StartsWith( "filter" ) && a.ID.Contains("_") ))
             {
                 var attributeId = control.ID.Split('_')[1].AsInteger();
-                var attribute = CacheAttribute.Get( attributeId );
+                var attribute = AttributeCache.Get( attributeId );
                 if ( attribute != null )
                 {
                     attribute.FieldType.Field.SetFilterValues( control, attribute.QualifierValues, new List<string>() );
@@ -6010,7 +6010,7 @@ namespace RockWeb.Blocks.Event
                         int? campusId = e.Value.AsIntegerOrNull();
                         if ( campusId.HasValue )
                         {
-                            var campus = CacheCampus.Get( campusId.Value );
+                            var campus = CampusCache.Get( campusId.Value );
                             e.Value = campus != null ? campus.Name : string.Empty;
                         }
                         else
@@ -6024,7 +6024,7 @@ namespace RockWeb.Blocks.Event
                         int? dvId = e.Value.AsIntegerOrNull();
                         if ( dvId.HasValue )
                         {
-                            var maritalStatus = CacheDefinedValue.Get( dvId.Value );
+                            var maritalStatus = DefinedValueCache.Get( dvId.Value );
                             e.Value = maritalStatus != null ? maritalStatus.Value : string.Empty;
                         }
                         else
@@ -6099,7 +6099,7 @@ namespace RockWeb.Blocks.Event
             /// <value>
             /// The attribute.
             /// </value>
-            public CacheAttribute Attribute { get; set; }
+            public AttributeCache Attribute { get; set; }
         }
 
         #endregion

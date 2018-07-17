@@ -24,7 +24,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Storage;
-using Rock.Cache;
+using Rock.Web.Cache;
 using System.Drawing;
 using ImageResizer;
 
@@ -130,7 +130,7 @@ namespace Rock.Model
                 StorageProvider = null;
                 if ( value.HasValue )
                 {
-                    var entityType = CacheEntityType.Get( value.Value );
+                    var entityType = EntityTypeCache.Get( value.Value );
                     if ( entityType != null )
                     {
                         StorageProvider = ProviderContainer.GetComponent( entityType.Name );

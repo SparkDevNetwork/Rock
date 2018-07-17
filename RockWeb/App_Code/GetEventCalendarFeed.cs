@@ -28,7 +28,7 @@ using DDay.iCal;
 using DDay.iCal.Serialization.iCalendar;
 
 using System.Globalization;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace RockWeb
 {
@@ -196,14 +196,14 @@ namespace RockWeb
         {
             // get the lava template
             int templateDefinedValueId = 0;
-            var iCalTemplateDefinedValue = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.DEFAULT_ICAL_DESCRIPTION );
+            var iCalTemplateDefinedValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.DEFAULT_ICAL_DESCRIPTION );
 
             if ( request.QueryString["templateid"] != null )
             {
                 int.TryParse( request.QueryString["templateid"], out templateDefinedValueId );
                 if ( templateDefinedValueId > 0 )
                 {
-                    iCalTemplateDefinedValue = CacheDefinedValue.Get( templateDefinedValueId );
+                    iCalTemplateDefinedValue = DefinedValueCache.Get( templateDefinedValueId );
                 }
             }
 

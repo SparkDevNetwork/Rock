@@ -28,7 +28,7 @@ using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -130,7 +130,7 @@ namespace RockWeb.Blocks.Finance
 
             financialPledge.TotalAmount = tbTotalAmount.Text.AsDecimal();
 
-            var pledgeFrequencySelection = CacheDefinedValue.Get( ddlFrequency.SelectedValue.AsInteger() );
+            var pledgeFrequencySelection = DefinedValueCache.Get( ddlFrequency.SelectedValue.AsInteger() );
             if ( pledgeFrequencySelection != null )
             {
                 financialPledge.PledgeFrequencyValueId = pledgeFrequencySelection.Id;
@@ -298,7 +298,7 @@ namespace RockWeb.Blocks.Finance
             drpDateRange.Visible = drpDateRange.LowerValue == null || drpDateRange.UpperValue == null;
 
             ddlFrequency.Items.Clear();
-            var frequencies = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.FINANCIAL_FREQUENCY.AsGuid() ).DefinedValues.OrderBy( a => a.Order ).ThenBy( a => a.Value );
+            var frequencies = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_FREQUENCY.AsGuid() ).DefinedValues.OrderBy( a => a.Order ).ThenBy( a => a.Value );
             foreach ( var frequency in frequencies )
             {
                 ddlFrequency.Items.Add( new ListItem( frequency.Value, frequency.Id.ToString() ) );
@@ -356,7 +356,7 @@ namespace RockWeb.Blocks.Finance
 
             if ( person == null )
             {
-                var definedValue = CacheDefinedValue.Get( GetAttributeValue( "NewConnectionStatus" ).AsGuidOrNull() ?? Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PARTICIPANT.AsGuid() );
+                var definedValue = DefinedValueCache.Get( GetAttributeValue( "NewConnectionStatus" ).AsGuidOrNull() ?? Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PARTICIPANT.AsGuid() );
                 person = new Person
                 {
                     FirstName = tbFirstName.Text,
@@ -367,8 +367,8 @@ namespace RockWeb.Blocks.Finance
                 };
 
                 person.IsSystem = false;
-                person.RecordTypeValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
-                person.RecordStatusValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() ).Id;
+                person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                person.RecordStatusValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() ).Id;
 
                 PersonService.SaveNewPerson( person, rockContext, null, false );
             }

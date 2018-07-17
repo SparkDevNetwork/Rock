@@ -22,7 +22,7 @@ using System.Reflection;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Security;
 
 namespace Rock.Rest.Controllers
@@ -109,7 +109,7 @@ namespace Rock.Rest.Controllers
 
             IService serviceInstance = null;
 
-            var cachedEntityType = CacheEntityType.Get( entityTypeId );
+            var cachedEntityType = EntityTypeCache.Get( entityTypeId );
             if ( cachedEntityType != null )
             {
                 qry = qry.Where( a => a.EntityTypeId == entityTypeId );

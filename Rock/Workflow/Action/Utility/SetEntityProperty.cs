@@ -24,7 +24,7 @@ using System.Reflection;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Workflow.Action
 {
@@ -56,11 +56,11 @@ namespace Rock.Workflow.Action
             errorMessages = new List<string>();
 
             // Get the entity type
-            CacheEntityType entityType = null;
+            EntityTypeCache entityType = null;
             var entityTypeGuid = GetAttributeValue( action, "EntityType" ).AsGuidOrNull();
             if ( entityTypeGuid.HasValue )
             {
-                entityType = CacheEntityType.Get( entityTypeGuid.Value );
+                entityType = EntityTypeCache.Get( entityTypeGuid.Value );
             }
             if ( entityType == null )
             {

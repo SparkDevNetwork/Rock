@@ -26,7 +26,7 @@ using System.Xml.Linq;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Security.BackgroundCheck
 {
@@ -73,8 +73,8 @@ namespace Rock.Security.BackgroundCheck
         ///     Report (BinaryFile):    The downloaded background report
         /// </remarks>
         public override bool SendRequest( RockContext rockContext, Model.Workflow workflow,
-            CacheAttribute personAttribute, CacheAttribute ssnAttribute, CacheAttribute requestTypeAttribute,
-            CacheAttribute billingCodeAttribute, out List<string> errorMessages )
+            AttributeCache personAttribute, AttributeCache ssnAttribute, AttributeCache requestTypeAttribute,
+            AttributeCache billingCodeAttribute, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
 
@@ -129,7 +129,7 @@ namespace Rock.Security.BackgroundCheck
                     Guid? campusGuid = billingCode.AsGuidOrNull();
                     if ( campusGuid.HasValue )
                     {
-                        var campus = CacheCampus.Get( campusGuid.Value );
+                        var campus = CampusCache.Get( campusGuid.Value );
                         if ( campus != null )
                         {
                             billingCode = campus.Name;
@@ -210,7 +210,7 @@ namespace Rock.Security.BackgroundCheck
                     subjectElement.Add( aliasesElement );
                 }
 
-                CacheDefinedValue pkgTypeDefinedValue = null;
+                DefinedValueCache pkgTypeDefinedValue = null;
                 string packageName = "BASIC";
                 string county = string.Empty;
                 string state = string.Empty;
@@ -219,7 +219,7 @@ namespace Rock.Security.BackgroundCheck
 
                 if ( requestTypeAttribute != null )
                 {
-                    pkgTypeDefinedValue = CacheDefinedValue.Get( workflow.GetAttributeValue( requestTypeAttribute.Key ).AsGuid() );
+                    pkgTypeDefinedValue = DefinedValueCache.Get( workflow.GetAttributeValue( requestTypeAttribute.Key ).AsGuid() );
                     if ( pkgTypeDefinedValue != null )
                     {
                         if ( pkgTypeDefinedValue.Attributes == null )
@@ -233,7 +233,7 @@ namespace Rock.Security.BackgroundCheck
                         Guid? mvrJurisdictionGuid = pkgTypeDefinedValue.GetAttributeValue( "MVRJurisdiction" ).AsGuidOrNull();
                         if ( mvrJurisdictionGuid.HasValue )
                         {
-                            var mvrJurisdictionDv = CacheDefinedValue.Get( mvrJurisdictionGuid.Value );
+                            var mvrJurisdictionDv = DefinedValueCache.Get( mvrJurisdictionGuid.Value );
                             if ( mvrJurisdictionDv != null )
                             {
                                 mvrJurisdiction = mvrJurisdictionDv.Value;
@@ -373,7 +373,7 @@ Response XML ({2}):
                             if ( xStatus != null )
                             {
                                 if ( SaveAttributeValue( workflow, "RequestStatus", xStatus.Value,
-                                    CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT.AsGuid() ), newRockContext, null ) )
+                                    FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT.AsGuid() ), newRockContext, null ) )
                                 {
                                 }
                             }
@@ -399,7 +399,7 @@ Response XML ({2}):
                     if ( handledErrorMessages.Any() )
                     {
                         if ( SaveAttributeValue( workflow, "RequestMessage", handledErrorMessages.AsDelimited( Environment.NewLine ),
-                            CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT.AsGuid() ), newRockContext, null ) )
+                            FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT.AsGuid() ), newRockContext, null ) )
                         {
                         }
                     }
@@ -617,7 +617,7 @@ Response XML ({0}):
                         if ( !string.IsNullOrWhiteSpace( recommendation ) )
                         {
                             if ( SaveAttributeValue( workflow, "ReportRecommendation", recommendation,
-                                CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT.AsGuid() ), rockContext,
+                                FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT.AsGuid() ), rockContext,
                                 new Dictionary<string, string> { { "ispassword", "false" } } ) )
                             {
                             }
@@ -630,7 +630,7 @@ Response XML ({0}):
                         if ( !string.IsNullOrWhiteSpace( reportLink ) )
                         {
                             if ( SaveAttributeValue( workflow, "ReportLink", reportLink,
-                                CacheFieldType.Get( Rock.SystemGuid.FieldType.URL_LINK.AsGuid() ), rockContext ) )
+                                FieldTypeCache.Get( Rock.SystemGuid.FieldType.URL_LINK.AsGuid() ), rockContext ) )
                             {
                             }
 
@@ -639,7 +639,7 @@ Response XML ({0}):
                             if ( binaryFileGuid.HasValue )
                             {
                                 if ( SaveAttributeValue( workflow, "Report", binaryFileGuid.Value.ToString(),
-                                    CacheFieldType.Get( Rock.SystemGuid.FieldType.BINARY_FILE.AsGuid() ), rockContext,
+                                    FieldTypeCache.Get( Rock.SystemGuid.FieldType.BINARY_FILE.AsGuid() ), rockContext,
                                     new Dictionary<string, string> { { "binaryFileType", "" } } ) )
                                 {
                                 }
@@ -648,7 +648,7 @@ Response XML ({0}):
 
                         // Save the status
                         if ( SaveAttributeValue( workflow, "ReportStatus", reportStatus,
-                            CacheFieldType.Get( Rock.SystemGuid.FieldType.SINGLE_SELECT.AsGuid() ), rockContext,
+                            FieldTypeCache.Get( Rock.SystemGuid.FieldType.SINGLE_SELECT.AsGuid() ), rockContext,
                             new Dictionary<string, string> { { "fieldtype", "ddl" }, { "values", "Pass,Fail,Review" } } ) )
                         {
                         }
@@ -686,7 +686,7 @@ Response XML ({0}):
         /// <param name="qualifiers">The qualifiers.</param>
         /// <returns></returns>
         private static bool SaveAttributeValue( Rock.Model.Workflow workflow, string key, string value,
-            CacheFieldType fieldType, RockContext rockContext, Dictionary<string, string> qualifiers = null )
+            FieldTypeCache fieldType, RockContext rockContext, Dictionary<string, string> qualifiers = null )
         {
             bool createdNewAttribute = false;
 
@@ -748,7 +748,7 @@ Response XML ({0}):
         /// <param name="url">The URL.</param>
         /// <param name="fileName">Name of the file.</param>
         /// <returns></returns>
-        private static Guid? SaveFile( CacheAttribute binaryFileAttribute, string url, string fileName )
+        private static Guid? SaveFile( AttributeCache binaryFileAttribute, string url, string fileName )
         {
             // get BinaryFileType info
             if ( binaryFileAttribute != null &&

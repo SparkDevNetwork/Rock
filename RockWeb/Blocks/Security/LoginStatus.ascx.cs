@@ -197,7 +197,7 @@ namespace RockWeb.Blocks.Security
 
                 // After logging out check to see if an anonymous user is allowed to view the current page.  If so
                 // redirect back to the current page, otherwise redirect to the site's default page
-                var currentPage = Rock.Cache.CachePage.Get( RockPage.PageId );
+                var currentPage = Rock.Web.Cache.PageCache.Get( RockPage.PageId );
                 if ( currentPage != null && currentPage.IsAuthorized(Authorization.VIEW, null))
                 {
                     string url = CurrentPageReference.BuildUrl( true );

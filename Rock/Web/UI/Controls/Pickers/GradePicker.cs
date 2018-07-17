@@ -17,7 +17,7 @@
 using System;
 using System.Linq;
 using System.Web.UI.WebControls;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -32,7 +32,7 @@ namespace Rock.Web.UI.Controls
         public GradePicker()
             : base()
         {
-            Label = CacheGlobalAttributes.Get().GetValue( "core.GradeLabel" );
+            Label = GlobalAttributesCache.Get().GetValue( "core.GradeLabel" );
 
             PopulateItems();
         }
@@ -47,7 +47,7 @@ namespace Rock.Web.UI.Controls
             // add blank item as first item
             this.Items.Add( new ListItem() );
 
-            var schoolGrades = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
+            var schoolGrades = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
             if ( schoolGrades != null )
             {
                 foreach ( var schoolGrade in schoolGrades.DefinedValues.OrderByDescending( a => a.Value.AsInteger() ) )
@@ -131,7 +131,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                var schoolGrades = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
+                var schoolGrades = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
                 return schoolGrades.DefinedValues.Select( a => a.Value.AsInteger() ).Max();
             }
         }
@@ -186,11 +186,11 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The selected grade value unique identifier.
         /// </value>
-        public CacheDefinedValue SelectedGradeValue
+        public DefinedValueCache SelectedGradeValue
         {
             get
             {
-                return CacheDefinedValue.Get( this.SelectedValue.AsGuid() );
+                return DefinedValueCache.Get( this.SelectedValue.AsGuid() );
             }
             set
             {

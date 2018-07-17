@@ -24,7 +24,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -199,7 +199,7 @@ namespace RockWeb.Blocks.Core
             {
                 if ( noteWatch.EntityTypeId.HasValue )
                 {
-                    var entityType = CacheEntityType.Get( noteWatch.EntityTypeId.Value );
+                    var entityType = EntityTypeCache.Get( noteWatch.EntityTypeId.Value );
                     if ( entityType != null )
                     {
                         lWatchingEntityType.Text = entityType.FriendlyName;
@@ -239,13 +239,13 @@ namespace RockWeb.Blocks.Core
             if ( blockNoteTypeGuid.HasValue )
             {
                 // if a NoteType was specified in block settings, only list note watches for the specified note type
-                int noteTypeId = CacheEntityType.Get( blockNoteTypeGuid.Value ).Id;
+                int noteTypeId = EntityTypeCache.Get( blockNoteTypeGuid.Value ).Id;
                 qry = qry.Where( a => a.NoteTypeId.HasValue && a.NoteTypeId == noteTypeId );
             }
             else if ( blockEntityTypeGuid.HasValue )
             {
                 // if an EntityType was specifiec in block settings, only list note watches for the specified entity type (or for NoteTypes of the specified EntityType)
-                int entityTypeId = CacheEntityType.Get( blockEntityTypeGuid.Value ).Id;
+                int entityTypeId = EntityTypeCache.Get( blockEntityTypeGuid.Value ).Id;
                 qry = qry.Where( a =>
                     ( a.EntityTypeId.HasValue && a.EntityTypeId.Value == entityTypeId )
                     || ( a.NoteTypeId.HasValue && a.NoteType.EntityTypeId == entityTypeId ) );

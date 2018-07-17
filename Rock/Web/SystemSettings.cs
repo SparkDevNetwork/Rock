@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -42,7 +42,7 @@ namespace Rock.Web
         #region Properties
 
         [DataMember]
-        private List<CacheAttribute> Attributes { get; set; }
+        private List<AttributeCache> Attributes { get; set; }
 
         #endregion
 
@@ -108,7 +108,7 @@ namespace Rock.Web
             if ( attribute == null )
             {
                 attribute = new Rock.Model.Attribute();
-                attribute.FieldTypeId = CacheFieldType.Get( new Guid( SystemGuid.FieldType.TEXT ) ).Id;
+                attribute.FieldTypeId = FieldTypeCache.Get( new Guid( SystemGuid.FieldType.TEXT ) ).Id;
                 attribute.EntityTypeQualifierColumn = Rock.Model.Attribute.SYSTEM_SETTING_QUALIFIER;
                 attribute.EntityTypeQualifierValue = string.Empty;
                 attribute.Key = key;
@@ -130,7 +130,7 @@ namespace Rock.Web
                 settings.Attributes.Remove( attributeCache );
             }
 
-            settings.Attributes.Add( CacheAttribute.Get( attribute.Id ) );
+            settings.Attributes.Add( AttributeCache.Get( attribute.Id ) );
 
             RockCache.AddOrUpdate( CacheKey, settings );
         }
@@ -216,14 +216,14 @@ namespace Rock.Web
         private static SystemSettings LoadSettings()
         {
             var systemSettings = new SystemSettings();
-            systemSettings.Attributes = new List<CacheAttribute>();
+            systemSettings.Attributes = new List<AttributeCache>();
 
             var rockContext = new RockContext();
             var attributeService = new Rock.Model.AttributeService( rockContext );
 
             foreach ( Rock.Model.Attribute attribute in attributeService.GetSystemSettings() )
             {
-                var attributeCache = CacheAttribute.Get( attribute );
+                var attributeCache = AttributeCache.Get( attribute );
                 systemSettings.Attributes.Add( attributeCache );
             }
 

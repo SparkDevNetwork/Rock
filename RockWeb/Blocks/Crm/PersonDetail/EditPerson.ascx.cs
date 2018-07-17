@@ -29,7 +29,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 /*******************************************************************************************************************************
@@ -80,12 +80,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             base.OnInit( e );
 
-            ddlTitle.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_TITLE ) ), true );
-            ddlSuffix.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_SUFFIX ) ), true );
-            ddlMaritalStatus.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS ) ), true );
-            ddlConnectionStatus.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ), true );
-            ddlRecordStatus.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ) );
-            ddlReason.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ), true );
+            ddlTitle.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_TITLE ) ), true );
+            ddlSuffix.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_SUFFIX ) ), true );
+            ddlMaritalStatus.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS ) ), true );
+            ddlConnectionStatus.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ), true );
+            ddlRecordStatus.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ) );
+            ddlReason.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ), true );
 
             pnlGivingGroup.Visible = UserCanAdministrate || IsUserAuthorized( "EditFinancials" );
 
@@ -252,7 +252,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void ddlRecordStatus_SelectedIndexChanged( object sender, EventArgs e )
         {
-            bool showInactiveReason = ( ddlRecordStatus.SelectedValueAsInt() == CacheDefinedValue.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id );
+            bool showInactiveReason = ( ddlRecordStatus.SelectedValueAsInt() == DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id );
 
             bool canEditRecordStatus = UserCanAdministrate || IsUserAuthorized( "EditRecordStatus" );
             ddlReason.Visible = showInactiveReason && canEditRecordStatus;
@@ -325,7 +325,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         person.GraduationYear = graduationYear;
 
                         person.MaritalStatusValueId = ddlMaritalStatus.SelectedValueAsInt();
-                        person.AnniversaryDate = person.MaritalStatusValueId == CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED ).Id ? dpAnniversaryDate.SelectedDate : null;
+                        person.AnniversaryDate = person.MaritalStatusValueId == DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED ).Id ? dpAnniversaryDate.SelectedDate : null;
                         person.Gender = rblGender.SelectedValue.ConvertToEnum<Gender>();
                         person.ConnectionStatusValueId = ddlConnectionStatus.SelectedValueAsInt();
 
@@ -401,8 +401,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         person.IsLockedAsChild = cbLockAsChild.Checked;
 
                     // Save the Envelope Number attribute if it exists and has changed
-                    var personGivingEnvelopeAttribute = CacheAttribute.Get( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
-                        if ( CacheGlobalAttributes.Get().EnableGivingEnvelopeNumber && personGivingEnvelopeAttribute != null )
+                    var personGivingEnvelopeAttribute = AttributeCache.Get( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
+                        if ( GlobalAttributesCache.Get().EnableGivingEnvelopeNumber && personGivingEnvelopeAttribute != null )
                         {
                             if ( person.Attributes == null )
                             {
@@ -460,7 +460,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         }
 
                         bool recordStatusChangedToOrFromInactive = false;
-                        var recordStatusInactiveId = CacheDefinedValue.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
+                        var recordStatusInactiveId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
 
                         int? newRecordStatusId = ddlRecordStatus.SelectedValueAsInt();
                     // Is the person's record status changing?
@@ -601,7 +601,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             var searchKeyTypes = new List<Guid> { Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() };
 
-            var dt = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_SEARCH_KEYS );
+            var dt = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_SEARCH_KEYS );
             if ( dt != null )
             {
                 var values = dt.DefinedValues;
@@ -700,10 +700,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             ddlRecordStatus_SelectedIndexChanged( null, null );
 
-            var mobilePhoneType = CacheDefinedValue.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) );
+            var mobilePhoneType = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) );
 
             var phoneNumbers = new List<PhoneNumber>();
-            var phoneNumberTypes = CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE ) );
+            var phoneNumberTypes = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE ) );
             if ( phoneNumberTypes.DefinedValues.Any() )
             {
                 foreach ( var phoneNumberType in phoneNumberTypes.DefinedValues )
@@ -733,8 +733,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             ddlGivingGroup.SetValue( Person.GivingGroupId );
             cbLockAsChild.Checked = Person.IsLockedAsChild;
-            var personGivingEnvelopeAttribute = CacheAttribute.Get( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
-            rcwEnvelope.Visible = CacheGlobalAttributes.Get().EnableGivingEnvelopeNumber && personGivingEnvelopeAttribute != null;
+            var personGivingEnvelopeAttribute = AttributeCache.Get( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
+            rcwEnvelope.Visible = GlobalAttributesCache.Get().EnableGivingEnvelopeNumber && personGivingEnvelopeAttribute != null;
             if ( personGivingEnvelopeAttribute != null )
             {
                 tbGivingEnvelopeNumber.Text = Person.GetAttributeValue( personGivingEnvelopeAttribute.Key );
@@ -767,7 +767,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         private void BindPersonAlternateIdsGrid()
         {
             var values = this.PersonSearchKeysState;
-            var dv = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() );
+            var dv = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() );
             if ( dv != null )
             {
                 values = values.Where( s => s.SearchTypeValueId == dv.Id ).ToList();
@@ -783,7 +783,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         private void BindPersonSearchKeysGrid()
         {
             var values = this.PersonSearchKeysState;
-            var dv = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() );
+            var dv = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() );
             if ( dv != null )
             {
                 values = values.Where( s => s.SearchTypeValueId != dv.Id ).ToList();
@@ -822,7 +822,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void mdAlternateId_SaveClick( object sender, EventArgs e )
         {
-            var dv = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() );
+            var dv = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() );
             if ( dv != null )
             {
                 this.PersonSearchKeysState.Add( new PersonSearchKey { SearchValue = tbAlternateId.Text, SearchTypeValueId = dv.Id, Guid = Guid.NewGuid() } );
@@ -844,7 +844,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 .Where( t => t != Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() )
                 .ToList();
 
-            var searchValueTypes = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_SEARCH_KEYS ).DefinedValues;
+            var searchValueTypes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_SEARCH_KEYS ).DefinedValues;
             var searchTypesList = searchValueTypes.Where( a => validSearchTypes.Contains( a.Guid ) ).ToList();
 
             ddlSearchValueType.DataSource = searchTypesList;
@@ -921,7 +921,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnGenerateEnvelopeNumber_Click( object sender, EventArgs e )
         {
-            var personGivingEnvelopeAttribute = CacheAttribute.Get( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
+            var personGivingEnvelopeAttribute = AttributeCache.Get( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
             var maxEnvelopeNumber = new AttributeValueService( new RockContext() ).Queryable()
                                     .Where( a => a.AttributeId == personGivingEnvelopeAttribute.Id && a.ValueAsNumeric.HasValue )
                                     .Max( a => (int?)a.ValueAsNumeric );
@@ -947,7 +947,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 dpAnniversaryDate.Visible = false;
             }
-            else if ( ddlMaritalStatus.SelectedValueAsInt() == CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED ).Id )
+            else if ( ddlMaritalStatus.SelectedValueAsInt() == DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED ).Id )
             {
                 dpAnniversaryDate.Visible = true;
             }
@@ -965,7 +965,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         protected void cvAlternateIds_ServerValidate( object source, ServerValidateEventArgs args )
         {
             // Validate that none of the alternate ids are being used alredy.
-            var dv = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() );
+            var dv = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() );
             if ( dv != null )
             {
                 var invalidIds = new List<string>();

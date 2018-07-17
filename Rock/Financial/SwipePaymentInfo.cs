@@ -16,7 +16,7 @@
 //
 using System;
 using System.Text.RegularExpressions;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Financial
 {
@@ -101,12 +101,12 @@ namespace Rock.Financial
         /// <summary>
         /// Gets the credit card type value id.
         /// </summary>
-        public override CacheDefinedValue CreditCardTypeValue
+        public override DefinedValueCache CreditCardTypeValue
         {
             get
             {
                 string cc = Number.AsNumeric();
-                foreach ( var dv in CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE ) ).DefinedValues )
+                foreach ( var dv in DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE ) ).DefinedValues )
                 {
                     string pattern = dv.GetAttributeValue( "RegExPattern" );
                     if ( !string.IsNullOrWhiteSpace( pattern ) )
@@ -134,9 +134,9 @@ namespace Rock.Financial
         /// <summary>
         /// Gets the currency type value.
         /// </summary>
-        public override CacheDefinedValue CurrencyTypeValue
+        public override DefinedValueCache CurrencyTypeValue
         {
-            get { return CacheDefinedValue.Get( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) ); }
+            get { return DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) ); }
         }
 
 

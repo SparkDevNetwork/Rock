@@ -30,7 +30,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
@@ -469,7 +469,7 @@ namespace RockWeb.Blocks.Event
             gFees.GridRebind += gFees_GridRebind;
             gFees.GridReorder += gFees_GridReorder;
             
-            btnSecurity.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.RegistrationTemplate ) ).Id;
+            btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.RegistrationTemplate ) ).Id;
 
             ddlRegistrarOption.Help = @"How should the registrar's information be collected?
 
@@ -568,7 +568,7 @@ The first registrant's information will be used to complete the registrar inform
                 }
             }
 
-            breadCrumbs.Add( new BreadCrumb( this.CachePage.PageTitle, pageReference ) );
+            breadCrumbs.Add( new BreadCrumb( this.PageCache.PageTitle, pageReference ) );
             return breadCrumbs;
         }
         
@@ -1006,7 +1006,7 @@ The first registrant's information will be used to complete the registrar inform
                     registrationTemplateFeeService.Delete( fee );
                 }
 
-                int? entityTypeId = CacheEntityType.Get( typeof( Rock.Model.RegistrationRegistrant ) ).Id;
+                int? entityTypeId = EntityTypeCache.Get( typeof( Rock.Model.RegistrationRegistrant ) ).Id;
                 var qualifierColumn = "RegistrationTemplateId";
                 var qualifierValue = registrationTemplate.Id.ToString();
 
@@ -1080,7 +1080,7 @@ The first registrant's information will be used to complete the registrar inform
                                 formFieldUI.FieldSource == RegistrationFieldSource.RegistrationAttribute &&
                                 formFieldUI.Attribute != null )
                             {
-                                var attr = CacheAttribute.Get( formFieldUI.Attribute.Guid, rockContext );
+                                var attr = AttributeCache.Get( formFieldUI.Attribute.Guid, rockContext );
                                 if ( attr != null )
                                 {
                                     formField.AttributeId = attr.Id;
@@ -2274,7 +2274,7 @@ The first registrant's information will be used to complete the registrar inform
                     foreach ( var formField in form.Fields.OrderBy( a => a.Order ) )
                     {
                         string formFieldName = ( formField.Attribute != null ) ? formField.Attribute.Name : formField.PersonFieldType.ConvertToString();
-                        string fieldTypeName = ( formField.Attribute != null ) ? CacheFieldType.GetName( formField.Attribute.FieldTypeId ) : string.Empty;
+                        string fieldTypeName = ( formField.Attribute != null ) ? FieldTypeCache.GetName( formField.Attribute.FieldTypeId ) : string.Empty;
                         attributeText += string.Format( 
                             @"<div class='row'>
                                 <div class='col-sm-1'></div>
@@ -2571,7 +2571,7 @@ The first registrant's information will be used to complete the registrar inform
                 }
 
                 var attribute = new Attribute();
-                attribute.FieldTypeId = CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
+                attribute.FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
 
                 if ( formField.FieldSource == RegistrationFieldSource.PersonAttribute )
                 {

@@ -19,7 +19,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using UAParser;
 
 namespace Rock.Transactions
@@ -120,7 +120,7 @@ namespace Rock.Transactions
                     if ( clientType != "Crawler" )
                     {
                         // lookup the interaction channel, and create it if it doesn't exist
-                        int channelMediumTypeValueId = CacheDefinedValue.Get( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_URLSHORTENER.AsGuid() ).Id;
+                        int channelMediumTypeValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_URLSHORTENER.AsGuid() ).Id;
                         InteractionChannelService interactionChannelService = new InteractionChannelService( rockContext );
                         var interactionChannel = interactionChannelService.Queryable()
                             .Where( a => a.ChannelTypeMediumValueId == channelMediumTypeValueId )
@@ -130,7 +130,7 @@ namespace Rock.Transactions
                             interactionChannel = new InteractionChannel();
                             interactionChannel.Name = "Short Links";
                             interactionChannel.ChannelTypeMediumValueId = channelMediumTypeValueId;
-                            interactionChannel.ComponentEntityTypeId = CacheEntityType.Get<Rock.Model.PageShortLink>().Id; ;
+                            interactionChannel.ComponentEntityTypeId = EntityTypeCache.Get<Rock.Model.PageShortLink>().Id; ;
                             interactionChannel.Guid = SystemGuid.InteractionChannel.SHORT_LINKS.AsGuid();
                             interactionChannelService.Add( interactionChannel );
                             rockContext.SaveChanges();
