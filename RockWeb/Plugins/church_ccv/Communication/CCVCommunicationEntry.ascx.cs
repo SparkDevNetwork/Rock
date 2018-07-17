@@ -18,6 +18,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls.Communication;
 using Rock.Web.UI.Controls;
+using System.Text.RegularExpressions;
 
 namespace RockWeb.Plugins.church_ccv.Communication
 {
@@ -689,14 +690,20 @@ $('a.remove-all-recipients').click(function( e ){
                 communication.EnabledLavaCommands = GetAttributeValue( "EnabledLavaCommands" );
                 lTitle.Text = "New Communication".FormatAsHtmlTitle();
 
-                int? personId = PageParameter( "Person" ).AsIntegerOrNull();
-                if ( personId.HasValue )
+                string personIdParameter = Regex.Replace( PageParameter( "Person" ), @"\s+", "," );
+                if ( personIdParameter.IsNotNullOrWhitespace() )
                 {
                     communication.IsBulkCommunication = false;
-                    var person = new PersonService( new RockContext() ).Get( personId.Value );
-                    if ( person != null )
+
+                    string[] personIds = personIdParameter.Split( ',' );
+
+                    foreach ( var personId in personIds )
                     {
-                        Recipients.Add( new Recipient( person, person.PhoneNumbers.Any( p => p.IsMessagingEnabled ), CommunicationRecipientStatus.Pending, string.Empty, string.Empty, null ) );
+                        var person = new PersonService( new RockContext() ).Get( personId.AsInteger() );
+                        if ( person != null )
+                        {
+                            Recipients.Add( new Recipient( person, person.PhoneNumbers.Any( p => p.IsMessagingEnabled ), CommunicationRecipientStatus.Pending, string.Empty, string.Empty, null ) );
+                        }
                     }
                 }
 
