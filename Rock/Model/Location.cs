@@ -26,7 +26,7 @@ using System.Runtime.Serialization;
 using System.Text;
 
 using Rock.Data;
-using Rock.Cache;
+using Rock.Web.Cache;
 using System.Data.Entity;
 
 namespace Rock.Model
@@ -512,7 +512,7 @@ namespace Rock.Model
         {
             get
             {
-                var campuses = CacheCampus.All();
+                var campuses = CampusCache.All();
 
                 int? campusId = null;
                 Location loc = this;
@@ -704,7 +704,7 @@ namespace Rock.Model
 
             string result = string.Format( "{0} {1} {2}, {3} {4}",
                 this.Street1, this.Street2, this.City, this.State, this.PostalCode ).ReplaceWhileExists( "  ", " " );
-            var countryValue = Rock.Cache.CacheDefinedType.Get( new Guid( SystemGuid.DefinedType.LOCATION_COUNTRIES ) ).GetDefinedValueFromValue( this.Country );
+            var countryValue = DefinedTypeCache.Get( new Guid( SystemGuid.DefinedType.LOCATION_COUNTRIES ) ).GetDefinedValueFromValue( this.Country );
 
             if ( countryValue != null )
             {
@@ -806,17 +806,17 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
         {
-            // CacheCampus has a CampusLocation that could get stale when Location changes, so refresh the CampusCache for this location's Campus
+            // CampusCache has a CampusLocation that could get stale when Location changes, so refresh the CampusCache for this location's Campus
             if ( this.CampusId.HasValue )
             {
-                CacheCampus.UpdateCachedEntity( this.CampusId.Value, EntityState.Detached );
+                CampusCache.UpdateCachedEntity( this.CampusId.Value, EntityState.Detached );
             }
 
-            // and also refresh the CacheCampus for any Campus that uses this location
-            foreach ( var campus in CacheCampus.All()
+            // and also refresh the CampusCache for any Campus that uses this location
+            foreach ( var campus in CampusCache.All()
                 .Where( c => c.LocationId == this.Id ) )
             {
-                CacheCampus.UpdateCachedEntity( campus.Id, EntityState.Detached );
+                CampusCache.UpdateCachedEntity( campus.Id, EntityState.Detached );
             }
         }
 

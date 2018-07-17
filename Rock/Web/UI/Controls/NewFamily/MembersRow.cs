@@ -24,7 +24,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -247,7 +247,7 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public int? GradeOffset
         {
-            get { return _ddlGradePicker.SelectedValueAsInt( NoneAsNull: false ); }
+            get { return _ddlGradePicker.SelectedValueAsInt( noneAsNull: false ); }
             set { SetListValue( _ddlGradePicker, value ); }
         }
 
@@ -263,7 +263,7 @@ namespace Rock.Web.UI.Controls
             {
                 if ( GroupTypeId.HasValue )
                 {
-                    var groupGroupType = CacheGroupType.Get( GroupTypeId.Value );
+                    var groupGroupType = GroupTypeCache.Get( GroupTypeId.Value );
                     if ( groupGroupType != null )
                     {
                         return groupGroupType.Roles;
@@ -632,7 +632,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="insertBlankOption">if set to <c>true</c> [insert blank option].</param>
         protected void BindListToDefinedType( ListControl listControl, string definedTypeGuid, bool insertBlankOption = false )
         {
-            var definedType = CacheDefinedType.Get( new Guid( definedTypeGuid ) );
+            var definedType = DefinedTypeCache.Get( new Guid( definedTypeGuid ) );
             listControl.BindToDefinedType( definedType, insertBlankOption );
         }
 

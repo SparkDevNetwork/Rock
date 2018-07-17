@@ -22,7 +22,7 @@ using Rock;
 using Rock.Data;
 using Rock.Attribute;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using System.Data.Entity;
 using System.Linq;
 

@@ -26,7 +26,7 @@ using System.Text;
 
 using Rock.Data;
 using Rock.Reporting;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Security;
 
 namespace Rock.Model
@@ -193,7 +193,7 @@ namespace Rock.Model
             {
                 if ( EntityTypeId.HasValue )
                 {
-                    var filterComponent = Rock.Reporting.DataFilterContainer.GetComponent( CacheEntityType.Get( this.EntityTypeId.Value )?.Name );
+                    var filterComponent = Rock.Reporting.DataFilterContainer.GetComponent( EntityTypeCache.Get( this.EntityTypeId.Value )?.Name );
                     if ( filterComponent != null )
                     {
                         authorized = filterComponent.IsAuthorized( action, person );
@@ -245,7 +245,7 @@ namespace Rock.Model
 
                     if ( this.EntityTypeId.HasValue )
                     {
-                        var entityType = Rock.Cache.CacheEntityType.Get( this.EntityTypeId.Value );
+                        var entityType = EntityTypeCache.Get( this.EntityTypeId.Value );
                         if ( entityType != null )
                         {
                             var component = Rock.Reporting.DataFilterContainer.GetComponent( entityType.Name );
@@ -365,7 +365,7 @@ namespace Rock.Model
             {
                 if ( EntityTypeId.HasValue )
                 {
-                    var entityType = CacheEntityType.Get( EntityTypeId.Value );
+                    var entityType = EntityTypeCache.Get( EntityTypeId.Value );
                     var component = Rock.Reporting.DataFilterContainer.GetComponent( entityType.Name );
                     if ( component != null )
                     {
@@ -428,7 +428,7 @@ namespace Rock.Model
         {
             if ( this.ExpressionType == FilterExpressionType.Filter && this.EntityTypeId.HasValue )
             {
-                return this.ToString( CacheEntityType.Get( this.EntityTypeId.Value ).GetEntityType() );
+                return this.ToString( EntityTypeCache.Get( this.EntityTypeId.Value ).GetEntityType() );
             }
             else 
             {

@@ -55,7 +55,7 @@ namespace Rock
             Assembly executingAssembly = Assembly.GetExecutingAssembly();
             assemblies.Add( executingAssembly );
 
-            foreach (var assemblyEntry in assemblies )
+            foreach ( var assemblyEntry in assemblies )
             {
                 var typeEntries = SearchAssembly( assemblyEntry, baseType );
                 foreach ( KeyValuePair<string, Type> typeEntry in typeEntries )
@@ -233,7 +233,7 @@ namespace Rock
             string pluginsFolder = Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "Plugins" );
 
             // blacklist of files that would never have Rock MEF components or Rock types
-            string[] ignoredFileStart = { "Lucene.", "Microsoft.", "msvcr100.", "System.", "JavaScriptEngineSwitcher.", "React.", "CacheManager."  };
+            string[] ignoredFileStart = { "Lucene.", "Microsoft.", "msvcr100.", "System.", "JavaScriptEngineSwitcher.", "React.", "CacheManager." };
 
             // get all *.dll in the bin and plugin directories except for blacklisted ones
             var assemblyFileNames = Directory.EnumerateFiles( binDirectory, "*.dll", SearchOption.AllDirectories ).ToList();
@@ -256,7 +256,7 @@ namespace Rock
                     try
                     {
                         // if an assembly is found that isn't loaded yet, load it so we can search it for types
-                        assembly = Assembly.LoadFile( assemblyFileName );
+                        assembly = Assembly.Load( File.ReadAllBytes( assemblyFileName ) );
                     }
                     catch ( Exception ex )
                     {
@@ -293,15 +293,6 @@ namespace Rock
             _pluginAssemblies = pluginAssemblies;
 
             return _pluginAssemblies.ToList();
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public class RockAssemblyInfo
-        {
-            public string FilePath { get; set; }
-            public bool IsRockAssembly { get; set; }
         }
     }
 }

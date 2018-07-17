@@ -28,7 +28,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Finance
@@ -143,7 +143,7 @@ namespace RockWeb.Blocks.Finance
         {
             pnlDetails.Visible = true;
             var frequencyTypeGuid = new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_FREQUENCY );
-            ddlFrequencyType.BindToDefinedType( CacheDefinedType.Get( frequencyTypeGuid ), true );
+            ddlFrequencyType.BindToDefinedType( DefinedTypeCache.Get( frequencyTypeGuid ), true );
 
             using ( var rockContext = new RockContext() )
             {

@@ -26,7 +26,7 @@ using dotless.Core;
 using dotless.Core.configuration;
 using DotLiquid;
 using Rock.Utility;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using System.Text;
 

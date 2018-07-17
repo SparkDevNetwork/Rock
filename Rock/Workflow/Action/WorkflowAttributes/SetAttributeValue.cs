@@ -24,7 +24,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Workflow.Action
 {
@@ -52,12 +52,12 @@ namespace Rock.Workflow.Action
         {
             errorMessages = new List<string>();
 
-            var attribute = CacheAttribute.Get( GetAttributeValue( action, "Attribute" ).AsGuid(), rockContext );
+            var attribute = AttributeCache.Get( GetAttributeValue( action, "Attribute" ).AsGuid(), rockContext );
             if ( attribute != null )
             {
                 string value = value = GetAttributeValue( action, "Value", true ).ResolveMergeFields( GetMergeFields( action ) );
-                if ( attribute.FieldTypeId == CacheFieldType.Get( SystemGuid.FieldType.ENCRYPTED_TEXT.AsGuid(), rockContext ).Id ||
-                    attribute.FieldTypeId == CacheFieldType.Get( SystemGuid.FieldType.SSN.AsGuid(), rockContext ).Id )
+                if ( attribute.FieldTypeId == FieldTypeCache.Get( SystemGuid.FieldType.ENCRYPTED_TEXT.AsGuid(), rockContext ).Id ||
+                    attribute.FieldTypeId == FieldTypeCache.Get( SystemGuid.FieldType.SSN.AsGuid(), rockContext ).Id )
                 {
                     value = Security.Encryption.EncryptString( value );
                 }

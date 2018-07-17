@@ -38,7 +38,7 @@ using Rock.Financial;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -490,7 +490,7 @@ namespace RockWeb.Blocks.Event
 
             if ( !Page.IsPostBack )
             {
-                var personDv = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() );
+                var personDv = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() );
                 if ( CurrentPerson != null && CurrentPerson.RecordTypeValue != null && personDv != null && CurrentPerson.RecordTypeValue.Guid != personDv.Guid )
                 {
                     ShowError( "Invalid Login", "Sorry, the login you are using doesn't appear to be tied to a valid person record. Try logging out and logging in with a different username, or create a new account before registering for the selected event." );
@@ -531,7 +531,7 @@ namespace RockWeb.Blocks.Event
                                         !string.IsNullOrWhiteSpace( DigitalSignatureComponent.CookieInitializationUrl ) )
                                     {
                                         // Redirect for Digital Signature Cookie Initialization 
-                                        var returnUrl = CacheGlobalAttributes.Get().GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash() + Request.Url.PathAndQuery.RemoveLeadingForwardslash();
+                                        var returnUrl = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash() + Request.Url.PathAndQuery.RemoveLeadingForwardslash();
                                         returnUrl = returnUrl + ( returnUrl.Contains( "?" ) ? "&" : "?" ) + "redirected=True";
                                         string redirectUrl = string.Format( "{0}?redirect_uri={1}", DigitalSignatureComponent.CookieInitializationUrl, HttpUtility.UrlEncode( returnUrl ) );
                                         Response.Redirect( redirectUrl, false );
@@ -586,7 +586,7 @@ namespace RockWeb.Blocks.Event
                 return breadCrumbs;
             }
 
-            breadCrumbs.Add( new BreadCrumb( this.CachePage.PageTitle, pageReference ) );
+            breadCrumbs.Add( new BreadCrumb( this.PageCache.PageTitle, pageReference ) );
             return breadCrumbs;
         }
 
@@ -1166,7 +1166,7 @@ namespace RockWeb.Blocks.Event
 
                     if ( gateway != null )
                     {
-                        var ccCurrencyType = CacheDefinedValue.Get( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) );
+                        var ccCurrencyType = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) );
                         string errorMessage = string.Empty;
 
                         PersonAlias authorizedPersonAlias = null;
@@ -1195,7 +1195,7 @@ namespace RockWeb.Blocks.Event
                                     rockContext,
                                     authorizedPersonAlias.Person,
                                     Rock.Model.AuthenticationServiceType.Internal,
-                                    CacheEntityType.Get( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id,
+                                    EntityTypeCache.Get( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id,
                                     txtUserName.Text,
                                     txtPassword.Text,
                                     false );
@@ -1937,9 +1937,9 @@ namespace RockWeb.Blocks.Event
             int? singleFamilyId = null;
             var multipleFamilyGroupIds = new Dictionary<Guid, int>();
 
-            var dvcConnectionStatus = CacheDefinedValue.Get( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
-            var dvcRecordStatus = CacheDefinedValue.Get( GetAttributeValue( "RecordStatus" ).AsGuid() );
-            var familyGroupType = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+            var dvcConnectionStatus = DefinedValueCache.Get( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
+            var dvcRecordStatus = DefinedValueCache.Get( GetAttributeValue( "RecordStatus" ).AsGuid() );
+            var familyGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
             var adultRoleId = familyGroupType.Roles
                 .Where( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ) )
                 .Select( r => r.Id )
@@ -2085,7 +2085,7 @@ namespace RockWeb.Blocks.Event
                 person.IsEmailActive = true;
                 person.Email = registration.ConfirmationEmail;
                 person.EmailPreference = EmailPreference.EmailAllowed;
-                person.RecordTypeValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
                 if ( dvcConnectionStatus != null )
                 {
                     person.ConnectionStatusValueId = dvcConnectionStatus.Id;
@@ -2220,7 +2220,7 @@ namespace RockWeb.Blocks.Event
                         person.IsEmailActive = true;
                         person.Email = email;
                         person.EmailPreference = EmailPreference.EmailAllowed;
-                        person.RecordTypeValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                        person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
                         if ( dvcConnectionStatus != null )
                         {
                             person.ConnectionStatusValueId = dvcConnectionStatus.Id;
@@ -2303,7 +2303,7 @@ namespace RockWeb.Blocks.Event
                                         if ( fieldValue != null )
                                         {
                                             int? newMaritalStatusId = fieldValue.ToString().AsIntegerOrNull();
-                                            History.EvaluateChange( personChanges, "Marital Status", CacheDefinedValue.GetName( person.MaritalStatusValueId ), CacheDefinedValue.GetName( newMaritalStatusId ) );
+                                            History.EvaluateChange( personChanges, "Marital Status", DefinedValueCache.GetName( person.MaritalStatusValueId ), DefinedValueCache.GetName( newMaritalStatusId ) );
                                             person.MaritalStatusValueId = newMaritalStatusId;
                                         }
 
@@ -2331,7 +2331,7 @@ namespace RockWeb.Blocks.Event
                                 case RegistrationPersonFieldType.ConnectionStatus:
                                     {
                                         var newConnectionStatusId = fieldValue.ToString().AsIntegerOrNull() ?? dvcConnectionStatus.Id;
-                                        History.EvaluateChange( personChanges, "Connection Status", CacheDefinedValue.GetName( person.ConnectionStatusValueId ), CacheDefinedValue.GetName( newConnectionStatusId ) );
+                                        History.EvaluateChange( personChanges, "Connection Status", DefinedValueCache.GetName( person.ConnectionStatusValueId ), DefinedValueCache.GetName( newConnectionStatusId ) );
                                         person.ConnectionStatusValueId = newConnectionStatusId;
                                         break;
                                     }
@@ -2360,7 +2360,7 @@ namespace RockWeb.Blocks.Event
 
                         if ( fieldValue != null )
                         {
-                            var attribute = CacheAttribute.Get( field.AttributeId.Value );
+                            var attribute = AttributeCache.Get( field.AttributeId.Value );
                             if ( attribute != null )
                             {
                                 string originalValue = person.GetAttributeValue( attribute.Key );
@@ -2500,7 +2500,7 @@ namespace RockWeb.Blocks.Event
 
                         if ( fieldValue != null )
                         {
-                            var attribute = CacheAttribute.Get( field.AttributeId.Value );
+                            var attribute = AttributeCache.Get( field.AttributeId.Value );
                             if ( attribute != null )
                             {
                                 string originalValue = registrant.GetAttributeValue( attribute.Key );
@@ -2680,7 +2680,7 @@ namespace RockWeb.Blocks.Event
 
             if ( familyId.HasValue && location != null )
             {
-                var homeLocationType = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
+                var homeLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
                 if ( homeLocationType != null )
                 {
                     var familyGroup = new GroupService( rockContext ).Get( familyId.Value );
@@ -2719,7 +2719,7 @@ namespace RockWeb.Blocks.Event
                 string cleanNumber = PhoneNumber.CleanNumber( phoneNumber.Number );
                 if ( !string.IsNullOrWhiteSpace( cleanNumber ) )
                 {
-                    var numberType = CacheDefinedValue.Get( phoneTypeGuid );
+                    var numberType = DefinedValueCache.Get( phoneTypeGuid );
                     if ( numberType != null )
                     {
                         var phone = person.PhoneNumbers.FirstOrDefault( p => p.NumberTypeValueId == numberType.Id );
@@ -2824,7 +2824,7 @@ namespace RockWeb.Blocks.Event
 
                                 if ( fieldValue != null )
                                 {
-                                    var attribute = CacheAttribute.Get( field.AttributeId.Value );
+                                    var attribute = AttributeCache.Get( field.AttributeId.Value );
                                     if ( attribute != null )
                                     {
                                         string originalValue = groupMember.GetAttributeValue( attribute.Key );
@@ -2927,7 +2927,7 @@ namespace RockWeb.Blocks.Event
                 transaction.TransactionDateTime = RockDateTime.Now;
                 transaction.FinancialGatewayId = RegistrationTemplate.FinancialGatewayId;
 
-                var txnType = CacheDefinedValue.Get( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_EVENT_REGISTRATION ) );
+                var txnType = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_EVENT_REGISTRATION ) );
                 transaction.TransactionTypeValueId = txnType.Id;
 
                 if ( transaction.FinancialPaymentDetail == null )
@@ -2935,8 +2935,8 @@ namespace RockWeb.Blocks.Event
                     transaction.FinancialPaymentDetail = new FinancialPaymentDetail();
                 }
 
-                CacheDefinedValue currencyType = null;
-                CacheDefinedValue creditCardType = null;
+                DefinedValueCache currencyType = null;
+                DefinedValueCache creditCardType = null;
 
                 if ( paymentInfo != null )
                 {
@@ -2948,7 +2948,7 @@ namespace RockWeb.Blocks.Event
                 Guid sourceGuid = Guid.Empty;
                 if ( Guid.TryParse( GetAttributeValue( "Source" ), out sourceGuid ) )
                 {
-                    var source = CacheDefinedValue.Get( sourceGuid );
+                    var source = DefinedValueCache.Get( sourceGuid );
                     if ( source != null )
                     {
                         transaction.SourceTypeValueId = source.Id;
@@ -2960,7 +2960,7 @@ namespace RockWeb.Blocks.Event
                 var transactionDetail = new FinancialTransactionDetail();
                 transactionDetail.Amount = RegistrationState.PaymentAmount ?? 0.0m;
                 transactionDetail.AccountId = RegistrationInstanceState.AccountId.Value;
-                transactionDetail.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.Registration ) ).Id;
+                transactionDetail.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Registration ) ).Id;
                 transactionDetail.EntityId = registration.Id;
                 transaction.TransactionDetails.Add( transactionDetail );
 
@@ -3414,7 +3414,7 @@ namespace RockWeb.Blocks.Event
                         string inviteLink = DigitalSignatureComponent.GetInviteLink( RegistrationTemplate.RequiredSignatureDocumentTemplate.ProviderTemplateKey, out errors );
                         if ( !string.IsNullOrWhiteSpace( inviteLink ) )
                         {
-                            string returnUrl = CacheGlobalAttributes.Get().GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash() +
+                            string returnUrl = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash() +
                                 ResolveRockUrl( "~/Blocks/Event/DocumentReturn.html" );
                             hfRequiredDocumentLinkUrl.Value = string.Format( "{0}?redirect_uri={1}", inviteLink, returnUrl );
                         }
@@ -3842,7 +3842,7 @@ namespace RockWeb.Blocks.Event
                 hfPreviouslyPaid.ClientID,              // {3}
                 lRemainingDue.ClientID,                 // {4}
                 hfTriggerScroll.ClientID,               // {5}
-                CacheGlobalAttributes.Value( "CurrencySymbol" ), // {6}
+                GlobalAttributesCache.Value( "CurrencySymbol" ), // {6}
                 hfStep2Url.ClientID,                    // {7}
                 hfStep2ReturnQueryString.ClientID,      // {8}
                 this.Page.ClientScript.GetPostBackEventReference( lbStep2Return, string.Empty ), // {9}
@@ -4098,7 +4098,7 @@ namespace RockWeb.Blocks.Event
                         cpHomeCampus.Label = "Campus";
                         cpHomeCampus.Required = field.IsRequired;
                         cpHomeCampus.ValidationGroup = BlockValidationGroup;
-                        cpHomeCampus.Campuses = CacheCampus.All( false );
+                        cpHomeCampus.Campuses = CampusCache.All( false );
 
                         phRegistrantControls.Controls.Add( cpHomeCampus );
 
@@ -4214,7 +4214,7 @@ namespace RockWeb.Blocks.Event
                         ddlMaritalStatus.Label = "Marital Status";
                         ddlMaritalStatus.Required = field.IsRequired;
                         ddlMaritalStatus.ValidationGroup = BlockValidationGroup;
-                        ddlMaritalStatus.BindToDefinedType( CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ), true );
+                        ddlMaritalStatus.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ), true );
                         phRegistrantControls.Controls.Add( ddlMaritalStatus );
 
                         if ( setValue && fieldValue != null )
@@ -4228,7 +4228,7 @@ namespace RockWeb.Blocks.Event
 
                 case RegistrationPersonFieldType.MobilePhone:
                     {
-                        var dv = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
+                        var dv = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
                         if ( dv != null )
                         {
                             var ppMobile = new PhoneNumberBox();
@@ -4256,7 +4256,7 @@ namespace RockWeb.Blocks.Event
 
                 case RegistrationPersonFieldType.HomePhone:
                     {
-                        var dv = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
+                        var dv = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
                         if ( dv != null )
                         {
                             var ppHome = new PhoneNumberBox();
@@ -4284,7 +4284,7 @@ namespace RockWeb.Blocks.Event
 
                 case RegistrationPersonFieldType.WorkPhone:
                     {
-                        var dv = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK );
+                        var dv = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK );
                         if ( dv != null )
                         {
                             var ppWork = new PhoneNumberBox();
@@ -4317,7 +4317,7 @@ namespace RockWeb.Blocks.Event
                         ddlConnectionStatus.Label = "Connection Status";
                         ddlConnectionStatus.Required = field.IsRequired;
                         ddlConnectionStatus.ValidationGroup = BlockValidationGroup;
-                        ddlConnectionStatus.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ), true );
+                        ddlConnectionStatus.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ), true );
 
                         phRegistrantControls.Controls.Add( ddlConnectionStatus );
 
@@ -4342,7 +4342,7 @@ namespace RockWeb.Blocks.Event
         {
             if ( field.AttributeId.HasValue )
             {
-                var attribute = CacheAttribute.Get( field.AttributeId.Value );
+                var attribute = AttributeCache.Get( field.AttributeId.Value );
 
                 string value = string.Empty;
                 if ( setValue && fieldValue != null )
@@ -4749,7 +4749,7 @@ namespace RockWeb.Blocks.Event
         {
             if ( field.AttributeId.HasValue )
             {
-                var attribute = CacheAttribute.Get( field.AttributeId.Value );
+                var attribute = AttributeCache.Get( field.AttributeId.Value );
                 string fieldId = "attribute_field_" + attribute.Id.ToString();
 
                 Control control = phRegistrantControls.FindControl( fieldId );
@@ -5346,7 +5346,7 @@ namespace RockWeb.Blocks.Event
                     .GetByPersonId( CurrentPerson.Id );
 
                 // Verify component is valid and that it supports using saved accounts for one-time, credit card transactions
-                var ccCurrencyType = CacheDefinedValue.Get( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) );
+                var ccCurrencyType = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) );
                 if ( component != null &&
                     component.SupportsSavedAccount( false ) &&
                     component.SupportsSavedAccount( ccCurrencyType ) )

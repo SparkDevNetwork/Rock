@@ -27,7 +27,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -146,21 +146,21 @@ namespace RockWeb.Blocks.Core
 
             Guid entityTypeGuid = Guid.Empty;
             Guid.TryParse( GetAttributeValue( "EntityType" ), out entityTypeGuid );
-            var entityType = CacheEntityType.Get( entityTypeGuid );
+            var entityType = EntityTypeCache.Get( entityTypeGuid );
             if ( entityType != null )
             {
                 entityTypeName = entityType.FriendlyName;
             }
 
             int parentCategoryId = int.MinValue;
-            CacheCategory category = null;
+            CategoryCache category = null;
             if ( int.TryParse( PageParameter( "CategoryId" ), out parentCategoryId ) )
             {
-                category = CacheCategory.Get( parentCategoryId );
+                category = CategoryCache.Get( parentCategoryId );
 
                 if ( entityType == null && category != null )
                 {
-                    entityType = CacheEntityType.Get( category.EntityTypeId.Value );
+                    entityType = EntityTypeCache.Get( category.EntityTypeId.Value );
 
                     if (entityType != null )
                     {
@@ -240,7 +240,7 @@ namespace RockWeb.Blocks.Core
                         if ( e.Value != "" )
                         {
                             if ( e.Value != "0" )
-                                e.Value = CacheEntityType.Get( int.Parse( e.Value ) ).FriendlyName;
+                                e.Value = EntityTypeCache.Get( int.Parse( e.Value ) ).FriendlyName;
                         }
                         break;
                     }
@@ -457,7 +457,7 @@ namespace RockWeb.Blocks.Core
             var securityField = gCategories.ColumnsOfType<SecurityField>().FirstOrDefault();
             if ( securityField != null )
             {
-                securityField.EntityTypeId = CacheEntityType.Get( typeof( Category ) ).Id;
+                securityField.EntityTypeId = EntityTypeCache.Get( typeof( Category ) ).Id;
             }
 
             _canConfigure = IsUserAuthorized( Authorization.ADMINISTRATE );
@@ -466,7 +466,7 @@ namespace RockWeb.Blocks.Core
                 Guid entityTypeGuid = Guid.Empty;
                 if ( Guid.TryParse( GetAttributeValue( "EntityType" ), out entityTypeGuid ) )
                 {
-                    var entityType = Rock.Cache.CacheEntityType.Get( entityTypeGuid );
+                    var entityType = EntityTypeCache.Get( entityTypeGuid );
                     if ( entityType != null )
                     {
                         securityField.Visible = entityType.IsSecured;
@@ -555,7 +555,7 @@ namespace RockWeb.Blocks.Core
                     IsSystem = c.IsSystem
                 } ).ToList();
 
-            gCategories.EntityTypeId = CacheEntityType.Get<Rock.Model.Category>().Id;
+            gCategories.EntityTypeId = EntityTypeCache.Get<Rock.Model.Category>().Id;
             gCategories.DataBind();
         }
 
@@ -621,7 +621,7 @@ namespace RockWeb.Blocks.Core
                 // if there is a parent category set the entity type and qualifiers and hide the settings
                 if ( _parentCategoryId.HasValue )
                 {
-                    var parentCategory = CacheCategory.Get( _parentCategoryId.Value );
+                    var parentCategory = CategoryCache.Get( _parentCategoryId.Value );
                     entityTypePicker.SelectedEntityTypeId = parentCategory.EntityTypeId;
                     tbEntityQualifierField.Text = parentCategory.EntityTypeQualifierColumn;
                     tbEntityQualifierValue.Text = parentCategory.EntityTypeQualifierValue;

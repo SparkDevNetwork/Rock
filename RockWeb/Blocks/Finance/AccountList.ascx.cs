@@ -24,7 +24,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -54,7 +54,7 @@ namespace RockWeb.Blocks.Finance
             rAccountFilter.ApplyFilterClick += rAccountFilter_ApplyFilterClick;
             rAccountFilter.DisplayFilterValue += rAccountFilter_DisplayFilterValue;
 
-            var campusList = CacheCampus.All();
+            var campusList = CampusCache.All();
             if ( campusList.Count > 0 )
             {
                 ddlCampus.Visible = true;
@@ -194,7 +194,7 @@ namespace RockWeb.Blocks.Finance
                     int? campusId = e.Value.AsIntegerOrNull();
                     if ( campusId.HasValue )
                     {
-                        var campus = CacheCampus.Get( campusId.Value );
+                        var campus = CampusCache.Get( campusId.Value );
                         if ( campus != null )
                         {
                             e.Value = campus.Name;
@@ -316,7 +316,7 @@ namespace RockWeb.Blocks.Finance
         {
             txtAccountName.Text = rAccountFilter.GetUserPreference( "Account Name" );
             ddlCampus.Items.Add( new ListItem( string.Empty, string.Empty ) );
-            foreach ( var campus in CacheCampus.All() )
+            foreach ( var campus in CampusCache.All() )
             {
                 ListItem li = new ListItem( campus.Name, campus.Id.ToString() );
                 li.Selected = campus.Id.ToString() == rAccountFilter.GetUserPreference( "Campus" );
@@ -357,7 +357,7 @@ namespace RockWeb.Blocks.Finance
                     boundField.AttributeId = attribute.Id;
                     boundField.HeaderText = attribute.Name;
 
-                    var attributeCache = Rock.Cache.CacheAttribute.Get( attribute.Id );
+                    var attributeCache = Rock.Web.Cache.AttributeCache.Get( attribute.Id );
                     if ( attributeCache != null )
                     {
                         boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;

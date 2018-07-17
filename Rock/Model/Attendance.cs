@@ -22,6 +22,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -300,7 +301,7 @@ namespace Rock.Model
                 }
                 else if ( CampusId.HasValue )
                 {
-                    var campus = Rock.Cache.CacheCampus.Get( CampusId.Value );
+                    var campus = CampusCache.Get( CampusId.Value );
                     if ( campus != null )
                     {
                         currentDateTime = campus.CurrentDateTime;

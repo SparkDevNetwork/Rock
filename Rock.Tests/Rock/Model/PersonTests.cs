@@ -1,5 +1,5 @@
 ﻿using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using System;
 using Xunit;
 
@@ -58,13 +58,13 @@ namespace Rock.Tests.Rock.Model
         private static void InitGlobalAttributesCache()
         {
             DateTime today = RockDateTime.Now;
-            CacheGlobalAttributes globalAttributes = CacheGlobalAttributes.Get();
+            GlobalAttributesCache globalAttributes = GlobalAttributesCache.Get();
             globalAttributes.SetValue( "GradeTransitionDate", string.Format( "{0}/{1}", today.Month, today.Day ), false );
         }
 
         private static void SetGradeTransitionDateGlobalAttribute( int month, int day )
         {
-            CacheGlobalAttributes globalAttributes = CacheGlobalAttributes.Get();
+            GlobalAttributesCache globalAttributes = GlobalAttributesCache.Get();
             globalAttributes.SetValue( "GradeTransitionDate", string.Format( "{0}/{1}", month, day ), false );
         }
     }

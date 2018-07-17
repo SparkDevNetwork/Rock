@@ -31,7 +31,7 @@ using System.Web;
 using Rock.Data;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -632,7 +632,7 @@ namespace Rock.Model
         {
             if ( recordTypeValueId.HasValue )
             {
-                int recordTypeValueIdBusiness = CacheDefinedValue.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
+                int recordTypeValueIdBusiness = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
                 return recordTypeValueId.Value == recordTypeValueIdBusiness;
             }
             else
@@ -679,7 +679,7 @@ namespace Rock.Model
             // that if FullName is used in datagrid, the SuffixValue is not lazy-loaded for each row
             if ( suffixValueId.HasValue )
             {
-                var suffix = CacheDefinedValue.Get( suffixValueId.Value );
+                var suffix = DefinedValueCache.Get( suffixValueId.Value );
                 if ( suffix != null )
                 {
                     fullName.AppendFormat( " {0}", suffix.Value );
@@ -1694,7 +1694,7 @@ namespace Rock.Model
                     rockUrlRoot.EnsureTrailingBackslash();
 
                     // get email link preference (new communication/mailto)
-                    var globalAttributes = Rock.Cache.CacheGlobalAttributes.Get();
+                    var globalAttributes = GlobalAttributesCache.Get();
                     string emailLinkPreference = globalAttributes.GetValue( "PreferredEmailLinkType" );
 
                     string emailLink = string.Empty;
@@ -1790,8 +1790,8 @@ namespace Rock.Model
         {
             var rockContext = (RockContext)dbContext;
 
-            var inactiveStatus = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
-            var deceased = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED.AsGuid() );
+            var inactiveStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
+            var deceased = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED.AsGuid() );
 
             if ( inactiveStatus != null && deceased != null )
             {
@@ -1844,7 +1844,7 @@ namespace Rock.Model
 
             if ( this.AnniversaryDate.HasValue )
             {
-                if ( this.MaritalStatusValueId != CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED ).Id )
+                if ( this.MaritalStatusValueId != DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED ).Id )
                 {
                     this.AnniversaryDate = null;
                 }
@@ -1968,7 +1968,7 @@ namespace Rock.Model
                             if ( !string.IsNullOrEmpty( currentEmail ) )
                             {
                                 var personSearchKeyService = new PersonSearchKeyService( rockContext );
-                                var searchTypeValue = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_EMAIL.AsGuid() );
+                                var searchTypeValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_EMAIL.AsGuid() );
                                 if ( !personSearchKeyService.Queryable().Any( a => a.PersonAlias.PersonId == Id && a.SearchTypeValueId == searchTypeValue.Id && a.SearchValue == currentEmail ) )
                                 {
                                     PersonSearchKey personSearchKey = new PersonSearchKey()
@@ -2081,7 +2081,7 @@ namespace Rock.Model
                     .Select( s => new
                     {
                         Id = s.Id,
-                        SignalType = Rock.Cache.CacheSignalType.Get( s.SignalTypeId )
+                        SignalType = SignalTypeCache.Get( s.SignalTypeId )
                     } )
                     .OrderBy( s => s.SignalType.Order )
                     .ThenBy( s => s.SignalType.Id )
@@ -2119,10 +2119,10 @@ namespace Rock.Model
         /// <returns></returns>
         public static string GetFamilySalutation( Person person, bool includeChildren = false, bool includeInactive = true, bool useFormalNames = false, string finalSeparator = "&", string separator = ","  )
         {
-            var _familyType = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
+            var _familyType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
             var _adultRole = _familyType.Roles.FirstOrDefault( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ) );
             var _childRole = _familyType.Roles.FirstOrDefault( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ) );
-            var _deceased = CacheDefinedValue.Get( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED ).Id;
+            var _deceased = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED ).Id;
 
             // clean up the separators
             finalSeparator = $" {finalSeparator} "; // add spaces before and after
@@ -2143,7 +2143,7 @@ namespace Rock.Model
             // filter for inactive
             if ( !includeInactive )
             {
-                var activeRecordStatusId = CacheDefinedValue.Get( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE ).Id;
+                var activeRecordStatusId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE ).Id;
                 familyMembers = familyMembers.Where( f => f.Person.RecordStatusValueId == activeRecordStatusId ).ToList();
             }
 
@@ -2357,7 +2357,7 @@ namespace Rock.Model
                     Guid? familyRoleGuid = null;
                     if ( personId.HasValue )
                     {
-                        var familyGroupTypeId = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
+                        var familyGroupTypeId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
                         familyRoleGuid = new GroupMemberService( new RockContext() ).Queryable()
                                             .Where( m =>
                                                 m.Group.GroupTypeId == familyGroupTypeId
@@ -2400,7 +2400,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static string GetPersonPhotoUrl( Person person, int? maxWidth = null, int? maxHeight = null )
         {
-            return GetPersonPhotoUrl( person.Id, person.PhotoId, person.Age, person.Gender, person.RecordTypeValueId.HasValue ? CacheDefinedValue.Get( person.RecordTypeValueId.Value ).Guid : (Guid?)null, maxWidth, maxHeight );
+            return GetPersonPhotoUrl( person.Id, person.PhotoId, person.Age, person.Gender, person.RecordTypeValueId.HasValue ? DefinedValueCache.Get( person.RecordTypeValueId.Value ).Guid : (Guid?)null, maxWidth, maxHeight );
         }
 
         /// <summary>
@@ -2428,7 +2428,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static string GetPersonNoPictureUrl( Person person, int? maxWidth = null, int? maxHeight = null )
         {
-            return GetPersonPhotoUrl( person.Id, null, person.Age, person.Gender, person.RecordTypeValueId.HasValue ? CacheDefinedValue.Get( person.RecordTypeValueId.Value ).Guid : ( Guid? ) null, maxWidth, maxHeight );
+            return GetPersonPhotoUrl( person.Id, null, person.Age, person.Gender, person.RecordTypeValueId.HasValue ? DefinedValueCache.Get( person.RecordTypeValueId.Value ).Guid : ( Guid? ) null, maxWidth, maxHeight );
         }
 
         /// <summary>
@@ -2590,7 +2590,7 @@ namespace Rock.Model
                 gender = person.Gender;
                 altText = person.FullName;
                 age = person.Age;
-                recordTypeValueGuid = person.RecordTypeValueId.HasValue ? CacheDefinedValue.Get( person.RecordTypeValueId.Value ).Guid : (Guid?)null;
+                recordTypeValueGuid = person.RecordTypeValueId.HasValue ? DefinedValueCache.Get( person.RecordTypeValueId.Value ).Guid : (Guid?)null;
                 personId = person.Id;
             }
 
@@ -2706,7 +2706,7 @@ namespace Rock.Model
                     Guid? familyRoleGuid = null;
                     if ( personId.HasValue )
                     {
-                        var familyGroupTypeId = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
+                        var familyGroupTypeId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
                         familyRoleGuid = new GroupMemberService( new RockContext() ).Queryable()
                                             .Where( m =>
                                                 m.Group.GroupTypeId == familyGroupTypeId
@@ -2903,7 +2903,7 @@ namespace Rock.Model
         /// <param name="rockContext">The rock context.</param>
         public static void CreateCheckinRelationship( int personId, int relatedPersonId, RockContext rockContext = null )
         {
-            var knownRelationshipGroupType = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS );
+            var knownRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS );
             var canCheckInRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN ) ) );
             if ( canCheckInRole != null )
             {
@@ -2951,7 +2951,7 @@ namespace Rock.Model
 
             if ( suffixValueId.HasValue )
             {
-                var suffix = CacheDefinedValue.Get( suffixValueId.Value );
+                var suffix = DefinedValueCache.Get( suffixValueId.Value );
                 if ( suffix != null )
                 {
                     return FormatFullName( nickName, lastName, suffix.Value );
@@ -3027,7 +3027,7 @@ namespace Rock.Model
         {
             if ( gradeOffset.HasValue && gradeOffset >= 0 )
             {
-                var schoolGrades = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
+                var schoolGrades = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
                 if ( schoolGrades != null )
                 {
                     var sortedGradeValues = schoolGrades.DefinedValues.OrderBy( a => a.Value.AsInteger() );
@@ -3064,8 +3064,8 @@ namespace Rock.Model
 
                 if ( homeAddressGuid.HasValue && familyGuid.HasValue )
                 {
-                    var homeAddressDv = CacheDefinedValue.Get( homeAddressGuid.Value );
-                    var familyGroupType = CacheGroupType.Get( familyGuid.Value );
+                    var homeAddressDv = DefinedValueCache.Get( homeAddressGuid.Value );
+                    var familyGroupType = GroupTypeCache.Get( familyGuid.Value );
                     if ( homeAddressDv != null && familyGroupType != null )
                     {
                         var personLocations = new GroupMemberService( rockContext ).Queryable()
@@ -3104,8 +3104,8 @@ namespace Rock.Model
         {
             List<IndexModelBase> indexableItems = new List<IndexModelBase>();
 
-            var recordTypePersonId = CacheDefinedValue.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
-            var recordTypeBusinessId = CacheDefinedValue.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
+            var recordTypePersonId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+            var recordTypeBusinessId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
 
             RockContext rockContext = new RockContext();
 
@@ -3379,7 +3379,7 @@ namespace Rock.Model
             Guid? homeAddressGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuidOrNull();
             if ( homeAddressGuid.HasValue )
             {
-                var homeAddressDv = CacheDefinedValue.Get( homeAddressGuid.Value );
+                var homeAddressDv = DefinedValueCache.Get( homeAddressGuid.Value );
                 if ( homeAddressDv != null )
                 {
                     foreach ( var family in person.GetFamilies( rockContext ) )
@@ -3445,8 +3445,8 @@ namespace Rock.Model
                 var workAddressGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuidOrNull();
                 if ( homeAddressGuid.HasValue && workAddressGuid.HasValue )
                 {
-                    var homeAddressDv = CacheDefinedValue.Get( homeAddressGuid.Value );
-                    var workAddressDv = CacheDefinedValue.Get( workAddressGuid.Value );
+                    var homeAddressDv = DefinedValueCache.Get( homeAddressGuid.Value );
+                    var workAddressDv = DefinedValueCache.Get( workAddressGuid.Value );
                     if ( homeAddressDv != null && workAddressDv != null )
                     {
                         // Get all available mailing locations, prioritizing mapped locations then home locations
@@ -3519,7 +3519,7 @@ namespace Rock.Model
                 phoneNumberService.Add( phoneObject );
 
                 // get the typeId for this phone number so we set it correctly
-                //var numberType = Rock.Cache.CacheDefinedValue.Get( phoneTypeGuid );
+                //var numberType = DefinedValueCache.Get( phoneTypeGuid );
                 phoneObject.NumberTypeValueId = numberTypeValueId;
 
                 phoneObject.CountryCode = PhoneNumber.CleanNumber( phoneCountryCode );

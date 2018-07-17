@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Transactions
 {
@@ -78,7 +79,7 @@ namespace Rock.Transactions
         /// <param name="name">The name.</param>
         private void LaunchWorkflow( RockContext rockContext, int workflowTypeId, string name )
         {
-            var workflowType = Cache.CacheWorkflowType.Get( workflowTypeId );
+            var workflowType = WorkflowTypeCache.Get( workflowTypeId );
             if ( workflowType != null && ( workflowType.IsActive ?? true ) )
             {
                 var workflow = Rock.Model.Workflow.Activate( workflowType, name );

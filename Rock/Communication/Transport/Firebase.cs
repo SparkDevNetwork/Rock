@@ -24,7 +24,7 @@ using System.Net.Mail;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using FCM.Net;
 
 namespace Rock.Communication.Transport
@@ -143,16 +143,16 @@ namespace Rock.Communication.Transport
                 if ( hasPendingRecipients )
                 {
                     var currentPerson = communication.CreatedByPersonAlias?.Person;
-                    var globalAttributes = CacheGlobalAttributes.Get();
+                    var globalAttributes = GlobalAttributesCache.Get();
                     string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
                     var mergeFields = Lava.LavaHelper.GetCommonMergeFields( null, currentPerson );
 
                     string serverKey = GetAttributeValue( "ServerKey" );
                     var sender = new Sender( serverKey );
 
-                    var personEntityTypeId = CacheEntityType.Get( "Rock.Model.Person" ).Id;
-                    var communicationEntityTypeId = CacheEntityType.Get( "Rock.Model.Communication" ).Id;
-                    var communicationCategoryId = CacheCategory.Get( Rock.SystemGuid.Category.HISTORY_PERSON_COMMUNICATIONS.AsGuid(), communicationRockContext ).Id;
+                    var personEntityTypeId = EntityTypeCache.Get( "Rock.Model.Person" ).Id;
+                    var communicationEntityTypeId = EntityTypeCache.Get( "Rock.Model.Communication" ).Id;
+                    var communicationCategoryId = CategoryCache.Get( Rock.SystemGuid.Category.HISTORY_PERSON_COMMUNICATIONS.AsGuid(), communicationRockContext ).Id;
 
                     bool recipientFound = true;
                     while ( recipientFound )
@@ -297,7 +297,7 @@ namespace Rock.Communication.Transport
         [Obsolete( "Use Send( Communication communication, Dictionary<string, string> mediumAttributes ) instead" )]
         public override void Send( Rock.Model.Communication communication )
         {
-            int mediumEntityId = CacheEntityType.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_PUSH_NOTIFICATION.AsGuid() )?.Id ?? 0;
+            int mediumEntityId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_PUSH_NOTIFICATION.AsGuid() )?.Id ?? 0;
             Send( communication, mediumEntityId, null );
         }
 
@@ -321,7 +321,7 @@ namespace Rock.Communication.Transport
             message.AppRoot = appRoot;
 
             var errorMessages = new List<string>();
-            int mediumEntityId = CacheEntityType.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_PUSH_NOTIFICATION.AsGuid() )?.Id ?? 0;
+            int mediumEntityId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_PUSH_NOTIFICATION.AsGuid() )?.Id ?? 0;
             Send( message, mediumEntityId, null, out errorMessages );
         }
 

@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI.WebControls;
 
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
 
@@ -50,11 +50,11 @@ namespace Rock.Web.UI.Controls
             ItemRestUrlExtraParams = $"?getCategorizedItems=true&showCategoriesThatHaveNoChildren=false";
 
             // set the entityType of the category
-            ItemRestUrlExtraParams += "&entityTypeId=" + CacheEntityType.Get<Rock.Model.Report>().Id;
+            ItemRestUrlExtraParams += "&entityTypeId=" + EntityTypeCache.Get<Rock.Model.Report>().Id;
 
             if ( this.CategoryGuids?.Any() == true )
             {
-                ItemRestUrlExtraParams += "&includedCategoryIds=" + this.CategoryGuids.Select( a => CacheCategory.Get( a ) ).Where( a => a != null ).Select( a => a.Id ).ToList().AsDelimited( "," );
+                ItemRestUrlExtraParams += "&includedCategoryIds=" + this.CategoryGuids.Select( a => CategoryCache.Get( a ) ).Where( a => a != null ).Select( a => a.Id ).ToList().AsDelimited( "," );
             }
 
             // set the itemFilter to only get DataViews with the specified EntityTypeId
@@ -123,7 +123,7 @@ namespace Rock.Web.UI.Controls
                 ItemId = report.Id.ToString();
 
                 string parentCategoryIds = string.Empty;
-                var parentCategory = report.CategoryId.HasValue ? CacheCategory.Get( report.CategoryId.Value ) : null;
+                var parentCategory = report.CategoryId.HasValue ? CategoryCache.Get( report.CategoryId.Value ) : null;
                 while ( parentCategory != null )
                 {
                     parentCategoryIds = parentCategory.Id + "," + parentCategoryIds;

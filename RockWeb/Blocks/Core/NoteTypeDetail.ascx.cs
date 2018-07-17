@@ -21,7 +21,7 @@ using System.Linq;
 using System.Web.UI;
 
 using Rock;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -178,14 +178,14 @@ namespace RockWeb.Blocks.Core
             bool showEntityTypePicker = true;
 
             var rockContext = new RockContext();
-            CacheEntityType entityType = null;
+            EntityTypeCache entityType = null;
 
             if ( noteTypeId > 0 )
             {
                 noteType = new NoteTypeService( rockContext ).Get( noteTypeId );
                 lActionTitle.Text = ActionTitle.Edit( NoteType.FriendlyTypeName ).FormatAsHtmlTitle();
                 pdAuditDetails.SetEntity( noteType, ResolveRockUrl( "~" ) );
-                entityType = CacheEntityType.Get( noteType.EntityTypeId );
+                entityType = EntityTypeCache.Get( noteType.EntityTypeId );
             }
 
             if ( noteType == null )
@@ -198,7 +198,7 @@ namespace RockWeb.Blocks.Core
                 if ( entityTypeId.HasValue )
                 {
                     noteType.EntityTypeId = entityTypeId.Value;
-                    entityType = CacheEntityType.Get( entityTypeId.Value );
+                    entityType = EntityTypeCache.Get( entityTypeId.Value );
                     showEntityTypePicker = false;
                     lActionTitle.Text = ActionTitle.Add( entityType.FriendlyName + " " + NoteType.FriendlyTypeName ).FormatAsHtmlTitle();
                 }

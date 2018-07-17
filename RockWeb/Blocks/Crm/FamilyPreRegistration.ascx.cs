@@ -30,7 +30,7 @@ using Rock.Model;
 
 using Rock.Security;
 using Rock.Web;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -159,7 +159,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
 
             // Get the allowed relationship types that have been selected
             var selectedRelationshipTypeIds = GetAttributeValue( "Relationships" ).SplitDelimitedValues().AsIntegerList();
-            var knownRelationshipGroupType = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
+            var knownRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
             if ( knownRelationshipGroupType != null )
             {
                 _relationshipTypes = knownRelationshipGroupType.Roles
@@ -291,15 +291,15 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             if ( ValidateInfo() )
             {
                 // Get some system values
-                var familyGroupType = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
+                var familyGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
                 var adultRoleId = familyGroupType.Roles.FirstOrDefault( r => r.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
                 var childRoleId = familyGroupType.Roles.FirstOrDefault( r => r.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ).Id;
 
-                var recordTypePersonId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
-                var recordStatusValue = CacheDefinedValue.Get( GetAttributeValue( "RecordStatus" ).AsGuid() ) ?? CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
-                var connectionStatusValue = CacheDefinedValue.Get( GetAttributeValue( "ConnectionStatus" ).AsGuid() ) ?? CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR.AsGuid() );
+                var recordTypePersonId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                var recordStatusValue = DefinedValueCache.Get( GetAttributeValue( "RecordStatus" ).AsGuid() ) ?? DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
+                var connectionStatusValue = DefinedValueCache.Get( GetAttributeValue( "ConnectionStatus" ).AsGuid() ) ?? DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR.AsGuid() );
 
-                var knownRelationshipGroupType = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
+                var knownRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
                 var canCheckInRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN.AsGuid() );
                 var knownRelationshipOwnerRoleGuid = Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid();
 
@@ -337,7 +337,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                 // If two adults were entered, let's check to see if we should assume they're married
                 if ( adultIds.Count == 2 )
                 {
-                    var marriedStatusValue = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() );
+                    var marriedStatusValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() );
                     if ( marriedStatusValue != null )
                     {
                         var adults = personService.Queryable().Where( p => adultIds.Contains( p.Id ) ).ToList();
@@ -395,7 +395,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                 }
 
                 // Save the family address
-                var homeLocationType = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
+                var homeLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
                 if ( homeLocationType != null )
                 {
                     // Find a location record for the address that was entered
@@ -430,7 +430,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                         if ( groupLocation != null && saveEmptyValues )
                         {
                             // If an address was not entered, and family has one on record, update it to be a previous address
-                            var prevLocationType = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid() );
+                            var prevLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid() );
                             if ( prevLocationType != null )
                             {
                                 groupLocation.GroupLocationTypeValueId = prevLocationType.Id;
@@ -704,7 +704,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             // Campus 
             if ( GetAttributeValue( "ShowCampus" ).AsBoolean() )
             {
-                cpCampus.Campuses = CacheCampus.All( false );
+                cpCampus.Campuses = CampusCache.All( false );
                 pnlCampus.Visible = true;
                 cpCampus.Required = GetAttributeValue("RequireCampus").AsBoolean();
             }
@@ -723,7 +723,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             bool isRequired = SetControl( "AdultSuffix", pnlSuffix1, pnlSuffix2 );
             dvpSuffix1.Required = isRequired;
             dvpSuffix2.Required = isRequired;
-            var suffixDt = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid() );
+            var suffixDt = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid() );
             dvpSuffix1.BindToDefinedType( suffixDt, true );
             dvpSuffix2.BindToDefinedType( suffixDt, true );
 
@@ -743,7 +743,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             isRequired = SetControl( "AdultMaritalStatus", pnlMaritalStatus1, pnlMaritalStatus2 );
             dvpMaritalStatus1.Required = isRequired;
             dvpMaritalStatus2.Required = isRequired;
-            var MaritalStatusDt = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() );
+            var MaritalStatusDt = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() );
             dvpMaritalStatus1.BindToDefinedType( MaritalStatusDt, true );
             dvpMaritalStatus2.BindToDefinedType( MaritalStatusDt, true );
 
@@ -871,7 +871,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                 cpCampus.SetValue( family.CampusId );
 
                 // Set the address from the family
-                var homeLocationType = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
+                var homeLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
                 if ( homeLocationType != null )
                 {
                     var location = family.GroupLocations
@@ -930,7 +930,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                 Guid? campusGuid = GetAttributeValue( "DefaultCampus" ).AsGuidOrNull();
                 if ( campusGuid.HasValue )
                 {
-                    var defaultCampus = CacheCampus.Get( campusGuid.Value );
+                    var defaultCampus = CampusCache.Get( campusGuid.Value );
                     if ( defaultCampus != null )
                     {
                         cpCampus.SetValue( defaultCampus.Id );
@@ -1154,11 +1154,11 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             PhoneNumberBox pnMobilePhone,
             DynamicPlaceholder phAttributes )
         {
-            var familyGroupType = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
+            var familyGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
 
-            var recordTypePersonId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
-            var recordStatusValue = CacheDefinedValue.Get( GetAttributeValue( "RecordStatus" ).AsGuid() ) ?? CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
-            var connectionStatusValue = CacheDefinedValue.Get( GetAttributeValue( "ConnectionStatus" ).AsGuid() ) ?? CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR.AsGuid() );
+            var recordTypePersonId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+            var recordStatusValue = DefinedValueCache.Get( GetAttributeValue( "RecordStatus" ).AsGuid() ) ?? DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
+            var connectionStatusValue = DefinedValueCache.Get( GetAttributeValue( "ConnectionStatus" ).AsGuid() ) ?? DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR.AsGuid() );
 
             var showSuffix = GetAttributeValue( "AdultSuffix" ) != "Hide";
             var showGender = GetAttributeValue( "AdultGender" ) != "Hide";
@@ -1290,7 +1290,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                     Control control = parentControl.FindControl( string.Format( "attribute_field_{0}_{1}", attribute.Value.Id, adultNumber ) );
                     if ( control != null )
                     {
-                        var value = new CacheAttributeValue();
+                        var value = new AttributeValueCache();
                         value.Value = attribute.Value.FieldType.Field.GetEditValue( control, attribute.Value.QualifierValues );
                         if ( setEmptyValue || value.Value.IsNotNullOrWhitespace() )
                         {
@@ -1345,19 +1345,19 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
         /// </summary>
         /// <param name="attributeKey">The attribute key.</param>
         /// <returns></returns>
-        private List<CacheAttribute> GetCategoryAttributeList( string attributeKey )
+        private List<AttributeCache> GetCategoryAttributeList( string attributeKey )
         {
-            var AttributeList = new List<CacheAttribute>();
+            var AttributeList = new List<AttributeCache>();
             foreach ( Guid categoryGuid in GetAttributeValue( attributeKey ).SplitDelimitedValues( false ).AsGuidList() )
             {
-                var category = CacheCategory.Get( categoryGuid );
+                var category = CategoryCache.Get( categoryGuid );
                 if ( category != null )
                 {
                     foreach ( var attribute in new AttributeService( _rockContext ).GetByCategoryId( category.Id, false ) )
                     {
                         if ( attribute.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                         {
-                            AttributeList.Add( CacheAttribute.Get( attribute ) );
+                            AttributeList.Add( AttributeCache.Get( attribute ) );
                         }
                     }
                 }
@@ -1371,12 +1371,12 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
         /// </summary>
         /// <param name="attributeKey">The attribute key.</param>
         /// <returns></returns>
-        private List<CacheAttribute> GetAttributeList( string attributeKey )
+        private List<AttributeCache> GetAttributeList( string attributeKey )
         {
-            var AttributeList = new List<CacheAttribute>();
+            var AttributeList = new List<AttributeCache>();
             foreach ( Guid attributeGuid in GetAttributeValue( attributeKey ).SplitDelimitedValues( false ).AsGuidList() )
             {
-                var attribute = CacheAttribute.Get( attributeGuid );
+                var attribute = AttributeCache.Get( attributeGuid );
                 if ( attribute != null && attribute.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                 {
                     AttributeList.Add( attribute );
@@ -1470,7 +1470,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                 Guid? campusGuid = GetAttributeValue( "DefaultCampus" ).AsGuidOrNull();
                 if ( campusGuid.HasValue )
                 {
-                    var defaultCampus = CacheCampus.Get( campusGuid.Value );
+                    var defaultCampus = CampusCache.Get( campusGuid.Value );
                     if ( defaultCampus != null )
                     {
                         family.CampusId = defaultCampus.Id;
@@ -1603,7 +1603,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
 
             var phoneNumberService = new PhoneNumberService( _rockContext );
 
-            var phType = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
+            var phType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
             if ( phType != null )
             {
                 var phoneNumber = phoneNumberService.Queryable()

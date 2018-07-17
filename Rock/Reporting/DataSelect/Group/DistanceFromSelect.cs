@@ -23,7 +23,7 @@ using System.Linq.Expressions;
 using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataSelect.Group
@@ -180,7 +180,7 @@ namespace Rock.Reporting.DataSelect.Group
 
             RockDropDownList locationTypeList = new RockDropDownList();
             locationTypeList.Items.Clear();
-            foreach ( var value in CacheDefinedType.Get( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() ).DefinedValues.OrderBy( a => a.Order ).ThenBy( a => a.Value ) )
+            foreach ( var value in DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() ).DefinedValues.OrderBy( a => a.Order ).ThenBy( a => a.Value ) )
             {
                 locationTypeList.Items.Add( new ListItem( value.Value, value.Guid.ToString() ) );
             }

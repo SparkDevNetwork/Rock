@@ -30,7 +30,7 @@ using Rock.Web.UI.Controls;
 using Rock;
 using Attribute = Rock.Model.Attribute;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Newtonsoft.Json;
 
 namespace RockWeb.Blocks.WorkFlow
@@ -60,7 +60,7 @@ namespace RockWeb.Blocks.WorkFlow
         /// <value>
         /// The available attributes.
         /// </value>
-        public List<CacheAttribute> AvailableAttributes { get; set; }
+        public List<AttributeCache> AvailableAttributes { get; set; }
 
         #endregion
 
@@ -74,7 +74,7 @@ namespace RockWeb.Blocks.WorkFlow
         {
             base.LoadViewState( savedState );
 
-            AvailableAttributes = ViewState["AvailableAttributes"] as List<CacheAttribute>;
+            AvailableAttributes = ViewState["AvailableAttributes"] as List<AttributeCache>;
 
             AddDynamicControls();
         }
@@ -442,7 +442,7 @@ namespace RockWeb.Blocks.WorkFlow
         private void BindAttributes()
         {
             // Parse the attribute filters 
-            AvailableAttributes = new List<CacheAttribute>();
+            AvailableAttributes = new List<AttributeCache>();
             if ( _workflowType != null )
             {
                 int entityTypeId = new Workflow().TypeId;
@@ -457,7 +457,7 @@ namespace RockWeb.Blocks.WorkFlow
                     .ThenBy( a => a.Order )
                     .ThenBy( a => a.Name ) )
                 {
-                    AvailableAttributes.Add( CacheAttribute.Get( attributeModel ) );
+                    AvailableAttributes.Add( AttributeCache.Get( attributeModel ) );
                 }
             }
         }
@@ -521,7 +521,7 @@ namespace RockWeb.Blocks.WorkFlow
                         boundField.HeaderText = attribute.Name;
                         boundField.Condensed = false;
 
-                        var attributeCache = Rock.Cache.CacheAttribute.Get( attribute.Id );
+                        var attributeCache = Rock.Web.Cache.AttributeCache.Get( attribute.Id );
                         if ( attributeCache != null )
                         {
                             boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
@@ -733,7 +733,7 @@ namespace RockWeb.Blocks.WorkFlow
 
                 gWorkflows.ObjectList = workflowObjectQry.ToList().ToDictionary( k => k.Id.ToString(), v => v as object );
 
-                gWorkflows.EntityTypeId = CacheEntityType.Get<Workflow>().Id;
+                gWorkflows.EntityTypeId = EntityTypeCache.Get<Workflow>().Id;
                 var qryGrid = workflows.Select( w => new
                 {
                     w.Id,

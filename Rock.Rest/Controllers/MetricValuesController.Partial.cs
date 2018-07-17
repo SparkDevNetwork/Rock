@@ -24,7 +24,7 @@ using System.Web.Http.OData;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Rest.Controllers
 {
@@ -209,20 +209,20 @@ namespace Rock.Rest.Controllers
             {
                 if ( entityTypeEntity.EntityTypeId.HasValue && entityTypeEntity.EntityId.HasValue )
                 {
-                    var entityTypeCache = CacheEntityType.Get( entityTypeEntity.EntityTypeId.Value );
+                    var entityTypeCache = EntityTypeCache.Get( entityTypeEntity.EntityTypeId.Value );
                     if ( entityTypeCache != null )
                     {
-                        if ( entityTypeCache.Id == CacheEntityType.GetId<Campus>() )
+                        if ( entityTypeCache.Id == EntityTypeCache.GetId<Campus>() )
                         {
-                            var campus = CacheCampus.Get( entityTypeEntity.EntityId.Value );
+                            var campus = CampusCache.Get( entityTypeEntity.EntityId.Value );
                             if ( campus != null )
                             {
                                 seriesPartitionValues.Add( campus.Name );
                             }
                         }
-                        else if ( entityTypeCache.Id == CacheEntityType.GetId<DefinedValue>() )
+                        else if ( entityTypeCache.Id == EntityTypeCache.GetId<DefinedValue>() )
                         {
-                            var definedValue = CacheDefinedValue.Get( entityTypeEntity.EntityId.Value );
+                            var definedValue = DefinedValueCache.Get( entityTypeEntity.EntityId.Value );
                             if ( definedValue != null )
                             {
                                 seriesPartitionValues.Add( definedValue.ToString() );

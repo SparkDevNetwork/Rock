@@ -24,7 +24,7 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.Administration
         #region Fields
 
         private bool canConfigure = false;
-        private Rock.Cache.CachePage _page = null;
+        private PageCache _page = null;
 
         #endregion
 
@@ -87,7 +87,7 @@ namespace RockWeb.Blocks.Administration
             try
             {
                 int pageId = Convert.ToInt32( PageParameter( "EditPage" ) );
-                _page = Rock.Cache.CachePage.Get( pageId );
+                _page = PageCache.Get( pageId );
 
                 if ( _page != null )
                 {
@@ -325,7 +325,7 @@ namespace RockWeb.Blocks.Administration
                     else
                     {
                         page.ParentPageId = null;
-                        page.LayoutId = CachePage.Get( RockPage.PageId ).LayoutId;
+                        page.LayoutId = PageCache.Get( RockPage.PageId ).LayoutId;
                     }
 
                     page.PageTitle = dtbPageName.Text;
