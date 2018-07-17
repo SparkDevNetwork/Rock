@@ -23,7 +23,7 @@ using Rock;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
@@ -106,7 +106,7 @@ namespace RockWeb.Blocks.Cms
             gItemAttributes.EmptyDataText = Server.HtmlEncode( None.Text );
             gItemAttributes.GridReorder += gItemAttributes_GridReorder;
 
-            btnSecurity.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.ContentChannel ) ).Id;
+            btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.ContentChannel ) ).Id;
             
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -372,7 +372,7 @@ namespace RockWeb.Blocks.Cms
                     rockContext.SaveChanges();
 
                     // Save the Item Attributes
-                    int entityTypeId = CacheEntityType.Get( typeof( ContentChannelItem ) ).Id;
+                    int entityTypeId = EntityTypeCache.Get( typeof( ContentChannelItem ) ).Id;
                     SaveAttributes( contentChannel.Id, entityTypeId, ItemAttributesState, rockContext );
 
                 } );
@@ -448,7 +448,7 @@ namespace RockWeb.Blocks.Cms
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
-                attribute.FieldTypeId = CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
+                attribute.FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
                 edtItemAttributes.ActionTitle = ActionTitle.Add( tbName.Text + " Item Attribute" );
 
             }

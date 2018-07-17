@@ -29,7 +29,7 @@ using System.Dynamic;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using Rock.Security;
@@ -114,8 +114,8 @@ namespace RockWeb.Blocks.Finance
             set { ViewState["CampusId"] = value; }
         }
 
-        CacheDefinedValue _dvcConnectionStatus = null;
-        CacheDefinedValue _dvcRecordStatus = null;
+        DefinedValueCache _dvcConnectionStatus = null;
+        DefinedValueCache _dvcRecordStatus = null;
 
         bool _receiptSent = false;
         string _transactionCode = string.Empty;
@@ -157,7 +157,7 @@ namespace RockWeb.Blocks.Finance
             base.OnLoad( e );
 
             // set campus
-            var campusEntityType = CacheEntityType.Get( "Rock.Model.Campus" );
+            var campusEntityType = EntityTypeCache.Get( "Rock.Model.Campus" );
             var contextCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
 
             if ( contextCampus != null )
@@ -428,7 +428,7 @@ namespace RockWeb.Blocks.Finance
                             transaction.TransactionDateTime = RockDateTime.Now;
                             transaction.FinancialGatewayId = financialGateway.Id;
 
-                            var txnType = CacheDefinedValue.Get( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION ) );
+                            var txnType = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION ) );
                             transaction.TransactionTypeValueId = txnType.Id;
 
                             transaction.Summary = swipeInfo.Comment1;
@@ -442,7 +442,7 @@ namespace RockWeb.Blocks.Finance
                             Guid sourceGuid = Guid.Empty;
                             if ( Guid.TryParse( GetAttributeValue( "Source" ), out sourceGuid ) )
                             {
-                                var source = CacheDefinedValue.Get( sourceGuid );
+                                var source = DefinedValueCache.Get( sourceGuid );
                                 if ( source != null )
                                 {
                                     transaction.SourceTypeValueId = source.Id;
@@ -583,8 +583,8 @@ namespace RockWeb.Blocks.Finance
         }
         protected void lbRegisterNext_Click( object sender, EventArgs e )
         {
-            _dvcConnectionStatus = CacheDefinedValue.Get( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
-            _dvcRecordStatus = CacheDefinedValue.Get( GetAttributeValue( "RecordStatus" ).AsGuid() );
+            _dvcConnectionStatus = DefinedValueCache.Get( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
+            _dvcRecordStatus = DefinedValueCache.Get( GetAttributeValue( "RecordStatus" ).AsGuid() );
             
             // create new person / family
             Person person = new Person();
@@ -954,7 +954,7 @@ namespace RockWeb.Blocks.Finance
                 lbGiveAnonymously.Visible = false;
             }
 
-            _dvcConnectionStatus = CacheDefinedValue.Get( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
+            _dvcConnectionStatus = DefinedValueCache.Get( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
             if ( _dvcConnectionStatus == null )
             {
                 nbBlockConfigErrors.Heading = "Invalid Connection Status";
@@ -962,7 +962,7 @@ namespace RockWeb.Blocks.Finance
                 return false;
             }
 
-            _dvcRecordStatus = CacheDefinedValue.Get( GetAttributeValue( "RecordStatus" ).AsGuid() );
+            _dvcRecordStatus = DefinedValueCache.Get( GetAttributeValue( "RecordStatus" ).AsGuid() );
             if ( _dvcRecordStatus == null )
             {
                 nbBlockConfigErrors.Heading = "Invalid Record Status";

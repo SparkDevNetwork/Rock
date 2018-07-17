@@ -23,7 +23,7 @@ using System.Web.UI.WebControls;
 using Rock.Communication;
 using Rock.Field;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls.Communication
 {
@@ -91,7 +91,7 @@ namespace Rock.Web.UI.Controls.Communication
             var valueItem = ddlFrom.Items.FindByValue( communication.SMSFromDefinedValueId.ToString() );
             if ( valueItem == null && communication.SMSFromDefinedValueId != null )
             {
-                var lookupDefinedValue = CacheDefinedValue.Get( communication.SMSFromDefinedValueId.GetValueOrDefault() );
+                var lookupDefinedValue = DefinedValueCache.Get( communication.SMSFromDefinedValueId.GetValueOrDefault() );
                 ddlFrom.Items.Add( new ListItem( lookupDefinedValue.Description, lookupDefinedValue.Id.ToString() ) );
             }
             ddlFrom.SetValue( communication.SMSFromDefinedValueId );
@@ -122,7 +122,7 @@ namespace Rock.Web.UI.Controls.Communication
             Controls.Clear();
 
             var selectedNumberGuids = SelectedNumbers; //GetAttributeValue( "FilterCategories" ).SplitDelimitedValues( true ).AsGuidList();
-            var definedType = CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM ) );
+            var definedType = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM ) );
 
 
             ddlFrom = new RockDropDownList();
@@ -206,7 +206,7 @@ namespace Rock.Web.UI.Controls.Communication
         /// <exception cref="System.NotImplementedException"></exception>
         public override void InitializeFromSender( Person sender )
         {
-            var numbers = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM.AsGuid() );
+            var numbers = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM.AsGuid() );
             if( numbers != null )
             {
                 foreach ( var number in numbers.DefinedValues )

@@ -25,7 +25,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using System.ComponentModel;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using System.Web.UI.WebControls;
 
 namespace RockWeb.Blocks.Cms
@@ -158,7 +158,7 @@ namespace RockWeb.Blocks.Cms
                     int? siteId = e.Value.AsIntegerOrNull();
                     if ( siteId.HasValue )
                     {
-                        var site = CacheSite.Get( siteId.Value );
+                        var site = SiteCache.Get( siteId.Value );
                         if ( site != null )
                         {
                             e.Value = site.Name;
@@ -211,7 +211,7 @@ namespace RockWeb.Blocks.Cms
                     boundField.AttributeId = attribute.Id;
                     boundField.HeaderText = attribute.Name;
 
-                    var attributeCache = Rock.Cache.CacheAttribute.Get( attribute.Id );
+                    var attributeCache = Rock.Web.Cache.AttributeCache.Get( attribute.Id );
                     if ( attributeCache != null )
                     {
                         boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
@@ -228,7 +228,7 @@ namespace RockWeb.Blocks.Cms
         private void BindFilter()
         {
             ddlSite.Items.Clear();
-            foreach ( CacheSite site in new SiteService( new RockContext() ).Queryable().OrderBy( s => s.Name ).Select( a => a.Id ).ToList().Select( a => CacheSite.Get( a ) ) )
+            foreach ( SiteCache site in new SiteService( new RockContext() ).Queryable().OrderBy( s => s.Name ).Select( a => a.Id ).ToList().Select( a => SiteCache.Get( a ) ) )
             {
                 ddlSite.Items.Add( new ListItem( site.Name, site.Id.ToString() ) );
             }
@@ -243,7 +243,7 @@ namespace RockWeb.Blocks.Cms
         {
             PageRouteService pageRouteService = new PageRouteService( new RockContext() );
             SortProperty sortProperty = gPageRoutes.SortProperty;
-            gPageRoutes.EntityTypeId = CacheEntityType.Get<PageRoute>().Id;
+            gPageRoutes.EntityTypeId = EntityTypeCache.Get<PageRoute>().Id;
 
             var queryable = pageRouteService.Queryable();
 

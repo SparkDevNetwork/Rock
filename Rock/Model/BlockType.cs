@@ -15,7 +15,7 @@
 // </copyright>
 //
 using Newtonsoft.Json;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -156,7 +156,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IEntityCache GetCacheObject()
         {
-            return CacheBlockType.Get( this.Id );
+            return BlockTypeCache.Get( this.Id );
         }
 
         /// <summary>
@@ -166,7 +166,7 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
         {
-            CacheBlockType.UpdateCachedEntity( this.Id, entityState );
+            BlockTypeCache.UpdateCachedEntity( this.Id, entityState );
         }
 
         #endregion

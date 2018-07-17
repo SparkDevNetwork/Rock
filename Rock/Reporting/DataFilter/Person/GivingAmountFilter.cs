@@ -24,6 +24,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.Person
@@ -181,7 +182,7 @@ function() {
             comparisonControl.ID = filterControl.ID + "_comparisonControl";
             filterControl.Controls.Add( comparisonControl );
 
-            var globalAttributes = Rock.Cache.CacheGlobalAttributes.Get();
+            var globalAttributes = GlobalAttributesCache.Get();
 
             NumberBox numberBoxAmount = new NumberBox();
             numberBoxAmount.PrependText = globalAttributes.GetValue( "CurrencySymbol" ) ?? "$";
@@ -376,7 +377,7 @@ function() {
                 combineGiving = selectionValues[5].AsBooleanOrNull() ?? false;
             }
 
-            int transactionTypeContributionId = Rock.Cache.CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
+            int transactionTypeContributionId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
 
             var financialTransactionQry = new FinancialTransactionService( rockContext ).Queryable()
                 .Where( xx => xx.AuthorizedPersonAliasId.HasValue )

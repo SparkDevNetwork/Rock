@@ -25,7 +25,7 @@ using System.Xml;
 using System.Xml.Linq;
 
 using Rock.Web;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 public class SyndicationFeedHelper
 {

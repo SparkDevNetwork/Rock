@@ -27,7 +27,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -81,7 +81,7 @@ namespace RockWeb.Blocks.CheckIn.Config
         {
             base.OnInit( e );
 
-            cbShowInactive.Checked = GetUserPreference( CacheBlock.Guid.ToString() + "_showInactive" ).AsBoolean();
+            cbShowInactive.Checked = GetUserPreference( BlockCache.Guid.ToString() + "_showInactive" ).AsBoolean();
 
             BuildRows( !Page.IsPostBack );
 
@@ -540,14 +540,14 @@ namespace RockWeb.Blocks.CheckIn.Config
                             rockContext.SaveChanges();
 
                             int labelOrder = 0;
-                            int binaryFileFieldTypeID = CacheFieldType.Get( Rock.SystemGuid.FieldType.LABEL.AsGuid() ).Id;
+                            int binaryFileFieldTypeID = FieldTypeCache.Get( Rock.SystemGuid.FieldType.LABEL.AsGuid() ).Id;
                             foreach ( var checkinLabelAttributeInfo in checkinArea.CheckinLabels )
                             {
                                 var attribute = new Rock.Model.Attribute();
                                 attribute.AttributeQualifiers.Add( new AttributeQualifier { Key = "binaryFileType", Value = Rock.SystemGuid.BinaryFiletype.CHECKIN_LABEL } );
                                 attribute.Guid = Guid.NewGuid();
                                 attribute.FieldTypeId = binaryFileFieldTypeID;
-                                attribute.EntityTypeId = CacheEntityType.GetId( typeof( GroupType ) );
+                                attribute.EntityTypeId = EntityTypeCache.GetId( typeof( GroupType ) );
                                 attribute.EntityTypeQualifierColumn = "Id";
                                 attribute.EntityTypeQualifierValue = groupType.Id.ToString();
                                 attribute.DefaultValue = checkinLabelAttributeInfo.BinaryFileGuid.ToString();
@@ -706,7 +706,7 @@ namespace RockWeb.Blocks.CheckIn.Config
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void cbShowInactive_CheckedChanged( object sender, EventArgs e )
         {
-            SetUserPreference( CacheBlock.Guid.ToString() + "_showInactive", cbShowInactive.Checked.ToString() );
+            SetUserPreference( BlockCache.Guid.ToString() + "_showInactive", cbShowInactive.Checked.ToString() );
             BuildRows( true );
         }
 
@@ -799,7 +799,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                          !g.ParentGroupId.HasValue ||
                         !allGroupIds.Contains( g.ParentGroupId.Value ) );
 
-                if ( !GetUserPreference( CacheBlock.Guid.ToString() + "_showInactive" ).AsBoolean() )
+                if ( !GetUserPreference( BlockCache.Guid.ToString() + "_showInactive" ).AsBoolean() )
                 {
                     childGroups = childGroups.Where( g => g.IsActive );
                 }

@@ -23,7 +23,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Reporting;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Security;
 
 namespace Rock.Web.UI.Controls
@@ -156,7 +156,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                var entityTypeCache = CacheEntityType.Get( FilteredEntityTypeName );
+                var entityTypeCache = EntityTypeCache.Get( FilteredEntityTypeName );
                 if ( entityTypeCache != null )
                 {
                     return entityTypeCache.GetEntityType();

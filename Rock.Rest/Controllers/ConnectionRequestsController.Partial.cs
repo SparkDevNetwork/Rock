@@ -23,7 +23,7 @@ using System.Reflection;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Security;
 using Rock.Web.UI.Controls;
 

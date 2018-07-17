@@ -26,7 +26,7 @@ using System.Collections.Generic;
 using System.Data;
 using System;
 using System.Diagnostics;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.PersonProfile.Badge
 {
@@ -38,14 +38,14 @@ namespace Rock.PersonProfile.Badge
     [ExportMetadata( "ComponentName", "Family Weeks Attended In Duration" )]
     
     [IntegerField("Duration", "The number of weeks to use for the duration (default 16.)", false, 16)]
-    public class FamilyWeeksAttendedInDuration : BadgeComponentModern
+    public class FamilyWeeksAttendedInDuration : BadgeComponent
     {        
         /// <summary>
         /// Renders the specified writer.
         /// </summary>
         /// <param name="badge">The badge.</param>
         /// <param name="writer">The writer.</param>
-        public override void Render( CachePersonBadge badge, System.Web.UI.HtmlTextWriter writer )
+        public override void Render( PersonBadgeCache badge, System.Web.UI.HtmlTextWriter writer )
         {
             int duration = GetAttributeValue(badge, "Duration").AsIntegerOrNull() ?? 16;
             

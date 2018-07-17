@@ -28,7 +28,7 @@ using System.Web;
 using System.Web.UI;
 
 using Rock;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
 using Rock.Transactions;

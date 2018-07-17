@@ -26,7 +26,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -221,7 +221,7 @@ namespace RockWeb.Blocks.Administration
 
             gSchedules.SetLinqDataSource( qry.AsNoTracking() );
 
-            gSchedules.EntityTypeId = CacheEntityType.Get<Schedule>().Id;
+            gSchedules.EntityTypeId = EntityTypeCache.Get<Schedule>().Id;
             gSchedules.DataBind();
         }
 

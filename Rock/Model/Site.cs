@@ -24,7 +24,7 @@ using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.Crawler;
@@ -584,7 +584,7 @@ namespace Rock.Model
                 }
                 catch { }
 
-                return new Uri( Rock.Cache.CacheGlobalAttributes.Get().GetValue( "PublicApplicationRoot" ) );
+                return new Uri( GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ) );
             }
         }
 
@@ -720,7 +720,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IEntityCache GetCacheObject()
         {
-            return CacheSite.Get( this.Id );
+            return SiteCache.Get( this.Id );
         }
 
         /// <summary>
@@ -730,7 +730,7 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
         {
-            CacheSite.UpdateCachedEntity( this.Id, entityState );
+            SiteCache.UpdateCachedEntity( this.Id, entityState );
 
             using ( var rockContext = new RockContext() )
             {
@@ -738,7 +738,7 @@ namespace Rock.Model
                         .Select( p => p.Id )
                         .ToList() )
                 {
-                    CachePage.UpdateCachedEntity( pageId, EntityState.Detached );
+                    PageCache.UpdateCachedEntity( pageId, EntityState.Detached );
                 }
             }
         }

@@ -25,6 +25,7 @@ using System.Web.Http.Filters;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Rest.Filters
 {
@@ -54,10 +55,10 @@ namespace Rock.Rest.Filters
                 actionPath += "?" + actionPathQueryString;
             }
 
-            ISecured item = Rock.Cache.CacheRestAction.Get( actionMethod + actionPath );
+            ISecured item = RestActionCache.Get( actionMethod + actionPath );
             if ( item == null )
             {
-                item = Rock.Cache.CacheRestController.Get( controllerClassName );
+                item = RestControllerCache.Get( controllerClassName );
                 if ( item == null )
                 {
                     item = new RestController();

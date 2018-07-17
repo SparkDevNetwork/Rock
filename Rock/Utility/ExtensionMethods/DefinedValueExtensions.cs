@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Web.Cache;
+
 namespace Rock
 {
     /// <summary>
@@ -33,7 +35,7 @@ namespace Rock
             if ( !id.HasValue )
                 return string.Empty;
 
-            var definedValue = Rock.Cache.CacheDefinedValue.Get( id.Value );
+            var definedValue = DefinedValueCache.Get( id.Value );
             if ( definedValue != null )
                 return definedValue.Value;
             else

@@ -29,7 +29,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Event
 {
@@ -144,7 +144,7 @@ namespace RockWeb.Blocks.Event
                     var mergeFields = new Dictionary<string, object>();
                     mergeFields.Add( "RegistrationPage", LinkedPageRoute( "RegistrationPage" ) );
 
-                    var campusEntityType = CacheEntityType.Get( "Rock.Model.Campus" );
+                    var campusEntityType = EntityTypeCache.Get( "Rock.Model.Campus" );
                     var contextCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
 
                     if ( contextCampus != null )

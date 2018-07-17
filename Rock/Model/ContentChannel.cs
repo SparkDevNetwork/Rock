@@ -22,7 +22,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
@@ -399,7 +399,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IEntityCache GetCacheObject()
         {
-            return CacheContentChannel.Get( this.Id );
+            return ContentChannelCache.Get( this.Id );
         }
 
         /// <summary>
@@ -409,7 +409,7 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
         {
-            CacheContentChannel.UpdateCachedEntity( this.Id, entityState );
+            ContentChannelCache.UpdateCachedEntity( this.Id, entityState );
         }
 
         #endregion

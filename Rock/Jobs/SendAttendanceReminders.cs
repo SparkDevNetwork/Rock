@@ -25,7 +25,7 @@ using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
@@ -53,7 +53,7 @@ namespace Rock.Jobs
         public virtual void Execute( IJobExecutionContext context )
         {
             JobDataMap dataMap = context.JobDetail.JobDataMap;
-            var groupType = CacheGroupType.Get( dataMap.GetString( "GroupType" ).AsGuid() );
+            var groupType = GroupTypeCache.Get( dataMap.GetString( "GroupType" ).AsGuid() );
             int attendanceRemindersSent = 0;
             if ( groupType.TakesAttendance && groupType.SendAttendanceReminder )
             {

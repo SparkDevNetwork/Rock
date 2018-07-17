@@ -23,7 +23,7 @@ using System.IO;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Workflow.Action.WorkflowAttributes
 {
@@ -72,7 +72,7 @@ namespace Rock.Workflow.Action.WorkflowAttributes
             Guid guid = GetAttributeValue( action, "ResultAttribute" ).AsGuid();
             if ( !guid.IsEmpty() )
             {
-                var destinationAttribute = CacheAttribute.Get( guid, rockContext );
+                var destinationAttribute = AttributeCache.Get( guid, rockContext );
                 if ( destinationAttribute != null )
                 {
                     string lavaTemplate = GetAttributeValue( action, "LavaTemplate" );

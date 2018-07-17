@@ -25,7 +25,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -197,7 +197,7 @@ namespace RockWeb.Blocks.Reporting
 
             try
             {
-                var componentEntityType = CacheEntityType.Get( interactionComponent.Channel.ComponentEntityTypeId.Value ).GetEntityType();
+                var componentEntityType = EntityTypeCache.Get( interactionComponent.Channel.ComponentEntityTypeId.Value ).GetEntityType();
                 IService serviceInstance = Reflection.GetServiceForEntityType( componentEntityType, rockContext );
                 if ( serviceInstance != null )
                 {

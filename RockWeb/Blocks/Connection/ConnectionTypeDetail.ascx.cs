@@ -31,7 +31,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
@@ -135,7 +135,7 @@ namespace RockWeb.Blocks.Connection
             gWorkflows.GridRebind += gWorkflows_GridRebind;
 
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', 'This will also delete all the connection opportunities! Are you sure you wish to continue with the delete?');", ConnectionType.FriendlyTypeName );
-            btnSecurity.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.ConnectionType ) ).Id;
+            btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.ConnectionType ) ).Id;
 
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upConnectionType );
@@ -544,7 +544,7 @@ namespace RockWeb.Blocks.Connection
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
-                attribute.FieldTypeId = CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
+                attribute.FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
             }
             else
             {
@@ -642,7 +642,7 @@ namespace RockWeb.Blocks.Connection
                              a.Guid,
                              a.Name,
                              a.Description,
-                             FieldType = CacheFieldType.GetName( a.FieldTypeId ),
+                             FieldType = FieldTypeCache.GetName( a.FieldTypeId ),
                              a.IsRequired,
                              a.IsGridColumn,
                              a.AllowSearch

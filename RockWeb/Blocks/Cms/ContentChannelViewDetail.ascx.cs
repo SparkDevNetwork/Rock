@@ -23,7 +23,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
 using Rock.Transactions;
@@ -194,7 +194,7 @@ Guid - ContentChannelItem Guid
             pnlSettings.Visible = true;
             ddlContentChannel.Items.Clear();
             ddlContentChannel.Items.Add( new ListItem() );
-            foreach ( var contentChannel in CacheContentChannel.All().OrderBy( a => a.Name ) )
+            foreach ( var contentChannel in ContentChannelCache.All().OrderBy( a => a.Name ) )
             {
                 ddlContentChannel.Items.Add( new ListItem( contentChannel.Name, contentChannel.Guid.ToString() ) );
             }
@@ -291,7 +291,7 @@ Guid - ContentChannelItem Guid
             Guid? selectedWorkflowTypeGuid = null;
             if ( selectedWorkflowTypeId.HasValue )
             {
-                selectedWorkflowTypeGuid = CacheWorkflowType.Get( selectedWorkflowTypeId.Value ).Guid;
+                selectedWorkflowTypeGuid = WorkflowTypeCache.Get( selectedWorkflowTypeId.Value ).Guid;
             }
 
             this.SetAttributeValue( "WorkflowType", selectedWorkflowTypeGuid.ToString() );
@@ -414,7 +414,7 @@ Guid - ContentChannelItem Guid
                 var channelGuid = this.GetAttributeValue( "ContentChannel" ).AsGuidOrNull();
                 if ( channelGuid.HasValue )
                 {
-                    var channel = CacheContentChannel.Get( channelGuid.Value );
+                    var channel = ContentChannelCache.Get( channelGuid.Value );
                     if ( channel != null )
                     {
                         if ( contentChannelItem.ContentChannelId != channel.Id )
@@ -599,7 +599,7 @@ Guid - ContentChannelItem Guid
             var contentChannelItem = GetContentChannelItem( GetContentChannelItemParameterValue() );
 
             var interactionTransaction = new InteractionTransaction(
-                CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_CONTENTCHANNEL.AsGuid() ),
+                DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_CONTENTCHANNEL.AsGuid() ),
                 contentChannelItem.ContentChannel,
                 contentChannelItem );
 
@@ -614,14 +614,14 @@ Guid - ContentChannelItem Guid
         private void LaunchWorkflow()
         {
             // Check to see if a workflow should be launched when viewed
-            CacheWorkflowType workflowType = null;
+            WorkflowTypeCache workflowType = null;
             Guid? workflowTypeGuid = GetAttributeValue( "WorkflowType" ).AsGuidOrNull();
             if ( !workflowTypeGuid.HasValue )
             {
                 return;
             }
 
-            workflowType = CacheWorkflowType.Get( workflowTypeGuid.Value );
+            workflowType = WorkflowTypeCache.Get( workflowTypeGuid.Value );
 
             if ( workflowType == null || ( workflowType.IsActive != true ) )
             {
@@ -735,7 +735,7 @@ Guid - ContentChannelItem Guid
 
             if ( attributeEntityType == "C" )
             {
-                mergeObject = CacheContentChannel.Get( contentChannelItem.ContentChannelId );
+                mergeObject = ContentChannelCache.Get( contentChannelItem.ContentChannelId );
             }
             else
             {
@@ -756,8 +756,8 @@ Guid - ContentChannelItem Guid
         /// <param name="channelGuid">The channel unique identifier.</param>
         private void UpdateSocialMediaDropdowns( Guid? channelGuid )
         {
-            List<CacheAttribute> channelAttributes = new List<CacheAttribute>();
-            List<CacheAttribute> itemAttributes = new List<CacheAttribute>();
+            List<AttributeCache> channelAttributes = new List<AttributeCache>();
+            List<AttributeCache> itemAttributes = new List<AttributeCache>();
 
             if ( channelGuid.HasValue )
             {
