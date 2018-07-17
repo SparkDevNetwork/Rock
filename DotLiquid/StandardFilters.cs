@@ -13,6 +13,8 @@ using System.Web;
 #endif
 using DotLiquid.Util;
 
+/// CCV CORE 7-17-2018: CFU added sort updates from v7
+
 namespace DotLiquid
 {
 	public static class StandardFilters
