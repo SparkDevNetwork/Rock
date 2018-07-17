@@ -263,43 +263,75 @@ namespace DotLiquid
         /// <param name="input"></param>
         /// <param name="property"></param>
         /// <returns></returns>
-        public static IEnumerable Sort(object input, string property)
+        public static IEnumerable Sort(object input, string property) 
+        {
+            return Sort(input, property, "asc");
+        }
+        /// <summary>
+        /// Sort elements of the array
+        /// provide optional property with which to sort an array of hashes or drops and optional sort order (asc or desc).
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="property"></param>
+        /// <param name="sortOrder"></param>
+        /// <returns></returns>
+        public static IEnumerable Sort(object input, string property, string sortOrder)
 #else
-		/// <summary>
-		/// Sort elements of the array
-		/// provide optional property with which to sort an array of hashes or drops
-		/// </summary>
-		/// <param name="input"></param>
-		/// <param name="property"></param>
-		/// <returns></returns>
-		public static IEnumerable Sort(object input, string property = null)
+        /// <summary>
+        /// Sort elements of the array
+        /// provide optional property with which to sort an array of hashes or drops
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="property"></param>
+        /// <returns></returns>
+        public static IEnumerable Sort( object input, string property = null )
+        {
+            return Sort( input, property, "asc" );
+        }
+
+        /// <summary>
+        /// Sort elements of the array
+        /// provide optional property with which to sort an array of hashes or drops and optional sort order (asc or desc).
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="property"></param>
+        /// <param name="sortOrder"></param>
+        /// <returns></returns>
+        public static IEnumerable Sort( object input, string property = null, string sortOrder = "asc" )
 #endif
-		{
-			List<object> ary;
-			if (input is IEnumerable)
-				ary = ((IEnumerable) input).Flatten().Cast<object>().ToList();
-			else
-				ary = new List<object>(new[] { input });
-			if (!ary.Any())
-				return ary;
+        {
+            List<object> ary;
+            if ( input is IEnumerable )
+                ary = ( ( IEnumerable ) input ).Flatten().Cast<object>().ToList();
+            else
+                ary = new List<object>( new[] { input } );
+            if ( !ary.Any() )
+                return ary;
 
-			if (string.IsNullOrEmpty(property))
-				ary.Sort();
-			else if ((ary.All(o => o is IDictionary)) && ((IDictionary) ary.First()).Contains(property))
-				ary.Sort((a, b) => Comparer.Default.Compare(((IDictionary) a)[property], ((IDictionary) b)[property]));
-			else if (ary.All(o => o.RespondTo(property)))
-				ary.Sort((a, b) => Comparer.Default.Compare(a.Send(property), b.Send(property)));
+            if ( string.IsNullOrEmpty( property ) )
+                ary.Sort();
+            else if ( ( ary.All( o => o is IDictionary ) ) && ( ( IDictionary ) ary.First() ).Contains( property ) )
+                if ( sortOrder.ToLower() == "desc" )
+                    ary.Sort( ( a, b ) => Comparer.Default.Compare( ( ( IDictionary ) b )[property], ( ( IDictionary ) a )[property] ) );
+                else
+                    ary.Sort( ( a, b ) => Comparer.Default.Compare( ( ( IDictionary ) a )[property], ( ( IDictionary ) b )[property] ) );
+            else if ( ary.All( o => o.RespondTo( property ) ) )
+                if ( sortOrder.ToLower() == "desc" )
+                    ary.Sort( ( a, b ) => Comparer.Default.Compare( b.Send( property ), a.Send( property ) ) );
+                else
+                    ary.Sort( ( a, b ) => Comparer.Default.Compare( a.Send( property ), b.Send( property ) ) );
 
-			return ary;
-		}
+            return ary;
+        }
 
-		/// <summary>
-		/// Map/collect on a given property
-		/// </summary>
-		/// <param name="input"></param>
-		/// <param name="property"></param>
-		/// <returns></returns>
-		public static IEnumerable Map(IEnumerable input, string property)
+
+        /// <summary>
+        /// Map/collect on a given property
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="property"></param>
+        /// <returns></returns>
+        public static IEnumerable Map(IEnumerable input, string property)
 		{
 			List<object> ary = input.Cast<object>().ToList();
 			if (!ary.Any())
