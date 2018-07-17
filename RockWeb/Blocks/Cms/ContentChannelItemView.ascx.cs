@@ -578,7 +578,7 @@ namespace RockWeb.Blocks.Cms
                             testedTags.Add( taggedItem.TagId, taggedItem.Tag.IsAuthorized( Authorization.VIEW, CurrentPerson ) ? taggedItem.Tag.Name : string.Empty );
                         }
 
-                        if ( testedTags[taggedItem.TagId].IsNotNullOrWhitespace() )
+                        if ( testedTags[taggedItem.TagId].IsNotNullOrWhiteSpace() )
                         {
                             itemTags[taggedItem.EntityGuid] += string.Format( "<span class='tag'>{0}</span>", testedTags[taggedItem.TagId] );
                         }

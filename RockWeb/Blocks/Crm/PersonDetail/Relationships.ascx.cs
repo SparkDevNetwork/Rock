@@ -337,7 +337,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         {
                             lGroupName.Text = group.Name.Pluralize();
                             lGroupTypeIcon.Text = string.Format( "<i class='{0}'></i>", group.GroupType.IconCssClass );
-                            lGroupTypeIcon.Visible = group.GroupType.IconCssClass.IsNotNullOrWhitespace();
+                            lGroupTypeIcon.Visible = group.GroupType.IconCssClass.IsNotNullOrWhiteSpace();
                             phEditActions.Visible = group.IsAuthorized( Authorization.EDIT, CurrentPerson );
 
                             if ( group.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
