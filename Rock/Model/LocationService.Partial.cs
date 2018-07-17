@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Data.Entity.Spatial;
 using System.Linq;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -511,7 +512,7 @@ namespace Rock.Model
             if ( !campusId.HasValue )
             {
                 var campusLocations = new Dictionary<int, int>();
-                Rock.Cache.CacheCampus.All()
+                CampusCache.All()
                     .Where( c => c.LocationId.HasValue )
                     .Select( c => new
                     {

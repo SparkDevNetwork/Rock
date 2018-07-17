@@ -21,7 +21,7 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -49,16 +49,16 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The attribute ids.
         /// </value>
-        public List<CacheAttribute> AttributeList
+        public List<AttributeCache> AttributeList
         {
             get 
             {
                 if ( _attributeList == null )
                 {
-                    _attributeList = ViewState["AttributeList"] as List<CacheAttribute>;
+                    _attributeList = ViewState["AttributeList"] as List<AttributeCache>;
                     if ( _attributeList == null )
                     {
-                        _attributeList = new List<CacheAttribute>();
+                        _attributeList = new List<AttributeCache>();
                     }
                 }
                 return _attributeList;
@@ -69,7 +69,7 @@ namespace Rock.Web.UI.Controls
                 ViewState["AttributeList"] = _attributeList;
             }
         }
-        private List<CacheAttribute> _attributeList = null;
+        private List<AttributeCache> _attributeList = null;
 
         /// <summary>
         /// Gets the attributes rows.

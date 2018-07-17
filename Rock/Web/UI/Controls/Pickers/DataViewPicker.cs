@@ -20,7 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web;
 using System.Web.UI.WebControls;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -127,7 +127,7 @@ namespace Rock.Web.UI.Controls
                         .Include( "DataViewFilter" )
                         .AsNoTracking() )
                     {
-                        var category = dataView.CategoryId.HasValue ? CacheCategory.Get( dataView.CategoryId.Value ) : null;
+                        var category = dataView.CategoryId.HasValue ? CategoryCache.Get( dataView.CategoryId.Value ) : null;
                         if ( !categoryGuids.Any() || ( category != null && categoryGuids.Contains( category.Guid ) ) )
                         { 
                             var currentPerson = HttpContext.Current.Items["CurrentPerson"] as Person;

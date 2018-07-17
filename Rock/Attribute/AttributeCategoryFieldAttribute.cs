@@ -15,7 +15,7 @@
 // </copyright>
 //
 using Rock.Field.Types;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Attribute
 {
@@ -49,7 +49,7 @@ namespace Rock.Attribute
             FieldConfigurationValues.Add( ENTITY_TYPE_NAME_KEY, new Field.ConfigurationValue( "Rock.Model.Attribute" ) );
             FieldConfigurationValues.Add( QUALIFIER_COLUMN_KEY, new Field.ConfigurationValue( "EntityTypeId" ) );
 
-            var entityType = CacheEntityType.Get( entityTypeName, false );
+            var entityType = EntityTypeCache.Get( entityTypeName, false );
             if ( entityType != null )
                 FieldConfigurationValues.Add( QUALIFIER_VALUE_KEY, new Field.ConfigurationValue( entityType.Id.ToString() ) );
         }

@@ -24,7 +24,7 @@ using DotLiquid;
 using DotLiquid.Exceptions;
 using DotLiquid.Util;
 using Rock.Data;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Model;
 using System;
 using Rock.Lava.Blocks;
@@ -41,7 +41,7 @@ namespace Rock.Lava.Shortcodes
 
         string _markup = string.Empty;
         string _tagName = string.Empty;
-        CacheLavaShortcode _shortcode;
+        LavaShortcodeCache _shortcode;
         Dictionary<string,object> _internalMergeFields;
         string _enabledSecurityCommands = "";
 
@@ -55,7 +55,7 @@ namespace Rock.Lava.Shortcodes
         public override void OnStartup()
         {
             // get all the block dynamic shortcodes and register them
-            var blockShortCodes = CacheLavaShortcode.All().Where( s => s.TagType == TagType.Block );
+            var blockShortCodes = LavaShortcodeCache.All().Where( s => s.TagType == TagType.Block );
 
             foreach(var shortcode in blockShortCodes )
             {
@@ -75,7 +75,7 @@ namespace Rock.Lava.Shortcodes
         {
             _markup = markup;
             _tagName = tagName;
-            _shortcode = CacheLavaShortcode.All().Where( c => c.TagName == tagName ).FirstOrDefault();
+            _shortcode = LavaShortcodeCache.All().Where( c => c.TagName == tagName ).FirstOrDefault();
 
             base.Initialize( tagName, markup, tokens );
         }
@@ -157,7 +157,7 @@ namespace Rock.Lava.Shortcodes
                 _enabledSecurityCommands = context.Registers["EnabledCommands"].ToString();
             }
 
-            var shortcode = CacheLavaShortcode.Get( _shortcode.Id );
+            var shortcode = LavaShortcodeCache.Get( _shortcode.Id );
 
             if ( shortcode != null )
             {

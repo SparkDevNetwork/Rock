@@ -28,7 +28,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using System.ComponentModel;
 using Rock.Data;
-using Rock.Cache;
+using Rock.Web.Cache;
 using System.Text;
 using HtmlAgilityPack;
 using System.Web;
@@ -455,7 +455,7 @@ namespace RockWeb.Blocks.Cms
                     v.ExpireDateTime
                 } ).ToList();
 
-            gVersions.EntityTypeId = CacheEntityType.Get<HtmlContent>().Id;
+            gVersions.EntityTypeId = EntityTypeCache.Get<HtmlContent>().Id;
             gVersions.DataSource = versions;
             
             gVersions.DataBind();
@@ -679,7 +679,7 @@ namespace RockWeb.Blocks.Cms
                         if ( content.Content.HasMergeFields() )
                         {
                             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-                            mergeFields.Add( "CurrentPage", this.CachePage );
+                            mergeFields.Add( "CurrentPage", this.PageCache );
 
                             if ( CurrentPerson != null )
                             {

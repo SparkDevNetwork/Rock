@@ -21,7 +21,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock.Data;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types

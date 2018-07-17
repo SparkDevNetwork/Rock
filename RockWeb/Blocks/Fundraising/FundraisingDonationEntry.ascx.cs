@@ -27,7 +27,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -273,7 +273,7 @@ namespace RockWeb.Blocks.Fundraising
 
                     if ( groupMember.Group.GetAttributeValue( "CapFundraisingAmount" ).AsBoolean() )
                     {
-                        var entityTypeIdGroupMember = CacheEntityType.GetId<Rock.Model.GroupMember>();
+                        var entityTypeIdGroupMember = EntityTypeCache.GetId<Rock.Model.GroupMember>();
 
                         var contributionTotal = new FinancialTransactionDetailService( rockContext ).Queryable()
                                     .Where( d => d.EntityTypeId == entityTypeIdGroupMember

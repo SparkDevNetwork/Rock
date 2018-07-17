@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -30,14 +31,14 @@ namespace Rock.Model
         /// <summary>
         /// Returns a queryable collection of <see cref="Rock.Model.Category">Categories</see> by parent <see cref="Rock.Model.Category"/> and <see cref="Rock.Model.EntityType"/>.
         /// </summary>
-        /// <param name="ParentId">A <see cref="System.Int32"/> representing the CategoryID of the parent <see cref="Rock.Model.Category"/> to search by. To find <see cref="Rock.Model.Category">Categories</see>
+        /// <param name="parentId">A <see cref="System.Int32"/> representing the CategoryID of the parent <see cref="Rock.Model.Category"/> to search by. To find <see cref="Rock.Model.Category">Categories</see>
         /// that do not inherit from a parent category, this value will be null.</param>
         /// <param name="entityTypeId">A <see cref="System.Int32"/> representing the EntityTypeId of the <see cref="Rock.Model.EntityType"/> to search by.</param>
         /// <returns>A queryable collection of <see cref="Rock.Model.Category">Categories</see> that meet the specified criteria. </returns>
-        public IQueryable<Category> Get( int? ParentId, int? entityTypeId )
+        public IQueryable<Category> Get( int? parentId, int? entityTypeId )
         {
             var query = Queryable()
-                .Where( c => ( c.ParentCategoryId ?? 0 ) == ( ParentId ?? 0 ) );
+                .Where( c => ( c.ParentCategoryId ?? 0 ) == ( parentId ?? 0 ) );
 
             if ( entityTypeId.HasValue )
             {
@@ -188,7 +189,7 @@ namespace Rock.Model
         /// <returns></returns>
         public override Guid? GetGuid( int id )
         {
-            var cacheItem = Rock.Cache.CacheCategory.Get( id );
+            var cacheItem = CategoryCache.Get( id );
             if ( cacheItem != null )
             {
                 return cacheItem.Guid;

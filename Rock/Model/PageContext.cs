@@ -21,7 +21,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Newtonsoft.Json;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 
 namespace Rock.Model
@@ -119,8 +119,8 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
         {
-            // CachePage has PageContexts that could get stale if PageContext is modified
-            CachePage.UpdateCachedEntity( this.PageId, System.Data.Entity.EntityState.Detached );
+            // PageCache has PageContexts that could get stale if PageContext is modified
+            PageCache.UpdateCachedEntity( this.PageId, System.Data.Entity.EntityState.Detached );
         }
 
         #endregion ICacheable

@@ -28,7 +28,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
@@ -339,7 +339,7 @@ namespace RockWeb.Blocks.Core
         /// <returns></returns>
         private List<string> GetBlockTypeStaticAttributeKeys()
         {
-            var blockTypeCache = CacheBlockType.Get( hfBlockTypeId.Value.AsInteger() );
+            var blockTypeCache = BlockTypeCache.Get( hfBlockTypeId.Value.AsInteger() );
             List<FieldAttribute> blockProperties = new List<FieldAttribute>(); ;
             try
             {
@@ -373,7 +373,7 @@ namespace RockWeb.Blocks.Core
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
-                attribute.FieldTypeId = CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
+                attribute.FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
                 edtBlockTypeAttributes.ActionTitle = ActionTitle.Add( "attribute for block type " + tbName.Text );
             }
             else
@@ -489,7 +489,7 @@ namespace RockWeb.Blocks.Core
         protected void edtBlockTypeAttributes_SaveClick( object sender, EventArgs e )
         {
             var attribute = Rock.Attribute.Helper.SaveAttributeEdits(
-                edtBlockTypeAttributes, CacheEntityType.Get( typeof( Rock.Model.Block ) ).Id, "BlockTypeId", hfBlockTypeId.Value );
+                edtBlockTypeAttributes, EntityTypeCache.Get( typeof( Rock.Model.Block ) ).Id, "BlockTypeId", hfBlockTypeId.Value );
 
             // Attribute will be null if it was not valid
             if ( attribute == null )

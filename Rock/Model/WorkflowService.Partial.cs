@@ -20,7 +20,7 @@ using System.Linq;
 using System.Web.Compilation;
 
 using Rock.Data;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -49,7 +49,7 @@ namespace Rock.Model
         /// <returns></returns>
         public bool Process( Workflow workflow, object entity, out List<string> errorMessages )
         {
-            var workflowType = CacheWorkflowType.Get( workflow.WorkflowTypeId );
+            var workflowType = WorkflowTypeCache.Get( workflow.WorkflowTypeId );
             if ( workflowType != null && ( workflowType.IsActive ?? true ) )
             {
                 var rockContext = (RockContext)this.Context;

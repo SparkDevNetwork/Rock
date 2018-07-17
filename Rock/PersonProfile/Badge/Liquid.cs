@@ -20,7 +20,7 @@ using System.ComponentModel.Composition;
 using System.Web.UI;
 using Rock.Attribute;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.PersonProfile.Badge
@@ -34,14 +34,14 @@ namespace Rock.PersonProfile.Badge
 
     [CodeEditorField( "Display Text", "The text (or html) to display as a badge", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200 )]
     [BooleanField( "Enable Debug", "Outputs the object graph to help create your Lava syntax.", false )]
-    public class Liquid : BadgeComponentModern
+    public class Liquid : BadgeComponent
     {
         /// <summary>
         /// Renders the specified writer.
         /// </summary>
         /// <param name="badge">The badge.</param>
         /// <param name="writer">The writer.</param>
-        public override void Render( CachePersonBadge badge, System.Web.UI.HtmlTextWriter writer )
+        public override void Render( PersonBadgeCache badge, System.Web.UI.HtmlTextWriter writer )
         {
             string displayText = GetAttributeValue( badge, "DisplayText" );
             if ( Person != null )

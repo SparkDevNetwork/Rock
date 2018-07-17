@@ -25,7 +25,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Core
@@ -127,7 +127,7 @@ namespace RockWeb.Blocks.Core
         {
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
             
-            var entityType = CacheEntityType.Get(GetAttributeValue("EntityType").AsGuid());
+            var entityType = EntityTypeCache.Get(GetAttributeValue("EntityType").AsGuid());
 
             if ( entityType != null )
             {
@@ -198,7 +198,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="entityId">The group member identifier.</param>
         private void DeleteFollowing( int entityId )
         {
-            var entityType = CacheEntityType.Get( GetAttributeValue( "EntityType" ).AsGuid() );
+            var entityType = EntityTypeCache.Get( GetAttributeValue( "EntityType" ).AsGuid() );
             int personId = this.CurrentPersonId.Value;
 
             RockContext rockContext = new RockContext();

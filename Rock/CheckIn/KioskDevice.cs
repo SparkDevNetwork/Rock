@@ -21,7 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
 
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
 
@@ -197,7 +197,7 @@ namespace Rock.CheckIn
             using ( var rockContext = new RockContext() )
             {
                 var campusLocations = new Dictionary<int, int>();
-                CacheCampus.All()
+                CampusCache.All()
                     .Where( c => c.LocationId.HasValue )
                     .Select( c => new
                     {
@@ -297,7 +297,7 @@ namespace Rock.CheckIn
             DateTime currentDateTime = RockDateTime.Now;
             if ( campusId.HasValue )
             {
-                currentDateTime = CacheCampus.Get( campusId.Value )?.CurrentDateTime ?? RockDateTime.Now;
+                currentDateTime = CampusCache.Get( campusId.Value )?.CurrentDateTime ?? RockDateTime.Now;
             }
 
             var activeSchedules = new Dictionary<int, KioskSchedule>();

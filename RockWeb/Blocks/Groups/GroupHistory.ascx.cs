@@ -20,10 +20,9 @@ using System.Web.UI;
 
 using Rock;
 using Rock.Attribute;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -125,12 +124,12 @@ namespace RockWeb.Blocks.Groups
         private void ShowGroupHistory( int groupId )
         {
             int entityId;
-            CacheEntityType primaryEntityType;
-            CacheEntityType secondaryEntityType = null;
+            EntityTypeCache primaryEntityType;
+            EntityTypeCache secondaryEntityType = null;
 
             hlMemberHistory.NavigateUrl = LinkedPageUrl( "GroupMemberHistoryPage", new Dictionary<string, string> { { "GroupId", groupId.ToString() } } );
 
-            primaryEntityType = CacheEntityType.Get<Rock.Model.Group>();
+            primaryEntityType = EntityTypeCache.Get<Rock.Model.Group>();
             entityId = groupId;
             var group = new GroupService( new RockContext() ).Get( groupId );
             if ( group != null )
@@ -140,7 +139,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( tglShowGroupMembersInHistory.Checked )
             {
-                secondaryEntityType = CacheEntityType.Get<Rock.Model.GroupMember>();
+                secondaryEntityType = EntityTypeCache.Get<Rock.Model.GroupMember>();
             }
 
             var rockContext = new RockContext();

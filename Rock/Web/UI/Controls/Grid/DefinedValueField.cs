@@ -18,7 +18,7 @@ using System;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -38,7 +38,7 @@ namespace Rock.Web.UI.Controls
         /// </returns>
         protected override string FormatDataValue( object dataValue, bool encode )
         {
-            CacheDefinedValue definedValueCache = GetDefinedValue( dataValue );
+            DefinedValueCache definedValueCache = GetDefinedValue( dataValue );
 
             if ( definedValueCache != null )
             {
@@ -60,7 +60,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="dataValue">The data value.</param>
         /// <returns></returns>
-        public CacheDefinedValue GetDefinedValue( object dataValue )
+        public DefinedValueCache GetDefinedValue( object dataValue )
         {
             int? dataValueAsInt = null;
             Guid? dataValueAsGuid = null;
@@ -79,14 +79,14 @@ namespace Rock.Web.UI.Controls
                 dataValueAsGuid = ( dataValue as string ).AsGuidOrNull();
             }
 
-            CacheDefinedValue definedValueCache = null;
+            DefinedValueCache definedValueCache = null;
             if ( dataValueAsInt.HasValue )
             {
-                definedValueCache = Rock.Cache.CacheDefinedValue.Get( dataValueAsInt.Value );
+                definedValueCache = DefinedValueCache.Get( dataValueAsInt.Value );
             }
             else if ( dataValueAsGuid.HasValue )
             {
-                definedValueCache = Rock.Cache.CacheDefinedValue.Get( dataValueAsGuid.Value );
+                definedValueCache = DefinedValueCache.Get( dataValueAsGuid.Value );
             }
 
             return definedValueCache;
