@@ -68,7 +68,7 @@ namespace Rock.Model
         public int? ScheduleId { get; set; }
 
         /// <summary>
-        /// Gets or sets the start date and time/check in time
+        /// Gets or sets the date of the Attendance
         /// </summary>
         /// <value>
         /// A <see cref="System.DateTime"/> representing the start date and time/check in date and time.
