@@ -32,16 +32,6 @@ namespace Rock.Tests.Rock.Model
         }
 
         [Fact( Skip = "Need a mock for Global Attributes" )]
-        public void GraduatesThisYear()
-        {
-            InitGlobalAttributesCache();
-            var Person = new Person();
-            Person.GradeOffset = 1;
-
-            Assert.True( Person.GraduationYear == RockDateTime.Now.AddYears( 1 ).Year );
-        }
-
-        [Fact( Skip = "Need a mock for Global Attributes" )]
         public void GraduatesNextYear()
         {
             InitGlobalAttributesCache();
