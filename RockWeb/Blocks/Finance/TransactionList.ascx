@@ -13,7 +13,7 @@
             <asp:HiddenField ID="hfTransactionViewMode" runat="server" />
             <asp:HiddenField ID="hfMoveToBatchId" runat="server" />
 
-            <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+            <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
             <div class="panel panel-block">
                 <div class="panel-heading">

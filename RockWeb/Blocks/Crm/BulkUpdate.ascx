@@ -51,7 +51,7 @@
 
                 <asp:Panel ID="pnlEntry" runat="server">
 
-                    <asp:ValidationSummary ID="ValidationSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                    <asp:ValidationSummary ID="ValidationSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                     <div class="panel panel-widget individuals">
                         <div class="panel-heading clearfix">

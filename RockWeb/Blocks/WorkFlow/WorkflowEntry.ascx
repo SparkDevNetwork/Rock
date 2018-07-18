@@ -24,7 +24,7 @@
 
                         <asp:Panel ID="pnlForm" CssClass="workflow-entry-panel" runat="server">
 
-                            <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                            <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                             <asp:Literal ID="lheadingText" runat="server" />
 

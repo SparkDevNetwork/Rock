@@ -428,7 +428,7 @@ namespace RockWeb.Blocks.Event
 
                 if ( validationMessages.Any() )
                 {
-                    nbValidation.Text = "Please Correct the Following<ul><li>" + validationMessages.AsDelimited( "</li><li>" ) + "</li></ul>";
+                    nbValidation.Text = "Please correct the following:<ul><li>" + validationMessages.AsDelimited( "</li><li>" ) + "</li></ul>";
                     nbValidation.Visible = true;
                     return;
                 }

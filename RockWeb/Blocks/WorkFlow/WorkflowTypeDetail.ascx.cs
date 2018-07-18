@@ -598,7 +598,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
 
             if ( validationErrors.Any() )
             {
-                nbValidationError.Text = string.Format( "Please Correct the Following<ul><li>{0}</li></ul>",
+                nbValidationError.Text = string.Format( "Please correct the following:<ul><li>{0}</li></ul>",
                     validationErrors.AsDelimited( "</li><li>" ) );
                 nbValidationError.Visible = true;
 
