@@ -70,7 +70,7 @@
                                     </div>
                                     <div class="col-xs-6">
                                         <Rock:NumberBox MinimumValue="1" ID="nbMaxRegistrants" runat="server" Label="Maximum Registrants"
-                                            Help="The maximum number of registrants that user is allowed to register" Visible="false" />
+                                            Help="The maximum number of registrants that user is allowed to register. Leave blank for unlimited." Visible="false" />
 
                                     </div>
                                 </div>
