@@ -4,7 +4,7 @@
     <ContentTemplate>
 
         <Rock:NotificationBox ID="nbError" runat="server" NotificationBoxType="Danger" />
-        <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+        <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
         <div class="panel panel-block">
 

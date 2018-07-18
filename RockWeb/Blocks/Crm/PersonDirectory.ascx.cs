@@ -757,7 +757,7 @@ namespace RockWeb.Blocks.Crm
         {
             if ( messages.Any() )
             {
-                nbValidation.Text = string.Format( "Please correct the following <ul><li>{0}</li></ul>",
+                nbValidation.Text = string.Format( "Please correct the following: <ul><li>{0}</li></ul>",
                     messages.AsDelimited( "</li><li>" ) );
                 nbValidation.Visible = true;
             }

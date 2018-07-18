@@ -143,7 +143,7 @@ namespace RockWeb.Blocks.Crm
 
                     if ( errors.Any() )
                     {
-                        nbError.Text = "Please Correct the Following<ul><li>" + errors.AsDelimited( "</li><li>" ) + "</li></ul>";
+                        nbError.Text = "Please correct the following:<ul><li>" + errors.AsDelimited( "</li><li>" ) + "</li></ul>";
                         nbError.Visible = true;
                         return;
                     }

@@ -14,7 +14,7 @@
             </div>
             <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body">
-                <asp:ValidationSummary ID="valValidation" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                <asp:ValidationSummary ID="valValidation" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                 
                 <div class="">
                     <div class="row">
@@ -125,7 +125,7 @@
 
         <Rock:ModalDialog ID="mdAddResult" runat="server" ScrollbarEnabled="false" SaveButtonText="Add" OnSaveClick="btnAddResults_Click" Title="Benevolence Request Result" ValidationGroup="valResult">
             <Content>
-                <asp:ValidationSummary ID="valResultsSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" ValidationGroup="valResult" />
+                <asp:ValidationSummary ID="valResultsSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="valResult" />
                 <asp:HiddenField ID="hfInfoGuid" runat="server" />
                 <div class="row">
                     <div class="col-md-6">
