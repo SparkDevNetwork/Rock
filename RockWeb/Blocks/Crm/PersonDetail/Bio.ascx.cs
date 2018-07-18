@@ -334,7 +334,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                         if ( guid.HasValue )
                         {
                             var workflowType = workflowTypeService.Get( guid.Value );
-                            if ( workflowType != null && workflowType.IsActive && workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                            if ( workflowType != null && (workflowType.IsActive ?? true) && workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                             {
                                 workflowTypes.Add( workflowType );
                             }

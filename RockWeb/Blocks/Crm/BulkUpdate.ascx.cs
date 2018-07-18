@@ -91,7 +91,7 @@ namespace RockWeb.Blocks.Crm
                 foreach ( var workflowType in new WorkflowTypeService( rockContext )
                     .Queryable().AsNoTracking()
                     .Where( t => guidList.Contains( t.Guid ) &&
-                    t.IsActive )
+                    t.IsActive == true )
                     .ToList() )
                 {
                     if ( workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )

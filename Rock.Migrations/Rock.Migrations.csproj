@@ -85,6 +85,10 @@
     <Compile Include="Migrations\201807102225186_AddIsActiveToDefinedValueType.Designer.cs">
       <DependentUpon>201807102225186_AddIsActiveToDefinedValueType.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201807182135104_WorkflowTypeIsActive.cs" />
+    <Compile Include="Migrations\201807182135104_WorkflowTypeIsActive.Designer.cs">
+      <DependentUpon>201807182135104_WorkflowTypeIsActive.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 8.0\Version 1.8.0\201801162056008_V8Features.cs" />
     <Compile Include="Migrations\Version 8.0\Version 1.8.0\201801162056008_V8Features.Designer.cs">
       <DependentUpon>201801162056008_V8Features.cs</DependentUpon>
@@ -2913,6 +2917,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201807102225186_AddIsActiveToDefinedValueType.resx">
       <DependentUpon>201807102225186_AddIsActiveToDefinedValueType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201807182135104_WorkflowTypeIsActive.resx">
+      <DependentUpon>201807182135104_WorkflowTypeIsActive.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201801162056008_V8Features.resx">
       <DependentUpon>201801162056008_V8Features.cs</DependentUpon>
