@@ -619,7 +619,17 @@ $(document).ready(function() {
 
             tbName.Text = dataView.Name;
             tbDescription.Text = dataView.Description;
-            etpEntityType.SelectedEntityTypeId = dataView.EntityTypeId;
+
+            if ( dataView.EntityTypeId.HasValue )
+            {
+                etpEntityType.SelectedEntityTypeId = dataView.EntityTypeId;
+                etpEntityType.Enabled = false;
+            }
+            else
+            {
+                etpEntityType.Enabled = true;
+            }
+
             cpCategory.SetValue( dataView.CategoryId );
             nbPersistedScheduleIntervalMinutes.Text = dataView.PersistedScheduleIntervalMinutes.ToString();
 
