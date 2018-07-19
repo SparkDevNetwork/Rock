@@ -2522,7 +2522,7 @@ namespace RockWeb.Blocks.Groups
 
         /// <summary>
         /// Handles the Add event of the gGroupSyncs control.
-        /// Shows the GroupSync modal and populates the conrols without explicitly assigning
+        /// Shows the GroupSync modal and populates the controls without explicitly assigning
         /// a value
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -2535,13 +2535,16 @@ namespace RockWeb.Blocks.Groups
 
             CreateRoleDropDownList( rockContext );
             CreateGroupSyncEmailDropDownLists( rockContext );
+
+            dvipSyncDataView.EntityTypeId = EntityTypeCache.Get( typeof( Person ) ).Id;
+
             ShowDialog( "GROUPSYNCSETTINGS", true );
         }
 
         /// <summary>
         /// Handles the Edit event of the gGroupSyncs control.
-        /// Shows the GroupSync modal, popluates the controls, and selects
-        /// the data for the selected group syc.
+        /// Shows the GroupSync modal, populates the controls, and selects
+        /// the data for the selected group sync.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
@@ -2555,7 +2558,7 @@ namespace RockWeb.Blocks.Groups
 
             hfGroupSyncGuid.Value = syncGuid.ToString();
 
-            dvipSyncDataView.EntityTypeId = EntityTypeCache.Get<Person>().Id;
+            dvipSyncDataView.EntityTypeId = EntityTypeCache.Get( typeof( Person ) ).Id;
             dvipSyncDataView.SetValue( groupSync.SyncDataViewId );
 
             CreateRoleDropDownList( rockContext, groupSync.GroupTypeRoleId );
@@ -2619,7 +2622,9 @@ namespace RockWeb.Blocks.Groups
 
             groupSync.GroupId = hfGroupId.ValueAsInt();
             groupSync.GroupTypeRoleId = ddlGroupRoles.SelectedValue.AsInteger();
+            groupSync.GroupTypeRole = new GroupTypeRoleService( rockContext ).Get( groupSync.GroupTypeRoleId );
             groupSync.SyncDataViewId = dvipSyncDataView.SelectedValueAsInt() ?? 0;
+            groupSync.SyncDataView = new DataViewService( rockContext ).Get( groupSync.SyncDataViewId );
             groupSync.ExitSystemEmailId = ddlExitEmail.SelectedValue.AsIntegerOrNull();
             groupSync.WelcomeSystemEmailId = ddlWelcomeEmail.SelectedValue.AsIntegerOrNull();
             groupSync.AddUserAccountsDuringSync = cbCreateLoginDuringSync.Checked;
@@ -2627,6 +2632,7 @@ namespace RockWeb.Blocks.Groups
             hfGroupSyncGuid.Value = string.Empty;
 
             BindGroupSyncGrid();
+
             HideDialog();
         }
 

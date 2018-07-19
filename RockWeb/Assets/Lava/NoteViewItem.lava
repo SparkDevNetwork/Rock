@@ -4,15 +4,15 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
 {%- endcomment -%}
 {%- assign viewableChildNotesCount = note.ViewableDescendentsCount -%}
 {%- if note.IsAlert -%}
-    {%- assign wrapperClass = "is-alert" -%}
+    {%- assign wrapperClass = 'is-alert' -%}
 {%- elsif note.IsPrivateNote -%}
-    {%- assign wrapperClass = "is-personal" -%}
+    {%- assign wrapperClass = 'is-personal' -%}
 {%- else -%}
-    {%- assign wrapperClass = "" -%}
+    {%- assign wrapperClass = '' -%}
 {%- endif -%}
-{%- assign noteTypeName = note.NoteType.Name | ToCssClass | Prepend:" note-type-" -%}
+{%- assign noteTypeName = note.NoteType.Name | ToCssClass | Prepend:' note-type-' -%}
 {%- assign wrapperClass =  wrapperClass | Append:noteTypeName -%}
-{%- assign wrapperStyle = "" -%}
+{%- assign wrapperStyle = '' -%}
 {%- if noteReplyDepth == '0' -%}
 {%- capture fontStyle -%}{%- if note.NoteType.FontColor and note.NoteType.FontColor != '' -%}color: {{ note.NoteType.FontColor }};{%- endif -%}{%- endcapture -%}
 {%- capture borderStyle -%}{%- if note.NoteType.BorderColor and note.NoteType.BorderColor != '' -%}box-shadow: inset 5px 0 0 0 {{ note.NoteType.BorderColor }};{%- endif -%}{%- endcapture -%}
@@ -146,7 +146,7 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
                 </div>
 
                 <div class="note-details">
-                {%- if note.NoteType.RequiresApprovals and note.ApprovalStatus == "Approved" -%}
+                {%- if note.NoteType.RequiresApprovals and note.ApprovalStatus == 'Approved' -%}
                     {%- assign approver = note.ApprovedByPersonAliasId | PersonByAliasId -%}
                 <a href="#{{ note.NoteAnchorId }}" class="timestamp"{% if note.ApprovedByPersonAliasId %} data-toggle="tooltip" data-placement="top" title="Approved By {{ approver.FullName }} on {{ note.ApprovedDateTime }}"{% endif %}>
                     <relative-time datetime="{{ note.EditedDateTime | Date:'yyyy-MM-ddTHH:mm:ss' }}" title="{{ note.EditedDateTime | Date:'MMMM d, yyyy, h:mm tt' }}">{{ noteDateTimeText }}</relative-time>

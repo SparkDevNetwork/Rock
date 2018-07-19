@@ -1910,6 +1910,17 @@ namespace Rock.Model
                             HistoryChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Property, "Photo" );
                         }
 
+                        // ensure a new person has an Alternate Id
+                        int alternateValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() ).Id;
+                        var personSearchKeyService = new PersonSearchKeyService( rockContext );
+                        PersonSearchKey personSearchKey = new PersonSearchKey()
+                        {
+                            PersonAlias = this.Aliases.First(),
+                            SearchTypeValueId = alternateValueId,
+                            SearchValue = PersonSearchKeyService.GenerateRandomAlternateId( true )
+                        };
+                        personSearchKeyService.Add( personSearchKey );
+
                         break;
                     }
 

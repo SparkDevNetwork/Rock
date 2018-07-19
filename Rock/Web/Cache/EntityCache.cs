@@ -34,57 +34,12 @@ namespace Rock.Web.Cache
     /// <seealso cref="IEntityCache" />
     [Serializable]
     [DataContract]
-    public abstract class EntityCache<T, TT> : ItemCache<T>, IEntityCache
+    public abstract class EntityCache<T, TT> : EntityItemCache<T>, IEntityCache
         where T : IEntityCache, new()
         where TT : Entity<TT>, new()
     {
 
         #region Properties
-
-        /// <summary>
-        /// Gets or sets the identifier.
-        /// </summary>
-        /// <value>
-        /// The identifier.
-        /// </value>
-        [DataMember]
-        public virtual int Id { get; protected set; }
-
-        /// <summary>
-        /// Gets or sets the unique identifier.
-        /// </summary>
-        /// <value>
-        /// The unique identifier.
-        /// </value>
-        [DataMember]
-        public virtual Guid Guid { get; protected set; }
-
-        /// <summary>
-        /// Gets or sets the foreign identifier.
-        /// </summary>
-        /// <value>
-        /// The foreign identifier.
-        /// </value>
-        [DataMember]
-        public int? ForeignId { get; protected set; }
-
-        /// <summary>
-        /// Gets or sets the foreign unique identifier.
-        /// </summary>
-        /// <value>
-        /// The foreign unique identifier.
-        /// </value>
-        [DataMember]
-        public Guid? ForeignGuid { get; protected set; }
-
-        /// <summary>
-        /// Gets or sets the foreign key.
-        /// </summary>
-        /// <value>
-        /// The foreign key.
-        /// </value>
-        [DataMember]
-        public string ForeignKey { get; protected set; }
 
         /// <summary>
         /// The EntityType of the cached entity
