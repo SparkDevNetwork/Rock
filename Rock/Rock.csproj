@@ -510,6 +510,7 @@
     <Compile Include="Web\Cache\Entities\WorkflowTypeCache.cs" />
     <Compile Include="Web\Cache\ICacheable.cs" />
     <Compile Include="Web\Cache\IItemCache.cs" />
+    <Compile Include="Web\Cache\EntityItemCache.cs" />
     <Compile Include="Web\Cache\NonEntities\EntityNoteTypesCache.cs" />
     <Compile Include="Web\Cache\NonEntities\IdFromGuidCache.cs" />
     <Compile Include="Web\Cache\NonEntities\WorkflowTriggersCache.cs" />
