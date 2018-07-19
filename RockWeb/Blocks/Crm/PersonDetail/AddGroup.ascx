@@ -55,6 +55,10 @@
                     <Rock:NewGroupContactInfo ID="nfciContactInfo" runat="server" />
                 </asp:Panel>
 
+                <asp:Panel ID="pnlAdvanceInfo" runat="server" Visible="false">
+                    <Rock:NewGroupAdvanceInfo ID="nfaiAdvanceInfo" runat="server" />
+                </asp:Panel>
+
                 <asp:Panel ID="pnlAttributes" runat="server" Visible="false">
                 </asp:Panel>
 

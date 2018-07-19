@@ -323,6 +323,19 @@ namespace Rock.Model
 
         #region Obsolete Properties
 
+        // Keep track if any of the obsolete properties that were moved to AttendanceOccurrence were updated, then we'll deal with that on PreSaveChanges
+        private bool _updatedObsoleteGroupId = false;
+        private int? _updatedObsoleteGroupIdValue = null;
+
+        private bool _updatedObsoleteLocationId = false;
+        private int? _updatedObsoleteLocationIdValue = null;
+
+        private bool _updatedObsoleteScheduleId = false;
+        private int? _updatedObsoleteScheduleIdValue = null;
+
+        private bool _updatedObsoleteDidNotOccur = false;
+        private bool? _updatedObsoleteDidNotOccurValue = null;
+
         /// <summary>
         /// Gets the Id of the <see cref="Rock.Model.Group"/> that the <see cref="Rock.Model.Person"/> checked in to.
         /// </summary>
@@ -332,7 +345,22 @@ namespace Rock.Model
         [LavaInclude]
         [NotMapped]
         [Obsolete( "Use Occurrence.GroupId instead", false )]
-        public int? GroupId => Occurrence?.GroupId;
+        public int? GroupId
+        {
+            get
+            {
+                return _updatedObsoleteGroupId ? _updatedObsoleteGroupIdValue : Occurrence?.GroupId;
+            }
+
+            set
+            {
+                _updatedObsoleteGroupId = true;
+                _updatedObsoleteGroupIdValue = value;
+
+                // Update ModifiedDateTime to ensure this record is Tracked in ChangeTracker
+                ModifiedDateTime = RockDateTime.Now;
+            }
+        }
 
         /// <summary>
         /// Gets the Id of the <see cref="Rock.Model.Location"/> that the individual attended/checked in to. 
@@ -342,8 +370,23 @@ namespace Rock.Model
         /// </value>
         [LavaInclude]
         [NotMapped]
-        [Obsolete( "Use Occurrence.GroupId instead", false )]
-        public int? LocationId => Occurrence?.LocationId;
+        [Obsolete( "Use Occurrence.LocationId instead", false )]
+        public int? LocationId
+        {
+            get
+            {
+                return _updatedObsoleteLocationId ? _updatedObsoleteLocationIdValue : Occurrence?.LocationId;
+            }
+
+            set
+            {
+                _updatedObsoleteLocationId = true;
+                _updatedObsoleteLocationIdValue = value;
+
+                // Update ModifiedDateTime to ensure this record is Tracked in ChangeTracker
+                ModifiedDateTime = RockDateTime.Now;
+            }
+        }
 
         /// <summary>
         /// Gets the Id of the schedule that the <see cref="Rock.Model.Person"/> checked in to.
@@ -354,8 +397,22 @@ namespace Rock.Model
         [LavaInclude]
         [NotMapped]
         [Obsolete( "Use Occurrence.ScheduleId instead", false )]
+        public int? ScheduleId
+        {
+            get
+            {
+                return _updatedObsoleteScheduleId ? _updatedObsoleteScheduleIdValue : Occurrence?.ScheduleId;
+            }
 
-        public int? ScheduleId => Occurrence?.ScheduleId;
+            set
+            {
+                _updatedObsoleteScheduleId = true;
+                _updatedObsoleteScheduleIdValue = value;
+
+                // Update ModifiedDateTime to ensure this record is Tracked in ChangeTracker
+                ModifiedDateTime = RockDateTime.Now;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the did not occur.
@@ -366,7 +423,23 @@ namespace Rock.Model
         [LavaInclude]
         [NotMapped]
         [Obsolete( "Use Occurrence.DidNotOccur instead", false )]
-        public bool? DidNotOccur => Occurrence?.DidNotOccur;
+        public bool? DidNotOccur
+        {
+            get
+            {
+                return _updatedObsoleteDidNotOccur ? _updatedObsoleteDidNotOccurValue : Occurrence?.DidNotOccur;
+            }
+
+            set
+            {
+                _updatedObsoleteDidNotOccur = true;
+                _updatedObsoleteDidNotOccurValue = value;
+
+                // Update ModifiedDateTime to ensure this record is Tracked in ChangeTracker
+                ModifiedDateTime = RockDateTime.Now;
+            }
+        }
+
 
         /// <summary>
         /// Gets or sets the sunday date.
@@ -422,6 +495,66 @@ namespace Rock.Model
         {
             var transaction = new Rock.Transactions.GroupAttendedTransaction( entry );
             Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+
+            if ( entry.State == System.Data.Entity.EntityState.Modified )
+            {
+                // NOTE: If they only changed StartDateTime, don't change the Occurrence record. We want to support letting StartDateTime be a different Date than the OccurenceDate in that situation
+                if ( _updatedObsoleteGroupId || _updatedObsoleteLocationId || _updatedObsoleteScheduleId || _updatedObsoleteDidNotOccur )
+                {
+                    if ( _updatedObsoleteGroupId || _updatedObsoleteLocationId || _updatedObsoleteScheduleId )
+                    {
+                        // if they changed stuff related to AttendanceOccurrence (not including DidNotOccur or StartDateTime) thru obsolete properties, find or create a Matching AttendanceOccurrence Record
+                        using ( var attendanceOccurrenceRockContext = new RockContext() )
+                        {
+                            var attendanceOccurrenceService = new AttendanceOccurrenceService( attendanceOccurrenceRockContext );
+
+                            // if GroupId,LocationId, or ScheduleId changed, use StartDateTime's Date as the OccurrenceDate to look up AttendanceOccurence since it is really a completely different Occurence if Group,Location or Schedule changes
+                            var occurrenceDate = this.StartDateTime.Date;
+#pragma warning disable 612, 618
+                            var attendanceOccurrence = attendanceOccurrenceService.Queryable().Where( a => a.GroupId == this.GroupId && a.LocationId == this.LocationId && a.ScheduleId == this.ScheduleId && a.OccurrenceDate == occurrenceDate ).FirstOrDefault();
+                            if ( attendanceOccurrence != null )
+                            {
+                                // found a matching attendanceOccurrence, so use that
+                                if ( _updatedObsoleteDidNotOccur && attendanceOccurrence.DidNotOccur != this.DidNotOccur )
+                                {
+                                    // If DidNotOccur also changed, update the DidNotOccur for the attendanceOccurrence
+                                    // NOTE: This will update *all* Attendances' DidNotOccur for this AttendanceOccurrence. That is OK. That is what we want to happen.
+                                    attendanceOccurrence.DidNotOccur = this.DidNotOccur;
+                                    attendanceOccurrenceRockContext.SaveChanges();
+                                }
+
+                                if ( attendanceOccurrence.Id != this.OccurrenceId )
+                                {
+                                    this.OccurrenceId = attendanceOccurrence.Id;
+                                }
+                            }
+                            else
+                            {
+                                // didn't find a matching attendanceOccurrence, so create and insert a new one
+                                attendanceOccurrence = new AttendanceOccurrence
+                                {
+                                    GroupId = this.GroupId,
+                                    LocationId = this.LocationId,
+                                    ScheduleId = this.ScheduleId,
+                                    DidNotOccur = this.DidNotOccur,
+                                    OccurrenceDate = occurrenceDate
+                                };
+
+                                attendanceOccurrenceService.Add( attendanceOccurrence );
+                                attendanceOccurrenceRockContext.SaveChanges();
+                                this.OccurrenceId = attendanceOccurrence.Id;
+                            }
+#pragma warning restore 612, 618
+
+                        }
+                    }
+                    else if ( _updatedObsoleteDidNotOccur )
+                    {
+                        // if they only changed DidNotOccur, but not any of the other obsolete attendanceoccurrence properties, just change the DidNotOccur on the existing AttendanceOccurrence record
+                        this.Occurrence.DidNotOccur = _updatedObsoleteDidNotOccurValue;
+                    }
+                }
+            }
 
             base.PreSaveChanges( dbContext, entry );
         }
