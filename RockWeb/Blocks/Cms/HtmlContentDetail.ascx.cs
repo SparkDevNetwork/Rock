@@ -686,6 +686,8 @@ namespace RockWeb.Blocks.Cms
                                 // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
                                 mergeFields.AddOrIgnore( "Person", CurrentPerson );
                             }
+
+                            mergeFields.Add( "CurrentBrowser", this.RockPage.BrowserClient );
                             
                             mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
                             mergeFields.Add( "CurrentPersonCanEdit", IsUserAuthorized( Authorization.EDIT ) );
