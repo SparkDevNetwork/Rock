@@ -2,7 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Rock.Model
 {
@@ -22,7 +22,7 @@ namespace Rock.Tests.Integration.Rock.Model
         private static void InitGlobalAttributesCache()
         {
             DateTime today = RockDateTime.Now;
-            CacheGlobalAttributes globalAttributes = CacheGlobalAttributes.Get();
+            GlobalAttributesCache globalAttributes = GlobalAttributesCache.Get();
             globalAttributes.SetValue( "GradeTransitionDate", string.Format( "{0}/{1}", today.Month, today.Day ), false );
         }
     }
