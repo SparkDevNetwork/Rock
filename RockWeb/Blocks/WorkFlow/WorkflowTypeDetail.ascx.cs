@@ -1391,7 +1391,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
 
             SetEditMode( true );
 
-            cbIsActive.Checked = workflowType.IsActive;
+            cbIsActive.Checked = workflowType.IsActive == true;
             tbName.Text = workflowType.Name;
             tbDescription.Text = workflowType.Description;
             cpCategory.SetValue( workflowType.CategoryId );
