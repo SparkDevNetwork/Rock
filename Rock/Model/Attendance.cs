@@ -496,21 +496,35 @@ namespace Rock.Model
             var transaction = new Rock.Transactions.GroupAttendedTransaction( entry );
             Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
 
-            if ( entry.State == System.Data.Entity.EntityState.Modified )
+#pragma warning disable 612, 618
+            ProcessObsoleteOccurrenceFields( entry );
+#pragma warning restore 612, 618
+
+            base.PreSaveChanges( dbContext, entry );
+        }
+
+        /// <summary>
+        /// Processes the obsolete occurrence fields.
+        /// </summary>
+        /// <param name="entry">The entry.</param>
+        [Obsolete]
+        private void ProcessObsoleteOccurrenceFields( System.Data.Entity.Infrastructure.DbEntityEntry entry )
+        {
+            if ( entry.State == System.Data.Entity.EntityState.Modified || entry.State == System.Data.Entity.EntityState.Added )
             {
                 // NOTE: If they only changed StartDateTime, don't change the Occurrence record. We want to support letting StartDateTime be a different Date than the OccurenceDate in that situation
                 if ( _updatedObsoleteGroupId || _updatedObsoleteLocationId || _updatedObsoleteScheduleId || _updatedObsoleteDidNotOccur )
                 {
                     if ( _updatedObsoleteGroupId || _updatedObsoleteLocationId || _updatedObsoleteScheduleId )
                     {
-                        // if they changed stuff related to AttendanceOccurrence (not including DidNotOccur or StartDateTime) thru obsolete properties, find or create a Matching AttendanceOccurrence Record
+                        // if they changed or set stuff related to AttendanceOccurrence (not including DidNotOccur or StartDateTime) thru obsolete properties, find or create a Matching AttendanceOccurrence Record
                         using ( var attendanceOccurrenceRockContext = new RockContext() )
                         {
                             var attendanceOccurrenceService = new AttendanceOccurrenceService( attendanceOccurrenceRockContext );
 
                             // if GroupId,LocationId, or ScheduleId changed, use StartDateTime's Date as the OccurrenceDate to look up AttendanceOccurence since it is really a completely different Occurence if Group,Location or Schedule changes
                             var occurrenceDate = this.StartDateTime.Date;
-#pragma warning disable 612, 618
+
                             var attendanceOccurrence = attendanceOccurrenceService.Queryable().Where( a => a.GroupId == this.GroupId && a.LocationId == this.LocationId && a.ScheduleId == this.ScheduleId && a.OccurrenceDate == occurrenceDate ).FirstOrDefault();
                             if ( attendanceOccurrence != null )
                             {
@@ -544,19 +558,20 @@ namespace Rock.Model
                                 attendanceOccurrenceRockContext.SaveChanges();
                                 this.OccurrenceId = attendanceOccurrence.Id;
                             }
-#pragma warning restore 612, 618
+
 
                         }
                     }
                     else if ( _updatedObsoleteDidNotOccur )
                     {
                         // if they only changed DidNotOccur, but not any of the other obsolete attendanceoccurrence properties, just change the DidNotOccur on the existing AttendanceOccurrence record
-                        this.Occurrence.DidNotOccur = _updatedObsoleteDidNotOccurValue;
+                        if ( this.Occurrence != null )
+                        {
+                            this.Occurrence.DidNotOccur = _updatedObsoleteDidNotOccurValue;
+                        }
                     }
                 }
             }
-
-            base.PreSaveChanges( dbContext, entry );
         }
 
         /// <summary>
