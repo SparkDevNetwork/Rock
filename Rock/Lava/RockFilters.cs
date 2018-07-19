@@ -2850,6 +2850,7 @@ namespace Rock.Lava
             if ( person != null && numericalGroupTypeId.HasValue )
             {
                 return new AttendanceService( GetRockContext( context ) ).Queryable()
+                    .AsNoTracking()
                     .Where( a => 
                         a.Occurrence.Group != null && 
                         a.Occurrence.Group.GroupTypeId == numericalGroupTypeId && 
@@ -2876,6 +2877,7 @@ namespace Rock.Lava
             if ( person != null && numericalGroupTypeId.HasValue )
             {
                 var attendance = new AttendanceService( GetRockContext( context ) ).Queryable( "Group" )
+                    .AsNoTracking()
                     .Where( a => 
                         a.Occurrence.Group != null &&
                         a.Occurrence.Group.GroupTypeId == numericalGroupTypeId && 
@@ -4039,6 +4041,7 @@ namespace Rock.Lava
             if ( !siteId.HasValue )
             {
                 siteId = new SiteService( rockContext ).Queryable()
+                    .AsNoTracking()
                     .OrderBy( s => s.EnabledForShortening )
                     .Take( 1 )
                     .Select( s => s.Id ).FirstOrDefault();
@@ -4386,7 +4389,7 @@ namespace Rock.Lava
                 noteTypeIds = ((string)noteType).Split( ',' ).Select( Int32.Parse ).ToList();
             }
 
-            var notes = new NoteService( new RockContext() ).Queryable().Where( n => n.EntityId == entityId );
+            var notes = new NoteService( new RockContext() ).Queryable().AsNoTracking().Where( n => n.EntityId == entityId );
 
             if ( noteTypeIds.Count > 0 )
             {
