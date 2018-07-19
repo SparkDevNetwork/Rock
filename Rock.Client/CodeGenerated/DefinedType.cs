@@ -53,6 +53,9 @@ namespace Rock.Client
         public string HelpText { get; set; }
 
         /// <summary />
+        public bool IsActive { get; set; }
+
+        /// <summary />
         public bool IsSystem { get; set; }
 
         /// <summary>
@@ -105,6 +108,7 @@ namespace Rock.Client
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.HelpText = source.HelpText;
+            this.IsActive = source.IsActive;
             this.IsSystem = source.IsSystem;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;

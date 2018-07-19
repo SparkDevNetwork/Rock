@@ -281,9 +281,9 @@ namespace Rock.Plugin
             /// <summary>
             /// Get the migration operation's Sql.  This iterates through the DbMigrations operations list and pulls out the sql.
             /// </summary>
-            /// <param name="SqlConnection">The SqlConnection object from the Plugin Migration class.</param>
+            /// <param name="sqlConnection">The SqlConnection object from the Plugin Migration class.</param>
             /// <returns>A string containing the SQL generated from the current migration.</returns>
-            internal string GetMigrationSql( SqlConnection SqlConnection )
+            internal string GetMigrationSql( SqlConnection sqlConnection )
             {
                 StringBuilder sql = new StringBuilder();
                 var prop = this.GetType().GetProperty( "Operations", BindingFlags.NonPublic | BindingFlags.Instance );
@@ -299,7 +299,7 @@ namespace Rock.Plugin
                         }
                     }
                     var generator = new SqlServerMigrationSqlGenerator();
-                    var statements = generator.Generate( operations, SqlConnection.ServerVersion.AsInteger() > 10 ? "2008" : "2005" );
+                    var statements = generator.Generate( operations, sqlConnection.ServerVersion.AsInteger() > 10 ? "2008" : "2005" );
                     foreach ( MigrationStatement item in statements )
                     {
                         sql.Append( item.Sql );
