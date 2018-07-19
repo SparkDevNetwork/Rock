@@ -1,12 +1,13 @@
 Rock McKinley 8.0
 
 + Added a block setting to Communication Entry for simple mode to be non-bulk.
-+ Added a block setting to require a campus on the prayer request detail block.
-+ Added a block setting to the pre-registration block to require a campus.
++ Added a block setting to require a campus on the Prayer Request Detail block.
++ Added a block setting to the Pre-Registration block to require a campus.
 + Added a block to assign attribute values to an Event Occurrence.
 + Added a 'Can Manage Members' option to Group Type Roles, similar to the existing 'Can View' and 'Can Edit' options that can be used to give a role the ability to manage members only for the group they are a member of.
 + Added a connection type filter to the Connection Opportunities filed type. This will allow Connection Opportunity Attribute values to be constrained to the selected Connection Type.
 + Added a file watcher for BlockTypes.
++ Added a new AttendanceOccurrence model/table for grouping attendance records by group, location, schedule and date.
 + Added a new block type for converting Person records to and from Businesses.
 + Added a new connection type filter to the Connection Opportunities filed type. This will allow Connection Opportunity Attribute values to be constrained to the selected Connection Type.
 + Added a new Content Channel View Detail block that can be used to present a content channel item.
@@ -37,6 +38,8 @@ Rock McKinley 8.0
 + Added an option to the Baptism Following Event to support being notified a configured number of years after a baptism date.
 + Added audit panel details to the Registration Template Detail and Registration Instance Detail blocks.
 + Added block settting to hide or show inactive Connection Requests in the Connection Request profile block.
++ Added check to prevent duplicate phone numbers being added to a person.
++ Added checks to jobs that send emails in order to ensure emails are sent with consent.
 + Added configurable labels for Group Finder filters.
 + Added Configuration properties to the GroupType Detail block to control which panels are visible on the Group Detail block when editing groups of that type.
 + Added Data Automation for setting Person Connection Status and Family Status.
@@ -46,6 +49,7 @@ Rock McKinley 8.0
 + Added 'Family Members Transform' post-filter transformation.
 + Added Family Status to Family.
 + Added Gender Autofill method to the DataAutomation Jobs task.
++ Added IsActive Property to Defined Values and Defined Types
 + Added IsActive property to Registration template fee. If the fee is not active, it will no longer appear in new registrations. The fee will be listed for existing ones.
 + Added Lucene Search Engine to Universal Search.
 + Added more options on how to use Persisted Data Views when using the 'In Other Data View' filters.
@@ -78,7 +82,6 @@ Rock McKinley 8.0
 + Added the ability to assign security settings to a merge template from the Merge Template Detail block.
 + Added the ability to filter by campus on the Prayer Sessions block. The default is 'enabled'.
 + Added the ability to filter on active Connection Types on the My Connection Requests block.
-+ Added the ability to group attendance records by group, location, schedule and date.
 + Added the ability to have alternate search keys for people when checking for existing records. Specifically this will add the ability to search for people by former email addresses.
 + Added the ability to have CSS classes on zones.
 + Added the ability to have inactive interaction channels.
@@ -91,6 +94,7 @@ Rock McKinley 8.0
 + Added the Group History feature.
 + Added the ID of the entity to the panel drawer of all detail blocks. This is helpful when writing Lava.
 + Added the option to add people to a tag when viewing the tag's detail page.
++ Changed the security login on the Family Bar to show the Address Configuration button (gear) for those with 'Edit' access to the block. Before this was 'Administrate'. This allows staff to easily lock the address from being geocoded.
 + Cleaned up legacy Lava.
 + Fixed Address Field in registrations not respecting Show in Grid.
 + Fixed an error that would occur in the Group Detail block when saving a group without admin security.
@@ -105,28 +109,42 @@ Rock McKinley 8.0
 + Fixed an issue with the Attendance Analytics block where despite it being configured to use a group type it still displayed a message indicating a check-in type was required.
 + Fixed and enhanced Captive Portal (Windows version number, incorrect phone number). See Asana tasks 'Add Existing Page to Personal Device Badge', 'FrontPorch Tweaks' and 'FrontPorch'. Updated block settings. Replaced First Name and Last Name block settings with Show Name.
 + Fixed anniversary date persistence after Marital Status is changed from Married to something else. The anniversary date control will only display if the Marital Status is 'married'. If the Marital Status is changed to 'married', the anniversary date will be set to null when the person is saved.
++ Fixed autofocus on checkin to work as intended.
 + Fixed Background Check Grid sorting by name.
 + Fixed Batch List not being able to open closed batches from the dropdown menu in Chrome.
++ Fixed DB locking issue on DBs with read committed snapshot set to false. (Fixes Rock-v8-Alpha-Issues #13)
 + Fixed Entity Not Supported Exception in GroupFinder.
++ Fixed filter issues on GroupMemberList. (Fixes Rock-v8-Alpha-Issues #20)
 + Fixed form sorting for Person Attribute forms.
 + Fixed group member triggers (from the group or from the group type) to only fire if they are active.
++ Fixed HtmlContentDetail not displaying content if the expired date is set in the past.
 + Fixed In Group Together following suggestions so inactive group members are not included.
++ Fixed incorrect prepend/append logic in the WithFallback Lava filter.
++ Fixed issue in ContextSetter blocks (CampusContextSetter, GroupContextSetter) where specifying the context in the URL doesn't always set the context correctly.
++ Fixed issue where single account refunds incorrectly displayed negative number error message.
 + Fixed issue where the Data Automation job inactivated new people by adding a setting to ignore new records when inactivating records.
 + Fixed missing Workflow Trigger Qualifier columns.
 + Fixed order of Financial Account lists in the Transaction Matching block. Ordering is now a flattened hierarchical list (i.e., sub accounts are listed under the parent accounts but are not indented).
++ Fixed recursion issue in Lava inline shortcodes.
++ Fixed registration notes not being added when the registrar was logged in.
++ Fixed registration notes not being saved when people are added using RegistrantDetail.
 + Fixed required expiration for content channel date ranges without time.
 + Fixed re-selecting Registered By person not overwriting existing fields.
 + Fixed scrolling issue on the Transaction Entry block (Give Now). Default behavior will be to scroll to the same window position after clicking Next.
 + Fixed sorting in Bio Action menu. Workflow items are sorted alphabetically at the bottom of the menu.
 + Fixed SSN Control to honor the Required property.
++ Fixed the EditGroup block not making case-sensitive changes to the address.
 + Fixed the Group Detail block so a group sync configuration will not prevent the group from being deleted.
 + Fixed the Registration Detail block to always set the template group member status.
 + Fixed the Tag grid Export to Excel function to prevent it from creating an invalid file.
 + Fixed Universal Search Site Crawler to honor the 'robots nofollow' tag to indicate that links should not be followed.
 + Fixed unlisted phone numbers causing errors when giving.
++ Fixed Unsorted Dataview list in Group Sync Settings by changing to the DataViewItemPicker. (Rock-v8-Alpha-Issues #6)
 + Fixed validation errors on FamilyPreRegistration block for adult #2 when there is no redirect URL specified. Redirect URL is now required.
++ Fixed Verify Photos grid showing CreatedDateTime of group member rather than photo.
 + Fixed 'workflowactivate' Lava command not to make attribute names lowercase.
 + Implement Required Fees
++ Improved New Family block to be fully responsive on mobile
 + Improved the Group Detail Group Sync display. The panel will now only show if the group type allows sync or if the group has at least one sync already. If the group type does not allow syncing, the add button under the grid will not be displayed. If the user does not have access, the section will not display.
 + Improved the Group Member List active sync label to show all the roles being synced in a tool tip.
 + Improved the Group Member list grid not to display IsAddedbySync column if the group has no GroupSyncs configured.
@@ -135,6 +153,7 @@ Rock McKinley 8.0
 + Switched Mailgun to use HTTP API.
 + Updated Calculate Person Duplicates Command Timeout from 5 minutes to 30 minutes.
 + Updated currency box control to allow negative values.
++ Updated Edit Label and Label Upload to force expanded characters on the label (prints any language). Label can be saved as is in the Edit Label block by unchecking the 'Force Expanded Character set (UTF-8)' checkbox.
 + Updated Event Registrants list to include age of registrant if BirthDate field is set to show on grid.
 + Updated Font Awesome to 5.0.12.
 + Updated FontAwesome to 5.0.13.
@@ -143,6 +162,7 @@ Rock McKinley 8.0
 + Updated Page View Interactions to report the actual browser title instead of the page title stored in the database. This makes the title more specific as many pages dynamically update the page title on load.
 + Updated Rock's built-in theme to a new/update look. If you've made customizations to the internal theme, you may wish to make a backup of the old theme before upgrading. (In general, though, we don't support custom changes to the core internal theme other than what's available through the theme editor).
 + Updated Scheduled Transaction list Lava to include the masked card number.
++ Updated Summernote paste behavior to default to paste as text. To paste from Word, the Paste From Word toolbar button can be used.
 + Updated Text to Workflow to use new Age Classification property to order duplicate person matches (adults first).
 + Updated the Activate Workflow Action to optionally allow saving the new workflow to an Attribute on the originating workflow.
 + Updated the attribute editor so when it is used inside a modal dialog it will display the ID of the attribute being edited in the title of the dialog.
@@ -151,12 +171,14 @@ Rock McKinley 8.0
 + Updated the Calendar Lava block to support configuring a specific list of campuses that should be enabled on the block.
 + Updated the Check-in Identifiers to be associated with a person instead of a family. This allows for saving the person that did the check-in with the attendance records.
 + Updated the Check-in Schedule Builder to display schedule columns in name order.
++ Updated the creation of new attendance codes (for check-in) to avoid an infinite loop situation.
 + Updated the default CalendarItem.lava to use the event's Summary as the meta description for better SEO behavior. Any custom CalendarItem lava files should be updated with the same change.
 + Updated the default image resizing to mode=clip. This resizes the image to fit without cropping or stretching.
 + Updated the Defined Value List block to remove the tooltip that displayed the ID, as it often conflicts with the modal. The ID is available on the modal.
 + Updated the Download Payments job so it can be configured to download payments only for a specific gateway.
 + Updated the Email Editor to improve drag and drop usability.
 + Updated the Entity Type list block to only show true entities.
++ Updated the Family Pre-Registration block to match children with same name/birthdate in the same family as a matched adult, and ensure that blank values do not overwrite existing data for the matched child.
 + Updated the Giving Analytics block to include Phone and Address when exporting the grid.
 + Updated the Group Detail block to allow the view mode to be defined using Lava.
 + Updated the Group Member Add workflow actions to not error if a selected person already belongs to the selected group.
