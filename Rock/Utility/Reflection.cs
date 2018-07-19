@@ -255,8 +255,9 @@ namespace Rock
                 {
                     try
                     {
-                        // if an assembly is found that isn't loaded yet, load it so we can search it for types
-                        assembly = Assembly.Load( File.ReadAllBytes( assemblyFileName ) );
+                        // if an assembly is found that isn't loaded yet, load it into the CurrentDomain
+                        AssemblyName assemblyName = AssemblyName.GetAssemblyName( assemblyFileName );
+                        assembly = AppDomain.CurrentDomain.Load( assemblyName );
                     }
                     catch ( Exception ex )
                     {
