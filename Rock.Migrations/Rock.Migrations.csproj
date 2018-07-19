@@ -69,25 +69,29 @@
     <Compile Include="HotFixMigrations\004_FixBaptismBadge.cs" />
     <Compile Include="HotFixMigrations\005_ValueAsNumeric.cs" />
     <Compile Include="HotFixMigrations\006_StatementProcs.cs" />
-    <Compile Include="Migrations\201806251757250_BackgroundCheckWarnOfRecent.cs" />
-    <Compile Include="Migrations\201806251757250_BackgroundCheckWarnOfRecent.Designer.cs">
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201806251757250_BackgroundCheckWarnOfRecent.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201806251757250_BackgroundCheckWarnOfRecent.Designer.cs">
       <DependentUpon>201806251757250_BackgroundCheckWarnOfRecent.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201806252044512_UpdateHomepageMetrics.cs" />
-    <Compile Include="Migrations\201806252044512_UpdateHomepageMetrics.Designer.cs">
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201806252044512_UpdateHomepageMetrics.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201806252044512_UpdateHomepageMetrics.Designer.cs">
       <DependentUpon>201806252044512_UpdateHomepageMetrics.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201806262300325_Rollup_0626.cs" />
-    <Compile Include="Migrations\201806262300325_Rollup_0626.Designer.cs">
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201806262300325_Rollup_0626.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201806262300325_Rollup_0626.Designer.cs">
       <DependentUpon>201806262300325_Rollup_0626.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201807102225186_AddIsActiveToDefinedValueType.cs" />
-    <Compile Include="Migrations\201807102225186_AddIsActiveToDefinedValueType.Designer.cs">
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201807102225186_AddIsActiveToDefinedValueType.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201807102225186_AddIsActiveToDefinedValueType.Designer.cs">
       <DependentUpon>201807102225186_AddIsActiveToDefinedValueType.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201807182135104_WorkflowTypeIsActive.cs" />
-    <Compile Include="Migrations\201807182135104_WorkflowTypeIsActive.Designer.cs">
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201807182135104_WorkflowTypeIsActive.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201807182135104_WorkflowTypeIsActive.Designer.cs">
       <DependentUpon>201807182135104_WorkflowTypeIsActive.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201807191932379_Rollup_0719.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201807191932379_Rollup_0719.Designer.cs">
+      <DependentUpon>201807191932379_Rollup_0719.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 8.0\Version 1.8.0\201801162056008_V8Features.cs" />
     <Compile Include="Migrations\Version 8.0\Version 1.8.0\201801162056008_V8Features.Designer.cs">
@@ -2906,20 +2910,23 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201806251757250_BackgroundCheckWarnOfRecent.resx">
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201806251757250_BackgroundCheckWarnOfRecent.resx">
       <DependentUpon>201806251757250_BackgroundCheckWarnOfRecent.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201806252044512_UpdateHomepageMetrics.resx">
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201806252044512_UpdateHomepageMetrics.resx">
       <DependentUpon>201806252044512_UpdateHomepageMetrics.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201806262300325_Rollup_0626.resx">
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201806262300325_Rollup_0626.resx">
       <DependentUpon>201806262300325_Rollup_0626.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201807102225186_AddIsActiveToDefinedValueType.resx">
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201807102225186_AddIsActiveToDefinedValueType.resx">
       <DependentUpon>201807102225186_AddIsActiveToDefinedValueType.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201807182135104_WorkflowTypeIsActive.resx">
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201807182135104_WorkflowTypeIsActive.resx">
       <DependentUpon>201807182135104_WorkflowTypeIsActive.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201807191932379_Rollup_0719.resx">
+      <DependentUpon>201807191932379_Rollup_0719.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201801162056008_V8Features.resx">
       <DependentUpon>201801162056008_V8Features.cs</DependentUpon>
@@ -5049,6 +5056,12 @@
     <None Include="Migrations\Version 8.0\Version 1.8.0\201802092340176_Rollup_0209_spCrm_PersonDuplicateFinder.sql">
       <DependentUpon>201802092340176_Rollup_0209.cs</DependentUpon>
     </None>
+    <Content Include="Migrations\Version 8.0\Version 1.8.0\201807191932379_Rollup_0719_Add ConnectionStatus and RecordStatus Security Actions to Bulk Update.sql">
+      <DependentUpon>201807191932379_Rollup_0719.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 8.0\Version 1.8.0\201807191932379_Rollup_0719_Fix Accordion Bug.sql">
+      <DependentUpon>201807191932379_Rollup_0719.cs</DependentUpon>
+    </Content>
     <Content Include="Migrations\Version 8.0\Version 1.8.0\201802260423490_Rollup_0225_spCheckin_AttendanceAnalyticsQuery_Attendees.sql">
       <DependentUpon>201802260423490_Rollup_0225.cs</DependentUpon>
     </Content>
