@@ -262,12 +262,17 @@ namespace RockWeb.Blocks.Groups
         {
             base.OnLoad( e );
 
+            int? groupId = 0;
+            if ( !string.IsNullOrWhiteSpace( PageParameter( "GroupId" ) ) )
+            {
+                groupId = PageParameter( "GroupId" ).AsIntegerOrNull();
+            }
+
             if ( !Page.IsPostBack )
             {
-                string groupId = PageParameter( "GroupId" );
-                if ( !string.IsNullOrWhiteSpace( groupId ) )
+                if ( groupId.HasValue )
                 {
-                    ShowDetail( groupId.AsInteger(), PageParameter( "ParentGroupId" ).AsIntegerOrNull() );
+                    ShowDetail( groupId.Value, PageParameter( "ParentGroupId" ).AsIntegerOrNull() );
                 }
                 else
                 {
@@ -293,6 +298,15 @@ namespace RockWeb.Blocks.Groups
                     ShowGroupTypeEditDetails( CurrentGroupTypeCache, group, false );
                 }
             }
+
+            RockContext rockContext = new RockContext();
+
+            if ( groupId.HasValue && groupId.Value != 0 )
+            {
+                var group = GetGroup( groupId.Value, rockContext );
+                FollowingsHelper.SetFollowing( group, pnlFollowing, this.CurrentPerson );
+            }
+
         }
 
         /// <summary>
@@ -1273,9 +1287,7 @@ namespace RockWeb.Blocks.Groups
             string roleLimitWarnings;
             nbRoleLimitWarning.Visible = group.GetGroupTypeRoleLimitWarnings( out roleLimitWarnings );
             nbRoleLimitWarning.Text = roleLimitWarnings;
-
-            FollowingsHelper.SetFollowing( group, pnlFollowing, this.CurrentPerson );
-
+            
             if ( readOnly )
             {
                 btnEdit.Visible = false;
