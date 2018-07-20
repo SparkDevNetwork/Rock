@@ -1,5 +1,9 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Bio.ascx.cs" Inherits="RockWeb.Blocks.Crm.PersonDetail.Bio" %>
 
+<%--CCV CORE --%>
+<%--JHM - Removed <a> tag from Social Media links, because in the case of Facebook, they are app-specific links that expire, so they cause confusion among staff when they stop working. --%>
+<%-- --%>
+
 <Rock:NotificationBox ID="nbInvalidPerson" runat="server" NotificationBoxType="Warning" Title="Person Not Found" Text="The requested person profile does not exist." Visible="false" />
 <asp:Panel ID="pnlContent" runat="server">
 
@@ -37,7 +41,7 @@
                 <ul class="social-icons list-unstyled margin-t-sm">
                     <asp:Repeater ID="rptSocial" runat="server">
                         <ItemTemplate>
-                            <li class='icon icon-<%# Eval("name").ToString().ToLower() %>'><a href='<%# Eval("url") %>' target="_blank"><i class='<%# Eval("icon") %>'></i></a></li>
+                            <li class='icon icon-<%# Eval("name").ToString().ToLower() %>'><i class='<%# Eval("icon") %>'></i></li>
                         </ItemTemplate>
                     </asp:Repeater>
                 </ul>
