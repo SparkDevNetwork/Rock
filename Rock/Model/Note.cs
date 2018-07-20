@@ -492,6 +492,19 @@ namespace Rock.Model
 
                 return false;
             }
+            else if ( action.Equals( Rock.Security.Authorization.EDIT, StringComparison.OrdinalIgnoreCase ) )
+            {
+                // If this note was created by the logged person, they should be be able to EDIT their own note,
+                // otherwise EDIT (and DELETE) of other people's notes require ADMINISTRATE
+                if ( CreatedByPersonAlias?.PersonId == person?.Id )
+                {
+                    return true;
+                }
+                else 
+                {
+                    return base.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, person );
+                }
+            }
             else
             {
                 // If this note was created by the logged person, they should be be able to do any action (except for APPROVE)
