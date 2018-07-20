@@ -397,6 +397,15 @@ namespace Rock.Model
                     }
             }
 
+            if ( entry.State == EntityState.Added || entry.State == EntityState.Modified )
+            {
+                // Ensure that CurrencyTypeValueId is set. The UI tries to prevent it, but just in case, if it isn't, set it to Unknown
+                if ( !this.CurrencyTypeValueId.HasValue )
+                {
+                    this.CurrencyTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_UNKNOWN.AsGuid() )?.Id;
+                }
+            }
+
             base.PreSaveChanges( dbContext, entry );
         }
 
