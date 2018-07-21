@@ -444,15 +444,15 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Gets the search details (for the person picker)
         /// </summary>
-        /// <param name="Id">The identifier.</param>
+        /// <param name="id">The identifier.</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/People/GetSearchDetails" )]
-        public string GetSearchDetails( int Id )
+        public string GetSearchDetails( int id )
         {
             PersonSearchResult personSearchResult = new PersonSearchResult();
-            var person = this.Get().Include( a => a.PhoneNumbers ).Where( a => a.Id == Id ).FirstOrDefault();
+            var person = this.Get().Include( a => a.PhoneNumbers ).Where( a => a.Id == id ).FirstOrDefault();
             if ( person != null )
             {
                 GetPersonSearchDetails( personSearchResult, person );

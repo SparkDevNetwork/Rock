@@ -265,6 +265,12 @@ namespace Rock.SystemGuid
         public const string PROTECT_MY_MINISTRY_MVR_JURISDICTION_CODES = "2F8821E8-05B9-4CD5-9FA4-303662AAC85D";
 
         /// <summary>
+        /// Protect My Ministry background package types
+        /// </summary>
+        [Obsolete( "Use BACKGROUND_CHECK_TYPES instead")]
+        public const string PROTECT_MY_MINISTRY_PACKAGES = "BC2FDF9A-93B8-4325-8DE9-2F7B1943BFDF";
+
+        /// <summary>
         /// Guid for the types of map styles
         /// </summary>
         public const string MAP_STYLES = "4EF89471-C049-49ED-AB50-677F689A4E4E";
