@@ -291,6 +291,16 @@ namespace Rock.Web.Cache
         #region Public Methods
 
         /// <summary>
+        /// Copies from model.
+        /// </summary>
+        /// <param name="model">The model.</param>
+        [Obsolete("Use SetFromEntity instead")]
+        public override void CopyFromModel( Data.IEntity model )
+        {
+            this.SetFromEntity( model );
+        }
+
+        /// <summary>
         /// Set's the cached objects properties from the model/entities properties.
         /// </summary>
         /// <param name="entity">The entity.</param>
@@ -311,6 +321,17 @@ namespace Rock.Web.Cache
             }
 
             SetFromEntity( attribute, qualifiers );
+        }
+
+        /// <summary>
+        /// Copies from model.
+        /// </summary>
+        /// <param name="attribute">The attribute.</param>
+        /// <param name="qualifiers">The qualifiers.</param>
+        [Obsolete( "Use SetFromEntity instead" )]
+        public void CopyFromModel( Rock.Model.Attribute attribute, Dictionary<string, string> qualifiers )
+        {
+            this.SetFromEntity( attribute, qualifiers );
         }
 
         /// <summary>
@@ -628,6 +649,16 @@ namespace Rock.Web.Cache
         public static void RemoveEntityAttributes()
         {
             EntityAttributesCache.Remove();
+        }
+
+        /// <summary>
+        /// Loads the entity attributes.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        [Obsolete("No longer needed")]
+        public static void LoadEntityAttributes( RockContext rockContext )
+        {
+            //
         }
 
         /// <summary>

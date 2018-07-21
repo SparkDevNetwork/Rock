@@ -65,6 +65,7 @@
                         <ItemTemplate>
                             <%# ((DateTime)Eval("Date")).ToShortDateString() %><br />
                             <%# Eval("Schedule") %>
+                            <asp:Literal id="lWhoCheckedIn" runat="server"></asp:Literal>
                         </ItemTemplate>
                     </Rock:RockTemplateField>
                     <Rock:RockTemplateField HeaderText="Where">

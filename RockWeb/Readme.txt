@@ -2,14 +2,14 @@ Rock McKinley 8.0
 
 + Added a block setting to Communication Entry for simple mode to be non-bulk.
 + Added a block setting to require a campus on the Prayer Request Detail block.
-+ Added a block setting to the Pre-Registration block to require a campus.
++ Added a block setting to the Family Pre-Registration block to require a campus.
 + Added a block to assign attribute values to an Event Occurrence.
 + Added a 'Can Manage Members' option to Group Type Roles, similar to the existing 'Can View' and 'Can Edit' options that can be used to give a role the ability to manage members only for the group they are a member of.
-+ Added a connection type filter to the Connection Opportunities filed type. This will allow Connection Opportunity Attribute values to be constrained to the selected Connection Type.
++ Added a connection type filter to the Connection Opportunities field type. This will allow Connection Opportunity Attribute values to be constrained to the selected Connection Type.
 + Added a file watcher for BlockTypes.
 + Added a new AttendanceOccurrence model/table for grouping attendance records by group, location, schedule and date.
 + Added a new block type for converting Person records to and from Businesses.
-+ Added a new connection type filter to the Connection Opportunities filed type. This will allow Connection Opportunity Attribute values to be constrained to the selected Connection Type.
++ Added a new connection type filter to the Connection Opportunities field type. This will allow Connection Opportunity Attribute values to be constrained to the selected Connection Type.
 + Added a new Content Channel View Detail block that can be used to present a content channel item.
 + Added a new data view filter to allow for filtering people who have clicked and opened a specific communication.
 + Added a new Days Until Anniversary field for use with Person Data Views and Reports.
@@ -37,18 +37,18 @@ Rock McKinley 8.0
 + Added an internal communications Homepage content channel.
 + Added an option to the Baptism Following Event to support being notified a configured number of years after a baptism date.
 + Added audit panel details to the Registration Template Detail and Registration Instance Detail blocks.
-+ Added block settting to hide or show inactive Connection Requests in the Connection Request profile block.
++ Added block setting to hide or show Inactive Connection Requests in the Connection Request profile block.
 + Added check to prevent duplicate phone numbers being added to a person.
-+ Added checks to jobs that send emails in order to ensure emails are sent with consent.
++ Added checks to jobs that send emails, in order to ensure emails are sent with consent.
 + Added configurable labels for Group Finder filters.
 + Added Configuration properties to the GroupType Detail block to control which panels are visible on the Group Detail block when editing groups of that type.
 + Added Data Automation for setting Person Connection Status and Family Status.
 + Added Default Connection Status to the block settings for the Public Profile Edit block. If there is no default, the logged-in person's status is used.
 + Added enhancements to Notes.
 + Added Event Occurrence Specific Attribute Values. Added block to assign attribute values to an Event Occurrence.
-+ Added 'Family Members Transform' post-filter transformation.
++ Added 'Family Members' post-filter transformation.
 + Added Family Status to Family.
-+ Added Gender Autofill method to the DataAutomation Jobs task.
++ Added Gender Autofill method as an option on the DataAutomation Jobs task.
 + Added IsActive Property to Defined Values and Defined Types
 + Added IsActive property to Registration template fee. If the fee is not active, it will no longer appear in new registrations. The fee will be listed for existing ones.
 + Added Lucene Search Engine to Universal Search.
@@ -66,7 +66,7 @@ Rock McKinley 8.0
 + Added new UrlDecode and UnescapeDataString Lava filters. Also made an alias for EscapeDataString called 'UrlEncode'.
 + Added new workflow actions for managing registration discount codes.
 + Added option to have a Group Status on Groups.
-+ Added option to persist Dataviews to help improve the performance of complex dataviews.
++ Added option to persist Data Views to help improve performance of complex ones.
 + Added Person Connection Request data view filter.
 + Added properties to store image dimensions for a BinaryFile.
 + Added requirement that a group sync be tied to a role for Group Sync By Role. Unsynced roles can be manually added to a group. Synced roles cannot be manually added or removed from a group.
@@ -76,7 +76,7 @@ Rock McKinley 8.0
 + Added support for automated event registration discounts.
 + Added support for Checkr background check.
 + Added support for in-place editing of HTML contents.
-+ Added support to the Lava Sql block and Run SQL workflow for Parameterized SQL statements.
++ Added support to the Lava SQL command and Run SQL workflow action for Parameterized SQL statements.
 + Added the ability to add Lava directly on a Theme Master Page or Layout file.
 + Added the ability to add/manage HTTP modules inside of Rock.
 + Added the ability to assign security settings to a merge template from the Merge Template Detail block.
@@ -107,9 +107,9 @@ Rock McKinley 8.0
 + Fixed an issue where the Defined Type list displayed IDs instead of friendly names on reports or dynamic reports.
 + Fixed an issue with connection type workflow qualifiers not being set correctly when first viewed.
 + Fixed an issue with the Attendance Analytics block where despite it being configured to use a group type it still displayed a message indicating a check-in type was required.
-+ Fixed and enhanced Captive Portal (Windows version number, incorrect phone number). See Asana tasks 'Add Existing Page to Personal Device Badge', 'FrontPorch Tweaks' and 'FrontPorch'. Updated block settings. Replaced First Name and Last Name block settings with Show Name.
-+ Fixed anniversary date persistence after Marital Status is changed from Married to something else. The anniversary date control will only display if the Marital Status is 'married'. If the Marital Status is changed to 'married', the anniversary date will be set to null when the person is saved.
-+ Fixed autofocus on checkin to work as intended.
++ Fixed and enhanced Captive Portal
++ Fixed anniversary date persistence after Marital Status is changed from Married to something else. The anniversary date control will only display if the Marital Status is 'married'. If the Marital Status is changed to 'single', the anniversary date will be set to null when the person is saved.
++ Fixed autofocus on check-in to work as intended.
 + Fixed Background Check Grid sorting by name.
 + Fixed Batch List not being able to open closed batches from the dropdown menu in Chrome.
 + Fixed DB locking issue on DBs with read committed snapshot set to false. (Fixes Rock-v8-Alpha-Issues #13)
@@ -139,7 +139,7 @@ Rock McKinley 8.0
 + Fixed the Tag grid Export to Excel function to prevent it from creating an invalid file.
 + Fixed Universal Search Site Crawler to honor the 'robots nofollow' tag to indicate that links should not be followed.
 + Fixed unlisted phone numbers causing errors when giving.
-+ Fixed Unsorted Dataview list in Group Sync Settings by changing to the DataViewItemPicker. (Rock-v8-Alpha-Issues #6)
++ Fixed unsorted data view list in Group Sync Settings by changing to the DataViewItemPicker. (Rock-v8-Alpha-Issues #6)
 + Fixed validation errors on FamilyPreRegistration block for adult #2 when there is no redirect URL specified. Redirect URL is now required.
 + Fixed Verify Photos grid showing CreatedDateTime of group member rather than photo.
 + Fixed 'workflowactivate' Lava command not to make attribute names lowercase.

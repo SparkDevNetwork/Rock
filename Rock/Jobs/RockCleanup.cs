@@ -68,11 +68,11 @@ namespace Rock.Jobs
 
             List<Exception> rockCleanupExceptions = new List<Exception>();
 
-            Dictionary<string, int> databaseRowsDeleted = new Dictionary<string, int>();
+            Dictionary<string, int> databaseRowsCleanedUp = new Dictionary<string, int>();
 
             try
             {
-                databaseRowsDeleted.Add( "Exception Log", PurgeExceptionLog( dataMap ) );
+                databaseRowsCleanedUp.Add( "Exception Log", PurgeExceptionLog( dataMap ) );
             }
             catch ( Exception ex )
             {
@@ -81,7 +81,7 @@ namespace Rock.Jobs
 
             try
             {
-                databaseRowsDeleted.Add( "Expired Entity Set", CleanupExpiredEntitySets( dataMap ) );
+                databaseRowsCleanedUp.Add( "Expired Entity Set", CleanupExpiredEntitySets( dataMap ) );
             }
             catch ( Exception ex )
             {
@@ -90,7 +90,7 @@ namespace Rock.Jobs
 
             try
             {
-                databaseRowsDeleted.Add( "Old Interaction", CleanupInteractions( dataMap ) );
+                databaseRowsCleanedUp.Add( "Old Interaction", CleanupInteractions( dataMap ) );
             }
             catch ( Exception ex )
             {
@@ -99,7 +99,7 @@ namespace Rock.Jobs
 
             try
             {
-                databaseRowsDeleted.Add( "Audit Log", PurgeAuditLog( dataMap ) );
+                databaseRowsCleanedUp.Add( "Audit Log", PurgeAuditLog( dataMap ) );
             }
             catch ( Exception ex )
             {
@@ -136,7 +136,7 @@ namespace Rock.Jobs
 
             try
             {
-                databaseRowsDeleted.Add( "Temporary Registration", CleanUpTemporaryRegistrations() );
+                databaseRowsCleanedUp.Add( "Temporary Registration", CleanUpTemporaryRegistrations() );
             }
             catch ( Exception ex )
             {
@@ -145,7 +145,7 @@ namespace Rock.Jobs
 
             try
             {
-                databaseRowsDeleted.Add( "Workflow", CleanUpWorkflows( dataMap ) );
+                databaseRowsCleanedUp.Add( "Workflow", CleanUpWorkflows( dataMap ) );
             }
             catch ( Exception ex )
             {
@@ -154,7 +154,7 @@ namespace Rock.Jobs
 
             try
             {
-                databaseRowsDeleted.Add( "Workflow Log", CleanUpWorkflowLogs( dataMap ) );
+                databaseRowsCleanedUp.Add( "Workflow Log", CleanUpWorkflowLogs( dataMap ) );
             }
             catch ( Exception ex )
             {
@@ -163,7 +163,7 @@ namespace Rock.Jobs
 
             try
             {
-                databaseRowsDeleted.Add( "Orphaned Attribute Value", CleanupOrphanedAttributes( dataMap ) );
+                databaseRowsCleanedUp.Add( "Orphaned Attribute Value", CleanupOrphanedAttributes( dataMap ) );
             }
             catch ( Exception ex )
             {
@@ -172,7 +172,7 @@ namespace Rock.Jobs
 
             try
             {
-                databaseRowsDeleted.Add( "Transient Communication", CleanupTransientCommunications( dataMap ) );
+                databaseRowsCleanedUp.Add( "Transient Communication", CleanupTransientCommunications( dataMap ) );
             }
             catch ( Exception ex )
             {
@@ -181,16 +181,25 @@ namespace Rock.Jobs
 
             try
             {
-                databaseRowsDeleted.Add( "Person Token", CleanupPersonTokens( dataMap ) );
+                databaseRowsCleanedUp.Add( "Missing Financial Transaction Currency", CleanupFinancialTransactionNullCurrency( dataMap ) );
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in CleanupFinancialTransactionNullCurrency", ex ) );
+            }
+
+            try
+            {
+                databaseRowsCleanedUp.Add( "Person Token", CleanupPersonTokens( dataMap ) );
             }
             catch ( Exception ex )
             {
                 rockCleanupExceptions.Add( new Exception( "Exception in CleanupPersonTokens", ex ) );
             }
 
-            if ( databaseRowsDeleted.Any( a => a.Value > 0 ) )
+            if ( databaseRowsCleanedUp.Any( a => a.Value > 0 ) )
             {
-                context.Result = string.Format( "Rock Cleanup cleaned up {0}", databaseRowsDeleted.Where( a => a.Value > 0 ).Select( a => $"{a.Value} {a.Key.PluralizeIf( a.Value != 1 )}" ).ToList().AsDelimited( ", ", " and " ) );
+                context.Result = string.Format( "Rock Cleanup cleaned up {0}", databaseRowsCleanedUp.Where( a => a.Value > 0 ).Select( a => $"{a.Value} {a.Key.PluralizeIf( a.Value != 1 )}" ).ToList().AsDelimited( ", ", " and " ) );
             }
             else
             {
@@ -850,6 +859,28 @@ WHERE ic.ChannelId = @channelId
             totalRowsDeleted = rockContext.BulkDelete( communicationsToDelete, batchAmount );
 
             return totalRowsDeleted;
+        }
+
+        /// <summary>
+        /// Cleanups the financial transaction null currency.
+        /// </summary>
+        /// <param name="dataMap">The data map.</param>
+        /// <returns></returns>
+        private int CleanupFinancialTransactionNullCurrency( JobDataMap dataMap )
+        {
+            int totalRowsUpdated = 0;
+            var rockContext = new Rock.Data.RockContext();
+
+            int? currencyTypeUnknownId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_UNKNOWN.AsGuid() )?.Id;
+
+            if ( currencyTypeUnknownId.HasValue )
+            {
+                var financialPaymentDetailsToUpdate = new FinancialPaymentDetailService( rockContext ).Queryable().Where( a => a.CurrencyTypeValueId == null );
+
+                totalRowsUpdated = rockContext.BulkUpdate( financialPaymentDetailsToUpdate, a => new FinancialPaymentDetail { CurrencyTypeValueId = currencyTypeUnknownId.Value } );
+            }
+
+            return totalRowsUpdated;
         }
 
         /// <summary>

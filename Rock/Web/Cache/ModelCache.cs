@@ -44,6 +44,16 @@ namespace Rock.Web.Cache
     {
 
         /// <summary>
+        /// Copies from model.
+        /// </summary>
+        /// <param name="model">The model.</param>
+        [Obsolete("Use SetFromEntity instead")]
+        public virtual void CopyFromModel( Rock.Data.IEntity model )
+        {
+            this.SetFromEntity( model );
+        }
+
+        /// <summary>
         /// Set's the cached objects properties from the model/entities properties.
         /// </summary>
         /// <param name="entity">The entity.</param>
