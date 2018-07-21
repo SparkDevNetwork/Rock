@@ -28,6 +28,8 @@ namespace Rock
         /// Returns a formated string of the memory size.
         /// </summary>
         /// <param name="value">The value.</param>
+        /// <param name="unit">The unit.</param>
+        /// <param name="decimalPlaces">The decimal places.</param>
         /// <returns></returns>
         public static string FormatAsSpecificMemorySize( this int value, MemorySizeUnit unit, int decimalPlaces = 0 )
         {
@@ -43,14 +45,59 @@ namespace Rock
         /// </summary>
         public enum MemorySizeUnit
         {
-            Bytes, KB, MB, GB, TB, PB, EB, ZB, YB
+            /// <summary>
+            /// The bytes
+            /// </summary>
+            Bytes,
+
+            /// <summary>
+            /// The kb
+            /// </summary>
+            KB,
+
+            /// <summary>
+            /// The mb
+            /// </summary>
+            MB,
+
+            /// <summary>
+            /// The gb
+            /// </summary>
+            GB,
+
+            /// <summary>
+            /// The tb
+            /// </summary>
+            TB,
+
+            /// <summary>
+            /// The pb
+            /// </summary>
+            PB,
+
+            /// <summary>
+            /// The eb
+            /// </summary>
+            EB,
+
+            /// <summary>
+            /// The zb
+            /// </summary>
+            ZB,
+
+            /// <summary>
+            /// The yb
+            /// </summary>
+            YB
         }
 
         /// <summary>
         /// Returns a formated string of the memory size.
         /// </summary>
         /// <param name="value">The value.</param>
+        /// <param name="decimalPlaces">The decimal places.</param>
         /// <returns></returns>
+        /// <exception cref="System.ArgumentOutOfRangeException">decimalPlaces</exception>
         public static string FormatAsMemorySize( this int value, int decimalPlaces = 0)
         {
             if ( decimalPlaces < 0 )

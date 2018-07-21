@@ -834,7 +834,7 @@ namespace Rock.Model
         /// <param name="relatedEntityId">The related entity identifier.</param>
         /// <param name="commitSave">if set to <c>true</c> [commit save].</param>
         /// <param name="modifiedByPersonAliasId">The modified by person alias identifier.</param>
-        /// <param name="sourceOfChange">The source of change.</param>
+        /// <param name="sourceOfCharge">The source of charge.</param>
         public static void SaveChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, History.HistoryChangeList changes, string caption, Type relatedModelType, int? relatedEntityId, bool commitSave = true, int? modifiedByPersonAliasId = null, string sourceOfCharge = null )
         {
             if ( changes.Any() )
