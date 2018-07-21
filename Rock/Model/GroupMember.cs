@@ -971,6 +971,15 @@ namespace Rock.Model
         public int PersonId { get; set; }
 
         /// <summary>
+        /// Gets or sets the changes.
+        /// </summary>
+        /// <value>
+        /// The changes.
+        /// </value>
+        [Obsolete( "Use PersonHistoryChangeList or GroupMemberHistoryChangeList instead, depending on what you are doing. " )]
+        public List<string> Changes { get; set; }
+
+        /// <summary>
         /// Gets or sets the changes to be written as Person History
         /// </summary>
         /// <value>
