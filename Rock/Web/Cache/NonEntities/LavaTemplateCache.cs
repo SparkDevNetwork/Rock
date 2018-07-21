@@ -52,6 +52,18 @@ namespace Rock.Web.Cache
         #region Static Methods
 
         /// <summary>
+        /// Gets the or add existing.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="valueFactory">The value factory.</param>
+        /// <returns></returns>
+        [Obsolete( "No longer needed" )]
+        public static new LavaTemplateCache GetOrAddExisting( string key, Func<LavaTemplateCache> valueFactory )
+        {
+            return ItemCache<LavaTemplateCache>.GetOrAddExisting( key, null );
+        }
+
+        /// <summary>
         /// Returns LavaTemplate object from cache.  If template does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>
