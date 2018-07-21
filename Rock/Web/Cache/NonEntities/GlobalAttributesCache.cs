@@ -341,12 +341,26 @@ namespace Rock.Web.Cache
         #region Static Methods
 
         /// <summary>
+        /// Gets the or add existing.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="valueFactory">The value factory.</param>
+        /// <returns></returns>
+        [Obsolete("No longer needed")]
+        public new static GlobalAttributesCache GetOrAddExisting( string key, Func<GlobalAttributesCache> valueFactory )
+        {
+            // Note we still need the private method, we are just making the public method obsolete
+            return ItemCache<GlobalAttributesCache>.GetOrAddExisting( key, Load );
+        }
+
+        /// <summary>
         /// Gets this instance.
         /// </summary>
         /// <returns></returns>
         public static GlobalAttributesCache Get()
         {
-            return GetOrAddExisting( "All", Load );
+            // NOTE this can be changed plain GetOrAddExisting once the above obsolete 
+            return ItemCache<GlobalAttributesCache>.GetOrAddExisting( "All", Load );
         }
 
         private static GlobalAttributesCache Load()
@@ -382,6 +396,17 @@ namespace Rock.Web.Cache
             appSettings[ORG_LOC_GUID] = null;
             appSettings[ORG_LOC_STATE] = null;
             appSettings[ORG_LOC_COUNTRY] = null;
+        }
+
+        /// <summary>
+        /// Gets the global attribute values as merge fields for dotLiquid merging.
+        /// </summary>
+        /// <param name="currentPerson">The current person.</param>
+        /// <returns></returns>
+        [Obsolete( "Use Rock.Lava.LavaHelper.GetCommonMergeFields instead" )]
+        public static Dictionary<string, object> GetMergeFields( Person currentPerson )
+        {
+            return GetLegacyMergeFields( currentPerson );
         }
 
         /// <summary>

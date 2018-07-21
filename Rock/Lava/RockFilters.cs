@@ -2759,7 +2759,20 @@ namespace Rock.Lava
         /// <param name="groupTypeId">The group type identifier.</param>
         /// <param name="status">The status.</param>
         /// <returns></returns>
-        public static List<Rock.Model.GroupMember> Groups( DotLiquid.Context context, object input, string groupTypeId, string status = "Active" )
+        public static List<Rock.Model.GroupMember> Groups( DotLiquid.Context context, object input, string groupTypeId )
+        {
+            return Groups( context, input, "Active" );
+        }
+
+        /// <summary>
+        /// Gets the groups of selected type that person is a member of
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <param name="status">The status.</param>
+        /// <returns></returns>
+        public static List<Rock.Model.GroupMember> Groups( DotLiquid.Context context, object input, string groupTypeId, string status )
         {
             var person = GetPerson( input );
             int? numericalGroupTypeId = groupTypeId.AsIntegerOrNull();

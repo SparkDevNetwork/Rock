@@ -66,7 +66,7 @@ namespace Rock.Model
         [DataMember]
         [FieldType( Rock.SystemGuid.FieldType.CAMPUS )]
         public int? CampusId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.Device"/> that was used (the device where the person checked in from).
         /// </summary>
@@ -440,7 +440,6 @@ namespace Rock.Model
             }
         }
 
-
         /// <summary>
         /// Gets or sets the sunday date.
         /// </summary>
@@ -450,7 +449,21 @@ namespace Rock.Model
         [LavaInclude]
         [NotMapped]
         [Obsolete( "Use Occurrence.SundayDate instead", false )]
-        public DateTime SundayDate => Occurrence.SundayDate;
+        public DateTime SundayDate
+        {
+            get
+            {
+                return Occurrence?.SundayDate ?? DateTime.MinValue;
+            }
+
+            set
+            {
+                if ( Occurrence != null )
+                {
+                    Occurrence.SundayDate = value;
+                }
+            }
+        }
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Group"/> that was attended.
@@ -460,7 +473,23 @@ namespace Rock.Model
         /// </value>
         [LavaInclude]
         [Obsolete( "Use Occurrence.Group instead", false )]
-        public virtual Group Group => Occurrence?.Group;
+        public virtual Group Group
+        {
+            get
+            {
+                return Occurrence?.Group;
+            }
+
+            set
+            {
+                this.GroupId = value?.Id;
+                if ( Occurrence != null )
+                {
+                    Occurrence.Group = value;
+                }
+            }
+        }
+
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Location"/> where the <see cref="Rock.Model.Person"/> attended.
@@ -470,7 +499,22 @@ namespace Rock.Model
         /// </value>
         [LavaInclude]
         [Obsolete( "Use Occurrence.Location instead", false )]
-        public virtual Location Location => Occurrence?.Location;
+        public virtual Location Location
+        {
+            get
+            {
+                return Occurrence?.Location;
+            }
+
+            set
+            {
+                this.LocationId = value?.Id;
+                if ( Occurrence != null )
+                {
+                    Occurrence.Location = value;
+                }
+            }
+        }
 
         /// <summary>
         /// Gets or sets the schedule.
@@ -480,7 +524,22 @@ namespace Rock.Model
         /// </value>
         [LavaInclude]
         [Obsolete( "Use Occurrence.Schedule instead", false )]
-        public virtual Schedule Schedule => Occurrence?.Schedule;
+        public virtual Schedule Schedule
+        {
+            get
+            {
+                return Occurrence?.Schedule;
+            }
+
+            set
+            {
+                this.ScheduleId = value?.Id;
+                if ( Occurrence != null )
+                {
+                    Occurrence.Schedule = value;
+                }
+            }
+        }
 
         #endregion
 
@@ -582,33 +641,47 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            if (!DidAttend.HasValue) return string.Empty;
+            if ( !DidAttend.HasValue )
+                return string.Empty;
 
             var sb = new StringBuilder();
             sb.Append( ( PersonAlias?.Person != null ) ? PersonAlias.Person.ToStringSafe() + " " : "" );
             sb.Append( DidAttend.Value ? "attended " : "did not attend " );
             sb.Append( Occurrence?.Group?.ToStringSafe() );
-            if (DidAttend.Value)
+            if ( DidAttend.Value )
             {
-                sb.AppendFormat("on {0} at {1} ", StartDateTime.ToShortDateString(), StartDateTime.ToShortTimeString());
+                sb.AppendFormat( "on {0} at {1} ", StartDateTime.ToShortDateString(), StartDateTime.ToShortTimeString() );
 
                 var end = EndDateTime ?? Occurrence?.OccurrenceDate;
-                if (end.HasValue)
+                if ( end.HasValue )
                 {
-                    sb.AppendFormat("until {0} at {1} ", end.Value.ToShortDateString(), end.Value.ToShortTimeString());
+                    sb.AppendFormat( "until {0} at {1} ", end.Value.ToShortDateString(), end.Value.ToShortTimeString() );
                 }
             }
 
-            if (Occurrence?.Location != null)
+            if ( Occurrence?.Location != null )
             {
-                sb.Append("in " + Occurrence.Location.ToStringSafe());
+                sb.Append( "in " + Occurrence.Location.ToStringSafe() );
             }
 
             return sb.ToString().Trim();
         }
 
-        #endregion
+        /// <summary>
+        /// Returns true if ... is valid.
+        /// </summary>
+        /// <value>
+        /// A <see cref="T:System.Boolean" /> that is <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+        /// </value>
+        public override bool IsValid
+        {
+            get
+            {
+                return base.IsValid;
+            }
+        }
 
+        #endregion
     }
 
     #region Entity Configuration
