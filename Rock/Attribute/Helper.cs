@@ -511,7 +511,7 @@ namespace Rock.Attribute
         /// <param name="allowMultiple">if set to <c>true</c> returns the attribute in each of its categories, if false, only returns attribut in first category.</param>
         /// <param name="supressOrdering">if set to <c>true</c> supresses reording (LoadAttributes() may perform custom ordering as is the case for group member attributes).</param>
         /// <returns></returns>
-        public static List<CategoryAttributes> GetAttributeCategories( Rock.Attribute.IHasAttributes entity, bool onlyIncludeGridColumns = false, bool allowMultiple = false, bool supressOrdering = false)
+        public static List<AttributeCategory> GetAttributeCategories( Rock.Attribute.IHasAttributes entity, bool onlyIncludeGridColumns = false, bool allowMultiple = false, bool supressOrdering = false)
         {
             if ( entity != null )
             {
@@ -534,9 +534,9 @@ namespace Rock.Attribute
         /// <param name="onlyIncludeGridColumns">if set to <c>true</c> will only include those attributes with the option to display in grid set to true</param>
         /// <param name="allowMultiple">if set to <c>true</c> returns the attribute in each of its categories, if false, only returns attribut in first category.</param>
         /// <returns></returns>
-        public static List<CategoryAttributes> GetAttributeCategories( List<Rock.Web.Cache.AttributeCache> attributes, bool onlyIncludeGridColumns = false, bool allowMultiple = false )
+        public static List<AttributeCategory> GetAttributeCategories( List<Rock.Web.Cache.AttributeCache> attributes, bool onlyIncludeGridColumns = false, bool allowMultiple = false )
         {
-            var attributeCategories = new List<CategoryAttributes>();
+            var attributeCategories = new List<AttributeCategory>();
 
             if ( onlyIncludeGridColumns )
             {
@@ -565,9 +565,9 @@ namespace Rock.Attribute
             return attributeCategories.OrderBy( c => c.CategoryName ).ToList();
         }
 
-        private static void AddAttributeCategory( List<CategoryAttributes> attributeCategories, CategoryCache category, Rock.Web.Cache.AttributeCache attribute )
+        private static void AddAttributeCategory( List<AttributeCategory> attributeCategories, CategoryCache category, Rock.Web.Cache.AttributeCache attribute )
         {
-            CategoryAttributes attributeCategory = null;
+            AttributeCategory attributeCategory = null;
             if ( category != null )
             {
                 attributeCategory = attributeCategories.Where( g => g.Category != null && g.Category.Id == category.Id ).FirstOrDefault();
@@ -579,7 +579,7 @@ namespace Rock.Attribute
 
             if ( attributeCategory == null )
             {
-                attributeCategory = new CategoryAttributes();
+                attributeCategory = new AttributeCategory();
                 attributeCategory.Category = category;
                 attributeCategory.Attributes = new List<Rock.Web.Cache.AttributeCache>();
                 attributeCategories.Add( attributeCategory );
@@ -1104,7 +1104,7 @@ namespace Rock.Attribute
         /// <param name="parentControl">The parent control.</param>
         /// <param name="exclude">The exclude.</param>
         /// <param name="showHeading">if set to <c>true</c> [show heading].</param>
-        public static void AddDisplayControls( Rock.Attribute.IHasAttributes item, List<CategoryAttributes> attributeCategories, Control parentControl, List<string> exclude = null, bool showHeading = true )
+        public static void AddDisplayControls( Rock.Attribute.IHasAttributes item, List<AttributeCategory> attributeCategories, Control parentControl, List<string> exclude = null, bool showHeading = true )
         {
             if ( item == null )
             {
@@ -1231,15 +1231,7 @@ namespace Rock.Attribute
     /// <summary>
     /// Attributes group by category
     /// </summary>
-    [Obsolete ("Use CategoryAttributes instead")]
-    public class AttributeCategory : CategoryAttributes
-    {
-    }
-
-    /// <summary>
-    /// Attributes grouped by category
-    /// </summary>
-    public class CategoryAttributes
+    public class AttributeCategory
     {
         /// <summary>
         /// Gets or sets the category.
@@ -1247,7 +1239,7 @@ namespace Rock.Attribute
         /// <value>
         /// The category.
         /// </value>
-        public CategoryCache Category { get; set; }
+        public Rock.Web.Cache.CategoryCache Category { get; set; }
 
         /// <summary>
         /// Gets or sets the attributes.
@@ -1268,6 +1260,4 @@ namespace Rock.Attribute
             get { return Category != null ? Category.Name : string.Empty; }
         }
     }
-
-
 }

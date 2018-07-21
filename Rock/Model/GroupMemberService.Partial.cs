@@ -32,6 +32,17 @@ namespace Rock.Model
     public partial class GroupMemberService
     {
         /// <summary>
+        /// Gets the specified identifier.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public override GroupMember Get( int id )
+        {
+            // NOTE: This used to some something special pre-v8, but that is no longer needed, so just call base
+            return base.Get( id );
+        }
+
+        /// <summary>
         /// Gets the person.
         /// </summary>
         /// <param name="groupMemberId">The group member identifier.</param>
@@ -39,6 +50,17 @@ namespace Rock.Model
         public Person GetPerson( int groupMemberId )
         {
             return this.AsNoFilter().Where( m => m.Id == groupMemberId ).Select( a => a.Person ).FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Gets the model with the Guid value
+        /// </summary>
+        /// <param name="guid">The GUID.</param>
+        /// <returns></returns>
+        public override GroupMember Get( Guid guid )
+        {
+            // NOTE: This used to some something special pre-v8, but that is no longer needed, so just call base
+            return base.Get( guid );
         }
 
         /// <summary>
