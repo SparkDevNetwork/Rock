@@ -472,6 +472,7 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.Group"/> that was attended.
         /// </value>
         [LavaInclude]
+        [NotMapped]
         [Obsolete( "Use Occurrence.Group instead", false )]
         public virtual Group Group
         {
@@ -498,6 +499,7 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.Location"/> where the <see cref="Rock.Model.Person"/> attended.
         /// </value>
         [LavaInclude]
+        [NotMapped]
         [Obsolete( "Use Occurrence.Location instead", false )]
         public virtual Location Location
         {
@@ -523,6 +525,7 @@ namespace Rock.Model
         /// The schedule.
         /// </value>
         [LavaInclude]
+        [NotMapped]
         [Obsolete( "Use Occurrence.Schedule instead", false )]
         public virtual Schedule Schedule
         {
