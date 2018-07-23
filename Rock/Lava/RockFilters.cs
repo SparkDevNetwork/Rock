@@ -2817,7 +2817,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static List<Rock.Model.GroupMember> Groups( DotLiquid.Context context, object input, string groupTypeId )
         {
-            return Groups( context, input, "Active", "Active" );
+            return Groups( context, input, groupTypeId, "Active", "Active" );
         }
 
         /// <summary>
@@ -2830,7 +2830,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static List<Rock.Model.GroupMember> Groups( DotLiquid.Context context, object input, string groupTypeId, string status )
         {
-        	return Groups( context, input, status, "Active" );
+        	return Groups( context, input, groupTypeId, status, "Active" );
         }
 
         /// <summary>
