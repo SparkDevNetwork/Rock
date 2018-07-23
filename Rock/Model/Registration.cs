@@ -456,7 +456,8 @@ Registration By: {0} Total Cost/Fees:{1}
                                     typeof( Registration ),
                                     registration.Id,
                                     false,
-                                    currentPersonAliasId );
+                                    currentPersonAliasId,
+                                    rockContext.SourceOfChange );
                             }
                         }
 
@@ -498,7 +499,8 @@ Registration By: {0} Total Cost/Fees:{1}
                                 typeof( Registration ),
                                 registration.Id,
                                 false,
-                                currentPersonAliasId );
+                                currentPersonAliasId,
+                                rockContext.SourceOfChange );
                         }
 
                         rockContext.SaveChanges();

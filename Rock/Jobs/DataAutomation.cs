@@ -36,6 +36,7 @@ namespace Rock.Jobs
     [DisallowConcurrentExecution]
     public class DataAutomation : IJob
     {
+        private const string SOURCE_OF_CHANGE = "Data Automation";
         private HttpContext _httpContext = null;
 
         #region Constructor
@@ -118,6 +119,7 @@ Update Family Status: {updateFamilyStatus}
                 {
                     using ( RockContext rockContext = new RockContext() )
                     {
+                        rockContext.SourceOfChange = SOURCE_OF_CHANGE;
                         // attach the person object to this rockContext so that it will do changetracking on it
                         rockContext.People.Attach( person );
 
@@ -219,6 +221,7 @@ Update Family Status: {updateFamilyStatus}
 
                 using ( var rockContext = new RockContext() )
                 {
+                    rockContext.SourceOfChange = SOURCE_OF_CHANGE;
                     // increase the timeout just in case.
                     rockContext.Database.CommandTimeout = 180;
 
@@ -315,6 +318,7 @@ Update Family Status: {updateFamilyStatus}
                         // Reactivate the person
                         using ( var rockContext = new RockContext() )
                         {
+                            rockContext.SourceOfChange = SOURCE_OF_CHANGE;
                             var person = new PersonService( rockContext ).Get( personId );
                             if ( person != null )
                             {
@@ -408,6 +412,7 @@ Update Family Status: {updateFamilyStatus}
                 {
                     // increase the timeout just in case.
                     rockContext.Database.CommandTimeout = 180;
+                    rockContext.SourceOfChange = SOURCE_OF_CHANGE;
 
                     // Get all the person ids with selected activity
                     personIds = GetPeopleWhoContributed( settings.IsNoLastContributionEnabled, settings.NoLastContributionPeriod, rockContext );
@@ -480,6 +485,7 @@ Update Family Status: {updateFamilyStatus}
                     // Inactivate the person
                     using ( var rockContext = new RockContext() )
                     {
+                        rockContext.SourceOfChange = SOURCE_OF_CHANGE;
                         try
                         {
                             var person = new PersonService( rockContext ).Get( personId );
@@ -547,6 +553,7 @@ Update Family Status: {updateFamilyStatus}
 
                 using ( RockContext rockContext = new RockContext() )
                 {
+                    rockContext.SourceOfChange = SOURCE_OF_CHANGE;
                     // increase the timeout just in case.
                     rockContext.Database.CommandTimeout = 180;
 
@@ -641,6 +648,8 @@ Update Family Status: {updateFamilyStatus}
                         // Using a new rockcontext for each one (to improve performance)
                         using ( var rockContext = new RockContext() )
                         {
+                            rockContext.SourceOfChange = SOURCE_OF_CHANGE;
+
                             // Get the family
                             var groupService = new GroupService( rockContext );
                             var family = groupService.Get( familyId );
@@ -872,6 +881,7 @@ Update Family Status: {updateFamilyStatus}
                 {
                     // increase the timeout just in case.
                     rockContext.Database.CommandTimeout = 180;
+                    rockContext.SourceOfChange = SOURCE_OF_CHANGE;
 
                     var qry = new GroupMemberService( rockContext )
                         .Queryable().AsNoTracking()
@@ -919,6 +929,8 @@ Update Family Status: {updateFamilyStatus}
                         // Using a new rockcontext for each one (to improve performance)
                         using ( var rockContext = new RockContext() )
                         {
+                            rockContext.SourceOfChange = SOURCE_OF_CHANGE;
+
                             // Get all the 'family' group member records for this person.
                             var groupMemberService = new GroupMemberService( rockContext );
                             var groupMembers = groupMemberService.Queryable()
@@ -993,7 +1005,7 @@ Update Family Status: {updateFamilyStatus}
                                     // Save role change to history
                                     var memberChanges = new History.HistoryChangeList();
                                     History.EvaluateChange( memberChanges, "Role", string.Empty, adultRole.Name );
-                                    HistoryService.SaveChanges( rockContext, typeof( Person ), familyChangesGuid, personId, memberChanges, newFamily.Name, typeof( Group ), newFamily.Id, false, null, "Data Automation" );
+                                    HistoryService.SaveChanges( rockContext, typeof( Person ), familyChangesGuid, personId, memberChanges, newFamily.Name, typeof( Group ), newFamily.Id, false, null, SOURCE_OF_CHANGE );
                                 }
                                 else
                                 {
@@ -1029,7 +1041,7 @@ Update Family Status: {updateFamilyStatus}
                                     History.EvaluateChange( familyChanges, groupLocation.GroupLocationTypeValue.Value + " Location", string.Empty, groupLocation.Location.ToString() );
                                 }
 
-                                HistoryService.SaveChanges( rockContext, typeof( Person ), familyChangesGuid, personId, familyChanges, false,null, "Data Automation" );
+                                HistoryService.SaveChanges( rockContext, typeof( Person ), familyChangesGuid, personId, familyChanges, false,null, SOURCE_OF_CHANGE );
                             }
 
                             // If user configured the job to copy home phone and this person does not have a home phone, copy the first home phone number from another adult in original family(s)
@@ -1208,6 +1220,7 @@ Update Family Status: {updateFamilyStatus}
                                 {
                                     using ( var updateRockContext = new RockContext() )
                                     {
+                                        updateRockContext.SourceOfChange = SOURCE_OF_CHANGE;
                                         // Attach the person to the updateRockContext so that it'll be tracked/saved using updateRockContext 
                                         updateRockContext.People.Attach( person );
 
@@ -1284,6 +1297,7 @@ Update Family Status: {updateFamilyStatus}
                             {
                                 using ( var updateRockContext = new RockContext() )
                                 {
+                                    updateRockContext.SourceOfChange = SOURCE_OF_CHANGE;
                                     // Attach the group to the updateRockContext so that it'll be tracked/saved using updateRockContext 
                                     updateRockContext.Groups.Attach( group );
 
