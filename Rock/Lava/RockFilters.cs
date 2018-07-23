@@ -2200,6 +2200,63 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Returns a Person from the person alternate identifier.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static Person PersonByPersonAlternateId( DotLiquid.Context context, object input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            var alternateId = input.ToString();
+
+            if ( alternateId.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            var alternateIdSearchTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() ).Id;
+            return new PersonSearchKeyService( new RockContext() ).Queryable().AsNoTracking()
+                    .Where( k =>
+                        k.SearchValue == alternateId
+                        && k.SearchTypeValueId == alternateIdSearchTypeValueId )
+                    .Select( k => k.PersonAlias.Person )
+                    .FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Gets the person's alternate identifier.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string GetPersonAlternateId( DotLiquid.Context context, object input )
+        {
+            Person person = null;
+
+            if ( input is int )
+            {
+                person = new PersonService( new RockContext() ).Get( ( int ) input );
+            }
+            else if ( input is Person )
+            {
+                person = ( Person ) input;
+            }
+
+            if ( person != null )
+            {
+                var alternateIdSearchTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() ).Id;
+                return person.GetPersonSearchKeys().Where( k => k.SearchTypeValueId == alternateIdSearchTypeValueId ).FirstOrDefault().SearchValue;
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
         /// Gets the parents of the person
         /// </summary>
         /// <param name="context">The context.</param>
