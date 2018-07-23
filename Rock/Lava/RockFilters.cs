@@ -2814,14 +2814,15 @@ namespace Rock.Lava
         /// <param name="context">The context.</param>
         /// <param name="input">The input.</param>
         /// <param name="groupTypeId">The group type identifier.</param>
+        /// <param name="status">The status.</param>
         /// <returns></returns>
         public static List<Rock.Model.GroupMember> Groups( DotLiquid.Context context, object input, string groupTypeId )
         {
-            return Groups( context, input, "Active", "Active" );
+            return Groups( context, input, groupTypeId, "Active" );
         }
 
         /// <summary>
-        /// Groupses the specified context.
+        /// Gets the groups of selected type that person is a member of
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="input">The input.</param>
