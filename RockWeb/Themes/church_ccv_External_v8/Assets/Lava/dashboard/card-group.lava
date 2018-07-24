@@ -25,10 +25,6 @@ TODO: Add Other Group Type leader roles
 {% endcomment %}
 {% assign groupCoachIds = '50,114,133' %}
 
-{% comment %} Used for show/hide the admin elements (IE contact, add person...) {% endcomment %}
-{% assign showAdminElements = false %}
-{% assign isCoach = false %}
-
 {% comment %} Check if user in any groups, if not display Call To Action Serving {% endcomment %}
 {% assign numberOfGroups = Groups | Size %}
 {% if numberOfGroups > 0 %}
@@ -44,6 +40,9 @@ TODO: Add Other Group Type leader roles
         {% include '~~/Assets/Lava/dashboard/_group-card-header.lava' %}
         <div class="content">
             {% for group in Groups %}
+                {% comment %} Used for show/hide the admin elements (IE contact, add person...) {% endcomment %}
+                {% assign showAdminElements = false %}
+                {% assign isCoach = false %}
 
                 {% comment %} Exclude Utility Groups {% endcomment %}
                 {% assign groupId = group.Group.Id | ToString %}
@@ -111,7 +110,8 @@ TODO: Add Other Group Type leader roles
 
                             {% comment %} Show Coach Video if Admin and group is a CCV group {% endcomment %}
                             {% if showAdminElements == true %}
-                                {% if group.Group.GroupTypeId == 49 %}
+                                {% comment %} Temporarily Hiding {% endcomment %}
+                                {% if group.Group.GroupTypeId == 99999 %}
                                     <div class="group-header">
                                         <div class="coach-video-row">
                                             <div class="coach-video">
