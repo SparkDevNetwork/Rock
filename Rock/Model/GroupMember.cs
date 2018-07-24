@@ -874,7 +874,7 @@ namespace Rock.Model
                 var groupType = CacheGroupType.Get( group.GroupTypeId );
                 if ( group.IsSecurityRole || groupType?.Guid == Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() )
                 {
-                    Rock.Cache.CacheRole.Remove( group.Id );
+                    Rock.Cache.CacheRole.FlushItem( group.Id );
                     Rock.Security.Authorization.Clear();
                 }
             }

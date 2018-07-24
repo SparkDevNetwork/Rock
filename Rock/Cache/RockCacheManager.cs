@@ -101,9 +101,9 @@ namespace Rock.Cache
         {
             // We need to get the settings from the DB instead of the cache or else we'll go into an infinite loop (which is bad).
             var attributeService = new Model.AttributeService( new Data.RockContext() );
-            bool redisEnabled = attributeService.GetSystemSetting( SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER )?.DefaultValue.AsBoolean() ?? false;
+            bool redisEnabled = attributeService.GetSystemSettingValue( SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER )?.AsBoolean() ?? false;
             bool disableBackplane = System.Configuration.ConfigurationManager.AppSettings["DisableRemoteCache"].AsBooleanOrNull() ?? false;
-
+            
             if ( redisEnabled == false || disableBackplane )
             {
                 return new ConfigurationBuilder( "InProcess" )
@@ -112,8 +112,9 @@ namespace Rock.Cache
                 .Build();
             }
 
-            string[] redisEndPointList = attributeService.GetSystemSetting( SystemKey.SystemSetting.REDIS_ENDPOINT_LIST ).DefaultValue.Split( ',' );
-            int redisDbIndex = attributeService.GetSystemSetting( SystemKey.SystemSetting.REDIS_DATABASE_NUMBER ).DefaultValue.AsIntegerOrNull() ?? 0;
+            string redisPassword = attributeService.GetSystemSettingValue( Rock.SystemKey.SystemSetting.REDIS_PASSWORD ) ?? string.Empty;
+            string[] redisEndPointList = attributeService.GetSystemSettingValue( SystemKey.SystemSetting.REDIS_ENDPOINT_LIST )?.Split( ',' );
+            int redisDbIndex = attributeService.GetSystemSettingValue( SystemKey.SystemSetting.REDIS_DATABASE_NUMBER )?.AsIntegerOrNull() ?? 0;
 
             return new ConfigurationBuilder( "InProcess With Redis Backplane" )
                 .WithJsonSerializer()
@@ -121,8 +122,12 @@ namespace Rock.Cache
                 .And
                 .WithRedisConfiguration( "redis", redisConfig =>
                 {
-                    redisConfig.WithAllowAdmin()
-                    .WithDatabase( redisDbIndex );
+                    redisConfig.WithAllowAdmin().WithDatabase( redisDbIndex );
+
+                    if( redisPassword.IsNotNullOrWhitespace() )
+                    {
+                        redisConfig.WithPassword( redisPassword );
+                    }
 
                     foreach ( var redisEndPoint in redisEndPointList )
                     {

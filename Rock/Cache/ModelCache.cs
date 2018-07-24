@@ -37,7 +37,7 @@ namespace Rock.Cache
     /// <seealso cref="Rock.Lava.ILiquidizable" />
     [Serializable]
     [DataContract]
-    public abstract class ModelCache<T, TT> : EntityCache<T, TT>, ISecured, IHasAttributes, Lava.ILiquidizable, IModelCache where T : IEntityCache, new()
+    public abstract class ModelCache<T, TT> : EntityCache<T, TT>, ISecured, IHasAttributes, Lava.ILiquidizable where T : IEntityCache, new()
         where TT : Model<TT>, new()
     {
 
@@ -205,7 +205,16 @@ namespace Rock.Cache
                 foreach ( var id in AttributeIds.ToList() )
                 {
                     var attribute = CacheAttribute.Get( id );
-                    attributes.Add( attribute.Key, attribute );
+                    if ( attribute == null )
+                    {
+                        // this could happen if another thread deleted the attribute. If so, don't add it since it no longer exists
+                        // NOTE:this should only happen if another thread deleted the attribute at the same time that this object was trying to fetch it, and should correct itself
+                        System.Diagnostics.Debug.WriteLine( "Deleted CacheAttribute detected. This is OK, but should be rare and only happen in a multi-threaded situation. If you see this message alot, something is wrong." );
+                    }
+                    else
+                    {
+                        attributes.Add( attribute.Key, attribute );
+                    }
                 }
 
                 return attributes;
@@ -325,37 +334,9 @@ namespace Rock.Cache
         }
 
         /// <summary>
-        /// Updates the cached attribute ids based on the attributeEntityState
-        /// </summary>
-        /// <param name="attributeId">The attribute identifier.</param>
-        /// <param name="attributeEntityState">State of the attribute entity.</param>
-        public void UpdateCachedAttributeIds( int attributeId, System.Data.Entity.EntityState attributeEntityState)
-        {
-            var attributeIds = this.AttributeIds.ToList();
-
-            if ( attributeEntityState != EntityState.Added )
-            {
-                if ( attributeIds.Contains( attributeId ) )
-                {
-                    attributeIds.Remove( attributeId );
-                }
-            }
-
-            // unless we know for sure it was deleted, do a Get to update the cache (if the item still exists in the database)
-            if ( attributeEntityState != EntityState.Deleted )
-            {
-                if ( !attributeIds.Contains( attributeId ) )
-                {
-                    attributeIds.Add( attributeId );
-                }
-            }
-
-            this.AttributeIds = attributeIds;
-        }
-
-        /// <summary>
         /// Reloads the attribute values.
         /// </summary>
+        [Obsolete( "No longer needed. The Attributes will get reloaded automatically." )]
         public virtual void ReloadAttributeValues()
         {
             using ( var rockContext = new RockContext() )

@@ -1820,10 +1820,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     this.State,
                     this.PostalCode ).ReplaceWhileExists( "  ", " " );
 
-                var countryValue = Rock.Cache.CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES ) )
-                    .DefinedValues
-                    .Where( v => v.Value.Equals( this.Country, StringComparison.OrdinalIgnoreCase ) )
-                    .FirstOrDefault();
+                var countryValue = Rock.Cache.CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES ) ).GetDefinedValueFromValue( this.Country );
                 if ( countryValue != null )
                 {
                     string format = countryValue.GetAttributeValue( "AddressFormat" );

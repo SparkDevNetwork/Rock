@@ -756,7 +756,7 @@ namespace Rock.Slingshot
             }
 
             var updatedGroupTypes = groupTypeRolesToInsert.Select( a => a.GroupTypeId.Value ).Distinct().ToList();
-            updatedGroupTypes.ForEach( id => CacheGroupType.UpdateCachedEntity( id, EntityState.Detached, rockContext ) );
+            updatedGroupTypes.ForEach( id => CacheGroupType.UpdateCachedEntity( id, EntityState.Detached ) );
 
             if ( groupTypeRolesToInsert.Any() )
             {
@@ -910,7 +910,7 @@ WHERE gta.GroupTypeId IS NULL" );
             // make sure grouptype caches get updated in case 'allowed group types' changed
             foreach ( var groupTypeId in groupTypeGroupLookup.Keys )
             {
-                CacheGroupType.UpdateCachedEntity( groupTypeId, EntityState.Detached, rockContext );
+                CacheGroupType.UpdateCachedEntity( groupTypeId, EntityState.Detached );
             }
 
             stopwatchTotal.Stop();

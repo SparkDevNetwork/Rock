@@ -40,6 +40,7 @@ namespace Rock.Rest.Controllers
         public void Flush( int id )
         {
             Rock.Cache.CacheAttribute.Remove( id );
+            Rock.Cache.CacheAttribute.Get( id );
         }
 
         /// <summary>

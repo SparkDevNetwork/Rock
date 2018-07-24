@@ -542,7 +542,7 @@ namespace RockWeb.Blocks.Cms
             lbDeny.Enabled = IsUserAuthorized( "Approve" );
 
             string entityValue = EntityValue();
-            HtmlContent htmlContent = new HtmlContentService( new RockContext() ).GetActiveContent( this.BlockId, entityValue );
+            HtmlContent htmlContent = new HtmlContentService( new RockContext() ).GetLatestVersion( this.BlockId, entityValue );
 
             // set Height of editors
             if ( supportsVersioning && requireApproval )

@@ -407,6 +407,8 @@ namespace RockWeb
                     }
                 }
 
+                settings.Add( "autorotate.default", "true" );
+
                 MemoryStream resizedStream = new MemoryStream();
 
                 ImageBuilder.Current.Build( fileContent, resizedStream, settings );

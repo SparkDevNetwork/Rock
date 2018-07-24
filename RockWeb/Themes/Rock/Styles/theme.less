@@ -89,10 +89,6 @@ textarea,
 // 2. Bootstrap Overrides    */
 // -------------------------
 
-.badge {
-  border-radius: @border-radius-base;
-}
-
 .well {
   .box-shadow(none)
 }
@@ -969,7 +965,7 @@ td.grid-select-field {
         display: none;
         width: 280px;
         height: 100%;
-        padding: 0 @padding-base-horizontal 72px;
+        padding: 0 @padding-base-horizontal;
         overflow-x: hidden;
         overflow-y: auto;
         text-align: left;
@@ -1049,9 +1045,11 @@ td.grid-select-field {
               margin-top: 0;
             }
           }
+
+          &:last-child {
+            margin-bottom: 72px;
+          }
         }
-
-
 
 
         &::-webkit-scrollbar {
@@ -1151,7 +1149,7 @@ body.navbar-side-close {
       > li + li::before {
         padding: 0 5;
         font-family: FontAwesome;
-        font-size:80%;
+        font-size: 80%;
         font-weight: 600;
         content: @fa-var-chevron-right;
       }

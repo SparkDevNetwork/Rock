@@ -50,6 +50,7 @@ namespace RockWeb.Blocks.Connection
     [LinkedPage( "Detail Page", "The page used to view a connection opportunity.", order: 7 )]
     [IntegerField( "Connection Type Id", "The Id of the connection type whose opportunities are displayed.", true, 1, order:8 )]
     [BooleanField( "Show Search", "Determines if the search fields should be displayed. Sometimes listing all the options is enough.", true, order: 9 )]
+    [TextField( "Campus Label", "", true, "Campuses",  order:10 )]
 
     public partial class OpportunitySearch : Rock.Web.UI.RockBlock
     {
@@ -178,6 +179,7 @@ namespace RockWeb.Blocks.Connection
 
                 if ( GetAttributeValue( "DisplayCampusFilter" ).AsBoolean() )
                 {
+                    cblCampus.Label = GetAttributeValue( "CampusLabel" );
                     var searchCampuses = cblCampus.SelectedValuesAsInt;
                     if ( searchCampuses.Count > 0 )
                     {
