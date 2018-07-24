@@ -66,6 +66,36 @@
                             <Rock:Zone Name="AvondaleContact" runat="server" />
                         </div>
                     </div>
+                        <div class="module module-with-footer">
+                            <div class="module-body">
+                                <h3 class="module-title margin-b-lg">Midtown Campus</h3>
+                                <Rock:Zone Name="MidtownSports" runat="server" />
+                            </div>
+                            <div class="module-mid js-fieldstatus fieldstatus clearfix">
+                                <strong class="pull-left margin-r-sm">Field Status:</strong>
+                                <div class="pull-left">
+                                    <Rock:Zone Name="MidtownStatus" runat="server" />
+                                </div>
+                            </div>
+                            <div class="module-footer">
+                                <Rock:Zone Name="MidtownContact" runat="server" />
+                            </div>
+                        </div>
+                        <div class="module module-with-footer">
+                            <div class="module-body">
+                                <h3 class="module-title margin-b-lg">North Phoenix Campus</h3>
+                                <Rock:Zone Name="NorthPhoenixSports" runat="server" />
+                            </div>
+                            <div class="module-mid js-fieldstatus fieldstatus clearfix">
+                                <strong class="pull-left margin-r-sm">Field Status:</strong>
+                                <div class="pull-left">
+                                    <Rock:Zone Name="NorthPhoenixStatus" runat="server" />
+                                </div>
+                            </div>
+                            <div class="module-footer">
+                                <Rock:Zone Name="NorthPhoenixContact" runat="server" />
+                            </div>
+                        </div>
                 </div>
                 <div class="col-md-6">
                     <div class="module module-with-footer">
@@ -116,24 +146,23 @@
                             <Rock:Zone Name="ChandlerContact" runat="server" />
                         </div>
                     </div>
-                </div>
-                <div class="col-md-6">
                     <div class="module module-with-footer">
                         <div class="module-body">
-                            <h3 class="module-title margin-b-lg">North Phoenix Campus</h3>
-                            <Rock:Zone Name="NorthPhoenixSports" runat="server" />
+                            <h3 class="module-title margin-b-lg">Scottsdale Campus</h3>
+                            <Rock:Zone Name="ScottsdaleSports" runat="server" />
                         </div>
                         <div class="module-mid js-fieldstatus fieldstatus clearfix">
                             <strong class="pull-left margin-r-sm">Field Status:</strong>
                             <div class="pull-left">
-                                <Rock:Zone Name="NorthPhoenixStatus" runat="server" />
+                                <Rock:Zone Name="ScottsdaleStatus" runat="server" />
                             </div>
                         </div>
                         <div class="module-footer">
-                            <Rock:Zone Name="NorthPhoenixContact" runat="server" />
+                            <Rock:Zone Name="ScottsdaleContact" runat="server" />
                         </div>
-                    </div>
                 </div>
+                </div>
+                
             </div>
             <Rock:Zone Name="Feature" runat="server" />
         </div>
