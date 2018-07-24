@@ -23,7 +23,7 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -142,7 +142,7 @@ function() {{
                 List<string> campusNames = new List<string>();
                 foreach ( var campusGuid in campusGuidList )
                 {
-                    var campus = CacheCampus.Get( campusGuid );
+                    var campus = CampusCache.Get( campusGuid );
                     if ( campus != null )
                     {
                         campusNames.Add( campus.Name );
@@ -168,7 +168,7 @@ function() {{
             campusesPicker.ID = filterControl.ID + "_0";
             campusesPicker.Label = string.Empty;
             campusesPicker.CssClass = $"{ControlClassName} campuses-picker";
-            campusesPicker.Campuses = CacheCampus.All( IncludeInactive );
+            campusesPicker.Campuses = CampusCache.All( IncludeInactive );
 
             filterControl.Controls.Add( campusesPicker );
 
@@ -201,7 +201,7 @@ function() {{
                 List<Guid> campusGuids = new List<Guid>();
                 foreach ( var campusId in campusIds )
                 {
-                    var campus = CacheCampus.Get( campusId );
+                    var campus = CampusCache.Get( campusId );
                     if ( campus != null )
                     {
                         campusGuids.Add( campus.Guid );
@@ -229,7 +229,7 @@ function() {{
                 List<int> campusIds = new List<int>();
                 foreach ( var campusGuid in campusGuidList )
                 {
-                    var campus = CacheCampus.Get( campusGuid );
+                    var campus = CampusCache.Get( campusGuid );
                     if ( campus != null )
                     {
                         campusIds.Add( campus.Id );
@@ -260,7 +260,7 @@ function() {{
                 List<int> campusIds = new List<int>();
                 foreach ( var campusGuid in campusGuidList )
                 {
-                    var campus = CacheCampus.Get( campusGuid );
+                    var campus = CampusCache.Get( campusGuid );
                     if ( campus != null )
                     {
                         campusIds.Add( campus.Id );
@@ -273,7 +273,7 @@ function() {{
                 }
 
                 GroupMemberService groupMemberService = new GroupMemberService( rockContext );
-                var groupTypeFamily = CacheGroupType.GetFamilyGroupType();
+                var groupTypeFamily = GroupTypeCache.GetFamilyGroupType();
                 int groupTypeFamilyId = groupTypeFamily != null ? groupTypeFamily.Id : 0;
 
                 var groupMemberServiceQry = groupMemberService.Queryable()
@@ -309,7 +309,7 @@ function() {{
                 if ( campusIds.Any() )
                 {
 
-                    var selectedCampusGuids = campusIds.Select( a => CacheCampus.Get( a ) ).Where( a => a != null ).Select( a => a.Guid ).ToList();
+                    var selectedCampusGuids = campusIds.Select( a => CampusCache.Get( a ) ).Where( a => a != null ).Select( a => a.Guid ).ToList();
 
                     selectionValues[0] = selectedCampusGuids.AsDelimited( "," );
                     return selectionValues.ToList().AsDelimited( "|" );

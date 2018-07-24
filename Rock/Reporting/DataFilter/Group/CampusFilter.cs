@@ -22,7 +22,7 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.Group
@@ -117,7 +117,7 @@ function() {
                 int? campusId = GetCampusIdFromSelection( selectionValues );
                 if ( campusId.HasValue )
                 {
-                    var campus = CacheCampus.Get( campusId.Value );
+                    var campus = CampusCache.Get( campusId.Value );
                     if ( campus != null )
                     {
                         result = string.Format( "Campus: {0}", campus.Name );
@@ -141,7 +141,7 @@ function() {
             CampusPicker campusPicker = new CampusPicker();
             campusPicker.ID = filterControl.ID + "_campusPicker";
             campusPicker.Label = "Campus";
-            campusPicker.Campuses = CacheCampus.All();
+            campusPicker.Campuses = CampusCache.All();
             filterControl.Controls.Add( campusPicker );
 
             return new Control[] { campusPicker };
@@ -170,7 +170,7 @@ function() {
             int? campusId = ( controls[0] as CampusPicker ).SelectedCampusId;
             if ( campusId.HasValue )
             {
-                var campus = CacheCampus.Get( campusId.Value );
+                var campus = CampusCache.Get( campusId.Value );
                 if ( campus != null )
                 {
                     return campus.Guid.ToString();
@@ -233,7 +233,7 @@ function() {
             int? campusId = null;
             if ( campusGuid.HasValue )
             {
-                var campus = CacheCampus.Get( campusGuid.Value );
+                var campus = CampusCache.Get( campusGuid.Value );
                 if ( campus != null )
                 {
                     campusId = campus.Id;

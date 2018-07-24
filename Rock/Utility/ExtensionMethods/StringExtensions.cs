@@ -89,6 +89,19 @@ namespace Rock
         /// <param name="str">The string.</param>
         /// <returns></returns>
         [System.Diagnostics.DebuggerStepThrough()]
+        public static bool IsNotNullOrWhiteSpace( this string str )
+        {
+            return !string.IsNullOrWhiteSpace( str );
+        }
+
+        /// <summary>
+        /// Determines whether [is not null or whitespace].
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns>
+        ///   <c>true</c> if [is not null or whitespace] [the specified string]; otherwise, <c>false</c>.
+        /// </returns>
+        [Obsolete( "Use IsNotNullOrWhiteSpace instead. Fixes non-standard casing.", false )]
         public static bool IsNotNullOrWhitespace( this string str )
         {
             return !string.IsNullOrWhiteSpace( str );
@@ -402,7 +415,7 @@ namespace Rock
         /// <returns></returns>
         public static string TrimForMaxLength( this string str, Data.IEntity entity, string propertyName )
         {
-            if ( str.IsNotNullOrWhitespace() )
+            if ( str.IsNotNullOrWhiteSpace() )
             {
                 var maxLengthAttr = entity.GetAttributeFrom<System.ComponentModel.DataAnnotations.MaxLengthAttribute>( propertyName );
                 if ( maxLengthAttr != null )

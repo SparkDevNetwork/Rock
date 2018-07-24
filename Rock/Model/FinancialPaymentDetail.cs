@@ -28,7 +28,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Rock.Data;
 using Rock.Financial;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Security;
 
 namespace Rock.Model
@@ -296,7 +296,7 @@ namespace Rock.Model
         /// <param name="rockContext">The rock context.</param>
         public void SetFromPaymentInfo( PaymentInfo paymentInfo, GatewayComponent paymentGateway, RockContext rockContext ) 
         {
-            if ( AccountNumberMasked.IsNullOrWhiteSpace() && paymentInfo.MaskedNumber.IsNotNullOrWhitespace() )
+            if ( AccountNumberMasked.IsNullOrWhiteSpace() && paymentInfo.MaskedNumber.IsNotNullOrWhiteSpace() )
             {
                 AccountNumberMasked = paymentInfo.MaskedNumber;
             }
@@ -319,7 +319,7 @@ namespace Rock.Model
                 var newLocation = new LocationService( rockContext ).Get(
                     ccPaymentInfo.BillingStreet1, ccPaymentInfo.BillingStreet2, ccPaymentInfo.BillingCity, ccPaymentInfo.BillingState, ccPaymentInfo.BillingPostalCode, ccPaymentInfo.BillingCountry );
 
-                if ( NameOnCard.IsNullOrWhiteSpace() && NameOnCard.IsNotNullOrWhitespace() )
+                if ( NameOnCard.IsNullOrWhiteSpace() && NameOnCard.IsNotNullOrWhiteSpace() )
                 {
                     NameOnCardEncrypted = Encryption.EncryptString( nameOnCard );
                 }
@@ -343,7 +343,7 @@ namespace Rock.Model
             {
                 var swipePaymentInfo = (SwipePaymentInfo)paymentInfo;
 
-                if ( NameOnCard.IsNullOrWhiteSpace() && NameOnCard.IsNotNullOrWhitespace() )
+                if ( NameOnCard.IsNullOrWhiteSpace() && NameOnCard.IsNotNullOrWhiteSpace() )
                 {
                     NameOnCardEncrypted = Encryption.EncryptString( swipePaymentInfo.NameOnCard );
                 }
@@ -395,6 +395,15 @@ namespace Rock.Model
                         History.EvaluateChange( HistoryChangeList, "Billing Location", History.GetValue<Location>( null, entry.OriginalValues["BillingLocationId"].ToStringSafe().AsIntegerOrNull(), rockContext ), History.GetValue<Location>( BillingLocation, BillingLocationId, rockContext ) );
                         break;
                     }
+            }
+
+            if ( entry.State == EntityState.Added || entry.State == EntityState.Modified )
+            {
+                // Ensure that CurrencyTypeValueId is set. The UI tries to prevent it, but just in case, if it isn't, set it to Unknown
+                if ( !this.CurrencyTypeValueId.HasValue )
+                {
+                    this.CurrencyTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_UNKNOWN.AsGuid() )?.Id;
+                }
             }
 
             base.PreSaveChanges( dbContext, entry );

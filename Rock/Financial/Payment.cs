@@ -19,7 +19,7 @@ using System.Collections.Generic;
 
 using DotLiquid;
 
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Financial
 {
@@ -51,12 +51,12 @@ namespace Rock.Financial
         /// <summary>
         /// Gets the currency type value.
         /// </summary>
-        public virtual CacheDefinedValue CurrencyTypeValue { get; set; }
+        public virtual DefinedValueCache CurrencyTypeValue { get; set; }
 
         /// <summary>
         /// Gets the credit card type value id.
         /// </summary>
-        public virtual CacheDefinedValue CreditCardTypeValue { get; set; }
+        public virtual DefinedValueCache CreditCardTypeValue { get; set; }
 
         /// <summary>
         /// Gets or sets the gateway schedule id.

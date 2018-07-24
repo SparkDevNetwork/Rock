@@ -21,6 +21,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Reporting.DataFilter.Person
 {
@@ -90,7 +91,7 @@ function() {
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 2 )
             {
-                var groupType = Rock.Cache.CacheGroupType.Get( selectionValues[0].AsGuid() );
+                var groupType = GroupTypeCache.Get( selectionValues[0].AsGuid() );
 
                 var groupTypeRoleGuidList = selectionValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.AsGuid() ).ToList();
 

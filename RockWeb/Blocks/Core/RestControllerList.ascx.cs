@@ -23,7 +23,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -58,7 +58,7 @@ namespace RockWeb.Blocks.Administration
             var securityField = gControllers.ColumnsOfType<SecurityField>().FirstOrDefault();
             if ( securityField != null )
             {
-                securityField.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.RestController ) ).Id;
+                securityField.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.RestController ) ).Id;
             }
         }
 
@@ -142,7 +142,7 @@ namespace RockWeb.Blocks.Administration
                 qry = qry.OrderBy( c => c.Name);
             }
 
-            gControllers.EntityTypeId = CacheEntityType.Get<RestController>().Id;
+            gControllers.EntityTypeId = EntityTypeCache.Get<RestController>().Id;
             gControllers.DataSource = qry.ToList();
             gControllers.DataBind();
         }

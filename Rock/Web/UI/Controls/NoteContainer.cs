@@ -28,7 +28,7 @@ using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -69,7 +69,7 @@ namespace Rock.Web.UI.Controls
 
             set
             {
-                NoteOptions.SetNoteTypes( value?.Select( a => CacheNoteType.Get( a.Id ) ).ToList() );
+                NoteOptions.SetNoteTypes( value?.Select( a => NoteTypeCache.Get( a.Id ) ).ToList() );
             }
         }
 
@@ -102,7 +102,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The note type list.
         /// </value>
-        public void SetNoteTypes( List<CacheNoteType> noteTypeList )
+        public void SetNoteTypes( List<NoteTypeCache> noteTypeList )
         {
             NoteOptions.SetNoteTypes( noteTypeList );
         }

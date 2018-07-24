@@ -28,9 +28,10 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using OfficeOpenXml;
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Utility;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -693,7 +694,7 @@ namespace Rock.Web.UI.Controls
             var rockBlock = this.RockBlock();
             if ( rockBlock != null )
             {
-                string preferenceKey = string.Format( "{0}_{1}", PAGE_SIZE_KEY, rockBlock.CacheBlock.Id );
+                string preferenceKey = string.Format( "{0}_{1}", PAGE_SIZE_KEY, rockBlock.BlockCache.Id );
                 pageSize = rockBlock.GetUserPreference( preferenceKey ).AsInteger();
                 if ( pageSize != 50 && pageSize != 500 && pageSize != 5000 )
                 {
@@ -1410,7 +1411,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
             var rockBlock = this.RockBlock();
             if ( rockBlock != null )
             {
-                string preferenceKey = string.Format( "{0}_{1}", PAGE_SIZE_KEY, rockBlock.CacheBlock.Id );
+                string preferenceKey = string.Format( "{0}_{1}", PAGE_SIZE_KEY, rockBlock.BlockCache.Id );
                 rockBlock.SetUserPreference( preferenceKey, e.Number.ToString() );
             }
 
@@ -1843,8 +1844,22 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                 }
 
                 // print data
+                int gridRowCounter = 0;
+                var selectedKeys = SelectedKeys.ToList();
                 foreach ( DataRowView rowView in data.DefaultView )
                 {
+                    if ( selectedKeys.Any() && this.DataKeyNames.Count() == 1 )
+                    {
+                        var dataKeyValue = this.DataKeys[gridRowCounter].Value;
+                        gridRowCounter++;
+
+                        if ( !selectedKeys.Contains( dataKeyValue ) )
+                        {
+                            // if there are specific rows selected, skip over rows that aren't selected
+                            continue;
+                        }
+                    }
+
                     rowCounter++;
 
                     for ( int i = 0; i < data.Columns.Count; i++ )
@@ -2244,7 +2259,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
 
                         if ( definedValueId > 0 )
                         {
-                            var definedValue = CacheDefinedValue.Get( definedValueId );
+                            var definedValue = DefinedValueCache.Get( definedValueId );
                             if ( definedValue != null )
                             {
                                 return definedValue.Value;
@@ -2269,7 +2284,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
 
                             if ( isGuid )
                             {
-                                var definedValue = CacheDefinedValue.Get( definedValueGuid );
+                                var definedValue = DefinedValueCache.Get( definedValueGuid );
 
                                 if ( definedValue != null )
                                 {
@@ -2395,7 +2410,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
             var allColumns = new List<DataControlField>();
 
             // If displaying people, add select field (for merging & communication)
-            if ( CommunicationRecipientPersonIdFields.Any() || PersonIdField.IsNotNullOrWhitespace() )
+            if ( CommunicationRecipientPersonIdFields.Any() || PersonIdField.IsNotNullOrWhiteSpace() )
             {
                 var selectField = new SelectField();
                 displayColumns.Add( selectField );
@@ -2468,7 +2483,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                 else
                 {
                     // If there were not any special columns for the communication, just use the column that was configured for the person id
-                    if ( this.PersonIdField.IsNotNullOrWhitespace() )
+                    if ( this.PersonIdField.IsNotNullOrWhiteSpace() )
                     {
                         personIdFields.Add( this.PersonIdField );
                     }
@@ -2476,7 +2491,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
             }
             else
             {
-                if ( this.PersonIdField.IsNotNullOrWhitespace() )
+                if ( this.PersonIdField.IsNotNullOrWhiteSpace() )
                 {
                     personIdFields.Add( this.PersonIdField );
                 }
@@ -2530,7 +2545,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                                 if ( isForCommunication )
                                 {
                                     var mergeField = communicationMergeFields.Where( f => f.Key.Equals( data.Columns[i].ColumnName, StringComparison.OrdinalIgnoreCase ) ).Select( f => f.Value ).FirstOrDefault();
-                                    if ( mergeField.IsNotNullOrWhitespace() )
+                                    if ( mergeField.IsNotNullOrWhiteSpace() )
                                     {
                                         var boundField = this.ColumnsOfType<RockBoundField>().Where( c => c.DataField == mergeField ).FirstOrDefault();
                                         if ( boundField != null )
@@ -2765,7 +2780,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
             if ( keys.Any() )
             {
                 var entitySet = new Rock.Model.EntitySet();
-                entitySet.EntityTypeId = Rock.Cache.CacheEntityType.Get<Rock.Model.Person>().Id;
+                entitySet.EntityTypeId = EntityTypeCache.Get<Rock.Model.Person>().Id;
                 entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( 5 );
                 List<Rock.Model.EntitySetItem> entitySetItems = new List<Rock.Model.EntitySetItem>();
 
@@ -2884,7 +2899,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                 entitySet.EntityTypeId = null;
             }
 
-            bool isPersonEntitySet = this.EntityTypeId == CacheEntityType.GetId<Rock.Model.Person>();
+            bool isPersonEntitySet = this.EntityTypeId == EntityTypeCache.GetId<Rock.Model.Person>();
             string dataKeyField = this.DataKeyNames.FirstOrDefault() ?? "Id";
             if ( isPersonEntitySet && !string.IsNullOrEmpty( this.PersonIdField ) )
             {
@@ -2897,10 +2912,24 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
             List<Rock.Model.EntitySetItem> entitySetItems = new List<Rock.Model.EntitySetItem>();
 
             int itemOrder = 0;
+            int gridRowCounter = 0;
+            var selectedKeys = SelectedKeys.ToList();
             foreach ( DataRowView row in this.DataSourceAsDataTable.DefaultView )
             {
                 try
                 {
+                    if ( selectedKeys.Any() && this.DataKeyNames.Count() == 1 )
+                    {
+                        var dataKeyValue = this.DataKeys[gridRowCounter].Value;
+                        gridRowCounter++;
+
+                        if ( !selectedKeys.Contains( dataKeyValue ) )
+                        {
+                            // if there are specific rows selected, skip over rows that aren't selected
+                            continue;
+                        }
+                    }
+
                     var item = new Rock.Model.EntitySetItem();
 
                     if ( entitySet.EntityTypeId.HasValue && dataKeyColumn != null )
@@ -2983,7 +3012,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                         entityType = dataSourceObjectType;
                     }
 
-                    var entityTypeCache = Rock.Cache.CacheEntityType.Get( entityType, false );
+                    var entityTypeCache = EntityTypeCache.Get( entityType, false );
                     if ( entityTypeCache != null )
                     {
                         entityTypeId = entityTypeCache.Id;
@@ -2992,7 +3021,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
             }
 
             string entityIdColumn;
-            if ( entityTypeId.HasValue && entityTypeId.Value == CacheEntityType.GetId<Model.Person>() )
+            if ( entityTypeId.HasValue && entityTypeId.Value == EntityTypeCache.GetId<Model.Person>() )
             {
                 entityIdColumn = this.PersonIdField ?? "Id";
             }
@@ -3037,7 +3066,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
 
             if ( entityTypeId.HasValue )
             {
-                var dataSourceObjectTypeEntityType = CacheEntityType.Get( dataSourceObjectType, false );
+                var dataSourceObjectTypeEntityType = EntityTypeCache.Get( dataSourceObjectType, false );
                 if ( dataSourceObjectTypeEntityType != null && dataSourceObjectTypeEntityType.Id == entityTypeId )
                 {
                     // the entityType and the Datasource type are the same, so no additional merge fields 
@@ -3045,7 +3074,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                 else
                 {
                     // the entityType and the Datasource type are different, so figure out the extra properties and put them into AdditionalMergeFields
-                    var entityType = CacheEntityType.Get( entityTypeId.Value ).GetEntityType();
+                    var entityType = EntityTypeCache.Get( entityTypeId.Value ).GetEntityType();
                     var entityTypePropertyNames = entityType.GetProperties().Select( a => a.Name ).ToList();
 
                     additionalMergeProperties = new List<PropertyInfo>();
@@ -3187,7 +3216,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                         if ( pageRef.IsValid )
                         {
                             // if a valid pageref was found, check the security of the page
-                            var page = CachePage.Get( pageRef.PageId );
+                            var page = PageCache.Get( pageRef.PageId );
                             if ( page != null )
                             {
                                 return page.IsAuthorized( Rock.Security.Authorization.VIEW, rockPage.CurrentPerson );

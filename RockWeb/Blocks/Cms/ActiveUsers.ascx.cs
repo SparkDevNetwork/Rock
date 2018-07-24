@@ -26,7 +26,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -93,7 +93,7 @@ namespace RockWeb.Blocks.Cms
         private void ShowActiveUsers()
         {
             int? siteId = GetAttributeValue( "Site" ).AsIntegerOrNull();
-            if ( !siteId.HasValue || CacheSite.Get(siteId.Value) == null )
+            if ( !siteId.HasValue || SiteCache.Get(siteId.Value) == null )
             {
                 lMessages.Text = "<div class='alert alert-warning'>No site is currently configured.</div>";
                 return;
@@ -104,7 +104,7 @@ namespace RockWeb.Blocks.Cms
 
                 StringBuilder sbUsers = new StringBuilder();
 
-                var site = CacheSite.Get( siteId.Value );
+                var site = SiteCache.Get( siteId.Value );
                 lSiteName.Text = "<h4>" + site.Name + "</h4>";
                 lSiteName.Visible = GetAttributeValue( "ShowSiteNameAsTitle" ).AsBoolean();
 

@@ -25,7 +25,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using System.ComponentModel;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using System.Collections.Generic;
 using DotLiquid;
 using System.Web.UI.WebControls;

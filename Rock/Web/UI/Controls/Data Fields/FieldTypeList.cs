@@ -18,6 +18,7 @@ using System;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -37,7 +38,7 @@ namespace Rock.Web.UI.Controls
 
             this.Items.Clear();
             this.Items.Add( new ListItem() );
-            foreach ( var item in Rock.Cache.CacheFieldType.All() )
+            foreach ( var item in FieldTypeCache.All() )
             {
                 this.Items.Add( new ListItem( item.Name, item.Id.ToString() ) );
             }

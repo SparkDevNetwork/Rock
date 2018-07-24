@@ -20,7 +20,7 @@ using System.Linq;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using System.Web;
 using Rock.Web.UI;
 
@@ -31,7 +31,7 @@ namespace Rock.Transactions
     /// </summary>
     public class InteractionTransaction : ITransaction
     {
-        private CacheDefinedValue _channelMediumTypeValue;
+        private DefinedValueCache _channelMediumTypeValue;
         private int _channelEntityId;
         private string _channelName;
         private int _componentEntityTypeId;
@@ -71,7 +71,7 @@ namespace Rock.Transactions
         /// <param name="channelMediumTypeValue">The channel medium type value.</param>
         /// <param name="channelEntity">The channel entity.</param>
         /// <param name="componentEntity">The component entity.</param>
-        public InteractionTransaction( CacheDefinedValue channelMediumTypeValue, IEntity channelEntity, IEntity componentEntity )
+        public InteractionTransaction( DefinedValueCache channelMediumTypeValue, IEntity channelEntity, IEntity componentEntity )
         {
             if ( channelEntity == null || componentEntity == null )
             {
@@ -94,7 +94,7 @@ namespace Rock.Transactions
         /// <param name="channelMediumTypeValue">The channel medium type value.</param>
         /// <param name="channelEntity">The channel entity.</param>
         /// <param name="componentEntity">The component entity.</param>
-        public InteractionTransaction( CacheDefinedValue channelMediumTypeValue, IEntityCache channelEntity, IEntityCache componentEntity )
+        public InteractionTransaction( DefinedValueCache channelMediumTypeValue, IEntityCache channelEntity, IEntityCache componentEntity )
         {
             if ( channelEntity == null || componentEntity == null )
             {
@@ -166,7 +166,7 @@ namespace Rock.Transactions
             _currentPersonAliasId = rockPage.CurrentPersonAliasId;
 
             var title = string.Empty;
-            if ( rockPage.BrowserTitle.IsNotNullOrWhitespace() )
+            if ( rockPage.BrowserTitle.IsNotNullOrWhiteSpace() )
             {
                 title = rockPage.BrowserTitle;
             }

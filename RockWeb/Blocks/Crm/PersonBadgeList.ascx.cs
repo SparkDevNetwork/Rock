@@ -24,7 +24,7 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.PersonProfile;
 using Rock.Security;
@@ -63,7 +63,7 @@ namespace RockWeb.Blocks.Crm
             var securityField = gPersonBadge.ColumnsOfType<SecurityField>().FirstOrDefault();
             if ( securityField != null )
             {
-                securityField.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.PersonBadge ) ).Id;
+                securityField.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.PersonBadge ) ).Id;
             }
         }
 
@@ -179,7 +179,7 @@ namespace RockWeb.Blocks.Crm
         public bool IsActive { get; set; }
         public int Order { get; set; }
 
-        public PersonBadgeInfo(CachePersonBadge badge)
+        public PersonBadgeInfo(PersonBadgeCache badge)
         {
             Id = badge.Id;
             Name = badge.Name;

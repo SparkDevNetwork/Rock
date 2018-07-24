@@ -158,7 +158,7 @@ namespace Rock.Model
             if ( campusId.HasValue ) attendance.CampusId = campusId.Value;
             if ( deviceId.HasValue ) attendance.DeviceId = deviceId.Value;
             if ( searchTypeValueId.HasValue ) attendance.SearchTypeValueId = searchTypeValueId;
-            if ( searchValue.IsNotNullOrWhitespace() ) attendance.SearchValue = searchValue;
+            if ( searchValue.IsNotNullOrWhiteSpace() ) attendance.SearchValue = searchValue;
             if ( checkedInByPersonAliasId.HasValue ) attendance.CheckedInByPersonAliasId = checkedInByPersonAliasId.Value;
             if ( searchResultGroupId.HasValue ) attendance.SearchResultGroupId = searchResultGroupId;
             if ( attendanceCodeId.HasValue ) attendance.AttendanceCodeId = attendanceCodeId;

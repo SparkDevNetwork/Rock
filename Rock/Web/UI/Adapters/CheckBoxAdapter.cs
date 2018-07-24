@@ -59,10 +59,14 @@ namespace Rock.Web.UI.Adapters
                 if ( renderCheckboxLabel )
                 {
                     var containerCssClass = "checkbox";
-                    
+
 
                     if ( cb is RockCheckBox )
                     {
+                        if ( ( cb as RockCheckBox ).DisplayInline )
+                        {
+                            containerCssClass = "checkbox-inline";
+                        }
                         containerCssClass += " " + ( cb as RockCheckBox ).ContainerCssClass;
                         textCssClass += " " + ( cb as RockCheckBox ).TextCssClass;
                     }
@@ -71,14 +75,6 @@ namespace Rock.Web.UI.Adapters
                     writer.AddAttribute( HtmlTextWriterAttribute.Style, cb.Style.Value );
 
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                    if ( cb is RockCheckBox )
-                    {
-                        if ( ( cb as RockCheckBox ).DisplayInline )
-                        {
-                            writer.AddAttribute( HtmlTextWriterAttribute.Class, "checkbox-inline" );
-                        }
-                    }
 
                     writer.AddAttribute( "title", cb.ToolTip );
                     writer.RenderBeginTag( HtmlTextWriterTag.Label );
@@ -127,14 +123,14 @@ namespace Rock.Web.UI.Adapters
                 {
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, textCssClass );
                     writer.RenderBeginTag( HtmlTextWriterTag.Span );
-                    
+
                     if ( cb.Text.Length > 0 )
                     {
                         writer.Write( cb.Text );
                     }
                     else
                     {
-                        writer.Write( "&nbsp" );
+                        writer.Write( "&nbsp;" );
                     }
 
                     writer.RenderEndTag();      // Span

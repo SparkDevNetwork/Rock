@@ -24,11 +24,10 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -84,7 +83,7 @@ namespace RockWeb.Blocks.Communication
             var securityField = gCommunicationTemplates.ColumnsOfType<SecurityField>().FirstOrDefault();
             if ( securityField != null )
             {
-                securityField.EntityTypeId = CacheEntityType.Get( typeof( CommunicationTemplate ) ).Id;
+                securityField.EntityTypeId = EntityTypeCache.Get( typeof( CommunicationTemplate ) ).Id;
             }
 
             // make a custom delete confirmation dialog
@@ -175,7 +174,7 @@ namespace RockWeb.Blocks.Communication
                         var categoryId = e.Value.AsIntegerOrNull();
                         if ( categoryId.HasValue && categoryId > 0 )
                         {
-                            var category = CacheCategory.Get( categoryId.Value );
+                            var category = CategoryCache.Get( categoryId.Value );
                             if ( category != null )
                             {
                                 e.Value = category.Name;
@@ -268,8 +267,8 @@ namespace RockWeb.Blocks.Communication
                     copyName = string.Format( "Copy({0}) of {1}", copyNumber, template.Name );
                 }
 
-                template.Name = copyName.Truncate( 100 );
-                template.IsSystem = false;
+                templateCopy.Name = copyName.Truncate( 100 );
+                templateCopy.IsSystem = false;
                 templateCopy.Guid = Guid.NewGuid();
                 service.Add( templateCopy );
                 rockContext.SaveChanges();

@@ -24,7 +24,7 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Event
@@ -244,7 +244,7 @@ namespace RockWeb.Blocks.Event
         {
             if ( PageNumber.Value > targetPage )
             {
-                var pageCache = CachePage.Get( RockPage.PageId );
+                var pageCache = PageCache.Get( RockPage.PageId );
                 if ( pageCache != null )
                 {
                     if ( 

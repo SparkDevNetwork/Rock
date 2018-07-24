@@ -24,7 +24,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Security;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -136,7 +136,7 @@ namespace Rock.Reporting.DataFilter
         /// <returns></returns>
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
-            int entityTypeId = CacheEntityType.Get( entityType ).Id;
+            int entityTypeId = EntityTypeCache.Get( entityType ).Id;
 
             var dvpDataView = new DataViewItemPicker();
             dvpDataView.ID = filterControl.ID + "_dvpDataView";
@@ -355,7 +355,7 @@ namespace Rock.Reporting.DataFilter
                     var errorMessages = new List<string>();
                     if ( selectionConfig.UsePersisted == false )
                     {
-                        dataViewFilterOverrides.IgnoreDataViewPersistedValues.Add( dataView.Id );
+                        dataViewFilterOverrides?.IgnoreDataViewPersistedValues.Add( dataView.Id );
                     }
 
                     Expression expression = dataView.GetExpression( serviceInstance, parameterExpression, dataViewFilterOverrides, out errorMessages );
@@ -385,7 +385,7 @@ namespace Rock.Reporting.DataFilter
         /// </returns>
         private bool IsViewInFilter( int dataViewId, Rock.Model.DataViewFilter filter )
         {
-            if ( filter.EntityTypeId == CacheEntityType.Get( this.GetType() ).Id )
+            if ( filter.EntityTypeId == EntityTypeCache.Get( this.GetType() ).Id )
             {
                 int? filterDataViewId = filter.Selection.AsIntegerOrNull();
                 if ( filterDataViewId.HasValue )

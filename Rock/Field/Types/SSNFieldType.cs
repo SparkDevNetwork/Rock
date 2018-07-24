@@ -46,7 +46,7 @@ namespace Rock.Field.Types
         {
             string formattedValue = string.Empty;
 
-            if ( value.IsNotNullOrWhitespace() )
+            if ( value.IsNotNullOrWhiteSpace() )
             {
                 string ssn = Rock.Security.Encryption.DecryptString( value );
                 if ( !string.IsNullOrEmpty( ssn ) )
@@ -160,7 +160,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public static string UnencryptAndClean( string encryptedValue )
         {
-            if ( encryptedValue.IsNotNullOrWhitespace() )
+            if ( encryptedValue.IsNotNullOrWhiteSpace() )
             {
                 string ssn = Rock.Security.Encryption.DecryptString( encryptedValue );
                 if ( !string.IsNullOrEmpty( ssn ) )

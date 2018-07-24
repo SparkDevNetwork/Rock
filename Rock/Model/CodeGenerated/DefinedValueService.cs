@@ -314,6 +314,7 @@ namespace Rock.Model
             target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.IsActive = source.IsActive;
             target.IsSystem = source.IsSystem;
             target.Order = source.Order;
             target.Value = source.Value;

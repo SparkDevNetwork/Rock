@@ -27,7 +27,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -661,7 +661,7 @@ achieve our mission.  We are so grateful for your commitment.
             if ( scheduledTransaction != null && Gateway != null )
             {
                 if ( scheduledTransaction.FinancialPaymentDetail != null &&
-                    scheduledTransaction.FinancialPaymentDetail.CurrencyTypeValueId == CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ).Id )
+                    scheduledTransaction.FinancialPaymentDetail.CurrencyTypeValueId == DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ).Id )
                 {
                     ccEnabled = true;
                     txtCardFirstName.Visible = Gateway.SplitNameOnCard;
@@ -673,7 +673,7 @@ achieve our mission.  We are so grateful for your commitment.
                     txtCardName.Text = authorizedPerson.FullName;
 
                     var groupLocation = new PersonService( new RockContext() ).GetFirstLocation(
-                        authorizedPerson.Id, CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() ).Id );
+                        authorizedPerson.Id, DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() ).Id );
                     if ( groupLocation != null )
                     {
                         acBillingAddress.SetValues( groupLocation.Location );
@@ -687,14 +687,14 @@ achieve our mission.  We are so grateful for your commitment.
                 }
 
                 if ( scheduledTransaction.FinancialPaymentDetail != null &&
-                    scheduledTransaction.FinancialPaymentDetail.CurrencyTypeValueId == CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH ).Id )
+                    scheduledTransaction.FinancialPaymentDetail.CurrencyTypeValueId == DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH ).Id )
                 {
                     achEnabled = true;
                 }
 
                 if ( Gateway.SupportedPaymentSchedules.Any() )
                 {
-                    var oneTimeFrequency = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME );
+                    var oneTimeFrequency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME );
                     divRepeatingPayments.Visible = true;
 
                     btnFrequency.DataSource = Gateway.SupportedPaymentSchedules;
@@ -737,7 +737,7 @@ achieve our mission.  We are so grateful for your commitment.
 
                 if ( Gateway != null && Gateway.SupportsSavedAccount( true ) )
                 {
-                    var ccCurrencyType = CacheDefinedValue.Get( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) );
+                    var ccCurrencyType = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) );
                     if ( Gateway.SupportsSavedAccount( ccCurrencyType ) )
                     {
                         rblSavedCC.DataSource = savedAccounts
@@ -758,7 +758,7 @@ achieve our mission.  We are so grateful for your commitment.
                         }
                     }
 
-                    var achCurrencyType = CacheDefinedValue.Get( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH ) );
+                    var achCurrencyType = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH ) );
                     if ( Gateway.SupportsSavedAccount( achCurrencyType ) )
                     {
                         rblSavedAch.DataSource = savedAccounts
@@ -834,7 +834,7 @@ achieve our mission.  We are so grateful for your commitment.
                 errorMessages.Add( "Make sure the amount you've entered for each account is a positive amount" );
             }
 
-            string howOften = CacheDefinedValue.Get( btnFrequency.SelectedValueAsId().Value ).Value;
+            string howOften = DefinedValueCache.Get( btnFrequency.SelectedValueAsId().Value ).Value;
             DateTime when = DateTime.MinValue;
 
             // Make sure a repeating payment starts in the future
@@ -969,7 +969,7 @@ achieve our mission.  We are so grateful for your commitment.
             rptAccountListConfirmation.DataBind();
 
             string nextDate = dtpStartDate.SelectedDate.HasValue ? dtpStartDate.SelectedDate.Value.ToShortDateString() : "?";
-            string frequency = CacheDefinedValue.Get( btnFrequency.SelectedValueAsInt() ?? 0 ).Description;
+            string frequency = DefinedValueCache.Get( btnFrequency.SelectedValueAsInt() ?? 0 ).Description;
             tdWhen.Description = frequency + " starting on " + nextDate;
 
             return true;
@@ -1032,7 +1032,7 @@ achieve our mission.  We are so grateful for your commitment.
 
                 // Get the payment schedule
                 scheduledTransaction.TransactionFrequencyValueId = btnFrequency.SelectedValueAsId().Value;
-                changeSummary.Append( CacheDefinedValue.Get( scheduledTransaction.TransactionFrequencyValueId, rockContext ) );
+                changeSummary.Append( DefinedValueCache.Get( scheduledTransaction.TransactionFrequencyValueId, rockContext ) );
 
                 if ( dtpStartDate.SelectedDate.HasValue && dtpStartDate.SelectedDate > RockDateTime.Today )
                 {
@@ -1106,7 +1106,7 @@ achieve our mission.  We are so grateful for your commitment.
                     rockContext.SaveChanges();
 
                     // Add a note about the change
-                    var noteType = CacheNoteType.Get( Rock.SystemGuid.NoteType.SCHEDULED_TRANSACTION_NOTE.AsGuid() );
+                    var noteType = NoteTypeCache.Get( Rock.SystemGuid.NoteType.SCHEDULED_TRANSACTION_NOTE.AsGuid() );
                     if ( noteType != null )
                     {
                         var noteService = new NoteService( rockContext );
@@ -1196,7 +1196,7 @@ achieve our mission.  We are so grateful for your commitment.
                 bool displayPhone = GetAttributeValue( "DisplayPhone" ).AsBoolean();
                 if ( displayPhone )
                 {
-                    var phoneNumber = personService.GetPhoneNumber( authorizedPerson, CacheDefinedValue.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ) ) );
+                    var phoneNumber = personService.GetPhoneNumber( authorizedPerson, DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ) ) );
                     paymentInfo.Phone = phoneNumber != null ? phoneNumber.ToString() : string.Empty;
                 }
 
@@ -1206,7 +1206,7 @@ achieve our mission.  We are so grateful for your commitment.
                     addressTypeGuid = new Guid( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME );
                 }
 
-                var groupLocation = personService.GetFirstLocation( authorizedPerson.Id, CacheDefinedValue.Get( addressTypeGuid ).Id );
+                var groupLocation = personService.GetFirstLocation( authorizedPerson.Id, DefinedValueCache.Get( addressTypeGuid ).Id );
                 if ( groupLocation != null && groupLocation.Location != null )
                 {
                     paymentInfo.Street1 = groupLocation.Location.Street1;
@@ -1340,7 +1340,7 @@ achieve our mission.  We are so grateful for your commitment.
         {
             RockPage.AddScriptLink( ResolveUrl( "~/Scripts/jquery.creditCardTypeDetector.js" ) );
 
-            int oneTimeFrequencyId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ).Id;
+            int oneTimeFrequencyId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ).Id;
 
             string scriptFormat = @"
     Sys.Application.add_load(function () {{
@@ -1442,7 +1442,7 @@ achieve our mission.  We are so grateful for your commitment.
                 divACHPaymentInfo.ClientID, // {1} 
                 hfPaymentTab.ClientID, // {2} 
                 oneTimeFrequencyId, // {3} 
-                CacheGlobalAttributes.Value( "CurrencySymbol") // {4}
+                GlobalAttributesCache.Value( "CurrencySymbol") // {4}
                 );
             ScriptManager.RegisterStartupScript( upPayment, this.GetType(), "giving-profile", script, true );
         }

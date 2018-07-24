@@ -19,7 +19,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Workflow;
 
@@ -211,7 +211,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static ActionComponent GetWorkflowAction( int entityTypeId )
         {
-            var entityType = Cache.CacheEntityType.Get( entityTypeId );
+            var entityType = EntityTypeCache.Get( entityTypeId );
             if ( entityType != null )
             {
                 foreach ( var serviceEntry in ActionContainer.Instance.Components )
@@ -238,7 +238,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IEntityCache GetCacheObject()
         {
-            return CacheWorkflowActionType.Get( this.Id );
+            return WorkflowActionTypeCache.Get( this.Id );
         }
 
         /// <summary>
@@ -248,7 +248,7 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
         {
-            CacheWorkflowActionType.UpdateCachedEntity( this.Id, entityState );
+            WorkflowActionTypeCache.UpdateCachedEntity( this.Id, entityState );
         }
 
         #endregion

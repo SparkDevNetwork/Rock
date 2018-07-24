@@ -27,7 +27,7 @@ using Rock.Lava.Shortcodes;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using System.Collections.Generic;
 using System.Web;
@@ -122,7 +122,7 @@ namespace RockWeb.Blocks.Core
             rockContext.SaveChanges();
 
             // unregister shortcode
-            if ( hfOriginalTagName.Value.IsNotNullOrWhitespace() )
+            if ( hfOriginalTagName.Value.IsNotNullOrWhiteSpace() )
             {
                 Template.UnregisterShortcode( hfOriginalTagName.Value );
             }
@@ -272,7 +272,7 @@ namespace RockWeb.Blocks.Core
             kvlParameters.Value = lavaShortcode.Parameters;
             hfOriginalTagName.Value = lavaShortcode.TagName;
 
-            if ( lavaShortcode.EnabledLavaCommands.IsNotNullOrWhitespace() )
+            if ( lavaShortcode.EnabledLavaCommands.IsNotNullOrWhiteSpace() )
             {
                 lcpLavaCommands.SetValues( lavaShortcode.EnabledLavaCommands.Split( ',' ).ToList() );
             }

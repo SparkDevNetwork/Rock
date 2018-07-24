@@ -25,7 +25,7 @@ using Quartz;
 using Rock.Data;
 using Rock.Model;
 using Rock.SystemKey;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Attribute;
 
 namespace Rock.Jobs
@@ -195,21 +195,21 @@ Update Family Status: {updateFamilyStatus}
                 }
 
                 // Get the family group type
-                var familyGroupType = CacheGroupType.Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
+                var familyGroupType = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
                 if ( familyGroupType == null )
                 {
                     throw new Exception( "Could not determine the 'Family' group type." );
                 }
 
                 // Get the active record status defined value
-                var activeStatus = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
+                var activeStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
                 if ( activeStatus == null )
                 {
                     throw new Exception( "Could not determine the 'Active' record status value." );
                 }
 
                 // Get the inactive record status defined value
-                var inactiveStatus = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
+                var inactiveStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
                 if ( inactiveStatus == null )
                 {
                     throw new Exception( "Could not determine the 'Inactive' record status value." );
@@ -265,7 +265,7 @@ Update Family Status: {updateFamilyStatus}
                             p.RecordStatusValueId == inactiveStatus.Id );
 
                     // Check to see if any inactive reasons should be ignored, and if so filter the list to exclude those
-                    var invalidReasonDt = CacheDefinedType.Get( SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON.AsGuid() );
+                    var invalidReasonDt = DefinedTypeCache.Get( SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON.AsGuid() );
                     if ( invalidReasonDt != null )
                     {
                         var invalidReasonIds = invalidReasonDt.DefinedValues
@@ -376,28 +376,28 @@ Update Family Status: {updateFamilyStatus}
                 }
 
                 // Get the family group type
-                var familyGroupType = CacheGroupType.Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
+                var familyGroupType = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
                 if ( familyGroupType == null )
                 {
                     throw new Exception( "Could not determine the 'Family' group type." );
                 }
 
                 // Get the active record status defined value
-                var activeStatus = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
+                var activeStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
                 if ( activeStatus == null )
                 {
                     throw new Exception( "Could not determine the 'Active' record status value." );
                 }
 
                 // Get the inactive record status defined value
-                var inactiveStatus = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
+                var inactiveStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
                 if ( inactiveStatus == null )
                 {
                     throw new Exception( "Could not determine the 'Inactive' record status value." );
                 }
 
                 // Get the inactive record status defined value
-                var inactiveReason = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_NO_ACTIVITY.AsGuid() );
+                var inactiveReason = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_NO_ACTIVITY.AsGuid() );
                 if ( inactiveReason == null )
                 {
                     throw new Exception( "Could not determine the 'No Activity' record status reason value." );
@@ -535,7 +535,7 @@ Update Family Status: {updateFamilyStatus}
                 }
 
                 // Get the family group type and roles
-                var familyGroupType = CacheGroupType.Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
+                var familyGroupType = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
                 if ( familyGroupType == null )
                 {
                     throw new Exception( "Could not determine the 'Family' group type." );
@@ -562,7 +562,7 @@ Update Family Status: {updateFamilyStatus}
                         var startPeriod = RockDateTime.Now.AddDays( -settings.IgnoreIfManualUpdatePeriod );
 
                         // Find any families that has a campus manually added/updated within the configured number of days
-                        var personEntityTypeId = CacheEntityType.Get( typeof( Person ) ).Id;
+                        var personEntityTypeId = EntityTypeCache.Get( typeof( Person ) ).Id;
                         var familyIdsWithManualUpdate = new HistoryService( rockContext )
                             .Queryable().AsNoTracking()
                             .Where( m =>
@@ -850,7 +850,7 @@ Update Family Status: {updateFamilyStatus}
                 var familyChangesGuid = SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid();
 
                 // Get the family group type and roles
-                var familyGroupType = CacheGroupType.Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
+                var familyGroupType = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
                 if ( familyGroupType == null )
                 {
                     throw new Exception( "Could not determine the 'Family' group type." );
@@ -873,7 +873,7 @@ Update Family Status: {updateFamilyStatus}
                     // increase the timeout just in case.
                     rockContext.Database.CommandTimeout = 180;
 
-                    adultChildIds = new GroupMemberService( rockContext )
+                    var qry = new GroupMemberService( rockContext )
                         .Queryable().AsNoTracking()
                         .Where( m =>
                             m.GroupRoleId == childRole.Id &&
@@ -881,7 +881,16 @@ Update Family Status: {updateFamilyStatus}
                             m.Person.BirthDate <= adultBirthdate &&
                             m.Person.RecordStatusValue != null &&
                             m.Person.RecordStatusValue.Guid == activeRecordStatusGuid &&
-                            !m.Person.IsLockedAsChild )
+                            !m.Person.IsLockedAsChild );
+
+                    if ( settings.IsOnlyMoveGraduated )
+                    {
+                        int maxGradYear = CalculateMaxGradYear();
+                        // Children who have a graduation year and have graduated
+                        qry = qry.Where( gm => gm.Person.GraduationYear != null && gm.Person.GraduationYear <= maxGradYear );
+                    }
+
+                    adultChildIds = qry
                         .OrderBy( m => m.PersonId )
                         .Select( m => m.PersonId )
                         .Distinct()
@@ -984,7 +993,7 @@ Update Family Status: {updateFamilyStatus}
                                     // Save role change to history
                                     var memberChanges = new History.HistoryChangeList();
                                     History.EvaluateChange( memberChanges, "Role", string.Empty, adultRole.Name );
-                                    HistoryService.SaveChanges( rockContext, typeof( Person ), familyChangesGuid, personId, memberChanges, newFamily.Name, typeof( Group ), newFamily.Id, false );
+                                    HistoryService.SaveChanges( rockContext, typeof( Person ), familyChangesGuid, personId, memberChanges, newFamily.Name, typeof( Group ), newFamily.Id, false, null, "Data Automation" );
                                 }
                                 else
                                 {
@@ -1020,7 +1029,7 @@ Update Family Status: {updateFamilyStatus}
                                     History.EvaluateChange( familyChanges, groupLocation.GroupLocationTypeValue.Value + " Location", string.Empty, groupLocation.Location.ToString() );
                                 }
 
-                                HistoryService.SaveChanges( rockContext, typeof( Person ), familyChangesGuid, personId, familyChanges, false );
+                                HistoryService.SaveChanges( rockContext, typeof( Person ), familyChangesGuid, personId, familyChanges, false,null, "Data Automation" );
                             }
 
                             // If user configured the job to copy home phone and this person does not have a home phone, copy the first home phone number from another adult in original family(s)
@@ -1134,6 +1143,25 @@ Update Family Status: {updateFamilyStatus}
             }
         }
 
+        /// <summary>
+        /// Calculates the last graduation year which children can have graduated in order to be considered an adult. I.E. Any year greater than this and they have not graduated yet
+        /// </summary>
+        /// <returns></returns>
+        private int CalculateMaxGradYear()
+        {
+            var graduationDateWithCurrentYear = GlobalAttributesCache.Get().GetValue( "GradeTransitionDate" ).MonthDayStringAsDateTime() ?? new DateTime( RockDateTime.Today.Year, 6, 1 );
+            if ( !( graduationDateWithCurrentYear < RockDateTime.Today ) )
+            {
+                // if the graduation date hasn't occurred this year yet, return last year's graduation date as any children with this years date have not graduated yet
+                return graduationDateWithCurrentYear.AddYears( -1 ).Year;
+            }
+            else
+            {
+                return graduationDateWithCurrentYear.Year;
+            }
+        }
+
+
         #endregion Move Adult Children
 
         #region Update Person Connection Status
@@ -1160,7 +1188,7 @@ Update Family Status: {updateFamilyStatus}
             foreach ( var connectionStatusDataviewMapping in settings.ConnectionStatusValueIdDataviewIdMapping.Where( a => a.Value.HasValue ) )
             {
                 int connectionStatusValueId = connectionStatusDataviewMapping.Key;
-                var cacheConnectionStatusValue = CacheDefinedValue.Get( connectionStatusValueId );
+                var cacheConnectionStatusValue = DefinedValueCache.Get( connectionStatusValueId );
                 context.UpdateLastStatusMessage( $"Processing Connection Status Update for {cacheConnectionStatusValue}" );
                 int dataViewId = connectionStatusDataviewMapping.Value.Value;
                 using ( var dataViewRockContext = new RockContext() )
@@ -1293,7 +1321,7 @@ Update Family Status: {updateFamilyStatus}
         {
             if ( enabled )
             {
-                var contributionType = CacheDefinedValue.Get( SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
+                var contributionType = DefinedValueCache.Get( SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
                 if ( contributionType != null )
                 {
                     var startDate = RockDateTime.Now.AddDays( -periodInDays );
@@ -1428,7 +1456,7 @@ Update Family Status: {updateFamilyStatus}
             {
                 var startDate = RockDateTime.Now.AddDays( -periodInDays );
 
-                var personEntityTypeId = CacheEntityType.Get( typeof( Person ) ).Id;
+                var personEntityTypeId = EntityTypeCache.Get( typeof( Person ) ).Id;
 
                 var qry = new AttributeValueService( rockContext )
                     .Queryable().AsNoTracking()
@@ -1526,7 +1554,7 @@ Update Family Status: {updateFamilyStatus}
         private IQueryable<int> CreateEntitySetIdQuery( List<int> ids, RockContext rockContext )
         {
             var entitySet = new EntitySet();
-            entitySet.EntityTypeId = CacheEntityType.Get<Rock.Model.Person>().Id;
+            entitySet.EntityTypeId = EntityTypeCache.Get<Rock.Model.Person>().Id;
             entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( 5 );
 
             var service = new EntitySetService( rockContext );

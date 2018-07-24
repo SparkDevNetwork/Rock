@@ -91,6 +91,7 @@ namespace Rock.SystemKey
         /// <summary>
         /// The redis connection string
         /// </summary>
+        [Obsolete("Use REDIS_ENDPOINT_LIST, REDIS_PASSWORD, and REDIS_DATABASE_NUMBER instead.")]
         public const string REDIS_CONNECTION_STRING = "RedisConnectionString";
 
         /// <summary>

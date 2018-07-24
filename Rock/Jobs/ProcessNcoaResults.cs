@@ -27,7 +27,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace Rock.Jobs
@@ -60,15 +60,15 @@ namespace Rock.Jobs
         {
             // Get the inactive reason
             JobDataMap dataMap = context.JobDetail.JobDataMap;
-            var inactiveReason = CacheDefinedValue.Get( dataMap.GetString( "InactiveReason" ).AsGuid() );
+            var inactiveReason = DefinedValueCache.Get( dataMap.GetString( "InactiveReason" ).AsGuid() );
 
             List<int> ncoaIds = null;
 
             var minMoveDistance = SystemSettings.GetValue( SystemKey.SystemSetting.NCOA_MINIMUM_MOVE_DISTANCE_TO_INACTIVATE ).AsDecimalOrNull();
 
             // Get the ID's for the "Home" and "Previous" family group location types
-            int? homeValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() )?.Id;
-            int? previousValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid() )?.Id;
+            int? homeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() )?.Id;
+            int? previousValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid() )?.Id;
 
             // Process the 'None' and 'NoMove' NCOA Types (these will always have an address state as 'invalid')
             var markInvalidAsPrevious = SystemSettings.GetValue( SystemKey.SystemSetting.NCOA_SET_INVALID_AS_PREVIOUS ).AsBoolean();

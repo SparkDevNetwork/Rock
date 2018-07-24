@@ -24,7 +24,7 @@ using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Workflow.Action
 {
@@ -82,7 +82,7 @@ namespace Rock.Workflow.Action
             Guid? fromGuid = fromValue.AsGuidOrNull();
             if ( fromGuid.HasValue )
             {
-                var attribute = CacheAttribute.Get( fromGuid.Value, rockContext );
+                var attribute = AttributeCache.Get( fromGuid.Value, rockContext );
                 if ( attribute != null )
                 {
                     string fromAttributeValue = action.GetWorklowAttributeValue( fromGuid.Value );
@@ -119,7 +119,7 @@ namespace Rock.Workflow.Action
             Guid? guid = to.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                var attribute = CacheAttribute.Get( guid.Value, rockContext );
+                var attribute = AttributeCache.Get( guid.Value, rockContext );
                 if ( attribute != null )
                 {
                     string toValue = action.GetWorklowAttributeValue( guid.Value );
@@ -266,6 +266,7 @@ namespace Rock.Workflow.Action
             }
             
             emailMessage.CreateCommunicationRecord = createCommunicationRecord;
+            emailMessage.AppRoot = Rock.Web.Cache.GlobalAttributesCache.Get().GetValue( "InternalApplicationRoot" ) ?? string.Empty;
 
             emailMessage.Send();
         }

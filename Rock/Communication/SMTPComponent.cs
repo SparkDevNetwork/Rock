@@ -21,11 +21,10 @@ using System.Linq;
 using System.Net.Mail;
 using System.Net.Mime;
 using System.Text.RegularExpressions;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
 using Rock.Transactions;
-using Rock.Web.Cache;
 
 namespace Rock.Communication.Transport
 {
@@ -147,7 +146,7 @@ namespace Rock.Communication.Transport
                 fromName = fromName.ResolveMergeFields( mergeFields, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands );
 
                 // From - if none is set, use the one in the Organization's GlobalAttributes.
-                var globalAttributes = CacheGlobalAttributes.Get();
+                var globalAttributes = GlobalAttributesCache.Get();
                 if ( string.IsNullOrWhiteSpace( fromAddress ) )
                 {
                     fromAddress = globalAttributes.GetValue( "OrganizationEmail" );
@@ -169,7 +168,7 @@ namespace Rock.Communication.Transport
                 // Reply To
                 try
                 {
-                    if ( emailMessage.ReplyToEmail.IsNotNullOrWhitespace() )
+                    if ( emailMessage.ReplyToEmail.IsNotNullOrWhiteSpace() )
                     {
                         // Resolve any possible merge fields in the replyTo address
                         message.ReplyToList.Add( new MailAddress( emailMessage.ReplyToEmail.ResolveMergeFields( mergeFields, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands ) ) );
@@ -323,7 +322,7 @@ namespace Rock.Communication.Transport
                 }
 
                 var currentPerson = communication.CreatedByPersonAlias?.Person;
-                var globalAttributes = CacheGlobalAttributes.Get();
+                var globalAttributes = GlobalAttributesCache.Get();
                 string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, currentPerson );
                 var cssInliningEnabled = communication.CommunicationTemplate?.CssInliningEnabled ?? false;
@@ -365,8 +364,8 @@ namespace Rock.Communication.Transport
 
                 using ( var smtpClient = GetSmtpClient() )
                 {
-                    var personEntityTypeId = CacheEntityType.Get( "Rock.Model.Person" ).Id;
-                    var communicationEntityTypeId = CacheEntityType.Get( "Rock.Model.Communication" ).Id;
+                    var personEntityTypeId = EntityTypeCache.Get( "Rock.Model.Person" ).Id;
+                    var communicationEntityTypeId = EntityTypeCache.Get( "Rock.Model.Communication" ).Id;
                     var communicationCategoryGuid = Rock.SystemGuid.Category.HISTORY_PERSON_COMMUNICATIONS.AsGuid();
 
                     bool recipientFound = true;
@@ -616,7 +615,7 @@ namespace Rock.Communication.Transport
         /// </summary>
         /// <param name="message">The message.</param>
         /// <param name="globalAttributes">The global attributes.</param>
-        private void CheckSafeSender( MailMessage message, CacheGlobalAttributes globalAttributes )
+        private void CheckSafeSender( MailMessage message, GlobalAttributesCache globalAttributes )
         {
             if ( message != null && message.From != null )
             {
@@ -624,7 +623,7 @@ namespace Rock.Communication.Transport
                 string fromName = message.From.DisplayName;
 
                 // Get the safe sender domains
-                var safeDomainValues = CacheDefinedType.Get( SystemGuid.DefinedType.COMMUNICATION_SAFE_SENDER_DOMAINS.AsGuid() ).DefinedValues;
+                var safeDomainValues = DefinedTypeCache.Get( SystemGuid.DefinedType.COMMUNICATION_SAFE_SENDER_DOMAINS.AsGuid() ).DefinedValues;
                 var safeDomains = safeDomainValues.Select( v => v.Value ).ToList();
 
                 // Check to make sure the From email domain is a safe sender

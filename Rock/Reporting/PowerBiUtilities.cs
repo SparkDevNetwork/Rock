@@ -23,7 +23,7 @@ using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Newtonsoft.Json;
 
 using Rock.Attribute;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Reporting
 {
@@ -85,7 +85,7 @@ namespace Rock.Reporting
         /// <param name="returnUrl">The return URL.</param>
         public static void AuthenticateAccount( Guid accountValueGuid, string returnUrl )
         {
-            var biAccountValue = CacheDefinedValue.Get( accountValueGuid );
+            var biAccountValue = DefinedValueCache.Get( accountValueGuid );
 
             AuthenticateAccount( biAccountValue, returnUrl );
         }
@@ -95,7 +95,7 @@ namespace Rock.Reporting
         /// </summary>
         /// <param name="biAccountValue">The bi account value.</param>
         /// <param name="returnUrl">The return URL.</param>
-        private static void AuthenticateAccount( CacheDefinedValue biAccountValue, string returnUrl )
+        private static void AuthenticateAccount( DefinedValueCache biAccountValue, string returnUrl )
         {
             if ( biAccountValue != null )
             {
@@ -185,7 +185,7 @@ namespace Rock.Reporting
         /// <param name="biAccountValue">The bi account value.</param>
         /// <param name="message">The message.</param>
         /// <returns></returns>
-        private static string GetAccessToken( CacheDefinedValue biAccountValue, out string message )
+        private static string GetAccessToken( DefinedValueCache biAccountValue, out string message )
         {
             message = string.Empty;
             string accessCode = string.Empty;
@@ -234,7 +234,7 @@ namespace Rock.Reporting
         /// <returns></returns>
         public static string GetAccessToken( Guid accountValueGuid, out string message )
         {
-            var biAccountValue = CacheDefinedValue.Get( accountValueGuid );
+            var biAccountValue = DefinedValueCache.Get( accountValueGuid );
 
             return GetAccessToken( biAccountValue, out message );
         }
@@ -321,7 +321,7 @@ namespace Rock.Reporting
                 {
                     // configure reports request
                     System.Net.WebRequest request;
-                    if ( groupId.IsNotNullOrWhitespace() )
+                    if ( groupId.IsNotNullOrWhiteSpace() )
                     {
                         request = System.Net.WebRequest.Create( $"{_baseUri}groups/{groupId}/reports" ) as System.Net.HttpWebRequest;
                     }

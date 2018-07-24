@@ -26,7 +26,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -101,7 +101,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 pnlFollow.Visible = GetAttributeValue( "AllowFollowing" ).AsBoolean();
 
                 // Record Type - this is always "business". it will never change.
-                if ( Person.RecordTypeValueId == CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id )
+                if ( Person.RecordTypeValueId == DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id )
                 {
                     var parms = new Dictionary<string, string>();
                     parms.Add( "businessId", Person.Id.ToString() );
@@ -124,7 +124,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                         Guid guid = badgeGuid.AsGuid();
                         if ( guid != Guid.Empty )
                         {
-                            var personBadge = CachePersonBadge.Get( guid );
+                            var personBadge = PersonBadgeCache.Get( guid );
                             if ( personBadge != null )
                             {
                                 blStatus.PersonBadges.Add( personBadge );
@@ -211,7 +211,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     if ( Person.BirthDate.HasValue )
                     {
                         var formattedAge = Person.FormatAge();
-                        if ( formattedAge.IsNotNullOrWhitespace() )
+                        if ( formattedAge.IsNotNullOrWhiteSpace() )
                         {
                             formattedAge += " old";
                         }
@@ -255,7 +255,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     
                     var communicationLinkedPageValue = this.GetAttributeValue( "CommunicationPage" );
                     Rock.Web.PageReference communicationPageReference;
-                    if ( communicationLinkedPageValue.IsNotNullOrWhitespace() )
+                    if ( communicationLinkedPageValue.IsNotNullOrWhiteSpace() )
                     {
                         communicationPageReference = new Rock.Web.PageReference( communicationLinkedPageValue );
                     }
@@ -334,7 +334,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                         if ( guid.HasValue )
                         {
                             var workflowType = workflowTypeService.Get( guid.Value );
-                            if ( workflowType != null && workflowType.IsActive && workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                            if ( workflowType != null && (workflowType.IsActive ?? true) && workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                             {
                                 workflowTypes.Add( workflowType );
                             }
@@ -386,7 +386,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
             if ( Person.RecordTypeValueId.HasValue )
             {
-                int recordTypeValueIdBusiness = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
+                int recordTypeValueIdBusiness = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
 
                 isBusiness = ( Person.RecordTypeValueId.Value == recordTypeValueIdBusiness );
             }
@@ -412,7 +412,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 // Prefix with Title if they have a Title with IsFormal=True
                 if ( Person.TitleValueId.HasValue )
                 {
-                    var personTitleValue = CacheDefinedValue.Get( Person.TitleValueId.Value );
+                    var personTitleValue = DefinedValueCache.Get( Person.TitleValueId.Value );
                     if ( personTitleValue != null && personTitleValue.GetAttributeValue( "IsFormal" ).AsBoolean() )
                     {
                         nameText = string.Format( "<span class='title'>{0}</span> ", personTitleValue.Value ) + nameText;
@@ -431,7 +431,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 // Add Suffix.
                 if ( Person.SuffixValueId.HasValue )
                 {
-                    var suffix = CacheDefinedValue.Get( Person.SuffixValueId.Value );
+                    var suffix = DefinedValueCache.Get( Person.SuffixValueId.Value );
                     if ( suffix != null )
                     {
                         nameText += " " + suffix.Value;
@@ -542,7 +542,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 }
             }
 
-            var phoneType = CacheDefinedValue.Get( phoneNumberTypeId );
+            var phoneType = DefinedValueCache.Get( phoneNumberTypeId );
             if ( phoneType != null )
             {
                 string phoneMarkup = formattedNumber;

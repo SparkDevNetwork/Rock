@@ -21,7 +21,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Extension;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls.Communication;
 
 namespace Rock.Communication
@@ -48,7 +48,7 @@ namespace Rock.Communication
                     foreach ( var serviceEntry in TransportContainer.Instance.Components )
                     {
                         var component = serviceEntry.Value.Value;
-                        var entityType = CacheEntityType.Get( component.GetType() );
+                        var entityType = EntityTypeCache.Get( component.GetType() );
                         if ( entityType != null && entityType.Guid.Equals( entityTypeGuid ) )
                         {
                             return component;
@@ -92,14 +92,14 @@ namespace Rock.Communication
             if ( this.IsActive )
             {
                 // Get the Medium's Entity Type Id
-                int mediumEntityTypeId = CacheEntityType.Get( this.GetType() ).Id;
+                int mediumEntityTypeId = EntityTypeCache.Get( this.GetType() ).Id;
 
                 // Add the Medium's settings as attributes for the Transport to use.
                 var mediumAttributes = new Dictionary<string, string>();
                 foreach ( var attr in this.Attributes.Select( a => a.Value ) )
                 {
                     string value = this.GetAttributeValue( attr.Key );
-                    if ( value.IsNotNullOrWhitespace() )
+                    if ( value.IsNotNullOrWhiteSpace() )
                     {
                         mediumAttributes.Add( attr.Key, GetAttributeValue( attr.Key ) );
                     }
@@ -108,7 +108,7 @@ namespace Rock.Communication
                 // If there have not been any EnabledLavaCommands explicitely set, then use the global defaults.
                 if ( rockMessage.EnabledLavaCommands == null )
                 {
-                    rockMessage.EnabledLavaCommands = CacheGlobalAttributes.Get().GetValue( "DefaultEnabledLavaCommands" );
+                    rockMessage.EnabledLavaCommands = GlobalAttributesCache.Get().GetValue( "DefaultEnabledLavaCommands" );
                 }
 
                 // Use the transport to send communication
@@ -137,14 +137,14 @@ namespace Rock.Communication
             if ( this.IsActive )
             {
                 // Get the Medium's Entity Type Id
-                int mediumEntityTypeId = CacheEntityType.Get( this.GetType() ).Id;
+                int mediumEntityTypeId = EntityTypeCache.Get( this.GetType() ).Id;
 
                 // Add the Medium's settings as attributes for the Transport to use.
                 var mediumAttributes = new Dictionary<string, string>();
                 foreach ( var attr in this.Attributes.Select( a => a.Value ) )
                 {
                     string value = this.GetAttributeValue( attr.Key );
-                    if ( value.IsNotNullOrWhitespace() )
+                    if ( value.IsNotNullOrWhiteSpace() )
                     {
                         mediumAttributes.Add( attr.Key, GetAttributeValue( attr.Key ) );
                     }

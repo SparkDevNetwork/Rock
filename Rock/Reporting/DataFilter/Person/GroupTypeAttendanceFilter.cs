@@ -24,6 +24,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.Person
@@ -109,7 +110,7 @@ namespace Rock.Reporting.DataFilter.Person
             string[] options = selection.Split( '|' );
             if ( options.Length >= 4 )
             {
-                var groupType = Rock.Cache.CacheGroupType.Get( options[0].AsGuid() );
+                var groupType = GroupTypeCache.Get( options[0].AsGuid() );
 
                 ComparisonType comparisonType = options[1].ConvertToEnum<ComparisonType>( ComparisonType.GreaterThanOrEqualTo );
                 bool includeChildGroups = options.Length > 4 ? options[4].AsBoolean() : false;

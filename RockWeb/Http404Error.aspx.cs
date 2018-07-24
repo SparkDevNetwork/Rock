@@ -24,7 +24,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Model;
 using Rock.Web;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 public partial class Http404Error : System.Web.UI.Page
 {
@@ -36,7 +36,7 @@ public partial class Http404Error : System.Web.UI.Page
     protected void Page_Init(object sender, EventArgs e)
     {
         // Check to see if exception should be logged
-        if ( CacheGlobalAttributes.Get().GetValue( "Log404AsException" ).AsBoolean(true) )
+        if ( GlobalAttributesCache.Get().GetValue( "Log404AsException" ).AsBoolean(true) )
         {
             ExceptionLogService.LogException( new Exception( string.Format( "404 Error: {0} - Referred from: {1}", Request.Url.AbsoluteUri, Request.UrlReferrer != null ? Request.UrlReferrer.ToString() : "Direct Link" ) ), Context );
         }
@@ -64,7 +64,7 @@ public partial class Http404Error : System.Web.UI.Page
             form1.Action = "/";
         
             // try to get site's 404 page
-            CacheSite site = CacheSite.GetSiteByDomain(Request.Url.Host);
+            SiteCache site = SiteCache.GetSiteByDomain(Request.Url.Host);
             if ( site != null && site.PageNotFoundPageId.HasValue )
             {
                 site.RedirectToPageNotFoundPage();

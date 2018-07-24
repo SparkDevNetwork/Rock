@@ -25,7 +25,7 @@ using System.Web.UI.WebControls;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -151,7 +151,7 @@ namespace Rock.Reporting.DataSelect.Person
                 phoneNumberTypeValueGuid = Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid();
             }
 
-            int phoneNumberTypeValueId = CacheDefinedValue.Get( phoneNumberTypeValueGuid.Value ).Id;
+            int phoneNumberTypeValueId = DefinedValueCache.Get( phoneNumberTypeValueGuid.Value ).Id;
 
             // NOTE: This actually selects the entire PhoneNumber record instead of just one field. This is done intentionally so that the Grid will call the .ToString() method of PhoneNumber which formats it correctly
             var personPhoneNumberQuery = new PersonService( context ).Queryable()
@@ -171,7 +171,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             RockDropDownList phoneNumberTypeList = new RockDropDownList();
             phoneNumberTypeList.Items.Clear();
-            foreach (var value in CacheDefinedType.Get(Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid()).DefinedValues.OrderBy( a => a.Order).ThenBy(a => a.Value))
+            foreach (var value in DefinedTypeCache.Get(Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid()).DefinedValues.OrderBy( a => a.Order).ThenBy(a => a.Value))
             {
                 phoneNumberTypeList.Items.Add( new ListItem( value.Value.EndsWith( "Phone" ) ? value.Value : value.Value + " Phone", value.Guid.ToString() ) );
             }

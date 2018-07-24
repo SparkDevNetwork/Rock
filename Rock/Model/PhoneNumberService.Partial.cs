@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -88,7 +89,7 @@ namespace Rock.Model
         /// <returns></returns>
         public PhoneNumber GetNumberByPersonIdAndType( int personId, string definedValueGuid)
         {
-            int mobilePhoneTypeId = Rock.Cache.CacheDefinedValue.Get( definedValueGuid ).Id;
+            int mobilePhoneTypeId = DefinedValueCache.Get( definedValueGuid ).Id;
             return Queryable().Where( p => p.PersonId == personId && p.NumberTypeValueId == mobilePhoneTypeId ).FirstOrDefault();
         }
     }
