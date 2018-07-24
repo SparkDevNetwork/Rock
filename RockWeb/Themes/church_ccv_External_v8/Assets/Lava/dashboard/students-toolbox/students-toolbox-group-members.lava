@@ -39,6 +39,16 @@
 
                 <div id="studentRoster" class="collapse in">
 
+                    {% assign groupTextNumbers = '' %}
+
+                    {% for member in group.Members %}
+                        {% assign tempCell = member.Person | PhoneNumber:'Mobile' %}
+                        {% unless groupTextNumbers contains tempCell %}
+                            {% capture temp %}{{ groupTextNumbers }}{{ tempCell }};{% endcapture %}
+                            {% assign groupTextNumbers = temp %}
+                        {% endunless %}
+                    {% endfor %}
+
                     <div class="group-header">
                         <a href="/page/1751?group={{ group.Id }}">
                             <div class="group-header-content">
@@ -51,7 +61,7 @@
                         </a>
                     </div>
 
-                    {% assign groupMembersSorted = group.Members | Sort:'GroupMemberStatus', 'desc' %}
+                    {% assign groupMembersSorted = group.Members | Sort:'GroupMemberStatus','desc' %}
 
                     {% comment %} Render Group Members {% endcomment %}
                     {% for member in groupMembersSorted %}
@@ -81,9 +91,9 @@
                         {% assign personIndex = forloop.index %}
 
                         {% assign memberStatus = '' %}
-                        {% if member.GroupMemberStatus !=1 %}
+                        {% unless member.GroupMemberStatus == 1 %}
                             {% assign memberStatus = 'row-highlight' %}
-                        {% endif %}
+                        {% endunless %}
 
                         <div class="person-row {{ memberStatus }}">
                             <div class="person-row-summary">
@@ -92,30 +102,33 @@
                                 </div>
                                 <div class="person-info">
                                     <div>
-                                        <a href="/toolbox/edit-group-member?GroupMemberId={{ member.Id }}&AdminPersonId={{ CurrentPerson.Id }}"> <h5 style="padding: 0;">{{ member.Person.FullName }}</h5> </a> 
+                                        <a href="/student-toolbox/edit-group-member?GroupMemberId={{ member.Id }}&AdminPersonId={{ CurrentPerson.Id }}"> <h5 style="padding: 0;">{{ member.Person.FullName }}</h5> </a> 
                                     </div>
-                                    {% if member.GroupMemberStatus != 1 %}
+                                    {% unless member.GroupMemberStatus == 1 %}
                                         <p style="padding: 0;"><small>{{ member.GroupMemberStatus }}</small></p>
-                                    {% endif %}
+                                    {% endunless %}
                                 </div> 
                                 <div class="person-contact">
                                     {% assign cellPhone = member.Person | PhoneNumber:'Mobile' %}
                                     {% assign homePhone = member.Person | PhoneNumber:'Main/Home' %}
 
                                     {% if cellPhone %}
-                                        <a href="tel:+1{{cellPhone}}">
-                                        <i class="mdi mdi-phone dashboard-icon tooltip-phone-person"></i>
+                                        <a href="sms:+1{{ cellPhone }}">
+                                            <i class="mdi mdi-message dashboard-icon tooltop-text-person"></i>
+                                        </a>
+                                        <a href="tel:+1{{ cellPhone }}">
+                                            <i class="mdi mdi-phone dashboard-icon tooltip-phone-person"></i>
                                         </a>
                                     {% elseif homePhone %}
-                                        <a href="tel:+1{{homePhone}}">
-                                        <i class="mdi mdi-phone dashboard-icon tooltip-phone-person"></i>
+                                        <a href="tel:+1{{ homePhone }}">
+                                            <i class="mdi mdi-phone dashboard-icon tooltip-phone-person"></i>
                                         </a>
                                     {% endif %}
                                     <a href="/page/1751?person={{ member.Person.Id }}">
                                         <i class="mdi mdi-email dashboard-icon tooltip-email-person"></i>
                                     </a>
-                                    <button type="button" data-toggle="collapse" data-target="#personDetails{{ personIndex }}" class="person-details-toggle">
-                                        <i id="personDetailsToggle{{ personIndex }}" class="mdi mdi-chevron-down dashboard-icon tooltip-person-details" style="color: #7A1315"></i>
+                                    <button id="personDetailsToggle{{ personIndex }}" type="button" data-toggle="collapse" data-target="#personDetails{{ personIndex }}" class="person-details-toggle">
+                                        <i id="personDetailsToggleChevron{{ personIndex }}" class="mdi mdi-chevron-down dashboard-icon tooltip-person-details" style="color: #7A1315"></i>
                                     </button>
                                 </div>
                             </div>
@@ -138,6 +151,24 @@
                                     {% if member.Person.BirthDate != null and member.Person.BirthDate != '' %}
                                         <p>Birthday: {{ member.Person.BirthDate | Date:'M/d/yyyy' }} ({{ member.Person.Age }} yrs. old)</p>
                                     {% endif %}
+                                    {% if member.Person.Age < 18 %}                                    
+                                        {% assign memberParents = member.Person | Parents %}
+                                        {% if memberParents %}
+                                            {% for memberParent in memberParents %}
+                                                {% comment %} Add parent to parentRoster {% endcomment %}
+                                                {% assign memberParentId = memberParent.Id | AsString %}
+                                                {% unless parentRoster contains memberParentId %}
+                                                    {% capture temp %}{{ parentRoster }}{{ memberParent.Id }},{% endcapture %}
+                                                    {% assign parentRoster = temp %}
+                                                {% endunless %}
+                                                {% if forloop.index == 1 %}
+                                                    <p>Parents: {{ memberParent.FullName }}</p>
+                                                {% else %}
+                                                    <p class="person-details-additional-parent">{{ memberParent.FullName }}</p>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% endif %}
                                     {% assign addressHome = member.Person | Address:'Home' %}
                                     {% if addressHome != null and addressHome != '' %}
                                         <p>Address: {{ member.Person | Address:'Home','[[Street1]]' }}</p>
@@ -153,10 +184,10 @@
                         <script>
                             // on details collapse change toggle icon
                             $('#personDetails{{ personIndex }}').on('shown.bs.collapse', function() {
-                                toggleChevron('#personDetailsToggle{{ personIndex }}');
+                                toggleChevron('#personDetailsToggleChevron{{ personIndex }}');
                             });
                             $('#personDetails{{ personIndex }}').on('hidden.bs.collapse', function() {
-                                toggleChevron('#personDetailsToggle{{ personIndex }}');
+                                toggleChevron('#personDetailsToggleChevron{{ personIndex }}');
                             });
                             // on details click, query badges API for person selected
                             $('#personDetailsToggle{{ personIndex }}').on('click', function() {
@@ -253,18 +284,18 @@
 
                 </div>
 
-                {% if parentRoster != '' %}
-
-                    <div class="group-header roster-header">
-                        <h5>Parent Roster</h5>
-                        <div class="group-name-row-buttons">
-                            <button type="button" data-toggle="collapse" data-target="#parentRoster" class="group-details-toggle">
-                                <i id="parentRosterToggle" class="mdi mdi-chevron-down group-header-icon tooltip-group-details"></i>
-                            </button>
-                        </div>
+                <div class="group-header roster-header">
+                    <h5>Parent Roster</h5>
+                    <div class="group-name-row-buttons">
+                        <button type="button" data-toggle="collapse" data-target="#parentRoster" class="group-details-toggle">
+                            <i id="parentRosterToggle" class="mdi mdi-chevron-down group-header-icon tooltip-group-details"></i>
+                        </button>
                     </div>
+                </div>
 
-                    <div id="parentRoster" class="collapse">
+                <div id="parentRoster" class="collapse">
+
+                    {% if parentRoster != '' %}
 
                         <div class="group-header">
                             <a href="/page/1751?person={{ parentRoster | Replace:',','%2C' }}">
@@ -285,7 +316,7 @@
 
                             {% comment %} Get parent object {% endcomment %}
                             {% assign rosterParent = id | PersonById %}
-                        
+                            
                             {% assign personIndex = forloop.index %}
 
                             <div class="person-row">
@@ -295,7 +326,7 @@
                                     </div>
                                     <div class="person-info">
                                         <div>
-                                        <a href="/toolbox/edit-group-member?GroupMemberId={{ rosterParent.Id }}&AdminPersonId={{ CurrentPerson.Id }}"> <h5>{{ rosterParent.FullName }}</h5> </a> 
+                                            <h5>{{ rosterParent.FullName }}</h5> 
                                         </div>
                                     </div> 
                                     <div class="person-contact">
@@ -303,12 +334,15 @@
                                         {% assign homePhone = rosterParent | PhoneNumber:'Main/Home' %}
 
                                         {% if cellPhone %}
+                                            <a href="sms:+1{{ cellPhone }}">
+                                                <i class="mdi mdi-message dashboard-icon tooltop-text-person"></i>
+                                            </a>
                                             <a href="tel:+1{{cellPhone}}">
-                                            <i class="mdi mdi-phone dashboard-icon tooltip-phone-person"></i>
+                                                <i class="mdi mdi-phone dashboard-icon tooltip-phone-person"></i>
                                             </a>
                                         {% elseif homePhone %}
                                             <a href="tel:+1{{homePhone}}">
-                                            <i class="mdi mdi-phone dashboard-icon tooltip-phone-person"></i>
+                                                <i class="mdi mdi-phone dashboard-icon tooltip-phone-person"></i>
                                             </a>
                                         {% endif %}
                                         <a href="/page/1751?person={{ rosterParent.Id }}">
@@ -432,7 +466,7 @@
                                             });
                                         }
                                     }
-                                
+                                    
                                     // Check if query has already been made
                                     if(!$('#parentDetailsToggle{{ personIndex }}').hasClass('startingpoint-data-received')) {
                                         // Start loading animation
@@ -465,8 +499,16 @@
                             </script>
 
                         {% endfor %}
-                    </div>
-                {% endif %}
+                    {% else %}
+                        <div class="person-row">
+                            <div class="person-row-summary">
+                                <div class="person-info">
+                                    <p>No Parents to display</p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
             </div>
         </div>
 
@@ -475,19 +517,31 @@
 
 <script>
     // on details collapse change toggle icon - student roster
-    $('#studentRoster').on('shown.bs.collapse', function() {
-        toggleChevron('#studentRosterToggle');
+    $('#studentRoster').on('shown.bs.collapse', function(e) {
+        var target = $(e.target);
+        if (target.is('#studentRoster')) {
+            toggleChevron('#studentRosterToggle');
+        }
     });
-    $('#studentRoster').on('hidden.bs.collapse', function() {
-        toggleChevron('#studentRosterToggle');
+    $('#studentRoster').on('hidden.bs.collapse', function(e) {
+        var target = $(e.target);
+        if (target.is('#studentRoster')) {
+            toggleChevron('#studentRosterToggle');
+        }
     });
     
     // on details collapse change toggle icon - parent roster
-    $('#parentRoster').on('shown.bs.collapse', function() {
-        toggleChevron('#parentRosterToggle');
+    $('#parentRoster').on('shown.bs.collapse', function(e) {
+        var target = $(e.target);
+        if (target.is('#parentRoster')) {
+            toggleChevron('#parentRosterToggle');
+        }
     });
-    $('#parentRoster').on('hidden.bs.collapse', function() {
-        toggleChevron('#parentRosterToggle');
+    $('#parentRoster').on('hidden.bs.collapse', function(e) {
+        var target = $(e.target);
+        if (target.is('#parentRoster')) {
+            toggleChevron('#parentRosterToggle');
+        }
     });
 
     // Update starting point badge icon and relative popover

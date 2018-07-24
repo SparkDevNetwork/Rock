@@ -51,9 +51,11 @@
             WHERE (g.GroupTypeId = 93 OR g.GroupTypeId = 55) AND LOWER(g.Name) LIKE '%camp%coach%' AND YEAR(g.CreatedDateTime) = YEAR(GETDATE())
             AND gm.PersonId = @PersonId
         {% endsql %}
+
+        {% assign size = results | Size %}
     
         {% if size > 0 %}
-            <a href="/page/1804?ZoneLayout=Mobile">Camp Decision Tracker</a>
+            <a href="/camp-decision-tracker?ZoneLayout=Mobile">{{ 'Now' | Date:'yyyy' }} Camp Decision Tracker</a>
         {% endif %}
     </div>
 </div>

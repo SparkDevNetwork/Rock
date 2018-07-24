@@ -28,23 +28,6 @@
     {% endif %}
 {% endunless %}
 
-{% comment %} Check if person is an editor/admin to show/hide Preview Guide Link {% endcomment %}
-{% assign isEditor = false %}
-
-{% assign editors = CurrentPerson | Group: "1760271" %}
-{% for editor in editors %}
-    {% if editor.Id %}
-        {% assign isEditor = true %}
-    {% endif %}
-{% endfor %}
-
-{% assign admins = CurrentPerson | Group: "2" %}
-{% for admin in admins %}
-    {% if admin.Id %}
-        {% assign isEditor = true %}
-    {% endif %}
-{% endfor %}
-
 <script>
     // adds on "onload" hook to the window.onload function chain
     var oldonload = window.onload;
@@ -109,20 +92,18 @@
 
 <div class="toolbox-subnav-desktop">
     <div id="coach-guide-button" onClick="linkClicked(this, 'coach-guide')">Coach Guide</div>
-    {% if isEditor %}
-        <div id="preview-guide-button" onClick="linkClicked(this, 'preview-guide')">Preview Coach Guide</div>
-    {% endif %}
     <div id="training-center-button" onClick="linkClicked(this, 'training-center')">Training Center</div>
+    <div id="baptisms-button" onClick="linkClicked(this, 'baptisms')">Baptisms</div>
+    <div id="decisions-button" onClick="linkClicked(this, 'decisions')">Camp Tools</div>
     <div id="group-details-button" onClick="linkClicked(this, 'group-details', false)">Group Details</div>
 </div>
 
 <div class="toolbox-subnav-mobile">
     <div class="toolbox-subnav-mobile-items">
         <div id="coach-guide-mobile-button" onClick="linkClicked(this, 'coach-guide')" class="subnav-item toolbox-subnav-div-selected">Coach Guide</div>
-        {% if isEditor %}
-            <div id="preview-guide-mobile-button" onClick="linkClicked(this, 'preview-guide')">Preview Coach Guide</div>
-        {% endif %}
         <div id="training-center-mobile-button" onClick="linkClicked(this, 'training-center')" class="subnav-item">Training Center</div>
+        <div id="baptisms-mobile-button" onClick="linkClicked(this, 'baptisms')" class="subnav-item">Baptisms</div>
+        <div id="decisions-mobile-button" onClick="linkClicked(this, 'decisions')" class="subnav-item">Camp Tools</div>
         <div id="group-details-button" onClick="linkClicked(this, 'group-details', false)" class="subnav-item">Group Details</div>
     </div>
 </div>

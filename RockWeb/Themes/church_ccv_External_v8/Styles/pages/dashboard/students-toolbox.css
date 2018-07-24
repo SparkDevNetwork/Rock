@@ -47,7 +47,7 @@
 
 .toolbox-subnav-desktop {
     display: flex;
-    padding: 0px 30px 18px 15px;
+    padding: 0px 0px 0px 20px;
     flex-wrap: wrap;
 }
 
@@ -55,7 +55,7 @@
     text-decoration: none;
     text-transform: uppercase;
     color: #707270;
-    padding: 0 15px;
+    padding: 0 10px;
     font-family: Heebo;
     font-size: 14px;
     font-weight: 900;
@@ -96,7 +96,7 @@
 
 /* Coach Guide */
 .guide {
-    padding: 30px;
+    padding: 20px 30px;
 }
 
 .guide-header {
@@ -108,24 +108,55 @@
     line-height: unset;
 }
 
+.nav-buttons {
+    display: flex;
+    justify-content: flex-end;
+    padding-bottom: 20px;
+}
+
+.nav-buttons .btn {
+    min-width: unset;
+    max-width: 200px;
+    padding: 0 10px;
+    margin-left: 10px;
+}
+
 /* Phone */
 @media screen and (max-width: 500px) {   
     .guide-header {
         flex-direction: column;
     }
 
+    .guide-header h2 {
+        font-size: 28px;
+        line-height: 30px;
+        padding: 0;
+    }
+
     .guide {
-        padding-bottom: 0;
+        padding: 10px;
+        padding-bottom: unset;
     }
 
     .guide-header .text-muted {
         padding-top: 10px;
-        align-self: flex-end;
+        align-self: flex-start;
     }
 
     .guide h1 {
         font-size: 26px;
         line-height: 31px;
+    }
+
+    .nav-buttons {
+        flex-direction: column;
+        justify-content: center;
+    }
+    
+    .nav-buttons .btn {
+        min-width: 100%;
+        max-width: 100%;
+        margin-left: unset;
     }
 
 }
@@ -156,6 +187,14 @@
 
 }
 /* End Training Center */
+
+/* Camp Tools */
+.decisions-panel h1 {
+    font-size: 34px;
+    line-height: 36px;
+}
+
+/* End Camp Tools */
 
 /* Group Details */
 .roster-header {
@@ -211,6 +250,11 @@
 
 .group-schedule .btn {
     float: right;
+}
+
+/* Override Dashboard */
+.dashboard-icon {
+    margin: 0 5px;
 }
 
 /* Mobile Styling */
@@ -285,7 +329,7 @@
         padding-left: 10px;
     }
 
-    .toolbox-card-content.group-details-panel {
+    .toolbox-card-content.baptisms-panel, .toolbox-card-content.group-details-panel {
         margin: 0 20px 20px 20px;
     }
 
@@ -478,6 +522,10 @@
 
 .person-row-details .person-details-additional-child {
     margin-left: 34px;
+}
+
+.person-row-details .person-details-additional-parent {
+    margin-left: 54px;
 }
 
 .person-row-details .person-details-additional-address {

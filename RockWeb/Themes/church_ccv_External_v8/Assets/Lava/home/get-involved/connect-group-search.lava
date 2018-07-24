@@ -23,7 +23,22 @@
                                 </div>
                                 <div class="person-info">
                                   
-                                        <h5>{{ group.Name }} </h5> <p>{{ group.Schedule.FriendlyScheduleText }}</p>
+                                        <h5>{{ group.Name }} </h5> 
+                                        <p>{{ group.Schedule.FriendlyScheduleText }}</p>
+                                {% for attribute in group.AttributeValues %}
+                                
+                                    {% if attribute.Value != empty %}
+                                         {% if attribute.AttributeName != "Family Picture" and attribute.AttributeName != "Group Picture" %}
+                                            {% if attribute.AttributeName == "Group Filters" %}
+                                                {% if attribute.ValueFormatted == "Childcare Provided" %}
+                                                    <p>Childcare Provided</p>
+                                                {% elseif attribute.ValueFormatted == "Young Adults" %}  
+                                                    <p>Young Adults</p>  
+                                                {% endif %}
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endif %}
+                                {% endfor %}
                                     
                                 </div>
                         
@@ -48,13 +63,20 @@
                             </div>
                             <div class="details-right-card">
                                 {% for attribute in group.AttributeValues %}
+                                
                                     {% if attribute.Value != empty %}
                                         {% if attribute.AttributeName != "Family Picture" and attribute.AttributeName != "Group Picture" %}
                                             {% if attribute.AttributeName == "Group Description" %}
                                                 <h5>Description</h5>
                                                 {{ attribute.ValueFormatted }}
-                                            {% else %}
-                                              
+                                            {% elseif attribute.AttributeName == "Childcare Description" %}    
+                                                {% assign tempChildCareDescription = attribute.ValueFormatted %}   
+                                            {% endif %}
+                                            {% if attribute.AttributeName == "Group Filters" %}
+                                                {% if attribute.ValueFormatted == "Childcare Provided" %}
+                                                   <p></p>
+                                                   <p>{{ tempChildCareDescription }}</p>
+                                                {% endif %}
                                             {% endif %}
                                         {% endif %}
                                     {% endif %}

@@ -1,0 +1,23 @@
+.main-feature {
+    background-color: black;
+}
+
+.title p, .title h3 
+{ 
+    color: #000; 
+}
+
+@media screen and (min-width: 501px) {
+    .main-feature {
+        padding-top: 125px;
+        height: 350px;
+    }
+
+    .background-card {
+        min-height: 500px;
+    }
+}
+
+#subnavbar-bg { 
+    display: none;
+}

@@ -1,0 +1,11 @@
+﻿.rock-blank {   
+    background-color: #212121;
+}
+
+body, p, h2 {
+    color: #eee;
+}
+
+p {
+    font-weight: 0;
+}

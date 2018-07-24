@@ -12,12 +12,13 @@
     <div class="announcement-bar">
         <btn id="ccvlive" class="btn btn-default btn-live">Live</btn>CCV is live!<span> <a href="{{ liveURL }}">Tune into the sermon now ></a></span>
     </div>
+{% else %}
+    {% assign upcomingMaintenance = 'Global' | Attribute:'UpcomingMaintenance' %}
+
+    {% unless upcomingMaintenance == '' %}
+        <div class="announcement-bar">
+            CCV's website will be temporarily unavailable for scheduled maintenance starting at {{ upcomingMaintenance }}.
+        </div>
+    {% endunless %}
 {% endif %}
 
-{% assign upcomingMaintenance = 'Global' | Attribute:'UpcomingMaintenance' %}
-
-{% unless upcomingMaintenance == '' %}
-    <div class="announcement-bar">
-        CCV's website will be offline for maintenance starting at {{ upcomingMaintenance }}.
-    </div>
-{% endunless %}

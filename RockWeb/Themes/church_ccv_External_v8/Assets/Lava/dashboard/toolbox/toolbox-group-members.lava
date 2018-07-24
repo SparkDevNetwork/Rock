@@ -35,19 +35,30 @@
                     </a>
                 </div>
 
+                {% assign groupMembersSorted = group.Members | Sort:'GroupMemberStatus','desc' %}
+
+
                 {% comment %} Render Group Members {% endcomment %}
-                {% for member in group.Members %}
+                {% for member in groupMembersSorted %}
                     {% assign personIndex = forloop.index %}
 
-                    <div class="person-row">
+                    {% assign memberStatus = '' %}
+                    {% unless member.GroupMemberStatus == 1 %}
+                        {% assign memberStatus = 'row-highlight' %}
+                    {% endunless %}
+
+                    <div class="person-row {{ memberStatus }}">
                         <div class="person-row-summary">
                             <div>
                                 <img src="{{ member.Person.PhotoUrl }}" width="60" height="60" style="border-radius: 50%;">
                             </div>
                             <div class="person-info">
                                 <div>
-                                  <a href="/toolbox/edit-group-member?GroupMemberId={{ member.Id }}&AdminPersonId={{ CurrentPerson.Id }}"> <h5>{{ member.Person.FullName }}</h5> </a> 
+                                    <a href="/toolbox/edit-group-member?GroupMemberId={{ member.Id }}&AdminPersonId={{ CurrentPerson.Id }}"> <h5>{{ member.Person.FullName }}</h5> </a> 
                                 </div>
+                                {% unless member.GroupMemberStatus == 1 %}
+                                    <p style="padding: 0;"><small>{{ member.GroupMemberStatus }}</small></p>
+                                {% endunless %}
                             </div> 
                             <div class="person-contact">
                                 {% assign cellPhone = member.Person | PhoneNumber:'Mobile' %}
@@ -65,8 +76,8 @@
                                 <a href="/page/1751?person={{ member.Person.Id }}">
                                     <i class="mdi mdi-email dashboard-icon tooltip-email-person"></i>
                                 </a>
-                                <button type="button" data-toggle="collapse" data-target="#personDetails{{ personIndex }}" class="person-details-toggle">
-                                    <i id="personDetailsToggle{{ personIndex }}" class="mdi mdi-chevron-down dashboard-icon tooltip-person-details" style="color: #7A1315"></i>
+                                <button id="personDetailsToggle{{ personIndex }}" type="button" data-toggle="collapse" data-target="#personDetails{{ personIndex }}" class="person-details-toggle">
+                                    <i id="personDetailsToggleChevron{{ personIndex }}" class="mdi mdi-chevron-down dashboard-icon tooltip-person-details" style="color: #7A1315"></i>
                                 </button>
                             </div>
                         </div>
@@ -119,10 +130,10 @@
                     <script>
                         // on details collapse change toggle icon
                         $('#personDetails{{ personIndex }}').on('shown.bs.collapse', function() {
-                            toggleChevron('#personDetailsToggle{{ personIndex }}');
+                            toggleChevron('#personDetailsToggleChevron{{ personIndex }}');
                         });
                         $('#personDetails{{ personIndex }}').on('hidden.bs.collapse', function() {
-                            toggleChevron('#personDetailsToggle{{ personIndex }}');
+                            toggleChevron('#personDetailsToggleChevron{{ personIndex }}');
                         });
                         // on details click, query badges API for person selected
                         $('#personDetailsToggle{{ personIndex }}').on('click', function() {
@@ -136,7 +147,6 @@
                                 var currentPersonGuid = '{{ member.Person.Guid }}';
                                 if (currentPersonGuid !== '') {
                                     $.getJSON('/api/CCV/Badges/StepsBar/'+currentPersonGuid, function(data, status){
-                                        console.log('#personDetailsToggle{{ personIndex }} Badges: ', data);
                                         for (var key in data) {
                                             if (data.hasOwnProperty(key)) {
                                                 var keyData = data[key];

@@ -1,20 +1,41 @@
 {% assign Series = PodcastSeries %}
-{% assign currentDate = 'Now' | Date:'yyyyMMdd' %}
 
-<div id="series-details" class="series">
-    <div class="series-description">
-        <p>{{ Series.Description }}</p>
-        <p class="">{{ Series.Attributes.ExtraDetails }}</p>
-        <br/>
+{% contentchannel where:'Id == "{{ Series.Id }}"' %}
+	{% for item in contentchannelItems %}
+		{% assign seriesObject = item %}
+	{% endfor %}
+{% endcontentchannel %}
+
+{% if seriesObject.ContentChannelTypeId == 8 %}
+    {% assign currentDate = 'Now' | Date:'yyyyMMdd' %}
+
+    <div id="series-details" class="series">
+        <div class="series-description">
+            <p>{{ Series.Description }}</p>
+            <p class="">{{ Series.Attributes.ExtraDetails }}</p>
+            <br/>
+        </div>
+        <h4>Messages in this Series</h4>
+        <ol class="messages">
+        {% for Message in Series.Messages reversed %}
+            {% assign messageActiveDate = '' %}
+            {% assign messageActiveDate = Message.Date | Date:'yyyyMMdd' %}
+            {% if messageActiveDate != empty and messageActiveDate <= currentDate %}
+            <li><a href="{{ LinkedPages.MessageDetailPage }}?MessageId={{ Message.Id }}">{{ Message.Name }}</a></li>
+            {% endif %}
+        {% endfor %}
+        </ol>
     </div>
-    <h4>Messages in this Series</h4>
-    <ol class="messages">
-    {% for Message in Series.Messages reversed %}
-        {% assign messageActiveDate = '' %}
-        {% assign messageActiveDate = Message.Date | Date:'yyyyMMdd' %}
-        {% if messageActiveDate != empty and messageActiveDate <= currentDate %}
-        <li><a href="{{ LinkedPages.MessageDetailPage }}?MessageId={{ Message.Id }}">{{ Message.Name }}</a></li>
-        {% endif %}
-    {% endfor %}
-    </ol>
-</div>
+{% else %}
+	{% comment %} Invalid series id, redirect unless admin {% endcomment %}
+	{% assign groupMembers = CurrentPerson | Group: "2",'All' %}
+	{% for member in groupMembers %}
+		{% assign admin = member  %}
+	{% endfor %}
+	
+	{% if admin %}
+        <p class="alert alert-warning">If you could not edit you would be redirected to: <a href="/watch/messages">Messages</a> because the series id is invalid</p>
+    {% else %}
+		{{ '/watch/messages' | PageRedirect }}
+    {% endif %}
+{% endif %}

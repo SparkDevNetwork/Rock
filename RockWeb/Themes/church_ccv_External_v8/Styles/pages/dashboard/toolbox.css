@@ -598,6 +598,10 @@
     flex-direction: column;
 }
 
+.row-highlight {
+    background-color: #f5f5f5;
+}
+
 .person-row-details {
     display: flex;
     flex-direction: column;

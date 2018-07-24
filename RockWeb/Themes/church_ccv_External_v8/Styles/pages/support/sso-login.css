@@ -1,0 +1,69 @@
+.main-feature {
+    background-color: black;
+}
+
+@media screen and (min-width: 501px) {
+    .main-feature {
+        padding-top: 125px;
+        height: 350px;
+    }
+
+    .background-card {
+        padding-top: 75px;
+        padding-bottom: 75px;
+    }
+}
+
+#subnavbar-bg { 
+    display: none;
+}
+
+.facebook {
+    background-color: #3B5998;
+    color: #FFFFFF;
+}
+
+/* SSO Login page*/
+.sso-login-wrapper {
+	display: flex;
+    flex-direction: column;
+}
+
+.sso-createaccount-panel-wrapper {
+	display: flex;
+    flex-direction: column;
+	margin-left: auto;
+	margin-right: auto;
+	max-width: 756px;
+	margin-top: 100px;
+	padding: 25px;
+}
+
+.sso-entry-form {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+}
+
+.sso-entry-row {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+}
+
+.sso-entry-col {
+	width: 300px;
+}
+
+#sso-ca-form-result-panel {
+	max-width: 350px;
+}
+
+#sso-login-panel-title {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
