@@ -130,6 +130,24 @@ namespace Rock.Cache
         }
 
         /// <summary>
+        /// Returns the first defined value that has the specified Value (case-insensitive)
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public CacheDefinedValue GetDefinedValueFromValue( string value )
+        {
+            if ( _definedValueIdsByValue == null )
+            {
+                // create case-insensitive dictionary 
+                _definedValueIdsByValue = DefinedValues.Where( a => !string.IsNullOrEmpty( a.Value ) ).GroupBy( a => a.Value.ToLower() ).ToDictionary( k => k.Key, v => v.FirstOrDefault().Id, StringComparer.OrdinalIgnoreCase );
+            }
+
+            int? definedValueId = _definedValueIdsByValue.GetValueOrNull( value );
+
+            return definedValueId.HasValue ? CacheDefinedValue.Get( definedValueId.Value ) : null;
+        }
+
+        /// <summary>
         /// Gets the defined values.
         /// </summary>
         /// <value>
@@ -170,7 +188,8 @@ namespace Rock.Cache
                 return definedValues;
             }
         }
-        private List<int> _definedValueIds;
+        private List<int> _definedValueIds = null;
+        private Dictionary<string, int> _definedValueIdsByValue = null;
 
         /// <summary>
         /// Reloads the defined values.
@@ -179,6 +198,7 @@ namespace Rock.Cache
         {
             // set definedValueIds to null so it load them all at once on demand
             _definedValueIds = null;
+            _definedValueIdsByValue = null;
         }
 
         #endregion

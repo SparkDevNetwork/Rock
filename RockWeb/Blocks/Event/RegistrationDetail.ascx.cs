@@ -378,14 +378,8 @@ namespace RockWeb.Blocks.Event
 
                         if ( groupChanged && Registration.GroupId.HasValue )
                         {
-                            var previousRegistrantPersonIds = Registration.Registrants
-                                .Where( r => r.PersonAlias != null )
-                                .Select( r => r.PersonAlias.PersonId )
-                                .ToList();
-
                             foreach ( var registrant in Registration.Registrants.Where( r => !r.GroupMemberId.HasValue ) )
                             {
-                                Registration.SavePersonNotesAndHistory( new PersonService( new RockContext() ).Get( ppPerson.PersonId ?? 0 ), CurrentPersonAliasId, previousRegistrantPersonIds );
                                 AddRegistrantToGroup( registrant.Id );
                             }
 

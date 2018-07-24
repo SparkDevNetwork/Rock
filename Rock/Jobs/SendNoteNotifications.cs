@@ -340,7 +340,7 @@ namespace Rock.Jobs
                         // make sure a person doesn't get a notification on a note that they wrote
                         noteList = noteList.Where( a => a.EditedByPersonAlias?.PersonId != personToNotify.Id ).ToList();
 
-                        if ( !string.IsNullOrEmpty( personToNotify.Email ) && personToNotify.IsEmailActive && noteList.Any() )
+                        if ( !string.IsNullOrEmpty( personToNotify.Email ) && personToNotify.IsEmailActive && personToNotify.EmailPreference != EmailPreference.DoNotEmail && noteList.Any() )
                         {
                             var mergeFields = new Dictionary<string, object>( _defaultMergeFields );
                             mergeFields.Add( "Person", personToNotify );

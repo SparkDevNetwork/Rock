@@ -133,9 +133,28 @@ namespace Rock.Cache
             // Do any postcache processing that this item cache type may need to do
             item.PostCached();
 
+            AddToAllIds( key );
+        }
+
+        /// <summary>
+        /// Ensure that the Key is part of the AllIds list
+        /// </summary>
+        /// <param name="key">The key.</param>
+        private static void AddToAllIds( string key )
+        {
             // Get the dictionary of all item ids
-            var allKeys = RockCacheManager<List<string>>.Instance.Cache.Get( AllKey, _AllRegion ) ?? new List<string>();
-            if ( allKeys.Contains( key ) ) return;
+            var allKeys = RockCacheManager<List<string>>.Instance.Cache.Get( AllKey, _AllRegion );
+            if ( allKeys == null )
+            {
+                // All hasn't been asked for yet, so it doesn't need to be updated. Leave it null
+                return;
+            }
+
+            if ( allKeys.Contains( key ) )
+            {
+                // already has it so no need to update the cache
+                return;
+            }
 
             // If the key is not part of the dictionary all ready
             lock ( _obj )
@@ -144,7 +163,6 @@ namespace Rock.Cache
                 allKeys.Add( key, true );
                 RockCacheManager<List<string>>.Instance.AddOrUpdate( AllKey, _AllRegion, allKeys );
             }
-
         }
 
         /// <summary>
@@ -206,7 +224,7 @@ namespace Rock.Cache
         }
 
         /// <summary>
-        /// Removes the specified key from cache.
+        /// Removes the specified key from cache and from AllIds. Call this if Deleting the object from the database.
         /// </summary>
         /// <param name="key">The key.</param>
         public static void Remove( int key )
@@ -215,14 +233,39 @@ namespace Rock.Cache
         }
 
         /// <summary>
-        /// Removes the specified key from cache.
+        /// Flushes the object from the cache without removing it from AllIds.
+        /// Call this to force the cache to reload the object from the database the next time it is requested. 
         /// </summary>
         /// <param name="key">The key.</param>
-        public static void Remove( string key )
+        internal static void FlushItem( int key )
+        {
+            FlushItem( key.ToString() );
+        }
+
+        internal static void AddToAllIds( int key)
+        {
+            AddToAllIds( key.ToString() );
+        }
+
+        /// <summary>
+        /// Flushes the object from the cache without removing it from AllIds.
+        /// Call this to force the cache to reload the object from the database the next time it is requested. 
+        /// </summary>
+        /// <param name="key">The key.</param>
+        internal static void FlushItem( string key )
         {
             var qualifiedKey = QualifiedKey( key );
 
             RockCacheManager<T>.Instance.Cache.Remove( qualifiedKey );
+        }
+
+        /// <summary>
+        /// Removes the specified key from cache and from AllIds. Call this if Deleting the object from the database.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        public static void Remove( string key )
+        {
+            FlushItem( key );
 
             var allIds = RockCacheManager<List<string>>.Instance.Cache.Get( AllKey, _AllRegion ) ?? new List<string>();
             if ( !allIds.Contains( key ) )

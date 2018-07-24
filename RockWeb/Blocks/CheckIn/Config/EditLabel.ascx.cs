@@ -45,7 +45,9 @@ namespace RockWeb.Blocks.CheckIn.Config
         #region Properties
         private Regex regexPrintWidth = new Regex( @"\^PW(\d+)" );
         private Regex regexPrintHeight = new Regex( @"\^LL(\d+)" );
-        private const string REMOVE_ZPL_CODE = "^JUS";
+
+        // ^JUS will save changes to EEPROM, doing this for each label is not needed, slows printing dramatically, and shortens the printer's memory life.
+        private const string REMOVE_ZPL_CONFIG_UPDATE_CODE = "^JUS";
         #endregion
 
         #region Control Methods
@@ -74,7 +76,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                         if ( binaryFile != null )
                         {
                             lTitle.Text = binaryFile.FileName;
-                            ceLabel.Text = binaryFile.ContentsToString().Replace( REMOVE_ZPL_CODE, string.Empty );
+                            ceLabel.Text = binaryFile.ContentsToString().Replace( REMOVE_ZPL_CONFIG_UPDATE_CODE, string.Empty );
                             SetLabelSize( ceLabel.Text );
                         }
                     }
@@ -137,7 +139,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                     var file = new BinaryFileService( rockContext ).Get( fileId.Value );
                     if ( file != null )
                     {
-                        ceLabel.Text = file.ContentsToString().Replace( REMOVE_ZPL_CODE, string.Empty );
+                        ceLabel.Text = file.ContentsToString().Replace( REMOVE_ZPL_CONFIG_UPDATE_CODE, string.Empty );
                         SetLabelSize( ceLabel.Text );
                         ceLabel.Label = string.Format( file.FileName );
                         btnSave.Text = "Save " + file.FileName;
@@ -160,8 +162,11 @@ namespace RockWeb.Blocks.CheckIn.Config
                     {
                         using ( var stream = new MemoryStream() )
                         {
+                            ceLabel.Text = ceLabel.Text.Replace( REMOVE_ZPL_CONFIG_UPDATE_CODE, string.Empty );
+                            ceLabel.Text = cbForceUTF8.Checked ? ceLabel.Text.Replace( "^CI0", "^CI28" ) : ceLabel.Text;
+
                             var writer = new StreamWriter( stream );
-                            writer.Write( ceLabel.Text.Replace( REMOVE_ZPL_CODE, string.Empty ) );
+                            writer.Write( ceLabel.Text );
                             writer.Flush();
                             stream.Position = 0;
                             binaryFile.ContentStream = stream;
@@ -199,6 +204,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                 var device = new DeviceService( rockContext ).Get( ddlDevice.SelectedValueAsInt() ?? 0 );
                 if ( device != null )
                 {
+                    ceLabel.Text = cbForceUTF8.Checked ? ceLabel.Text.Replace( "^CI0", "^CI28" ) : ceLabel.Text;
                     ZebraPrint.PrintLabel( device.IPAddress, ceLabel.Text );
                 }
             }

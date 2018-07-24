@@ -74,7 +74,6 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         {
             nbNotification.Visible = false;
             pnlToken.Visible = true;
-            imgCheckrImage.Visible = false;
             pnlPackages.Visible = false;
             HideSecondaryBlocks( true );
         }
@@ -239,7 +238,6 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         /// </summary>
         private void ShowDetail()
         {
-            imgCheckrImage.ImageUrl = CheckrConstants.CHECKR_IMAGE_URL;
             string accessToken = null;
             using ( RockContext rockContext = new RockContext() )
             {
@@ -254,7 +252,6 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
             if ( accessToken.IsNullOrWhiteSpace() )
             {
                 pnlToken.Visible = true;
-                imgCheckrImage.Visible = true;
                 pnlPackages.Visible = false;
                 HideSecondaryBlocks( true );
             }

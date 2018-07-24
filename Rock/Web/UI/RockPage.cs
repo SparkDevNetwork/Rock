@@ -1058,6 +1058,12 @@ namespace Rock.Web.UI
                         stopwatchInitEvents.Restart();
                     }
 
+                    // If the block's AttributeProperty values have not yet been verified verify them.
+                    // (This provides a mechanism for block developers to define the needed block
+                    //  attributes in code and have them automatically added to the database)
+                    Page.Trace.Warn( "\tChecking if block attributes need refresh" );
+                    VerifyBlockTypeInstanceProperties();
+
                     // Load the blocks and insert them into page zones
                     Page.Trace.Warn( "Loading Blocks" );
                     var pageBlocks = _pageCache.Blocks;
@@ -1157,27 +1163,7 @@ namespace Rock.Web.UI
 
                                     // If the blocktype's security actions have not yet been loaded, load them now
                                     block.BlockType.SetSecurityActions( blockControl );
-
-                                    // If the block's AttributeProperty values have not yet been verified verify them.
-                                    // (This provides a mechanism for block developers to define the needed block
-                                    //  attributes in code and have them automatically added to the database)
-                                    Page.Trace.Warn( "\tChecking if block attributes need refresh" );
-                                    if ( !block.BlockType.IsInstancePropertiesVerified )
-                                    {
-                                        Page.Trace.Warn( "\tCreating block attributes" );
-                                        if ( blockControl.CreateAttributes( rockContext ) )
-                                        {
-                                            // If attributes were updated, update the block attributes for all blocks in page of same type
-                                            pageBlocks
-                                                .Where( b => b.BlockTypeId == block.BlockTypeId )
-                                                .ToList()
-                                                .ForEach( b => b.ReloadAttributeValues() );
-                                        }
-                                        block.BlockType.MarkInstancePropertiesVerified( true );
-                                    }
-
                                 }
-
                             }
 
                             zone.Controls.Add( control );
@@ -1416,6 +1402,49 @@ namespace Rock.Web.UI
                         ID="lblShowDebugTimings",
                         Text = string.Format( "<pre>{0}</pre>", slDebugTimings.ToString() )
                     } );
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// The verify block type instance properties lock object
+        /// </summary>
+        private static readonly object _verifyBlockTypeInstancePropertiesLockObj = new object();
+
+        /// <summary>
+        /// Verifies the block type instance properties.
+        /// </summary>
+        private void VerifyBlockTypeInstanceProperties()
+        {
+            var blockTypesIdToVerify = _pageCache.Blocks.Select( a => a.BlockType ).Distinct().Where( a => a.IsInstancePropertiesVerified == false ).Select( a => a.Id ).ToList();
+            foreach ( int blockTypeId in blockTypesIdToVerify )
+            {
+                Page.Trace.Warn( "\tCreating block attributes" );
+
+                try
+                {
+                    if ( Rock.Cache.CacheBlockType.Get( blockTypeId )?.IsInstancePropertiesVerified == false )
+                    {
+                        // make sure that only one thread is trying to compile block properties so that we don't get collisions and unneeded compiler overhead
+                        lock ( _verifyBlockTypeInstancePropertiesLockObj )
+                        {
+                            if ( Rock.Cache.CacheBlockType.Get( blockTypeId )?.IsInstancePropertiesVerified == false )
+                            {
+                                using ( var rockContext = new RockContext() )
+                                {
+                                    string blockTypePath = Rock.Cache.CacheBlockType.Get( blockTypeId ).Path;
+                                    var blockCompiledType = System.Web.Compilation.BuildManager.GetCompiledType( blockTypePath );
+                                    bool attributesUpdated = RockBlock.CreateAttributes( rockContext, blockCompiledType, blockTypeId );
+                                    Rock.Cache.CacheBlockType.Get( blockTypeId )?.MarkInstancePropertiesVerified( true );
+                                }
+                            }
+                        }
+                    }
+                }
+                catch
+                {
+                    // ignore if the block couldn't be compiled, it'll get logged and shown when the page tries to load the block into the page
                 }
             }
         }
