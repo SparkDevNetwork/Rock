@@ -25,7 +25,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Workflow.Action
 {
@@ -55,8 +55,8 @@ namespace Rock.Workflow.Action
 
             var adultRoleGuid = SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
 
-            var maritalStatusMarried = CacheDefinedValue.Get( SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() );
-            var familyGroupType = CacheGroupType.Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
+            var maritalStatusMarried = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() );
+            var familyGroupType = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
             var adultRole = familyGroupType.Roles.Where( r => r.Guid == adultRoleGuid ).FirstOrDefault();
 
             var person = GetPersonAliasFromActionAttribute("Person", rockContext, action, errorMessages);
@@ -98,7 +98,7 @@ namespace Rock.Workflow.Action
             Guid guidPersonAttribute = value.AsGuid();
             if (!guidPersonAttribute.IsEmpty())
             {
-                var attributePerson = CacheAttribute.Get( guidPersonAttribute, rockContext );
+                var attributePerson = AttributeCache.Get( guidPersonAttribute, rockContext );
                 if (attributePerson != null)
                 {
                     string attributePersonValue = action.GetWorklowAttributeValue(guidPersonAttribute);

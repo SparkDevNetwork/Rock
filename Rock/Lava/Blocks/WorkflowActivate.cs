@@ -22,7 +22,7 @@ using System.Text.RegularExpressions;
 using DotLiquid;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Lava.Blocks
 {
@@ -149,7 +149,7 @@ namespace Rock.Lava.Blocks
 
             /* Process inside a new stack level so our own created variables do not
              * persist throughout the rest of the workflow. */
-            context.Stack( () =>
+            context.Stack( ( System.Action)(() =>
             {
                 using ( var rockContext = new RockContext() )
                 {
@@ -162,22 +162,22 @@ namespace Rock.Lava.Blocks
                     {
                         string type = parmWorkflowType;
                         string name = parmWorkflowName ?? string.Empty;
-                        CacheWorkflowType workflowType = null;
+                        WorkflowTypeCache workflowType = null;
 
                         /* Get the type of workflow */
                         if ( type.AsGuidOrNull() != null )
                         {
-                            workflowType = CacheWorkflowType.Get( type.AsGuid() );
+                            workflowType = WorkflowTypeCache.Get( type.AsGuid() );
                         }
                         else if ( type.AsIntegerOrNull() != null )
                         {
-                            workflowType = CacheWorkflowType.Get( type.AsInteger() );
+                            workflowType = WorkflowTypeCache.Get( type.AsInteger() );
                         }
 
                         /* Try to activate the workflow */
                         if ( workflowType != null )
                         {
-                            workflow = Rock.Model.Workflow.Activate( workflowType, parmWorkflowName );
+                            workflow = Rock.Model.Workflow.Activate( ( WorkflowTypeCache ) workflowType, ( string ) parmWorkflowName );
 
                             /* Set any workflow attributes that were specified. */
                             foreach ( var attr in attributes )
@@ -245,16 +245,16 @@ namespace Rock.Lava.Blocks
                                     if ( parmActivityType != null )
                                     {
                                         string type = parmActivityType.ToString();
-                                        CacheWorkflowActivityType activityType = null;
+                                        WorkflowActivityTypeCache activityType = null;
 
                                         /* Get the type of activity */
                                         if ( type.AsGuidOrNull() != null )
                                         {
-                                            activityType = CacheWorkflowActivityType.Get( type.AsGuid() );
+                                            activityType = WorkflowActivityTypeCache.Get( type.AsGuid() );
                                         }
                                         else if ( type.AsIntegerOrNull() != null )
                                         {
-                                            activityType = CacheWorkflowActivityType.Get( type.AsInteger() );
+                                            activityType = WorkflowActivityTypeCache.Get( type.AsInteger() );
                                         }
 
                                         if ( activityType != null )
@@ -314,7 +314,7 @@ namespace Rock.Lava.Blocks
 
                     RenderAll( NodeList, context, result );
                 }
-            } );
+            }) );
         }
 
         /// <summary>

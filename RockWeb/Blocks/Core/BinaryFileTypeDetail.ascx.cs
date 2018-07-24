@@ -24,7 +24,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
@@ -94,7 +94,7 @@ namespace RockWeb.Blocks.Core
             {
                 if ( pnlDetails.Visible )
                 {
-                    var storageEntityType = CacheEntityType.Get( cpStorageType.SelectedValue.AsGuid() );
+                    var storageEntityType = EntityTypeCache.Get( cpStorageType.SelectedValue.AsGuid() );
                     if ( storageEntityType != null )
                     {
                         var binaryFileType = new BinaryFileType { StorageEntityTypeId = storageEntityType.Id };
@@ -333,7 +333,7 @@ namespace RockWeb.Blocks.Core
                 binaryFileType = binaryFileTypeService.Get( binaryFileType.Guid );
 
                 /* Take care of Binary File Attributes */
-                var entityTypeId = Rock.Cache.CacheEntityType.Get( typeof( BinaryFile ) ).Id;
+                var entityTypeId = EntityTypeCache.Get( typeof( BinaryFile ) ).Id;
 
                 // delete BinaryFileAttributes that are no longer configured in the UI
                 var attributes = attributeService.GetByEntityTypeQualifier( entityTypeId, "BinaryFileTypeId", binaryFileType.Id.ToString(), true );
@@ -397,7 +397,7 @@ namespace RockWeb.Blocks.Core
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
-                attribute.FieldTypeId = CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
+                attribute.FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
                 edtBinaryFileAttributes.ActionTitle = ActionTitle.Add( "attribute for binary files of type " + tbName.Text );
             }
             else

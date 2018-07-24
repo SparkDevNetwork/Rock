@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 
 namespace Rock.Model
@@ -155,7 +155,7 @@ namespace Rock.Model
             /// <value>
             /// The color of the group type.
             /// </value>
-            public string GroupTypeColor => CacheGroupType.Get( GroupTypeId )?.GroupTypeColor;
+            public string GroupTypeColor => GroupTypeCache.Get( GroupTypeId )?.GroupTypeColor;
 
             /// <summary>
             /// Gets the name of the group type.
@@ -163,7 +163,7 @@ namespace Rock.Model
             /// <value>
             /// The name of the group type.
             /// </value>
-            public string GroupTypeName => CacheGroupType.Get( GroupTypeId )?.Name;
+            public string GroupTypeName => GroupTypeCache.Get( GroupTypeId )?.Name;
 
             /// <summary>
             /// Gets or sets the start stop history.

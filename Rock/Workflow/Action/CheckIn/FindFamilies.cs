@@ -25,7 +25,7 @@ using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Workflow.Action.CheckIn
 {
@@ -60,9 +60,9 @@ namespace Rock.Workflow.Action.CheckIn
                     var memberService = new GroupMemberService( rockContext );
                     var groupService = new GroupService( rockContext );
 
-                    int personRecordTypeId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
-                    int familyGroupTypeId = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() ).Id;
-                    var dvInactive = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
+                    int personRecordTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                    int familyGroupTypeId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() ).Id;
+                    var dvInactive = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
 
                     IQueryable<int> familyIdQry = null;
 
@@ -114,7 +114,7 @@ namespace Rock.Workflow.Action.CheckIn
                         {
                             var personIds = new List<int>();
 
-                            var dv = CacheDefinedValue.Get( SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() );
+                            var dv = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() );
                             if ( dv != null )
                             {
                                 var searchValueService = new PersonSearchKeyService( rockContext );
@@ -142,7 +142,7 @@ namespace Rock.Workflow.Action.CheckIn
                                 var entityIds = new List<int>();
 
                                 var attributeValueService = new AttributeValueService( rockContext );
-                                var attr = CacheAttribute.Get( "8F528431-A438-4488-8DC3-CA42E66C1B37".AsGuid() );
+                                var attr = AttributeCache.Get( "8F528431-A438-4488-8DC3-CA42E66C1B37".AsGuid() );
                                 if ( attr != null )
                                 {
                                     entityIds = new AttributeValueService( rockContext )

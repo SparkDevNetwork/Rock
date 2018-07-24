@@ -26,7 +26,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -102,7 +102,7 @@ namespace RockWeb.Blocks.Follow
         /// </summary>
         private int GetCount()
         {
-            var personAliasEntityType = CacheEntityType.Get( "Rock.Model.PersonAlias" );
+            var personAliasEntityType = EntityTypeCache.Get( "Rock.Model.PersonAlias" );
             if ( personAliasEntityType != null && CurrentPersonAlias != null )
             {
                 using ( var rockContext = new RockContext() )

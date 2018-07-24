@@ -8,7 +8,7 @@ IF EXISTS (
 GO
 
 -- EXECUTE [dbo].[spAnalytics_ETL_Family] 
-CREATE PROCEDURE [dbo].spAnalytics_ETL_Family
+CREATE PROCEDURE [dbo].[spAnalytics_ETL_Family]
 AS
 BEGIN
     DECLARE @EtlDate DATE = convert(DATE, SysDateTime())

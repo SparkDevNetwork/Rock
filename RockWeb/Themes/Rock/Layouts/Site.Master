@@ -119,6 +119,7 @@
 
     <script>
         Sys.Application.add_load(BindNavEvents);
+        Sys.Application.add_load(PreventNumberScroll);
     </script>
 
 </body>

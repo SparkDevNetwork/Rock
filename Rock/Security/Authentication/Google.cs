@@ -30,7 +30,7 @@ using RestSharp;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Security.ExternalAuthentication
 {
@@ -398,8 +398,8 @@ namespace Rock.Security.ExternalAuthentication
                         person = personService.FindPerson( firstName, lastName, email, true );
                     }
 
-                    var personRecordTypeId = CacheDefinedValue.Get(SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid()).Id;
-                    var personStatusPending = CacheDefinedValue.Get(SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid()).Id;
+                    var personRecordTypeId = DefinedValueCache.Get(SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid()).Id;
+                    var personStatusPending = DefinedValueCache.Get(SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid()).Id;
 
                     rockContext.WrapTransaction(( ) =>
                     {
@@ -439,7 +439,7 @@ namespace Rock.Security.ExternalAuthentication
 
                         if ( person != null )
                         {
-                            int typeId = CacheEntityType.Get(typeof(Google)).Id;
+                            int typeId = EntityTypeCache.Get(typeof(Google)).Id;
                             user = UserLoginService.Create(rockContext, person, AuthenticationServiceType.External, typeId, userName, "goog", true);
                         }
 

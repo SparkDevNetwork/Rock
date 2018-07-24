@@ -10,9 +10,9 @@
             </div>
             <div class="panel-body">
 
-                <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                 <asp:CustomValidator ID="cvGroupMember" runat="server" Display="None" />
-                <Rock:NotificationBox ID="nbValidation" runat="server" Heading="Please Correct the Following" NotificationBoxType="Danger" />
+                <Rock:NotificationBox ID="nbValidation" runat="server" Heading="Please correct the following:" NotificationBoxType="Danger" />
 
                 <asp:Panel ID="pnlGroupData" runat="server">
 
@@ -53,6 +53,10 @@
 
                 <asp:Panel ID="pnlContactInfo" runat="server" Visible="false">
                     <Rock:NewGroupContactInfo ID="nfciContactInfo" runat="server" />
+                </asp:Panel>
+
+                <asp:Panel ID="pnlAdvanceInfo" runat="server" Visible="false">
+                    <Rock:NewGroupAdvanceInfo ID="nfaiAdvanceInfo" runat="server" />
                 </asp:Panel>
 
                 <asp:Panel ID="pnlAttributes" runat="server" Visible="false">

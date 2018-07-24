@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,13 +29,15 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            AddColumn("dbo.Person", "DeceasedDate", c => c.DateTime());
+            AddColumn("dbo.Person", "DeceasedDate", c => c.DateTime()); 
 
             UpdateImpliedRelationshipGroupTypeAndGroups();
 
             Sql( MigrationSQL._201805171836577_Rollup_0517_CreatePresenceUser );
 
             Sql( MigrationSQL._201805171836577_Rollup_0517_spAnalytics_ETL_Attendance );
+
+            Sql( MigrationSQL._201805171836577_Rollup_0517_vCheckin_Attendance );
 
             Sql( @"-- Move Person Pages to People Page and hide from navigation
                     DECLARE @ParentPageId int = (SELECT TOP 1 [Id] FROM [Page] WHERE [Guid] = '97ECDC48-6DF6-492E-8C72-161F76AE111B') -- Internal Homepage > People

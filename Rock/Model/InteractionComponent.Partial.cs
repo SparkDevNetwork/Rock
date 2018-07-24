@@ -17,7 +17,7 @@
 using System;
 using System.Linq;
 
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -75,7 +75,7 @@ namespace Rock.Model
         /// <returns></returns>
         public InteractionComponent GetComponentByEntityId( Guid channelGuid, int entityId, string name )
         {
-            var channel = CacheInteractionChannel.Get( channelGuid );
+            var channel = InteractionChannelCache.Get( channelGuid );
             if ( channel != null )
             {
                 return GetComponentByEntityId( channel.Id, entityId, name );

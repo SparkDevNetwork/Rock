@@ -22,7 +22,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -93,7 +93,7 @@ namespace RockWeb.Blocks.Core
 
                 using ( var rockContext = new RockContext() )
                 {
-                    var noteTypes = CacheNoteType.GetByEntity(contextEntity.TypeId, string.Empty, string.Empty, true);
+                    var noteTypes = NoteTypeCache.GetByEntity(contextEntity.TypeId, string.Empty, string.Empty, true);
 
                     // If block is configured to only allow certain note types, limit notes to those types.
                     var configuredNoteTypes = GetAttributeValue( "NoteTypes" ).SplitDelimitedValues().AsGuidList();

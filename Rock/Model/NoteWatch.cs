@@ -19,7 +19,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 
 namespace Rock.Model
@@ -272,10 +272,10 @@ namespace Rock.Model
                 return noteWatchesWithOverrideNotAllowedQuery.Where( a => false );
             }
 
-            CacheNoteType noteType = null;
+            NoteTypeCache noteType = null;
             if ( this.NoteTypeId.HasValue )
             {
-                noteType = CacheNoteType.Get( this.NoteTypeId.Value );
+                noteType = NoteTypeCache.Get( this.NoteTypeId.Value );
             }
 
             var noteWatchEntityTypeId = this.EntityTypeId ?? noteType?.EntityTypeId;

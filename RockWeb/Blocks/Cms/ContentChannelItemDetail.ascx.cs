@@ -24,7 +24,7 @@ using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
@@ -171,14 +171,14 @@ namespace RockWeb.Blocks.Cms
             gChildItems.Actions.AddClick += gChildItems_Add;
             gChildItems.GridRebind += gChildItems_GridRebind;
             gChildItems.GridReorder += gChildItems_GridReorder;
-            gChildItems.EntityTypeId = CacheEntityType.Get<ContentChannelItem>().Id;
+            gChildItems.EntityTypeId = EntityTypeCache.Get<ContentChannelItem>().Id;
 
             gParentItems.DataKeyNames = new string[] { "Id" };
             gParentItems.AllowSorting = true;
             gParentItems.Actions.ShowAdd = false;
             gParentItems.IsDeleteEnabled = false;
             gParentItems.GridRebind += gParentItems_GridRebind;
-            gParentItems.EntityTypeId = CacheEntityType.Get<ContentChannelItem>().Id;
+            gParentItems.EntityTypeId = EntityTypeCache.Get<ContentChannelItem>().Id;
 
             string clearScript = string.Format( "$('#{0}').val('false');", hfIsDirty.ClientID );
             lbSave.OnClientClick = clearScript;
@@ -788,7 +788,7 @@ namespace RockWeb.Blocks.Cms
 
             if ( contentItem.ContentChannel.IsTaggingEnabled )
             {
-                taglTags.EntityTypeId = CacheEntityType.Get( typeof( ContentChannelItem ) ).Id;
+                taglTags.EntityTypeId = EntityTypeCache.Get( typeof( ContentChannelItem ) ).Id;
                 taglTags.CategoryGuid = ( contentItem.ContentChannel != null && contentItem.ContentChannel.ItemTagCategory != null ) ?
                      contentItem.ContentChannel.ItemTagCategory.Guid : (Guid?)null;
                 taglTags.EntityGuid = contentItem.Guid;

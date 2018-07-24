@@ -16,7 +16,7 @@
 
             <div class="panel-body">
 
-                <asp:ValidationSummary ID="vsSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                <asp:ValidationSummary ID="vsSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                 <div class="row">
                     <div class="col-md-6">

@@ -16,7 +16,7 @@
                 <div class="panel-body">
 
                     <div id="pnlEditDetails" runat="server">
-                        <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                        <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                         <asp:HiddenField ID="hfBusinessId" runat="server" />
                         <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
 
@@ -49,7 +49,7 @@
                                     </div>
                                 </div>
 
-                                <Rock:RockTextBox ID="tbEmail" runat="server" PrependText="<i class='fa fa-envelope'></i>" Label="Email Address" />
+                                <Rock:EmailBox ID="tbEmail" runat="server" Label="Email Address" />
 
                                 <Rock:RockRadioButtonList ID="rblEmailPreference" runat="server" RepeatDirection="Horizontal" Label="Email Preference">
                                     <asp:ListItem Text="Email Allowed" Value="EmailAllowed" Selected="True" />
@@ -108,7 +108,7 @@
             <Rock:ModalDialog ID="mdAddContact" runat="server" Title="Add Contact" ValidationGroup="AddContact">
                 <Content>
                     <asp:HiddenField ID="hfModalOpen" runat="server" />
-                    <asp:ValidationSummary ID="valSummaryAddContact" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" ValidationGroup="AddContact" />
+                    <asp:ValidationSummary ID="valSummaryAddContact" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="AddContact" />
                     <Rock:PersonPicker ID="ppContact" runat="server" Label="Contact" Required="true" ValidationGroup="AddContact" />
                 </Content>
             </Rock:ModalDialog>

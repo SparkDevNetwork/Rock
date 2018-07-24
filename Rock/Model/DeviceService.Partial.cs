@@ -98,7 +98,7 @@ namespace Rock.Model
             try
             {
                 string hostValue = System.Net.Dns.GetHostEntry( ipAddress ).HostName;
-                if ( hostValue.IsNotNullOrWhitespace() )
+                if ( hostValue.IsNotNullOrWhiteSpace() )
                 {
                     // Find by name in the IP address field (why are people putting the name in the IP Address field?)
                     device =  Queryable()

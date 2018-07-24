@@ -31,7 +31,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -61,6 +61,8 @@ namespace RockWeb.Blocks.Event
         private List<Registration> paymentRegistrations;
         private bool _instanceHasCost = false;
         private Dictionary<int, Location> _homeAddresses = new Dictionary<int, Location>();
+        private Dictionary<int, PhoneNumber> _mobilePhoneNumbers = new Dictionary<int, PhoneNumber>();
+        private Dictionary<int, PhoneNumber> _homePhoneNumbers = new Dictionary<int, PhoneNumber>();
         private List<int> _waitListOrder = null;
         private bool _isExporting = false;
         
@@ -901,10 +903,19 @@ namespace RockWeb.Blocks.Event
                                 break;
                                 
                             case RegistrationPersonFieldType.MobilePhone:
-                                var tbPhoneFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "tbRegistrantsPhoneFilter" ) as RockTextBox;
-                                if ( tbPhoneFilter != null )
+                                var tbMobilePhoneFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "tbRegistrantsMobilePhoneFilter" ) as RockTextBox;
+                                if ( tbMobilePhoneFilter != null )
                                 {
-                                    fRegistrants.SaveUserPreference( "Phone", tbPhoneFilter.Text );
+                                    fRegistrants.SaveUserPreference( "Cell Phone", "Cell Phone", tbMobilePhoneFilter.Text );
+                                }
+
+                                break;
+
+                            case RegistrationPersonFieldType.HomePhone:
+                                var tbRegistrantsMobilePhoneFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "tbRegistrantsMobilePhoneFilter" ) as RockTextBox;
+                                if ( tbRegistrantsMobilePhoneFilter != null )
+                                {
+                                    fRegistrants.SaveUserPreference( "Home Phone", tbRegistrantsMobilePhoneFilter.Text );
                                 }
 
                                 break;
@@ -945,7 +956,7 @@ namespace RockWeb.Blocks.Event
             foreach ( var control in phRegistrantsRegistrantFormFieldFilters.ControlsOfTypeRecursive<Control>().Where( a => a.ID != null && a.ID.StartsWith( "filter" ) && a.ID.Contains( "_" ) ) )
             {
                 var attributeId = control.ID.Split( '_' )[1].AsInteger();
-                var attribute = CacheAttribute.Get( attributeId );
+                var attribute = AttributeCache.Get( attributeId );
                 if ( attribute != null )
                 {
                     attribute.FieldType.Field.SetFilterValues( control, attribute.QualifierValues, new List<string>() );
@@ -1016,10 +1027,19 @@ namespace RockWeb.Blocks.Event
                                 break;
                                 
                             case RegistrationPersonFieldType.MobilePhone:
-                                var tbPhoneFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "tbRegistrantsPhoneFilter" ) as RockTextBox;
-                                if ( tbPhoneFilter != null )
+                                var tbMobilePhoneFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "tbRegistrantsMobilePhoneFilter" ) as RockTextBox;
+                                if ( tbMobilePhoneFilter != null )
                                 {
-                                    tbPhoneFilter.Text = string.Empty;
+                                    tbMobilePhoneFilter.Text = string.Empty;
+                                }
+
+                                break;
+
+                            case RegistrationPersonFieldType.HomePhone:
+                                var tbRegistrantsHomePhoneFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "tbRegistrantsHomePhoneFilter" ) as RockTextBox;
+                                if ( tbRegistrantsHomePhoneFilter != null )
+                                {
+                                    tbRegistrantsHomePhoneFilter.Text = string.Empty;
                                 }
 
                                 break;
@@ -1085,8 +1105,9 @@ namespace RockWeb.Blocks.Event
                 case "First Name":
                 case "Last Name":
                 case "Email":
-                case "Phone":
                 case "Signed Document":
+                case "Home Phone":
+                case "Cell Phone":
                     break;
                     
                 case "Gender":
@@ -1098,7 +1119,7 @@ namespace RockWeb.Blocks.Event
                     int? campusId = e.Value.AsIntegerOrNull();
                     if ( campusId.HasValue )
                     {
-                        var campus = CacheCampus.Get( campusId.Value );
+                        var campus = CampusCache.Get( campusId.Value );
                         e.Value = campus != null ? campus.Name : string.Empty;
                     }
                     else
@@ -1112,7 +1133,7 @@ namespace RockWeb.Blocks.Event
                     int? dvId = e.Value.AsIntegerOrNull();
                     if ( dvId.HasValue )
                     {
-                        var maritalStatus = CacheDefinedValue.Get( dvId.Value );
+                        var maritalStatus = DefinedValueCache.Get( dvId.Value );
                         e.Value = maritalStatus != null ? maritalStatus.Value : string.Empty;
                     }
                     else
@@ -1201,7 +1222,7 @@ namespace RockWeb.Blocks.Event
                                 var campusNames = new List<string>();
                                 foreach ( int campusId in campusIds )
                                 {
-                                    var campus = CacheCampus.Get( campusId );
+                                    var campus = CampusCache.Get( campusId );
                                     if ( campus != null )
                                     {
                                         campusNames.Add( campus.Name );
@@ -1234,10 +1255,10 @@ namespace RockWeb.Blocks.Event
                     }
                 }
 
-                // add addresses if exporting
-                if (_homeAddresses.Count > 0 )
+                if (_homeAddresses.Any() )
                 {
                     var location = _homeAddresses[registrant.PersonId.Value];
+                    // break up addresses if exporting
                     if ( _isExporting )
                     {
                         var lStreet1 = e.Row.FindControl( "lStreet1" ) as Literal;
@@ -1262,9 +1283,45 @@ namespace RockWeb.Blocks.Event
                         var addressField = e.Row.FindControl( "lRegistrantsAddress" ) as Literal ?? e.Row.FindControl( "lGroupPlacementsAddress" ) as Literal;
                         if ( addressField != null )
                         {
-                            addressField.Text = location != null && location.FormattedAddress.IsNotNullOrWhitespace() ? location.FormattedAddress : string.Empty;
+                            addressField.Text = location != null && location.FormattedAddress.IsNotNullOrWhiteSpace() ? location.FormattedAddress : string.Empty;
                         }
                     }
+                }
+
+                if (_mobilePhoneNumbers.Any())
+                {
+                    var mobileNumber = _mobilePhoneNumbers[registrant.PersonId.Value];
+                    var mobileField = e.Row.FindControl( "lRegistrantsMobile" ) as Literal ?? e.Row.FindControl( "lGroupPlacementsMobile" ) as Literal;
+                    if ( mobileField != null)
+                    {
+                        if (mobileNumber == null || mobileNumber.NumberFormatted.IsNullOrWhiteSpace())
+                        {
+                            mobileField.Text = string.Empty;
+                        }
+                        else
+                        {
+                            mobileField.Text = mobileNumber.IsUnlisted ? "Unlisted" : mobileNumber.NumberFormatted;
+                        }
+                    }
+                    
+                }
+
+                if ( _homePhoneNumbers.Any() )
+                {
+                    var homePhoneNumber = _homePhoneNumbers[registrant.PersonId.Value];
+                    var mobileField = e.Row.FindControl( "lRegistrantsHomePhone" ) as Literal ?? e.Row.FindControl( "lGroupPlacementsHomePhone" ) as Literal;
+                    if ( mobileField != null )
+                    {
+                        if ( homePhoneNumber == null || homePhoneNumber.NumberFormatted.IsNullOrWhiteSpace() )
+                        {
+                            mobileField.Text = string.Empty;
+                        }
+                        else
+                        {
+                            mobileField.Text = homePhoneNumber.IsUnlisted ? "Unlisted" : homePhoneNumber.NumberFormatted;
+                        }
+                    }
+
                 }
             }
         }
@@ -1772,7 +1829,7 @@ namespace RockWeb.Blocks.Event
             if ( keys.Any() )
             {
                 var entitySet = new Rock.Model.EntitySet();
-                entitySet.EntityTypeId = Rock.Cache.CacheEntityType.Get<Rock.Model.RegistrationRegistrant>().Id;
+                entitySet.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Get<Rock.Model.RegistrationRegistrant>().Id;
                 entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( 20 );
 
                 foreach ( var key in keys )
@@ -1890,10 +1947,19 @@ namespace RockWeb.Blocks.Event
                                 break;
                                 
                             case RegistrationPersonFieldType.MobilePhone:
-                                var tbPhoneFilter = phWaitListFormFieldFilters.FindControl( "tbWaitlistPhoneFilter" ) as RockTextBox;
-                                if ( tbPhoneFilter != null )
+                                var tbMobilePhoneFilter = phWaitListFormFieldFilters.FindControl( "tbWaitlistMobilePhoneFilter" ) as RockTextBox;
+                                if ( tbMobilePhoneFilter != null )
                                 {
-                                    fWaitList.SaveUserPreference( "WL-Phone", "Phone", tbPhoneFilter.Text );
+                                    fWaitList.SaveUserPreference( "WL-Phone", "Cell Phone", tbMobilePhoneFilter.Text );
+                                }
+
+                                break;
+
+                            case RegistrationPersonFieldType.HomePhone:
+                                var tbWaitlistHomePhoneFilter = phWaitListFormFieldFilters.FindControl( "tbWaitlistHomePhoneFilter" ) as RockTextBox;
+                                if ( tbWaitlistHomePhoneFilter != null )
+                                {
+                                    fWaitList.SaveUserPreference( "WL-HomePhone", "Home Phone", tbWaitlistHomePhoneFilter.Text );
                                 }
 
                                 break;
@@ -1934,7 +2000,7 @@ namespace RockWeb.Blocks.Event
             foreach ( var control in phWaitListFormFieldFilters.ControlsOfTypeRecursive<Control>().Where( a => a.ID != null && a.ID.StartsWith( "filter" ) && a.ID.Contains( "_" ) ) )
             {
                 var attributeId = control.ID.Split( '_' )[1].AsInteger();
-                var attribute = CacheAttribute.Get( attributeId );
+                var attribute = AttributeCache.Get( attributeId );
                 if ( attribute != null )
                 {
                     attribute.FieldType.Field.SetFilterValues( control, attribute.QualifierValues, new List<string>() );
@@ -2005,10 +2071,19 @@ namespace RockWeb.Blocks.Event
                                 break;
                                 
                             case RegistrationPersonFieldType.MobilePhone:
-                                var tbPhoneFilter = phWaitListFormFieldFilters.FindControl( "tbWaitlistPhoneFilter" ) as RockTextBox;
-                                if ( tbPhoneFilter != null )
+                                var tbMobilePhoneFilter = phWaitListFormFieldFilters.FindControl( "tbWaitlistMobilePhoneFilter" ) as RockTextBox;
+                                if ( tbMobilePhoneFilter != null )
                                 {
-                                    tbPhoneFilter.Text = string.Empty;
+                                    tbMobilePhoneFilter.Text = string.Empty;
+                                }
+
+                                break;
+
+                            case RegistrationPersonFieldType.HomePhone:
+                                var tbWaitlistHomePhoneFilter = phWaitListFormFieldFilters.FindControl( "tbWaitlistHomePhoneFilter" ) as RockTextBox;
+                                if ( tbWaitlistHomePhoneFilter != null )
+                                {
+                                    tbWaitlistHomePhoneFilter.Text = string.Empty;
                                 }
 
                                 break;
@@ -2075,7 +2150,8 @@ namespace RockWeb.Blocks.Event
                     case "First Name":
                     case "Last Name":
                     case "Email":
-                    case "Phone":
+                    case "Cell Phone":
+                    case "Home Phone":
                     case "Signed Document":
                         break;
                         
@@ -2088,7 +2164,7 @@ namespace RockWeb.Blocks.Event
                         int? campusId = e.Value.AsIntegerOrNull();
                         if ( campusId.HasValue )
                         {
-                            var campus = CacheCampus.Get( campusId.Value );
+                            var campus = CampusCache.Get( campusId.Value );
                             e.Value = campus != null ? campus.Name : string.Empty;
                         }
                         else
@@ -2102,7 +2178,7 @@ namespace RockWeb.Blocks.Event
                         int? dvId = e.Value.AsIntegerOrNull();
                         if ( dvId.HasValue )
                         {
-                            var maritalStatus = CacheDefinedValue.Get( dvId.Value );
+                            var maritalStatus = DefinedValueCache.Get( dvId.Value );
                             e.Value = maritalStatus != null ? maritalStatus.Value : string.Empty;
                         }
                         else
@@ -2183,7 +2259,7 @@ namespace RockWeb.Blocks.Event
                                 var campusNames = new List<string>();
                                 foreach ( int campusId in campusIds )
                                 {
-                                    var campus = CacheCampus.Get( campusId );
+                                    var campus = CampusCache.Get( campusId );
                                     if ( campus != null )
                                     {
                                         campusNames.Add( campus.Name );
@@ -2200,7 +2276,38 @@ namespace RockWeb.Blocks.Event
                 if ( lAddress != null && _homeAddresses.Count() > 0 )
                 {
                     var location = _homeAddresses[registrant.PersonId.Value];
-                    lAddress.Text = location != null && location.FormattedAddress.IsNotNullOrWhitespace() ? location.FormattedAddress : string.Empty;
+                    lAddress.Text = location != null && location.FormattedAddress.IsNotNullOrWhiteSpace() ? location.FormattedAddress : string.Empty;
+                }
+
+
+                var mobileField = e.Row.FindControl( "lWaitlistMobile" ) as Literal;
+                if ( mobileField != null )
+                {
+
+                    var homePhoneNumber = _homePhoneNumbers[registrant.PersonId.Value];
+                    if ( homePhoneNumber == null || homePhoneNumber.NumberFormatted.IsNullOrWhiteSpace() )
+                    {
+                        mobileField.Text = string.Empty;
+                    }
+                    else
+                    {
+                        mobileField.Text = homePhoneNumber.IsUnlisted ? "Unlisted" : homePhoneNumber.NumberFormatted;
+                    }
+                }
+
+                var homePhoneField = e.Row.FindControl( "lWaitlistHomePhone" ) as Literal;
+                if ( homePhoneField != null )
+                {
+
+                    var homePhoneNumber = _homePhoneNumbers[registrant.PersonId.Value];
+                    if ( homePhoneNumber == null || homePhoneNumber.NumberFormatted.IsNullOrWhiteSpace() )
+                    {
+                        homePhoneField.Text = string.Empty;
+                    }
+                    else
+                    {
+                        homePhoneField.Text = homePhoneNumber.IsUnlisted ? "Unlisted" : homePhoneNumber.NumberFormatted;
+                    }
                 }
             }
         }
@@ -2747,7 +2854,7 @@ namespace RockWeb.Blocks.Event
                     !r.IsTemporary )
                 .Select( r => r.Id );
 
-            var registrationEntityType = CacheEntityType.Get( typeof( Rock.Model.Registration ) );
+            var registrationEntityType = EntityTypeCache.Get( typeof( Rock.Model.Registration ) );
             hfHasPayments.Value = new FinancialTransactionDetailService( rockContext )
                 .Queryable().AsNoTracking()
                 .Where( d =>
@@ -2787,7 +2894,7 @@ namespace RockWeb.Blocks.Event
             {
                 using ( var rockContext = new RockContext() )
                 {
-                    var registrationEntityType = CacheEntityType.Get( typeof( Rock.Model.Registration ) );
+                    var registrationEntityType = EntityTypeCache.Get( typeof( Rock.Model.Registration ) );
 
                     var instance = new RegistrationInstanceService( rockContext ).Get( instanceId.Value );
                     if ( instance != null )
@@ -3109,22 +3216,25 @@ namespace RockWeb.Blocks.Event
                     }
 
                     bool preloadCampusValues = false;
-                    var registrantAttributes = new List<CacheAttribute>();
-                    var personAttributes = new List<CacheAttribute>();
-                    var groupMemberAttributes = new List<CacheAttribute>();
+                    var registrantAttributes = new List<AttributeCache>();
+                    var personAttributes = new List<AttributeCache>();
+                    var groupMemberAttributes = new List<AttributeCache>();
                     var registrantAttributeIds = new List<int>();
                     var personAttributesIds = new List<int>();
                     var groupMemberAttributesIds = new List<int>();
 
+
+                    var personIds = qry.Select( r => r.PersonAlias.PersonId ).Distinct().ToList();
+
                     if ( isExporting || RegistrantFields != null && RegistrantFields.Any(f => f.PersonFieldType != null && f.PersonFieldType == RegistrationPersonFieldType.Address) )
                     {
-                        // get list of home addresses
-                        var personIds = qry.Select( r => r.PersonAlias.PersonId ).ToList();
                         _homeAddresses = Person.GetHomeLocations( personIds );
                     }
 
                     if ( RegistrantFields != null )
                     {
+                        SetPhoneDictionary( rockContext, personIds );
+
                         // Filter by any selected
                         foreach ( var personFieldType in RegistrantFields
                             .Where( f =>
@@ -3229,12 +3339,30 @@ namespace RockWeb.Blocks.Event
                                     }
 
                                     break;
-                                    
+
                                 case RegistrationPersonFieldType.MobilePhone:
-                                    var tbPhoneFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "tbRegistrantsPhoneFilter" ) as RockTextBox;
-                                    if ( tbPhoneFilter != null && !string.IsNullOrWhiteSpace( tbPhoneFilter.Text ) )
+                                    var tbMobilePhoneFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "tbRegistrantsMobilePhoneFilter" ) as RockTextBox;
+                                    if ( tbMobilePhoneFilter != null && !string.IsNullOrWhiteSpace( tbMobilePhoneFilter.Text ) )
                                     {
-                                        string numericPhone = tbPhoneFilter.Text.AsNumeric();
+                                        string numericPhone = tbMobilePhoneFilter.Text.AsNumeric();
+                                        if ( !string.IsNullOrEmpty( numericPhone ) )
+                                        {
+                                            var phoneNumberPersonIdQry = new PhoneNumberService( rockContext )
+                                                .Queryable()
+                                                .Where( a => a.Number.Contains( numericPhone ) )
+                                                .Select( a => a.PersonId );
+
+                                            qry = qry.Where( r => phoneNumberPersonIdQry.Contains( r.PersonAlias.PersonId ) );
+                                        }
+                                    }
+
+                                    break;
+
+                                case RegistrationPersonFieldType.HomePhone:
+                                    var tbRegistrantsHomePhoneFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "tbRegistrantsHomePhoneFilter" ) as RockTextBox;
+                                    if ( tbRegistrantsHomePhoneFilter != null && !string.IsNullOrWhiteSpace( tbRegistrantsHomePhoneFilter.Text ) )
+                                    {
+                                        string numericPhone = tbRegistrantsHomePhoneFilter.Text.AsNumeric();
                                         if ( !string.IsNullOrEmpty( numericPhone ) )
                                         {
                                             var phoneNumberPersonIdQry = new PhoneNumberService( rockContext )
@@ -3389,7 +3517,7 @@ namespace RockWeb.Blocks.Event
                                 if ( filterIsDefault )
                                 {
                                     qry = qry.Where( r => r.GroupMemberId.HasValue &&
-                                         (!attributeValues.Any( v => v.EntityId == r.GroupMemberId.Value ) ||
+                                         ( !attributeValues.Any( v => v.EntityId == r.GroupMemberId.Value ) ||
                                             filteredAttributeValues.Select( v => v.EntityId ).Contains( r.GroupMemberId.Value ) ) );
                                 }
                                 else
@@ -3439,7 +3567,7 @@ namespace RockWeb.Blocks.Event
                                 .ToList();
 
                             // Get all the person ids in current page of query results
-                            var personIds = currentPageRegistrants
+                            var currentPagePersonIds = currentPageRegistrants
                                 .Select( r => r.PersonAlias.PersonId )
                                 .Distinct()
                                 .ToList();
@@ -3472,7 +3600,7 @@ namespace RockWeb.Blocks.Event
                                     .Queryable().AsNoTracking()
                                     .Where( m =>
                                         m.Group.GroupType.Guid == familyGroupTypeGuid &&
-                                        personIds.Contains( m.PersonId ) )
+                                        currentPagePersonIds.Contains( m.PersonId ) )
                                     .GroupBy( m => m.PersonId )
                                     .Select( m => new
                                     {
@@ -3501,7 +3629,7 @@ namespace RockWeb.Blocks.Event
                                         (
                                             (
                                                 personAttributesIds.Contains( v.AttributeId ) &&
-                                                personIds.Contains( v.EntityId.Value )
+                                                currentPagePersonIds.Contains( v.EntityId.Value )
                                             ) ||
                                             (
                                                 groupMemberAttributesIds.Contains( v.AttributeId ) &&
@@ -3514,7 +3642,7 @@ namespace RockWeb.Blocks.Event
                                         ) ).ToList();
 
                                 // Get the attributes to add to each row's object
-                                var attributes = new Dictionary<string, CacheAttribute>();
+                                var attributes = new Dictionary<string, AttributeCache>();
                                 RegistrantFields
                                         .Where( f => f.Attribute != null )
                                         .Select( f => f.Attribute )
@@ -3542,7 +3670,7 @@ namespace RockWeb.Blocks.Event
                                             v.EntityId.Value == registrant.PersonAlias.PersonId )
                                         .ToList()
                                         .ForEach( v => attributeFieldObject.AttributeValues
-                                            .Add( v.AttributeId.ToString() + v.Attribute.Key, new CacheAttributeValue( v ) ) );
+                                            .Add( v.AttributeId.ToString() + v.Attribute.Key, new AttributeValueCache( v ) ) );
 
                                     // Add any group member attribute values to object
                                     if ( registrant.GroupMemberId.HasValue )
@@ -3553,7 +3681,7 @@ namespace RockWeb.Blocks.Event
                                                 v.EntityId.Value == registrant.GroupMemberId.Value )
                                             .ToList()
                                             .ForEach( v => attributeFieldObject.AttributeValues
-                                                .Add( v.AttributeId.ToString() + v.Attribute.Key, new CacheAttributeValue( v ) ) );
+                                                .Add( v.AttributeId.ToString() + v.Attribute.Key, new AttributeValueCache( v ) ) );
                                     }
 
                                     // Add any registrant attribute values to object
@@ -3563,7 +3691,7 @@ namespace RockWeb.Blocks.Event
                                             v.EntityId.Value == registrant.Id )
                                         .ToList()
                                         .ForEach( v => attributeFieldObject.AttributeValues
-                                            .Add( v.AttributeId.ToString() + v.Attribute.Key, new CacheAttributeValue( v ) ) );
+                                            .Add( v.AttributeId.ToString() + v.Attribute.Key, new AttributeValueCache( v ) ) );
 
                                     // Add row attribute object to grid's object list
                                     gRegistrants.ObjectList.Add( registrant.Id.ToString(), attributeFieldObject );
@@ -3573,6 +3701,27 @@ namespace RockWeb.Blocks.Event
                     }
 
                     gRegistrants.DataBind();
+                }
+            }
+        }
+
+        private void SetPhoneDictionary( RockContext rockContext, List<int> personIds )
+        {
+            if ( RegistrantFields.Any( f => f.PersonFieldType != null && f.PersonFieldType == RegistrationPersonFieldType.MobilePhone ) )
+            {
+                var phoneNumberService = new PhoneNumberService( rockContext );
+                foreach ( var personId in personIds )
+                {
+                    _mobilePhoneNumbers[personId] = phoneNumberService.GetNumberByPersonIdAndType( personId, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
+                }
+            }
+
+            if ( RegistrantFields.Any( f => f.PersonFieldType != null && f.PersonFieldType == RegistrationPersonFieldType.HomePhone ) )
+            {
+                var phoneNumberService = new PhoneNumberService( rockContext );
+                foreach ( var personId in personIds )
+                {
+                    _homePhoneNumbers[personId] = phoneNumberService.GetNumberByPersonIdAndType( personId, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
                 }
             }
         }
@@ -3612,7 +3761,7 @@ namespace RockWeb.Blocks.Event
                                 new RegistrantFormField
                                 {
                                     FieldSource = formField.FieldSource,
-                                    Attribute = CacheAttribute.Get( formField.AttributeId.Value )
+                                    Attribute = AttributeCache.Get( formField.AttributeId.Value )
                                 } );
                         }
                     }
@@ -3698,7 +3847,7 @@ namespace RockWeb.Blocks.Event
                                 ddlRegistrantsCampus.Label = "Home Campus";
                                 ddlRegistrantsCampus.DataValueField = "Id";
                                 ddlRegistrantsCampus.DataTextField = "Name";
-                                ddlRegistrantsCampus.DataSource = CacheCampus.All();
+                                ddlRegistrantsCampus.DataSource = CampusCache.All();
                                 ddlRegistrantsCampus.DataBind();
                                 ddlRegistrantsCampus.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
 
@@ -3714,7 +3863,7 @@ namespace RockWeb.Blocks.Event
                                 ddlGroupPlacementsCampus.Label = "Home Campus";
                                 ddlGroupPlacementsCampus.DataValueField = "Id";
                                 ddlGroupPlacementsCampus.DataTextField = "Name";
-                                ddlGroupPlacementsCampus.DataSource = CacheCampus.All();
+                                ddlGroupPlacementsCampus.DataSource = CampusCache.All();
                                 ddlGroupPlacementsCampus.DataBind();
                                 ddlGroupPlacementsCampus.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
 
@@ -3730,7 +3879,7 @@ namespace RockWeb.Blocks.Event
                                 ddlWaitListCampus.Label = "Home Campus";
                                 ddlWaitListCampus.DataValueField = "Id";
                                 ddlWaitListCampus.DataTextField = "Name";
-                                ddlWaitListCampus.DataSource = CacheCampus.All();
+                                ddlWaitListCampus.DataSource = CampusCache.All();
                                 ddlWaitListCampus.DataBind();
                                 ddlWaitListCampus.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
                                 ddlWaitListCampus.SetValue( fRegistrants.GetUserPreference( "WL-Home Campus" ) );
@@ -3986,7 +4135,7 @@ namespace RockWeb.Blocks.Event
 
                             case RegistrationPersonFieldType.MaritalStatus:
                                 var ddlRegistrantsMaritalStatusFilter = new RockDropDownList();
-                                ddlRegistrantsMaritalStatusFilter.BindToDefinedType( CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ), true );
+                                ddlRegistrantsMaritalStatusFilter.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ), true );
                                 ddlRegistrantsMaritalStatusFilter.ID = "ddlRegistrantsMaritalStatusFilter";
                                 ddlRegistrantsMaritalStatusFilter.Label = "Marital Status";
 
@@ -3998,7 +4147,7 @@ namespace RockWeb.Blocks.Event
                                 phRegistrantsRegistrantFormFieldFilters.Controls.Add( ddlRegistrantsMaritalStatusFilter );
 
                                 var ddlGroupPlacementsMaritalStatusFilter = new RockDropDownList();
-                                ddlGroupPlacementsMaritalStatusFilter.BindToDefinedType( CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ), true );
+                                ddlGroupPlacementsMaritalStatusFilter.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ), true );
                                 ddlGroupPlacementsMaritalStatusFilter.ID = "ddlGroupPlacementsMaritalStatusFilter";
                                 ddlGroupPlacementsMaritalStatusFilter.Label = "Marital Status";
 
@@ -4010,7 +4159,7 @@ namespace RockWeb.Blocks.Event
                                 phGroupPlacementsFormFieldFilters.Controls.Add( ddlGroupPlacementsMaritalStatusFilter );
 
                                 var ddlWaitlistMaritalStatusFilter = new RockDropDownList();
-                                ddlWaitlistMaritalStatusFilter.BindToDefinedType( CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ), true );
+                                ddlWaitlistMaritalStatusFilter.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ), true );
                                 ddlWaitlistMaritalStatusFilter.ID = "ddlWaitlistMaritalStatusFilter";
                                 ddlWaitlistMaritalStatusFilter.Label = "Marital Status";
                                 ddlWaitlistMaritalStatusFilter.SetValue( fRegistrants.GetUserPreference( "WL-Marital Status" ) );
@@ -4038,50 +4187,103 @@ namespace RockWeb.Blocks.Event
                                 break;
 
                             case RegistrationPersonFieldType.MobilePhone:
-                                var tbRegistrantsPhoneFilter = new RockTextBox();
-                                tbRegistrantsPhoneFilter.ID = "tbRegistrantsPhoneFilter";
-                                tbRegistrantsPhoneFilter.Label = "Phone";
+                                // Per discussion this should not have "Phone" appended to the end if it's missing.
+                                var mobileLabel = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Value;
+
+                                var tbRegistrantsMobilePhoneFilter = new RockTextBox();
+                                tbRegistrantsMobilePhoneFilter.ID = "tbRegistrantsMobilePhoneFilter";
+                                tbRegistrantsMobilePhoneFilter.Label = mobileLabel;
 
                                 if ( setValues )
                                 {
-                                    tbRegistrantsPhoneFilter.Text = fRegistrants.GetUserPreference( "Phone" );
+                                    tbRegistrantsMobilePhoneFilter.Text = fRegistrants.GetUserPreference( "Cell Phone" );
                                 }
 
-                                phRegistrantsRegistrantFormFieldFilters.Controls.Add( tbRegistrantsPhoneFilter );
+                                phRegistrantsRegistrantFormFieldFilters.Controls.Add( tbRegistrantsMobilePhoneFilter );
 
-                                var tbGroupPlacementsPhoneFilter = new RockTextBox();
-                                tbGroupPlacementsPhoneFilter.ID = "tbGroupPlacementsPhoneFilter";
-                                tbGroupPlacementsPhoneFilter.Label = "Phone";
+                                var tbGroupPlacementsMobilePhoneFilter = new RockTextBox();
+                                tbGroupPlacementsMobilePhoneFilter.ID = "tbGroupPlacementsMobilePhoneFilter";
+                                tbGroupPlacementsMobilePhoneFilter.Label = mobileLabel;
 
                                 if ( setValues )
                                 {
-                                    tbGroupPlacementsPhoneFilter.Text = fGroupPlacements.GetUserPreference( "GroupPlacements-Phone" );
+                                    tbGroupPlacementsMobilePhoneFilter.Text = fGroupPlacements.GetUserPreference( "GroupPlacements-Phone" );
                                 }
 
-                                phGroupPlacementsFormFieldFilters.Controls.Add( tbGroupPlacementsPhoneFilter );
+                                phGroupPlacementsFormFieldFilters.Controls.Add( tbGroupPlacementsMobilePhoneFilter );
 
-                                var tbWaitlistPhoneFilter = new RockTextBox();
-                                tbWaitlistPhoneFilter.ID = "tbWaitlistPhoneFilter";
-                                tbWaitlistPhoneFilter.Label = "Phone";
-                                tbWaitlistPhoneFilter.Text = fRegistrants.GetUserPreference( "WL-Phone" );
-                                phWaitListFormFieldFilters.Controls.Add( tbWaitlistPhoneFilter );
+                                var tbWaitlistMobilePhoneFilter = new RockTextBox();
+                                tbWaitlistMobilePhoneFilter.ID = "tbWaitlistMobilePhoneFilter";
+                                tbWaitlistMobilePhoneFilter.Label = mobileLabel;
+                                tbWaitlistMobilePhoneFilter.Text = fRegistrants.GetUserPreference( "WL-Phone" );
+                                phWaitListFormFieldFilters.Controls.Add( tbWaitlistMobilePhoneFilter );
 
-                                var phoneNumbersField = new PhoneNumbersField();
-                                phoneNumbersField.DataField = "PersonAlias.Person.PhoneNumbers";
-                                phoneNumbersField.HeaderText = "Phone(s)";
+                                var phoneNumbersField = new RockLiteralField();
+                                phoneNumbersField.ID = "lRegistrantsMobile";
+                                phoneNumbersField.HeaderText = mobileLabel;
                                 gRegistrants.Columns.Add( phoneNumbersField );
 
-                                var phoneNumbersField2 = new PhoneNumbersField();
-                                phoneNumbersField2.DataField = "PersonAlias.Person.PhoneNumbers";
-                                phoneNumbersField2.HeaderText = "Phone(s)";
+                                var phoneNumbersField2 = new RockLiteralField();
+                                phoneNumbersField2.ID = "lGroupPlacementsMobile";
+                                phoneNumbersField2.HeaderText = mobileLabel;
                                 gGroupPlacements.Columns.Add( phoneNumbersField2 );
 
-                                var phoneNumbersField3 = new PhoneNumbersField();
-                                phoneNumbersField3.DataField = "PersonAlias.Person.PhoneNumbers";
-                                phoneNumbersField3.HeaderText = "Phone(s)";
+                                var phoneNumbersField3 = new RockLiteralField();
+                                phoneNumbersField3.ID = "lWaitlistMobile";
+                                phoneNumbersField3.HeaderText = mobileLabel;
                                 gWaitList.Columns.Add( phoneNumbersField3 );
 
                                 break;
+
+                            case RegistrationPersonFieldType.HomePhone:
+                                // Per discussion this should not have "Phone" appended to the end if it's missing.
+                                var homePhoneLabel = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ).Value;
+
+                                var tbRegistrantsHomePhoneFilter = new RockTextBox();
+                                tbRegistrantsHomePhoneFilter.ID = "tbRegistrantsHomePhoneFilter";
+                                tbRegistrantsHomePhoneFilter.Label = homePhoneLabel;
+
+                                if ( setValues )
+                                {
+                                    tbRegistrantsHomePhoneFilter.Text = fRegistrants.GetUserPreference( "Home Phone" );
+                                }
+
+                                phRegistrantsRegistrantFormFieldFilters.Controls.Add( tbRegistrantsHomePhoneFilter );
+
+                                var tbGroupPlacementsHomePhoneFilter = new RockTextBox();
+                                tbGroupPlacementsHomePhoneFilter.ID = "tbGroupPlacementsHomePhoneFilter";
+                                tbGroupPlacementsHomePhoneFilter.Label = homePhoneLabel;
+
+                                if ( setValues )
+                                {
+                                    tbGroupPlacementsHomePhoneFilter.Text = fGroupPlacements.GetUserPreference( "GroupPlacements-HomePhone" );
+                                }
+
+                                phGroupPlacementsFormFieldFilters.Controls.Add( tbGroupPlacementsHomePhoneFilter );
+
+                                var tbWaitlistHomePhoneFilter = new RockTextBox();
+                                tbWaitlistHomePhoneFilter.ID = "tbWaitlistHomePhoneFilter";
+                                tbWaitlistHomePhoneFilter.Label = homePhoneLabel;
+                                tbWaitlistHomePhoneFilter.Text = fRegistrants.GetUserPreference( "WL-HomePhone" );
+                                phWaitListFormFieldFilters.Controls.Add( tbWaitlistHomePhoneFilter );
+
+                                var homePhoneNumbersField = new RockLiteralField();
+                                homePhoneNumbersField.ID = "lRegistrantsHomePhone";
+                                homePhoneNumbersField.HeaderText = homePhoneLabel;
+                                gRegistrants.Columns.Add( homePhoneNumbersField );
+
+                                var homePhoneNumbersField2 = new RockLiteralField();
+                                homePhoneNumbersField2.ID = "lGroupPlacementsHomePhone";
+                                homePhoneNumbersField2.HeaderText = homePhoneLabel;
+                                gGroupPlacements.Columns.Add( homePhoneNumbersField2 );
+
+                                var homePhoneNumbersField3 = new RockLiteralField();
+                                homePhoneNumbersField3.ID = "lWaitlistHomePhone";
+                                homePhoneNumbersField3.HeaderText = homePhoneLabel;
+                                gWaitList.Columns.Add( homePhoneNumbersField3 );
+
+                                break;
+
                             case RegistrationPersonFieldType.Address:
                                 var addressField = new RockLiteralField();
                                 addressField.ID = "lRegistrantsAddress";
@@ -4233,7 +4435,7 @@ namespace RockWeb.Blocks.Event
                             boundField3.AttributeId = attribute.Id;
                             boundField3.HeaderText = attribute.Name;
 
-                            var attributeCache = Rock.Cache.CacheAttribute.Get( attribute.Id );
+                            var attributeCache = Rock.Web.Cache.AttributeCache.Get( attribute.Id );
                             if ( attributeCache != null )
                             {
                                 boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
@@ -4294,7 +4496,7 @@ namespace RockWeb.Blocks.Event
                     var creditCardTypes = new Dictionary<int, string>();
 
                     // If configured for a registration and registration is null, return
-                    int registrationEntityTypeId = CacheEntityType.Get( typeof( Rock.Model.Registration ) ).Id;
+                    int registrationEntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Registration ) ).Id;
 
                     // Get all the registrations for this instance
                     paymentRegistrations = new RegistrationService( rockContext )
@@ -4476,7 +4678,7 @@ namespace RockWeb.Blocks.Event
             cblFeeOptions.Items.Clear();
 
             string feeId = ddlFeeName.SelectedValue;
-            if ( feeId.IsNotNullOrWhitespace() )
+            if ( feeId.IsNotNullOrWhiteSpace() )
             {
                 var registrationTemplateFeeService = new RegistrationTemplateFeeService( new RockContext() );
                 var fees = registrationTemplateFeeService.GetParsedFeeOptionsWithoutCost( feeId.AsInteger() );
@@ -4536,7 +4738,7 @@ namespace RockWeb.Blocks.Event
             {
                 data = data.Where( r => r.DiscountCode == ddlDiscountCode.SelectedItem.Text );
             }
-            else if ( tbDiscountCodeSearch.Text.IsNotNullOrWhitespace() )
+            else if ( tbDiscountCodeSearch.Text.IsNotNullOrWhiteSpace() )
             {
                 System.Text.RegularExpressions.Regex regex = new System.Text.RegularExpressions.Regex( tbDiscountCodeSearch.Text.ToLower() );
                 data = data.Where( r => regex.IsMatch( r.DiscountCode.ToLower()) );
@@ -4570,10 +4772,10 @@ namespace RockWeb.Blocks.Event
 
         private void PopulateTotals( List<TemplateDiscountReport> report )
         {
-            lTotalTotalCost.Text = string.Format( CacheGlobalAttributes.Value( "CurrencySymbol" ) + "{0:#,##0.00}", report.Sum( r => r.TotalCost ) );
-            lTotalDiscountQualifiedCost.Text = string.Format( CacheGlobalAttributes.Value( "CurrencySymbol" ) + "{0:#,##0.00}", report.Sum( r => r.DiscountQualifiedCost ) );
-            lTotalDiscounts.Text = string.Format( CacheGlobalAttributes.Value( "CurrencySymbol" ) + "{0:#,##0.00}", report.Sum( r => r.TotalDiscount ) );
-            lTotalRegistrationCost.Text = string.Format( CacheGlobalAttributes.Value( "CurrencySymbol" ) + "{0:#,##0.00}", report.Sum( r => r.RegistrationCost ) );
+            lTotalTotalCost.Text = string.Format( GlobalAttributesCache.Value( "CurrencySymbol" ) + "{0:#,##0.00}", report.Sum( r => r.TotalCost ) );
+            lTotalDiscountQualifiedCost.Text = string.Format( GlobalAttributesCache.Value( "CurrencySymbol" ) + "{0:#,##0.00}", report.Sum( r => r.DiscountQualifiedCost ) );
+            lTotalDiscounts.Text = string.Format( GlobalAttributesCache.Value( "CurrencySymbol" ) + "{0:#,##0.00}", report.Sum( r => r.TotalDiscount ) );
+            lTotalRegistrationCost.Text = string.Format( GlobalAttributesCache.Value( "CurrencySymbol" ) + "{0:#,##0.00}", report.Sum( r => r.RegistrationCost ) );
             lTotalRegistrations.Text = report.Count().ToString();
             lTotalRegistrants.Text = report.Sum( r => r.RegistrantCount ).ToString();
         }
@@ -4676,16 +4878,18 @@ namespace RockWeb.Blocks.Event
                             r.PersonAlias.Person.LastName.StartsWith( rlname ) );
                     }
 
+                    var personIds = qry.Select( r => r.PersonAlias.PersonId ).Distinct().ToList();
                     if ( isExporting || RegistrantFields != null && RegistrantFields.Any( f => f.PersonFieldType != null && f.PersonFieldType == RegistrationPersonFieldType.Address ))
                     {
-                        var personIds = qry.Select( r => r.PersonAlias.PersonId ).ToList();
                         _homeAddresses = Person.GetHomeLocations( personIds );
                     }
 
+                    SetPhoneDictionary( rockContext, personIds );
+
                     bool preloadCampusValues = false;
-                    var registrantAttributes = new List<CacheAttribute>();
-                    var personAttributes = new List<CacheAttribute>();
-                    var groupMemberAttributes = new List<CacheAttribute>();
+                    var registrantAttributes = new List<AttributeCache>();
+                    var personAttributes = new List<AttributeCache>();
+                    var groupMemberAttributes = new List<AttributeCache>();
                     var registrantAttributeIds = new List<int>();
                     var personAttributesIds = new List<int>();
                     var groupMemberAttributesIds = new List<int>();
@@ -4798,10 +5002,29 @@ namespace RockWeb.Blocks.Event
                                     break;
                                    
                                 case RegistrationPersonFieldType.MobilePhone:
-                                    var tbPhoneFilter = phWaitListFormFieldFilters.FindControl( "tbWaitlistPhoneFilter" ) as RockTextBox;
-                                    if ( tbPhoneFilter != null && !string.IsNullOrWhiteSpace( tbPhoneFilter.Text ) )
+                                    var tbMobilePhoneFilter = phWaitListFormFieldFilters.FindControl( "tbWaitlistMobilePhoneFilter" ) as RockTextBox;
+                                    if ( tbMobilePhoneFilter != null && !string.IsNullOrWhiteSpace( tbMobilePhoneFilter.Text ) )
                                     {
-                                        string numericPhone = tbPhoneFilter.Text.AsNumeric();
+                                        string numericPhone = tbMobilePhoneFilter.Text.AsNumeric();
+
+                                        if ( !string.IsNullOrEmpty( numericPhone ) )
+                                        {
+                                            var phoneNumberPersonIdQry = new PhoneNumberService( rockContext )
+                                                .Queryable()
+                                                .Where( a => a.Number.Contains( numericPhone ) )
+                                                .Select( a => a.PersonId );
+
+                                            qry = qry.Where( r => phoneNumberPersonIdQry.Contains( r.PersonAlias.PersonId ) );
+                                        }
+                                    }
+
+                                    break;
+
+                                case RegistrationPersonFieldType.HomePhone:
+                                    var tbWaitlistHomePhoneFilter = phWaitListFormFieldFilters.FindControl( "tbWaitlistHomePhoneFilter" ) as RockTextBox;
+                                    if ( tbWaitlistHomePhoneFilter != null && !string.IsNullOrWhiteSpace( tbWaitlistHomePhoneFilter.Text ) )
+                                    {
+                                        string numericPhone = tbWaitlistHomePhoneFilter.Text.AsNumeric();
 
                                         if ( !string.IsNullOrEmpty( numericPhone ) )
                                         {
@@ -5000,7 +5223,7 @@ namespace RockWeb.Blocks.Event
                                 .ToList();
 
                             // Get all the person ids in current page of query results
-                            var personIds = currentPageRegistrants
+                            var currentPagePersonIds = currentPageRegistrants
                                 .Select( r => r.PersonAlias.PersonId )
                                 .Distinct()
                                 .ToList();
@@ -5030,7 +5253,7 @@ namespace RockWeb.Blocks.Event
                                     .Queryable().AsNoTracking()
                                     .Where( m =>
                                         m.Group.GroupType.Guid == familyGroupTypeGuid &&
-                                        personIds.Contains( m.PersonId ) )
+                                        currentPagePersonIds.Contains( m.PersonId ) )
                                     .GroupBy( m => m.PersonId )
                                     .Select( m => new
                                     {
@@ -5059,7 +5282,7 @@ namespace RockWeb.Blocks.Event
                                         (
                                             (
                                                 personAttributesIds.Contains( v.AttributeId ) &&
-                                                personIds.Contains( v.EntityId.Value )
+                                                currentPagePersonIds.Contains( v.EntityId.Value )
                                             ) ||
                                             (
                                                 groupMemberAttributesIds.Contains( v.AttributeId ) &&
@@ -5072,7 +5295,7 @@ namespace RockWeb.Blocks.Event
                                         ) ).ToList();
 
                                 // Get the attributes to add to each row's object
-                                var attributes = new Dictionary<string, CacheAttribute>();
+                                var attributes = new Dictionary<string, AttributeCache>();
                                 RegistrantFields
                                         .Where( f => f.Attribute != null )
                                         .Select( f => f.Attribute )
@@ -5100,7 +5323,7 @@ namespace RockWeb.Blocks.Event
                                             v.EntityId.Value == registrant.PersonAlias.PersonId )
                                         .ToList()
                                         .ForEach( v => attributeFieldObject.AttributeValues
-                                            .Add( v.AttributeId.ToString() + v.Attribute.Key, new CacheAttributeValue( v ) ) );
+                                            .Add( v.AttributeId.ToString() + v.Attribute.Key, new AttributeValueCache( v ) ) );
 
                                     // Add any group member attribute values to object
                                     if ( registrant.GroupMemberId.HasValue )
@@ -5111,7 +5334,7 @@ namespace RockWeb.Blocks.Event
                                                 v.EntityId.Value == registrant.GroupMemberId.Value )
                                             .ToList()
                                             .ForEach( v => attributeFieldObject.AttributeValues
-                                                .Add( v.AttributeId.ToString() + v.Attribute.Key, new CacheAttributeValue( v ) ) );
+                                                .Add( v.AttributeId.ToString() + v.Attribute.Key, new AttributeValueCache( v ) ) );
                                     }
 
                                     // Add any registrant attribute values to object
@@ -5121,7 +5344,7 @@ namespace RockWeb.Blocks.Event
                                             v.EntityId.Value == registrant.Id )
                                         .ToList()
                                         .ForEach( v => attributeFieldObject.AttributeValues
-                                            .Add( v.AttributeId.ToString() + v.Attribute.Key, new CacheAttributeValue( v ) ) );
+                                            .Add( v.AttributeId.ToString() + v.Attribute.Key, new AttributeValueCache( v ) ) );
 
                                     // Add row attribute object to grid's object list
                                     gWaitList.ObjectList.Add( registrant.Id.ToString(), attributeFieldObject );
@@ -5145,7 +5368,7 @@ namespace RockWeb.Blocks.Event
         private void BindLinkagesFilter()
         {
             fLinkages.UserPreferenceKeyPrefix = string.Format( "{0}-", hfRegistrationTemplateId.Value );
-            cblCampus.DataSource = CacheCampus.All();
+            cblCampus.DataSource = CampusCache.All();
             cblCampus.DataBind();
             string campusValue = fLinkages.GetUserPreference( "Campus" );
             if ( !string.IsNullOrWhiteSpace( campusValue ) )
@@ -5276,16 +5499,17 @@ namespace RockWeb.Blocks.Event
                             r.PersonAlias.Person.LastName.StartsWith( rlname ) );
                     }
 
+                    var personIds = qry.Select( r => r.PersonAlias.PersonId ).Distinct().ToList();
                     if ( isExporting || RegistrantFields != null && RegistrantFields.Any( f => f.PersonFieldType == RegistrationPersonFieldType.Address ) )
                     {
-                        var personIds = qry.Select( r => r.PersonAlias.PersonId ).ToList();
                         _homeAddresses = Person.GetHomeLocations( personIds );
                     }
+                    SetPhoneDictionary( rockContext, personIds );
 
                     bool preloadCampusValues = false;
-                    var registrantAttributes = new List<CacheAttribute>();
-                    var personAttributes = new List<CacheAttribute>();
-                    var groupMemberAttributes = new List<CacheAttribute>();
+                    var registrantAttributes = new List<AttributeCache>();
+                    var personAttributes = new List<AttributeCache>();
+                    var groupMemberAttributes = new List<AttributeCache>();
                     var registrantAttributeIds = new List<int>();
                     var personAttributesIds = new List<int>();
                     var groupMemberAttributesIds = new List<int>();
@@ -5398,10 +5622,29 @@ namespace RockWeb.Blocks.Event
                                     break;
                                     
                                 case RegistrationPersonFieldType.MobilePhone:
-                                    var tbPhoneFilter = phGroupPlacementsFormFieldFilters.FindControl( "tbGroupPlacementsPhoneFilter" ) as RockTextBox;
-                                    if ( tbPhoneFilter != null && !string.IsNullOrWhiteSpace( tbPhoneFilter.Text ) )
+                                    var tbMobilePhoneFilter = phGroupPlacementsFormFieldFilters.FindControl( "tbGroupPlacementsMobilePhoneFilter" ) as RockTextBox;
+                                    if ( tbMobilePhoneFilter != null && !string.IsNullOrWhiteSpace( tbMobilePhoneFilter.Text ) )
                                     {
-                                        string numericPhone = tbPhoneFilter.Text.AsNumeric();
+                                        string numericPhone = tbMobilePhoneFilter.Text.AsNumeric();
+
+                                        if ( !string.IsNullOrEmpty( numericPhone ) )
+                                        {
+                                            var phoneNumberPersonIdQry = new PhoneNumberService( rockContext )
+                                                .Queryable()
+                                                .Where( a => a.Number.Contains( numericPhone ) )
+                                                .Select( a => a.PersonId );
+
+                                            qry = qry.Where( r => phoneNumberPersonIdQry.Contains( r.PersonAlias.PersonId ) );
+                                        }
+                                    }
+
+                                    break;
+
+                                case RegistrationPersonFieldType.HomePhone:
+                                    var tbGroupPlacementsHomePhoneFilter = phGroupPlacementsFormFieldFilters.FindControl( "tbGroupPlacementsHomePhoneFilter" ) as RockTextBox;
+                                    if ( tbGroupPlacementsHomePhoneFilter != null && !string.IsNullOrWhiteSpace( tbGroupPlacementsHomePhoneFilter.Text ) )
+                                    {
+                                        string numericPhone = tbGroupPlacementsHomePhoneFilter.Text.AsNumeric();
 
                                         if ( !string.IsNullOrEmpty( numericPhone ) )
                                         {
@@ -5600,7 +5843,7 @@ namespace RockWeb.Blocks.Event
                                 .ToList();
 
                             // Get all the person ids in current page of query results
-                            var personIds = currentPageRegistrants
+                            var currentPagePersonIds = currentPageRegistrants
                                 .Select( r => r.PersonAlias.PersonId )
                                 .Distinct()
                                 .ToList();
@@ -5630,7 +5873,7 @@ namespace RockWeb.Blocks.Event
                                     .Queryable().AsNoTracking()
                                     .Where( m =>
                                         m.Group.GroupType.Guid == familyGroupTypeGuid &&
-                                        personIds.Contains( m.PersonId ) )
+                                        currentPagePersonIds.Contains( m.PersonId ) )
                                     .GroupBy( m => m.PersonId )
                                     .Select( m => new
                                     {
@@ -5659,7 +5902,7 @@ namespace RockWeb.Blocks.Event
                                         (
                                             (
                                                 personAttributesIds.Contains( v.AttributeId ) &&
-                                                personIds.Contains( v.EntityId.Value )
+                                                currentPagePersonIds.Contains( v.EntityId.Value )
                                             ) ||
                                             (
                                                 groupMemberAttributesIds.Contains( v.AttributeId ) &&
@@ -5672,7 +5915,7 @@ namespace RockWeb.Blocks.Event
                                         ) ).ToList();
 
                                 // Get the attributes to add to each row's object
-                                var attributes = new Dictionary<string, CacheAttribute>();
+                                var attributes = new Dictionary<string, AttributeCache>();
                                 RegistrantFields
                                         .Where( f => f.Attribute != null )
                                         .Select( f => f.Attribute )
@@ -5700,7 +5943,7 @@ namespace RockWeb.Blocks.Event
                                             v.EntityId.Value == registrant.PersonAlias.PersonId )
                                         .ToList()
                                         .ForEach( v => attributeFieldObject.AttributeValues
-                                            .Add( v.AttributeId.ToString() + v.Attribute.Key, new CacheAttributeValue( v ) ) );
+                                            .Add( v.AttributeId.ToString() + v.Attribute.Key, new AttributeValueCache( v ) ) );
 
                                     // Add any group member attribute values to object
                                     if ( registrant.GroupMemberId.HasValue )
@@ -5711,7 +5954,7 @@ namespace RockWeb.Blocks.Event
                                                 v.EntityId.Value == registrant.GroupMemberId.Value )
                                             .ToList()
                                             .ForEach( v => attributeFieldObject.AttributeValues
-                                                .Add( v.AttributeId.ToString() + v.Attribute.Key, new CacheAttributeValue( v ) ) );
+                                                .Add( v.AttributeId.ToString() + v.Attribute.Key, new AttributeValueCache( v ) ) );
                                     }
 
                                     // Add any registrant attribute values to object
@@ -5721,7 +5964,7 @@ namespace RockWeb.Blocks.Event
                                             v.EntityId.Value == registrant.Id )
                                         .ToList()
                                         .ForEach( v => attributeFieldObject.AttributeValues
-                                            .Add( v.AttributeId.ToString() + v.Attribute.Key, new CacheAttributeValue( v ) ) );
+                                            .Add( v.AttributeId.ToString() + v.Attribute.Key, new AttributeValueCache( v ) ) );
 
                                     // Add row attribute object to grid's object list
                                     gGroupPlacements.ObjectList.Add( registrant.Id.ToString(), attributeFieldObject );
@@ -5812,10 +6055,19 @@ namespace RockWeb.Blocks.Event
                                 break;
                                 
                             case RegistrationPersonFieldType.MobilePhone:
-                                var tbPhoneFilter = phGroupPlacementsFormFieldFilters.FindControl( "tbGroupPlacementsPhoneFilter" ) as RockTextBox;
-                                if ( tbPhoneFilter != null )
+                                var tbMobilePhoneFilter = phGroupPlacementsFormFieldFilters.FindControl( "tbGroupPlacementsMobilePhoneFilter" ) as RockTextBox;
+                                if ( tbMobilePhoneFilter != null )
                                 {
-                                    fGroupPlacements.SaveUserPreference( "GroupPlacements-Phone", "Phone", tbPhoneFilter.Text );
+                                    fGroupPlacements.SaveUserPreference( "GroupPlacements-Phone", "Cell Phone", tbMobilePhoneFilter.Text );
+                                }
+
+                                break;
+
+                            case RegistrationPersonFieldType.HomePhone:
+                                var tbGroupPlacementsHomePhoneFilter = phGroupPlacementsFormFieldFilters.FindControl( "tbGroupPlacementsHomePhoneFilter" ) as RockTextBox;
+                                if ( tbGroupPlacementsHomePhoneFilter != null )
+                                {
+                                    fGroupPlacements.SaveUserPreference( "GroupPlacements-HomePhone", "Home Phone", tbGroupPlacementsHomePhoneFilter.Text );
                                 }
 
                                 break;
@@ -5856,7 +6108,7 @@ namespace RockWeb.Blocks.Event
             foreach ( var control in phGroupPlacementsFormFieldFilters.ControlsOfTypeRecursive<Control>().Where(a => a.ID != null && a.ID.StartsWith( "filter" ) && a.ID.Contains("_") ))
             {
                 var attributeId = control.ID.Split('_')[1].AsInteger();
-                var attribute = CacheAttribute.Get( attributeId );
+                var attribute = AttributeCache.Get( attributeId );
                 if ( attribute != null )
                 {
                     attribute.FieldType.Field.SetFilterValues( control, attribute.QualifierValues, new List<string>() );
@@ -5927,10 +6179,19 @@ namespace RockWeb.Blocks.Event
                                 break;
                                 
                             case RegistrationPersonFieldType.MobilePhone:
-                                var tbPhoneFilter = phGroupPlacementsFormFieldFilters.FindControl( "tbGroupPlacementsPhoneFilter" ) as RockTextBox;
-                                if ( tbPhoneFilter != null )
+                                var tbMobilePhoneFilter = phGroupPlacementsFormFieldFilters.FindControl( "tbGroupPlacementsMobilePhoneFilter" ) as RockTextBox;
+                                if ( tbMobilePhoneFilter != null )
                                 {
-                                    tbPhoneFilter.Text = string.Empty;
+                                    tbMobilePhoneFilter.Text = string.Empty;
+                                }
+
+                                break;
+
+                            case RegistrationPersonFieldType.HomePhone:
+                                var tbGroupPlacementsHomePhoneFilter = phGroupPlacementsFormFieldFilters.FindControl( "tbGroupPlacementsHomePhoneFilter" ) as RockTextBox;
+                                if ( tbGroupPlacementsHomePhoneFilter != null )
+                                {
+                                    tbGroupPlacementsHomePhoneFilter.Text = string.Empty;
                                 }
 
                                 break;
@@ -5997,10 +6258,10 @@ namespace RockWeb.Blocks.Event
                     case "First Name":
                     case "Last Name":
                     case "Email":
-                    case "Phone":
+                    case "Home Phone":
                     case "Signed Document":
                         break;
-                        
+
                     case "Gender":
                         var gender = e.Value.ConvertToEnumOrNull<Gender>();
                         e.Value = gender.HasValue ? gender.ConvertToString() : string.Empty;
@@ -6010,7 +6271,7 @@ namespace RockWeb.Blocks.Event
                         int? campusId = e.Value.AsIntegerOrNull();
                         if ( campusId.HasValue )
                         {
-                            var campus = CacheCampus.Get( campusId.Value );
+                            var campus = CampusCache.Get( campusId.Value );
                             e.Value = campus != null ? campus.Name : string.Empty;
                         }
                         else
@@ -6024,7 +6285,7 @@ namespace RockWeb.Blocks.Event
                         int? dvId = e.Value.AsIntegerOrNull();
                         if ( dvId.HasValue )
                         {
-                            var maritalStatus = CacheDefinedValue.Get( dvId.Value );
+                            var maritalStatus = DefinedValueCache.Get( dvId.Value );
                             e.Value = maritalStatus != null ? maritalStatus.Value : string.Empty;
                         }
                         else
@@ -6099,7 +6360,7 @@ namespace RockWeb.Blocks.Event
             /// <value>
             /// The attribute.
             /// </value>
-            public CacheAttribute Attribute { get; set; }
+            public AttributeCache Attribute { get; set; }
         }
 
         #endregion

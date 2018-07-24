@@ -126,6 +126,7 @@ namespace Rock.Workflow.Action.CheckIn
                                         attendance.StartDateTime = startDateTime;
                                         attendance.EndDateTime = null;
                                         attendance.DidAttend = true;
+                                        attendance.Note = group.Notes;
 
                                         KioskLocationAttendance.AddAttendance( attendance );
                                     }

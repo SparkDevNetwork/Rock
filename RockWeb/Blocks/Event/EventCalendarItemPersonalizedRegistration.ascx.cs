@@ -26,7 +26,7 @@ using Humanizer;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 
@@ -94,7 +94,7 @@ namespace RockWeb.Blocks.Event
             if ( !Page.IsPostBack )
             {
                 // load campuses
-                cpCampus.DataSource = CacheCampus.All();
+                cpCampus.DataSource = CampusCache.All();
                 cpCampus.DataValueField = "Id";
                 cpCampus.DataTextField = "Name";
                 cpCampus.DataBind();
@@ -362,7 +362,7 @@ namespace RockWeb.Blocks.Event
                 lbRegister.Visible = false;
                 lEventIntro.Visible = false;
                 cblRegistrants.Visible = false;
-                var campus = CacheCampus.Get( _campusId );
+                var campus = CampusCache.Get( _campusId );
                 lMessages.Text = string.Format( "<div class='alert alert-info'>There are no {0} events for the {1} campus in the next {2} days.</div>",
                                     eventItem.Name,
                                     campus != null ? campus.Name : string.Empty,

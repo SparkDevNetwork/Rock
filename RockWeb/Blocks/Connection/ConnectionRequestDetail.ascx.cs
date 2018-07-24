@@ -30,7 +30,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
@@ -64,7 +64,7 @@ namespace RockWeb.Blocks.Connection
         /// <value>
         /// The search attributes.
         /// </value>
-        public List<CacheAttribute> SearchAttributes { get; set; }
+        public List<AttributeCache> SearchAttributes { get; set; }
 
         #endregion
 
@@ -78,7 +78,7 @@ namespace RockWeb.Blocks.Connection
         {
             base.LoadViewState( savedState );
 
-            SearchAttributes = ViewState["SearchAttributes"] as List<CacheAttribute>;
+            SearchAttributes = ViewState["SearchAttributes"] as List<AttributeCache>;
             if ( SearchAttributes != null )
             {
                 AddDynamicControls();
@@ -135,7 +135,7 @@ namespace RockWeb.Blocks.Connection
                     Guid guid = badgeGuid.AsGuid();
                     if ( guid != Guid.Empty )
                     {
-                        var personBadge = CachePersonBadge.Get( guid );
+                        var personBadge = PersonBadgeCache.Get( guid );
                         if ( personBadge != null )
                         {
                             blStatus.PersonBadges.Add( personBadge );
@@ -913,7 +913,7 @@ namespace RockWeb.Blocks.Connection
                     connectionRequest.ConnectionOpportunity != null &&
                     connectionRequest.ConnectionOpportunity.ConnectionType != null )
                 {
-                    cblCampus.DataSource = CacheCampus.All();
+                    cblCampus.DataSource = CampusCache.All();
                     cblCampus.DataBind();
 
                     if ( connectionRequest.CampusId.HasValue )
@@ -1637,7 +1637,7 @@ namespace RockWeb.Blocks.Connection
                     var authorizedWorkflows = new List<ConnectionWorkflow>();
                     foreach ( var manualWorkflow in manualWorkflows )
                     {
-                        if ( manualWorkflow.WorkflowType.IsActive && manualWorkflow.WorkflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                        if ( manualWorkflow.WorkflowType.IsActive ?? true && manualWorkflow.WorkflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                         {
                             authorizedWorkflows.Add( manualWorkflow );
                         }
@@ -1728,7 +1728,7 @@ namespace RockWeb.Blocks.Connection
             // Campus
             ddlCampus.Items.Clear();
             ddlCampus.Items.Add( new ListItem( string.Empty, string.Empty ) );
-            foreach ( var campus in CacheCampus.All() )
+            foreach ( var campus in CampusCache.All() )
             {
                 var listItem = new ListItem( campus.Name, campus.Id.ToString() );
                 listItem.Selected = connectionRequest.CampusId.HasValue && campus.Id == connectionRequest.CampusId.Value;
@@ -2251,7 +2251,7 @@ namespace RockWeb.Blocks.Connection
                     connectionRequest.ConnectionOpportunity != null )
                 {
                     // Parse the attribute filters 
-                    SearchAttributes = new List<CacheAttribute>();
+                    SearchAttributes = new List<AttributeCache>();
 
                     int entityTypeId = new ConnectionOpportunity().TypeId;
                     foreach ( var attributeModel in new AttributeService( rockContext ).GetByEntityTypeQualifier( entityTypeId, "ConnectionTypeId", connectionRequest.ConnectionOpportunity.ConnectionTypeId.ToString(), false )
@@ -2259,7 +2259,7 @@ namespace RockWeb.Blocks.Connection
                         .OrderBy( a => a.Order )
                         .ThenBy( a => a.Name ) )
                     {
-                        SearchAttributes.Add( CacheAttribute.Get( attributeModel ) );
+                        SearchAttributes.Add( AttributeCache.Get( attributeModel ) );
                     }
                 }
             }
@@ -2460,7 +2460,7 @@ namespace RockWeb.Blocks.Connection
         {
             if ( connectionRequest != null && connectionWorkflow != null )
             {
-                var workflowType = connectionWorkflow.CacheWorkflowType;
+                var workflowType = connectionWorkflow.WorkflowTypeCache;
                 if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                 {
                     var workflow = Rock.Model.Workflow.Activate( workflowType, connectionWorkflow.WorkflowType.WorkTerm, rockContext );

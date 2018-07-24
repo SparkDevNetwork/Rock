@@ -12,11 +12,12 @@
                     
                     <div class="panel-labels">
                         <Rock:HighlightLabel ID="hlblEditDataViewId" runat="server" />
+                        <div class="label label-primary"><asp:LinkButton ID="lbCreateReport" runat="server" OnClick="lbCreateReport_Click" ><i class="fa fa-plus"></i> Create Report</asp:LinkButton></div>
                     </div>
                 </div>
                 <div class="panel-body">
 
-                    <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                    <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                     <fieldset>
 
@@ -55,6 +56,7 @@
                         <div class="panel-labels">
                              <Rock:HighlightLabel ID="hlblDataViewId" runat="server" />
                              <Rock:HighlightLabel ID="hlblPersisted" LabelType="Info" Text="Persisted" Visible="false" runat="server" />
+                            <div class="label label-primary"><asp:LinkButton ID="lbViewCreateReport" runat="server" OnClick="lbCreateReport_Click" ><i class="fa fa-plus"></i> Create Report</asp:LinkButton></div>
                         </div>
                     </div>
                     <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>

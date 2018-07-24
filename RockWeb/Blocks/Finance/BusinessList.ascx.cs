@@ -25,7 +25,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -186,7 +186,7 @@ namespace RockWeb.Blocks.Finance
         private void BindGrid()
         {
             var rockContext = new RockContext();
-            var recordTypeValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
+            var recordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
 
             var queryable = new PersonService( rockContext ).Queryable()
                 .Where( q => q.RecordTypeValueId == recordTypeValueId );
@@ -214,7 +214,7 @@ namespace RockWeb.Blocks.Finance
 
             if ( ! viaSearch )
             {
-                var activeRecordStatusValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
+                var activeRecordStatusValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
                 string activeFilterValue = gfBusinessFilter.GetUserPreference( "Active Status" );
                 if ( activeFilterValue == "inactive" )
                 {
@@ -265,7 +265,7 @@ namespace RockWeb.Blocks.Finance
             }
             else
             {
-                gBusinessList.EntityTypeId = CacheEntityType.Get<Person>().Id;
+                gBusinessList.EntityTypeId = EntityTypeCache.Get<Person>().Id;
                 gBusinessList.DataSource = businessList.ToList();
                 gBusinessList.DataBind();
             }
@@ -282,8 +282,8 @@ namespace RockWeb.Blocks.Finance
 
         protected string FormatContactInfo( string phone, string address )
         {
-            var values = new List<string> { phone, address, "&nbsp;", "&nbsp" };
-            return values.Where( v => v.IsNotNullOrWhitespace() ).Take( 2 ).ToList().AsDelimited( "<br/>" );
+            var values = new List<string> { phone, address, "&nbsp;", "&nbsp;" };
+            return values.Where( v => v.IsNotNullOrWhiteSpace() ).Take( 2 ).ToList().AsDelimited( "<br/>" );
         }
 
         #endregion Internal Methods

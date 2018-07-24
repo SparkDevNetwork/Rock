@@ -27,7 +27,7 @@ using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using System.Data;
@@ -151,7 +151,7 @@ namespace RockWeb.Blocks.Administration
                 query = query.Sort( gExceptionOccurrences.SortProperty );
             }
 
-            gExceptionOccurrences.EntityTypeId = CacheEntityType.Get<ExceptionLog>().Id;
+            gExceptionOccurrences.EntityTypeId = EntityTypeCache.Get<ExceptionLog>().Id;
             gExceptionOccurrences.SetLinqDataSource( query );
             gExceptionOccurrences.DataBind();
         }

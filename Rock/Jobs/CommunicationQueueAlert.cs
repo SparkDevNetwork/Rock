@@ -25,7 +25,7 @@ using Rock.Attribute;
 using Rock.Model;
 using Rock.Data;
 using Rock.Communication;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
@@ -87,7 +87,7 @@ namespace Rock.Jobs
 
         private int GetJobAttributeValue( string key, int defaultValue, RockContext rockContext )
         {
-            var jobEntityType = CacheEntityType.Get( typeof( Rock.Model.ServiceJob ) );
+            var jobEntityType = EntityTypeCache.Get( typeof( Rock.Model.ServiceJob ) );
 
             int intValue = 3;
             var jobExpirationAttribute = new AttributeService( rockContext )

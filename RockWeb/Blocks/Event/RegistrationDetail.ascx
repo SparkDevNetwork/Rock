@@ -67,7 +67,7 @@
                 <div class="panel-body">
 
                     <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
-                    <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                    <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                     <div id="pnlEditDetails" runat="server">
 
@@ -145,11 +145,11 @@
                                                         </div>
 
                                                         <div runat="server" class="col-sm-3 fee-value" visible='<%# PercentageDiscountExists %>'>
-                                                            <span class="visible-xs-inline">Discounted Amount:</span> <%# Rock.Cache.CacheGlobalAttributes.Value( "CurrencySymbol" )%> <%# string.Format("{0:N}", Eval("DiscountedCost")) %>
+                                                            <span class="visible-xs-inline">Discounted Amount:</span> <%# Rock.Web.Cache.GlobalAttributesCache.Value( "CurrencySymbol" )%> <%# string.Format("{0:N}", Eval("DiscountedCost")) %>
                                                         </div>
 
                                                         <div class="col-sm-3 fee-value">
-                                                            <span class="visible-xs-inline">Amount:</span> <%# Rock.Cache.CacheGlobalAttributes.Value( "CurrencySymbol" )%> <%# string.Format("{0:N}", Eval("Cost")) %>
+                                                            <span class="visible-xs-inline">Amount:</span> <%# Rock.Web.Cache.GlobalAttributesCache.Value( "CurrencySymbol" )%> <%# string.Format("{0:N}", Eval("Cost")) %>
                                                         </div>
 
                                                     </div>
@@ -289,7 +289,7 @@
 
         <Rock:ModalDialog ID="mdMoveRegistration" runat="server" Title="Move Registration" ValidationGroup="vgMoveRegistration" CancelLinkVisible="false">
             <Content>
-                <asp:ValidationSummary ID="vsMoveRegistration" runat="server" ValidationGroup="vgMoveRegistration" HeaderText="Please Correct the Following" CssClass="alert alert-validation"  />
+                <asp:ValidationSummary ID="vsMoveRegistration" runat="server" ValidationGroup="vgMoveRegistration" HeaderText="Please correct the following:" CssClass="alert alert-validation"  />
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:RockLiteral ID="lCurrentRegistrationInstance" runat="server" Label="Current Registration Instance" />

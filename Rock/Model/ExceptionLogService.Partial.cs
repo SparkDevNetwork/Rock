@@ -327,7 +327,7 @@ namespace Rock.Model
                     formItems.Append( "<table class=\"form-items exception-table\">" );
                     foreach ( string formItem in formList )
                     {
-                        if ( formItem.IsNotNullOrWhitespace() )
+                        if ( formItem.IsNotNullOrWhiteSpace() )
                         {
                             string formValue = formList[formItem].EncodeHtml();
                             string lc = formItem.ToLower();
@@ -355,7 +355,20 @@ namespace Rock.Model
                     serverVars.Append( "<table class=\"server-variables exception-table\">" );
 
                     foreach ( string serverVar in serverVarList )
-                        serverVars.Append( "<tr><td><b>" + serverVar + "</b></td><td>" + serverVarList[serverVar].EncodeHtml() + "</td></tr>" );
+                    {
+                        string val = string.Empty;
+                        try
+                        {
+                            // 'serverVarList[serverVar]' throws an exception if the value is empty, even if the key exists. Was not able to find a more elegant way to avoid an exception. 
+                            val = serverVarList[serverVar].ToStringSafe().EncodeHtml();
+                        }
+                        catch
+                        {
+
+                        }
+
+                        serverVars.Append( $"<tr><td><b>{serverVar}</b></td><td>{val}</td></tr>" );
+                    }
 
                     serverVars.Append( "</table>" );
                 }

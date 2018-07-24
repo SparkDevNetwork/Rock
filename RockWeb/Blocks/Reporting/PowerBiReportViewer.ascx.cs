@@ -23,7 +23,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Reporting;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Reporting
@@ -89,7 +89,7 @@ namespace RockWeb.Blocks.Reporting
         {
             pnlEditModal.Visible = true;
 
-            var biAccounts = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.POWERBI_ACCOUNTS.AsGuid() );
+            var biAccounts = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.POWERBI_ACCOUNTS.AsGuid() );
 
             ddlSettingPowerBiAccount.Items.Clear();
             ddlSettingPowerBiAccount.Items.Add( new ListItem() );
@@ -221,7 +221,7 @@ namespace RockWeb.Blocks.Reporting
             if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PowerBiAccount" ) ) )
             {
                 // ensure that the account still exists as a defined value
-                var accountValue = CacheDefinedValue.Get( GetAttributeValue( "PowerBiAccount" ) );
+                var accountValue = DefinedValueCache.Get( GetAttributeValue( "PowerBiAccount" ) );
 
                 if ( accountValue != null )
                 {

@@ -39,14 +39,14 @@ namespace Rock.Migrations
 
             RockMigrationHelper.UpdateBlockType( "Internal Communication View", "Block for showing the contents of internal content channels.", "~/Blocks/Utility/InternalCommunicationView.ascx", "Utility", INTERNAL_COMMUNICATION_VIEW_BLOCKTYPE );
             // Add Block to Page: Internal Homepage, Site: Rock RMS
-            RockMigrationHelper.AddBlock( true, Page.INTERNAL_HOMEPAGE, "", INTERNAL_COMMUNICATION_VIEW_BLOCKTYPE, "Internal Communication View", "Main", @"{% stylesheet id:'home-feature' %}
+            RockMigrationHelper.AddBlock( true, Page.INTERNAL_HOMEPAGE, "", INTERNAL_COMMUNICATION_VIEW_BLOCKTYPE, "Internal Communication View", "Main", @"{% stylesheet id:''home-feature'' %}
 
 .feature-image {
     width: 100%;
     height: 450px;
     background-repeat: no-repeat;
     background-size: cover;
-    background-position: center; 
+    background-position: center;
 }
 
 
@@ -96,6 +96,9 @@ namespace Rock.Migrations
     float: right;
     opacity: .3;
     font-size: 65px;
+    border-radius: 0;
+    width: 85px;
+    height: 65px;
 }
 
 {% endstylesheet %}", @"", 2, "879BC5A7-3CE2-43FC-BEDB-B93B0054F417" );
@@ -131,14 +134,14 @@ namespace Rock.Migrations
             // Attrib Value for Block:Internal Communication View, Attribute:Block Title Icon CSS Class Page: Internal Homepage, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "879BC5A7-3CE2-43FC-BEDB-B93B0054F417", "86044377-02E9-46C7-A90B-4CF4DA8F38B0", @"fa fa-newspaper" );
             // Attrib Value for Block:Internal Communication View, Attribute:Body Template Page: Internal Homepage, Site: Rock RMS
-            RockMigrationHelper.AddBlockAttributeValue( "879BC5A7-3CE2-43FC-BEDB-B93B0054F417", "E7A96FBE-C05F-4079-896E-E84115A96077", @"{% stylesheet id:'home-feature' %}
+            RockMigrationHelper.AddBlockAttributeValue( "879BC5A7-3CE2-43FC-BEDB-B93B0054F417", "E7A96FBE-C05F-4079-896E-E84115A96077", @"{% stylesheet id:''home-feature'' %}
 
 .feature-image {
     width: 100%;
     height: 450px;
     background-repeat: no-repeat;
     background-size: cover;
-    background-position: center; 
+    background-position: center;
 }
 
 
@@ -188,37 +191,40 @@ namespace Rock.Migrations
     float: right;
     opacity: .3;
     font-size: 65px;
+    border-radius: 0;
+    width: 85px;
+    height: 65px;
 }
 
 {% endstylesheet %}
 
 <div class=""communicationview"">
     {% assign featureLink = Item | Attribute:'FeatureLink' -%}
-    
+
     <div class=""feature"">
-    
+
         <div class=""feature-image"" style="" background-image: url('/GetImage.ashx?Guid={{ Item | Attribute:'FeatureImage','RawValue' }}&w=2400&h=2400');""></div>
         <h1 class=""feature-title"">{{ Item | Attribute:'FeatureTitle' }}</h1>
         <p>
             {{ Item | Attribute:'FeatureText' }}
         </p>
-        
+
         {% if featureLink != empty -%}
             <a class=""btn btn-xs btn-link"" href=""{{ featureLink }}"">More Info</a>
         {% endif -%}
     </div>
-    
+
     <hr class=""margin-v-lg"" />
-    
+
     <div class=""margin-b-lg"">
         {{ Item | Attribute:'Articles' }}
     </div>
-    
+
     {% assign metricCount = Metrics | Size -%}
-    
+
     {% if metricCount > 0 -%}
         <h1>Metrics</h1>
-        
+
         <div class=""row"">
         {% for metric in Metrics -%}
             <div class=""col-lg-4"">
@@ -226,19 +232,19 @@ namespace Rock.Migrations
                     <h5>{{ metric.Title }}</h5>
                     <span class=""date"">{{ metric.LastRunDateTime | Date:'sd' }}</span>
                     <i class=""icon {{ metric.IconCssClass  }}""></i>
-                    
+
                     <div class=""value"">
                         {{ metric.LastValue | AsInteger }}
                         <small>{{ metric.UnitsLabel }}</small>
                     </div>
                 </div>
             </div>
-            
+
             {% cycle '', '', '</div><div class=""row"">' %}
         {% endfor -%}
         </div>
     {% endif %}
-    
+
 </div>" );
             // Attrib Value for Block:Internal Communication View, Attribute:Metrics Page: Internal Homepage, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "879BC5A7-3CE2-43FC-BEDB-B93B0054F417", "F3B7330F-1E4B-45A8-AF38-587E1409F9D9", @"ecb1b552-9a3d-46fc-952b-d57dbc4a329d|073add0c-b1f3-43ab-8360-89a1ce05a95d,491061b7-1834-44da-8ea1-bb73b2d52ad3|073add0c-b1f3-43ab-8360-89a1ce05a95d,f0a24208-f8ac-4e04-8309-1a276885f6a6|073add0c-b1f3-43ab-8360-89a1ce05a95d" );
@@ -251,56 +257,56 @@ namespace Rock.Migrations
             Sql( @"UPDATE [Page] SET [DisplayInNavWhen] = 2 WHERE [Guid] = '5E036ADE-C2A4-4988-B393-DAC58230F02E'" );
 
             // Add Swimlane to Person
-            RockMigrationHelper.UpdateBlockType("Person Group History","Displays a timeline of a person's history in groups","~/Blocks/Crm/PersonDetail/PersonGroupHistory.ascx","CRM > Person Detail","F8E351BC-607E-4897-B732-F590B5155451");  
-            // Add Block to Page: Groups, Site: Rock RMS              
-            RockMigrationHelper.AddBlock( true, "183B7B7E-105A-4C9A-A4BC-06CD26B7FE6D","","F8E351BC-607E-4897-B732-F590B5155451","Person Group History","SectionC1","","",0,"E18B1B2D-BF2A-43AD-BB9E-5DADBEFFB908");   
-            // Attrib for BlockType: Person Group History:Group Types              
-            RockMigrationHelper.UpdateBlockTypeAttribute("F8E351BC-607E-4897-B732-F590B5155451","F725B854-A15E-46AE-9D4C-0608D4154F1E","Group Types","GroupTypes","","List of Group Types that this block defaults to, and the user is able to choose from in the options filter. Leave blank to include all group types that have history enabled.",1,@"","82FA5003-05E8-4E22-8E5F-ED841DF4D9CB");  
+            RockMigrationHelper.UpdateBlockType("Person Group History","Displays a timeline of a person's history in groups","~/Blocks/Crm/PersonDetail/PersonGroupHistory.ascx","CRM > Person Detail","F8E351BC-607E-4897-B732-F590B5155451");
+            // Add Block to Page: Groups, Site: Rock RMS
+            RockMigrationHelper.AddBlock( true, "183B7B7E-105A-4C9A-A4BC-06CD26B7FE6D","","F8E351BC-607E-4897-B732-F590B5155451","Person Group History","SectionC1","","",0,"E18B1B2D-BF2A-43AD-BB9E-5DADBEFFB908");
+            // Attrib for BlockType: Person Group History:Group Types
+            RockMigrationHelper.UpdateBlockTypeAttribute("F8E351BC-607E-4897-B732-F590B5155451","F725B854-A15E-46AE-9D4C-0608D4154F1E","Group Types","GroupTypes","","List of Group Types that this block defaults to, and the user is able to choose from in the options filter. Leave blank to include all group types that have history enabled.",1,@"","82FA5003-05E8-4E22-8E5F-ED841DF4D9CB");
             // Move Group List to be Second on the Page
             Sql( @"UPDATE [Block] SET [Order] = 1 WHERE [Guid] = '1CBE10C7-5E64-4385-BEE3-81DCA43DC47F'" );
 
-            // Page: Group History Grid              
+            // Page: Group History Grid
             RockMigrationHelper.AddPage( true, "FCCF2570-DC09-4129-87BE-F1CAE25F1B9D","D65F783D-87A9-4CC9-8110-E83466A0EADB","Group History Grid","", Rock.SystemGuid.Page.GROUP_HISTORY_GRID, ""); // Site:Rock RMS
             RockMigrationHelper.AddPageRoute( Rock.SystemGuid.Page.GROUP_HISTORY_GRID,"group/{GroupId}/history/grid");
             RockMigrationHelper.UpdateBlockType("Group Member History","Displays a timeline of history for a group member","~/Blocks/Groups/GroupMemberHistory.ascx","Groups","EA6EA2E7-6504-41FE-AB55-0B1E7D04B226");
-            // Add Block to Page: Group History Grid, Site: Rock RMS              
-            RockMigrationHelper.AddBlock( true, "FB9A6BC0-0B51-4A92-A32C-58AC822CD2D0","","EA6EA2E7-6504-41FE-AB55-0B1E7D04B226","Group Member History","Main","","",0,"C41CBC63-0DB6-4F69-8DEA-894580E27312");   
-            // Attrib for BlockType: Group Member History:core.CustomGridColumnsConfig              
-            RockMigrationHelper.UpdateBlockTypeAttribute("EA6EA2E7-6504-41FE-AB55-0B1E7D04B226","9C204CD0-1233-41C5-818A-C5DA439445AA","core.CustomGridColumnsConfig","core.CustomGridColumnsConfig","","",0,@"","BFECBDEF-F723-4C97-A8C5-FBDC5707EA22");  
-            // Attrib for BlockType: Group Member History:core.CustomGridEnableStickyHeaders              
-            RockMigrationHelper.UpdateBlockTypeAttribute("EA6EA2E7-6504-41FE-AB55-0B1E7D04B226","1EDAFDED-DFE6-4334-B019-6EECBA89E05A","core.CustomGridEnableStickyHeaders","core.CustomGridEnableStickyHeaders","","",0,@"False","80F5C53B-BA41-41CC-8EB6-2A89CA426622");  
-            // Attrib for BlockType: Group Member History:Timeline Lava Template              
-            RockMigrationHelper.UpdateBlockTypeAttribute("EA6EA2E7-6504-41FE-AB55-0B1E7D04B226","1D0D3794-C210-48A8-8C68-3FBEC08A6BA5","Timeline Lava Template","TimelineLavaTemplate","","The Lava Template to use when rendering the timeline view of the history.",1,@"{% include '~~/Assets/Lava/GroupHistoryTimeline.lava' %}","2928385B-09D9-4877-A35C-2A688F22DB22");  
-            // Attrib for BlockType: Group Member History:Group History Grid Page              
-            RockMigrationHelper.UpdateBlockTypeAttribute("EA6EA2E7-6504-41FE-AB55-0B1E7D04B226","BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108","Group History Grid Page","GroupHistoryGridPage","","",2,@"","B72E26E2-5EC5-49BE-829B-18FB9AE12E47");  
-            // Attrib for BlockType: Group Member History:Group Member History Page              
-            RockMigrationHelper.UpdateBlockTypeAttribute("EA6EA2E7-6504-41FE-AB55-0B1E7D04B226","BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108","Group Member History Page","GroupMemberHistoryPage","","",3,@"","A1D22BA4-4D39-4187-9F6B-C0B8DC6D6896");  
+            // Add Block to Page: Group History Grid, Site: Rock RMS
+            RockMigrationHelper.AddBlock( true, "FB9A6BC0-0B51-4A92-A32C-58AC822CD2D0","","EA6EA2E7-6504-41FE-AB55-0B1E7D04B226","Group Member History","Main","","",0,"C41CBC63-0DB6-4F69-8DEA-894580E27312");
+            // Attrib for BlockType: Group Member History:core.CustomGridColumnsConfig
+            RockMigrationHelper.UpdateBlockTypeAttribute("EA6EA2E7-6504-41FE-AB55-0B1E7D04B226","9C204CD0-1233-41C5-818A-C5DA439445AA","core.CustomGridColumnsConfig","core.CustomGridColumnsConfig","","",0,@"","BFECBDEF-F723-4C97-A8C5-FBDC5707EA22");
+            // Attrib for BlockType: Group Member History:core.CustomGridEnableStickyHeaders
+            RockMigrationHelper.UpdateBlockTypeAttribute("EA6EA2E7-6504-41FE-AB55-0B1E7D04B226","1EDAFDED-DFE6-4334-B019-6EECBA89E05A","core.CustomGridEnableStickyHeaders","core.CustomGridEnableStickyHeaders","","",0,@"False","80F5C53B-BA41-41CC-8EB6-2A89CA426622");
+            // Attrib for BlockType: Group Member History:Timeline Lava Template
+            RockMigrationHelper.UpdateBlockTypeAttribute("EA6EA2E7-6504-41FE-AB55-0B1E7D04B226","1D0D3794-C210-48A8-8C68-3FBEC08A6BA5","Timeline Lava Template","TimelineLavaTemplate","","The Lava Template to use when rendering the timeline view of the history.",1,@"{% include '~~/Assets/Lava/GroupHistoryTimeline.lava' %}","2928385B-09D9-4877-A35C-2A688F22DB22");
+            // Attrib for BlockType: Group Member History:Group History Grid Page
+            RockMigrationHelper.UpdateBlockTypeAttribute("EA6EA2E7-6504-41FE-AB55-0B1E7D04B226","BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108","Group History Grid Page","GroupHistoryGridPage","","",2,@"","B72E26E2-5EC5-49BE-829B-18FB9AE12E47");
+            // Attrib for BlockType: Group Member History:Group Member History Page
+            RockMigrationHelper.UpdateBlockTypeAttribute("EA6EA2E7-6504-41FE-AB55-0B1E7D04B226","BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108","Group Member History Page","GroupMemberHistoryPage","","",3,@"","A1D22BA4-4D39-4187-9F6B-C0B8DC6D6896");
 
-            // Page: Group Member History              
+            // Page: Group Member History
             RockMigrationHelper.AddPage( true, "FCCF2570-DC09-4129-87BE-F1CAE25F1B9D","D65F783D-87A9-4CC9-8110-E83466A0EADB","Group Member History","", Rock.SystemGuid.Page.GROUP_MEMBER_HISTORY, ""); // Site:Rock RMS
             RockMigrationHelper.AddPageRoute( Rock.SystemGuid.Page.GROUP_MEMBER_HISTORY, "group/{GroupId}/history/groupmember/{GroupMemberId}" );
             RockMigrationHelper.UpdateBlockType("Group Member History","Displays a timeline of history for a group member","~/Blocks/Groups/GroupMemberHistory.ascx","Groups","EA6EA2E7-6504-41FE-AB55-0B1E7D04B226");
-            // Add Block to Page: Group Member History, Site: Rock RMS              
-            RockMigrationHelper.AddBlock( true, "EAAB757E-524F-4DB9-A124-D5EFBCDCA63B","","EA6EA2E7-6504-41FE-AB55-0B1E7D04B226","Group Member History","Main","","",0,"03FB6DBD-3320-46A8-B3E1-662AE2C3FC41");   
-            // Attrib for BlockType: Group Member History:core.CustomGridColumnsConfig              
-            RockMigrationHelper.UpdateBlockTypeAttribute("EA6EA2E7-6504-41FE-AB55-0B1E7D04B226","9C204CD0-1233-41C5-818A-C5DA439445AA","core.CustomGridColumnsConfig","core.CustomGridColumnsConfig","","",0,@"","BFECBDEF-F723-4C97-A8C5-FBDC5707EA22");  
-            // Attrib for BlockType: Group Member History:core.CustomGridEnableStickyHeaders              
-            RockMigrationHelper.UpdateBlockTypeAttribute("EA6EA2E7-6504-41FE-AB55-0B1E7D04B226","1EDAFDED-DFE6-4334-B019-6EECBA89E05A","core.CustomGridEnableStickyHeaders","core.CustomGridEnableStickyHeaders","","",0,@"False","80F5C53B-BA41-41CC-8EB6-2A89CA426622");  
-            // Attrib for BlockType: Group Member History:Timeline Lava Template              
-            RockMigrationHelper.UpdateBlockTypeAttribute("EA6EA2E7-6504-41FE-AB55-0B1E7D04B226","1D0D3794-C210-48A8-8C68-3FBEC08A6BA5","Timeline Lava Template","TimelineLavaTemplate","","The Lava Template to use when rendering the timeline view of the history.",1,@"{% include '~~/Assets/Lava/GroupHistoryTimeline.lava' %}","2928385B-09D9-4877-A35C-2A688F22DB22");  
-            // Attrib for BlockType: Group Member History:Group History Grid Page              
-            RockMigrationHelper.UpdateBlockTypeAttribute("EA6EA2E7-6504-41FE-AB55-0B1E7D04B226","BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108","Group History Grid Page","GroupHistoryGridPage","","",2,@"","B72E26E2-5EC5-49BE-829B-18FB9AE12E47");  
-            // Attrib for BlockType: Group Member History:Group Member History Page              
-            RockMigrationHelper.UpdateBlockTypeAttribute("EA6EA2E7-6504-41FE-AB55-0B1E7D04B226","BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108","Group Member History Page","GroupMemberHistoryPage","","",3,@"","A1D22BA4-4D39-4187-9F6B-C0B8DC6D6896");  
+            // Add Block to Page: Group Member History, Site: Rock RMS
+            RockMigrationHelper.AddBlock( true, "EAAB757E-524F-4DB9-A124-D5EFBCDCA63B","","EA6EA2E7-6504-41FE-AB55-0B1E7D04B226","Group Member History","Main","","",0,"03FB6DBD-3320-46A8-B3E1-662AE2C3FC41");
+            // Attrib for BlockType: Group Member History:core.CustomGridColumnsConfig
+            RockMigrationHelper.UpdateBlockTypeAttribute("EA6EA2E7-6504-41FE-AB55-0B1E7D04B226","9C204CD0-1233-41C5-818A-C5DA439445AA","core.CustomGridColumnsConfig","core.CustomGridColumnsConfig","","",0,@"","BFECBDEF-F723-4C97-A8C5-FBDC5707EA22");
+            // Attrib for BlockType: Group Member History:core.CustomGridEnableStickyHeaders
+            RockMigrationHelper.UpdateBlockTypeAttribute("EA6EA2E7-6504-41FE-AB55-0B1E7D04B226","1EDAFDED-DFE6-4334-B019-6EECBA89E05A","core.CustomGridEnableStickyHeaders","core.CustomGridEnableStickyHeaders","","",0,@"False","80F5C53B-BA41-41CC-8EB6-2A89CA426622");
+            // Attrib for BlockType: Group Member History:Timeline Lava Template
+            RockMigrationHelper.UpdateBlockTypeAttribute("EA6EA2E7-6504-41FE-AB55-0B1E7D04B226","1D0D3794-C210-48A8-8C68-3FBEC08A6BA5","Timeline Lava Template","TimelineLavaTemplate","","The Lava Template to use when rendering the timeline view of the history.",1,@"{% include '~~/Assets/Lava/GroupHistoryTimeline.lava' %}","2928385B-09D9-4877-A35C-2A688F22DB22");
+            // Attrib for BlockType: Group Member History:Group History Grid Page
+            RockMigrationHelper.UpdateBlockTypeAttribute("EA6EA2E7-6504-41FE-AB55-0B1E7D04B226","BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108","Group History Grid Page","GroupHistoryGridPage","","",2,@"","B72E26E2-5EC5-49BE-829B-18FB9AE12E47");
+            // Attrib for BlockType: Group Member History:Group Member History Page
+            RockMigrationHelper.UpdateBlockTypeAttribute("EA6EA2E7-6504-41FE-AB55-0B1E7D04B226","BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108","Group Member History Page","GroupMemberHistoryPage","","",3,@"","A1D22BA4-4D39-4187-9F6B-C0B8DC6D6896");
 
 
 
             // Add Route to Page: Group History
             RockMigrationHelper.AddPageRoute("FCCF2570-DC09-4129-87BE-F1CAE25F1B9D","group/{GroupId}/history");
-            // Attrib Value for Block:Group History, Attribute:Group Member History Page Page: Group History, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("C27FF3C0-D7BF-4CAD-B33D-C0A6953370FC","8CC92361-B724-4296-B7D0-75B5D33F66C9",@"eaab757e-524f-4db9-a124-d5efbcdca63b");  
-            // Attrib Value for Block:Group History, Attribute:Group History Grid Page Page: Group History, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("C27FF3C0-D7BF-4CAD-B33D-C0A6953370FC","6A7F08FE-256E-4FEA-886E-2545BF64887D",@"fb9a6bc0-0b51-4a92-a32c-58ac822cd2d0");  
+            // Attrib Value for Block:Group History, Attribute:Group Member History Page Page: Group History, Site: Rock RMS
+            RockMigrationHelper.AddBlockAttributeValue("C27FF3C0-D7BF-4CAD-B33D-C0A6953370FC","8CC92361-B724-4296-B7D0-75B5D33F66C9",@"eaab757e-524f-4db9-a124-d5efbcdca63b");
+            // Attrib Value for Block:Group History, Attribute:Group History Grid Page Page: Group History, Site: Rock RMS
+            RockMigrationHelper.AddBlockAttributeValue("C27FF3C0-D7BF-4CAD-B33D-C0A6953370FC","6A7F08FE-256E-4FEA-886E-2545BF64887D",@"fb9a6bc0-0b51-4a92-a32c-58ac822cd2d0");
 
 
             // Enable Group History on Small Groups
@@ -343,33 +349,33 @@ namespace Rock.Migrations
 
             // Remove Swimlane from Person
             RockMigrationHelper.DeleteBlock("E18B1B2D-BF2A-43AD-BB9E-5DADBEFFB908");
-            // Attrib for BlockType: Group Member History:core.CustomGridEnableStickyHeaders  
+            // Attrib for BlockType: Group Member History:core.CustomGridEnableStickyHeaders
             RockMigrationHelper.DeleteAttribute("80F5C53B-BA41-41CC-8EB6-2A89CA426622");
-            // Attrib for BlockType: Group Member History:core.CustomGridColumnsConfig  
+            // Attrib for BlockType: Group Member History:core.CustomGridColumnsConfig
             RockMigrationHelper.DeleteAttribute("BFECBDEF-F723-4C97-A8C5-FBDC5707EA22");
-            // Attrib for BlockType: Group Member History:Group History Grid Page              
+            // Attrib for BlockType: Group Member History:Group History Grid Page
             RockMigrationHelper.DeleteAttribute("B72E26E2-5EC5-49BE-829B-18FB9AE12E47");
-            // Attrib for BlockType: Group Member History:Timeline Lava Template 
+            // Attrib for BlockType: Group Member History:Timeline Lava Template
             RockMigrationHelper.DeleteAttribute("2928385B-09D9-4877-A35C-2A688F22DB22");
-            // Attrib for BlockType: Group Member History:Group Member History Page 
+            // Attrib for BlockType: Group Member History:Group Member History Page
             RockMigrationHelper.DeleteAttribute("A1D22BA4-4D39-4187-9F6B-C0B8DC6D6896");
-            // Remove Block from Page: Group History Grid, Site: Rock RMS   
+            // Remove Block from Page: Group History Grid, Site: Rock RMS
             RockMigrationHelper.DeleteBlock("C41CBC63-0DB6-4F69-8DEA-894580E27312");
             RockMigrationHelper.DeleteBlockType("EA6EA2E7-6504-41FE-AB55-0B1E7D04B226");
             RockMigrationHelper.DeletePage("FB9A6BC0-0B51-4A92-A32C-58AC822CD2D0"); //  Page: Group History Grid
 
 
-            // Attrib for BlockType: Group Member History:core.CustomGridEnableStickyHeaders              
+            // Attrib for BlockType: Group Member History:core.CustomGridEnableStickyHeaders
             RockMigrationHelper.DeleteAttribute("80F5C53B-BA41-41CC-8EB6-2A89CA426622");
-            // Attrib for BlockType: Group Member History:core.CustomGridColumnsConfig  
+            // Attrib for BlockType: Group Member History:core.CustomGridColumnsConfig
             RockMigrationHelper.DeleteAttribute("BFECBDEF-F723-4C97-A8C5-FBDC5707EA22");
-            // Attrib for BlockType: Group Member History:Group History Grid Page   
+            // Attrib for BlockType: Group Member History:Group History Grid Page
             RockMigrationHelper.DeleteAttribute("B72E26E2-5EC5-49BE-829B-18FB9AE12E47");
-            // Attrib for BlockType: Group Member History:Timeline Lava Template     
+            // Attrib for BlockType: Group Member History:Timeline Lava Template
             RockMigrationHelper.DeleteAttribute("2928385B-09D9-4877-A35C-2A688F22DB22");
-            // Attrib for BlockType: Group Member History:Group Member History Page  
+            // Attrib for BlockType: Group Member History:Group Member History Page
             RockMigrationHelper.DeleteAttribute("A1D22BA4-4D39-4187-9F6B-C0B8DC6D6896");
-            // Remove Block to Page: Group Member History, Site: Rock RMS   
+            // Remove Block to Page: Group Member History, Site: Rock RMS
             RockMigrationHelper.DeleteBlock("03FB6DBD-3320-46A8-B3E1-662AE2C3FC41");
             RockMigrationHelper.DeleteBlockType("EA6EA2E7-6504-41FE-AB55-0B1E7D04B226");
             RockMigrationHelper.DeletePage("EAAB757E-524F-4DB9-A124-D5EFBCDCA63B"); //  Page: Group Member History

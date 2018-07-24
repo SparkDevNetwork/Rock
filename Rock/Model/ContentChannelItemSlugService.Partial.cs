@@ -20,7 +20,7 @@ using System.Data.Entity;
 using System.Data.Entity.Spatial;
 using System.Linq;
 using Rock.Data;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {

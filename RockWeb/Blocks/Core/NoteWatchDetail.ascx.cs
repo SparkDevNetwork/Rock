@@ -23,7 +23,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -126,11 +126,11 @@ namespace RockWeb.Blocks.Core
 
             if ( noteWatch.EntityTypeId.HasValue )
             {
-                if ( noteWatch.EntityTypeId.Value == CacheEntityType.GetId<Rock.Model.Person>() )
+                if ( noteWatch.EntityTypeId.Value == EntityTypeCache.GetId<Rock.Model.Person>() )
                 {
                     noteWatch.EntityId = ppWatchedPerson.PersonId;
                 }
-                else if ( noteWatch.EntityTypeId.Value == CacheEntityType.GetId<Rock.Model.Group>() )
+                else if ( noteWatch.EntityTypeId.Value == EntityTypeCache.GetId<Rock.Model.Group>() )
                 {
                     noteWatch.EntityId = gpWatchedGroup.GroupId;
                 }
@@ -198,7 +198,7 @@ namespace RockWeb.Blocks.Core
             // see if the NoteType allows following
             if ( noteWatch.NoteTypeId.HasValue )
             {
-                var noteTypeCache = CacheNoteType.Get( noteWatch.NoteTypeId.Value );
+                var noteTypeCache = NoteTypeCache.Get( noteWatch.NoteTypeId.Value );
                 if ( noteTypeCache != null )
                 {
                     if ( noteTypeCache.AllowsWatching == false )
@@ -297,7 +297,7 @@ namespace RockWeb.Blocks.Core
                 }
                 else
                 {
-                    lWatchedEntityName.Text = string.Format( "<span class='label label-danger'>{0} with Id {1} not found</span>", CacheEntityType.Get( etpEntityType.SelectedEntityTypeId.Value ).FriendlyName, entityId );
+                    lWatchedEntityName.Text = string.Format( "<span class='label label-danger'>{0} with Id {1} not found</span>", EntityTypeCache.Get( etpEntityType.SelectedEntityTypeId.Value ).FriendlyName, entityId );
                 }
             }
         }
@@ -333,7 +333,7 @@ namespace RockWeb.Blocks.Core
             ddlNoteType.Items.Add( new ListItem() );
             if ( entityTypeId.HasValue )
             {
-                var entityNoteTypes = CacheNoteType.GetByEntity( entityTypeId.Value, null, null, true );
+                var entityNoteTypes = NoteTypeCache.GetByEntity( entityTypeId.Value, null, null, true );
                 ddlNoteType.Items.AddRange( entityNoteTypes.Select( a => new ListItem( a.Name, a.Id.ToString() ) ).ToArray() );
             }
 
@@ -351,11 +351,11 @@ namespace RockWeb.Blocks.Core
             pnlWatchedEntityGeneric.Visible = false;
             if ( entityTypeId.HasValue )
             {
-                if ( entityTypeId.Value == CacheEntityType.GetId<Rock.Model.Person>() )
+                if ( entityTypeId.Value == EntityTypeCache.GetId<Rock.Model.Person>() )
                 {
                     ppWatchedPerson.Visible = true;
                 }
-                else if ( entityTypeId.Value == CacheEntityType.GetId<Rock.Model.Group>() )
+                else if ( entityTypeId.Value == EntityTypeCache.GetId<Rock.Model.Group>() )
                 {
                     gpWatchedGroup.Visible = true;
                 }

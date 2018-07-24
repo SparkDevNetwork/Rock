@@ -29,7 +29,7 @@ using Rock.Web;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json.Linq;
 using System.Data.Entity;
@@ -312,7 +312,7 @@ namespace RockWeb.Blocks.Core
             int? entityTypeId = cpProvider.SelectedEntityTypeId;
             if ( entityTypeId.HasValue )
             {
-                var entityType = CacheEntityType.Get( entityTypeId.Value );
+                var entityType = EntityTypeCache.Get( entityTypeId.Value );
                 if ( entityType != null )
                 {
                     var component = DigitalSignatureContainer.GetComponent( entityType.Name );

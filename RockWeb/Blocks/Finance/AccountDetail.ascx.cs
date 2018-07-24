@@ -25,7 +25,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -378,9 +378,9 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void LoadDropDowns()
         {
-            ddlAccountType.BindToDefinedType( CacheDefinedType.Get( Rock.SystemGuid.DefinedType.FINANCIAL_ACCOUNT_TYPE.AsGuid() ) );
+            ddlAccountType.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_ACCOUNT_TYPE.AsGuid() ) );
 
-            cpCampus.Campuses = CacheCampus.All();
+            cpCampus.Campuses = CampusCache.All();
             cpCampus.Visible = cpCampus.Items.Count > 0;
         }
 

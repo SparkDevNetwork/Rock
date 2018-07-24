@@ -3,7 +3,7 @@
 <asp:UpdatePanel ID="upEditPerson" runat="server">
     <ContentTemplate>
 
-        <asp:ValidationSummary ID="valValidation" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+        <asp:ValidationSummary ID="valValidation" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
         <div class="row">
 
@@ -40,7 +40,7 @@
                                             <div class="col-sm-7">
                                                 <asp:HiddenField ID="hfPhoneType" runat="server" Value='<%# Eval("NumberTypeValueId")  %>' />
                                                 <Rock:PhoneNumberBox ID="pnbPhone" runat="server" CountryCode='<%# Eval("CountryCode")  %>' Number='<%# Eval("NumberFormatted")  %>' />
-                                            </div>    
+                                            </div>
                                             <div class="col-sm-5">
                                                 <div class="row">
                                                     <div class="col-xs-6">
@@ -58,7 +58,7 @@
                         </asp:Repeater>
                     </div>
 
-                    <Rock:DataTextBox ID="tbEmail" PrependText="<i class='fa fa-envelope'></i>" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="Email" />
+                    <Rock:EmailBox ID="tbEmail" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="Email" />
 
                     <Rock:RockRadioButtonList ID="rblEmailPreference" runat="server" RepeatDirection="Horizontal" Label="Email Preference">
                         <asp:ListItem Text="Email Allowed" Value="EmailAllowed" />
@@ -89,7 +89,7 @@
                         <asp:HiddenField ID="hfCountry" runat="server" />
 
                         <Rock:AddressControl id="acAddress" runat="server" RequiredErrorMessage="Your Address is Required" />
-                        
+
                         <div class="margin-b-sm">
                             <Rock:RockCheckBox ID="cbIsMailingAddress" runat="server" Text="This is my mailing address" Checked="true" />
                             <Rock:RockCheckBox ID="cbIsPhysicalAddress" runat="server" Text="This is my physical address" Checked="true" />

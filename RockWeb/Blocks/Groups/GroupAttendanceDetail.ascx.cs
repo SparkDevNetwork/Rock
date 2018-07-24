@@ -28,7 +28,7 @@ using Rock.Data;
 using Rock.MergeTemplates;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Communication;
@@ -139,7 +139,7 @@ namespace RockWeb.Blocks.Groups
             bddlCampus.Visible = _allowCampusFilter;
             if ( _allowCampusFilter )
             {
-                bddlCampus.DataSource = CacheCampus.All();
+                bddlCampus.DataSource = CampusCache.All();
                 bddlCampus.DataBind();
                 bddlCampus.Items.Insert( 0, new ListItem( "All Campuses", "0" ) );
             }
@@ -171,7 +171,7 @@ namespace RockWeb.Blocks.Groups
                 {
                     if ( _allowCampusFilter )
                     {
-                        var campus = CacheCampus.Get( GetBlockUserPreference( "Campus" ).AsInteger() );
+                        var campus = CampusCache.Get( GetBlockUserPreference( "Campus" ).AsInteger() );
                         if ( campus != null )
                         {
                             bddlCampus.Title = campus.Name;
@@ -361,7 +361,7 @@ namespace RockWeb.Blocks.Groups
         protected void bddlCampus_SelectionChanged( object sender, EventArgs e )
         {
             SetBlockUserPreference( "Campus", bddlCampus.SelectedValue );
-            var campus = CacheCampus.Get( bddlCampus.SelectedValueAsInt() ?? 0 );
+            var campus = CampusCache.Get( bddlCampus.SelectedValueAsInt() ?? 0 );
             bddlCampus.Title = campus != null ? campus.Name : "All Campuses";
             BindAttendees();
         }
@@ -813,7 +813,7 @@ namespace RockWeb.Blocks.Groups
             var campusAttendees = _attendees;
             if ( _allowCampusFilter )
             {
-                var campus = CacheCampus.Get( bddlCampus.SelectedValueAsInt() ?? 0 );
+                var campus = CampusCache.Get( bddlCampus.SelectedValueAsInt() ?? 0 );
                 if ( campus != null )
                 {
                     campusAttendees = _attendees.Where( a => a.CampusIds.Contains( campus.Id ) ).ToList();
@@ -928,7 +928,7 @@ namespace RockWeb.Blocks.Groups
                     int? campusId = locationService.GetCampusIdForLocation( _occurrence.LocationId ) ?? _group.CampusId;
                     if ( !campusId.HasValue && _allowCampusFilter )
                     {
-                        var campus = CacheCampus.Get( bddlCampus.SelectedValueAsInt() ?? 0 );
+                        var campus = CampusCache.Get( bddlCampus.SelectedValueAsInt() ?? 0 );
                         if ( campus != null )
                         {
                             campusId = campus.Id;
@@ -992,7 +992,7 @@ namespace RockWeb.Blocks.Groups
                 Guid? workflowTypeGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
                 if ( workflowTypeGuid.HasValue )
                 {
-                    var workflowType = CacheWorkflowType.Get( workflowTypeGuid.Value );
+                    var workflowType = WorkflowTypeCache.Get( workflowTypeGuid.Value );
                     if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                     {
                         try

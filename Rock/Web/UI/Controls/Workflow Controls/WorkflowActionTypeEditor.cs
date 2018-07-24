@@ -23,7 +23,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Workflow;
 
 namespace Rock.Web.UI.Controls
@@ -245,7 +245,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             result.IsActionCompletedOnSuccess = _cbIsActionCompletedOnSuccess.Checked;
             result.IsActivityCompletedOnSuccess = _cbIsActivityCompletedOnSuccess.Checked;
 
-            var entityType = CacheEntityType.Get( result.EntityTypeId );
+            var entityType = EntityTypeCache.Get( result.EntityTypeId );
             if ( entityType != null && entityType.Name == typeof( Rock.Workflow.Action.UserEntryForm ).FullName )
             {
                 result.WorkflowForm = _formEditor.GetForm();
@@ -304,10 +304,10 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             _tbddlCriteriaValue.SelectedValue = value.CriteriaValue;
 
             _tbActionTypeName.Text = value.Name;
-            _wfatpEntityType.SetValue( CacheEntityType.Get( value.EntityTypeId ) );
+            _wfatpEntityType.SetValue( EntityTypeCache.Get( value.EntityTypeId ) );
             _cbIsActivityCompletedOnSuccess.Checked = value.IsActivityCompletedOnSuccess;
 
-            var entityType = CacheEntityType.Get( value.EntityTypeId );
+            var entityType = EntityTypeCache.Get( value.EntityTypeId );
             if ( entityType != null && entityType.Name == typeof( Rock.Workflow.Action.UserEntryForm ).FullName )
             {
                 if (value.WorkflowForm == null)
@@ -567,11 +567,11 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-lg-8" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            CacheEntityType entityType = null;
+            EntityTypeCache entityType = null;
             int? entityTypeId = _wfatpEntityType.SelectedValueAsInt();
             if ( entityTypeId.HasValue )
             {
-                entityType = CacheEntityType.Get( entityTypeId.Value );
+                entityType = EntityTypeCache.Get( entityTypeId.Value );
                 if ( entityType != null )
                 {
                     var component = ActionContainer.GetComponent( entityType.Name );

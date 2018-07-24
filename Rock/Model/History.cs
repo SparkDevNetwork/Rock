@@ -22,7 +22,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using System.Text;
 using Rock.Data;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -1396,7 +1396,7 @@ namespace Rock.Model
 
             if ( definedValueId.HasValue )
             {
-                var dv = CacheDefinedValue.Get( definedValueId.Value );
+                var dv = DefinedValueCache.Get( definedValueId.Value );
                 if ( dv != null )
                 {
                     return dv.Value;
@@ -1468,7 +1468,7 @@ namespace Rock.Model
 
             if ( groupTypeId.HasValue )
             {
-                var dv = CacheGroupType.Get( groupTypeId.Value );
+                var dv = GroupTypeCache.Get( groupTypeId.Value );
                 if ( dv != null )
                 {
                     return dv.Name;
@@ -1505,7 +1505,7 @@ namespace Rock.Model
 
             if ( campusId.HasValue )
             {
-                var dv = CacheCampus.Get( campusId.Value );
+                var dv = CampusCache.Get( campusId.Value );
                 if ( dv != null )
                 {
                     return dv.Name;

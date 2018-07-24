@@ -26,7 +26,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Core
@@ -327,7 +327,7 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void LoadDropDowns()
         {
-            ddlDeviceType.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.DEVICE_TYPE ) ) );
+            ddlDeviceType.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.DEVICE_TYPE ) ) );
             ddlDeviceType.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
 
             ddlPrintFrom.BindToEnum<PrintFrom>();
@@ -382,7 +382,7 @@ namespace RockWeb.Blocks.Core
             SetPrinterVisibility();
             SetPrinterSettingsVisibility();
 
-            string orgLocGuid = CacheGlobalAttributes.Get().GetValue( "OrganizationAddress" );
+            string orgLocGuid = GlobalAttributesCache.Get().GetValue( "OrganizationAddress" );
             if ( !string.IsNullOrWhiteSpace( orgLocGuid ) )
             {
                 Guid locGuid = Guid.Empty;
@@ -500,7 +500,7 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void SetPrinterSettingsVisibility()
         {
-            var checkinKioskDeviceTypeId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK ).Id;
+            var checkinKioskDeviceTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK ).Id;
             pnlPrinterSettings.Visible = ( ddlDeviceType.SelectedValue.AsIntegerOrNull() == checkinKioskDeviceTypeId );
         }
 

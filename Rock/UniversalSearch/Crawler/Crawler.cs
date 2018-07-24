@@ -99,7 +99,7 @@ namespace Rock.UniversalSearch.Crawler
             _cookieContainer = new CookieContainer();
 
             // If a loginId and password were included, get an authentication cookie
-            if ( loginId.IsNotNullOrWhitespace() && password.IsNotNullOrWhitespace() )
+            if ( loginId.IsNotNullOrWhiteSpace() && password.IsNotNullOrWhiteSpace() )
             {
                 var loginParam = new LoginParameters();
                 loginParam.Username = loginId;

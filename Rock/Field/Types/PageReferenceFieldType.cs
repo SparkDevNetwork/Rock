@@ -20,6 +20,7 @@ using System.Linq;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -52,7 +53,7 @@ namespace Rock.Field.Types
                     Guid? pageGuid = valuePair[0].AsGuidOrNull();
                     if ( pageGuid.HasValue )
                     {
-                        var page = Rock.Cache.CachePage.Get( pageGuid.Value );
+                        var page = PageCache.Get( pageGuid.Value );
                         if ( page != null )
                         {
                             if ( valuePair.Length > 1 )

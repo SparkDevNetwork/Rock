@@ -20,7 +20,7 @@ using System.IO;
 using System.Linq;
 using System.Web;
 using Rock.Utility;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace RockWeb
 {
@@ -51,7 +51,7 @@ namespace RockWeb
         {
             base.ValidateFileType( context, uploadedFile );
 
-            var globalAttributesCache = CacheGlobalAttributes.Get();
+            var globalAttributesCache = GlobalAttributesCache.Get();
             IEnumerable<string> contentImageFileTypeWhiteList = ( globalAttributesCache.GetValue( "ContentImageFiletypeWhitelist" ) ?? string.Empty ).Split( new char[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries );
 
             // clean up list

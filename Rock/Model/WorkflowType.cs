@@ -24,7 +24,7 @@ using System.Runtime.Serialization;
 
 using Rock.Security;
 using Rock.Data;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -62,12 +62,24 @@ namespace Rock.Model
         /// A <see cref="System.Boolean"/> that is <c>true</c> if the WorkflowType is active; otherwise <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsActive
+        public bool? IsActive
+        {
+            get { return _isActive; }
+            set { _isActive = value ?? false; }
+        }
+        private bool _isActive = true;
+
+        /// <summary>
+        /// Gets or sets a flag indicating if this item is active or not.
+        /// </summary>
+        /// <value>
+        /// Active.
+        /// </value>
+        bool IHasActiveFlag.IsActive
         {
             get { return _isActive; }
             set { _isActive = value; }
         }
-        private bool _isActive = true;
 
         /// <summary>
         /// Gets or sets the workflow identifier prefix.
@@ -332,7 +344,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IEntityCache GetCacheObject()
         {
-            return CacheWorkflowType.Get( this.Id );
+            return WorkflowTypeCache.Get( this.Id );
         }
 
         /// <summary>
@@ -342,7 +354,7 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
         {
-            CacheWorkflowType.UpdateCachedEntity( this.Id, entityState );
+            WorkflowTypeCache.UpdateCachedEntity( this.Id, entityState );
         }
 
         #endregion

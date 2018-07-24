@@ -24,7 +24,7 @@ using System.Web.Security;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using System.Runtime.Serialization;
 
 namespace Rock.Security
@@ -110,7 +110,7 @@ namespace Rock.Security
             // Load the authorizations
             var authorizations = new Dictionary<int, Dictionary<int, Dictionary<string, List<AuthRule>>>>();
 
-            var securityGroupType = CacheGroupType.Get( SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
+            var securityGroupType = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
             int securityGroupTypeId = securityGroupType?.Id ?? 0;
 
             // query the database for all of the entity auth rules
@@ -255,7 +255,7 @@ namespace Rock.Security
         /// <returns></returns>
         private static List<Auth> LoadAuths( int entityTypeId, int entityId, RockContext rockContext )
         {
-            var securityGroupType = CacheGroupType.Get( SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid(), rockContext );
+            var securityGroupType = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid(), rockContext );
             int securityGroupTypeId = securityGroupType?.Id ?? 0;
 
             return new AuthService( rockContext )
@@ -294,7 +294,7 @@ namespace Rock.Security
             // Query database for the authorizations related to this entitytype, entity, and action
             using ( var rockContext = new RockContext() )
             {
-                var securityGroupType = CacheGroupType.Get( SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid(), rockContext );
+                var securityGroupType = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid(), rockContext );
                 int securityGroupTypeId = securityGroupType?.Id ?? 0;
 
                 foreach ( var auth in new AuthService( rockContext )
@@ -336,7 +336,7 @@ namespace Rock.Security
         {
             var newAuthRules = new List<AuthRule>();
 
-            var securityGroupType = CacheGroupType.Get( SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid(), rockContext );
+            var securityGroupType = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid(), rockContext );
             int securityGroupTypeId = securityGroupType?.Id ?? 0;
 
             // Query database for the authorizations related to this entitytype, entity, and action
@@ -704,7 +704,7 @@ namespace Rock.Security
 
             // If cookie is for a more generic domain, we need to store that domain so that we can expire it correctly 
             // when the user signs out.
-            if ( !authCookie.Domain.IsNotNullOrWhitespace() ) return;
+            if ( !authCookie.Domain.IsNotNullOrWhiteSpace() ) return;
 
             var domainCookie =
                 new HttpCookie( $"{FormsAuthentication.FormsCookieName}_DOMAIN", authCookie.Domain )
@@ -759,7 +759,7 @@ namespace Rock.Security
         {
             var httpCookie = new HttpCookie( FormsAuthentication.FormsCookieName, value )
             {
-                Domain = domain.IsNotNullOrWhitespace() ? domain : FormsAuthentication.CookieDomain,
+                Domain = domain.IsNotNullOrWhiteSpace() ? domain : FormsAuthentication.CookieDomain,
                 HttpOnly = true,
                 Path = FormsAuthentication.FormsCookiePath,
                 Secure = FormsAuthentication.RequireSSL
@@ -775,12 +775,12 @@ namespace Rock.Security
         private static string GetCookieDomain()
         {
             // Get the domains that should be saving cookies as domain level cookies instead of the default of subdomain level.
-            var dt = CacheDefinedType.Get( SystemGuid.DefinedType.DOMAINS_SHARING_LOGINS.AsGuid() );
+            var dt = DefinedTypeCache.Get( SystemGuid.DefinedType.DOMAINS_SHARING_LOGINS.AsGuid() );
             var domains = dt?.DefinedValues.Select( v => v.Value ).ToList() ?? new List<string>();
 
             // Get the first domain in the list that the current request's host name ends with
             var domain = domains.FirstOrDefault( d => HttpContext.Current.Request.Url.Host.ToLower().EndsWith( d.ToLower() ) );
-            if ( !domain.IsNotNullOrWhitespace() ) return null;
+            if ( !domain.IsNotNullOrWhiteSpace() ) return null;
 
             // Make sure domain name is prefixed with a '.'
             domain = domain != null && domain.StartsWith( "." ) ? domain : $".{domain}";
@@ -970,7 +970,7 @@ namespace Rock.Security
                     if ( !authRule.GroupId.HasValue ) continue;
 
                     // Get the role
-                    var role = CacheRole.Get( authRule.GroupId.Value );
+                    var role = RoleCache.Get( authRule.GroupId.Value );
 
                     // If the role was invalid, or person is not in the role, keep checking
                     if ( role == null || !role.IsPersonInRole( personGuid ) ) continue;
@@ -1404,7 +1404,7 @@ namespace Rock.Security
 
                         try
                         {
-                            var role = CacheRole.Get( GroupId.Value );
+                            var role = RoleCache.Get( GroupId.Value );
                             if ( role != null )
                             {
                                 return ( role.IsSecurityTypeGroup ? "" : "GROUP - " ) +

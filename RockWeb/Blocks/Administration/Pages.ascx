@@ -6,7 +6,7 @@
     
     <asp:PlaceHolder ID="phContent" runat="server">
 
-        <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation"/>
+        <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation"/>
         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
 
         <Rock:ModalDialog ID="mdConfirmCopy" runat="server" Title="Please Confirm" SaveButtonText="Yes" OnSaveClick="mdConfirmCopy_Click">
