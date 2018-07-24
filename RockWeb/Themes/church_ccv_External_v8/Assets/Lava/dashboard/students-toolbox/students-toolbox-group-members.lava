@@ -39,16 +39,6 @@
 
                 <div id="studentRoster" class="collapse in">
 
-                    {% assign groupTextNumbers = '' %}
-
-                    {% for member in group.Members %}
-                        {% assign tempCell = member.Person | PhoneNumber:'Mobile' %}
-                        {% unless groupTextNumbers contains tempCell %}
-                            {% capture temp %}{{ groupTextNumbers }}{{ tempCell }};{% endcapture %}
-                            {% assign groupTextNumbers = temp %}
-                        {% endunless %}
-                    {% endfor %}
-
                     <div class="group-header">
                         <a href="/page/1751?group={{ group.Id }}">
                             <div class="group-header-content">
