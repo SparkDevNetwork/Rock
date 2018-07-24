@@ -1,0 +1,7 @@
+
+<h4 class="page-header">Previous Weekends</h4>
+{% for item in Items offset:1 limit:3 %}
+    <a href="/page/1251?ContentId={{ item.Id }}" class="btn btn-block btn-default">Week of<br><span class="no-caps"> {{ item.StartDateTime | Date:'M/d/yyyy' }}</span></a>
+{% endfor %}
+  
+ 

@@ -1,0 +1,17 @@
+{% comment %}
+
+{% include '~~/Assets/Lava/MobileApp/Invite/easter/easter-email-all.lava' %}
+
+{% endcomment %}
+
+{% assign inviteAllBtnClasses = inviteAllBtnClasses | Default: 'btn btn-default btn-block' %}
+
+{% capture subject %}
+Join me for Easter at CCV
+{% endcapture %}
+
+{% capture body %}
+I'm going to Easter service at CCV on the {{ item.Name }} Campus. Would you like to join me? Check out the service times at http://ccveaster.church and let's plan to go together!
+{% endcapture %}
+
+<a class="{{ inviteAllBtnClasses }} js-track-email" data-label="{{ item.Name }} Don't know yet" href="{{ preUrl }}mailto:?subject={{ subject | Trim | EscapeDataString }}&body={{ body | EscapeDataString }}">I don't know yet</a>

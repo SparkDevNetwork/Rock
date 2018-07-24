@@ -1,0 +1,28 @@
+{% comment %}
+  {% include '~~/Assets/Lava/NextGen/Resources/EarlyKids.lava' %}
+{% endcomment %}
+
+{% assign resultList = Items | Where:'Id', PageParameter.ContentId %}
+{% assign count = resultList | Size %}
+
+{% comment %}If the result list is empty or invalid, show the latest item{% endcomment%}
+{% if count > 0 %}
+	{% assign viewedItem = resultList | First %} 
+{% else %}
+	{% assign viewedItem = Items | First %}
+{% endif %}
+
+<h4 class="page-header">What They Learned In Class</h4>
+<p><b>BIG Question:</b> {{ viewedItem | Attribute: 'TheBIGQuestion' }}</p>
+<p><b>Today's Answer:</b> {{ viewedItem | Attribute: 'TodaysAnswer' }}</p>
+<p><b>Bible Verses:</b> {{ viewedItem | Attribute: 'BibleVerses' }}</p>
+<p>{{ viewedItem | Attribute:'Summary' }}</p>
+<p>{{ viewedItem.Content }}</p>
+
+{% assign message = viewedItem | Attribute: 'LinktoMessage' %}
+
+{% if message != '' %}
+  <div class="embed-responsive embed-responsive-16by9">
+    <iframe class="embed-responsive-item" src="https://player.vimeo.com/video/{{ message }}" width="320" height="180" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+  </div>
+{% endif %}

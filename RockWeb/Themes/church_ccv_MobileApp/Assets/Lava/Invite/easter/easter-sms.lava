@@ -1,0 +1,36 @@
+{% comment %}
+
+{% include '~~/Assets/Lava/MobileApp/Invite/easter/easter-sms.lava' %}
+
+{% endcomment %}
+
+{% assign inviteBtnClasses = inviteBtnClasses | Default: 'btn btn-default' %}
+
+{% capture smsAll %}
+Come to Easter at CCV with me! I'll be going to the {{ rawTime }} service on {{ day.Date }} at the {{ item.Name }} campus. You should join me! http://ccveaster.church
+{% endcapture %}
+
+{% case OSFamily %}
+  {% when 'android' %}
+    {% assign sep = '?' %}
+  {% when 'ios' %}
+    {% assign sep = '&' %}
+  {% else %}
+    {% assign sep = '&' %}
+{% endcase %}
+
+<a class="{{ inviteBtnClasses }} js-track-sms" data-label="{{ item.Name }} {{ day.Date }} {{ rawTime }}" href="{{ preUrl }}sms:{{ sep }}body={{ smsAll | Trim | EscapeDataString }}">
+   <div class="row">
+      <div class="col-xs-6">
+         {{ rawTime }}
+      </div>
+      <div class="col-xs-6">
+            {% if hasSpecial %}
+            <i style="font-size: 1.25rem; padding-left: 5px;" class="{{ specialNeedsIcon }}"></i>
+         {% endif %}
+         {% if hasHearing %}
+            <i style="font-size: 1.25rem; padding-left: 5px;" class="{{ hearingIcon }}"></i>
+         {% endif %}
+      </div>
+   </div>
+</a>

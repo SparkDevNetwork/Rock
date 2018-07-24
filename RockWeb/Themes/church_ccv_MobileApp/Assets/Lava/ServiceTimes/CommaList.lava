@@ -1,0 +1,45 @@
+{% comment %}
+
+Service Times - Comma list style (like campus page)
+
+{% assign useLightIcon = true %}
+{% include '~~/Assets/Lava/ServiceTimes/CommaList.lava' %}
+
+{% endcomment %}
+
+{% capture deafIcon %}
+<span class="csi csi-slt"></span>
+{% endcapture %}
+
+{% capture specialNeedsIcon %}
+<span class="csi csi-special-needs"></span>
+{% endcapture %}
+
+{% assign hasSaturday = false %}{% assign hasSunday = false %}
+{% for time in campus.ServiceTimes %}
+  {% if time.Day == 'Saturday' %}
+    {% assign hasSaturday = true %}
+  {% endif %}
+  {% if time.Day == 'Sunday' %}
+    {% assign hasSunday = true %}
+  {% endif %}
+{% endfor %}
+
+{% if hasSaturday %}
+  <strong class="margin-r-sm">Saturday</strong>
+  {% for time in campus.ServiceTimes %}
+    {% if time.Day == 'Saturday' %}
+      <span class="commalist-item">{{ time.Time | Remove: ' ' | Replace: '*', deafIcon | Replace: '%', specialNeedsIcon }}</span>
+    {% endif %}
+  {% endfor %}
+  <br>
+{% endif %}
+
+{% if hasSunday %}
+  <strong class="margin-r-sm">Sunday</strong>
+  {% for time in campus.ServiceTimes %}
+    {% if time.Day == 'Sunday' %}
+      <span class="commalist-item">{{ time.Time | Remove: ' ' | Replace: '*', deafIcon | Replace: '%', specialNeedsIcon }}</span>
+    {% endif %}
+  {% endfor %}
+{% endif %}
