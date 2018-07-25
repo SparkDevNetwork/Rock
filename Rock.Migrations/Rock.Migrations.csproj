@@ -5056,9 +5056,6 @@
     <None Include="Migrations\Version 8.0\Version 1.8.0\201802092340176_Rollup_0209_spCrm_PersonDuplicateFinder.sql">
       <DependentUpon>201802092340176_Rollup_0209.cs</DependentUpon>
     </None>
-    <Content Include="Migrations\Version 8.0\Version 1.8.0\201807191932379_Rollup_0719_Add ConnectionStatus and RecordStatus Security Actions to Bulk Update.sql">
-      <DependentUpon>201807191932379_Rollup_0719.cs</DependentUpon>
-    </Content>
     <Content Include="Migrations\Version 8.0\Version 1.8.0\201807191932379_Rollup_0719_Fix Accordion Bug.sql">
       <DependentUpon>201807191932379_Rollup_0719.cs</DependentUpon>
     </Content>
