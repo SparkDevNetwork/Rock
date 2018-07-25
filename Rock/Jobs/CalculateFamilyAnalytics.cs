@@ -105,6 +105,7 @@ namespace Rock.Jobs
             {
                 // create new rock context for each family (https://weblog.west-wind.com/posts/2014/Dec/21/Gotcha-Entity-Framework-gets-slow-in-long-Iteration-Loops)
                 RockContext updateContext = new RockContext();
+                updateContext.SourceOfChange = "eRA";
                 updateContext.Database.CommandTimeout = commandTimeout;
                 var attributeValueService = new AttributeValueService( updateContext );
                 var historyService = new HistoryService( updateContext );

@@ -15,11 +15,11 @@
 
         <h4 class="js-checkin-person-name"><asp:Literal ID="lName" runat="server"></asp:Literal></h4>
 
-        <div class="row">
+        <div class="row margin-b-sm">
             <div class="col-sm-3">
                 <asp:Literal ID="lPhoto" runat="server" />
             </div>
-            <div class="col-sm-9">
+            <div class="col-sm-6">
                 <ul class="list-unstyled">
                     <li><asp:Literal ID="lGender" runat="server" /></li>
                     <li><asp:Literal ID="lAge" runat="server" /></li>
@@ -35,6 +35,17 @@
                 </Rock:RockControlWrapper>
 
                 <Rock:RockLiteral ID="lEmail" runat="server" Label="Email" />
+            </div>
+            <div class="col-sm-2">
+                <Rock:NotificationBox ID="nbResult" CssClass="margin-t-md" runat="server" Visible="false" Dismissable="true" />
+
+                <!-- Initiates entry -->
+                <asp:LinkButton runat="server" Visible="false" ID="btnSms" CssClass="btn btn-xs btn-info js-btn-sms" OnClick="btnSms_Click" >Send SMS</asp:LinkButton>
+
+                <!-- During entry -->
+                <textarea runat="server" rows="3" cols="30" id="tbSmsMessage" visible="false" placeholder="Your message here" class="js-sms-message"></textarea> <br />
+                <asp:LinkButton runat="server" Visible="false" ID="btnSmsSend" CssClass="btn btn-xs btn-default js-btn-send" OnClick="btnSend_Click">Send</asp:LinkButton>
+                <asp:LinkButton runat="server" Visible="false" ID="btnSmsCancel" OnClick="btnSmsCancel_Click">Cancel</asp:LinkButton>
             </div>
         </div>
 
@@ -85,6 +96,24 @@
             </Rock:Grid>
         </Rock:RockControlWrapper>
 
+		<%-- Ensures that a blank SMS cannot be sent --%>
+        <script type="text/javascript">
+            function setSmsSendDisabled(boolean) {
+                $('.js-btn-send').attr('disabled', boolean);
+            }
+
+            Sys.Application.add_load(function () {
+                setSmsSendDisabled(true);
+                $('.js-sms-message').on('input', function (e) {
+                    var tbValue = $(this).val();
+                    setSmsSendDisabled(!tbValue.trim());
+                });
+
+                $('.js-btn-sms').on('click', function (e) {
+                    setSmsSendDisabled(true);
+                });
+            });
+        </script>
 
     </ContentTemplate>
 </asp:UpdatePanel>
