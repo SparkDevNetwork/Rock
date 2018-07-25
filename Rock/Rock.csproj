@@ -378,6 +378,8 @@
     <Compile Include="Attribute\WorkflowAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTextOrAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
+    <Compile Include="Model\CodeGenerated\NoteAttachmentService.cs" />
+    <Compile Include="Model\NoteAttachment.cs" />
     <Compile Include="Web\Cache\Entities\BlockCache.cs" />
     <Compile Include="Web\Cache\Entities\CampusCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentChannelCache.cs" />
