@@ -71,5 +71,10 @@ namespace Rock.SystemGuid
         public const string CONVERT_BUSINESS = "115A7725-6760-4E86-8171-57F4A3CF6909";
 
         #endregion
+
+        /// <summary>
+        /// The bulk update block type guid
+        /// </summary>
+        public const string BULK_UPDATE = "A844886D-ED6F-4367-9C6F-667401201ED0";
     }
 }
