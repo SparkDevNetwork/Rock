@@ -16,10 +16,21 @@
         <h4 class="js-checkin-person-name"><asp:Literal ID="lName" runat="server"></asp:Literal></h4>
 
         <div class="row margin-b-sm">
-            <div class="col-sm-3">
+            <div class="col-sm-4 col-md-3 col-lg-2">
                 <asp:Literal ID="lPhoto" runat="server" />
+                <div class="margin-t-md">
+                <Rock:NotificationBox ID="nbResult" runat="server" Visible="false" Dismissable="true" />
+
+                <!-- Initiates entry -->
+                <asp:LinkButton runat="server" Visible="false" ID="btnSms" CssClass="btn btn-default btn-block js-btn-sms" OnClick="btnSms_Click" >Send Text</asp:LinkButton>
+
+                <!-- During entry -->
+                <textarea runat="server" rows="3" cols="30" id="tbSmsMessage" visible="false" placeholder="Your message here..." class="form-control js-sms-message"></textarea>
+                <asp:LinkButton runat="server" Visible="false" ID="btnSmsSend" CssClass="btn btn-xs btn-primary js-btn-send" OnClick="btnSend_Click">Send</asp:LinkButton>
+                <asp:LinkButton runat="server" Visible="false" ID="btnSmsCancel" CssClass="btn btn-xs btn-link" OnClick="btnSmsCancel_Click">Cancel</asp:LinkButton>
+                </div>
             </div>
-            <div class="col-sm-6">
+            <div class="col-sm-8 col-md-9 col-lg-10">
                 <ul class="list-unstyled">
                     <li><asp:Literal ID="lGender" runat="server" /></li>
                     <li><asp:Literal ID="lAge" runat="server" /></li>
@@ -36,17 +47,6 @@
 
                 <Rock:RockLiteral ID="lEmail" runat="server" Label="Email" />
             </div>
-            <div class="col-sm-2">
-                <Rock:NotificationBox ID="nbResult" CssClass="margin-t-md" runat="server" Visible="false" Dismissable="true" />
-
-                <!-- Initiates entry -->
-                <asp:LinkButton runat="server" Visible="false" ID="btnSms" CssClass="btn btn-xs btn-info js-btn-sms" OnClick="btnSms_Click" >Send SMS</asp:LinkButton>
-
-                <!-- During entry -->
-                <textarea runat="server" rows="3" cols="30" id="tbSmsMessage" visible="false" placeholder="Your message here" class="js-sms-message"></textarea> <br />
-                <asp:LinkButton runat="server" Visible="false" ID="btnSmsSend" CssClass="btn btn-xs btn-default js-btn-send" OnClick="btnSend_Click">Send</asp:LinkButton>
-                <asp:LinkButton runat="server" Visible="false" ID="btnSmsCancel" OnClick="btnSmsCancel_Click">Cancel</asp:LinkButton>
-            </div>
         </div>
 
         <Rock:RockControlWrapper ID="rcwFamily" runat="server" Label="Family" CssClass="list-unstyled">
@@ -58,7 +58,7 @@
                 </asp:Repeater>
             </ul>
         </Rock:RockControlWrapper>
-        
+
         <Rock:RockControlWrapper ID="rcwRelationships" runat="server" Label="Related People" CssClass="list-unstyled">
             <ul class="list-unstyled list-horizontal">
                 <asp:Repeater ID="rptrRelationships" runat="server" OnItemDataBound="rptrRelationships_ItemDataBound">
