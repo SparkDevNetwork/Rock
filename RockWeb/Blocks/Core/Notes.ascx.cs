@@ -102,7 +102,7 @@ namespace RockWeb.Blocks.Core
                         noteTypes = noteTypes.Where( n => configuredNoteTypes.Contains( n.Guid ) ).ToList();
                     }
 
-                    NoteOptions noteOptions = new NoteOptions()
+                    NoteOptions noteOptions = new NoteOptions( notesTimeline )
                     {
                         EntityId = contextEntity.Id,
                         NoteTypes = noteTypes.ToArray(),
