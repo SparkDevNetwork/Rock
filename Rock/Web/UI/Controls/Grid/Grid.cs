@@ -3090,6 +3090,13 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                 additionalMergeProperties = dataSourceObjectType.GetProperties().ToList();
             }
 
+            // If this is a DotLiquid.Drop class, don't include any of the properties that are inherited from DotLiquid.Drop
+            if ( typeof( DotLiquid.Drop ).IsAssignableFrom( dataSourceObjectType ) )
+            {
+                var dropProperties = typeof( DotLiquid.Drop ).GetProperties().Select( a => a.Name );
+                additionalMergeProperties = additionalMergeProperties.Where( a => !dropProperties.Contains( a.Name ) ).ToList();
+            }
+
             var gridDataFields = this.Columns.OfType<BoundField>().ToList();
 
             Dictionary<int, Dictionary<string, object>> itemMergeFieldsList = new Dictionary<int, Dictionary<string, object>>( this.DataSourceAsList.Count );
