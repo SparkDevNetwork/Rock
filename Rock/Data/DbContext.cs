@@ -61,6 +61,14 @@ namespace Rock.Data
         public virtual List<string> SaveErrorMessages { get; private set; }
 
         /// <summary>
+        /// Gets or sets the source of change. If the source of change is set then changes made to entities with this context will have History records marked with this Source of Change.
+        /// </summary>
+        /// <value>
+        /// The source of change.
+        /// </value>
+        public string SourceOfChange { get; set; }
+
+        /// <summary>
         /// Wraps code in a BeginTransaction and CommitTransaction
         /// </summary>
         /// <param name="action">The action.</param>

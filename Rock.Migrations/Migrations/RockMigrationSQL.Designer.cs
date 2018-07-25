@@ -1069,21 +1069,6 @@ namespace Rock.Migrations.Migrations {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to -- We have secured Person.ConnectionStatus and Person.RecordStatus on the bulk upate block to follow conventions on the person edit block.
-        ///-- Now we need to add those that currently have access so they don&apos;t lose anything.
-        ///
-        ///DECLARE @BlockEntityTypeId INT = (SELECT [Id] FROM [EntityType] WHERE [Guid] = &apos;D89555CA-9AE4-4D62-8AF1-E5E463C1EF65&apos;)
-        ///DECLARE @BulkUpdateBlockId INT = (SELECT [Id] FROM [Block] WHERE [Guid] = &apos;A610AB9D-7397-4D27-8614-F6A282B78B2C&apos;)
-        ///DECLARE @RockAdminGroupId INT = (SELECT [Id] FROM  [rest of string was truncated]&quot;;.
-        /// </summary>
-        public static string _201807191932379_Rollup_0719_Add_ConnectionStatus_and_RecordStatus_Security_Actions_to_Bulk_Update {
-            get {
-                return ResourceManager.GetString("_201807191932379_Rollup_0719_Add_ConnectionStatus_and_RecordStatus_Security_Actio" +
-                        "ns_to_Bulk_Update", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to UPDATE [LavaShortCode] 
         ///SET [Markup] = &apos;{%- assign wrapperId = uniqueid -%}
         ///{%- assign firstopen = firstopen | AsBoolean -%}
