@@ -22,12 +22,13 @@
                                 <Rock:ReorderField />
                                 <asp:BoundField DataField="EntityType.Name" HeaderText="Entity Type" />
                                 <Rock:RockBoundField DataField="Name" HeaderText="Note Type" />
-                                <Rock:RockBoundField DataField="CssClass" HeaderText="CSS Class" />
-                                <Rock:RockBoundField DataField="IconCssClass" HeaderText="Icon CSS Class" />
-                                <Rock:BoolField DataField="UserSelectable" HeaderText="User Selectable" />
-                                <Rock:BoolField DataField="RequiresApprovals" HeaderText="Requires Approvals" />
-                                <Rock:BoolField DataField="AllowsWatching" HeaderText="Allows Watching" />
-                                <Rock:BoolField DataField="AllowsReplies" HeaderText="Allows Replies" />
+                                <Rock:RockBoundField DataField="CssClass" HeaderText="CSS Class" ColumnPriority="DesktopSmall" />
+                                <Rock:RockBoundField DataField="IconCssClass" HeaderText="Icon CSS Class" ColumnPriority="DesktopSmall" />
+                                <Rock:BoolField DataField="UserSelectable" HeaderText="User Selectable" ColumnPriority="Desktop" />
+                                <Rock:BoolField DataField="RequiresApprovals" HeaderText="Requires Approvals" ColumnPriority="Desktop" />
+                                <Rock:BoolField DataField="AllowsWatching" HeaderText="Allows Watching" ColumnPriority="DesktopLarge" />
+                                <Rock:BoolField DataField="AllowsReplies" HeaderText="Allows Replies" ColumnPriority="DesktopLarge" />
+                                <Rock:BoolField DataField="AllowsAttachments" HeaderText="Allows Attachments" ColumnPriority="DesktopLarge" />
                                 <Rock:BoolField DataField="IsSystem" HeaderText="System" />
                                 <Rock:SecurityField />
                                 <Rock:DeleteField OnClick="gNoteTypes_Delete" />
