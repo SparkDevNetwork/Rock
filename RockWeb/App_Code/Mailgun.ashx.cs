@@ -129,7 +129,7 @@ public class Mailgun : IHttpHandler
     }
 
     /// <summary>
-    /// Processes for receipent.
+    /// Processes for recipient.
     /// </summary>
     /// <param name="eventType">Type of the event.</param>
     /// <param name="communicationRecipientGuid">The communication recipient unique identifier.</param>

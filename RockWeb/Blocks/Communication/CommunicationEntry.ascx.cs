@@ -253,7 +253,7 @@ namespace RockWeb.Blocks.Communication
                 var communication = RockPage.GetSharedItem( "Communication" ) as Rock.Model.Communication;
                 if ( communication == null )
                 {
-                    // If not, check page parameter for existing communiciaton
+                    // If not, check page parameter for existing communication
                     int? communicationId = PageParameter( "CommunicationId" ).AsIntegerOrNull();
                     if ( communicationId.HasValue )
                     {
@@ -285,7 +285,7 @@ namespace RockWeb.Blocks.Communication
                     bool isCreator = ( communication.CreatedByPersonAlias != null && CurrentPersonId.HasValue && communication.CreatedByPersonAlias.PersonId == CurrentPersonId.Value );
                     bool isApprovalEditor = communication.Status == CommunicationStatus.PendingApproval && _editingApproved;
 
-                    // If communicatoin was just created only for authorization, set it to null so that Showing of details works correctly.
+                    // If communication was just created only for authorization, set it to null so that Showing of details works correctly.
                     if ( communication.Id == 0 )
                     {
                         communication = null;
@@ -651,7 +651,7 @@ namespace RockWeb.Blocks.Communication
                     {
                         string message = string.Empty;
 
-                        // Save the communication proir to checking recipients.
+                        // Save the communication prior to checking recipients.
                         communication.Status = CommunicationStatus.Draft;
                         rockContext.SaveChanges();
 

@@ -214,10 +214,10 @@ namespace Rock.Model
         public string Option { get; set; }
 
         /// <summary>
-        /// Gets or sets the quanity.
+        /// Gets or sets the quantity.
         /// </summary>
         /// <value>
-        /// The quanity.
+        /// The quantity.
         /// </value>
         public int Quanity { get; set; }
 

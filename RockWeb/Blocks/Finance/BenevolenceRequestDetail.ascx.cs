@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Block for users to create, edit, and view benevolence requests." )]
     [SecurityRoleField( "Case Worker Role", "The security role to draw case workers from", false, "", "", 0 )]
-    [LinkedPage("Benevolence Request Statement Page", "The page which summarises a benevolence request for printing", true)]
+    [LinkedPage("Benevolence Request Statement Page", "The page which summarizes a benevolence request for printing", true)]
     public partial class BenevolenceRequestDetail : Rock.Web.UI.RockBlock
     {
         #region Fields 

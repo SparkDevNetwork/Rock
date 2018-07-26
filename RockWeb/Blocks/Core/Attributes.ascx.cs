@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Core
     /// </summary>
     [DisplayName( "Attributes" )]
     [Category( "Core" )]
-    [Description( "Allows for the managing of attribues." )]
+    [Description( "Allows for the managing of attributes." )]
 
     [EntityTypeField( "Entity", "Entity Name", false, "Applies To", 0 )]
     [TextField( "Entity Qualifier Column", "The entity column to evaluate when determining if this attribute applies to the entity", false, "", "Applies To", 1 )]
@@ -47,7 +47,7 @@ namespace RockWeb.Blocks.Core
     [BooleanField( "Allow Setting of Values", "Should UI be available for setting values of the specified Entity ID?", false, order: 3 )]
     [IntegerField( "Entity Id", "The entity id that values apply to", false, 0, order: 4 )]
     [BooleanField( "Enable Show In Grid", "Should the 'Show In Grid' option be displayed when editing attributes?", false, order: 5 )]
-    [TextField( "Category Filter", "A comma separated list of category guids to limit the display of attributes to.", false, "", order: 6 )]
+    [TextField( "Category Filter", "A comma separated list of category GUIDs to limit the display of attributes to.", false, "", order: 6 )]
 
     public partial class Attributes : RockBlock, ICustomGridColumns
     {

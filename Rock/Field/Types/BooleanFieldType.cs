@@ -488,7 +488,7 @@ namespace Rock.Field.Types
         {
             if ( filterValues.Count == 1 )
             {
-                // NOTE: this is for backwords compatility for filters that were saved when Boolean DataFilters didn't have a Compare Option
+                // NOTE: this is for backwords compatibility for filters that were saved when Boolean DataFilters didn't have a Compare Option
                 MemberExpression propertyExpression = Expression.Property( parameterExpression, propertyName );
                 ConstantExpression constantExpression = Expression.Constant( bool.Parse( filterValues[0] ) );
                 ComparisonType comparisonType = ComparisonType.EqualTo;
@@ -525,7 +525,7 @@ namespace Rock.Field.Types
         {
             if ( filterValues.Count == 1 )
             {
-                // NOTE: this is for backwords compatility for filters that were saved when Boolean DataFilters didn't have a Compare Option
+                // NOTE: this is for backwords compatibility for filters that were saved when Boolean DataFilters didn't have a Compare Option
                 MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
                 ConstantExpression constantExpression = Expression.Constant( filterValues[0] );
                 ComparisonType comparisonType = ComparisonType.EqualTo;

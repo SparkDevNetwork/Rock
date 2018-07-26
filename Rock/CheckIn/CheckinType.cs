@@ -24,7 +24,7 @@ using Rock.Web.Cache;
 namespace Rock.CheckIn
 {
     /// <summary>
-    /// Helper class for getting check-in configuratoin settings from the group type
+    /// Helper class for getting check-in configuration settings from the group type
     /// </summary>
     public class CheckinType
     {

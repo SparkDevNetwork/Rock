@@ -26,7 +26,7 @@ using Rock.Model;
 namespace Rock.Web.Cache
 {
     /// <summary>
-    /// MEF Container class for WorkflowAction Componenets
+    /// MEF Container class for WorkflowAction Components
     /// </summary>
     [Serializable]
     [DataContract]

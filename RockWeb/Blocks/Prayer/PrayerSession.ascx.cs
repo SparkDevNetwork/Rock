@@ -377,7 +377,7 @@ namespace RockWeb.Blocks.Prayer
         }
 
         /// <summary>
-        /// Updates the Hightlight label that shows how many prayers have been made out of the total for this session.
+        /// Updates the Highlight label that shows how many prayers have been made out of the total for this session.
         /// </summary>
         /// <param name="currentNumber"></param>
         /// <param name="total"></param>
