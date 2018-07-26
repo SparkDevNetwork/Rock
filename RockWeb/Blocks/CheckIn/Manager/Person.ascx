@@ -31,6 +31,7 @@
                 </div>
             </div>
             <div class="col-sm-8 col-md-9 col-lg-10">
+                <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" />
                 <ul class="list-unstyled">
                     <li><asp:Literal ID="lGender" runat="server" /></li>
                     <li><asp:Literal ID="lAge" runat="server" /></li>
