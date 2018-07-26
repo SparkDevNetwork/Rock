@@ -362,7 +362,7 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Removes all items from cache for comma seperated list of cache tags
+        /// Removes all items from cache for comma separated list of cache tags
         /// </summary>
         /// <param name="cacheTags">The cache tags.</param>
         public static void RemoveForTags( string cacheTags )

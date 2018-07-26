@@ -1085,7 +1085,7 @@ namespace Rock.Model
         /// NOTE: If their birthday is Feb 29, and this isn't a leap year, it'll treat Feb 28th as their birthday when doing this calculation
         /// </summary>
         /// <value>
-        /// The the number of days until their next birthday
+        /// The number of days until their next birthday
         /// </value>
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
@@ -1427,7 +1427,7 @@ namespace Rock.Model
         /// NOTE: If their anniversary is Feb 29, and this isn't a leap year, it'll treat Feb 28th as their anniversary when doing this calculation
         /// </summary>
         /// <value>
-        /// The the number of days until their next anniversary
+        /// The number of days until their next anniversary
         /// </value>
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]

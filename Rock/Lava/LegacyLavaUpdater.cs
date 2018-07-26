@@ -28,7 +28,7 @@ using Rock.Model;
 namespace Rock.Lava
 {
     /// <summary>
-    /// Finds and updatges legacy lava
+    /// Finds and updates legacy lava
     /// </summary>
     public class LegacyLavaUpdater
     {

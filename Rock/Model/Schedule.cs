@@ -882,7 +882,7 @@ namespace Rock.Model
         #region consts
 
         /// <summary>
-        /// The "nth" names for DayName of Month (First, Secord, Third, Forth, Last)
+        /// The "nth" names for DayName of Month (First, Second, Third, Forth, Last)
         /// </summary>
         public static readonly Dictionary<int, string> NthNames = new Dictionary<int, string> { 
             {1, "First"}, 

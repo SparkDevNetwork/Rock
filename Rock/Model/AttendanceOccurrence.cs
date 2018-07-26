@@ -157,7 +157,7 @@ namespace Rock.Model
         public virtual ICollection<Attendance> Attendees { get; set; } = new Collection<Attendance>();
 
         /// <summary>
-        /// Gets a value indicating whether attendance was entered (based on presense of any attendee records).
+        /// Gets a value indicating whether attendance was entered (based on presence of any attendee records).
         /// </summary>
         /// <value>
         ///   <c>true</c> if [attendance entered]; otherwise, <c>false</c>.
@@ -303,7 +303,7 @@ namespace Rock.Model
         Schedule = 3,
 
         /// <summary>
-        /// Each Lodation (from Attendance.LocationId) is its own series
+        /// Each Location (from Attendance.LocationId) is its own series
         /// </summary>
         Location = 4
     }

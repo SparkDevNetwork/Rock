@@ -565,7 +565,7 @@ namespace Rock.UniversalSearch.IndexComponents
 
                 totalResultsAvailable = results.Total;
 
-                // normallize the results to rock search results
+                // normalize the results to rock search results
                 if ( results != null )
                 {
                     foreach ( var hit in results.Hits )

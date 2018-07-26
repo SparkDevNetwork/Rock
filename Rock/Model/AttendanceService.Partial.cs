@@ -171,7 +171,7 @@ namespace Rock.Model
         /// <summary>
         /// Returns a specific <see cref="Rock.Model.Attendance"/> record.
         /// </summary>
-        /// <param name="date">A <see cref="System.DateTime"/> representing the the date attended.</param>
+        /// <param name="date">A <see cref="System.DateTime"/> representing the date attended.</param>
         /// <param name="locationId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Location"/> </param>
         /// <param name="scheduleId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Schedule"/></param>
         /// <param name="groupId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Group"/>.</param>

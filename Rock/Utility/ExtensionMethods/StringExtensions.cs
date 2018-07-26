@@ -249,7 +249,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Splits a Camel or Pascal cased identifier into seperate words.
+        /// Splits a Camel or Pascal cased identifier into separate words.
         /// </summary>
         /// <param name="str">The identifier.</param>
         /// <returns></returns>

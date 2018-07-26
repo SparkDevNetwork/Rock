@@ -25,7 +25,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [RockDomain( "Core" )]
     [Table( "ScheduleCategoryExclusion" )]
@@ -103,7 +103,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Updates any Cache Objects that are dependant  this entity
+        /// Updates any Cache Objects that are dependent on this entity
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
@@ -118,7 +118,7 @@ namespace Rock.Model
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public partial class ScheduleCategoryExclusionConfiguration : EntityTypeConfiguration<ScheduleCategoryExclusion>
     {

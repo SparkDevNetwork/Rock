@@ -1501,7 +1501,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                 bool selectAll = !SelectedKeys.Any();
                 RebindGrid( e, selectAll, false, true );
 
-                // Create a dictionary of the additional merge fields that were created for the communicatoin
+                // Create a dictionary of the additional merge fields that were created for the communication
                 var communicationMergeFields = new Dictionary<string, string>();
                 foreach ( string mergeField in this.CommunicateMergeFields )
                 {
