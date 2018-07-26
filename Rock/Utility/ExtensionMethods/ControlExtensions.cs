@@ -311,7 +311,7 @@ namespace Rock
         {
             if ( checkBoxList is Rock.Web.UI.Controls.CampusesPicker )
             {
-                // Campus Picker will add the items if neccessary, so needs to be handled differently
+                // Campus Picker will add the items if necessary, so needs to be handled differently
                 ( (Rock.Web.UI.Controls.CampusesPicker)checkBoxList ).SelectedCampusIds = values.AsIntegerList();
             }
             else
@@ -332,7 +332,7 @@ namespace Rock
         {
             if ( checkBoxList is Rock.Web.UI.Controls.CampusesPicker )
             {
-                // Campus Picker will add the items if neccessary, so needs to be handled differently
+                // Campus Picker will add the items if necessary, so needs to be handled differently
                 ( (Rock.Web.UI.Controls.CampusesPicker)checkBoxList ).SelectedCampusIds = values.ToList();
             }
             else

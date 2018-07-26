@@ -265,7 +265,7 @@ namespace Rock.Model
         public virtual DefinedValue Qualifier { get; set; }
 
         /// <summary>
-        /// Gets a value indicating whether this attenance is currently checked in.
+        /// Gets a value indicating whether this attendance is currently checked in.
         /// </summary>
         /// <value>
         ///   <c>true</c> if this instance is currently checked in; otherwise, <c>false</c>.

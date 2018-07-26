@@ -590,7 +590,7 @@ namespace Rock
             string val = ( s as string );
             if ( !string.IsNullOrEmpty( val ) )
             {
-                // we techically want to XML encode, but Html Encode does the trick
+                // we technically want to XML encode, but Html Encode does the trick
                 return val.EncodeHtml();
             }
             else

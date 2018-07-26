@@ -473,7 +473,7 @@ namespace Rock.Model
             Delete,
 
             /// <summary>
-            /// Something was Registed. For example a Person was registered for an event.
+            /// Something was Registered. For example a Person was registered for an event.
             /// </summary>
             Registered,
 

@@ -98,7 +98,7 @@ namespace Rock.Jobs
 
         /// <summary>
         /// Creates the index on Interactions.ForeignKey.
-        /// Includes were reccomended by Query Analyzer
+        /// Includes were recommended by Query Analyzer
         /// </summary>
         public static void CreateIndexInteractionsForeignKey()
         {
