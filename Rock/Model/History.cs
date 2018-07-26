@@ -1935,7 +1935,7 @@ namespace Rock.Model
                     history.Caption = this.Caption.Truncate( 200 );
                 }
 
-                // for backwards compability, still store summary (and we can ignore the Obsolete warning here)
+                // for backwards compatibility, still store summary (and we can ignore the Obsolete warning here)
 #pragma warning disable 612, 618
                 history.Summary = this.Summary;
 #pragma warning restore 612, 618

@@ -15,7 +15,7 @@
                 <p>
                     In order for us to get the store ready for your first download 
                     we need to do a bit of configuration. The first step is to match
-                    your Rock install to a registered organzation so we can remember
+                    your Rock install to a registered organization so we can remember
                     your purchases. 
                 </p>
                 

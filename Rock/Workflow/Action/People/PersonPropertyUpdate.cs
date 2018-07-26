@@ -204,7 +204,7 @@ namespace Rock.Workflow.Action
                     }
                 case "Photo":
                     {
-                        // could be interger of binary file or a guid
+                        // could be integer of binary file or a guid
 
                         var binaryFileId = updateValue.AsIntegerOrNull();
                         if ( binaryFileId.HasValue )

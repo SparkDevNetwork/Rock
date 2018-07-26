@@ -533,7 +533,7 @@ namespace RockWeb.Blocks.Groups
                         }
                     }
 
-                    // Remove the occurrenced that are associated with another campus
+                    // Remove the occurrences that are associated with another campus
                     occurrences = occurrences
                         .Where( o =>
                             !o.CampusId.HasValue ||

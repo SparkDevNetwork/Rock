@@ -382,7 +382,7 @@ namespace Rock.Jobs
 
             if ( note == null || !note.EntityId.HasValue )
             {
-                // shouldnt' happen
+                // shouldn't' happen
                 return;
             }
 

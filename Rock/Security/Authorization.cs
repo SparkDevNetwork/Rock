@@ -576,7 +576,7 @@ namespace Rock.Security
         /// <param name="sourceEntity">The source entity.</param>
         /// <param name="targetEntity">The target entity.</param>
         /// <param name="rockContext">The rock context.</param>
-        /// <param name="action">Optional action (if ommitted or left blank, all actions will be copied).</param>
+        /// <param name="action">Optional action (if omitted or left blank, all actions will be copied).</param>
         /// <remarks>
         /// This method will save any previous changes made to the context
         /// </remarks>

@@ -108,7 +108,7 @@ namespace Rock.Model
             else
             {
                 // determine client type
-                // note this regex should be updated from http://detectmobilebrowsers.com/ occassionally
+                // note this regex should be updated from http://detectmobilebrowsers.com/ occasionally
                 // last update 11/11/2015 - JME
                 bool clientDetected = false;
 

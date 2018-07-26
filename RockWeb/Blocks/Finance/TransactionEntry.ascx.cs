@@ -143,7 +143,7 @@ TransactionAccountDetails: [
 ]</pre>", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false, "Online Contribution", "", 28 )]
     [BooleanField( "Enable Comment Entry", "Allows the guest to enter the value that's put into the comment field (will be appended to the 'Payment Comment' setting)", false, "", 29 )]
     [TextField( "Comment Entry Label", "The label to use on the comment edit field (e.g. Trip Name to give to a specific trip).", false, "Comment", "", 30 )]
-    [BooleanField( "Enable Business Giving", "Should the option to give as as a business be displayed", true, "", 31 )]
+    [BooleanField( "Enable Business Giving", "Should the option to give as a business be displayed", true, "", 31 )]
     [BooleanField( "Enable Anonymous Giving", "Should the option to give anonymously be displayed. Giving anonymously will display the transaction as 'Anonymous' in places where it is shown publicly, for example, on a list of fundraising contributors.", false, "", 32 )]
     [TextField( "Anonymous Giving Tooltip", "The tooltip for the 'Give Anonymously' checkbox.", false, "", order: 33 )]
 
@@ -809,7 +809,7 @@ TransactionAccountDetails: [
                 {
                     if ( string.IsNullOrWhiteSpace( txtUserName.Text ) || string.IsNullOrWhiteSpace( txtPassword.Text ) )
                     {
-                        nbSaveAccount.Title = "Missing Informaton";
+                        nbSaveAccount.Title = "Missing Information";
                         nbSaveAccount.Text = "A username and password are required when saving an account";
                         nbSaveAccount.NotificationBoxType = NotificationBoxType.Danger;
                         nbSaveAccount.Visible = true;
@@ -2862,7 +2862,7 @@ TransactionAccountDetails: [
                 }
                 else
                 {
-                    //content.Text = String.Format( "<div class='alert alert-danger'>An error occured while deleting your scheduled transation. Message: {0}</div>", errorMessage );
+                    //content.Text = String.Format( "<div class='alert alert-danger'>An error occurred while deleting your scheduled transaction. Message: {0}</div>", errorMessage );
                 }
             }
         }
