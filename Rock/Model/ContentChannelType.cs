@@ -78,7 +78,7 @@ namespace Rock.Model
             set { _includeTime = value; }
         }
         private bool _includeTime = true;
-        
+
         /// <summary>
         /// Gets or sets a value indicating whether [disable priority].
         /// </summary>
@@ -106,6 +106,16 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool DisableStatus { get; set; }
+
+        /// <summary>
+        /// A flag indicating if a <see cref="Rock.Model.ContentChannel"/> of this ContentChannelType will be shown in the content channel list.
+        /// Whem false, it means any 'Channel Types Include' settings MUST specifically include in order to show it.
+        /// </summary>
+        /// <value>
+        ///   A <see cref="System.Boolean"/> value that is <c>true</c> if a <see cref="Rock.Model.Group"/> of this Content Channel Type will be shown in the Channel list; otherwise <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool ShowInChannelList { get; set; }
 
         #endregion
 
@@ -148,6 +158,7 @@ namespace Rock.Model
         public ContentChannelType()
         {
             Channels = new Collection<ContentChannel>();
+            ShowInChannelList = true;
         }
 
         #endregion
