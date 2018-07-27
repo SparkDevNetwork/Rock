@@ -40,7 +40,7 @@ namespace Rock.Workflow.Action
     [TextField("Title", "The title of the content channel item. <span class='tip tip-lava'></span>", true, "", "", 2 )]
     [WorkflowTextOrAttribute( "Start Date Time", "Attribute Value", "Text (date time format) or datetime workflow attribute that contains the text to set the start date time. <span class='tip tip-lava'></span>", true, "", "", 3, "StartDateTime",
         new string[] { "Rock.Field.Types.DateTimeFieldType", "Rock.Field.Types.TextFieldType" } )]
-    [WorkflowTextOrAttribute( "Expire Date Time", "Attribute Value", "An optional text (date time format) or datetime workflow attribute that contains the text to set the expiration date time. <span class='tip tip-lava'></span>", false, "", "", 4, null,
+    [WorkflowTextOrAttribute( "Expire Date Time", "Attribute Value", "An optional text (date time format) or datetime workflow attribute that contains the text to set the expiration date time. <span class='tip tip-lava'></span>", false, "", "", 4, "ExpireDateTime",
         new string[] { "Rock.Field.Types.DateTimeFieldType", "Rock.Field.Types.TextFieldType" } )]
     [WorkflowTextOrAttribute( "Content", "Attribute Value", "The content or a text/memo attribute that contains the content for the channel item. <span class='tip tip-lava'></span>", true, "", "", 5, "Content",
         new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" } )]
