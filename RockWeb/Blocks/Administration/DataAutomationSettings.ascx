@@ -410,7 +410,7 @@
                 <div class="actions margin-t-lg">
                     <Rock:BootstrapButton ID="bbtnSaveConfig" runat="server" CssClass="btn btn-primary" AccessKey="s" ToolTip="Alt+s" OnClick="bbtnSaveConfig_Click" Text="Save"
                         DataLoadingText="&lt;i class='fa fa-refresh fa-spin'&gt;&lt;/i&gt; Saving"
-                        CompletedText="Success" CompletedMessage="&nbsp;Changes Have Been Saved!" CompletedDuration="2"></Rock:BootstrapButton>
+                        CompletedText="Success" CompletedMessage="<div class='margin-t-md alert alert-success'>Changes have been saved.</div>" CompletedDuration="3"></Rock:BootstrapButton>
                 </div>
 
             </div>
