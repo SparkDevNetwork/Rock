@@ -521,7 +521,7 @@ namespace RockWeb.Blocks.Event
                             {
                                 case "re-order-form":
                                     {
-                                        SortForms( guid, newIndex+1 );
+                                        SortForms( guid, newIndex + 1 );
                                         break;
                                     }
                             }
@@ -583,7 +583,7 @@ namespace RockWeb.Blocks.Event
             if ( pnlEditDetails.Visible )
             {
                 var sameFamily = rblRegistrantsInSameFamily.SelectedValueAsEnum<RegistrantsSameFamily>();
-                divCurrentFamilyMembers.Attributes["style"] = sameFamily == RegistrantsSameFamily.Yes ? "display:block" : "display:none";
+                divCurrentFamilyMembers.Attributes["style"] = sameFamily == RegistrantsSameFamily.No ? "display:none" : "display:block";
             }
 
             base.OnPreRender( e );
