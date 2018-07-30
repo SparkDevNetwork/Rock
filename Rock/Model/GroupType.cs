@@ -1078,12 +1078,12 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
         {
-            var parentGroupTypes = GroupTypeCache.Get( this.Id, dbContext as RockContext )?.ParentGroupTypes;
-            if ( parentGroupTypes?.Any() == true )
+            var parentGroupTypeIds = new GroupTypeService( dbContext as RockContext ).GetParentGroupTypes( this.Id ).Select( a => a.Id ).ToList();
+            if ( parentGroupTypeIds?.Any() == true )
             {
-                foreach ( var parentGroupType in parentGroupTypes )
+                foreach ( var parentGroupTypeId in parentGroupTypeIds )
                 {
-                    GroupTypeCache.UpdateCachedEntity( parentGroupType.Id, EntityState.Detached );
+                    GroupTypeCache.UpdateCachedEntity( parentGroupTypeId, EntityState.Detached );
                 }
             }
 

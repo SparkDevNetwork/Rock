@@ -559,7 +559,7 @@ namespace Rock.Model
 
             if ( this.EntityId.HasValue && cacheAttribute.EntityTypeId.HasValue )
             {
-                EntityTypeCache entityType = EntityTypeCache.Get( cacheAttribute.EntityTypeId.Value );
+                EntityTypeCache entityType = EntityTypeCache.Get( cacheAttribute.EntityTypeId.Value, dbContext as RockContext );
 
                 if ( entityType?.HasEntityCache() == true )
                 {
