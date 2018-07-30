@@ -176,7 +176,7 @@ namespace Rock.Jobs
                     workflow.SetAttributeValue( attribute.Key, attribute.Value );
                 }
 
-                // lauch workflow
+                // launch workflow
                 List<string> workflowErrors;
                 workflowService.Process( workflow, out workflowErrors );
             }

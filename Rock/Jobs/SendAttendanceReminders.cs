@@ -157,7 +157,7 @@ namespace Rock.Jobs
                     }
                 }
 
-                // Remove any 'occurrenes' that already have attendance data entered
+                // Remove any 'occurrences' that already have attendance data entered
                 foreach ( var occurrence in attendanceOccurrenceService
                     .Queryable().AsNoTracking()
                     .Where( a =>

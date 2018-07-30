@@ -53,7 +53,7 @@ namespace Rock.Reporting
             }
 
             // Verify that the Data View does not contain any references to itself in any of its components.
-            // This configuration would cause a circular reference excpetion during evaluation of the Data View.
+            // This configuration would cause a circular reference exception during evaluation of the Data View.
             if (dsService.IsViewInFilter( dataView.Id, dataView.DataViewFilter ))
             {
                 throw new Exception( "Filter issue(s): One of the filters contains a circular reference to the Data View itself." );

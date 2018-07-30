@@ -35,7 +35,7 @@ namespace RockWeb.Blocks.CheckIn
     [Category( "Check-in" )]
     [Description( "Provides a way to manually enter attendance for a large group of people in an efficient manner." )]
 
-    [GroupField( "Parent Group", "Select the parent group whose immediate childeren will be displayed as options to take attendance for.", required: true, order: 0 )]
+    [GroupField( "Parent Group", "Select the parent group whose immediate children will be displayed as options to take attendance for.", required: true, order: 0 )]
     [BooleanField( "Include Parent Group", "If true then the parent group will be included as an option in addition to its children.", false, order: 1 )]
     [BooleanField( "Default Show Current Attendees", "Should the Current Attendees grid be visible by default. When the grid is enabled performance will be reduced.", false, order: 1 )]
     public partial class RapidAttendanceEntry : RockBlock
@@ -214,7 +214,7 @@ namespace RockWeb.Blocks.CheckIn
                 }
 
                 //
-                // If ther is only one schedule then select it, otherwise show the picker and let the user select.
+                // If there is only one schedule then select it, otherwise show the picker and let the user select.
                 //
                 if ( schedules.Count == 1 )
                 {
@@ -442,7 +442,7 @@ namespace RockWeb.Blocks.CheckIn
         }
 
         /// <summary>
-        /// Handles the user changign the selected person in the ppAttendee control.
+        /// Handles the user changing the selected person in the ppAttendee control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>

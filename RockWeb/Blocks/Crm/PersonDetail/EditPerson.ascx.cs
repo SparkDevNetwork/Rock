@@ -40,7 +40,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
     /// <summary>
-    /// The main Person Profile block the main information about a peron 
+    /// The main Person Profile block the main information about a person 
     /// </summary>
     [DisplayName( "Edit Person" )]
     [Category( "CRM > Person Detail" )]
@@ -413,7 +413,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             var oldEnvelopeNumber = person.GetAttributeValue( personGivingEnvelopeAttribute.Key );
                             if ( newEnvelopeNumber != oldEnvelopeNumber )
                             {
-                            // If they haven't already comfirmed about duplicate, see if the envelope number if assigned to somebody else
+                            // If they haven't already confirmed about duplicate, see if the envelope number if assigned to somebody else
                             if ( !string.IsNullOrWhiteSpace( newEnvelopeNumber ) && hfGivingEnvelopeNumberConfirmed.Value != newEnvelopeNumber )
                                 {
                                     var otherPersonIdsWithEnvelopeNumber = new AttributeValueService( rockContext ).Queryable()
@@ -964,7 +964,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="args">The <see cref="ServerValidateEventArgs"/> instance containing the event data.</param>
         protected void cvAlternateIds_ServerValidate( object source, ServerValidateEventArgs args )
         {
-            // Validate that none of the alternate ids are being used alredy.
+            // Validate that none of the alternate ids are being used already.
             var dv = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() );
             if ( dv != null )
             {

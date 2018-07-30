@@ -181,7 +181,7 @@ namespace Rock.Jobs
                             }
                             else
                             {
-                                // all parents in the heirarchy
+                                // all parents in the hierarchy
                                 var parentIds = groupService.GetAllAncestorIds( group.Id );
                                 parentLeaders = parentLeaders.Where( m => parentIds.Contains( m.GroupId ) );
                             }
@@ -197,7 +197,7 @@ namespace Rock.Jobs
                     }
                 }
 
-                // send out notificatons
+                // send out notifications
                 int recipients = 0;
                 var notificationRecipients = _notificationList.GroupBy( p => p.Person.Id ).ToList();
                 foreach ( var recipientId in notificationRecipients )

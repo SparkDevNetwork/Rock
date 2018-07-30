@@ -40,7 +40,7 @@ namespace Rock.Jobs
     {
         /// <summary>
         /// Executes the specified context. When updating large data sets SQL will burn a lot of time updating the indexes. If performing multiple inserts/updates
-        /// consider dropping the related indexes first and re-creating them once the opoeration is complete.
+        /// consider dropping the related indexes first and re-creating them once the operation is complete.
         /// Put all index creation method calls at the end of this method.
         /// </summary>
         /// <param name="context">The context.</param>
@@ -98,7 +98,7 @@ namespace Rock.Jobs
 
         /// <summary>
         /// Creates the index on Interactions.ForeignKey.
-        /// Includes were reccomended by Query Analyzer
+        /// Includes were recommended by Query Analyzer
         /// </summary>
         public static void CreateIndexInteractionsForeignKey()
         {

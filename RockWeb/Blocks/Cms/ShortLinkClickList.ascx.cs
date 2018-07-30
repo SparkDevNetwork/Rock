@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Cms
     /// </summary>
     [DisplayName("Short Link Click List")]
     [Category("CMS")]
-    [Description("Lists cliks for a particular short link.")]
+    [Description("Lists clicks for a particular short link.")]
     public partial class ShortLinkClickList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
         #region Control Methods

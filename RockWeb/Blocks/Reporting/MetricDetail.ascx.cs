@@ -1363,7 +1363,7 @@ The Lava can include Lava merge fields:";
         }
 
         /// <summary>
-        /// Updates the type of the metric partion detail for entity.
+        /// Updates the type of the metric partition detail for entity.
         /// </summary>
         private void UpdateMetricPartionDetailForEntityType()
         {

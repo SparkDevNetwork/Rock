@@ -257,7 +257,7 @@ namespace Rock.Communication.Transport
                     .Queryable().Include( a => a.CreatedByPersonAlias.Person ).Include( a => a.CommunicationTemplate )
                     .FirstOrDefault( c => c.Id == communication.Id );
 
-                // If there are no pending recipents than just exit the method
+                // If there are no pending recipients than just exit the method
                 if ( communication != null &&
                     communication.Status == Model.CommunicationStatus.Approved &&
                     ( !communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value.CompareTo( RockDateTime.Now ) <= 0 ) )
@@ -303,7 +303,7 @@ namespace Rock.Communication.Transport
 
                 RestRequest restRequest = null;
 
-                // Loop through receipents and send the email
+                // Loop through recipients and send the email
                 bool recipientFound = true;
                 while ( recipientFound )
                 {
@@ -533,7 +533,7 @@ namespace Rock.Communication.Transport
                 return;
             }
 
-            // The sender domain is not considered safe so check all the recipeients to see if they have a domain that does not requrie a safe sender
+            // The sender domain is not considered safe so check all the recipients to see if they have a domain that does not requrie a safe sender
             bool unsafeToDomain = false;
 
             foreach ( var toEmailAddress in toEmailAddresses )

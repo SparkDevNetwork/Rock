@@ -31,7 +31,7 @@ using Rock.Web.Cache;
 namespace Rock.Jobs
 {
     /// <summary>
-    /// Determines if any events have occured for the enitities that a person follows, and if so notifies them
+    /// Determines if any events have occurred for the enitities that a person follows, and if so notifies them
     /// </summary>
     [SystemEmailField( "Following Event Notification Email Template", required: true, order: 0, key: "EmailTemplate" )]
     [SecurityRoleField( "Eligible Followers", "The group that contains individuals who should receive following event notification", true, order: 1 )]
@@ -208,7 +208,7 @@ namespace Rock.Jobs
                                                     var eventComponent = eventType.GetEventComponent();
                                                     if ( eventComponent != null )
                                                     {
-                                                        // Get the previous notificatoins for this event type
+                                                        // Get the previous notifications for this event type
                                                         var previousNotifications = followingEventNotificationService
                                                             .Queryable()
                                                             .Where( n => n.FollowingEventTypeId == eventType.Id )
@@ -264,7 +264,7 @@ namespace Rock.Jobs
                         }
                     }
 
-                    // send notificatons
+                    // send notifications
                     var possibleRecipients = new PersonService( rockContext )
                         .Queryable().AsNoTracking()
                         .Where( p => personSubscriptions.Keys.Contains( p.Id ) )
