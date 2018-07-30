@@ -158,8 +158,6 @@ namespace Rock.Jobs
                         continue;
                     }
 
-                    var appRoot = GlobalAttributesCache.Read( rockContext ).GetValue( "PublicApplicationRoot" );
-
                     var recipients = new List<RecipientData>();
                     foreach ( var leader in groupLeaders )
                     {
