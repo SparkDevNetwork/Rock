@@ -364,7 +364,7 @@ namespace Rock.Web
     }
 
     /// <summary>
-    /// Handler used when an error occurrs
+    /// Handler used when an error occurs
     /// </summary>
     public class HttpHandlerError : System.Web.IHttpHandler
     {

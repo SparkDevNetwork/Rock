@@ -160,7 +160,7 @@ namespace Rock.Services.NuGet
                 return false;
             }
 
-            // This really shouldn't happen since it was theoretically‎ just added before
+            // This really shouldn't happen since it was theoretically just added before
             // we were called.
             if ( !File.Exists( transformFile ) )
             {

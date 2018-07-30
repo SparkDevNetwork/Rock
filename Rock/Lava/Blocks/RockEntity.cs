@@ -805,7 +805,7 @@ namespace Rock.Lava.Blocks
         }
 
         /// <summary>
-        /// Properties the comparison converstion.
+        /// Properties the comparison conversion.
         /// </summary>
         /// <param name="comparisonOperator">The comparison operator.</param>
         /// <returns></returns>

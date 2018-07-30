@@ -38,7 +38,7 @@ namespace Rock.Follow.Event
     [Export( typeof( EventComponent ) )]
     [ExportMetadata( "ComponentName", "PersonHistory" )]
 
-    [TextField( "Fields", "Field name(s) to monitor in history data. Seperate multiple items by a comma. If you look at a person's history data it would be in the format of 'Modified FIELD value from OLD to NEW'.", true, order: 0 )]
+    [TextField( "Fields", "Field name(s) to monitor in history data. Separate multiple items by a comma. If you look at a person's history data it would be in the format of 'Modified FIELD value from OLD to NEW'.", true, order: 0 )]
     [IntegerField( "Max Days Back", "Maximum number of days back to look at a person's history.", true, 30, "", order: 1 )]
 
     [BooleanField( "Match Both", "Require a match on both the Old Value and the New Value. This equates to an AND comparison, otherwise it equates to an OR comparison on the values.", true, category: "Values", order: 0 )]

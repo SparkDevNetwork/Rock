@@ -512,7 +512,7 @@ namespace Rock.Web
             // Get previous page references in nav history
             var pageReferenceHistory = HttpContext.Current.Session["RockPageReferenceHistory"] as List<PageReference>;
                         
-            // Current page heirarchy references
+            // Current page hierarchy references
             var pageReferences = new List<PageReference>();
 
             if (currentPage != null)

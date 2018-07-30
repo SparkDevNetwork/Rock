@@ -95,7 +95,7 @@ namespace Rock.Transactions
                                     ( w.ConnectionTypeId.HasValue && w.ConnectionTypeId.Value == ConnectionTypeId ) )
                                 .ToList();
 
-                            // Loop through connectionWorkflows and lauch appropriate workflow
+                            // Loop through connectionWorkflows and launch appropriate workflow
                             foreach ( var connectionWorkflow in workflows )
                             {
                                 if ( QualifiersMatch( rockContext, connectionWorkflow, ConnectionActivityTypeId ) )

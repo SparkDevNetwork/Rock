@@ -380,7 +380,7 @@ namespace Rock.Field
         }
 
         /// <summary>
-        /// Gets the type of the filter comparison.
+        /// Returns the ComparisonType options that the field supports
         /// </summary>
         /// <value>
         /// The type of the filter comparison.
@@ -720,16 +720,18 @@ namespace Rock.Field
                 if ( comparisonValue != "0" )
                 {
                     ComparisonType comparisonType = comparisonValue.ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
-
+                    string compareToValue = filterValues[1];
                     bool valueNotNeeded = ( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType );
-                    if ( valueNotNeeded || !string.IsNullOrWhiteSpace( filterValues[1] ) )
+
+                    if ( valueNotNeeded || !string.IsNullOrWhiteSpace( compareToValue ) )
                     {
                         MemberExpression propertyExpression = Expression.Property( parameterExpression, this.AttributeValueFieldName );
-                        return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, AttributeConstantExpression( filterValues[1] ) );
+                        return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, AttributeConstantExpression( compareToValue ) );
                     }
                 }
             }
 
+            // return null if there isn't an additional expression that will help narrow down which AttributeValue records to include
             return null;
         }
 

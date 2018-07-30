@@ -101,7 +101,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns a collection of all <see cref="Rock.Model.GroupMember">GroupMembers</see> with eager loading of properties specfied in includes
+        /// Returns a collection of all <see cref="Rock.Model.GroupMember">GroupMembers</see> with eager loading of properties specified in includes
         /// </summary>
         /// <param name="includes">The includes.</param>
         /// <returns>Returns a queryable collection of <see cref="Rock.Model.GroupMember">GroupMembers</see> with specified properties eagerly loaded</returns>
@@ -111,7 +111,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns a queryable collection of all <see cref="Rock.Model.GroupMember">GroupMembers</see> with eager loading of properties specfied in includes
+        /// Returns a queryable collection of all <see cref="Rock.Model.GroupMember">GroupMembers</see> with eager loading of properties specified in includes
         /// </summary>
         /// <param name="includes">A <see cref="System.String"/> containing a list of properties to be eagerly loaded.</param>
         /// <param name="includeDeceased">A <see cref="System.Boolean"/> value indicating if deceased <see cref="Rock.Model.GroupMember">GroupMembers</see> should be included. If <c>true</c> 
@@ -298,7 +298,7 @@ namespace Rock.Model
         /// Gets a list of <see cref="System.Int32"/> PersonIds who's home address matches the given search value.
         /// </summary>
         /// <param name="partialHomeAddress">a partial address search string</param>
-        /// <returns>A querable list of <see cref="System.Int32"/> PersonIds</returns>
+        /// <returns>A queryable list of <see cref="System.Int32"/> PersonIds</returns>
         public IQueryable<int> GetPersonIdsByHomeAddress( string partialHomeAddress )
         {
             Guid groupTypefamilyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );

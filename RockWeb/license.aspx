@@ -125,7 +125,7 @@
                             <li><a href="http://bcrypt.codeplex.com/">BCrypt</a> (BSD)</li>
                             <li><a href="https://github.com/MikaelEliasson/EntityFramework.Utilities/blob/master/EntityFramework.Utilities">EFUtilities</a> (MIT)</li>
                             <li><a href="https://harvesthq.github.io/chosen/">Chosen</a> (MIT)</li>
-                            <li><a href="https://github.com/alxlit/bootstrap-chosen">Bootstrap Stylsheet for Chosen</a> (MIT)</li>
+                            <li><a href="https://github.com/alxlit/bootstrap-chosen">Bootstrap Stylesheet for Chosen</a> (MIT)</li>
                             <li><a href="https://github.com/elastic/elasticsearch-net">Elasticsearch NEST Client</a> (Apache 2)</li>
                             <li><a href="https://github.com/bcuff/elasticsearch-net-aws">Elasticsearch Net for Amazon AWS</a> (Apache 2)</li>
                             <li><a href="https://github.com/d3/d3">D3 (Data-Driven Documents)</a> (Custom)</li>

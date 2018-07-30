@@ -242,7 +242,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 }
                 else if ( ViewMode == VIEW_MODE_ORDER && _canAdministrate )
                 {
-                    // Split and deliminate again to remove trailing delimiter
+                    // Split and delineate again to remove trailing delimiter
                     var attributeOrder = hfAttributeOrder.Value.SplitDelimitedValues().ToList().AsDelimited( "|" );
 
                     SetAttributeValue( "AttributeOrder", attributeOrder );

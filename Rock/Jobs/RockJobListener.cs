@@ -132,7 +132,7 @@ namespace Rock.Jobs
             // set the scheduler name
             job.LastRunSchedulerName = context.Scheduler.SchedulerName;
 
-            // determine if an error occured
+            // determine if an error occurred
             if ( jobException == null )
             {
                 job.LastSuccessfulRunDateTime = job.LastRunDateTime;

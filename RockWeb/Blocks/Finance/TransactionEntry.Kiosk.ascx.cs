@@ -391,7 +391,7 @@ namespace RockWeb.Blocks.Finance
 
                     }
 
-                    // add comment to the transation
+                    // add comment to the transaction
                     swipeInfo.Comment1 = GetAttributeValue( "PaymentComment" );
 
                     // get gateway
