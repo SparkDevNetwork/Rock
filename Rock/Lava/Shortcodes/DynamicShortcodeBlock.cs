@@ -284,7 +284,7 @@ namespace Rock.Lava.Shortcodes
                             var dynamicParm = new Dictionary<string, Object>();
                             dynamicParm.Add( "content", parmContent );
 
-                            var parmItems = Regex.Matches( tagParms, "(.*?:'[^']+')" )
+                            var parmItems = Regex.Matches( tagParms, @"(\S*?:'[^']+')" )
                                 .Cast<Match>()
                                 .Select( m => m.Value )
                                 .ToList();
@@ -369,7 +369,7 @@ namespace Rock.Lava.Shortcodes
             // first run lava across the inputted markup
             var resolvedMarkup = markup.ResolveMergeFields( _internalMergeFields );
 
-            var markupItems = Regex.Matches( resolvedMarkup, "(.*?:'[^']+')" )
+            var markupItems = Regex.Matches( resolvedMarkup, @"(\S*?:'[^']+')" )
                 .Cast<Match>()
                 .Select( m => m.Value )
                 .ToList();

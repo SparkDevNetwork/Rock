@@ -29,7 +29,7 @@ namespace Rock.Lava.Blocks
 {
     /// <summary>
     /// Sql stores the result of provided SQL query into a variable.
-    /// 
+    ///
     /// {% sql results %}
     /// SELECT [FirstName], [LastName] FROM [Person]
     /// {% endsql %}
@@ -131,7 +131,7 @@ namespace Rock.Lava.Blocks
             parms.Add( "return", "results" );
             parms.Add( "statement", "select" );
 
-            var markupItems = Regex.Matches( markup, "(.*?:'[^']+')" )
+            var markupItems = Regex.Matches( markup, @"(\S*?:'[^']+')" )
                 .Cast<Match>()
                 .Select( m => m.Value )
                 .ToList();
