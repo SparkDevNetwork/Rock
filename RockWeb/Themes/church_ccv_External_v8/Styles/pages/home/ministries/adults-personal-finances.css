@@ -1,12 +1,11 @@
 .page-background {
-    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/hero-starting-point.jpg");
-    background-color: #ffffff;
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/hero-personal-finances.jpg");
 }
 
 /* Mobile Background Image */
 @media screen and (max-width: 500px) {
     .page-background {
-        background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/hero-mobile-starting-point.jpg");
+        background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/hero-mobile-personal-finances.jpg");
     }
 }
 

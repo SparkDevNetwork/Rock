@@ -1,7 +1,8 @@
-<h4 class='margin-t-none'>{{ Group.Name }}<br>
-  <small>{{ Group.Schedule.FriendlyScheduleText }}</small>
-</h4>
-
+<div class="group-name-and-schedule">
+		<h4 class='margin-t-none'>{{ Group.Name }}<br>
+			<small>{{ Group.Schedule.FriendlyScheduleText }}</small>
+		</h4>
+</div>
 {% for member in Group.Members %}
   {% if member.GroupRole.Name == 'Coach' %}
     {% assign groupLeader = member %}
@@ -44,7 +45,7 @@
 		<img class="pull-left margin-r-sm margin-b-sm" src="{{ rootUrl }}GetImage.ashx?guid={{ groupPictureGuid }}&height=180&width=180&mode=crop&scale=both" height="60" width="60"/>
   {% endif %}
 
-  <div class='margin-b-sm'>
+  {% comment %} <div class='margin-b-sm'>
     {% for attribute in Group.AttributeValues %}
       {% if attribute.Value != empty %}
         {% if attribute.AttributeName != "Family Picture" and attribute.AttributeName != "Group Picture" %}
@@ -54,18 +55,18 @@
         {% endif %}
       {% endif %}
     {% endfor %}
-  </div>
+  </div> {% endcomment %}
 
-  <div class='margin-v-sm'>
+  <div class='location-of-group'>
     {% if Location.FormattedHtmlAddress && Location.FormattedHtmlAddress != '' %}
-      {{ Location.FormattedHtmlAddress }}
+      <p>{{ Location.FormattedHtmlAddress }}</p>
     {% endif %}
   </div>
 </div>
 
-{% if LinkedPages.GroupDetailPage and LinkedPages.GroupDetailPage != '' %}
+{% comment %} {% if LinkedPages.GroupDetailPage and LinkedPages.GroupDetailPage != '' %}
   <a class='btn btn-xs btn-action margin-r-sm' href='{{ LinkedPages.GroupDetailPage }}?GroupId={{ Group.Id }}'>View {{ Group.GroupType.GroupTerm }}</a>
-{% endif %}
+{% endif %} {% endcomment %}
 
 {% if LinkedPages.RegisterPage and LinkedPages.RegisterPage != '' %}
   {% if LinkedPages.RegisterPage contains '?' %}

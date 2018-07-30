@@ -371,6 +371,7 @@
 .search-item {
     margin-left: 15px;
     padding: 10px;
+    font-size: 20px;
 }
 
 .search-item:hover {
@@ -512,6 +513,7 @@
     margin-left: 25px;
     color: #FFFFFF;
     text-decoration: none;
+    font-size: 18px;
 }
 
 .navigation-mobile-items {

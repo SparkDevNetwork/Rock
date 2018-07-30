@@ -1,10 +1,17 @@
 .page-background {   
     background-color: #EBEBEB;
-    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/hero-giving.jpg");
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/stand-alone/hero-changed.jpg");
     background-position: center top;
     margin: auto;
     background-repeat: no-repeat;
     background-attachment: fixed;
+}
+
+/* Mobile Background Image */
+@media screen and (max-width: 500px) {
+    .page-background {
+        background-image: url("/Themes/church_ccv_External_v8/Assets/Images/stand-alone/hero-mobile-changed.jpg");
+    }
 }
 
 .vid-row {
@@ -50,10 +57,6 @@
 
 /* Mobile Background Image */
 @media screen and (max-width: 700px) {
-    .page-background {
-        background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/hero-mobile-giving.jpg");
-    }
-
     .vid-row {
         display: flex;
         flex-direction: column;

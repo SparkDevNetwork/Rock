@@ -15,11 +15,11 @@
                             
                                 <div class="profile-picture">
                                     {% assign familyPicture = group | Attribute: 'FamilyPicture', 'RawValue' %}
-                                    {% if familyPicture != empty %}
-                                            <img class="pull-left margin-r-sm margin-b-sm" src="/GetImage.ashx?guid={{ familyPicture }}"/>
-                                    {% else %}
-                                            <img class="pull-left margin-r-sm margin-b-sm" src="/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/icon-connect.png"/>
-                                    {% endif %}
+                                        {% if familyPicture != empty %}
+                                                <img class="pull-left" src="/GetImage.ashx?guid={{ familyPicture }}"/>
+                                        {% else %}
+                                                <img class="pull-left" src="/Themes/church_ccv_External_v8/Assets/Images/home/get-involved/icon-connect.png"/>
+                                        {% endif %}
                                 </div>
                                 <div class="person-info">
                                   
@@ -75,6 +75,7 @@
                                             {% if attribute.AttributeName == "Group Filters" %}
                                                 {% if attribute.ValueFormatted == "Childcare Provided" %}
                                                    <p></p>
+                                                   <h5>Childcare Description</h5>
                                                    <p>{{ tempChildCareDescription }}</p>
                                                 {% endif %}
                                             {% endif %}
