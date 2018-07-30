@@ -2757,7 +2757,6 @@ namespace Rock.Lava
         /// <param name="context">The context.</param>
         /// <param name="input">The input.</param>
         /// <param name="groupTypeId">The group type identifier.</param>
-        /// <param name="status">The status.</param>
         /// <returns></returns>
         public static List<Rock.Model.GroupMember> Groups( DotLiquid.Context context, object input, string groupTypeId )
         {
