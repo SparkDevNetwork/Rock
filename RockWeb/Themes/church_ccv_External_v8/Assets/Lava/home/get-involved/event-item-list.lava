@@ -216,6 +216,8 @@
                                 {% else %}
                                     {% capture regInfo %}<div class="btn btn-primary" disabled>Registration Closed</div><br/><span class="registration-closed">{{ registrationMessage }}</span></div>{% endcapture %}
                                 {% endif %}
+                            {% else %}
+                                {% assign regInfo = '' %}
                             {% endif %}
                            
                             <script>
