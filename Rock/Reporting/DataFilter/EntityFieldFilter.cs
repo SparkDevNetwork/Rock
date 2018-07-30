@@ -171,7 +171,7 @@ namespace Rock.Reporting.DataFilter
             {
                 var fieldSelection = values[0];
                 var entityField = entityFields.FindFromFilterSelection( fieldSelection );
-                
+
                 if ( entityField != null )
                 {
                     string selectedProperty = entityField.UniqueName;
@@ -324,11 +324,10 @@ namespace Rock.Reporting.DataFilter
         /// <returns></returns>
         public Expression GetAttributeExpression( IService serviceInstance, ParameterExpression parameterExpression, EntityField entityField, List<string> values )
         {
-            var service = new AttributeValueService( (RockContext)serviceInstance.Context );
-            
+            var service = new AttributeValueService( ( RockContext ) serviceInstance.Context );
+
             var attributeValues = service.Queryable().Where( v =>
-                v.EntityId.HasValue &&
-                v.Value != string.Empty );
+                v.EntityId.HasValue );
 
             if ( entityField.AttributeGuid.HasValue )
             {
@@ -350,14 +349,12 @@ namespace Rock.Reporting.DataFilter
             // first we find the Attribute Values that match those values and then we exclude the associated Entities from the result set.
             var comparisonType = ComparisonType.EqualTo;
             ComparisonType evaluatedComparisonType = comparisonType;
+            string compareToValue = null;
 
             if ( values.Count >= 2 )
             {
-                string comparisonValue = values[0];
-                if ( comparisonValue != "0" )
-                {
-                    comparisonType = comparisonValue.ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
-                }
+                comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
+                compareToValue = values[1];
 
                 switch ( comparisonType )
                 {
@@ -387,7 +384,40 @@ namespace Rock.Reporting.DataFilter
             var filterExpression = entityField.FieldType.Field.AttributeFilterExpression( entityField.FieldConfig, values, attributeValueParameterExpression );
             if ( filterExpression != null )
             {
-                attributeValues = attributeValues.Where( attributeValueParameterExpression, filterExpression, null );
+                if ( filterExpression is ConstantExpression )
+                {
+                    // Special Case: If AttributeFilterExpression returns ConstantExpression (for example, Expression.Constant(true)), just return the ConstantExpression.
+                    // For example, If this is a CampusFieldType and they didn't pick any campus, we don't want to do any filtering for this datafilter.
+                    return filterExpression;
+                }
+                else
+                {
+                    attributeValues = attributeValues.Where( attributeValueParameterExpression, filterExpression, null );
+                }
+            }
+            else
+            {
+                // AttributeFilterExpression returned NULL (the FieldType didn't specify any additional filter on AttributeValue),
+                // so just filter based on if the AttributeValue exists with a non-empty value
+                if ( entityField.FieldType.Field.FilterComparisonType.HasFlag( ComparisonType.IsBlank ) && string.IsNullOrEmpty( compareToValue )  )
+                {
+                    // in the case of EqualTo/NotEqualTo with a NULL compareToValue, filter this using an IsBlank/IsNotBlank filter ( if the fieldtype supports it )
+                    if ( comparisonType == ComparisonType.EqualTo )
+                    {
+                        // treat as IsBlank, but invert so that it ends being "NOT (people that *have* a value)"
+                        // this will make is so that the filter will return people that have a blank value or no AttributeValue record
+                        comparisonType = ComparisonType.IsBlank;
+                        evaluatedComparisonType = ComparisonType.IsNotBlank;
+                    }
+                    else if ( comparisonType == ComparisonType.NotEqualTo )
+                    {
+                        // treat as IsNotBlank
+                        comparisonType = ComparisonType.IsNotBlank;
+                        evaluatedComparisonType = ComparisonType.IsNotBlank;
+                    }
+                }
+
+                attributeValues = attributeValues.Where( a => !string.IsNullOrEmpty( a.Value ) );
             }
 
             IQueryable<int> ids = attributeValues.Select( v => v.EntityId.Value );
