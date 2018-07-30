@@ -25,6 +25,8 @@ namespace Rock.Migrations.RockStartup
                 SystemGuid.ServiceJob.MIGRATE_HISTORY_SUMMARY_DATA.AsGuid(),
                 SystemGuid.ServiceJob.MIGRATE_ATTENDANCE_OCCURRENCE.AsGuid(),
                 SystemGuid.ServiceJob.MIGRATE_FAMILY_CHECKIN_IDS.AsGuid(),
+                SystemGuid.ServiceJob.MIGRATE_INTERACTIONS_DATA.AsGuid(),
+                SystemGuid.ServiceJob.MIGRATE_COMMUNICATION_MEDIUM_DATA.AsGuid()
             };
 
             var runOnceJobIds = new Model.ServiceJobService( new Rock.Data.RockContext() ).Queryable().Where( a => runOnceJobGuids.Contains( a.Guid ) ).Select( a => a.Id ).ToList();
