@@ -117,7 +117,7 @@ namespace Rock.Lava.Shortcodes
             parms.Add( "return", "results" );
             parms.Add( "statement", "select" );
 
-            var markupItems = Regex.Matches( resolvedMarkup, "(.*?:'[^']*')" )
+            var markupItems = Regex.Matches( resolvedMarkup, @"(\S*?:'[^']+')" )
                 .Cast<Match>()
                 .Select( m => m.Value )
                 .ToList();

@@ -236,7 +236,7 @@ namespace Rock.Lava.Blocks
             var parms = new Dictionary<string, string>();
             parms.Add( "cacheduration", "0" );
 
-            var markupItems = Regex.Matches( resolvedMarkup, "(.*?:'[^']*')" )
+            var markupItems = Regex.Matches( resolvedMarkup, @"(\S*?:'[^']+')" )
                 .Cast<Match>()
                 .Select( m => m.Value )
                 .ToList();
