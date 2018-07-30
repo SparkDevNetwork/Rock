@@ -191,7 +191,7 @@ namespace Rock.Model
         public List<HistorySummary> GetHistorySummary( IQueryable<History> historyQry )
         {
             // group the history into into summaries of records that were saved at the same time (for the same Entity, Category, etc)
-            var historySummaryQry = historyQry
+            var historySummaryQry = historyQry.Where( a => a.CreatedDateTime.HasValue )
                 .GroupBy( a => new
                 {
                     CreatedDateTime = a.CreatedDateTime.Value,
