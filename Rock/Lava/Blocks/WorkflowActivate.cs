@@ -33,7 +33,7 @@ namespace Rock.Lava.Blocks
     /// activity (if one was activated). Also provides an <c>Error</c> variable if any
     /// error occurred.
     /// </summary>
-    /// 
+    ///
     /// <example>
     /// This example shows how to initiate a new Workflow instance. The <c>WorkflowType</c> can
     /// be either an integer (42), string integer ('42') or string GUID
@@ -45,7 +45,7 @@ namespace Rock.Lava.Blocks
     /// {% endworkflowactivate %}
     /// </code>
     /// </example>
-    /// 
+    ///
     /// <example>
     /// This example shows how to activate an Activity in an existing Workflow instance. The
     /// <c>WorkflowId</c> can be either an integer (122), string integer ('122') or string GUID
@@ -58,7 +58,7 @@ namespace Rock.Lava.Blocks
     /// {% endworkflowactivate %}
     /// </code>
     /// </example>
-    /// 
+    ///
     /// <example>
     /// Example of passing attribute values to a workflow. The same can be done with an Activity.
     /// Any unrecognized parameters are treated as potential attributes in the Workflow or Activity.
@@ -67,7 +67,7 @@ namespace Rock.Lava.Blocks
     /// {% endworkflowactivate %}
     /// </code>
     /// </example>
-    /// 
+    ///
     /// <example>
     /// Re-activate an existing workflow for immediate processing if it is in a suspended/waiting state.
     /// <code>
@@ -350,7 +350,7 @@ namespace Rock.Lava.Blocks
 
             var parms = new Dictionary<string, string>();
 
-            var markupItems = Regex.Matches( resolvedMarkup, "(.*?:('[^']+'|[\\d.]+))" )
+            var markupItems = Regex.Matches( resolvedMarkup, @"(\S*?:('[^']+'|[\\d.]+))" )
                 .Cast<Match>()
                 .Select( m => m.Value )
                 .ToList();
