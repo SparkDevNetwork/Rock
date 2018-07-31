@@ -25,6 +25,7 @@ using Rock.Model;
 using System.Linq;
 using Rock.Web.Cache;
 using church.ccv.CCVPurpleWifiSync.Model;
+using System.Text.RegularExpressions;
 
 namespace church.ccv.CCVPurpleWifiSync
 {
@@ -157,6 +158,8 @@ namespace church.ccv.CCVPurpleWifiSync
                                     numNewPeople++;
                                 }
 
+                                SyncFormData(visitor, personId);
+
                                 // now update their attendance (note that we truncate to DATE with no time)
                                 if ( CreateAttendanceRecord( personId, campusId, DateTime.Parse( visitor.Last_Seen ), attendanceService, personAliasService, rockContext ) == true )
                                 {
@@ -178,8 +181,8 @@ namespace church.ccv.CCVPurpleWifiSync
                 // but our attendance system will only store one record per date.
                 lastProcessedDate = RockDateTime.Now.Date;
 
-                Rock.Web.SystemSettings.SetValue( LastUpdatePropertyKey, lastProcessedDate.Value.ToString( ) );
-                context.Result = string.Format( "Sync'd Purple Data. {0} people added. {1} attendance records added. {2} people skipped due to blank name fields.", numNewPeople, numAttendanceRecords, numPeopleSkipped);
+               Rock.Web.SystemSettings.SetValue( LastUpdatePropertyKey, lastProcessedDate.Value.ToString( ) );
+               context.Result = string.Format( "Sync'd Purple Data. {0} people added. {1} attendance records added. {2} people skipped due to blank name fields.", numNewPeople, numAttendanceRecords, numPeopleSkipped);
             }
             catch( Exception e )
             {
@@ -233,7 +236,7 @@ namespace church.ccv.CCVPurpleWifiSync
                         person.SystemNote = "Added by PurpleWifi";
 
                         // now, save the person so that all the extra stuff (known relationship groups) gets created.
-                        Group newFamily = PersonService.SaveNewPerson( person, rockContext, campusId );
+                        Rock.Model.Group newFamily = PersonService.SaveNewPerson( person, rockContext, campusId );
 
                         createdNewPerson = true;
                     } );
@@ -254,6 +257,54 @@ namespace church.ccv.CCVPurpleWifiSync
             // return the ID of the person we created / found, and whether we did create a new person
             personId = person.Id;
             return createdNewPerson;
+        }
+        void SyncFormData (PurpleWifi.Models.Visitor visitor, int personId)
+        {
+            try
+            {
+                // Loop through Form Data Questions that visitor has answered
+                for (int i = 0; i < visitor.Form_Data.Count; i++ )
+                {
+                    // If visitor has answered form questions in PurpleWifi...
+                    if (string.IsNullOrWhiteSpace(visitor.Form_Data[i].Response) == false)
+                    {
+                        // Create new rockContext that will be saved after every question that is copied from PurpleWifi into Rock
+                        RockContext rockContext = new RockContext();
+
+                        // Sanitize Key (Label/Question)
+                        string fixedKey = Regex.Replace(visitor.Form_Data[i].Label, @"\s", "_").ToLower();
+                        fixedKey = Regex.Replace(fixedKey, @"[^0-9a-zA-Z_]+", "");
+
+                        // Load Attribute
+                        AttributeService attribService = new AttributeService(rockContext);
+                        Rock.Model.Attribute attribItem = attribService.Queryable().Where(ai => ai.Key == fixedKey).SingleOrDefault();
+
+                        // Now load the Attribute Value, if it exists
+                        AttributeValueService avService = new AttributeValueService(rockContext);
+                        AttributeValue avItem = avService.Queryable().Where(av => av.EntityId == personId && av.AttributeId == attribItem.Id).SingleOrDefault();
+
+                        // if Attribute Value doesn't exist, we'll create a new attribute value (which is tied to the Person ID)
+                        if (avItem == null)
+                        {
+                            // Now create a new attribute value tied to the Person
+                            avItem = new AttributeValue();
+                            avItem.EntityId = personId;
+                            avItem.AttributeId = attribItem.Id;
+                            avService.Add(avItem);
+                        }
+
+                        // If Visitor has answered form questions, but the answers are still not in rock...
+                        if (string.IsNullOrWhiteSpace(avItem.Value) == true)
+                        {
+                            // Copy answer from Purple Wifi into Rock 
+                            avItem.Value = visitor.Form_Data[i].Response;
+                        }
+                        // Save changes to Rock
+                        rockContext.SaveChanges();
+                    }
+                }
+            }
+            catch { } 
         }
 
         bool CreateAttendanceRecord( int personId, int? campusId, DateTime startDateTime, AttendanceService attendanceService, PersonAliasService personAliasService, RockContext rockContext )
