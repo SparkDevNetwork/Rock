@@ -3506,8 +3506,8 @@ namespace RockWeb.Blocks.Event
     // Adjust the Family Member dropdown when choosing same immediate family
     $('#{24}').on('change', function() {{
         var displaySetting = $('#{25}').css('display');
-        if ( $(""input[name$='rblFamilyOptions']:checked"").val() == '{26}' && displaySetting == 'none' ) {{
-            $('#{25}').slideToggle();
+        if ( $(""input[id*='{24}']:checked"").val() == '{26}' && displaySetting == 'none' ) {{
+            $( '#{25}').slideToggle();
         }}
         else if ( displaySetting == 'block' ) {{
             $('#{25}').slideToggle();
@@ -3758,10 +3758,10 @@ namespace RockWeb.Blocks.Event
                     // Check to see if option for asking about family should be displayed
                     if ( CurrentFormIndex == 0 && RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Ask )
                     {
-                        // GetFamilyOptions ignores the first registrant by default
                         var familyOptions = RegistrationState.GetFamilyOptions( RegistrationTemplate, CurrentRegistrantIndex );
                         if ( CurrentRegistrantIndex == 0 )
                         {
+                            // GetFamilyOptions ignores the first registrant by default, so add it manually when set to Ask
                             familyOptions.Add( CurrentPerson.GetFamily().Guid, CurrentPerson.FullName );
                         }
 
