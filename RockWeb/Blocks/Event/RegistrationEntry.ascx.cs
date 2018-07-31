@@ -3482,6 +3482,12 @@ namespace RockWeb.Blocks.Event
         {
             RockPage.AddScriptLink( ResolveUrl( "~/Scripts/jquery.creditCardTypeDetector.js" ) );
 
+            var controlFamilyGuid = Guid.Empty;
+            if ( CurrentPerson != null )
+            {
+                controlFamilyGuid = CurrentPerson.GetFamily().Guid;
+            }
+
             string script = string.Format( @"
     // Adjust the label of 'is in the same family' based on value of first name entered
     $('input.js-first-name').change( function() {{
@@ -3666,7 +3672,7 @@ namespace RockWeb.Blocks.Event
             ,RegistrantTerm                         // {23}
             ,rblFamilyOptions.ClientID              // {24}
             ,pnlFamilyMembers.ClientID              // {25}
-            ,CurrentPerson.GetFamily().Guid         // {26}
+            ,controlFamilyGuid                      // {26}
 );
 
             ScriptManager.RegisterStartupScript( Page, Page.GetType(), "registrationEntry", script, true );
@@ -3759,7 +3765,7 @@ namespace RockWeb.Blocks.Event
                     if ( CurrentFormIndex == 0 && RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Ask )
                     {
                         var familyOptions = RegistrationState.GetFamilyOptions( RegistrationTemplate, CurrentRegistrantIndex );
-                        if ( CurrentRegistrantIndex == 0 )
+                        if ( CurrentRegistrantIndex == 0  && CurrentPerson != null )
                         {
                             // GetFamilyOptions ignores the first registrant by default, so add it manually when set to Ask
                             familyOptions.Add( CurrentPerson.GetFamily().Guid, CurrentPerson.FullName );
