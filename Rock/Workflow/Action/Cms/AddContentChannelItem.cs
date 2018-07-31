@@ -40,12 +40,14 @@ namespace Rock.Workflow.Action
     [TextField("Title", "The title of the content channel item. <span class='tip tip-lava'></span>", true, "", "", 2 )]
     [WorkflowTextOrAttribute( "Start Date Time", "Attribute Value", "Text (date time format) or datetime workflow attribute that contains the text to set the start date time. <span class='tip tip-lava'></span>", true, "", "", 3, "StartDateTime",
         new string[] { "Rock.Field.Types.DateTimeFieldType", "Rock.Field.Types.TextFieldType" } )]
-    [WorkflowTextOrAttribute( "Expire Date Time", "Attribute Value", "An optional text (date time format) or datetime workflow attribute that contains the text to set the expiration date time. <span class='tip tip-lava'></span>", false, "", "", 4, null,
+    [WorkflowTextOrAttribute( "Expire Date Time", "Attribute Value", "An optional text (date time format) or datetime workflow attribute that contains the text to set the expiration date time. <span class='tip tip-lava'></span>", false, "", "", 4, "ExpireDateTime",
         new string[] { "Rock.Field.Types.DateTimeFieldType", "Rock.Field.Types.TextFieldType" } )]
     [WorkflowTextOrAttribute( "Content", "Attribute Value", "The content or a text/memo attribute that contains the content for the channel item. <span class='tip tip-lava'></span>", true, "", "", 5, "Content",
         new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" } )]
-    [EnumField( "Status", "The  status for the new content channel item.", typeof( ContentChannelItemStatus ), true, "1", "", 6 )]
-    [KeyValueListField( "Item Attribute Key", "Used to match the current workflow's attribute keys to the keys of the content channel item. The new content channel item will receive the values from this workflow's attributes.", false, keyPrompt: "Source Attribute", valuePrompt: "Target Attribute", order: 7 )]
+    [WorkflowAttribute( "Created By", "An optional Person attribute that contains the person who is adding the activity.", false, "", "", 6, "CreatedBy",
+        new string[] { "Rock.Field.Types.PersonFieldType" } )]
+    [EnumField( "Status", "The  status for the new content channel item.", typeof( ContentChannelItemStatus ), true, "1", "", 7 )]
+    [KeyValueListField( "Item Attribute Key", "Used to match the current workflow's attribute keys to the keys of the content channel item. The new content channel item will receive the values from this workflow's attributes.", false, keyPrompt: "Source Attribute", valuePrompt: "Target Attribute", order: 8 )]
     public class AddContentChannelItem : ActionComponent
     {
         /// <summary>
@@ -95,6 +97,22 @@ namespace Rock.Workflow.Action
             else
             {
                 content = contentValue;
+            }
+            
+            // Get the Content Creator
+            int? personAliasId = null;
+            Guid? personAttributeGuid = GetAttributeValue( action, "CreatedBy" ).AsGuidOrNull();
+            if ( personAttributeGuid.HasValue )
+            {
+                Guid? personAliasGuid = action.GetWorklowAttributeValue( personAttributeGuid.Value ).AsGuidOrNull();
+                if ( personAliasGuid.HasValue )
+                {
+                    var personAlias = new PersonAliasService( rockContext ).Get( personAliasGuid.Value );
+                    if ( personAlias != null )
+                    {
+                        personAliasId = personAlias.Id;
+                    }
+                }
             }
 
             // Get the Start Date Time
@@ -146,6 +164,7 @@ namespace Rock.Workflow.Action
             contentChannelItem.StartDateTime = startDateTime;
             contentChannelItem.ExpireDateTime = expireDateTime;
             contentChannelItem.Status = channelItemStatus;
+            contentChannelItem.CreatedByPersonAliasId = personAliasId;
 
             contentChannelItemService.Add( contentChannelItem );
             rockContext.SaveChanges();
