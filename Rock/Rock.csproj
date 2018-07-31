@@ -378,6 +378,7 @@
     <Compile Include="Attribute\WorkflowAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTextOrAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
+    <Compile Include="Plugin\HotFixes\051_SparkData.cs" />
     <Compile Include="Web\Cache\Entities\BlockCache.cs" />
     <Compile Include="Web\Cache\Entities\CampusCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentChannelCache.cs" />
@@ -535,6 +536,7 @@
     <Compile Include="Extension\Component.cs" />
     <Compile Include="Extension\ComponentDescription.cs" />
     <Compile Include="Extension\Container.cs" />
+    <Compile Include="Extension\FixedSizeList.cs" />
     <Compile Include="Extension\IComponentData.cs" />
     <Compile Include="Extension\IContainer.cs" />
     <Compile Include="Extension\SafeDirectoryCatalog.cs" />
@@ -693,14 +695,12 @@
     <Compile Include="Jobs\CalculatePersonSignals.cs" />
     <Compile Include="Jobs\CommunicationQueueAlert.cs" />
     <Compile Include="Jobs\DatabaseMaintenance.cs" />
+    <Compile Include="Jobs\GetNcoa.cs" />
     <Compile Include="Jobs\IndexRockSite.cs" />
     <Compile Include="Jobs\MigrateFamilyAlternateId.cs" />
     <Compile Include="Jobs\MigrateAttendanceOccurrenceData.cs" />
     <Compile Include="Jobs\MigrateHistorySummaryData.cs" />
     <Compile Include="Jobs\PostV80DataMigrations.cs" />
-    <Compile Include="Jobs\ProcessNcoaResults.cs">
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
     <Compile Include="Jobs\PostV74DataMigrations.cs" />
     <Compile Include="Jobs\MigrateCommunicationMediumData.cs" />
     <Compile Include="Jobs\MigrateInteractionsData.cs" />
@@ -1155,6 +1155,7 @@
     <Compile Include="Model\MetricValue.cs" />
     <Compile Include="Model\MetricValuePartition.cs" />
     <Compile Include="Model\NcoaHistory.cs" />
+    <Compile Include="Model\NcoaHistoryService.Partial.cs" />
     <Compile Include="Model\Note.cs" />
     <Compile Include="Model\NoteService.Partial.cs" />
     <Compile Include="Model\NoteType.cs" />
@@ -1556,6 +1557,13 @@
     <Compile Include="Utility\FileUtilities.cs" />
     <Compile Include="Utility\FontAwesomeHelper.cs" />
     <Compile Include="Utility\IRockOwinStartup.cs" />
+    <Compile Include="Utility\Ncoa.cs" />
+    <Compile Include="Utility\SparkDataApi\PersonAddressItem.cs" />
+    <Compile Include="Utility\SparkDataApi\NcoaApi.cs" />
+    <Compile Include="Utility\SparkDataApi\NcoaReturnRecord.cs" />
+    <Compile Include="Utility\SparkDataApi\NcoaResponse.cs" />
+    <Compile Include="Utility\SparkDataApi\GroupNameTransactionKey.cs" />
+    <Compile Include="Utility\SparkDataApi\UsernamePassword.cs" />
     <Compile Include="Utility\Settings\DataAutomation\InactivatePeople.cs" />
     <Compile Include="Utility\Settings\DataAutomation\InteractionItem.cs" />
     <Compile Include="Utility\Settings\DataAutomation\MoveAdultChildren.cs" />
@@ -1563,6 +1571,9 @@
     <Compile Include="Utility\Settings\DataAutomation\UpdateFamilyStatus.cs" />
     <Compile Include="Utility\Settings\DataAutomation\UpdatePersonConnectionStatus.cs" />
     <Compile Include="Utility\Settings\DataAutomation\UpdateFamilyCampus.cs" />
+    <Compile Include="Utility\Settings\SparkData\NcoaSettings.cs" />
+    <Compile Include="Utility\Settings\SparkData\SparkDataConfig.cs" />
+    <Compile Include="Utility\SparkDataApi\SparkDataApi.cs" />
     <Compile Include="Utility\TextToWorkflow.cs" />
     <Compile Include="Utility\ZebraPrint.cs" />
     <Compile Include="Web\HttpModules\ResponseHeaders.cs" />
