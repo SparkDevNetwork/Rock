@@ -72,12 +72,7 @@ namespace Rock.Model
         ///   <c>true</c> if [include time]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IncludeTime
-        {
-            get { return _includeTime; }
-            set { _includeTime = value; }
-        }
-        private bool _includeTime = true;
+        public bool IncludeTime { get; set; } = true;
 
         /// <summary>
         /// Gets or sets a value indicating whether [disable priority].
@@ -115,7 +110,7 @@ namespace Rock.Model
         ///   A <see cref="System.Boolean"/> value that is <c>true</c> if a <see cref="Rock.Model.Group"/> of this Content Channel Type will be shown in the Channel list; otherwise <c>false</c>.
         /// </value>
         [DataMember]
-        public bool ShowInChannelList { get; set; }
+        public bool ShowInChannelList { get; set; } = true;
 
         #endregion
 
@@ -158,7 +153,6 @@ namespace Rock.Model
         public ContentChannelType()
         {
             Channels = new Collection<ContentChannel>();
-            ShowInChannelList = true;
         }
 
         #endregion
