@@ -278,29 +278,32 @@ namespace church.ccv.CCVPurpleWifiSync
                         // Load Attribute
                         AttributeService attribService = new AttributeService(rockContext);
                         Rock.Model.Attribute attribItem = attribService.Queryable().Where(ai => ai.Key == fixedKey).SingleOrDefault();
-
-                        // Now load the Attribute Value, if it exists
-                        AttributeValueService avService = new AttributeValueService(rockContext);
-                        AttributeValue avItem = avService.Queryable().Where(av => av.EntityId == personId && av.AttributeId == attribItem.Id).SingleOrDefault();
-
-                        // if Attribute Value doesn't exist, we'll create a new attribute value (which is tied to the Person ID)
-                        if (avItem == null)
+                      
+                        if (attribItem != null)
                         {
-                            // Now create a new attribute value tied to the Person
-                            avItem = new AttributeValue();
-                            avItem.EntityId = personId;
-                            avItem.AttributeId = attribItem.Id;
-                            avService.Add(avItem);
-                        }
+                            // Now load the Attribute Value, if it exists
+                            AttributeValueService avService = new AttributeValueService(rockContext);
+                            AttributeValue avItem = avService.Queryable().Where(av => av.EntityId == personId && av.AttributeId == attribItem.Id).SingleOrDefault();
 
-                        // If Visitor has answered form questions, but the answers are still not in rock...
-                        if (string.IsNullOrWhiteSpace(avItem.Value) == true)
-                        {
-                            // Copy answer from Purple Wifi into Rock 
-                            avItem.Value = visitor.Form_Data[i].Response;
+                            // if Attribute Value doesn't exist, we'll create a new attribute value (which is tied to the Person ID)
+                            if (avItem == null)
+                            {
+                                // Now create a new attribute value tied to the Person
+                                avItem = new AttributeValue();
+                                avItem.EntityId = personId;
+                                avItem.AttributeId = attribItem.Id;
+                                avService.Add(avItem);
+                            }
+
+                            // If Visitor has answered form questions, but the answers are still not in rock...
+                            if (string.IsNullOrWhiteSpace(avItem.Value) == true)
+                            {
+                                // Copy answer from Purple Wifi into Rock 
+                                avItem.Value = visitor.Form_Data[i].Response;
+                            }
+                            // Save changes to Rock
+                            rockContext.SaveChanges();
                         }
-                        // Save changes to Rock
-                        rockContext.SaveChanges();
                     }
                 }
             }
