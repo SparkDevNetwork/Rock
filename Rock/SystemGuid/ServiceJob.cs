@@ -39,7 +39,6 @@ namespace Rock.SystemGuid
         public const string MIGRATE_FAMILY_CHECKIN_IDS = "E782C667-EF07-4AD2-86B7-01C1935AAF5B";
 
         /// <summary>
-
         /// The Job to run Post v8.0 Data Migrations
         /// </summary>
         public const string DATA_MIGRATIONS_80 = "AF760EF9-66BD-4A4D-AF95-749AA789ACAA";
@@ -64,6 +63,7 @@ namespace Rock.SystemGuid
         /// </summary>
         public static string MIGRATE_COMMUNICATION_MEDIUM_DATA = "E7C54AAB-451E-4E89-8083-CF398D37416E";
 
+        /// <summary>
         /// The Job to get NCOA
         /// </summary>
         public const string GET_NCOA = "D2D6EA6C-F94A-39A0-481B-A23D08B887D6";

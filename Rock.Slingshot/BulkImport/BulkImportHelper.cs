@@ -722,7 +722,7 @@ namespace Rock.Slingshot
             StringBuilder sbStats = new StringBuilder();
 
             int groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
-            var entityTypeIdGroup = EntityTypeCache.Read<Group>().Id;
+            var entityTypeIdGroup = EntityTypeCache.Get<Group>().Id;
             var locationService = new LocationService( rockContext );
             Dictionary<int, List<AttributeValueCache>> attributeValuesLookup = new AttributeValueService( rockContext ).Queryable().Where( a => a.Attribute.EntityTypeId == entityTypeIdGroup && a.EntityId.HasValue )
                 .Select( a => new
@@ -2248,8 +2248,6 @@ and ft.Id not in (select TransactionId from FinancialTransactionImage)" );
         #endregion NoteImport
     }
 
-
-// needed????
     public class ImportOccurrence
     {
         public int Id { get; set; }

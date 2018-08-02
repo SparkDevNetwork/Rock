@@ -2205,7 +2205,7 @@ namespace Rock.Slingshot
             this.FieldTypeLookup = new FieldTypeService( rockContext ).Queryable().Select( a => a.Id ).ToList().Select( a => FieldTypeCache.Get( a ) ).ToDictionary( k => k.Class, v => v );
 
             // Group Attributes
-            var groupAttributes = new AttributeService( rockContext ).Queryable().Where( a => a.EntityTypeId == entityTypeIdGroup ).Select( a => a.Id ).ToList().Select( a => AttributeCache.Read( a ) ).ToList();
+            var groupAttributes = new AttributeService( rockContext ).Queryable().Where( a => a.EntityTypeId == entityTypeIdGroup ).Select( a => a.Id ).ToList().Select( a => AttributeCache.Get( a ) ).ToList();
             this.GroupAttributeKeyLookup = groupAttributes.ToDictionary( k => k.Key, v => v );
 
             // GroupTypes
