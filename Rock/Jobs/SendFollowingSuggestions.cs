@@ -79,7 +79,7 @@ namespace Rock.Jobs
                             m.GroupMemberStatus == GroupMemberStatus.Active &&
                             m.Person != null &&
                             m.Person.Email != null &&
-                            m.Person.Email != "" &&
+                            m.Person.Email != string.Empty &&
                             m.Person.EmailPreference != EmailPreference.DoNotEmail &&
                             m.Person.IsEmailActive )
                         .Select( m => m.PersonId )
@@ -343,7 +343,9 @@ namespace Rock.Jobs
 
                                     var emailMessage = new RockEmailMessage( systemEmailGuid.Value );
                                     emailMessage.AddRecipient( new RecipientData( person.Email, mergeFields ) );
-                                    emailMessage.Send();
+                                    var errors = new List<string>();
+                                    emailMessage.Send(out errors);
+                                    exceptionMsgs.AddRange( errors );
 
                                     followingSuggestionsEmailsSent += 1;
                                     followingSuggestionsSuggestionsTotal += personSuggestionNotices.Count();

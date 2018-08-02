@@ -96,6 +96,7 @@ namespace Rock.Jobs
 
                 registrationInstanceCount = registrations.Select( r => r.RegistrationInstance.Id ).Distinct().Count();
 
+                var errors = new List<string>();
                 foreach(var registration in registrations )
                 {
                     if ( registration.DiscountedCost > registration.TotalPaid )
@@ -115,18 +116,34 @@ namespace Rock.Jobs
                             emailMessage.FromName = registration.RegistrationInstance.RegistrationTemplate.PaymentReminderSubject;
                             emailMessage.Subject = registration.RegistrationInstance.RegistrationTemplate.PaymentReminderFromName;
                             emailMessage.Message = registration.RegistrationInstance.RegistrationTemplate.PaymentReminderEmailTemplate;
-                            emailMessage.Send();
+                            var emailErrors = new List<string>();
+                            emailMessage.Send(out errors);
 
                             registration.LastPaymentReminderDateTime = RockDateTime.Now;
                             rockContext.SaveChanges();
 
-                            sendCount++;
+                            if (!emailErrors.Any())
+                            {
+                                sendCount++;
+                            }
                         }
                     }
                 }
 
                 context.Result =  string.Format("Sent {0} from {1}", "reminder".ToQuantity( sendCount ), "registration instances".ToQuantity(registrationInstanceCount) );
-
+                if ( errors.Any() )
+                {
+                    StringBuilder sb = new StringBuilder();
+                    sb.AppendLine();
+                    sb.Append( string.Format( "{0} Errors: ", errors.Count() ) );
+                    errors.ForEach( e => { sb.AppendLine(); sb.Append( e ); } );
+                    string errorMessage = sb.ToString();
+                    context.Result += errorMessage;
+                    var exception = new Exception( errorMessage );
+                    HttpContext context2 = HttpContext.Current;
+                    ExceptionLogService.LogException( exception, context2 );
+                    throw exception;
+                }
             }
         }
 

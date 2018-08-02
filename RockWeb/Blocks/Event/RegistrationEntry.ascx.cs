@@ -2041,6 +2041,7 @@ namespace RockWeb.Blocks.Event
                         if ( person != null )
                         {
                             person.Email = registration.ConfirmationEmail;
+                            rockContext.SaveChanges();
                         }
                     }
                 }
