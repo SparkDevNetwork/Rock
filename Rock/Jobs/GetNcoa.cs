@@ -120,7 +120,6 @@ namespace Rock.Jobs
                     if ( sparkDataConfig.SparkDataApiKey.IsNotNullOrWhiteSpace() && sparkDataConfig.NcoaSettings.FileName.IsNotNullOrWhiteSpace() )
                     {
                         SparkDataApi sparkDataApi = new SparkDataApi();
-                        sparkDataApi.NcoaCompleteFailed( sparkDataConfig.SparkDataApiKey, sparkDataConfig.NcoaSettings.FileName );
                     }
 
                     Exception ex = new AggregateException( "NCOA job failed.", exception );
@@ -157,7 +156,8 @@ namespace Rock.Jobs
         /// <param name="sparkDataConfig">The spark data configuration.</param>
         private void StatusFailed( SparkDataConfig sparkDataConfig )
         {
-            // No action.
+            var ncoa = new Ncoa();
+            ncoa.Start( sparkDataConfig, true );
         }
 
         /// <summary>
@@ -169,7 +169,7 @@ namespace Rock.Jobs
             if ( sparkDataConfig.NcoaSettings.IsAckPrice && sparkDataConfig.NcoaSettings.IsAcceptedTerms )
             {
                 var ncoa = new Ncoa();
-                ncoa.Start( sparkDataConfig );
+                ncoa.Start( sparkDataConfig, false );
             }
             else
             {
