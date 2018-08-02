@@ -509,6 +509,14 @@ namespace RockWeb.Blocks.Reporting
                         {
                             dataSet = GetData( out errorMessage );
                         }
+
+                        if (dataSet == null || dataSet.Tables == null)
+                        {
+
+                            nbError.Text = errorMessage;
+                            nbError.Visible = true;
+                            return;
+                        }
                          
                         foreach ( DataTable dataTable in dataSet.Tables )
                         {
