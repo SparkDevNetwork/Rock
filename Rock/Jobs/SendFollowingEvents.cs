@@ -93,7 +93,7 @@ namespace Rock.Jobs
                             m.GroupMemberStatus == GroupMemberStatus.Active &&
                             m.Person != null &&
                             m.Person.Email != null &&
-                            m.Person.Email != "" &&
+                            m.Person.Email != string.Empty &&
                             m.Person.EmailPreference != EmailPreference.DoNotEmail &&
                             m.Person.IsEmailActive
                          )
@@ -169,7 +169,7 @@ namespace Rock.Jobs
                     {
                         // Get the entitytype
                         EntityTypeCache itemEntityType = EntityTypeCache.Get( keyVal.Key );
-                        if ( itemEntityType.AssemblyName != null )
+                        if ( itemEntityType != null && itemEntityType.AssemblyName != null )
                         {
                             // get the actual type of what is being followed 
                             Type entityType = itemEntityType.GetEntityType();
@@ -331,9 +331,13 @@ namespace Rock.Jobs
 
                                         var emailMessage = new RockEmailMessage( systemEmailGuid.Value );
                                         emailMessage.AddRecipient( new RecipientData( person.Email, mergeFields ) );
-                                        emailMessage.Send();
-
-                                        followingEventsSent++;
+                                        var errors = new List<string>(); 
+                                        emailMessage.Send(out errors);
+                                        exceptionMsgs.AddRange( errors );
+                                        if ( !errors.Any() )
+                                        {
+                                            followingEventsSent++;
+                                        }
                                     }
                                 }
                             }

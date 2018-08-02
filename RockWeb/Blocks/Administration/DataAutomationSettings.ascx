@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="DataAutomationSettings.ascx.cs" Inherits="RockWeb.Blocks.Administration.DataAutomationSettings" %>
+<%@ Control Language="C#" AutoEventWireup="true" CodeFile="DataAutomationSettings.ascx.cs" Inherits="RockWeb.Blocks.Administration.DataAutomationSettings" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
@@ -18,20 +18,6 @@
 
                 <Rock:PanelWidget ID="pwGeneralSettings" runat="server" Title="General Settings">
                     <Rock:NumberBox ID="nbGenderAutoFill" runat="server" AppendText="%" CssClass="input-width-md" Label="Gender AutoFill Confidence" MinimumValue="0" MaximumValue="100" NumberType="Double" Help="The minimum confidence level required to automatically set blank genders in the Data Automation service job. If set to 0 then gender will not be automatically determined." />
-                </Rock:PanelWidget>
-
-                <Rock:PanelWidget ID="pwNcoaConfiguration" runat="server" Title="National Change of Address (NCOA)">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <Rock:NumberBox ID="nbMinMoveDistance" runat="server" AppendText="miles" CssClass="input-width-md" Label="Minimum Move Distance to Inactivate" NumberType="Double" Text="250" />
-                        </div>
-                        <div class="col-md-4">
-                            <Rock:RockCheckBox ID="cb48MonAsPrevious" runat="server" Label="Mark 48 Month Move as Previous Addresses" />
-                        </div>
-                        <div class="col-md-4">
-                            <Rock:RockCheckBox ID="cbInvalidAddressAsPrevious" runat="server" Label="Mark Invalid Addresses as Previous Addresses" />
-                        </div>
-                    </div>
                 </Rock:PanelWidget>
 
                 <fieldset>

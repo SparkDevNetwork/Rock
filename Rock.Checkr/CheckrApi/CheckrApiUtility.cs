@@ -74,7 +74,6 @@ namespace Rock.Checkr.CheckrApi
         /// <summary>
         /// Return a rest client.
         /// </summary>
-        /// <param name="url">The URL.</param>
         /// <returns>The rest client.</returns>
         private static RestClient RestClient()
         {
