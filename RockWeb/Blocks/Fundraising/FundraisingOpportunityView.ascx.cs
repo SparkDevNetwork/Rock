@@ -48,13 +48,13 @@ namespace RockWeb.Blocks.Fundraising
         @"{% include '~~/Assets/Lava/FundraisingOpportunityUpdates.lava' %}", order: 3 )]
 
 
-    [CodeEditorField( "Participant Lava Template", "Lava template for how the partipant actions and progress bar should be displayed", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false,
+    [CodeEditorField( "Participant Lava Template", "Lava template for how the participant actions and progress bar should be displayed", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false,
         @"{% include '~~/Assets/Lava/FundraisingOpportunityParticipant.lava' %}", order: 4 )]
 
     [NoteTypeField( "Note Type", "Note Type to use for comments", false, "Rock.Model.Group", defaultValue: "9BB1A7B6-0E51-4E0E-BFC0-1E42F4F2DA95", order: 5 )]
     [LinkedPage( "Donation Page", "The page where a person can donate to the fundraising opportunity", required: false, order: 6 )]
     [LinkedPage( "Leader Toolbox Page", "The toolbox page for a leader of this fundraising opportunity", required: false, order: 7 )]
-    [LinkedPage( "Participant Page", "The partipant page for a participant of this fundraising opportunity", required: false, order: 8 )]
+    [LinkedPage( "Participant Page", "The participant page for a participant of this fundraising opportunity", required: false, order: 8 )]
 
     [BooleanField( "Set Page Title to Opportunity Title", "", true, order: 9 )]
     [LinkedPage( "Registration Page", "The page to use for registrations.", required: false, order: 10 )]
@@ -178,7 +178,7 @@ namespace RockWeb.Blocks.Fundraising
                 gm.LoadAttributes( rockContext );
             }
 
-            // only show the 'Donate to a Partipant' button if there are participants that are taking contribution requests
+            // only show the 'Donate to a Participant' button if there are participants that are taking contribution requests
             btnDonateToParticipant.Visible = groupMembers.Where( a => !a.GetAttributeValue( "DisablePublicContributionRequests" ).AsBoolean() ).Any();
             if ( !string.IsNullOrWhiteSpace( opportunityType.GetAttributeValue( "core_DonateButtonText" ) ) )
             {

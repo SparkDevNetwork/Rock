@@ -151,7 +151,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     if ( lWhoCheckedIn != null && attendanceInfo.CheckInByPersonGuid.HasValue )
                     {
                         string url = String.Format( "{0}{1}{2}{3}?Person={4}", Request.Url.Scheme, Uri.SchemeDelimiter, Request.Url.Authority, Request.Url.AbsolutePath, attendanceInfo.CheckInByPersonGuid );
-                        lWhoCheckedIn.Text = string.Format( "<br /><a href=\"{0}\">By {1}</a>", url, attendanceInfo.CheckInByPersonName );
+                        lWhoCheckedIn.Text = string.Format( "<br /><a href=\"{0}\">by: {1}</a>", url, attendanceInfo.CheckInByPersonName );
                     }
                 }
             }
@@ -322,6 +322,16 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         lPhoto.Text = photoTag;
                     }
 
+                    var campus = person.GetCampus();
+                    if ( campus != null )
+                    {
+                        hlCampus.Visible = true;
+                        hlCampus.Text = campus.Name;
+                    }
+                    else
+                    {
+                        hlCampus.Visible = false;
+                    }
 
                     lGender.Text = person.Gender != Gender.Unknown ? person.Gender.ConvertToString() : "";
                     
@@ -341,7 +351,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     lEmail.Visible = !string.IsNullOrWhiteSpace( person.Email );
                     lEmail.Text = person.GetEmailTag( ResolveRockUrl( "/" ), "btn btn-default", "<i class='fa fa-envelope'></i>" );
                     
-                    btnSms.Visible = GetAttributeValue( SMS_FROM_KEY ).IsNotNullOrWhitespace() && person.PhoneNumbers.Any(n => n.IsMessagingEnabled && n.Number.IsNotNullOrWhitespace());
+                    btnSms.Visible = GetAttributeValue( SMS_FROM_KEY ).IsNotNullOrWhiteSpace() && person.PhoneNumbers.Any( n => n.IsMessagingEnabled && n.Number.IsNotNullOrWhiteSpace() );
 
                     // Get all family member from all families ( including self )
                     var allFamilyMembers = personService.GetFamilyMembers( person.Id, true ).ToList();

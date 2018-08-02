@@ -30,10 +30,10 @@ using Rock.Web.Cache;
 namespace Rock.Workflow.Action.CheckIn
 {
     /// <summary>
-    /// Finds families based on a given search critieria (i.e. phone, barcode, etc)
+    /// Finds families based on a given search criteria (i.e. phone, barcode, etc)
     /// </summary>
     [ActionCategory( "Check-In" )]
-    [Description( "Finds families based on a given search critieria (i.e. phone, barcode, etc)" )]
+    [Description( "Finds families based on a given search criteria (i.e. phone, barcode, etc)" )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Find Families" )]
     public class FindFamilies : CheckInActionComponent

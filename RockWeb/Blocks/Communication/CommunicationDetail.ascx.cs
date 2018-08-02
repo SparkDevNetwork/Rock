@@ -305,7 +305,7 @@ namespace RockWeb.Blocks.Communication
 
                             rockContext.SaveChanges();
 
-                            // TODO: Send notice to sneder that communication was approved
+                            // TODO: Send notice to sender that communication was approved
 
                             ShowResult( "The communication has been approved", communication, NotificationBoxType.Success );
                         }
@@ -348,7 +348,7 @@ namespace RockWeb.Blocks.Communication
 
                             rockContext.SaveChanges();
 
-                            // TODO: Send notice to sneder that communication was denied
+                            // TODO: Send notice to sender that communication was denied
 
                             ShowResult( "The communication has been denied", communication, NotificationBoxType.Warning );
                         }

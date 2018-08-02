@@ -348,7 +348,7 @@
                                         <Rock:RockBoundField HeaderText ="Registrant ID" DataField="RegistrantId" ExcelExportBehavior="AlwaysInclude" Visible="false" />
 		                                <Rock:RockBoundField HeaderText ="Fee Name" DataField="FeeName" SortExpression="FeeName" />
                                         <Rock:RockBoundField HeaderText ="Option" DataField="Option" SortExpression="Option" />
-		                                <Rock:RockBoundField HeaderText ="Quanity" DataField="Quanity" SortExpression="Quanity" />
+		                                <Rock:RockBoundField HeaderText ="Quantity" DataField="Quantity" SortExpression="Quantity" />
                                         <Rock:CurrencyField HeaderText ="Cost" DataField="Cost" SortExpression="Cost" />
                                         <Rock:CurrencyField HeaderText ="Fee Total" DataField="FeeTotal" SortExpression="FeeTotal"  />
                                 </Columns>

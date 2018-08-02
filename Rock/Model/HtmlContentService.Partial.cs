@@ -152,7 +152,7 @@ namespace Rock.Model
         private static string HtmlContentCacheKey( int blockId, string entityValue )
         {
             // If an entity value is specified, then return content specific to that context (entityValue), 
-            // otherewise return content for the current block instance
+            // otherwise return content for the current block instance
             string cacheKey;
             if ( !string.IsNullOrEmpty( entityValue ) )
             {

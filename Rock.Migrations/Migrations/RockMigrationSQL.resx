@@ -769,9 +769,6 @@
   <data name="_201805171836577_Rollup_0517_vCheckin_Attendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>version 8.0\version 1.8.0\201805171836577_rollup_0517_vcheckin_attendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
-  <data name="_201807191932379_Rollup_0719_Add_ConnectionStatus_and_RecordStatus_Security_Actions_to_Bulk_Update" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 8.0\version 1.8.0\201807191932379_rollup_0719_add connectionstatus and recordstatus security actions to bulk update.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
   <data name="_201807191932379_Rollup_0719_Fix_Accordion_Bug" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>version 8.0\version 1.8.0\201807191932379_rollup_0719_fix accordion bug.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>

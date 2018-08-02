@@ -121,7 +121,7 @@ namespace RockWeb.Blocks.Cms
                     queryString = CurrentPageReference.QueryString;
                 }
 
-                // Get list of pages in current page's heirarchy
+                // Get list of pages in current page's hierarchy
                 var pageHeirarchy = new List<int>();
                 if ( currentPage != null )
                 {

@@ -95,7 +95,7 @@ namespace Rock.Workflow.Action
             var requestDescription = GetAttributeValue( action, "RequestDescription", true ).ResolveMergeFields( mergeFields );
             if ( string.IsNullOrWhiteSpace( requestDescription ) )
             {
-                var errorMessage = "Request description is requried.";
+                var errorMessage = "Request description is required.";
                 errorMessages.Add( errorMessage );
                 action.AddLogEntry( errorMessage, true );
                 return false;

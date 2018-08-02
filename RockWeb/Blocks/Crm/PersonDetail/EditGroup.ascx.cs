@@ -34,7 +34,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
     /// <summary>
-    /// The main Person Profile block the main information about a peron 
+    /// The main Person Profile block the main information about a person 
     /// </summary>
     [DisplayName( "Edit Group" )]
     [Category( "CRM > Person Detail" )]
@@ -972,7 +972,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 groupAddress.Country = acAddress.Country;
                 groupAddress.IsMailing = cbMailing.Checked;
 
-                // If setting this location to be a map location, unselect all the other loctions
+                // If setting this location to be a map location, unselect all the other locations
                 if ( !groupAddress.IsLocation && cbLocation.Checked )
                 {
                     foreach ( var otherAddress in GroupAddresses )

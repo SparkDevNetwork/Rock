@@ -181,7 +181,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Looks for a single exact match based on the critieria provided. If more than one person is found it will return null (consider using FindPersons).
+        /// Looks for a single exact match based on the criteria provided. If more than one person is found it will return null (consider using FindPersons).
         /// </summary>
         /// <param name="firstName">The first name.</param>
         /// <param name="lastName">The last name.</param>

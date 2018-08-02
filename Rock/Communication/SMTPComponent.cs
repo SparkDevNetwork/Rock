@@ -159,7 +159,7 @@ namespace Rock.Communication.Transport
 
                 if ( fromAddress.IsNullOrWhiteSpace() )
                 {
-                    errorMessages.Add( "A From address was not provided and no Orgnaization email address is configured." );
+                    errorMessages.Add( "A From address was not provided and no Organization email address is configured." );
                     return false;
                 }
                 
@@ -230,7 +230,7 @@ namespace Rock.Communication.Transport
 
                             var metaData = new Dictionary<string, string>( emailMessage.MessageMetaData );
 
-                            // If a communicatoin is going to get created, create a guid for tracking the opens/clicks
+                            // If a communication is going to get created, create a guid for tracking the opens/clicks
                             Guid? recipientGuid = null;
                             if ( emailMessage.CreateCommunicationRecord )
                             {

@@ -123,7 +123,7 @@ namespace RockWeb.Blocks.Event
         {
             var rockContext = new RockContext();
 
-            // get the person who was passed in for the registration registar
+            // get the person who was passed in for the registration registrar
             Person person = null;
 
             Guid personGuid = Guid.Empty;

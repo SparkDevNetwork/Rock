@@ -40,7 +40,7 @@ namespace Rock.Workflow.Action
         new string[] { "Rock.Field.Types.PersonFieldType" } )]
     [WorkflowAttribute( "Phone Type (From Attribute)", "The attribute that contains the phone number type to update.", false, "", "", 1, "PhoneTypeAttribute",
         new string[] { "Rock.Field.Types.DefinedValueFieldType" } )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE, "Phone Type", "The type of phone numer to update (if attribute is not specified or is an invalid value).", true, false, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME, "", 2 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE, "Phone Type", "The type of phone number to update (if attribute is not specified or is an invalid value).", true, false, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME, "", 2 )]
     [WorkflowTextOrAttribute( "Phone Number", "Attribute Value", "The value or attribute value to set the phone number to. <span class='tip tip-lava'></span>", false, "", "", 3, "PhoneNumber" )]
     [WorkflowTextOrAttribute( "Unlisted", "Attribute Value", "The value or attribute value to indicate if number should be unlisted. Only valid values are 'True' or 'False' any other value will be ignored. <span class='tip tip-lava'></span>", false, "", "", 4, "Unlisted" )]
     [WorkflowTextOrAttribute( "Messaging Enabled", "Attribute Value", "The value or attribute value to indicate if messaging (SMS) should be enabled for phone. Only valid values are 'True' or 'False' any other value will be ignored. <span class='tip tip-lava'></span>", false, "", "", 5, "MessagingEnabled" )]
