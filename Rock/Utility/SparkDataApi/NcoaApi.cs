@@ -42,7 +42,7 @@ namespace Rock.Utility.SparkDataApi
         /// <summary>
         /// Initializes a new instance of the <see cref="NcoaApi"/> class.
         /// </summary>
-        /// <param name="id">The identifier.</param>
+        /// <param name="usernamePassword">NCOA's credentials.</param>
         public NcoaApi( UsernamePassword usernamePassword )
         {
             _username = usernamePassword.UserName;

@@ -23,7 +23,9 @@ using Rock.Utility.Settings.SparkData;
 
 namespace Rock.Utility.SparkDataApi
 {
-    // API Calls to Spark Data server.
+    /// <summary>
+    ///API Calls to Spark Data server. 
+    /// </summary>
     public class SparkDataApi
     {
         internal RestClient _client;
@@ -41,13 +43,37 @@ namespace Rock.Utility.SparkDataApi
         /// </summary>
         public enum AccountStatus
         {
+            /// <summary>
+            /// The account is enabled and there is a valid credit card associated with the account
+            /// </summary>
             EnabledCard,
+            /// <summary>
+            /// The account is enabled and there is no credit card associated with the account
+            /// </summary>
             EnabledNoCard,
+            /// <summary>
+            /// The account is enabled and the credit card associated with the account have expired
+            /// </summary>
             EnabledCardExpired,
+            /// <summary>
+            /// The account is enabled and the credit card associated with the account have no expire date
+            /// </summary>
             EnabledCardNoExpirationDate,
+            /// <summary>
+            /// The account is disabled
+            /// </summary>
             Disabled,
+            /// <summary>
+            /// The account have no name
+            /// </summary>
             AccountNoName,
+            /// <summary>
+            /// The account was not found
+            /// </summary>
             AccountNotFound,
+            /// <summary>
+            /// Invalid spark data key
+            /// </summary>
             InvalidSparkDataKey
         }
 
@@ -125,7 +151,7 @@ namespace Rock.Utility.SparkDataApi
         /// </summary>
         /// <param name="sparkDataApiKey">The spark data API key.</param>
         /// <param name="numberRecords">The number records.</param>
-        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <param name="personFullName">The person that initiated the request.</param>
         public GroupNameTransactionKey NcoaInitiateReport( string sparkDataApiKey, int? numberRecords, string personFullName = null )
         {
             try
@@ -208,7 +234,6 @@ namespace Rock.Utility.SparkDataApi
                     RequestFormat = DataFormat.Json
                 };
 
-                // IRestResponse response = client.Execute( request );
                 IRestResponse response = _client.Execute( request );
                 if ( response.StatusCode == HttpStatusCode.OK || response.StatusCode == HttpStatusCode.Accepted )
                 {
@@ -229,25 +254,24 @@ namespace Rock.Utility.SparkDataApi
         }
 
         /// <summary>
-        /// Send a failed message to Spark server.
+        /// Inform Spark server that NCOA failed and the job will try again to get NCOA data.
         /// </summary>
         /// <param name="sparkDataApiKey">The spark data API key.</param>
         /// <param name="reportKey">The report key.</param>
-        /// <returns>Return true if successful</returns>
-        public bool NcoaCompleteFailed( string sparkDataApiKey, string reportKey )
+        /// <returns>Return the organization name</returns>
+        public string NcoaRetryReport( string sparkDataApiKey, string reportKey )
         {
             try
             {
-                var request = new RestRequest( $"api/SparkData/Ncoa/CompleteFailed/{sparkDataApiKey}/{reportKey}", Method.POST )
+                var request = new RestRequest( $"api/SparkData/Ncoa/RetryReport/{sparkDataApiKey}/{reportKey}", Method.POST )
                 {
                     RequestFormat = DataFormat.Json
                 };
 
-                // IRestResponse response = client.Execute( request );
                 IRestResponse response = _client.Execute( request );
                 if ( response.StatusCode == HttpStatusCode.OK || response.StatusCode == HttpStatusCode.Accepted )
                 {
-                    return response.Content.AsBoolean();
+                    return response.Content;
                 }
                 else
                 {
@@ -259,7 +283,7 @@ namespace Rock.Utility.SparkDataApi
             }
             catch ( Exception ex )
             {
-                throw new AggregateException( "Communication with Spark server failed: Could not set Spark report to failed. Possible cause is the Spark Server API server is down.", ex );
+                throw new AggregateException( "Communication with Spark server failed: Could not set Spark initiate a retry. Possible cause is the Spark Server API server is down.", ex );
             }
         }
 
