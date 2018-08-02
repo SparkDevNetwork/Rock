@@ -26,6 +26,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -265,17 +266,71 @@ namespace RockWeb.Blocks.Crm
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
-        protected void rptNcoaResults_ItemCommand( object Sender, RepeaterCommandEventArgs e )
+        protected void rptNcoaResults_ItemCommand( object sender, RepeaterCommandEventArgs e )
         {
-            var ncoaHistoryId = e.CommandArgument.ToString().AsIntegerOrNull();
+            var ncoaHistoryId = e.CommandArgument.ToStringSafe().AsIntegerOrNull();
+            if (!ncoaHistoryId.HasValue)
+            {
+                return;
+            }
+
             if ( e.CommandName == "MarkAddressAsPrevious" )
             {
-                
-            }
-            if ( e.CommandName == "MarkProcessed" )
-            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var ncoaHistory = new NcoaHistoryService( rockContext ).Get( ncoaHistoryId.Value );
+                    if ( ncoaHistory != null )
+                    {
+                        var groupService = new GroupService( rockContext );
+                        var groupLocationService = new GroupLocationService( rockContext );
 
+                        var changes = new History.HistoryChangeList();
+
+                        Ncoa ncoa = new Ncoa();
+                        var previousValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid() );
+                        int? previousValueId = previousValue == null ? ( int? ) null : previousValue.Id;
+                        if ( ncoa.MarkAsPreviousLocation( ncoaHistory, groupLocationService, previousValueId, changes ) )
+                        {
+                            ncoaHistory.Processed = Processed.Complete;
+
+                            // If there were any changes, write to history
+                            if ( changes.Any() )
+                            {
+                                var family = groupService.Get( ncoaHistory.FamilyId );
+                                if ( family != null )
+                                {
+                                    foreach ( var fm in family.Members )
+                                    {
+                                        HistoryService.SaveChanges(
+                                            rockContext,
+                                            typeof( Person ),
+                                            Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
+                                            fm.PersonId,
+                                            changes,
+                                            family.Name,
+                                            typeof( Group ),
+                                            family.Id,
+                                            false );
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    rockContext.SaveChanges();
+                }
             }
+            else if ( e.CommandName == "MarkProcessed" )
+            {
+                using ( RockContext rockContext = new RockContext() )
+                {
+                    var ncoa = ( new NcoaHistoryService( rockContext ) ).Get( ncoaHistoryId.Value );
+                    ncoa.Processed = Processed.Complete;
+                    rockContext.SaveChanges();
+                }
+            }
+
+            NcoaResults_BlockUpdated( null, null );
         }
 
         #endregion
@@ -299,6 +354,7 @@ namespace RockWeb.Blocks.Crm
             else
             {
                 ddlProcessed.SetValue( Processed.ManualUpdateRequiredOrNotProcessed.ConvertToInt().ToString() );
+                gfNcoaFilter.SaveUserPreference( "Processed", ddlProcessed.SelectedValue );
             }
 
             sdpMoveDate.DelimitedValues = gfNcoaFilter.GetUserPreference( "Move Date" );
