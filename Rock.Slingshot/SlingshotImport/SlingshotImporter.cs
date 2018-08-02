@@ -1353,6 +1353,11 @@ namespace Rock.Slingshot
 
             var familyRolesLookup = GroupTypeCache.GetFamilyGroupType().Roles.ToDictionary( k => k.Guid );
 
+            var gradeOffsetLookupFromDescription = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() )?.DefinedValues.ToDictionary( k => k.Description, v => v.Value.AsInteger(), StringComparer.OrdinalIgnoreCase );
+            var gradeOffsetLookupFromAbbreviation = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() )?.DefinedValues
+                .Select( a => new { Value = a.Value.AsInteger(), Abbreviation = a.AttributeValues["Abbreviation"]?.Value } )
+                .Where( a => !string.IsNullOrWhiteSpace( a.Abbreviation ) ).ToDictionary( k => k.Abbreviation, v => v.Value, StringComparer.OrdinalIgnoreCase );
+
             foreach ( var slingshotPerson in this.SlingshotPersonList )
             {
                 var personImport = new Rock.Slingshot.Model.PersonImport();
@@ -1472,7 +1477,23 @@ namespace Rock.Slingshot
 
                 personImport.AnniversaryDate = slingshotPerson.AnniversaryDate;
 
+                // do a case-insensitive lookup GradeOffset from either the Description ("Kindergarten", "1st Grade", etc) or Abbreviation ("K", "1st", etc)
                 personImport.Grade = slingshotPerson.Grade;
+                int? gradeOffset = null;
+                if ( !string.IsNullOrWhiteSpace( personImport.Grade ) )
+                {
+                    gradeOffset = gradeOffsetLookupFromDescription.GetValueOrNull( personImport.Grade );
+                    if ( gradeOffset == null )
+                    {
+                        gradeOffset = gradeOffsetLookupFromAbbreviation.GetValueOrNull( personImport.Grade );
+                    }
+                }
+
+                if ( gradeOffset.HasValue )
+                {
+                    personImport.GraduationYear = Person.GraduationYearFromGradeOffset( gradeOffset );
+                }
+
                 personImport.Email = slingshotPerson.Email;
 
                 // slingshot doesn't include an IsEmailActive, so default it to True
@@ -2051,7 +2072,7 @@ namespace Rock.Slingshot
         {
             this.SlingshotPersonList = LoadSlingshotListFromFile<SlingshotCore.Model.Person>( false );
 
-            Dictionary<int, List<SlingshotCore.Model.PersonAddress>> slingshotPersonAddressListLookup = LoadSlingshotListFromFile<SlingshotCore.Model.PersonAddress>().GroupBy( a => a.PersonId ).ToDictionary( k => k.Key, v => v.ToList() );
+            Dictionary<int, List<SlingshotCore.Model.PersonAddress>> slingshotPersonAddressListLookup = LoadSlingshotListFromFile<SlingshotCore.Model.PersonAddress>( false ).GroupBy( a => a.PersonId ).ToDictionary( k => k.Key, v => v.ToList() );
             Dictionary<int, List<SlingshotCore.Model.PersonAttributeValue>> slingshotPersonAttributeValueListLookup = LoadSlingshotListFromFile<SlingshotCore.Model.PersonAttributeValue>().GroupBy( a => a.PersonId ).ToDictionary( k => k.Key, v => v.ToList() );
             Dictionary<int, List<SlingshotCore.Model.PersonPhone>> slingshotPersonPhoneListLookup = LoadSlingshotListFromFile<SlingshotCore.Model.PersonPhone>().GroupBy( a => a.PersonId ).ToDictionary( k => k.Key, v => v.ToList() );
 
@@ -2070,7 +2091,7 @@ namespace Rock.Slingshot
         /// </summary>
         private void LoadGroupSlingshotLists()
         {
-            this.SlingshotGroupList = LoadSlingshotListFromFile<SlingshotCore.Model.Group>().DistinctBy( a => a.Id ).ToList();
+            this.SlingshotGroupList = LoadSlingshotListFromFile<SlingshotCore.Model.Group>( false ).DistinctBy( a => a.Id ).ToList();
 
             var groupAddressLookup = LoadSlingshotListFromFile<SlingshotCore.Model.GroupAddress>().GroupBy( a => a.GroupId ).ToDictionary( k => k.Key, v => v.ToList() );
             var groupAttributeValueLookup = LoadSlingshotListFromFile<SlingshotCore.Model.GroupAttributeValue>().GroupBy( a => a.GroupId ).ToDictionary( k => k.Key, v => v.ToList() );
