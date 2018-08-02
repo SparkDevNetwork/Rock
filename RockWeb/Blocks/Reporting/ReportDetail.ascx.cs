@@ -1101,10 +1101,13 @@ namespace RockWeb.Blocks.Reporting
             if ( report.Id == default( int ) )
             {
                 dataViewId = PageParameter( "dataViewId" ).AsIntegerOrNull();
-                var dataView = new DataViewService( rockContext ).Get( dataViewId.Value );
-                if ( dataView != null )
+                if (dataViewId.HasValue)
                 {
-                    entityTypeId = dataView.EntityTypeId;
+                    var dataView = new DataViewService( rockContext ).Get( dataViewId.Value );
+                    if ( dataView != null )
+                    {
+                        entityTypeId = dataView.EntityTypeId;
+                    }
                 }
             }
 

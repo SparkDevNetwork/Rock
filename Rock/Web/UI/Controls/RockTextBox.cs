@@ -418,7 +418,7 @@ namespace Rock.Web.UI.Controls
                 this.Attributes["value"] = this.Text;
             }
 
-            // logic to add input groups for preappend and append labels
+            // logic to add input groups for prepend and append labels
             bool renderInputGroup = false;
             string cssClass = this.CssClass;
 

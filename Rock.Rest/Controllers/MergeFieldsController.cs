@@ -149,7 +149,7 @@ namespace Rock.Rest.Controllers
 
                 default:
                     {
-                        // In this scenario, the id should be a concatnation of a root qualified entity name and then the property path
+                        // In this scenario, the id should be a concatenation of a root qualified entity name and then the property path
                         var idParts = id.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
                         if ( idParts.Count > 0 )
                         {

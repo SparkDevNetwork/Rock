@@ -147,7 +147,7 @@ namespace Rock.Utility
 
             // Special Code if an $expand clause is specified and a $select clause is NOT specified
             // This fixes a couple of issues:
-            //  1) our special loadAttributes stuff did't work if $expand is specified
+            //  1) our special loadAttributes stuff didn't work if $expand is specified
             //  2) Only non-virtual,non-inherited fields were included (for example: Person.PrimaryAliasId, etc, wasn't getting included) if $expand was specified
             if ( value is IQueryable && typeof( IQueryable<Rock.Data.IEntity> ).IsAssignableFrom( type ) )
             {

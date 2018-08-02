@@ -276,7 +276,7 @@ namespace RockWeb.Blocks.Core
                     } )
                 .ToList();
 
-            // SanitizeHtml can't be compilied into a SQL query so we have to ToList() the data and then sanitize the field in the List<T>
+            // SanitizeHtml can't be compiled into a SQL query so we have to ToList() the data and then sanitize the field in the List<T>
             //gDefinedType.DataSource = dataSource
             //    .Select( a =>
             //        new

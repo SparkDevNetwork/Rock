@@ -203,7 +203,7 @@ namespace RockWeb.Blocks.Cms
         #region Events
 
         /// <summary>
-        /// Handles the BlockUpdated event of the block for when setings are changed.
+        /// Handles the BlockUpdated event of the block for when settings are changed.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
@@ -379,7 +379,7 @@ namespace RockWeb.Blocks.Cms
         protected override void ShowSettings()
         {
             // Switch does not automatically initialize again after a partial-postback.  This script 
-            // looks for any switch elements that have not been initialized and re-intializes them.
+            // looks for any switch elements that have not been initialized and re-initializes them.
             string script = @"
 $(document).ready(function() {
     $('.switch > input').each( function () {

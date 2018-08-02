@@ -24,7 +24,8 @@ using Quartz;
 
 using Rock.Data;
 using Rock.Model;
-
+using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
@@ -39,13 +40,15 @@ namespace Rock.Jobs
     {
         /// <summary>
         /// Executes the specified context. When updating large data sets SQL will burn a lot of time updating the indexes. If performing multiple inserts/updates
-        /// consider dropping the related indexes first and re-creating them once the opoeration is complete.
+        /// consider dropping the related indexes first and re-creating them once the operation is complete.
         /// Put all index creation method calls at the end of this method.
         /// </summary>
         /// <param name="context">The context.</param>
         /// <exception cref="NotImplementedException"></exception>
         public void Execute( IJobExecutionContext context )
         {
+            UpdateBulkUpdateSecurity();
+
             UpdateInteractionSummaryForPageViews();
             UpdateSlugForContentChannelItems();
             CreateIndexInteractionPersonAliasSession();
@@ -95,7 +98,7 @@ namespace Rock.Jobs
 
         /// <summary>
         /// Creates the index on Interactions.ForeignKey.
-        /// Includes were reccomended by Query Analyzer
+        /// Includes were recommended by Query Analyzer
         /// </summary>
         public static void CreateIndexInteractionsForeignKey()
         {
@@ -132,6 +135,107 @@ namespace Rock.Jobs
 	                    ,[InteractionEndDateTime])
                     END" );
             }
+        }
+
+        /// <summary>
+        /// Updates the bulk update security.
+        /// </summary>
+        private static void UpdateBulkUpdateSecurity()
+        {
+            var rockContext = new RockContext();
+            var authService = new Rock.Model.AuthService( rockContext );
+
+            var bulkUpdateBlockType = BlockTypeCache.Get( Rock.SystemGuid.BlockType.BULK_UPDATE.AsGuid() );
+            var bulkUpdateBlocks = new BlockService( rockContext ).Queryable().Where( a => a.BlockTypeId == bulkUpdateBlockType.Id ).ToList();
+            foreach ( var bulkUpdateBlock in bulkUpdateBlocks )
+            {
+                var alreadyUpdated = authService.Queryable().Where( a =>
+                    ( a.Action == "EditConnectionStatus" || a.Action == "EditRecordStatus" )
+                    && a.EntityTypeId == bulkUpdateBlock.TypeId
+                    && a.EntityId == bulkUpdateBlock.Id ).Any();
+
+                if ( alreadyUpdated )
+                {
+                    // EditConnectionStatus and/or EditRecordStatus has already been set, so don't copy VIEW auth to it
+                    continue;
+                }
+
+                var groupIdAuthRules = new HashSet<int>();
+                var personIdAuthRules = new HashSet<int>();
+                var specialRoleAuthRules = new HashSet<SpecialRole>();
+                var authRulesToAdd = new List<AuthRule>();
+
+                Dictionary<ISecured, List<AuthRule>> parentAuthRulesList = new Dictionary<ISecured, List<AuthRule>>();
+                ISecured secured = bulkUpdateBlock;
+                while ( secured != null )
+                {
+                    var entityType = secured.TypeId;
+                    List<AuthRule> authRules = Authorization.AuthRules( secured.TypeId, secured.Id, Authorization.VIEW ).OrderBy( a => a.Order ).ToList();
+
+                    foreach ( var rule in authRules )
+                    {
+                        if ( rule.GroupId.HasValue )
+                        {
+                            if ( !groupIdAuthRules.Contains(rule.GroupId.Value ) )
+                            {
+                                groupIdAuthRules.Add( rule.GroupId.Value );
+                                authRulesToAdd.Add( rule );
+                            }
+                        }
+
+                        else if ( rule.PersonId.HasValue )
+                        {
+                            if ( !personIdAuthRules.Contains( rule.PersonId.Value ) )
+                            {
+                                personIdAuthRules.Add( rule.PersonId.Value );
+                                authRulesToAdd.Add( rule );
+                            }
+                        }
+                        else if ( rule.SpecialRole != SpecialRole.None )
+                        {
+                            if ( !specialRoleAuthRules.Contains( rule.SpecialRole ) )
+                            {
+                                specialRoleAuthRules.Add( rule.SpecialRole );
+                                authRulesToAdd.Add( rule );
+                            }
+                        }
+                    }
+
+                    secured = secured.ParentAuthority;
+                }
+
+                List<Auth> authsToAdd = new List<Auth>();
+
+                foreach ( var auth in authRulesToAdd )
+                {
+                    authsToAdd.Add( AddAuth( bulkUpdateBlock, auth, "EditConnectionStatus" ) );
+                    authsToAdd.Add( AddAuth( bulkUpdateBlock, auth, "EditRecordStatus" ) );
+                }
+
+                int authOrder = 0;
+                authsToAdd.ForEach( a => a.Order = authOrder++ );
+
+                authService.AddRange( authsToAdd );
+                Authorization.RefreshAction( bulkUpdateBlock.TypeId, bulkUpdateBlock.Id, "EditConnectionStatus" );
+                Authorization.RefreshAction( bulkUpdateBlock.TypeId, bulkUpdateBlock.Id, "EditRecordStatus" );
+            }
+
+            rockContext.SaveChanges();
+        }
+
+        private static Auth AddAuth( Block bulkUpdateBlock, AuthRule authRule, string authAction )
+        {
+            var auth = new Auth();
+            auth.EntityTypeId = bulkUpdateBlock.TypeId;
+            auth.EntityId = bulkUpdateBlock.Id;
+            auth.Order = authRule.Order;
+            auth.Action = authAction;
+            auth.AllowOrDeny = authRule.AllowOrDeny.ToString();
+            auth.GroupId = authRule.GroupId;
+            auth.PersonAliasId = authRule.PersonAliasId;
+            auth.SpecialRole = authRule.SpecialRole;
+
+            return auth;
         }
 
         /// <summary>

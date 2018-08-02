@@ -109,7 +109,7 @@ namespace RockWeb.Blocks.Cms
 <p>&nbsp;</p>
 
 {{ 'Global' | Attribute:'EmailFooter' }}", "", 7 )]
-    [CodeEditorField( "Response Message", "The message the user will see when they submit the form if no response page if provided. Lava merege fields are available for you to use in your message.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, @"<div class=""alert alert-info"">
+    [CodeEditorField( "Response Message", "The message the user will see when they submit the form if no response page if provided. Lava merge fields are available for you to use in your message.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, @"<div class=""alert alert-info"">
     Thank you for your response. We appreciate your feedback!
 </div>", "", 8 )]
     [LinkedPage( "Response Page", "The page the use will be taken to after submitting the form. Use the 'Response Message' field if you just need a simple message.", false, "", "", 9 )]

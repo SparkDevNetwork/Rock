@@ -29,7 +29,7 @@ namespace Rock.Model
 {
 
     /// <summary>
-    /// Represents a Interation Channel.
+    /// Represents a Interaction Channel.
     /// </summary>
     [RockDomain( "Core" )]
     [NotAudited]

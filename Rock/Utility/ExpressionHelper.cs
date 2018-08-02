@@ -28,7 +28,7 @@ using Rock.Reporting;
 namespace Rock.Utility
 {
     /// <summary>
-    /// Expresssion Helper Methods
+    /// Expression Helper Methods
     /// </summary>
     public static class ExpressionHelper
     {

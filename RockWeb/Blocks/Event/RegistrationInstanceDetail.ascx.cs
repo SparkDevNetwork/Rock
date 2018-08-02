@@ -3039,7 +3039,7 @@ namespace RockWeb.Blocks.Event
                     if ( sortProperty != null )
                     {
                         // If sorting by Total Cost or Balance Due, the database query needs to be run first without ordering,
-                        // and then ordering needs to be done in memory since TotalCost and BalanceDue are not databae fields.
+                        // and then ordering needs to be done in memory since TotalCost and BalanceDue are not database fields.
                         if ( sortProperty.Property == "TotalCost" )
                         {
                             if ( sortProperty.Direction == SortDirection.Ascending )

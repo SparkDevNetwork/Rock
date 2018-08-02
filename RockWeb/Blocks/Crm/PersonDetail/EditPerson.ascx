@@ -113,7 +113,7 @@
                                                             <asp:HiddenField ID="hfPhoneType" runat="server" Value='<%# Eval("NumberTypeValueId")  %>' />
                                                             <Rock:PhoneNumberBox ID="pnbPhone" runat="server" CountryCode='<%# Eval("CountryCode") %>' Number='<%# Eval("NumberFormatted")  %>' autocomplete="off" />
                                                         </div>
-                                                        <div class="col-sm-5 col-lg-2">
+                                                        <div class="col-sm-5 col-lg-5">
                                                             <Rock:RockCheckBox ID="cbSms" runat="server" Text="SMS" Checked='<%# (bool)Eval("IsMessagingEnabled") %>' ContainerCssClass="pull-left" CssClass="js-sms-number" />
                                                             <Rock:RockCheckBox ID="cbUnlisted" runat="server" Text="Unlisted" Checked='<%# (bool)Eval("IsUnlisted") %>' ContainerCssClass="pull-left" />
                                                         </div>

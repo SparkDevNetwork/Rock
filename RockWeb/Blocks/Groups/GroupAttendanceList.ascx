@@ -38,6 +38,7 @@
                             <Rock:BoolField DataField="DidNotOccur" HeaderText="Didn't Meet" SortExpression="DidNotOccur" />
                             <Rock:RockBoundField DataField="DidAttendCount" HeaderText="Attendance Count" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:N0}" SortExpression="DidAttendCount" HeaderStyle-HorizontalAlign="Right" />
                             <Rock:RockBoundField DataField="AttendanceRate" HeaderText="Percent Attended" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:P0}" SortExpression="AttendanceRate" HeaderStyle-HorizontalAlign="Right"/>
+                            <Rock:RockBoundField DataField="Notes" HeaderText="Notes" HtmlEncode="false" ColumnPriority="Desktop" SortExpression="Notes"/>
                             <Rock:EditField IconCssClass="fa fa-check-square-o" OnClick="gOccurrences_Edit" ToolTip="Enter Attendance" />
                             <Rock:DeleteField OnClick="gOccurrences_Delete" />
                         </Columns>

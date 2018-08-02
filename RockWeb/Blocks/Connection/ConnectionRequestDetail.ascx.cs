@@ -1714,7 +1714,7 @@ namespace RockWeb.Blocks.Connection
                 }
             }
 
-            // Coments
+            // Comments
             tbComments.Text = connectionRequest.Comments;//.SanitizeHtml();
 
             // Status

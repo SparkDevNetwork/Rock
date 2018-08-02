@@ -399,7 +399,7 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
-        /// Checks the availibility of the configured Redis endpoints and updates the status label.
+        /// Checks the availability of the configured Redis endpoints and updates the status label.
         /// </summary>
         private void RedisEndPointAvailabilityCheck()
         {
