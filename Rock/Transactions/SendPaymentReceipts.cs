@@ -132,7 +132,9 @@ namespace Rock.Transactions
 
                         var emailMessage = new RockEmailMessage( SystemEmailGuid );
                         emailMessage.AddRecipient( new RecipientData( person.Email, mergeFields ) );
-                        emailMessage.Send();
+                        var errors = new List<string>();
+                        // errors will be logged by send
+                        emailMessage.Send(out errors);
                     }
                 }
             }
