@@ -80,7 +80,15 @@ namespace church.ccv.Actions
             class ResultTable
             {
                 public int PersonId { get; set; }
-                public bool IsGiving { get; set; }
+                public int FamilyId { get; set; }
+	            public bool IsGiving { get; set; }
+                public int TotalGifts { get; set; }
+                public DateTime FirstGave { get; set; }
+                public DateTime LastGave { get; set; }
+                public int LongTerm_NumGifts { get; set; }
+                public decimal LongTerm_AmountGiven { get; set; }
+                public int ShortTerm_NumGifts { get; set; }
+                public decimal ShortTerm_AmountGiven { get; set; }
             }
 
             public static bool IsGiving( int personId )
@@ -88,11 +96,12 @@ namespace church.ccv.Actions
                 RockContext rockContext = new RockContext( );
                 var result = rockContext.Database.SqlQuery<ResultTable>
                     (
-                        "SELECT TOP 1 * FROM dbo._church_ccv_ufnActions_Adult_IsGiving(@PersonId)",
+                        "SELECT * FROM dbo._church_ccv_ufnActions_Adult_IsGiving(@PersonId)",
                         new SqlParameter( "@PersonId", personId ) { SqlDbType = SqlDbType.Int, IsNullable = false }
-                    ).ToList( ).SingleOrDefault( );
+                    ).ToList( );
                         
-                return result.IsGiving;
+                var isGiving = result.Max( r => r.IsGiving );
+                return isGiving;
             }
         }
 
@@ -410,15 +419,20 @@ namespace church.ccv.Actions
             }
         }
 
-        /// <summary>
-        /// Giving
-        /// </summary>
         public static class Give
         {
             class ResultTable
             {
                 public int PersonId { get; set; }
-                public bool IsGiving { get; set; }
+                public int FamilyId { get; set; }
+	            public bool IsGiving { get; set; }
+                public int TotalGifts { get; set; }
+                public DateTime FirstGave { get; set; }
+                public DateTime LastGave { get; set; }
+                public int LongTerm_NumGifts { get; set; }
+                public decimal LongTerm_AmountGiven { get; set; }
+                public int ShortTerm_NumGifts { get; set; }
+                public decimal ShortTerm_AmountGiven { get; set; }
             }
 
             public static bool IsGiving( int personId )
@@ -426,11 +440,12 @@ namespace church.ccv.Actions
                 RockContext rockContext = new RockContext( );
                 var result = rockContext.Database.SqlQuery<ResultTable>
                     (
-                        "SELECT TOP 1 * FROM dbo._church_ccv_ufnActions_Student_IsGiving(@PersonId)",
+                        "SELECT * FROM dbo._church_ccv_ufnActions_Student_IsGiving(@PersonId)",
                         new SqlParameter( "@PersonId", personId ) { SqlDbType = SqlDbType.Int, IsNullable = false }
-                    ).ToList( ).SingleOrDefault( );
+                    ).ToList( );
                         
-                return result.IsGiving;
+                var isGiving = result.Max( r => r.IsGiving );
+                return isGiving;
             }
         }
 
