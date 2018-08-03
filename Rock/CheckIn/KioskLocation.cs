@@ -149,7 +149,7 @@ namespace Rock.CheckIn
         /// </returns>
         public override string ToString()
         {
-            return Location.ToString();
+            return Location.Name;
         }
     }
 }
