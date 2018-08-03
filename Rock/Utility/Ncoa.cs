@@ -162,8 +162,7 @@ namespace Rock.Utility
         /// Starts the NCOA request.
         /// </summary>
         /// <param name="sparkDataConfig">The spark data configuration.</param>
-        /// <param name="retrying">If the previous run failed and the user should not be charged to try again, set the value to <c>True</c>. If the previous run was successful, set the value to <c>false</c>.</param>
-        public void Start( SparkDataConfig sparkDataConfig, bool retrying )
+        public void Start( SparkDataConfig sparkDataConfig )
         {
             if (sparkDataConfig == null)
             {
@@ -198,7 +197,7 @@ namespace Rock.Utility
             }
 
             string groupName = null;
-            if ( retrying )
+            if ( sparkDataConfig.NcoaSettings.FileName.IsNotNullOrWhiteSpace() )
             {
                 groupName = sparkDataApi.NcoaRetryReport( sparkDataConfig.SparkDataApiKey, sparkDataConfig.NcoaSettings.FileName );
             }
@@ -304,6 +303,7 @@ namespace Rock.Utility
 
             sparkDataConfig.NcoaSettings.LastRunDate = RockDateTime.Now;
             sparkDataConfig.NcoaSettings.CurrentReportStatus = "Complete";
+            sparkDataConfig.NcoaSettings.FileName = null;
             SaveSettings( sparkDataConfig );
         }
 
