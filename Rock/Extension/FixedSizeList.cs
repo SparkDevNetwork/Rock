@@ -55,7 +55,7 @@ namespace Rock.Extension
         /// <summary>
         /// Adds the elements of the specified collection to the end of the <see cref="T:System.Collections.Generic.List`1" />. Truncate from the start of the list if it is bigger than the preset size.
         /// </summary>
-        /// <param name="collection">The collection whose elements should be added to the end of the <see cref="T:System.Collections.Generic.List`1" />. The collection itself cannot be null, but it can contain elements that are null, if type <paramref name="T" /> is a reference type.</param>
+        /// <param name="collection">The collection whose elements should be added to the end of the <see cref="T:System.Collections.Generic.List`1" />. The collection itself cannot be null, but it can contain elements that are null, if type T is a reference type.</param>
         public new void AddRange(IEnumerable<T> collection)
         {
             base.AddRange( collection );

@@ -14,14 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Checkr.Constants;
 using Rock.Plugin;
-using Rock.SystemGuid;
 
 namespace Rock.Migrations
 {
     [MigrationNumber( 5, "1.8.0" )]
-    class Checkr_WarnOfRecent : Migration
+    public class Checkr_WarnOfRecent : Migration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.

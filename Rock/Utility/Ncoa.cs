@@ -157,11 +157,11 @@ namespace Rock.Utility
         #endregion
 
         #region Executing NCOA states
+
         /// <summary>
         /// Starts the NCOA request.
         /// </summary>
         /// <param name="sparkDataConfig">The spark data configuration.</param>
-        /// <param name="personAliasId">The person alias identifier.</param>
         public void Start( SparkDataConfig sparkDataConfig )
         {
             if (sparkDataConfig == null)
@@ -196,13 +196,22 @@ namespace Rock.Utility
                 return;
             }
 
-            GroupNameTransactionKey groupNameTransactionKey = sparkDataApi.NcoaInitiateReport( sparkDataConfig.SparkDataApiKey, addresses.Count, sparkDataConfig.NcoaSettings.PersonFullName );
-            sparkDataConfig.NcoaSettings.FileName = groupNameTransactionKey.TransactionKey;
+            string groupName = null;
+            if ( sparkDataConfig.NcoaSettings.FileName.IsNotNullOrWhiteSpace() )
+            {
+                groupName = sparkDataApi.NcoaRetryReport( sparkDataConfig.SparkDataApiKey, sparkDataConfig.NcoaSettings.FileName );
+            }
+            else
+            {
+                GroupNameTransactionKey groupNameTransactionKey = sparkDataApi.NcoaInitiateReport( sparkDataConfig.SparkDataApiKey, addresses.Count, sparkDataConfig.NcoaSettings.PersonFullName );
+                sparkDataConfig.NcoaSettings.FileName = groupNameTransactionKey.TransactionKey;
+                groupName = groupNameTransactionKey.GroupName;
+            }
+
             var credentials = sparkDataApi.NcoaGetCredentials( sparkDataConfig.SparkDataApiKey );
             var trueNcoaApi = new NcoaApi( credentials );
 
-            string id;
-            trueNcoaApi.CreateFile( sparkDataConfig.NcoaSettings.FileName, groupNameTransactionKey.GroupName, out id );
+            trueNcoaApi.CreateFile( sparkDataConfig.NcoaSettings.FileName, groupName, out string id );
             sparkDataConfig.NcoaSettings.CurrentReportKey = id;
 
             trueNcoaApi.UploadAddresses( addresses, sparkDataConfig.NcoaSettings.CurrentReportKey );
@@ -294,6 +303,7 @@ namespace Rock.Utility
 
             sparkDataConfig.NcoaSettings.LastRunDate = RockDateTime.Now;
             sparkDataConfig.NcoaSettings.CurrentReportStatus = "Complete";
+            sparkDataConfig.NcoaSettings.FileName = null;
             SaveSettings( sparkDataConfig );
         }
 
@@ -403,10 +413,8 @@ namespace Rock.Utility
         /// Processes the NCOA History results.
         /// </summary>
         /// <param name="inactiveReason">The inactive reason.</param>
-        /// <param name="homeValueId">The home value identifier.</param>
-        /// <param name="previousValueId">The previous value identifier.</param>
-        /// <param name="markInvalidAsPrevious">if set to <c>true</c> [mark invalid as previous].</param>
-        /// <param name="mark48MonthAsPrevious">if set to <c>true</c> [mark48 month as previous].</param>
+        /// <param name="markInvalidAsPrevious">If invalid addresses should be marked as previous, set to <c>true</c>.</param>
+        /// <param name="mark48MonthAsPrevious">if a 48 month move should be marked as previous, set to <c>true</c>.</param>
         /// <param name="minMoveDistance">The minimum move distance.</param>
         public void ProcessNcoaResults( DefinedValueCache inactiveReason, bool markInvalidAsPrevious, bool mark48MonthAsPrevious, decimal? minMoveDistance )
         {
@@ -424,8 +432,8 @@ namespace Rock.Utility
         /// Processes the NCOA results: invalid address.
         /// </summary>
         /// <param name="inactiveReason">The inactive reason.</param>
-        /// <param name="markInvalidAsPrevious">if set to <c>true</c> [mark invalid as previous].</param>
-        /// <param name="mark48MonthAsPrevious">if set to <c>true</c> [mark48 month as previous].</param>
+        /// <param name="markInvalidAsPrevious">If invalid addresses should be marked as previous, set to <c>true</c>.</param>
+        /// <param name="mark48MonthAsPrevious">if a 48 month move should be marked as previous, set to <c>true</c>.</param>
         /// <param name="minMoveDistance">The minimum move distance.</param>
         /// <param name="homeValueId">The home value identifier.</param>
         /// <param name="previousValueId">The previous value identifier.</param>
@@ -498,8 +506,8 @@ namespace Rock.Utility
         /// Processes the NCOA results: 48 month move.
         /// </summary>
         /// <param name="inactiveReason">The inactive reason.</param>
-        /// <param name="markInvalidAsPrevious">if set to <c>true</c> [mark invalid as previous].</param>
-        /// <param name="mark48MonthAsPrevious">if set to <c>true</c> [mark48 month as previous].</param>
+        /// <param name="markInvalidAsPrevious">If invalid addresses should be marked as previous, set to <c>true</c>.</param>
+        /// <param name="mark48MonthAsPrevious">if a 48 month move should be marked as previous, set to <c>true</c>.</param>
         /// <param name="minMoveDistance">The minimum move distance.</param>
         /// <param name="homeValueId">The home value identifier.</param>
         /// <param name="previousValueId">The previous value identifier.</param>
@@ -574,8 +582,8 @@ namespace Rock.Utility
         /// Processes the NCOA results: family move.
         /// </summary>
         /// <param name="inactiveReason">The inactive reason.</param>
-        /// <param name="markInvalidAsPrevious">if set to <c>true</c> [mark invalid as previous].</param>
-        /// <param name="mark48MonthAsPrevious">if set to <c>true</c> [mark48 month as previous].</param>
+        /// <param name="markInvalidAsPrevious">If invalid addresses should be marked as previous, set to <c>true</c>.</param>
+        /// <param name="mark48MonthAsPrevious">if a 48 month move should be marked as previous, set to <c>true</c>.</param>
         /// <param name="minMoveDistance">The minimum move distance.</param>
         /// <param name="homeValueId">The home value identifier.</param>
         /// <param name="previousValueId">The previous value identifier.</param>
@@ -687,8 +695,8 @@ namespace Rock.Utility
         /// Processes the NCOA results: individual move.
         /// </summary>
         /// <param name="inactiveReason">The inactive reason.</param>
-        /// <param name="markInvalidAsPrevious">if set to <c>true</c> [mark invalid as previous].</param>
-        /// <param name="mark48MonthAsPrevious">if set to <c>true</c> [mark48 month as previous].</param>
+        /// <param name="markInvalidAsPrevious">If invalid addresses should be marked as previous, set to <c>true</c>.</param>
+        /// <param name="mark48MonthAsPrevious">if a 48 month move should be marked as previous, set to <c>true</c>.</param>
         /// <param name="minMoveDistance">The minimum move distance.</param>
         /// <param name="homeValueId">The home value identifier.</param>
         /// <param name="previousValueId">The previous value identifier.</param>
@@ -812,7 +820,7 @@ namespace Rock.Utility
         /// <param name="previousValueId">The previous value identifier.</param>
         /// <param name="changes">The changes.</param>
         /// <returns></returns>
-        private bool MarkAsPreviousLocation( NcoaHistory ncoaHistory, GroupLocationService groupLocationService, int? previousValueId, History.HistoryChangeList changes )
+        public bool MarkAsPreviousLocation( NcoaHistory ncoaHistory, GroupLocationService groupLocationService, int? previousValueId, History.HistoryChangeList changes )
         {
             if (ncoaHistory.LocationId.HasValue && previousValueId.HasValue)
             {
@@ -880,6 +888,7 @@ namespace Rock.Utility
         /// Sends the notification that NCOA finished
         /// </summary>
         /// <param name="sparkDataConfig">The spark data configuration.</param>
+        /// <param name="status">The status to put in the notification.</param>
         public void SentNotification( SparkDataConfig sparkDataConfig, string status )
         {
             if (!sparkDataConfig.GlobalNotificationApplicationGroupId.HasValue || sparkDataConfig.GlobalNotificationApplicationGroupId.Value == 0)
@@ -928,7 +937,6 @@ namespace Rock.Utility
             {
                 sparkDataConfig = Rock.Web.SystemSettings.GetValue( SystemSetting.SPARK_DATA ).FromJsonOrNull<SparkDataConfig>() ?? new SparkDataConfig();
             }
-
 
             if (sparkDataConfig.NcoaSettings == null)
             {
