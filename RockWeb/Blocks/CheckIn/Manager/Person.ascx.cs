@@ -221,6 +221,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
         protected void btnSms_Click( object sender, EventArgs e )
         {
             btnSms.Visible = false;
+            nbResult.Visible = false;
+            nbResult.Text = string.Empty;
             tbSmsMessage.Visible = btnSmsCancel.Visible = btnSmsSend.Visible = true;
         }
 
@@ -350,8 +352,18 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     
                     lEmail.Visible = !string.IsNullOrWhiteSpace( person.Email );
                     lEmail.Text = person.GetEmailTag( ResolveRockUrl( "/" ), "btn btn-default", "<i class='fa fa-envelope'></i>" );
-                    
-                    btnSms.Visible = GetAttributeValue( SMS_FROM_KEY ).IsNotNullOrWhiteSpace() && person.PhoneNumbers.Any( n => n.IsMessagingEnabled && n.Number.IsNotNullOrWhiteSpace() );
+
+                    // Text Message
+                    var phoneNumber = person.PhoneNumbers.FirstOrDefault( n => n.IsMessagingEnabled && n.Number.IsNotNullOrWhiteSpace() );
+                    if ( GetAttributeValue( SMS_FROM_KEY ).IsNotNullOrWhiteSpace() && phoneNumber != null )
+                    {
+                        btnSms.Text = string.Format( "<i class='fa fa-mobile'></i> {0} <small>({1})</small>", phoneNumber.NumberFormatted, phoneNumber.NumberTypeValue );
+                        btnSms.Visible = true;
+                    }
+                    else
+                    {
+                        btnSms.Visible = false;
+                    }
 
                     // Get all family member from all families ( including self )
                     var allFamilyMembers = personService.GetFamilyMembers( person.Id, true ).ToList();
