@@ -157,7 +157,7 @@ namespace Rock.Jobs
         private void StatusFailed( SparkDataConfig sparkDataConfig )
         {
             var ncoa = new Ncoa();
-            ncoa.Start( sparkDataConfig, true );
+            ncoa.Start( sparkDataConfig );
         }
 
         /// <summary>
@@ -169,7 +169,7 @@ namespace Rock.Jobs
             if ( sparkDataConfig.NcoaSettings.IsAckPrice && sparkDataConfig.NcoaSettings.IsAcceptedTerms )
             {
                 var ncoa = new Ncoa();
-                ncoa.Start( sparkDataConfig, false );
+                ncoa.Start( sparkDataConfig );
             }
             else
             {
