@@ -23,7 +23,7 @@ namespace Rock.Plugin.HotFixes
     /// SparkData and NCOA
     /// </summary>
     [MigrationNumber( 51, "1.8.1" )]
-    class SparkData : Migration
+    public class SparkData : Migration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
