@@ -1600,6 +1600,7 @@
     <Compile Include="Web\UI\Controls\NumberBoxBase.cs" />
     <Compile Include="Web\UI\Controls\NumberUpDownGroup.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ContentChannelItemPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\ItemFromBlockPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ReportPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DataViewItemPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\RegistrationInstancePicker.cs" />
@@ -1615,6 +1616,7 @@
     <Compile Include="Web\UI\Controls\SSNBox.cs" />
     <Compile Include="Web\UI\ICustomGridColumns.cs" />
     <Compile Include="Web\UI\ICustomGridOptions.cs" />
+    <Compile Include="Web\UI\IPickerBlock.cs" />
     <Compile Include="Web\UI\RockHiddenFieldPageStatePersister.cs" />
     <Compile Include="Web\UI\Controls\Grid\LavaBoundField.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DefinedValuesPickerEnhanced.cs" />
