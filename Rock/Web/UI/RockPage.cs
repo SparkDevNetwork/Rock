@@ -732,7 +732,7 @@ namespace Rock.Web.UI
                         var pageReference = new PageReference( PageReference.PageId, PageReference.RouteId, PageReference.Parameters );
                         foreach ( string key in PageReference.QueryString )
                         {
-                            if ( !key.Equals( "logout", StringComparison.OrdinalIgnoreCase ) )
+                            if ( key != null && !key.Equals( "logout", StringComparison.OrdinalIgnoreCase ) )
                             {
                                 pageReference.Parameters.Add( key, PageReference.QueryString[key] );
                             }

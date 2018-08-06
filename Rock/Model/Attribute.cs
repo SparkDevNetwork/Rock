@@ -441,6 +441,15 @@ namespace Rock.Model
                 GlobalAttributesCache.Remove();
             }
 
+            if ( ( !entityTypeId.HasValue || entityTypeId.Value == 0 ) && entityTypeQualifierColumn== Attribute.SYSTEM_SETTING_QUALIFIER && string.IsNullOrEmpty( entityTypeQualifierValue ) )
+            {
+                if ( entityState != System.Data.Entity.EntityState.Modified )
+                {
+                    // if a SystemSettings was Added or Removed, flush the SystemSettings cache (if it was only modified, it'll will point to the updated AttributeCache value)
+                    Rock.Web.SystemSettings.Remove();
+                }
+            }
+
             if ( entityTypeId.HasValue )
             {
                 if ( entityTypeId == EntityTypeCache.GetId<Block>() )

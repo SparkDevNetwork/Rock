@@ -381,6 +381,12 @@
     <Compile Include="Model\CodeGenerated\NoteAttachmentService.cs" />
     <Compile Include="Model\NoteAttachment.cs" />
     <Compile Include="Plugin\HotFixes\051_SparkData.cs" />
+    <Compile Include="Plugin\HotFixes\052_MigrationRollupsForV8_1.cs" />
+    <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>HotFixMigrationResource.resx</DependentUpon>
+    </Compile>
     <Compile Include="Web\Cache\Entities\BlockCache.cs" />
     <Compile Include="Web\Cache\Entities\CampusCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentChannelCache.cs" />
@@ -1241,11 +1247,6 @@
     <Compile Include="Plugin\HotFixes\048_InteractionSessionPerformance.cs" />
     <Compile Include="Plugin\HotFixes\047_DataAutomation.cs" />
     <Compile Include="Plugin\HotFixes\049_UpdateGivingAnalyticsAccounts.cs" />
-    <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
-      <DependentUpon>HotFixMigrationResource.resx</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-    </Compile>
     <Compile Include="Reporting\DataFilter\Person\AttendanceCampusFilter.cs" />
     <Compile Include="Plugin\HotFixes\050_MigrationRollupsForV7_4.cs" />
     <Compile Include="Reporting\DataFilter\FinancialScheduledTransactionDetail\AccountFilter.cs" />
@@ -2193,6 +2194,12 @@
     <Content Include="Plugin\HotFixes\050_MigrationRollupsForV7_4_spCrm_PersonMerge.sql">
       <DependentUpon>050_MigrationRollupsForV7_4.cs</DependentUpon>
     </Content>
+    <Content Include="Plugin\HotFixes\052_MigrationRollupsForV8_1_ufnCrm_GetFamilyTitle.sql">
+      <DependentUpon>052_MigrationRollupsForV8_1.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\052_MigrationRollupsForV8_1_ufnCrm_GetFamilyTitleIncludeInactive.sql">
+      <DependentUpon>052_MigrationRollupsForV8_1.cs</DependentUpon>
+    </Content>
     <Content Include="Scripts\jquery-1.12.4.intellisense.js" />
     <Content Include="Scripts\jquery-1.12.4.js" />
     <Content Include="Scripts\jquery-1.12.4.min.js" />
@@ -2257,8 +2264,8 @@
   <ItemGroup>
     <EmbeddedResource Include="Plugin\HotFixes\HotFixMigrationResource.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>HotFixMigrationResource.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
+      <LastGenOutput>HotFixMigrationResource.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
