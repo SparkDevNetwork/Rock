@@ -1637,7 +1637,8 @@ namespace RockWeb.Blocks.Event
                 validationErrors.Add( "Amount To Pay is greater than the amount due. Please check the amount you have selected to pay." );
             }
 
-            if ( minimumPayment.HasValue && minimumPayment > 0.0M )
+            // Validate payment information if there is a payment due or if there is a payment amount being provided
+            if ( minimumPayment.HasValue && minimumPayment > 0.0M || RegistrationState.PaymentAmount > 0.0M )
             {
                 if ( RegistrationState.PaymentAmount < minimumPayment )
                 {
