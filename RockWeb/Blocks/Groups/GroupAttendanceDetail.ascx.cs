@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Show Notes", "Should the notes field be displayed?", true, "", 9 )]
     [TextField( "Attendance Note Label", "The text to use to describe the notes", true, "Notes", "", 10 )]
     [BooleanField( "Show Anonymous Count", "Should the anonymous count be displayed?", true, "", 11 )]
-    [EnumField( "Send Summary Email To", "", typeof( SendSummaryEmailType ), true, "0", "", 12 )]
+    [EnumsField( "Send Summary Email To", "", typeof( SendSummaryEmailType ), false, "", "", 12 )]
     [SystemEmailField( "Attendance Email", "The System Email to use to send the attendance", false, Rock.SystemGuid.SystemEmail.ATTENDANCE_NOTIFICATION, "", 13, "AttendanceEmailTemplate" )]
     public partial class GroupAttendanceDetail : RockBlock
     {
@@ -62,11 +62,6 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         private enum SendSummaryEmailType
         {
-            /// <summary>
-            /// None
-            /// </summary>
-            None = 0,
-
             /// <summary>
             /// Group Leaders
             /// </summary>
@@ -1026,48 +1021,54 @@ namespace RockWeb.Blocks.Groups
                 mergeObjects.Add( "AttendanceOccurrence", _occurrence );
                 mergeObjects.Add( "AttendanceNoteLabel", GetAttributeValue( "AttendanceNoteLabel" ) );
 
-                var notificationOption = GetAttributeValue( "SendSummaryEmailTo" ).ConvertToEnum<SendSummaryEmailType>( SendSummaryEmailType.None );
-
                 List<string> recipients = new List<string>();
 
-                switch ( notificationOption )
+                var notificationOptions = GetAttributeValue( "SendSummaryEmailTo" ).SplitDelimitedValues().Select( a => a.ConvertToEnumOrNull<SendSummaryEmailType>() ).ToList();
+                foreach ( var notificationOption in notificationOptions )
                 {
-                    case SendSummaryEmailType.GroupLeaders:
-                        {
-                            var leaders = new GroupMemberService( _rockContext ).Queryable( "Person" ).AsNoTracking()
-                                            .Where( m => m.GroupRole.IsLeader && m.GroupId == _group.Id );
-                            recipients.AddRange( leaders.Where( a => !string.IsNullOrEmpty( a.Person.Email ) ).Select( a => a.Person.Email ) );
-                        }
-                        break;
-                    case SendSummaryEmailType.AllGroupMembers:
-                        {
-                            var leaders = new GroupMemberService( _rockContext ).Queryable( "Person" ).AsNoTracking()
-                                            .Where( m => m.GroupId == _group.Id );
-                            recipients.AddRange( leaders.Where( a => !string.IsNullOrEmpty( a.Person.Email ) ).Select( a => a.Person.Email ) );
-                        }
-                        break;
-                    case SendSummaryEmailType.ParentGroupLeaders:
-                        {
-                            if ( _group.ParentGroupId.HasValue )
+                    if ( !notificationOption.HasValue )
+                    {
+                        continue;
+                    }
+
+                    switch ( notificationOption )
+                    {
+                        case SendSummaryEmailType.GroupLeaders:
                             {
-                                var parentLeaders = new GroupMemberService( _rockContext ).Queryable( "Person" ).AsNoTracking()
-                                                    .Where( m => m.GroupRole.IsLeader && m.GroupId == _group.ParentGroupId.Value );
-                                recipients.AddRange( parentLeaders.Where( a => !string.IsNullOrEmpty( a.Person.Email ) ).Select( a => a.Person.Email ) );
+                                var leaders = new GroupMemberService( _rockContext ).Queryable( "Person" ).AsNoTracking()
+                                                .Where( m => m.GroupRole.IsLeader && m.GroupId == _group.Id );
+                                recipients.AddRange( leaders.Where( a => !string.IsNullOrEmpty( a.Person.Email ) ).Select( a => a.Person.Email ) );
                             }
-                        }
-                        break;
-                    case SendSummaryEmailType.IndividualEnteringAttendance:
-                        if ( !string.IsNullOrEmpty( this.CurrentPerson.Email ) )
-                        {
-                            recipients.Add( this.CurrentPerson.Email );
-                        }
-                        break;
-                    case SendSummaryEmailType.None:
-                    default:
-                        break;
+                            break;
+                        case SendSummaryEmailType.AllGroupMembers:
+                            {
+                                var leaders = new GroupMemberService( _rockContext ).Queryable( "Person" ).AsNoTracking()
+                                                .Where( m => m.GroupId == _group.Id );
+                                recipients.AddRange( leaders.Where( a => !string.IsNullOrEmpty( a.Person.Email ) ).Select( a => a.Person.Email ) );
+                            }
+                            break;
+                        case SendSummaryEmailType.ParentGroupLeaders:
+                            {
+                                if ( _group.ParentGroupId.HasValue )
+                                {
+                                    var parentLeaders = new GroupMemberService( _rockContext ).Queryable( "Person" ).AsNoTracking()
+                                                        .Where( m => m.GroupRole.IsLeader && m.GroupId == _group.ParentGroupId.Value );
+                                    recipients.AddRange( parentLeaders.Where( a => !string.IsNullOrEmpty( a.Person.Email ) ).Select( a => a.Person.Email ) );
+                                }
+                            }
+                            break;
+                        case SendSummaryEmailType.IndividualEnteringAttendance:
+                            if ( !string.IsNullOrEmpty( this.CurrentPerson.Email ) )
+                            {
+                                recipients.Add( this.CurrentPerson.Email );
+                            }
+                            break;
+                        default:
+                            break;
+                    }
                 }
 
-                foreach ( var recipient in recipients )
+                foreach ( var recipient in recipients.Distinct( StringComparer.CurrentCultureIgnoreCase ) )
                 {
                     var emailMessage = new RockEmailMessage( GetAttributeValue( "AttendanceEmailTemplate" ).AsGuid() );
                     emailMessage.AddRecipient( new RecipientData( recipient, mergeObjects ) );

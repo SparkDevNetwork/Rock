@@ -18,17 +18,7 @@
         <div class="row margin-b-sm">
             <div class="col-sm-4 col-md-3 col-lg-2">
                 <asp:Literal ID="lPhoto" runat="server" />
-                <div class="margin-t-md">
-                <Rock:NotificationBox ID="nbResult" runat="server" Visible="false" Dismissable="true" />
 
-                <!-- Initiates entry -->
-                <asp:LinkButton runat="server" Visible="false" ID="btnSms" CssClass="btn btn-default btn-block js-btn-sms" OnClick="btnSms_Click" >Send Text</asp:LinkButton>
-
-                <!-- During entry -->
-                <textarea runat="server" rows="3" cols="30" id="tbSmsMessage" visible="false" placeholder="Your message here..." class="form-control js-sms-message"></textarea>
-                <asp:LinkButton runat="server" Visible="false" ID="btnSmsSend" CssClass="btn btn-xs btn-primary js-btn-send" OnClick="btnSend_Click">Send</asp:LinkButton>
-                <asp:LinkButton runat="server" Visible="false" ID="btnSmsCancel" CssClass="btn btn-xs btn-link" OnClick="btnSmsCancel_Click">Cancel</asp:LinkButton>
-                </div>
             </div>
             <div class="col-sm-8 col-md-9 col-lg-10">
                 <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" />
@@ -44,6 +34,17 @@
                                 <li><a class="btn btn-default" href='tel:<%# Eval("Number") %>' ><i class="fa fa-phone-square"></i> <%# Eval("NumberFormatted") %> <small>(<%# Eval("NumberTypeValue.Value") %>)</small></a></li>                            </ItemTemplate>
                         </asp:Repeater>
                     </ul>
+                </Rock:RockControlWrapper>
+
+                <Rock:RockControlWrapper ID="rcwTextMessage" runat="server" Visible="true" Label="Text Message">
+                    <Rock:NotificationBox ID="nbResult" runat="server" Visible="false" Dismissable="true" />
+                    <!-- Initiates entry -->
+                    <asp:LinkButton runat="server" ID="btnSms" EnableViewState="true" CssClass="btn btn-default js-btn-sms" OnClick="btnSms_Click" />
+
+                    <!-- During entry -->
+                    <textarea runat="server" rows="3" cols="30" id="tbSmsMessage" visible="false" placeholder="Your message here..." class="form-control js-sms-message margin-b-sm"></textarea>
+                    <asp:LinkButton runat="server" Visible="false" ID="btnSmsSend" CssClass="btn btn-xs btn-primary js-btn-send" OnClick="btnSend_Click">Send</asp:LinkButton>
+                    <asp:LinkButton runat="server" Visible="false" ID="btnSmsCancel" CssClass="btn btn-xs btn-link" OnClick="btnSmsCancel_Click">Cancel</asp:LinkButton>
                 </Rock:RockControlWrapper>
 
                 <Rock:RockLiteral ID="lEmail" runat="server" Label="Email" />
