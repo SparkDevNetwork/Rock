@@ -667,13 +667,18 @@ namespace RockWeb.Blocks.Groups
                     .ThenBy( a => a.Order )
                     .ThenBy( a => a.Name ).ToCacheAttributeList() )
                 {
-                    AvailableAttributes.Add( attribute );
+                    if ( attribute.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                    {
+                        AvailableAttributes.Add( attribute );
+                    }
                 }
 
-                var inheritedGridColumnAttributes = ( new GroupMember() { GroupId = _group.Id } ).GetInheritedAttributes( rockContext ).Where( a => a.IsGridColumn == true && a.IsActive == true ).ToList();
-                if ( inheritedGridColumnAttributes.Any() )
-                {
-                    AvailableAttributes.AddRange( inheritedGridColumnAttributes );
+                foreach ( var inheritedGridColumnAttribute in ( new GroupMember() { GroupId = _group.Id } ).GetInheritedAttributes( rockContext ).Where( a => a.IsGridColumn == true && a.IsActive == true ).ToList() )
+                { 
+                    if ( inheritedGridColumnAttribute.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                    {
+                        AvailableAttributes.Add( inheritedGridColumnAttribute );
+                    }
                 }
             }
         }

@@ -216,7 +216,7 @@ namespace Rock.CheckIn
         /// </returns>
         public override string ToString()
         {
-            return Location != null ? Location.ToString() : string.Empty;
+            return Location != null ? Location.Name : string.Empty;
         }
 
         /// <summary>
