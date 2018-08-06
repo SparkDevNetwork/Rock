@@ -378,7 +378,7 @@
     <Compile Include="Attribute\WorkflowAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTextOrAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
-    <Compile Include="Plugin\HotFixes\051_MigrationRollupsForV8_1.cs" />
+    <Compile Include="Plugin\HotFixes\052_MigrationRollupsForV8_1.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2179,11 +2179,11 @@
     <Content Include="Plugin\HotFixes\050_MigrationRollupsForV7_4_spCrm_PersonMerge.sql">
       <DependentUpon>050_MigrationRollupsForV7_4.cs</DependentUpon>
     </Content>
-    <Content Include="Plugin\HotFixes\051_MigrationRollupsForV8_1_ufnCrm_GetFamilyTitle.sql">
-      <DependentUpon>051_MigrationRollupsForV8_1.cs</DependentUpon>
+    <Content Include="Plugin\HotFixes\052_MigrationRollupsForV8_1_ufnCrm_GetFamilyTitle.sql">
+      <DependentUpon>052_MigrationRollupsForV8_1.cs</DependentUpon>
     </Content>
-    <Content Include="Plugin\HotFixes\051_MigrationRollupsForV8_1_ufnCrm_GetFamilyTitleIncludeInactive.sql">
-      <DependentUpon>051_MigrationRollupsForV8_1.cs</DependentUpon>
+    <Content Include="Plugin\HotFixes\052_MigrationRollupsForV8_1_ufnCrm_GetFamilyTitleIncludeInactive.sql">
+      <DependentUpon>052_MigrationRollupsForV8_1.cs</DependentUpon>
     </Content>
     <Content Include="Scripts\jquery-1.12.4.intellisense.js" />
     <Content Include="Scripts\jquery-1.12.4.js" />

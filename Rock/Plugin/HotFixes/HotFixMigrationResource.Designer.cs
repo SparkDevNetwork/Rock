@@ -422,9 +422,9 @@ namespace Rock.Plugin.HotFixes {
         ///        Example3 (different lastnames): Jim Jackson and Betty Sanders
         ///        Example4 (just kids [rest of string was truncated]&quot;;.
         /// </summary>
-        public static string _051_MigrationRollupsForV8_1_ufnCrm_GetFamilyTitle {
+        public static string _052_MigrationRollupsForV8_1_ufnCrm_GetFamilyTitle {
             get {
-                return ResourceManager.GetString("_051_MigrationRollupsForV8_1_ufnCrm_GetFamilyTitle", resourceCulture);
+                return ResourceManager.GetString("_052_MigrationRollupsForV8_1_ufnCrm_GetFamilyTitle", resourceCulture);
             }
         }
         
@@ -439,9 +439,9 @@ namespace Rock.Plugin.HotFixes {
         ///        Example3 (different lastnames): Jim Jackson and Betty Sanders
         ///        Example4 (just kids [rest of string was truncated]&quot;;.
         /// </summary>
-        public static string _051_MigrationRollupsForV8_1_ufnCrm_GetFamilyTitleIncludeInactive {
+        public static string _052_MigrationRollupsForV8_1_ufnCrm_GetFamilyTitleIncludeInactive {
             get {
-                return ResourceManager.GetString("_051_MigrationRollupsForV8_1_ufnCrm_GetFamilyTitleIncludeInactive", resourceCulture);
+                return ResourceManager.GetString("_052_MigrationRollupsForV8_1_ufnCrm_GetFamilyTitleIncludeInactive", resourceCulture);
             }
         }
     }
