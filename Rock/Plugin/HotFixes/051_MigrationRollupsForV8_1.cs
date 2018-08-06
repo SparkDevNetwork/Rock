@@ -20,7 +20,7 @@ namespace Rock.Plugin.HotFixes
         {
             // MP - Fix for Inactive People showing up in Statement Generator Address when ExcludeInactive = True
             Sql( @"
-IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[ufnCrm_GetFamilyTitleIncludeInactive]') AND type in (N'P', N'PC'))
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[ufnCrm_GetFamilyTitleIncludeInactive]') AND type in (N'P', N'PC', N'TF'))
 DROP PROCEDURE [dbo].[ufnCrm_GetFamilyTitleIncludeInactive]
 " );
 
