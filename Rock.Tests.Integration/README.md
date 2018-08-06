@@ -65,3 +65,15 @@ Any tests that require a database will need to be moved from the existing `Rock.
             Assert.IsTrue( Person.GraduationYear == RockDateTime.Now.AddYears( 1 ).Year );
         }
    ```
+
+## MSTest LifeCycle
+
+The following decorators can give you more control over setup and cleanup for your test suite:
+
+* [AssemblyInitialize] - called once before running the tests of the assembly. 
+* [AssemblyCleanup] - called after all tests of the assembly are executed.
+* [ClassInitialize] - called once before running the tests of the class.
+* [ClassCleanup] - called after all tests from all classes finish.
+* [TestInitialize] - called before running each test of the class. 
+* [TestCleanup] - called after running each test of the class.
+ 
