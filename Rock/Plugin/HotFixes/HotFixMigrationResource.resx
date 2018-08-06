@@ -163,4 +163,10 @@
   <data name="_050_MigrationRollupsForV7_4_spCrm_PersonMerge" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>050_migrationrollupsforv7_4_spcrm_personmerge.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
+  <data name="_051_MigrationRollupsForV8_1_ufnCrm_GetFamilyTitle" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>051_migrationrollupsforv8_1_ufncrm_getfamilytitle.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_051_MigrationRollupsForV8_1_ufnCrm_GetFamilyTitleIncludeInactive" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>051_migrationrollupsforv8_1_ufncrm_getfamilytitleincludeinactive.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
 </root>
