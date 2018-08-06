@@ -1086,5 +1086,70 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201807191932379_Rollup_0719_Fix_Accordion_Bug", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///    &lt;doc&gt;
+        ///	    &lt;summary&gt;
+        /// 		    This stored procedure updates several attributes related to a person&apos;s
+        ///		    giving.
+        ///	    &lt;/summary&gt;
+        ///	
+        ///	    &lt;remarks&gt;	
+        ///		    For eRA we only consider adults for the critieria.
+        ///	    &lt;/remarks&gt;
+        ///	    &lt;code&gt;
+        ///		    EXEC [dbo].[spCrm_FamilyAnalyticsGiving] 
+        ///	    &lt;/code&gt;
+        ///    &lt;/doc&gt;
+        ///    */
+        ///
+        ///    ALTER PROCEDURE [dbo].[spCrm_FamilyAnalyticsGiving]
+        ///	
+        ///    AS
+        ///    BEGIN
+        ///	
+        ///	    -- configuration of the duration in weeks
+        ///	    DECLARE @GivingDurationLongWeeks int = 52        /// [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201808062254493_Rollup_0806_spCrm_FamilyAnalyticsGiving {
+            get {
+                return ResourceManager.GetString("_201808062254493_Rollup_0806_spCrm_FamilyAnalyticsGiving", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns either the FullName of the specified Person or a list of names of family members
+        ///        In the case of a group (family), it will return the names of the adults of the family. If there are no adults in the family, the names of the non-adults will be listed
+        ///        Example1 (specific person): Bob Smith 
+        ///        Example2 (family with kids): Bill and Sally Jones
+        ///        Example3 (different lastnames): Jim Jackson and Betty Sanders
+        ///        Example4 (just kids [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201808062254493_Rollup_0806_ufnCrm_GetFamilyTitle {
+            get {
+                return ResourceManager.GetString("_201808062254493_Rollup_0806_ufnCrm_GetFamilyTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns either the FullName of the specified Person or a list of names of family members
+        ///        In the case of a group (family), it will return the names of the adults of the family. If there are no adults in the family, the names of the non-adults will be listed
+        ///        Example1 (specific person): Bob Smith 
+        ///        Example2 (family with kids): Bill and Sally Jones
+        ///        Example3 (different lastnames): Jim Jackson and Betty Sanders
+        ///        Example4 (just kids [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201808062254493_Rollup_0806_ufnCrm_GetFamilyTitleIncludeInactive {
+            get {
+                return ResourceManager.GetString("_201808062254493_Rollup_0806_ufnCrm_GetFamilyTitleIncludeInactive", resourceCulture);
+            }
+        }
     }
 }

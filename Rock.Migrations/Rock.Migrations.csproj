@@ -78,6 +78,10 @@
     <Compile Include="Migrations\201807261532052_AddShowChannelInListToContentChannelType.Designer.cs">
       <DependentUpon>201807261532052_AddShowChannelInListToContentChannelType.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201808062254493_Rollup_0806.cs" />
+    <Compile Include="Migrations\201808062254493_Rollup_0806.Designer.cs">
+      <DependentUpon>201808062254493_Rollup_0806.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -369,6 +373,9 @@
     <EmbeddedResource Include="Migrations\201807261532052_AddShowChannelInListToContentChannelType.resx">
       <DependentUpon>201807261532052_AddShowChannelInListToContentChannelType.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201808062254493_Rollup_0806.resx">
+      <DependentUpon>201808062254493_Rollup_0806.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
     </EmbeddedResource>
@@ -592,6 +599,15 @@
     <Content Include="..\packages\Microsoft.SqlServer.Types.11.0.2\nativeBinaries\x86\SqlServerSpatial110.dll">
       <Link>SqlServerTypes\x86\SqlServerSpatial110.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Migrations\201808062254493_Rollup_0806_spCrm_FamilyAnalyticsGiving.sql">
+      <DependentUpon>201808062254493_Rollup_0806.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201808062254493_Rollup_0806_ufnCrm_GetFamilyTitle.sql">
+      <DependentUpon>201808062254493_Rollup_0806.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201808062254493_Rollup_0806_ufnCrm_GetFamilyTitleIncludeInactive.sql">
+      <DependentUpon>201808062254493_Rollup_0806.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.sql">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
