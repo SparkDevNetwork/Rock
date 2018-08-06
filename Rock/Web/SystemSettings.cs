@@ -41,8 +41,51 @@ namespace Rock.Web
 
         #region Properties
 
-        [DataMember]
-        private List<AttributeCache> Attributes { get; set; }
+        private readonly object _obj = new object();
+
+        /// <summary>
+        /// Gets or sets the attributes.  Used to iterate all values when merging possible merge fields
+        /// </summary>
+        /// <value>
+        /// The attributes.
+        /// </value>
+		[DataMember]
+        private List<AttributeCache> Attributes
+        {
+            get
+            {
+                var attributes = new List<AttributeCache>();
+
+                if ( _attributeIds == null )
+                {
+                    lock ( _obj )
+                    {
+                        if ( _attributeIds == null )
+                        {
+                            using ( var rockContext = new RockContext() )
+                            {
+                                _attributeIds = new AttributeService( rockContext )
+                                    .GetSystemSettings()
+                                    .Select( t => t.Id )
+                                    .ToList();
+                            }
+                        }
+                    }
+                }
+
+                foreach ( var id in _attributeIds )
+                {
+                    var attribute = AttributeCache.Get( id );
+                    if ( attribute != null )
+                    {
+                        attributes.Add( attribute );
+                    }
+                }
+
+                return attributes;
+            }
+        }
+        private List<int> _attributeIds;
 
         #endregion
 
@@ -121,18 +164,8 @@ namespace Rock.Web
                 attribute.DefaultValue = value;
             }
 
+            // NOTE: Service Layer will automatically update this Cache (see Attribute.cs UpdateCache)
             rockContext.SaveChanges();
-
-            var settings = Get();
-            var attributeCache = settings.Attributes.FirstOrDefault( a => a.Key.Equals( key, StringComparison.OrdinalIgnoreCase ) );
-            if ( attributeCache != null )
-            {
-                settings.Attributes.Remove( attributeCache );
-            }
-
-            settings.Attributes.Add( AttributeCache.Get( attribute.Id ) );
-
-            RockCache.AddOrUpdate( CacheKey, settings );
         }
 
         /// <summary>
@@ -216,17 +249,6 @@ namespace Rock.Web
         private static SystemSettings LoadSettings()
         {
             var systemSettings = new SystemSettings();
-            systemSettings.Attributes = new List<AttributeCache>();
-
-            var rockContext = new RockContext();
-            var attributeService = new Rock.Model.AttributeService( rockContext );
-
-            foreach ( Rock.Model.Attribute attribute in attributeService.GetSystemSettings() )
-            {
-                var attributeCache = AttributeCache.Get( attribute );
-                systemSettings.Attributes.Add( attributeCache );
-            }
-
             return systemSettings;
         }
 
