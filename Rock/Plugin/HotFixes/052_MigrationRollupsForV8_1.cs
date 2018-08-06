@@ -19,13 +19,13 @@ namespace Rock.Plugin.HotFixes
         public override void Up()
         {
             // MP - Fix for Inactive People showing up in Statement Generator Address when ExcludeInactive = True
-            Sql( @"
-IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[ufnCrm_GetFamilyTitleIncludeInactive]') AND type in (N'P', N'PC', N'TF'))
-DROP PROCEDURE [dbo].[ufnCrm_GetFamilyTitleIncludeInactive]
-" );
+//            Sql( @"
+//IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[ufnCrm_GetFamilyTitleIncludeInactive]') AND type in (N'P', N'PC', N'TF'))
+//DROP PROCEDURE [dbo].[ufnCrm_GetFamilyTitleIncludeInactive]
+//" );
 
-            Sql( HotFixMigrationResource._052_MigrationRollupsForV8_1_ufnCrm_GetFamilyTitleIncludeInactive );
-            Sql( HotFixMigrationResource._052_MigrationRollupsForV8_1_ufnCrm_GetFamilyTitle );
+//            Sql( HotFixMigrationResource._052_MigrationRollupsForV8_1_ufnCrm_GetFamilyTitleIncludeInactive );
+//            Sql( HotFixMigrationResource._052_MigrationRollupsForV8_1_ufnCrm_GetFamilyTitle );
         }
 
         /// <summary>
