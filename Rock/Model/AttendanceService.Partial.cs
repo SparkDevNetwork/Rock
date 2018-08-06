@@ -57,7 +57,7 @@ namespace Rock.Model
         public Attendance AddOrUpdate( int personAliasId, DateTime occurrenceDate,
                     int? groupId, int? locationId, int? scheduleId, int? campusId )
         {
-            return AddOrUpdate( personAliasId, occurrenceDate, groupId, null, null, null, null, null, null, null, null );
+            return AddOrUpdate( personAliasId, occurrenceDate, groupId, locationId, scheduleId, campusId, null, null, null, null, null );
         }
 
         /// <summary>
