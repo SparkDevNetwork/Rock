@@ -24,7 +24,7 @@
 	</code>
 </doc>
 */
-CREATE FUNCTION [dbo].[ufnCrm_GetFamilyTitleIncludeInactive] (
+ALTER FUNCTION [dbo].[ufnCrm_GetFamilyTitleIncludeInactive] (
     @PersonId INT
     ,@GroupId INT
     ,@GroupPersonIds VARCHAR(max) = NULL
