@@ -24,8 +24,8 @@ IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[ufnCr
 DROP PROCEDURE [dbo].[ufnCrm_GetFamilyTitleIncludeInactive]
 " );
 
-            Sql( HotFixMigrationResource._051_MigrationRollupsForV8_1_ufnCrm_GetFamilyTitleIncludeInactive );
-            Sql( HotFixMigrationResource._051_MigrationRollupsForV8_1_ufnCrm_GetFamilyTitle);
+            Sql( HotFixMigrationResource._052_MigrationRollupsForV8_1_ufnCrm_GetFamilyTitleIncludeInactive );
+            Sql( HotFixMigrationResource._052_MigrationRollupsForV8_1_ufnCrm_GetFamilyTitle );
         }
 
         /// <summary>
