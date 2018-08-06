@@ -82,7 +82,7 @@
                                     </div>
                                     <Rock:GroupPicker ID="gpParentGroup" runat="server" Required="false" Label="Parent Group" OnSelectItem="ddlParentGroup_SelectedIndexChanged" />
                                     <Rock:DefinedValuePicker ID="dvpGroupStatus" runat="server" Label="Status" />
-                                    <Rock:NumberBox ID="nbGroupCapacity" runat="server" Label="Group Capacity" NumberType="Integer" />
+                                    <Rock:NumberBox ID="nbGroupCapacity" runat="server" Label="Group Capacity" NumberType="Integer" MinimumValue="0"  />
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
