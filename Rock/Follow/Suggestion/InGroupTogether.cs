@@ -88,7 +88,7 @@ namespace Rock.Follow.Suggestion
                             m.Group.GroupType.Guid.Equals( groupTypeGuid.Value ) &&
                             followerPersonIds.Contains( m.PersonId ) );
 
-                    // If a specific group or security role was specifed, limit groupmembers to only those of the selected group
+                    // If a specific group or security role was specified, limit groupmembers to only those of the selected group
                     Guid? groupGuid = GetAttributeValue( followingSuggestionType, "Group" ).AsGuidOrNull();
                     if ( !groupGuid.HasValue )
                     {

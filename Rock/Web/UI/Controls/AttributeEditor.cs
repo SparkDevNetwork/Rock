@@ -503,7 +503,7 @@ namespace Rock.Web.UI.Controls
         /// Gets or sets a value indicating whether or not to show the analytics options are displayed.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if the Analuytics options are visible; otherwise, <c>false</c>.
+        ///   <c>true</c> if the Analytics options are visible; otherwise, <c>false</c>.
         /// </value>
         public bool IsAnalyticsVisible
         {

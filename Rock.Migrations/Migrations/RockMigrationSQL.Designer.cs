@@ -1069,21 +1069,6 @@ namespace Rock.Migrations.Migrations {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to -- We have secured Person.ConnectionStatus and Person.RecordStatus on the bulk upate block to follow conventions on the person edit block.
-        ///-- Now we need to add those that currently have access so they don&apos;t lose anything.
-        ///
-        ///DECLARE @BlockEntityTypeId INT = (SELECT [Id] FROM [EntityType] WHERE [Guid] = &apos;D89555CA-9AE4-4D62-8AF1-E5E463C1EF65&apos;)
-        ///DECLARE @BulkUpdateBlockId INT = (SELECT [Id] FROM [Block] WHERE [Guid] = &apos;A610AB9D-7397-4D27-8614-F6A282B78B2C&apos;)
-        ///DECLARE @RockAdminGroupId INT = (SELECT [Id] FROM  [rest of string was truncated]&quot;;.
-        /// </summary>
-        public static string _201807191932379_Rollup_0719_Add_ConnectionStatus_and_RecordStatus_Security_Actions_to_Bulk_Update {
-            get {
-                return ResourceManager.GetString("_201807191932379_Rollup_0719_Add_ConnectionStatus_and_RecordStatus_Security_Actio" +
-                        "ns_to_Bulk_Update", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to UPDATE [LavaShortCode] 
         ///SET [Markup] = &apos;{%- assign wrapperId = uniqueid -%}
         ///{%- assign firstopen = firstopen | AsBoolean -%}
@@ -1099,6 +1084,71 @@ namespace Rock.Migrations.Migrations {
         public static string _201807191932379_Rollup_0719_Fix_Accordion_Bug {
             get {
                 return ResourceManager.GetString("_201807191932379_Rollup_0719_Fix_Accordion_Bug", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///    &lt;doc&gt;
+        ///	    &lt;summary&gt;
+        /// 		    This stored procedure updates several attributes related to a person&apos;s
+        ///		    giving.
+        ///	    &lt;/summary&gt;
+        ///	
+        ///	    &lt;remarks&gt;	
+        ///		    For eRA we only consider adults for the critieria.
+        ///	    &lt;/remarks&gt;
+        ///	    &lt;code&gt;
+        ///		    EXEC [dbo].[spCrm_FamilyAnalyticsGiving] 
+        ///	    &lt;/code&gt;
+        ///    &lt;/doc&gt;
+        ///    */
+        ///
+        ///    ALTER PROCEDURE [dbo].[spCrm_FamilyAnalyticsGiving]
+        ///	
+        ///    AS
+        ///    BEGIN
+        ///	
+        ///	    -- configuration of the duration in weeks
+        ///	    DECLARE @GivingDurationLongWeeks int = 52        /// [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201808062254493_Rollup_0806_spCrm_FamilyAnalyticsGiving {
+            get {
+                return ResourceManager.GetString("_201808062254493_Rollup_0806_spCrm_FamilyAnalyticsGiving", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns either the FullName of the specified Person or a list of names of family members
+        ///        In the case of a group (family), it will return the names of the adults of the family. If there are no adults in the family, the names of the non-adults will be listed
+        ///        Example1 (specific person): Bob Smith 
+        ///        Example2 (family with kids): Bill and Sally Jones
+        ///        Example3 (different lastnames): Jim Jackson and Betty Sanders
+        ///        Example4 (just kids [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201808062254493_Rollup_0806_ufnCrm_GetFamilyTitle {
+            get {
+                return ResourceManager.GetString("_201808062254493_Rollup_0806_ufnCrm_GetFamilyTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns either the FullName of the specified Person or a list of names of family members
+        ///        In the case of a group (family), it will return the names of the adults of the family. If there are no adults in the family, the names of the non-adults will be listed
+        ///        Example1 (specific person): Bob Smith 
+        ///        Example2 (family with kids): Bill and Sally Jones
+        ///        Example3 (different lastnames): Jim Jackson and Betty Sanders
+        ///        Example4 (just kids [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201808062254493_Rollup_0806_ufnCrm_GetFamilyTitleIncludeInactive {
+            get {
+                return ResourceManager.GetString("_201808062254493_Rollup_0806_ufnCrm_GetFamilyTitleIncludeInactive", resourceCulture);
             }
         }
     }

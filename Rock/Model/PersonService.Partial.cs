@@ -181,7 +181,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Looks for a single exact match based on the critieria provided. If more than one person is found it will return null (consider using FindPersons).
+        /// Looks for a single exact match based on the criteria provided. If more than one person is found it will return null (consider using FindPersons).
         /// </summary>
         /// <param name="firstName">The first name.</param>
         /// <param name="lastName">The last name.</param>
@@ -2099,7 +2099,10 @@ namespace Rock.Model
                 typeof( Person ),
                 Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
                 groupMember.Person.Id,
-                demographicChanges );
+                demographicChanges,
+                false,
+                null,
+                rockContext.SourceOfChange);
 
             if ( isFamilyGroup )
             {
@@ -2111,7 +2114,10 @@ namespace Rock.Model
                     memberChanges,
                     group.Name,
                     typeof( Group ),
-                    groupId );
+                    groupId,
+                    false,
+                    null,
+                    rockContext.SourceOfChange);
             }
         }
 
@@ -2164,7 +2170,10 @@ namespace Rock.Model
                         typeof( Person ),
                         Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
                         person.Id,
-                        demographicChanges );
+                        demographicChanges,
+                        false,
+                        null,
+                        rockContext.SourceOfChange);
 
                     person.GivingGroupId = groupId;
                     rockContext.SaveChanges();

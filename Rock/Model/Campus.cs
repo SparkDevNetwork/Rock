@@ -126,7 +126,7 @@ namespace Rock.Model
         public int? LeaderPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the service times (Stored as a delimeted list)
+        /// Gets or sets the service times (Stored as a delimited list)
         /// </summary>
         /// <value>
         /// The service times.

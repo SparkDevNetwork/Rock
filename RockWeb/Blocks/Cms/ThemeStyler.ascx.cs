@@ -245,12 +245,19 @@ $('.js-panel-toggle').on('click', function (e) {
                 alternateFontWeights = FontAwesomeHelper.FontAwesomeIconCssWeights.Where( a => a.IsConfigurable && a.IncludedInFree && a.WeightName != selectedWeight ).ToList();
             }
 
-
-            var selectedAlternateFonts = cblFontAwesomeAlternateFonts.Items.OfType<ListItem>().Where( a => a.Selected ).Select( a => a.Value ).ToList();
-            cblFontAwesomeAlternateFonts.Items.Clear();
-            foreach ( var fontWeight in alternateFontWeights )
+            if ( alternateFontWeights.Count > 0 )
             {
-                cblFontAwesomeAlternateFonts.Items.Add( new ListItem( fontWeight.DisplayName, fontWeight.WeightName ) { Selected = selectedAlternateFonts.Contains( fontWeight.WeightName ) } );
+                cblFontAwesomeAlternateFonts.Visible = true;
+                var selectedAlternateFonts = cblFontAwesomeAlternateFonts.Items.OfType<ListItem>().Where( a => a.Selected ).Select( a => a.Value ).ToList();
+                cblFontAwesomeAlternateFonts.Items.Clear();
+                foreach ( var fontWeight in alternateFontWeights )
+                {
+                    cblFontAwesomeAlternateFonts.Items.Add( new ListItem( fontWeight.DisplayName, fontWeight.WeightName ) { Selected = selectedAlternateFonts.Contains( fontWeight.WeightName ) } );
+                }
+            }
+            else
+            {
+                cblFontAwesomeAlternateFonts.Visible = false;
             }
         }
 

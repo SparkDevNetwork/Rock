@@ -25,6 +25,8 @@ using Rock.Web.Cache;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
+using System.Text;
+using System.Web;
 
 namespace Rock.Jobs
 {
@@ -159,19 +161,35 @@ namespace Rock.Jobs
             _defaultMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null, new Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
             _noteWatchNotificationEmailGuid = dataMap.GetString( "NoteWatchNotificationEmail" ).AsGuidOrNull();
             _noteApprovalNotificationEmailGuid = dataMap.GetString( "NoteApprovalNotificationEmail" ).AsGuidOrNull();
+            var errors = new List<string>();
 
-            SendNoteWatchNotifications( context );
+            errors.AddRange(SendNoteWatchNotifications( context ));
             context.UpdateLastStatusMessage( $"{_noteWatchNotificationsSent} note watch notifications sent..." );
-            SendNoteApprovalNotifications( context );
+            errors.AddRange(SendNoteApprovalNotifications( context ));
             context.UpdateLastStatusMessage( $"{_noteWatchNotificationsSent} note watch notifications sent, and {_noteApprovalNotificationsSent} note approval notifications sent" );
+
+            if ( errors.Any() )
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine();
+                sb.Append( string.Format( "{0} Errors: ", errors.Count() ) );
+                errors.ForEach( e => { sb.AppendLine(); sb.Append( e ); } );
+                string errorMessage = sb.ToString();
+                context.Result += errorMessage;
+                var exception = new Exception( errorMessage );
+                HttpContext context2 = HttpContext.Current;
+                ExceptionLogService.LogException( exception, context2 );
+                throw exception;
+            }
         }
 
         /// <summary>
         /// Sends the note approval notifications.
         /// </summary>
         /// <param name="context">The context.</param>
-        private void SendNoteApprovalNotifications( IJobExecutionContext context )
+        private List<string> SendNoteApprovalNotifications( IJobExecutionContext context )
         {
+            var errors = new List<string>();
             List<int> noteIdsToProcessApprovalsList = new List<int>();
 
             using ( var rockContext = new RockContext() )
@@ -189,7 +207,7 @@ namespace Rock.Jobs
                 if ( !notesThatNeedApprovalNotifyQuery.Any() )
                 {
                     // there aren't any notes that haven't had approval notifications processed yet
-                    return;
+                    return errors;
                 }
 
                 noteIdsToProcessApprovalsList = notesThatNeedApprovalNotifyQuery.Select( a => a.Id ).ToList();
@@ -244,7 +262,7 @@ namespace Rock.Jobs
                 if ( !approverNotesToApproveList.Any() )
                 {
                     // nothing to do so exit
-                    return;
+                    return errors;
                 }
 
                 // send approval emails
@@ -265,7 +283,7 @@ namespace Rock.Jobs
                     {
                         var emailMessage = new RockEmailMessage( _noteApprovalNotificationEmailGuid.Value );
                         emailMessage.SetRecipients( recipients );
-                        emailMessage.Send();
+                        emailMessage.Send(out errors);
                         _noteApprovalNotificationsSent += recipients.Count();
 
                         using ( var rockUpdateContext = new RockContext() )
@@ -279,14 +297,17 @@ namespace Rock.Jobs
                     }
                 }
             }
+
+            return errors;
         }
 
         /// <summary>
         /// Sends the note watch notifications.
         /// </summary>
         /// <param name="context">The context.</param>
-        private void SendNoteWatchNotifications( IJobExecutionContext context )
+        private List<string> SendNoteWatchNotifications( IJobExecutionContext context )
         {
+            var errors = new List<string>();
             List<int> noteIdsToProcessNoteWatchesList = new List<int>();
 
             using ( var rockContext = new RockContext() )
@@ -298,7 +319,7 @@ namespace Rock.Jobs
                 if ( !noteWatchQuery.Any() )
                 {
                     // there aren't any note watches, so there is nothing to do
-                    return;
+                    return errors;
                 }
 
                 // get all notes that haven't processed notifications yet
@@ -313,7 +334,7 @@ namespace Rock.Jobs
                 if ( !notesToNotifyQuery.Any() )
                 {
                     // there aren't any notes that haven't had notifications processed yet
-                    return;
+                    return errors;
                 }
 
                 noteIdsToProcessNoteWatchesList = notesToNotifyQuery.Select( a => a.Id ).ToList();
@@ -352,7 +373,7 @@ namespace Rock.Jobs
                         {
                             var emailMessage = new RockEmailMessage( _noteWatchNotificationEmailGuid.Value );
                             emailMessage.SetRecipients( recipients );
-                            emailMessage.Send();
+                            emailMessage.Send(out errors);
                             _noteWatchNotificationsSent += recipients.Count();
                         }
                     }
@@ -366,6 +387,7 @@ namespace Rock.Jobs
                 // use BulkUpdate to mark all the notes that we processed to NotificationsSent = true
                 rockUpdateContext.BulkUpdate( notesToMarkNotified, n => new Note { NotificationsSent = true } );
             }
+            return errors;
         }
 
         /// <summary>
@@ -382,7 +404,7 @@ namespace Rock.Jobs
 
             if ( note == null || !note.EntityId.HasValue )
             {
-                // shouldnt' happen
+                // shouldn't' happen
                 return;
             }
 

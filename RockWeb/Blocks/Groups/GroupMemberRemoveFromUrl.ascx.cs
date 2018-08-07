@@ -45,7 +45,7 @@ namespace RockWeb.Blocks.Groups
     [CodeEditorField( "Not In Group Message", "Lava template to display when person is not in the group.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, true, @"<div class='alert alert-warning'>
     {{ Person.NickName }} was not in the group '{{ Group.Name }}'.
 </div>", order: 2 )]
-    [BooleanField("Warn When Not In Group", "Determines if the 'Not In Group Message'should be shown if the person is not in the group. Otherwise the success message will be shown", true, order: 3)]
+    [BooleanField("Warn When Not In Group", "Determines if the 'Not In Group Message' should be shown if the person is not in the group. Otherwise the success message will be shown", true, order: 3)]
     [BooleanField("Inactivate Instead of Remove", "Inactivates the person in the group instead of removing them.", false, key:"Inactivate", order: 4)]
     public partial class GroupMemberRemoveFromUrl : Rock.Web.UI.RockBlock
     {
@@ -89,7 +89,7 @@ namespace RockWeb.Blocks.Groups
             if ( !Page.IsPostBack )
             {
                 RockContext rockContext = new RockContext();
-                
+
                 Group group = null;
                 Guid personGuid = Guid.Empty;
 
@@ -162,7 +162,7 @@ namespace RockWeb.Blocks.Groups
                         {
                             groupMemberService.Delete( groupMember );
                         }
-                        
+
                         rockContext.SaveChanges();
                     }
 

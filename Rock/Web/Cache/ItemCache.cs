@@ -34,7 +34,7 @@ namespace Rock.Web.Cache
         private const string _AllRegion = "AllItems";
 
         // This static field will be different for each generic type. See (https://www.jetbrains.com/help/resharper/2018.1/StaticMemberInGenericType.html)
-        // This is intentional behaviour in this case.
+        // This is intentional behavior in this case.
         private static readonly object _obj = new object();
 
         private static readonly string KeyPrefix = $"{typeof( T ).Name}";
@@ -43,7 +43,7 @@ namespace Rock.Web.Cache
         #region Protected Methods
 
         /// <summary>
-        /// Returns the key prefixed with the type of ojbect being cached.
+        /// Returns the key prefixed with the type of object being cached.
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>

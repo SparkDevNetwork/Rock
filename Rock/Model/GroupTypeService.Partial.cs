@@ -155,7 +155,7 @@ namespace Rock.Model
         {
             return this.Context.Database.SqlQuery<GroupTypePath>(
                 @"
-                -- Get GroupType association heirarchy with GroupType ancestor path information
+                -- Get GroupType association hierarchy with GroupType ancestor path information
                 WITH CTE (ChildGroupTypeId,GroupTypeId, HierarchyPath) AS
                 (
                       SELECT [ChildGroupTypeId], [GroupTypeId], CONVERT(nvarchar(500),'')

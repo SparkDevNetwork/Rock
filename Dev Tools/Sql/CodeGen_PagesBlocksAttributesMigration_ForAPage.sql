@@ -9,7 +9,7 @@ begin
 
 -- This will generate migrations for *all* the stuff on this specific page only, not just the new stuff
 -- Set this to a pageid that you want to specifically generate all the migration code for, then you can edit out the stuff that you don't need
-DECLARE @PageId int = 492
+DECLARE @PageId int = 1038
 
 IF OBJECT_ID('tempdb..#codeTable') IS NOT NULL
     DROP TABLE #codeTable
@@ -25,8 +25,7 @@ create table #codeTable (
     SELECT 
 		'            // ' + ISNULL('Page: ' + p.InternalName,'') +
         @crlf + 
-		'            RockMigrationHelper.AddPage(' +
-		' true, "' +
+		'            RockMigrationHelper.AddPage("' +
         ISNULL(CONVERT( nvarchar(50), [pp].[Guid]),'') + '","'+ 
         CONVERT( nvarchar(50), [l].[Guid]) + '","'+ 
         [p].[InternalName]+  '","'+  
@@ -150,14 +149,15 @@ create table #codeTable (
     from [AttributeValue] [av]
     join Block b on b.Id = av.EntityId
     join Attribute a on a.id = av.AttributeId
-    left outer join [Page] [p] on [p].[Id] = [b].[PageId]
+	inner join EntityType AS et ON et.Id = a.EntityTypeId
+    inner join [Page] [p] on [p].[Id] = [b].[PageId]
 	left outer join [Layout] [l] on [l].[Id] = [b].[LayoutId]
 	left outer join [Layout] [pl] on [pl].[Id] = [p].[LayoutId]
 	join [site] [s] on [s].[Id] = [l].[siteId] or [s].[Id] = [pl].[siteId]
     where b.[Id] in (
 		SELECT b.[Id]
 		FROM [block] b
-		WHERE b.[PageId] = @PageId
+		WHERE b.[PageId] = @PageId AND (et.Name = 'Rock.Model.Block')
 	)
     order by b.Id
 

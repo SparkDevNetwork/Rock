@@ -191,7 +191,7 @@ namespace Rock.Model
         public List<HistorySummary> GetHistorySummary( IQueryable<History> historyQry )
         {
             // group the history into into summaries of records that were saved at the same time (for the same Entity, Category, etc)
-            var historySummaryQry = historyQry
+            var historySummaryQry = historyQry.Where( a => a.CreatedDateTime.HasValue )
                 .GroupBy( a => new
                 {
                     CreatedDateTime = a.CreatedDateTime.Value,
@@ -834,12 +834,12 @@ namespace Rock.Model
         /// <param name="relatedEntityId">The related entity identifier.</param>
         /// <param name="commitSave">if set to <c>true</c> [commit save].</param>
         /// <param name="modifiedByPersonAliasId">The modified by person alias identifier.</param>
-        /// <param name="sourceOfCharge">The source of charge.</param>
-        public static void SaveChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, History.HistoryChangeList changes, string caption, Type relatedModelType, int? relatedEntityId, bool commitSave = true, int? modifiedByPersonAliasId = null, string sourceOfCharge = null )
+        /// <param name="sourceOfChange">The source of change to be recorded on the history record. If this is not provided the RockContext source of change will be used instead.</param>
+        public static void SaveChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, History.HistoryChangeList changes, string caption, Type relatedModelType, int? relatedEntityId, bool commitSave = true, int? modifiedByPersonAliasId = null, string sourceOfChange = null )
         {
             if ( changes.Any() )
             {
-                changes.ForEach( a => a.SourceOfChange = sourceOfCharge );
+                changes.ForEach( a => a.SourceOfChange = sourceOfChange ?? rockContext.SourceOfChange );
                 AddChanges( rockContext, modelType, categoryGuid, entityId, changes, caption, relatedModelType, relatedEntityId, modifiedByPersonAliasId );
                 if ( commitSave )
                 {

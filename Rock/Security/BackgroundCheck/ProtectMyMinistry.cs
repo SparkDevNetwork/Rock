@@ -69,7 +69,7 @@ namespace Rock.Security.BackgroundCheck
         ///     RequestMessage:         Any error messages returned by PMM request
         ///     ReportStatus:           The report status returned by PMM
         ///     ReportLink:             The location of the background report on PMM server
-        ///     ReportRecommendation:   PMM's recomendataion
+        ///     ReportRecommendation:   PMM's recommendation
         ///     Report (BinaryFile):    The downloaded background report
         /// </remarks>
         public override bool SendRequest( RockContext rockContext, Model.Workflow workflow,

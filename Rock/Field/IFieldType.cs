@@ -198,6 +198,14 @@ namespace Rock.Field
         Control FilterControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode );
 
         /// <summary>
+        /// Returns the ComparisonType options that the field supports
+        /// </summary>
+        /// <value>
+        /// The type of the filter comparison.
+        /// </value>
+        Rock.Model.ComparisonType FilterComparisonType { get; }
+
+        /// <summary>
         /// Determines whether this filter type has a FilterControl
         /// </summary>
         /// <returns></returns>

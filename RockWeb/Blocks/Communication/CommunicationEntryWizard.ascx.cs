@@ -250,8 +250,8 @@ namespace RockWeb.Blocks.Communication
                 {
                     if ( !communication.CommunicationTemplateId.HasValue || !communication.CommunicationTemplate.SupportsEmailWizard() )
                     {
-                        // If this communication was previously created, but doesn't have a CommunicationTemplateId or uses a template that doesn't suport the EmailWizard, 
-                        // it is a communication (or a copy of a communication) that was created created using the 'Simple Editor' or the editor prior to v7.
+                        // If this communication was previously created, but doesn't have a CommunicationTemplateId or uses a template that doesn't support the EmailWizard, 
+                        // it is a communication (or a copy of a communication) that was created using the 'Simple Editor' or the editor prior to v7.
                         // So, if they use the wizard, the main Html Content will be reset when they get to the Select Template step
                         // since the wizard requires that the communication uses a Template that supports the Email Wizard.
                         // So, if this is the case, warn them and explain that they can continue with the wizard but start over on the content,
@@ -272,7 +272,7 @@ namespace RockWeb.Blocks.Communication
                 bool isApprovalEditor = communication.Status == CommunicationStatus.PendingApproval && editingApproved;
                 if ( isAuthorizedEditor || isCreator || isApprovalEditor )
                 {
-                    // communication is either new or ok to edit
+                    // communication is either new or OK to edit
                 }
                 else
                 {
@@ -970,7 +970,7 @@ namespace RockWeb.Blocks.Communication
 
             if ( !rcwMediumType.Visible )
             {
-                // if only one MediumType is availalbe, automatically set the MediumType to it
+                // if only one MediumType is available, automatically set the MediumType to it
                 if ( emailTransportEnabled )
                 {
                     hfMediumType.Value = CommunicationType.Email.ConvertToInt().ToString();
@@ -1218,7 +1218,7 @@ namespace RockWeb.Blocks.Communication
 
             hfShowAdditionalFields.Value = ( !string.IsNullOrEmpty( communicationTemplate.ReplyToEmail ) || !string.IsNullOrEmpty( communicationTemplate.CCEmails ) || !string.IsNullOrEmpty( communicationTemplate.BCCEmails ) ).ToTrueFalse().ToLower();
 
-            //  set the subject from the template even if it is null so we don't accidently keep a subject doesn't make sense for the newly selected template
+            //  set the subject from the template even if it is null so we don't accidentally keep a subject doesn't make sense for the newly selected template
             tbEmailSubject.Text = communicationTemplate.Subject;
 
             // if this communication already has an Email Content specified, since they picked (or re-picked) a template, 

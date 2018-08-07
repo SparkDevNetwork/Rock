@@ -455,7 +455,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the javasscript that will get executed after the ace editor is done initializing
+        /// Gets or sets the javascript that will get executed after the ace editor is done initializing
         /// </summary>
         /// <value>
         /// The on load complete script.

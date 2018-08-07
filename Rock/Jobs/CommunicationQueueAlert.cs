@@ -26,6 +26,7 @@ using Rock.Model;
 using Rock.Data;
 using Rock.Communication;
 using Rock.Web.Cache;
+using System.Text;
 
 namespace Rock.Jobs
 {
@@ -80,7 +81,21 @@ namespace Rock.Jobs
                     {
                         emailMessage.AddRecipient( new RecipientData( email, mergeFields ) );
                     }
-                    emailMessage.Send();
+
+                    var errors = new List<string>();
+                    emailMessage.Send( out errors );
+
+                    context.Result = string.Format( "Notified about {0} queued communications. {1} errors encountered.", communications.Count, errors.Count );
+                    if ( errors.Any() )
+                    {
+                        StringBuilder sb = new StringBuilder();
+                        sb.AppendLine();
+                        sb.Append( "Errors: " );
+                        errors.ForEach( e => { sb.AppendLine(); sb.Append( e ); } );
+                        string errorMessage = sb.ToString();
+                        context.Result += errorMessage;
+                        throw new Exception( errorMessage );
+                    }
                 }
             }
         }

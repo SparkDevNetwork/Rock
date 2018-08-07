@@ -59,7 +59,6 @@ namespace Rock.Jobs
         {
             JobDataMap dataMap = context.JobDetail.JobDataMap;
 
-            // run a SQL query to do something
             var workflowTypeGuids = dataMap.GetString( "WorkflowTypes" ).Split(',').Select(Guid.Parse).ToList();
             int? expirationAge = dataMap.GetString( "ExpirationAge" ).AsIntegerOrNull();
             string closeStatus = dataMap.GetString( "CloseStatus" );
@@ -85,6 +84,8 @@ namespace Rock.Jobs
 
                 rockContext.SaveChanges();
             }
+
+            context.Result = string.Format("{0} workflows were closed", workflows.Count);
         }
 
     }

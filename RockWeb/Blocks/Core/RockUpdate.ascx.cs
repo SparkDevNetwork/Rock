@@ -401,7 +401,7 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
-        /// Suggested approach to check which version of the .Net framework is intalled when using version 4.5 or later
+        /// Suggested approach to check which version of the .Net framework is installed when using version 4.5 or later
         /// as per https://msdn.microsoft.com/en-us/library/hh925568(v=vs.110).aspx.
         /// </summary>
         /// <returns>a string containing the human readable version of the .Net framework</returns>
