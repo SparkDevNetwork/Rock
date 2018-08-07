@@ -1,4 +1,4 @@
-// <copyright>
+ï»¿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -44,7 +44,7 @@ WHERE [Message] LIKE '%<!-- prevent Gmail on iOS font size manipulation -->
   <div style=""display:none; white-space:nowrap; font:15px courier; line-height:0;""> &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; </div>%'"
  );
 
-            // add ServiceJob: Data Migrations for v7.4
+            // add ServiceJob: Data Migrations for v7.4 (schedule for 9pm to avoid conflict with AppPoolRecycle)
             // Code Generated using Rock\Dev Tools\Sql\CodeGen_ServiceJobWithAttributes_ForAJob.sql
             Sql( @"IF NOT EXISTS( SELECT [Id] FROM [ServiceJob] WHERE [Class] = 'Rock.Jobs.PostV74DataMigrations' AND [Guid] = 'FF760EF9-66BD-4A4D-AF95-749AA789ACAF' )
             BEGIN
@@ -63,7 +63,7 @@ WHERE [Message] LIKE '%<!-- prevent Gmail on iOS font size manipulation -->
                   ,'Data Migrations for v7.4'
                   ,'This job will take care of any data migrations that need to occur after updating to v74. After all the operations are done, this job will delete itself.'
                   ,'Rock.Jobs.PostV74DataMigrations'
-                  ,'0 0 3 1/1 * ? *'
+                  ,'0 0 21 1/1 * ? *'
                   ,1
                   ,'FF760EF9-66BD-4A4D-AF95-749AA789ACAF'
                   );
@@ -185,7 +185,7 @@ WHERE [Message] LIKE '%<!-- prevent Gmail on iOS font size manipulation -->
             Sql( @"UPDATE [LavaShortCode]
                 SET [Documentation] = '<p>
     Adding parallax effects (when the background image of a section scrolls at a different speed than the rest of the page) can greatly enhance the 
-    aesthetics of the page. Until now, this effect has taken quite a bit of CSS know how to achieve. Now it’s as simple as:
+    aesthetics of the page. Until now, this effect has taken quite a bit of CSS know how to achieve. Now itâ€™s as simple as:
 </p>
 <pre>{[ parallax image:''http://cdn.wonderfulengineering.com/wp-content/uploads/2014/09/star-wars-wallpaper-4.jpg'' contentpadding:''20px'' ]}
     &lt;h1&gt;Hello World&lt;/h1&gt;
@@ -197,17 +197,17 @@ WHERE [Message] LIKE '%<!-- prevent Gmail on iOS font size manipulation -->
 </p>
     
 <ul>
-    <li><strong>image</strong> (required) – A valid URL to the image that should be used as the background.</li><li><b>height</b> (200px) – The minimum height of the content. This is useful if you want your section to not have any 
+    <li><strong>image</strong> (required) â€“ A valid URL to the image that should be used as the background.</li><li><b>height</b> (200px) â€“ The minimum height of the content. This is useful if you want your section to not have any 
     content, but instead be just the parallax image.</li>
     <li><strong>videourl</strong> - This is the URL to use if you''d like a video background.</li>
-    <li><strong>speed</strong> (50) – the speed that the background should scroll. The value of 0 means the image will be fixed in place, the value of 100 would make the background scroll quick up as the page scrolls down, while the value of -100 would scroll quickly in the opposite direction.</li>
-    <li><strong>zindex</strong> (1) – The z-index of the background image. Depending on your design you may need to adjust the z-index of the parallax image. </li>
+    <li><strong>speed</strong> (50) â€“ the speed that the background should scroll. The value of 0 means the image will be fixed in place, the value of 100 would make the background scroll quick up as the page scrolls down, while the value of -100 would scroll quickly in the opposite direction.</li>
+    <li><strong>zindex</strong> (1) â€“ The z-index of the background image. Depending on your design you may need to adjust the z-index of the parallax image. </li>
     <li><strong>position</strong> (center center) - This is analogous to the background-position css property. Specify coordinates as top, bottom, right, left, center, or pixel values (e.g. -10px 0px). The parallax image will be positioned as close to these values as possible while still covering the target element.</li>
-    <li><strong>contentpadding</strong> (0) – The amount of padding you’d like to have around your content. You can provide any valid CSS padding value. For example, the value ‘200px 20px’ would give you 200px top and bottom and 20px left and right.</li>
-    <li><strong>contentcolor</strong> (#fff = white) – The font color you’d like to use for your content. This simplifies the styling of your content.</li>
-    <li><strong>contentalign</strong> (center) – The alignment of your content inside of the section. </li>
-    <li><strong>noios</strong> (false) – Disables the effect on iOS devices. </li>
-    <li><strong>noandriod</strong> (center) – Disables the effect on driods. </li>
+    <li><strong>contentpadding</strong> (0) â€“ The amount of padding youâ€™d like to have around your content. You can provide any valid CSS padding value. For example, the value â€˜200px 20pxâ€™ would give you 200px top and bottom and 20px left and right.</li>
+    <li><strong>contentcolor</strong> (#fff = white) â€“ The font color youâ€™d like to use for your content. This simplifies the styling of your content.</li>
+    <li><strong>contentalign</strong> (center) â€“ The alignment of your content inside of the section. </li>
+    <li><strong>noios</strong> (false) â€“ Disables the effect on iOS devices. </li>
+    <li><strong>noandriod</strong> (center) â€“ Disables the effect on driods. </li>
 </ul>
 <p>Note: Due to the javascript requirements of this shortcode, you will need to do a full page reload before changes to the shortcode appear on your page.</p>'
                 WHERE [Guid] = '4B6452EF-6FEA-4A66-9FB9-1A7CCE82E7A4'" );
