@@ -235,10 +235,10 @@ namespace Rock.Reporting
             }
             catch
             {
-                values = new Dictionary<string, string>();
+                return string.Empty;
             }
 
-            if ( values.ContainsKey( attributeKey ) )
+            if ( values != null && values.ContainsKey( attributeKey ) )
             {
                 return values[attributeKey];
             }
