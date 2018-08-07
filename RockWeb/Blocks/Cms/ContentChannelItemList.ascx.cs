@@ -316,8 +316,8 @@ namespace RockWeb.Blocks.Cms
                 {
                     contentItemAssociationService.DeleteRange( contentItem.ChildItems );
                     contentItemAssociationService.DeleteRange( contentItem.ParentItems );
-                    contentItemService.Delete( contentItem );
                     contentItemSlugService.DeleteRange( contentItem.ContentChannelItemSlugs );
+                    contentItemService.Delete( contentItem );
                     rockContext.SaveChanges();
                 } );
             }
