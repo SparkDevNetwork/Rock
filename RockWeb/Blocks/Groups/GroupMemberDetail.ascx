@@ -23,7 +23,7 @@
             <div class="panel-body">
 
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
-                <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                 <asp:CustomValidator ID="cvGroupMember" runat="server" Display="None" />
                 <Rock:NotificationBox ID="nbErrorMessage" runat="server" NotificationBoxType="Danger" />
 
@@ -127,7 +127,7 @@
 
         <Rock:ModalDialog ID="mdMoveGroupMember" runat="server" Title="Move Group Member" ValidationGroup="vgMoveGroupMember" Visible="false" CancelLinkVisible="false">
             <Content>
-                <asp:ValidationSummary ID="vsMoveGroupMember" runat="server" ValidationGroup="vgMoveGroupMember" HeaderText="Please Correct the Following" CssClass="alert alert-validation"  />
+                <asp:ValidationSummary ID="vsMoveGroupMember" runat="server" ValidationGroup="vgMoveGroupMember" HeaderText="Please correct the following:" CssClass="alert alert-validation"  />
                 <div class="row">
                     <div class="col-md-12">
                         <Rock:RockLiteral ID="lCurrentGroup" runat="server" Label="Current Group" />

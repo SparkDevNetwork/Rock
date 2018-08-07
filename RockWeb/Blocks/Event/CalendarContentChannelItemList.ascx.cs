@@ -29,7 +29,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -445,7 +445,7 @@ namespace RockWeb.Blocks.Event
                     }
 
                     // Add attribute columns
-                    int entityTypeId = CacheEntityType.Get( typeof( Rock.Model.ContentChannelItem ) ).Id;
+                    int entityTypeId = EntityTypeCache.Get( typeof( Rock.Model.ContentChannelItem ) ).Id;
                     string qualifier = contentChannel.ContentChannelTypeId.ToString();
                     foreach ( var attributeCache in new AttributeService( rockContext ).GetByEntityTypeQualifier(entityTypeId, "ContentChannelTypeId", qualifier, false )
                         .Where( a => a.IsGridColumn )
@@ -534,7 +534,7 @@ namespace RockWeb.Blocks.Event
 
                             gItems.ObjectList = new Dictionary<string, object>();
                             items.ForEach( i => gItems.ObjectList.Add( i.Id.ToString(), i ) );
-                            gItems.EntityTypeId = CacheEntityType.Get<ContentChannelItem>().Id;
+                            gItems.EntityTypeId = EntityTypeCache.Get<ContentChannelItem>().Id;
 
                             gItems.DataSource = items.Select( i => new
                             {

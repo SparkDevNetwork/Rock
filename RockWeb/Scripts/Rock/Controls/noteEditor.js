@@ -55,7 +55,7 @@
                 }
                 else if (editNote) {
                     // display the 'noteEditor' in place of the currentNote
-                    $.get(Rock.settings.get('baseUrl') + 'api/notes/' + currentNoteId, function (noteData) {
+                  $.get(Rock.settings.get('baseUrl') + 'api/notes/GetNoteEditData?noteId=' + currentNoteId, function (noteData) {
                         $noteEditor.find('.js-parentnoteid').val(noteData.ParentNoteId);
                         $noteEditor.find('.js-notetext').val(noteData.Text);
                         $noteEditor.find('.js-noteprivate').prop('checked', noteData.IsPrivateNote);

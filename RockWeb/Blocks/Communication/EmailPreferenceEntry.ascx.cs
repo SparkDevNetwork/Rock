@@ -26,7 +26,7 @@ using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -168,7 +168,7 @@ We have saved your unsubscribed you from the following lists:
                                 }
                             case EmailPreference.DoNotEmail:
                                 {
-                                    if ( _person.RecordStatusValueId != CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ).Id )
+                                    if ( _person.RecordStatusValueId != DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ).Id )
                                     {
                                         if ( rbEmailPreferenceDoNotEmail.Visible )
                                         {
@@ -265,19 +265,19 @@ We have saved your unsubscribed you from the following lists:
 
                     if ( rbNotInvolved.Checked )
                     {
-                        var newRecordStatus = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE );
+                        var newRecordStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE );
                         if ( newRecordStatus != null )
                         {
                             person.RecordStatusValueId = newRecordStatus.Id;
                         }
 
-                        var newInactiveReason = CacheDefinedValue.Get( ddlInactiveReason.SelectedValue.AsInteger() );
+                        var newInactiveReason = DefinedValueCache.Get( ddlInactiveReason.SelectedValue.AsInteger() );
                         if ( newInactiveReason != null )
                         {
                             person.RecordStatusReasonValueId = newInactiveReason.Id;
                         }
 
-                        var newReviewReason = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_REVIEW_REASON_SELF_INACTIVATED );
+                        var newReviewReason = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_REVIEW_REASON_SELF_INACTIVATED );
                         if ( newReviewReason != null )
                         {
                             person.ReviewReasonValueId = newReviewReason.Id;
@@ -293,7 +293,7 @@ We have saved your unsubscribed you from the following lists:
                     }
                     else
                     {
-                        var newRecordStatus = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE );
+                        var newRecordStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE );
                         if ( newRecordStatus != null )
                         {
                             person.RecordStatusValueId = newRecordStatus.Id;
@@ -434,7 +434,7 @@ We have saved your unsubscribed you from the following lists:
                 var groupMemberService = new GroupMemberService( rockContext );
                 var categoryService = new CategoryService( rockContext );
 
-                int communicationListGroupTypeId = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST.AsGuid() ).Id;
+                int communicationListGroupTypeId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST.AsGuid() ).Id;
 
                 // Get a list of all the Active CommunicationLists that the person is an active member of
                 var communicationListQry = groupService.Queryable()
@@ -511,7 +511,7 @@ We have saved your unsubscribed you from the following lists:
             // NOTE: OnLoad will set the default selection based the communication.ListGroup and/or the person's current email preference
 
             var excludeReasons = GetAttributeValue( "ReasonstoExclude" ).SplitDelimitedValues( false ).ToList();
-            var ds = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON.AsGuid() ).DefinedValues
+            var ds = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON.AsGuid() ).DefinedValues
                 .Where( v => !excludeReasons.Contains( v.Value, StringComparer.OrdinalIgnoreCase ) )
                 .Select( v => new
                 {

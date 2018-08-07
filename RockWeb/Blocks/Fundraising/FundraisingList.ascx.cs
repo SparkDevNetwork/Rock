@@ -25,7 +25,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using Rock.Web.UI;
@@ -102,7 +102,7 @@ namespace RockWeb.Blocks.Fundraising
         {
             RockContext rockContext = new RockContext();
             GroupService groupService = new GroupService( rockContext );
-            var groupTypeIdFundraising = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FUNDRAISINGOPPORTUNITY.AsGuid() ).Id;
+            var groupTypeIdFundraising = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FUNDRAISINGOPPORTUNITY.AsGuid() ).Id;
             var fundraisingGroupTypeIdList = new GroupTypeService( rockContext ).Queryable().Where( a => a.Id == groupTypeIdFundraising || a.InheritedGroupTypeId == groupTypeIdFundraising ).Select( a => a.Id ).ToList();
 
             var fundraisingGroupList = groupService.Queryable()

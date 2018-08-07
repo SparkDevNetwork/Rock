@@ -27,7 +27,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -200,7 +200,7 @@ namespace RockWeb.Blocks.Reporting
         {
             if ( _updatePage )
             {
-                var pageCache = CachePage.Get( RockPage.PageId );
+                var pageCache = PageCache.Get( RockPage.PageId );
                 if ( pageCache != null &&
                     ( pageCache.PageTitle != tbName.Text || pageCache.Description != tbDesc.Text ) )
                 {
@@ -213,7 +213,7 @@ namespace RockWeb.Blocks.Reporting
                     page.Description = tbDesc.Text;
                     rockContext.SaveChanges();
                     
-                    pageCache = CachePage.Get( RockPage.PageId );
+                    pageCache = PageCache.Get( RockPage.PageId );
 
                     var breadCrumb = RockPage.BreadCrumbs.Where( c => c.Url == RockPage.PageReference.BuildUrl() ).FirstOrDefault();
                     if ( breadCrumb != null )
@@ -379,7 +379,7 @@ namespace RockWeb.Blocks.Reporting
 
             if ( _updatePage )
             {
-                var pageCache = CachePage.Get( RockPage.PageId );
+                var pageCache = PageCache.Get( RockPage.PageId );
                 tbName.Text = pageCache != null ? pageCache.PageTitle : string.Empty;
                 tbDesc.Text = pageCache != null ? pageCache.Description : string.Empty;
             }
@@ -422,7 +422,7 @@ namespace RockWeb.Blocks.Reporting
             }
 
             mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
-            mergeFields.Add( "CurrentPage", this.CachePage );
+            mergeFields.Add( "CurrentPage", this.PageCache );
 
             return mergeFields;
         }
@@ -568,7 +568,7 @@ namespace RockWeb.Blocks.Reporting
                                 
                                 if ( personReport )
                                 {
-                                    grid.EntityTypeId = CacheEntityType.GetId<Person>();
+                                    grid.EntityTypeId = EntityTypeCache.GetId<Person>();
                                 }
 
                                 grid.DataBind();

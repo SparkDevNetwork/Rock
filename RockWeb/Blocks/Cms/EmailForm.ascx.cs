@@ -29,7 +29,7 @@ using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Cms
@@ -139,14 +139,14 @@ namespace RockWeb.Blocks.Cms
             string fromEmail = GetAttributeValue( "FromEmail" );
             if ( string.IsNullOrWhiteSpace( fromEmail ) )
             {
-                SetAttributeValue( "FromEmail", CacheGlobalAttributes.Value( "OrganizationEmail" ) );
+                SetAttributeValue( "FromEmail", GlobalAttributesCache.Value( "OrganizationEmail" ) );
                 SaveAttributeValues();
             }
 
             string fromName = GetAttributeValue( "FromName" );
             if ( string.IsNullOrWhiteSpace( fromEmail ) )
             {
-                SetAttributeValue( "FromName", CacheGlobalAttributes.Value( "OrganizationName" ) );
+                SetAttributeValue( "FromName", GlobalAttributesCache.Value( "OrganizationName" ) );
                 SaveAttributeValues();
             }
 
@@ -247,8 +247,8 @@ namespace RockWeb.Blocks.Cms
         private void SendEmail()
         {
             // ensure this is not from a bot
-            string[] bots = CacheGlobalAttributes.Value( "EmailExceptionsFilter" ).Split( '|' );
-            string test = CacheGlobalAttributes.Value( "EmailExceptionsFilter" );
+            string[] bots = GlobalAttributesCache.Value( "EmailExceptionsFilter" ).Split( '|' );
+            string test = GlobalAttributesCache.Value( "EmailExceptionsFilter" );
             var serverVarList = Context.Request.ServerVariables;
             bool isBot = false;
 
@@ -298,7 +298,7 @@ namespace RockWeb.Blocks.Cms
                 for ( int i = 0; i < Request.Files.Count; i++ )
                 {
                     var uploadedFile = Request.Files[i];
-                    if ( uploadedFile.ContentLength > 0 && uploadedFile.FileName.IsNotNullOrWhitespace() )
+                    if ( uploadedFile.ContentLength > 0 && uploadedFile.FileName.IsNotNullOrWhiteSpace() )
                     {
                         var binaryFile = new BinaryFile();
                         binaryFileService.Add( binaryFile );

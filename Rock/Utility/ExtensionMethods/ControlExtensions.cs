@@ -20,6 +20,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Web.UI.WebControls;
+using Rock.Web.Cache;
 
 namespace Rock
 {
@@ -167,7 +168,7 @@ namespace Rock
         public static WebControl AddCssClass( this WebControl webControl, string className )
         {
             // if the className is blank, don't do anything
-            if ( className.IsNotNullOrWhitespace() )
+            if ( className.IsNotNullOrWhiteSpace() )
             {
                 // if the webControl doesn't have a CssClass yet, simply set it to the className
                 if ( webControl.CssClass.IsNullOrWhiteSpace() )
@@ -445,7 +446,8 @@ namespace Rock
         /// <param name="listControl">The list control.</param>
         /// <param name="insertBlankOption">if set to <c>true</c> [insert blank option].</param>
         /// <param name="ignoreTypes">any enums that should not be included in the list control</param>
-        public static void BindToEnum<T>( this ListControl listControl, bool insertBlankOption = false, T[] ignoreTypes = null )
+        /// <param name="sortAlpha">Sort the collection by value in alpha asc, otherwise sorts by enum order.</param>
+        public static void BindToEnum<T>( this ListControl listControl, bool insertBlankOption = false, T[] ignoreTypes = null, bool sortAlpha = false )
         {
             var enumType = typeof( T );
             var dictionary = new Dictionary<int, string>();
@@ -470,7 +472,15 @@ namespace Rock
                 }
             }
 
-            listControl.DataSource = dictionary;
+            if (sortAlpha)
+            {
+                listControl.DataSource = dictionary.OrderBy( x => x.Value );
+            }
+            else
+            {
+                listControl.DataSource = dictionary;
+            }
+
             listControl.DataTextField = "Value";
             listControl.DataValueField = "Key";
             listControl.DataBind();
@@ -488,20 +498,7 @@ namespace Rock
         /// <param name="definedType">Type of the defined.</param>
         /// <param name="insertBlankOption">if set to <c>true</c> [insert blank option].</param>
         /// <param name="useDescriptionAsText">if set to <c>true</c> [use description as text].</param>
-        [Obsolete]
-        public static void BindToDefinedType( this ListControl listControl, Web.Cache.DefinedTypeCache definedType, bool insertBlankOption = false, bool useDescriptionAsText = false )
-        {
-            BindToDefinedType( listControl, Cache.CacheDefinedType.Get( definedType.Id ), insertBlankOption, useDescriptionAsText );
-        }
-
-        /// <summary>
-        /// Binds to the values of a definedType using the definedValue's Id as the listitem value
-        /// </summary>
-        /// <param name="listControl">The list control.</param>
-        /// <param name="definedType">Type of the defined.</param>
-        /// <param name="insertBlankOption">if set to <c>true</c> [insert blank option].</param>
-        /// <param name="useDescriptionAsText">if set to <c>true</c> [use description as text].</param>
-        public static void BindToDefinedType( this ListControl listControl, Cache.CacheDefinedType definedType, bool insertBlankOption = false, bool useDescriptionAsText = false )
+        public static void BindToDefinedType( this ListControl listControl, DefinedTypeCache definedType, bool insertBlankOption = false, bool useDescriptionAsText = false )
         {
             var ds = definedType.DefinedValues
                 .Select( v => new
@@ -527,11 +524,11 @@ namespace Rock
         /// Returns the Value as Int or null if Value is <see cref="T:Rock.Constants.None"/>.
         /// </summary>
         /// <param name="listControl">The list control.</param>
-        /// <param name="NoneAsNull">if set to <c>true</c>, will return Null if SelectedValue = <see cref="T:Rock.Constants.None" /> </param>
+        /// <param name="noneAsNull">if set to <c>true</c>, will return Null if SelectedValue = <see cref="T:Rock.Constants.None" /> </param>
         /// <returns></returns>
-        public static int? SelectedValueAsInt( this ListControl listControl, bool NoneAsNull = true )
+        public static int? SelectedValueAsInt( this ListControl listControl, bool noneAsNull = true )
         {
-            if ( NoneAsNull )
+            if ( noneAsNull )
             {
                 if ( listControl == null || listControl.SelectedValue.Equals( Rock.Constants.None.Id.ToString() ) )
                 {

@@ -24,7 +24,7 @@ using System.Linq;
 using System.Web.UI.WebControls;
 
 using Rock;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -115,38 +115,6 @@ namespace RockWeb.Blocks.Cms
             nbRedisSettings.Visible = false;
         }
 
-        private bool RestartWebApplication()
-        {
-            bool Error = false;
-            try
-            {
-                // *** This requires full trust so this will fail
-                // *** in many scenarios
-                System.Web.HttpRuntime.UnloadAppDomain();
-            }
-            catch
-            {
-                Error = true;
-            }
-
-            if ( !Error )
-                return true;
-
-            // *** Couldn't unload with Runtime - let's try modifying web.config
-            string ConfigPath = System.Web.HttpContext.Current.Request.PhysicalApplicationPath + "\\web.config";
-
-            try
-            {
-                System.IO.File.SetLastWriteTimeUtc( ConfigPath, DateTime.UtcNow );
-            }
-            catch
-            {
-                return false;
-            }
-
-            return true;
-        }
-
         #region Grid
 
         /// <summary>
@@ -154,7 +122,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void BindGrid()
         {
-            int cacheTagDefinedTypeId = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.CACHE_TAGS ).Id;
+            int cacheTagDefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.CACHE_TAGS ).Id;
             RockContext rockContext = new RockContext();
             DefinedValueService definedValueService = new DefinedValueService( rockContext );
             var cacheTags = definedValueService.Queryable().Where( v => v.DefinedTypeId == cacheTagDefinedTypeId ).ToList();
@@ -198,7 +166,7 @@ namespace RockWeb.Blocks.Cms
         protected void gCacheTagList_ClearCacheTag( object sender, RowEventArgs e )
         {
             var definedValueId = e.RowKeyId;
-            var definedValue = CacheDefinedValue.Get( definedValueId );
+            var definedValue = DefinedValueCache.Get( definedValueId );
             RockCache.RemoveForTags( definedValue.Value );
             DisplayNotification( nbMessage, string.Format( "Removed cached items tagged with \"{0}\".", definedValue.Value ), NotificationBoxType.Success );
         }
@@ -255,6 +223,28 @@ namespace RockWeb.Blocks.Cms
 
         #region Redis
 
+        //private string GetValueFromWebConfig( string key )
+        //{
+        //    return ConfigurationManager.AppSettings[key] ?? string.Empty;
+        //}
+
+        //private void SetValueToWebConfig( string key, string value )
+        //{
+        //    try
+        //    {
+        //        if ( ConfigurationManager.AppSettings[key] != null )
+        //        {
+        //            Configuration rockWebConfig = System.Web.Configuration.WebConfigurationManager.OpenWebConfiguration( "~" );
+        //            rockWebConfig.AppSettings.Settings[key].Value = value;
+        //            rockWebConfig.Save();
+        //        }
+        //    }
+        //    catch ( Exception ex )
+        //    {
+        //        LogException( ex );
+        //    }
+        //}
+
         protected void PopulateRedisView()
         {
             // clear and hide edit
@@ -264,25 +254,21 @@ namespace RockWeb.Blocks.Cms
 
             redisView.Visible = true;
 
-            string enabledSetting = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER );
-            bool enabled = enabledSetting.IsNullOrWhiteSpace() || enabledSetting.ToLower() == "false" ? false : true;
-            if(!enabled )
+            bool enabled = SystemSettings.GetValueFromWebConfig( Rock.SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER ).AsBoolean();
+            if( !enabled )
             {
-                //redisNotEnabled.Visible = true;
                 DisplayNotification( nbRedisSettings, "Redis is currently not enabled. Review documentation for more information on enabling Redis backplane support.", NotificationBoxType.Info );
                 redisEnabled.Visible = false;
                 return;
             }
 
-            //redisNotEnabled.Visible = false;
             redisEnabled.Visible = true;
 
-            string redisPassword = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.REDIS_PASSWORD ) ?? string.Empty;
+            string redisPassword = SystemSettings.GetValueFromWebConfig( Rock.SystemKey.SystemSetting.REDIS_PASSWORD ) ?? string.Empty;
 
             string serverList = string.Join(
                 "",
-                SystemSettings
-                    .GetValue( Rock.SystemKey.SystemSetting.REDIS_ENDPOINT_LIST )
+                SystemSettings.GetValueFromWebConfig( Rock.SystemKey.SystemSetting.REDIS_ENDPOINT_LIST )
                     .Split( ',' )
                     .Select( s => 
                     (
@@ -294,8 +280,8 @@ namespace RockWeb.Blocks.Cms
             // show and populate view
             cbEnabled.Checked = enabled;
             lEndPointList.Text = serverList;
-            lblPassword.Text = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.REDIS_PASSWORD ).IsNullOrWhiteSpace() ? string.Empty : "***********";
-            lblDatabaseNumber.Text = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.REDIS_DATABASE_NUMBER );
+            lblPassword.Text = SystemSettings.GetValueFromWebConfig( Rock.SystemKey.SystemSetting.REDIS_PASSWORD ).IsNullOrWhiteSpace() ? string.Empty : "***********";
+            lblDatabaseNumber.Text = SystemSettings.GetValueFromWebConfig( Rock.SystemKey.SystemSetting.REDIS_DATABASE_NUMBER );
         }
         
         protected void PopulateRedisEdit()
@@ -305,11 +291,10 @@ namespace RockWeb.Blocks.Cms
             DisplayNotification( nbRedisSettings, "After clicking save Rock will be unavailable for a few minutes while the current cache is cleared and the configurations are reloaded.", NotificationBoxType.Warning );
             RedisEndPointAvailabilityCheck();
 
-            string enabled = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER );
-            cbEnabledEdit.Checked = enabled.IsNullOrWhiteSpace() || enabled.ToLower() == "false" ? false : true;
+            cbEnabledEdit.Checked = SystemSettings.GetValueFromWebConfig( Rock.SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER ).AsBoolean();
 
             var keyValuePairs = new List<ListItems.KeyValuePair>();
-            var endPoints = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.REDIS_ENDPOINT_LIST ).Split( ',' );
+            var endPoints = SystemSettings.GetValueFromWebConfig( Rock.SystemKey.SystemSetting.REDIS_ENDPOINT_LIST ).Split( ',' );
             foreach ( var endPoint in endPoints )
             {
                 keyValuePairs.Add( new ListItems.KeyValuePair { Value = endPoint } );
@@ -318,8 +303,8 @@ namespace RockWeb.Blocks.Cms
             var endPointsValue = JsonConvert.SerializeObject( keyValuePairs );
             liEndPoints.Value = endPointsValue;
 
-            tbPassword.Text = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.REDIS_PASSWORD );
-            tbDatabaseNumber.Text = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.REDIS_DATABASE_NUMBER );
+            tbPassword.Text = SystemSettings.GetValueFromWebConfig( Rock.SystemKey.SystemSetting.REDIS_PASSWORD );
+            tbDatabaseNumber.Text = SystemSettings.GetValueFromWebConfig( Rock.SystemKey.SystemSetting.REDIS_DATABASE_NUMBER );
         }
 
         protected void ClearAndHideRedisEdit()
@@ -337,7 +322,7 @@ namespace RockWeb.Blocks.Cms
             cbEnabled.Checked = false;
             lEndPointList.Text = string.Empty;
             lblPassword.Text = string.Empty;
-            lblDatabaseNumber.Text = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.REDIS_DATABASE_NUMBER );
+            lblDatabaseNumber.Text = string.Empty;
         }
 
         protected void btnEditRedis_Click( object sender, EventArgs e )
@@ -354,7 +339,7 @@ namespace RockWeb.Blocks.Cms
             foreach ( var keyValuePair in keyValuePairs )
             {
                 serverList += keyValuePair.Value + ",";
-                endPointsHaveAtLeastOneValue = keyValuePair.Value.Trim().IsNotNullOrWhitespace() ? true : endPointsHaveAtLeastOneValue;
+                endPointsHaveAtLeastOneValue = keyValuePair.Value.Trim().IsNotNullOrWhiteSpace() ? true : endPointsHaveAtLeastOneValue;
             }
 
             serverList = serverList.TrimEnd( ',' );
@@ -372,14 +357,20 @@ namespace RockWeb.Blocks.Cms
                     return;
                 }
             }
-            
-            SystemSettings.SetValue( Rock.SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER, cbEnabledEdit.Checked.ToString() );
-            SystemSettings.SetValue( Rock.SystemKey.SystemSetting.REDIS_ENDPOINT_LIST, serverList );
-            SystemSettings.SetValue( Rock.SystemKey.SystemSetting.REDIS_PASSWORD, tbPassword.Text );
-            SystemSettings.SetValue( Rock.SystemKey.SystemSetting.REDIS_DATABASE_NUMBER, tbDatabaseNumber.Text );
 
-            PopulateRedisView();
-            RestartWebApplication();
+            Dictionary<string, string> settings = new Dictionary<string, string>();
+            settings.Add( Rock.SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER, cbEnabledEdit.Checked.ToString() );
+            settings.Add( Rock.SystemKey.SystemSetting.REDIS_ENDPOINT_LIST, serverList );
+            settings.Add( Rock.SystemKey.SystemSetting.REDIS_PASSWORD, tbPassword.Text );
+            settings.Add( Rock.SystemKey.SystemSetting.REDIS_DATABASE_NUMBER, tbDatabaseNumber.Text );
+
+            SystemSettings.SetValueToWebConfig( settings );
+            //SystemSettings.SetValueToWebConfig( Rock.SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER, cbEnabledEdit.Checked.ToString() );
+            //SystemSettings.SetValueToWebConfig( Rock.SystemKey.SystemSetting.REDIS_ENDPOINT_LIST, serverList );
+            //SystemSettings.SetValueToWebConfig( Rock.SystemKey.SystemSetting.REDIS_PASSWORD, tbPassword.Text );
+            //SystemSettings.SetValueToWebConfig( Rock.SystemKey.SystemSetting.REDIS_DATABASE_NUMBER, tbDatabaseNumber.Text );
+
+            Response.Redirect( Request.RawUrl );
         }
 
         protected void btnCancelRedis_Click( object sender, EventArgs e )
@@ -396,7 +387,7 @@ namespace RockWeb.Blocks.Cms
         /// </returns>
         private bool IsRedisAvailable( string[] endPoints )
         {
-            string redisPassword = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.REDIS_PASSWORD ) ?? string.Empty;
+            string redisPassword = SystemSettings.GetValueFromWebConfig( Rock.SystemKey.SystemSetting.REDIS_PASSWORD ) ?? string.Empty;
             int endPointErrorCount = 0;
             
             foreach ( var endPoint in endPoints )
@@ -412,7 +403,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void RedisEndPointAvailabilityCheck()
         {
-            bool redisEnabled = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER ).AsBooleanOrNull() ?? false;
+            bool redisEnabled = SystemSettings.GetValueFromWebConfig( Rock.SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER ).AsBooleanOrNull() ?? false;
 
             if ( !redisEnabled  )
             {
@@ -422,10 +413,10 @@ namespace RockWeb.Blocks.Cms
 
             spRedisStatus.Visible = true;
 
-            string[] endPoints = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.REDIS_ENDPOINT_LIST ).Split( ',' );
+            string[] endPoints = SystemSettings.GetValueFromWebConfig( Rock.SystemKey.SystemSetting.REDIS_ENDPOINT_LIST ).Split( ',' );
             int endPointErrorCount = 0;
 
-            string redisPassword = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.REDIS_PASSWORD ) ?? string.Empty;
+            string redisPassword = SystemSettings.GetValueFromWebConfig( Rock.SystemKey.SystemSetting.REDIS_PASSWORD ) ?? string.Empty;
 
             foreach ( var endPoint in endPoints )
             {
@@ -580,7 +571,7 @@ namespace RockWeb.Blocks.Cms
             }
 
             // see if the tag exists
-            int cachedTagDefinedTypeId = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.CACHE_TAGS ).Id;
+            int cachedTagDefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.CACHE_TAGS ).Id;
             var rockContext = new RockContext();
             var definedValueService = new DefinedValueService( rockContext );
 
@@ -599,7 +590,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void SaveTag()
         {
-            int cachedTagDefinedTypeId = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.CACHE_TAGS ).Id;
+            int cachedTagDefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.CACHE_TAGS ).Id;
             var rockContext = new RockContext();
             var definedValueService = new DefinedValueService( rockContext );
             int order = 0;

@@ -26,7 +26,7 @@ using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
 
@@ -87,10 +87,10 @@ namespace Rock.Reporting.DataFilter.GroupMember
 
                 // Derive GroupTypeId from AttributeKey
                 var attributeGuid = AttributeKey.Split( '_' ).LastOrDefault().AsGuidOrNull();
-                CacheAttribute attribute = null;
+                AttributeCache attribute = null;
                 if ( attributeGuid.HasValue )
                 {
-                    attribute = CacheAttribute.Get( attributeGuid.Value );
+                    attribute = AttributeCache.Get( attributeGuid.Value );
                 }
 
                 this.GroupTypeId = null;
@@ -174,17 +174,42 @@ namespace Rock.Reporting.DataFilter.GroupMember
         /// <returns></returns>
         public override string FormatSelection( Type entityType, string selection )
         {
+            return GetSelectedFieldName( selection );            
+        }
+
+        /// <summary>
+        /// Gets the name of the selected field.
+        /// </summary>
+        /// <param name="selection">The selection.</param>
+        /// <returns></returns>
+        public override string GetSelectedFieldName( string selection )
+        {
             string result = "Member Property";
-
-            var settings = new FilterSettings( selection );
-
-            var entityField = GetGroupMemberAttributes( settings.GroupTypeId ).FirstOrDefault( f => f.UniqueName == settings.AttributeKey );
-            if ( entityField != null )
+            if ( !string.IsNullOrWhiteSpace( selection ) )
             {
-                result = entityField.FormattedFilterDescription( settings.AttributeFilterSettings );
+                var settings = new FilterSettings( selection );
+                var entityField = GetGroupMemberAttributes( settings.GroupTypeId ).FirstOrDefault( f => f.UniqueName == settings.AttributeKey );
+                if ( entityField != null )
+                {
+                    result = entityField.FormattedFilterDescription( settings.AttributeFilterSettings );
+                }
+
+                return result;
             }
 
-            return result;
+            return null;
+        }
+
+        /// <summary>
+        /// Updates the selection from page parameters if there is a page parameter for the selection
+        /// </summary>
+        /// <param name="selection">The selection.</param>
+        /// <param name="rockBlock">The rock block.</param>
+        /// <returns></returns>
+        public override string UpdateSelectionFromPageParameters( string selection, Rock.Web.UI.RockBlock rockBlock )
+        {
+            // don't modify the selection for the Filter based on PageParameters
+            return selection;
         }
 
         /// <summary>
@@ -208,13 +233,22 @@ namespace Rock.Reporting.DataFilter.GroupMember
             groupTypePicker.GroupTypes = new GroupTypeService( new RockContext() ).Queryable().OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
             groupTypePicker.SelectedIndexChanged += groupTypePicker_SelectedIndexChanged;
             groupTypePicker.AutoPostBack = true;
-            groupTypePicker.Visible = filterMode == FilterMode.AdvancedFilter;
+            if ( filterMode == FilterMode.SimpleFilter )
+            {
+                // we still need to render the control in order to get the selected GroupTypeId on postback, so just hide it instead
+                groupTypePicker.Style[HtmlTextWriterStyle.Display] = "none";
+            }
+
             containerControl.Controls.Add( groupTypePicker );
 
             // set the GroupTypePicker selected value now so we can create the other controls the depending on know the groupTypeid
-            int? groupTypeId = filterControl.Page.Request.Params[groupTypePicker.UniqueID].AsIntegerOrNull();
-            groupTypePicker.SelectedGroupTypeId = groupTypeId;
-            groupTypePicker_SelectedIndexChanged( groupTypePicker, new EventArgs() );
+            if ( filterControl.Page.IsPostBack )
+            {
+                // since we just created the GroupTypePicker, we'll have to sniff the GroupTypeId from Request.Params
+                int? groupTypeId = filterControl.Page.Request.Params[groupTypePicker.UniqueID].AsIntegerOrNull();
+                groupTypePicker.SelectedGroupTypeId = groupTypeId;
+                EnsureSelectedGroupTypeControls( groupTypePicker );
+            }
 
             return new Control[] { containerControl };
         }
@@ -227,44 +261,61 @@ namespace Rock.Reporting.DataFilter.GroupMember
         public void groupTypePicker_SelectedIndexChanged( object sender, EventArgs e )
         {
             GroupTypePicker groupTypePicker = sender as GroupTypePicker;
+            EnsureSelectedGroupTypeControls( groupTypePicker );
+        }
+
+        /// <summary>
+        /// Ensures that the controls that are created based on the GroupType have been created
+        /// </summary>
+        /// <param name="groupTypePicker">The group type picker.</param>
+        private void EnsureSelectedGroupTypeControls( GroupTypePicker groupTypePicker )
+        {
             DynamicControlsPanel containerControl = groupTypePicker.Parent as DynamicControlsPanel;
             FilterField filterControl = containerControl.FirstParentControlOfType<FilterField>();
 
-            containerControl.Controls.Clear();
-            containerControl.Controls.Add( groupTypePicker );
+            this.entityFields = GetGroupMemberAttributes( groupTypePicker.SelectedGroupTypeId );
 
             // Create the field selection dropdown
-            var ddlProperty = new RockDropDownList();
-            ddlProperty.ID = string.Format( "{0}_{1}_ddlProperty", containerControl.ID, groupTypePicker.SelectedGroupTypeId );
-            containerControl.Controls.Add( ddlProperty );
+            string propertyControlId = string.Format( "{0}_ddlProperty", containerControl.ID );
+            RockDropDownList ddlProperty = containerControl.Controls.OfType<RockDropDownList>().FirstOrDefault( a => a.ID == propertyControlId );
+            if ( ddlProperty == null )
+            {
+                ddlProperty = new RockDropDownList();
+                ddlProperty.ID = propertyControlId;
+                ddlProperty.AutoPostBack = true;
+                ddlProperty.SelectedIndexChanged += ddlProperty_SelectedIndexChanged;
+                ddlProperty.AddCssClass( "js-property-dropdown" );
+                containerControl.Controls.Add( ddlProperty );
+            }
+
+            // update the list of items just in case the GroupType changed
+            ddlProperty.Items.Clear();
 
             // add Empty option first
             ddlProperty.Items.Add( new ListItem() );
+            foreach ( var entityField in this.entityFields )
+            {
+                // Add the field to the dropdown of available fields
+                ddlProperty.Items.Add( new ListItem( entityField.TitleWithoutQualifier, entityField.UniqueName ) );
+            }
 
-            this.entityFields = GetGroupMemberAttributes( groupTypePicker.SelectedGroupTypeId );
+            if ( groupTypePicker.Page.IsPostBack )
+            {
+                ddlProperty.SetValue( groupTypePicker.Page.Request.Params[ddlProperty.UniqueID] );
+            }
+
             foreach ( var entityField in this.entityFields )
             {
                 string controlId = string.Format( "{0}_{1}", containerControl.ID, entityField.UniqueName );
-                var control = entityField.FieldType.Field.FilterControl( entityField.FieldConfig, controlId, true, filterControl.FilterMode );
-                if ( control != null )
+                if ( !containerControl.Controls.OfType<Control>().Any( a => a.ID == controlId ) )
                 {
-                    // Add the field to the dropdown of available fields
-                    ddlProperty.Items.Add( new ListItem( entityField.TitleWithoutQualifier, entityField.UniqueName ) );
-                    containerControl.Controls.Add( control );
+                    var control = entityField.FieldType.Field.FilterControl( entityField.FieldConfig, controlId, true, filterControl.FilterMode );
+                    if ( control != null )
+                    {
+                        containerControl.Controls.Add( control );
+                    }
                 }
             }
-
-            ddlProperty.AutoPostBack = true;
-
-            // grab the currently selected value off of the request params since we are creating the controls after the Page Init
-            var selectedValue = ddlProperty.Page.Request.Params[ddlProperty.UniqueID];
-            if ( selectedValue != null )
-            {
-                ddlProperty.SelectedValue = selectedValue;
-                ddlProperty_SelectedIndexChanged( ddlProperty, new EventArgs() );
-            }
-
-            ddlProperty.SelectedIndexChanged += ddlProperty_SelectedIndexChanged;
         }
 
         /// <summary>
@@ -274,11 +325,11 @@ namespace Rock.Reporting.DataFilter.GroupMember
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlProperty_SelectedIndexChanged( object sender, EventArgs e )
         {
-            var ddlEntityField = sender as RockDropDownList;
-            var containerControl = ddlEntityField.FirstParentControlOfType<DynamicControlsPanel>();
-            FilterField filterControl = ddlEntityField.FirstParentControlOfType<FilterField>();
+            var ddlProperty = sender as RockDropDownList;
+            var containerControl = ddlProperty.FirstParentControlOfType<DynamicControlsPanel>();
+            FilterField filterControl = ddlProperty.FirstParentControlOfType<FilterField>();
 
-            var entityField = this.entityFields.FirstOrDefault( a => a.UniqueName == ddlEntityField.SelectedValue );
+            var entityField = this.entityFields.FirstOrDefault( a => a.UniqueName == ddlProperty.SelectedValue );
             if ( entityField != null )
             {
                 string controlId = string.Format( "{0}_{1}", containerControl.ID, entityField.UniqueName );
@@ -314,13 +365,13 @@ namespace Rock.Reporting.DataFilter.GroupMember
                     GroupTypePicker groupTypePicker = containerControl.Controls[0] as GroupTypePicker;
                     groupTypePicker.RenderControl( writer );
 
-                    DropDownList ddlEntityField = containerControl.Controls[1] as DropDownList;
+                    DropDownList ddlProperty = containerControl.Controls[1] as DropDownList;
                     var entityFields = GetGroupMemberAttributes( groupTypePicker.SelectedGroupTypeId );
 
                     var panelControls = new List<Control>();
                     panelControls.AddRange( containerControl.Controls.OfType<Control>() );
 
-                    RenderEntityFieldsControls( entityType, filterControl, writer, entityFields, ddlEntityField, panelControls, containerControl.ID, filterMode );
+                    RenderEntityFieldsControls( entityType, filterControl, writer, entityFields, ddlProperty, panelControls, containerControl.ID, filterMode );
                 }
             }
         }
@@ -345,11 +396,6 @@ namespace Rock.Reporting.DataFilter.GroupMember
                     GroupTypePicker groupTypePicker = containerControl.Controls[0] as GroupTypePicker;
                     Guid groupTypeGuid = Guid.Empty;
                     var groupTypeId = groupTypePicker.SelectedGroupTypeId;
-                    
-                    if ( containerControl.Controls.Count == 1 || filterMode == FilterMode.SimpleFilter )
-                    {
-                        groupTypePicker_SelectedIndexChanged( groupTypePicker, new EventArgs() );
-                    }
 
                     if ( containerControl.Controls.Count > 1 )
                     {
@@ -401,7 +447,7 @@ namespace Rock.Reporting.DataFilter.GroupMember
                 {
                     GroupTypePicker groupTypePicker = containerControl.Controls[0] as GroupTypePicker;
                     groupTypePicker.SelectedGroupTypeId = groupTypeId;
-                    groupTypePicker_SelectedIndexChanged( groupTypePicker, new EventArgs() );
+                    EnsureSelectedGroupTypeControls( groupTypePicker );
                 }
 
                 if ( containerControl.Controls.Count > 1 )

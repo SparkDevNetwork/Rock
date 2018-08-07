@@ -21,7 +21,7 @@ using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -237,12 +237,12 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string CountryCode
         {
-            get 
+            get
             {
                 EnsureChildControls();
                 return _hfCountryCode.Value;
             }
-            set 
+            set
             {
                 EnsureChildControls();
                 if ( !string.IsNullOrWhiteSpace( value ) )
@@ -309,7 +309,7 @@ namespace Rock.Web.UI.Controls
                     StringBuilder sbScript = new StringBuilder();
                     sbScript.Append( "\tvar phoneNumberFormats = {\n" );
 
-                    var definedType = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
+                    var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
                     if ( definedType != null )
                     {
                         var definedValues = definedType.DefinedValues;
@@ -431,7 +431,7 @@ namespace Rock.Web.UI.Controls
 
             bool renderCountryCodeButton = false;
 
-            var definedType = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
+            var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
             if ( definedType != null )
             {
                 var countryCodes = definedType.DefinedValues.OrderBy( v => v.Order ).Select( v => v.Value ).Distinct();
@@ -501,11 +501,13 @@ namespace Rock.Web.UI.Controls
                 this.Attributes["placeholder"] = Placeholder;
             }
 
+            this.Attributes["type"] = "tel";
+
             base.RenderControl( writer );
 
             writer.RenderEndTag();              // div.input-group
 
             this.CssClass = cssClass;
-        }   
+        }
     }
 }

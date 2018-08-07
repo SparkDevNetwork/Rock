@@ -364,9 +364,9 @@
 
   .meta-body {
     border: 1px solid @input-border;
-    border: var(--focus-state-border);
-    box-shadow: var(--focus-state-shadow);
-    &:focus {
+    &:focus,
+    &:focus-within,
+    &.focus-within {
       border: var(--focus-state-border);
       box-shadow: var(--focus-state-shadow);
     }

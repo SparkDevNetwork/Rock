@@ -20,7 +20,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Data.Entity;
 using System.Linq;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
 
@@ -194,7 +194,7 @@ namespace Rock.Workflow.Action.CheckIn
                                         var locationDateTime = RockDateTime.Now;
                                         if ( location.CampusId.HasValue )
                                         {
-                                            locationDateTime = CacheCampus.Get( location.CampusId.Value )?.CurrentDateTime ?? RockDateTime.Now;
+                                            locationDateTime = CampusCache.Get( location.CampusId.Value )?.CurrentDateTime ?? RockDateTime.Now;
                                         }
                                         var activeScheduleIds = new List<int>();
                                         foreach( var schedule in checkinSchedules )

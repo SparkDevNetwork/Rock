@@ -25,7 +25,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using System.Data.Entity;
@@ -244,7 +244,7 @@ namespace RockWeb.Blocks.Finance
 
             // get excluded currency types setting
             List<Guid> excludedCurrencyTypes = new List<Guid>();
-            if ( GetAttributeValue( "ExcludedCurrencyTypes" ).IsNotNullOrWhitespace() )
+            if ( GetAttributeValue( "ExcludedCurrencyTypes" ).IsNotNullOrWhiteSpace() )
             {
                 excludedCurrencyTypes = GetAttributeValue( "ExcludedCurrencyTypes" ).Split( ',' ).Select( Guid.Parse ).ToList();
             }
@@ -302,7 +302,7 @@ namespace RockWeb.Blocks.Finance
                 mergeFields.Add( "StatementEndDate", "12/31/" + statementYear.ToString() );
             }
 
-            var familyGroupTypeId = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
+            var familyGroupTypeId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
             var groupMemberQry = new GroupMemberService( rockContext ).Queryable().Where( m => m.Group.GroupTypeId == familyGroupTypeId );
 
             // get giving group members in order by family role (adult -> child) and then gender (male -> female)

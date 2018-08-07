@@ -21,7 +21,7 @@ using System.Linq;
 using System.Reflection;
 using Rock;
 using Rock.Data;
-using Rock.Cache;
+using Rock.Web.Cache;
 using System.Data.Entity;
 
 namespace Rock.Model
@@ -131,7 +131,7 @@ namespace Rock.Model
                 .Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
                 .Select( s => new
                 {
-                    EntityTypeCache = Rock.Cache.CacheEntityType.Get( s ),
+                    EntityTypeCache = EntityTypeCache.Get( s ),
                     Entity = s,
                 } )
                 .Where( a => a.EntityTypeCache != null && a.EntityTypeCache.GetEntityType() != null && !a.EntityTypeCache.GetEntityType().GetCustomAttributes( typeof( HideFromReportingAttribute ), true ).Any() )
@@ -224,7 +224,7 @@ namespace Rock.Model
         /// <returns></returns>
         private IQueryable<IEntity> GetQueryable( int entityTypeId )
         {
-            CacheEntityType itemEntityType = CacheEntityType.Get( entityTypeId );
+            EntityTypeCache itemEntityType = EntityTypeCache.Get( entityTypeId );
             if ( itemEntityType != null )
             {
                 Type entityType = itemEntityType.GetEntityType();
@@ -338,10 +338,10 @@ namespace Rock.Model
 
                 rockContext.SaveChanges();
 
-                // make sure the CacheEntityType is synced up with any changes that were made
+                // make sure the EntityTypeCache is synced up with any changes that were made
                 foreach (var entityTypeModel in entityTypeService.Queryable())
                 {
-                    CacheEntityType.Get( entityTypeModel );
+                    EntityTypeCache.Get( entityTypeModel );
                 }
             }
         }
@@ -353,7 +353,7 @@ namespace Rock.Model
         /// <returns></returns>
         public override Guid? GetGuid( int id )
         {
-            var cacheItem = Rock.Cache.CacheEntityType.Get( id );
+            var cacheItem = EntityTypeCache.Get( id );
             if ( cacheItem != null )
             {
                 return cacheItem.Guid;

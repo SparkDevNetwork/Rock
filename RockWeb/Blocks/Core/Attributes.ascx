@@ -79,7 +79,7 @@
 
         <Rock:ModalDialog ID="mdAttribute" runat="server" Title="Attribute" OnCancelScript="clearActiveDialog();" ValidationGroup="Attribute">
             <Content>
-                <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                 <asp:panel ID="pnlEntityTypeQualifier" runat="server" Visible="false" class="well">
                     <Rock:EntityTypePicker ID="ddlAttrEntityType" runat="server" Label="Entity Type" IncludeGlobalOption="true" Required="true" AutoPostBack="true" OnSelectedIndexChanged="ddlAttrEntityType_SelectedIndexChanged" EnhanceForLongLists="true" />
                     <div class="row">
@@ -98,7 +98,7 @@
         <Rock:ModalDialog ID="mdAttributeValue" runat="server" Title="Attribute Value" OnCancelScript="clearActiveDialog();" ValidationGroup="AttributeValue">
             <Content>
                 <asp:HiddenField ID="hfIdValues" runat="server" />
-                <asp:ValidationSummary ID="ValidationSummaryValue" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" ValidationGroup="AttributeValue" />
+                <asp:ValidationSummary ID="ValidationSummaryValue" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="AttributeValue" />
                 <Rock:DynamicPlaceholder ID="phEditControls" runat="server" />
             </Content>
         </Rock:ModalDialog>

@@ -21,7 +21,7 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using Newtonsoft.Json;
 using Rock.Attribute;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Checkr.CheckrApi;
 using Rock.Checkr.Constants;
 using Rock.Data;
@@ -56,8 +56,8 @@ namespace Rock.Checkr
         /// True/False value of whether the request was successfully sent or not.
         /// </returns>
         public override bool SendRequest( RockContext rockContext, Model.Workflow workflow,
-                    CacheAttribute personAttribute, CacheAttribute ssnAttribute, CacheAttribute requestTypeAttribute,
-                    CacheAttribute billingCodeAttribute, out List<string> errorMessages )
+                    AttributeCache personAttribute, AttributeCache ssnAttribute, AttributeCache requestTypeAttribute,
+                    AttributeCache billingCodeAttribute, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
 
@@ -193,7 +193,7 @@ namespace Rock.Checkr
         /// <param name="qualifiers">The qualifiers.</param>
         /// <returns>True/False value of whether the request was successfully sent or not.</returns>
         private static bool SaveAttributeValue( Rock.Model.Workflow workflow, string key, string value,
-            CacheFieldType fieldType, RockContext rockContext, Dictionary<string, string> qualifiers = null )
+            FieldTypeCache fieldType, RockContext rockContext, Dictionary<string, string> qualifiers = null )
         {
             bool createdNewAttribute = false;
 
@@ -265,7 +265,7 @@ namespace Rock.Checkr
                 workflow.LoadAttributes();
                 if ( workflow.Attributes.ContainsKey( "ReportStatus" ) )
                 {
-                    if ( workflow.GetAttributeValue( "ReportStatus" ).IsNotNullOrWhitespace() && reportStatus.IsNullOrWhiteSpace() )
+                    if ( workflow.GetAttributeValue( "ReportStatus" ).IsNotNullOrWhiteSpace() && reportStatus.IsNullOrWhiteSpace() )
                     {
                         // Don't override current values if Webhook is older than current values
                         return;
@@ -274,7 +274,7 @@ namespace Rock.Checkr
 
                 if ( workflow.Attributes.ContainsKey( "Report" ) )
                 {
-                    if ( workflow.GetAttributeValue( "Report" ).IsNotNullOrWhitespace() && documentId.IsNullOrWhiteSpace() )
+                    if ( workflow.GetAttributeValue( "Report" ).IsNotNullOrWhiteSpace() && documentId.IsNullOrWhiteSpace() )
                     {
                         // Don't override current values if Webhook is older than current values
                         return;
@@ -285,18 +285,18 @@ namespace Rock.Checkr
                 if ( !string.IsNullOrWhiteSpace( recommendation ) )
                 {
                     if ( SaveAttributeValue( workflow, "ReportRecommendation", recommendation,
-                        CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT.AsGuid() ), rockContext,
+                        FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT.AsGuid() ), rockContext,
                         new Dictionary<string, string> { { "ispassword", "false" } } ) )
                     {
                     }
 
                 }
                 // Save the report link 
-                if ( documentId.IsNotNullOrWhitespace() )
+                if ( documentId.IsNotNullOrWhiteSpace() )
                 {
-                    int entityTypeId = CacheEntityType.Get( typeof(Checkr) ).Id;
+                    int entityTypeId = EntityTypeCache.Get( typeof(Checkr) ).Id;
                     if ( SaveAttributeValue( workflow, "Report", $"{entityTypeId},{documentId}",
-                        CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT.AsGuid() ), rockContext,
+                        FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT.AsGuid() ), rockContext,
                         new Dictionary<string, string> { { "ispassword", "false" } } ) )
                     {
                     }
@@ -306,7 +306,7 @@ namespace Rock.Checkr
                 {
                     // Save the status
                     if ( SaveAttributeValue( workflow, "ReportStatus", reportStatus,
-                    CacheFieldType.Get( Rock.SystemGuid.FieldType.SINGLE_SELECT.AsGuid() ), rockContext,
+                    FieldTypeCache.Get( Rock.SystemGuid.FieldType.SINGLE_SELECT.AsGuid() ), rockContext,
                     new Dictionary<string, string> { { "fieldtype", "ddl" }, { "values", "Pass,Fail,Review" } } ) )
                     {
                     }
@@ -361,7 +361,7 @@ namespace Rock.Checkr
                     backgroundCheck.PackageName = packageName;
                 }
 
-                if ( documentId.IsNotNullOrWhitespace() )
+                if ( documentId.IsNotNullOrWhiteSpace() )
                 {
                     backgroundCheck.ResponseId = documentId;
                 }
@@ -424,7 +424,7 @@ namespace Rock.Checkr
         private void UpdateWorkflowRequestStatus( Model.Workflow workflow, RockContext rockContext, string requestStatus )
         {
             if ( SaveAttributeValue( workflow, "RequestStatus", requestStatus,
-                CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT.AsGuid() ), rockContext, null ) )
+                FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT.AsGuid() ), rockContext, null ) )
             {
                 rockContext.SaveChanges();
             }
@@ -439,7 +439,7 @@ namespace Rock.Checkr
         /// <param name="packageName"></param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns>True/False value of whether the request was successfully sent or not.</returns>
-        private bool GetPackageName( RockContext rockContext, Model.Workflow workflow, CacheAttribute requestTypeAttribute, out string packageName, List<string> errorMessages )
+        private bool GetPackageName( RockContext rockContext, Model.Workflow workflow, AttributeCache requestTypeAttribute, out string packageName, List<string> errorMessages )
         {
             packageName = null;
             if ( requestTypeAttribute == null )
@@ -448,7 +448,7 @@ namespace Rock.Checkr
                 return false;
             }
 
-            CacheDefinedValue pkgTypeDefinedValue = CacheDefinedValue.Get( workflow.GetAttributeValue( requestTypeAttribute.Key ).AsGuid() );
+            DefinedValueCache pkgTypeDefinedValue = DefinedValueCache.Get( workflow.GetAttributeValue( requestTypeAttribute.Key ).AsGuid() );
             if ( pkgTypeDefinedValue == null )
             {
                 errorMessages.Add( "The 'Checkr' background check provider couldn't load background check type." );
@@ -474,7 +474,7 @@ namespace Rock.Checkr
         /// <param name="personAliasId">Return the person alias ID.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns>True/False value of whether the request was successfully sent or not.</returns>
-        private bool GetPerson( RockContext rockContext, Model.Workflow workflow, CacheAttribute personAttribute, out Person person, out int? personAliasId, List<string> errorMessages )
+        private bool GetPerson( RockContext rockContext, Model.Workflow workflow, AttributeCache personAttribute, out Person person, out int? personAliasId, List<string> errorMessages )
         {
             person = null;
             personAliasId = null;
@@ -525,7 +525,7 @@ namespace Rock.Checkr
             List<string> packages;
             using ( var rockContext = new RockContext() )
             {
-                var definedType = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.BACKGROUND_CHECK_TYPES.AsGuid() );
+                var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.BACKGROUND_CHECK_TYPES.AsGuid() );
 
                 DefinedValueService definedValueService = new DefinedValueService( rockContext );
                 packages = definedValueService
@@ -566,7 +566,7 @@ namespace Rock.Checkr
                 }
             }
 
-            CacheDefinedValue.Clear();
+            DefinedValueCache.Clear();
             return true;
         }
 

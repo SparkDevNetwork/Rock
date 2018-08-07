@@ -26,7 +26,7 @@ using Newtonsoft.Json;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter
@@ -88,7 +88,7 @@ namespace Rock.Reporting.DataFilter
         /// <returns></returns>
         public override string GetTitle( Type entityType )
         {
-            return CacheEntityType.Get( entityType ).FriendlyName + " Fields";
+            return EntityTypeCache.Get( entityType ).FriendlyName + " Fields";
         }
 
         /// <summary>
@@ -202,7 +202,7 @@ namespace Rock.Reporting.DataFilter
             // add Empty option first
             ddlEntityField.Items.Add( new ListItem() );
             var rockBlock = filterControl.RockBlock();
-            var entityTypeCache = CacheEntityType.Get( entityType, true );
+            var entityTypeCache = EntityTypeCache.Get( entityType, true );
 
             this.entityFields = EntityHelper.GetEntityFields( entityType );
             foreach ( var entityField in this.entityFields.OrderBy(a => !a.IsPreviewable).ThenBy(a => a.FieldKind != FieldKind.Property ).ThenBy(a => a.Title) )
@@ -217,7 +217,7 @@ namespace Rock.Reporting.DataFilter
                         includeField = false;
                     }
 
-                    var attribute = CacheAttribute.Get( entityField.AttributeGuid.Value );
+                    var attribute = AttributeCache.Get( entityField.AttributeGuid.Value );
 
                     // Don't include the attribute if it isn't active
                     if ( attribute.IsActive == false )

@@ -21,7 +21,7 @@ using System.Linq;
 using System.Web;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Communication
 {
@@ -121,7 +121,7 @@ namespace Rock.Communication
         /// <param name="to">To.</param>
         public void AddRecipient( string to )
         {
-            if ( to.IsNotNullOrWhitespace() )
+            if ( to.IsNotNullOrWhiteSpace() )
             {
                 _recipients.Add( new RecipientData( to ) );
             }
@@ -255,7 +255,7 @@ namespace Rock.Communication
             {
                 if ( this._recipients.Any() )
                 {
-                    var mediumEntity = CacheEntityType.Get( MediumEntityTypeId );
+                    var mediumEntity = EntityTypeCache.Get( MediumEntityTypeId );
                     if ( mediumEntity != null )
                     {
                         var medium = MediumContainer.GetComponent( mediumEntity.Name );

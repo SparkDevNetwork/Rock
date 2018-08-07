@@ -61,12 +61,12 @@ namespace Rock.Model
                     ( t.OwnerPersonAlias == null || ( ownerId.HasValue && t.OwnerPersonAlias.PersonId == ownerId ) ) );
 
 
-            if ( entityQualifierColumn.IsNotNullOrWhitespace() )
+            if ( entityQualifierColumn.IsNotNullOrWhiteSpace() )
             {
                 qry = qry.Where( t => t.EntityTypeQualifierColumn == entityQualifierColumn );
             }
 
-            if ( entityQualifierValue.IsNotNullOrWhitespace() )
+            if ( entityQualifierValue.IsNotNullOrWhiteSpace() )
             {
                 qry = qry.Where( t => t.EntityTypeQualifierValue == entityQualifierValue );
             }

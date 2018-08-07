@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Model;
 
 namespace Rock.CheckIn
@@ -113,7 +113,7 @@ namespace Rock.CheckIn
             {
                 if ( CampusId.HasValue )
                 {
-                    var campus = CacheCampus.Get( CampusId.Value );
+                    var campus = CampusCache.Get( CampusId.Value );
                     if ( campus != null )
                     {
                         return campus.CurrentDateTime;

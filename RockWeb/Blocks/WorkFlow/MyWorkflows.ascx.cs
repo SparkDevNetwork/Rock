@@ -27,7 +27,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.WorkFlow
@@ -411,7 +411,7 @@ namespace RockWeb.Blocks.WorkFlow
 
             foreach ( var workflowType in allWorkflowTypes )
             {
-                if ( workflowType.IsActive  && workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                if ( workflowType.IsActive == true  && workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 {
                     foreach ( var activityType in workflowType.ActivityTypes.Where( a => a.ActionTypes.Any( f => f.WorkflowFormId.HasValue ) ) )
                     {
@@ -457,7 +457,7 @@ namespace RockWeb.Blocks.WorkFlow
                         boundField.AttributeId = attribute.Id;
                         boundField.HeaderText = attribute.Name;
 
-                        var attributeCache = Rock.Cache.CacheAttribute.Get( attribute.Id );
+                        var attributeCache = Rock.Web.Cache.AttributeCache.Get( attribute.Id );
                         if ( attributeCache != null )
                         {
                             boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;

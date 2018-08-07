@@ -20,7 +20,7 @@ using System.Data;
 using System.Data.Entity;
 using System.Linq;
 
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 
 namespace Rock.Model
@@ -184,7 +184,7 @@ namespace Rock.Model
             if ( newOccurrences.Any() )
             {
                 // Filter Exclusions
-                var groupType = CacheGroupType.Get( group.GroupTypeId );
+                var groupType = GroupTypeCache.Get( group.GroupTypeId );
                 foreach ( var exclusion in groupType.GroupScheduleExclusions )
                 {
                     if ( !exclusion.Start.HasValue || !exclusion.End.HasValue ) continue;

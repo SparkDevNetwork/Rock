@@ -23,7 +23,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -115,39 +115,19 @@ namespace Rock.Model
         public virtual WorkflowType WorkflowType { get; set; }
 
         /// <summary>
-        /// Gets the workflow type cache.
-        /// </summary>
-        /// <value>
-        /// The workflow type cache.
-        /// </value>
-        [LavaInclude]
-        [Obsolete( "Use CacheWorkflowType instead")]
-        public virtual Web.Cache.WorkflowTypeCache WorkflowTypeCache
-        {
-            get
-            {
-                if ( WorkflowTypeId.HasValue && WorkflowTypeId.Value > 0 )
-                {
-                    return Web.Cache.WorkflowTypeCache.Read( WorkflowTypeId.Value );
-                }
-                return null;
-            }
-        }
-
-        /// <summary>
         /// Gets the type of the cache workflow.
         /// </summary>
         /// <value>
         /// The type of the cache workflow.
         /// </value>
         [LavaInclude]
-        public virtual CacheWorkflowType CacheWorkflowType
+        public virtual WorkflowTypeCache WorkflowTypeCache
         {
             get
             {
                 if ( WorkflowTypeId.HasValue && WorkflowTypeId.Value > 0 )
                 {
-                    return CacheWorkflowType.Get( WorkflowTypeId.Value );
+                    return WorkflowTypeCache.Get( WorkflowTypeId.Value );
                 }
                 return null;
             }

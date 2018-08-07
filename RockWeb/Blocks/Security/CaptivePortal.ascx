@@ -5,7 +5,7 @@
         <asp:HiddenField ID="hfMacAddress" runat="server" />
         <asp:HiddenField ID="hfPersonAliasId" runat="server" />
         <Rock:NotificationBox ID="nbAlert" runat="server" NotificationBoxType="Warning" />
-        <asp:ValidationSummary ID="valCaptivePortal" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" ValidationGroup="CaptivePortal" />
+        <asp:ValidationSummary ID="valCaptivePortal" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="CaptivePortal" />
         <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server">
             
             <div class="panel-heading">

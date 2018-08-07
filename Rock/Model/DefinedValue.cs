@@ -18,7 +18,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 
 namespace Rock.Model
@@ -85,6 +85,22 @@ namespace Rock.Model
         [DataMember]
         public string Description { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this DefinedValue is active.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember( IsRequired = true )]
+        [Required]
+        public bool IsActive
+        {
+            get { return _isActive; }
+            set { _isActive = value; }
+        }
+
+        private bool _isActive = true;
+
         #endregion
 
         #region Virtual Properties
@@ -137,7 +153,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IEntityCache GetCacheObject()
         {
-            return CacheDefinedValue.Get( this.Id );
+            return DefinedValueCache.Get( this.Id );
         }
 
         /// <summary>
@@ -147,8 +163,8 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
         {
-            CacheDefinedValue.UpdateCachedEntity( this.Id, entityState );
-            CacheDefinedType.Get( this.DefinedTypeId )?.ReloadDefinedValues();
+            DefinedValueCache.UpdateCachedEntity( this.Id, entityState );
+            DefinedTypeCache.Get( this.DefinedTypeId, (RockContext)dbContext )?.ReloadDefinedValues();
         }
 
         #endregion

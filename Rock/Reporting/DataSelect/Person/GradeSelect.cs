@@ -22,7 +22,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataSelect.Person
@@ -115,7 +115,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         private string GetGlobalGradeLabel()
         {
-            var value = CacheGlobalAttributes.Get().GetValue( "core.GradeLabel" );
+            var value = GlobalAttributesCache.Get().GetValue( "core.GradeLabel" );
             return string.IsNullOrWhiteSpace( value ) ? "Grade" : value;
         }
 

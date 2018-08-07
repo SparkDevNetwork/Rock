@@ -22,7 +22,7 @@ using System.Web.Http;
 using Rock.Model;
 using Rock.Rest.Filters;
 using System.Net.Http;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Rest.Controllers
 {
@@ -39,8 +39,8 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/attributes/flush/{id}" )]
         public void Flush( int id )
         {
-            Rock.Cache.CacheAttribute.Remove( id );
-            Rock.Cache.CacheAttribute.Get( id );
+            Rock.Web.Cache.AttributeCache.Remove( id );
+            Rock.Web.Cache.AttributeCache.Get( id );
         }
 
         /// <summary>
@@ -51,7 +51,7 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/attributes/flush" )]
         public void Flush()
         {
-            Rock.Cache.CacheGlobalAttributes.Remove();
+            GlobalAttributesCache.Remove();
         }
 
         /// <summary>
