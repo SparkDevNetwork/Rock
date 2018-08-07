@@ -185,7 +185,11 @@ namespace Rock.Model
             //   - OR - FutureSendDateTime IS set (scheduled), and the FutureSendDateTime is Now (or within the expiration window)
 
             // Limit to communications that haven't been sent yet
-            var queuedQry = Queryable().Where( c => !c.SendDateTime.HasValue );
+            var queuedQry = Queryable().Where( c => !c.SendDateTime.HasValue);
+
+            var qryPendingRecipients = new CommunicationRecipientService( ( RockContext ) Context )
+                .Queryable()
+                .Where( a => a.Status == CommunicationRecipientStatus.Pending );
 
             if ( includePendingApproval )
             {
@@ -213,6 +217,9 @@ namespace Rock.Model
                     ( !c.FutureSendDateTime.HasValue && c.CreatedDateTime.HasValue && c.CreatedDateTime.Value >= beginWindow && c.CreatedDateTime.Value <= endWindow )
                     || ( c.FutureSendDateTime.HasValue && c.FutureSendDateTime.Value >= beginWindow && c.FutureSendDateTime.Value <= currentDateTime ) );
             }
+
+            // just in case SendDateTime is null (pre-v8 communication), also limit to communications that either have a ListGroupId or has PendingRecipients
+            queuedQry = queuedQry.Where( c => c.ListGroupId.HasValue || qryPendingRecipients.Any( r => r.CommunicationId == c.Id ) );
 
             return queuedQry;
         }
