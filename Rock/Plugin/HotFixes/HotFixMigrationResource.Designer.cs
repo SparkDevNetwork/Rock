@@ -413,6 +413,37 @@ namespace Rock.Plugin.HotFixes {
         
         /// <summary>
         ///   Looks up a localized string similar to /*
+        ///    &lt;doc&gt;
+        ///	    &lt;summary&gt;
+        /// 		    This stored procedure updates several attributes related to a person&apos;s
+        ///		    giving.
+        ///	    &lt;/summary&gt;
+        ///	
+        ///	    &lt;remarks&gt;	
+        ///		    For eRA we only consider adults for the critieria.
+        ///	    &lt;/remarks&gt;
+        ///	    &lt;code&gt;
+        ///		    EXEC [dbo].[spCrm_FamilyAnalyticsGiving] 
+        ///	    &lt;/code&gt;
+        ///    &lt;/doc&gt;
+        ///    */
+        ///
+        ///    ALTER PROCEDURE [dbo].[spCrm_FamilyAnalyticsGiving]
+        ///	
+        ///    AS
+        ///    BEGIN
+        ///	
+        ///	    -- configuration of the duration in weeks
+        ///	    DECLARE @GivingDurationLongWeeks int = 52        /// [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _052_MigrationRollupsForV8_1_spCrm_FamilyAnalyticsGiving {
+            get {
+                return ResourceManager.GetString("_052_MigrationRollupsForV8_1_spCrm_FamilyAnalyticsGiving", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
         ///&lt;doc&gt;
         ///	&lt;summary&gt;
         /// 		This function returns either the FullName of the specified Person or a list of names of family members
