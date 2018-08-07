@@ -103,7 +103,8 @@ namespace Rock.Transactions
                     }
 
                     // Group Leaders
-                    if ( ( template.Notify & RegistrationNotify.GroupLeaders ) == RegistrationNotify.GroupLeaders )
+                    if ( registration.GroupId.HasValue &&
+                        ( template.Notify & RegistrationNotify.GroupLeaders ) == RegistrationNotify.GroupLeaders )
                     {
                         new GroupMemberService( rockContext ).GetLeaders( registration.GroupId.Value )
                             .Where( m =>
