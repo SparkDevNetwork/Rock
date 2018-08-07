@@ -1090,6 +1090,15 @@ TransactionAccountDetails: [
                     btnFrequency.SelectedValue = oneTimeFrequency.Id.ToString();
                     dtpStartDate.SelectedDate = RockDateTime.Today;
 
+                    if ( !string.IsNullOrWhiteSpace( PageParameter( "StartDate" ) ) )
+                    {
+                        dtpStartDate.SelectedDate = PageParameter( "StartDate" ).AsDateTime() ?? RockDateTime.Today;
+                        if ( dtpStartDate.SelectedDate < RockDateTime.Today )
+                        {
+                            dtpStartDate.SelectedDate = RockDateTime.Today;
+                        }
+                    }
+
                     if ( !string.IsNullOrWhiteSpace( PageParameter( "Frequency" ) ) )
                     {
                         var frequencyValues = PageParameter( "Frequency" ).Split( new char[] { '^' } );
@@ -1810,9 +1819,9 @@ TransactionAccountDetails: [
                 !string.IsNullOrWhiteSpace( txtBusinessContactFirstName.Text ) &&
                 !string.IsNullOrWhiteSpace( txtBusinessContactLastName.Text ) )
             {
-                // Find matching person. Intentionally not updating their primary email address as in this rare case it is likely to be their 
+                // Find matching person. Intentionally not updating their primary email address as in this rare case it is likely to be their
                 // business email which is more likely that they don't want updated
-                person = personService.FindPerson( txtBusinessContactFirstName.Text, txtBusinessContactLastName.Text, txtBusinessContactEmail.Text, false ); 
+                person = personService.FindPerson( txtBusinessContactFirstName.Text, txtBusinessContactLastName.Text, txtBusinessContactEmail.Text, false );
             }
 
             if ( person == null )
@@ -2157,7 +2166,7 @@ TransactionAccountDetails: [
             {
                 errorMessages.Add( "Make sure to enter a valid address.  An address is required for us to process this transaction" );
             }
-            
+
             if ( DisplayPhone && string.IsNullOrWhiteSpace( pnbPhone.Number ) )
             {
                 errorMessages.Add( "Make sure to enter a valid phone number.  A phone number is required for us to process this transaction" );
