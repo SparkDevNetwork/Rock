@@ -364,6 +364,9 @@ namespace Rock.Jobs
                             System.Diagnostics.Debug.WriteLine( $"Unexpected Summary:{historyRecord.Summary}" );
                         }
 
+                        // just in case the ValueName is over 250, truncate it (it could be a really long attribute name)
+                        historyRecord.ValueName = historyRecord.ValueName.Truncate( 250 );
+
                         historyRecord.Verb = historyVerb?.ConvertToString( false ).ToUpper();
                         historyRecord.ChangeType = historyChangeType.ConvertToString( false );
 
