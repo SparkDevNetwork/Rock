@@ -18,13 +18,13 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            InactivePeopleInStatementGenerator();
-            RemoveAdultChildrenServiceJob();
-            EnableAlternateIdentifier();
-            MoveAdultChildrenDefaults();
-            ERAFinancial();
-            AddDisplayNotes();
-            HomepageStylesheet();
+            //InactivePeopleInStatementGenerator();
+            //RemoveAdultChildrenServiceJob();
+            //EnableAlternateIdentifier();
+            //MoveAdultChildrenDefaults();
+            //ERAFinancial();
+            //AddDisplayNotes();
+            //HomepageStylesheet();
         }
 
         /// <summary>
