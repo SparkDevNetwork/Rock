@@ -1090,6 +1090,15 @@ TransactionAccountDetails: [
                     btnFrequency.SelectedValue = oneTimeFrequency.Id.ToString();
                     dtpStartDate.SelectedDate = RockDateTime.Today;
 
+                    if ( !string.IsNullOrWhiteSpace( PageParameter( "StartDate" ) ) )
+                    {
+                        dtpStartDate.SelectedDate = PageParameter( "StartDate" ).AsDateTime() ?? RockDateTime.Today;
+                        if ( dtpStartDate.SelectedDate < RockDateTime.Today )
+                        {
+                            dtpStartDate.SelectedDate = RockDateTime.Today;
+                        }
+                    }
+
                     if ( !string.IsNullOrWhiteSpace( PageParameter( "Frequency" ) ) )
                     {
                         var frequencyValues = PageParameter( "Frequency" ).Split( new char[] { '^' } );
