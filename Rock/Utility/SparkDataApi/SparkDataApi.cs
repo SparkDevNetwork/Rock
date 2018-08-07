@@ -152,6 +152,7 @@ namespace Rock.Utility.SparkDataApi
         /// <param name="sparkDataApiKey">The spark data API key.</param>
         /// <param name="numberRecords">The number records.</param>
         /// <param name="personFullName">The person that initiated the request.</param>
+        /// <returns>Return the organization name and transaction key.</returns>
         public GroupNameTransactionKey NcoaInitiateReport( string sparkDataApiKey, int? numberRecords, string personFullName = null )
         {
             try
@@ -258,8 +259,8 @@ namespace Rock.Utility.SparkDataApi
         /// </summary>
         /// <param name="sparkDataApiKey">The spark data API key.</param>
         /// <param name="reportKey">The report key.</param>
-        /// <returns>Return the organization name</returns>
-        public string NcoaRetryReport( string sparkDataApiKey, string reportKey )
+        /// <returns>Return the organization name and transaction key.</returns>
+        public GroupNameTransactionKey NcoaRetryReport( string sparkDataApiKey, string reportKey )
         {
             try
             {
@@ -268,10 +269,10 @@ namespace Rock.Utility.SparkDataApi
                     RequestFormat = DataFormat.Json
                 };
 
-                IRestResponse response = _client.Execute( request );
+                var response = _client.Post<GroupNameTransactionKey>( request );
                 if ( response.StatusCode == HttpStatusCode.OK || response.StatusCode == HttpStatusCode.Accepted )
                 {
-                    return response.Content;
+                    return response.Data;
                 }
                 else
                 {

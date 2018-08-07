@@ -196,22 +196,22 @@ namespace Rock.Utility
                 return;
             }
 
-            string groupName = null;
+            GroupNameTransactionKey groupNameTransactionKey;
             if ( sparkDataConfig.NcoaSettings.FileName.IsNotNullOrWhiteSpace() )
             {
-                groupName = sparkDataApi.NcoaRetryReport( sparkDataConfig.SparkDataApiKey, sparkDataConfig.NcoaSettings.FileName );
+                groupNameTransactionKey = sparkDataApi.NcoaRetryReport( sparkDataConfig.SparkDataApiKey, sparkDataConfig.NcoaSettings.FileName );
             }
             else
             {
-                GroupNameTransactionKey groupNameTransactionKey = sparkDataApi.NcoaInitiateReport( sparkDataConfig.SparkDataApiKey, addresses.Count, sparkDataConfig.NcoaSettings.PersonFullName );
-                sparkDataConfig.NcoaSettings.FileName = groupNameTransactionKey.TransactionKey;
-                groupName = groupNameTransactionKey.GroupName;
+                groupNameTransactionKey = sparkDataApi.NcoaInitiateReport( sparkDataConfig.SparkDataApiKey, addresses.Count, sparkDataConfig.NcoaSettings.PersonFullName );
             }
+
+            sparkDataConfig.NcoaSettings.FileName = groupNameTransactionKey.TransactionKey;
 
             var credentials = sparkDataApi.NcoaGetCredentials( sparkDataConfig.SparkDataApiKey );
             var trueNcoaApi = new NcoaApi( credentials );
 
-            trueNcoaApi.CreateFile( sparkDataConfig.NcoaSettings.FileName, groupName, out string id );
+            trueNcoaApi.CreateFile( sparkDataConfig.NcoaSettings.FileName, groupNameTransactionKey.GroupName, out string id );
             sparkDataConfig.NcoaSettings.CurrentReportKey = id;
 
             trueNcoaApi.UploadAddresses( addresses, sparkDataConfig.NcoaSettings.CurrentReportKey );
