@@ -84,7 +84,7 @@
 
         <Rock:ModalDialog ID="mdAddBlock" runat="server" ValidationGroup="vgAddBlock" OnSaveClick="mdAddBlock_SaveClick" Title="Add Block">
             <Content>
-                <asp:ValidationSummary ID="vsAddBlock" runat="server" ValidationGroup="vgAddBlock" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                <asp:ValidationSummary ID="vsAddBlock" runat="server" ValidationGroup="vgAddBlock" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                 <Rock:RockTextBox ID="tbNewBlockName" runat="server" Label="Name" Required="true" ValidationGroup="vgAddBlock" />
                 
                 <div class="row">

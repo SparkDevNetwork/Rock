@@ -162,7 +162,7 @@ namespace Rock.Model
         /// <returns></returns>
         public virtual PersonAlias GetByAliasEncryptedKey( string encryptedKey )
         {
-            if ( encryptedKey.IsNotNullOrWhitespace() )
+            if ( encryptedKey.IsNotNullOrWhiteSpace() )
             {
                 string publicKey = Rock.Security.Encryption.DecryptString( encryptedKey );
                 return GetByAliasPublicKey( publicKey );

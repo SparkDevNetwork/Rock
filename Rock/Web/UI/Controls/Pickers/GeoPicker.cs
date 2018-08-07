@@ -25,7 +25,7 @@ using System.Text.RegularExpressions;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -693,7 +693,7 @@ namespace Rock.Web.UI.Controls
 
             try
             {
-                CacheDefinedValue dvcMapStyle = CacheDefinedValue.Get( this.MapStyleValueGuid );
+                DefinedValueCache dvcMapStyle = DefinedValueCache.Get( this.MapStyleValueGuid );
                 if ( dvcMapStyle != null )
                 {
                     mapStyle = dvcMapStyle.GetAttributeValue( "DynamicMapStyle" );
@@ -716,7 +716,7 @@ namespace Rock.Web.UI.Controls
             else
             {
                 // If no centerpoint was defined, try to get it from organization address
-                var globalAttributes = Rock.Cache.CacheGlobalAttributes.Get();
+                var globalAttributes = GlobalAttributesCache.Get();
                 Guid guid = globalAttributes.GetValue( "OrganizationAddress" ).AsGuid();
                 if ( !guid.Equals( Guid.Empty ) )
                 {

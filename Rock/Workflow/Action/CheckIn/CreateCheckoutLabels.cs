@@ -25,7 +25,7 @@ using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Workflow.Action.CheckIn
 {
@@ -79,7 +79,7 @@ namespace Rock.Workflow.Action.CheckIn
                             var key = string.Format( "{0}:{1}", attendanceRec.Occurrence.Group.Id, attendanceRec.Occurrence.Location.Id );
                             if ( !person.Labels.Any( l => l.LabelKey.StartsWith( key ) ) )
                             {
-                                var groupType = CacheGroupType.Get( attendanceRec.Occurrence.Group.GroupTypeId );
+                                var groupType = GroupTypeCache.Get( attendanceRec.Occurrence.Group.GroupTypeId );
                                 if ( groupType != null )
                                 {
                                     var groupLocAttendance = attendanceRecs
@@ -170,7 +170,7 @@ namespace Rock.Workflow.Action.CheckIn
             return false;
         }
 
-        private List<KioskLabel> GetGroupTypeLabels( CacheGroupType groupType )
+        private List<KioskLabel> GetGroupTypeLabels( GroupTypeCache groupType )
         {
             var labels = new List<KioskLabel>();
 

@@ -26,6 +26,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Administration
@@ -226,7 +227,7 @@ namespace RockWeb.Blocks.Administration
             tbName.Text = job.Name;
             tbDescription.Text = job.Description;
             cbActive.Checked = job.IsActive.HasValue ? job.IsActive.Value : false;
-            if ( job.Class.IsNotNullOrWhitespace() )
+            if ( job.Class.IsNotNullOrWhiteSpace() )
             {
                 if ( ddlJobTypes.Items.FindByValue( job.Class ) == null )
                 {
@@ -304,7 +305,7 @@ namespace RockWeb.Blocks.Administration
         {
             ddlNotificationStatus.BindToEnum<JobNotificationStatus>();
 
-            int? jobEntityTypeId = Rock.Cache.CacheEntityType.Get( "Rock.Model.ServiceJob" ).Id;
+            int? jobEntityTypeId = EntityTypeCache.Get( "Rock.Model.ServiceJob" ).Id;
 
             var jobs = Rock.Reflection.FindTypes( typeof( Quartz.IJob ) ).Values;
 

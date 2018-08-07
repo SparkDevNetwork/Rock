@@ -25,7 +25,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using System.Data.Entity;
@@ -178,8 +178,8 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            int campusEntityTypeId = CacheEntityType.Get( typeof( Rock.Model.Campus ) ).Id;
-            int scheduleEntityTypeId = CacheEntityType.Get( typeof( Rock.Model.Schedule ) ).Id;
+            int campusEntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Campus ) ).Id;
+            int scheduleEntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Schedule ) ).Id;
 
             int? campusId = bddlCampus.SelectedValueAsInt();
             int? scheduleId = bddlService.SelectedValueAsInt();
@@ -326,7 +326,7 @@ namespace RockWeb.Blocks.Reporting
 
         private void BuildCampusSelection()
         {
-            foreach ( var campus in CacheCampus.All()
+            foreach ( var campus in CampusCache.All()
                 .Where( c => c.IsActive.HasValue && c.IsActive.Value )
                 .OrderBy( c => c.Name ) )
             {
@@ -371,11 +371,11 @@ namespace RockWeb.Blocks.Reporting
         /// Gets the campuses.
         /// </summary>
         /// <returns></returns>
-        private List<CacheCampus> GetCampuses()
+        private List<CampusCache> GetCampuses()
         {
-            var campuses = new List<CacheCampus>();
+            var campuses = new List<CampusCache>();
 
-            foreach ( var campus in CacheCampus.All()
+            foreach ( var campus in CampusCache.All()
                 .Where( c => c.IsActive.HasValue && c.IsActive.Value )
                 .OrderBy( c => c.Name ) )
             {
@@ -416,7 +416,7 @@ namespace RockWeb.Blocks.Reporting
         {
             var services = new List<Schedule>();
 
-            var scheduleCategory = CacheCategory.Get( GetAttributeValue( "ScheduleCategory" ).AsGuid() );
+            var scheduleCategory = CategoryCache.Get( GetAttributeValue( "ScheduleCategory" ).AsGuid() );
             if ( scheduleCategory != null )
             {
                 using ( var rockContext = new RockContext() )
@@ -443,8 +443,8 @@ namespace RockWeb.Blocks.Reporting
         {
             var serviceMetricValues = new List<ServiceMetric>();
 
-            int campusEntityTypeId = CacheEntityType.Get( typeof( Rock.Model.Campus ) ).Id;
-            int scheduleEntityTypeId = CacheEntityType.Get( typeof( Rock.Model.Schedule ) ).Id;
+            int campusEntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Campus ) ).Id;
+            int scheduleEntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Schedule ) ).Id;
 
             int? campusId = bddlCampus.SelectedValueAsInt();
             int? scheduleId = bddlService.SelectedValueAsInt();

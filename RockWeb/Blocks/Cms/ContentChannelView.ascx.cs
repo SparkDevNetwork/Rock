@@ -33,7 +33,7 @@ using Rock.Data;
 using Rock.Field.Types;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -1099,7 +1099,7 @@ $(document).ready(function() {
         {
             if ( channel != null )
             {
-                var entityTypeCache = CacheEntityType.Get( ITEM_TYPE_NAME );
+                var entityTypeCache = EntityTypeCache.Get( ITEM_TYPE_NAME );
                 if ( entityTypeCache != null )
                 {
                     var entityType = entityTypeCache.GetEntityType();
@@ -1115,7 +1115,7 @@ $(document).ready(function() {
                         .ToList() )
                     {
                         // remove EntityFields that aren't attributes for this ContentChannelType or ChannelChannel (to avoid duplicate Attribute Keys)
-                        var attribute = CacheAttribute.Get( entityField.AttributeGuid.Value );
+                        var attribute = AttributeCache.Get( entityField.AttributeGuid.Value );
                         if ( attribute != null &&
                             attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" &&
                             attribute.EntityTypeQualifierValue.AsInteger() != channel.ContentChannelTypeId )
@@ -1223,7 +1223,7 @@ $(document).ready(function() {
 
                     if ( filter.EntityTypeId.HasValue )
                     {
-                        var entityTypeCache = Rock.Cache.CacheEntityType.Get( filter.EntityTypeId.Value, rockContext );
+                        var entityTypeCache = EntityTypeCache.Get( filter.EntityTypeId.Value, rockContext );
                         if ( entityTypeCache != null )
                         {
                             filterControl.FilterEntityTypeName = entityTypeCache.Name;
@@ -1325,7 +1325,7 @@ $(document).ready(function() {
             filter.Expanded = filterField.Expanded;
             if ( filterField.FilterEntityTypeName != null )
             {
-                filter.EntityTypeId = Rock.Cache.CacheEntityType.Get( filterField.FilterEntityTypeName ).Id;
+                filter.EntityTypeId = EntityTypeCache.Get( filterField.FilterEntityTypeName ).Id;
                 filter.Selection = filterField.GetSelection();
             }
 

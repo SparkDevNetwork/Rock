@@ -16,7 +16,6 @@
 //
 using System;
 using System.Configuration;
-using Rock.Cache;
 using Rock.Web.Cache;
 
 namespace Rock
@@ -153,7 +152,7 @@ namespace Rock
         {
             get
             {
-                var graduationDateWithCurrentYear = CacheGlobalAttributes.Get().GetValue( "GradeTransitionDate" ).MonthDayStringAsDateTime() ?? new DateTime( RockDateTime.Today.Year, 6, 1 );
+                var graduationDateWithCurrentYear = GlobalAttributesCache.Get().GetValue( "GradeTransitionDate" ).MonthDayStringAsDateTime() ?? new DateTime( RockDateTime.Today.Year, 6, 1 );
                 if ( graduationDateWithCurrentYear < RockDateTime.Today )
                 {
                     // if the graduation date already occurred this year, return next year' graduation date

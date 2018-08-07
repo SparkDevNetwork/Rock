@@ -62,8 +62,8 @@
 
                 <div class="checkin-footer">
                     <div class="checkin-actions">
-                        <asp:LinkButton CssClass="btn btn-default" ID="lbBack" runat="server" OnClick="lbBack_Click" Text="Back" />
-                        <asp:LinkButton CssClass="btn btn-default" ID="lbCancel" runat="server" OnClick="lbCancel_Click" Text="Cancel" />
+                        <asp:LinkButton CssClass="btn btn-default btn-back" ID="lbBack" runat="server" OnClick="lbBack_Click" Text="Back" />
+                        <asp:LinkButton CssClass="btn btn-default btn-cancel" ID="lbCancel" runat="server" OnClick="lbCancel_Click" Text="Cancel" />
                         <asp:LinkButton CssClass="btn btn-primary pull-right" ID="lbSelect" runat="server" OnClientClick="return GetPersonSelection();" OnClick="lbSelect_Click" Text="Next" />
                     </div>
                 </div>
@@ -90,7 +90,7 @@
                                 <div class="controls checkin-option-list">
                                     <asp:Repeater ID="rOptions" runat="server">
                                         <ItemTemplate>
-                                            <a data-key='<%# Eval("Key") %>' data-schedule-id='<%# Eval("Schedule.Schedule.Id") %>' 
+                                            <a data-key='<%# Eval("Key") %>' data-schedule-id='<%# Eval("Schedule.Schedule.Id") %>'
                                                 class='btn btn-primary btn-checkin-select btn-block js-option-select <%# (bool)Eval("Disabled") ? "btn-dimmed" : "" %>' style="text-align: left">
                                                 <div class="row">
                                                     <div class="col-md-1 col-sm-2 col-xs-3">
@@ -113,7 +113,7 @@
 
                 <div class="checkin-footer">
                     <div class="checkin-actions">
-                        <asp:LinkButton CssClass="btn btn-default" ID="lbOptionCacncel" runat="server" OnClick="lbOptionCancel_Click" Text="Cancel" />
+                        <asp:LinkButton CssClass="btn btn-default btn-cancel" ID="lbOptionCacncel" runat="server" OnClick="lbOptionCancel_Click" Text="Cancel" />
                         <asp:LinkButton CssClass="btn btn-primary pull-right" ID="lbOptionSelect" runat="server" OnClientClick="return GetOptionSelection();" OnClick="lbOptionSelect_Click" Text="Ok" />
                     </div>
                 </div>

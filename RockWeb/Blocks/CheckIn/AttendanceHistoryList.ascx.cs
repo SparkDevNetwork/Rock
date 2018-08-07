@@ -25,7 +25,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -86,13 +86,13 @@ namespace RockWeb.Blocks.Checkin
             if ( !Page.IsPostBack )
             {
                 bool valid = true;
-                int personEntityTypeId = CacheEntityType.Get( "Rock.Model.Person" ).Id;
+                int personEntityTypeId = EntityTypeCache.Get( "Rock.Model.Person" ).Id;
                 if ( ContextTypesRequired.Any( p => p.Id == personEntityTypeId ) && _person == null )
                 {
                     valid = false;
                 }
 
-                int batchEntityTypeId = CacheEntityType.Get( "Rock.Model.Group" ).Id;
+                int batchEntityTypeId = EntityTypeCache.Get( "Rock.Model.Group" ).Id;
                 if ( ContextTypesRequired.Any( g => g.Id == batchEntityTypeId ) && _group == null )
                 {
                     valid = false;
@@ -436,7 +436,7 @@ namespace RockWeb.Blocks.Checkin
                 _locationPaths.AddOrIgnore( location.Id, locationPath );
             }
 
-            gHistory.EntityTypeId = CacheEntityType.Get<Attendance>().Id;
+            gHistory.EntityTypeId = EntityTypeCache.Get<Attendance>().Id;
             gHistory.DataSource = qry.ToList();
             gHistory.DataBind();
         }

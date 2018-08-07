@@ -27,7 +27,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Attribute;
 
@@ -122,7 +122,7 @@ namespace RockWeb.Blocks.Cms
             }
 
             int? siteId = null;
-            var pageCache = CachePage.Get( selectedPageId );
+            var pageCache = PageCache.Get( selectedPageId );
             if ( pageCache != null && pageCache.Layout != null )
             {
                 siteId = pageCache.Layout.SiteId;
@@ -297,7 +297,7 @@ namespace RockWeb.Blocks.Cms
             int? pageId = ppPage.SelectedValueAsInt();
             if ( pageId.HasValue )
             {
-                var page = CachePage.Get( pageId.Value );
+                var page = PageCache.Get( pageId.Value );
                 if ( page != null && page.Layout != null && page.Layout.Site != null )
                 {
                     lSite.Text = page.Layout.Site.Name;

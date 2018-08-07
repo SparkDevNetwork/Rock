@@ -24,7 +24,7 @@ using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Workflow.Action
 {
@@ -63,7 +63,7 @@ namespace Rock.Workflow.Action
             Guid guid = toValue.AsGuid();
             if ( !guid.IsEmpty() )
             {
-                var attribute = CacheAttribute.Get( guid, rockContext );
+                var attribute = AttributeCache.Get( guid, rockContext );
                 if ( attribute != null )
                 {
                     string toAttributeValue = action.GetWorklowAttributeValue( guid );
@@ -166,7 +166,7 @@ namespace Rock.Workflow.Action
             Guid messageGuid = message.AsGuid();
             if ( !messageGuid.IsEmpty() )
             {
-                var attribute = CacheAttribute.Get( messageGuid, rockContext );
+                var attribute = AttributeCache.Get( messageGuid, rockContext );
                 if ( attribute != null )
                 {
                     string messageAttributeValue = action.GetWorklowAttributeValue( messageGuid );
@@ -184,7 +184,7 @@ namespace Rock.Workflow.Action
             Guid titleGuid = title.AsGuid();
             if ( !titleGuid.IsEmpty() )
             {
-                var attribute = CacheAttribute.Get( titleGuid, rockContext );
+                var attribute = AttributeCache.Get( titleGuid, rockContext );
                 if ( attribute != null )
                 {
                     string titleAttributeValue = action.GetWorklowAttributeValue( titleGuid );
@@ -202,7 +202,7 @@ namespace Rock.Workflow.Action
             Guid soundGuid = sound.AsGuid();
             if ( !soundGuid.IsEmpty() )
             {
-                var attribute = CacheAttribute.Get( soundGuid, rockContext );
+                var attribute = AttributeCache.Get( soundGuid, rockContext );
                 if ( attribute != null )
                 {
                     string soundAttributeValue = action.GetWorklowAttributeValue( soundGuid );

@@ -18,7 +18,7 @@ using System.Linq;
 using System.Web.UI.WebControls;
 
 using Rock.Data;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -81,7 +81,7 @@ namespace Rock.Web.UI.Controls
                     picker.Items.Add( new ListItem() );
                 }
 
-                var dt = CacheDefinedType.Get( picker.DefinedTypeId.Value );
+                var dt = DefinedTypeCache.Get( picker.DefinedTypeId.Value );
                 if ( dt != null && dt.DefinedValues.Any() )
                 {
                     foreach ( var definedValue in dt.DefinedValues.OrderBy( v => v.Order ).ThenBy( v => v.Value ) )

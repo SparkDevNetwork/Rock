@@ -25,7 +25,7 @@ using Rock.Data;
 using Rock.Follow;
 using Rock.Attribute;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using System.Collections.Generic;
 
 namespace Rock.Follow.Event
@@ -95,8 +95,8 @@ namespace Rock.Follow.Event
                     PersonAlias targetPersonAlias = new PersonAliasService( new RockContext() ).Get( targetPersonGuid.AsGuid() );
                     DateTime daysBackDate = RockDateTime.Now.AddDays( -daysBack );
                     var person = personAlias.Person;
-                    int personEntityTypeId = CacheEntityType.Get( typeof( Person ) ).Id;
-                    int categoryId = CacheCategory.Get( Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid() ).Id;
+                    int personEntityTypeId = EntityTypeCache.Get( typeof( Person ) ).Id;
+                    int categoryId = CategoryCache.Get( Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid() ).Id;
 
                     //
                     // Start building the basic query. We want all History items that are for

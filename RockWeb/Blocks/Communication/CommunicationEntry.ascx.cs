@@ -29,7 +29,7 @@ using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls.Communication;
 using Rock.Web.UI.Controls;
@@ -410,7 +410,7 @@ namespace RockWeb.Blocks.Communication
                         }
                         else
                         {
-                            if ( MediumEntityTypeId == CacheEntityType.Get( "Rock.Communication.Medium.Email" ).Id )
+                            if ( MediumEntityTypeId == EntityTypeCache.Get( "Rock.Communication.Medium.Email" ).Id )
                             {
                                 if ( string.IsNullOrWhiteSpace( recipient.Email ) )
                                 {
@@ -447,7 +447,7 @@ namespace RockWeb.Blocks.Communication
                                     }
                                 }
                             }
-                            else if ( MediumEntityTypeId == CacheEntityType.Get( "Rock.Communication.Medium.Sms" ).Id )
+                            else if ( MediumEntityTypeId == EntityTypeCache.Get( "Rock.Communication.Medium.Sms" ).Id )
                             {
                                 if ( !recipient.HasSmsNumber )
                                 {
@@ -456,7 +456,7 @@ namespace RockWeb.Blocks.Communication
                                     textTooltip = "No phone number with SMS enabled.";
                                 }
                             }
-                            else if ( MediumEntityTypeId == CacheEntityType.Get( "Rock.Communication.Medium.PushNotification" ).Id )
+                            else if ( MediumEntityTypeId == EntityTypeCache.Get( "Rock.Communication.Medium.PushNotification" ).Id )
                             {
                                 if ( !recipient.HasNotificationsEnabled )
                                 {
@@ -999,10 +999,10 @@ namespace RockWeb.Blocks.Communication
             string mediumName = string.Empty;
 
             // Get the current medium type
-            CacheEntityType entityType = null;
+            EntityTypeCache entityType = null;
             if ( MediumEntityTypeId.HasValue )
             {
-                entityType = CacheEntityType.Get( MediumEntityTypeId.Value );
+                entityType = EntityTypeCache.Get( MediumEntityTypeId.Value );
             }
 
             foreach ( var serviceEntry in MediumContainer.Instance.Components )
@@ -1060,12 +1060,12 @@ namespace RockWeb.Blocks.Communication
 
                     if ( htmlControl != null )
                     {
-                        if ( GetAttributeValue( "DocumentRootFolder" ).IsNotNullOrWhitespace() )
+                        if ( GetAttributeValue( "DocumentRootFolder" ).IsNotNullOrWhiteSpace() )
                         {
                             htmlControl.DocumentFolderRoot = GetAttributeValue( "DocumentRootFolder" );
                         }
 
-                        if ( GetAttributeValue( "ImageRootFolder" ).IsNotNullOrWhitespace() )
+                        if ( GetAttributeValue( "ImageRootFolder" ).IsNotNullOrWhiteSpace() )
                         {
                             htmlControl.ImageFolderRoot = GetAttributeValue( "ImageRootFolder" );
                         }
@@ -1430,7 +1430,7 @@ namespace RockWeb.Blocks.Communication
             hlViewCommunication.NavigateUrl = CurrentPageReference.BuildUrl();
 
             // only show the Link if there is a CommunicationDetail block type on this page
-            hlViewCommunication.Visible = this.CachePage.Blocks.Any( a => a.BlockType.Guid == Rock.SystemGuid.BlockType.COMMUNICATION_DETAIL.AsGuid() );
+            hlViewCommunication.Visible = this.PageCache.Blocks.Any( a => a.BlockType.Guid == Rock.SystemGuid.BlockType.COMMUNICATION_DETAIL.AsGuid() );
 
             pnlResult.Visible = true;
 

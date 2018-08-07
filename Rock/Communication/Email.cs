@@ -22,7 +22,7 @@ using System.Web;
 using Humanizer;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Communication
 {
@@ -47,7 +47,7 @@ namespace Rock.Communication
                 return;
             }
 
-            string bounceMessage = message.IsNotNullOrWhitespace() ? $" ({message})" : "";
+            string bounceMessage = message.IsNotNullOrWhiteSpace() ? $" ({message})" : "";
 
             // get people who have those emails
             PersonService personService = new PersonService( new RockContext() );
@@ -101,7 +101,7 @@ namespace Rock.Communication
                 var errorMessages = new List<string>();
 
                 var emailMessage = new RockEmailMessage();
-                emailMessage.FromEmail = CacheGlobalAttributes.Value( "OrganizationEmail" );
+                emailMessage.FromEmail = GlobalAttributesCache.Value( "OrganizationEmail" );
                 emailMessage.Subject = subject;
                 emailMessage.SetRecipients( recipients );
                 emailMessage.Message = message;

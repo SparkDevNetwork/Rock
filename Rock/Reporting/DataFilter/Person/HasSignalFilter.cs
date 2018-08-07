@@ -23,7 +23,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.Person
@@ -140,7 +140,7 @@ function() {
             filterControl.Controls.Add( ddlSignalType );
 
             var signalTypeService = new SignalTypeService( new RockContext() );
-            var entityTypeIdPerson = CacheEntityType.GetId<Rock.Model.Person>();
+            var entityTypeIdPerson = EntityTypeCache.GetId<Rock.Model.Person>();
             var signalTypes = signalTypeService.Queryable()
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )

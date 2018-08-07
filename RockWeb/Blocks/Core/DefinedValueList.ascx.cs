@@ -23,7 +23,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -102,7 +102,7 @@ namespace RockWeb.Blocks.Core
             // A configured defined type takes precedence over any definedTypeId param value that is passed in.
             if ( Guid.TryParse( GetAttributeValue( "DefinedType" ), out definedTypeGuid ) )
             {
-                definedTypeId = CacheDefinedType.Get( definedTypeGuid ).Id;
+                definedTypeId = DefinedTypeCache.Get( definedTypeGuid ).Id;
             }
             else
             {
@@ -354,7 +354,7 @@ namespace RockWeb.Blocks.Core
                         boundField.AttributeId = attribute.Id;
                         boundField.HeaderText = attribute.Name;
 
-                        var attributeCache = Rock.Cache.CacheAttribute.Get( attribute.Id );
+                        var attributeCache = Rock.Web.Cache.AttributeCache.Get( attribute.Id );
                         if ( attributeCache != null )
                         {
                             boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
@@ -392,7 +392,7 @@ namespace RockWeb.Blocks.Core
 
         private void ShowDefinedValueEdit( int valueId, bool setValues )
         {
-            var definedType = CacheDefinedType.Get( hfDefinedTypeId.ValueAsInt() );
+            var definedType = DefinedTypeCache.Get( hfDefinedTypeId.ValueAsInt() );
             DefinedValue definedValue;
 
             modalValue.SubTitle = String.Format( "Id: {0}", valueId );

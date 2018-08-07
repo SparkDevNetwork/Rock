@@ -27,7 +27,7 @@ using Newtonsoft.Json;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using Rock.Security;
@@ -58,7 +58,7 @@ namespace RockWeb.Blocks.Cms
         #region Properties
 
         protected int? SelectedChannelId { get; set; }
-        public List<CacheAttribute> AvailableAttributes { get; set; }
+        public List<AttributeCache> AvailableAttributes { get; set; }
 
         #endregion
 
@@ -129,7 +129,7 @@ namespace RockWeb.Blocks.Cms
 
                     if ( selectedChannelGuid.HasValue )
                     {
-                        SelectedChannelId = CacheContentChannel.Get( selectedChannelGuid.Value ).Id;
+                        SelectedChannelId = ContentChannelCache.Get( selectedChannelGuid.Value ).Id;
                     }
                 }
 
@@ -563,7 +563,7 @@ namespace RockWeb.Blocks.Cms
                 if ( selectedChannel.IsTaggingEnabled )
                 {
                     itemTags = items.ToDictionary( i => i.Guid, v => "" );
-                    var entityTypeId = CacheEntityType.Get( Rock.SystemGuid.EntityType.CONTENT_CHANNEL_ITEM.AsGuid() ).Id;
+                    var entityTypeId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.CONTENT_CHANNEL_ITEM.AsGuid() ).Id;
                     var testedTags = new Dictionary<int, string>();
 
                     foreach ( var taggedItem in new TaggedItemService( rockContext )
@@ -578,7 +578,7 @@ namespace RockWeb.Blocks.Cms
                             testedTags.Add( taggedItem.TagId, taggedItem.Tag.IsAuthorized( Authorization.VIEW, CurrentPerson ) ? taggedItem.Tag.Name : string.Empty );
                         }
 
-                        if ( testedTags[taggedItem.TagId].IsNotNullOrWhitespace() )
+                        if ( testedTags[taggedItem.TagId].IsNotNullOrWhiteSpace() )
                         {
                             itemTags[taggedItem.EntityGuid] += string.Format( "<span class='tag'>{0}</span>", testedTags[taggedItem.TagId] );
                         }
@@ -730,8 +730,8 @@ namespace RockWeb.Blocks.Cms
 
         protected void BindAttributes( ContentChannel channel )
         {
-            AvailableAttributes = new List<CacheAttribute>();
-            int entityTypeId = CacheEntityType.Get( typeof( Rock.Model.ContentChannelItem ) ).Id;
+            AvailableAttributes = new List<AttributeCache>();
+            int entityTypeId = EntityTypeCache.Get( typeof( Rock.Model.ContentChannelItem ) ).Id;
             string channelId = channel.Id.ToString();
             string channelTypeId = channel.ContentChannelTypeId.ToString();
             foreach ( var attributeModel in new AttributeService( new RockContext() ).Queryable()
@@ -747,7 +747,7 @@ namespace RockWeb.Blocks.Cms
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name ) )
             {
-                AvailableAttributes.Add( Rock.Cache.CacheAttribute.Get( attributeModel ) );       
+                AvailableAttributes.Add( Rock.Web.Cache.AttributeCache.Get( attributeModel ) );       
             }
         }
 
@@ -771,7 +771,7 @@ namespace RockWeb.Blocks.Cms
                 gContentChannelItems.Columns.Add( titleField );
 
                 // Add Attribute columns
-                int entityTypeId = CacheEntityType.Get( typeof( Rock.Model.ContentChannelItem ) ).Id;
+                int entityTypeId = EntityTypeCache.Get( typeof( Rock.Model.ContentChannelItem ) ).Id;
                 string channelId = channel.Id.ToString();
                 string channelTypeId = channel.ContentChannelTypeId.ToString();
                 foreach ( var attribute in AvailableAttributes )

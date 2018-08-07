@@ -26,7 +26,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -118,7 +118,7 @@ namespace RockWeb.Blocks.Follow
             gSuggestions.SelectedKeys.ToList().ForEach( f => itemsSelected.Add( f.ToString().AsInteger() ) );
 
             // Get the personAlias entity type
-            var personAliasEntityType = CacheEntityType.Get( typeof( Rock.Model.PersonAlias ));
+            var personAliasEntityType = EntityTypeCache.Get( typeof( Rock.Model.PersonAlias ));
 
             // If we have a valid current person and items were selected
             if ( personAliasEntityType != null && CurrentPersonAliasId.HasValue && itemsSelected.Any() )
@@ -219,7 +219,7 @@ namespace RockWeb.Blocks.Follow
         /// </summary>
         private void BindGrid()
         {
-            var personAliasEntityType = CacheEntityType.Get( "Rock.Model.PersonAlias" );
+            var personAliasEntityType = EntityTypeCache.Get( "Rock.Model.PersonAlias" );
             if ( personAliasEntityType != null && CurrentPersonAlias != null )
             {
                 var rockContext = new RockContext();

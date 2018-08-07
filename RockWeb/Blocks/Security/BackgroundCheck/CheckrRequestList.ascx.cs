@@ -190,7 +190,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                 if ( bc != null )
                 {
                     string url = new Checkr().GetReportUrl( bc.ResponseId );
-                    if ( url.IsNotNullOrWhitespace() && url != "Unauthorized" )
+                    if ( url.IsNotNullOrWhiteSpace() && url != "Unauthorized" )
                     {
                         try
                         {

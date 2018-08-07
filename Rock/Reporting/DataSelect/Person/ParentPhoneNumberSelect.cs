@@ -24,7 +24,7 @@ using System.Linq.Expressions;
 using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataSelect.Person
@@ -168,7 +168,7 @@ namespace Rock.Reporting.DataSelect.Person
                 phoneNumberTypeValueGuid = Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid();
             }
 
-            int phoneNumberTypeValueId = CacheDefinedValue.Get(phoneNumberTypeValueGuid.Value).Id;
+            int phoneNumberTypeValueId = DefinedValueCache.Get(phoneNumberTypeValueGuid.Value).Id;
 
             var familyGroupMembers = new GroupMemberService(context).Queryable()
                 .Where(m => m.Group.GroupType.Guid == familyGuid);
@@ -197,7 +197,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             RockDropDownList phoneNumberTypeList = new RockDropDownList();
             phoneNumberTypeList.Items.Clear();
-            foreach ( var value in CacheDefinedType.Get(Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid()).DefinedValues.OrderBy(a => a.Order).ThenBy(a => a.Value) )
+            foreach ( var value in DefinedTypeCache.Get(Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid()).DefinedValues.OrderBy(a => a.Order).ThenBy(a => a.Value) )
             {
                 phoneNumberTypeList.Items.Add(new ListItem(value.Value.EndsWith("Phone") ? value.Value : value.Value + " Phone", value.Guid.ToString()));
             }

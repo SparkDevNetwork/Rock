@@ -479,7 +479,7 @@ namespace Rock.Web.UI.Controls
         {
             int? pageId = null;
             var rockBlock = this.RockBlock();
-            if ( rockBlock.CachePage.Guid == Rock.SystemGuid.Page.BLOCK_PROPERTIES.AsGuid() )
+            if ( rockBlock.PageCache.Guid == Rock.SystemGuid.Page.BLOCK_PROPERTIES.AsGuid() )
             {
                 // if the BlockProperties block is the current block, we'll treat the page that this block properties is for as the current page
                 int blockId = rockBlock.PageParameter( "BlockId" ).AsInteger();
@@ -491,7 +491,7 @@ namespace Rock.Web.UI.Controls
             }
             else
             {
-                pageId = rockBlock.CachePage.Id;
+                pageId = rockBlock.PageCache.Id;
             }
 
             if ( pageId.HasValue )

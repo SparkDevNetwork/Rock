@@ -27,7 +27,7 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using Rock.Store;
@@ -62,7 +62,7 @@ namespace RockWeb.Blocks.Connection
         /// <value>
         /// The available attributes.
         /// </value>
-        public List<CacheAttribute> AvailableAttributes { get; set; }
+        public List<AttributeCache> AvailableAttributes { get; set; }
 
         #endregion
 
@@ -76,7 +76,7 @@ namespace RockWeb.Blocks.Connection
         {
             base.LoadViewState( savedState );
 
-            AvailableAttributes = ViewState["AvailableAttributes"] as List<CacheAttribute>;
+            AvailableAttributes = ViewState["AvailableAttributes"] as List<AttributeCache>;
 
             SetFilters( false );
         }
@@ -237,7 +237,7 @@ namespace RockWeb.Blocks.Connection
 
                 var mergeFields = new Dictionary<string, object>();
                 mergeFields.Add( "CurrentPerson", CurrentPerson );
-                mergeFields.Add( "CampusContext", RockPage.GetCurrentContext( CacheEntityType.Get( "Rock.Model.Campus" ) ) as Campus );
+                mergeFields.Add( "CampusContext", RockPage.GetCurrentContext( EntityTypeCache.Get( "Rock.Model.Campus" ) ) as Campus );
                 var pageReference = new PageReference( GetAttributeValue( "DetailPage" ), null );
                 mergeFields.Add( "DetailPage", BuildDetailPageUrl(pageReference.BuildUrl()) );
 
@@ -310,7 +310,7 @@ namespace RockWeb.Blocks.Connection
                 if ( GetAttributeValue( "DisplayCampusFilter" ).AsBoolean() )
                 {
                     cblCampus.Visible = true;
-                    cblCampus.DataSource = CacheCampus.All( GetAttributeValue( "DisplayInactiveCampuses" ).AsBoolean() );
+                    cblCampus.DataSource = CampusCache.All( GetAttributeValue( "DisplayInactiveCampuses" ).AsBoolean() );
                     cblCampus.DataBind();
                 }
                 else
@@ -332,7 +332,7 @@ namespace RockWeb.Blocks.Connection
                 }
                 else if ( GetAttributeValue( "EnableCampusContext" ).AsBoolean() )
                 {
-                    var campusEntityType = CacheEntityType.Get( "Rock.Model.Campus" );
+                    var campusEntityType = EntityTypeCache.Get( "Rock.Model.Campus" );
                     var contextCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
 
                     if ( contextCampus != null )
@@ -344,7 +344,7 @@ namespace RockWeb.Blocks.Connection
                 if ( GetAttributeValue( "DisplayAttributeFilters" ).AsBoolean() )
                 {
                     // Parse the attribute filters 
-                    AvailableAttributes = new List<CacheAttribute>();
+                    AvailableAttributes = new List<AttributeCache>();
                     if ( connectionType != null )
                     {
                         int entityTypeId = new ConnectionOpportunity().TypeId;
@@ -357,7 +357,7 @@ namespace RockWeb.Blocks.Connection
                             .OrderBy( a => a.Order )
                             .ThenBy( a => a.Name ) )
                         {
-                            AvailableAttributes.Add( CacheAttribute.Get( attributeModel ) );
+                            AvailableAttributes.Add( AttributeCache.Get( attributeModel ) );
                         }
                     }
 

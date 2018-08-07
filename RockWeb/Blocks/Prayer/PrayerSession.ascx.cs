@@ -24,7 +24,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -169,10 +169,10 @@ namespace RockWeb.Blocks.Prayer
 
             if ( NoteTypeId.HasValue )
             {
-                var noteType = CacheNoteType.Get( NoteTypeId.Value );
+                var noteType = NoteTypeCache.Get( NoteTypeId.Value );
                 if ( noteType != null )
                 {
-                    notesComments.NoteOptions.NoteTypes = new CacheNoteType[] { noteType };
+                    notesComments.NoteOptions.NoteTypes = new NoteTypeCache[] { noteType };
                 }
             }
 
@@ -416,7 +416,7 @@ namespace RockWeb.Blocks.Prayer
             if ( !string.IsNullOrEmpty( categoryGuid ) )
             {
                 Guid guid = new Guid( categoryGuid );
-                var filterCategory = CacheCategory.Get( guid );
+                var filterCategory = CategoryCache.Get( guid );
                 if ( filterCategory != null )
                 {
                     prayerRequestQuery = prayerRequestQuery.Where( p => p.Category.ParentCategoryId == filterCategory.Id );

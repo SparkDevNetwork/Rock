@@ -25,7 +25,7 @@ using System.Web.UI.WebControls;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock
 {
@@ -362,7 +362,7 @@ namespace Rock
             if ( sortProperty.Property.StartsWith( "attribute:" ) )
             {
                 var itemType = typeof( T );
-                var attributeCache = CacheAttribute.Get( sortProperty.Property.Substring( 10 ).AsInteger() );
+                var attributeCache = AttributeCache.Get( sortProperty.Property.Substring( 10 ).AsInteger() );
                 if ( attributeCache != null && typeof( IModel ).IsAssignableFrom( typeof( T ) ) )
                 {
                     var entityIds = new List<int>();
@@ -448,7 +448,7 @@ namespace Rock
         ///   </example>
         public static IQueryable<T> WhereAttributeValue<T>( this IQueryable<T> source, RockContext rockContext, string attributeKey, string attributeValue ) where T : Rock.Data.Model<T>, new()
         {
-            int entityTypeId = Rock.Cache.CacheEntityType.GetId( typeof( T ) ) ?? 0;
+            int entityTypeId = EntityTypeCache.GetId( typeof( T ) ) ?? 0;
 
             var avs = new AttributeValueService( rockContext ).Queryable()
                 .Where( a => a.Attribute.Key == attributeKey )
@@ -477,7 +477,7 @@ namespace Rock
                 .WhereAttributeValue( rockContext, a => a.Attribute.Key == "IsAwesome" && a.ValueAsBoolean == true );
             */
 
-            int entityTypeId = Rock.Cache.CacheEntityType.GetId( typeof( T ) ) ?? 0;
+            int entityTypeId = EntityTypeCache.GetId( typeof( T ) ) ?? 0;
 
             var avs = new AttributeValueService( rockContext ).Queryable()
                 .Where( a => a.Attribute.EntityTypeId == entityTypeId )
@@ -566,7 +566,7 @@ namespace Rock
         /// <param name="replace">if set to <c>true</c> [replace].</param>
         public static void AddIfNotBlank( this IDictionary<string, string> dictionary, string key, string value, bool replace = true ) 
         {
-            if ( value.IsNotNullOrWhitespace() )
+            if ( value.IsNotNullOrWhiteSpace() )
             {
                 if ( !dictionary.ContainsKey( key ) )
                 {

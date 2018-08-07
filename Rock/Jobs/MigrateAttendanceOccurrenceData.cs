@@ -20,7 +20,7 @@ using Quartz;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
@@ -162,6 +162,7 @@ INSERT INTO [AttendanceOccurrence] (
     ,[LocationId]
     ,[ScheduleId]
     ,[OccurrenceDate]
+    ,[DidNotOccur]    
     ,[Guid]
 )
 SELECT 
@@ -169,21 +170,34 @@ SELECT
     [LocationId],
     [ScheduleId],
     [OccurrenceDate],
+    [DidNotOccur],
     NEWID()
 FROM (
 SELECT DISTINCT 
         A.[GroupId],
         A.[LocationId],
         A.[ScheduleId],
-        CAST(A.[StartDateTime] AS DATE) AS [OccurrenceDate]
-    FROM [Attendance] A
+        A.[OccurrenceDate],
+        A.[DidNotOccur]
+    FROM (
+		SELECT 
+        A.[GroupId],
+        A.[LocationId],
+        A.[ScheduleId],
+        CAST(A.[StartDateTime] AS DATE) AS [OccurrenceDate],
+		max(cast(a.DidNotOccur as int) ) [DidNotOccur]
+    FROM [Attendance] a
+	GROUP BY A.[GroupId],
+        A.[LocationId],
+        A.[ScheduleId],
+        CAST(A.[StartDateTime] AS DATE)
+	) A
         LEFT OUTER JOIN [AttendanceOccurrence] O
             ON ((O.[GroupId] = A.[GroupId]) or (o.GroupId is null and a.GroupId is null))
             AND ((O.[LocationId] = A.[LocationId]) or (o.LocationId is null and a.LocationId is null))
             AND ((O.[ScheduleId] = A.[ScheduleId]) or (o.ScheduleId is null and a.ScheduleId is null))
-            AND O.[OccurrenceDate] = CAST(A.[StartDateTime] AS DATE)
+            AND O.[OccurrenceDate] = A.[OccurrenceDate]
     WHERE O.[Id] IS NULL
-
 ) x
 ";
 

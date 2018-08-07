@@ -26,7 +26,7 @@ using Newtonsoft.Json;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 public class TwilioAsync : IHttpAsyncHandler
 {
@@ -224,7 +224,7 @@ class TwilioResponseAsync : IAsyncResult
             {
                 if ( retry < maxRetry - 1 )
                 {
-                    System.Threading.Thread.Sleep( 2000 );
+                    System.Threading.Tasks.Task.Delay( 2000 ).Wait();
                 }
             }
         }

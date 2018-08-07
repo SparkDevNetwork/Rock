@@ -27,6 +27,7 @@ using Rock.Model;
 using Rock.Web.UI;
 using Rock.Security;
 using System.IO;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Core
 {
@@ -123,7 +124,7 @@ namespace RockWeb.Blocks.Core
 
                     // create a rockContext for the workflow so that it can save it's changes, without 
                     var workflowRockContext = new RockContext();
-                    var workflowType = Rock.Cache.CacheWorkflowType.Get( workflowTypeGuid );
+                    var workflowType = WorkflowTypeCache.Get( workflowTypeGuid );
                     if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                     {
                         var workflow = Workflow.Activate( workflowType, binaryFile.FileName );

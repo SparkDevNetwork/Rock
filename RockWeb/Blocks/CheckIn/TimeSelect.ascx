@@ -7,9 +7,9 @@
     <div class="checkin-header">
         <h1><asp:Literal ID="lTitle" runat="server" /><div class="checkin-sub-title"><asp:Literal ID="lSubTitle" runat="server"></asp:Literal></div></h1>
     </div>
-                
+
     <div class="checkin-body">
-        
+
         <div class="checkin-scroll-panel">
             <div class="scroller">
 
@@ -20,7 +20,7 @@
                             <ItemTemplate>
                                 <button type="button" schedule-id='<%# Eval("Schedule.Id") %>' class='<%# "btn btn-default btn-lg btn-checkbox" + ((bool)Eval("PreSelected") ? " active" : "") %>'>
                                     <i class="fa fa-square-o"></i>
-                                
+
                                     <div><%# Container.DataItem.ToString() %></div>
                                 </button>
                             </ItemTemplate>
@@ -37,14 +37,14 @@
             </div>
         </div>
     </div>
-        
 
 
-    <div class="checkin-footer">   
+
+    <div class="checkin-footer">
         <div class="checkin-actions">
-            
-            <asp:LinkButton CssClass="btn btn-default" ID="lbBack" runat="server" OnClick="lbBack_Click" Text="Back" />
-            <asp:LinkButton CssClass="btn btn-default" ID="lbCancel" runat="server" OnClick="lbCancel_Click" Text="Cancel" />
+
+            <asp:LinkButton CssClass="btn btn-default btn-back" ID="lbBack" runat="server" OnClick="lbBack_Click" Text="Back" />
+            <asp:LinkButton CssClass="btn btn-default btn-cancel" ID="lbCancel" runat="server" OnClick="lbCancel_Click" Text="Cancel" />
         </div>
     </div>
 

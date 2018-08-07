@@ -25,7 +25,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Core
@@ -86,7 +86,7 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void LoadDropdowns()
         {
-            var scheduleEntityType = CacheEntityType.Get( typeof( Schedule ) );
+            var scheduleEntityType = EntityTypeCache.Get( typeof( Schedule ) );
             var currentSchedule = RockPage.GetCurrentContext( scheduleEntityType ) as Schedule;
 
             var scheduleIdString = Request.QueryString["scheduleId"];

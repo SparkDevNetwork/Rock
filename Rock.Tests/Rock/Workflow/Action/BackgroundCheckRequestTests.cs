@@ -1,6 +1,6 @@
 ﻿using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Workflow.Action;
 using System.Collections.Generic;
 using Xunit;
@@ -32,8 +32,8 @@ namespace Rock.Tests.Workflow.Action
                 {
                     // add in the expected objects so we don't make a db request
                     // in the future the db connection should be mocked
-                    Attributes = new Dictionary<string, CacheAttribute>(),
-                    AttributeValues = new Dictionary<string, CacheAttributeValue>()
+                    Attributes = new Dictionary<string, AttributeCache>(),
+                    AttributeValues = new Dictionary<string, AttributeValueCache>()
                 }
             };
             var errors = new List<string>();
@@ -56,8 +56,8 @@ namespace Rock.Tests.Workflow.Action
                 ActionType = new WorkflowActionType()
                 {
                     // add in the expected objects so we don't make a db request
-                    Attributes = new Dictionary<string, CacheAttribute>(),
-                    AttributeValues = new Dictionary<string, CacheAttributeValue>()
+                    Attributes = new Dictionary<string, AttributeCache>(),
+                    AttributeValues = new Dictionary<string, AttributeValueCache>()
                 }
             };
             var errors = new List<string>();

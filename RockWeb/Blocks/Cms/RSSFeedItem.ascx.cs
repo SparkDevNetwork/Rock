@@ -31,7 +31,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -103,7 +103,7 @@ namespace RockWeb.Blocks.Cms
 
         private Template GetTemplate()
         {
-            var cacheTemplate = CacheLavaTemplate.Get( TemplateCacheKey, GetAttributeValue( "Template" ) );
+            var cacheTemplate = LavaTemplateCache.Get( TemplateCacheKey, GetAttributeValue( "Template" ) );
             return cacheTemplate != null ? cacheTemplate.Template : null;
         }
 

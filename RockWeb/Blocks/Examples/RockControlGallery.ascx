@@ -48,7 +48,7 @@ Sys.Application.add_load(function () {
             <div id="main-controls" class="col-md-9 col-lg-7">
                 <asp:Panel ID="pnlDetails" runat="server">
 
-                    <asp:ValidationSummary ID="valExample" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                    <asp:ValidationSummary ID="valExample" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                     <h1 runat="server">General Information</h1>
 

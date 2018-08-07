@@ -230,7 +230,7 @@ namespace Rock.UniversalSearch.IndexModels
                 {
                     url = channel.ItemUrl;
 
-                    if ( url.IsNotNullOrWhitespace() )
+                    if ( url.IsNotNullOrWhiteSpace() )
                     {
                         if ( mergeFields == null )
                         {

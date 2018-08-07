@@ -20,7 +20,7 @@ using System.Linq;
 using Quartz;
 
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Attribute;
 
 namespace Rock.Jobs
@@ -93,7 +93,7 @@ namespace Rock.Jobs
                     successes++;
                 }
                 rockContext.SaveChanges();
-                System.Threading.Thread.Sleep( throttlePeriod );
+                System.Threading.Tasks.Task.Delay( throttlePeriod ).Wait();
             }
 
             context.Result = string.Format( "{0:N0} address verifications attempted; {1:N0} successfully verified", attempts, successes );

@@ -22,7 +22,7 @@ using System.ComponentModel.Composition;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Workflow.Action
 {
@@ -51,7 +51,7 @@ namespace Rock.Workflow.Action
         {
             errorMessages = new List<string>();
 
-            var attribute = CacheAttribute.Get( GetAttributeValue( action, "Attribute" ).AsGuid(), rockContext );
+            var attribute = AttributeCache.Get( GetAttributeValue( action, "Attribute" ).AsGuid(), rockContext );
             if ( attribute != null )
             {
                 string value = GetAttributeValue( action, "Value" ).ResolveMergeFields( GetMergeFields( action ), GetAttributeValue( action, "EnabledLavaCommands" ) ).Trim();

@@ -26,7 +26,7 @@ using DotLiquid.Exceptions;
 using Rock.Data;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Lava.Blocks
 {
@@ -156,7 +156,7 @@ namespace Rock.Lava.Blocks
 
                 foreach(var entity in entities )
                 {
-                    foreach(var entityType in CacheEntityType.All() )
+                    foreach(var entityType in EntityTypeCache.All() )
                     {
                         if (entityType.FriendlyName?.ToLower() == entity )
                         {
@@ -208,7 +208,7 @@ namespace Rock.Lava.Blocks
             parms.Add( "iterator", "results" );
             parms.Add( "searchtype", "wildcard" );
 
-            var markupItems = Regex.Matches( resolvedMarkup, "(.*?:'[^']+')" )
+            var markupItems = Regex.Matches( resolvedMarkup, "(.*?:'[^']*')" )
                 .Cast<Match>()
                 .Select( m => m.Value )
                 .ToList();

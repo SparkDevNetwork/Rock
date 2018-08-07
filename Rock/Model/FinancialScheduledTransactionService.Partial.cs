@@ -23,7 +23,7 @@ using System.Text;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Transactions;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -285,7 +285,7 @@ namespace Rock.Model
             var newTransactions = new List<FinancialTransaction>();
             var failedPayments = new List<FinancialTransaction>();
 
-            var contributionTxnType = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
+            var contributionTxnType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
 
             int? defaultAccountId = null;
             using ( var rockContext2 = new RockContext() )
@@ -349,7 +349,7 @@ namespace Rock.Model
                             transaction.StatusMessage = payment.StatusMessage;
                             transaction.FinancialPaymentDetail = new FinancialPaymentDetail();
 
-                            if ( payment.ForeignKey.IsNotNullOrWhitespace() )
+                            if ( payment.ForeignKey.IsNotNullOrWhiteSpace() )
                             {
                                 transaction.ForeignKey = payment.ForeignKey;
                             }
@@ -405,12 +405,12 @@ namespace Rock.Model
                             {
                                 if ( currencyTypeValue == null && financialPaymentDetail.CurrencyTypeValueId.HasValue )
                                 {
-                                    currencyTypeValue = CacheDefinedValue.Get( financialPaymentDetail.CurrencyTypeValueId.Value );
+                                    currencyTypeValue = DefinedValueCache.Get( financialPaymentDetail.CurrencyTypeValueId.Value );
                                 }
 
                                 if ( creditCardTypevalue == null && financialPaymentDetail.CreditCardTypeValueId.HasValue )
                                 {
-                                    creditCardTypevalue = CacheDefinedValue.Get( financialPaymentDetail.CreditCardTypeValueId.Value );
+                                    creditCardTypevalue = DefinedValueCache.Get( financialPaymentDetail.CreditCardTypeValueId.Value );
                                 }
 
                                 transaction.FinancialPaymentDetail.AccountNumberMasked = financialPaymentDetail.AccountNumberMasked;
@@ -710,7 +710,7 @@ namespace Rock.Model
             return processedAmount - rockAmount;
         }
 
-        private void LaunchWorkflow( CacheWorkflowType workflowType, FinancialTransaction transaction )
+        private void LaunchWorkflow( WorkflowTypeCache workflowType, FinancialTransaction transaction )
         {
             if ( workflowType != null && ( workflowType.IsActive ?? true ) )
             {

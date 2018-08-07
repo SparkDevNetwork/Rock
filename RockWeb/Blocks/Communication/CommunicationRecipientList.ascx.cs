@@ -25,7 +25,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -264,7 +264,7 @@ namespace RockWeb.Blocks.Communication
         private void BindGrid()
         {
             // If configured for a person and person is null, return
-            int personEntityTypeId = CacheEntityType.Get<Person>().Id;
+            int personEntityTypeId = EntityTypeCache.Get<Person>().Id;
             if ( ContextTypesRequired.Any( e => e.Id == personEntityTypeId ) && _person == null )
             {
                 return;
@@ -332,7 +332,7 @@ namespace RockWeb.Blocks.Communication
                 qryCommunications = qryCommunications.OrderByDescending( c => c.CreatedDateTime );
             }
 
-            gCommunication.EntityTypeId = CacheEntityType.Get<Rock.Model.Communication>().Id;
+            gCommunication.EntityTypeId = EntityTypeCache.Get<Rock.Model.Communication>().Id;
             gCommunication.SetLinqDataSource( qryCommunications.AsNoTracking() );
             gCommunication.DataBind();
         }

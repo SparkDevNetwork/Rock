@@ -5,7 +5,7 @@
         top: 200px;
     }
 </style>
-<script> 
+<script>
     var timeout = 0;
 </script>
 
@@ -100,7 +100,7 @@
                         // stop the keypress
                         e.preventDefault();
 
-                    } 
+                    }
 
                     lastKeyPress = date.getTime();
 
@@ -304,7 +304,7 @@
                                     </div>
 
                                     <div class="checkin-actions">
-                                        <asp:LinkButton ID="lbLogin" runat="server" OnClick="lbLogin_Click" CssClass="btn btn-primary">Login</asp:LinkButton>
+                                        <asp:LinkButton ID="lbLogin" runat="server" OnClick="lbLogin_Click" CssClass="btn btn-primary pull-left">Login</asp:LinkButton>
                                     </div>
                                 </div>
                             </div>
@@ -325,7 +325,7 @@
             <div class="checkin-footer">
 
                 <div class="checkin-actions">
-                    <asp:LinkButton ID="lbCancel" runat="server" CausesValidation="false" OnClick="lbCancel_Click" CssClass="btn btn-default">Cancel</asp:LinkButton>
+                    <asp:LinkButton ID="lbCancel" runat="server" CausesValidation="false" OnClick="lbCancel_Click" CssClass="btn btn-default btn-cancel">Cancel</asp:LinkButton>
                 </div>
             </div>
 

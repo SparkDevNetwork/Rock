@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
 
@@ -146,7 +146,7 @@ namespace Rock.CheckIn
                                 int definedValueId = int.MinValue;
                                 if ( int.TryParse( nameAndValue[1], out definedValueId ) )
                                 {
-                                    var definedValue = CacheDefinedValue.Get( definedValueId );
+                                    var definedValue = DefinedValueCache.Get( definedValueId );
                                     if ( definedValue != null )
                                     {
                                         string mergeField = definedValue.GetAttributeValue( "MergeField" );

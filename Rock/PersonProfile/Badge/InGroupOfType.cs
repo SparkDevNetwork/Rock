@@ -26,7 +26,7 @@ using System.Collections.Generic;
 using System.Data;
 using System;
 using System.Diagnostics;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.PersonProfile.Badge
 {
@@ -39,14 +39,14 @@ namespace Rock.PersonProfile.Badge
 
     [GroupTypeField("Group Type", "The type of group to use.", true)]
     [ColorField("Badge Color", "The color of the badge (#ffffff).", true, defaultValue: "#0ab4dd")]
-    public class InGroupOfType : BadgeComponentModern
+    public class InGroupOfType : BadgeComponent
     {
         /// <summary>
         /// Renders the specified writer.
         /// </summary>
         /// <param name="badge">The badge.</param>
         /// <param name="writer">The writer.</param>
-        public override void Render( CachePersonBadge badge, System.Web.UI.HtmlTextWriter writer )
+        public override void Render( PersonBadgeCache badge, System.Web.UI.HtmlTextWriter writer )
         {
             if (!String.IsNullOrEmpty(GetAttributeValue(badge, "GroupType")))
             {

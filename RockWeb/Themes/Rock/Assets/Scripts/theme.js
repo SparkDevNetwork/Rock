@@ -13,8 +13,8 @@ function BindNavEvents() {
     var bodyElement = $('body'),
     topNavElement = $('.navbar-fixed-top'),
     navElement = $('.navbar-side'),
-    hoverDelay = 250,
-    hideDelay = 100;
+    hoverDelay = 200,
+    hideDelay = 150;
 
     $('.navbar-side > li').mouseenter(function() {
       const $this = $(this);
@@ -26,7 +26,6 @@ function BindNavEvents() {
             $('.navbar-side > li').removeClass('open');
             $this.addClass('open');
             $this[0].navHoverTimeout = undefined;
-          //}, 0);
         } else {
           $this[0].navHoverTimeout = setTimeout(function() {
             $this.addClass('open');
@@ -47,7 +46,6 @@ function BindNavEvents() {
         $this[0].navHoverTimeout = undefined;
       } else if ($this[0].navUnHoverTimeout === undefined) {
         $this[0].navUnHoverTimeout = setTimeout(function() {
-          // $('.navbar-side > li').removeClass('open');
           $this.removeClass('open');
           if (navElement.find('li.open').length <= 1) {
             $('body')
@@ -75,6 +73,28 @@ function BindNavEvents() {
           .addClass('navbar-side-open')
           .removeClass('navbar-side-close');
       }
+    });
+  });
+}
+
+function PreventNumberScroll() {
+  $(document).ready(function() {
+    // disable mousewheel on a input number field when in focus
+    // (to prevent Cromium browsers change the value when scrolling)
+    $('form').on('focus', 'input[type=number]', function (e) {
+      $(this).on('mousewheel.disableScroll', function (e) {
+        e.preventDefault()
+      })
+    });
+    $('form').on('blur', 'input[type=number]', function (e) {
+      $(this).off('mousewheel.disableScroll')
+    });
+
+    $('.js-notetext').blur(function() {
+      $(this).parent().removeClass("focus-within");
+    })
+    .focus(function() {
+      $(this).parent().addClass("focus-within")
     });
   });
 }

@@ -33,7 +33,7 @@ using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls.Communication;
 using Rock.Web.UI.Controls;
@@ -590,7 +590,7 @@ namespace RockWeb.Blocks.Communication
             pnlOpened.Visible = false;
 
             lDetails.Text = GetMediumData( communication );
-            if ( communication.UrlReferrer.IsNotNullOrWhitespace() )
+            if ( communication.UrlReferrer.IsNotNullOrWhiteSpace() )
             {
                 lDetails.Text += string.Format( "<small>Originated from <a href='{0}'>this page</a></small>", communication.UrlReferrer );
             }
@@ -864,7 +864,7 @@ namespace RockWeb.Blocks.Communication
 
                         sb.AppendLine( "</div>" );
 
-                        if ( communication.Message.IsNotNullOrWhitespace() )
+                        if ( communication.Message.IsNotNullOrWhiteSpace() )
                         {
                             AppendMediumData( sb, "HtmlMessage", string.Format( @"
                         <iframe id='js-email-body-iframe' class='email-body'></iframe>
@@ -904,7 +904,7 @@ namespace RockWeb.Blocks.Communication
 
         private void AppendMediumData( StringBuilder sb, string key, string value )
         {
-            if ( key.IsNotNullOrWhitespace() && value.IsNotNullOrWhitespace() )
+            if ( key.IsNotNullOrWhiteSpace() && value.IsNotNullOrWhiteSpace() )
             {
                 sb.AppendFormat( "<div class='form-group'><label class='control-label'>{0}</label><p class='form-control-static'>{1}</p></div>", key, value );
             }

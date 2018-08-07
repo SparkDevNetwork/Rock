@@ -20,7 +20,7 @@ using System.Linq;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Transactions
 {
@@ -138,7 +138,7 @@ namespace Rock.Transactions
             using ( var rockContext = new RockContext() )
             {
                 // lookup the interaction channel, and create it if it doesn't exist
-                int channelMediumTypeValueId = CacheDefinedValue.Get( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
+                int channelMediumTypeValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
                 var interactionChannelService = new InteractionChannelService( rockContext );
                 var interactionChannelId = interactionChannelService.Queryable()
                     .Where( a =>
@@ -149,10 +149,10 @@ namespace Rock.Transactions
                 if ( interactionChannelId == null )
                 {
                     var interactionChannel = new InteractionChannel();
-                    interactionChannel.Name = CacheSite.Get( SiteId ?? 1 ).Name;
+                    interactionChannel.Name = SiteCache.Get( SiteId ?? 1 ).Name;
                     interactionChannel.ChannelTypeMediumValueId = channelMediumTypeValueId;
                     interactionChannel.ChannelEntityId = this.SiteId;
-                    interactionChannel.ComponentEntityTypeId = CacheEntityType.Get<Rock.Model.Page>().Id;
+                    interactionChannel.ComponentEntityTypeId = EntityTypeCache.Get<Rock.Model.Page>().Id;
                     interactionChannelService.Add( interactionChannel );
                     rockContext.SaveChanges();
                     interactionChannelId = interactionChannel.Id;
@@ -169,7 +169,7 @@ namespace Rock.Transactions
                 if ( interactionComponent != null )
                 {
                     var title = string.Empty;
-                    if ( BrowserTitle.IsNotNullOrWhitespace() )
+                    if ( BrowserTitle.IsNotNullOrWhiteSpace() )
                     {
                         title = BrowserTitle;
                     }

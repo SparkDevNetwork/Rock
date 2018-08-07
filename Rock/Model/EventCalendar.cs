@@ -20,7 +20,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Security;
 
@@ -136,7 +136,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IEntityCache GetCacheObject()
         {
-            return CacheEventCalendar.Get( this.Id );
+            return EventCalendarCache.Get( this.Id );
         }
 
         /// <summary>
@@ -146,7 +146,7 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
         {
-            CacheEventCalendar.UpdateCachedEntity( this.Id, entityState );
+            EventCalendarCache.UpdateCachedEntity( this.Id, entityState );
         }
 
         #endregion
