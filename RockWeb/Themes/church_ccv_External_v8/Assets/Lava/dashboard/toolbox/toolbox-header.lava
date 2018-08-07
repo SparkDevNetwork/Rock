@@ -75,8 +75,8 @@
 
     <div class="toolbox-subnav-desktop">
         <div id="dashboard-button" onClick="linkClicked(this, 'dashboard')">Dashboard</div>
+        <div id="curriculum-button" onClick="linkClicked(this, 'curriculum')">Curriculum</div>
         <div id="training-center-button" onClick="linkClicked(this, 'training-center')">Training Center</div>
-        <div id="resources-button" onClick="linkClicked(this, 'resources')">Resources</div>
         <div id="baptisms-button" onClick="linkClicked(this, 'baptisms')">Baptisms</div>
         <div id="group-details-button" onClick="linkClicked(this, 'group-details', false)">Group Details</div>
     </div>
@@ -84,8 +84,8 @@
     <div class="toolbox-subnav-mobile">
         <div class="toolbox-subnav-mobile-items">
             <div id="dashboard-mobile-button" onClick="linkClicked(this, 'dashboard')" class="subnav-item toolbox-subnav-div-selected">Dashboard</div>
+            <div id="curriculum-mobile-button" onClick="linkClicked(this, 'curriculum')" class="subnav-item">Curriculum</div>
             <div id="training-center-mobile-button" onClick="linkClicked(this, 'training-center')" class="subnav-item">Training Center</div>
-            <div id="resources-mobile-button" onClick="linkClicked(this, 'resources')" class="subnav-item">Resources</div>
             <div id="baptisms-mobile-button" onClick="linkClicked(this, 'baptisms')" class="subnav-item">Baptisms</div>
             <div id="group-details-button" onClick="linkClicked(this, 'group-details', false)" class="subnav-item">Group Details</div>
         </div>
