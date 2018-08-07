@@ -860,55 +860,12 @@ namespace RockWeb.Blocks.Communication
         /// <returns></returns>
         private IQueryable<GroupMember> GetRecipientFromListSelection()
         {
-            IQueryable<GroupMember> groupMemberQuery = null;
-            var rockContext = new RockContext();
-            var groupMemberService = new GroupMemberService( rockContext );
-            var personService = new PersonService( rockContext );
-            var dataViewService = new DataViewService( rockContext );
             int? communicationGroupId = ddlCommunicationGroupList.SelectedValue.AsIntegerOrNull();
-            if ( communicationGroupId.HasValue )
-            {
-                groupMemberQuery = groupMemberService.Queryable().Where( a => a.GroupId == communicationGroupId.Value && a.GroupMemberStatus == GroupMemberStatus.Active );
+            var segmentFilterType = rblCommunicationGroupSegmentFilterType.SelectedValueAsEnum<SegmentCriteria>();
+            var segmentDataViewIds = cblCommunicationGroupSegments.Items.OfType<ListItem>().Where( a => a.Selected ).Select( a => a.Value.AsInteger() ).ToList();
+            var rockContext = new RockContext();
 
-                var segmentFilterType = rblCommunicationGroupSegmentFilterType.SelectedValueAsEnum<SegmentCriteria>();
-                var segmentDataViewIds = cblCommunicationGroupSegments.Items.OfType<ListItem>().Where( a => a.Selected ).Select( a => a.Value.AsInteger() ).ToList();
-
-                Expression segmentExpression = null;
-                ParameterExpression paramExpression = personService.ParameterExpression;
-                var segmentDataViewList = dataViewService.GetByIds( segmentDataViewIds ).AsNoTracking().ToList();
-                foreach ( var segmentDataView in segmentDataViewList )
-                {
-                    List<string> errorMessages;
-
-                    var exp = segmentDataView.GetExpression( personService, paramExpression, out errorMessages );
-                    if ( exp != null )
-                    {
-                        if ( segmentExpression == null )
-                        {
-                            segmentExpression = exp;
-                        }
-                        else
-                        {
-                            if ( segmentFilterType == SegmentCriteria.All )
-                            {
-                                segmentExpression = Expression.AndAlso( segmentExpression, exp );
-                            }
-                            else
-                            {
-                                segmentExpression = Expression.OrElse( segmentExpression, exp );
-                            }
-                        }
-                    }
-                }
-
-                if ( segmentExpression != null )
-                {
-                    var personQry = personService.Get( paramExpression, segmentExpression );
-                    groupMemberQuery = groupMemberQuery.Where( a => personQry.Any( p => p.Id == a.PersonId ) );
-                }
-            }
-
-            return groupMemberQuery;
+            return Rock.Model.Communication.GetCommunicationListMembers( rockContext, communicationGroupId, segmentFilterType, segmentDataViewIds );
         }
 
         /// <summary>

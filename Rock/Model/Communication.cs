@@ -29,6 +29,7 @@ using Rock.Data;
 using Rock.Communication;
 using Rock.Web.Cache;
 using System.Data.Entity;
+using System.Linq.Expressions;
 
 namespace Rock.Model
 {
@@ -687,6 +688,63 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the communication list members.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="listGroupId">The list group identifier.</param>
+        /// <param name="segmentCriteria">The segment criteria.</param>
+        /// <param name="segmentDataViewIds">The segment data view ids.</param>
+        /// <returns></returns>
+        public static IQueryable<GroupMember> GetCommunicationListMembers( RockContext rockContext, int? listGroupId, SegmentCriteria segmentCriteria, List<int> segmentDataViewIds)
+        {
+            IQueryable<GroupMember> groupMemberQuery = null;
+            if ( listGroupId.HasValue )
+            {
+                var groupMemberService = new GroupMemberService( rockContext );
+                var personService = new PersonService( rockContext );
+                var dataViewService = new DataViewService( rockContext );
+
+                groupMemberQuery = groupMemberService.Queryable().Where( a => a.GroupId == listGroupId.Value && a.GroupMemberStatus == GroupMemberStatus.Active );
+
+                Expression segmentExpression = null;
+                ParameterExpression paramExpression = personService.ParameterExpression;
+                var segmentDataViewList = dataViewService.GetByIds( segmentDataViewIds ).AsNoTracking().ToList();
+                foreach ( var segmentDataView in segmentDataViewList )
+                {
+                    List<string> errorMessages;
+
+                    var exp = segmentDataView.GetExpression( personService, paramExpression, out errorMessages );
+                    if ( exp != null )
+                    {
+                        if ( segmentExpression == null )
+                        {
+                            segmentExpression = exp;
+                        }
+                        else
+                        {
+                            if ( segmentCriteria == SegmentCriteria.All )
+                            {
+                                segmentExpression = Expression.AndAlso( segmentExpression, exp );
+                            }
+                            else
+                            {
+                                segmentExpression = Expression.OrElse( segmentExpression, exp );
+                            }
+                        }
+                    }
+                }
+
+                if ( segmentExpression != null )
+                {
+                    var personQry = personService.Get( paramExpression, segmentExpression );
+                    groupMemberQuery = groupMemberQuery.Where( a => personQry.Any( p => p.Id == a.PersonId ) );
+                }
+            }
+
+            return groupMemberQuery;
+        }
+
+        /// <summary>
         /// Refresh the recipients list.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
@@ -701,10 +759,10 @@ namespace Rock.Model
             var emailMediumEntityType = EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );
             var smsMediumEntityType = EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() );
             var preferredCommunicationTypeAttribute = AttributeCache.Get( SystemGuid.Attribute.GROUPMEMBER_COMMUNICATION_LIST_PREFERRED_COMMUNICATION_MEDIUM.AsGuid() );
+            var segmentDataViewGuids = this.Segments.SplitDelimitedValues().AsGuidList();
+            var segmentDataViewIds =  new DataViewService( rockContext ).GetByGuids( segmentDataViewGuids ).Select( a => a.Id ).ToList();
 
-            var qryCommunicationListMembers = new GroupMemberService( rockContext )
-                .Queryable()
-                .Where( a => a.GroupId == ListGroupId.Value && a.GroupMemberStatus == GroupMemberStatus.Active );
+            var qryCommunicationListMembers = GetCommunicationListMembers( rockContext, ListGroupId, this.SegmentCriteria, segmentDataViewIds );
 
             // NOTE: If this is scheduled communication, don't include Members that were added after the scheduled FutureSendDateTime
             if ( this.FutureSendDateTime.HasValue )
