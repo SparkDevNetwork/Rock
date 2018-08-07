@@ -648,7 +648,7 @@ namespace Rock.Model
             {
                 if ( keyVal.Value.Any() )
                 {
-                    HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialBatch ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), keyVal.Key, keyVal.Value, string.Empty, typeof( FinancialTransaction ), this.Id, true, this.ModifiedByPersonAliasId );
+                    HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialBatch ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), keyVal.Key, keyVal.Value, string.Empty, typeof( FinancialTransaction ), this.Id, true, this.ModifiedByPersonAliasId, dbContext.SourceOfChange );
                 }
             }
 

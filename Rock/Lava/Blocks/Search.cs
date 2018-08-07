@@ -208,7 +208,7 @@ namespace Rock.Lava.Blocks
             parms.Add( "iterator", "results" );
             parms.Add( "searchtype", "wildcard" );
 
-            var markupItems = Regex.Matches( resolvedMarkup, "(.*?:'[^']*')" )
+            var markupItems = Regex.Matches( resolvedMarkup, @"(\S*?:'[^']+')" )
                 .Cast<Match>()
                 .Select( m => m.Value )
                 .ToList();

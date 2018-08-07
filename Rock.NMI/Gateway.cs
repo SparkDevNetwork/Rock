@@ -135,7 +135,7 @@ namespace Rock.NMI
         }
 
         /// <summary>
-        /// Returnes a boolean value indicating if 'Saved Account' functionality is supported for frequency (i.e. one-time vs repeating )
+        /// Returns a boolean value indicating if 'Saved Account' functionality is supported for frequency (i.e. one-time vs repeating )
         /// </summary>
         /// <param name="isRepeating">if set to <c>true</c> [is repeating].</param>
         /// <returns></returns>

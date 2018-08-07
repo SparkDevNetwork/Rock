@@ -73,9 +73,9 @@ namespace Rock.Jobs
                         ( l.IsGeoPointLocked == null || l.IsGeoPointLocked == false ) &&// don't ever try locked address
                         l.IsActive == true && 
                         l.Street1 != null &&
-                        l.Street1 != "" &&
+                        l.Street1 != string.Empty &&
                         l.City != null && 
-                        l.City != "" &&
+                        l.City != string.Empty &&
                         (
                             ( l.GeocodedDateTime == null && ( l.GeocodeAttemptedDateTime == null || l.GeocodeAttemptedDateTime < retryDate ) ) || // has not been attempted to be geocoded since retry date
                             ( l.StandardizedDateTime == null && ( l.StandardizeAttemptedDateTime == null || l.StandardizeAttemptedDateTime < retryDate ) ) // has not been attempted to be standardize since retry date

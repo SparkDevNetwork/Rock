@@ -10,7 +10,7 @@
 
 <div class="picker-wrapper clearfix">
     <div class="picker-folders">
-        <%-- Folders - Separate UpdatePanel so that Tree doesn't get rebuilt on postbacks (unless the server explicity wants it to get rebuilt) --%>
+        <%-- Folders - Separate UpdatePanel so that Tree doesn't get rebuilt on postbacks (unless the server explicitly wants it to get rebuilt) --%>
         <asp:UpdatePanel ID="upnlFolders" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false">
             <ContentTemplate>
                 <div class="actions btn-group">

@@ -30,7 +30,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// Control for entering a Social Security Number (SSN). Note: This control should only be used on a page that is using SSL as the SSN number is passed from client
     /// to server in a hidden field in plain text. If the SSN is being persisted, make sure to use the TextEncrypted property instead of the Text property so that an 
-    /// encyrpted version of the SSN number is stored.
+    /// encrypted version of the SSN number is stored.
     /// </summary>
     public class SSNBox : CompositeControl, IRockControl
     {

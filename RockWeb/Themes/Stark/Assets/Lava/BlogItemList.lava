@@ -18,7 +18,7 @@
   </div>
 
   <p class="margin-t-lg">
-    <a href="/{{ itemLink }}" class="btn btn-default btn-xs">
+    <a href="{{ itemLink }}" class="btn btn-default btn-xs">
       Read more <i class="fa fa-chevron-right"></i>
     </a>
   </p>

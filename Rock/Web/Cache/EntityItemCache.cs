@@ -91,7 +91,7 @@ namespace Rock.Web.Cache
         #region Protected Methods
 
         /// <summary>
-        /// Returns the key prefixed with the type of ojbect being cached.
+        /// Returns the key prefixed with the type of object being cached.
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>

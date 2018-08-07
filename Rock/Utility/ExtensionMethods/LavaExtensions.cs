@@ -138,7 +138,7 @@ namespace Rock
                 entityType = entityType.BaseType;
             }
 
-            // If this is an IEntity, check to see if it's already been liquidized in prev heirarchy. If so, just return string indicating "--See Previous Entry--"
+            // If this is an IEntity, check to see if it's already been liquidized in prev hierarchy. If so, just return string indicating "--See Previous Entry--"
             if ( myObject is IEntity )
             {
                 var entity = myObject as IEntity;
@@ -562,7 +562,7 @@ namespace Rock
                     return content ?? string.Empty;
                 }
 
-                // If there have not been any EnabledLavaCommands explicitely set, then use the global defaults.
+                // If there have not been any EnabledLavaCommands explicitly set, then use the global defaults.
                 if ( enabledLavaCommands == null )
                 {
                     enabledLavaCommands = GlobalAttributesCache.Value( "DefaultEnabledLavaCommands" );
@@ -590,7 +590,7 @@ namespace Rock
             string val = ( s as string );
             if ( !string.IsNullOrEmpty( val ) )
             {
-                // we techically want to XML encode, but Html Encode does the trick
+                // we technically want to XML encode, but Html Encode does the trick
                 return val.EncodeHtml();
             }
             else

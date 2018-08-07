@@ -292,18 +292,14 @@ achieve our mission.  We are so grateful for your commitment.
                     // Save amounts from controls to the viewstate list
                     foreach ( RepeaterItem item in rptAccountList.Items )
                     {
-                        var accountAmount = item.FindControl( "txtAccountAmount" ) as RockTextBox;
-                        if ( accountAmount != null )
+                        var hfAccountId = item.FindControl( "hfAccountId" ) as HiddenField;
+                        var txtAccountAmount = item.FindControl( "txtAccountAmount" ) as RockTextBox;
+                        if ( hfAccountId != null && txtAccountAmount != null )
                         {
-                            if ( SelectedAccounts.Count > item.ItemIndex )
+                            var selectedAccount = SelectedAccounts.FirstOrDefault( a => a.Id == hfAccountId.ValueAsInt() );
+                            if ( selectedAccount != null )
                             {
-                                decimal amount = decimal.MinValue;
-                                if ( !decimal.TryParse( accountAmount.Text, out amount ) )
-                                {
-                                    amount = 0.0M;
-                                }
-
-                                SelectedAccounts[item.ItemIndex].Amount = amount;
+                                selectedAccount.Amount = txtAccountAmount.Text.AsDecimal();
                             }
                         }
                     }
@@ -1275,7 +1271,7 @@ achieve our mission.  We are so grateful for your commitment.
         /// </summary>
         private void BindAccounts()
         {
-            rptAccountList.DataSource = SelectedAccounts.OrderBy( a => a.Order ).ToList();
+            rptAccountList.DataSource = SelectedAccounts;
             rptAccountList.DataBind();
 
             btnAddAccount.Visible = AvailableAccounts.Any();

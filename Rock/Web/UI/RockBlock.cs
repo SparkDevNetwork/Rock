@@ -215,7 +215,7 @@ namespace Rock.Web.UI
 
                         if ( contextAttribute.EntityType == null )
                         {
-                            // If the entity type was not specified in the attibute, look for a property that defines it
+                            // If the entity type was not specified in the attribute, look for a property that defines it
                             string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : string.Empty );
                             properties++;
 
@@ -396,7 +396,7 @@ namespace Rock.Web.UI
         /// <param name="key">A <see cref="System.String"/> representing the name of the key to differentiate items from same block instance</param>
         /// <param name="value">The <see cref="System.Object"/> to cache.</param>
         /// <param name="cacheItemPolicy">Optional <see cref="System.Runtime.Caching.CacheItemPolicy"/>, defaults to null</param>
-        [Obsolete( "AddCacheItem no longer supports a CacheItemPolicy, specifiy a number of seconds or absolute datetime instead.")]
+        [Obsolete( "AddCacheItem no longer supports a CacheItemPolicy, specify a number of seconds or absolute datetime instead.")]
         protected virtual void AddCacheItem( string key, object value, CacheItemPolicy cacheItemPolicy )
         {
             AddCacheItem( key, value, TimeSpan.MaxValue );
@@ -500,7 +500,7 @@ namespace Rock.Web.UI
 
             base.OnInit( e );
 
-            this.BlockValidationGroup = string.Format( "{0}_{1}", this.GetType().BaseType.Name, BlockCache.Id );
+            this.BlockValidationGroup = string.Format( "{0}_{1}", this.GetType().BaseType.Name, BlockCache?.Id );
 
             RockPage.BlockUpdated += Page_BlockUpdated;
             

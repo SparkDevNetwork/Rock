@@ -244,7 +244,7 @@ namespace RockWeb.Blocks.Core
             }
             else if ( blockEntityTypeGuid.HasValue )
             {
-                // if an EntityType was specifiec in block settings, only list note watches for the specified entity type (or for NoteTypes of the specified EntityType)
+                // if an EntityType was specific in block settings, only list note watches for the specified entity type (or for NoteTypes of the specified EntityType)
                 int entityTypeId = EntityTypeCache.Get( blockEntityTypeGuid.Value ).Id;
                 qry = qry.Where( a =>
                     ( a.EntityTypeId.HasValue && a.EntityTypeId.Value == entityTypeId )

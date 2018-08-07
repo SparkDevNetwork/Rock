@@ -180,7 +180,7 @@ namespace Rock.Model
                     var batchHistory = new History.HistoryChangeList();
 
                     batchHistory.AddChange( History.HistoryVerb.Modify, History.HistoryChangeType.Record, "Transaction" );
-                    HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialBatch ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), txn.BatchId.Value, batchHistory, string.Empty, typeof( FinancialTransaction ), this.TransactionId, true, this.ModifiedByPersonAliasId );
+                    HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialBatch ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), txn.BatchId.Value, batchHistory, string.Empty, typeof( FinancialTransaction ), this.TransactionId, true, this.ModifiedByPersonAliasId, dbContext.SourceOfChange );
                 }
             }
 

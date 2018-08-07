@@ -38,7 +38,7 @@ namespace Rock.Workflow.Action
     [ExportMetadata( "ComponentName", "Person Get head of household" )]
 
     [WorkflowAttribute( "Person", "Workflow attribute that contains the person to get the head of the house for.", true, "", "", 0, null, new string[] { "Rock.Field.Types.PersonFieldType" } )]
-    [WorkflowAttribute( "HeadOfHousehold Attribute", "The workflow attribute to assign the head of household to.  head of household is deemed to be the other group memmber on the first family.", true, "", "", 1, null, new string[] { "Rock.Field.Types.PersonFieldType" } )]
+    [WorkflowAttribute( "HeadOfHousehold Attribute", "The workflow attribute to assign the head of household to.  head of household is deemed to be the other group member on the first family.", true, "", "", 1, null, new string[] { "Rock.Field.Types.PersonFieldType" } )]
     public class PersonGetHeadOfHousehold : ActionComponent
     {
         /// <summary>

@@ -112,7 +112,7 @@ namespace RockWeb.Blocks.CheckIn
                                         {
                                             var li = new HtmlGenericControl( "li" );
                                             li.InnerText = string.Format( GetAttributeValue( "DetailMessage" ),
-                                                person.ToString(), attendance.Occurrence.Group.ToString(), attendance.Occurrence.Location.ToString(), attendance.Occurrence.Schedule.Name );
+                                                person.ToString(), attendance.Occurrence.Group.ToString(), attendance.Occurrence.Location.Name, attendance.Occurrence.Schedule.Name );
 
                                             phResults.Controls.Add( li );
                                         }

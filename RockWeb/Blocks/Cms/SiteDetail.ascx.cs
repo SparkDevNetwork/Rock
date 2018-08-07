@@ -954,7 +954,7 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
-        /// Sets the controls visiblity.
+        /// Sets the controls visibility.
         /// </summary>
         private void SetControlsVisiblity()
         {

@@ -42,7 +42,7 @@ namespace RockWeb.Blocks.Reporting
     /// </summary>
     [DisplayName( "Sample Linq Report" )]
     [Category( "Reporting" )]
-    [Description( "Sample Block that executes a Linq statment and displays the result (if any)." )]
+    [Description( "Sample Block that executes a Linq statement and displays the result (if any)." )]
     public partial class SampleLinqReport : RockBlock
     {
         #region Control Methods

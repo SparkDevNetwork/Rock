@@ -120,7 +120,7 @@ td.wrap-contents {
 // 3. Filter
 // -------------------------
 .grid-filter {
-  padding: 6px 12px;
+  padding: 0;
   color: @grid-filter-color;
   background-color: @grid-filter-bg;
   border-bottom: 1px solid @grid-border-color;
@@ -149,6 +149,19 @@ td.wrap-contents {
     }
   }
 
+  .btn-link {
+    position: absolute;
+    z-index: 100;
+    margin: @table-cell-padding;
+    color: @ui-5;
+    text-decoration: none;
+    background: @grid-footer-bg;
+
+    &.is-open {
+      background: @grid-filter-bg;
+    }
+  }
+
   h4 {
     padding-bottom: 8px;
     margin: 12px 0 20px;
@@ -157,7 +170,10 @@ td.wrap-contents {
 
   .grid-filter-entry {
     padding: @panel-body-padding;
+    padding-top: 37px;
     border-bottom: 1px solid darken(@grid-filter-bg, 10%);
+
+    h4 { display: none; }
   }
 
   // adjust the background color of pickers in the filters
@@ -179,7 +195,7 @@ td.wrap-contents {
   }
 
   fieldset {
-    margin-bottom: 12px;
+    padding: 37px 16px 8px;
   }
 }
 
@@ -203,6 +219,7 @@ td.wrap-contents {
       font-family: @fa-font-face;
       font-weight: @fa-theme-weight;
       color: #8c9ba5;
+      text-decoration: none;
       content: @fa-var-caret-down;
       opacity: 0;
     }
@@ -436,9 +453,9 @@ td.grid-col-actions {
 .grid-select-cell {
   .photo-icon {
     display: inline-block;
-    vertical-align: top;
     width: @line-height-computed;
     height: @line-height-computed;
+    vertical-align: top;
   }
 }
 

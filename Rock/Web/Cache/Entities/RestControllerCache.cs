@@ -122,7 +122,7 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Returns a <see cref="System.String" /> that represen ts this instance.
+        /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>
         /// A <see cref="System.String" /> that represents this instance.

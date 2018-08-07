@@ -288,7 +288,7 @@ namespace Rock.Model
         /// Gets or sets date and time that this Location's  address has been successfully geocoded. 
         /// </summary>
         /// <value>
-        /// A <see cref="System.DateTime"/> representing the date and time that the address of this location was successfully geocoded. If geocoding has not been attepted for this location or 
+        /// A <see cref="System.DateTime"/> representing the date and time that the address of this location was successfully geocoded. If geocoding has not been attempted for this location or 
         /// the location had not been successfully geocoded this value will be null.
         /// </value>
         [DataMember]

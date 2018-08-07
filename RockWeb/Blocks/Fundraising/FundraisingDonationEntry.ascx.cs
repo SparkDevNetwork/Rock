@@ -40,7 +40,7 @@ namespace RockWeb.Blocks.Fundraising
     [LinkedPage( "Transaction Entry Page", "The Transaction Entry page to navigate to after prompting for the Fundraising Specific inputs", required: true, order: 1 )]
     [BooleanField( "Show First Name Only", "Only show the First Name of each participant instead of Full Name", defaultValue: false, order: 2 )]
     [BooleanField( "Allow Automatic Selection", "If enabled and there is only one participant and registrations are not enabled then that participant will automatically be selected and this page will get bypassed.", defaultValue: false, order: 3 )]
-    [GroupField( "Root Group", "Select the group that will be used as the bease of the list.", required: false, order: 4 )]
+    [GroupField( "Root Group", "Select the group that will be used as the base of the list.", required: false, order: 4 )]
    
     public partial class FundraisingDonationEntry : RockBlock
     {
