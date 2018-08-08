@@ -153,8 +153,6 @@
                         domObj.enabled = (enable != false);
                     }
                 });
-
-                //$('.js-Adult2Required').attr('Required', enable);
             }
 
         </script>
