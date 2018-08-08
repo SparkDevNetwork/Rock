@@ -32,7 +32,8 @@ using Rock.Model;
 namespace Rock.Jobs
 {
     /// <summary>
-    /// Job that executes routine cleanup tasks on Rock
+    /// Job that executes routine cleanup tasks on Rock.
+    /// Cleanup tasks are tasks that fixes (add, update or purge) invalid, missing or obsolete data.
     /// </summary>
     [IntegerField( "Days to Keep Exceptions in Log", "The number of days to keep exceptions in the exception log (default is 14 days.)", false, 14, "General", 1, "DaysKeepExceptions" )]
     [IntegerField( "Audit Log Expiration Days", "The number of days to keep items in the audit log (default is 14 days.)", false, 14, "General", 2, "AuditLogExpirationDays" )]
@@ -209,6 +210,17 @@ namespace Rock.Jobs
             if ( rockCleanupExceptions.Count > 0 )
             {
                 throw new AggregateException( "One or more exceptions occurred in RockCleanup.", rockCleanupExceptions );
+            }
+
+            try
+            {
+                // Search for locations with no country and assign USA or Canada if it match any of the country's states
+
+                LocationCleanup( dataMap );
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in LocationCleanup", ex ) );
             }
         }
 
@@ -822,7 +834,7 @@ WHERE ic.ChannelId = @channelId
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        private int CleanupOrphanedAttributeValuesForEntityType<T>() where T : Rock.Data.Entity<T>,  Attribute.IHasAttributes, new()
+        private int CleanupOrphanedAttributeValuesForEntityType<T>() where T : Rock.Data.Entity<T>, Attribute.IHasAttributes, new()
         {
             int recordsDeleted = 0;
 
@@ -1028,6 +1040,44 @@ WHERE ExpireDateTime IS NOT NULL
                     System.Threading.Tasks.Task.Delay( 10 ).Wait();
                     DeleteFile( filePath, true );
                 }
+            }
+        }
+
+        /// <summary>
+        /// Does cleanup of Locations
+        /// </summary>
+        /// <param name="dataMap">The data map.</param>
+        private void LocationCleanup( JobDataMap dataMap )
+        {
+            // Add any missing person aliases
+            using ( var rockContext = new Rock.Data.RockContext() )
+            {
+                LocationService locationService = new LocationService( rockContext );
+                var locations = locationService
+                    .Queryable()
+                    .Where( l => ( l.Country == null || l.Country == string.Empty ) && l.State != null && l.State != string.Empty )
+                    .ToList();
+
+                string statesUSA = "|AL|AK|AS|AZ|AR|CA|CO|CT|DE|DC|FM|FL|GA|GU|HI|ID|IL|IN|IA|KS|KY|LA|ME|MH|MD|MA|MI|MN|MS|MO|MT|NE|NV|NH|NJ|NM|NY|NC|ND|MP|OH|OK|OR|PW|PA|PR|RI|SC|SD|TN|TX|UT|VT|VI|VA|WA|WV|WI|WY|";
+                string statesCanada = "|AB|BC|MB|NB|NL|NS|NT|NU|ON|PE|QC|SK|YT|";
+
+                foreach (var location in locations)
+                {
+                    if (location.State.Length == 2)
+                    {
+                        if ( statesUSA.IndexOf( location.State.ToUpperInvariant() ) > 0 )
+                        {
+                            location.Country = "US";
+                        }
+                        else if ( statesCanada.IndexOf( location.State.ToUpperInvariant() ) > 0 )
+                        {
+                            location.Country = "CA";
+                        }
+
+                    }
+                }
+
+                rockContext.SaveChanges();
             }
         }
     }
