@@ -1350,7 +1350,7 @@ TransactionAccountDetails: [
             txtCommentEntry.Label = GetAttributeValue( "CommentEntryLabel" );
             txtCommentEntry.Visible = GetAttributeValue( "EnableCommentEntry" ).AsBoolean();
 
-            // Se the payment method tabs
+            // Set the payment method tabs
             bool ccEnabled = _ccGatewayComponent != null;
             bool achEnabled = _achGatewayComponent != null;
             divCCPaymentInfo.Visible = ccEnabled;
@@ -3169,16 +3169,16 @@ TransactionAccountDetails: [
 
         if ( typeof {21} != 'undefined' ) {{
             //// Toggle credit card display if saved card option is available
-            $({21}).unbind('click').on('click', function () {{
+            $('input[name=""{22}""]').change(function () {{
 
-                var radioDisplay = $({22}).css('display');
-                var selectedVal = $({21}).val();
+                var radioDisplay = $('#{23}').css('display');
+                var selectedVal = $('input[name=""{22}""]:checked').val();
 
                 if ( selectedVal == 0 && radioDisplay == 'none') {{
-                    $({22}).slideToggle();
+                    $('#{23}').slideDown();
                 }}
                 else if (selectedVal != 0 && radioDisplay != 'none') {{
-                    $({22}).slideToggle();
+                    $('#{23}').slideUp();
                 }}
             }});
         }}
@@ -3302,7 +3302,8 @@ TransactionAccountDetails: [
                 txtCardLastName.ClientID,       // {19}
                 txtCardName.ClientID,           // {20}
                 rblSavedAccount.ClientID,       // {21}
-                divNewPayment.ClientID         // {22}
+                rblSavedAccount.UniqueID,       // {22}
+                divNewPayment.ClientID          // {23}
             );
 
             ScriptManager.RegisterStartupScript( upPayment, this.GetType(), "giving-profile", script, true );
