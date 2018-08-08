@@ -97,6 +97,51 @@ WHERE [RecordTypeValueId] = (
 
             // add 'Find Duplicates' liquid field to the Pending Persons's report
             RockMigrationHelper.DeleteReportField( "7A4C4C85-61C9-4378-9CDE-3F38516FB7DE" );
+
+            Sql( string.Format( @"
+                DECLARE @ReportId INT = (
+                            SELECT TOP 1 [Id]
+                            FROM [Report]
+                            WHERE [Guid] = '{0}'
+                            )
+                       ,@DataSelectComponentEntityTypeId INT = (
+                            SELECT TOP 1 [Id]
+                            FROM [EntityType]
+                            WHERE [Guid] = '{3}'
+                            )
+
+                INSERT INTO [dbo].[ReportField] (
+                    [ReportId]
+                    ,[ReportFieldType]
+                    ,[ShowInGrid]
+                    ,[DataSelectComponentEntityTypeId]
+                    ,[Selection]
+                    ,[Order]
+                    ,[ColumnHeaderText]
+                    ,[Guid]
+                    )
+                VALUES (
+                    @ReportId
+                    ,{1}
+                    ,{2}
+                    ,@DataSelectComponentEntityTypeId
+                    ,'{4}'
+                    ,{5}
+                    ,'{6}'
+                    ,'{7}'
+                    )
+                ",
+                "4E3ECAE0-9D36-4C22-994D-AD31DE0F6FB7", // {0}
+                Model.ReportFieldType.DataSelectComponent.ConvertToInt(), // {1}
+                true.Bit(), // {2}
+                SystemGuid.EntityType.REPORTING_DATASELECT_LIQUIDSELECT, // {3}
+                @"<a class='btn btn-default' href='/PersonDuplicate/{{ Id }}' title='Find Duplicates'><i class='fa fa-search-plus'></i></a>".Replace( "'", "''" ), // {4}
+                2, // {5}
+                "Action", // {6}
+                "7A4C4C85-61C9-4378-9CDE-3F38516FB7DE" // {7}
+                ) );
+
+            /*
             RockMigrationHelper.AddReportField(
                 "4E3ECAE0-9D36-4C22-994D-AD31DE0F6FB7",
                 Model.ReportFieldType.DataSelectComponent,
@@ -106,6 +151,7 @@ WHERE [RecordTypeValueId] = (
                 2,
                 "Action",
                 "7A4C4C85-61C9-4378-9CDE-3F38516FB7DE" );
+                */
         }
 
         /// <summary>
