@@ -190,7 +190,9 @@ namespace RockWeb.Blocks.Prayer
             var prayerRequest = new PrayerRequest { Id = 0 };
             prayerRequest.LoadAttributes();
             phAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( prayerRequest, phAttributes, false, BlockValidationGroup );
+            // Filter to only include attribute / attribute values that the person is authorized to edit.
+            var excludeForEdit = prayerRequest.Attributes.Where( a => !a.Value.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) ).Select( a => a.Key ).ToList();
+            Rock.Attribute.Helper.AddEditControls( prayerRequest, phAttributes, false, BlockValidationGroup, excludeForEdit );
         }
 
         #endregion

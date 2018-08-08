@@ -24,6 +24,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -525,6 +526,11 @@ namespace RockWeb.Blocks.Prayer
 
             // need to load attributes so that lava can loop thru PrayerRequest.Attributes
             prayerRequest.LoadAttributes();
+
+            // Filter to only show attribute / attribute values that the person is authorized to view.
+            var excludeForView = prayerRequest.Attributes.Where( a => !a.Value.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) ).Select( a => a.Key ).ToList();
+            prayerRequest.Attributes = prayerRequest.Attributes.Where( a => !excludeForView.Contains( a.Key ) ).ToDictionary( k => k.Key, k => k.Value );
+            prayerRequest.AttributeValues = prayerRequest.AttributeValues.Where( av => !excludeForView.Contains( av.Key ) ).ToDictionary( k => k.Key, k => k.Value );
 
             mergeFields.Add( "PrayerRequest", prayerRequest );
             string prayerPersonLava = this.GetAttributeValue( "PrayerPersonLava" );
