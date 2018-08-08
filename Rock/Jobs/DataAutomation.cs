@@ -32,6 +32,7 @@ namespace Rock.Jobs
 {
     /// <summary>
     /// Job to update people/families based on the Data Automation settings.
+    /// Data Automation tasks are tasks that update the status of data.
     /// </summary>
     [DisallowConcurrentExecution]
     public class DataAutomation : IJob
