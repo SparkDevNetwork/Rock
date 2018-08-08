@@ -1711,8 +1711,9 @@ TransactionAccountDetails: [
                         !string.IsNullOrWhiteSpace( txtFirstName.Text ) &&
                         !string.IsNullOrWhiteSpace( txtLastName.Text ) )
                     {
-                        // Same logic as CreatePledge.ascx.cs
-                        person = personService.FindPerson( txtFirstName.Text, txtLastName.Text, txtEmail.Text, true );
+                        // Same logic as PledgeEntry.ascx.cs
+                        var personQuery = new PersonService.PersonMatchQuery( txtFirstName.Text, txtLastName.Text, txtEmail.Text, pnbPhone.Text.Trim());
+                        person = personService.FindPerson( personQuery, true );
                     }
 
                     if ( person == null )
