@@ -3,17 +3,6 @@
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
-        <style>
-            .eventitem {
-                cursor: pointer;
-            }
-
-            .eventitem-select {
-                font-size: 38px;
-            }
-
-        </style>
-
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
             <asp:HiddenField ID="hfSelectedEventId" ClientIDMode="Static" runat="server" />
 
@@ -36,7 +25,7 @@
                              <div class="well eventitem js-eventitem <%# Container.ItemIndex == 0 ? "selected" : "" %>">
                                  <div class="row">
                                      <div class="col-xs-1">
-                                         <div class="eventitem-select"><i class="fa <%# Container.ItemIndex == 0 ? "fa-check-square" : "fa-square" %>"></i></div>
+                                         <div class="eventitem-select"></div>
                                      </div>
                                      <div class="col-xs-11">
                                          <div class="row">

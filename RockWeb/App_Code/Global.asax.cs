@@ -93,6 +93,14 @@ namespace RockWeb
             string allowedDomains = string.Empty;
 
             int? siteId = ( Context.Items["Rock:SiteId"] ?? "" ).ToString().AsIntegerOrNull();
+
+            // We only care about protecting content served up through Rock, not the static
+            // content assets on the file system. Only Rock pages would have a site.
+            if ( !siteId.HasValue )
+            {
+                return;
+            }
+
             try
             {
                 if ( siteId.HasValue )
@@ -117,8 +125,7 @@ namespace RockWeb
             {
                 Response.AddHeader( "X-Frame-Options", "SAMEORIGIN" );
                 Response.AddHeader( "Content-Security-Policy", "frame-ancestors 'self'" );
-            }
-            
+            }            
         }
 
         /// <summary>
