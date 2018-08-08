@@ -5677,51 +5677,56 @@ END
         public void AddReport( string categoryGuid, string dataViewGuid, string entityTypeGuid, string name, string description, string guid, int? fetchTop = null )
         {
             Migration.Sql( string.Format( @"
-                DECLARE @CategoryId INT = (
-                        SELECT TOP 1 [Id]
-                        FROM [Category]
-                        WHERE [Guid] = '{0}'
-                        )
-                    ,@DataViewId INT = (
-                        SELECT TOP 1 [Id]
-                        FROM [DataView]
-                        WHERE [Guid] = '{1}'
-                        )
-                    ,@EntityTypeId INT = (
-                        SELECT TOP 1 [Id]
-                        FROM [EntityType]
-                        WHERE [Guid] = '{2}'
-                        )
+                IF NOT EXISTS (
+                    SELECT [Id]
+                    FROM [Report]
+                    WHERE [Guid] = '{5}' )
+                BEGIN
+                    DECLARE @CategoryId INT = (
+                            SELECT TOP 1 [Id]
+                            FROM [Category]
+                            WHERE [Guid] = '{0}'
+                            )
+                        ,@DataViewId INT = (
+                            SELECT TOP 1 [Id]
+                            FROM [DataView]
+                            WHERE [Guid] = '{1}'
+                            )
+                        ,@EntityTypeId INT = (
+                            SELECT TOP 1 [Id]
+                            FROM [EntityType]
+                            WHERE [Guid] = '{2}'
+                            )
 
-                INSERT INTO [Report] (
-                    [IsSystem]
-                    ,[Name]
-                    ,[Description]
-                    ,[CategoryId]
-                    ,[EntityTypeId]
-                    ,[DataViewId]
-                    ,[Guid]
-                    ,[FetchTop]
-                    )
-                VALUES (
-                    0
-                    ,'{3}'
-                    ,'{4}'
-                    ,@CategoryId
-                    ,@EntityTypeId
-                    ,@DataViewId
-                    ,'{5}'
-                    ,{6}
-                    )",
-                      categoryGuid, // {0}
-                      dataViewGuid, // {1}
-                      entityTypeGuid, // {2}
-                      name, // {3}
-                      description, // {4}
-                      guid, // {5}
-                      fetchTop.HasValue ? fetchTop.Value.ToString() : "NULL" // {6}
-                      )
-                      );
+                    INSERT INTO [Report] (
+                        [IsSystem]
+                        ,[Name]
+                        ,[Description]
+                        ,[CategoryId]
+                        ,[EntityTypeId]
+                        ,[DataViewId]
+                        ,[Guid]
+                        ,[FetchTop]
+                        )
+                    VALUES (
+                        0
+                        ,'{3}'
+                        ,'{4}'
+                        ,@CategoryId
+                        ,@EntityTypeId
+                        ,@DataViewId
+                        ,'{5}'
+                        ,{6}
+                        )
+                END",
+                categoryGuid, // {0}
+                dataViewGuid, // {1}
+                entityTypeGuid, // {2}
+                name, // {3}
+                description, // {4}
+                guid, // {5}
+                fetchTop.HasValue ? fetchTop.Value.ToString() : "NULL" // {6}
+                ) );
         }
 
         /// <summary>
@@ -5748,47 +5753,52 @@ END
             string dataSelectComponentEntityTypeGuid, string selection, int order, string columnHeaderText, string guid )
         {
             Migration.Sql( string.Format( @"
-            DECLARE @ReportId INT = (
-                        SELECT TOP 1 [Id]
-                        FROM [Report]
-                        WHERE [Guid] = '{0}'
-                        )
-                   ,@DataSelectComponentEntityTypeId INT = (
-                        SELECT TOP 1 [Id]
-                        FROM [EntityType]
-                        WHERE [Guid] = '{3}'
-                        )
+                IF NOT EXISTS (
+                    SELECT [Id]
+                    FROM [dbo].[ReportField]
+                    WHERE [Guid] = '{7}' )
+                BEGIN
+                    DECLARE @ReportId INT = (
+                            SELECT TOP 1 [Id]
+                            FROM [Report]
+                            WHERE [Guid] = '{0}'
+                            )
+                        ,@DataSelectComponentEntityTypeId INT = (
+                            SELECT TOP 1 [Id]
+                            FROM [EntityType]
+                            WHERE [Guid] = '{3}'
+                            )
 
-            INSERT INTO [dbo].[ReportField] (
-                [ReportId]
-                ,[ReportFieldType]
-                ,[ShowInGrid]
-                ,[DataSelectComponentEntityTypeId]
-                ,[Selection]
-                ,[Order]
-                ,[ColumnHeaderText]
-                ,[Guid]
-                )
-            VALUES (
-                @ReportId
-                ,{1}
-                ,{2}
-                ,@DataSelectComponentEntityTypeId
-                ,'{4}'
-                ,{5}
-                ,'{6}'
-                ,'{7}'
-                )
-            ",
-              reportGuid, // {0}
-              reportFieldType.ConvertToInt(), // {1}
-              showInGrid.Bit(), // {2}
-              dataSelectComponentEntityTypeGuid, // {3}
-              selection.Replace( "'", "''" ), // {4}
-              order, // {5}
-              columnHeaderText, // {6}
-              guid // {7}
-              ) );
+                    INSERT INTO [dbo].[ReportField] (
+                        [ReportId]
+                        ,[ReportFieldType]
+                        ,[ShowInGrid]
+                        ,[DataSelectComponentEntityTypeId]
+                        ,[Selection]
+                        ,[ColumnOrder]
+                        ,[ColumnHeaderText]
+                        ,[Guid]
+                        )
+                    VALUES (
+                        @ReportId
+                        ,{1}
+                        ,{2}
+                        ,@DataSelectComponentEntityTypeId
+                        ,'{4}'
+                        ,{5}
+                        ,'{6}'
+                        ,'{7}'
+                        )
+                END",
+                reportGuid, // {0}
+                reportFieldType.ConvertToInt(), // {1}
+                showInGrid.Bit(), // {2}
+                dataSelectComponentEntityTypeGuid, // {3}
+                selection.Replace( "'", "''" ), // {4}
+                order, // {5}
+                columnHeaderText, // {6}
+                guid // {7}
+                ) );
         }
 
         /// <summary>

@@ -1200,7 +1200,14 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                 // If not editing an existing person, attempt to match them to existing (if configured to do so)
                 if ( adult == null && showEmail && autoMatch )
                 {
-                    adult = personService.FindPerson( tbFirstName.Text, tbLastName.Text, tbEmail.Text, true );
+                    var gender = ddlGender.SelectedValueAsEnumOrNull<Gender>();
+                    int? suffixValueId = dvpSuffix.SelectedValueAsInt();
+                    var birthDate = dpBirthDate.SelectedDate;
+
+                    var personQuery = new PersonService.PersonMatchQuery( tbFirstName.Text.Trim(), tbLastName.Text.Trim(), tbEmail.Text.Trim(), pnMobilePhone.Text.Trim(), gender, birthDate, suffixValueId );
+
+                    
+                    adult = personService.FindPerson( personQuery, true );
                     if ( adult != null )
                     {
                         saveEmptyValues = false;
@@ -1275,7 +1282,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                 // Save the mobile phone number
                 if ( showMobilePhone )
                 {
-                    SavePhoneNumber( adult.Id, pnMobilePhone1 );
+                    SavePhoneNumber( adult.Id, pnMobilePhone );
                 }
 
                 // Save any attribute values
