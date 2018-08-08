@@ -3161,7 +3161,7 @@ TransactionAccountDetails: [
             //// Toggle credit card display if saved card option is available
             $('input[name=""{22}""]').change(function () {{
 
-                var radioDisplay = $({23}).css('display');
+                var radioDisplay = $('#{23}').css('display');
                 var selectedVal = $('input[name=""{22}""]:checked').val();
 
                 if ( selectedVal == 0 && radioDisplay == 'none') {{
