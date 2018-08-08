@@ -12,7 +12,7 @@ VALUES
 	, @SourceValueTypeId
 	, 'SELECT COUNT(*) 
 FROM [Person]
-WHERE [RecordTypeValueId] = 1'
+WHERE ([RecordTypeValueId] = 1) AND ([RecordStatusValueId] = 3)'
 	, 'People'
 	, 'ecb1b552-9a3d-46fc-952b-d57dbc4a329d'
 	, 0 ),
@@ -28,7 +28,7 @@ SELECT COUNT( DISTINCT(g.[Id]))
 FROM [Person] p
     INNER JOIN [GroupMember] gm ON gm.[PersonId] = p.[Id]
     INNER JOIN [Group] g ON g.[Id] = gm.[GroupId] AND g.[GroupTypeId] = @FamilyGroupTypeId
-WHERE [RecordTypeValueId] = 1'
+WHERE ([RecordTypeValueId] = 1) AND ([RecordStatusValueId] = 3)'
 	, 'Families'
 	, '491061b7-1834-44da-8ea1-bb73b2d52ad3'
 	, 0 ),
