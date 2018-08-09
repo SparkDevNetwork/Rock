@@ -226,7 +226,6 @@ namespace RockWeb.Blocks.CheckIn.Manager
             tbSmsMessage.Visible = btnSmsCancel.Visible = btnSmsSend.Visible = true;
         }
 
-
         /// <summary>
         /// Handles the Click event of the btnSend control.
         /// </summary>
@@ -359,10 +358,12 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     {
                         btnSms.Text = string.Format( "<i class='fa fa-mobile'></i> {0} <small>({1})</small>", phoneNumber.NumberFormatted, phoneNumber.NumberTypeValue );
                         btnSms.Visible = true;
+                        rcwTextMessage.Label = "Text Message";
                     }
                     else
                     {
                         btnSms.Visible = false;
+                        rcwTextMessage.Label = string.Empty;
                     }
 
                     // Get all family member from all families ( including self )
