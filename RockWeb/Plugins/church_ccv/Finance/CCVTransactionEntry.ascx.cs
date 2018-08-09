@@ -15,6 +15,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
+using Rock.Transactions;
 
 namespace RockWeb.Plugins.church_ccv.Finance
 {
@@ -214,6 +215,11 @@ TransactionAcountDetails: [
                 tbCommentEntry.Label = GetAttributeValue( "CommentEntryLabel" );
                 tbCommentEntry.Visible = GetAttributeValue( "EnableCommentEntry" ).AsBoolean();
 
+                // Evaluate if scheduled transaction option should be shown
+
+                pnlScheduledTransactionToggle.Visible = GetAttributeValue( "AllowScheduled" ).AsBoolean();
+                pnlScheduledTransaction.Visible = GetAttributeValue( "AllowScheduled" ).AsBoolean();
+
                 // if person logged in, prepopulate form fields
                 if ( _person != null )
                 {
@@ -282,6 +288,15 @@ TransactionAcountDetails: [
                 ToggleProgressIndicator( "btnProgressAmount", true, true );
                 ToggleProgressIndicator( "btnProgressPerson", true, true );
                 ToggleProgressIndicator( "btnProgressPayment", true, false );
+
+                // set amount panel view
+                if (hfIsScheduledTransaction.Value == "true")
+                {
+                    tglScheduledTransaction.Checked = true;
+                } else
+                {
+                    tglScheduledTransaction.Checked = false;
+                }
 
                 // set payment type form panel view
                 if (hfPaymentType.Value == "REF")
@@ -365,7 +380,7 @@ TransactionAcountDetails: [
             }
 
             // check if schedule transaction form is toggled
-            if ( tglScheduleTransaction.Checked && pnlScheduleTransaction.Visible == true )
+            if ( tglSuccessScheduleTransaction.Checked && pnlSuccessScheduleTransaction.Visible == true )
             {
                 string returnedErrorMessage = string.Empty;
 
@@ -373,7 +388,7 @@ TransactionAcountDetails: [
                 if ( SaveSchedule( out returnedErrorMessage ) )
                 {
                     // Hide Schedule Transaction to prevent duplicate schedule saving
-                    pnlScheduleTransaction.Visible = false;
+                    pnlSuccessScheduleTransaction.Visible = false;
 
                     // Update Result - Remove error class
                     lblSaveScheduleTransactionResult.Text = "New Schedule has been successfully created.";
@@ -384,8 +399,8 @@ TransactionAcountDetails: [
                     errorMessage += "Schedule Transaction Save Failed: " + returnedErrorMessage + "<br />";
 
                     // Resetup view so in same spot after post back
-                    tglScheduleTransaction.Checked = true;
-                    pnlScheduleTransactionInput.AddCssClass( "in" );
+                    tglSuccessScheduleTransaction.Checked = true;
+                    pnlSuccessScheduleTransactionInput.AddCssClass( "in" );
                     btnSaveSuccessInputForm.RemoveCssClass( "hidden" );
                     btnSaveSuccessInputForm.Enabled = true;
                 }
@@ -394,7 +409,7 @@ TransactionAcountDetails: [
             } else
             {
                 // schedule transaction form is not toggled, reset view in case its not up to date after postback
-                pnlScheduleTransactionInput.RemoveCssClass( "in" );
+                pnlSuccessScheduleTransactionInput.RemoveCssClass( "in" );
             }
 
             if (!errorMessage.IsNullOrWhiteSpace())
@@ -430,6 +445,7 @@ TransactionAcountDetails: [
             _achGatewayComponent = GetGatewayComponent( rockContext, _achGateway );
             bool achEnabled = _achGatewayComponent != null;
 
+            // configure supported frequency for schedule transaction sections
             bool allowScheduled = GetAttributeValue( "AllowScheduled" ).AsBoolean();
             if ( allowScheduled && ( ccEnabled || achEnabled ) )
             {
@@ -450,11 +466,13 @@ TransactionAcountDetails: [
                 if ( supportedFrequencies.Any() )
                 {
                     ddlScheduleFrequency.Items.Clear();
+                    ddlSuccessScheduleFrequency.Items.Clear();
 
                     // if more than one frequency add placeholder text
                     if (supportedFrequencies.Count != 1)
                     {
-                        ddlScheduleFrequency.Items.Add( new ListItem( "--Select Frequency--", "-1" ) );
+                        ddlScheduleFrequency.Items.Add(new ListItem("--Select Frequency--", "-1"));
+                        ddlSuccessScheduleFrequency.Items.Add(new ListItem("--Select Frequency--", "-1"));
                     }
 
                     // add each frequency to the radio button list, except "One-Time"
@@ -462,17 +480,22 @@ TransactionAcountDetails: [
                     {
                         if ( frequency.Value != "One-Time" )
                         {
-                             ddlScheduleFrequency.Items.Add( new ListItem( frequency.Value, frequency.Guid.ToString() ) );
+                            ddlScheduleFrequency.Items.Add(new ListItem(frequency.Value, frequency.Guid.ToString()));
+                            ddlSuccessScheduleFrequency.Items.Add(new ListItem(frequency.Value, frequency.Guid.ToString()));
                         }
                     }
 
                     // configure schedule transaction toggle attributes and enable toggle
-                    tglScheduleTransaction.InputAttributes.Add( "data-toggle", "collapse" );
-                    tglScheduleTransaction.InputAttributes.Add( "data-target", "#pnlScheduleTransactionInput" );
+                    tglScheduledTransaction.InputAttributes.Add( "data-toggle", "collapse" );
+                    tglScheduledTransaction.InputAttributes.Add( "data-target", "#pnlScheduledTransaction" );
+
+                    tglSuccessScheduleTransaction.InputAttributes.Add("data-toggle", "collapse");
+                    tglSuccessScheduleTransaction.InputAttributes.Add("data-target", "#pnlSuccessScheduleTransactionInput");
                 }
 
                 // Enable schedule panel
-                pnlScheduleTransaction.Visible = true;
+                pnlScheduledTransaction.Visible = true;
+                pnlSuccessScheduleTransaction.Visible = true;
             }
         }
 
@@ -697,15 +720,14 @@ TransactionAcountDetails: [
             var rockContext = new RockContext();
             if ( string.IsNullOrWhiteSpace( TransactionCode ) )
             {
-                var transactionGuid = hfTransactionGuid.Value.AsGuid();
-
+                // get gateway info
                 bool isACHTxn = hfPaymentType.Value == "ACH";
                 var financialGateway = isACHTxn ? _achGateway : _ccGateway;
                 var gateway = isACHTxn ? _achGatewayComponent : _ccGatewayComponent;
 
                 if ( gateway == null )
                 {
-                    errorMessage = "There was a problem creating the payment gateway information";
+                    errorMessage = "There was a problem getting the payment gateway information";
                     return false;
                 }
 
@@ -716,14 +738,14 @@ TransactionAcountDetails: [
 
                     if ( _person == null )
                     {
-                        errorMessage = "There was a problem creating the person information";
+                        errorMessage = "There was a problem populating the person";
                         return false;
                     }
                 }
 
                 if ( !_person.PrimaryAliasId.HasValue )
                 {
-                    errorMessage = "There was a problem creating the person's primary alias";
+                    errorMessage = "There was a problem getting the person's primary alias";
                     return false;
                 }
 
@@ -750,25 +772,104 @@ TransactionAcountDetails: [
                     return false;
                 }
 
-                var transactionAlreadyExists = new FinancialTransactionService( rockContext ).Queryable().FirstOrDefault( a => a.Guid == transactionGuid );
-                if ( transactionAlreadyExists != null )
+
+                // transaction variables
+                var transactionGuid = hfTransactionGuid.Value.AsGuid();
+                bool transactionSuccess = false;
+                string persistedTransactionInfoString = null;
+
+                if ( hfIsScheduledTransaction.Value.AsBoolean() == true )
                 {
-                    // hopefully shouldn't happen, but just in case the transaction already went thru, show the success screen
-                    ShowTransactionSuccess( gateway, _person, paymentInfo, fundAccountName, transactionAlreadyExists.FinancialPaymentDetail, rockContext );
-                    return true;
-                }
+                    // Create new schedule
+                    PaymentSchedule schedule = CreateSchedule( ddlScheduleFrequency.SelectedValue, dpScheduledTransactionStartDate.SelectedDate.Value.Date );
 
-                // charge transaction
-                var transaction = gateway.Charge( financialGateway, paymentInfo, out errorMessage );
-                if ( transaction == null )
+                    if ( schedule == null )
+                    {
+                        errorMessage = "There was a problem creating the schedule";
+                        return false;
+                    }
+                     
+                    // Set schedule attributes                   
+                    schedule.PersonId = _person.Id;
+
+                    // Create new scheduled transaction object
+                    FinancialScheduledTransaction scheduledTransaction = null;
+
+                    // Check if scheduled transaction already exists
+                    var scheduledTransactionAlreadyExists = new FinancialScheduledTransactionService( rockContext ).Queryable().FirstOrDefault( a => a.Guid == transactionGuid );
+                    if ( scheduledTransactionAlreadyExists != null )
+                    {
+                        // Hopefully shouldn't happen, but just in case the scheduledtransaction already went thru, show the success screen
+                        ShowScheduleSuccess( gateway, _person, paymentInfo, fundAccountName, schedule, true, scheduledTransactionAlreadyExists.FinancialPaymentDetail, rockContext );
+                        transactionSuccess = true;
+                    }
+
+                    // If transaction does not already exist, continue processing
+                    if (!transactionSuccess)
+                    {
+                        // Save the schedule with the gateway
+                        scheduledTransaction = gateway.AddScheduledPayment( financialGateway, schedule, paymentInfo, out errorMessage );
+                        if ( scheduledTransaction == null )
+                        {
+                            // Something failed or transaction denied by gateway
+                            return false;
+                        }
+
+                        // Assign transaction guid to prevent duplicate transactions
+                        scheduledTransaction.Guid = transactionGuid;
+
+                        SaveScheduledTransaction( financialGateway, gateway, _person, paymentInfo, fundAccountId, fundAccountName, schedule, scheduledTransaction, rockContext );
+
+                        // Hide the schedule transaction on success view
+                        pnlSuccessScheduleTransaction.Visible = false;
+
+                        ShowScheduleSuccess( gateway, _person, paymentInfo, fundAccountName, schedule, true, scheduledTransaction.FinancialPaymentDetail, rockContext );
+
+                        transactionSuccess = true;
+                    }
+                    
+                    // Create persisted data string
+                    PersistedPaymentInfo persistedPaymentInfo = CreatePersistedPaymentInfo( null, scheduledTransaction, schedule, paymentInfo, fundAccountName, fundAccountId );
+                    persistedTransactionInfoString = ObjectToString( persistedPaymentInfo );
+                }
+                else
                 {
-                    return false;
+                    // Check if transaction already exists
+                    var transactionAlreadyExists = new FinancialTransactionService(rockContext).Queryable().FirstOrDefault(a => a.Guid == transactionGuid);
+                    if (transactionAlreadyExists != null)
+                    {
+                        // hopefully shouldn't happen, but just in case the transaction already went thru, show the success screen
+                        ShowTransactionSuccess(gateway, _person, paymentInfo, fundAccountName, transactionAlreadyExists.FinancialPaymentDetail, rockContext);
+                        transactionSuccess = true;
+                    }
+
+                    // Create new financial transaction
+                    FinancialTransaction transaction = null;
+
+                    if ( !transactionSuccess)
+                    {
+                        // charge transaction
+                        transaction = gateway.Charge( financialGateway, paymentInfo, out errorMessage );
+                        if ( transaction == null )
+                        {
+                            // transaction failed or gateway denied transaction
+                            return false;
+                        }
+
+                        // Assign transaction guid to prevent duplicate transactions
+                        transaction.Guid = transactionGuid;
+
+                        SaveTransaction( financialGateway, gateway, _person, paymentInfo, fundAccountId, fundAccountName, transaction, rockContext );
+
+                        ShowTransactionSuccess( gateway, _person, paymentInfo, fundAccountName, transaction.FinancialPaymentDetail, rockContext );
+
+                        transactionSuccess = true;
+                    }
+                    
+                    // Create persisted data string
+                    PersistedPaymentInfo persistedPaymentInfo = CreatePersistedPaymentInfo( transaction, null, null, paymentInfo, fundAccountName, fundAccountId );
+                    persistedTransactionInfoString = ObjectToString( persistedPaymentInfo );
                 }
-
-                // manually assign the Guid that we generated at the beginning of the transaction UI entry to help make duplicate transactions impossible
-                transaction.Guid = transactionGuid;
-
-                SaveTransaction( financialGateway, gateway, _person, paymentInfo, fundAccountId, fundAccountName, transaction, rockContext );
 
                 // check if reference transaction or ACH and hide save new payment account if so
                 // **PayFlow Pro does not support saving ACH accounts
@@ -777,18 +878,11 @@ TransactionAcountDetails: [
                     pnlSavePaymentAccount.Visible = false;
                 }
 
-                ShowTransactionSuccess( gateway, _person, paymentInfo, fundAccountName, transaction.FinancialPaymentDetail, rockContext );
-
-                // encrypt persisted data and save to view state
-                PersistedPaymentInfo persistedPaymentInfo = CreatePersistedPaymentInfo( transaction, paymentInfo, fundAccountName, fundAccountId );
-
-                string persistedPaymentInfoString = ObjectToString( persistedPaymentInfo );
-
-                string encryptedPersistedPaymentInfo = Encryption.EncryptString( persistedPaymentInfoString );
-
+                // Encrypt persisted data string and save to view state
+                string encryptedPersistedPaymentInfo = Encryption.EncryptString( persistedTransactionInfoString );
                 ViewState["PersistedInfo"] = encryptedPersistedPaymentInfo;
 
-                return true;
+                return transactionSuccess;
             }
             else
             {
@@ -914,14 +1008,14 @@ TransactionAcountDetails: [
             var financialGateway = isACHTxn ? _achGateway : _ccGateway;
             var gateway = isACHTxn ? _achGatewayComponent : _ccGatewayComponent;
 
-            PaymentSchedule schedule = GetSchedule();
+            // Create a schedule
+            PaymentSchedule schedule = CreateSchedule(ddlSuccessScheduleFrequency.SelectedValue, dpSuccessScheduleStartDate.SelectedDate.Value.Date);
 
-            if ( schedule == null || schedule.TransactionFrequencyValue == null )
+            if ( schedule == null )
             {
                 errorMessage = "There was a problem creating the schedule";
                 return false;
             }
-
 
             // Get payment info from view state, decrypt and convert to usable type
             string encryptedPersistedPaymentInfo = ViewState["PersistedInfo"] as string;
@@ -961,7 +1055,7 @@ TransactionAcountDetails: [
             if ( scheduledTransactionAlreadyExists != null )
             {
                 // hopefully shouldn't happen, but just in case the scheduledtransaction already went thru, show the success screen
-                ShowScheduleSuccess( gateway, _person, paymentInfo, persistedPaymentInfo.FundAccountName, schedule, scheduledTransactionAlreadyExists.FinancialPaymentDetail, rockContext );
+                ShowScheduleSuccess( gateway, _person, paymentInfo, persistedPaymentInfo.FundAccountName, schedule, false, scheduledTransactionAlreadyExists.FinancialPaymentDetail, rockContext );
                 return true;
             }
 
@@ -969,6 +1063,7 @@ TransactionAcountDetails: [
             var scheduledTransaction = gateway.AddScheduledPayment( financialGateway, schedule, paymentInfo, out errorMessage );
             if ( scheduledTransaction == null )
             {
+                // Something failed or gateway denied transaction
                 return false;
             }
 
@@ -977,7 +1072,7 @@ TransactionAcountDetails: [
 
             SaveScheduledTransaction( financialGateway, gateway, _person, paymentInfo, persistedPaymentInfo.FundAccountId, persistedPaymentInfo.FundAccountName, schedule, scheduledTransaction, rockContext );
 
-            ShowScheduleSuccess( gateway, _person, paymentInfo, persistedPaymentInfo.FundAccountName, schedule, scheduledTransaction.FinancialPaymentDetail, rockContext );
+            ShowScheduleSuccess( gateway, _person, paymentInfo, persistedPaymentInfo.FundAccountName, schedule, false, scheduledTransaction.FinancialPaymentDetail, rockContext );
 
             errorMessage = string.Empty;
             return true;
@@ -1059,7 +1154,7 @@ TransactionAcountDetails: [
         {
             errorMessage = string.Empty;
 
-            // Get payment info from view state, decrypt and convert to usable type
+            // Get payment info from view state, decrypt and convert to usable object
             string encryptedPersistedPaymentInfo = ViewState["PersistedInfo"] as string;
 
             if (encryptedPersistedPaymentInfo.IsNullOrWhiteSpace())
@@ -1072,7 +1167,8 @@ TransactionAcountDetails: [
 
             PersistedPaymentInfo persistedPaymentInfo = StringToObject( decryptedPaymentInfo ) as PersistedPaymentInfo;
 
-            if ( persistedPaymentInfo.TransactionCode.IsNullOrWhiteSpace() )
+            // Verify we have either a transaction code or a schedule id
+            if ( persistedPaymentInfo.TransactionCode.IsNullOrWhiteSpace() && persistedPaymentInfo.ScheduledTransactionId.IsNullOrWhiteSpace() )
             {
                 errorMessage = "Missing transaction code.";
                 return false;
@@ -1080,34 +1176,56 @@ TransactionAcountDetails: [
 
             using ( var rockContext = new RockContext() )
             {
+                // Get gateway info
                 bool isACHTxn = hfPaymentType.Value == "ACH";
                 var financialGateway = isACHTxn ? _achGateway : _ccGateway;
                 var gateway = isACHTxn ? _achGatewayComponent : _ccGatewayComponent;
 
                 if ( gateway != null )
                 {
+                    // Get cc / ach info
                     var ccCurrencyType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) );
                     var achCurrencyType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH ) );
-
-                    string referenceNumber = string.Empty;
-                    FinancialPaymentDetail paymentDetail = null;
                     int? currencyTypeValueId = isACHTxn ? achCurrencyType.Id : ccCurrencyType.Id;
 
+                    // Saved account variables
+                    string referenceNumber = string.Empty;
+                    FinancialPaymentDetail paymentDetail = null;
+
+                    // Try to get a transaction / scheduledTransaction
                     var transaction = new FinancialTransactionService( rockContext ).GetByTransactionCode( persistedPaymentInfo.TransactionCode );
+                    var scheduledTransaction = new FinancialScheduledTransactionService( rockContext ).GetByScheduleId( persistedPaymentInfo.ScheduledTransactionId );
+
                     if ( transaction != null && transaction.AuthorizedPersonAlias != null )
                     {
+                        // Transaction found, load gateway attributes
                         if ( transaction.FinancialGateway != null )
                         {
                             transaction.FinancialGateway.LoadAttributes( rockContext );
                         }
+
+                        // Set account variables
                         referenceNumber = gateway.GetReferenceNumber( transaction, out errorMessage );
                         paymentDetail = transaction.FinancialPaymentDetail;
+                    }
+                    else if ( scheduledTransaction != null && scheduledTransaction.AuthorizedPersonAlias != null)
+                    {
+                        // Scheduled transaction found, load gateway attributes
+                        if ( scheduledTransaction.FinancialGateway != null )
+                        {
+                            scheduledTransaction.FinancialGateway.LoadAttributes( rockContext );
+                        }
+
+                        // Set account variables
+                        referenceNumber = gateway.GetReferenceNumber( scheduledTransaction, out errorMessage );
+                        paymentDetail = scheduledTransaction.FinancialPaymentDetail;
                     }
                     else
                     {
                         errorMessage = "Failed to load transaction data";
                     }
 
+                    // Create savedAccount object, populate, and write to database
                     if ( _person != null && paymentDetail != null )
                     {
                         var savedAccount = new FinancialPersonSavedAccount();
@@ -1219,7 +1337,7 @@ TransactionAcountDetails: [
         /// <param name="schedule"></param>
         /// <param name="paymentDetail"></param>
         /// <param name="rockContext"></param>
-        private void ShowScheduleSuccess( GatewayComponent gatewayComponent, Person person, PaymentInfo paymentInfo, string accountName, PaymentSchedule schedule, FinancialPaymentDetail paymentDetail, RockContext rockContext )
+        private void ShowScheduleSuccess( GatewayComponent gatewayComponent, Person person, PaymentInfo paymentInfo, string accountName, PaymentSchedule schedule, bool newTransaction, FinancialPaymentDetail paymentDetail, RockContext rockContext )
         {
             // hide transaction id labal
             lblTransactionCode.Visible = false;
@@ -1260,6 +1378,11 @@ TransactionAcountDetails: [
             lblWhen.Text = schedule.ToString();
             lblWhen.Visible = true;
             lblWhenTitle.Visible = true;
+
+            if (newTransaction)
+            {
+                lblSuccessMessage.Text = "Your contribution has been scheduled.<br />Your support is helping to actively achieve our mission.<br />We are so grateful for your commitment.";
+            }
         }
 
         /// <summary>
@@ -1621,27 +1744,45 @@ TransactionAcountDetails: [
         }
 
         /// <summary>
-        /// Gets the payment schedule.
+        /// Create New Payment Schedule
         /// </summary>
+        /// <param name="frequency"></param>
+        /// <param name="startDate"></param>
         /// <returns></returns>
-        private PaymentSchedule GetSchedule()
+        private PaymentSchedule CreateSchedule(string frequency, DateTime startDate)
         {
             if ( GetAttributeValue( "AllowScheduled" ).AsBoolean() )
             {
+                // Create new payment schedule
                 var schedule = new PaymentSchedule();
-                schedule.TransactionFrequencyValue = DefinedValueCache.Read( ddlScheduleFrequency.SelectedValue );
-                if ( dpScheduleStartDate.SelectedDate.HasValue && dpScheduleStartDate.SelectedDate > RockDateTime.Today )
+
+                // Get frequency as defined value
+                DefinedValueCache definedValueFrequency = DefinedValueCache.Read( frequency );
+
+                // Set frequency
+                if ( definedValueFrequency != null)
                 {
-                    schedule.StartDate = dpScheduleStartDate.SelectedDate.Value;
+                    schedule.TransactionFrequencyValue = definedValueFrequency;
+                } else
+                {
+                    // problem getting frequency, return null schedule
+                    return null;
                 }
-                else
+                
+                // Set start date
+                if ( startDate > RockDateTime.Today )
                 {
-                    schedule.StartDate = DateTime.MinValue;
+                    schedule.StartDate = startDate;
+                } else
+                {
+                    // Date can not be in the past, return null schedule
+                    return null;
                 }
 
                 return schedule;
             }
 
+            // Scheduled Transactions not allowed - return null schedule
             return null;
         }
 
@@ -1653,7 +1794,7 @@ TransactionAcountDetails: [
         /// <param name="fundAccountName"></param>
         /// <param name="fundAccountId"></param>
         /// <returns></returns>
-        private PersistedPaymentInfo CreatePersistedPaymentInfo( FinancialTransaction transaction, PaymentInfo paymentInfo, string fundAccountName, int fundAccountId )
+        private PersistedPaymentInfo CreatePersistedPaymentInfo( FinancialTransaction singleTransaction, FinancialScheduledTransaction scheduledTransaction, PaymentSchedule schedule, PaymentInfo paymentInfo, string fundAccountName, int fundAccountId )
         {
             PersistedPaymentInfo persistedPaymentInfo = new PersistedPaymentInfo();
 
@@ -1697,16 +1838,32 @@ TransactionAcountDetails: [
                 return null;
             }
 
-            // Add Transaction information
-            persistedPaymentInfo.TransactionCode = transaction.TransactionCode;
+            // Add Transaction Info
             persistedPaymentInfo.Amount = paymentInfo.Amount.ToString();
-            persistedPaymentInfo.Email = paymentInfo.Email;
-            persistedPaymentInfo.PersonId = _person.Id;
             persistedPaymentInfo.FundAccountId = fundAccountId;
             persistedPaymentInfo.FundAccountName = fundAccountName;
 
+            // Add single transaction info if exists
+            if ( singleTransaction != null )
+            {
+                persistedPaymentInfo.TransactionCode = singleTransaction.TransactionCode;
+            }
+
+            // Add schedule transaction info if exists
+            if ( scheduledTransaction != null )
+            {
+                persistedPaymentInfo.TransactionCode = scheduledTransaction.TransactionCode;
+                persistedPaymentInfo.ScheduledTransactionId = scheduledTransaction.GatewayScheduleId;
+                persistedPaymentInfo.ScheduleFrequency = schedule.TransactionFrequencyValue;
+                persistedPaymentInfo.ScheduleStartDate = schedule.StartDate;
+            }
+
+            // Add Person information
+            persistedPaymentInfo.Email = paymentInfo.Email;
+            persistedPaymentInfo.PersonId = _person.Id;
+
             return persistedPaymentInfo;
-        }        
+        }
 
         /// <summary>
         /// Gets the default country.
@@ -1876,18 +2033,24 @@ TransactionAcountDetails: [
 
             // Transaction Properties
             public string TransactionCode { get; set; }
+            public string ScheduledTransactionId { get; set; }
+            public DefinedValueCache ScheduleFrequency { get; set; }
+            public DateTime ScheduleStartDate { get; set; }
+
+            // Payment Properties
             public string Amount { get; set; }
-            public string Email { get; set; }
-            public int PersonId { get; set; }
             public int FundAccountId { get; set; }
             public string FundAccountName { get; set; }
+
+            // Person Properties
+            public string Email { get; set; }
+            public int PersonId { get; set; }
 
             public PersistedPaymentInfo()
             {
             }
-
         }
-        
+
         /// <summary>
         /// Lightweight object for each contribution item
         /// </summary>

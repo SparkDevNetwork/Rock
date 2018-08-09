@@ -535,8 +535,8 @@
 }
 
 .amount {
-    margin-top: 40px;
-    margin-bottom: 80px;
+    margin-top: 20px;
+    margin-bottom: 20px;
     width: 100%;
     font-size: 65px;
     font-family: Akrobat;
@@ -558,10 +558,19 @@
     border-bottom: 2px solid lightgrey !important;
 }
 
+.schedule-date-wrapper .control-label {
+    font-family: Heebo;
+    font-size: 12px;
+    color: #010001;
+}
+
+.schedule-date-wrapper .form-control {
+    color: #7A1315;
+}
+
 .comment-wrapper {
     width: 100%;
     margin-bottom: 40px;
-    margin-top: -40px;
 }
 
 /* Give */
@@ -862,22 +871,19 @@
 
 .confirm-card-gift {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     justify-content: center;
-    margin: 5px 0;
+    margin-bottom: 10px;
 }
 
-.confirm-card-gift p {
-    margin-right: 10px;
-}
-
-#confirmGiftMessage {
+.confirm-gift-summary {
     font-family: Akrobat;
     font-size: 20px;
     font-weight: bold;
     line-height: 24px;
     color: #000000;
     text-align: center;
+    margin: 0;
 }
 
 #confirmGiftAmount {
@@ -887,7 +893,7 @@
     line-height: 43px;
     color: #7A1315;
     text-align: center;
-    margin-top: -10px;
+    padding: 0;
 }
 
 .confirm-paymenttype-card {
@@ -974,9 +980,8 @@
         width: 100%;
     }
 
-    #confirmGiftMessage {
-        margin-top: unset;
-        margin-bottom: 5px;
+    .confirm-gift-summary {
+        font-size: 18px;
     }
 
     #confirmGiftAmount {
@@ -1026,6 +1031,14 @@
     width: 100%;
 }
 
+.navigation-right {
+    margin-right: -20%;
+}
+
+.navigation-left {
+    margin-left: -20%;
+}
+
 .navigation .btn {
     border-radius: 25px;
     margin-left: 5px;
@@ -1040,6 +1053,14 @@
     .navigation {
         justify-content: space-between;
         padding-bottom: 5px;
+    }
+
+    .navigation-right {
+        margin-right: unset;
+    }
+
+    .navigation-left {
+        margin-left: unset;
     }
 }
 
@@ -1151,6 +1172,10 @@
 }
 
 /* Schedule Transaction */
+.schedule-wrapper {
+    width: 100%;
+}
+
 .schedule-transaction .collapse {
     transition: all 1s;
 }
@@ -1236,9 +1261,15 @@ input:checked + .slider:before {
 
 .schedule-frequency {
     margin-top: 20px;
+    margin-bottom: 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border-bottom: 2px solid lightgrey;
+    font-size: 20px;
+    color: #7A1315;
+    padding: unset;
+    padding-left: 10px;
 }
 
  .schedule-frequency label {
