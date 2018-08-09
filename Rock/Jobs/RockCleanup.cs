@@ -1052,28 +1052,27 @@ WHERE ExpireDateTime IS NOT NULL
             // Add any missing person aliases
             using ( var rockContext = new Rock.Data.RockContext() )
             {
+                var definedType = DefinedTypeCache.Get( new Guid( SystemGuid.DefinedType.LOCATION_ADDRESS_STATE ) );
+                var stateList = definedType
+                    .DefinedValues
+                    .Where( v => v.ContainsKey( "Country" ) && v["Country"] != null )
+                    .Select( v => new { State = v.Value, Country = v["Country"] } ).ToLookup( v => v.State );
+
                 LocationService locationService = new LocationService( rockContext );
                 var locations = locationService
                     .Queryable()
                     .Where( l => ( l.Country == null || l.Country == string.Empty ) && l.State != null && l.State != string.Empty )
                     .ToList();
 
-                string statesUSA = "|AL|AK|AS|AZ|AR|CA|CO|CT|DE|DC|FM|FL|GA|GU|HI|ID|IL|IN|IA|KS|KY|LA|ME|MH|MD|MA|MI|MN|MS|MO|MT|NE|NV|NH|NJ|NM|NY|NC|ND|MP|OH|OK|OR|PW|PA|PR|RI|SC|SD|TN|TX|UT|VT|VI|VA|WA|WV|WI|WY|";
-                string statesCanada = "|AB|BC|MB|NB|NL|NS|NT|NU|ON|PE|QC|SK|YT|";
-
-                foreach (var location in locations)
+                foreach ( var location in locations )
                 {
-                    if (location.State.Length == 2)
+                    if ( stateList.Contains( location.State ) )
                     {
-                        if ( statesUSA.IndexOf( location.State.ToUpperInvariant() ) > 0 )
+                        var state = stateList[location.State];
+                        if ( state.Count() == 1 )
                         {
-                            location.Country = "US";
+                            location.Country = state.First().Country.ToStringSafe();
                         }
-                        else if ( statesCanada.IndexOf( location.State.ToUpperInvariant() ) > 0 )
-                        {
-                            location.Country = "CA";
-                        }
-
                     }
                 }
 
