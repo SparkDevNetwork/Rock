@@ -434,7 +434,7 @@ namespace church.ccv.MobileApp
     // Common reusable functions for supporting the Mobile App
     public static class Util
     {
-        public static PersonData GetPersonData( string userID )
+        public static PersonData GetPersonData( string userID, out HttpStatusCode statusCode )
         {
             PersonData personData = new PersonData( );
 
@@ -450,7 +450,7 @@ namespace church.ccv.MobileApp
                     .Select( a => a.PersonId )
                     .FirstOrDefault();
 
-                if ( personId.HasValue == false ) break;
+                if ( personId.HasValue == false ) {  statusCode = HttpStatusCode.NotFound; break; }
 
                 // start by getting the person. if we can't do that, we should fail
                 var person = personService.Queryable().Include( a => a.PhoneNumbers ).Include(a => a.Aliases )
@@ -459,7 +459,7 @@ namespace church.ccv.MobileApp
                 // do a shallow copy of the person
                 personData.Person = new Person( );
                 personData.Person.CopyPropertiesFrom( person );
-                if( personData.Person == null ) break;
+                if( personData.Person == null ) { statusCode = HttpStatusCode.BadRequest; break; }
 
                 // take one deep object, the aliases, so we can provide the client a PrimaryAliasId
                 personData.Person.Aliases = person.Aliases;
@@ -569,6 +569,7 @@ namespace church.ccv.MobileApp
                     personData.SharedStory = Actions_Student.ShareStory.SharedStory( person.Id, out storyIds );
                 }
 
+                statusCode = HttpStatusCode.OK;
                 return personData;
             }
             while( false );

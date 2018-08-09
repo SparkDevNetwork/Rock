@@ -53,11 +53,13 @@ namespace church.ccv.MobileApp.Rest
         [Authenticate, Secured]
         public HttpResponseMessage GetPersonData( string userID )
         {
-            PersonData personData = Util.GetPersonData( userID );
+            HttpStatusCode statusCode;
+            PersonData personData = Util.GetPersonData( userID, out statusCode );
 
             StringContent restContent = new StringContent( JsonConvert.SerializeObject( personData ), Encoding.UTF8, "application/json" );
             return new HttpResponseMessage()
             {
+                StatusCode = statusCode,
                 Content = restContent
             };
         }
