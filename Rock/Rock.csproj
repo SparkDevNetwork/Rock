@@ -381,6 +381,7 @@
     <Compile Include="Model\CodeGenerated\NoteAttachmentService.cs" />
     <Compile Include="Model\NoteAttachment.cs" />
     <Compile Include="Plugin\HotFixes\051_SparkData.cs" />
+    <Compile Include="Data\NoAttributeFilterExpression.cs" />
     <Compile Include="Plugin\HotFixes\052_MigrationRollupsForV8_1.cs" />
     <Compile Include="Plugin\HotFixes\053_DuplicateDataIntegrityReports.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">

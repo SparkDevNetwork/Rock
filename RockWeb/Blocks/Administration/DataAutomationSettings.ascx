@@ -6,7 +6,7 @@
         <div class="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-tachometer"></i>
+                    <i class="fa fa-sliders-h"></i>
                     Data Automation Settings
                 </h1>
             </div>
