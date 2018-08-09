@@ -797,6 +797,7 @@
     <Compile Include="Model\AnalyticsSourcePersonHistorical.cs" />
     <Compile Include="Model\AnalyticsFactFinancialTransaction.cs" />
     <Compile Include="Model\AnalyticsSourceFinancialTransaction.cs" />
+    <Compile Include="Model\CodeGenerated\ServiceJobHistoryService.cs" />
     <Compile Include="Model\ConnectionTypeService.Partial.cs" />
     <Compile Include="Model\AttendanceOccurrence.cs" />
     <Compile Include="Model\Attendance.cs" />
@@ -1225,6 +1226,8 @@
     <Compile Include="Model\RestControllerService.Partial.cs" />
     <Compile Include="Model\Schedule.cs" />
     <Compile Include="Model\ScheduleService.Partial.cs" />
+    <Compile Include="Model\ServiceJobHistory.cs" />
+    <Compile Include="Model\ServiceJobHistoryService.Partial.cs" />
     <Compile Include="Model\SignalType.cs" />
     <Compile Include="Model\SiteDomain.cs" />
     <Compile Include="Model\LavaShortCode.cs" />
