@@ -425,6 +425,8 @@ namespace Rock.Web.Cache
 
             // If the control is a RockControl
             var rockControl = attributeControl as IRockControl;
+            var controlHasRequired = attributeControl as IHasRequired;
+            
             if ( rockControl != null )
             {
                 rockControl.Label = labelText;
@@ -437,6 +439,12 @@ namespace Rock.Web.Cache
             }
             else
             {
+                if ( controlHasRequired != null )
+                {
+                    controlHasRequired.Required = required ?? IsRequired;
+                    controlHasRequired.ValidationGroup = validationGroup;
+                }
+
                 bool renderLabel = !string.IsNullOrEmpty( labelText );
                 bool renderHelp = !string.IsNullOrWhiteSpace( helpText );
                 bool renderWarning = !string.IsNullOrWhiteSpace( warningText );

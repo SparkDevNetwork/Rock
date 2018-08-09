@@ -23,7 +23,7 @@ namespace Rock.Web.UI.Controls
     /// This is the generic interface that most Rock UI controls should implement.  Use along with the
     /// RockControlHelper's CreateChildControls() and RenderControl() methods.
     /// </summary>
-    public interface IRockControl: IHasValidationGroup
+    public interface IRockControl: IHasValidationGroup, IHasRequired
     {
         /// <summary>
         /// Gets or sets the label.
@@ -48,14 +48,6 @@ namespace Rock.Web.UI.Controls
         /// The warning text.
         /// </value>
         string Warning { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="IRockControl" /> is required.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if required; otherwise, <c>false</c>.
-        /// </value>
-        bool Required { get; set; }
 
         /// <summary>
         /// Gets or sets the required error message.  If blank, the LabelName name will be used
