@@ -352,7 +352,13 @@ namespace Rock.Model
         /// </summary>
         public class PersonMatchQuery
         {
-
+            /// <summary>
+            /// Initializes a new instance of the <see cref="PersonMatchQuery"/> class.
+            /// </summary>
+            /// <param name="firstName">The first name.</param>
+            /// <param name="lastName">The last name.</param>
+            /// <param name="email">The email.</param>
+            /// <param name="mobilePhone">The mobile phone.</param>
             public PersonMatchQuery( string firstName, string lastName, string email, string mobilePhone )
             {
                 FirstName = firstName ?? string.Empty;
@@ -408,18 +414,60 @@ namespace Rock.Model
                 SuffixValueId = suffixValueId;
             }
 
+            /// <summary>
+            /// Gets or sets the first name.
+            /// </summary>
+            /// <value>
+            /// The first name.
+            /// </value>
             public string FirstName { get; set; }
 
+            /// <summary>
+            /// Gets or sets the last name.
+            /// </summary>
+            /// <value>
+            /// The last name.
+            /// </value>
             public string LastName { get; set; }
 
+            /// <summary>
+            /// Gets or sets the email.
+            /// </summary>
+            /// <value>
+            /// The email.
+            /// </value>
             public string Email { get; set; }
 
+            /// <summary>
+            /// Gets or sets the mobile phone.
+            /// </summary>
+            /// <value>
+            /// The mobile phone.
+            /// </value>
             public string MobilePhone { get; set; }
 
+            /// <summary>
+            /// Gets or sets the gender.
+            /// </summary>
+            /// <value>
+            /// The gender.
+            /// </value>
             public Gender? Gender { get; set; }
 
+            /// <summary>
+            /// Gets or sets the birth date.
+            /// </summary>
+            /// <value>
+            /// The birth date.
+            /// </value>
             public DateTime? BirthDate { get; set; }
 
+            /// <summary>
+            /// Gets or sets the suffix value identifier.
+            /// </summary>
+            /// <value>
+            /// The suffix value identifier.
+            /// </value>
             public int? SuffixValueId { get; set;  }
         }
 
