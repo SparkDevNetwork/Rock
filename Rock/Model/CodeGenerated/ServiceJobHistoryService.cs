@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// ServiceJob Service class
+    /// ServiceJobHistory Service class
     /// </summary>
-    public partial class ServiceJobService : Service<ServiceJob>
+    public partial class ServiceJobHistoryService : Service<ServiceJobHistory>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ServiceJobService"/> class
+        /// Initializes a new instance of the <see cref="ServiceJobHistoryService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public ServiceJobService(RockContext context) : base(context)
+        public ServiceJobHistoryService(RockContext context) : base(context)
         {
         }
 
@@ -48,16 +48,9 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( ServiceJob item, out string errorMessage )
+        public bool CanDelete( ServiceJobHistory item, out string errorMessage )
         {
             errorMessage = string.Empty;
-
-            if ( new Service<ServiceJobHistory>( Context ).Queryable().Any( a => a.ServiceJobId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} contains one or more child {1}.", ServiceJob.FriendlyTypeName, ServiceJobHistory.FriendlyTypeName.Pluralize().ToLower() );
-                return false;
-            }
-
             return true;
         }
     }
@@ -65,60 +58,50 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class ServiceJobExtensionMethods
+    public static partial class ServiceJobHistoryExtensionMethods
     {
         /// <summary>
-        /// Clones this ServiceJob object to a new ServiceJob object
+        /// Clones this ServiceJobHistory object to a new ServiceJobHistory object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static ServiceJob Clone( this ServiceJob source, bool deepCopy )
+        public static ServiceJobHistory Clone( this ServiceJobHistory source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as ServiceJob;
+                return source.Clone() as ServiceJobHistory;
             }
             else
             {
-                var target = new ServiceJob();
+                var target = new ServiceJobHistory();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another ServiceJob object to this ServiceJob object
+        /// Copies the properties from another ServiceJobHistory object to this ServiceJobHistory object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this ServiceJob target, ServiceJob source )
+        public static void CopyPropertiesFrom( this ServiceJobHistory target, ServiceJobHistory source )
         {
             target.Id = source.Id;
-            target.Assembly = source.Assembly;
-            target.Class = source.Class;
-            target.CronExpression = source.CronExpression;
-            target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.IsActive = source.IsActive;
-            target.IsSystem = source.IsSystem;
-            target.LastRunDateTime = source.LastRunDateTime;
-            target.LastRunDurationSeconds = source.LastRunDurationSeconds;
-            target.LastRunSchedulerName = source.LastRunSchedulerName;
-            target.LastStatus = source.LastStatus;
-            target.LastStatusMessage = source.LastStatusMessage;
-            target.LastSuccessfulRunDateTime = source.LastSuccessfulRunDateTime;
-            target.Name = source.Name;
-            target.NotificationEmails = source.NotificationEmails;
-            target.NotificationStatus = source.NotificationStatus;
+            target.ServiceJobId = source.ServiceJobId;
+            target.ServiceWorker = source.ServiceWorker;
+            target.StartDateTime = source.StartDateTime;
+            target.StopDateTime = source.StopDateTime;
+            target.Status = source.Status;
+            target.StatusMessage = source.StatusMessage;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
-
         }
     }
 }
