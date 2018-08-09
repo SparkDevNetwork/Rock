@@ -506,6 +506,7 @@ namespace Rock.Web.UI.Controls
                 _tbCounty.ValidationGroup = value;
                 _tbState.ValidationGroup = value;
                 _ddlState.ValidationGroup = value;
+                _ddlCountry.ValidationGroup = value;
             }
         }
 
