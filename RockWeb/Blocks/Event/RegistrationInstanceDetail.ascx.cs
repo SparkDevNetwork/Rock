@@ -3152,7 +3152,8 @@ namespace RockWeb.Blocks.Event
                     }
 
                     // Start query for registrants
-                    var qry = new RegistrationRegistrantService( rockContext )
+                    var registrationRegistrantService =  new RegistrationRegistrantService( rockContext );
+                    var qry = registrationRegistrantService
                     .Queryable( "PersonAlias.Person.PhoneNumbers.NumberTypeValue,Fees.RegistrationTemplateFee,GroupMember.Group" ).AsNoTracking()
                     .Where( r =>
                         r.Registration.RegistrationInstanceId == instanceId.Value &&
@@ -3390,41 +3391,10 @@ namespace RockWeb.Blocks.Event
                         // Filter query by any configured registrant attribute filters
                         if ( registrantAttributes != null && registrantAttributes.Any() )
                         {
-                            var attributeValueService = new AttributeValueService( rockContext );
-                            var parameterExpression = attributeValueService.ParameterExpression;
                             foreach ( var attribute in registrantAttributes )
                             {
                                 var filterControl = phRegistrantsRegistrantFormFieldFilters.FindControl( "filterRegistrants_" + attribute.Id.ToString() );
-                                if ( filterControl == null )
-                                {
-                                    continue;
-                                }
-
-                                var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
-                                var filterIsDefault = attribute.FieldType.Field.IsEqualToValue( filterValues, attribute.DefaultValue );
-                                var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
-                                if ( expression == null )
-                                {
-                                    continue;
-                                }
-
-                                var attributeValues = attributeValueService
-                                                      .Queryable()
-                                                      .Where( v => v.Attribute.Id == attribute.Id );
-
-                                var filteredAttributeValues = attributeValues.Where( parameterExpression, expression, null );
-
-                                if ( filterIsDefault )
-                                {
-                                    qry = qry.Where( w =>
-                                         !attributeValues.Any( v => v.EntityId == w.Id ) ||
-                                         filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Id ) );
-                                }
-                                else
-                                {
-                                    qry = qry.Where( w =>
-                                        filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Id ) );
-                                }
+                                qry = attribute.FieldType.Field.ApplyAttributeQueryFilter( qry, filterControl, attribute, registrationRegistrantService, Rock.Reporting.FilterMode.SimpleFilter );
                             }
                         }
 
@@ -3440,41 +3410,10 @@ namespace RockWeb.Blocks.Event
                         // Filter query by any configured person attribute filters
                         if ( personAttributes != null && personAttributes.Any() )
                         {
-                            var attributeValueService = new AttributeValueService( rockContext );
-                            var parameterExpression = attributeValueService.ParameterExpression;
                             foreach ( var attribute in personAttributes )
                             {
                                 var filterControl = phRegistrantsRegistrantFormFieldFilters.FindControl( "filterRegistrants_" + attribute.Id.ToString() );
-                                if ( filterControl == null )
-                                {
-                                    continue;
-                                }
-
-                                var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
-                                var filterIsDefault = attribute.FieldType.Field.IsEqualToValue( filterValues, attribute.DefaultValue );
-                                var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
-                                if ( expression == null )
-                                {
-                                    continue;
-                                }
-
-                                var attributeValues = attributeValueService
-                                    .Queryable()
-                                    .Where( v => v.Attribute.Id == attribute.Id );
-
-                                var filteredAttributeValues = attributeValues.Where( parameterExpression, expression, null );
-
-                                if ( filterIsDefault )
-                                {
-                                    qry = qry.Where( w =>
-                                         !attributeValues.Any( v => v.EntityId == w.PersonAlias.PersonId ) ||
-                                         filteredAttributeValues.Select( v => v.EntityId ).Contains( w.PersonAlias.PersonId ) );
-                                }
-                                else
-                                {
-                                    qry = qry.Where( w =>
-                                        filteredAttributeValues.Select( v => v.EntityId ).Contains( w.PersonAlias.PersonId ) );
-                                }
+                                qry = attribute.FieldType.Field.ApplyAttributeQueryFilter( qry, filterControl, attribute, registrationRegistrantService, Rock.Reporting.FilterMode.SimpleFilter );
                             }
                         }
 
@@ -3490,46 +3429,10 @@ namespace RockWeb.Blocks.Event
                         // Filter query by any configured person attribute filters
                         if ( groupMemberAttributes != null && groupMemberAttributes.Any() )
                         {
-                            var attributeValueService = new AttributeValueService( rockContext );
-                            var parameterExpression = attributeValueService.ParameterExpression;
                             foreach ( var attribute in groupMemberAttributes )
                             {
                                 var filterControl = phRegistrantsRegistrantFormFieldFilters.FindControl( "filterRegistrants_" + attribute.Id.ToString() );
-                                if ( filterControl == null )
-                                {
-                                    continue;
-                                }
-
-                                var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
-                                var filterIsDefault = attribute.FieldType.Field.IsEqualToValue( filterValues, attribute.DefaultValue );
-                                var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
-                                if ( expression == null )
-                                {
-                                    continue;
-                                }
-
-                                var attributeValues = attributeValueService
-                                    .Queryable()
-                                    .Where( v => v.Attribute.Id == attribute.Id );
-
-                                var filteredAttributeValues = attributeValues.Where( parameterExpression, expression, null );
-
-                                if ( filterIsDefault )
-                                {
-                                    qry = qry.Where( r => r.GroupMemberId.HasValue &&
-                                         ( !attributeValues.Any( v => v.EntityId == r.GroupMemberId.Value ) ||
-                                            filteredAttributeValues.Select( v => v.EntityId ).Contains( r.GroupMemberId.Value ) ) );
-                                }
-                                else
-                                {
-                                    qry = qry.Where( r =>
-                                        r.GroupMemberId.HasValue &&
-                                        filteredAttributeValues
-                                            .Select( v => v.EntityId )
-                                            .Contains( r.GroupMemberId.Value ) );
-                                }
-
-                                qry = qry.Where( r => r.GroupMemberId.HasValue && attributeValues.Select( v => v.EntityId ).Contains( r.GroupMemberId.Value ) );
+                                qry = attribute.FieldType.Field.ApplyAttributeQueryFilter( qry, filterControl, attribute, registrationRegistrantService, Rock.Reporting.FilterMode.SimpleFilter );
                             }
                         }
                     }
@@ -4838,7 +4741,8 @@ namespace RockWeb.Blocks.Event
                                         .Select( r => r.Id ).ToList();
 
                     // Start query for registrants
-                    var qry = new RegistrationRegistrantService( rockContext )
+                    var registrationRegistrantService = new RegistrationRegistrantService( rockContext );
+                    var qry = registrationRegistrantService
                     .Queryable( "PersonAlias.Person.PhoneNumbers.NumberTypeValue,Fees.RegistrationTemplateFee" ).AsNoTracking()
                     .Where( r =>
                         r.Registration.RegistrationInstanceId == instanceId.Value &&
@@ -5053,41 +4957,10 @@ namespace RockWeb.Blocks.Event
                         // Filter query by any configured registrant attribute filters
                         if ( registrantAttributes != null && registrantAttributes.Any() )
                         {
-                            var attributeValueService = new AttributeValueService( rockContext );
-                            var parameterExpression = attributeValueService.ParameterExpression;
                             foreach ( var attribute in registrantAttributes )
                             {
                                 var filterControl = phWaitListFormFieldFilters.FindControl( "filterWaitlist_" + attribute.Id.ToString() );
-                                if ( filterControl == null )
-                                {
-                                    continue;
-                                }
-
-                                var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
-                                var filterIsDefault = attribute.FieldType.Field.IsEqualToValue( filterValues, attribute.DefaultValue );
-                                var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
-                                if ( expression == null )
-                                {
-                                    continue;
-                                }
-
-                                var attributeValues = attributeValueService
-                                    .Queryable()
-                                    .Where( v => v.Attribute.Id == attribute.Id );
-
-                                var filteredAttributeValues = attributeValues.Where( parameterExpression, expression, null );
-
-                                if ( filterIsDefault )
-                                {
-                                    qry = qry.Where( w =>
-                                         !attributeValues.Any( v => v.EntityId == w.Id ) ||
-                                         filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Id ) );
-                                }
-                                else
-                                {
-                                    qry = qry.Where( w =>
-                                        filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Id ) );
-                                }
+                                qry = attribute.FieldType.Field.ApplyAttributeQueryFilter( qry, filterControl, attribute, registrationRegistrantService, Rock.Reporting.FilterMode.SimpleFilter );
                             }
                         }
 
@@ -5103,41 +4976,10 @@ namespace RockWeb.Blocks.Event
                         // Filter query by any configured person attribute filters
                         if ( personAttributes != null && personAttributes.Any() )
                         {
-                            var attributeValueService = new AttributeValueService( rockContext );
-                            var parameterExpression = attributeValueService.ParameterExpression;
                             foreach ( var attribute in personAttributes )
                             {
                                 var filterControl = phWaitListFormFieldFilters.FindControl( "filterWaitlist_" + attribute.Id.ToString() );
-                                if ( filterControl == null )
-                                {
-                                    continue;
-                                }
-
-                                var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
-                                var filterIsDefault = attribute.FieldType.Field.IsEqualToValue( filterValues, attribute.DefaultValue );
-                                var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
-                                if ( expression == null )
-                                {
-                                    continue;
-                                }
-
-                                var attributeValues = attributeValueService
-                                    .Queryable()
-                                    .Where( v => v.Attribute.Id == attribute.Id );
-
-                                var filteredAttributeValues = attributeValues.Where( parameterExpression, expression, null );
-
-                                if ( filterIsDefault )
-                                {
-                                    qry = qry.Where( w =>
-                                         !attributeValues.Any( v => v.EntityId == w.PersonAlias.PersonId ) ||
-                                         filteredAttributeValues.Select( v => v.EntityId ).Contains( w.PersonAlias.PersonId ) );
-                                }
-                                else
-                                {
-                                    qry = qry.Where( w =>
-                                        filteredAttributeValues.Select( v => v.EntityId ).Contains( w.PersonAlias.PersonId ) );
-                                }
+                                qry = attribute.FieldType.Field.ApplyAttributeQueryFilter( qry, filterControl, attribute, registrationRegistrantService, Rock.Reporting.FilterMode.SimpleFilter );
                             }
                         }
 
@@ -5153,40 +4995,10 @@ namespace RockWeb.Blocks.Event
                         // Filter query by any configured person attribute filters
                         if ( groupMemberAttributes != null && groupMemberAttributes.Any() )
                         {
-                            var attributeValueService = new AttributeValueService( rockContext );
-                            var parameterExpression = attributeValueService.ParameterExpression;
                             foreach ( var attribute in groupMemberAttributes )
                             {
                                 var filterControl = phWaitListFormFieldFilters.FindControl( "filterWaitlist_" + attribute.Id.ToString() );
-                                if ( filterControl == null )
-                                {
-                                    continue;
-                                }
-
-                                var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
-                                var filterIsDefault = attribute.FieldType.Field.IsEqualToValue( filterValues, attribute.DefaultValue );
-                                var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
-                                if ( expression == null )
-                                {
-                                    continue;
-                                }
-
-                                var attributeValues = attributeValueService
-                                    .Queryable()
-                                    .Where( v => v.Attribute.Id == attribute.Id );
-
-                                var filteredAttributeValues = attributeValues.Where( parameterExpression, expression, null );
-
-                                if ( filterIsDefault )
-                                {
-                                    qry = qry.Where( w => w.GroupMemberId.HasValue &&
-                                         ( !attributeValues.Any( v => v.EntityId == w.GroupMemberId.Value ) || filteredAttributeValues.Select( v => v.EntityId ).Contains( w.GroupMemberId.Value ) ) );
-                                }
-                                else
-                                {
-                                    qry = qry.Where( w => w.GroupMemberId.HasValue &&
-                                        filteredAttributeValues.Select( v => v.EntityId ).Contains( w.GroupMemberId.Value ) );
-                                }
+                                qry = attribute.FieldType.Field.ApplyAttributeQueryFilter( qry, filterControl, attribute, registrationRegistrantService, Rock.Reporting.FilterMode.SimpleFilter );
                             }
                         }
                     }
@@ -5442,7 +5254,8 @@ namespace RockWeb.Blocks.Event
                 using ( var rockContext = new RockContext() )
                 {
                     // Start query for registrants
-                    var qry = new RegistrationRegistrantService( rockContext )
+                    var registrationRegistrantService = new RegistrationRegistrantService( rockContext );
+                    var qry = registrationRegistrantService
                         .Queryable( "PersonAlias.Person.PhoneNumbers.NumberTypeValue,Fees.RegistrationTemplateFee,GroupMember.Group" ).AsNoTracking()
                         .Where( r =>
                             r.Registration.RegistrationInstanceId == instanceId.Value &&
@@ -5673,41 +5486,10 @@ namespace RockWeb.Blocks.Event
                         // Filter query by any configured registrant attribute filters
                         if ( registrantAttributes != null && registrantAttributes.Any() )
                         {
-                            var attributeValueService = new AttributeValueService( rockContext );
-                            var parameterExpression = attributeValueService.ParameterExpression;
                             foreach ( var attribute in registrantAttributes )
                             {
                                 var filterControl = phGroupPlacementsFormFieldFilters.FindControl( "filterGroupPlacements_" + attribute.Id.ToString() );
-                                if ( filterControl == null )
-                                {
-                                    continue;
-                                }
-                                
-                                var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
-                                var filterIsDefault = attribute.FieldType.Field.IsEqualToValue( filterValues, attribute.DefaultValue );
-                                var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
-                                if ( expression == null )
-                                {
-                                    continue;
-                                }
-
-                                var attributeValues = attributeValueService
-                                    .Queryable()
-                                    .Where( v => v.Attribute.Id == attribute.Id );
-
-                                var filteredAttributeValues = attributeValues.Where( parameterExpression, expression, null );
-
-                                if ( filterIsDefault )
-                                {
-                                    qry = qry.Where( w =>
-                                         !attributeValues.Any( v => v.EntityId == w.Id ) ||
-                                         filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Id ) );
-                                }
-                                else
-                                {
-                                    qry = qry.Where( w =>
-                                        filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Id ) );
-                                }
+                                qry = attribute.FieldType.Field.ApplyAttributeQueryFilter( qry, filterControl, attribute, registrationRegistrantService, Rock.Reporting.FilterMode.SimpleFilter );
                             }
                         }
 
@@ -5723,41 +5505,10 @@ namespace RockWeb.Blocks.Event
                         // Filter query by any configured person attribute filters
                         if ( personAttributes != null && personAttributes.Any() )
                         {
-                            var attributeValueService = new AttributeValueService( rockContext );
-                            var parameterExpression = attributeValueService.ParameterExpression;
                             foreach ( var attribute in personAttributes )
                             {
                                 var filterControl = phGroupPlacementsFormFieldFilters.FindControl( "filterGroupPlacements_" + attribute.Id.ToString() );
-                                if ( filterControl == null )
-                                {
-                                    continue;
-                                }
-
-                                var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
-                                var filterIsDefault = attribute.FieldType.Field.IsEqualToValue( filterValues, attribute.DefaultValue );
-                                var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
-                                if ( expression == null )
-                                {
-                                    continue;
-                                }
-
-                                var attributeValues = attributeValueService
-                                    .Queryable()
-                                    .Where( v => v.Attribute.Id == attribute.Id );
-
-                                var filteredAttributeValues = attributeValues.Where( parameterExpression, expression, null );
-
-                                if ( filterIsDefault )
-                                {
-                                    qry = qry.Where( w =>
-                                         !attributeValues.Any( v => v.EntityId == w.PersonAlias.PersonId ) ||
-                                         filteredAttributeValues.Select( v => v.EntityId ).Contains( w.PersonAlias.PersonId ) );
-                                }
-                                else
-                                {
-                                    qry = qry.Where( w =>
-                                        filteredAttributeValues.Select( v => v.EntityId ).Contains( w.PersonAlias.PersonId ) );
-                                }
+                                qry = attribute.FieldType.Field.ApplyAttributeQueryFilter( qry, filterControl, attribute, registrationRegistrantService, Rock.Reporting.FilterMode.SimpleFilter );
                             }
                         }
 
@@ -5773,42 +5524,10 @@ namespace RockWeb.Blocks.Event
                         // Filter query by any configured person attribute filters
                         if ( groupMemberAttributes != null && groupMemberAttributes.Any() )
                         {
-                            var attributeValueService = new AttributeValueService( rockContext );
-                            var parameterExpression = attributeValueService.ParameterExpression;
                             foreach ( var attribute in groupMemberAttributes )
                             {
                                 var filterControl = phGroupPlacementsFormFieldFilters.FindControl( "filterGroupPlacements_" + attribute.Id.ToString() );
-                                if ( filterControl == null )
-                                {
-                                    continue;
-                                }
-
-                                var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
-                                var filterIsDefault = attribute.FieldType.Field.IsEqualToValue( filterValues, attribute.DefaultValue );
-                                var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
-
-                                if ( expression == null )
-                                {
-                                    continue;
-                                }
-
-                                var attributeValues = attributeValueService
-                                    .Queryable()
-                                    .Where( v => v.Attribute.Id == attribute.Id );
-
-                                var filteredAttributeValues = attributeValues.Where( parameterExpression, expression, null );
-
-                                if ( filterIsDefault )
-                                {
-                                    qry = qry.Where( w => w.GroupMemberId.HasValue &&
-                                        (!attributeValues.Any( v => v.EntityId == w.GroupMemberId.Value ) ||
-                                            filteredAttributeValues.Select( v => v.EntityId ).Contains( w.GroupMemberId.Value ) ) );
-                                }
-                                else
-                                {
-                                    qry = qry.Where( w => w.GroupMemberId.HasValue &&
-                                        filteredAttributeValues.Select( v => v.EntityId ).Contains( w.GroupMemberId.Value ) );
-                                }                               
+                                qry = attribute.FieldType.Field.ApplyAttributeQueryFilter( qry, filterControl, attribute, registrationRegistrantService, Rock.Reporting.FilterMode.SimpleFilter );
                             }
                         }
                     }
