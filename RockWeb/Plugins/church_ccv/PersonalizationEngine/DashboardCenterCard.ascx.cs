@@ -55,27 +55,23 @@ namespace RockWeb.Plugins.church_ccv.PersonalizationEngine
             base.OnLoad( e );
             
             var relevantCampaign = PersonalizationEngineUtil.GetRelevantCampaign( new Campaign.CampaignType[] { Campaign.CampaignType.DashboardCard }, CurrentPerson.Id );
-
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-            string campaignImage = "/Themes/church_ccv_External_v8/Assets/Images/dashboard/feature-dashboard-next-step-go-on-a-trip.jpg";
-            string campaignTitle = "Impact The World";
-            string campaignSubTitle = "Go on a Mission Trip";
-            string campaignBody = "Jesus calls us to spread His gospel throughout the world. Have you considered going on a Mission Trip?";
-            string campaignLinkText = "Learn More";
-            string campaignLink = "/ministries/missions";
-
-            if( relevantCampaign != null )
+            if ( relevantCampaign == null )
             {
-                JObject jsonBlob = JObject.Parse( relevantCampaign.ContentJson );
-                    
-                campaignImage =  jsonBlob["img"].ToString( );
-                campaignTitle = jsonBlob["title"].ToString( );
-                campaignSubTitle = jsonBlob["sub-title"].ToString( );
-                campaignBody = jsonBlob["body"].ToString( );
-                campaignLinkText = jsonBlob["link-text"].ToString( );
-                campaignLink = jsonBlob["link"].ToString( );
+                // JHM Hack 8-10-18 - We need to update the Personalization Engine to support getting a campaign not tied to any persona. Until then,
+                // grab the one we know to be that.
+                relevantCampaign = PersonalizationEngineUtil.GetCampaign( 9 );
             }
 
+            JObject jsonBlob = JObject.Parse( relevantCampaign.ContentJson );
+                    
+            string campaignImage =  jsonBlob["img"].ToString( );
+            string campaignTitle = jsonBlob["title"].ToString( );
+            string campaignSubTitle = jsonBlob["sub-title"].ToString( );
+            string campaignBody = jsonBlob["body"].ToString( );
+            string campaignLinkText = jsonBlob["link-text"].ToString( );
+            string campaignLink = jsonBlob["link"].ToString( );
+
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
             mergeFields.Add( "CampaignImage", campaignImage );
             mergeFields.Add( "CampaignTitle", campaignTitle );
             mergeFields.Add( "CampaignSubTitle", campaignSubTitle );

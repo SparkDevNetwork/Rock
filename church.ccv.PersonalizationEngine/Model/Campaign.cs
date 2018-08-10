@@ -32,6 +32,9 @@ namespace church.ccv.PersonalizationEngine.Model
         public string Type { get; set; }
 
         [DataMember]
+        public int Priority { get; set; }
+
+        [DataMember]
         public string ContentJson { get; set; }
     }
 }

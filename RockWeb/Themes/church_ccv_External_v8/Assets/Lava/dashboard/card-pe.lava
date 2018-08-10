@@ -1,0 +1,21 @@
+
+<div id="infoCard" class="info-card">
+    <div class="info-card-image">
+        <img id="infoCardImage" src="{{CampaignImage}}">
+    </div>
+    <div class="header">
+        <h4 id="infoCardHeader">{{CampaignTitle}}</h4>
+        <h5 id="infoCardSubHeader">{{CampaignSubTitle}}</h5>
+    </div>
+    <div class="content">
+        <p id="infoCardContent">{{CampaignBody}}</p>
+    </div>
+    <div class="link">
+        <a id="infoCardLink" href="{{CampaignLink}}">
+            <div>
+                <span id="infoCardLinkText">{{CampaignLinkText}}</span>
+                <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path></svg>
+            </div>
+        </a>
+    </div>
+</div>

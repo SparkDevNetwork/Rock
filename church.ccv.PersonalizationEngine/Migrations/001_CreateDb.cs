@@ -7,7 +7,7 @@ using Rock.Plugin;
 
 namespace church.ccv.PersonalizationEngine.Migrations
 {
-    [MigrationNumber( 1, "1.4.0" )]
+    [MigrationNumber( 1, "1.0.0" )]
     public class CreateDb : Migration
     {
         /// <summary>
@@ -39,6 +39,7 @@ CREATE TABLE [dbo].[_church_ccv_PersonalizationEngine_Campaign] (
     [StartDate] [datetime] NOT NULL,
     [EndDate] [datetime],
     [Type] [nvarchar](MAX) NOT NULL,
+    [Priority] [int] NOT NULL,
     [ContentJson] [nvarchar](MAX),
 
     [CreatedDateTime] [datetime],

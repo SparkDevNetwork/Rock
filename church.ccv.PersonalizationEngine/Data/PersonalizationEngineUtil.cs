@@ -118,6 +118,7 @@ namespace church.ccv.PersonalizationEngine.Data
                                          .Where( c => c.EndDate >= endDate.Value || endDate.HasValue == false )
                                          // for each Campaign, see if any element of typesAsString is contained in c.Type (the CSV)
                                          .Where( c => typesAsString.Any( t => c.Type.Contains( t ) ) )
+                                         .OrderByDescending( c => c.Priority )
                                          .ToList( ); //take those
                 return campaigns;
             }
@@ -159,6 +160,7 @@ namespace church.ccv.PersonalizationEngine.Data
                 var campaigns = peLinkageQry.Join( peCampaignQry, l => l.CampaignId, c => c.Id, ( l, c ) => new { Linkage = l, Campaign = c } )
                                             .Where( lp => lp.Linkage.PersonaId == personaId )
                                             .Select( a => a.Campaign )
+                                            .OrderByDescending( c => c.Priority )
                                             .ToList( );
 
                 return campaigns;
