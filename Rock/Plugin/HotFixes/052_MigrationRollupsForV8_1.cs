@@ -228,7 +228,7 @@ DROP PROCEDURE [dbo].[ufnCrm_GetFamilyTitleIncludeInactive]
         }
 
         /// <summary>
-        /// GJ: Default Values IF move adult children is not enabled.
+        /// GJ: Homepage Updates
         /// </summary>
         private void HomepageMatrix()
         {
