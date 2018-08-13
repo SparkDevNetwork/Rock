@@ -199,6 +199,11 @@ Rock McKinley 8.0
 + Updated workflow editing to support adding multiple attributes at a time (using new Save Then Add button).
 
 
+Rock McKinley 7.5
+
++ Increased security for social media endpoints.
+
+
 Rock McKinley 7.4
 
 + Added a new badge that shows interactions for a specific channel.
@@ -230,6 +235,7 @@ Rock McKinley 7.4
 + Fixed an exception that would occur in the Group Sync job when attempting to create a login for a person with no name.
 + Fixed an issue preventing user-drawn geofences from filtering groups and people.
 + Fixed an issue that kept inline Lava shortcodes from having recursive capabilities.
++ Fixed an issue that was causing the 'send signature document reminder' to create a new document instead of using the existing one.
 + Fixed an issue when impersonating another user that would result in the Restore button not always being visible in the administrator toolbar.
 + Fixed an issue where copying a communication template would not reset IsSystem to false.
 + Fixed an issue where text and SMS messages created through a workflow, job, etc., would not resolve Lava commands successfully.
@@ -309,6 +315,7 @@ Rock McKinley 7.4
 + Updated the Email Preference Entry block to allow user the option of updating their email address, and added configuration option for customizing which options are displayed.
 + Updated the Family Pre-Registration block to use the Date Part Picker instead of the Date Picker for birth dates.
 + Updated the File Browser to actually disable the Rename, Move and Delete buttons when they are disabled.
++ Updated the Financial Transaction List block to include Batch Id when exporting to excel.
 + Updated the Giving Analytics block to support filtering transactions by Transaction Type.
 + Updated the Grade Transition Date global attribute to use a month/day picker, and updated the grade and graduation date logic so it works consistently regardless of culture.
 + Updated the Group Attendance Detail block to allow people with Manage Members security to update attendance.
