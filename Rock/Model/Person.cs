@@ -323,7 +323,7 @@ namespace Rock.Model
 
             private set
             {
-                // don't do anthing here since EF uses this for loading 
+                // don't do anthing here since EF uses this for loading
             }
         }
 
@@ -611,7 +611,7 @@ namespace Rock.Model
         {
             get
             {
-                // Use the SuffixValueId and DefinedValue cache instead of referencing SuffixValue property so 
+                // Use the SuffixValueId and DefinedValue cache instead of referencing SuffixValue property so
                 // that if FullName is used in datagrid, the SuffixValue is not lazy-loaded for each row
                 return FormatFullName( NickName, LastName, SuffixValueId );
             }
@@ -675,7 +675,7 @@ namespace Rock.Model
 
             fullName.Append( lastName );
 
-            // Use the SuffixValueId and DefinedValue cache instead of referencing SuffixValue property so 
+            // Use the SuffixValueId and DefinedValue cache instead of referencing SuffixValue property so
             // that if FullName is used in datagrid, the SuffixValue is not lazy-loaded for each row
             if ( suffixValueId.HasValue )
             {
@@ -1080,7 +1080,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the number of days until their next birthday. This is a computed column and can be used
-        /// in LinqToSql queries, but there is no in-memory calculation. Avoid using this property outside of 
+        /// in LinqToSql queries, but there is no in-memory calculation. Avoid using this property outside of
         /// a linq query. Use DaysToBirthday property instead
         /// NOTE: If their birthday is Feb 29, and this isn't a leap year, it'll treat Feb 28th as their birthday when doing this calculation
         /// </summary>
@@ -1164,7 +1164,7 @@ namespace Rock.Model
 
 
         /// <summary>
-        /// Formats the age with unit (year, month, day) suffix depending on the age of the individual. 
+        /// Formats the age with unit (year, month, day) suffix depending on the age of the individual.
         /// </summary>
         /// <param name="condensed">if set to <c>true</c> age in years is returned without a unit suffix.</param>
         /// <returns></returns>
@@ -1257,7 +1257,7 @@ namespace Rock.Model
         /// use DaysUntilBirthday property instead
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the number of days until the Person's birthday. If the person's birthdate is 
+        /// A <see cref="System.Int32"/> representing the number of days until the Person's birthday. If the person's birthdate is
         /// not available returns Int.MaxValue
         /// </value>
         [DataMember]
@@ -1345,7 +1345,7 @@ namespace Rock.Model
         /// use DaysUntilAnniversary property instead
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the number of days until the Person's anniversary. If the person's anniversary 
+        /// A <see cref="System.Int32"/> representing the number of days until the Person's anniversary. If the person's anniversary
         /// is not available returns Int.MaxValue
         /// </value>
         [DataMember]
@@ -2482,7 +2482,7 @@ namespace Rock.Model
                             ageClassification = new PersonService( rockContext ).Queryable( true ).Where( a => a.Id == personId ).Select( a => ( AgeClassification ? )a.AgeClassification ).FirstOrDefault();
                         }
                     }
-                    
+
                     if ( ageClassification.HasValue && ageClassification == AgeClassification.Child )
                     {
                         // it's a child
@@ -2729,13 +2729,6 @@ namespace Rock.Model
                     }
                 }
 
-                if ( maxWidth.HasValue || maxHeight.HasValue )
-                {
-                    styleString = string.Format(
-                        " style='{0}{1}'",
-                        maxWidth.HasValue ? "max-width:" + maxWidth.Value.ToString() + "px; " : string.Empty,
-                        maxHeight.HasValue ? "max-height:" + maxHeight.Value.ToString() + "px;" : string.Empty );
-                }
             }
 
             return string.Format( "<img src='{0}'{1}{2}{3}/>", photoUrl.ToString(), styleString, altString, classString );
@@ -2854,14 +2847,6 @@ namespace Rock.Model
                         // it's an adult
                         photoUrl.Append( GetPhotoPath( gender, true ) );
                     }
-                }
-
-                if ( maxWidth.HasValue || maxHeight.HasValue )
-                {
-                    styleString = string.Format(
-                        " style='{0}{1}'",
-                        maxWidth.HasValue ? "max-width:" + maxWidth.Value.ToString() + "px; " : string.Empty,
-                        maxHeight.HasValue ? "max-height:" + maxHeight.Value.ToString() + "px;" : string.Empty );
                 }
             }
 
@@ -3043,8 +3028,8 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the home locations for all the person id's passed in. If a person is in 
-        /// more than one family or that family has more than one home address a single 
+        /// Gets the home locations for all the person id's passed in. If a person is in
+        /// more than one family or that family has more than one home address a single
         /// location is provided.
         /// </summary>
         /// <param name="personIds">The person ids.</param>
@@ -3476,7 +3461,7 @@ namespace Rock.Model
                 .FirstOrDefault();
 
             // Since only one number can be used for SMS, before anything else, if isMessagingEnabled is true, turn it off on ALL
-            // numbers, so we only enable it for this one. 
+            // numbers, so we only enable it for this one.
             if( isMessagingEnabled.HasValue && isMessagingEnabled.Value == true )
             {
                 foreach( PhoneNumber currPhoneNumber in person.PhoneNumbers )

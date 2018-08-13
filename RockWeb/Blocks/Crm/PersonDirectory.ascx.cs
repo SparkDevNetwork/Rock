@@ -40,8 +40,8 @@ namespace RockWeb.Blocks.Crm
     [Category( "CRM" )]
     [Description( "A directory of people in database." )]
 
-    [DataViewField("Data View", 
-        "The data view to use as the source for the directory. Only those people returned by the data view filter will be displayed on this directory.", 
+    [DataViewField("Data View",
+        "The data view to use as the source for the directory. Only those people returned by the data view filter will be displayed on this directory.",
         true, "cb4bb264-a1f4-4edb-908f-2ccf3a534bc7", "Rock.Model.Person", "", 0)]
     [GroupField("Opt-out Group", "A group that contains people that should be excluded from this list.", false, "", "", 1, "OptOut")]
     [CustomRadioListField("Show By", "People can be displayed individually, or grouped by family", "Individual,Family", true, "Individual", "", 2)]
@@ -239,7 +239,7 @@ namespace RockWeb.Blocks.Crm
                     string personName = personItem.NickName + " " + personItem.LastName;
                     personName = string.IsNullOrWhiteSpace( _personProfileUrl ) ? personName : string.Format( "<a href='{0}'>{1}</a>", string.Format(_personProfileUrl, personItem.Id), personName );
 
-                    sb.Append( string.Format( "<div class=\"photo-round photo-round-sm pull-left\" data-original=\"{0}&w=100\" style=\"background-image: url('{1}');\"></div>", personItem.PhotoUrl, ResolveUrl( "~/Assets/Images/person-no-photo-male.svg" ) ) );
+                    sb.Append( string.Format( "<div class=\"photo-round photo-round-sm pull-left\" data-original=\"{0}&w=100\" style=\"background-image: url('{1}');\"></div>", personItem.PhotoUrl, ResolveUrl( "~/Assets/Images/person-no-photo-unknown.svg" ) ) );
                     sb.Append( "<div class=\"pull-left margin-l-sm\">" );
                     sb.AppendFormat( "<strong>{0}</strong>", personName );
 
@@ -513,7 +513,7 @@ namespace RockWeb.Blocks.Crm
                     lbOptInOut.Text = optedOut ? "Opt in to the Directory" : "Opt Out of the Directory";
                 }
             }
-            
+
         }
 
         private void BindPeople( RockContext rockContext, IQueryable<Person> personQry )
