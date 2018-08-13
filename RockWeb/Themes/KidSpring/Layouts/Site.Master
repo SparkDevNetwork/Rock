@@ -1,0 +1,105 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.RockMasterPage" %>
+
+<%@ Import Namespace="System.Web.Optimization" %>
+<!DOCTYPE html>
+
+<!--
+
+  @@@   @@@@@@@@    @@@@@@@@         @@@@@@@@    @@@@@@@@    @@@@@@@@
+ @@@@  @@@@@@@@@@  @@@@@@@@@@       @@@@@@@@@@  @@@@@@@@@@  @@@@@@@@@@
+@@@!!  @@!   @@@@  @@!   @@@@       @@!   @@@@  @@!   @@@@  @@!   @@@@
+  !@!  !@!  @!@!@  !@!  @!@!@       !@!  @!@!@  !@!  @!@!@  !@!  @!@!@
+  @!@  @!@ @! !@!  @!@ @! !@!       @!@ @! !@!  @!@ @! !@!  @!@ @! !@!
+  !@!  !@!!!  !!!  !@!!!  !!!       !@!!!  !!!  !@!!!  !!!  !@!!!  !!!
+  !!:  !!:!   !!!  !!:!   !!!       !!:!   !!!  !!:!   !!!  !!:!   !!!
+  :!:  :!:    !:!  :!:    !:!  :!:  :!:    !:!  :!:    !:!  :!:    !:!
+  :::  ::::::: ::  ::::::: ::   ::  ::::::: ::  ::::::: ::  ::::::: ::
+   ::   : : :  :    : : :  :   ::    : : :  :    : : :  :    : : :  :
+
+-->
+
+<script runat="server">
+
+    // keep code below to call base class init method
+
+    /// <summary>
+    /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+    /// </summary>
+    /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+    protected override void OnInit( EventArgs e )
+    {
+        base.OnInit( e );
+
+        siteUrl.Text = String.Format( Request.Url.Authority );
+
+    }
+</script>
+
+<html class="no-js">
+<head runat="server">
+    <meta http-equiv="X-UA-Compatible" content="IE=10" />
+    <meta charset="utf-8">
+    <title></title>
+
+    <!-- Sentry -->
+    <script src="https://cdn.ravenjs.com/3.5.1/raven.min.js"></script>
+    <script type="text/javascript">
+        Raven.config("<%# Rock.Web.Cache.GlobalAttributesCache.Read().GetValue( "PublicSentryDSN" ) %>").install();
+    </script>
+
+    <script type="text/javascript">var _sf_startpt = (new Date()).getTime()</script>
+    <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js", true) %>"></script>
+    <script src="<%# ResolveRockUrl("~/Scripts/jquery-1.10.2.min.js", true) %>"></script>
+
+    <!-- Set the viewport width to device width for mobile -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+    <!-- Included CSS Files -->
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/checkin-theme.css", true) %>" />
+    <asp:ContentPlaceHolder ID="css" runat="server" />
+
+    <script src="<%# ResolveRockUrl("~/Scripts/fastclick.js", true) %>"></script>
+
+    <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
+
+    <!-- Icons -->
+    <link rel="shortcut icon" href="<%# ResolveRockUrl("~/Themes/NewSpring/Assets/Icons/favicon.ico", true) %>">
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="<%# ResolveRockUrl("~/Themes/NewSpring/Assets/Icons/apple.touch.large.png", true) %>">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="<%# ResolveRockUrl("~/Themes/NewSpring/Assets/Icons/apple.touch.medium.png", true) %>">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="<%# ResolveRockUrl("~/Themes/NewSpring/Assets/Icons/apple.touch.small.png", true) %>">
+    <link rel="apple-touch-icon-precomposed" href="<%# ResolveRockUrl("~/Themes/NewSpring/Assets/Icons/apple.touch.small.png", true) %>">
+</head>
+<body>
+    <form id="form1" runat="server">
+
+        <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
+    </form>
+
+    <script>
+        window.addEventListener('load', function () {
+            new FastClick(document.body);
+        }, false);
+
+        // add quick fade-in effect to the page
+        $(document).ready(function () {
+            $("body").rockFadeIn();
+        });
+
+        // Chartbeat Analytics
+        var _sf_async_config = { uid: 36438, domain: '<asp:Literal ID="siteUrl" runat="server" />', useCanonical: true };
+        (function () {
+            function loadChartbeat() {
+                window._sf_endpt = (new Date()).getTime();
+                var e = document.createElement('script');
+                e.setAttribute('language', 'javascript');
+                e.setAttribute('type', 'text/javascript');
+                e.setAttribute('src', '//static.chartbeat.com/js/chartbeat.js');
+                document.body.appendChild(e);
+            };
+            var oldonload = window.onload;
+            window.onload = (typeof window.onload != 'function') ?
+                loadChartbeat : function () { oldonload(); loadChartbeat(); };
+        })();
+    </script>
+</body>
+</html>
