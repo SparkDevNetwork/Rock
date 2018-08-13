@@ -180,13 +180,13 @@
                 "Content": "CCV Coaches are trained individuals within the church whose sole responsibility is to help you determine your Next Steps at CCV.<br/><a href='/Content/ccv.church/2018/FAQ_Doc.pdf'>Next Steps FAQ</a>",
                 "Buttons": [
                     {
-                        "Label": "Request a Coach",
-                        "Link": "/get-involved/next-steps/coach-request?Whattypeofcoaching=Request%20a%20Coach",
+                        "Label": "Become a Coach",
+                        "Link": "/get-involved/next-steps/coach-request?Whattypeofcoaching=Become%20a%20Coach",
                         "Class": "btn-primary double"
                     },
                     {
-                        "Label": "Become a Coach",
-                        "Link": "/get-involved/next-steps/coach-request?Whattypeofcoaching=Become%20a%20Coach",
+                        "Label": "Request a Coach",
+                        "Link": "/get-involved/next-steps/coach-request?Whattypeofcoaching=Request%20a%20Coach",
                         "Class": "btn-primary double"
                     }
                 ],

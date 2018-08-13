@@ -22,6 +22,10 @@
     background: url("/Themes/church_ccv_External_v8/Assets/Images/home/watch/background-watch-ccvlive.jpg");
  }
 
+ /* #section-b-bg {
+    background-color: #f9f9f9;
+ } */
+
  .ccv-live-countdown {
      display: flex;
      align-items: center;

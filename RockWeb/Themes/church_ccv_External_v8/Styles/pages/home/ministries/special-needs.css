@@ -54,9 +54,26 @@
     color: #333;
 }
 
-.students-service-detail {
+.special-needs-service-times {
+    display: flex;
+    flex-direction: column;
+}
+
+.special-needs-service-detail {
     display: flex;
     margin: 5px 0;
+}
+
+.special-needs-service-detail-label {
+    min-width: 100px;
+    color: #838383;
+    font-size: 16px;
+    line-height: 18px;
+    font-weight: bold;
+}
+
+.contextsetter-campus .dropdown {
+    margin-bottom: 35px;
 }
 
 @media screen and (min-width: 992px) {

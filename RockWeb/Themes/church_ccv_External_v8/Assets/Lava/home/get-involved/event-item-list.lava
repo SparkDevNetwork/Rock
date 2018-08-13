@@ -182,7 +182,7 @@
                                     <div id="{{eventOccurrenceSummary.EventItemOccurrence.Id}}" class="item-details" onClick="setSelectedEvent( {{eventOccurrenceSummary.EventItemOccurrence.Id}} );">
                                         <div class="item-info">
                                             <h4>{{ eventOccurrenceSummary.Name }}</h4>
-                                            <p>Click for Dates</p>
+                                            <p>Click on Learn More for Dates</p>
                                         </div>
                                         <i class="mdi mdi-chevron-right"></i> 
                                     </div>

@@ -18,7 +18,7 @@
                 <div class="nextstep-modal-content-header">
                     <button type="button" class="close" data-dismiss="modal"><i class="mdi mdi-close nextstep-modal-close"></i></button>
                     <div class="nextstep-modal-content-title">
-                        {% if modal.Content.Icon != "" %}
+                        {% if modal.Content.Icon != "" %}                       
                             <img class="nextstep-icon-active" src='{{ modal.Content.Icon }}' alt="">
                         {% endif %}
                         <h4>{{ modal.Content.Title }}</h4>
@@ -29,7 +29,7 @@
                 </div>
                 <div class="nextstep-modal-footer">
                     {% for button in modal.Content.Buttons %}
-                        <a class="btn {{ button.Class }}" href="{{ button.Link }}">{{ button.Label }}</a>
+                         <a id="button{{ modal.Name }}" class="btn {{ button.Class }}" href="{{ button.Link }}">{{ button.Label }}</a>                      
                     {% endfor %}
                 </div>
             </div>

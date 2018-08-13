@@ -101,6 +101,9 @@
                 // is baptised
                 statusValue = `Congratulations! You took one of the most important steps in the life of a Christian on ${data.BaptismDateFormatted}.`;
 
+                // Hide button to get baptised since already baptised
+                $('#buttonBaptism').html(htmlContent).hide();
+
                 // Update modal content
                 var htmlContent = "<p>" + statusValue + "</p>";
                 // if baptized by CCV show certificate button, if photo exists show photo button
@@ -145,6 +148,9 @@
             // is worshiping 
             statusValue = 'It’s good to see you! Thank you for joining us regularly. Invite a friend next week.';
 
+            // Hide button to worship since already worshiping
+            $('#buttonWorship').hide();
+
             // update modal content
             $('#modalContentWorship').html(statusValue+nextStepsFAQ);
 
@@ -164,6 +170,9 @@
             case 0: {
                 // in a group
                 statusValue = `You’re in a group! It’s time to reach your community and impact it for the better.`; 
+
+                // Hide button to connect since already in group
+                $('#buttonConnect').hide();
 
                 // update modal content
                 $('#modalContentConnect').html(statusValue+nextStepsFAQ);
@@ -212,6 +221,9 @@
                 // Is Serving
                 statusValue = `Thank you for the time that you invest into our ministries. We couldn’t do it without you!`; 
                 
+                // Hide button to serve since already serving
+                $('#buttonServe').hide();
+
                 // update modal content
                 $('#modalContentServe').html(statusValue+nextStepsFAQ);
 
@@ -232,6 +244,9 @@
             // giving
             statusValue = `Thank you for generously giving to support our mission to reach others for Jesus Christ, both in the Valley and around the world.`; 
 
+            // Hide button to learn more since already gave
+            // $('#buttonGive').hide();
+
             // update modal content
             $('#modalContentGive').html(statusValue+nextStepsFAQ);
 
@@ -251,6 +266,9 @@
             // Story shared
             statusValue = 'You’ve shared with us how God has changed your life; don’t stop there, share your story with others too. It just might be the encouragement that leads someone else to Christ.'; 
 
+            // Hide button to share since already shared
+            $('#buttonShare').hide();
+
             // update modal content
             $('#modalContentShare').html(statusValue+nextStepsFAQ);            
 
@@ -269,6 +287,9 @@
         if (data.IsCoaching) {
             // is Coach
             statusValue = `Thank you for leading people through their Next Steps at CCV. Do you know someone that would make a good Coach? Ask them to join you.`; 
+
+            // Hide button to coach since already coaching
+            $('#buttonCoach').hide();
 
             // update modal content
             $('#modalContentCoach').html(statusValue+nextStepsFAQ);

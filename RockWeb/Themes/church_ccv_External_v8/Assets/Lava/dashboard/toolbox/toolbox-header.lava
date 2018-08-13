@@ -74,7 +74,7 @@
     </div>
 
     <div class="toolbox-subnav-desktop">
-        <div id="dashboard-button" onClick="linkClicked(this, 'dashboard')">Dashboard</div>
+        <div id="dashboard-button" onClick="linkClicked(this, 'dashboard')">Toolbox</div>
         <div id="curriculum-button" onClick="linkClicked(this, 'curriculum')">Curriculum</div>
         <div id="training-center-button" onClick="linkClicked(this, 'training-center')">Training Center</div>
         <div id="baptisms-button" onClick="linkClicked(this, 'baptisms')">Baptisms</div>

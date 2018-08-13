@@ -670,6 +670,10 @@ h2 {
     font-weight: 500;
 }
 
+.item-row {
+    padding-bottom: 10px;
+}
+
 .item-title-icon {
     color: #D0DD29; 
     position: relative; 

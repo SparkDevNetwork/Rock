@@ -27,7 +27,9 @@
     {{ pageTitle | SetPageTitle }}
 	
     {% if item.DetailImage_unformatted != '' %}
-      <img src="/GetImage.ashx?Guid={{ item.DetailImage_unformatted }}&width=2280" class="title-image img-responsive">
+      {% comment %} <img src="/GetImage.ashx?Guid={{ item.DetailImage_unformatted }}&width=2280" class="title-image img-responsive"> {% endcomment %}
+      <div id="featImage" class="bigblock-flexbg bigblock-flexbg-md page-background" style="background-image: url('/GetImage.ashx?guid={{ item.DetailImage_unformatted  }}');"></div>
+
     {% endif %}
 
   {% else %}
@@ -36,3 +38,10 @@
 {% else %}
   <div class="alert alert-danger">Unable to find selected item.</div>
 {% endif %}
+
+<style>
+
+:root {
+    --page-background: url('/GetImage.ashx?guid={{ item.DetailImage_unformatted }}');
+}
+</style>

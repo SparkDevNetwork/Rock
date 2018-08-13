@@ -1,0 +1,42 @@
+/* Kids Page */
+.page-background {   
+    background-color: #EBEBEB;
+    background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/hero-right-now-media.jpg");
+}
+
+/* Mobile Background Image */
+@media screen and (max-width: 500px) {
+    .page-background {
+        background-image: url("/Themes/church_ccv_External_v8/Assets/Images/home/ministries/hero-mobile-right-now-media.jpg");
+    }
+}
+
+#ternavbar-bg {
+    display: flex;
+}
+
+#zone-tertiarynavbar {
+    margin: 0 12%;  
+}
+
+#section-b-bg {
+    background-color: #EBEBEB;
+}
+
+#section-d-bg {
+    display: none;
+}
+
+#section-e-bg {
+   display: none;
+}
+
+.title img {
+    max-width: 300px;
+    margin-bottom: 25px;
+}
+
+
+@media screen and (min-width: 768px) {
+    
+}

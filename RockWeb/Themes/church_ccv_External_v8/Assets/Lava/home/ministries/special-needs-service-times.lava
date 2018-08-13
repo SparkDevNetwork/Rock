@@ -1,15 +1,30 @@
 
 {% assign SpecialNeedsTimes = Context.Campus | Attribute: 'SpecialNeedsServiceTimes' | Split: ", " %}
 
+{% capture specialNeedsTimes %}{{ Context.Campus | Attribute: 'SpecialNeedsServiceTimes' }}{% endcapture%}
+
+{% assign num = Context.Campus | Attribute: 'PhoneNumber' %}
+{% capture phoneNumber %}{{ Context.Campus | Attribute: 'PhoneNumber' }}{% endcapture%}
+{% capture email %}{{ Context.Campus | Attribute: 'Email' }}{% endcapture%}
+
 {% if SpecialNeedsTime != empty  %}
 <div class="special-needs-details">
     <div class="special-needs-service-times">
-    <br />
-        <h3>SERVICE TIMES</h3>
-        {% for time in SpecialNeedsTimes %}
-            {{ time }} <br />
-        {% endfor %}  
+        <br />
+        {% if JrHighContact != empty and JrHighLocations != empty and JrHighTime != empty  %}
+            <div class="special-needs-service-detail">
+                <p class="special-needs-service-detail-label">When: </p>
+                <p>{{ specialNeedsTimes }}</p>
+            </div>
+            {% endif %}
     </div>
+    <div class="special-needs-service-detail">
+        <p class="special-needs-service-detail-label">Contact: </p>
+        <div> <i class="fa fa-fw fa-phone"></i> {{ Context.Campus.PhoneNumber }}<br/> 
+        <fa class="fa fa-fw fa-envelope"></fa> <a href="mailto:{{ email }}?subject=Special Needs">{{ email }}</a>
+        </div>
+    </div>
+    
     <div class="special-needs-features">
         <h3>FEATURES</h3>
         <ul>
@@ -21,4 +36,4 @@
     
     </div>
 </div>
-{% endif %}
+{% endif %} 

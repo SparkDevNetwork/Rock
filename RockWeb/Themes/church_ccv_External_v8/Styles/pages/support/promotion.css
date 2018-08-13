@@ -1,13 +1,60 @@
-﻿.page-background {   
+﻿.page-background {
     background-color: black;
+    background-image: var(--page-background);
+    background-position: center top;
 }
 
-#subnavbar-bg {
+.title-image {
     display: none;
 }
 
+#subnavbar-bg {
+    display: flex;
+}
+
 .main-feature {
-    height: unset;
     padding-top: 100px;
-    margin-bottom: 100px;
+    margin-bottom: 35px;
+}
+
+#featImage {
+    display: none;    
+}
+
+/* Mobile Styling */
+@media screen and (max-width: 500px){
+    /* .page-background {
+        background-image: unset;
+    } */
+
+    .title-image {
+        display: block;
+        background-size: contain;
+        margin-left: -15px;
+        margin-right: -15px;
+    }
+
+    .main-feature {
+        padding-top: 60px;
+    }
+    
+    .series-header-image {
+        min-height: 165px;
+    }
+    
+    .page-background {
+        background-image: unset;
+        background-attachment: unset;
+        background-size: cover;
+        margin-left: -15px;
+        margin-right: -15px;
+    }
+
+    #zone-feature {
+        margin: 0;
+    }
+
+    #featImage {
+        display: block;    
+    }
 }

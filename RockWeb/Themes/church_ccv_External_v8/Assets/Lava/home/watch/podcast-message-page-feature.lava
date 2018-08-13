@@ -1,0 +1,58 @@
+{% include '~~/Assets/Lava/home/locations/campus-landing-page-util.lava' %}
+
+<script>
+    // adds on "onload" hook to the window.onload function chain
+    var oldonload = window.onload;
+    window.onload = (typeof window.onload != 'function') ?
+        handleOnLoad : function() { 
+            oldonload(); handleOnLoad(); 
+        };
+      
+    function handleOnLoad() {
+        // setup a callback for browser width changes
+        const mq = window.matchMedia( "(min-width: 501px)" );
+        mq.addListener( widthChange );
+        
+        widthChange( mq );
+    }
+
+    function widthChange( mediaQuery ) {
+    
+        // this event is called when we do or do not hit 501px.
+        // therefore, we can take its true/false and display correct size
+        if ( mediaQuery.matches) {
+            $(".page-background").css('background-image', 'url(/Themes/church_ccv_External_v8/Assets/Images/home/locations/campus-landing/hero-locations-{{ campus.ShortCode }}.jpg');
+
+        } else {
+            $(".page-background").css('background-image', 'url(/Themes/church_ccv_External_v8/Assets/Images/home/locations/campus-landing/hero-mobile-locations-{{ campus.ShortCode }}.jpg');
+        }
+    }
+</script>
+
+{% capture newPageTitle %}{{ campus.Name }} Campus{% endcapture %}
+{{ newPageTitle | SetPageTitle }}
+
+<div class="infoSection">
+    <div class="left-and-right-container">
+        <div class="left">
+            {% assign campusLeader = campus.LeaderPersonAliasId | PersonByAliasId %}
+            <div class="campus-leader">
+                {% if campusLeader %}
+                    <img src="{{ 'Global' | Attribute: 'PublicApplicationRoot' }}{{ campusLeader.PhotoUrl }}&width=600&height=600" style="border-radius: 50%;"/>
+                    <div class="campus-leader-details">
+                        <h4>{{ campusLeader.NickName }} {{ campusLeader.LastName }}</h4>
+                        <p>Campus Pastor</p>
+                        <p class="campus-leader-email">{{ campusLeader.Email }}</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="right">
+            {% if campus.CampusTourWistiaId != "" %}
+                <script src="https://fast.wistia.com/embed/medias/{{campus.CampusTourWistiaId}}.jsonp" async></script><script src="https://fast.wistia.com/assets/external/E-v1.js" async></script><div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;"><div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;"><span class="wistia_embed wistia_async_{{campus.CampusTourWistiaId}} popover=true popoverAnimateThumbnail=true videoFoam=true" style="display:inline-block;height:100%;position:relative;width:100%">&nbsp;</span></div></div>
+            {% else %}
+                <img class="img-responsive" src="~~/Assets/Images/home/locations/feature-campus-video.jpg" />
+            {% endif %}
+        </div>
+    </div>
+</div>
