@@ -2365,9 +2365,9 @@ The first registrant's information will be used to complete the registrar inform
 
             ddlFieldSource.BindToEnum<RegistrationFieldSource>();
 
-            ddlPersonField.BindToEnum<RegistrationPersonFieldType>();
-            ddlPersonField.Items.RemoveAt( 0 );
-            ddlPersonField.Items.RemoveAt( 0 );
+            ddlPersonField.BindToEnum<RegistrationPersonFieldType>( sortAlpha: true );
+            ddlPersonField.Items.Remove( ddlPersonField.Items.FindByValue( "0" ) );
+            ddlPersonField.Items.Remove( ddlPersonField.Items.FindByValue( "1" ) );
 
             rblFeeType.BindToEnum<RegistrationFeeType>();
 
