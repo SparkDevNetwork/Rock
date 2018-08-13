@@ -75,11 +75,13 @@ namespace Rock.Reporting
             }
 
             // Find all non-virtual properties or properties that have the [IncludeForReporting] attribute
-            var entityProperties = entityType.GetProperties().ToList();
+            List<PropertyInfo> entityProperties = entityType.GetProperties().ToList();
+
             var filteredEntityProperties = entityProperties
                 .Where( p =>
-                    !p.GetGetMethod().IsVirtual ||
+                    ( p.GetGetMethod() != null && !p.GetGetMethod().IsVirtual ) ||
                     p.GetCustomAttributes( typeof( IncludeForReportingAttribute ), true ).Any() ||
+                    p.GetCustomAttributes( typeof( IncludeAsEntityProperty ), true ).Any() ||
                     p.Name == "Order" || p.Name == "IsActive" )
                 .ToList();
 
