@@ -197,7 +197,7 @@ namespace RockWeb.Blocks.Crm
         {
             personBadge.LoadAttributes();
             phAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( personBadge, phAttributes, setValues, "", new List<string> { "Active", "Order" } );
+            Rock.Attribute.Helper.AddEditControls( personBadge, phAttributes, setValues, BlockValidationGroup, new List<string> { "Active", "Order" } );
         }
 
         #endregion
