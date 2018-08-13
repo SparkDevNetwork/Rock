@@ -47,6 +47,9 @@ namespace RockWeb.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Used for updating information about several individuals at once." )]
 
+    [SecurityAction( "EditConnectionStatus", "The roles and/or users that can edit the connection status for the selected persons." )]
+    [SecurityAction( "EditRecordStatus", "The roles and/or users that can edit the record status for the selected persons." )]
+
     [AttributeCategoryField( "Attribute Categories", "The person attribute categories to display and allow bulk updating", true, "Rock.Model.Person", false, "", "", 0 )]
     [IntegerField( "Display Count", "The initial number of individuals to display prior to expanding list", false, 0, "", 1 )]
     [WorkflowTypeField( "Workflow Types", "The workflows to make available for bulk updating.", true, false, "", "", 2 )]
@@ -55,6 +58,8 @@ namespace RockWeb.Blocks.Crm
         #region Fields
 
         DateTime _gradeTransitionDate = new DateTime( RockDateTime.Today.Year, 6, 1 );
+        bool _canEditConnectionStatus = false;
+        bool _canEditRecordStatus = true;
 
         #endregion
 
@@ -82,6 +87,12 @@ namespace RockWeb.Blocks.Crm
             ddlRecordStatus.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ) );
             ddlInactiveReason.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ) );
             ddlReviewReason.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_REVIEW_REASON ) ), true );
+
+            _canEditConnectionStatus = UserCanAdministrate || IsUserAuthorized( "EditConnectionStatus" );
+            ddlConnectionStatus.Visible = _canEditConnectionStatus;
+
+            _canEditRecordStatus = UserCanAdministrate || IsUserAuthorized( "EditRecordStatus" );
+            ddlRecordStatus.Visible = _canEditRecordStatus;
 
             rlbWorkFlowType.Items.Clear();
             var guidList = GetAttributeValue( "WorkflowTypes" ).SplitDelimitedValues().AsGuidList();
@@ -450,13 +461,13 @@ namespace RockWeb.Blocks.Crm
                     EvaluateChange( changes, "Suffix", DefinedValueCache.GetName( newSuffixId ) );
                 }
 
-                if ( SelectedFields.Contains( ddlStatus.ClientID ) )
+                if ( SelectedFields.Contains( ddlConnectionStatus.ClientID ) && _canEditConnectionStatus )
                 {
                     int? newConnectionStatusId = ddlStatus.SelectedValueAsInt();
                     EvaluateChange( changes, "Connection Status", DefinedValueCache.GetName( newConnectionStatusId ) );
                 }
 
-                if ( SelectedFields.Contains( ddlRecordStatus.ClientID ) )
+                if ( SelectedFields.Contains( ddlRecordStatus.ClientID ) && _canEditRecordStatus )
                 {
                     int? newRecordStatusId = ddlRecordStatus.SelectedValueAsInt();
                     EvaluateChange( changes, "Record Status", DefinedValueCache.GetName( newRecordStatusId ) );
@@ -806,7 +817,7 @@ namespace RockWeb.Blocks.Crm
 
             int? newTitleId = ddlTitle.SelectedValueAsInt();
             int? newSuffixId = ddlSuffix.SelectedValueAsInt();
-            int? newConnectionStatusId = ddlStatus.SelectedValueAsInt();
+            int? newConnectionStatusId = ddlConnectionStatus.SelectedValueAsInt();
             int? newRecordStatusId = ddlRecordStatus.SelectedValueAsInt();
             int? newInactiveReasonId = ddlInactiveReason.SelectedValueAsInt();
             string newInactiveReasonNote = tbInactiveReasonNote.Text;
@@ -851,12 +862,12 @@ namespace RockWeb.Blocks.Crm
                     person.SuffixValueId = newSuffixId;
                 }
 
-                if ( SelectedFields.Contains( ddlStatus.ClientID ) )
+                if ( SelectedFields.Contains( ddlConnectionStatus.ClientID ) && _canEditConnectionStatus )
                 {
                     person.ConnectionStatusValueId = newConnectionStatusId;
                 }
 
-                if ( SelectedFields.Contains( ddlRecordStatus.ClientID ) )
+                if ( SelectedFields.Contains( ddlRecordStatus.ClientID )  && _canEditRecordStatus )
                 {
                     person.RecordStatusValueId = newRecordStatusId;
 
@@ -1476,7 +1487,7 @@ namespace RockWeb.Blocks.Crm
         private void SetControlSelection()
         {
             SetControlSelection( ddlTitle, "Title" );
-            SetControlSelection( ddlStatus, "Connection Status" );
+            SetControlSelection( ddlConnectionStatus, "Connection Status", _canEditConnectionStatus );
             SetControlSelection( ddlGender, "Gender" );
             SetControlSelection( ddlMaritalStatus, "Marital Status" );
             SetControlSelection( ddlGradePicker, GlobalAttributesCache.Get().GetValue( "core.GradeLabel" ) );
@@ -1485,7 +1496,7 @@ namespace RockWeb.Blocks.Crm
             SetControlSelection( cpCampus, "Campus" );
             SetControlSelection( ddlCommunicationPreference, "Communication Preference" );
             SetControlSelection( ddlSuffix, "Suffix" );
-            SetControlSelection( ddlRecordStatus, "Record Status" );
+            SetControlSelection( ddlRecordStatus, "Record Status", _canEditRecordStatus );
             SetControlSelection( ddlIsEmailActive, "Email Status" );
             SetControlSelection( ddlEmailPreference, "Email Preference" );
             SetControlSelection( tbEmailNote, "Email Note" );
@@ -1504,6 +1515,13 @@ namespace RockWeb.Blocks.Crm
             if ( webControl != null )
             {
                 webControl.Enabled = controlEnabled;
+            }
+        }
+        private void SetControlSelection( IRockControl control, string label, bool canEdit )
+        {
+            if (canEdit)
+            {
+                SetControlSelection( control, label );
             }
         }
 
