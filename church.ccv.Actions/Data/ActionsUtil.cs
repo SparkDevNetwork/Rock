@@ -80,11 +80,11 @@ namespace church.ccv.Actions
             class ResultTable
             {
                 public int PersonId { get; set; }
-                public int FamilyId { get; set; }
+                public int? FamilyId { get; set; }
 	            public bool IsGiving { get; set; }
                 public int TotalGifts { get; set; }
-                public DateTime FirstGave { get; set; }
-                public DateTime LastGave { get; set; }
+                public DateTime? FirstGave { get; set; }
+                public DateTime? LastGave { get; set; }
                 public int LongTerm_NumGifts { get; set; }
                 public decimal LongTerm_AmountGiven { get; set; }
                 public int ShortTerm_NumGifts { get; set; }
@@ -424,11 +424,11 @@ namespace church.ccv.Actions
             class ResultTable
             {
                 public int PersonId { get; set; }
-                public int FamilyId { get; set; }
+                public int? FamilyId { get; set; }
 	            public bool IsGiving { get; set; }
                 public int TotalGifts { get; set; }
-                public DateTime FirstGave { get; set; }
-                public DateTime LastGave { get; set; }
+                public DateTime? FirstGave { get; set; }
+                public DateTime? LastGave { get; set; }
                 public int LongTerm_NumGifts { get; set; }
                 public decimal LongTerm_AmountGiven { get; set; }
                 public int ShortTerm_NumGifts { get; set; }
