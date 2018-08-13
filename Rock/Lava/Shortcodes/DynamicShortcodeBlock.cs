@@ -33,7 +33,7 @@ using System.Dynamic;
 namespace Rock.Lava.Shortcodes
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class DynamicShortcodeBlock : RockLavaShortcodeBlockBase
     {
@@ -202,8 +202,8 @@ namespace Rock.Lava.Shortcodes
                 else
                 {
                     parms.AddOrReplace( "blockContentExists", false );
-                }  
-                
+                }
+
                 // next ensure they did not use any entity commands in the block that are not allowed
                 // this is needed as the shortcode it configured to allow entities for processing that
                 // might allow more entities than the source block, template, action, etc allows
@@ -332,7 +332,7 @@ namespace Rock.Lava.Shortcodes
                         matchExists = false;
                         blockContent = blockContent + "Warning: invalid child parameter definition.";
                     }
-                    
+
                 }
                 else
                 {
