@@ -1,3 +1,8 @@
+Rock McKinley 7.5
+
++ Increased security for social media endpoints.
+
+
 Rock McKinley 7.4
 
 + Added a new badge that shows interactions for a specific channel.
