@@ -16,7 +16,7 @@
 //
 using System.Collections.Generic;
 using System.Linq;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Utility.Settings.DataAutomation
 {
@@ -35,7 +35,7 @@ namespace Rock.Utility.Settings.DataAutomation
             UseSameHomeAddress = true;
             UseSameHomePhone = true;
             MaximumRecords = 200;
-            var knownRelGroupType = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
+            var knownRelGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
             if ( knownRelGroupType != null )
             {
                 SiblingRelationshipId = knownRelGroupType.Roles.Where( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_SIBLING.AsGuid() ).Select( a => a.Id ).FirstOrDefault();

@@ -2646,64 +2646,61 @@ namespace RockWeb.Blocks.Event
 
                     switch ( field.PersonFieldType )
                     {
+                        case RegistrationPersonFieldType.MiddleName:
+                            rlField.Text = fieldValue.ToString() ?? string.Empty;
+                            break;
+
                         case RegistrationPersonFieldType.Campus:
-                            {
-                                var campus = CampusCache.Get( fieldValue.ToString().AsInteger() );
-                                rlField.Text = campus != null ? campus.Name : string.Empty;
-                                break;
-                            }
+                            var campus = CampusCache.Get( fieldValue.ToString().AsInteger() );
+                            rlField.Text = campus != null ? campus.Name : string.Empty;
+                            break;
 
                         case RegistrationPersonFieldType.Address:
-                            {
-                                var location = fieldValue.ToString();
-                                rlField.Text = location != null ? location.ToString() : string.Empty;
-                                break;
-                            }
+                            var location = fieldValue.ToString();
+                            rlField.Text = location != null ? location.ToString() : string.Empty;
+                            break;
 
                         case RegistrationPersonFieldType.Email:
-                            {
-                                rlField.Text = fieldValue.ToString();
-                                break;
-                            }
+                            rlField.Text = fieldValue.ToString();
+                            break;
 
                         case RegistrationPersonFieldType.Birthdate:
-                            {
-                                var birthDate = fieldValue as DateTime?;
-                                rlField.Text = birthDate != null ? birthDate.Value.ToShortDateString() : string.Empty;
-                                break;
-                            }
+                            var birthDate = fieldValue as DateTime?;
+                            rlField.Text = birthDate != null ? birthDate.Value.ToShortDateString() : string.Empty;
+                            break;
 
                         case RegistrationPersonFieldType.Grade:
-                            {
-                                int? graduationYear = fieldValue.ToString().AsIntegerOrNull();
-                                rlField.Text = Person.GradeFormattedFromGraduationYear( graduationYear );
-                                break;
-                            }
+                            int? graduationYear = fieldValue.ToString().AsIntegerOrNull();
+                            rlField.Text = Person.GradeFormattedFromGraduationYear( graduationYear );
+                            break;
 
                         case RegistrationPersonFieldType.Gender:
-                            {
-                                var gender = fieldValue.ToString().ConvertToEnumOrNull<Gender>() ?? Gender.Unknown;
-                                rlField.Text = gender.ConvertToString();
-                                break;
-                            }
-
+                            var gender = fieldValue.ToString().ConvertToEnumOrNull<Gender>() ?? Gender.Unknown;
+                            rlField.Text = gender.ConvertToString();
+                            break;
+                            
                         case RegistrationPersonFieldType.MaritalStatus:
-                            {
-                                var maritalStatusDv = DefinedValueCache.Get( fieldValue.ToString().AsInteger() );
-                                rlField.Text = maritalStatusDv != null ? maritalStatusDv.Value : string.Empty;
-                                break;
-                            }
+                            var maritalStatusDv = DefinedValueCache.Get( fieldValue.ToString().AsInteger() );
+                            rlField.Text = maritalStatusDv != null ? maritalStatusDv.Value : string.Empty;
+                            break;
+
+                        case RegistrationPersonFieldType.AnniversaryDate:
+                            var anniversaryDate = fieldValue as DateTime?;
+                            rlField.Text = anniversaryDate != null ? anniversaryDate.Value.ToShortDateString() : string.Empty;
+                            break;
 
                         case RegistrationPersonFieldType.MobilePhone:
                         case RegistrationPersonFieldType.HomePhone:
                         case RegistrationPersonFieldType.WorkPhone:
-                            {
-                                var pn = fieldValue as PhoneNumber;
-                                rlField.Text = pn != null ? pn.NumberFormatted : string.Empty;
-                                break;
-                            }
-                    }
+                            var pn = fieldValue as PhoneNumber;
+                            rlField.Text = pn != null ? pn.NumberFormatted : string.Empty;
+                            break;
 
+                        case RegistrationPersonFieldType.ConnectionStatus:
+                            var connectionStatus = DefinedValueCache.Get( fieldValue.ToString().AsInteger() );
+                            rlField.Text = connectionStatus != null ? connectionStatus.Value : string.Empty;
+                            break;
+                    }
                 }
                 else
                 {
