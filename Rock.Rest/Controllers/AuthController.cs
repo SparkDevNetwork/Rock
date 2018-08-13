@@ -59,6 +59,12 @@ namespace Rock.Rest.Controllers
             }
         }
 
+
+        /*
+         * 8/13/2018 - JME
+         * Removed these endpoints as they allowed anyone to login with a valid first name, last name, email.
+         *
+         * 
         /// <summary>
         /// Use this to Login a user and return an AuthCookie which can be used in subsequent REST calls
         /// </summary>
@@ -79,6 +85,7 @@ namespace Rock.Rest.Controllers
                 throw new HttpResponseException( HttpStatusCode.Unauthorized );
             }
         }
+        
 
         /// <summary>
         /// Use this to Login a user and return an AuthCookie which can be used in subsequent REST calls
@@ -121,7 +128,7 @@ namespace Rock.Rest.Controllers
                 throw new HttpResponseException( HttpStatusCode.Unauthorized );
             }
         }
-
+        */
     }
 
 }

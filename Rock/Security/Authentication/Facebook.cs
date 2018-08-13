@@ -336,6 +336,15 @@ namespace Rock.Security.ExternalAuthentication
         /// <returns></returns>
         public static string GetFacebookUserName( FacebookUser facebookUser, bool syncFriends = false, string accessToken = "" )
         {
+            // 8/13/2018 - JME
+            // Decided as a team (Nick, Jon) that all calls need to have an access token.
+            // This came up as a REST endpoint was available that allowed login
+            // by only first name, last name, email.
+            if ( accessToken.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
             string username = string.Empty;
             string facebookId = facebookUser.id;
             string facebookLink = facebookUser.link;
