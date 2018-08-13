@@ -1659,6 +1659,7 @@
     <Compile Include="Utility\DebugHelper.cs" />
     <Compile Include="Utility\ExcelHelper.cs" />
     <Compile Include="Utility\ExtensionMethods\DataTable.cs" />
+    <Compile Include="Utility\ExtensionMethods\IntegerExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\IRockTransactionExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\QuartzExtensions.cs" />
     <Compile Include="Utility\FileUtilities.cs" />
