@@ -661,7 +661,7 @@ namespace Rock.Web.UI.Controls
                 writer.Write( Person.GetPersonPhotoImageTag( CreatedByPersonId, CreatedByPhotoId, null, CreatedByGender, null, 50, 50) );
             }
 
-            writer.AddAttribute(HtmlTextWriterAttribute.Class, "noteentry-control");
+            writer.AddAttribute(HtmlTextWriterAttribute.Class, "noteentry-control focus-within");
             writer.RenderBeginTag(HtmlTextWriterTag.Div);
             _ddlNoteType.RenderControl( writer );
             _tbNote.RenderControl( writer );
