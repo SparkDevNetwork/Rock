@@ -39,7 +39,7 @@ using Rock.Security;
 namespace Rock.Lava.Blocks
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <seealso cref="DotLiquid.Block" />
     public class RockEntity : RockLavaBlockBase
