@@ -237,12 +237,12 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string CountryCode
         {
-            get 
+            get
             {
                 EnsureChildControls();
                 return _hfCountryCode.Value;
             }
-            set 
+            set
             {
                 EnsureChildControls();
                 if ( !string.IsNullOrWhiteSpace( value ) )
@@ -501,11 +501,13 @@ namespace Rock.Web.UI.Controls
                 this.Attributes["placeholder"] = Placeholder;
             }
 
+            this.Attributes["type"] = "tel";
+
             base.RenderControl( writer );
 
             writer.RenderEndTag();              // div.input-group
 
             this.CssClass = cssClass;
-        }   
+        }
     }
 }
