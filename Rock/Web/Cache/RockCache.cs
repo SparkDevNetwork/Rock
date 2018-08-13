@@ -119,12 +119,13 @@ namespace Rock.Web.Cache
         {
             get
             {
-                if ( Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER ).IsNullOrWhiteSpace() ? false : true )
+                if ( Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER )?.AsBoolean() == true )
                 {
                     return true;
                 }
 
-                return true; //false;
+                // not using Redis, so it is safe to cache non-serializable things (like CacheLavaTemplate)
+                return false;
             }
         }
 
