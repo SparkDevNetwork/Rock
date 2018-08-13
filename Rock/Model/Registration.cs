@@ -1205,6 +1205,7 @@ Registration By: {0} Total Cost/Fees:{1}
                     switch ( field.PersonFieldType )
                     {
                         case RegistrationPersonFieldType.FirstName: return person.NickName;
+                        case RegistrationPersonFieldType.MiddleName: return person.MiddleName;
                         case RegistrationPersonFieldType.LastName: return person.LastName;
                         case RegistrationPersonFieldType.Campus:
                             {
@@ -1228,6 +1229,7 @@ Registration By: {0} Total Cost/Fees:{1}
                         case RegistrationPersonFieldType.Grade: return person.GraduationYear;
                         case RegistrationPersonFieldType.Gender: return person.Gender;
                         case RegistrationPersonFieldType.MaritalStatus: return person.MaritalStatusValueId;
+                        case RegistrationPersonFieldType.AnniversaryDate: return person.AnniversaryDate;
                         case RegistrationPersonFieldType.MobilePhone:
                             {
                                 dvPhone = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );

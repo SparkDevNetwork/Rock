@@ -81,7 +81,7 @@ namespace RockWeb.Blocks.Crm
             var personEntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Person ) ).Id;
 
             ddlTitle.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_TITLE ) ), true );
-            ddlStatus.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ) );
+            ddlConnectionStatus.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ) );
             ddlMaritalStatus.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS ) ) );
             ddlSuffix.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_SUFFIX ) ), true );
             ddlRecordStatus.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ) );
@@ -463,7 +463,7 @@ namespace RockWeb.Blocks.Crm
 
                 if ( SelectedFields.Contains( ddlConnectionStatus.ClientID ) && _canEditConnectionStatus )
                 {
-                    int? newConnectionStatusId = ddlStatus.SelectedValueAsInt();
+                    int? newConnectionStatusId = ddlConnectionStatus.SelectedValueAsInt();
                     EvaluateChange( changes, "Connection Status", DefinedValueCache.GetName( newConnectionStatusId ) );
                 }
 

@@ -266,7 +266,7 @@ namespace Rock.Workflow.Action
             }
             
             emailMessage.CreateCommunicationRecord = createCommunicationRecord;
-            emailMessage.AppRoot = Rock.Cache.CacheGlobalAttributes.Get().GetValue( "InternalApplicationRoot" ) ?? string.Empty;
+            emailMessage.AppRoot = GlobalAttributesCache.Get().GetValue( "InternalApplicationRoot" ) ?? string.Empty;
 
             emailMessage.Send();
         }
