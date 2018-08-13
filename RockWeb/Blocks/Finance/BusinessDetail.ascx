@@ -49,7 +49,7 @@
                                     </div>
                                 </div>
 
-                                <Rock:RockTextBox ID="tbEmail" runat="server" PrependText="<i class='fa fa-envelope'></i>" Label="Email Address" />
+                                <Rock:EmailBox ID="tbEmail" runat="server" Label="Email Address" />
 
                                 <Rock:RockRadioButtonList ID="rblEmailPreference" runat="server" RepeatDirection="Horizontal" Label="Email Preference">
                                     <asp:ListItem Text="Email Allowed" Value="EmailAllowed" Selected="True" />
