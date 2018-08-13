@@ -31,7 +31,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Groups
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [DisplayName( "Group Member History" )]
     [Category( "Groups" )]
@@ -195,7 +195,7 @@ namespace RockWeb.Blocks.Groups
             Literal lPersonProfileLink = e.Row.FindControl( "lPersonProfileLink" ) as Literal;
             if ( groupMember != null )
             {
-                lPersonNameHtml.Text = string.Format( photoFormat, groupMember.PersonId, groupMember.Person.PhotoUrl, ResolveUrl( "~/Assets/Images/person-no-photo-male.svg" ) )
+                lPersonNameHtml.Text = string.Format( photoFormat, groupMember.PersonId, groupMember.Person.PhotoUrl, ResolveUrl( "~/Assets/Images/person-no-photo-unknown.svg" ) )
                     + groupMember.ToString();
 
                 string personUrl = this.ResolveUrl( string.Format( "~/Person/{0}", groupMember.PersonId ) );
