@@ -489,14 +489,9 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                     // If person was not found, Look for existing person in same family with same name and birthdate
                     if ( person == null && child.BirthDate.HasValue )
                     {
-                        person = primaryFamily.Members
-                            .Where( m =>
-                                ( m.Person.NickName == child.NickName || m.Person.FirstName == child.NickName ) &&
-                                m.Person.LastName == child.LastName &&
-                                m.Person.BirthDate.HasValue &&
-                                m.Person.BirthDate.Value == child.BirthDate.Value )
-                            .Select( m => m.Person )
-                            .FirstOrDefault();
+                        var possibleMatch = new Person { NickName = child.NickName, LastName = child.LastName };
+                        possibleMatch.SetBirthDate( child.BirthDate );
+                        person = primaryFamily.MatchingFamilyMember( possibleMatch  );
                     }
 
                     // Otherwise create a new person
