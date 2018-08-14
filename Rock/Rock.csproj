@@ -2311,6 +2311,7 @@
   <ItemGroup>
     <None Include="App.config" />
     <Compile Include="Model\RegistrationTemplateFeeService.Partial.cs" />
+    <None Include="CheckIn\_DiagramCheckInClasses.cd" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
