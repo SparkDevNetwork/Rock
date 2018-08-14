@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -431,6 +431,7 @@ namespace RockWeb.Blocks.Administration
 
             // Adult Children
             cbAdultChildren.Checked = _adultChildrenSettings.IsEnabled;
+            cbisMoveGraduated.Checked = _adultChildrenSettings.IsOnlyMoveGraduated;
             pnlAdultChildren.Enabled = _adultChildrenSettings.IsEnabled;
             nbAdultAge.Text = _adultChildrenSettings.AdultAge.ToString();
             rpParentRelationship.GroupRoleId = _adultChildrenSettings.ParentRelationshipId;
@@ -600,6 +601,7 @@ namespace RockWeb.Blocks.Administration
 
             // Adult Children
             _adultChildrenSettings.IsEnabled = cbAdultChildren.Checked;
+            _adultChildrenSettings.IsOnlyMoveGraduated = cbisMoveGraduated.Checked;
             _adultChildrenSettings.AdultAge = nbAdultAge.Text.AsIntegerOrNull() ?? 18;
             _adultChildrenSettings.ParentRelationshipId = rpParentRelationship.GroupRoleId;
             _adultChildrenSettings.SiblingRelationshipId = rpSiblingRelationship.GroupRoleId;
