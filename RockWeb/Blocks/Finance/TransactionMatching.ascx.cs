@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -584,6 +584,8 @@ namespace RockWeb.Blocks.Finance
                         cbTotalAmount.Text = string.Empty;
                     }
 
+                    tbTransactionCode.Text = transactionToMatch.TransactionCode;
+
                     // update accountboxes
                     foreach ( var accountBox in rptAccounts.ControlsOfTypeRecursive<CurrencyBox>() )
                     {
@@ -974,6 +976,8 @@ namespace RockWeb.Blocks.Finance
                         History.EvaluateChange( changes, accountBox.Label, 0.0M.FormatAsCurrency(), amount.Value.FormatAsCurrency() );
                     }
                 }
+
+                financialTransaction.TransactionCode = tbTransactionCode.Text;
 
                 financialTransaction.Summary = tbSummary.Text;
 
