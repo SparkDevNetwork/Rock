@@ -489,7 +489,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         errorMessages.Add( "Alternate Id is required." );
                     }
 
-                    int alternateValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() ).Id;
+                    int alternateValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() ).Id;
                     var alternateIds = _alternateIds.Select( a => a.Value ).ToList();
 
                     // Look for duplicates in the local/current set of alternate ids
@@ -580,7 +580,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                             if ( _enableAlternateIdentifier )
                                             {
                                                 var personSearchKeyService = new PersonSearchKeyService( rockContext );
-                                                int alternateValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() ).Id;
+                                                int alternateValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() ).Id;
                                                 foreach ( var groupMember in GroupMembers )
                                                 {
                                                     var personSearchKey = new PersonSearchKey();

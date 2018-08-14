@@ -1911,7 +1911,7 @@ namespace Rock.Model
                         }
 
                         // ensure a new person has an Alternate Id
-                        int alternateValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() ).Id;
+                        int alternateValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() ).Id;
                         var personSearchKeyService = new PersonSearchKeyService( rockContext );
                         PersonSearchKey personSearchKey = new PersonSearchKey()
                         {
