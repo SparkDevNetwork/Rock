@@ -14,33 +14,43 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-
-namespace Rock.SystemGuid
+namespace Rock.Utility.SparkDataApi
 {
     /// <summary>
-    /// Service Job guids
+    /// The NCOA server response
     /// </summary>
-    public static class ServiceJob
+    internal class NcoaResponse
     {
         /// <summary>
-        /// Gets the Job Pulse guid
+        /// Gets or sets the file name on the NCOA server.
         /// </summary>
-        public const string JOB_PULSE = "CB24FF2A-5AD3-4976-883F-DAF4EFC1D7C7";
+        /// <value>
+        /// The NCOA file name.
+        /// </value>
+        public string Name { get; set; }
 
         /// <summary>
-        /// The Job for migrating attendance records to occurrence recors (in V8)
+        /// Gets or sets the status.
         /// </summary>
-        public const string MIGRATE_ATTENDANCE_OCCURRENCE = "98A2DCA5-5E2E-482A-A7CA-15DAD5B4EA65";
+        /// <value>
+        /// The status.
+        /// </value>
+        public string Status { get; set; }
 
         /// <summary>
-        /// The Job for migrating family check-in identifiers to person alternate ids
+        /// Gets or sets the identifier.
         /// </summary>
-        public const string MIGRATE_FAMILY_CHECKIN_IDS = "E782C667-EF07-4AD2-86B7-01C1935AAF5B";
+        /// <value>
+        /// The identifier.
+        /// </value>
+        public string Id { get; set; }
 
         /// <summary>
-        /// The Job to get NCOA
+        /// Gets or sets the record count.
         /// </summary>
-        public const string GET_NCOA = "D2D6EA6C-F94A-39A0-481B-A23D08B887D6";
+        /// <value>
+        /// The record count.
+        /// </value>
+        public int RecordCount { get; set; }
     }
 }
