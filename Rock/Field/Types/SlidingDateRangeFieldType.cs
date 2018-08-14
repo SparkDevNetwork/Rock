@@ -128,7 +128,7 @@ namespace Rock.Field.Types
                 if ( controls.Count >= 1 )
                 {
                     var clbSlidingDateRangeTypes = controls[0] as RockCheckBoxList;
-                    if ( clbSlidingDateRangeTypes != null )
+                    if ( clbSlidingDateRangeTypes != null && configurationValues.ContainsKey(ENABLED_SLIDING_DATE_RANGE_TYPES) )
                     {
                         var selectedDateRangeTypes = configurationValues[ENABLED_SLIDING_DATE_RANGE_TYPES].Value.SplitDelimitedValues().AsIntegerList().Select( a => (SlidingDateRangePicker.SlidingDateRangeType)a );
                         foreach ( var item in clbSlidingDateRangeTypes.Items.OfType<ListItem>() )
@@ -141,7 +141,7 @@ namespace Rock.Field.Types
                 if ( controls.Count >= 2 )
                 {
                     var clbSlidingDateRangeUnits = controls[1] as RockCheckBoxList;
-                    if ( clbSlidingDateRangeUnits != null )
+                    if ( clbSlidingDateRangeUnits != null && configurationValues.ContainsKey(ENABLED_SLIDING_DATE_RANGE_UNITS) )
                     {
                         var selectedDateRangeUnits = configurationValues[ENABLED_SLIDING_DATE_RANGE_UNITS].Value.SplitDelimitedValues().AsIntegerList().Select( a => (SlidingDateRangePicker.TimeUnitType)a );
                         foreach ( var item in clbSlidingDateRangeUnits.Items.OfType<ListItem>() )
