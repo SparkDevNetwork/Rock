@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -4187,9 +4187,10 @@ namespace RockWeb.Blocks.Event
                                 break;
 
                             case RegistrationPersonFieldType.MobilePhone:
+                                var mobileLabel = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Value;
                                 var tbRegistrantsMobilePhoneFilter = new RockTextBox();
                                 tbRegistrantsMobilePhoneFilter.ID = "tbRegistrantsMobilePhoneFilter";
-                                tbRegistrantsMobilePhoneFilter.Label = "Cell Phone";
+                                tbRegistrantsMobilePhoneFilter.Label = mobileLabel;
 
                                 if ( setValues )
                                 {
@@ -4200,7 +4201,7 @@ namespace RockWeb.Blocks.Event
 
                                 var tbGroupPlacementsMobilePhoneFilter = new RockTextBox();
                                 tbGroupPlacementsMobilePhoneFilter.ID = "tbGroupPlacementsMobilePhoneFilter";
-                                tbGroupPlacementsMobilePhoneFilter.Label = "Cell Phone";
+                                tbGroupPlacementsMobilePhoneFilter.Label = mobileLabel;
 
                                 if ( setValues )
                                 {
@@ -4211,23 +4212,23 @@ namespace RockWeb.Blocks.Event
 
                                 var tbWaitlistMobilePhoneFilter = new RockTextBox();
                                 tbWaitlistMobilePhoneFilter.ID = "tbWaitlistMobilePhoneFilter";
-                                tbWaitlistMobilePhoneFilter.Label = "Cell Phone";
+                                tbWaitlistMobilePhoneFilter.Label = mobileLabel;
                                 tbWaitlistMobilePhoneFilter.Text = fRegistrants.GetUserPreference( "WL-Phone" );
                                 phWaitListFormFieldFilters.Controls.Add( tbWaitlistMobilePhoneFilter );
 
                                 var phoneNumbersField = new RockLiteralField();
                                 phoneNumbersField.ID = "lRegistrantsMobile";
-                                phoneNumbersField.HeaderText = "Cell Phone";
+                                phoneNumbersField.HeaderText = mobileLabel;
                                 gRegistrants.Columns.Add( phoneNumbersField );
 
                                 var phoneNumbersField2 = new RockLiteralField();
                                 phoneNumbersField2.ID = "lGroupPlacementsMobile";
-                                phoneNumbersField2.HeaderText = "Cell Phone";
+                                phoneNumbersField2.HeaderText = mobileLabel;
                                 gGroupPlacements.Columns.Add( phoneNumbersField2 );
 
                                 var phoneNumbersField3 = new RockLiteralField();
                                 phoneNumbersField3.ID = "lWaitlistMobile";
-                                phoneNumbersField3.HeaderText = "Cell Phone";
+                                phoneNumbersField3.HeaderText = mobileLabel;
                                 gWaitList.Columns.Add( phoneNumbersField3 );
 
                                 break;
