@@ -59,7 +59,7 @@ public class Lava : IHttpHandler
                 string response = lava.ResolveMergeFields( mergeFields, currentUser != null ? currentUser.Person : null, enabledLavaCommands );
 
                 context.Response.Write( response );
-                context.Response.ContentType = contentType.IsNotNullOrWhitespace() ? contentType : "text/plain";
+                context.Response.ContentType = contentType.IsNotNullOrWhiteSpace() ? contentType : "text/plain";
 
                 return;
             }

@@ -165,7 +165,7 @@ namespace RockWeb.Blocks.Reporting
                 
                 mergeFields.Add( "InteractionComponentEntity", componentEntity);
 
-                string template = _component.Channel.ComponentDetailTemplate.IsNotNullOrWhitespace() ?
+                string template = _component.Channel.ComponentDetailTemplate.IsNotNullOrWhiteSpace() ?
                     _component.Channel.ComponentDetailTemplate :
                     GetAttributeValue( "DefaultTemplate" );
 

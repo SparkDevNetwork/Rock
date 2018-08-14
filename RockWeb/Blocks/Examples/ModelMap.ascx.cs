@@ -243,7 +243,7 @@ namespace RockWeb.Blocks.Examples
                 {
                     string category = "Other";
                     var domainAttr = type.GetCustomAttribute<RockDomainAttribute>( false );
-                    if ( domainAttr != null && domainAttr.Name.IsNotNullOrWhitespace() )
+                    if ( domainAttr != null && domainAttr.Name.IsNotNullOrWhiteSpace() )
                     {
                         category = domainAttr.Name;
                     }

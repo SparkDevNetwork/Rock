@@ -384,7 +384,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                 else
                 {
                     // Otherwise, create a new family and save it
-                    primaryFamily = CreateNewFamily( familyGroupType.Id, ( tbLastName1.Text.IsNotNullOrWhitespace() ? tbLastName1.Text : tbLastName2.Text ) );
+                    primaryFamily = CreateNewFamily( familyGroupType.Id, ( tbLastName1.Text.IsNotNullOrWhiteSpace() ? tbLastName1.Text : tbLastName2.Text ) );
                     groupService.Add( primaryFamily );
                     saveEmptyValues = true;
                 }
@@ -419,7 +419,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                     // Find a location record for the address that was entered
                     var loc = new Location();
                     acAddress.GetValues( loc );
-                    if ( acAddress.Street1.IsNotNullOrWhitespace() && loc.City.IsNotNullOrWhitespace() )
+                    if ( acAddress.Street1.IsNotNullOrWhiteSpace() && loc.City.IsNotNullOrWhiteSpace() )
                     {
                         loc = new LocationService( _rockContext ).Get(
                             loc.Street1, loc.Street2, loc.City, loc.State, loc.PostalCode, loc.Country, primaryFamily, true );
@@ -536,7 +536,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                     _rockContext.SaveChanges();
 
                     // Save the mobile phone number
-                    if ( showChildMobilePhone && child.MobilePhoneNumber.IsNotNullOrWhitespace() )
+                    if ( showChildMobilePhone && child.MobilePhoneNumber.IsNotNullOrWhiteSpace() )
                     {
                         SavePhoneNumber( person.Id, child.MobilePhoneNumber, child.MobileCountryCode );
                     }
@@ -545,7 +545,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                     person.LoadAttributes();
                     foreach( var keyVal in child.AttributeValues )
                     {
-                        if ( keyVal.Value.IsNotNullOrWhitespace() )
+                        if ( keyVal.Value.IsNotNullOrWhiteSpace() )
                         {
                             person.SetAttributeValue( keyVal.Key, keyVal.Value );
                         }
@@ -650,7 +650,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
 
                 List<Guid> workflows = GetAttributeValue( "WorkflowTypes" ).SplitDelimitedValues().AsGuidList();
                 string redirectUrl = GetAttributeValue( "RedirectURL" );
-                if ( workflows.Any() || redirectUrl.IsNotNullOrWhitespace() )
+                if ( workflows.Any() || redirectUrl.IsNotNullOrWhiteSpace() )
                 {
                     var family = groupService.Get( primaryFamily.Id );
 
@@ -681,7 +681,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                         }
                     }
 
-                    if ( redirectUrl.IsNotNullOrWhitespace() )
+                    if ( redirectUrl.IsNotNullOrWhiteSpace() )
                     {
                         var relatedPersonIds = newRelationships.Select( r => r.Key ).ToList();
                         var relatedChildren = personService.Queryable().Where( p => relatedPersonIds.Contains( p.Id ) ).ToList();
@@ -1192,7 +1192,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             }
 
             // Check to see if this is an existing person, or a name was entered for this adult
-            if ( adult != null || ( tbFirstName.Text.IsNotNullOrWhitespace() && tbLastName.Text.IsNotNullOrWhitespace() ) )
+            if ( adult != null || ( tbFirstName.Text.IsNotNullOrWhiteSpace() && tbLastName.Text.IsNotNullOrWhiteSpace() ) )
             {
                 // Flag indicating if empty values should be saved to person record (Should not do this if a matched record was found)
                 bool saveEmptyValues = true;
@@ -1263,7 +1263,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
 
                 if ( showEmail )
                 {
-                    if ( tbEmail.Text.IsNotNullOrWhitespace() || saveEmptyValues )
+                    if ( tbEmail.Text.IsNotNullOrWhiteSpace() || saveEmptyValues )
                     {
                         adult.Email = tbEmail.Text;
                     }
@@ -1305,7 +1305,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                     {
                         var value = new AttributeValueCache();
                         value.Value = attribute.Value.FieldType.Field.GetEditValue( control, attribute.Value.QualifierValues );
-                        if ( setEmptyValue || value.Value.IsNotNullOrWhitespace() )
+                        if ( setEmptyValue || value.Value.IsNotNullOrWhiteSpace() )
                         {
                             person.AttributeValues[attribute.Key] = value;
                         }
@@ -1413,10 +1413,10 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             }
 
             if (
-                ( tbFirstName1.Text.IsNotNullOrWhitespace() && tbLastName1.Text.IsNullOrWhiteSpace() ) ||
-                ( tbLastName1.Text.IsNullOrWhiteSpace() && tbLastName1.Text.IsNotNullOrWhitespace() ) ||
-                ( tbFirstName2.Text.IsNotNullOrWhitespace() && tbLastName2.Text.IsNullOrWhiteSpace() ) ||
-                ( tbLastName2.Text.IsNullOrWhiteSpace() && tbLastName2.Text.IsNotNullOrWhitespace() ) 
+                ( tbFirstName1.Text.IsNotNullOrWhiteSpace() && tbLastName1.Text.IsNullOrWhiteSpace() ) ||
+                ( tbLastName1.Text.IsNullOrWhiteSpace() && tbLastName1.Text.IsNotNullOrWhiteSpace() ) ||
+                ( tbFirstName2.Text.IsNotNullOrWhiteSpace() && tbLastName2.Text.IsNullOrWhiteSpace() ) ||
+                ( tbLastName2.Text.IsNullOrWhiteSpace() && tbLastName2.Text.IsNotNullOrWhiteSpace() ) 
             )
             {
                 errorMessages.Add( "A First and Last name is required for each person." );
@@ -1424,8 +1424,8 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
 
             ValidateRequiredField( "AdultGender", "Gender is required for each adult.", ddlGender1.SelectedValueAsEnumOrNull<Gender>() != null, ddlGender2.SelectedValueAsEnumOrNull<Gender>() != null, errorMessages );
             ValidateRequiredField( ADULT_BIRTHDATE_KEY, "Birthdate is required for each adult.", dpBirthDate1.SelectedDate != null, dpBirthDate2.SelectedDate != null, errorMessages );
-            ValidateRequiredField( ADULT_EMAIL_KEY, "Email is required for each adult.", tbEmail1.Text.IsNotNullOrWhitespace(), tbEmail2.Text.IsNotNullOrWhitespace(), errorMessages );
-            ValidateRequiredField( ADULT_MOBILE_KEY, "Mobile Phone is required for each adult.", PhoneNumber.CleanNumber( pnMobilePhone1.Number ).IsNotNullOrWhitespace(), PhoneNumber.CleanNumber( pnMobilePhone2.Number ).IsNotNullOrWhitespace(), errorMessages );
+            ValidateRequiredField( ADULT_EMAIL_KEY, "Email is required for each adult.", tbEmail1.Text.IsNotNullOrWhiteSpace(), tbEmail2.Text.IsNotNullOrWhiteSpace(), errorMessages );
+            ValidateRequiredField( ADULT_MOBILE_KEY, "Mobile Phone is required for each adult.", PhoneNumber.CleanNumber( pnMobilePhone1.Number ).IsNotNullOrWhiteSpace(), PhoneNumber.CleanNumber( pnMobilePhone2.Number ).IsNotNullOrWhiteSpace(), errorMessages );
 
             if ( errorMessages.Any() )
             {
@@ -1452,8 +1452,8 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             if ( GetAttributeValue( attributeKey ) == "Required" )
             {
                 if (
-                    ( tbFirstName1.Text.IsNotNullOrWhitespace() && !adult1HasValue ) ||
-                    ( tbFirstName2.Text.IsNotNullOrWhitespace() && !adult2HasValue )
+                    ( tbFirstName1.Text.IsNotNullOrWhiteSpace() && !adult1HasValue ) ||
+                    ( tbFirstName2.Text.IsNotNullOrWhiteSpace() && !adult2HasValue )
                 )
                 {
                     errorMessages.Add( errorMessage );
@@ -1626,7 +1626,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                         n.NumberTypeValueId.Value == phType.Id )
                     .FirstOrDefault();
 
-                if ( phone.IsNotNullOrWhitespace() )
+                if ( phone.IsNotNullOrWhiteSpace() )
                 {
                     if ( phoneNumber == null )
                     {

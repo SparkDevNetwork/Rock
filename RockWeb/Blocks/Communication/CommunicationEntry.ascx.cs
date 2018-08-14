@@ -1060,12 +1060,12 @@ namespace RockWeb.Blocks.Communication
 
                     if ( htmlControl != null )
                     {
-                        if ( GetAttributeValue( "DocumentRootFolder" ).IsNotNullOrWhitespace() )
+                        if ( GetAttributeValue( "DocumentRootFolder" ).IsNotNullOrWhiteSpace() )
                         {
                             htmlControl.DocumentFolderRoot = GetAttributeValue( "DocumentRootFolder" );
                         }
 
-                        if ( GetAttributeValue( "ImageRootFolder" ).IsNotNullOrWhitespace() )
+                        if ( GetAttributeValue( "ImageRootFolder" ).IsNotNullOrWhiteSpace() )
                         {
                             htmlControl.ImageFolderRoot = GetAttributeValue( "ImageRootFolder" );
                         }

@@ -163,7 +163,7 @@ namespace RockWeb.Blocks.Reporting
                     
                     mergeFields.Add( "Interaction", interaction );
 
-                    lContent.Text = interaction.InteractionComponent.Channel.InteractionDetailTemplate.IsNotNullOrWhitespace() ?
+                    lContent.Text = interaction.InteractionComponent.Channel.InteractionDetailTemplate.IsNotNullOrWhiteSpace() ?
                         interaction.InteractionComponent.Channel.InteractionDetailTemplate.ResolveMergeFields( mergeFields ) :
                         GetAttributeValue( "DefaultTemplate" ).ResolveMergeFields( mergeFields );
                 }

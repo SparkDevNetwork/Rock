@@ -299,7 +299,7 @@ namespace RockWeb.Blocks.Communication
 
             if ( lavaFieldsNode != null )
             {
-                var templateDocLavaFieldLines = lavaFieldsNode.InnerText.Split( new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.Trim() ).Where( a => a.IsNotNullOrWhitespace() ).ToList();
+                var templateDocLavaFieldLines = lavaFieldsNode.InnerText.Split( new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.Trim() ).Where( a => a.IsNotNullOrWhiteSpace() ).ToList();
 
                 // dictionary of keys and values from the lava fields in the 'lava-fields' div
                 foreach ( var templateDocLavaFieldLine in templateDocLavaFieldLines )
@@ -634,7 +634,7 @@ namespace RockWeb.Blocks.Communication
                     helpHeight = templateLogoNode.Attributes["height"].Value;
                 }
 
-                if ( helpWidth.IsNotNullOrWhitespace() && helpHeight.IsNotNullOrWhitespace() )
+                if ( helpWidth.IsNotNullOrWhiteSpace() && helpHeight.IsNotNullOrWhiteSpace() )
                 {
                     helpText += string.Format( " (Image size: {0}px x {1}px)", helpWidth, helpHeight );
                 }
@@ -654,7 +654,7 @@ namespace RockWeb.Blocks.Communication
                 lavaFieldsNode.Attributes.Add( "style", "display:none" );
             }
 
-            var templateDocLavaFieldLines = lavaFieldsNode.InnerText.Split( new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.Trim() ).Where( a => a.IsNotNullOrWhitespace() ).ToList();
+            var templateDocLavaFieldLines = lavaFieldsNode.InnerText.Split( new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.Trim() ).Where( a => a.IsNotNullOrWhiteSpace() ).ToList();
 
             // dictionary of keys and default values from Lava Fields KeyValueList control
             var lavaFieldsDefaultDictionary = kvlMergeFields.Value.AsDictionary();

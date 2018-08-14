@@ -234,7 +234,7 @@ namespace RockWeb.Blocks.Reporting
                     var channelMergeFields = new Dictionary<string, object>( mergeFields );
                     channelMergeFields.Add( "InteractionChannel", channel );
 
-                    string html = channel.ChannelListTemplate.IsNotNullOrWhitespace() ?
+                    string html = channel.ChannelListTemplate.IsNotNullOrWhiteSpace() ?
                         channel.ChannelListTemplate.ResolveMergeFields( channelMergeFields ) :
                         defaultTemplate.Render( Hash.FromDictionary( channelMergeFields ) );
 

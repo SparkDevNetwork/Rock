@@ -589,7 +589,7 @@ namespace RockWeb.Blocks.Finance
 
                 var communicationLinkedPageValue = this.GetAttributeValue( "CommunicationPage" );
                 Rock.Web.PageReference communicationPageReference;
-                if ( communicationLinkedPageValue.IsNotNullOrWhitespace() )
+                if ( communicationLinkedPageValue.IsNotNullOrWhiteSpace() )
                 {
                     communicationPageReference = new Rock.Web.PageReference( communicationLinkedPageValue );
                 }

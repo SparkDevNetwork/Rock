@@ -346,7 +346,7 @@ namespace RockWeb.Blocks.WorkFlow
                     // attributes that might have the same key
                     foreach ( var param in RockPage.PageParameters() )
                     {
-                        if ( param.Value != null && param.Value.ToString().IsNotNullOrWhitespace() )
+                        if ( param.Value != null && param.Value.ToString().IsNotNullOrWhiteSpace() )
                         {
                             _workflow.SetAttributeValue( param.Key, param.Value.ToString() );
                         }
