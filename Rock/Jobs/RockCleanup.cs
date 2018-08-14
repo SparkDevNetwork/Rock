@@ -792,7 +792,7 @@ WHERE ic.ChannelId = @channelId
                         bool ignore = false;
                         if ( entityType.Assembly != rockContextType.Assembly )
                         {
-                            // If the model is from a custom project, verify that it is using RockContext, if not, ignore it since an 
+                            // If the model is from a custom project, verify that it is using RockContext, if not, ignore it since an
                             // exception will occur due to the AttributeValue query using RockContext.
                             var entityContextType = Reflection.SearchAssembly( entityType.Assembly, typeof( System.Data.Entity.DbContext ) );
                             ignore = ( entityContextType.Any() && !entityContextType.First().Value.Equals( rockContextType ) );
@@ -984,7 +984,7 @@ WHERE ExpireDateTime IS NOT NULL
         {
             try
             {
-                // if the directory exixts
+                // if the directory exists
                 if ( Directory.Exists( directoryPath ) )
                 {
                     // delete the directory

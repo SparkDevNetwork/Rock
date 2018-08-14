@@ -53,7 +53,7 @@ namespace Rock.Address
         /// <param name="reVerify">Should location be reverified even if it has already been successfully verified</param>
         /// <param name="result">The result code unique to the service.</param>
         /// <returns>
-        /// True/False value of whether the verification was successfull or not
+        /// True/False value of whether the verification was successful or not
         /// </returns>
         [Obsolete("Use Verify method instead")]
         public virtual bool VerifyLocation( Rock.Model.Location location, bool reVerify, out string result )

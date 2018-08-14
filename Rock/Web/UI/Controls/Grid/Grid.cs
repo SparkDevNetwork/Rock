@@ -4187,7 +4187,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
     }
 
     /// <summary>
-    /// Column Prioritiy Values
+    /// Column Priority Values
     /// </summary>
     public enum ColumnPriority
     {

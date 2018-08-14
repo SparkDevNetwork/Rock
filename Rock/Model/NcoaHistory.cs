@@ -289,7 +289,7 @@ namespace Rock.Model
 
         #region Virtual Properties
 
-        // removed this to elminate a hard link between the ncoa and the person alias, since this data leaves the system and comes
+        // removed this to eliminate a hard link between the ncoa and the person alias, since this data leaves the system and comes
         // back at a later date it's best not to rely on the person alias being there
 
         /*/// <summary>
@@ -483,7 +483,7 @@ namespace Rock.Model
         /// </summary>
         public NcoaHistoryConfiguration()
         {
-            // removed this to elminate a hard link between the ncoa and the person alias, since this data leaves the system and comes
+            // removed this to eliminate a hard link between the ncoa and the person alias, since this data leaves the system and comes
             // back at a later date it's best not to rely on the person alias being there
             // this.HasRequired( p => p.PersonAlias ).WithMany().HasForeignKey( p => p.PersonAliasId ).WillCascadeOnDelete( false );
             this.Property( p => p.MoveDistance ).HasPrecision( 6, 2 );

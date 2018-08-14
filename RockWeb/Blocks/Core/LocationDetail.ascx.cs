@@ -293,7 +293,7 @@ namespace RockWeb.Blocks.Core
 
             } );
 
-            // If this is a names location (or was previouisly)
+            // If this is a names location (or was previously)
             if ( !string.IsNullOrWhiteSpace( location.Name ) || ( previousName ?? string.Empty ) != (location.Name ?? string.Empty ) )
             {
                 // flush the checkin config

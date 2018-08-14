@@ -98,7 +98,7 @@ namespace Rock.Lava.Shortcodes
 
                     if ( currentRecurrsionDepth > _maxRecursionDepth )
                     {
-                        result.Write( "A recursive loop was dected and processing of this shortcode has stopped." );
+                        result.Write( "A recursive loop was detected and processing of this shortcode has stopped." );
                         return;
                     }
                 }

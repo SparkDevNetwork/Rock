@@ -184,7 +184,7 @@ namespace Rock.Workflow.Action
             }
             else
             {
-                // Check to see if this action instance has a value for the 'Delay Activated' attrbute
+                // Check to see if this action instance has a value for the 'Delay Activated' attribute
                 DateTime? dateSent = action.Activity.GetAttributeValue( AttrKey ).AsDateTime();
                 if ( dateSent.HasValue )
                 {

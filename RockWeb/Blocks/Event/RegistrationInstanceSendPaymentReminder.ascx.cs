@@ -407,7 +407,7 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
-        /// Dayses the since last reminder.
+        /// Days the since last reminder.
         /// </summary>
         /// <param name="lastReminderDate">The last reminder date.</param>
         /// <returns></returns>

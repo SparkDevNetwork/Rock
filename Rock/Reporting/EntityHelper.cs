@@ -99,7 +99,7 @@ namespace Rock.Reporting
                     // check if we can set it from the fieldTypeAttribute
                     if ( ( fieldTypeAttribute != null ) && SetEntityFieldFromFieldTypeAttribute( entityField, fieldTypeAttribute ) )
                     {
-                        // intentially blank, entity field is already setup
+                        // intentionally blank, entity field is already setup
                     }
 
                     // Enum Properties
@@ -313,7 +313,7 @@ namespace Rock.Reporting
                 }
             }
 
-            // NOTE: This method of naming the field isn't predictable, but for backwards compability, keep doing it this way so that old datafilter settings will still match up
+            // NOTE: This method of naming the field isn't predictable, but for backwards compatibility, keep doing it this way so that old datafilter settings will still match up
             int i = 1;
             while ( entityFields.Any( p => p.LegacyName.Equals( legacyFieldName, StringComparison.CurrentCultureIgnoreCase ) ) )
             {
@@ -429,7 +429,7 @@ namespace Rock.Reporting
     public class EntityField
     {
         /// <summary>
-        /// Gets the consistantly unique name of the field in the form of "Property: {{ Name }}" for properties and "Attribute:{{ Name }} (Guid:{{ Guid }}})" for attributes
+        /// Gets the consistently unique name of the field in the form of "Property: {{ Name }}" for properties and "Attribute:{{ Name }} (Guid:{{ Guid }}})" for attributes
         /// </summary>
         /// <value>
         /// Unique Name

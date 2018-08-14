@@ -91,7 +91,7 @@ namespace RockWeb.Blocks.CheckIn
                 {
                     bool enableLocationSharing = GetAttributeValue( "EnableLocationSharing" ).AsBoolean();
 
-                    // Inject script used for geo location determiniation
+                    // Inject script used for geo location determination
                     if ( enableLocationSharing )
                     {
                         lbRetry.Visible = true;
@@ -224,7 +224,7 @@ namespace RockWeb.Blocks.CheckIn
         /// <summary>
         /// Adds GeoLocation script and calls its init() to get client's latitude/longitude before firing
         /// the server side lbCheckGeoLocation_Click click event. Puts the two values into the two corresponding
-        /// hidden varialbles, hfLatitude and hfLongitude.
+        /// hidden variables, hfLatitude and hfLongitude.
         /// </summary>
         private void AddGeoLocationScript()
         {

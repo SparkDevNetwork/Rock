@@ -632,7 +632,7 @@ namespace RockWeb.Blocks.CheckIn.Config
         }
 
         /// <summary>
-        /// Handels the Delete button click
+        /// Handles the Delete button click
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -700,7 +700,7 @@ namespace RockWeb.Blocks.CheckIn.Config
         }
 
         /// <summary>
-        /// Handels the the Check Changed event of the Show Inactive button.
+        /// Handles the Check Changed event of the Show Inactive button.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>

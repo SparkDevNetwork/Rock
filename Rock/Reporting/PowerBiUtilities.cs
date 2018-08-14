@@ -106,7 +106,7 @@ namespace Rock.Reporting
                 HttpContext.Current.Session["PowerBiRedirectUri"] = redirectUrl;
                 HttpContext.Current.Session["PowerBiRockReturnUrl"] = returnUrl;
 
-                // now that everything is saved redirect for Power BI authenication
+                // now that everything is saved redirect for Power BI authentication
                 var @params = new NameValueCollection
                 {
                     // Azure AD will return an authorization code -see the Redirect class to see how "code" is used to AcquireTokenByAuthorizationCode
@@ -153,7 +153,7 @@ namespace Rock.Reporting
             HttpContext.Current.Session["PowerBiRedirectUri"] = redirectUrl;
             HttpContext.Current.Session["PowerBiRockReturnUrl"] = returnUrl;
 
-            // now that everything is saved redirect for Power BI authenication
+            // now that everything is saved redirect for Power BI authentication
             var @params = new NameValueCollection
             {
                 // Azure AD will return an authorization code -see the Redirect class to see how "code" is used to AcquireTokenByAuthorizationCode

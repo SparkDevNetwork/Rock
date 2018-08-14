@@ -161,10 +161,10 @@ namespace Rock.Web.Cache
         public int? LogRetentionPeriod { get; private set; }
 
         /// <summary>
-        /// Gets or sets the completed workflow rention period in days.
+        /// Gets or sets the completed workflow retention period in days.
         /// </summary>
         /// <value>
-        /// The completed workflow rention period in days.
+        /// The completed workflow retention period in days.
         /// </value>
         [DataMember]
         public int? CompletedWorkflowRetentionPeriod { get; private set; }

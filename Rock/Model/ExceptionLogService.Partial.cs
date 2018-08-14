@@ -167,7 +167,7 @@ namespace Rock.Model
                     var exceptionLogService = new ExceptionLogService( rockContext );
                     exceptionLogService.Add( exceptionLog );
 
-                    // make sure to call the regular SaveChanges so that CreatedBy,CreatedByDateTime, etc get set properly. If any of the post processing happens to also create an excpetion, we can just log to the exception file instead
+                    // make sure to call the regular SaveChanges so that CreatedBy,CreatedByDateTime, etc get set properly. If any of the post processing happens to also create an exception, we can just log to the exception file instead
                     rockContext.SaveChanges();
                 }
 

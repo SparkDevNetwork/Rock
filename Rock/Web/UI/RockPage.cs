@@ -820,7 +820,7 @@ namespace Rock.Web.UI
                     }
                 }
 
-                // Add Favicons
+                // Add Favicon
                 if ( Site.FavIconBinaryFileId.HasValue )
                 {
                     AddIconLink( Site.FavIconBinaryFileId.Value, 192, "shortcut icon" );
@@ -1999,7 +1999,7 @@ Sys.Application.add_load(function () {
 
                         if ( modelType == null )
                         {
-                            // if the Type isn't found in the Rock.dll (it might be from a Plugin), lookup which assessmbly it is in and look in there
+                            // if the Type isn't found in the Rock.dll (it might be from a Plugin), lookup which assembly it is in and look in there
                             string[] assemblyNameParts = entity.AssemblyName.Split( new char[] { ',' } );
                             if ( assemblyNameParts.Length > 1 )
                             {
@@ -2498,7 +2498,7 @@ Sys.Application.add_load(function () {
         /// <summary>
         /// Gets the page route and query string parameters
         /// </summary>
-        /// <returns>A <see cref="System.Collections.Generic.Dictionary{String, Object}"/> containing the page route and query string value, the Key is the is the paramter name/key and the object is the value.</returns>
+        /// <returns>A <see cref="System.Collections.Generic.Dictionary{String, Object}"/> containing the page route and query string value, the Key is the is the parameter name/key and the object is the value.</returns>
         public Dictionary<string, object> PageParameters()
         {
             var parameters = new Dictionary<string, object>();

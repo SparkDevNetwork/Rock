@@ -352,7 +352,7 @@ namespace RockWeb.Blocks.Crm
             // people who have emails addresses
             people = people.Where( p => ! ( p.Email == null || p.Email.Trim() == string.Empty ) );
 
-            // people who match the Connection Status critera
+            // people who match the Connection Status criteria
             people = people.Where( p => cblConnectionStatus.SelectedValuesAsInt.Contains( p.ConnectionStatusValueId ?? -1 ) );
 
             // people who are old enough
