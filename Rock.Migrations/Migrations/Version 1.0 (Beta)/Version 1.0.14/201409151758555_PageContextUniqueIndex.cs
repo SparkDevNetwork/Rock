@@ -66,7 +66,7 @@ namespace Rock.Migrations
         <ol>
         <li>Visit the <a target=""_blank"" href=""https://code.google.com/apis/console"">Google APIs Console</a> and log in with the Google Account you wish to tie the key to (perhaps not your personal account).</li>
         <li>Click the <em>APIs</em> link under APIs & auth from the left-hand menu.</li>
-        <li>Activate the <em>Google Maps JavaScript API v3</em> service.</a></li>
+        <li>Activate the <em>Google Maps JavaScript API v3</em> service.</li>
         <li>Click the <em>Credentials</em> link from the left-hand menu. Your API key is available from the <em>Public API access</em> section. Press the ""Create new Key"" button if you don''t yet have a key. Maps API applications use Maps API applications use the Key for browser apps.</li>
         <li>Enter this key under <span class=""navigation-tip"">Administration > General Settings > Global Attributes > Google API Key</span>.</li>
         </ol>
