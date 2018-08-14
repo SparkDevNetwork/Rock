@@ -1831,16 +1831,26 @@ namespace Rock.Slingshot
             var fileName = Path.Combine( this.SlingshotDirectoryName, new T().GetFileName() );
             if ( File.Exists( fileName ) )
             {
-                using ( var slingshotFileStream = File.OpenText( fileName ) )
+                try
                 {
-                    CsvReader csvReader = new CsvReader( slingshotFileStream );
-                    csvReader.Configuration.HasHeaderRecord = true;
-                    if ( willThrowOnMissingField.HasValue )
+                    using ( var slingshotFileStream = File.OpenText( fileName ) )
                     {
-                        csvReader.Configuration.WillThrowOnMissingField = willThrowOnMissingField.Value;
-                    }
+                        CsvReader csvReader = new CsvReader( slingshotFileStream );
+                        csvReader.Configuration.HasHeaderRecord = true;
+                        if ( willThrowOnMissingField.HasValue )
+                        {
+                            csvReader.Configuration.WillThrowOnMissingField = willThrowOnMissingField.Value;
+                        }
 
-                    return csvReader.GetRecords<T>().ToList();
+                        return csvReader.GetRecords<T>().ToList();
+                    }
+                }
+                catch
+                {
+                    var exceptions = AnalyzeImportFileExceptions<T>( willThrowOnMissingField, fileName );
+                    var exception = new AggregateException( $"File '{Path.GetFileName( fileName )}' cannot be properly read during Slingshot import. See InnerExceptions for line number(s).", exceptions );
+                    ExceptionLogService.LogException( exception );
+                    throw exception;
                 }
             }
             else
@@ -1848,6 +1858,48 @@ namespace Rock.Slingshot
                 return new List<T>();
             }
         }
+
+        /// <summary>
+        /// Process the import file and log all the lines where exceptions occur.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="willThrowOnMissingField">The will throw on missing field.</param>
+        /// <param name="fileName">Name of the file.</param>
+        /// <returns>Exceptions</returns>
+        private static List<Exception> AnalyzeImportFileExceptions<T>( bool? willThrowOnMissingField, string fileName ) where T : SlingshotCore.Model.IImportModel, new()
+        {
+            List<Exception> exceptions = new List<Exception>();
+
+            using ( var slingshotFileStream = File.OpenText( fileName ) )
+            {
+                // Pre process file to see if there are errors.
+                CsvReader csvReader = new CsvReader( slingshotFileStream );
+                csvReader.Configuration.HasHeaderRecord = true;
+                if ( willThrowOnMissingField.HasValue )
+                {
+                    csvReader.Configuration.WillThrowOnMissingField = willThrowOnMissingField.Value;
+                    csvReader.Configuration.IgnoreReadingExceptions = true;
+                }
+
+                // We're just reading these to spot any problems on a particular row.
+                int i = 1; // start count at the header row
+                while ( csvReader.Read() )
+                {
+                    i++;
+                    try
+                    {
+                        var record = csvReader.GetRecord<T>();
+                    }
+                    catch ( Exception ex )
+                    {
+                        exceptions.Add( new CsvBadDataException( $"Line {i} cannot be properly read during Slingshot import.", ex ) );
+                    }
+                }
+            }
+
+            return exceptions;
+        }
+
 
         /// <summary>
         /// Loads the person slingshot lists.
