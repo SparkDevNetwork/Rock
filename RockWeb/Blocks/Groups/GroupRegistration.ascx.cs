@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -56,10 +56,14 @@ namespace RockWeb.Blocks.Groups
     [CustomRadioListField( "Auto Fill Form", "If set to FALSE then the form will not load the context of the logged in user (default: 'True'.)", "true^True,false^False", true, "true", "", 10 )]
     [TextField( "Register Button Alt Text", "Alternate text to use for the Register button (default is 'Register').", false, "", "", 11 )]
     [BooleanField( "Prevent Overcapacity Registrations", "When set to true, user cannot register for groups that are at capacity or whose default GroupTypeRole are at capacity. If only one spot is available, no spouses can be registered.", true, "", 12 )]
+    [BooleanField("Require Email", "Should email be required for registration?", true, key: REQUIRE_EMAIL_KEY )]
+    [BooleanField( "Require Mobile Phone", "Should mobile phone numbers be required for registration?", false, key: REQUIRE_MOBILE_KEY )]
 
     public partial class GroupRegistration : RockBlock
     {
         #region Fields
+        private const string REQUIRE_EMAIL_KEY = "IsRequireEmail";
+        private const string REQUIRE_MOBILE_KEY = "IsRequiredMobile";
 
         RockContext _rockContext = null;
         string _mode = "Simple";
@@ -89,20 +93,6 @@ namespace RockWeb.Blocks.Groups
             get
             {
                 return _mode == "Simple";
-            }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance is full.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is full; otherwise, <c>false</c>.
-        /// </value>
-        protected bool IsFull
-        {
-            get
-            {
-                return _mode == "Full";
             }
         }
 
@@ -423,6 +413,9 @@ namespace RockWeb.Blocks.Groups
                     pnlCol1.RemoveCssClass( "col-md-6" ).AddCssClass( "col-md-12" );
                 }
                 pnlCol2.Visible = IsFullWithSpouse;
+
+                tbEmail.Required = GetAttributeValue( REQUIRE_EMAIL_KEY ).AsBoolean();
+                pnCell.Required = GetAttributeValue( REQUIRE_MOBILE_KEY ).AsBoolean();
 
                 pnlHomePhone.Visible = !IsSimple;
                 pnlCellPhone.Visible = !IsSimple;
