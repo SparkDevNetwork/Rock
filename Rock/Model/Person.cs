@@ -1994,6 +1994,11 @@ namespace Rock.Model
                             }
                         }
 
+                        if ( entry.OriginalValues["RecordStatusValueId"].ToStringSafe().AsIntegerOrNull() != RecordStatusReasonValueId )
+                        {
+                            RecordStatusLastModifiedDateTime = RockDateTime.Now;
+                        }
+
                         break;
                     }
 
