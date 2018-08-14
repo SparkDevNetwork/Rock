@@ -43,7 +43,7 @@
                 <asp:LinkButton runat="server" Visible="false" ID="btnSms" CssClass="btn btn-xs btn-info js-btn-sms" OnClick="btnSms_Click" >Send SMS</asp:LinkButton>
 
                 <!-- During entry -->
-                <textarea runat="server" rows="4" cols="30" id="tbSmsMessage" visible="false" placeholder="Your message here" class="js-sms-message"></textarea> <br />
+                <textarea runat="server" rows="3" cols="30" id="tbSmsMessage" visible="false" placeholder="Your message here" class="js-sms-message"></textarea> <br />
                 <asp:LinkButton runat="server" Visible="false" ID="btnSmsSend" CssClass="btn btn-xs btn-default js-btn-send" OnClick="btnSend_Click">Send</asp:LinkButton>
                 <asp:LinkButton runat="server" Visible="false" ID="btnSmsCancel" OnClick="btnSmsCancel_Click">Cancel</asp:LinkButton>
             </div>

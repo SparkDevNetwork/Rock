@@ -238,7 +238,12 @@ namespace RockWeb.Blocks.CheckIn.Manager
             if ( message.IsNullOrWhiteSpace() || !definedValueGuid.HasValue )
             {
                 ResetSms();
-                DisplayResult( NotificationBoxType.Danger, "Error sending message. Please try again." );
+                DisplayResult( NotificationBoxType.Danger, "Error sending message. Please try again or contact an administrator if the error continues." );
+                if ( !definedValueGuid.HasValue )
+                {
+                    LogException( new Exception( string.Format( "While trying to send an SMS from the Check-in Manager, the following error occurred: There is a misconfiguration with the {0} setting.", SMS_FROM_KEY ) ) );
+                }
+
                 return;
             }
 
@@ -270,7 +275,9 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             if ( errorMessages.Any() )
             {
-                DisplayResult( NotificationBoxType.Danger, "Error sending message. Please try again." );
+                DisplayResult( NotificationBoxType.Danger, "Error sending message. Please try again or contact an administrator if the error continues." );
+                LogException( new Exception( string.Format( "While trying to send an SMS from the Check-in Manager, the following error(s) occurred: {0}", string.Join( "; ", errorMessages ) ) ) );
+                return;
             }
 
             DisplayResult( NotificationBoxType.Success, "Message sent." );
