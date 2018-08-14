@@ -29,7 +29,7 @@ namespace Rock.SystemKey
         public const string GENDER_AUTO_FILL_CONFIDENCE = "core_GenderAutoFillConfidence";
 
         /// <summary>
-        /// The minimum distance in miles person/family has to have moved before automatically inactivatingn their record
+        /// The minimum distance in miles person/family has to have moved before automatically inactivating their record
         /// </summary>
         public const string NCOA_MINIMUM_MOVE_DISTANCE_TO_INACTIVATE = "core_MinimumMoveDistanceToInactivate";
 
@@ -95,7 +95,7 @@ namespace Rock.SystemKey
         public const string REDIS_CONNECTION_STRING = "RedisConnectionString";
 
         /// <summary>
-        /// Comma seperated list of Redis endpoints (e.g. server.com:6379)
+        /// Comma separated list of Redis endpoints (e.g. server.com:6379)
         /// </summary>
         public const string REDIS_ENDPOINT_LIST = "RedisEndpointList";
 
@@ -109,5 +109,14 @@ namespace Rock.SystemKey
         /// </summary>
         public const string REDIS_DATABASE_NUMBER = "RedisDatabaseNumber";
 
+        /// <summary>
+        /// Settings for Spark Data NCOA
+        /// </summary>
+        public const string SPARK_DATA_NCOA = "core_SparkDataNcoa";
+
+        /// <summary>
+        /// Settings for Spark Data
+        /// </summary>
+        public const string SPARK_DATA = "core_SparkData";
     }
 }
