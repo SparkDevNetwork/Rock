@@ -45,6 +45,7 @@ namespace RockWeb.Blocks.Reporting
     [LinkedPage( "Report Detail Page", "The page to display a report.", false, order: 1 )]
     [LinkedPage( "Group Detail Page", "The page to display a group.", false, order: 2 )]
     [IntegerField( "Database Timeout", "The number of seconds to wait before reporting a database timeout.", false, 180, order: 3 )]
+    [LinkedPage( "Report Detail Page", "Page used to create new report.", false, order: 4 )]
     public partial class DataViewDetail : RockBlock, IDetailBlock
     {
         #region Properties
@@ -225,7 +226,7 @@ $(document).ready(function() {
         {
             // Create a new Data View using the current item as a template.
             var id = int.Parse( hfDataViewId.Value );
-            
+
             var dataViewService = new DataViewService( new RockContext() );
 
             var newItem = dataViewService.GetNewFromTemplate( id );
@@ -293,7 +294,7 @@ $(document).ready(function() {
             dataView.PersistedScheduleIntervalMinutes = nbPersistedScheduleIntervalMinutes.Text.AsIntegerOrNull();
 
             var newDataViewFilter = ReportingHelper.GetFilterFromControls( phFilters );
-            
+
             if ( !Page.IsValid )
             {
                 return;
@@ -321,10 +322,10 @@ $(document).ready(function() {
 
                     dataView.DataViewFilterId = null;
                     rockContext.SaveChanges();
-                    
+
                     DeleteDataViewFilter( origDataViewFilter, dataViewFilterService );
                 }
-                
+
                 dataView.DataViewFilter = newDataViewFilter;
                 rockContext.SaveChanges();
             } );
@@ -416,7 +417,7 @@ $(document).ready(function() {
                 else
                 {
                     categoryId = dataView.CategoryId;
-                    
+
                     // delete report filter
                     try
                     {
@@ -453,6 +454,23 @@ $(document).ready(function() {
         protected void btnToggleResults_Click( object sender, EventArgs e )
         {
             this.ShowResults = !this.ShowResults;
+        }
+
+
+        /// <summary>
+        /// Handles the Click event of the lbCreateReport control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbCreateReport_Click( object sender, EventArgs e )
+        {
+            var queryParams = new Dictionary<string, string>();
+            queryParams.Add( "reportId", "0" );
+            if ( hfDataViewId.ValueAsInt() != default( int ) )
+            {
+                queryParams.Add( "dataViewId", hfDataViewId.ValueAsInt().ToString() );
+            }
+            NavigateToLinkedPage( "ReportDetailPage", queryParams );
         }
 
         #endregion
@@ -607,6 +625,11 @@ $(document).ready(function() {
                 lActionTitle.Text = ActionTitle.Add( DataView.FriendlyTypeName ).FormatAsHtmlTitle();
             }
 
+            if ( dataView.Id == default( int ) || string.IsNullOrWhiteSpace( GetAttributeValue( "ReportDetailPage" ) ) )
+            {
+                lbCreateReport.Visible = false;
+            }
+
             SetEditMode( true );
             LoadDropDowns( dataView );
 
@@ -640,6 +663,10 @@ $(document).ready(function() {
             hfDataViewId.SetValue( dataView.Id );
             lReadOnlyTitle.Text = dataView.Name.FormatAsHtmlTitle();
             hlblDataViewId.Text = "Id: " + dataView.Id.ToString();
+            if ( dataView.Id == default( int ) || string.IsNullOrWhiteSpace( GetAttributeValue( "ReportDetailPage" ) ) )
+            {
+                lbViewCreateReport.Visible = false;
+            }
 
             lDescription.Text = dataView.Description.ConvertMarkdownToHtml();
 
@@ -825,7 +852,7 @@ $(document).ready(function() {
         private void ShowPreview( DataView dataView )
         {
             BindGrid( gPreview, dataView, 15 );
-            
+
             modalPreview.Show();
         }
 
@@ -877,7 +904,7 @@ $(document).ready(function() {
                             {
                                 qry = qry.Take( fetchRowCount.Value );
                             }
-                        
+
                             grid.SetLinqDataSource( qry.AsNoTracking() );
                             grid.DataBind();
                         }
@@ -996,7 +1023,7 @@ $(document).ready(function() {
         {
             FilterGroup groupControl = sender as FilterGroup;
             FilterGroup childGroupControl = new FilterGroup();
-            
+
             childGroupControl.AddFilterClick += groupControl_AddFilterClick;
             childGroupControl.AddGroupClick += groupControl_AddGroupClick;
             childGroupControl.DeleteGroupClick += groupControl_DeleteGroupClick;
@@ -1096,7 +1123,7 @@ $(document).ready(function() {
                     filterControl.Expanded = filter.Expanded;
                     if ( setSelection )
                     {
-                        try 
+                        try
                         {
                             filterControl.SetSelection( filter.Selection );
                         }

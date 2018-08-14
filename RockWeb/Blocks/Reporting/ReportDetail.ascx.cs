@@ -1092,14 +1092,30 @@ namespace RockWeb.Blocks.Reporting
             tbName.Text = report.Name;
             tbDescription.Text = report.Description;
             cpCategory.SetValue( report.CategoryId );
-            etpEntityType.SelectedEntityTypeId = report.EntityTypeId;
+
+            RockContext rockContext = new RockContext();
+
+            var dataViewId = report.DataViewId;
+            var entityTypeId = report.EntityTypeId;
+
+            if ( report.Id == default( int ) )
+            {
+                dataViewId = PageParameter( "dataViewId" ).AsIntegerOrNull();
+                var dataView = new DataViewService( rockContext ).Get( dataViewId.Value );
+                if ( dataView != null )
+                {
+                    entityTypeId = dataView.EntityTypeId;
+                }
+            }
+
+            etpEntityType.SelectedEntityTypeId = entityTypeId;
             UpdateControlsForEntityType( etpEntityType.SelectedEntityTypeId );
-            dvpDataView.SetValue( report.DataViewId );
+            dvpDataView.SetValue( dataViewId );
             nbFetchTop.Text = report.FetchTop.ToString();
             tbQueryHint.Text = report.QueryHint;
 
             ReportFieldsDictionary = new List<ReportFieldInfo>();
-            RockContext rockContext = new RockContext();
+            
 
             kvSortFields.CustomKeys = new Dictionary<string, string>();
             kvSortFields.CustomValues = new Dictionary<string, string>();
