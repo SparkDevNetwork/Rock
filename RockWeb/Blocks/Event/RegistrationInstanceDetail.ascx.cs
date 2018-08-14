@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -1283,7 +1283,7 @@ namespace RockWeb.Blocks.Event
                         var addressField = e.Row.FindControl( "lRegistrantsAddress" ) as Literal ?? e.Row.FindControl( "lGroupPlacementsAddress" ) as Literal;
                         if ( addressField != null )
                         {
-                            addressField.Text = location != null && location.FormattedAddress.IsNotNullOrWhitespace() ? location.FormattedAddress : string.Empty;
+                            addressField.Text = location != null && location.FormattedAddress.IsNotNullOrWhiteSpace() ? location.FormattedAddress : string.Empty;
                         }
                     }
                 }
@@ -2276,7 +2276,7 @@ namespace RockWeb.Blocks.Event
                 if ( lAddress != null && _homeAddresses.Count() > 0 )
                 {
                     var location = _homeAddresses[registrant.PersonId.Value];
-                    lAddress.Text = location != null && location.FormattedAddress.IsNotNullOrWhitespace() ? location.FormattedAddress : string.Empty;
+                    lAddress.Text = location != null && location.FormattedAddress.IsNotNullOrWhiteSpace() ? location.FormattedAddress : string.Empty;
                 }
 
 
@@ -4678,7 +4678,7 @@ namespace RockWeb.Blocks.Event
             cblFeeOptions.Items.Clear();
 
             string feeId = ddlFeeName.SelectedValue;
-            if ( feeId.IsNotNullOrWhitespace() )
+            if ( feeId.IsNotNullOrWhiteSpace() )
             {
                 var registrationTemplateFeeService = new RegistrationTemplateFeeService( new RockContext() );
                 var fees = registrationTemplateFeeService.GetParsedFeeOptionsWithoutCost( feeId.AsInteger() );
@@ -4738,7 +4738,7 @@ namespace RockWeb.Blocks.Event
             {
                 data = data.Where( r => r.DiscountCode == ddlDiscountCode.SelectedItem.Text );
             }
-            else if ( tbDiscountCodeSearch.Text.IsNotNullOrWhitespace() )
+            else if ( tbDiscountCodeSearch.Text.IsNotNullOrWhiteSpace() )
             {
                 System.Text.RegularExpressions.Regex regex = new System.Text.RegularExpressions.Regex( tbDiscountCodeSearch.Text.ToLower() );
                 data = data.Where( r => regex.IsMatch( r.DiscountCode.ToLower()) );
