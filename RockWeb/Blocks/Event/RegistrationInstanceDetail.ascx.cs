@@ -4188,6 +4188,8 @@ namespace RockWeb.Blocks.Event
 
                             case RegistrationPersonFieldType.MobilePhone:
                                 var mobileLabel = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Value;
+                                mobileLabel = mobileLabel.Trim().EndsWith( "Phone" ) ? mobileLabel : mobileLabel + " Phone";
+
                                 var tbRegistrantsMobilePhoneFilter = new RockTextBox();
                                 tbRegistrantsMobilePhoneFilter.ID = "tbRegistrantsMobilePhoneFilter";
                                 tbRegistrantsMobilePhoneFilter.Label = mobileLabel;
@@ -4234,9 +4236,12 @@ namespace RockWeb.Blocks.Event
                                 break;
 
                             case RegistrationPersonFieldType.HomePhone:
+                                var homePhoneLabel = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ).Value;
+                                homePhoneLabel = homePhoneLabel.Trim().EndsWith( "Phone" ) ? homePhoneLabel : homePhoneLabel + " Phone";
+
                                 var tbRegistrantsHomePhoneFilter = new RockTextBox();
                                 tbRegistrantsHomePhoneFilter.ID = "tbRegistrantsHomePhoneFilter";
-                                tbRegistrantsHomePhoneFilter.Label = "Home Phone";
+                                tbRegistrantsHomePhoneFilter.Label = homePhoneLabel;
 
                                 if ( setValues )
                                 {
@@ -4247,7 +4252,7 @@ namespace RockWeb.Blocks.Event
 
                                 var tbGroupPlacementsHomePhoneFilter = new RockTextBox();
                                 tbGroupPlacementsHomePhoneFilter.ID = "tbGroupPlacementsHomePhoneFilter";
-                                tbGroupPlacementsHomePhoneFilter.Label = "Home Phone";
+                                tbGroupPlacementsHomePhoneFilter.Label = homePhoneLabel;
 
                                 if ( setValues )
                                 {
@@ -4258,23 +4263,23 @@ namespace RockWeb.Blocks.Event
 
                                 var tbWaitlistHomePhoneFilter = new RockTextBox();
                                 tbWaitlistHomePhoneFilter.ID = "tbWaitlistHomePhoneFilter";
-                                tbWaitlistHomePhoneFilter.Label = "Home Phone";
+                                tbWaitlistHomePhoneFilter.Label = homePhoneLabel;
                                 tbWaitlistHomePhoneFilter.Text = fRegistrants.GetUserPreference( "WL-HomePhone" );
                                 phWaitListFormFieldFilters.Controls.Add( tbWaitlistHomePhoneFilter );
 
                                 var homePhoneNumbersField = new RockLiteralField();
                                 homePhoneNumbersField.ID = "lRegistrantsHomePhone";
-                                homePhoneNumbersField.HeaderText = "Home Phone";
+                                homePhoneNumbersField.HeaderText = homePhoneLabel;
                                 gRegistrants.Columns.Add( homePhoneNumbersField );
 
                                 var homePhoneNumbersField2 = new RockLiteralField();
                                 homePhoneNumbersField2.ID = "lGroupPlacementsHomePhone";
-                                homePhoneNumbersField2.HeaderText = "Home Phone";
+                                homePhoneNumbersField2.HeaderText = homePhoneLabel;
                                 gGroupPlacements.Columns.Add( homePhoneNumbersField2 );
 
                                 var homePhoneNumbersField3 = new RockLiteralField();
                                 homePhoneNumbersField3.ID = "lWaitlistHomePhone";
-                                homePhoneNumbersField3.HeaderText = "Home Phone";
+                                homePhoneNumbersField3.HeaderText = homePhoneLabel;
                                 gWaitList.Columns.Add( homePhoneNumbersField3 );
 
                                 break;
