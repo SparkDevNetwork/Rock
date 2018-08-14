@@ -62,7 +62,7 @@ namespace RockWeb
                         // The invoke does NOT work;
                         // it throws "Object does not match target type"             
                         string url = methodInfo.Invoke( classInstance, parametersArray ).ToStringSafe();
-                        if ( url.IsNotNullOrWhitespace() )
+                        if ( url.IsNotNullOrWhiteSpace() )
                         {
                             try
                             {

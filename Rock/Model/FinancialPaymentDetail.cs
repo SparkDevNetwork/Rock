@@ -296,7 +296,7 @@ namespace Rock.Model
         /// <param name="rockContext">The rock context.</param>
         public void SetFromPaymentInfo( PaymentInfo paymentInfo, GatewayComponent paymentGateway, RockContext rockContext ) 
         {
-            if ( AccountNumberMasked.IsNullOrWhiteSpace() && paymentInfo.MaskedNumber.IsNotNullOrWhitespace() )
+            if ( AccountNumberMasked.IsNullOrWhiteSpace() && paymentInfo.MaskedNumber.IsNotNullOrWhiteSpace() )
             {
                 AccountNumberMasked = paymentInfo.MaskedNumber;
             }
@@ -319,7 +319,7 @@ namespace Rock.Model
                 var newLocation = new LocationService( rockContext ).Get(
                     ccPaymentInfo.BillingStreet1, ccPaymentInfo.BillingStreet2, ccPaymentInfo.BillingCity, ccPaymentInfo.BillingState, ccPaymentInfo.BillingPostalCode, ccPaymentInfo.BillingCountry );
 
-                if ( NameOnCard.IsNullOrWhiteSpace() && NameOnCard.IsNotNullOrWhitespace() )
+                if ( NameOnCard.IsNullOrWhiteSpace() && NameOnCard.IsNotNullOrWhiteSpace() )
                 {
                     NameOnCardEncrypted = Encryption.EncryptString( nameOnCard );
                 }
@@ -343,7 +343,7 @@ namespace Rock.Model
             {
                 var swipePaymentInfo = (SwipePaymentInfo)paymentInfo;
 
-                if ( NameOnCard.IsNullOrWhiteSpace() && NameOnCard.IsNotNullOrWhitespace() )
+                if ( NameOnCard.IsNullOrWhiteSpace() && NameOnCard.IsNotNullOrWhiteSpace() )
                 {
                     NameOnCardEncrypted = Encryption.EncryptString( swipePaymentInfo.NameOnCard );
                 }

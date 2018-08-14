@@ -1242,7 +1242,7 @@ namespace Rock.Lava
             int? month;
             int? year;
 
-            if (input.ToString().IsNotNullOrWhitespace() )
+            if (input.ToString().IsNotNullOrWhiteSpace() )
             {
                 DateTime? date;
 
@@ -3245,7 +3245,7 @@ namespace Rock.Lava
                 userName = option1 ?? option2;
             }
 
-            if ( userName.IsNotNullOrWhitespace() )
+            if ( userName.IsNotNullOrWhiteSpace() )
             {
                 // if userName was specified, don't return anything if the currentPerson doesn't have a matching userName
                 var currentPerson = GetCurrentPerson( context );
@@ -3313,11 +3313,11 @@ namespace Rock.Lava
             if ( input.StartsWith( "~~" ) )
             {
                 string theme = "Rock";
-                if ( page.Theme.IsNotNullOrWhitespace() )
+                if ( page.Theme.IsNotNullOrWhiteSpace() )
                 {
                     theme = page.Theme;
                 }
-                else if ( page.Site != null && page.Site.Theme.IsNotNullOrWhitespace() )
+                else if ( page.Site != null && page.Site.Theme.IsNotNullOrWhiteSpace() )
                 {
                     theme = page.Site.Theme;
                 }

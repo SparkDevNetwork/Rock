@@ -135,7 +135,7 @@ namespace Rock.Communication.Transport
                     restRequest.AddParameter( "domian", GetAttributeValue("Domain"), ParameterType.UrlSegment );
 
                     // Reply To
-                    if ( emailMessage.ReplyToEmail.IsNotNullOrWhitespace() )
+                    if ( emailMessage.ReplyToEmail.IsNotNullOrWhiteSpace() )
                     {
                         // Resolve any possible merge fields in the replyTo address
                         restRequest.AddParameter( "h:Reply-To", emailMessage.ReplyToEmail.ResolveMergeFields( mergeFields, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands ) );
@@ -290,7 +290,7 @@ namespace Rock.Communication.Transport
                 Parameter replyTo = new Parameter();
                 
                 // Reply To
-                if ( communication.ReplyToEmail.IsNotNullOrWhitespace() )
+                if ( communication.ReplyToEmail.IsNotNullOrWhiteSpace() )
                 {
                     // Resolve any possible merge fields in the replyTo address
                     replyTo.Name = "h:Reply-To";
@@ -334,7 +334,7 @@ namespace Rock.Communication.Transport
                         restRequest.AddParameter( "domian", GetAttributeValue( "Domain" ), ParameterType.UrlSegment );
 
                         // ReplyTo
-                        if ( communication.ReplyToEmail.IsNotNullOrWhitespace() )
+                        if ( communication.ReplyToEmail.IsNotNullOrWhiteSpace() )
                         {
                             restRequest.AddParameter( replyTo );
                         }
@@ -349,7 +349,7 @@ namespace Rock.Communication.Transport
                         CheckSafeSender( restRequest, fromAddress, globalAttributes.GetValue( "OrganizationEmail" ) );
 
                         // CC
-                        if ( communication.CCEmails.IsNotNullOrWhitespace() )
+                        if ( communication.CCEmails.IsNotNullOrWhiteSpace() )
                         {
                             string ccRecipients = communication.CCEmails.ResolveMergeFields( mergeObjects, currentPerson );
                             foreach ( var ccRecipient in ccRecipients )
@@ -359,7 +359,7 @@ namespace Rock.Communication.Transport
                         }
 
                         // BCC
-                        if ( communication.BCCEmails.IsNotNullOrWhitespace() )
+                        if ( communication.BCCEmails.IsNotNullOrWhiteSpace() )
                         {
                             string bccRecipients = communication.CCEmails.ResolveMergeFields( mergeObjects, currentPerson );
                             foreach ( var bccRecipient in bccRecipients )

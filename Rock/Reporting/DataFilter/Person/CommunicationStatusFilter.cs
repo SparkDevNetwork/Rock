@@ -134,7 +134,7 @@ namespace Rock.Reporting.DataFilter.Person
             if ( selectionValues.Length >= 2 )
             {
                 var communicationIdText = selectionValues[0];
-                if ( communicationIdText.IsNotNullOrWhitespace() )
+                if ( communicationIdText.IsNotNullOrWhiteSpace() )
                 {
                     result += $" on Communication Id '{communicationIdText}'";
                 }

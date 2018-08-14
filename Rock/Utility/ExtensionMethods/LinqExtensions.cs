@@ -566,7 +566,7 @@ namespace Rock
         /// <param name="replace">if set to <c>true</c> [replace].</param>
         public static void AddIfNotBlank( this IDictionary<string, string> dictionary, string key, string value, bool replace = true ) 
         {
-            if ( value.IsNotNullOrWhitespace() )
+            if ( value.IsNotNullOrWhiteSpace() )
             {
                 if ( !dictionary.ContainsKey( key ) )
                 {

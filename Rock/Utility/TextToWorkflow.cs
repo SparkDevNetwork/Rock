@@ -155,7 +155,7 @@ namespace Rock.Utility
 
                     // Set the workflow name
                     var name = nameTemplate.ResolveMergeFields( mergeValues );
-                    if ( name.IsNotNullOrWhitespace() )
+                    if ( name.IsNotNullOrWhiteSpace() )
                     {
                         workflow.Name = name;
                     }
