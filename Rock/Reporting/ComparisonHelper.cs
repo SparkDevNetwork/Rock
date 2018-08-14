@@ -124,6 +124,10 @@ namespace Rock.Reporting
                     {
                         comparisonExpression = upperComparisonExpression;
                     }
+                    else
+                    {
+                        return Expression.Constant( true );
+                    }
                 }
             }
             else if ( comparisonType == ComparisonType.IsBlank )
