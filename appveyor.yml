@@ -22,7 +22,7 @@ branches:
 skip_tags: true
 
 # operating system (build VM template)
-image: Visual Studio 2015
+image: Visual Studio 2017
 configuration: Release
 platform: Any CPU
 
