@@ -904,7 +904,7 @@ namespace RockWeb.Blocks.Event
                 }
                 else
                 {
-                    ShowError( "Please Correct the Following", string.Format( "<ul><li>{0}</li></ul>", summaryErrors.AsDelimited( "</li><li>" ) ) );
+                    ShowError( "Please correct the following:", string.Format( "<ul><li>{0}</li></ul>", summaryErrors.AsDelimited( "</li><li>" ) ) );
                     ShowSummary();
                 }
             }

@@ -43,7 +43,7 @@
             <Rock:ModalDialog ID="modalAddPerson" runat="server" Title="Add Relationship" ValidationGroup="NewRelationship">
                 <Content>
 
-                    <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" ValidationGroup="NewRelationship" />
+                    <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="NewRelationship" />
 
                     <div id="divExistingPerson" runat="server">
                         <fieldset>

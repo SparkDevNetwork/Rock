@@ -42,7 +42,7 @@
 
                 <div id="pnlEditDetails" runat="server">
 
-                    <asp:ValidationSummary ID="valAccountDetail" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                    <asp:ValidationSummary ID="valAccountDetail" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                     <asp:CustomValidator ID="cvAccount" runat="server" Display="None" />
 
                     <div class="row">

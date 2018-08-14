@@ -1429,7 +1429,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
 
             if ( errorMessages.Any() )
             {
-                nbError.Title = "Please Correct the Following";
+                nbError.Title = "Please correct the following:";
                 nbError.Text = string.Format( "<ul><li>{0}</li></ul>", errorMessages.AsDelimited( "</li><li>" ) );
                 nbError.Visible = true;
 

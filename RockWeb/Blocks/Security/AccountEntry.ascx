@@ -60,7 +60,7 @@
 <ContentTemplate>
 
     <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert alert-validation"/>
-    <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation"/>
+    <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation"/>
 
     <asp:PlaceHolder ID="phUserInfo" runat="server" Visible="true">
 
