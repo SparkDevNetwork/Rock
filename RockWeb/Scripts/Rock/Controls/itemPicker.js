@@ -57,7 +57,7 @@
                     preventDefaultException: { tagName: /.*/ }
                 });
 
-                // Since some hanlers are "live" events, they need to be bound before tree is initialized
+                // Since some handlers are "live" events, they need to be bound before tree is initialized
                 this.initializeEventHandlers();
 
                 if ($hfItemIds.val() && $hfItemIds !== '0') {
