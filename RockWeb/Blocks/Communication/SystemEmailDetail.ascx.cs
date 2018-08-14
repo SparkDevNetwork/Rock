@@ -169,6 +169,9 @@ namespace RockWeb.Blocks.Communication
 
             if ( emailTemplate != null )
             {
+                pdAuditDetails.Visible = true;
+                pdAuditDetails.SetEntity( emailTemplate, ResolveRockUrl( "~" ) );
+
                 lActionTitle.Text = ActionTitle.Edit( SystemEmail.FriendlyTypeName ).FormatAsHtmlTitle();
                 hfEmailTemplateId.Value = emailTemplate.Id.ToString();
 
@@ -184,6 +187,7 @@ namespace RockWeb.Blocks.Communication
             }
             else
             {
+                pdAuditDetails.Visible = false;
                 lActionTitle.Text = ActionTitle.Add( SystemEmail.FriendlyTypeName ).FormatAsHtmlTitle();
                 hfEmailTemplateId.Value = 0.ToString();
 
