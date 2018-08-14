@@ -31,6 +31,7 @@ using Rock.Web.Cache;
 using Rock.Web;
 using Rock.Communication;
 using System.Data.Entity;
+using System.Text;
 
 namespace Rock.Jobs
 {
@@ -114,9 +115,25 @@ namespace Rock.Jobs
 
                 var emailMessage = new RockEmailMessage( emailTemplateGuid.Value );
                 emailMessage.SetRecipients( recipients );
-                emailMessage.Send();
+
+                var errors = new List<string>();
+                emailMessage.Send(out errors);
 
                 context.Result = string.Format( "{0} emails sent", recipients.Count() );
+
+                if ( errors.Any() )
+                {
+                    StringBuilder sb = new StringBuilder();
+                    sb.AppendLine();
+                    sb.Append( string.Format( "{0} Errors: ", errors.Count() ) );
+                    errors.ForEach( e => { sb.AppendLine(); sb.Append( e ); } );
+                    string errorMessage = sb.ToString();
+                    context.Result += errorMessage;
+                    var exception = new Exception( errorMessage );
+                    HttpContext context2 = HttpContext.Current;
+                    ExceptionLogService.LogException( exception, context2 );
+                    throw exception;
+                }
             }
         }
     }
