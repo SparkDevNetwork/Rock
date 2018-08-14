@@ -321,7 +321,7 @@ namespace Rock.Reporting
                 {
                     // configure reports request
                     System.Net.WebRequest request;
-                    if ( groupId.IsNotNullOrWhitespace() )
+                    if ( groupId.IsNotNullOrWhiteSpace() )
                     {
                         request = System.Net.WebRequest.Create( $"{_baseUri}groups/{groupId}/reports" ) as System.Net.HttpWebRequest;
                     }

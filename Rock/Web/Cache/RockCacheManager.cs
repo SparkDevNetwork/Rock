@@ -120,7 +120,7 @@ namespace Rock.Web.Cache
                 {
                     redisConfig.WithAllowAdmin().WithDatabase( redisDbIndex );
 
-                    if( redisPassword.IsNotNullOrWhitespace() )
+                    if( redisPassword.IsNotNullOrWhiteSpace() )
                     {
                         redisConfig.WithPassword( redisPassword );
                     }
@@ -190,21 +190,21 @@ namespace Rock.Web.Cache
             // If an expiration timespan was specific, will need to use a CacheItem to add item to cache.
             if ( expiration != TimeSpan.MaxValue )
             {
-                var cacheItem = region.IsNotNullOrWhitespace() ? Cache.GetCacheItem( key, region ) : Cache.GetCacheItem( key );
+                var cacheItem = region.IsNotNullOrWhiteSpace() ? Cache.GetCacheItem( key, region ) : Cache.GetCacheItem( key );
                 if ( cacheItem != null )
                 {
                     Cache.Put( cacheItem.WithAbsoluteExpiration( expiration ) );
                 }
                 else
                 {
-                    cacheItem = region.IsNotNullOrWhitespace() ?
+                    cacheItem = region.IsNotNullOrWhiteSpace() ?
                         new CacheItem<T>( key, region, updateValue, ExpirationMode.Absolute, expiration ) :
                         new CacheItem<T>( key, updateValue, ExpirationMode.Absolute, expiration );
                     Cache.Add( cacheItem );
                 }
             }
 
-            if ( region.IsNotNullOrWhitespace() )
+            if ( region.IsNotNullOrWhiteSpace() )
             {
                 Cache.AddOrUpdate( key, region, updateValue, v => updateValue );
             }

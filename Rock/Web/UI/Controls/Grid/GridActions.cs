@@ -78,7 +78,7 @@ namespace Rock.Web.UI.Controls
             get 
             {
                 // if the Grid has the PersonIdField set, default ShowCommunicate to True
-                bool hasPersonIdField = _parentGrid.CommunicationRecipientPersonIdFields.Any() || _parentGrid.PersonIdField.IsNotNullOrWhitespace();
+                bool hasPersonIdField = _parentGrid.CommunicationRecipientPersonIdFields.Any() || _parentGrid.PersonIdField.IsNotNullOrWhiteSpace();
 
                 return ViewState["ShowCommunicate"] as bool? ?? hasPersonIdField; 
             }
@@ -100,7 +100,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 // if the Grid has the PersonIdField set, default ShowMergePerson to True
-                bool hasPersonIdField = _parentGrid.PersonIdField.IsNotNullOrWhitespace();
+                bool hasPersonIdField = _parentGrid.PersonIdField.IsNotNullOrWhiteSpace();
 
                 return ViewState["ShowMergePerson"] as bool? ?? hasPersonIdField;
             }
@@ -122,7 +122,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 // if the Grid has the PersonIdField set, default ShowBulkUpdate to True
-                bool hasPersonIdField = _parentGrid.PersonIdField.IsNotNullOrWhitespace();
+                bool hasPersonIdField = _parentGrid.PersonIdField.IsNotNullOrWhiteSpace();
 
                 return ViewState["ShowBulkUpdate"] as bool? ?? hasPersonIdField;
             }

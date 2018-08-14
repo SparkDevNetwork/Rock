@@ -349,7 +349,7 @@ namespace Rock.Model
                             transaction.StatusMessage = payment.StatusMessage;
                             transaction.FinancialPaymentDetail = new FinancialPaymentDetail();
 
-                            if ( payment.ForeignKey.IsNotNullOrWhitespace() )
+                            if ( payment.ForeignKey.IsNotNullOrWhiteSpace() )
                             {
                                 transaction.ForeignKey = payment.ForeignKey;
                             }

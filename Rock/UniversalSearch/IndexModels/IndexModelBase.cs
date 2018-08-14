@@ -123,7 +123,7 @@ namespace Rock.UniversalSearch.IndexModels
             if ( sourceModelEntity != null ) {
                 var template = sourceModelEntity.IndexResultTemplate;
 
-                if ( template.IsNotNullOrWhitespace() )
+                if ( template.IsNotNullOrWhiteSpace() )
                 {
                     if ( mergeFields == null)
                     {
@@ -154,7 +154,7 @@ namespace Rock.UniversalSearch.IndexModels
             {
                 var template = sourceModelEntity.IndexDocumentUrl;
 
-                if ( template.IsNotNullOrWhitespace() )
+                if ( template.IsNotNullOrWhiteSpace() )
                 {
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null );
                     mergeFields.Add( "IndexDocument", this );

@@ -124,7 +124,7 @@ namespace Rock.Workflow.Action
         /// <returns></returns>
         private InteractionChannelCache GetChannel( RockContext rockContext, string identifier )
         {
-            if ( identifier.IsNotNullOrWhitespace() )
+            if ( identifier.IsNotNullOrWhiteSpace() )
             {
                 // Find by Id
                 int? id = identifier.AsIntegerOrNull();
@@ -196,7 +196,7 @@ namespace Rock.Workflow.Action
                     }
                 }
 
-                if ( identifier.IsNotNullOrWhitespace() )
+                if ( identifier.IsNotNullOrWhiteSpace() )
                 {
                     // Find by Id
                     int? id = identifier.AsIntegerOrNull();

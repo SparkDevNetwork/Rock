@@ -166,7 +166,7 @@ namespace Rock.Transactions
             _currentPersonAliasId = rockPage.CurrentPersonAliasId;
 
             var title = string.Empty;
-            if ( rockPage.BrowserTitle.IsNotNullOrWhitespace() )
+            if ( rockPage.BrowserTitle.IsNotNullOrWhiteSpace() )
             {
                 title = rockPage.BrowserTitle;
             }

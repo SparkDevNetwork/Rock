@@ -189,7 +189,7 @@ namespace Rock.Model
         {
             get
             {
-                if ( TimeZoneId.IsNotNullOrWhitespace() )
+                if ( TimeZoneId.IsNotNullOrWhiteSpace() )
                 {
                     var campusTimeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById( TimeZoneId );
                     if ( campusTimeZoneInfo != null )

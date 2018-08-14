@@ -154,7 +154,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static RestControllerCache Get( string className, RockContext rockContext )
         {
-            return className.IsNotNullOrWhitespace()
+            return className.IsNotNullOrWhiteSpace()
                 ? GetOrAddExisting( className, () => QueryDbByClassName( className, rockContext ) ) : null;
         }
 

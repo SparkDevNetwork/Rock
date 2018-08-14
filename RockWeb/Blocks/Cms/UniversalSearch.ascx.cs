@@ -110,7 +110,7 @@ namespace RockWeb.Blocks.Cms
             if ( !Page.IsPostBack )
             {
                 // check if this is a redirect from the smart search of a document
-                if(PageParameter( "DocumentType" ).IsNotNullOrWhitespace() && PageParameter( "DocumentId" ).IsNotNullOrWhitespace() )
+                if(PageParameter( "DocumentType" ).IsNotNullOrWhiteSpace() && PageParameter( "DocumentId" ).IsNotNullOrWhiteSpace() )
                 {
                     RedirectToDocument( PageParameter( "DocumentType" ), PageParameter( "DocumentId" ) );
                 }
@@ -134,7 +134,7 @@ namespace RockWeb.Blocks.Cms
                 var preHtml = GetAttributeValue( "PreHtml" );
                 var postHtml = GetAttributeValue( "PostHtml" );
 
-                if (preHtml.IsNotNullOrWhitespace() || postHtml.IsNotNullOrWhitespace() )
+                if (preHtml.IsNotNullOrWhiteSpace() || postHtml.IsNotNullOrWhiteSpace() )
                 {
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
                     lPreHtml.Text = preHtml.ResolveMergeFields( mergeFields );
@@ -407,7 +407,7 @@ namespace RockWeb.Blocks.Cms
         {
             List<int> selectedEntities = new List<int>();
 
-            if ( PageParameter( "SmartSearch" ).IsNotNullOrWhitespace() )
+            if ( PageParameter( "SmartSearch" ).IsNotNullOrWhiteSpace() )
             {
                 // get entities from smart search config
                 var searchEntitiesSetting = Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchEntities" );
@@ -422,7 +422,7 @@ namespace RockWeb.Blocks.Cms
                 selectedEntities = cblModelFilter.SelectedValuesAsInt;
                 
                 // if no entities from the UI get from the block config
-                if ( selectedEntities.Count == 0 && GetAttributeValue( "EnabledModels" ).IsNotNullOrWhitespace() )
+                if ( selectedEntities.Count == 0 && GetAttributeValue( "EnabledModels" ).IsNotNullOrWhiteSpace() )
                 {
                     selectedEntities = GetAttributeValue( "EnabledModels" ).Split( ',' ).Select( int.Parse ).ToList();
                 }
@@ -439,7 +439,7 @@ namespace RockWeb.Blocks.Cms
         {
             List<FieldValue> fieldValues = new List<FieldValue>();
 
-            if ( PageParameter( "SmartSearch" ).IsNotNullOrWhitespace() )
+            if ( PageParameter( "SmartSearch" ).IsNotNullOrWhiteSpace() )
             {
                 // get the field critiera
                 var fieldCriteriaSetting = Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchFieldCriteria" );
@@ -530,7 +530,7 @@ namespace RockWeb.Blocks.Cms
                 pageReference.Parameters.AddOrReplace("Q", tbSearch.Text);
             }
 
-            if ( PageParameter("SmartSearch").IsNotNullOrWhitespace() && respectSmartSearch )
+            if ( PageParameter("SmartSearch").IsNotNullOrWhiteSpace() && respectSmartSearch )
             {
                 pageReference.Parameters.AddOrReplace( "SmartSearch", "true" );
             }
@@ -544,7 +544,7 @@ namespace RockWeb.Blocks.Cms
             var selectedEntities = cblModelFilter.SelectedValuesAsInt;
 
             // if no entities from the UI get from the block config
-            if ( selectedEntities.Count == 0 && GetAttributeValue( "EnabledModels" ).IsNotNullOrWhitespace() )
+            if ( selectedEntities.Count == 0 && GetAttributeValue( "EnabledModels" ).IsNotNullOrWhiteSpace() )
             {
                 selectedEntities = GetAttributeValue( "EnabledModels" ).Split( ',' ).Select( int.Parse ).ToList();
             }
@@ -646,7 +646,7 @@ namespace RockWeb.Blocks.Cms
 
             // model selector
             var enabledModelIds = new List<int>();
-            if ( GetAttributeValue( "EnabledModels" ).IsNotNullOrWhitespace() )
+            if ( GetAttributeValue( "EnabledModels" ).IsNotNullOrWhiteSpace() )
             {
                 enabledModelIds = GetAttributeValue( "EnabledModels" ).Split( ',' ).Select( int.Parse ).ToList();
             }
@@ -731,7 +731,7 @@ namespace RockWeb.Blocks.Cms
         private void LoadCustomFilters()
         {
             var enabledModelIds = new List<int>();
-            if ( GetAttributeValue( "EnabledModels" ).IsNotNullOrWhitespace() )
+            if ( GetAttributeValue( "EnabledModels" ).IsNotNullOrWhiteSpace() )
             {
                 enabledModelIds = GetAttributeValue( "EnabledModels" ).Split( ',' ).Select( int.Parse ).ToList();
             }
@@ -825,7 +825,7 @@ namespace RockWeb.Blocks.Cms
                  
             var enabledModelIds = new List<int>();
 
-            if ( GetAttributeValue( "EnabledModels" ).IsNotNullOrWhitespace() )
+            if ( GetAttributeValue( "EnabledModels" ).IsNotNullOrWhiteSpace() )
             {
                 enabledModelIds = GetAttributeValue( "EnabledModels" ).Split( ',' ).Select( int.Parse ).ToList();
             }

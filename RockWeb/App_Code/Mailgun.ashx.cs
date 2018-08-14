@@ -105,7 +105,7 @@ public class Mailgun : IHttpHandler
             {
                 // for http sent email, mailgun puts the info as URL encoded JSON into the form key "X-Mailgun-Variables"
                 string mailgunVariables = HttpContext.Current.Server.UrlDecode( request.Form["X-Mailgun-Variables"] );
-                if ( mailgunVariables.IsNotNullOrWhitespace() )
+                if ( mailgunVariables.IsNotNullOrWhiteSpace() )
                 {
                     var mailgunVarDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>( mailgunVariables );
                     actionGuid = mailgunVarDictionary.ContainsKey( "workflow_action_guid" ) ? mailgunVarDictionary["workflow_action_guid"].AsGuidOrNull() : null;

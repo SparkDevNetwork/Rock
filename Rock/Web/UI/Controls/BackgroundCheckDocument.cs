@@ -139,7 +139,7 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 Guid? providerGuid = _componentPicker.SelectedValue.AsGuidOrNull();
-                if ( _textBox.Text.IsNotNullOrWhitespace() && providerGuid.HasValue )
+                if ( _textBox.Text.IsNotNullOrWhiteSpace() && providerGuid.HasValue )
                 {
                     return $"{EntityTypeCache.Get( providerGuid.Value ).Id},{_textBox.Text}";
                 }
@@ -150,7 +150,7 @@ namespace Rock.Web.UI.Controls
             set
             {
                 EnsureChildControls();
-                if ( value.IsNotNullOrWhitespace() )
+                if ( value.IsNotNullOrWhiteSpace() )
                 {
                     var valueSplit = value.Split( ',' );
                     if ( valueSplit != null && valueSplit.Length == 2 )

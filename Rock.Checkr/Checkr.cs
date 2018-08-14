@@ -265,7 +265,7 @@ namespace Rock.Checkr
                 workflow.LoadAttributes();
                 if ( workflow.Attributes.ContainsKey( "ReportStatus" ) )
                 {
-                    if ( workflow.GetAttributeValue( "ReportStatus" ).IsNotNullOrWhitespace() && reportStatus.IsNullOrWhiteSpace() )
+                    if ( workflow.GetAttributeValue( "ReportStatus" ).IsNotNullOrWhiteSpace() && reportStatus.IsNullOrWhiteSpace() )
                     {
                         // Don't override current values if Webhook is older than current values
                         return;
@@ -274,7 +274,7 @@ namespace Rock.Checkr
 
                 if ( workflow.Attributes.ContainsKey( "Report" ) )
                 {
-                    if ( workflow.GetAttributeValue( "Report" ).IsNotNullOrWhitespace() && documentId.IsNullOrWhiteSpace() )
+                    if ( workflow.GetAttributeValue( "Report" ).IsNotNullOrWhiteSpace() && documentId.IsNullOrWhiteSpace() )
                     {
                         // Don't override current values if Webhook is older than current values
                         return;
@@ -292,7 +292,7 @@ namespace Rock.Checkr
 
                 }
                 // Save the report link 
-                if ( documentId.IsNotNullOrWhitespace() )
+                if ( documentId.IsNotNullOrWhiteSpace() )
                 {
                     int entityTypeId = EntityTypeCache.Get( typeof(Checkr) ).Id;
                     if ( SaveAttributeValue( workflow, "Report", $"{entityTypeId},{documentId}",
@@ -361,7 +361,7 @@ namespace Rock.Checkr
                     backgroundCheck.PackageName = packageName;
                 }
 
-                if ( documentId.IsNotNullOrWhitespace() )
+                if ( documentId.IsNotNullOrWhiteSpace() )
                 {
                     backgroundCheck.ResponseId = documentId;
                 }

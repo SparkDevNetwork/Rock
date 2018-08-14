@@ -154,7 +154,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static RestActionCache Get( string apiId, RockContext rockContext )
         {
-            return apiId.IsNotNullOrWhitespace()
+            return apiId.IsNotNullOrWhiteSpace()
                 ? GetOrAddExisting( apiId, () => QueryDbByApiId( apiId, rockContext ) ) : null;
         }
 
