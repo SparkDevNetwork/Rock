@@ -654,7 +654,7 @@ namespace RockWeb.Blocks.Finance
                     var lBatchId = e.Row.FindControl( "lBatchId" ) as Literal;
                     if ( lBatchId != null )
                     {
-                        if ( _batchPageRoute.IsNotNullOrWhitespace() && txn.BatchId.HasValue && !isExporting )
+                        if ( _batchPageRoute.IsNotNullOrWhiteSpace() && txn.BatchId.HasValue && !isExporting )
                         {
                             var cell = e.Row.Cells.OfType<DataControlFieldCell>().Where( a => a == lBatchId.FirstParentControlOfType<DataControlFieldCell>() ).First();
                             cell.RemoveCssClass( "grid-select-cell" );

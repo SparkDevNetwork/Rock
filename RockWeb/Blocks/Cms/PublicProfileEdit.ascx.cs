@@ -284,7 +284,7 @@ namespace RockWeb.Blocks.Cms
             if ( person.BirthDate.HasValue )
             {
                 var formattedAge = person.FormatAge();
-                if ( formattedAge.IsNotNullOrWhitespace() )
+                if ( formattedAge.IsNotNullOrWhiteSpace() )
                 {
                     formattedAge += " old";
                 }

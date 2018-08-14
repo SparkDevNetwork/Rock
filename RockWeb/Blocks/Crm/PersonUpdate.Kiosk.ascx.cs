@@ -350,7 +350,7 @@ namespace RockWeb.Blocks.Crm
             {
                 var receiptEmail = new SystemEmailService( rockContext ).Get( new Guid( GetAttributeValue( "UpdateEmail" ) ) );
 
-                if ( receiptEmail != null && receiptEmail.To.IsNotNullOrWhitespace() )
+                if ( receiptEmail != null && receiptEmail.To.IsNotNullOrWhiteSpace() )
                 {
                     var errorMessages = new List<string>();
                     var message = new RockEmailMessage( receiptEmail );

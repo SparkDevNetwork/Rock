@@ -164,7 +164,7 @@ public class LaunchWorkflow : IHttpHandler
 
         // set workflow name
         string nameTemplate = hook.GetAttributeValue( "WorkflowNameTemplate" ).ResolveMergeFields( mergeFields );
-        if ( nameTemplate.IsNotNullOrWhitespace() )
+        if ( nameTemplate.IsNotNullOrWhiteSpace() )
         {
             workflow.Name = nameTemplate.ResolveMergeFields( mergeFields );
         }
@@ -255,10 +255,10 @@ public class LaunchWorkflow : IHttpHandler
         string response = workflow.GetAttributeValue( "WebhookResponse" );
         string contentType = workflow.GetAttributeValue( "WebhookResponseContentType" );
 
-        if ( response.IsNotNullOrWhitespace() )
+        if ( response.IsNotNullOrWhiteSpace() )
         {
             httpContext.Response.Write( response );
-            httpContext.Response.ContentType = contentType.IsNotNullOrWhitespace() ? contentType : "text/plain";
+            httpContext.Response.ContentType = contentType.IsNotNullOrWhiteSpace() ? contentType : "text/plain";
         }
     }
 

@@ -234,7 +234,7 @@ namespace RockWeb.Blocks.Reporting
                         mergeFields.Add( "PreviousPageNavigateUrl", pageReferencePrev.BuildUrl() );
                     }
 
-                    lContent.Text = interactionChannel.ComponentListTemplate.IsNotNullOrWhitespace() ?
+                    lContent.Text = interactionChannel.ComponentListTemplate.IsNotNullOrWhiteSpace() ?
                         interactionChannel.ComponentListTemplate.ResolveMergeFields( mergeFields ) :
                         GetAttributeValue( "DefaultTemplate" ).ResolveMergeFields( mergeFields );
                 }

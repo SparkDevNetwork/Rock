@@ -1693,7 +1693,7 @@ namespace RockWeb.Blocks.Groups
             string groupMapUrl = LinkedPageUrl( "GroupMapPage", pageParams );
             mergeFields.Add( "GroupMapUrl", groupMapUrl );
 
-            if ( groupMapUrl.IsNotNullOrWhitespace() )
+            if ( groupMapUrl.IsNotNullOrWhiteSpace() )
             {
                 hlMap.Visible = true;
                 hlMap.NavigateUrl = groupMapUrl;
@@ -1705,7 +1705,7 @@ namespace RockWeb.Blocks.Groups
 
             string groupHistoryUrl = LinkedPageUrl( "GroupHistoryPage", pageParams );
             mergeFields.Add( "GroupHistoryUrl", groupHistoryUrl );
-            if ( groupHistoryUrl.IsNotNullOrWhitespace() )
+            if ( groupHistoryUrl.IsNotNullOrWhiteSpace() )
             {
                 hlGroupHistory.Visible = groupType != null && groupType.EnableGroupHistory;
                 hlGroupHistory.NavigateUrl = groupHistoryUrl;
@@ -1725,7 +1725,7 @@ namespace RockWeb.Blocks.Groups
             var groupTypeIdFundraising = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FUNDRAISINGOPPORTUNITY.AsGuid() ).Id;
             var fundraisingGroupTypeIdList = new GroupTypeService( rockContext ).Queryable().Where( a => a.Id == groupTypeIdFundraising || a.InheritedGroupTypeId == groupTypeIdFundraising ).Select( a => a.Id ).ToList();
 
-            if ( fundraisingProgressUrl.IsNotNullOrWhitespace() && fundraisingGroupTypeIdList.Contains( group.GroupTypeId ) )
+            if ( fundraisingProgressUrl.IsNotNullOrWhiteSpace() && fundraisingGroupTypeIdList.Contains( group.GroupTypeId ) )
             {
                 hlFundraisingProgress.NavigateUrl = fundraisingProgressUrl;
                 hlFundraisingProgress.Visible = true;

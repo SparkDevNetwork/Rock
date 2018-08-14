@@ -504,7 +504,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="eventArgument">A <see cref="T:System.String" /> that represents an optional event argument to be passed to the event handler.</param>
         public void RaisePostBackEvent( string eventArgument )
         {
-            if ( eventArgument == "StatusUpdate" && hfAction.Value.IsNotNullOrWhitespace() )
+            if ( eventArgument == "StatusUpdate" && hfAction.Value.IsNotNullOrWhiteSpace() )
             {
                 var batchesSelected = new List<int>();
 

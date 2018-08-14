@@ -479,7 +479,7 @@ namespace RockWeb.Blocks.Finance
             StringBuilder headers = new StringBuilder();
             foreach ( var tableColumn in tableColumns )
             {
-                if ( tableColumn.HeaderStyle.CssClass.IsNotNullOrWhitespace() )
+                if ( tableColumn.HeaderStyle.CssClass.IsNotNullOrWhiteSpace() )
                 {
                     headers.AppendFormat( "<th class='{0}'>{1}</th>", tableColumn.HeaderStyle.CssClass, tableColumn.HeaderText );
                 }
@@ -601,7 +601,7 @@ namespace RockWeb.Blocks.Finance
                             // Resolve any dynamic url references
                             lavaOutput = lavaOutput.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
 
-                            if ( lavaField.ItemStyle.CssClass.IsNotNullOrWhitespace() )
+                            if ( lavaField.ItemStyle.CssClass.IsNotNullOrWhiteSpace() )
                             {
                                 literalControl.Text = string.Format( "<td class='{0}'>{1}</td>", lavaField.ItemStyle.CssClass, lavaOutput );
                             }

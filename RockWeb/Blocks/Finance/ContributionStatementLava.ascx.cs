@@ -244,7 +244,7 @@ namespace RockWeb.Blocks.Finance
 
             // get excluded currency types setting
             List<Guid> excludedCurrencyTypes = new List<Guid>();
-            if ( GetAttributeValue( "ExcludedCurrencyTypes" ).IsNotNullOrWhitespace() )
+            if ( GetAttributeValue( "ExcludedCurrencyTypes" ).IsNotNullOrWhiteSpace() )
             {
                 excludedCurrencyTypes = GetAttributeValue( "ExcludedCurrencyTypes" ).Split( ',' ).Select( Guid.Parse ).ToList();
             }
