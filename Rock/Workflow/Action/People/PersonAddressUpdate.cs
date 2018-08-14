@@ -243,7 +243,9 @@ namespace Rock.Workflow.Action
                             family.Name,
                             typeof( Group ),
                             family.Id,
-                            false );
+                            false,
+                            null,
+                            rockContext.SourceOfChange );
                     }
                 }
 
