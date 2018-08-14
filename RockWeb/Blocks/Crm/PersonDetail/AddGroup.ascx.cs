@@ -72,7 +72,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [WorkflowTypeField( "Child Workflow(s)", "When Family group type, the workflow(s) to launch for every child added.", true, false, "", "", 26, "ChildWorkflows" )]
     [WorkflowTypeField( "Group Workflow(s)", "The workflow(s) to launch for the group (family) that is added.", true, false, "", "", 27, "GroupWorkflows" )]
     [LinkedPage( "Person Detail Page", "The Page to navigate to after the family has been added. (Note that {GroupId} and {PersonId} can be included in the route). Leave blank to go to the default page of ~/Person/{PersonId}.", false, order: 28 )]
-    [BooleanField( "Enable Alternate Identifier", "If enabled, an additional step will shown for supplying an alternate identifier for each person.", false, order: 29 )]
+    [BooleanField( "Enable Alternate Identifier", "If enabled, an additional step will be shown for supplying a custom alternate identifier for each person.", false, order: 29 )]
     public partial class AddGroup : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -486,23 +486,41 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 {
                     if ( !( people.All( p => _alternateIds.ContainsKey( p.Guid ) ) && people.All( p => !string.IsNullOrEmpty( _alternateIds[p.Guid] ) ) ) )
                     {
-                        errorMessages.Add( "Alternate Id are required." );
+                        errorMessages.Add( "Alternate Id is required." );
                     }
 
                     int alternateValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() ).Id;
                     var alternateIds = _alternateIds.Select( a => a.Value ).ToList();
 
+                    // Look for duplicates in the local/current set of alternate ids
+                    var localDuplicateAlternateIds = alternateIds.GroupBy( x => x )
+                      .Where( g => g.Count() > 1 )
+                      .Select( y => y.Key )
+                      .ToList();
+                    if ( localDuplicateAlternateIds.Count > 0 )
+                    {
+                        errorMessages.Add( string.Format( "Alternate {1} '{0}' cannot be shared by multiple people.",
+                            localDuplicateAlternateIds.AsDelimited( "' and '" ),
+                            "id".PluralizeIf( localDuplicateAlternateIds.Count > 1 ) ) );
+                    }
+
+                    // Look for duplicates among all other existing alternate ids
                     using ( var rockContext = new RockContext() )
                     {
                         var duplicateAlternateIds = new PersonSearchKeyService( rockContext )
                                                 .Queryable()
                                                 .Where( a => a.SearchTypeValueId == alternateValueId && alternateIds.Contains( a.SearchValue ) )
                                                 .Select( a => a.SearchValue )
+                                                .Distinct()
                                                 .ToList();
 
-                        if ( duplicateAlternateIds.Count > 0 )
+                        if ( duplicateAlternateIds.Count == 1  )
                         {
-                            errorMessages.Add( string.Format( "{0} already exists and can't be taken again.", duplicateAlternateIds.AsDelimited( ", " ) ) );
+                            errorMessages.Add( string.Format( "Alternate Id '{0}' is already assigned to another person.", duplicateAlternateIds[0] ) );
+                        }
+                        else if ( duplicateAlternateIds.Count > 0 )
+                        {
+                            errorMessages.Add( string.Format( "Alternate Ids '{0}' are already assigned to other people.", duplicateAlternateIds.AsDelimited( "', '" ) ) );
                         }
                     }
                 }
