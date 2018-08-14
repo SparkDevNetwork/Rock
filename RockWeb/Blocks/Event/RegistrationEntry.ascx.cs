@@ -2888,6 +2888,35 @@ namespace RockWeb.Blocks.Event
             }
             else
             {
+                var rgx = new System.Text.RegularExpressions.Regex( @"[^\d]" );
+                string ccNum = rgx.Replace( txtCreditCard.Text, string.Empty );
+
+                bool isValid = true;
+                var errorMessages = new List<string>();
+                if ( string.IsNullOrWhiteSpace( ccNum ) )
+                {
+                    errorMessages.Add("<p> Card Number is required <p>");
+                    isValid = false;
+                }
+
+                if ( !mypExpiration.SelectedDate.HasValue )
+                {
+                    errorMessages.Add( "<p> Card Expiration Date is required <p>" );
+                    isValid = false;
+                }
+
+                if ( string.IsNullOrWhiteSpace( txtCVV.Text ) )
+                {
+                    errorMessages.Add( "<p> Card Security Code is required <p>" );
+                    isValid = false;
+                }
+
+                if ( !isValid )
+                {
+                    errorMessage = string.Format( "<ul><li>{0}</li></ul>", errorMessages.AsDelimited( "</li><li>" ) );
+                    return isValid;
+                }
+
                 paymentInfo = GetCCPaymentInfo( gateway );
             }
 
