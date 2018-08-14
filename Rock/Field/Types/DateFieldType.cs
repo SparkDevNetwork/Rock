@@ -674,19 +674,26 @@ namespace Rock.Field.Types
                         var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( filterValueValues[1] );
                         ConstantExpression constantExpressionLower = dateRange.Start.HasValue 
                             ? Expression.Constant( dateRange.Start, typeof( DateTime ) )
-                            : Expression.Constant( null );
+                            : null;
 
                         ConstantExpression constantExpressionUpper = dateRange.End.HasValue
                             ? Expression.Constant( dateRange.End, typeof( DateTime ) )
-                            : Expression.Constant( null );
+                            : null;
 
                         return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpressionLower, constantExpressionUpper );
                     }
                     else
                     {
-                        var dateTime = filterValueValues[0].AsDateTime() ?? DateTime.MinValue;
-                        ConstantExpression constantExpression = Expression.Constant( dateTime, typeof( DateTime ) );
-                        return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
+                        var dateTime = filterValueValues[0].AsDateTime();
+                        if ( dateTime.HasValue )
+                        {
+                            ConstantExpression constantExpression = Expression.Constant( dateTime, typeof( DateTime ) );
+                            return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
+                        }
+                        else
+                        {
+                            return null;
+                        }
                     }
                 }
             }

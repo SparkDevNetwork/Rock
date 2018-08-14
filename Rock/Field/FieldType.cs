@@ -519,7 +519,15 @@ namespace Rock.Field
         /// <param name="filterValues">The filter values.</param>
         public virtual void SetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues )
         {
-            if ( filterControl != null )
+            if ( filterControl != null &&
+                filterControl.Controls != null &&
+                filterControl.Controls.Count > 1 &&
+                filterControl.Controls[0].Controls != null &&
+                filterControl.Controls[0].Controls.Count != 0  &&
+                filterControl.Controls[1].Controls != null &&
+                filterControl.Controls[1].Controls.Count != 0  &&
+                filterValues != null &&
+                filterValues.Count != 0 )
             {
                 try
                 {

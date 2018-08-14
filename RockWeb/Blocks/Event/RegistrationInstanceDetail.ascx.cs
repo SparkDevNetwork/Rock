@@ -3410,12 +3410,18 @@ namespace RockWeb.Blocks.Event
                         // Filter query by any configured person attribute filters
                         if ( personAttributes != null && personAttributes.Any() )
                         {
+                            PersonService personService = new PersonService( rockContext );
+                            var personQry = personService.Queryable().AsNoTracking();
                             foreach ( var attribute in personAttributes )
                             {
                                 var filterControl = phRegistrantsRegistrantFormFieldFilters.FindControl( "filterRegistrants_" + attribute.Id.ToString() );
-                                qry = attribute.FieldType.Field.ApplyAttributeQueryFilter( qry, filterControl, attribute, registrationRegistrantService, Rock.Reporting.FilterMode.SimpleFilter );
+                                personQry = attribute.FieldType.Field.ApplyAttributeQueryFilter( personQry, filterControl, attribute, personService, Rock.Reporting.FilterMode.SimpleFilter );
                             }
+
+                            qry = qry.Where( r => personQry.Any( p => p.Id == r.PersonAlias.PersonId ) );
                         }
+
+
 
                         // Get all the group member attributes selected to be on grid
                         groupMemberAttributes = RegistrantFields
@@ -3429,11 +3435,15 @@ namespace RockWeb.Blocks.Event
                         // Filter query by any configured person attribute filters
                         if ( groupMemberAttributes != null && groupMemberAttributes.Any() )
                         {
+                            var groupMemberService = new GroupMemberService( rockContext );
+                            var groupMemberQry = groupMemberService.Queryable().AsNoTracking();
                             foreach ( var attribute in groupMemberAttributes )
                             {
                                 var filterControl = phRegistrantsRegistrantFormFieldFilters.FindControl( "filterRegistrants_" + attribute.Id.ToString() );
-                                qry = attribute.FieldType.Field.ApplyAttributeQueryFilter( qry, filterControl, attribute, registrationRegistrantService, Rock.Reporting.FilterMode.SimpleFilter );
+                                groupMemberQry = attribute.FieldType.Field.ApplyAttributeQueryFilter( groupMemberQry, filterControl, attribute, groupMemberService, Rock.Reporting.FilterMode.SimpleFilter );
                             }
+
+                            qry = qry.Where( r => groupMemberQry.Any( g => g.Id == r.GroupMemberId ) );
                         }
                     }
 
@@ -4976,11 +4986,16 @@ namespace RockWeb.Blocks.Event
                         // Filter query by any configured person attribute filters
                         if ( personAttributes != null && personAttributes.Any() )
                         {
+                            PersonService personService = new PersonService( rockContext );
+                            var personQry = personService.Queryable().AsNoTracking();
+
                             foreach ( var attribute in personAttributes )
                             {
                                 var filterControl = phWaitListFormFieldFilters.FindControl( "filterWaitlist_" + attribute.Id.ToString() );
-                                qry = attribute.FieldType.Field.ApplyAttributeQueryFilter( qry, filterControl, attribute, registrationRegistrantService, Rock.Reporting.FilterMode.SimpleFilter );
+                                personQry = attribute.FieldType.Field.ApplyAttributeQueryFilter( personQry, filterControl, attribute, personService, Rock.Reporting.FilterMode.SimpleFilter );
                             }
+
+                            qry = qry.Where( r => personQry.Any( p => p.Id == r.PersonAlias.PersonId ) );
                         }
 
                         // Get all the group member attributes selected to be on grid
@@ -4995,11 +5010,16 @@ namespace RockWeb.Blocks.Event
                         // Filter query by any configured person attribute filters
                         if ( groupMemberAttributes != null && groupMemberAttributes.Any() )
                         {
+                            var groupMemberService = new GroupMemberService( rockContext );
+                            var groupMemberQry = groupMemberService.Queryable().AsNoTracking();
+
                             foreach ( var attribute in groupMemberAttributes )
                             {
                                 var filterControl = phWaitListFormFieldFilters.FindControl( "filterWaitlist_" + attribute.Id.ToString() );
-                                qry = attribute.FieldType.Field.ApplyAttributeQueryFilter( qry, filterControl, attribute, registrationRegistrantService, Rock.Reporting.FilterMode.SimpleFilter );
+                                groupMemberQry = attribute.FieldType.Field.ApplyAttributeQueryFilter( groupMemberQry, filterControl, attribute, groupMemberService, Rock.Reporting.FilterMode.SimpleFilter );
                             }
+
+                            qry = qry.Where( r => groupMemberQry.Any( g => g.Id == r.GroupMemberId ) );
                         }
                     }
 
@@ -5505,11 +5525,16 @@ namespace RockWeb.Blocks.Event
                         // Filter query by any configured person attribute filters
                         if ( personAttributes != null && personAttributes.Any() )
                         {
+                            PersonService personService = new PersonService( rockContext );
+                            var personQry = personService.Queryable().AsNoTracking();
+
                             foreach ( var attribute in personAttributes )
                             {
                                 var filterControl = phGroupPlacementsFormFieldFilters.FindControl( "filterGroupPlacements_" + attribute.Id.ToString() );
-                                qry = attribute.FieldType.Field.ApplyAttributeQueryFilter( qry, filterControl, attribute, registrationRegistrantService, Rock.Reporting.FilterMode.SimpleFilter );
+                                personQry = attribute.FieldType.Field.ApplyAttributeQueryFilter( personQry, filterControl, attribute, personService, Rock.Reporting.FilterMode.SimpleFilter );
                             }
+
+                            qry = qry.Where( r => personQry.Any( p => p.Id == r.PersonAlias.PersonId ) );
                         }
 
                         // Get all the group member attributes selected to be on grid
@@ -5524,11 +5549,16 @@ namespace RockWeb.Blocks.Event
                         // Filter query by any configured person attribute filters
                         if ( groupMemberAttributes != null && groupMemberAttributes.Any() )
                         {
+                            var groupMemberService = new GroupMemberService( rockContext );
+                            var groupMemberQry = groupMemberService.Queryable().AsNoTracking();
+
                             foreach ( var attribute in groupMemberAttributes )
                             {
                                 var filterControl = phGroupPlacementsFormFieldFilters.FindControl( "filterGroupPlacements_" + attribute.Id.ToString() );
-                                qry = attribute.FieldType.Field.ApplyAttributeQueryFilter( qry, filterControl, attribute, registrationRegistrantService, Rock.Reporting.FilterMode.SimpleFilter );
+                                groupMemberQry = attribute.FieldType.Field.ApplyAttributeQueryFilter( groupMemberQry, filterControl, attribute, groupMemberService, Rock.Reporting.FilterMode.SimpleFilter );
                             }
+
+                            qry = qry.Where( r => groupMemberQry.Any( g => g.Id == r.GroupMemberId ) );
                         }
                     }
 
