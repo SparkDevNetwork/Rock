@@ -146,7 +146,7 @@ namespace Rock.Transactions
                                     .ToList();
                             }
 
-                            // Combine group and grouptype trigers
+                            // Combine group and grouptype triggers
                             var triggers = groupTriggers.Union( groupTypeTriggers ).ToList();
 
                             // If any triggers were found

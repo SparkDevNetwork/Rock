@@ -90,7 +90,7 @@ namespace Rock.Lava.Shortcodes
                 // add a unique id so shortcodes have easy access to one
                 parms.AddOrReplace( "uniqueid", "id-" + Guid.NewGuid().ToString() );
 
-                // keep track of the recurrsion depth
+                // keep track of the recursion depth
                 int currentRecurrsionDepth = 0;
                 if ( parms.ContainsKey( "RecursionDepth" ) )
                 {

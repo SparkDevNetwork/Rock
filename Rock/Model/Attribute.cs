@@ -221,7 +221,7 @@ namespace Rock.Model
         /// Gets or sets a value indicating whether this instance is analytic history.
         /// Only applies if this is an Attribute on an Entity that implements IAnalyticHistorical and IsAnalytic is True
         /// If this is true and IsAnalytic is also true, a change in value of this Attribute on the Entity makes the CurrentRowIndicator=1 record
-        /// to become CurrentRowIndicator=0, sets teh ExpireDate, then a new row with CurrentRowIndicator=1 to be created
+        /// to become CurrentRowIndicator=0, sets the ExpireDate, then a new row with CurrentRowIndicator=1 to be created
         /// </summary>
         /// <value>
         /// <c>true</c> if this instance is analytic history; otherwise, <c>false</c>.

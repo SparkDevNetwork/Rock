@@ -138,7 +138,7 @@ namespace Rock
         /// Joins a dictionary of items.
         /// </summary>
         /// <param name="items">The items.</param>
-        /// <param name="delimter">The delimter.</param>
+        /// <param name="delimter">The delimiter.</param>
         /// <returns></returns>
         public static string Join( this Dictionary<string, string> items, string delimter )
         {

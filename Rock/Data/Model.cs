@@ -428,10 +428,10 @@ namespace Rock.Data
         /// Gets the <see cref="System.Object"/> with the specified key.
         /// </summary>
         /// <remarks>
-        /// This method is only neccessary to support the old way of getting attribute values in 
+        /// This method is only necessary to support the old way of getting attribute values in 
         /// liquid templates (e.g. {{ Person.BaptismData }} ).  Once support for this method is 
         /// deprecated ( in v4.0 ), and only the new method of using the Attribute filter is 
-        /// suported (e.g. {{ Person | Attribute:'BaptismDate' }} ), this method can be removed
+        /// supported (e.g. {{ Person | Attribute:'BaptismDate' }} ), this method can be removed
         /// </remarks>
         /// <value>
         /// The <see cref="System.Object"/>.

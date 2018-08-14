@@ -863,7 +863,7 @@ namespace Rock.Security
 
             // If no match was found for the selected user on the current entity instance, check to see if the instance
             // has a parent authority defined and if so evaluate that entities authorization rules.  If there is no
-            // parent authority return the defualt authorization
+            // parent authority return the default authorization
             bool? parentAuthorized = null;
 
             if ( !checkParentAuthority ) return null;
@@ -989,7 +989,7 @@ namespace Rock.Security
 
             // If no match was found for the selected user on the current entity instance, check to see if the instance
             // has a parent authority defined and if so evaluate that entities authorization rules.  If there is no
-            // parent authority return the defualt authorization
+            // parent authority return the default authorization
             bool? parentAuthorized = null;
             if ( !checkParentAuthority ) return null;
 

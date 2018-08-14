@@ -93,7 +93,7 @@ namespace Rock.Model
 
         #region Public Methods
         /// <summary>
-        /// Determineds the ClientType (Mobile, Desktop, Tablet, etc) from a UserAgent string
+        /// Determines the ClientType (Mobile, Desktop, Tablet, etc) from a UserAgent string
         /// </summary>
         /// <param name="userAgent">The user agent.</param>
         /// <returns></returns>
