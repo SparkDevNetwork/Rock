@@ -1774,7 +1774,7 @@ namespace RockWeb.Blocks.Event
                         message = ex.Message;
                     }
 
-                    ShowError( "An Error Occurred Processing Your " + RegistrationTerm, ex.Message );
+                    ShowError( "An error occurred processing your " + RegistrationTerm.ToLowerInvariant(), ex.Message );
 
                     // Try to delete the registration if it was just created
                     try
@@ -2909,19 +2909,19 @@ namespace RockWeb.Blocks.Event
                 var errorMessages = new List<string>();
                 if ( string.IsNullOrWhiteSpace( ccNum ) )
                 {
-                    errorMessages.Add("<p> Card Number is required <p>");
+                    errorMessages.Add("Card Number is required");
                     isValid = false;
                 }
 
                 if ( !mypExpiration.SelectedDate.HasValue )
                 {
-                    errorMessages.Add( "<p> Card Expiration Date is required <p>" );
+                    errorMessages.Add( "Card Expiration Date is required " );
                     isValid = false;
                 }
 
                 if ( string.IsNullOrWhiteSpace( txtCVV.Text ) )
                 {
-                    errorMessages.Add( "<p> Card Security Code is required <p>" );
+                    errorMessages.Add( "Card Security Code is required" );
                     isValid = false;
                 }
 
