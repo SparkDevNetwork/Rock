@@ -40,7 +40,7 @@ namespace Rock.Workflow.Action
     [TextField("Title", "The title of the content channel item. <span class='tip tip-lava'></span>", true, "", "", 2 )]
     [WorkflowTextOrAttribute( "Start Date Time", "Attribute Value", "Text (date time format) or datetime workflow attribute that contains the text to set the start date time. <span class='tip tip-lava'></span>", true, "", "", 3, "StartDateTime",
         new string[] { "Rock.Field.Types.DateTimeFieldType", "Rock.Field.Types.TextFieldType" } )]
-    [WorkflowTextOrAttribute( "Expire Date Time", "Attribute Value", "An optional text (date time format) or datetime workflow attribute that contains the text to set the expiration date time. <span class='tip tip-lava'></span>", false, "", "", 4, null,
+    [WorkflowTextOrAttribute( "Expire Date Time", "Attribute Value", "An optional text (date time format) or datetime workflow attribute that contains the text to set the expiration date time. <span class='tip tip-lava'></span>", false, "", "", 4, "ExpireDateTime",
         new string[] { "Rock.Field.Types.DateTimeFieldType", "Rock.Field.Types.TextFieldType" } )]
     [WorkflowTextOrAttribute( "Content", "Attribute Value", "The content or a text/memo attribute that contains the content for the channel item. <span class='tip tip-lava'></span>", true, "", "", 5, "Content",
         new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" } )]
@@ -49,7 +49,8 @@ namespace Rock.Workflow.Action
     public class AddContentChannelItem : ActionComponent
     {
         /// <summary>
-        /// Executes the specified workflow.
+        /// Executes the specified workflow, setting the startDateTime to now (if none was given) and leaving
+        /// the expireDateTime as null (if none was given).
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="action">The action.</param>
@@ -60,8 +61,6 @@ namespace Rock.Workflow.Action
         {
             errorMessages = new List<string>();
             var mergeFields = GetMergeFields( action );
-            DateTime startDateTime = DateTime.Now;
-            DateTime? expireDateTime = null;
 
             // Get the content channel
             Guid contentChannelGuid = GetAttributeValue( action, "ContentChannel" ).AsGuid();
@@ -97,37 +96,81 @@ namespace Rock.Workflow.Action
                 content = contentValue;
             }
 
-            // Get the Start Date Time
-            Guid startDateTimeAttributeGuid = GetAttributeValue( action, "StartDateTime" ).AsGuid();
-            if ( ! startDateTimeAttributeGuid.IsEmpty() )
+            // Get the Start Date Time (check if the attribute value is a guid first)
+            DateTime startDateTime = RockDateTime.Now;
+            string startAttributeValue = GetAttributeValue( action, "StartDateTime" );
+            Guid startDateTimeAttributeGuid = startAttributeValue.AsGuid();
+            if ( !startDateTimeAttributeGuid.IsEmpty() )
             {
-                string attributeDatetime = action.GetWorklowAttributeValue( startDateTimeAttributeGuid );
-
-                if ( !string.IsNullOrWhiteSpace( attributeDatetime ) )
+                var attribute = AttributeCache.Get( startDateTimeAttributeGuid, rockContext );
+                if ( attribute != null )
                 {
-                    if ( !DateTime.TryParse( attributeDatetime, out startDateTime ) )
+                    string attributeValue = action.GetWorklowAttributeValue( startDateTimeAttributeGuid );
+                    if ( !string.IsNullOrWhiteSpace( attributeValue ) )
                     {
-                        errorMessages.Add( string.Format( "Could not parse the start date provided {0}.", attributeDatetime ) );
+                        if ( attribute.FieldType.Class == "Rock.Field.Types.TextFieldType" ||
+                            attribute.FieldType.Class == "Rock.Field.Types.DateTimeFieldType" )
+                        {
+                            if ( !DateTime.TryParse( attributeValue, out startDateTime ) )
+                            {
+                                startDateTime = RockDateTime.Now;
+                                errorMessages.Add( string.Format( "Could not parse the start date provided {0}.", attributeValue ) );
+                            }
+                        }
                     }
                 }
             }
+            // otherwise check just the plain value and then perform lava merge on it.
+            else if ( !string.IsNullOrWhiteSpace( startAttributeValue ) )
+            {
+                string mergedStartAttributeValue = startAttributeValue.ResolveMergeFields( mergeFields );
+                if ( ! DateTime.TryParse( mergedStartAttributeValue, out startDateTime ) )
+                {
+                    startDateTime = RockDateTime.Now;
+                    errorMessages.Add( string.Format( "Could not parse the start date provided {0}.", startAttributeValue ) );
+                }
+            }
 
-            // Get the Expire Date Time
-            Guid expireDateTimeAttributeGuid = GetAttributeValue( action, "ExpireDateTime" ).AsGuid();
+            // Get the Expire Date Time (check if the attribute value is a guid first)
+            DateTime? expireDateTime = null;
+            string expireAttributeValue = GetAttributeValue( action, "ExpireDateTime" );
+            Guid expireDateTimeAttributeGuid = expireAttributeValue.AsGuid();
             if ( !expireDateTimeAttributeGuid.IsEmpty() )
             {
-                string attributeDatetime = action.GetWorklowAttributeValue( expireDateTimeAttributeGuid );
-                DateTime aDateTime;
-                if ( !string.IsNullOrWhiteSpace( attributeDatetime ) )
+                var attribute = AttributeCache.Get( expireDateTimeAttributeGuid, rockContext );
+                if ( attribute != null )
                 {
-                    if ( !DateTime.TryParse( attributeDatetime, out aDateTime ) )
+                    DateTime aDateTime;
+                    string attributeValue = action.GetWorklowAttributeValue( expireDateTimeAttributeGuid );
+                    if ( !string.IsNullOrWhiteSpace( attributeValue ) )
                     {
-                        errorMessages.Add( string.Format( "Could not parse the expire date provided {0}.", attributeDatetime ) );
+                        if ( attribute.FieldType.Class == "Rock.Field.Types.TextFieldType" ||
+                            attribute.FieldType.Class == "Rock.Field.Types.DateTimeFieldType" )
+                        {
+                            if ( DateTime.TryParse( attributeValue, out aDateTime ) )
+                            {
+                                expireDateTime = aDateTime;
+                            }
+                            else
+                            {
+                                errorMessages.Add( string.Format( "Could not parse the expire date provided {0}.", attributeValue ) );
+                            }
+                        }
                     }
-                    else
-                    {
-                        expireDateTime = aDateTime;
-                    }
+                }
+            }
+            // otherwise check just the text value and then perform lava merge on it.
+            else if ( ! string.IsNullOrWhiteSpace( expireAttributeValue ) ) 
+            {
+                string mergedExpireAttributeValue = expireAttributeValue.ResolveMergeFields( mergeFields );
+                DateTime aDateTime;
+                if ( DateTime.TryParse( mergedExpireAttributeValue, out aDateTime ) )
+                {
+                    expireDateTime = aDateTime;
+                }
+                else
+                {
+                    errorMessages.Add( string.Format( "Could not parse the expire date provided {0}.", expireAttributeValue ) );
                 }
             }
 
