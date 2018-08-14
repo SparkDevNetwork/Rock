@@ -79,42 +79,22 @@ function BindNavEvents() {
 
 function PreventNumberScroll() {
   $(document).ready(function() {
-    $('input[type=number]').on('wheel', function(e){
-        return false;
+    // disable mousewheel on a input number field when in focus
+    // (to prevent Cromium browsers change the value when scrolling)
+    $('form').on('focus', 'input[type=number]', function (e) {
+      $(this).on('mousewheel.disableScroll', function (e) {
+        e.preventDefault()
+      })
+    });
+    $('form').on('blur', 'input[type=number]', function (e) {
+      $(this).off('mousewheel.disableScroll')
+    });
+
+    $('.js-notetext').blur(function() {
+      $(this).parent().removeClass("focus-within");
+    })
+    .focus(function() {
+      $(this).parent().addClass("focus-within")
     });
   });
 }
-
-
-// Focus Within Polyfill
-(function(window, document){
-	'use strict';
-	var slice = [].slice;
-	var removeClass = function(elem){
-		elem.classList.remove('focus-within');
-	};
-	var update = (function(){
-		var running, last;
-		var action = function(){
-			var element = document.activeElement;
-			running = false;
-			if(last !== element){
-				last = element;
-				slice.call(document.getElementsByClassName('focus-within')).forEach(removeClass);
-				while(element && element.classList){
-					element.classList.add('focus-within');
-					element = element.parentNode;
-				}
-			}
-		};
-		return function(){
-			if(!running){
-				requestAnimationFrame(action);
-				running = true;
-			}
-		};
-	})();
-	document.addEventListener('focus', update, true);
-	document.addEventListener('blur', update, true);
-	update();
-})(window, document);
