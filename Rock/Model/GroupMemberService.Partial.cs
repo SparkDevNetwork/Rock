@@ -298,7 +298,7 @@ namespace Rock.Model
         /// Gets a list of <see cref="System.Int32"/> PersonIds who's home address matches the given search value.
         /// </summary>
         /// <param name="partialHomeAddress">a partial address search string</param>
-        /// <returns>A querable list of <see cref="System.Int32"/> PersonIds</returns>
+        /// <returns>A queryable list of <see cref="System.Int32"/> PersonIds</returns>
         public IQueryable<int> GetPersonIdsByHomeAddress( string partialHomeAddress )
         {
             Guid groupTypefamilyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );

@@ -859,10 +859,10 @@ namespace Rock.Data
         public DbSet<FollowingEventType> FollowingEventTypes { get; set; }
 
         /// <summary>
-        /// Gets or sets the following suggesteds.
+        /// Gets or sets the following suggestions.
         /// </summary>
         /// <value>
-        /// The following suggesteds.
+        /// The following suggestions.
         /// </value>
         public DbSet<FollowingSuggested> FollowingSuggesteds { get; set; }
 

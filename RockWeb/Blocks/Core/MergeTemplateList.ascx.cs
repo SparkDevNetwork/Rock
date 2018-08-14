@@ -52,7 +52,7 @@ namespace RockWeb.Blocks.Core
             var mergeTemplateOwnership = this.GetAttributeValue( "MergeTemplatesOwnership" ).ConvertToEnum<MergeTemplateOwnership>( MergeTemplateOwnership.Personal );
 
             //// Block Security and special attributes (RockPage takes care of View)
-            //// NOTE: If MergeTemplatesOwnership = Person, the CurrentPerson can edit their own templates regardess of Authorization.EDIT
+            //// NOTE: If MergeTemplatesOwnership = Person, the CurrentPerson can edit their own templates regardless of Authorization.EDIT
             bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT ) || mergeTemplateOwnership == MergeTemplateOwnership.Personal;
             gMergeTemplates.Actions.ShowAdd = canAddEditDelete;
             gMergeTemplates.IsDeleteEnabled = canAddEditDelete;
