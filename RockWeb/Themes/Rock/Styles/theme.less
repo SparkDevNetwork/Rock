@@ -571,6 +571,26 @@ td.grid-select-field {
     }
   }
 
+.navbar-zone-header {
+  .zone-content > .block-instance {
+    display: none;
+
+    @media @sm {
+      float: left;
+      display: block;
+    }
+  }
+
+  .zone-content > .smart-search {
+    display: block;
+    @media @sm {
+      float: right;
+    }
+  }
+
+
+}
+
   .navbar-toggle {
     float: left;
     margin-top: 12px;
