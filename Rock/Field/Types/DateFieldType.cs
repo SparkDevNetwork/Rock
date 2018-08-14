@@ -22,6 +22,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
@@ -574,22 +575,25 @@ namespace Rock.Field.Types
             var filterValues = value.Split( new string[] { "\t" }, StringSplitOptions.None );
 
             var dateFiltersPanel = control as Panel;
-            var datePicker = dateFiltersPanel.ControlsOfTypeRecursive<DatePicker>().FirstOrDefault();
-            if ( datePicker != null && filterValues.Length > 0 )
+            if ( dateFiltersPanel != null )
             {
-                this.SetEditValue( datePicker, configurationValues, filterValues[0] );
-            }
+                var datePicker = dateFiltersPanel.ControlsOfTypeRecursive<DatePicker>().FirstOrDefault();
+                if ( datePicker != null && filterValues.Length > 0 )
+                {
+                    this.SetEditValue( datePicker, configurationValues, filterValues[0] );
+                }
 
-            var datePartsPicker = dateFiltersPanel.ControlsOfTypeRecursive<DatePartsPicker>().FirstOrDefault();
-            if ( datePartsPicker != null && filterValues.Length > 0 )
-            {
-                this.SetEditValue( datePartsPicker, configurationValues, filterValues[0] );
-            }
+                var datePartsPicker = dateFiltersPanel.ControlsOfTypeRecursive<DatePartsPicker>().FirstOrDefault();
+                if ( datePartsPicker != null && filterValues.Length > 0 )
+                {
+                    this.SetEditValue( datePartsPicker, configurationValues, filterValues[0] );
+                }
 
-            var slidingDateRangePicker = dateFiltersPanel.ControlsOfTypeRecursive<SlidingDateRangePicker>().FirstOrDefault();
-            if ( slidingDateRangePicker != null && filterValues.Length > 1 )
-            {
-                slidingDateRangePicker.DelimitedValues = filterValues[1];
+                var slidingDateRangePicker = dateFiltersPanel.ControlsOfTypeRecursive<SlidingDateRangePicker>().FirstOrDefault();
+                if ( slidingDateRangePicker != null && filterValues.Length > 1 )
+                {
+                    slidingDateRangePicker.DelimitedValues = filterValues[1];
+                }
             }
         }
         
@@ -630,7 +634,7 @@ namespace Rock.Field.Types
                     if ( comparisonType == ComparisonType.Between && filterValueValues.Length > 1 )
                     {
                         var dateRangeText = SlidingDateRangePicker.FormatDelimitedValues( filterValueValues[1] );
-                        return string.Format("during '{0}'", dateRangeText);
+                        return dateRangeText.IsNotNullOrWhiteSpace() ? string.Format( "during '{0}'", dateRangeText ) : null;
                     }
                     else
                     {
@@ -680,7 +684,14 @@ namespace Rock.Field.Types
                             ? Expression.Constant( dateRange.End, typeof( DateTime ) )
                             : null;
 
-                        return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpressionLower, constantExpressionUpper );
+                        if ( constantExpressionLower == null && constantExpressionUpper == null )
+                        {
+                            return new NoAttributeFilterExpression();
+                        }
+                        else
+                        {
+                            return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpressionLower, constantExpressionUpper );
+                        }
                     }
                     else
                     {
@@ -692,7 +703,14 @@ namespace Rock.Field.Types
                         }
                         else
                         {
-                            return null;
+                            if ( comparisonType == ComparisonType.IsBlank || comparisonType == ComparisonType.IsNotBlank )
+                            {
+                                return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, null );
+                            }
+                            else
+                            {
+                                return new NoAttributeFilterExpression();
+                            }
                         }
                     }
                 }
