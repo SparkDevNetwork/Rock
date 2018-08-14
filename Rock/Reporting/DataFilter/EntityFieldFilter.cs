@@ -229,7 +229,7 @@ namespace Rock.Reporting.DataFilter
             {
                 var values = JsonConvert.DeserializeObject<List<string>>( selection );
 
-                // selection list  is either "FieldName, Comparision, Value(s)" or "FieldName, Value(s)"
+                // selection list  is either "FieldName, Comparison, Value(s)" or "FieldName, Value(s)"
                 if ( values.Count == 3 )
                 {
                     var pageParamValue = rockBlock.PageParameter( values[0] );
@@ -295,7 +295,7 @@ namespace Rock.Reporting.DataFilter
                         }
                     }
 
-                    // selection list  is either "FieldName, Comparision, Value(s)" or "FieldName, Value(s)", so only update the selection if it is one of those
+                    // selection list  is either "FieldName, Comparison, Value(s)" or "FieldName, Value(s)", so only update the selection if it is one of those
                     if ( selectionValues.Count == 3 && userPreferenceValues.Count == 3 )
                     {
                         selectionValues[1] = userPreferenceValues[1];

@@ -800,7 +800,7 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
-        /// Builds the DropDownList contorl for multi-option single-quantity fees.
+        /// Builds the DropDownList control for multi-option single-quantity fees.
         /// </summary>
         /// <param name="fee">The fee.</param>
         /// <param name="setValues">if set to <c>true</c> [set values].</param>

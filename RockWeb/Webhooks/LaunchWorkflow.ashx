@@ -76,7 +76,7 @@ public class LaunchWorkflow : IHttpHandler
                                 List<string> errorMessages;
                                 new WorkflowService( rockContext ).Process( workflow, out errorMessages );
 
-                                // We send a response (if one is available) wether the workflow has ended
+                                // We send a response (if one is available) whether the workflow has ended
                                 // or not. This gives them a chance to send a "let me work on that for you"
                                 // type response and then continue processing in the background.
                                 SetWorkflowResponse( context, workflow );

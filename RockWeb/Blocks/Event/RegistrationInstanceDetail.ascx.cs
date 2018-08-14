@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -1829,7 +1829,7 @@ namespace RockWeb.Blocks.Event
             if ( keys.Any() )
             {
                 var entitySet = new Rock.Model.EntitySet();
-                entitySet.EntityTypeId = EntityTypeCache.Get<Rock.Model.RegistrationRegistrant>().Id;
+                entitySet.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Get<Rock.Model.RegistrationRegistrant>().Id;
                 entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( 20 );
 
                 foreach ( var key in keys )
@@ -3039,7 +3039,7 @@ namespace RockWeb.Blocks.Event
                     if ( sortProperty != null )
                     {
                         // If sorting by Total Cost or Balance Due, the database query needs to be run first without ordering,
-                        // and then ordering needs to be done in memory since TotalCost and BalanceDue are not databae fields.
+                        // and then ordering needs to be done in memory since TotalCost and BalanceDue are not database fields.
                         if ( sortProperty.Property == "TotalCost" )
                         {
                             if ( sortProperty.Direction == SortDirection.Ascending )
@@ -4236,8 +4236,8 @@ namespace RockWeb.Blocks.Event
                                 break;
 
                             case RegistrationPersonFieldType.HomePhone:
+                                // Per discussion this should not have "Phone" appended to the end if it's missing.
                                 var homePhoneLabel = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ).Value;
-                                homePhoneLabel = homePhoneLabel.Trim().EndsWith( "Phone" ) ? homePhoneLabel : homePhoneLabel + " Phone";
 
                                 var tbRegistrantsHomePhoneFilter = new RockTextBox();
                                 tbRegistrantsHomePhoneFilter.ID = "tbRegistrantsHomePhoneFilter";

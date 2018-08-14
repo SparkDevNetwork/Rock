@@ -26,7 +26,7 @@ using Rock.Web.Cache;
 namespace Rock.PersonProfile
 {
     /// <summary>
-    /// MEF Container class for Person Badge Componenets
+    /// MEF Container class for Person Badge Components
     /// </summary>
     public class BadgeContainer : Container<BadgeComponent, IComponentData>
     {

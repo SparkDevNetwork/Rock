@@ -32,7 +32,7 @@ using Rock.Web.UI;
 namespace RockWeb.Blocks.Security
 {
     /// <summary>
-    /// The main Person Profile block the main information about a peron 
+    /// The main Person Profile block the main information about a person 
     /// </summary>
     [DisplayName( "Account Detail" )]
     [Category( "Security" )]

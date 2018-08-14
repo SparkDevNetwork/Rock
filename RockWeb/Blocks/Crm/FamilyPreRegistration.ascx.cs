@@ -708,7 +708,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
         #region Methods
 
         /// <summary>
-        /// Sets the intial visibility/required properties of controls based on block attribute values
+        /// Sets the initial visibility/required properties of controls based on block attribute values
         /// </summary>
         private void SetControls()
         {
@@ -799,7 +799,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                     spouse = CurrentPerson.GetSpouse( _rockContext );
                     if ( spouse != null )
                     {
-                        // If spouse was found, find the first family that spouse beongs to also.
+                        // If spouse was found, find the first family that spouse belongs to also.
                         family = families.Where( f => f.Members.Any( m => m.PersonId == spouse.Id ) ).FirstOrDefault();
                         if ( family == null )
                         {
@@ -964,7 +964,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
         }
 
         /// <summary>
-        /// Helper method to set visibilty of adult controls and return if it's required or not.
+        /// Helper method to set visibility of adult controls and return if it's required or not.
         /// </summary>
         /// <param name="attributeKey">The attribute key.</param>
         /// <param name="adultControl1">The adult control1.</param>

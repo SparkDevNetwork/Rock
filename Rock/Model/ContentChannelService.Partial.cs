@@ -109,7 +109,7 @@ namespace Rock.Model
         {
             return this.Context.Database.SqlQuery<ContentChannelPath>(
                 @"
-                -- Get ContentChannel association heirarchy with ContentChannel ancestor path information
+                -- Get ContentChannel association hierarchy with ContentChannel ancestor path information
                 WITH CTE (ChildContentChannelId,ContentChannelId, HierarchyPath) AS
                 (
                       SELECT [ChildContentChannelId], [ContentChannelId], CONVERT(nvarchar(500),'')

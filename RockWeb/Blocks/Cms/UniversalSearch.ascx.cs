@@ -309,7 +309,7 @@ namespace RockWeb.Blocks.Cms
 
                     var showScores = GetAttributeValue( "ShowScores" ).AsBoolean();
 
-                    // for speed we will get the common merge fields and pass them to the formatter so it does not have to be done repeattedly in the loop (it's a bit expensive)
+                    // for speed we will get the common merge fields and pass them to the formatter so it does not have to be done repeatedly in the loop (it's a bit expensive)
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, CurrentPerson );
 
                     foreach ( var result in results )
@@ -335,7 +335,7 @@ namespace RockWeb.Blocks.Cms
                     lResults.Text = formattedResults.ToString();
                 }
 
-                // pageination
+                // pagination
                 if ( totalResultsAvailable > 0 )
                 {
                     StringBuilder pagination = new StringBuilder();
@@ -441,7 +441,7 @@ namespace RockWeb.Blocks.Cms
 
             if ( PageParameter( "SmartSearch" ).IsNotNullOrWhiteSpace() )
             {
-                // get the field critiera
+                // get the field criteria
                 var fieldCriteriaSetting = Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchFieldCriteria" );
                 
                 if ( !string.IsNullOrWhiteSpace( fieldCriteriaSetting ) )
@@ -616,7 +616,7 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
-        /// Supportses the index field filtering.
+        /// Supports the index field filtering.
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
         /// <returns></returns>

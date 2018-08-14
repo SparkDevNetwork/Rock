@@ -450,7 +450,7 @@ namespace RockWeb.Blocks.Cms
                             .GetByEntityTypeQualifier( entityType.Id, "DefinedTypeId", definedType.Id.ToString(), false )
                             .ToList();
 
-                        // Verify (and create if neccessary) the "Is Link" attribute
+                        // Verify (and create if necessary) the "Is Link" attribute
                         if ( !attributes.Any( a => a.Key == "IsLink" ) )
                         {
                             var fieldType = FieldTypeCache.Get( Rock.SystemGuid.FieldType.BOOLEAN );

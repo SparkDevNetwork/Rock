@@ -387,7 +387,7 @@ namespace RockWeb.Blocks.Crm
                     workflow.SetAttributeValue( "BirthDate", dpBirthdate.Text );
                     workflow.SetAttributeValue( "OtherUpdates", tbOtherUpdates.Text );
 
-                    // lauch workflow
+                    // launch workflow
                     List<string> workflowErrors;
                     workflowService.Process( workflow, out workflowErrors );
                 }

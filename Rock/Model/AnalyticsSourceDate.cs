@@ -213,10 +213,10 @@ namespace Rock.Model
         public string CalendarMonthName { get; set; }
 
         /// <summary>
-        /// Gets or sets the calendar in month name abbrevated. Format: "MMM"
+        /// Gets or sets the calendar in month name abbreviated. Format: "MMM"
         /// </summary>
         /// <value>
-        /// The calendar in month name abbrevated.
+        /// The calendar in month name abbreviated.
         /// </value>
         [DataMember]
         [MaxLength( 450 )]
@@ -300,10 +300,10 @@ namespace Rock.Model
         public string FiscalMonth { get; set; }
 
         /// <summary>
-        /// Gets or sets the fiscal month abbrevated.
+        /// Gets or sets the fiscal month abbreviated.
         /// </summary>
         /// <value>
-        /// The fiscal month abbrevated.
+        /// The fiscal month abbreviated.
         /// </value>
         [DataMember]
         [MaxLength( 450 )]

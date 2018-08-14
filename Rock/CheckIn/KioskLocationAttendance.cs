@@ -156,7 +156,7 @@ namespace Rock.CheckIn
         /// Flushes the specified id.
         /// </summary>
         /// <param name="id">The id.</param>
-        [Obsolete( "Use Remove( int id ) insted.")]
+        [Obsolete( "Use Remove( int id ) instead.")]
         public static void Flush( int id )
         {
             Remove( id );

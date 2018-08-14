@@ -42,7 +42,7 @@ namespace Rock.Jobs
         #region Constructor
 
         /// <summary> 
-        /// Empty constructor for job initilization
+        /// Empty constructor for job initialization
         /// <para>
         /// Jobs require a public empty constructor so that the
         /// scheduler can instantiate the class whenever it needs.
@@ -803,7 +803,7 @@ Update Family Status: {updateFamilyStatus}
                             family.CampusId = newCampusId.Value;
                             rockContext.SaveChanges();
 
-                            // Since we just succesfully saved the change, increment the update counter
+                            // Since we just successfully saved the change, increment the update counter
                             recordsUpdated++;
                         }
                     }
@@ -1098,7 +1098,7 @@ Update Family Status: {updateFamilyStatus}
                             // Save all the changes
                             rockContext.SaveChanges();
 
-                            // Since we just succesfully saved the change, increment the update counter
+                            // Since we just successfully saved the change, increment the update counter
                             recordsUpdated++;
 
                             // If configured to do so, add any parent relationships (these methods take care of logging changes)
@@ -1456,7 +1456,7 @@ Update Family Status: {updateFamilyStatus}
         }
 
         /// <summary>
-        /// Gets the people with person attribut updates.
+        /// Gets the people with person attribute updates.
         /// </summary>
         /// <param name="enabled">if set to <c>true</c> [enabled].</param>
         /// <param name="includeAttributeIds">The include attribute ids.</param>

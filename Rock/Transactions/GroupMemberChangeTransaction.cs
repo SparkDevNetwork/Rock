@@ -168,7 +168,7 @@ namespace Rock.Transactions
                             // If any triggers were found
                             if ( triggers.Any() )
                             {
-                                // Loop through triggers and lauch appropriate workflow
+                                // Loop through triggers and launch appropriate workflow
                                 foreach ( var trigger in triggers )
                                 {
                                     switch ( trigger.TriggerType )

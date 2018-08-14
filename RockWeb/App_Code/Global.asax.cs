@@ -110,7 +110,7 @@ namespace RockWeb
 
             if ( useFrameDomains )
             {
-                // string concat is 5x faster than String.Format in this senario
+                // string concat is 5x faster than String.Format in this scenario
                 Response.AddHeader( "Content-Security-Policy", "frame-ancestors " + allowedDomains );
             }
             else
