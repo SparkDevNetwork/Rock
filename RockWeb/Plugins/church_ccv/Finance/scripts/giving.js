@@ -240,7 +240,7 @@ function pageLoad() {
 
     // Schedule Recurring Transaction Panel
 
-    // configure the schedule start date pickers
+    // configure the schedule start for date pickers
     var currentDate = new Date();
     currentDate.setDate(currentDate.getDate() + 1);
 
@@ -253,6 +253,10 @@ function pageLoad() {
         format: 'mm/dd/yyyy',
         startDate: currentDate
     });
+
+    // configured default date for date pickers
+    $('#dpScheduledTransactionStartDate').datepicker('update', currentDate);
+    $('#dpSuccessScheduleStartDate').datepicker('update', currentDate);
 
     // Validate schedule drop down list
     $('#ddlSuccessScheduleFrequency').on('click', function () {
