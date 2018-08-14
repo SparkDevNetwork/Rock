@@ -219,7 +219,14 @@ namespace Rock.Model
 				var rockContext = ( RockContext ) dbContext;
 				var phoneNumberService = new PhoneNumberService( rockContext );
 				var duplicates = phoneNumberService.Queryable().Where( pn => pn.PersonId == PersonId && pn.Number == Number && pn.CountryCode == CountryCode );
-				if ( duplicates.Any() )
+
+                // Make sure this number isn't considered a duplicate
+                if ( entry.State == System.Data.Entity.EntityState.Modified )
+                {
+                    duplicates = duplicates.Where( d => d.Id != Id );
+                }
+
+                if ( duplicates.Any() )
 				{
 					var highestOrderedDuplicate = duplicates.Where( p => p.NumberTypeValue != null ).OrderBy(p => p.NumberTypeValue.Order).FirstOrDefault();
 					if ( NumberTypeValueId.HasValue && highestOrderedDuplicate != null && highestOrderedDuplicate.NumberTypeValue != null )
