@@ -322,6 +322,16 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         lPhoto.Text = photoTag;
                     }
 
+                    var campus = person.GetCampus();
+                    if ( campus != null )
+                    {
+                        hlCampus.Visible = true;
+                        hlCampus.Text = campus.Name;
+                    }
+                    else
+                    {
+                        hlCampus.Visible = false;
+                    }
 
                     lGender.Text = person.Gender != Gender.Unknown ? person.Gender.ConvertToString() : "";
                     
