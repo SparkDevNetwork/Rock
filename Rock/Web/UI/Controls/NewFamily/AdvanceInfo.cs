@@ -14,14 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 using System.Web.UI;
-using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
-using Rock.Model;
-using Rock.Cache;
 
 namespace Rock.Web.UI.Controls
 {
