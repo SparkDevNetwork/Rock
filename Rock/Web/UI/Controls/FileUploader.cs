@@ -279,7 +279,15 @@ namespace Rock.Web.UI.Controls
             set
             {
                 EnsureChildControls();
-                _hfBinaryFileId.Value = value.ToString();
+
+                if ( value.HasValue )
+                {
+                    _hfBinaryFileId.Value = value.ToString();
+                }
+                else
+                {
+                    _hfBinaryFileId.Value = "0";
+                }
             }
         }
 
