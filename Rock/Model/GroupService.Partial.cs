@@ -1237,6 +1237,26 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// For the group, gets a family member that matches the given person. A match
+        /// is found if the nickname matches the nickname or first name, the last name matches, and,
+        /// if there is a birth date on the potential match, the birth date matches.
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <param name="personToMatch">The person to match.</param>
+        /// <returns>a person (if a match was found) otherwise null</returns>
+        public static Person MatchingFamilyMember( this Group group, Person personToMatch )
+        {
+            return group.Members
+            .Where( m =>
+                ( m.Person.NickName == personToMatch.NickName || m.Person.FirstName == personToMatch.NickName ) &&
+                m.Person.LastName == personToMatch.LastName &&
+                m.Person.BirthDate.HasValue &&
+                m.Person.BirthDate.Value == personToMatch.BirthDate.Value )
+            .Select( m => m.Person )
+            .FirstOrDefault();
+        }
+
+        /// <summary>
         /// Gets the active members.
         /// </summary>
         /// <param name="group">The group.</param>
