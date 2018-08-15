@@ -10,8 +10,8 @@
                     <p>Login with social account</p>
                     <asp:PlaceHolder ID="phExternalLogins" runat="server"></asp:PlaceHolder>
                 </div>
+                <div id="orDiv" style="display:none;">OR</div>
                 <div id="divOrgLogin" runat="server" class="col-sm-6">
-                 
                         <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger"/>
 
                         <asp:Literal ID="lPromptMessage" runat="server" />
